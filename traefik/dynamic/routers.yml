@@ -1,0 +1,2 @@
+# Dynamic routing config - custom domains added here at runtime
+# Traefik Docker provider handles the main routing via labels

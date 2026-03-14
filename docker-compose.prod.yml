@@ -1,0 +1,14 @@
+services:
+  django:
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --graceful-timeout 30
+    volumes: []
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+
+  nextjs:
+    command: node server.js
+    volumes: []
+
+  celery-worker:
+    command: celery -A config.celery worker -l warning --concurrency=4
+    volumes: []
