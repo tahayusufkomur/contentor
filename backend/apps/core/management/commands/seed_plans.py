@@ -1,12 +1,38 @@
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from apps.core.models import PlatformPlan
+from apps.core.models import Domain, PlatformPlan, Tenant
 
 
 class Command(BaseCommand):
-    help = "Seed default platform plans"
+    help = "Seed default platform plans and public tenant"
 
     def handle(self, *args, **options):
+        # Create public tenant (required by django-tenants)
+        public_tenant, created = Tenant.objects.get_or_create(
+            schema_name="public",
+            defaults={
+                "name": "Contentor Platform",
+                "slug": "public",
+                "subdomain": "public",
+                "owner_email": "admin@contentor.com",
+                "provisioning_status": "ready",
+            },
+        )
+        if created:
+            self.stdout.write("Created public tenant")
+            Domain.objects.get_or_create(
+                domain=settings.CONTENTOR_DOMAIN,
+                defaults={"tenant": public_tenant, "is_primary": True},
+            )
+            Domain.objects.get_or_create(
+                domain="localhost",
+                defaults={"tenant": public_tenant, "is_primary": False},
+            )
+            self.stdout.write("Created platform domains")
+        else:
+            self.stdout.write("Public tenant already exists")
+
         plans = [
             {
                 "name": "free",

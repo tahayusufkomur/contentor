@@ -17,7 +17,6 @@ SHARED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
-    "django.contrib.admin",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
@@ -28,6 +27,7 @@ SHARED_APPS = [
 TENANT_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
+    "django.contrib.admin",
     "apps.accounts",
     "apps.tenant_config",
 ]

@@ -86,11 +86,11 @@ services:
   nextjs:
     build:
       context: ./frontend
+      target: dev
     command: npm run dev
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.localhost}
