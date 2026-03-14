@@ -5,11 +5,12 @@ api:
 entryPoints:
   web:
     address: ":80"
+  traefik:
+    address: ":8080"
 
 providers:
   docker:
     exposedByDefault: false
-    network: contentor_default
   file:
     directory: /etc/traefik/dynamic
     watch: true
