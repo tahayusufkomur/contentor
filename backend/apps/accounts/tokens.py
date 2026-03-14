@@ -1,0 +1,34 @@
+from datetime import datetime, timedelta, timezone
+
+import jwt
+from django.conf import settings
+
+
+def create_magic_link_token(email: str, tenant_schema: str, tenant_slug: str) -> str:
+    payload = {
+        "email": email,
+        "tenant_id": tenant_schema,
+        "tenant_slug": tenant_slug,
+        "purpose": "magic_link",
+        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
+        "iat": datetime.now(tz=timezone.utc),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+def verify_magic_link_token(token: str) -> dict:
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    if payload.get("purpose") != "magic_link":
+        raise jwt.InvalidTokenError("Invalid token purpose")
+    return payload
+
+
+def create_jwt(user, tenant) -> str:
+    payload = {
+        "user_id": user.id,
+        "tenant_id": tenant.schema_name,
+        "role": user.role,
+        "exp": datetime.now(tz=timezone.utc) + timedelta(days=settings.JWT_EXPIRY_DAYS),
+        "iat": datetime.now(tz=timezone.utc),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
