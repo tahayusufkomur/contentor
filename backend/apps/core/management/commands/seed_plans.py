@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from apps.accounts.models import User
 from apps.core.models import Domain, PlatformPlan, Tenant
 
 
 class Command(BaseCommand):
-    help = "Seed default platform plans and public tenant"
+    help = "Seed default platform plans, public tenant, and superusers"
 
     def handle(self, *args, **options):
         # Create public tenant (required by django-tenants)
@@ -72,3 +73,46 @@ class Command(BaseCommand):
             action = "Created" if created else "Updated"
             self.stdout.write(f"{action} plan: {plan.name}")
         self.stdout.write(self.style.SUCCESS("Plans seeded successfully"))
+
+        # Sync superusers from CONTENTOR_SUPERUSERS env var
+        superuser_emails = set(settings.CONTENTOR_SUPERUSERS)
+        if not superuser_emails:
+            return
+
+        # Create missing superusers
+        for email in superuser_emails:
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    "name": email.split("@")[0],
+                    "role": "owner",
+                    "is_staff": True,
+                    "is_superuser": True,
+                },
+            )
+            if created:
+                user.set_unusable_password()
+                user.save()
+                self.stdout.write(f"Created superuser: {email}")
+            else:
+                changed = False
+                if not user.is_superuser:
+                    user.is_superuser = True
+                    changed = True
+                if not user.is_staff:
+                    user.is_staff = True
+                    changed = True
+                if changed:
+                    user.save(update_fields=["is_superuser", "is_staff"])
+                    self.stdout.write(f"Promoted to superuser: {email}")
+                else:
+                    self.stdout.write(f"Superuser already exists: {email}")
+
+        # Revoke superuser from anyone not in the list
+        removed = User.objects.filter(is_superuser=True).exclude(email__in=superuser_emails).update(
+            is_superuser=False
+        )
+        if removed:
+            self.stdout.write(f"Revoked superuser from {removed} user(s) not in CONTENTOR_SUPERUSERS")
+
+        self.stdout.write(self.style.SUCCESS("Superusers synced"))

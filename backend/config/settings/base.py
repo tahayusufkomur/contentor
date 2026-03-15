@@ -22,6 +22,7 @@ SHARED_APPS = [
     "rest_framework",
     "corsheaders",
     "apps.core",
+    "apps.accounts",
 ]
 
 TENANT_APPS = [
@@ -128,5 +129,10 @@ USE_I18N = True
 USE_TZ = True
 
 CONTENTOR_DOMAIN = os.environ.get("CONTENTOR_DOMAIN", "contentor.localhost")
+CONTENTOR_SUPERUSERS = [
+    email.strip()
+    for email in os.environ.get("CONTENTOR_SUPERUSERS", "").split(",")
+    if email.strip()
+]
 MAGIC_LINK_EXPIRY_MINUTES = 15
 JWT_EXPIRY_DAYS = 7
