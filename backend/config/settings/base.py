@@ -31,6 +31,7 @@ TENANT_APPS = [
     "django.contrib.admin",
     "apps.accounts",
     "apps.tenant_config",
+    "apps.courses",
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [
