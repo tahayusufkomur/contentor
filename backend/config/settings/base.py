@@ -23,6 +23,8 @@ SHARED_APPS = [
     "corsheaders",
     "apps.core",
     "apps.accounts",
+    "apps.courses",
+    "apps.downloads",
 ]
 
 TENANT_APPS = [
