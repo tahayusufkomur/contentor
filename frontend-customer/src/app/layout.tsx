@@ -1,10 +1,14 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 
 import { TenantThemeStyle } from '@/components/shared/tenant-theme-style'
 import { TenantProvider } from '@/components/shared/tenant-provider'
+import { ThemeProvider } from '@/components/shared/theme-provider'
 import { fetchTenantConfig, getTenantSlug } from '@/lib/tenant'
 
 import '@/styles/globals.css'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const dynamic = 'force-dynamic'
 
@@ -33,8 +37,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
       </head>
-      <body className="font-sans antialiased">
-        <TenantProvider config={config}>{children}</TenantProvider>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          <TenantProvider config={config}>{children}</TenantProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
