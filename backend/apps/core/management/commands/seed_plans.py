@@ -30,6 +30,11 @@ class Command(BaseCommand):
                 domain="localhost",
                 defaults={"tenant": public_tenant, "is_primary": False},
             )
+            # Internal Docker hostname so Next.js → Django calls resolve a tenant
+            Domain.objects.get_or_create(
+                domain="django",
+                defaults={"tenant": public_tenant, "is_primary": False},
+            )
             self.stdout.write("Created platform domains")
         else:
             self.stdout.write("Public tenant already exists")
