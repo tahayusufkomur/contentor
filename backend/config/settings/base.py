@@ -32,6 +32,7 @@ TENANT_APPS = [
     "apps.accounts",
     "apps.tenant_config",
     "apps.courses",
+    "apps.downloads",
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [
