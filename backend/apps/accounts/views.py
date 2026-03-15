@@ -27,8 +27,26 @@ def magic_link_request(request):
     email = serializer.validated_data["email"]
     tenant = connection.tenant
     token = create_magic_link_token(email, tenant.schema_name, tenant.slug)
-    link = f"http://{request.get_host()}/auth/callback?token={token}"
-    logger.info("Magic link for %s: %s", email, link)
+
+    scheme = "https" if request.is_secure() else "http"
+    link = f"{scheme}://{request.get_host()}/auth/callback?token={token}"
+
+    brand_name = tenant.name
+    try:
+        from apps.tenant_config.models import TenantConfig
+
+        config = TenantConfig.objects.first()
+        if config:
+            brand_name = config.brand_name
+    except Exception:
+        pass
+
+    from apps.core.email import send_magic_link
+
+    sent = send_magic_link(email, link, brand_name)
+    if not sent:
+        logger.info("Magic link for %s: %s", email, link)
+
     return Response({"detail": "If an account exists, a magic link has been sent."})
 
 

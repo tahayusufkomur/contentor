@@ -136,3 +136,7 @@ CONTENTOR_SUPERUSERS = [
 ]
 MAGIC_LINK_EXPIRY_MINUTES = 15
 JWT_EXPIRY_DAYS = 7
+
+# --- Resend ---
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
