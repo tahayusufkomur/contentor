@@ -36,7 +36,7 @@ def send_magic_link(to: str, link: str, brand_name: str = "Contentor") -> bool:
         <h2 style="color: #1a1a2e; margin-bottom: 8px;">{brand_name}</h2>
         <p style="color: #444; font-size: 16px;">Click the button below to sign in. This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.</p>
         <a href="{link}"
-           style="display: inline-block; background: #7c3aed; color: white; padding: 12px 32px;
+           style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
                   border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
             Sign In
         </a>

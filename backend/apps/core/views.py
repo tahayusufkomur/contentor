@@ -64,7 +64,7 @@ def creator_signup(request):
             <h2 style="color: #1a1a2e;">Welcome to Contentor!</h2>
             <p style="color: #444;">Click the button below to verify your email and create <strong>{brand_name}</strong>.</p>
             <a href="{link}"
-               style="display: inline-block; background: #7c3aed; color: white; padding: 12px 32px;
+               style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
                       border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
                 Verify &amp; Create My Platform
             </a>
