@@ -140,3 +140,10 @@ JWT_EXPIRY_DAYS = 7
 # --- Resend ---
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
+
+# --- S3 / Object Storage ---
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "contentor-dev-private")
+AWS_ENDPOINT = os.environ.get("AWS_ENDPOINT", "")
+AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
