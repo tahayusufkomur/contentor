@@ -45,7 +45,11 @@ def magic_link_request(request):
 
     sent = send_magic_link(email, link, brand_name)
     if not sent:
-        logger.info("Magic link for %s: %s", email, link)
+        # Always print to console so the link is visible in `make logs`
+        print(f"\n{'='*60}")
+        print(f"MAGIC LINK for {email}:")
+        print(f"{link}")
+        print(f"{'='*60}\n")
 
     return Response({"detail": "If an account exists, a magic link has been sent."})
 
