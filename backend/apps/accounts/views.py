@@ -29,7 +29,7 @@ def magic_link_request(request):
     token = create_magic_link_token(email, tenant.schema_name, tenant.slug)
 
     scheme = "https" if request.is_secure() else "http"
-    link = f"{scheme}://{request.get_host()}/auth/callback?token={token}"
+    link = f"{scheme}://{request.get_host()}/callback?token={token}"
 
     brand_name = tenant.name
     try:
