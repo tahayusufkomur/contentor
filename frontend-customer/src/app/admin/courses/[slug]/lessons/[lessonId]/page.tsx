@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Skeleton } from '@/components/ui/skeleton'
 import { clientFetch } from '@/lib/api-client'
 import { VideoUploader } from '@/components/admin/video-uploader'
+import { ArrowLeft, Video } from 'lucide-react'
 import type { Lesson } from '@/types/course'
 
 export default function AdminLessonEditPage() {
@@ -46,39 +50,65 @@ export default function AdminLessonEditPage() {
     }
   }
 
-  if (!lesson) return <p>Loading...</p>
+  if (!lesson) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Edit Lesson</h1>
+      <div className="flex items-center gap-4">
+        <Button asChild variant="ghost" size="icon">
+          <Link href={`/admin/courses/${params.slug}`}>
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Edit Lesson</h1>
+          <p className="text-sm text-muted-foreground">{lesson.title}</p>
+        </div>
+      </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Lesson Details</CardTitle>
+          <CardDescription>Update the lesson content and settings.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Title</Label>
+            <Label htmlFor="lesson_title">Title</Label>
             <Input
+              id="lesson_title"
               value={lesson.title}
               onChange={(e) => setLesson({ ...lesson, title: e.target.value })}
             />
           </div>
           <div className="space-y-2">
-            <Label>Content (HTML)</Label>
+            <Label htmlFor="content_html">Content (HTML)</Label>
             <textarea
-              className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              id="content_html"
+              className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={lesson.content_html}
               onChange={(e) => setLesson({ ...lesson, content_html: e.target.value })}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-3">
+            <Switch
               id="is_free_preview"
               checked={lesson.is_free_preview}
-              onChange={(e) => setLesson({ ...lesson, is_free_preview: e.target.checked })}
-              className="h-4 w-4 rounded border-input"
+              onCheckedChange={(checked) =>
+                setLesson({ ...lesson, is_free_preview: checked })
+              }
             />
             <Label htmlFor="is_free_preview">Free Preview</Label>
           </div>
@@ -90,7 +120,13 @@ export default function AdminLessonEditPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Video</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Video className="h-5 w-5" />
+            Video
+          </CardTitle>
+          <CardDescription>
+            Upload or replace the lesson video. Supported formats: MP4, MOV, WebM.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <VideoUploader

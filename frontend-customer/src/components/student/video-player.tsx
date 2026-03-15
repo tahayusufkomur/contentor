@@ -2,7 +2,9 @@
 
 import { useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { clientFetch } from '@/lib/api-client'
+import { CheckCircle2, PlayCircle } from 'lucide-react'
 import type { Lesson, Progress } from '@/types/course'
 
 interface VideoPlayerProps {
@@ -60,8 +62,11 @@ export function VideoPlayer({ courseSlug, lesson, progress, onProgressUpdate }: 
 
   if (!lesson.video_signed_url) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg bg-muted">
-        <p className="text-muted-foreground">No video available for this lesson.</p>
+      <div className="flex aspect-video items-center justify-center bg-muted">
+        <div className="text-center">
+          <PlayCircle className="mx-auto h-12 w-12 text-muted-foreground/40" />
+          <p className="mt-2 text-sm text-muted-foreground">No video available for this lesson.</p>
+        </div>
       </div>
     )
   }
@@ -72,15 +77,21 @@ export function VideoPlayer({ courseSlug, lesson, progress, onProgressUpdate }: 
         ref={videoRef}
         src={lesson.video_signed_url}
         controls
-        className="w-full rounded-lg"
+        className="aspect-video w-full bg-black"
       />
-      {!progress?.completed && (
-        <div className="mt-2">
-          <Button variant="outline" size="sm" onClick={handleMarkComplete}>
+      <div className="flex items-center justify-between border-t px-4 py-3">
+        {progress?.completed ? (
+          <Badge variant="success" className="gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Completed
+          </Badge>
+        ) : (
+          <Button variant="outline" size="sm" onClick={handleMarkComplete} className="gap-2">
+            <CheckCircle2 className="h-4 w-4" />
             Mark as Complete
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

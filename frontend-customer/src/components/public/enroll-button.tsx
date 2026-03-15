@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { clientFetch } from '@/lib/api-client'
+import { Play, Loader2 } from 'lucide-react'
 import type { CourseDetail } from '@/types/course'
 
 interface EnrollButtonProps {
@@ -28,7 +29,8 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 
   if (course.is_enrolled) {
     return (
-      <Button className="w-full" onClick={() => router.push(`/learn/${course.slug}`)}>
+      <Button className="w-full gap-2" onClick={() => router.push(`/learn/${course.slug}`)}>
+        <Play className="h-4 w-4" />
         Continue Learning
       </Button>
     )
@@ -36,8 +38,15 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 
   if (course.pricing_type === 'free') {
     return (
-      <Button className="w-full" onClick={handleEnroll} disabled={enrolling}>
-        {enrolling ? 'Enrolling...' : 'Enroll for Free'}
+      <Button className="w-full gap-2" onClick={handleEnroll} disabled={enrolling}>
+        {enrolling ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Enrolling...
+          </>
+        ) : (
+          'Enroll for Free'
+        )}
       </Button>
     )
   }

@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { Button } from '@/components/ui/button'
 import { clientFetch } from '@/lib/api-client'
+import { AlertCircle, FileUp, Upload } from 'lucide-react'
 
 interface FileUploaderProps {
   downloadId: number
@@ -83,27 +85,47 @@ export function FileUploader({ downloadId, onUploadComplete }: FileUploaderProps
 
   return (
     <div className="space-y-4">
+      {/* Selected file info */}
       {fileName && fileSize !== null && (
-        <p className="text-sm text-muted-foreground">
-          {fileName} ({formatFileSize(fileSize)})
-        </p>
+        <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+          <FileUp className="h-4 w-4" />
+          <span>
+            {fileName} ({formatFileSize(fileSize)})
+          </span>
+        </div>
       )}
 
-      <div>
+      {/* Upload area */}
+      <div className="rounded-lg border-2 border-dashed bg-muted/30 p-6 text-center">
+        <Upload className="mx-auto h-8 w-8 text-muted-foreground/50" />
+        <p className="mt-2 text-sm font-medium">Choose a file</p>
+        <p className="mt-1 text-xs text-muted-foreground">Any file type</p>
         <input
           ref={fileInputRef}
           type="file"
           onChange={handleFileSelect}
           disabled={uploading}
-          className="text-sm"
+          className="hidden"
+          id="file-upload"
         />
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-3 gap-2"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+        >
+          <Upload className="h-4 w-4" />
+          Browse
+        </Button>
       </div>
 
+      {/* Upload progress */}
       {uploading && (
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-primary transition-all"
+              className="h-full rounded-full bg-primary transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -111,7 +133,13 @@ export function FileUploader({ downloadId, onUploadComplete }: FileUploaderProps
         </div>
       )}
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2">
+          <AlertCircle className="h-4 w-4 text-destructive" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
     </div>
   )
 }

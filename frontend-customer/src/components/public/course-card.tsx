@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { BookOpen } from 'lucide-react'
 import type { Course } from '@/types/course'
 
 interface CourseCardProps {
@@ -11,37 +13,38 @@ interface CourseCardProps {
 export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link href={`/courses/${course.slug}`}>
-      <Card className="overflow-hidden transition-shadow hover:shadow-md">
+      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
         {course.thumbnail_url ? (
-          <img
-            src={course.thumbnail_url}
-            alt={course.title}
-            className="h-40 w-full object-cover"
-          />
+          <div className="relative overflow-hidden">
+            <img
+              src={course.thumbnail_url}
+              alt={course.title}
+              className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
         ) : (
-          <div className="flex h-40 items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-            <span className="text-4xl font-bold text-primary/30">
+          <div className="flex h-44 items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+            <span className="text-5xl font-bold text-primary/30">
               {course.title.charAt(0)}
             </span>
           </div>
         )}
-        <CardContent className="p-4">
-          <h3 className="mb-1 font-semibold">{course.title}</h3>
-          <p className="mb-2 text-sm text-muted-foreground">{course.instructor_name}</p>
-          <div className="flex items-center justify-between">
-            <span
-              className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                course.pricing_type === 'free'
-                  ? 'bg-green-100 text-green-800'
-                  : course.pricing_type === 'paid'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-purple-100 text-purple-800'
-              }`}
-            >
-              {course.pricing_type === 'free' ? 'Free' : course.pricing_type === 'paid' ? `$${course.price}` : 'Subscription'}
-            </span>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold leading-snug line-clamp-2">{course.title}</h3>
+            <Badge variant={course.pricing_type === 'free' ? 'success' : 'default'} className="shrink-0">
+              {course.pricing_type === 'free'
+                ? 'Free'
+                : course.pricing_type === 'paid'
+                  ? `$${course.price}`
+                  : 'Subscription'}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>{course.instructor_name}</span>
             {course.lesson_count !== undefined && (
-              <span className="text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <BookOpen className="h-3.5 w-3.5" />
                 {course.lesson_count} lesson{course.lesson_count !== 1 ? 's' : ''}
               </span>
             )}

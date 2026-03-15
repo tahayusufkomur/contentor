@@ -2,12 +2,30 @@ export const dynamic = 'force-dynamic'
 
 import { serverFetch } from '@/lib/api-server'
 import { EnrollButton } from '@/components/public/enroll-button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { BookOpen, Clock, Lock, Play, User } from 'lucide-react'
 import type { CourseDetail, Module } from '@/types/course'
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
   return `${m}:${String(s).padStart(2, '0')}`
+}
+
+function getTotalDuration(modules: Module[]): number {
+  return modules.reduce(
+    (acc, m) => acc + m.lessons.reduce((a, l) => a + l.duration_seconds, 0),
+    0,
+  )
+}
+
+function formatTotalDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  if (hours > 0) return `${hours}h ${minutes}m`
+  return `${minutes}m`
 }
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -21,66 +39,121 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
   if (!course) {
     return (
-      <div className="py-20 text-center">
+      <div className="flex flex-col items-center py-20 text-center">
+        <BookOpen className="mb-4 h-12 w-12 text-muted-foreground/50" />
         <h1 className="text-2xl font-bold">Course not found</h1>
+        <p className="mt-2 text-muted-foreground">
+          The course you are looking for does not exist or has been removed.
+        </p>
       </div>
     )
   }
 
+  const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0)
+  const totalDuration = getTotalDuration(course.modules)
+
   return (
-    <div>
-      <div className="mb-8 grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-2">
+    <div className="space-y-8">
+      {/* Hero section */}
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Thumbnail */}
           {course.thumbnail_url ? (
-            <img
-              src={course.thumbnail_url}
-              alt={course.title}
-              className="mb-6 h-64 w-full rounded-lg object-cover"
-            />
+            <div className="overflow-hidden rounded-xl">
+              <img
+                src={course.thumbnail_url}
+                alt={course.title}
+                className="h-64 w-full object-cover md:h-80"
+              />
+            </div>
           ) : (
-            <div className="mb-6 flex h-64 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-              <span className="text-6xl font-bold text-primary/30">
+            <div className="flex h-64 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 md:h-80">
+              <span className="text-7xl font-bold text-primary/30">
                 {course.title.charAt(0)}
               </span>
             </div>
           )}
-          <h1 className="mb-2 text-3xl font-bold">{course.title}</h1>
-          <p className="mb-4 text-muted-foreground">By {course.instructor_name}</p>
-          <p className="mb-6 text-lg">{course.description}</p>
-        </div>
-        <div>
-          <div className="sticky top-6 rounded-lg border bg-card p-6 shadow-sm">
-            <p className="mb-2 text-3xl font-bold">
-              {course.pricing_type === 'free' ? 'Free' : `$${course.price}`}
-            </p>
-            <EnrollButton course={course} />
-            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <p>{course.modules.reduce((acc, m) => acc + m.lessons.length, 0)} lessons</p>
-              <p>{course.modules.length} modules</p>
+
+          {/* Course info */}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+              {course.title}
+            </h1>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                <User className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <span className="text-muted-foreground">
+                By {course.instructor_name}
+              </span>
             </div>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+              {course.description}
+            </p>
           </div>
+        </div>
+
+        {/* Sticky sidebar - price & enroll */}
+        <div>
+          <Card className="sticky top-24">
+            <CardContent className="p-6 space-y-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold">
+                  {course.pricing_type === 'free' ? 'Free' : `$${course.price}`}
+                </p>
+              </div>
+              <EnrollButton course={course} />
+              <Separator />
+              <div className="space-y-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span>{totalLessons} lesson{totalLessons !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{formatTotalDuration(totalDuration)} total</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Play className="h-4 w-4" />
+                  <span>{course.modules.length} module{course.modules.length !== 1 ? 's' : ''}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
+      {/* Curriculum */}
       <div>
-        <h2 className="mb-4 text-2xl font-bold">Curriculum</h2>
-        <div className="space-y-4">
+        <h2 className="mb-4 text-2xl font-bold tracking-tight">Curriculum</h2>
+        <div className="space-y-3">
           {course.modules.map((mod: Module) => (
-            <div key={mod.id} className="rounded-lg border">
-              <div className="border-b bg-muted/30 px-4 py-3">
+            <Card key={mod.id} className="overflow-hidden">
+              <div className="bg-muted/40 px-4 py-3">
                 <h3 className="font-semibold">
                   Module {mod.order}: {mod.title}
                 </h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {mod.lessons.length} lesson{mod.lessons.length !== 1 ? 's' : ''}
+                </p>
               </div>
               <div className="divide-y">
                 {mod.lessons.map((lesson) => (
-                  <div key={lesson.id} className="flex items-center justify-between px-4 py-3">
+                  <div
+                    key={lesson.id}
+                    className="flex items-center justify-between px-4 py-3"
+                  >
                     <div className="flex items-center gap-3">
+                      {lesson.is_free_preview ? (
+                        <Play className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Lock className="h-4 w-4 text-muted-foreground/50" />
+                      )}
                       <span className="text-sm">{lesson.title}</span>
                       {lesson.is_free_preview && (
-                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                        <Badge variant="success" className="text-[10px]">
                           Free Preview
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <span className="text-sm text-muted-foreground">
@@ -89,7 +162,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>

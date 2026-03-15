@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/shared/empty-state'
 import { clientFetch } from '@/lib/api-client'
+import { BookOpen, GraduationCap, Play } from 'lucide-react'
 import type { Course } from '@/types/course'
 
 export default function DashboardPage() {
@@ -17,43 +22,91 @@ export default function DashboardPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <p>Loading...</p>
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <Skeleton className="h-44 w-full" />
+              <CardContent className="p-4 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-2 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">My Courses</h1>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <GraduationCap className="h-7 w-7 text-primary" />
+        <h1 className="text-2xl font-bold tracking-tight">My Courses</h1>
+      </div>
+
       {courses.length === 0 ? (
-        <p className="text-muted-foreground">
-          You have not enrolled in any courses yet.{' '}
-          <Link href="/courses" className="text-primary underline">
-            Browse courses
-          </Link>
-        </p>
+        <EmptyState
+          icon={BookOpen}
+          title="No courses yet"
+          description="You have not enrolled in any courses yet. Browse our catalog to find something interesting."
+          action={{ label: 'Browse Courses', href: '/courses' }}
+        />
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
-            <Link key={course.id} href={`/learn/${course.slug}`}>
-              <Card className="overflow-hidden transition-shadow hover:shadow-md">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {courses.map((course) => {
+            // If the API returns progress info, we can use it. Otherwise default to 0.
+            const progressPercent = (course as any).progress_percent ?? 0
+
+            return (
+              <Card key={course.id} className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
                 {course.thumbnail_url ? (
-                  <img
-                    src={course.thumbnail_url}
-                    alt={course.title}
-                    className="h-40 w-full object-cover"
-                  />
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={course.thumbnail_url}
+                      alt={course.title}
+                      className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
                 ) : (
-                  <div className="flex h-40 items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                    <span className="text-4xl font-bold text-primary/30">
+                  <div className="flex h-44 items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                    <span className="text-5xl font-bold text-primary/30">
                       {course.title.charAt(0)}
                     </span>
                   </div>
                 )}
-                <CardContent className="p-4">
-                  <h3 className="mb-1 font-semibold">{course.title}</h3>
+                <CardContent className="p-4 space-y-3">
+                  <h3 className="font-semibold leading-snug">{course.title}</h3>
                   <p className="text-sm text-muted-foreground">{course.instructor_name}</p>
+
+                  {/* Progress bar */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Progress</span>
+                      <span>{progressPercent}%</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <Button asChild size="sm" className="w-full gap-2">
+                    <Link href={`/learn/${course.slug}`}>
+                      <Play className="h-3.5 w-3.5" />
+                      Continue Learning
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
-            </Link>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { CheckCircle2, Circle, Clock } from 'lucide-react'
 import type { CourseDetail, Lesson, Progress } from '@/types/course'
 
 interface LessonSidebarProps {
@@ -18,15 +19,18 @@ function formatDuration(seconds: number): string {
 
 export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSelect }: LessonSidebarProps) {
   return (
-    <div className="rounded-lg border">
+    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="border-b px-4 py-3">
         <h3 className="font-semibold">{course.title}</h3>
+        <p className="text-xs text-muted-foreground">
+          {course.modules.reduce((a, m) => a + m.lessons.length, 0)} lessons
+        </p>
       </div>
-      <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+      <div className="max-h-[calc(100vh-240px)] overflow-y-auto">
         {course.modules.map((mod) => (
           <div key={mod.id}>
-            <div className="bg-muted/30 px-4 py-2">
-              <p className="text-xs font-medium uppercase text-muted-foreground">
+            <div className="bg-muted/40 px-4 py-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Module {mod.order}: {mod.title}
               </p>
             </div>
@@ -41,30 +45,19 @@ export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSe
                     onClick={() => onLessonSelect(lesson)}
                     className={cn(
                       'flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50',
-                      isActive && 'bg-primary/10 font-medium',
+                      isActive && 'bg-primary/10 border-l-2 border-primary font-medium',
                     )}
                   >
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                       {isCompleted ? (
-                        <svg
-                          className="h-5 w-5 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
                       ) : (
-                        <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+                        <Circle className="h-4 w-4 text-muted-foreground/40" />
                       )}
                     </span>
-                    <span className="flex-1">{lesson.title}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="flex-1 truncate">{lesson.title}</span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
                       {formatDuration(lesson.duration_seconds)}
                     </span>
                   </button>
