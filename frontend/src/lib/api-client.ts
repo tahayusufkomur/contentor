@@ -1,7 +1,7 @@
 import { ApiError } from '@/types/api'
 
 export async function clientFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`/api/proxy${path}`, {
+  const res = await fetch(path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

@@ -16,7 +16,7 @@ export function MagicLinkForm() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/proxy/api/v1/auth/magic-link/', {
+      const res = await fetch('/api/v1/auth/magic-link/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
