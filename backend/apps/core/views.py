@@ -34,19 +34,105 @@ def health_check(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def creator_signup(request):
+    """Step 1: Validate signup data and send verification email. Tenant is NOT created yet."""
     serializer = CreatorSignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+
     slug = slugify(serializer.validated_data["brand_name"])[:63]
     if Tenant.objects.filter(slug=slug).exists():
         return Response({"detail": "Brand name already taken"}, status=400)
+
+    email = serializer.validated_data["email"]
+    name = serializer.validated_data["name"]
+    brand_name = serializer.validated_data["brand_name"]
+
+    from apps.accounts.tokens import create_signup_token
+
+    token = create_signup_token(email, name, brand_name)
+
+    scheme = "https" if request.is_secure() else "http"
+    host = request.get_host()
+    link = f"{scheme}://{host}/signup/verify?token={token}"
+
+    from apps.core.email import send_email
+
+    sent = send_email(
+        to=email,
+        subject=f"Verify your email — {brand_name}",
+        html=f"""
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+            <h2 style="color: #1a1a2e;">Welcome to Contentor!</h2>
+            <p style="color: #444;">Click the button below to verify your email and create <strong>{brand_name}</strong>.</p>
+            <a href="{link}"
+               style="display: inline-block; background: #7c3aed; color: white; padding: 12px 32px;
+                      border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
+                Verify &amp; Create My Platform
+            </a>
+            <p style="color: #888; font-size: 13px;">This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.</p>
+            <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
+                Or copy: <span style="word-break: break-all;">{link}</span>
+            </p>
+        </div>
+        """,
+    )
+    if not sent:
+        print(f"\n{'='*60}")
+        print(f"SIGNUP VERIFICATION for {email}:")
+        print(f"{link}")
+        print(f"{'='*60}\n")
+
+    return Response({"detail": "Verification email sent. Check your inbox."})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def creator_signup_verify(request):
+    """Step 2: Verify email token and create the tenant."""
+    token = request.data.get("token")
+    if not token:
+        return Response({"detail": "Token required"}, status=400)
+
+    from apps.accounts.tokens import verify_signup_token
+
+    try:
+        payload = verify_signup_token(token)
+    except Exception:
+        return Response({"detail": "Invalid or expired token"}, status=400)
+
+    email = payload["email"]
+    name = payload["name"]
+    brand_name = payload["brand_name"]
+    slug = slugify(brand_name)[:63]
+
+    if Tenant.objects.filter(slug=slug).exists():
+        # Tenant already created (e.g. user clicked link twice)
+        tenant = Tenant.objects.get(slug=slug)
+        return Response({
+            "slug": slug,
+            "status": tenant.provisioning_status,
+            "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
+        })
+
     tenant = Tenant.objects.create(
-        schema_name=slug, name=serializer.validated_data["brand_name"],
-        slug=slug, subdomain=slug, owner_email=serializer.validated_data["email"],
+        schema_name=slug,
+        name=brand_name,
+        slug=slug,
+        subdomain=slug,
+        owner_email=email,
         provisioning_status="pending",
     )
-    Domain.objects.create(domain=f"{slug}.{settings.CONTENTOR_DOMAIN}", tenant=tenant, is_primary=True)
-    provision_tenant.delay(tenant.id, serializer.validated_data["email"], serializer.validated_data["name"])
-    return Response({"tenant_id": tenant.id, "slug": slug, "status": "pending", "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}"}, status=201)
+    Domain.objects.create(
+        domain=f"{slug}.{settings.CONTENTOR_DOMAIN}",
+        tenant=tenant,
+        is_primary=True,
+    )
+    provision_tenant.delay(tenant.id, email, name)
+
+    return Response({
+        "slug": slug,
+        "status": "pending",
+        "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
+    }, status=201)
 
 
 @api_view(["GET"])

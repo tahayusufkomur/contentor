@@ -23,6 +23,25 @@ def verify_magic_link_token(token: str) -> dict:
     return payload
 
 
+def create_signup_token(email: str, name: str, brand_name: str) -> str:
+    payload = {
+        "email": email,
+        "name": name,
+        "brand_name": brand_name,
+        "purpose": "signup",
+        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
+        "iat": datetime.now(tz=timezone.utc),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+def verify_signup_token(token: str) -> dict:
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    if payload.get("purpose") != "signup":
+        raise jwt.InvalidTokenError("Invalid token purpose")
+    return payload
+
+
 def create_jwt(user, tenant) -> str:
     payload = {
         "user_id": user.id,

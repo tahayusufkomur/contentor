@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PlatformHeader } from '@/components/shared/platform-header'
 import { PlatformFooter } from '@/components/shared/platform-footer'
 
-type SignupState = 'form' | 'provisioning' | 'ready' | 'error'
+type SignupState = 'form' | 'email-sent' | 'error'
 
 export default function SignupPage() {
   const [brandName, setBrandName] = useState('')
@@ -18,15 +18,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [state, setState] = useState<SignupState>('form')
-  const [slug, setSlug] = useState('')
-  const [domain, setDomain] = useState('')
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current)
-    }
-  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,83 +30,37 @@ export default function SignupPage() {
         body: JSON.stringify({ brand_name: brandName, name, email }),
         credentials: 'same-origin',
       })
+      const data = await res.json()
       if (!res.ok) {
-        const data = await res.json()
         setError(data.detail || 'Something went wrong')
         setLoading(false)
         return
       }
-      const data = await res.json()
-      setSlug(data.slug)
-      setDomain(data.domain)
-      setState('provisioning')
+      setState('email-sent')
       setLoading(false)
-
-      pollRef.current = setInterval(async () => {
-        try {
-          const statusRes = await fetch(`/api/v1/onboarding/status/?slug=${data.slug}`, {
-            credentials: 'same-origin',
-          })
-          if (statusRes.ok) {
-            const statusData = await statusRes.json()
-            if (statusData.status === 'ready') {
-              if (pollRef.current) clearInterval(pollRef.current)
-              setDomain(statusData.domain)
-              setState('ready')
-            } else if (statusData.status === 'failed') {
-              if (pollRef.current) clearInterval(pollRef.current)
-              setState('error')
-              setError('Provisioning failed. Please contact support.')
-            }
-          }
-        } catch {
-          // Keep polling
-        }
-      }, 3000)
     } catch {
       setError('Network error. Please try again.')
       setLoading(false)
     }
   }
 
-  if (state === 'ready') {
+  if (state === 'email-sent') {
     return (
       <div className="flex min-h-screen flex-col">
         <PlatformHeader />
         <div className="flex flex-1 items-center justify-center px-4">
           <Card className="w-full max-w-md text-center">
             <CardHeader>
-              <CardTitle>Your app is ready!</CardTitle>
-              <CardDescription>Your branded platform has been set up successfully.</CardDescription>
+              <CardTitle>Check your email</CardTitle>
+              <CardDescription>
+                We sent a verification link to <strong>{email}</strong>
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">Check your email for login instructions.</p>
-              <Button asChild className="w-full">
-                <a href={`http://${domain}`}>Go to {domain}</a>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-        <PlatformFooter />
-      </div>
-    )
-  }
-
-  if (state === 'provisioning') {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <PlatformHeader />
-        <div className="flex flex-1 items-center justify-center px-4">
-          <Card className="w-full max-w-md text-center">
-            <CardHeader>
-              <CardTitle>Setting up your platform...</CardTitle>
-              <CardDescription>This usually takes less than a minute.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">Creating {slug}.contentor.localhost</p>
+              <p className="text-sm text-muted-foreground">
+                Click the link in your email to verify and create <strong>{brandName}</strong>.
+                The link expires in 15 minutes.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -168,13 +113,11 @@ export default function SignupPage() {
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating...' : 'Create My Platform'}
+                {loading ? 'Sending...' : 'Create My Platform'}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
                 Already have an account?{' '}
-                <Link href="/login" className="text-primary hover:underline">
-                  Sign in
-                </Link>
+                <Link href="/login" className="text-primary hover:underline">Sign in</Link>
               </p>
             </form>
           </CardContent>
