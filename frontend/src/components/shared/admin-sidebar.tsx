@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, CreditCard, LayoutDashboard, Mail, MessageSquare, Palette, FileText, Users, Video } from 'lucide-react'
+import { BookOpen, CreditCard, Download, LayoutDashboard, Mail, MessageSquare, Palette, FileText, Users, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Courses', href: '/admin/courses', icon: BookOpen },
+  { label: 'Downloads', href: '/admin/downloads', icon: Download },
   { label: 'Live Classes', href: '/admin/live', icon: Video },
   { label: 'Students', href: '/admin/students', icon: Users },
   { label: 'Community', href: '/admin/community', icon: MessageSquare },
