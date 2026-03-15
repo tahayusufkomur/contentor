@@ -33,8 +33,10 @@ docker-compose.override.yml
 node_modules/
 .next/
 out/
-frontend/.next/
-frontend/node_modules/
+frontend-customer/.next/
+frontend-customer/node_modules/
+frontend-main/.next/
+frontend-main/node_modules/
 
 # OS
 .DS_Store

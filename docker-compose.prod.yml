@@ -5,7 +5,11 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
 
-  nextjs:
+  nextjs-customer:
+    command: node server.js
+    volumes: []
+
+  nextjs-main:
     command: node server.js
     volumes: []
 

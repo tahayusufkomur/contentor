@@ -83,14 +83,14 @@ services:
       - "traefik.http.routers.channels.entrypoints=web"
       - "traefik.http.services.channels.loadbalancer.server.port=8001"
 
-  nextjs:
+  nextjs-customer:
     build:
-      context: ./frontend
+      context: ./frontend-customer
       target: dev
-    command: npm run dev
+    command: npm run dev -- -p 3001
     volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
+      - ./frontend-customer/src:/app/src
+      - ./frontend-customer/public:/app/public
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.localhost}
@@ -98,10 +98,30 @@ services:
       - django
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextjs.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.nextjs.entrypoints=web"
-      - "traefik.http.routers.nextjs.priority=1"
-      - "traefik.http.services.nextjs.loadbalancer.server.port=3000"
+      - "traefik.http.routers.nextjs-customer.rule=HostRegexp(`.+`)"
+      - "traefik.http.routers.nextjs-customer.entrypoints=web"
+      - "traefik.http.routers.nextjs-customer.priority=1"
+      - "traefik.http.services.nextjs-customer.loadbalancer.server.port=3001"
+
+  nextjs-main:
+    build:
+      context: ./frontend-main
+      target: dev
+    command: npm run dev -- -p 3000
+    volumes:
+      - ./frontend-main/src:/app/src
+      - ./frontend-main/public:/app/public
+    environment:
+      - NEXT_PUBLIC_API_URL=http://django:8000
+      - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.localhost}
+    depends_on:
+      - django
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextjs-main.rule=Host(`contentor.localhost`) || Host(`localhost`)"
+      - "traefik.http.routers.nextjs-main.entrypoints=web"
+      - "traefik.http.routers.nextjs-main.priority=2"
+      - "traefik.http.services.nextjs-main.loadbalancer.server.port=3000"
 
   celery-worker:
     build:
