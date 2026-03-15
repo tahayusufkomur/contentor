@@ -8,17 +8,18 @@ export function middleware(request: NextRequest) {
 
   const headers = new Headers(request.headers)
 
-  if (host === BASE_DOMAIN || host === 'localhost') {
-    headers.set('x-tenant-slug', '__platform__')
-  } else if (host.endsWith(`.${BASE_DOMAIN}`)) {
+  // Customer app always runs on a tenant subdomain or custom domain
+  if (host.endsWith(`.${BASE_DOMAIN}`)) {
     const slug = host.split('.')[0]
     headers.set('x-tenant-slug', slug)
   } else {
-    headers.set('x-tenant-slug', '__custom__')
+    // Custom domain or dev environment
+    headers.set('x-tenant-slug', host)
   }
 
   headers.set('x-tenant-domain', hostname)
 
+  // Dev override
   if (process.env.NODE_ENV === 'development') {
     const devTenant = request.headers.get('x-dev-tenant')
     if (devTenant) {

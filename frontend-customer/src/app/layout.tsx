@@ -10,17 +10,17 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
   const slug = await getTenantSlug()
-  const config = slug !== '__platform__' ? await fetchTenantConfig(slug) : null
+  const config = await fetchTenantConfig(slug)
 
   return {
-    title: config?.brand_name || 'Contentor',
-    description: config?.meta_description || 'Content creator platform',
+    title: config?.brand_name || 'Welcome',
+    description: config?.meta_description || '',
   }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const slug = await getTenantSlug()
-  const config = slug !== '__platform__' ? await fetchTenantConfig(slug) : null
+  const config = await fetchTenantConfig(slug)
 
   return (
     <html lang="en" suppressHydrationWarning>

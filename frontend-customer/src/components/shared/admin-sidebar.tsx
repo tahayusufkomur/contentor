@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, CreditCard, Download, LayoutDashboard, Mail, MessageSquare, Palette, FileText, Users, Video } from 'lucide-react'
+import { BookOpen, CreditCard, Download, LayoutDashboard, Palette, FileText, Users, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -11,11 +11,9 @@ const navItems = [
   { label: 'Downloads', href: '/admin/downloads', icon: Download },
   { label: 'Live Classes', href: '/admin/live', icon: Video },
   { label: 'Students', href: '/admin/students', icon: Users },
-  { label: 'Community', href: '/admin/community', icon: MessageSquare },
   { label: 'Pages', href: '/admin/pages', icon: FileText },
   { label: 'Design', href: '/admin/design', icon: Palette },
   { label: 'Billing', href: '/admin/billing', icon: CreditCard },
-  { label: 'Campaigns', href: '/admin/campaigns', icon: Mail },
 ]
 
 export function AdminSidebar() {

@@ -9,11 +9,9 @@ export function PublicHeader() {
   return (
     <header className="border-b">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold">{config?.brand_name || 'Contentor'}</Link>
+        <Link href="/" className="text-lg font-bold">{config?.brand_name || 'Welcome'}</Link>
         <nav className="flex items-center gap-6">
           <Link href="/courses" className="text-sm text-muted-foreground hover:text-foreground">Courses</Link>
-          <Link href="/schedule" className="text-sm text-muted-foreground hover:text-foreground">Schedule</Link>
-          <Link href="/community" className="text-sm text-muted-foreground hover:text-foreground">Community</Link>
           <Button asChild size="sm"><Link href="/login">Sign In</Link></Button>
         </nav>
       </div>
