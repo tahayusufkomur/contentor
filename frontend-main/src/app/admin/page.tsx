@@ -1,7 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Users, UserCheck, GraduationCap, HardDrive } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import type { PlatformDashboard } from '@/types/tenant'
 
 function formatBytes(bytes: number): string {
@@ -12,8 +24,59 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
+interface DashboardTenant {
+  name: string
+  slug: string
+  plan_name: string | null
+  provisioning_status: string
+  is_active: boolean
+  created_at: string
+}
+
+interface DashboardData extends PlatformDashboard {
+  recent_tenants?: DashboardTenant[]
+}
+
+function StatSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-5 w-5 rounded" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-8 w-20" />
+        <Skeleton className="mt-2 h-3 w-16" />
+      </CardContent>
+    </Card>
+  )
+}
+
+function TableSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-5 w-32" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function statusBadgeVariant(status: string): 'success' | 'warning' | 'destructive' {
+  if (status === 'ready') return 'success'
+  if (status === 'pending' || status === 'provisioning') return 'warning'
+  return 'destructive'
+}
+
 export default function AdminDashboardPage() {
-  const [data, setData] = useState<PlatformDashboard | null>(null)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -27,35 +90,117 @@ export default function AdminDashboardPage() {
   }, [])
 
   if (error) {
-    return <p className="text-destructive">{error}</p>
+    return (
+      <div className="p-4 md:p-6">
+        <div className="rounded-md border border-destructive/20 bg-destructive/10 px-4 py-3">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      </div>
+    )
   }
 
   if (!data) {
-    return <p className="text-muted-foreground">Loading dashboard...</p>
+    return (
+      <div className="space-y-6 p-4 md:p-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Platform overview and recent activity.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <StatSkeleton key={i} />
+          ))}
+        </div>
+        <TableSkeleton />
+      </div>
+    )
   }
 
   const stats = [
-    { label: 'Total Tenants', value: data.total_tenants },
-    { label: 'Active Tenants', value: data.active_tenants },
-    { label: 'Total Students', value: data.total_students },
-    { label: 'Storage Used', value: formatBytes(data.total_storage_bytes) },
+    { label: 'Total Tenants', value: data.total_tenants, description: 'All registered tenants', icon: Users },
+    { label: 'Active Tenants', value: data.active_tenants, description: 'Currently active', icon: UserCheck },
+    { label: 'Total Students', value: data.total_students, description: 'Across all tenants', icon: GraduationCap },
+    { label: 'Storage Used', value: formatBytes(data.total_storage_bytes), description: 'Total platform storage', icon: HardDrive },
   ]
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="space-y-6 p-4 md:p-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Platform overview and recent activity.</p>
       </div>
+
+      {/* Stats grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon
+          return (
+            <Card key={stat.label}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+                <Icon className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{stat.description}</p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Recent Tenants */}
+      {data.recent_tenants && data.recent_tenants.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">Recent Tenants</CardTitle>
+            <Link
+              href="/admin/tenants"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View all
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.recent_tenants.map((tenant) => (
+                  <TableRow key={tenant.slug}>
+                    <TableCell>
+                      <Link
+                        href={`/admin/tenants/${tenant.slug}`}
+                        className="font-medium text-foreground hover:underline"
+                      >
+                        {tenant.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">{tenant.slug}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{tenant.plan_name || 'None'}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusBadgeVariant(tenant.provisioning_status)}>
+                        {tenant.provisioning_status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">
+                      {new Date(tenant.created_at).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
