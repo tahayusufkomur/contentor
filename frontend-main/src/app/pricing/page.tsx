@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { PlatformHeader } from '@/components/shared/platform-header'
 import { PlatformFooter } from '@/components/shared/platform-footer'
+import { getAuthUser } from '@/lib/auth'
 
 const plans = [
   {
@@ -87,10 +88,11 @@ const faqs = [
   },
 ]
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const user = await getAuthUser()
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PlatformHeader />
+      <PlatformHeader user={user} />
 
       {/* Hero */}
       <section className="px-6 pb-16 pt-32 md:pt-40">

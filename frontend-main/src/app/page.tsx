@@ -10,11 +10,13 @@ import { FinalCtaSection } from '@/components/landing/final-cta-section'
 import { ScrollReveal } from '@/components/landing/scroll-reveal'
 import { PlatformHeader } from '@/components/shared/platform-header'
 import { PlatformFooter } from '@/components/shared/platform-footer'
+import { getAuthUser } from '@/lib/auth'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getAuthUser()
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PlatformHeader />
+      <PlatformHeader user={user} />
 
       <HeroSection />
 

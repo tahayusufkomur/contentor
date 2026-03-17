@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { COOKIE_NAME, DJANGO_API_URL } from '@/lib/constants'
+import { BASE_DOMAIN, COOKIE_NAME, DJANGO_API_URL } from '@/lib/constants'
 import type { User } from '@/types/auth'
 
 export async function getAuthUser(): Promise<User | null> {
@@ -9,7 +9,7 @@ export async function getAuthUser(): Promise<User | null> {
   if (!token) return null
   try {
     const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/users/me/`, {
-      headers: { Authorization: `Bearer ${token}`, Host: 'localhost' },
+      headers: { Authorization: `Bearer ${token}`, 'X-Tenant-Domain': BASE_DOMAIN },
     })
     if (!res.ok) return null
     return res.json()

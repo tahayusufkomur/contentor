@@ -16,7 +16,7 @@ export async function getAuthUser(): Promise<User | null> {
     const res = await fetch(`${DJANGO_API_URL}/api/v1/auth/users/me/`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        ...(tenantDomain && { Host: tenantDomain }),
+        ...(tenantDomain && { 'X-Tenant-Domain': tenantDomain }),
       },
     })
     if (!res.ok) return null

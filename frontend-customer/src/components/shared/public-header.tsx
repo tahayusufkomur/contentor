@@ -2,13 +2,26 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useTenant } from '@/hooks/use-tenant'
-import { BookOpen, Menu, X } from 'lucide-react'
+import { BookOpen, LogOut, Menu, User as UserIcon, X } from 'lucide-react'
+import type { User } from '@/types/auth'
 
-export function PublicHeader() {
+export function PublicHeader({ user }: { user?: User | null }) {
   const config = useTenant()
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+    router.refresh()
+  }
+
+  const dashboardHref = user?.role === 'owner' || user?.role === 'coach' ? '/admin' : '/dashboard'
 
   return (
     <header className="sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md">
@@ -30,9 +43,33 @@ export function PublicHeader() {
           >
             Courses
           </Link>
-          <Button asChild size="sm">
-            <Link href="/login">Sign In</Link>
-          </Button>
+          {user ? (
+            <>
+              <Link
+                href={dashboardHref}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {user.role === 'owner' || user.role === 'coach' ? 'Admin' : 'Dashboard'}
+              </Link>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="gap-1.5"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button asChild size="sm">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          )}
         </nav>
 
         {/* Mobile hamburger */}
@@ -56,11 +93,37 @@ export function PublicHeader() {
             >
               Courses
             </Link>
-            <Button asChild size="sm" className="w-full">
-              <Link href="/login" onClick={() => setMobileOpen(false)}>
-                Sign In
-              </Link>
-            </Button>
+            {user ? (
+              <>
+                <Link
+                  href={dashboardHref}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {user.role === 'owner' || user.role === 'coach' ? 'Admin' : 'Dashboard'}
+                </Link>
+                <div className="flex items-center gap-2 border-t pt-3">
+                  <UserIcon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="w-full justify-start gap-1.5"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button asChild size="sm" className="w-full">
+                <Link href="/login" onClick={() => setMobileOpen(false)}>
+                  Sign In
+                </Link>
+              </Button>
+            )}
           </nav>
         </div>
       )}
