@@ -47,7 +47,7 @@ DATABASE_ROUTERS = ("apps.core.routers.TenantRouter", "django_tenants.routers.Te
 AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
-    "django_tenants.middleware.main.TenantMainMiddleware",
+    "apps.core.middleware.tenant.HeaderAwareTenantMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

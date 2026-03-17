@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 
-import { DJANGO_API_URL } from '@/lib/constants'
+import { BASE_DOMAIN, DJANGO_API_URL } from '@/lib/constants'
 import type { TenantConfig } from '@/types/tenant'
 
 export async function getTenantSlug(): Promise<string> {
@@ -22,10 +22,14 @@ export async function fetchTenantConfig(slug: string): Promise<TenantConfig | nu
     return cached.config
   }
 
+  if (!slug || slug === 'unknown') return null
+
   try {
-    const domain = await getTenantDomain()
+    // Build domain from slug — getTenantDomain() can return empty in some
+    // server-side contexts (generateMetadata, manifest.ts)
+    const domain = `${slug}.${BASE_DOMAIN}`
     const res = await fetch(`${DJANGO_API_URL}/api/v1/admin/config/`, {
-      headers: { Host: domain },
+      headers: { 'X-Tenant-Domain': domain },
       next: { revalidate: 60 },
     })
     if (!res.ok) return null
