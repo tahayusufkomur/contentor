@@ -3,7 +3,7 @@ from django.db import connection
 from django.http import JsonResponse
 from django.utils.text import slugify
 from django_redis import get_redis_connection
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -32,6 +32,7 @@ def health_check(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def creator_signup(request):
     """Step 1: Validate signup data and send verification email. Tenant is NOT created yet."""
@@ -85,6 +86,7 @@ def creator_signup(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def creator_signup_verify(request):
     """Step 2: Verify email token and create the tenant."""
@@ -136,6 +138,7 @@ def creator_signup_verify(request):
 
 
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def provisioning_status(request):
     slug = request.query_params.get("slug")

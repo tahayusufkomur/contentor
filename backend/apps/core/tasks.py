@@ -16,8 +16,16 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
 
         tenant.create_schema(check_if_exists=True, verbosity=0)
 
+        # Create owner in main (public) schema if they don't exist yet
+        from apps.accounts.models import User
+
+        User.objects.get_or_create(
+            email=owner_email,
+            defaults={"name": owner_name, "role": "coach"},
+        )
+
+        # Create owner + config in tenant schema
         with tenant_context(tenant):
-            from apps.accounts.models import User
             from apps.tenant_config.models import TenantConfig
 
             TenantConfig.objects.create(

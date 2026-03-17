@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import connection
 from django.http import HttpResponseRedirect
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
@@ -24,6 +24,7 @@ class MagicLinkThrottle(AnonRateThrottle):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 @throttle_classes([MagicLinkThrottle])
 def magic_link_request(request):
@@ -60,6 +61,7 @@ def magic_link_request(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def magic_link_verify(request):
     serializer = MagicLinkVerifySerializer(data=request.data)
@@ -134,6 +136,7 @@ def _verify_oauth_state(state: str) -> dict:
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def google_login(request):
     tenant = connection.tenant
@@ -155,6 +158,7 @@ def google_login(request):
 
 
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def google_callback(request):
     code = request.query_params.get("code")
