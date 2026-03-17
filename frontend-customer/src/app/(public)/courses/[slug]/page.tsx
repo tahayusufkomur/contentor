@@ -67,7 +67,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               />
             </div>
           ) : (
-            <div className="flex h-64 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 md:h-80">
+            <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 md:h-80">
               <span className="text-7xl font-bold text-primary/30">
                 {course.title.charAt(0)}
               </span>
@@ -76,7 +76,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
           {/* Course info */}
           <div>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+            <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
               {course.title}
             </h1>
             <div className="mt-3 flex items-center gap-3">
@@ -95,10 +95,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
         {/* Sticky sidebar - price & enroll */}
         <div>
-          <Card className="sticky top-24">
+          <Card className="sticky top-24 ring-1 ring-primary/10">
             <CardContent className="p-6 space-y-4">
               <div className="text-center">
-                <p className="text-3xl font-bold">
+                <p className="font-display text-3xl font-bold">
                   {course.pricing_type === 'free' ? 'Free' : `$${course.price}`}
                 </p>
               </div>
@@ -125,11 +125,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
       {/* Curriculum */}
       <div>
-        <h2 className="mb-4 text-2xl font-bold tracking-tight">Curriculum</h2>
+        <h2 className="mb-4 font-display text-2xl font-bold tracking-tight">Curriculum</h2>
         <div className="space-y-3">
           {course.modules.map((mod: Module) => (
             <Card key={mod.id} className="overflow-hidden">
-              <div className="bg-muted/40 px-4 py-3">
+              <div className="bg-primary/5 px-4 py-3">
                 <h3 className="font-semibold">
                   Module {mod.order}: {mod.title}
                 </h3>

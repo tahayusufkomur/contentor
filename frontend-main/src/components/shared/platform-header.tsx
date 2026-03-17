@@ -21,35 +21,39 @@ export function PlatformHeader() {
       className={cn(
         'sticky top-0 z-50 transition-all duration-200',
         scrolled
-          ? 'border-b bg-background/80 backdrop-blur-md'
+          ? 'border-b border-primary/10 bg-background/80 backdrop-blur-md'
           : 'bg-transparent',
       )}
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-        <Link href="/" className="text-base font-semibold tracking-tight">
+        <Link href="/" className="font-display italic text-base font-semibold tracking-tight">
           Contentor
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
           <Link
             href="#features"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Features
           </Link>
           <Link
             href="/pricing"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Pricing
           </Link>
           <Link
             href="/login"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign In
           </Link>
-          <Button asChild size="sm" className="h-8 px-4">
+          <Button
+            asChild
+            size="sm"
+            className="h-8 border-0 bg-primary text-primary-foreground px-4 shadow-sm"
+          >
             <Link href="/signup">Get Started</Link>
           </Button>
         </nav>
@@ -69,7 +73,7 @@ export function PlatformHeader() {
             <Link href="#features" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Features</Link>
             <Link href="/pricing" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Pricing</Link>
             <Link href="/login" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Sign In</Link>
-            <Button asChild size="sm" className="w-full"><Link href="/signup" onClick={() => setMobileOpen(false)}>Get Started</Link></Button>
+            <Button asChild size="sm" className="w-full border-0 bg-primary text-primary-foreground shadow-sm"><Link href="/signup" onClick={() => setMobileOpen(false)}>Get Started</Link></Button>
           </nav>
         </div>
       )}

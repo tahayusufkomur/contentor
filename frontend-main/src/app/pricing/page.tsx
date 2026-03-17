@@ -95,7 +95,7 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="px-6 pb-16 pt-32 md:pt-40">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
             Simple, transparent pricing
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
@@ -112,7 +112,7 @@ export default function PricingPage() {
               key={plan.name}
               className={
                 plan.highlighted
-                  ? 'relative ring-2 ring-foreground'
+                  ? 'relative ring-2 ring-primary'
                   : 'border'
               }
             >
@@ -126,7 +126,7 @@ export default function PricingPage() {
                   {plan.name}
                 </CardTitle>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold tracking-tight text-foreground">
+                  <span className="font-display text-4xl font-bold tracking-tight text-foreground">
                     {plan.price}
                   </span>
                   <span className="text-sm text-muted-foreground">
@@ -178,13 +178,13 @@ export default function PricingPage() {
       {/* FAQ */}
       <section className="border-t px-6 py-32 md:py-40">
         <div className="mx-auto max-w-2xl">
-          <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="text-center font-display text-3xl font-bold tracking-tight md:text-4xl">
             Frequently asked questions
           </h2>
           <div className="mt-16 space-y-12">
             {faqs.map((faq) => (
               <div key={faq.question}>
-                <h3 className="text-base font-semibold text-foreground">
+                <h3 className="font-display text-base font-semibold text-foreground">
                   {faq.question}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -199,7 +199,7 @@ export default function PricingPage() {
       {/* CTA */}
       <section className="border-t px-6 py-32 md:py-40">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             Ready to get started?
           </h2>
           <p className="mt-4 text-muted-foreground">

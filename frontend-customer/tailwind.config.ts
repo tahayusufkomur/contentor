@@ -41,6 +41,12 @@ const config: Config = {
           DEFAULT: 'var(--card)',
           foreground: 'var(--card-foreground)',
         },
+        brand: {
+          primary: 'var(--brand-primary)',
+          accent: 'var(--brand-accent)',
+          warm: 'var(--brand-warm)',
+          surface: 'var(--brand-surface)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -49,6 +55,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
       },
     },
   },

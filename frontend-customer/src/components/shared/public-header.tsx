@@ -11,7 +11,7 @@ export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold">
           {config?.logo_url ? (
@@ -19,7 +19,7 @@ export function PublicHeader() {
           ) : (
             <BookOpen className="h-5 w-5 text-primary" />
           )}
-          <span>{config?.brand_name || 'Welcome'}</span>
+          <span className="font-display">{config?.brand_name || 'Welcome'}</span>
         </Link>
 
         {/* Desktop nav */}

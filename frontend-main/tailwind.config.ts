@@ -41,6 +41,12 @@ const config: Config = {
           DEFAULT: 'var(--card)',
           foreground: 'var(--card-foreground)',
         },
+        brand: {
+          primary: 'var(--brand-primary)',
+          accent: 'var(--brand-accent)',
+          warm: 'var(--brand-warm)',
+          surface: 'var(--brand-surface)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -49,6 +55,26 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+      },
+      keyframes: {
+        reveal: {
+          from: { opacity: '0', transform: 'translate(var(--reveal-x, 0), var(--reveal-y, 20px))' },
+          to: { opacity: '1', transform: 'translate(0, 0)' },
+        },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        reveal: 'reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) both',
+        marquee: 'marquee 30s linear infinite',
+        'scale-in': 'scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both',
       },
     },
   },

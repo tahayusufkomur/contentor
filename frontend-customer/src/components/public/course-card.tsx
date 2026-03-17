@@ -13,7 +13,7 @@ interface CourseCardProps {
 export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link href={`/courses/${course.slug}`}>
-      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5">
         {course.thumbnail_url ? (
           <div className="relative overflow-hidden">
             <img
@@ -23,7 +23,7 @@ export function CourseCard({ course }: CourseCardProps) {
             />
           </div>
         ) : (
-          <div className="flex h-44 items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+          <div className="flex h-44 items-center justify-center bg-gradient-to-br from-primary/20 to-accent/10">
             <span className="text-5xl font-bold text-primary/30">
               {course.title.charAt(0)}
             </span>

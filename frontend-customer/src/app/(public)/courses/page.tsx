@@ -18,7 +18,7 @@ export default async function CoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Courses</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Courses</h1>
         <p className="mt-1 text-muted-foreground">
           Browse our collection of courses and start learning today.
         </p>

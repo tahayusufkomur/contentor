@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Instrument_Sans } from 'next/font/google'
 
 import { TenantThemeStyle } from '@/components/shared/tenant-theme-style'
 import { TenantProvider } from '@/components/shared/tenant-provider'
@@ -8,7 +8,7 @@ import { fetchTenantConfig, getTenantSlug } from '@/lib/tenant'
 
 import '@/styles/globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${instrumentSans.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <TenantProvider config={config}>{children}</TenantProvider>
         </ThemeProvider>
