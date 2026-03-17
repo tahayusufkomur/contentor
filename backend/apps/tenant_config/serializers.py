@@ -17,4 +17,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "enabled_modules",
             "social_links",
             "meta_description",
+            "navbar_config",
+            "landing_sections",
+            "onboarding_completed",
         ]

@@ -11,6 +11,9 @@ class TenantConfig(models.Model):
     enabled_modules = models.JSONField(default=list)
     social_links = models.JSONField(default=dict)
     meta_description = models.TextField(blank=True, default="")
+    navbar_config = models.JSONField(default=dict)
+    landing_sections = models.JSONField(default=dict)
+    onboarding_completed = models.BooleanField(default=False)
 
     class Meta:
         app_label = "tenant_config"

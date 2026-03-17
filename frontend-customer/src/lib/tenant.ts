@@ -13,7 +13,7 @@ export async function getTenantDomain(): Promise<string> {
   return headersList.get('x-tenant-domain') || ''
 }
 
-const configCache = new Map<string, { config: TenantConfig; timestamp: number }>()
+export const configCache = new Map<string, { config: TenantConfig; timestamp: number }>()
 const CACHE_TTL = 60_000
 
 export async function fetchTenantConfig(slug: string): Promise<TenantConfig | null> {

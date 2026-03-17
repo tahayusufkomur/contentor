@@ -14,6 +14,11 @@ export function PublicHeader({ user }: { user?: User | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
+  const navbar = config?.navbar_config
+  const navLinks = navbar?.links?.length ? navbar.links : [{ label: 'Courses', href: '/courses' }]
+  const showLogin = navbar?.show_login !== false
+  const cta = navbar?.cta
+
   const handleSignOut = async () => {
     setSigningOut(true)
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -37,12 +42,16 @@ export function PublicHeader({ user }: { user?: User | null }) {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 md:flex">
-          <Link
-            href="/courses"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Courses
-          </Link>
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
+
           {user ? (
             <>
               <Link
@@ -66,9 +75,18 @@ export function PublicHeader({ user }: { user?: User | null }) {
               </div>
             </>
           ) : (
-            <Button asChild size="sm">
-              <Link href="/login">Sign In</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              {showLogin && (
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/login">Sign In</Link>
+                </Button>
+              )}
+              {cta && (
+                <Button asChild size="sm">
+                  <Link href={cta.href}>{cta.text}</Link>
+                </Button>
+              )}
+            </div>
           )}
         </nav>
 
@@ -86,13 +104,16 @@ export function PublicHeader({ user }: { user?: User | null }) {
       {mobileOpen && (
         <div className="border-t bg-background px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
-            <Link
-              href="/courses"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              onClick={() => setMobileOpen(false)}
-            >
-              Courses
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
             {user ? (
               <>
                 <Link
@@ -118,11 +139,22 @@ export function PublicHeader({ user }: { user?: User | null }) {
                 </Button>
               </>
             ) : (
-              <Button asChild size="sm" className="w-full">
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  Sign In
-                </Link>
-              </Button>
+              <div className="flex flex-col gap-2">
+                {showLogin && (
+                  <Button asChild variant="ghost" size="sm" className="w-full">
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      Sign In
+                    </Link>
+                  </Button>
+                )}
+                {cta && (
+                  <Button asChild size="sm" className="w-full">
+                    <Link href={cta.href} onClick={() => setMobileOpen(false)}>
+                      {cta.text}
+                    </Link>
+                  </Button>
+                )}
+              </div>
             )}
           </nav>
         </div>
