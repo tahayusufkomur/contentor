@@ -72,9 +72,7 @@ services:
       - ./backend:/app/backend
     env_file: .env
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
+      django:
         condition: service_healthy
     labels:
       - "traefik.enable=true"

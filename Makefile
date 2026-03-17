@@ -1,4 +1,4 @@
-.PHONY: help dev down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed format
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed format
 
 # ============================================================================
 # Help
@@ -9,7 +9,7 @@ help: ## Show this help
 	@echo "\033[1mUsage:\033[0m make <target>"
 	@echo ""
 	@echo "\033[1;33m--- Docker ---\033[0m"
-	@grep -E '^(dev|down|build|restart|reset|logs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(dev|dev-reset|down|build|restart|reset|logs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Database ---\033[0m"
 	@grep -E '^(migrate|migrate-shared|makemigrations|seed):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -41,6 +41,11 @@ restart: ## Full restart — stop, rebuild images, start fresh
 reset: ## Nuclear reset — wipe all volumes (DB, Redis) and rebuild
 	docker compose down -v
 	docker compose up --build -d
+
+dev-reset: ## Reset caches, volumes, and .next builds — then start fresh
+	docker compose down -v
+	rm -rf frontend-customer/.next frontend-main/.next
+	docker compose up --build
 
 logs: ## Tail logs from all services
 	docker compose logs -f
