@@ -60,7 +60,7 @@ services:
       start_period: 30s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.django.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`) || PathPrefix(`/django-admin`)"
+      - "traefik.http.routers.django.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`) || PathPrefix(`/admin`) || PathPrefix(`/static/admin`)"
       - "traefik.http.routers.django.entrypoints=web"
       - "traefik.http.services.django.loadbalancer.server.port=8000"
 

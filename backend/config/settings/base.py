@@ -16,6 +16,7 @@ SHARED_APPS = [
     "django_tenants",
     "django.contrib.contenttypes",
     "django.contrib.auth",
+    "django.contrib.admin",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
@@ -23,8 +24,6 @@ SHARED_APPS = [
     "corsheaders",
     "apps.core",
     "apps.accounts",
-    "apps.courses",
-    "apps.downloads",
 ]
 
 TENANT_APPS = [
@@ -43,7 +42,7 @@ INSTALLED_APPS = list(SHARED_APPS) + [
 
 TENANT_MODEL = "core.Tenant"
 TENANT_DOMAIN_MODEL = "core.Domain"
-DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
+DATABASE_ROUTERS = ("apps.core.routers.TenantRouter", "django_tenants.routers.TenantSyncRouter")
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -127,6 +126,11 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_PASSWORD_VALIDATORS = []
 
+AUTHENTICATION_BACKENDS = [
+    "apps.accounts.backends.AdminJWTBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
@@ -140,6 +144,11 @@ CONTENTOR_SUPERUSERS = [
 ]
 MAGIC_LINK_EXPIRY_MINUTES = 15
 JWT_EXPIRY_DAYS = 7
+
+# --- Google OAuth ---
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "")
 
 # --- Resend ---
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")

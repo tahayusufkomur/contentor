@@ -10,8 +10,29 @@ export default function CallbackPage() {
 
   useEffect(() => {
     const token = searchParams.get('token')
+    const source = searchParams.get('source')
     if (!token) { setError('No token provided'); return }
 
+    // Google OAuth callback: token is already a session JWT, just set the cookie
+    if (source === 'google') {
+      fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+        credentials: 'same-origin',
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            setError('Authentication failed')
+            return
+          }
+          router.push('/')
+        })
+        .catch(() => setError('Network error'))
+      return
+    }
+
+    // Magic link callback: token needs Django verification
     fetch('/api/auth/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
