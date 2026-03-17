@@ -34,6 +34,7 @@ docker-compose.override.yml
 node_modules/
 .next/
 out/
+*.tsbuildinfo
 frontend-customer/.next/
 frontend-customer/node_modules/
 frontend-main/.next/
