@@ -18,6 +18,7 @@ export async function getAuthUser(): Promise<User | null> {
         Authorization: `Bearer ${token}`,
         ...(tenantDomain && { 'X-Tenant-Domain': tenantDomain }),
       },
+      cache: 'no-store',
     })
     if (!res.ok) return null
     return res.json()
