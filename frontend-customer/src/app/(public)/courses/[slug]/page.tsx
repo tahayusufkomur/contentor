@@ -61,7 +61,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           {course.thumbnail_url ? (
             <div className="overflow-hidden rounded-xl">
               <img
-                src={course.thumbnail_url}
+                src={course.thumbnail_signed_url || course.thumbnail_url}
                 alt={course.title}
                 className="h-64 w-full object-cover md:h-80"
               />

@@ -172,9 +172,9 @@ export default function AdminCourseDetailPage() {
                   value={course.thumbnail_url || ''}
                   onChange={(e) => setCourse({ ...course, thumbnail_url: e.target.value })}
                 />
-                {course.thumbnail_url && (
+                {(course.thumbnail_signed_url || course.thumbnail_url) && (
                   <img
-                    src={course.thumbnail_url}
+                    src={course.thumbnail_signed_url || course.thumbnail_url}
                     alt="Thumbnail preview"
                     className="mt-2 h-32 w-auto rounded-md object-cover"
                   />

@@ -60,8 +60,12 @@ services:
       start_period: 30s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.django.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`) || PathPrefix(`/admin`) || PathPrefix(`/static/admin`)"
-      - "traefik.http.routers.django.entrypoints=web"
+      - "traefik.http.routers.django-api.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`)"
+      - "traefik.http.routers.django-api.entrypoints=web"
+      - "traefik.http.routers.django-api.priority=10"
+      - "traefik.http.routers.django-admin.rule=(Host(`contentor.localhost`) || Host(`localhost`)) && (PathPrefix(`/admin`) || PathPrefix(`/static/admin`))"
+      - "traefik.http.routers.django-admin.entrypoints=web"
+      - "traefik.http.routers.django-admin.priority=10"
       - "traefik.http.services.django.loadbalancer.server.port=8000"
 
   django-channels:

@@ -6,6 +6,15 @@ from apps.core.storage import generate_presigned_download_url
 from .models import Course, Enrollment, Lesson, Module, Progress
 
 
+def _sign_thumbnail(url):
+    """Return a presigned URL for S3 keys, or the original URL if already HTTP."""
+    if not url:
+        return None
+    if url.startswith("http"):
+        return url
+    return generate_presigned_download_url(url)
+
+
 class LessonSerializer(serializers.ModelSerializer):
     video_signed_url = serializers.SerializerMethodField()
 
@@ -56,6 +65,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 class CourseListSerializer(serializers.ModelSerializer):
     lesson_count = serializers.SerializerMethodField()
     enrolled_count = serializers.SerializerMethodField()
+    thumbnail_signed_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -74,6 +84,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "updated_at",
             "lesson_count",
             "enrolled_count",
+            "thumbnail_signed_url",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -83,12 +94,16 @@ class CourseListSerializer(serializers.ModelSerializer):
     def get_enrolled_count(self, obj):
         return obj.enrollments.count()
 
+    def get_thumbnail_signed_url(self, obj):
+        return _sign_thumbnail(obj.thumbnail_url)
+
 
 class CourseDetailSerializer(serializers.ModelSerializer):
     modules = serializers.SerializerMethodField()
     is_enrolled = serializers.SerializerMethodField()
     lesson_count = serializers.SerializerMethodField()
     enrolled_count = serializers.SerializerMethodField()
+    thumbnail_signed_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -109,6 +124,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "is_enrolled",
             "lesson_count",
             "enrolled_count",
+            "thumbnail_signed_url",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -127,6 +143,9 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
     def get_enrolled_count(self, obj):
         return obj.enrollments.count()
+
+    def get_thumbnail_signed_url(self, obj):
+        return _sign_thumbnail(obj.thumbnail_url)
 
 
 class CourseCreateUpdateSerializer(serializers.ModelSerializer):

@@ -24,6 +24,7 @@ export interface Course {
   instructor: number
   instructor_name: string
   thumbnail_url: string
+  thumbnail_signed_url?: string
   price: string
   pricing_type: 'free' | 'paid' | 'subscription'
   is_published: boolean

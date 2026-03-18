@@ -22,9 +22,14 @@ export function MagicLinkForm() {
         body: JSON.stringify({ email }),
         credentials: 'same-origin',
       })
+      const data = await res.json()
       if (!res.ok) {
-        const data = await res.json()
         setError(data.detail || 'Something went wrong')
+        return
+      }
+      // Demo tenants: instant redirect, no email needed
+      if (data.demo_redirect) {
+        window.location.href = data.demo_redirect
         return
       }
       setSent(true)

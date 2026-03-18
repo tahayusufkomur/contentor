@@ -10,7 +10,7 @@ class Course(models.Model):
     instructor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="courses_taught",
     )
-    thumbnail_url = models.URLField(blank=True, default="")
+    thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     pricing_type = models.CharField(
         max_length=20,

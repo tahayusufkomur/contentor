@@ -12,7 +12,7 @@ class TenantTheme(models.TextChoices):
 
 class TenantConfig(models.Model):
     brand_name = models.CharField(max_length=100)
-    logo_url = models.URLField(max_length=2000, blank=True, default="")
+    logo_url = models.CharField(max_length=2000, blank=True, default="")
     theme = models.CharField(max_length=30, choices=TenantTheme.choices, default=TenantTheme.OCEAN)
     dark_mode_enabled = models.BooleanField(default=True)
     font_family = models.CharField(max_length=100, default="Inter")

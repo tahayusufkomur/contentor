@@ -17,7 +17,7 @@ export function CourseCard({ course }: CourseCardProps) {
         {course.thumbnail_url ? (
           <div className="relative overflow-hidden">
             <img
-              src={course.thumbnail_url}
+              src={course.thumbnail_signed_url || course.thumbnail_url}
               alt={course.title}
               className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />

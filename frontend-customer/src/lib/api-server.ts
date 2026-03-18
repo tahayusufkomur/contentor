@@ -13,7 +13,7 @@ export async function serverFetch<T>(path: string, options?: RequestInit): Promi
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...(tenantDomain && { Host: tenantDomain }),
+      ...(tenantDomain && { 'X-Tenant-Domain': tenantDomain }),
       ...options?.headers,
     },
   })
