@@ -33,6 +33,17 @@
     --chart-3: oklch(0.65 0.08 70);
     --chart-4: oklch(0.7 0.12 100);
     --chart-5: oklch(0.5 0.1 200);
+    --cinematic-bg:
+      radial-gradient(
+        ellipse at 20% 50%,
+        oklch(0.93 0.03 240 / 0.35),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse at 80% 20%,
+        oklch(0.95 0.025 185 / 0.25),
+        transparent 60%
+      );
   }
 
   .dark {
@@ -64,6 +75,17 @@
     --chart-3: oklch(0.6 0.08 70);
     --chart-4: oklch(0.65 0.12 100);
     --chart-5: oklch(0.55 0.1 200);
+    --cinematic-bg:
+      radial-gradient(
+        ellipse at 20% 50%,
+        oklch(0.25 0.04 240 / 0.4),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse at 80% 20%,
+        oklch(0.2 0.03 185 / 0.3),
+        transparent 60%
+      );
   }
 }
 
@@ -73,5 +95,15 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-cinematic {
+    background-color: var(--background);
+    background-image: var(--cinematic-bg);
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 }

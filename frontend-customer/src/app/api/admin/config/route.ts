@@ -1,6 +1,7 @@
 import { cookies, headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { COOKIE_NAME, DJANGO_API_URL, BASE_DOMAIN } from '@/lib/constants'
+import { configCache } from '@/lib/tenant'
 
 async function proxyConfig(req: NextRequest, method: string, body?: unknown) {
   const cookieStore = await cookies()
@@ -28,6 +29,11 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const headersList = await headers()
+  const slug = headersList.get('x-tenant-slug') || 'unknown'
   const body = await req.json()
-  return proxyConfig(req, 'PATCH', body)
+  const response = await proxyConfig(req, 'PATCH', body)
+  // Bust the in-memory cache so router.refresh() fetches fresh data
+  configCache.delete(slug)
+  return response
 }

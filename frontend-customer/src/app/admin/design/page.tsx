@@ -1,36 +1,50 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { clientFetch } from '@/lib/api-client'
-import { Palette, Type, Image, Save } from 'lucide-react'
-import type { TenantConfig } from '@/types/tenant'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Image, MoonStar, Palette, Save, Type } from "lucide-react";
+import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { clientFetch } from "@/lib/api-client";
+import { getThemePalette } from "@/lib/themes";
+import type { TenantConfig } from "@/types/tenant";
 
 export default function DesignSettingsPage() {
-  const router = useRouter()
-  const [config, setConfig] = useState<TenantConfig | null>(null)
-  const [saving, setSaving] = useState(false)
+  const router = useRouter();
+  const [config, setConfig] = useState<TenantConfig | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    clientFetch<TenantConfig>('/api/v1/admin/config/').then(setConfig).catch(console.error)
-  }, [])
+    clientFetch<TenantConfig>("/api/v1/admin/config/")
+      .then(setConfig)
+      .catch(console.error);
+  }, []);
 
   async function handleSave() {
-    if (!config) return
-    setSaving(true)
+    if (!config) return;
+
+    setSaving(true);
     try {
-      await clientFetch('/api/v1/admin/config/', { method: 'PATCH', body: JSON.stringify(config) })
-      router.refresh()
+      await clientFetch("/api/v1/admin/config/", {
+        method: "PATCH",
+        body: JSON.stringify(config),
+      });
+      router.refresh();
     } catch (err) {
-      console.error(err)
+      console.error(err);
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -40,14 +54,14 @@ export default function DesignSettingsPage() {
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="space-y-4 p-6">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="space-y-4 p-6">
               {Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
@@ -55,8 +69,10 @@ export default function DesignSettingsPage() {
           </Card>
         </div>
       </div>
-    )
+    );
   }
+
+  const theme = getThemePalette(config.theme);
 
   return (
     <div className="space-y-6">
@@ -64,26 +80,24 @@ export default function DesignSettingsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Design Settings</h1>
           <p className="text-sm text-muted-foreground">
-            Customize the look and feel of your platform.
+            Configure brand identity, curated color themes, and public dark
+            mode.
           </p>
         </div>
         <Button onClick={handleSave} disabled={saving} className="gap-2">
           <Save className="h-4 w-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Branding */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="h-5 w-5" />
               Branding
             </CardTitle>
-            <CardDescription>
-              Set your brand name and logo.
-            </CardDescription>
+            <CardDescription>Set your brand name and logo.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -91,7 +105,9 @@ export default function DesignSettingsPage() {
               <Input
                 id="brand_name"
                 value={config.brand_name}
-                onChange={(e) => setConfig({ ...config, brand_name: e.target.value })}
+                onChange={(e) =>
+                  setConfig({ ...config, brand_name: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -99,7 +115,9 @@ export default function DesignSettingsPage() {
               <Input
                 id="logo_url"
                 value={config.logo_url}
-                onChange={(e) => setConfig({ ...config, logo_url: e.target.value })}
+                onChange={(e) =>
+                  setConfig({ ...config, logo_url: e.target.value })
+                }
                 placeholder="https://..."
               />
               {config.logo_url && (
@@ -109,72 +127,51 @@ export default function DesignSettingsPage() {
                     alt="Logo preview"
                     className="h-10 w-auto"
                   />
-                  <span className="text-xs text-muted-foreground">Logo preview</span>
+                  <span className="text-xs text-muted-foreground">
+                    Logo preview
+                  </span>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Colors */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              Colors
+              <MoonStar className="h-5 w-5" />
+              Theme Controls
             </CardTitle>
             <CardDescription>
-              Choose primary and secondary colors for your theme.
+              Themes set the entire palette, including accents, borders, charts,
+              and the cinematic wash.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="primary_color">Primary Color</Label>
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-10 w-10 shrink-0 rounded-md border shadow-sm"
-                  style={{ backgroundColor: config.primary_color }}
-                />
-                <input
-                  type="color"
-                  value={config.primary_color}
-                  onChange={(e) => setConfig({ ...config, primary_color: e.target.value })}
-                  className="h-10 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-                />
-                <Input
-                  id="primary_color"
-                  value={config.primary_color}
-                  onChange={(e) => setConfig({ ...config, primary_color: e.target.value })}
-                  className="flex-1"
-                />
+            <ThemeCardGrid
+              selectedTheme={config.theme}
+              onSelect={(selectedTheme) =>
+                setConfig({ ...config, theme: selectedTheme })
+              }
+            />
+            <div className="flex items-start justify-between gap-4 rounded-xl border bg-card/70 p-4">
+              <div className="space-y-1">
+                <Label className="text-sm">Allow dark mode for visitors</Label>
+                <p className="text-xs text-muted-foreground">
+                  Controls whether the public-facing header shows a light/dark
+                  toggle.
+                </p>
               </div>
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <Label htmlFor="secondary_color">Secondary Color</Label>
-              <div className="flex items-center gap-3">
-                <div
-                  className="h-10 w-10 shrink-0 rounded-md border shadow-sm"
-                  style={{ backgroundColor: config.secondary_color }}
-                />
-                <input
-                  type="color"
-                  value={config.secondary_color}
-                  onChange={(e) => setConfig({ ...config, secondary_color: e.target.value })}
-                  className="h-10 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-                />
-                <Input
-                  id="secondary_color"
-                  value={config.secondary_color}
-                  onChange={(e) => setConfig({ ...config, secondary_color: e.target.value })}
-                  className="flex-1"
-                />
-              </div>
+              <Switch
+                checked={config.dark_mode_enabled}
+                onCheckedChange={(dark_mode_enabled) =>
+                  setConfig({ ...config, dark_mode_enabled })
+                }
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* Typography */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -182,7 +179,8 @@ export default function DesignSettingsPage() {
               Typography
             </CardTitle>
             <CardDescription>
-              Choose a font for your platform. Must be a Google Fonts family name.
+              Choose a font for your platform. Must be a Google Fonts family
+              name.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -191,7 +189,9 @@ export default function DesignSettingsPage() {
               <Input
                 id="font_family"
                 value={config.font_family}
-                onChange={(e) => setConfig({ ...config, font_family: e.target.value })}
+                onChange={(e) =>
+                  setConfig({ ...config, font_family: e.target.value })
+                }
                 placeholder="Inter"
               />
               {config.font_family && (
@@ -206,7 +206,6 @@ export default function DesignSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Preview */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -214,44 +213,75 @@ export default function DesignSettingsPage() {
               Preview
             </CardTitle>
             <CardDescription>
-              A quick preview of how your branding looks.
+              Light-mode preview of the selected theme.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-lg border">
-              {/* Mock header */}
+            <div
+              className="overflow-hidden rounded-2xl border p-3"
+              style={{
+                backgroundColor: theme.light.background,
+                backgroundImage: theme.cinematic.light,
+              }}
+            >
               <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{ backgroundColor: config.primary_color }}
+                className="overflow-hidden rounded-xl border"
+                style={{
+                  backgroundColor: theme.light.card,
+                  borderColor: theme.light.border,
+                }}
               >
-                <span
-                  className="text-sm font-bold"
-                  style={{ color: '#ffffff' }}
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{
+                    backgroundColor: theme.light.primary,
+                    color: theme.light["primary-foreground"],
+                  }}
                 >
-                  {config.brand_name || 'Your Brand'}
-                </span>
-                <div className="flex gap-3">
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Courses
+                  <span className="text-sm font-bold">
+                    {config.brand_name || "Your Brand"}
                   </span>
-                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Sign In
-                  </span>
+                  <div className="flex gap-3 text-xs opacity-80">
+                    <span>Courses</span>
+                    <span>Sign In</span>
+                  </div>
                 </div>
-              </div>
-              {/* Mock content */}
-              <div className="bg-background p-4 text-center">
-                <p
-                  className="text-lg font-bold"
-                  style={{ fontFamily: config.font_family || 'inherit' }}
+                <div
+                  className="space-y-3 p-4"
+                  style={{ color: theme.light.foreground }}
                 >
-                  {config.brand_name || 'Your Brand'}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Your platform tagline here
-                </p>
-                <div className="mx-auto mt-3 w-fit rounded-md px-4 py-1.5 text-xs font-medium text-white" style={{ backgroundColor: config.primary_color }}>
-                  Browse Courses
+                  <div>
+                    <p
+                      className="text-lg font-bold"
+                      style={{ fontFamily: config.font_family || "inherit" }}
+                    >
+                      {config.brand_name || "Your Brand"}
+                    </p>
+                    <p
+                      className="mt-1 text-xs"
+                      style={{ color: theme.light["muted-foreground"] }}
+                    >
+                      Your platform tagline here
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {theme.preview.map((swatch) => (
+                      <span
+                        key={swatch}
+                        className="h-7 flex-1 rounded-md border border-black/5"
+                        style={{ backgroundColor: swatch }}
+                      />
+                    ))}
+                  </div>
+                  <div
+                    className="w-fit rounded-md px-4 py-1.5 text-xs font-medium"
+                    style={{
+                      backgroundColor: theme.light.accent,
+                      color: theme.light["accent-foreground"],
+                    }}
+                  >
+                    Browse Courses
+                  </div>
                 </div>
               </div>
             </div>
@@ -259,5 +289,5 @@ export default function DesignSettingsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

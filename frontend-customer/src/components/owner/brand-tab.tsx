@@ -1,91 +1,154 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Check, Loader2, Upload } from 'lucide-react'
-import type { TenantConfig } from '@/types/tenant'
+import { useRef, useState } from "react";
+import { Loader2, Upload } from "lucide-react";
+import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { clientFetch } from "@/lib/api-client";
+import type { TenantConfig } from "@/types/tenant";
 
-const FONTS = ['Inter', 'Geist', 'Poppins', 'Nunito', 'DM Sans', 'Playfair Display', 'Merriweather', 'Lora']
+const FONTS = [
+  "Inter",
+  "Geist",
+  "Poppins",
+  "Nunito",
+  "DM Sans",
+  "Playfair Display",
+  "Merriweather",
+  "Lora",
+];
 
 interface BrandTabProps {
-  config: TenantConfig
-  onSaved: (updated: Partial<TenantConfig>) => void
+  config: TenantConfig;
+  onChange: (patch: Partial<TenantConfig>) => void;
 }
 
-export function BrandTab({ config, onSaved }: BrandTabProps) {
-  const [brandName, setBrandName] = useState(config.brand_name)
-  const [logoUrl, setLogoUrl] = useState(config.logo_url)
-  const [primaryColor, setPrimaryColor] = useState(config.primary_color)
-  const [secondaryColor, setSecondaryColor] = useState(config.secondary_color)
-  const [fontFamily, setFontFamily] = useState(config.font_family)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+export function BrandTab({ config, onChange }: BrandTabProps) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = async () => {
-    setSaving(true)
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
     try {
-      const res = await fetch('/api/admin/config', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brand_name: brandName, logo_url: logoUrl, primary_color: primaryColor, secondary_color: secondaryColor, font_family: fontFamily }),
-      })
-      if (res.ok) {
-        const updated = await res.json()
-        onSaved(updated)
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2000)
-      }
+      const { upload_url, s3_key } = await clientFetch<{
+        upload_url: string;
+        s3_key: string;
+      }>("/api/v1/upload/presign/", {
+        method: "POST",
+        body: JSON.stringify({
+          filename: file.name,
+          content_type: file.type,
+          category: "branding",
+        }),
+      });
+      await fetch(upload_url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { file_url } = await clientFetch<{ file_url: string }>(
+        "/api/v1/upload/complete/",
+        {
+          method: "POST",
+          body: JSON.stringify({ s3_key, category: "branding" }),
+        },
+      );
+      onChange({ logo_url: file_url });
+    } catch (err) {
+      console.error("Logo upload failed", err);
     } finally {
-      setSaving(false)
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
-  }
+  };
 
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
         <Label htmlFor="brand-name">Brand name</Label>
-        <Input id="brand-name" value={brandName} onChange={(e) => setBrandName(e.target.value)} placeholder="My Platform" />
+        <Input
+          id="brand-name"
+          value={config.brand_name}
+          onChange={(e) => onChange({ brand_name: e.target.value })}
+          placeholder="My Platform"
+        />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="logo-url">Logo URL</Label>
+        <Label htmlFor="logo-url">Logo</Label>
         <div className="flex gap-2">
-          <Input id="logo-url" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
+          <Input
+            id="logo-url"
+            value={config.logo_url}
+            onChange={(e) => onChange({ logo_url: e.target.value })}
+            placeholder="https://..."
+            className="flex-1"
+          />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={handleLogoUpload}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="shrink-0"
+          >
+            {uploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+          </Button>
         </div>
-        {logoUrl && (
-          <img src={logoUrl} alt="Logo preview" className="h-10 w-auto rounded object-contain mt-1" />
+        {config.logo_url && (
+          <img
+            src={config.logo_url}
+            alt="Logo preview"
+            className="mt-1 h-10 w-auto rounded object-contain"
+          />
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="primary-color">Primary color</Label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              id="primary-color"
-              value={primaryColor}
-              onChange={(e) => setPrimaryColor(e.target.value)}
-              className="h-10 w-10 cursor-pointer rounded border border-input bg-background p-0.5"
-            />
-            <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="font-mono text-xs" />
-          </div>
+      <div className="space-y-2">
+        <div>
+          <Label>Theme</Label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Pick a complete palette for surfaces, accents, charts, and the
+            cinematic background.
+          </p>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="secondary-color">Secondary</Label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              id="secondary-color"
-              value={secondaryColor}
-              onChange={(e) => setSecondaryColor(e.target.value)}
-              className="h-10 w-10 cursor-pointer rounded border border-input bg-background p-0.5"
-            />
-            <Input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="font-mono text-xs" />
-          </div>
+        <ThemeCardGrid
+          selectedTheme={config.theme}
+          onSelect={(theme) => onChange({ theme })}
+        />
+      </div>
+
+      <div className="flex items-start justify-between gap-4 rounded-xl border bg-card/70 p-4">
+        <div className="space-y-1">
+          <Label className="text-sm">Allow dark mode for visitors</Label>
+          <p className="text-xs text-muted-foreground">
+            Shows a light/dark toggle in the public header and keeps the dark
+            palette available.
+          </p>
         </div>
+        <Switch
+          checked={config.dark_mode_enabled}
+          onCheckedChange={(dark_mode_enabled) =>
+            onChange({ dark_mode_enabled })
+          }
+        />
       </div>
 
       <div className="space-y-1.5">
@@ -94,23 +157,15 @@ export function BrandTab({ config, onSaved }: BrandTabProps) {
           {FONTS.map((font) => (
             <button
               key={font}
-              onClick={() => setFontFamily(font)}
-              className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${fontFamily === font ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'}`}
+              type="button"
+              onClick={() => onChange({ font_family: font })}
+              className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${config.font_family === font ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"}`}
             >
               {font}
             </button>
           ))}
         </div>
       </div>
-
-      <Button onClick={handleSave} disabled={saving} className="w-full gap-2">
-        {saving ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : saved ? (
-          <Check className="h-4 w-4" />
-        ) : null}
-        {saved ? 'Saved!' : saving ? 'Saving…' : 'Save brand'}
-      </Button>
     </div>
-  )
+  );
 }

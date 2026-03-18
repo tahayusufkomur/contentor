@@ -5,4 +5,4 @@ from .models import TenantConfig
 
 @admin.register(TenantConfig)
 class TenantConfigAdmin(admin.ModelAdmin):
-    list_display = ("brand_name", "primary_color", "font_family")
+    list_display = ("brand_name", "theme", "dark_mode_enabled", "font_family")

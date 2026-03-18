@@ -1,11 +1,20 @@
 from django.db import models
 
 
+class TenantTheme(models.TextChoices):
+    OCEAN = "ocean", "Ocean"
+    EMBER = "ember", "Ember"
+    FOREST = "forest", "Forest"
+    SUNSET = "sunset", "Sunset"
+    VIOLET = "violet", "Violet"
+    SLATE = "slate", "Slate"
+
+
 class TenantConfig(models.Model):
     brand_name = models.CharField(max_length=100)
-    logo_url = models.URLField(blank=True, default="")
-    primary_color = models.CharField(max_length=7, default="#171717")
-    secondary_color = models.CharField(max_length=7, default="#737373")
+    logo_url = models.URLField(max_length=2000, blank=True, default="")
+    theme = models.CharField(max_length=30, choices=TenantTheme.choices, default=TenantTheme.OCEAN)
+    dark_mode_enabled = models.BooleanField(default=True)
     font_family = models.CharField(max_length=100, default="Inter")
     custom_css = models.TextField(blank=True, default="")
     enabled_modules = models.JSONField(default=list)

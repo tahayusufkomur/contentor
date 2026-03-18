@@ -1,30 +1,39 @@
-import type { Metadata } from 'next'
-import { Instrument_Sans } from 'next/font/google'
+import type { Metadata } from "next";
+import { Instrument_Sans } from "next/font/google";
 
-import { TenantThemeStyle } from '@/components/shared/tenant-theme-style'
-import { TenantProvider } from '@/components/shared/tenant-provider'
-import { ThemeProvider } from '@/components/shared/theme-provider'
-import { fetchTenantConfig, getTenantSlug } from '@/lib/tenant'
+import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
+import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
+import { TenantProvider } from "@/components/shared/tenant-provider";
+import { ThemeProvider } from "@/components/shared/theme-provider";
+import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 
-import '@/styles/globals.css'
+import "@/styles/globals.css";
 
-const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const slug = await getTenantSlug()
-  const config = await fetchTenantConfig(slug)
+  const slug = await getTenantSlug();
+  const config = await fetchTenantConfig(slug);
 
   return {
-    title: config?.brand_name || 'Welcome',
-    description: config?.meta_description || '',
-  }
+    title: config?.brand_name || "Welcome",
+    description: config?.meta_description || "",
+  };
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const slug = await getTenantSlug()
-  const config = await fetchTenantConfig(slug)
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const slug = await getTenantSlug();
+  const config = await fetchTenantConfig(slug);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -37,11 +46,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
       </head>
-      <body className={`${instrumentSans.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <TenantProvider config={config}>{children}</TenantProvider>
+      <body
+        className={`${instrumentSans.variable} bg-cinematic min-h-screen font-sans antialiased`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          forcedTheme={
+            config?.dark_mode_enabled === false ? "light" : undefined
+          }
+          disableTransitionOnChange
+        >
+          <TenantProvider config={config}>
+            <TenantThemeEnforcer />
+            {children}
+          </TenantProvider>
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

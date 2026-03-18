@@ -30,7 +30,7 @@ export async function fetchTenantConfig(slug: string): Promise<TenantConfig | nu
     const domain = `${slug}.${BASE_DOMAIN}`
     const res = await fetch(`${DJANGO_API_URL}/api/v1/admin/config/`, {
       headers: { 'X-Tenant-Domain': domain },
-      next: { revalidate: 60 },
+      cache: 'no-store',
     })
     if (!res.ok) return null
     const config: TenantConfig = await res.json()
