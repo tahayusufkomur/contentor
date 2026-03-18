@@ -1,43 +1,54 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { useTenant } from '@/hooks/use-tenant'
-import { BookOpen, LogOut, Menu, User as UserIcon, X } from 'lucide-react'
-import type { User } from '@/types/auth'
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { useTenant } from "@/hooks/use-tenant";
+import { BookOpen, LogOut, Menu, User as UserIcon, X } from "lucide-react";
+import type { User } from "@/types/auth";
 
 export function PublicHeader({ user }: { user?: User | null }) {
-  const config = useTenant()
-  const router = useRouter()
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [signingOut, setSigningOut] = useState(false)
+  const config = useTenant();
+  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const navbar = config?.navbar_config
-  const navLinks = navbar?.links?.length ? navbar.links : [{ label: 'Courses', href: '/courses' }]
-  const showLogin = navbar?.show_login !== false
-  const cta = navbar?.cta
+  const navbar = config?.navbar_config;
+  const navLinks = navbar?.links?.length
+    ? navbar.links
+    : [{ label: "Courses", href: "/courses" }];
+  const showLogin = navbar?.show_login !== false;
+  const cta = navbar?.cta;
+  const allowDarkMode = config?.dark_mode_enabled !== false;
 
   const handleSignOut = async () => {
-    setSigningOut(true)
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-    router.refresh()
-  }
+    setSigningOut(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  };
 
-  const dashboardHref = user?.role === 'owner' || user?.role === 'coach' ? '/admin' : '/dashboard'
+  const dashboardHref =
+    user?.role === "owner" || user?.role === "coach" ? "/admin" : "/dashboard";
 
   return (
     <header className="sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold">
           {config?.logo_url ? (
-            <img src={config.logo_url} alt={config.brand_name} className="h-8 w-auto" />
+            <img
+              src={config.logo_url}
+              alt={config.brand_name}
+              className="h-8 w-auto"
+            />
           ) : (
             <BookOpen className="h-5 w-5 text-primary" />
           )}
-          <span className="font-display">{config?.brand_name || 'Welcome'}</span>
+          <span className="font-display">
+            {config?.brand_name || "Welcome"}
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -52,16 +63,22 @@ export function PublicHeader({ user }: { user?: User | null }) {
             </Link>
           ))}
 
+          {allowDarkMode && <ThemeToggle compact className="shrink-0" />}
+
           {user ? (
             <>
               <Link
                 href={dashboardHref}
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                {user.role === 'owner' || user.role === 'coach' ? 'Admin' : 'Dashboard'}
+                {user.role === "owner" || user.role === "coach"
+                  ? "Admin"
+                  : "Dashboard"}
               </Link>
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+                <span className="text-sm text-muted-foreground">
+                  {user.name || user.email}
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -96,7 +113,11 @@ export function PublicHeader({ user }: { user?: User | null }) {
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle navigation"
         >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {mobileOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </button>
       </div>
 
@@ -121,11 +142,15 @@ export function PublicHeader({ user }: { user?: User | null }) {
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   onClick={() => setMobileOpen(false)}
                 >
-                  {user.role === 'owner' || user.role === 'coach' ? 'Admin' : 'Dashboard'}
+                  {user.role === "owner" || user.role === "coach"
+                    ? "Admin"
+                    : "Dashboard"}
                 </Link>
                 <div className="flex items-center gap-2 border-t pt-3">
                   <UserIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {user.name || user.email}
+                  </span>
                 </div>
                 <Button
                   variant="ghost"
@@ -156,9 +181,10 @@ export function PublicHeader({ user }: { user?: User | null }) {
                 )}
               </div>
             )}
+            {allowDarkMode && <ThemeToggle className="justify-start" />}
           </nav>
         </div>
       )}
     </header>
-  )
+  );
 }

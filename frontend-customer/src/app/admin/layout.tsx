@@ -1,6 +1,6 @@
-import { requireAuth, requireRole } from '@/lib/auth'
-import { AppSidebar } from '@/components/shared/app-sidebar'
-import { MobileHeader } from '@/components/shared/mobile-header'
+import { requireAuth, requireRole } from "@/lib/auth";
+import { AppSidebar } from "@/components/shared/app-sidebar";
+import { MobileHeader } from "@/components/shared/mobile-header";
 import {
   BookOpen,
   CreditCard,
@@ -10,31 +10,59 @@ import {
   FileText,
   Users,
   Video,
-} from 'lucide-react'
+} from "lucide-react";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Courses', href: '/admin/courses', icon: BookOpen },
-  { label: 'Downloads', href: '/admin/downloads', icon: Download },
-  { label: 'Live Classes', href: '/admin/live', icon: Video },
-  { label: 'Students', href: '/admin/students', icon: Users },
-  { label: 'Pages', href: '/admin/pages', icon: FileText },
-  { label: 'Design', href: '/admin/design', icon: Palette },
-  { label: 'Billing', href: '/admin/billing', icon: CreditCard },
-]
+const navSections = [
+  {
+    id: "overview",
+    label: "Overview",
+    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+  },
+  {
+    id: "content",
+    label: "Content",
+    items: [
+      { label: "Courses", href: "/admin/courses", icon: BookOpen },
+      { label: "Downloads", href: "/admin/downloads", icon: Download },
+      { label: "Live Classes", href: "/admin/live", icon: Video },
+    ],
+  },
+  {
+    id: "community",
+    label: "Community",
+    items: [{ label: "Students", href: "/admin/students", icon: Users }],
+  },
+  {
+    id: "site",
+    label: "Site",
+    items: [
+      { label: "Pages", href: "/admin/pages", icon: FileText },
+      { label: "Design", href: "/admin/design", icon: Palette },
+    ],
+  },
+  {
+    id: "business",
+    label: "Business",
+    items: [{ label: "Billing", href: "/admin/billing", icon: CreditCard }],
+  },
+];
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireAuth()
-  await requireRole(user, ['owner', 'coach'])
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const user = await requireAuth();
+  await requireRole(user, ["owner", "coach"]);
   return (
     <div className="flex h-screen">
-      <AppSidebar title="Admin" navItems={navItems} />
+      <AppSidebar title="Admin" sections={navSections} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <MobileHeader title="Admin" navItems={navItems} />
+        <MobileHeader title="Admin" sections={navSections} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
-  )
+  );
 }

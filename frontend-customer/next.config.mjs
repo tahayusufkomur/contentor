@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || "contentor.localhost";
+
 const nextConfig = {
   output: "standalone",
+  allowedDevOrigins: [`*.${BASE_DOMAIN}`],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.amazonaws.com" },

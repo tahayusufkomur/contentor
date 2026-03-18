@@ -96,13 +96,9 @@ def complete(request):
         return Response({"detail": "Download file updated.", "s3_key": s3_key})
 
     elif category == "branding":
-        from apps.tenant_config.models import TenantConfig
+        from apps.core.storage import generate_presigned_download_url
 
-        config = TenantConfig.objects.first()
-        if not config:
-            return Response({"detail": "Tenant config not found."}, status=status.HTTP_404_NOT_FOUND)
-        config.logo_url = s3_key
-        config.save()
-        return Response({"detail": "Branding updated.", "s3_key": s3_key})
+        file_url = generate_presigned_download_url(s3_key, expiry=86400 * 7)
+        return Response({"detail": "Upload complete.", "s3_key": s3_key, "file_url": file_url})
 
     return Response({"detail": "Invalid category."}, status=status.HTTP_400_BAD_REQUEST)
