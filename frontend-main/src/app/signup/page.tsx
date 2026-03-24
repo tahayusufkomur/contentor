@@ -123,7 +123,7 @@ export default function SignupPage() {
                   <p className="text-sm text-destructive">{error}</p>
                 </div>
               )}
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              <Button type="submit" className="w-full" size="lg" loading={loading}>
                 {loading ? 'Creating...' : 'Create My Platform'}
               </Button>
               <p className="text-center text-xs text-muted-foreground">

@@ -26,7 +26,7 @@ export default function CallbackPage() {
             setError('Authentication failed')
             return
           }
-          router.push('/')
+          router.push('/?toast=Welcome+back!&toast_type=success')
         })
         .catch(() => setError('Network error'))
       return
@@ -47,7 +47,8 @@ export default function CallbackPage() {
         }
         const data = await res.json()
         const role = data.user?.role
-        router.push(role === 'owner' || role === 'coach' ? '/admin' : '/')
+        const dest = role === 'owner' || role === 'coach' ? '/admin' : '/'
+        router.push(`${dest}?toast=Welcome+back!&toast_type=success`)
       })
       .catch(() => setError('Network error'))
   }, [searchParams, router])

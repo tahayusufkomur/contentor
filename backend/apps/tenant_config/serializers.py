@@ -1,17 +1,8 @@
 from rest_framework import serializers
 
-from apps.core.storage import generate_presigned_download_url
+from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 
 from .models import TenantConfig, TenantTheme
-
-
-def _sign_if_s3_key(value):
-    """Return a presigned URL for S3 keys, or the original value if already HTTP or empty."""
-    if not value:
-        return value
-    if isinstance(value, str) and not value.startswith("http"):
-        return generate_presigned_download_url(value)
-    return value
 
 
 class TenantConfigSerializer(serializers.ModelSerializer):
@@ -26,6 +17,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "id",
             "brand_name",
             "logo_url",
+            "logo_id",
             "theme",
             "dark_mode_enabled",
             "font_family",
@@ -35,19 +27,54 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "meta_description",
             "navbar_config",
             "landing_sections",
+            "timezone",
             "onboarding_completed",
         ]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        # Sign logo_url if it's an S3 key
-        data["logo_url"] = _sign_if_s3_key(data.get("logo_url"))
-        # Sign image URLs inside landing_sections
+        # Prefer logo FK over logo_url string
+        if instance.logo_id and instance.logo and instance.logo.s3_key:
+            data["logo_url"] = generate_presigned_download_url(instance.logo.s3_key)
+        else:
+            data["logo_url"] = sign_if_s3_key(data.get("logo_url"))
+        # Sign image URLs inside landing_sections and resolve photo IDs
         sections = data.get("landing_sections")
         if isinstance(sections, dict):
-            for section_data in sections.values():
-                if isinstance(section_data, dict):
-                    for key in ("bg_image_url", "image_url"):
-                        if key in section_data:
-                            section_data[key] = _sign_if_s3_key(section_data[key])
+            self._sign_landing_section_photos(sections)
         return data
+
+    def _sign_landing_section_photos(self, sections):
+        from apps.media.models import Photo
+
+        # Collect all photo IDs for bulk query
+        photo_ids = []
+        for section_data in sections.values():
+            if isinstance(section_data, dict):
+                for key in ("bg_image_photo_id", "image_photo_id"):
+                    pid = section_data.get(key)
+                    if pid:
+                        photo_ids.append(pid)
+
+        # Bulk fetch photos
+        photo_map = {}
+        if photo_ids:
+            for photo in Photo.objects.filter(pk__in=photo_ids):
+                photo_map[str(photo.pk)] = photo
+
+        # Sign URLs and resolve photo IDs
+        for section_data in sections.values():
+            if isinstance(section_data, dict):
+                # Sign legacy string URLs
+                for key in ("bg_image_url", "image_url"):
+                    if key in section_data:
+                        section_data[key] = sign_if_s3_key(section_data[key])
+                # Override with Photo FK if present
+                for photo_key, url_key in (
+                    ("bg_image_photo_id", "bg_image_url"),
+                    ("image_photo_id", "image_url"),
+                ):
+                    pid = section_data.get(photo_key)
+                    if pid and str(pid) in photo_map:
+                        photo = photo_map[str(pid)]
+                        section_data[url_key] = generate_presigned_download_url(photo.s3_key)

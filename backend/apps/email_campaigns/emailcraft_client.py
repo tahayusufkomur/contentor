@@ -1,0 +1,150 @@
+import requests
+from django.conf import settings
+
+
+def _base_url() -> str:
+    return settings.EMAILCRAFT_BASE_URL.rstrip("/")
+
+
+def _site_headers() -> dict[str, str]:
+    return {
+        "Authorization": f"Token {settings.EMAILCRAFT_TOKEN}",
+        "Content-Type": "application/json",
+    }
+
+
+def _org_headers(api_key: str) -> dict[str, str]:
+    return {
+        "X-API-Key": api_key,
+        "Content-Type": "application/json",
+    }
+
+
+def _request_with_fallback(
+    method: str,
+    paths: list[str],
+    *,
+    headers: dict[str, str],
+    timeout: int,
+    json: dict | None = None,
+    params: dict | None = None,
+) -> requests.Response:
+    """
+    Try multiple path variants (e.g. /api/* then /api/v1/*), using the first non-404 response.
+    """
+    last_response: requests.Response | None = None
+    for path in paths:
+        url = f"{_base_url()}{path}"
+        response = requests.request(
+            method,
+            url,
+            headers=headers,
+            timeout=timeout,
+            json=json,
+            params=params,
+        )
+        if response.status_code == 404:
+            last_response = response
+            continue
+        response.raise_for_status()
+        return response
+
+    if last_response is not None:
+        last_response.raise_for_status()
+    raise RuntimeError("EmailCraft request failed without a response.")
+
+
+def provision_organization(name: str) -> dict:
+    response = _request_with_fallback(
+        "POST",
+        ["/api/site/provision", "/api/v1/site/provision"],
+        headers=_site_headers(),
+        timeout=30,
+        json={"name": name},
+    )
+    return response.json()
+
+
+def create_session(api_key: str, origin: str) -> dict:
+    response = _request_with_fallback(
+        "POST",
+        ["/api/auth/session", "/api/v1/auth/session"],
+        headers=_org_headers(api_key),
+        timeout=15,
+        json={"origin": origin},
+    )
+    return response.json()
+
+
+def list_templates(api_key: str) -> dict:
+    response = _request_with_fallback(
+        "GET",
+        ["/api/templates", "/api/v1/templates"],
+        headers=_org_headers(api_key),
+        timeout=15,
+    )
+    return response.json()
+
+
+def get_template(api_key: str, template_id: str) -> dict:
+    response = _request_with_fallback(
+        "GET",
+        [f"/api/templates/{template_id}", f"/api/v1/templates/{template_id}"],
+        headers=_org_headers(api_key),
+        timeout=15,
+    )
+    return response.json()
+
+
+def delete_template(api_key: str, template_id: str) -> None:
+    _request_with_fallback(
+        "DELETE",
+        [f"/api/templates/{template_id}", f"/api/v1/templates/{template_id}"],
+        headers=_org_headers(api_key),
+        timeout=15,
+    )
+
+
+def list_gallery(api_key: str, category: str | None = None) -> dict:
+    params = {}
+    if category:
+        params["category"] = category
+    response = _request_with_fallback(
+        "GET",
+        ["/api/gallery", "/api/v1/gallery"],
+        headers=_org_headers(api_key),
+        timeout=15,
+        params=params,
+    )
+    return response.json()
+
+
+def configure_variables(api_key: str, variables: list[dict]) -> dict:
+    response = _request_with_fallback(
+        "PUT",
+        ["/api/templates/variables", "/api/v1/templates/variables"],
+        headers=_org_headers(api_key),
+        timeout=15,
+        json={"variables": variables},
+    )
+    return response.json()
+
+
+DEFAULT_VARIABLES = [
+    {"key": "student_name", "label": "Student Name", "defaultValue": "Student"},
+    {"key": "student_email", "label": "Student Email", "defaultValue": ""},
+    {"key": "course_name", "label": "Course Name", "defaultValue": ""},
+    {"key": "coach_name", "label": "Coach Name", "defaultValue": ""},
+    {"key": "brand_name", "label": "Brand Name", "defaultValue": ""},
+]
+
+
+def render_template(api_key: str, template_id: str, variables: dict[str, str]) -> dict:
+    response = _request_with_fallback(
+        "POST",
+        ["/api/render", "/api/v1/render"],
+        headers=_org_headers(api_key),
+        timeout=30,
+        json={"template_id": template_id, "variables": variables},
+    )
+    return response.json()

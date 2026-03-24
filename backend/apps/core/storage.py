@@ -1,5 +1,3 @@
-import uuid
-
 import boto3
 from django.conf import settings
 from django.db import connection
@@ -51,3 +49,12 @@ def generate_presigned_download_url(s3_key, expiry=3600):
         },
         ExpiresIn=expiry,
     )
+
+
+def sign_if_s3_key(value):
+    """Return a presigned download URL for S3 keys, or the original value if HTTP or empty."""
+    if not value:
+        return value
+    if isinstance(value, str) and not value.startswith("http"):
+        return generate_presigned_download_url(value)
+    return value

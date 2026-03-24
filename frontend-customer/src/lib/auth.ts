@@ -29,7 +29,7 @@ export async function getAuthUser(): Promise<User | null> {
 
 export async function requireAuth(): Promise<User> {
   const user = await getAuthUser()
-  if (!user) redirect('/login')
+  if (!user) redirect('/login?toast=Please+log+in+to+continue&toast_type=info')
   return user
 }
 

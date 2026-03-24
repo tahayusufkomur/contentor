@@ -34,11 +34,13 @@ TENANT_APPS = [
     "apps.tenant_config",
     "apps.courses",
     "apps.downloads",
+    "apps.live",
+    "apps.media",
+    "apps.billing",
+    "apps.email_campaigns",
 ]
 
-INSTALLED_APPS = list(SHARED_APPS) + [
-    app for app in TENANT_APPS if app not in SHARED_APPS
-]
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
 TENANT_MODEL = "core.Tenant"
 TENANT_DOMAIN_MODEL = "core.Domain"
@@ -138,9 +140,7 @@ USE_TZ = True
 
 CONTENTOR_DOMAIN = os.environ.get("CONTENTOR_DOMAIN", "contentor.localhost")
 CONTENTOR_SUPERUSERS = [
-    email.strip()
-    for email in os.environ.get("CONTENTOR_SUPERUSERS", "").split(",")
-    if email.strip()
+    email.strip() for email in os.environ.get("CONTENTOR_SUPERUSERS", "").split(",") if email.strip()
 ]
 MAGIC_LINK_EXPIRY_MINUTES = 15
 JWT_EXPIRY_DAYS = 7
@@ -154,9 +154,17 @@ GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
 
+# --- EmailCraft ---
+EMAILCRAFT_TOKEN = os.environ.get("EMAILCRAFT_TOKEN", "")
+EMAILCRAFT_BASE_URL = os.environ.get("EMAILCRAFT_BASE_URL", "https://emailcraft.contentor.app")
+
 # --- S3 / Object Storage ---
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "contentor-dev-private")
 AWS_ENDPOINT = os.environ.get("AWS_ENDPOINT", "")
 AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
+
+# --- GetStream Video ---
+GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
+GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")

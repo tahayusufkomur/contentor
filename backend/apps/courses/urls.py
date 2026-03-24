@@ -4,8 +4,12 @@ from . import views
 
 urlpatterns = [
     path("", views.course_list_create, name="course-list-create"),
+    path("enrolled/", views.enrolled_courses, name="enrolled-courses"),
+    path("videos/", views.video_list_create, name="video-list-create"),
+    path("videos/<int:pk>/", views.video_detail, name="video-detail"),
     path("<slug:slug>/", views.course_detail, name="course-detail"),
     path("<slug:slug>/enroll/", views.enroll, name="course-enroll"),
+    path("<slug:slug>/progress/", views.course_progress, name="course-progress"),
     path(
         "<slug:slug>/lessons/<int:lesson_id>/progress/",
         views.update_progress,

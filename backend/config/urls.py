@@ -32,6 +32,14 @@ urlpatterns = [
     path("api/v1/upload/", include("apps.core.urls_upload")),
     path("api/v1/courses/", include("apps.courses.urls")),
     path("api/v1/downloads/", include("apps.downloads.urls")),
+    path("api/v1/live/", include("apps.live.urls")),
+    path("api/v1/live-streams/", include(("apps.live.urls_streams", "live_streams"))),
+    path("api/v1/zoom-classes/", include("apps.live.urls_zoom")),
+    path("api/v1/onsite-events/", include("apps.live.urls_onsite")),
+    path("api/v1/calendar/", include("apps.live.urls_calendar")),
+    path("api/v1/photos/", include("apps.media.urls")),
+    path("api/v1/billing/", include("apps.billing.urls")),
+    path("api/v1/email/", include("apps.email_campaigns.urls")),
 ]
 
 if settings.DEBUG:

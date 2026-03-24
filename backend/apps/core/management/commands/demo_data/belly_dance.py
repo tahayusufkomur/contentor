@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Dancing", "href": "/courses"},
         "show_login": True,
@@ -495,21 +496,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/belly_dance_4.png",
         "file_size": 2_500_000,
         "download_count": 142,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Shimmy Drills Cheat Sheet",
         "file_url": "demo/photos/belly_dance_5.png",
         "file_size": 1_200_000,
         "download_count": 87,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Choreography Music Playlist",
         "file_url": "demo/photos/belly_dance_8.jpg",
         "file_size": 800_000,
         "download_count": 215,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -519,4 +520,213 @@ STUDENTS = [
     {"email": "nadia@demo.test", "name": "Nadia Saeed"},
     {"email": "sofia@demo.test", "name": "Sofia Reyes"},
     {"email": "emma@demo.test", "name": "Emma Chen"},
+]
+
+# ---------------------------------------------------------------------------
+# Subscription plans offered by this coach
+# ---------------------------------------------------------------------------
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Access all subscription courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        # "access" lists course titles (by index in COURSES) that this plan unlocks
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Belly Dance Collection",
+        "description": "All three courses at a discounted price. Start from scratch and perform with confidence.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Practice Session",
+        "description": "Bring your questions and we'll drill combinations together.",
+        "duration_minutes": 45,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "Shimmy Bootcamp LIVE",
+        "description": "Intensive 45-minute shimmy drill — bring water!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Choreography Q&A",
+        "description": "Live feedback on your choreography submissions.",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Flow Class",
+    "description": "Our signature weekly belly dance class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Friday Night Dance Party",
+        "description": "Weekly community stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Private Coaching — Small Group",
+        "description": "Intimate 4-person coaching session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the instructor and get oriented before your first course.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Belly Dance Workshop",
+        "description": "Full-day in-person workshop covering shimmies, isolations, and choreography.",
+        "location": "Dance Studio Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Dance Meetup",
+        "description": "Free social dance evening — bring friends!",
+        "location": "Kadıköy Cultural Center",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Ayşe: bought Shimmy course, subscribed monthly, good progress
+        "email": "ayse@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 360, True),
+            (0, 2, 300, False),
+            (1, 0, 450, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Leila: bought the bundle, fully completed basics
+        "email": "leila@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 360, True),
+            (0, 2, 480, True),
+            (0, 3, 390, True),
+            (0, 4, 540, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # Nadia: annual subscriber, light progress
+        "email": "nadia@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 420, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Sofia: bought choreography course individually
+        "email": "sofia@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 390, True),
+            (2, 1, 450, True),
+            (2, 2, 420, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # Emma: free course only, no purchases
+        "email": "emma@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

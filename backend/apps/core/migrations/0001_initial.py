@@ -6,68 +6,112 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='PlatformPlan',
+            name="PlatformPlan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True)),
-                ('price_monthly', models.DecimalField(decimal_places=2, max_digits=8)),
-                ('transaction_fee_pct', models.DecimalField(decimal_places=2, max_digits=5)),
-                ('max_students', models.IntegerField(default=0)),
-                ('max_storage_gb', models.IntegerField(default=0)),
-                ('max_streaming_hours', models.IntegerField(default=0)),
-                ('max_campaign_emails', models.IntegerField(default=0)),
-                ('stripe_price_id', models.CharField(blank=True, default='', max_length=255)),
-                ('is_live_enabled', models.BooleanField(default=False)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=50, unique=True)),
+                ("price_monthly", models.DecimalField(decimal_places=2, max_digits=8)),
+                ("transaction_fee_pct", models.DecimalField(decimal_places=2, max_digits=5)),
+                ("max_students", models.IntegerField(default=0)),
+                ("max_storage_gb", models.IntegerField(default=0)),
+                ("max_streaming_hours", models.IntegerField(default=0)),
+                ("max_campaign_emails", models.IntegerField(default=0)),
+                ("stripe_price_id", models.CharField(blank=True, default="", max_length=255)),
+                ("is_live_enabled", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='Tenant',
+            name="Tenant",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('schema_name', models.CharField(db_index=True, max_length=63, unique=True, validators=[django_tenants.postgresql_backend.base._check_schema_name])),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(max_length=63, unique=True)),
-                ('owner_email', models.EmailField(max_length=254)),
-                ('is_active', models.BooleanField(default=True)),
-                ('subdomain', models.CharField(max_length=63, unique=True)),
-                ('stripe_account_id', models.CharField(blank=True, default='', max_length=255)),
-                ('iyzico_submerchant_id', models.CharField(blank=True, default='', max_length=255)),
-                ('provisioning_status', models.CharField(choices=[('pending', 'Pending'), ('provisioning', 'Provisioning'), ('ready', 'Ready'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('plan', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tenants', to='core.platformplan')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "schema_name",
+                    models.CharField(
+                        db_index=True,
+                        max_length=63,
+                        unique=True,
+                        validators=[django_tenants.postgresql_backend.base._check_schema_name],
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("slug", models.SlugField(max_length=63, unique=True)),
+                ("owner_email", models.EmailField(max_length=254)),
+                ("is_active", models.BooleanField(default=True)),
+                ("subdomain", models.CharField(max_length=63, unique=True)),
+                ("stripe_account_id", models.CharField(blank=True, default="", max_length=255)),
+                ("iyzico_submerchant_id", models.CharField(blank=True, default="", max_length=255)),
+                (
+                    "provisioning_status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("provisioning", "Provisioning"),
+                            ("ready", "Ready"),
+                            ("failed", "Failed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "plan",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="tenants",
+                        to="core.platformplan",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Domain',
+            name="Domain",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('domain', models.CharField(db_index=True, max_length=253, unique=True)),
-                ('is_primary', models.BooleanField(db_index=True, default=True)),
-                ('ssl_status', models.CharField(choices=[('pending', 'Pending'), ('active', 'Active'), ('error', 'Error')], default='pending', max_length=20)),
-                ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='domains', to='core.tenant')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("domain", models.CharField(db_index=True, max_length=253, unique=True)),
+                ("is_primary", models.BooleanField(db_index=True, default=True)),
+                (
+                    "ssl_status",
+                    models.CharField(
+                        choices=[("pending", "Pending"), ("active", "Active"), ("error", "Error")],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "tenant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="domains", to="core.tenant"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TenantUsage',
+            name="TenantUsage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('month', models.DateField()),
-                ('student_count', models.IntegerField(default=0)),
-                ('storage_bytes', models.BigIntegerField(default=0)),
-                ('streaming_minutes', models.IntegerField(default=0)),
-                ('emails_sent', models.IntegerField(default=0)),
-                ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='usage_records', to='core.tenant')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("month", models.DateField()),
+                ("student_count", models.IntegerField(default=0)),
+                ("storage_bytes", models.BigIntegerField(default=0)),
+                ("streaming_minutes", models.IntegerField(default=0)),
+                ("emails_sent", models.IntegerField(default=0)),
+                (
+                    "tenant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="usage_records", to="core.tenant"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('tenant', 'month')},
+                "unique_together": {("tenant", "month")},
             },
         ),
     ]

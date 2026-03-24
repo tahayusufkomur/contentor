@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Glowing", "href": "/courses"},
         "show_login": True,
@@ -470,21 +471,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/face_yoga_3.png",
         "file_size": 1_800_000,
         "download_count": 203,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Before & After Tracking Sheet",
         "file_url": "demo/photos/face_yoga_4.png",
         "file_size": 950_000,
         "download_count": 147,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Advanced Sculpting Exercise Guide",
         "file_url": "demo/photos/face_yoga_5.png",
         "file_size": 2_400_000,
         "download_count": 89,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -494,4 +495,209 @@ STUDENTS = [
     {"email": "astrid@demo.test", "name": "Astrid Nilsson"},
     {"email": "yuki@demo.test", "name": "Yuki Tanaka"},
     {"email": "grace@demo.test", "name": "Grace Okafor"},
+]
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Access all subscription courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        # "access" lists course titles (by index in COURSES) that this plan unlocks
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Face Yoga Collection",
+        "description": "All three courses at a discounted price. Master the basics, fight aging, and sculpt your dream face.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Practice Session",
+        "description": "Bring your questions and we'll practise face yoga techniques together.",
+        "duration_minutes": 45,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "Jawline Sculpting LIVE",
+        "description": "Intensive 30-minute jawline sculpting drill — grab a mirror!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Technique Q&A",
+        "description": "Live feedback on your face yoga form and technique.",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Face Yoga Flow",
+    "description": "Our signature weekly face yoga session — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Friday Self-Care Stream",
+        "description": "Weekly community self-care stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Private Coaching — Small Group",
+        "description": "Intimate 4-person face yoga coaching session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the instructor and get oriented before starting your face yoga journey.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Face Yoga Retreat",
+        "description": "Full-day in-person workshop covering facial exercises, massage, and self-care rituals.",
+        "location": "Wellness Studio Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Glow-Up Meetup",
+        "description": "Free social face yoga evening — bring friends and glow together!",
+        "location": "Kadıköy Cultural Center",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Sarah: bought Anti-Aging course, subscribed monthly, good progress
+        "email": "sarah@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 360, True),
+            (0, 1, 330, True),
+            (0, 2, 300, False),
+            (1, 0, 390, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Mei: bought the bundle, fully completed basics
+        "email": "mei@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 360, True),
+            (0, 1, 330, True),
+            (0, 2, 390, True),
+            (0, 3, 360, True),
+            (0, 4, 420, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # Astrid: annual subscriber, light progress
+        "email": "astrid@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 360, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Yuki: bought Sculpt & Tone course individually
+        "email": "yuki@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 390, True),
+            (2, 1, 420, True),
+            (2, 2, 450, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # Grace: free course only, no purchases
+        "email": "grace@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 360, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

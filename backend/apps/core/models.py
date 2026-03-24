@@ -75,9 +75,7 @@ class PlatformPlan(models.Model):
 
 
 class TenantUsage(models.Model):
-    tenant = models.ForeignKey(
-        Tenant, on_delete=models.CASCADE, related_name="usage_records"
-    )
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="usage_records")
     month = models.DateField()
     student_count = models.IntegerField(default=0)
     storage_bytes = models.BigIntegerField(default=0)

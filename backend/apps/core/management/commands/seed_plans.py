@@ -72,9 +72,7 @@ class Command(BaseCommand):
             },
         ]
         for plan_data in plans:
-            plan, created = PlatformPlan.objects.update_or_create(
-                name=plan_data["name"], defaults=plan_data
-            )
+            plan, created = PlatformPlan.objects.update_or_create(name=plan_data["name"], defaults=plan_data)
             action = "Created" if created else "Updated"
             self.stdout.write(f"{action} plan: {plan.name}")
         self.stdout.write(self.style.SUCCESS("Plans seeded successfully"))
@@ -114,10 +112,24 @@ class Command(BaseCommand):
                     self.stdout.write(f"Superuser already exists: {email}")
 
         # Revoke superuser from anyone not in the list
-        removed = User.objects.filter(is_superuser=True).exclude(email__in=superuser_emails).update(
-            is_superuser=False
-        )
+        removed = User.objects.filter(is_superuser=True).exclude(email__in=superuser_emails).update(is_superuser=False)
         if removed:
             self.stdout.write(f"Revoked superuser from {removed} user(s) not in CONTENTOR_SUPERUSERS")
 
         self.stdout.write(self.style.SUCCESS("Superusers synced"))
+
+        # Seed demo tenants
+        from pathlib import Path
+
+        from django.core.management import call_command
+
+        demo_data_dir = Path(__file__).parent / "demo_data"
+        niches = [f.stem for f in demo_data_dir.glob("*.py") if f.stem != "__init__"]
+        if niches:
+            self.stdout.write(f"\nSeeding {len(niches)} demo tenants...")
+            for niche in sorted(niches):
+                try:
+                    call_command("seed_demo_tenant", niche=niche, stdout=self.stdout)
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(f"Failed to seed {niche}: {e}"))
+            self.stdout.write(self.style.SUCCESS("Demo tenants seeded"))

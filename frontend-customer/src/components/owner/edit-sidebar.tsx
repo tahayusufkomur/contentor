@@ -11,26 +11,28 @@ import {
   Palette,
   Navigation,
   LayoutList,
+  ChevronDown,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { TenantContext } from "@/hooks/use-tenant";
 import { generateThemeCSS } from "@/lib/themes";
 import type { TenantConfig } from "@/types/tenant";
 
-type Tab = "brand" | "navbar" | "sections";
+type Section = "brand" | "navbar" | "sections";
 
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: "brand", label: "Brand", icon: <Palette className="h-4 w-4" /> },
   { id: "navbar", label: "Navbar", icon: <Navigation className="h-4 w-4" /> },
   {
     id: "sections",
-    label: "Sections",
+    label: "Landing sections",
     icon: <LayoutList className="h-4 w-4" />,
   },
 ];
 
-const ONBOARDING_ORDER: Tab[] = ["brand", "navbar", "sections"];
+const ONBOARDING_ORDER: Section[] = ["brand", "navbar", "sections"];
 const DEBOUNCE_MS = 800;
 const SIDEBAR_WIDTH = 380;
 
@@ -42,13 +44,22 @@ interface EditSidebarProps {
 export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   const router = useRouter();
   const [open, setOpen] = useState(!initialConfig.onboarding_completed);
-  const [activeTab, setActiveTab] = useState<Tab>("brand");
+  const [expanded, setExpanded] = useState<Set<Section>>(() => new Set<Section>(["brand"]));
   const [config, setConfig] = useState<TenantConfig>(initialConfig);
-  const [savedTabs, setSavedTabs] = useState<Set<Tab>>(new Set());
+  const [savedSections, setSavedSections] = useState<Set<Section>>(new Set());
   const [saving, setSaving] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isOnboarding = !config.onboarding_completed;
+
+  const toggleSection = (id: Section) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const persistConfig = useCallback(
     async (nextConfig: TenantConfig) => {
@@ -71,10 +82,10 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   );
 
   const handleChange = useCallback(
-    (patch: Partial<TenantConfig>, tab: Tab) => {
+    (patch: Partial<TenantConfig>, section: Section) => {
       const nextConfig = { ...config, ...patch };
       setConfig(nextConfig);
-      setSavedTabs((prev) => new Set(Array.from(prev).concat(tab)));
+      setSavedSections((prev) => new Set(Array.from(prev).concat(section)));
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
@@ -86,13 +97,13 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
 
   useEffect(() => {
     if (!isOnboarding) return;
-    if (ONBOARDING_ORDER.every((t) => savedTabs.has(t))) {
+    if (ONBOARDING_ORDER.every((t) => savedSections.has(t))) {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       const nextConfig = { ...config, onboarding_completed: true };
       persistConfig(nextConfig);
       setConfig(nextConfig);
     }
-  }, [config, savedTabs, isOnboarding, persistConfig]);
+  }, [config, savedSections, isOnboarding, persistConfig]);
 
   useEffect(
     () => () => {
@@ -100,6 +111,27 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
     },
     [],
   );
+
+  const sectionContent: Record<Section, React.ReactNode> = {
+    brand: (
+      <BrandTab
+        config={config}
+        onChange={(patch) => handleChange(patch, "brand")}
+      />
+    ),
+    navbar: (
+      <NavbarTab
+        config={config}
+        onChange={(patch) => handleChange(patch, "navbar")}
+      />
+    ),
+    sections: (
+      <SectionsTab
+        config={config}
+        onChange={(patch) => handleChange(patch, "sections")}
+      />
+    ),
+  };
 
   return (
     <div className="relative flex min-h-screen">
@@ -140,59 +172,55 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
             {ONBOARDING_ORDER.map((t) => (
               <div
                 key={t}
-                className={`h-1 flex-1 rounded-full transition-colors ${savedTabs.has(t) ? "bg-primary" : "bg-border"}`}
+                className={`h-1 flex-1 rounded-full transition-colors ${savedSections.has(t) ? "bg-primary" : "bg-border"}`}
               />
             ))}
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex border-b" style={{ minWidth: SIDEBAR_WIDTH }}>
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`relative flex flex-1 items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors ${activeTab === tab.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {savedTabs.has(tab.id) && (
-                <CheckCircle2 className="absolute right-2 top-2 h-3 w-3 text-primary" />
-              )}
-              {tab.icon}
-              {tab.label}
-              {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
-            </button>
+        {/* Accordion sections */}
+        <div
+          className="flex-1 overflow-y-auto"
+          style={{ minWidth: SIDEBAR_WIDTH }}
+        >
+          {SECTIONS.map((section) => (
+            <div key={section.id} className="border-b last:border-b-0">
+              <button
+                onClick={() => toggleSection(section.id)}
+                className="flex w-full items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-accent/50"
+              >
+                <span className="text-muted-foreground">{section.icon}</span>
+                <span className="flex-1 text-left">{section.label}</span>
+                {savedSections.has(section.id) && (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                )}
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                    expanded.has(section.id) && "rotate-180",
+                  )}
+                />
+              </button>
+              <div
+                className={cn(
+                  "grid transition-all duration-200 ease-in-out",
+                  expanded.has(section.id)
+                    ? "grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0",
+                )}
+              >
+                <div className="overflow-hidden">
+                  <div className="px-5 pb-5 pt-1">
+                    {sectionContent[section.id]}
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Tab content */}
-        <div
-          className="flex-1 overflow-y-auto px-5 py-5"
-          style={{ minWidth: SIDEBAR_WIDTH }}
-        >
-          {activeTab === "brand" && (
-            <BrandTab
-              config={config}
-              onChange={(patch) => handleChange(patch, "brand")}
-            />
-          )}
-          {activeTab === "navbar" && (
-            <NavbarTab
-              config={config}
-              onChange={(patch) => handleChange(patch, "navbar")}
-            />
-          )}
-          {activeTab === "sections" && (
-            <SectionsTab
-              config={config}
-              onChange={(patch) => handleChange(patch, "sections")}
-            />
-          )}
-        </div>
-
         {/* Onboarding completion */}
-        {config.onboarding_completed && savedTabs.size >= 3 && (
+        {config.onboarding_completed && savedSections.size >= 3 && (
           <div
             className="border-t px-5 py-4 bg-primary/5"
             style={{ minWidth: SIDEBAR_WIDTH }}

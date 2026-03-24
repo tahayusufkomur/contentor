@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0005_tenantconfig_theme_and_dark_mode'),
+        ("tenant_config", "0005_tenantconfig_theme_and_dark_mode"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tenantconfig',
-            name='logo_url',
-            field=models.CharField(blank=True, default='', max_length=2000),
+            model_name="tenantconfig",
+            name="logo_url",
+            field=models.CharField(blank=True, default="", max_length=2000),
         ),
     ]

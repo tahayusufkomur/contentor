@@ -64,15 +64,32 @@ def complete(request):
                 {"detail": "lesson_id is required for video uploads."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        from apps.courses.models import Lesson
+        from apps.courses.models import Lesson, Video
 
         try:
-            lesson = Lesson.objects.get(pk=lesson_id)
+            lesson = Lesson.objects.select_related("video").get(pk=lesson_id)
         except Lesson.DoesNotExist:
             return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        duration = data.get("duration_seconds", 0)
+
+        if lesson.video:
+            lesson.video.s3_key = s3_key
+            if duration:
+                lesson.video.duration_seconds = duration
+            lesson.video.save()
+        else:
+            video = Video.objects.create(
+                title=lesson.title,
+                s3_key=s3_key,
+                duration_seconds=duration,
+            )
+            lesson.video = video
+
+        # Keep legacy fields in sync during transition
         lesson.video_url = s3_key
-        if data.get("duration_seconds"):
-            lesson.duration_seconds = data["duration_seconds"]
+        if duration:
+            lesson.duration_seconds = duration
         lesson.save()
         return Response({"detail": "Lesson video updated.", "s3_key": s3_key})
 
@@ -95,10 +112,65 @@ def complete(request):
         download_file.save()
         return Response({"detail": "Download file updated.", "s3_key": s3_key})
 
+    elif category == "library":
+        video_id = data.get("video_id")
+        if not video_id:
+            return Response(
+                {"detail": "video_id is required for library uploads."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        from apps.courses.models import Video
+
+        try:
+            video = Video.objects.get(pk=video_id)
+        except Video.DoesNotExist:
+            return Response({"detail": "Video not found."}, status=status.HTTP_404_NOT_FOUND)
+        video.s3_key = s3_key
+        if data.get("duration_seconds"):
+            video.duration_seconds = data["duration_seconds"]
+        if data.get("file_size"):
+            video.file_size = int(data["file_size"])
+        video.save()
+        return Response({"detail": "Video updated.", "s3_key": s3_key})
+
     elif category == "branding":
         from apps.core.storage import generate_presigned_download_url
+        from apps.media.models import Photo
 
+        photo = Photo.objects.create(
+            s3_key=s3_key,
+            title="Branding",
+            content_type=data.get("content_type", ""),
+            file_size=data.get("file_size", 0),
+        )
         file_url = generate_presigned_download_url(s3_key, expiry=86400 * 7)
-        return Response({"detail": "Upload complete.", "s3_key": s3_key, "file_url": file_url})
+        return Response(
+            {
+                "detail": "Upload complete.",
+                "s3_key": s3_key,
+                "file_url": file_url,
+                "photo_id": str(photo.id),
+            }
+        )
+
+    elif category == "photo":
+        from apps.core.storage import generate_presigned_download_url
+        from apps.media.models import Photo
+
+        photo = Photo.objects.create(
+            s3_key=s3_key,
+            title=data.get("title", ""),
+            content_type=data.get("content_type", ""),
+            file_size=data.get("file_size", 0),
+        )
+        signed_url = generate_presigned_download_url(s3_key, expiry=86400 * 7)
+        return Response(
+            {
+                "detail": "Photo uploaded.",
+                "photo_id": str(photo.id),
+                "s3_key": s3_key,
+                "signed_url": signed_url,
+            }
+        )
 
     return Response({"detail": "Invalid category."}, status=status.HTTP_400_BAD_REQUEST)

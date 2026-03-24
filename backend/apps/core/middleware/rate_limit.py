@@ -1,4 +1,7 @@
 import time
+
+import jwt
+from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
 from django_redis import get_redis_connection
@@ -11,9 +14,29 @@ class TenantRateLimitMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
+    @staticmethod
+    def _is_admin(request):
+        """Check JWT cookie/header for owner/coach role (runs before DRF auth)."""
+        token = request.COOKIES.get("contentor_access_token")
+        if not token:
+            auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+            if auth_header.startswith("Bearer "):
+                token = auth_header[7:]
+        if not token:
+            return False
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            return payload.get("role") in ("owner", "coach")
+        except Exception:
+            return False
+
     def __call__(self, request):
         tenant = getattr(connection, "tenant", None)
         if not tenant or tenant.schema_name == "public":
+            return self.get_response(request)
+
+        # Skip rate limiting for admin users (owner/coach)
+        if self._is_admin(request):
             return self.get_response(request)
         is_upload = request.path.startswith("/api/v1/upload/")
         rate = self.UPLOAD_RATE if is_upload else self.DEFAULT_RATE

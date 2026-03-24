@@ -75,7 +75,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  disabled={signingOut}
+                  loading={signingOut}
                   className="h-8 gap-1.5"
                 >
                   <LogOut className="h-4 w-4" />
@@ -152,7 +152,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  disabled={signingOut}
+                  loading={signingOut}
                   className="w-full justify-start gap-1.5"
                 >
                   <LogOut className="h-4 w-4" />

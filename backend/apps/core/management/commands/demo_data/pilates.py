@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Training", "href": "/courses"},
         "show_login": True,
@@ -501,21 +502,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/pilates_4.jpg",
         "file_size": 2_500_000,
         "download_count": 156,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Core Activation Cheat Sheet",
         "file_url": "demo/photos/pilates_5.jpg",
         "file_size": 1_200_000,
         "download_count": 93,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Weekly Pilates Schedule Planner",
         "file_url": "demo/photos/pilates_1.jpg",
         "file_size": 800_000,
         "download_count": 201,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -525,4 +526,213 @@ STUDENTS = [
     {"email": "hana@demo.test", "name": "Hana Yoshida"},
     {"email": "liam@demo.test", "name": "Liam O'Brien"},
     {"email": "priya@demo.test", "name": "Priya Sharma"},
+]
+
+# ---------------------------------------------------------------------------
+# Subscription plans offered by this coach
+# ---------------------------------------------------------------------------
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Access all subscription courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        # "access" lists course titles (by index in COURSES) that this plan unlocks
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Pilates Collection",
+        "description": "All three courses at a discounted price. Build a strong foundation and sculpt your entire body.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Reformer Session",
+        "description": "Bring your questions and we'll work through reformer fundamentals together.",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "Core Blast LIVE",
+        "description": "Intensive 45-minute core-focused Pilates session — bring a mat and water!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Form Check Q&A",
+        "description": "Live feedback on your form and alignment for any Pilates exercise.",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Mat Pilates",
+    "description": "Our signature weekly mat Pilates class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Friday Evening Stretch",
+        "description": "Weekly community stretch stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Private Coaching — Small Group",
+        "description": "Intimate 4-person coaching session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the instructor and get oriented before your first Pilates course.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Pilates Intensive",
+        "description": "Full-day in-person workshop covering mat work, reformer basics, and recovery techniques.",
+        "location": "Pilates Studio Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Mat Session",
+        "description": "Free outdoor mat Pilates in the park — bring friends!",
+        "location": "Kadıköy Sahil Parkı",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Clara: bought Core Strength course, subscribed monthly, good progress
+        "email": "clara@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 360, True),
+            (0, 2, 300, False),
+            (1, 0, 450, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Marco: bought the bundle, fully completed fundamentals
+        "email": "marco@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 360, True),
+            (0, 2, 380, True),
+            (0, 3, 400, True),
+            (0, 4, 540, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # Hana: annual subscriber, light progress
+        "email": "hana@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 420, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Liam: bought Full Body Sculpt course individually
+        "email": "liam@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 450, True),
+            (2, 1, 400, True),
+            (2, 2, 420, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # Priya: free course only, no purchases
+        "email": "priya@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

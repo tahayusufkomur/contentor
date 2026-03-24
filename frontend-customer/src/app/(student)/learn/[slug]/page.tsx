@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { clientFetch } from '@/lib/api-client'
 import { VideoPlayer } from '@/components/student/video-player'
@@ -13,6 +13,7 @@ export default function LearnPage() {
   const [course, setCourse] = useState<CourseDetail | null>(null)
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
   const [progressMap, setProgressMap] = useState<Record<number, Progress>>({})
+  const [autoPlay, setAutoPlay] = useState(true)
 
   useEffect(() => {
     loadCourse()
@@ -42,6 +43,12 @@ export default function LearnPage() {
       .catch(console.error)
   }
 
+  // Flatten all lessons in order
+  const allLessons = useMemo(() => {
+    if (!course) return []
+    return course.modules.flatMap((m) => m.lessons)
+  }, [course])
+
   function handleLessonSelect(lesson: Lesson) {
     setCurrentLesson(lesson)
   }
@@ -49,6 +56,14 @@ export default function LearnPage() {
   function handleProgressUpdate() {
     loadProgress()
   }
+
+  const handleLessonComplete = useCallback(() => {
+    if (!autoPlay || !currentLesson) return
+    const idx = allLessons.findIndex((l) => l.id === currentLesson.id)
+    if (idx >= 0 && idx < allLessons.length - 1) {
+      setTimeout(() => setCurrentLesson(allLessons[idx + 1]), 1500)
+    }
+  }, [autoPlay, currentLesson, allLessons])
 
   // Calculate overall progress
   const overallProgress = useMemo(() => {
@@ -104,6 +119,7 @@ export default function LearnPage() {
               lesson={currentLesson}
               progress={progressMap[currentLesson.id] || null}
               onProgressUpdate={handleProgressUpdate}
+              onLessonComplete={handleLessonComplete}
             />
           </div>
 
@@ -127,6 +143,8 @@ export default function LearnPage() {
               currentLessonId={currentLesson.id}
               progressMap={progressMap}
               onLessonSelect={handleLessonSelect}
+              autoPlay={autoPlay}
+              onAutoPlayChange={setAutoPlay}
             />
           </div>
         </div>

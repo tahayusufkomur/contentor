@@ -8,13 +8,18 @@ class Course(models.Model):
     slug = models.SlugField(max_length=200, unique=True)
     description = models.TextField(blank=True, default="")
     instructor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="courses_taught",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="courses_taught",
     )
     thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
+    thumbnail = models.ForeignKey(
+        "media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="courses"
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     pricing_type = models.CharField(
         max_length=20,
-        choices=[("free", "Free"), ("paid", "Paid"), ("subscription", "Subscription")],
+        choices=[("free", "Free"), ("paid", "Paid")],
         default="free",
     )
     is_published = models.BooleanField(default=False)
@@ -58,6 +63,7 @@ class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=200)
     order = models.IntegerField(default=0)
+    video = models.ForeignKey("Video", null=True, blank=True, on_delete=models.SET_NULL, related_name="lessons")
     video_url = models.CharField(max_length=500, blank=True, default="")
     duration_seconds = models.IntegerField(default=0)
     content_html = models.TextField(blank=True, default="")
@@ -71,13 +77,37 @@ class Lesson(models.Model):
         return self.title
 
 
+class Video(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default="")
+    s3_key = models.CharField(max_length=500, blank=True, default="")
+    duration_seconds = models.IntegerField(default=0)
+    file_size = models.BigIntegerField(default=0)
+    thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
+    thumbnail = models.ForeignKey(
+        "media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="videos"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "courses"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
 class Enrollment(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="enrollments",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="enrollments",
     )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
     enrolled_at = models.DateTimeField(auto_now_add=True)
     payment_id = models.IntegerField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         app_label = "courses"
@@ -89,7 +119,9 @@ class Enrollment(models.Model):
 
 class Progress(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lesson_progress",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lesson_progress",
     )
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="progress_records")
     completed = models.BooleanField(default=False)

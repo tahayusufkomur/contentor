@@ -16,6 +16,7 @@ export interface LandingHero {
   cta_text: string;
   cta_href: string;
   bg_image_url: string | null;
+  bg_image_photo_id?: string | null;
 }
 
 export interface LandingAbout {
@@ -23,6 +24,7 @@ export interface LandingAbout {
   heading: string;
   body: string;
   image_url: string | null;
+  image_photo_id?: string | null;
 }
 
 export interface LandingCourses {
@@ -73,6 +75,7 @@ export interface TenantConfig {
   id: number;
   brand_name: string;
   logo_url: string;
+  logo_id?: string | null;
   theme: string;
   dark_mode_enabled: boolean;
   font_family: string;
@@ -82,5 +85,6 @@ export interface TenantConfig {
   meta_description: string;
   navbar_config: NavbarConfig;
   landing_sections: LandingSections;
+  timezone: string;
   onboarding_completed: boolean;
 }

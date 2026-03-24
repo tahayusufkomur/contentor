@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronLeft } from "lucide-react";
@@ -148,7 +148,11 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
       <div className="border-t p-2 space-y-2">
         <Separator className="mb-2" />
         {allowDarkMode && <ThemeToggle collapsed={collapsed} />}
-        {children}
+        {React.Children.map(children, (child) =>
+          React.isValidElement(child)
+            ? React.cloneElement(child as React.ReactElement<any>, { collapsed })
+            : child
+        )}
       </div>
     </aside>
   );

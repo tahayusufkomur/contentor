@@ -1,4 +1,5 @@
 import logging
+
 from celery import shared_task
 from django_tenants.utils import tenant_context
 
@@ -30,19 +31,40 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
 
             TenantConfig.objects.create(
                 brand_name=tenant.name,
-                enabled_modules=["courses", "live", "community", "downloads", "billing", "campaigns", "analytics", "pages"],
+                enabled_modules=[
+                    "courses",
+                    "live",
+                    "community",
+                    "downloads",
+                    "billing",
+                    "campaigns",
+                    "analytics",
+                    "pages",
+                ],
                 navbar_config={
                     "links": [{"label": "Courses", "href": "/courses"}],
                     "cta": {"text": "Get Started", "href": "/courses"},
                     "show_login": True,
                 },
                 landing_sections={
-                    "hero": {"enabled": True, "headline": f"Welcome to {tenant.name}", "subheadline": "Explore our courses and start learning today.", "cta_text": "Browse Courses", "cta_href": "/courses", "bg_image_url": None},
+                    "hero": {
+                        "enabled": True,
+                        "headline": f"Welcome to {tenant.name}",
+                        "subheadline": "Explore our courses and start learning today.",
+                        "cta_text": "Browse Courses",
+                        "cta_href": "/courses",
+                        "bg_image_url": None,
+                    },
                     "about": {"enabled": False, "heading": "About Me", "body": "", "image_url": None},
                     "courses": {"enabled": True, "heading": "Featured Courses"},
                     "testimonials": {"enabled": False, "heading": "What students say", "items": []},
                     "faq": {"enabled": False, "heading": "FAQ", "items": []},
-                    "cta": {"enabled": True, "heading": "Ready to start learning?", "button_text": "Join Now", "button_href": "/courses"},
+                    "cta": {
+                        "enabled": True,
+                        "heading": "Ready to start learning?",
+                        "button_text": "Join Now",
+                        "button_href": "/courses",
+                    },
                 },
                 onboarding_completed=False,
             )

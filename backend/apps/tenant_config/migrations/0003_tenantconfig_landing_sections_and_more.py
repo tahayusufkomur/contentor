@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0002_alter_tenantconfig_primary_color_and_more'),
+        ("tenant_config", "0002_alter_tenantconfig_primary_color_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenantconfig',
-            name='landing_sections',
+            model_name="tenantconfig",
+            name="landing_sections",
             field=models.JSONField(default=dict),
         ),
         migrations.AddField(
-            model_name='tenantconfig',
-            name='navbar_config',
+            model_name="tenantconfig",
+            name="navbar_config",
             field=models.JSONField(default=dict),
         ),
         migrations.AddField(
-            model_name='tenantconfig',
-            name='onboarding_completed',
+            model_name="tenantconfig",
+            name="onboarding_completed",
             field=models.BooleanField(default=False),
         ),
     ]

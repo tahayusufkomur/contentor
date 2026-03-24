@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import creator_signup, creator_signup_verify, provisioning_status
 
 urlpatterns = [

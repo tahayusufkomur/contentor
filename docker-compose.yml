@@ -92,9 +92,11 @@ services:
     volumes:
       - ./frontend-customer/src:/app/src
       - ./frontend-customer/public:/app/public
+      - ./frontend-customer/next.config.mjs:/app/next.config.mjs
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.localhost}
+      - NEXT_PUBLIC_GETSTREAM_API_KEY=${GETSTREAM_API_KEY}
     depends_on:
       - django
     labels:
@@ -145,16 +147,6 @@ services:
     depends_on:
       - celery-worker
 
-  livekit:
-    image: livekit/livekit-server:latest
-    command: --config /etc/livekit.yaml --dev
-    volumes:
-      - ./livekit/livekit.yaml:/etc/livekit.yaml
-    ports:
-      - "7880:7880"
-      - "7881:7881"
-    profiles:
-      - livekit
 
   prometheus:
     image: prom/prometheus:latest

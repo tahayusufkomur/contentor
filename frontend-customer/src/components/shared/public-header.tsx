@@ -6,19 +6,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
-import { BookOpen, LogOut, Menu, User as UserIcon, X } from "lucide-react";
+import { BookOpen, LogOut, Menu, User as UserIcon, X, Zap } from "lucide-react";
 import type { User } from "@/types/auth";
 
-export function PublicHeader({ user }: { user?: User | null }) {
+export function PublicHeader({ user, hasSubscription }: { user?: User | null; hasSubscription?: boolean }) {
   const config = useTenant();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const navbar = config?.navbar_config;
-  const navLinks = navbar?.links?.length
+  const allNavLinks = navbar?.links?.length
     ? navbar.links
-    : [{ label: "Courses", href: "/courses" }];
+    : [{ label: "Courses", href: "/courses" }, { label: "Calendar", href: "/calendar" }, { label: "Store", href: "/store" }];
+  const SIGNED_IN_HIDDEN = new Set(["/about", "/faq"]);
+  const navLinks = user
+    ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
+    : allNavLinks;
   const showLogin = navbar?.show_login !== false;
   const cta = navbar?.cta;
   const allowDarkMode = config?.dark_mode_enabled !== false;
@@ -26,7 +30,7 @@ export function PublicHeader({ user }: { user?: User | null }) {
   const handleSignOut = async () => {
     setSigningOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/login?toast=You've+been+logged+out&toast_type=info");
     router.refresh();
   };
 
@@ -79,6 +83,12 @@ export function PublicHeader({ user }: { user?: User | null }) {
                 <span className="text-sm text-muted-foreground">
                   {user.name || user.email}
                 </span>
+                <Button asChild size="sm" variant={hasSubscription ? "outline" : "default"} className="gap-1.5">
+                  <Link href="/plans">
+                    <Zap className="h-4 w-4" />
+                    {hasSubscription ? "Plans" : "Subscribe"}
+                  </Link>
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -146,6 +156,12 @@ export function PublicHeader({ user }: { user?: User | null }) {
                     ? "Admin"
                     : "Dashboard"}
                 </Link>
+                <Button asChild size="sm" variant={hasSubscription ? "outline" : "default"} className="w-full gap-1.5">
+                  <Link href="/plans" onClick={() => setMobileOpen(false)}>
+                    <Zap className="h-4 w-4" />
+                    {hasSubscription ? "Plans" : "Subscribe"}
+                  </Link>
+                </Button>
                 <div className="flex items-center gap-2 border-t pt-3">
                   <UserIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">

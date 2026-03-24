@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Training", "href": "/courses"},
         "show_login": True,
@@ -458,21 +459,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/pole_4.png",
         "file_size": 2_800_000,
         "download_count": 163,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Spin Progression Checklist",
         "file_url": "demo/photos/pole_5.png",
         "file_size": 1_100_000,
         "download_count": 94,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Pole Dance Warm-Up Music Playlist",
         "file_url": "demo/photos/pole_8.jpg",
         "file_size": 900_000,
         "download_count": 231,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -482,4 +483,213 @@ STUDENTS = [
     {"email": "priya@demo.test", "name": "Priya Desai"},
     {"email": "chloe@demo.test", "name": "Chloe Martin"},
     {"email": "luna@demo.test", "name": "Luna Park"},
+]
+
+# ---------------------------------------------------------------------------
+# Subscription plans offered by this coach
+# ---------------------------------------------------------------------------
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Unlimited access to all subscription pole dance courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        # "access" lists course titles (by index in COURSES) that this plan unlocks
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited pole dance training — save over 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Pole Dance Collection",
+        "description": "All three pole dance courses at a discounted price. From basics to advanced tricks.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Pole Practice",
+        "description": "Free practice session — hop on the pole and work on your moves together.",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "Spin Combo Bootcamp LIVE",
+        "description": "Intensive 45-minute spin combination class — bring grip aid and water!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Choreography Q&A",
+        "description": "Live feedback on your choreography, transitions, and musicality.",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Pole Flow",
+    "description": "Our signature weekly pole flow class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Friday Night Pole Party",
+        "description": "Weekly community pole stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Private Coaching — Small Group",
+        "description": "Intimate 4-person pole technique session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the instructor and get oriented before your first pole dance course.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Pole Dance Intensive",
+        "description": "Full-day in-person workshop covering spins, inversions, and choreography.",
+        "location": "Pole Art Studio Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Pole Jam",
+        "description": "Free open pole jam session — bring friends and dance together!",
+        "location": "Kadıköy Dance Hub",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Jessica: bought Spins & Transitions course, subscribed monthly, good progress
+        "email": "jessica@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 380, True),
+            (0, 2, 300, False),
+            (1, 0, 420, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Mia: bought the bundle, fully completed Pole Basics
+        "email": "mia@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 380, True),
+            (0, 2, 450, True),
+            (0, 3, 480, True),
+            (0, 4, 510, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # Priya: annual subscriber, light progress
+        "email": "priya@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 420, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Chloe: bought Advanced Pole Tricks course individually
+        "email": "chloe@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 450, True),
+            (2, 1, 420, True),
+            (2, 2, 480, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # Luna: free course only, no purchases
+        "email": "luna@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

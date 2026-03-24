@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Learning", "href": "/courses"},
         "show_login": True,
@@ -467,21 +468,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/make_up_3.png",
         "file_size": 2_200_000,
         "download_count": 178,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Bridal Makeup Checklist",
         "file_url": "demo/photos/make_up_4.png",
         "file_size": 1_400_000,
         "download_count": 112,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Editorial Mood Board Templates",
         "file_url": "demo/photos/make_up_5.png",
         "file_size": 3_100_000,
         "download_count": 95,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -491,4 +492,208 @@ STUDENTS = [
     {"email": "hannah@demo.test", "name": "Hannah Lee"},
     {"email": "camila@demo.test", "name": "Camila Torres"},
     {"email": "ruby@demo.test", "name": "Ruby Johnson"},
+]
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Access all subscription courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Makeup Collection",
+        "description": "All three courses at a discounted price. From everyday glam to editorial artistry.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Practice Session",
+        "description": "Bring your brushes and practice looks together with live feedback.",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "Contouring Masterclass LIVE",
+        "description": "Intensive 45-minute contouring workshop — bring your contour kit and mirror!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Portfolio Review Q&A",
+        "description": "Live feedback on your makeup portfolio and creative direction.",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Glam Session",
+    "description": "Our signature weekly makeup class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Friday Beauty Stream",
+        "description": "Weekly community stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Private Coaching — Small Group",
+        "description": "Intimate 4-person makeup session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the instructor and get oriented before your first course.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Makeup Masterclass",
+        "description": "Full-day in-person workshop covering bridal looks, contouring, and editorial techniques.",
+        "location": "Beauty Studio Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Beauty Meetup",
+        "description": "Free makeup meetup at the studio — bring friends and your favourite products!",
+        "location": "Kadıköy Beauty Lounge",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Olivia: bought Bridal course, subscribed monthly, good progress
+        "email": "olivia@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 380, True),
+            (0, 2, 300, False),
+            (1, 0, 390, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Zara: bought the bundle, fully completed Everyday Glam
+        "email": "zara@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 480, True),
+            (0, 2, 390, True),
+            (0, 3, 360, True),
+            (0, 4, 330, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # Hannah: annual subscriber, light progress
+        "email": "hannah@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 420, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Camila: bought Editorial & Creative Looks course individually
+        "email": "camila@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 420, True),
+            (2, 1, 450, True),
+            (2, 2, 480, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # Ruby: free course only, no purchases
+        "email": "ruby@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

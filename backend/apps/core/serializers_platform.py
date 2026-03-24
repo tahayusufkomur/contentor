@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Tenant, PlatformPlan, TenantUsage
+
+from .models import PlatformPlan, Tenant
 
 
 class TenantListSerializer(serializers.ModelSerializer):

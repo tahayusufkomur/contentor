@@ -109,11 +109,13 @@ def creator_signup_verify(request):
     if Tenant.objects.filter(slug=slug).exists():
         # Tenant already created (e.g. user clicked link twice)
         tenant = Tenant.objects.get(slug=slug)
-        return Response({
-            "slug": slug,
-            "status": tenant.provisioning_status,
-            "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
-        })
+        return Response(
+            {
+                "slug": slug,
+                "status": tenant.provisioning_status,
+                "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
+            }
+        )
 
     tenant = Tenant.objects.create(
         schema_name=slug,
@@ -130,11 +132,14 @@ def creator_signup_verify(request):
     )
     provision_tenant.delay(tenant.id, email, name)
 
-    return Response({
-        "slug": slug,
-        "status": "pending",
-        "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
-    }, status=201)
+    return Response(
+        {
+            "slug": slug,
+            "status": "pending",
+            "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
+        },
+        status=201,
+    )
 
 
 @api_view(["GET"])
@@ -148,4 +153,10 @@ def provisioning_status(request):
         tenant = Tenant.objects.get(slug=slug)
     except Tenant.DoesNotExist:
         return Response({"detail": "Tenant not found"}, status=404)
-    return Response({"slug": tenant.slug, "status": tenant.provisioning_status, "domain": f"{tenant.slug}.{settings.CONTENTOR_DOMAIN}"})
+    return Response(
+        {
+            "slug": tenant.slug,
+            "status": tenant.provisioning_status,
+            "domain": f"{tenant.slug}.{settings.CONTENTOR_DOMAIN}",
+        }
+    )

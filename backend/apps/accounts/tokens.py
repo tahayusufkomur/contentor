@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from django.conf import settings
@@ -10,8 +10,8 @@ def create_magic_link_token(email: str, tenant_schema: str, tenant_slug: str) ->
         "tenant_id": tenant_schema,
         "tenant_slug": tenant_slug,
         "purpose": "magic_link",
-        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
-        "iat": datetime.now(tz=timezone.utc),
+        "exp": datetime.now(tz=UTC) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
+        "iat": datetime.now(tz=UTC),
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
@@ -29,8 +29,8 @@ def create_signup_token(email: str, name: str, brand_name: str) -> str:
         "name": name,
         "brand_name": brand_name,
         "purpose": "signup",
-        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
-        "iat": datetime.now(tz=timezone.utc),
+        "exp": datetime.now(tz=UTC) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
+        "iat": datetime.now(tz=UTC),
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
@@ -47,7 +47,7 @@ def create_jwt(user, tenant) -> str:
         "user_id": user.id,
         "tenant_id": tenant.schema_name,
         "role": user.role,
-        "exp": datetime.now(tz=timezone.utc) + timedelta(days=settings.JWT_EXPIRY_DAYS),
-        "iat": datetime.now(tz=timezone.utc),
+        "exp": datetime.now(tz=UTC) + timedelta(days=settings.JWT_EXPIRY_DAYS),
+        "iat": datetime.now(tz=UTC),
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")

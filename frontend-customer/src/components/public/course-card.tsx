@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { BookOpen } from 'lucide-react'
 import type { Course } from '@/types/course'
+import { PriceBadge } from '@/components/billing/price-badge'
 
 interface CourseCardProps {
   course: Course
@@ -32,13 +32,7 @@ export function CourseCard({ course }: CourseCardProps) {
         <CardContent className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold leading-snug line-clamp-2">{course.title}</h3>
-            <Badge variant={course.pricing_type === 'free' ? 'success' : 'default'} className="shrink-0">
-              {course.pricing_type === 'free'
-                ? 'Free'
-                : course.pricing_type === 'paid'
-                  ? `$${course.price}`
-                  : 'Subscription'}
-            </Badge>
+            <PriceBadge accessInfo={course.access_info} price={course.price} pricingType={course.pricing_type} />
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>{course.instructor_name}</span>

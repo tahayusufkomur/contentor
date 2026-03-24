@@ -4,26 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='TenantConfig',
+            name="TenantConfig",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('brand_name', models.CharField(max_length=100)),
-                ('logo_url', models.URLField(blank=True, default='')),
-                ('primary_color', models.CharField(default='#7c3aed', max_length=7)),
-                ('secondary_color', models.CharField(default='#ec4899', max_length=7)),
-                ('font_family', models.CharField(default='Inter', max_length=100)),
-                ('custom_css', models.TextField(blank=True, default='')),
-                ('enabled_modules', models.JSONField(default=list)),
-                ('social_links', models.JSONField(default=dict)),
-                ('meta_description', models.TextField(blank=True, default='')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("brand_name", models.CharField(max_length=100)),
+                ("logo_url", models.URLField(blank=True, default="")),
+                ("primary_color", models.CharField(default="#7c3aed", max_length=7)),
+                ("secondary_color", models.CharField(default="#ec4899", max_length=7)),
+                ("font_family", models.CharField(default="Inter", max_length=100)),
+                ("custom_css", models.TextField(blank=True, default="")),
+                ("enabled_modules", models.JSONField(default=list)),
+                ("social_links", models.JSONField(default=dict)),
+                ("meta_description", models.TextField(blank=True, default="")),
             ],
         ),
     ]

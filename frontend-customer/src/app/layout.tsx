@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
 
+import { Toaster } from "sonner";
+
+import { RedirectToast } from "@/components/shared/redirect-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { TenantProvider } from "@/components/shared/tenant-provider";
@@ -48,6 +51,7 @@ export default async function RootLayout({
       </head>
       <body
         className={`${instrumentSans.variable} bg-cinematic min-h-screen font-sans antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider
           attribute="class"
@@ -60,6 +64,8 @@ export default async function RootLayout({
         >
           <TenantProvider config={config}>
             <TenantThemeEnforcer />
+            <Toaster position="top-center" richColors />
+            <RedirectToast />
             {children}
           </TenantProvider>
         </ThemeProvider>

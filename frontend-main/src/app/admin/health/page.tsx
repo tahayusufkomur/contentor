@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { RefreshCw, Database, Server, Activity } from 'lucide-react'
+import { Database, Server, Activity } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -75,10 +75,9 @@ export default function HealthPage() {
           variant="outline"
           size="sm"
           onClick={checkHealth}
-          disabled={loading}
+          loading={loading}
           className="gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>

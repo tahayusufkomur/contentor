@@ -1,10 +1,12 @@
 import logging
+from datetime import UTC
 from urllib.parse import urlencode
 
 import jwt as jwt_lib
 import requests as http_requests
 from django.conf import settings
 from django.db import connection
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
@@ -12,8 +14,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from apps.core.pagination import StandardPagination
+
 from .models import User
-from .serializers import MagicLinkRequestSerializer, MagicLinkVerifySerializer, UserSerializer
+from .serializers import MagicLinkRequestSerializer, MagicLinkVerifySerializer, StudentListSerializer, UserSerializer
 from .tokens import create_jwt, create_magic_link_token, verify_magic_link_token
 
 logger = logging.getLogger(__name__)
@@ -86,8 +90,12 @@ def magic_link_verify(request):
     jwt_token = create_jwt(user, tenant)
     response = Response({"user": UserSerializer(user).data})
     response.set_cookie(
-        "contentor_access_token", jwt_token,
-        httponly=True, secure=False, samesite="Lax", max_age=86400 * 7,
+        "contentor_access_token",
+        jwt_token,
+        httponly=True,
+        secure=False,
+        samesite="Lax",
+        max_age=86400 * 7,
     )
     return response
 
@@ -115,6 +123,56 @@ def update_me(request):
     return Response(serializer.data)
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def student_list(request):
+    """List all students for the current tenant (coach/owner only)."""
+    from apps.core.permissions import IsCoachOrOwner
+
+    perm = IsCoachOrOwner()
+    if not perm.has_permission(request, None):
+        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+    students = User.objects.filter(role="student")
+    search = request.query_params.get("search")
+    if search:
+        students = students.filter(Q(name__icontains=search) | Q(email__icontains=search))
+    ordering = request.query_params.get("ordering", "").strip()
+    if ordering and ordering.lstrip("-") in {"name", "date_joined", "email", "last_login"}:
+        students = students.order_by(ordering)
+    else:
+        students = students.order_by("-date_joined")
+
+    paginate = "limit" in request.query_params or "offset" in request.query_params
+    if paginate:
+        paginator = StandardPagination()
+        page = paginator.paginate_queryset(students, request)
+        serializer = StudentListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    serializer = StudentListSerializer(students, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def student_delete(request, pk):
+    """Delete a student user (owner only)."""
+    from apps.core.permissions import IsCoachOrOwner
+
+    perm = IsCoachOrOwner()
+    if not perm.has_permission(request, None):
+        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        student = User.objects.get(pk=pk, role="student")
+    except User.DoesNotExist:
+        return Response({"detail": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    student.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
@@ -122,13 +180,14 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 def _create_oauth_state(tenant_schema: str, origin: str) -> str:
     """Create a signed JWT containing OAuth state (no cookies needed)."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
+
     payload = {
         "tenant": tenant_schema,
         "origin": origin,
         "purpose": "google_oauth",
-        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=10),
-        "iat": datetime.now(tz=timezone.utc),
+        "exp": datetime.now(tz=UTC) + timedelta(minutes=10),
+        "iat": datetime.now(tz=UTC),
     }
     return jwt_lib.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
@@ -198,6 +257,7 @@ def google_callback(request):
 
     # Resolve the correct tenant from state
     from apps.core.models import Tenant
+
     try:
         tenant = Tenant.objects.get(schema_name=tenant_schema)
     except Tenant.DoesNotExist:
@@ -205,6 +265,7 @@ def google_callback(request):
 
     # Switch to tenant schema for user lookup
     from django.db import connection as db_connection
+
     db_connection.set_tenant(tenant)
 
     # Exchange code for tokens

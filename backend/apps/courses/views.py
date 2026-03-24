@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -5,9 +7,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from apps.core.permissions import IsCoachOrOwner, IsOwner
+from apps.core.access import ContentAccessService
+from apps.core.pagination import StandardPagination, apply_ordering
+from apps.core.permissions import IsCoachOrOwner
 
-from .models import Course, Enrollment, Lesson, Module, Progress
+from .models import Course, Enrollment, Lesson, Module, Progress, Video
 from .serializers import (
     CourseCreateUpdateSerializer,
     CourseDetailSerializer,
@@ -16,12 +20,14 @@ from .serializers import (
     LessonCreateSerializer,
     ModuleCreateSerializer,
     ProgressUpdateSerializer,
+    VideoCreateSerializer,
+    VideoSerializer,
 )
-
 
 # ──────────────────────────────────────────────
 # Course list / create
 # ──────────────────────────────────────────────
+
 
 @api_view(["GET", "POST"])
 @permission_classes([AllowAny])
@@ -51,7 +57,21 @@ def _course_list(request):
     if pricing_type:
         qs = qs.filter(pricing_type=pricing_type)
 
-    serializer = CourseListSerializer(qs, many=True, context={"request": request})
+    qs = apply_ordering(qs, request, ["title", "created_at"])
+    paginate = "limit" in request.query_params or "offset" in request.query_params
+
+    service = ContentAccessService() if request.user.is_authenticated else None
+
+    if paginate:
+        paginator = StandardPagination()
+        page = paginator.paginate_queryset(qs, request)
+        page_items = list(page)
+        access_map = service.bulk_check_access(request.user, page_items) if service else {}
+        serializer = CourseListSerializer(page_items, many=True, context={"request": request, "access_map": access_map})
+        return paginator.get_paginated_response(serializer.data)
+
+    access_map = service.bulk_check_access(request.user, qs) if service else {}
+    serializer = CourseListSerializer(qs, many=True, context={"request": request, "access_map": access_map})
     return Response(serializer.data)
 
 
@@ -68,6 +88,7 @@ def _course_create(request):
 # ──────────────────────────────────────────────
 # Course detail / update / delete
 # ──────────────────────────────────────────────
+
 
 @api_view(["GET", "PUT", "DELETE"])
 @permission_classes([AllowAny])
@@ -101,15 +122,27 @@ def course_detail(request, slug):
 # Enrollment
 # ──────────────────────────────────────────────
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def enroll(request, slug):
     course = get_object_or_404(Course, slug=slug)
+
     if Enrollment.objects.filter(user=request.user, course=course).exists():
         return Response(
             {"detail": "Already enrolled."},
             status=status.HTTP_409_CONFLICT,
         )
+
+    if course.pricing_type == "paid":
+        access_service = ContentAccessService()
+        info = access_service.get_access_info(request.user, course)
+        if not info.has_access:
+            return Response(
+                {"detail": "This course requires purchase or subscription.", "access_info": asdict(info)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     enrollment = Enrollment.objects.create(user=request.user, course=course)
     serializer = EnrollmentSerializer(enrollment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -118,6 +151,36 @@ def enroll(request, slug):
 # ──────────────────────────────────────────────
 # Progress
 # ──────────────────────────────────────────────
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def course_progress(request, slug):
+    """GET: list all progress for a course. POST: create/update progress for a lesson."""
+    course = get_object_or_404(Course, slug=slug)
+    user = request.user
+    is_staff = user.role in ("owner", "coach")
+    if not is_staff and not Enrollment.objects.filter(user=user, course=course).exists():
+        return Response({"detail": "Not enrolled."}, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == "GET":
+        lessons = Lesson.objects.filter(module__course=course)
+        progress_qs = Progress.objects.filter(user=user, lesson__in=lessons)
+        from .serializers import ProgressSerializer
+
+        return Response(ProgressSerializer(progress_qs, many=True).data)
+
+    # POST
+    lesson_id = request.data.get("lesson")
+    if not lesson_id:
+        return Response({"detail": "lesson field is required."}, status=status.HTTP_400_BAD_REQUEST)
+    lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
+    progress, _created = Progress.objects.get_or_create(user=user, lesson=lesson)
+    serializer = ProgressUpdateSerializer(progress, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
@@ -139,8 +202,34 @@ def update_progress(request, slug, lesson_id):
 
 
 # ──────────────────────────────────────────────
+# Enrolled courses
+# ──────────────────────────────────────────────
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def enrolled_courses(request):
+    """List courses the current user is enrolled in, with progress percentage."""
+    enrollments = Enrollment.objects.filter(user=request.user, is_active=True).select_related("course")
+    result = []
+    for enrollment in enrollments:
+        course = enrollment.course
+        total_lessons = Lesson.objects.filter(module__course=course).count()
+        completed_lessons = Progress.objects.filter(
+            user=request.user, lesson__module__course=course, completed=True
+        ).count()
+        progress_percent = round((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
+        course_data = CourseListSerializer(course, context={"request": request}).data
+        course_data["progress_percent"] = progress_percent
+        course_data["enrolled_at"] = enrollment.enrolled_at
+        result.append(course_data)
+    return Response(result)
+
+
+# ──────────────────────────────────────────────
 # Module CRUD
 # ──────────────────────────────────────────────
+
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
@@ -178,6 +267,7 @@ def module_detail(request, slug, module_id):
 # Lesson CRUD
 # ──────────────────────────────────────────────
 
+
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def lesson_create(request, slug, module_id):
@@ -206,4 +296,47 @@ def lesson_detail(request, slug, lesson_id):
 
     if request.method == "DELETE":
         lesson.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ──────────────────────────────────────────────
+# Video Library
+# ──────────────────────────────────────────────
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def video_list_create(request):
+    if request.method == "GET":
+        qs = Video.objects.all()
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
+        qs = apply_ordering(qs, request, ["title", "created_at", "file_size", "duration_seconds"])
+        paginator = StandardPagination()
+        page = paginator.paginate_queryset(qs, request)
+        return paginator.get_paginated_response(VideoSerializer(page, many=True).data)
+
+    serializer = VideoCreateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    video = serializer.save()
+    return Response(VideoSerializer(video).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "PUT", "DELETE"])
+@permission_classes([IsCoachOrOwner])
+def video_detail(request, pk):
+    video = get_object_or_404(Video, pk=pk)
+
+    if request.method == "GET":
+        return Response(VideoSerializer(video).data)
+
+    if request.method == "PUT":
+        serializer = VideoCreateSerializer(video, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(VideoSerializer(video).data)
+
+    if request.method == "DELETE":
+        video.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

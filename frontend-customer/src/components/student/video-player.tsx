@@ -12,9 +12,10 @@ interface VideoPlayerProps {
   lesson: Lesson
   progress: Progress | null
   onProgressUpdate: () => void
+  onLessonComplete?: () => void
 }
 
-export function VideoPlayer({ courseSlug, lesson, progress, onProgressUpdate }: VideoPlayerProps) {
+export function VideoPlayer({ courseSlug, lesson, progress, onProgressUpdate, onLessonComplete }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const lastReportedRef = useRef(0)
 
@@ -52,12 +53,24 @@ export function VideoPlayer({ courseSlug, lesson, progress, onProgressUpdate }: 
       }
     }
 
+    const handleEnded = () => {
+      if (!progress?.completed) {
+        reportProgress(video.duration || lesson.duration_seconds, true)
+      }
+      onLessonComplete?.()
+    }
+
     video.addEventListener('timeupdate', handleTimeUpdate)
-    return () => video.removeEventListener('timeupdate', handleTimeUpdate)
-  }, [lesson.id, lesson.duration_seconds, reportProgress])
+    video.addEventListener('ended', handleEnded)
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate)
+      video.removeEventListener('ended', handleEnded)
+    }
+  }, [lesson.id, lesson.duration_seconds, reportProgress, progress?.completed, onLessonComplete])
 
   async function handleMarkComplete() {
     await reportProgress(progress?.watched_seconds ?? 0, true)
+    onLessonComplete?.()
   }
 
   if (!lesson.video_signed_url) {

@@ -13,6 +13,7 @@ class TenantTheme(models.TextChoices):
 class TenantConfig(models.Model):
     brand_name = models.CharField(max_length=100)
     logo_url = models.CharField(max_length=2000, blank=True, default="")
+    logo = models.ForeignKey("media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     theme = models.CharField(max_length=30, choices=TenantTheme.choices, default=TenantTheme.OCEAN)
     dark_mode_enabled = models.BooleanField(default=True)
     font_family = models.CharField(max_length=100, default="Inter")
@@ -22,7 +23,9 @@ class TenantConfig(models.Model):
     meta_description = models.TextField(blank=True, default="")
     navbar_config = models.JSONField(default=dict)
     landing_sections = models.JSONField(default=dict)
+    timezone = models.CharField(max_length=50, default="UTC")
     onboarding_completed = models.BooleanField(default=False)
+    emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:
         app_label = "tenant_config"

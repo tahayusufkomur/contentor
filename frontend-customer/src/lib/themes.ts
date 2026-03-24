@@ -26,8 +26,8 @@ const ocean: ThemePalette = {
   preview: ["#1a56db", "#0d9488", "#f0f9ff", "#1e3a5f", "#e0f2fe"],
   cinematic: {
     light:
-      "radial-gradient(ellipse at 20% 50%, oklch(0.93 0.03 240 / 0.35), transparent 70%), radial-gradient(ellipse at 80% 20%, oklch(0.95 0.025 185 / 0.25), transparent 60%)",
-    dark: "radial-gradient(ellipse at 20% 50%, oklch(0.25 0.04 240 / 0.4), transparent 70%), radial-gradient(ellipse at 80% 20%, oklch(0.2 0.03 185 / 0.3), transparent 60%)",
+      "radial-gradient(ellipse 120% 80% at 15% 10%, oklch(0.92 0.045 240 / 0.4), transparent 60%), radial-gradient(ellipse 80% 120% at 85% 50%, oklch(0.94 0.035 185 / 0.3), transparent 55%), radial-gradient(ellipse 100% 60% at 50% 95%, oklch(0.96 0.02 260 / 0.2), transparent 50%), radial-gradient(circle at 30% 60%, oklch(0.90 0.05 220 / 0.15), transparent 40%)",
+    dark: "radial-gradient(ellipse 120% 80% at 15% 10%, oklch(0.22 0.05 240 / 0.45), transparent 60%), radial-gradient(ellipse 80% 120% at 85% 50%, oklch(0.18 0.04 185 / 0.35), transparent 55%), radial-gradient(ellipse 100% 60% at 50% 95%, oklch(0.15 0.03 260 / 0.25), transparent 50%), radial-gradient(circle at 30% 60%, oklch(0.20 0.05 220 / 0.2), transparent 40%)",
   },
   light: {
     background: "oklch(0.985 0.005 240)",
@@ -101,8 +101,8 @@ const ember: ThemePalette = {
   preview: ["#c2410c", "#d97706", "#fff7ed", "#7c2d12", "#fed7aa"],
   cinematic: {
     light:
-      "radial-gradient(ellipse at 25% 40%, oklch(0.92 0.04 35 / 0.35), transparent 70%), radial-gradient(ellipse at 75% 60%, oklch(0.94 0.03 70 / 0.25), transparent 60%)",
-    dark: "radial-gradient(ellipse at 25% 40%, oklch(0.25 0.05 35 / 0.4), transparent 70%), radial-gradient(ellipse at 75% 60%, oklch(0.22 0.04 70 / 0.3), transparent 60%)",
+      "radial-gradient(ellipse 110% 90% at 80% 15%, oklch(0.91 0.05 35 / 0.4), transparent 55%), radial-gradient(ellipse 90% 110% at 10% 60%, oklch(0.93 0.04 70 / 0.3), transparent 50%), radial-gradient(ellipse 120% 50% at 50% 100%, oklch(0.95 0.03 20 / 0.22), transparent 45%), radial-gradient(circle at 65% 45%, oklch(0.89 0.055 50 / 0.15), transparent 35%)",
+    dark: "radial-gradient(ellipse 110% 90% at 80% 15%, oklch(0.24 0.06 35 / 0.45), transparent 55%), radial-gradient(ellipse 90% 110% at 10% 60%, oklch(0.20 0.05 70 / 0.35), transparent 50%), radial-gradient(ellipse 120% 50% at 50% 100%, oklch(0.16 0.04 20 / 0.25), transparent 45%), radial-gradient(circle at 65% 45%, oklch(0.22 0.06 50 / 0.2), transparent 35%)",
   },
   light: {
     background: "oklch(0.985 0.005 60)",
@@ -176,8 +176,8 @@ const forest: ThemePalette = {
   preview: ["#15803d", "#a16207", "#f0fdf4", "#14532d", "#bbf7d0"],
   cinematic: {
     light:
-      "radial-gradient(ellipse at 30% 45%, oklch(0.93 0.03 155 / 0.3), transparent 70%), radial-gradient(ellipse at 70% 25%, oklch(0.95 0.025 80 / 0.2), transparent 60%)",
-    dark: "radial-gradient(ellipse at 30% 45%, oklch(0.22 0.04 155 / 0.35), transparent 70%), radial-gradient(ellipse at 70% 25%, oklch(0.2 0.03 80 / 0.25), transparent 60%)",
+      "radial-gradient(ellipse 100% 100% at 10% 20%, oklch(0.92 0.04 155 / 0.38), transparent 55%), radial-gradient(ellipse 80% 130% at 90% 70%, oklch(0.94 0.035 80 / 0.28), transparent 50%), radial-gradient(ellipse 130% 60% at 45% 5%, oklch(0.96 0.02 130 / 0.2), transparent 45%), radial-gradient(circle at 70% 30%, oklch(0.90 0.045 100 / 0.15), transparent 35%)",
+    dark: "radial-gradient(ellipse 100% 100% at 10% 20%, oklch(0.20 0.05 155 / 0.4), transparent 55%), radial-gradient(ellipse 80% 130% at 90% 70%, oklch(0.18 0.04 80 / 0.3), transparent 50%), radial-gradient(ellipse 130% 60% at 45% 5%, oklch(0.15 0.03 130 / 0.22), transparent 45%), radial-gradient(circle at 70% 30%, oklch(0.20 0.05 100 / 0.18), transparent 35%)",
   },
   light: {
     background: "oklch(0.985 0.005 145)",
@@ -251,8 +251,8 @@ const sunset: ThemePalette = {
   preview: ["#e11d48", "#d97706", "#fff1f2", "#9f1239", "#fecdd3"],
   cinematic: {
     light:
-      "radial-gradient(ellipse at 20% 55%, oklch(0.93 0.04 20 / 0.3), transparent 70%), radial-gradient(ellipse at 80% 30%, oklch(0.95 0.03 55 / 0.25), transparent 60%)",
-    dark: "radial-gradient(ellipse at 20% 55%, oklch(0.25 0.05 20 / 0.35), transparent 70%), radial-gradient(ellipse at 80% 30%, oklch(0.22 0.04 55 / 0.3), transparent 60%)",
+      "radial-gradient(ellipse 130% 80% at 85% 10%, oklch(0.91 0.05 20 / 0.38), transparent 55%), radial-gradient(ellipse 90% 120% at 5% 55%, oklch(0.93 0.04 55 / 0.3), transparent 50%), radial-gradient(ellipse 100% 50% at 55% 95%, oklch(0.95 0.025 350 / 0.2), transparent 45%), radial-gradient(circle at 40% 30%, oklch(0.89 0.05 40 / 0.15), transparent 35%)",
+    dark: "radial-gradient(ellipse 130% 80% at 85% 10%, oklch(0.24 0.06 20 / 0.42), transparent 55%), radial-gradient(ellipse 90% 120% at 5% 55%, oklch(0.20 0.05 55 / 0.32), transparent 50%), radial-gradient(ellipse 100% 50% at 55% 95%, oklch(0.16 0.03 350 / 0.22), transparent 45%), radial-gradient(circle at 40% 30%, oklch(0.22 0.06 40 / 0.18), transparent 35%)",
   },
   light: {
     background: "oklch(0.985 0.005 20)",
@@ -326,8 +326,8 @@ const violet: ThemePalette = {
   preview: ["#7c3aed", "#db2777", "#faf5ff", "#4c1d95", "#e9d5ff"],
   cinematic: {
     light:
-      "radial-gradient(ellipse at 25% 50%, oklch(0.93 0.04 300 / 0.3), transparent 70%), radial-gradient(ellipse at 75% 30%, oklch(0.95 0.03 340 / 0.2), transparent 60%)",
-    dark: "radial-gradient(ellipse at 25% 50%, oklch(0.22 0.05 300 / 0.4), transparent 70%), radial-gradient(ellipse at 75% 30%, oklch(0.2 0.04 340 / 0.3), transparent 60%)",
+      "radial-gradient(ellipse 100% 110% at 20% 15%, oklch(0.91 0.05 300 / 0.38), transparent 55%), radial-gradient(ellipse 120% 80% at 80% 65%, oklch(0.93 0.04 340 / 0.28), transparent 50%), radial-gradient(ellipse 80% 60% at 50% 100%, oklch(0.95 0.025 270 / 0.2), transparent 45%), radial-gradient(circle at 75% 20%, oklch(0.89 0.055 320 / 0.15), transparent 35%)",
+    dark: "radial-gradient(ellipse 100% 110% at 20% 15%, oklch(0.20 0.06 300 / 0.42), transparent 55%), radial-gradient(ellipse 120% 80% at 80% 65%, oklch(0.18 0.05 340 / 0.32), transparent 50%), radial-gradient(ellipse 80% 60% at 50% 100%, oklch(0.15 0.035 270 / 0.22), transparent 45%), radial-gradient(circle at 75% 20%, oklch(0.22 0.06 320 / 0.18), transparent 35%)",
   },
   light: {
     background: "oklch(0.985 0.006 300)",
@@ -401,8 +401,8 @@ const slate: ThemePalette = {
   preview: ["#334155", "#6366f1", "#f8fafc", "#0f172a", "#e2e8f0"],
   cinematic: {
     light:
-      "radial-gradient(ellipse at 30% 40%, oklch(0.94 0.01 250 / 0.2), transparent 70%), radial-gradient(ellipse at 70% 60%, oklch(0.96 0.008 200 / 0.15), transparent 60%)",
-    dark: "radial-gradient(ellipse at 30% 40%, oklch(0.2 0.015 250 / 0.25), transparent 70%), radial-gradient(ellipse at 70% 60%, oklch(0.18 0.012 200 / 0.2), transparent 60%)",
+      "radial-gradient(ellipse 110% 100% at 5% 25%, oklch(0.95 0.015 250 / 0.25), transparent 55%), radial-gradient(ellipse 100% 110% at 95% 75%, oklch(0.96 0.012 200 / 0.2), transparent 50%), radial-gradient(ellipse 120% 50% at 50% 5%, oklch(0.97 0.008 270 / 0.15), transparent 45%), radial-gradient(circle at 60% 50%, oklch(0.94 0.018 230 / 0.1), transparent 35%)",
+    dark: "radial-gradient(ellipse 110% 100% at 5% 25%, oklch(0.20 0.02 250 / 0.3), transparent 55%), radial-gradient(ellipse 100% 110% at 95% 75%, oklch(0.18 0.018 200 / 0.25), transparent 50%), radial-gradient(ellipse 120% 50% at 50% 5%, oklch(0.16 0.012 270 / 0.18), transparent 45%), radial-gradient(circle at 60% 50%, oklch(0.19 0.022 230 / 0.15), transparent 35%)",
   },
   light: {
     background: "oklch(0.985 0.003 250)",

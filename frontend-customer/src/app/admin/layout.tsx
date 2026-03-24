@@ -10,5 +10,5 @@ export default async function AdminLayout({
 }) {
   const user = await requireAuth();
   await requireRole(user, ["owner", "coach"]);
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell user={user}>{children}</AdminShell>;
 }

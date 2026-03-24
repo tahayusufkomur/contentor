@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Shield } from 'lucide-react'
@@ -20,6 +21,7 @@ const GOOGLE_ERRORS: Record<string, string> = {
 export default function LoginPage() {
   const searchParams = useSearchParams()
   const googleError = searchParams.get('error')
+  const [googleLoading, setGoogleLoading] = useState(false)
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -43,16 +45,24 @@ export default function LoginPage() {
           <Button
             variant="outline"
             className="w-full"
+            loading={googleLoading}
             onClick={async () => {
-              const res = await fetch('/api/v1/auth/google/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ origin: window.location.origin }),
-                credentials: 'same-origin',
-              })
-              if (res.ok) {
-                const data = await res.json()
-                window.location.href = data.url
+              setGoogleLoading(true)
+              try {
+                const res = await fetch('/api/v1/auth/google/', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ origin: window.location.origin }),
+                  credentials: 'same-origin',
+                })
+                if (res.ok) {
+                  const data = await res.json()
+                  window.location.href = data.url
+                } else {
+                  setGoogleLoading(false)
+                }
+              } catch {
+                setGoogleLoading(false)
               }
             }}
           >

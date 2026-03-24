@@ -3,12 +3,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import Tenant, PlatformPlan, TenantUsage
+from .models import PlatformPlan, Tenant, TenantUsage
 from .permissions import IsSuperUser
 from .serializers_platform import (
-    TenantListSerializer,
-    TenantDetailSerializer,
     PlatformPlanSerializer,
+    TenantDetailSerializer,
+    TenantListSerializer,
 )
 
 
@@ -35,11 +35,7 @@ def platform_dashboard(request):
 @api_view(["GET"])
 @permission_classes([IsSuperUser])
 def platform_tenants(request):
-    tenants = (
-        Tenant.objects.exclude(schema_name="public")
-        .select_related("plan")
-        .order_by("-created_at")
-    )
+    tenants = Tenant.objects.exclude(schema_name="public").select_related("plan").order_by("-created_at")
     serializer = TenantListSerializer(tenants, many=True)
     return Response(serializer.data)
 

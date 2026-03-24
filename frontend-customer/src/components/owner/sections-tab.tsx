@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PhotoPicker } from '@/components/admin/photo-picker'
 import type { TenantConfig, LandingSections } from '@/types/tenant'
+import type { Photo } from '@/types/photo'
 
 interface SectionsTabProps {
   config: TenantConfig
@@ -76,7 +78,13 @@ export function SectionsTab({ config, onChange }: SectionsTabProps) {
           </div>
           <div>
             <Label className="text-xs">Background image (optional)</Label>
-            <Input value={hero.bg_image_url ?? ''} onChange={(e) => emit('hero', { bg_image_url: e.target.value || null })} placeholder="https://..." />
+            <PhotoPicker
+              value={hero.bg_image_url}
+              previewUrl={hero.bg_image_url}
+              onSelect={(photo: Photo) => emit('hero', { bg_image_url: photo.s3_key, bg_image_photo_id: photo.id } as any)}
+              onClear={() => emit('hero', { bg_image_url: null, bg_image_photo_id: null } as any)}
+              label="Choose image"
+            />
           </div>
         </div>
       </SectionRow>
@@ -99,8 +107,14 @@ export function SectionsTab({ config, onChange }: SectionsTabProps) {
             />
           </div>
           <div>
-            <Label className="text-xs">Image URL (optional)</Label>
-            <Input value={about.image_url ?? ''} onChange={(e) => emit('about', { image_url: e.target.value || null })} placeholder="https://..." />
+            <Label className="text-xs">Image (optional)</Label>
+            <PhotoPicker
+              value={about.image_url}
+              previewUrl={about.image_url}
+              onSelect={(photo: Photo) => emit('about', { image_url: photo.s3_key, image_photo_id: photo.id } as any)}
+              onClear={() => emit('about', { image_url: null, image_photo_id: null } as any)}
+              label="Choose image"
+            />
           </div>
         </div>
       </SectionRow>

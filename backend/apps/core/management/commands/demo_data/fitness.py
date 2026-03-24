@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Training", "href": "/courses"},
         "show_login": True,
@@ -509,21 +510,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/fitness_8.jpg",
         "file_size": 2_500_000,
         "download_count": 198,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Nutrition & Macro Guide",
         "file_url": "demo/photos/fitness_9.jpg",
         "file_size": 1_400_000,
         "download_count": 156,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Advanced Periodization Templates",
         "file_url": "demo/photos/fitness_10.jpg",
         "file_size": 900_000,
         "download_count": 243,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -533,4 +534,213 @@ STUDENTS = [
     {"email": "david@demo.test", "name": "David Kowalski"},
     {"email": "jessica@demo.test", "name": "Jessica Rivera"},
     {"email": "ryan@demo.test", "name": "Ryan Patel"},
+]
+
+# ---------------------------------------------------------------------------
+# Subscription plans offered by this coach
+# ---------------------------------------------------------------------------
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Access all subscription courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        # "access" lists course titles (by index in COURSES) that this plan unlocks
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Fitness Collection",
+        "description": "All three programs at a discounted price. Build your foundation and train like a pro.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Gym Session",
+        "description": "Bring your questions and we'll work through exercises together.",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "HIIT Bootcamp LIVE",
+        "description": "Intense 45-minute HIIT session — bring a towel and water!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Form & Technique Q&A",
+        "description": "Live feedback on your exercise form and technique.",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Strength Class",
+    "description": "Our signature weekly strength training class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Friday Night Workout Party",
+        "description": "Weekly community stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Personal Training — Small Group",
+        "description": "Intimate 4-person coaching session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the coach and get oriented before your first program.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Fitness Bootcamp",
+        "description": "Full-day in-person bootcamp covering HIIT, strength, and mobility.",
+        "location": "Fitness Hub Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Workout Meetup",
+        "description": "Free outdoor workout session — bring friends!",
+        "location": "Kadıköy Sahil Parkı",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Marcus: bought HIIT course, subscribed monthly, good progress
+        "email": "marcus@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 360, True),
+            (0, 1, 420, True),
+            (0, 2, 300, False),
+            (1, 0, 360, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Sarah: bought the bundle, fully completed Total Body Transformation
+        "email": "sarah@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 360, True),
+            (0, 1, 420, True),
+            (0, 2, 480, True),
+            (0, 3, 360, True),
+            (0, 4, 540, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # David: annual subscriber, light progress
+        "email": "david@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 360, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Jessica: bought Strength & Conditioning course individually
+        "email": "jessica@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 390, True),
+            (2, 1, 480, True),
+            (2, 2, 450, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # Ryan: free course only, no purchases
+        "email": "ryan@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 360, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

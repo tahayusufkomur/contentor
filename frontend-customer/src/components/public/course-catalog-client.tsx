@@ -9,7 +9,7 @@ import { Search, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Course } from '@/types/course'
 
-type Filter = 'all' | 'free' | 'paid'
+type Filter = 'all' | 'free' | 'paid' | 'accessible'
 
 interface CourseCatalogClientProps {
   courses: Course[]
@@ -25,19 +25,23 @@ export function CourseCatalogClient({ courses }: CourseCatalogClientProps) {
       const q = search.toLowerCase()
       result = result.filter(
         (c) =>
-          c.title.toLowerCase().includes(q) ||
-          c.instructor_name.toLowerCase().includes(q),
+          c.title?.toLowerCase().includes(q) ||
+          c.instructor_name?.toLowerCase().includes(q),
       )
     }
     if (filter === 'free') result = result.filter((c) => c.pricing_type === 'free')
     if (filter === 'paid') result = result.filter((c) => c.pricing_type !== 'free')
+    if (filter === 'accessible') result = result.filter((c) => c.access_info?.has_access)
     return result
   }, [courses, search, filter])
+
+  const hasAccessible = courses.some((c) => c.access_info?.has_access && c.pricing_type !== 'free')
 
   const filters: { label: string; value: Filter }[] = [
     { label: 'All', value: 'all' },
     { label: 'Free', value: 'free' },
     { label: 'Paid', value: 'paid' },
+    ...(hasAccessible ? [{ label: 'My Courses', value: 'accessible' as Filter }] : []),
   ]
 
   return (

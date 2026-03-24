@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -5,7 +7,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from apps.core.access import can_access
+from apps.core.access import ContentAccessService
+from apps.core.pagination import StandardPagination, apply_ordering
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import generate_presigned_download_url
 
@@ -17,9 +20,20 @@ from .serializers import DownloadFileCreateSerializer, DownloadFileSerializer
 @permission_classes([AllowAny])
 def download_list_create(request):
     if request.method == "GET":
-        files = DownloadFile.objects.all()
-        serializer = DownloadFileSerializer(files, many=True)
-        return Response(serializer.data)
+        qs = DownloadFile.objects.all()
+        search = request.query_params.get("search", "").strip()
+        if search:
+            qs = qs.filter(title__icontains=search)
+        qs = apply_ordering(qs, request, ["title", "created_at", "file_size"])
+        paginator = StandardPagination()
+        page = paginator.paginate_queryset(qs, request)
+        access_map = {}
+        if request.user.is_authenticated:
+            service = ContentAccessService()
+            access_map = service.bulk_check_access(request.user, page)
+        return paginator.get_paginated_response(
+            DownloadFileSerializer(page, many=True, context={"request": request, "access_map": access_map}).data
+        )
 
     # POST requires coach or owner
     if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
@@ -55,9 +69,11 @@ def download_detail(request, pk):
 def download_url(request, pk):
     download_file = get_object_or_404(DownloadFile, pk=pk)
 
-    if not can_access(request.user, download_file):
+    access_service = ContentAccessService()
+    if not access_service.check_access(request.user, download_file):
+        info = access_service.get_access_info(request.user, download_file)
         return Response(
-            {"detail": "You do not have access to this file."},
+            {"detail": "You do not have access to this file.", "access_info": asdict(info)},
             status=status.HTTP_403_FORBIDDEN,
         )
 

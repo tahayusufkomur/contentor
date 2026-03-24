@@ -1,7 +1,9 @@
 import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
+import { serverFetch } from "@/lib/api-server";
 import { PublicHeader } from "@/components/shared/public-header";
 import { EditSidebar } from "@/components/owner/edit-sidebar";
+import type { SubscriptionPlan } from "@/types/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +16,17 @@ export default async function PublicLayout({
   const isAdmin = user?.role === "owner" || user?.role === "coach";
   const config = isAdmin ? await fetchTenantConfig(slug) : null;
 
+  let hasSubscription = false;
+  if (user) {
+    try {
+      const plans = await serverFetch<SubscriptionPlan[]>("/api/v1/billing/plans/");
+      hasSubscription = plans.some((p) => p.is_subscribed);
+    } catch {}
+  }
+
   const content = (
     <>
-      <PublicHeader user={user} />
+      <PublicHeader user={user} hasSubscription={hasSubscription} />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
     </>
   );

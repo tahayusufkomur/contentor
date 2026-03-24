@@ -1,3 +1,8 @@
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || "contentor.localhost";
 
@@ -8,6 +13,15 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**.amazonaws.com" },
     ],
+  },
+  webpack: (config) => {
+    // @mediapipe/tasks-vision has a malformed exports field (conditional keys
+    // mixed with subpath exports at the same level). Alias to the bundle directly.
+    config.resolve.alias["@mediapipe/tasks-vision"] = path.resolve(
+      __dirname,
+      "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
+    );
+    return config;
   },
   async rewrites() {
     return [

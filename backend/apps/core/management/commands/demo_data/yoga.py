@@ -32,8 +32,9 @@ CONFIG = {
     "navbar_config": {
         "links": [
             {"label": "Programs", "href": "/courses"},
-            {"label": "About", "href": "#about"},
-            {"label": "FAQ", "href": "#faq"},
+            {"label": "Calendar", "href": "/calendar"},
+            {"label": "About", "href": "/about"},
+            {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Your Practice", "href": "/courses"},
         "show_login": True,
@@ -501,21 +502,21 @@ DOWNLOADS = [
         "file_url": "demo/photos/yoga_8.jpg",
         "file_size": 2_800_000,
         "download_count": 178,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Sun Salutation Cheat Sheet",
         "file_url": "demo/photos/yoga_9.jpg",
         "file_size": 1_100_000,
         "download_count": 94,
-        "access_type": "free",
+        "pricing_type": "free",
     },
     {
         "title": "Advanced Asanas Sequence Chart",
         "file_url": "demo/photos/yoga_10.jpg",
         "file_size": 950_000,
         "download_count": 203,
-        "access_type": "paid",
+        "pricing_type": "paid",
     },
 ]
 
@@ -525,4 +526,213 @@ STUDENTS = [
     {"email": "marcus@demo.test", "name": "Marcus Torres"},
     {"email": "akiko@demo.test", "name": "Akiko Tanaka"},
     {"email": "david@demo.test", "name": "David Okonkwo"},
+]
+
+# ---------------------------------------------------------------------------
+# Subscription plans offered by this coach
+# ---------------------------------------------------------------------------
+
+SUBSCRIPTION_PLANS = [
+    {
+        "name": "Monthly Pass",
+        "description": "Access all subscription courses and live classes for one month.",
+        "price": "49.00",
+        "currency": "TRY",
+        "sort_order": 1,
+        # "access" lists course titles (by index in COURSES) that this plan unlocks
+        "access_course_indices": [1, 2],
+    },
+    {
+        "name": "Annual Pass",
+        "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "price": "349.00",
+        "currency": "TRY",
+        "sort_order": 2,
+        "access_course_indices": [1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bundles
+# ---------------------------------------------------------------------------
+
+BUNDLES = [
+    {
+        "name": "Complete Yoga Collection",
+        "description": "All three courses at a discounted price. From beginner foundations to advanced asanas.",
+        "price": "79.00",
+        "currency": "TRY",
+        # Indices into COURSES
+        "course_indices": [0, 1, 2],
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Live classes & streams (seeded as past/scheduled events)
+# ---------------------------------------------------------------------------
+
+LIVE_CLASSES = [
+    {
+        "title": "Open Mat Session",
+        "description": "Bring your questions and we'll practice poses together.",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+    {
+        "title": "Power Vinyasa LIVE",
+        "description": "Intensive 45-minute power flow — bring your mat and water!",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 15,
+    },
+    {
+        "title": "Alignment Q&A",
+        "description": "Live feedback on your pose alignment and form.",
+        "duration_minutes": 45,
+        "pricing_type": "paid",
+        "price": 0,
+    },
+]
+
+# Recurring weekly live class template — seed command creates instances for 8 weeks
+RECURRING_LIVE_CLASS = {
+    "title": "Weekly Vinyasa Flow",
+    "description": "Our signature weekly yoga class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,  # Wednesday (0=Mon)
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8,
+}
+
+LIVE_STREAMS = [
+    {
+        "title": "Sunday Morning Meditation & Flow",
+        "description": "Weekly community stream — free for everyone!",
+        "duration_minutes": 90,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ZOOM_CLASSES = [
+    {
+        "title": "Private Yoga Coaching — Small Group",
+        "description": "Intimate 4-person alignment session via Zoom. Camera on required.",
+        "zoom_link": "https://zoom.us/j/1234567890",
+        "duration_minutes": 60,
+        "pricing_type": "paid",
+        "price": 25,
+    },
+    {
+        "title": "Beginner Orientation (Zoom)",
+        "description": "Meet the instructor and get oriented before your first course.",
+        "zoom_link": "https://zoom.us/j/9876543210",
+        "duration_minutes": 60,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+ONSITE_EVENTS = [
+    {
+        "title": "Weekend Yoga Workshop",
+        "description": "Full-day in-person workshop covering alignment, inversions, and breathwork.",
+        "location": "Yoga Shala Istanbul",
+        "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+        "max_capacity": 20,
+        "duration_minutes": 240,
+        "pricing_type": "paid",
+        "price": 120,
+    },
+    {
+        "title": "Community Yoga Meetup",
+        "description": "Free outdoor yoga session in the park — bring friends!",
+        "location": "Kadıköy Yoga Park",
+        "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+        "max_capacity": 50,
+        "duration_minutes": 180,
+        "pricing_type": "free",
+        "price": 0,
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Payments, subscriptions & progress generated for STUDENTS
+#
+# Format:
+#   "purchases"    — list of course indices the student bought outright
+#   "bundle_index" — index into BUNDLES the student purchased (or None)
+#   "subscription" — plan index into SUBSCRIPTION_PLANS (or None)
+#   "progress"     — list of (course_idx, lesson_idx, watched_seconds, completed)
+# ---------------------------------------------------------------------------
+
+STUDENT_BILLING = [
+    {
+        # Priya: bought Vinyasa course, subscribed monthly, good progress
+        "email": "priya@demo.test",
+        "purchases": [1],
+        "bundle_index": None,
+        "subscription_plan_index": 0,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 380, True),
+            (0, 2, 300, False),
+            (1, 0, 430, True),
+            (1, 1, 200, False),
+        ],
+    },
+    {
+        # Sarah: bought the bundle, fully completed beginners
+        "email": "sarah@demo.test",
+        "purchases": [],
+        "bundle_index": 0,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 380, True),
+            (0, 2, 450, True),
+            (0, 3, 400, True),
+            (0, 4, 540, True),
+            (1, 0, 100, False),
+        ],
+    },
+    {
+        # Marcus: annual subscriber, light progress
+        "email": "marcus@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": 1,
+        "progress": [
+            (0, 0, 420, True),
+            (2, 0, 200, False),
+        ],
+    },
+    {
+        # Akiko: bought Advanced Asanas course individually
+        "email": "akiko@demo.test",
+        "purchases": [2],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (2, 0, 400, True),
+            (2, 1, 470, True),
+            (2, 2, 490, True),
+            (2, 3, 180, False),
+        ],
+    },
+    {
+        # David: free course only, no purchases
+        "email": "david@demo.test",
+        "purchases": [],
+        "bundle_index": None,
+        "subscription_plan_index": None,
+        "progress": [
+            (0, 0, 420, True),
+            (0, 1, 100, False),
+        ],
+    },
 ]

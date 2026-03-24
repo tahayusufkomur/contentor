@@ -1,14 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Loader2, Upload } from "lucide-react";
 import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { clientFetch } from "@/lib/api-client";
+import { PhotoPicker } from "@/components/admin/photo-picker";
 import type { TenantConfig } from "@/types/tenant";
+import type { Photo } from "@/types/photo";
 
 const FONTS = [
   "Inter",
@@ -27,47 +25,6 @@ interface BrandTabProps {
 }
 
 export function BrandTab({ config, onChange }: BrandTabProps) {
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const { upload_url, s3_key } = await clientFetch<{
-        upload_url: string;
-        s3_key: string;
-      }>("/api/v1/upload/presign/", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: file.name,
-          content_type: file.type,
-          category: "branding",
-        }),
-      });
-      await fetch(upload_url, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      const { file_url } = await clientFetch<{ file_url: string }>(
-        "/api/v1/upload/complete/",
-        {
-          method: "POST",
-          body: JSON.stringify({ s3_key, category: "branding" }),
-        },
-      );
-      onChange({ logo_url: file_url });
-    } catch (err) {
-      console.error("Logo upload failed", err);
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  };
-
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
@@ -81,44 +38,16 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="logo-url">Logo</Label>
-        <div className="flex gap-2">
-          <Input
-            id="logo-url"
-            value={config.logo_url}
-            onChange={(e) => onChange({ logo_url: e.target.value })}
-            placeholder="https://..."
-            className="flex-1"
-          />
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            onChange={handleLogoUpload}
-            className="hidden"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="shrink-0"
-          >
-            {uploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-        {config.logo_url && (
-          <img
-            src={config.logo_url}
-            alt="Logo preview"
-            className="mt-1 h-10 w-auto rounded object-contain"
-          />
-        )}
+        <Label>Logo</Label>
+        <PhotoPicker
+          value={config.logo_url}
+          previewUrl={config.logo_url}
+          onSelect={(photo: Photo) =>
+            onChange({ logo_url: photo.s3_key, logo_id: photo.id })
+          }
+          onClear={() => onChange({ logo_url: "", logo_id: null })}
+          label="Choose logo"
+        />
       </div>
 
       <div className="space-y-2">

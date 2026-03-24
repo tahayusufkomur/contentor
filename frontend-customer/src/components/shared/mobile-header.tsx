@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { User } from "@/types/auth";
 
 interface NavItem {
   label: string;
@@ -22,15 +24,18 @@ interface NavSection {
 interface MobileHeaderProps {
   title: string;
   sections: NavSection[];
+  user?: User | null;
 }
 
 function isItemActive(pathname: string, href: string) {
   return pathname === href || (href !== "/admin" && pathname.startsWith(href));
 }
 
-export function MobileHeader({ title, sections }: MobileHeaderProps) {
+export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     () =>
       Object.fromEntries(
@@ -116,6 +121,36 @@ export function MobileHeader({ title, sections }: MobileHeaderProps) {
               </div>
             );
           })}
+
+          {user && (
+            <div className="border-t pt-2 mt-2">
+              <div className="flex items-center gap-2.5 px-3 py-2">
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src={user.avatar_url} />
+                  <AvatarFallback className="text-[10px]">
+                    {(user.name || user.email).split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user.name || user.email}</p>
+                  <p className="text-[11px] text-muted-foreground">{user.role === "owner" ? "Owner" : "Coach"}</p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  setSigningOut(true);
+                  await fetch("/api/auth/logout", { method: "POST" });
+                  router.push("/login?toast=You've+been+logged+out&toast_type=info");
+                  router.refresh();
+                }}
+                disabled={signingOut}
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                {signingOut ? "Signing out..." : "Sign out"}
+              </button>
+            </div>
+          )}
         </nav>
       )}
     </div>

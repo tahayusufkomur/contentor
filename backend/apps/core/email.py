@@ -6,7 +6,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
-def send_email(to: str, subject: str, html: str) -> bool:
+def send_email(to: str, subject: str, html: str, from_name: str = "") -> bool:
     if not settings.RESEND_API_KEY:
         logger.warning("RESEND_API_KEY not set, logging email instead")
         logger.info("Email to=%s subject=%s", to, subject)
@@ -14,10 +14,14 @@ def send_email(to: str, subject: str, html: str) -> bool:
 
     resend.api_key = settings.RESEND_API_KEY
 
+    from_email = settings.RESEND_FROM_EMAIL
+    if from_name:
+        from_email = f"{from_name} <{settings.RESEND_FROM_EMAIL}>"
+
     try:
         resend.Emails.send(
             {
-                "from": settings.RESEND_FROM_EMAIL,
+                "from": from_email,
                 "to": [to],
                 "subject": subject,
                 "html": html,

@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0001_initial'),
+        ("tenant_config", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tenantconfig',
-            name='primary_color',
-            field=models.CharField(default='#171717', max_length=7),
+            model_name="tenantconfig",
+            name="primary_color",
+            field=models.CharField(default="#171717", max_length=7),
         ),
         migrations.AlterField(
-            model_name='tenantconfig',
-            name='secondary_color',
-            field=models.CharField(default='#737373', max_length=7),
+            model_name="tenantconfig",
+            name="secondary_color",
+            field=models.CharField(default="#737373", max_length=7),
         ),
     ]
