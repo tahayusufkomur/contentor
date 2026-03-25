@@ -7,6 +7,27 @@ import { createEmailSession } from "@/lib/email-api";
 const EMAILCRAFT_BASE =
   process.env.NEXT_PUBLIC_EMAILCRAFT_URL || "https://emailcraft.contentor.app";
 
+function resolvedColorToHex(cssVar: string): string {
+  if (typeof window === "undefined") return "";
+  // Resolve the CSS variable via a temporary element
+  const el = document.createElement("div");
+  el.style.setProperty("background-color", `var(${cssVar})`);
+  document.body.appendChild(el);
+  const raw = getComputedStyle(el).backgroundColor;
+  document.body.removeChild(el);
+  if (!raw || raw === "rgba(0, 0, 0, 0)") return "";
+  // Draw a 1x1 pixel to convert any color format (oklch, hsl, etc.) to RGB
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+  ctx.fillStyle = raw;
+  ctx.fillRect(0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 interface SavePayload {
   html: string;
   json: Record<string, unknown>;
@@ -20,14 +41,23 @@ interface TemplateSavedPayload {
 interface EmailBuilderIframeProps {
   templateJson?: Record<string, unknown>;
   templateId?: string;
+  chromeColor?: string;
+  canvasColor?: string;
   onSave?: (payload: SavePayload) => void;
   onTemplateSaved?: (payload: TemplateSavedPayload) => void;
   onReady?: () => void;
 }
 
+function detectTheme(): "light" | "dark" {
+  if (typeof document === "undefined") return "light";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
 export function EmailBuilderIframe({
   templateJson,
   templateId,
+  chromeColor,
+  canvasColor,
   onSave,
   onTemplateSaved,
   onReady,
@@ -37,6 +67,26 @@ export function EmailBuilderIframe({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [builderReady, setBuilderReady] = useState(false);
+  const [themeMode, setThemeMode] = useState<"light" | "dark">(detectTheme);
+
+  const [resolvedChromeColor, setResolvedChromeColor] = useState(chromeColor || "");
+  const [resolvedCanvasColor, setResolvedCanvasColor] = useState(canvasColor || "");
+
+  // Observe dark mode class changes on <html>
+  useEffect(() => {
+    const resolve = () => {
+      setThemeMode(detectTheme());
+      setResolvedChromeColor(chromeColor || resolvedColorToHex("--card"));
+      setResolvedCanvasColor(canvasColor || resolvedColorToHex("--background"));
+    };
+    resolve();
+    const observer = new MutationObserver(resolve);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, [chromeColor, canvasColor]);
 
   const emailcraftOrigin = useMemo(() => {
     try {
@@ -141,6 +191,34 @@ export function EmailBuilderIframe({
     }
   }, [builderReady, emailcraftOrigin, templateId, templateJson]);
 
+  // Send updated theme/colors to the builder when they change
+  useEffect(() => {
+    if (!builderReady || !iframeRef.current?.contentWindow) return;
+    iframeRef.current.contentWindow.postMessage(
+      {
+        source: "mailcraft-host",
+        type: "MAILCRAFT_INIT",
+        payload: {
+          context: {
+            themeMode,
+            chromeColor: resolvedChromeColor || undefined,
+            canvasColor: resolvedCanvasColor || undefined,
+          },
+        },
+      },
+      emailcraftOrigin,
+    );
+  }, [builderReady, emailcraftOrigin, themeMode, resolvedChromeColor, resolvedCanvasColor]);
+
+  const iframeSrc = useMemo(() => {
+    if (!sessionToken) return "";
+    const params = new URLSearchParams({ sessionToken });
+    params.set("themeMode", themeMode);
+    if (resolvedChromeColor) params.set("chromeColor", resolvedChromeColor);
+    if (resolvedCanvasColor) params.set("canvasColor", resolvedCanvasColor);
+    return `${EMAILCRAFT_BASE}/builder/?${params.toString()}`;
+  }, [sessionToken, themeMode, resolvedChromeColor, resolvedCanvasColor]);
+
   if (loading) {
     return (
       <div className="flex h-[600px] items-center justify-center rounded-lg border bg-muted/30">
@@ -157,12 +235,12 @@ export function EmailBuilderIframe({
     );
   }
 
-  if (!sessionToken) return null;
+  if (!sessionToken || !iframeSrc) return null;
 
   return (
     <iframe
       ref={iframeRef}
-      src={`${EMAILCRAFT_BASE}/builder/?sessionToken=${encodeURIComponent(sessionToken)}`}
+      src={iframeSrc}
       className="w-full rounded-lg border"
       style={{ height: "800px" }}
       allow="clipboard-write"

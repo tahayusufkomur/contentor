@@ -50,7 +50,6 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
 
     try:
         with tenant_context(tenant):
-            from apps.courses.models import Course
             from apps.email_campaigns.models import CampaignStatus, EmailCampaign
             from apps.email_campaigns.recipients import resolve_recipients
             from apps.tenant_config.models import TenantConfig
@@ -75,19 +74,6 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
 
             recipients = list(resolve_recipients(campaign.recipient_filter).values("id", "name", "email"))
             recipient_count = len(recipients)
-
-            course_name = ""
-            recipient_filter = campaign.recipient_filter
-            if recipient_filter.get("type") == "course":
-                course_ids = recipient_filter.get("course_ids") or []
-                if len(course_ids) == 1:
-                    course = Course.objects.filter(pk=course_ids[0]).first()
-                    if course:
-                        course_name = course.title
-
-            # EmailCraft variable validation rejects blank values for some fields.
-            if not course_name:
-                course_name = "General"
 
             summary = _build_recipient_summary(recipient_filter)
             campaign.recipient_summary = summary
@@ -132,11 +118,7 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
 
                 try:
                     variables = {
-                        "student_name": (recipient["name"] or recipient["email"] or "Student"),
-                        "student_email": recipient["email"] or "unknown@example.com",
-                        "course_name": course_name,
-                        "coach_name": coach_name or "Coach",
-                        "brand_name": brand_name or "Brand",
+                        "Name": (recipient["name"] or recipient["email"] or "Student"),
                     }
                     rendered = emailcraft_client.render_template(api_key, campaign.template_id, variables)
                     html = rendered.get("html", "")

@@ -7,7 +7,6 @@ import { EmailBuilderIframe } from "@/components/admin/email/email-builder-ifram
 import { RecipientSelector } from "@/components/admin/email/recipient-selector";
 import { TemplateGrid } from "@/components/admin/email/template-grid";
 import {
-  copyTemplate,
   getTemplate,
   listGallery,
   listTemplates,
@@ -62,7 +61,9 @@ export default function ComposePage() {
       listTemplates().then(asArray).catch(() => [] as EmailTemplate[]),
       listGallery().then(asArray).catch(() => [] as EmailTemplate[]),
     ]).then(([mine, gallery]) => {
-      const all = [...mine, ...(gallery as EmailTemplate[])];
+      const seen = new Set(mine.map((t) => t.id));
+      const uniqueGallery = (gallery as EmailTemplate[]).filter((t) => !seen.has(t.id));
+      const all = [...mine, ...uniqueGallery];
       setAllTemplates(all);
       setLoadingTemplates(false);
 
@@ -92,17 +93,20 @@ export default function ComposePage() {
       .catch(() => {});
   }, [initialTemplateId]);
 
-  // Step 1: Select a template → copy and go to Step 2
+  // Step 1: Select a template → load its JSON and go to Step 2
   const handleSelectTemplate = useCallback(async (template: EmailTemplate) => {
     setCopyingTemplateId(template.id);
     try {
-      const copy = await copyTemplate(template.id);
-      setSavedTemplateId(copy.id);
-      setSavedTemplateName(copy.name);
-      setHasSaved(true);
+      const data = await getTemplate(template.id);
+      if (data.json_data && typeof data.json_data === "object") {
+        setTemplateJson(data.json_data as Record<string, unknown>);
+      }
+      setSavedTemplateName(String(data.name || template.name || ""));
+      setSavedTemplateId("");
+      setHasSaved(false);
       setStep("design");
     } catch {
-      setError("Failed to copy template. Please try again.");
+      setError("Failed to load template. Please try again.");
     } finally {
       setCopyingTemplateId(null);
     }

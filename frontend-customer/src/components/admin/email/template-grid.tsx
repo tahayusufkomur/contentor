@@ -6,6 +6,8 @@ import type { EmailTemplate } from "@/lib/email-api";
 import { TemplateCard } from "./template-card";
 
 const CATEGORIES = ["All", "Welcome", "Newsletter", "Promotional", "Transactional", "Event"];
+const SOURCES = ["All", "Saved", "Gallery"] as const;
+type Source = (typeof SOURCES)[number];
 
 interface TemplateGridProps {
   templates: EmailTemplate[];
@@ -34,9 +36,20 @@ export function TemplateGrid({
 }: TemplateGridProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [source, setSource] = useState<Source>("All");
+
+  const hasSavedTemplates = useMemo(
+    () => templates.some((t) => (t as Record<string, unknown>).template_type === "user"),
+    [templates],
+  );
 
   const filtered = useMemo(() => {
     let result = templates;
+    if (source === "Saved") {
+      result = result.filter((t) => (t as Record<string, unknown>).template_type === "user");
+    } else if (source === "Gallery") {
+      result = result.filter((t) => (t as Record<string, unknown>).template_type !== "user");
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((t) => t.name.toLowerCase().includes(q));
@@ -47,10 +60,29 @@ export function TemplateGrid({
       );
     }
     return result;
-  }, [templates, search, category]);
+  }, [templates, search, category, source]);
 
   return (
     <div className="space-y-4">
+      {/* Source toggle */}
+      {hasSavedTemplates && (
+        <div className="flex gap-2">
+          {SOURCES.map((s) => (
+            <button
+              key={s}
+              onClick={() => setSource(s)}
+              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+                source === s
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {s === "Saved" ? "My Saved" : s}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="flex flex-wrap items-center gap-3">
         <input

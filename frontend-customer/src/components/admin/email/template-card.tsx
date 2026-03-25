@@ -25,6 +25,7 @@ export function TemplateCard({
 }: TemplateCardProps) {
   const isGallery = (template as Record<string, unknown>).template_type === "provided";
   const category = (template as Record<string, unknown>).category as string | undefined;
+  const thumbnailUrl = (template as Record<string, unknown>).thumbnail_url as string | undefined;
 
   return (
     <div
@@ -35,7 +36,13 @@ export function TemplateCard({
     >
       {/* Preview area */}
       <div className="relative h-[200px] overflow-hidden bg-muted/20">
-        {previewHtml ? (
+        {thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={template.name}
+            className="h-full w-full object-cover object-top"
+          />
+        ) : previewHtml ? (
           <div className="h-[500px] w-[600px] origin-top-left scale-[0.38]">
             <iframe
               srcDoc={previewHtml}

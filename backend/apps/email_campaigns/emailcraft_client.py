@@ -182,11 +182,7 @@ def configure_variables(api_key: str, variables: list[dict]) -> dict:
 
 
 DEFAULT_VARIABLES = [
-    {"key": "student_name", "label": "Student Name", "defaultValue": "Student"},
-    {"key": "student_email", "label": "Student Email", "defaultValue": ""},
-    {"key": "course_name", "label": "Course Name", "defaultValue": ""},
-    {"key": "coach_name", "label": "Coach Name", "defaultValue": ""},
-    {"key": "brand_name", "label": "Brand Name", "defaultValue": ""},
+    {"key": "Name", "label": "Student Name", "defaultValue": "Student"},
 ]
 
 
