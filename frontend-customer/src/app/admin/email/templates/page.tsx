@@ -1,165 +1,216 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
+import { TemplateGrid } from "@/components/admin/email/template-grid";
 import {
   deleteTemplate,
+  getTemplate,
   listGallery,
   listTemplates,
+  previewTemplates,
   type EmailTemplate,
   type GalleryTemplate,
 } from "@/lib/email-api";
 
 export const dynamic = "force-dynamic";
 
-function asArray<T>(data: T[] | { results: T[] }): T[] {
-  return Array.isArray(data) ? data : data.results || [];
+type Tab = "mine" | "gallery";
+
+function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
+  if (Array.isArray(data)) return data;
+  if ("results" in data && Array.isArray(data.results)) return data.results;
+  if ("data" in data && Array.isArray((data as { data: T[] }).data)) return (data as { data: T[] }).data;
+  return [];
 }
 
-export default function TemplateLibraryPage() {
+export default function TemplatesPage() {
   const router = useRouter();
+  const [tab, setTab] = useState<Tab>("mine");
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [gallery, setGallery] = useState<GalleryTemplate[]>([]);
-  const [showGallery, setShowGallery] = useState(false);
+  const [gallery, setGallery] = useState<EmailTemplate[]>([]);
+  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
 
-  const fetchTemplates = useCallback(async () => {
+  // Preview modal state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTitle, setPreviewTitle] = useState("");
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  const fetchPreviews = useCallback(async (tmpls: EmailTemplate[]) => {
+    const ids = tmpls.map((t) => t.id).filter(Boolean);
+    if (ids.length === 0) return;
+
+    // Batch in groups of 20
+    for (let i = 0; i < ids.length; i += 20) {
+      const batch = ids.slice(i, i + 20);
+      try {
+        const result = await previewTemplates(batch);
+        setPreviewHtmlMap((prev) => ({ ...prev, ...result.previews }));
+      } catch {
+        // partial failure is fine
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    listTemplates()
+      .then((data) => {
+        const tmpls = asArray(data);
+        setTemplates(tmpls);
+        fetchPreviews(tmpls);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [fetchPreviews]);
+
+  useEffect(() => {
+    if (tab !== "gallery" || galleryLoaded) return;
+    listGallery()
+      .then((data) => {
+        const g = asArray(data) as EmailTemplate[];
+        setGallery(g);
+        setGalleryLoaded(true);
+        fetchPreviews(g);
+      })
+      .catch(() => {});
+  }, [tab, galleryLoaded, fetchPreviews]);
+
+  const handlePreview = useCallback(async (template: EmailTemplate) => {
+    setPreviewOpen(true);
+    setPreviewTitle(template.name);
+    setPreviewHtml("");
+    setPreviewLoading(true);
+
+    // Try cached preview first
+    if (previewHtmlMap[template.id]) {
+      setPreviewHtml(previewHtmlMap[template.id]);
+      setPreviewLoading(false);
+      return;
+    }
+
     try {
-      const data = await listTemplates();
-      setTemplates(asArray(data));
+      const detail = await getTemplate(template.id);
+      const html =
+        (detail as Record<string, unknown>).html as string ||
+        (detail as Record<string, unknown>).rendered_html as string ||
+        "";
+      if (html) {
+        setPreviewHtml(html);
+      } else {
+        // Try batch preview for this one
+        const result = await previewTemplates([template.id]);
+        setPreviewHtml(result.previews[template.id] || "");
+      }
     } catch {
-      setTemplates([]);
+      setPreviewHtml("");
     } finally {
-      setLoading(false);
+      setPreviewLoading(false);
     }
-  }, []);
+  }, [previewHtmlMap]);
 
-  const fetchGallery = useCallback(async () => {
+  const handleDelete = useCallback(async (template: EmailTemplate) => {
+    if (!window.confirm(`Delete "${template.name}"?`)) return;
     try {
-      const data = await listGallery();
-      setGallery(asArray(data));
-    } catch {
-      setGallery([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTemplates();
-  }, [fetchTemplates]);
-
-  useEffect(() => {
-    if (showGallery) {
-      fetchGallery();
-    }
-  }, [fetchGallery, showGallery]);
-
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this template?")) return;
-
-    try {
-      await deleteTemplate(id);
-      setTemplates((prev) => prev.filter((template) => template.id !== id));
+      await deleteTemplate(template.id);
+      setTemplates((prev) => prev.filter((t) => t.id !== template.id));
     } catch {
       // ignore
     }
-  }
+  }, []);
 
-  function handleEdit(templateId: string) {
-    router.push(`/admin/email/compose?template=${encodeURIComponent(templateId)}`);
-  }
+  const handleEdit = useCallback(
+    (template: EmailTemplate) => {
+      router.push(`/admin/email/compose?template=${template.id}`);
+    },
+    [router],
+  );
+
+  const currentTemplates = tab === "mine" ? templates : gallery;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Email Templates</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage your email templates.</p>
+          <p className="text-sm text-muted-foreground">Manage your email templates.</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowGallery((prev) => !prev)}
-            className="rounded-md border px-4 py-2 text-sm hover:bg-muted/50"
-          >
-            {showGallery ? "My Templates" : "Browse Gallery"}
-          </button>
-          <Link
-            href="/admin/email/compose"
-            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground hover:opacity-90"
-          >
-            New Template
-          </Link>
-        </div>
+        <Link
+          href="/admin/email/compose"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          New Email
+        </Link>
       </div>
 
-      {loading ? (
-        <div className="py-12 text-center text-muted-foreground">Loading templates...</div>
-      ) : showGallery ? (
-        <div>
-          <h2 className="mb-4 text-lg font-semibold">Gallery Templates</h2>
-          {gallery.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">No gallery templates available.</p>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {gallery.map((template) => (
-                <div
-                  key={template.id}
-                  className="rounded-lg border p-4 transition-shadow hover:shadow-md"
-                >
-                  <h3 className="text-sm font-medium">{template.name}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {template.category}
-                    {template.is_premium ? " (Premium)" : ""}
-                  </p>
-                  <button
-                    onClick={() => handleEdit(template.id)}
-                    className="mt-3 text-xs text-primary hover:underline"
-                  >
-                    Use this template
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : templates.length === 0 ? (
-        <div className="rounded-lg border bg-muted/10 py-12 text-center">
-          <p className="text-muted-foreground">No templates yet.</p>
-          <button
-            onClick={() => setShowGallery(true)}
-            className="mt-2 text-sm text-primary hover:underline"
-          >
-            Browse the gallery to get started
-          </button>
-        </div>
+      {/* Tab toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTab("mine")}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+            tab === "mine" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          My Templates
+        </button>
+        <button
+          onClick={() => setTab("gallery")}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+            tab === "gallery" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          Gallery
+        </button>
+      </div>
+
+      {loading && tab === "mine" ? (
+        <p className="text-sm text-muted-foreground">Loading templates...</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
-            <div
-              key={template.id}
-              className="rounded-lg border p-4 transition-shadow hover:shadow-md"
-            >
-              <h3 className="text-sm font-medium">{template.name}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {new Date(String(template.updated_at || template.created_at)).toLocaleDateString()}
-              </p>
-              <div className="mt-3 flex gap-3">
-                <button
-                  onClick={() => handleEdit(template.id)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(template.id)}
-                  className="text-xs text-destructive hover:underline"
-                >
-                  Delete
-                </button>
-              </div>
+        <TemplateGrid
+          templates={currentTemplates}
+          previewHtmlMap={previewHtmlMap}
+          mode="library"
+          onEdit={handleEdit}
+          onDelete={tab === "mine" ? handleDelete : undefined}
+          onPreview={handlePreview}
+        />
+      )}
+
+      {/* Preview modal */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative mx-4 w-full max-w-3xl rounded-lg bg-background p-4 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">{previewTitle}</h3>
+              <button
+                onClick={() => setPreviewOpen(false)}
+                className="rounded-md px-2 py-1 text-sm hover:bg-muted"
+              >
+                Close
+              </button>
             </div>
-          ))}
+            {previewLoading ? (
+              <div className="flex h-[60vh] items-center justify-center">
+                <p className="text-sm text-muted-foreground">Loading preview...</p>
+              </div>
+            ) : previewHtml ? (
+              <iframe
+                srcDoc={previewHtml}
+                sandbox=""
+                className="h-[75vh] w-full rounded border"
+                title="Template preview"
+              />
+            ) : (
+              <div className="flex h-[60vh] items-center justify-center">
+                <p className="text-sm text-muted-foreground">Preview not available.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import EmailCampaign
+from .models import CampaignRecipient, EmailCampaign
 from .recipients import get_recipient_count
 
 
@@ -35,8 +35,14 @@ class SendEmailSerializer(serializers.Serializer):
 
 
 class EmailCampaignSerializer(serializers.ModelSerializer):
-    sender_name = serializers.CharField(source="sender.name", read_only=True)
-    sender_email = serializers.CharField(source="sender.email", read_only=True)
+    sender_name = serializers.SerializerMethodField()
+    sender_email = serializers.SerializerMethodField()
+
+    def get_sender_name(self, obj):
+        return obj.sender.name if obj.sender else ""
+
+    def get_sender_email(self, obj):
+        return obj.sender.email if obj.sender else ""
 
     class Meta:
         model = EmailCampaign
@@ -55,5 +61,26 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
             "sent_at",
+            "rendered_html",
+            "recipient_summary",
         ]
         read_only_fields = fields
+
+
+class CampaignRecipientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignRecipient
+        fields = ["id", "user_id", "user_name", "user_email", "status", "error_message", "sent_at"]
+        read_only_fields = fields
+
+
+class CopyTemplateSerializer(serializers.Serializer):
+    source_template_id = serializers.CharField(max_length=255)
+
+
+class PreviewTemplateSerializer(serializers.Serializer):
+    template_ids = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        min_length=1,
+        max_length=20,
+    )

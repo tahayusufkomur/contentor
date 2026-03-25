@@ -1,4 +1,6 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 
 from django.conf import settings as django_settings
 from django.db import connection
@@ -222,6 +224,106 @@ def campaign_list(request):
     page = campaigns[offset : offset + limit]
 
     return Response({"count": total, "results": EmailCampaignSerializer(page, many=True).data})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def copy_template(request):
+    from .serializers import CopyTemplateSerializer
+
+    serializer = CopyTemplateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    api_key, error = _get_api_key()
+    if error or not api_key:
+        return Response({"detail": error or "Email service unavailable."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    source_id = serializer.validated_data["source_template_id"]
+
+    try:
+        source = emailcraft_client.get_template(api_key, source_id)
+    except Exception:
+        logger.exception("Failed to fetch source template %s", source_id)
+        return Response({"detail": "Source template not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    source_name = source.get("name", "Untitled")
+    source_json = source.get("json_data", {})
+    source_category = source.get("category", "")
+
+    try:
+        result = emailcraft_client.create_template(
+            api_key,
+            name=f"Copy of {source_name}",
+            json_data=source_json,
+            category=source_category,
+        )
+        return Response(
+            {"id": result.get("id", ""), "name": result.get("name", "")},
+            status=status.HTTP_201_CREATED,
+        )
+    except Exception:
+        logger.exception("Failed to create template copy")
+        return Response({"detail": "Failed to copy template."}, status=status.HTTP_502_BAD_GATEWAY)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def template_preview_batch(request):
+    from .serializers import PreviewTemplateSerializer
+
+    serializer = PreviewTemplateSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    api_key, error = _get_api_key()
+    if error or not api_key:
+        return Response({"detail": error or "Email service unavailable."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+    template_ids = serializer.validated_data["template_ids"]
+    previews: dict[str, str] = {}
+    errors: dict[str, str] = {}
+
+    def render_one(tid: str) -> tuple[str, str | None, str | None]:
+        try:
+            tmpl = emailcraft_client.get_template(api_key, tid)
+            json_data = tmpl.get("json_data")
+            if not json_data:
+                return tid, None, "No template data"
+            result = emailcraft_client.export_html(api_key, json_data, "defaults")
+            return tid, result.get("html", ""), None
+        except Exception as exc:
+            return tid, None, str(exc)[:200]
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = {pool.submit(render_one, tid): tid for tid in template_ids}
+        for future in futures:
+            try:
+                tid, html, err = future.result(timeout=10)
+                if html:
+                    previews[tid] = html
+                elif err:
+                    errors[tid] = err
+            except FuturesTimeoutError:
+                errors[futures[future]] = "Render timed out"
+            except Exception as exc:
+                errors[futures[future]] = str(exc)[:200]
+
+    return Response({"previews": previews, "errors": errors})
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def campaign_recipients(request, pk: int):
+    from .models import CampaignRecipient
+    from .serializers import CampaignRecipientSerializer
+
+    campaign = EmailCampaign.objects.filter(pk=pk).first()
+    if not campaign:
+        return Response({"detail": "Campaign not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    recipients = CampaignRecipient.objects.filter(campaign=campaign)
+    return Response({"results": CampaignRecipientSerializer(recipients, many=True).data})
 
 
 @api_view(["GET"])

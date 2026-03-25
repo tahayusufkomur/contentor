@@ -10,14 +10,18 @@ const EMAILCRAFT_BASE =
 interface SavePayload {
   html: string;
   json: Record<string, unknown>;
-  templateId?: string;
-  templateName?: string;
+}
+
+interface TemplateSavedPayload {
+  templateId: string;
+  templateName: string;
 }
 
 interface EmailBuilderIframeProps {
   templateJson?: Record<string, unknown>;
   templateId?: string;
   onSave?: (payload: SavePayload) => void;
+  onTemplateSaved?: (payload: TemplateSavedPayload) => void;
   onReady?: () => void;
 }
 
@@ -25,6 +29,7 @@ export function EmailBuilderIframe({
   templateJson,
   templateId,
   onSave,
+  onTemplateSaved,
   onReady,
 }: EmailBuilderIframeProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -91,9 +96,15 @@ export function EmailBuilderIframe({
         onSave?.({
           html: data.payload?.html ?? "",
           json: data.payload?.json ?? {},
-          templateId: data.payload?.template_id ?? data.payload?.templateId,
-          templateName: data.payload?.template_name ?? data.payload?.templateName,
         });
+      }
+
+      if (type === "MAILCRAFT_TEMPLATE_SAVED") {
+        const tid = data.payload?.template_id || data.payload?.templateId || "";
+        const tname = data.payload?.template_name || data.payload?.templateName || "";
+        if (tid) {
+          onTemplateSaved?.({ templateId: String(tid), templateName: String(tname) });
+        }
       }
     }
 
@@ -101,7 +112,7 @@ export function EmailBuilderIframe({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [emailcraftOrigin, onReady, onSave]);
+  }, [emailcraftOrigin, onReady, onSave, onTemplateSaved]);
 
   useEffect(() => {
     if (!builderReady || !iframeRef.current?.contentWindow) return;

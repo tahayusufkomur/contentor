@@ -32,12 +32,22 @@ export type RecipientFilter =
   | { type: "course"; course_ids: number[] }
   | { type: "individual"; user_ids: number[] };
 
+export interface CampaignRecipientEntry {
+  id: number;
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  status: "sent" | "failed";
+  error_message: string;
+  sent_at: string | null;
+}
+
 export interface EmailCampaign {
   id: number;
   subject: string;
   template_id: string;
   template_name: string;
-  sender: number;
+  sender: number | null;
   sender_name: string;
   sender_email: string;
   recipient_filter: RecipientFilter;
@@ -45,6 +55,8 @@ export interface EmailCampaign {
   success_count: number;
   failure_count: number;
   status: "sending" | "sent" | "partial" | "failed";
+  rendered_html: string;
+  recipient_summary: string;
   created_at: string;
   sent_at: string | null;
 }
@@ -110,4 +122,31 @@ export async function listCampaigns(
 
 export async function getCampaign(id: number): Promise<EmailCampaign> {
   return clientFetch<EmailCampaign>(`/api/v1/email/campaigns/${id}/`);
+}
+
+export async function copyTemplate(sourceTemplateId: string): Promise<{ id: string; name: string }> {
+  return clientFetch<{ id: string; name: string }>("/api/v1/email/templates/copy/", {
+    method: "POST",
+    body: JSON.stringify({ source_template_id: sourceTemplateId }),
+  });
+}
+
+export async function previewTemplates(
+  templateIds: string[],
+): Promise<{ previews: Record<string, string>; errors: Record<string, string> }> {
+  return clientFetch<{ previews: Record<string, string>; errors: Record<string, string> }>(
+    "/api/v1/email/templates/preview/",
+    {
+      method: "POST",
+      body: JSON.stringify({ template_ids: templateIds }),
+    },
+  );
+}
+
+export async function listCampaignRecipients(
+  campaignId: number,
+): Promise<{ results: CampaignRecipientEntry[] }> {
+  return clientFetch<{ results: CampaignRecipientEntry[] }>(
+    `/api/v1/email/campaigns/${campaignId}/recipients/`,
+  );
 }
