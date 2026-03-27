@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { EmailBuilderIframe } from "@/components/admin/email/email-builder-iframe";
+import { EmailBuilderIframe, type EmailBuilderIframeHandle } from "@/components/admin/email/email-builder-iframe";
 import { RecipientSelector } from "@/components/admin/email/recipient-selector";
 import { TemplateGrid } from "@/components/admin/email/template-grid";
 import {
@@ -30,27 +30,63 @@ function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
 export default function ComposePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const builderRef = useRef<EmailBuilderIframeHandle>(null);
   const initialTemplateId = searchParams.get("template") || "";
+  const initialStep = (searchParams.get("step") as Step) || (initialTemplateId ? "design" : "choose");
+  const initialSubject = searchParams.get("subject") || "";
+  const initialTemplateName = searchParams.get("templateName") || "";
 
   // Step 1 state
-  const [step, setStep] = useState<Step>(initialTemplateId ? "design" : "choose");
+  const [step, setStepRaw] = useState<Step>(initialStep);
   const [allTemplates, setAllTemplates] = useState<EmailTemplate[]>([]);
   const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>({});
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [copyingTemplateId, setCopyingTemplateId] = useState<string | null>(null);
 
   // Step 2 state
-  const [savedTemplateId, setSavedTemplateId] = useState(initialTemplateId);
-  const [savedTemplateName, setSavedTemplateName] = useState("");
+  const [savedTemplateId, setSavedTemplateIdRaw] = useState(initialTemplateId);
+  const [savedTemplateName, setSavedTemplateNameRaw] = useState(initialTemplateName);
   const [templateJson, setTemplateJson] = useState<Record<string, unknown> | undefined>(undefined);
   const [hasSaved, setHasSaved] = useState(!!initialTemplateId);
 
   // Step 3 state
-  const [subject, setSubject] = useState("");
+  const [subject, setSubjectRaw] = useState(initialSubject);
   const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>({ type: "all" });
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync key state to URL so refresh preserves selections
+  const syncUrl = useCallback((overrides: Record<string, string>) => {
+    const params = new URLSearchParams(window.location.search);
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v) params.set(k, v);
+      else params.delete(k);
+    }
+    const qs = params.toString();
+    const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState({}, "", next);
+  }, []);
+
+  const setStep = useCallback((s: Step) => {
+    setStepRaw(s);
+    syncUrl({ step: s });
+  }, [syncUrl]);
+
+  const setSavedTemplateId = useCallback((id: string) => {
+    setSavedTemplateIdRaw(id);
+    syncUrl({ template: id });
+  }, [syncUrl]);
+
+  const setSavedTemplateName = useCallback((name: string) => {
+    setSavedTemplateNameRaw(name);
+    syncUrl({ templateName: name });
+  }, [syncUrl]);
+
+  const setSubject = useCallback((s: string) => {
+    setSubjectRaw(s);
+    syncUrl({ subject: s });
+  }, [syncUrl]);
 
   // Load templates for Step 1
   useEffect(() => {
@@ -91,7 +127,7 @@ export default function ComposePage() {
         if (data.name) setSavedTemplateName(String(data.name));
       })
       .catch(() => {});
-  }, [initialTemplateId]);
+  }, [initialTemplateId, setSavedTemplateName]);
 
   // Step 1: Select a template → load its JSON and go to Step 2
   const handleSelectTemplate = useCallback(async (template: EmailTemplate) => {
@@ -102,8 +138,8 @@ export default function ComposePage() {
         setTemplateJson(data.json_data as Record<string, unknown>);
       }
       setSavedTemplateName(String(data.name || template.name || ""));
-      setSavedTemplateId("");
-      setHasSaved(false);
+      setSavedTemplateId(template.id);
+      setHasSaved(true);
       setStep("design");
     } catch {
       setError("Failed to load template. Please try again.");
@@ -236,6 +272,7 @@ export default function ComposePage() {
       {step === "design" && (
         <div className="space-y-4">
           <EmailBuilderIframe
+            ref={builderRef}
             templateJson={templateJson}
             templateId={savedTemplateId || undefined}
             onSave={handleSave}
@@ -252,7 +289,17 @@ export default function ComposePage() {
             )}
             <div className="ml-auto">
               <button
-                onClick={() => setStep("send")}
+                onClick={async () => {
+                  // Auto-save the template before going to Send
+                  if (builderRef.current && savedTemplateId) {
+                    setError(null);
+                    const result = await builderRef.current.requestSave();
+                    if (result?.templateId) {
+                      setSavedTemplateId(result.templateId);
+                    }
+                  }
+                  setStep("send");
+                }}
                 disabled={!canGoToSend}
                 className="rounded-md bg-primary px-6 py-2 text-sm text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >

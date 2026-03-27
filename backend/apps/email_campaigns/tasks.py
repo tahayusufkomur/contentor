@@ -75,7 +75,7 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
             recipients = list(resolve_recipients(campaign.recipient_filter).values("id", "name", "email"))
             recipient_count = len(recipients)
 
-            summary = _build_recipient_summary(recipient_filter)
+            summary = _build_recipient_summary(campaign.recipient_filter)
             campaign.recipient_summary = summary
             campaign.save(update_fields=["recipient_summary"])
 

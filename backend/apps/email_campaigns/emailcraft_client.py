@@ -144,6 +144,16 @@ def create_template(api_key: str, name: str, json_data: dict, category: str = ""
     return response.json()
 
 
+def get_template_preview(api_key: str, template_id: str) -> dict:
+    response = _request_with_fallback(
+        "GET",
+        [f"/api/templates/{template_id}/preview", f"/api/v1/templates/{template_id}/preview"],
+        headers=_org_headers(api_key),
+        timeout=15,
+    )
+    return response.json()
+
+
 def export_html(api_key: str, json_data: dict, variables_mode: str = "defaults") -> dict:
     response = _request_with_fallback(
         "POST",
@@ -170,13 +180,13 @@ def list_gallery(api_key: str, category: str | None = None) -> dict:
     return response.json()
 
 
-def configure_variables(api_key: str, variables: list[dict]) -> dict:
+def configure_variables(org_id: str, variables: list[dict]) -> dict:
     response = _request_with_fallback(
-        "PUT",
-        ["/api/templates/variables", "/api/v1/templates/variables"],
-        headers=_org_headers(api_key),
+        "PATCH",
+        [f"/api/site/organizations/{org_id}/", f"/api/v1/site/organizations/{org_id}/"],
+        headers=_site_headers(),
         timeout=15,
-        json={"variables": variables},
+        json={"available_variables": variables},
     )
     return response.json()
 

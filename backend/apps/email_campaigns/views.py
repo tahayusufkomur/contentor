@@ -34,18 +34,33 @@ def _get_api_key() -> tuple[str | None, str | None]:
 
     try:
         result = emailcraft_client.provision_organization(brand_name)
-        api_key = result.get("api_key", {}).get("raw", "")
+        api_key_data = result.get("api_key")
+        api_key = api_key_data.get("raw", "") if isinstance(api_key_data, dict) else ""
         if not api_key:
-            logger.error("EmailCraft provisioning response missing api_key.raw")
+            # Org already existed and no new key was created.
+            # Another request may have saved the key — re-read from DB.
+            config.refresh_from_db()
+            if config.emailcraft_api_key:
+                return config.emailcraft_api_key, None
+            logger.error("EmailCraft provisioning returned no api_key and none stored")
             return None, "Failed to provision email service."
 
-        config.emailcraft_api_key = api_key
-        config.save(update_fields=["emailcraft_api_key"])
+        # Atomically save only if still empty
+        updated = TenantConfig.objects.filter(
+            pk=config.pk,
+            emailcraft_api_key="",
+        ).update(emailcraft_api_key=api_key)
 
-        try:
-            emailcraft_client.configure_variables(api_key, emailcraft_client.DEFAULT_VARIABLES)
-        except Exception:
-            logger.warning("Failed to configure EmailCraft variables", exc_info=True)
+        if not updated:
+            config.refresh_from_db()
+            return config.emailcraft_api_key, None
+
+        org_id = result.get("organization", {}).get("id", "")
+        if org_id:
+            try:
+                emailcraft_client.configure_variables(org_id, emailcraft_client.DEFAULT_VARIABLES)
+            except Exception:
+                logger.warning("Failed to configure EmailCraft variables", exc_info=True)
 
         return api_key, None
     except Exception:
@@ -286,11 +301,7 @@ def template_preview_batch(request):
 
     def render_one(tid: str) -> tuple[str, str | None, str | None]:
         try:
-            tmpl = emailcraft_client.get_template(api_key, tid)
-            json_data = tmpl.get("json_data")
-            if not json_data:
-                return tid, None, "No template data"
-            result = emailcraft_client.export_html(api_key, json_data, "defaults")
+            result = emailcraft_client.get_template_preview(api_key, tid)
             return tid, result.get("html", ""), None
         except Exception as exc:
             return tid, None, str(exc)[:200]

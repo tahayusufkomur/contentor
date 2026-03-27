@@ -7,6 +7,7 @@ interface TemplateCardProps {
   previewHtml?: string;
   mode: "library" | "picker";
   loading?: boolean;
+  previewAspectRatio?: string;
   onSelect?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -18,6 +19,7 @@ export function TemplateCard({
   previewHtml,
   mode,
   loading,
+  previewAspectRatio = "100%",
   onSelect,
   onEdit,
   onDelete,
@@ -34,26 +36,40 @@ export function TemplateCard({
       }`}
       onClick={mode === "picker" ? onSelect : undefined}
     >
-      {/* Preview area */}
-      <div className="relative h-[200px] overflow-hidden bg-muted/20">
+      {/* Preview area — 2:3 email ratio, iframe scaled to fit */}
+      <div className="relative overflow-hidden bg-muted/20" style={{ paddingBottom: previewAspectRatio }}>
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={template.name}
-            className="h-full w-full object-cover object-top"
+            className="absolute inset-0 h-full w-full object-cover object-top"
           />
         ) : previewHtml ? (
-          <div className="h-[500px] w-[600px] origin-top-left scale-[0.38]">
-            <iframe
-              srcDoc={previewHtml}
-              sandbox=""
-              className="h-full w-full border-0"
-              title={`Preview of ${template.name}`}
-              style={{ pointerEvents: "none" }}
-            />
-          </div>
+          <iframe
+            srcDoc={previewHtml}
+            sandbox=""
+            className="absolute left-0 top-0 border-0 origin-top-left"
+            style={{
+              width: 600,
+              height: 900,
+              transform: "scale(var(--preview-scale, 0.5))",
+              pointerEvents: "none",
+            }}
+            title={`Preview of ${template.name}`}
+            ref={(el) => {
+              if (!el) return;
+              const parent = el.parentElement;
+              if (!parent) return;
+              const ro = new ResizeObserver(([entry]) => {
+                const scale = entry.contentRect.width / 600;
+                el.style.setProperty("--preview-scale", String(scale));
+                el.style.transform = `scale(${scale})`;
+              });
+              ro.observe(parent);
+            }}
+          />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
             No preview available
           </div>
         )}

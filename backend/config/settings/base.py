@@ -156,7 +156,7 @@ RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
 
 # --- EmailCraft ---
 EMAILCRAFT_TOKEN = os.environ.get("EMAILCRAFT_TOKEN", "")
-EMAILCRAFT_BASE_URL = os.environ.get("EMAILCRAFT_BASE_URL", "https://emailcraft.contentor.app")
+EMAILCRAFT_BASE_URL = os.environ.get("EMAILCRAFT_BASE_URL", "https://mailcraft.contentor.app")
 
 # --- S3 / Object Storage ---
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")

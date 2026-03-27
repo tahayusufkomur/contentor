@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 import { createEmailSession } from "@/lib/email-api";
 
 const EMAILCRAFT_BASE =
-  process.env.NEXT_PUBLIC_EMAILCRAFT_URL || "https://emailcraft.contentor.app";
+  process.env.NEXT_PUBLIC_EMAILCRAFT_URL || "https://mailcraft.contentor.app";
 
 function resolvedColorToHex(cssVar: string): string {
   if (typeof window === "undefined") return "";
@@ -48,12 +48,16 @@ interface EmailBuilderIframeProps {
   onReady?: () => void;
 }
 
+export interface EmailBuilderIframeHandle {
+  requestSave: () => Promise<TemplateSavedPayload | null>;
+}
+
 function detectTheme(): "light" | "dark" {
   if (typeof document === "undefined") return "light";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
-export function EmailBuilderIframe({
+export const EmailBuilderIframe = forwardRef<EmailBuilderIframeHandle, EmailBuilderIframeProps>(function EmailBuilderIframe({
   templateJson,
   templateId,
   chromeColor,
@@ -61,7 +65,7 @@ export function EmailBuilderIframe({
   onSave,
   onTemplateSaved,
   onReady,
-}: EmailBuilderIframeProps) {
+}, ref) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,9 +96,34 @@ export function EmailBuilderIframe({
     try {
       return new URL(EMAILCRAFT_BASE).origin;
     } catch {
-      return "https://emailcraft.contentor.app";
+      return "https://mailcraft.contentor.app";
     }
   }, []);
+
+  // Resolve for pending requestSave calls
+  const saveResolverRef = useRef<((payload: TemplateSavedPayload | null) => void) | null>(null);
+
+  const requestSave = useCallback((): Promise<TemplateSavedPayload | null> => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return Promise.resolve(null);
+
+    return new Promise((resolve) => {
+      saveResolverRef.current = resolve;
+      iframe.contentWindow!.postMessage(
+        { source: "mailcraft-host", type: "MAILCRAFT_REQUEST_SAVE" },
+        emailcraftOrigin,
+      );
+      // Timeout after 5s
+      setTimeout(() => {
+        if (saveResolverRef.current === resolve) {
+          saveResolverRef.current = null;
+          resolve(null);
+        }
+      }, 5000);
+    });
+  }, [emailcraftOrigin]);
+
+  useImperativeHandle(ref, () => ({ requestSave }), [requestSave]);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,7 +182,13 @@ export function EmailBuilderIframe({
         const tid = data.payload?.template_id || data.payload?.templateId || "";
         const tname = data.payload?.template_name || data.payload?.templateName || "";
         if (tid) {
-          onTemplateSaved?.({ templateId: String(tid), templateName: String(tname) });
+          const payload = { templateId: String(tid), templateName: String(tname) };
+          onTemplateSaved?.(payload);
+          // Resolve pending requestSave promise
+          if (saveResolverRef.current) {
+            saveResolverRef.current(payload);
+            saveResolverRef.current = null;
+          }
         }
       }
     }
@@ -246,4 +281,4 @@ export function EmailBuilderIframe({
       allow="clipboard-write"
     />
   );
-}
+});
