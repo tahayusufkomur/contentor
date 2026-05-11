@@ -10,6 +10,7 @@ urlpatterns = [
     path("logout/", views.logout, name="logout"),
     path("users/me/", views.me, name="user-me"),
     path("users/me/update/", views.update_me, name="user-update"),
+    path("users/me/locale/", views.update_locale, name="user-locale"),
     path("students/", views.student_list, name="student-list"),
     path("students/<int:pk>/", views.student_delete, name="student-delete"),
 ]

@@ -1,0 +1,29 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "loading": "Loading…",
+    "loadMore": "Load more"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "downloads": "Downloads",
+    "live": "Live",
+    "email": "Email",
+    "settings": "Settings",
+    "billing": "Billing",
+    "signOut": "Sign out"
+  },
+  "language": {
+    "label": "Language",
+    "switchToTurkish": "Türkçe",
+    "switchToEnglish": "English"
+  }
+}

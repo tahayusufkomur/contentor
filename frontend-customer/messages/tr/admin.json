@@ -1,0 +1,12 @@
+{
+  "title": "Yönetim",
+  "welcome": "Hoş geldiniz, {name}",
+  "settings": {
+    "title": "Ayarlar",
+    "languageAndRegion": "Dil ve bölge",
+    "defaultLocaleLabel": "Öğrenciler için varsayılan dil",
+    "defaultLocaleDescription": "Yeni öğrenciler ilk ziyaretlerinde bu dili devralır. Her öğrenci tercihini değiştirebilir.",
+    "saved": "Kaydedildi.",
+    "saveFailed": "Kaydedilemedi. Lütfen tekrar deneyin."
+  }
+}

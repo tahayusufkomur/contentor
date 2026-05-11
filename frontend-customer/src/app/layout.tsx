@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 import { Toaster } from "sonner";
 
@@ -37,9 +39,11 @@ export default async function RootLayout({
 }) {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
+  const locale = await getLocale();
+  const messages = await getMessages();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {config && <TenantThemeStyle config={config} />}
         {config?.font_family && (
@@ -53,22 +57,24 @@ export default async function RootLayout({
         className={`${instrumentSans.variable} bg-cinematic min-h-screen font-sans antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          forcedTheme={
-            config?.dark_mode_enabled === false ? "light" : undefined
-          }
-          disableTransitionOnChange
-        >
-          <TenantProvider config={config}>
-            <TenantThemeEnforcer />
-            <Toaster position="top-center" richColors />
-            <RedirectToast />
-            {children}
-          </TenantProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            forcedTheme={
+              config?.dark_mode_enabled === false ? "light" : undefined
+            }
+            disableTransitionOnChange
+          >
+            <TenantProvider config={config}>
+              <TenantThemeEnforcer />
+              <Toaster position="top-center" richColors />
+              <RedirectToast />
+              {children}
+            </TenantProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

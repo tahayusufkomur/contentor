@@ -1,0 +1,16 @@
+{
+  "home": {
+    "welcome": "Welcome back",
+    "yourCourses": "Your courses",
+    "upcoming": "Upcoming",
+    "downloads": "Downloads",
+    "noContent": "Nothing here yet."
+  },
+  "auth": {
+    "magicLinkLabel": "Email",
+    "magicLinkPlaceholder": "you@example.com",
+    "magicLinkSubmit": "Send magic link",
+    "magicLinkSent": "Check your inbox for the link.",
+    "magicLinkError": "Could not send the link. Please try again."
+  }
+}

@@ -1,5 +1,7 @@
 from django.db import models
 
+from apps.core.constants import LOCALE_CHOICES, LOCALE_EN
+
 
 class TenantTheme(models.TextChoices):
     OCEAN = "ocean", "Ocean"
@@ -24,6 +26,12 @@ class TenantConfig(models.Model):
     navbar_config = models.JSONField(default=dict)
     landing_sections = models.JSONField(default=dict)
     timezone = models.CharField(max_length=50, default="UTC")
+    default_locale = models.CharField(
+        max_length=2,
+        choices=LOCALE_CHOICES,
+        default=LOCALE_EN,
+        help_text="Default UI language for this tenant. Coach-configurable.",
+    )
     onboarding_completed = models.BooleanField(default=False)
     emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
 

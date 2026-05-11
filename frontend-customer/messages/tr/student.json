@@ -1,0 +1,16 @@
+{
+  "home": {
+    "welcome": "Tekrar hoş geldiniz",
+    "yourCourses": "Kurslarınız",
+    "upcoming": "Yaklaşan",
+    "downloads": "İndirilenler",
+    "noContent": "Henüz burada bir şey yok."
+  },
+  "auth": {
+    "magicLinkLabel": "E-posta",
+    "magicLinkPlaceholder": "siz@ornek.com",
+    "magicLinkSubmit": "Sihirli bağlantı gönder",
+    "magicLinkSent": "Bağlantı için gelen kutunuzu kontrol edin.",
+    "magicLinkError": "Bağlantı gönderilemedi. Lütfen tekrar deneyin."
+  }
+}

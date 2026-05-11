@@ -99,7 +99,28 @@ def magic_link_verify(request):
         samesite="Lax",
         max_age=86400 * 7,
     )
+    # Readable locale cookie — edge middleware in Next.js reads this without decoding the JWT.
+    locale = user.preferred_locale or _tenant_default_locale(tenant) or "en"
+    response.set_cookie(
+        "user-locale",
+        locale,
+        httponly=False,
+        secure=False,
+        samesite="Lax",
+        max_age=86400 * 365,
+    )
     return response
+
+
+def _tenant_default_locale(tenant) -> str:
+    try:
+        from apps.tenant_config.models import TenantConfig
+        cfg = TenantConfig.objects.first()
+        if cfg:
+            return cfg.default_locale
+    except Exception:
+        pass
+    return "en"
 
 
 @api_view(["POST"])
@@ -123,6 +144,27 @@ def update_me(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def update_locale(request):
+    locale = (request.data.get("locale") or "").strip().lower()
+    if locale not in ("en", "tr"):
+        return Response({"detail": "Unsupported locale"}, status=400)
+    user = request.user
+    user.preferred_locale = locale
+    user.save(update_fields=["preferred_locale"])
+    response = Response({"locale": locale})
+    response.set_cookie(
+        "user-locale",
+        locale,
+        httponly=False,
+        secure=False,
+        samesite="Lax",
+        max_age=86400 * 365,
+    )
+    return response
 
 
 @api_view(["GET"])

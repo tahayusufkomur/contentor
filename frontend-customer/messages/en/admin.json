@@ -1,0 +1,12 @@
+{
+  "title": "Admin",
+  "welcome": "Welcome, {name}",
+  "settings": {
+    "title": "Settings",
+    "languageAndRegion": "Language & region",
+    "defaultLocaleLabel": "Default language for students",
+    "defaultLocaleDescription": "New students inherit this language on first visit. Each student can override their preference.",
+    "saved": "Saved.",
+    "saveFailed": "Could not save. Please try again."
+  }
+}
