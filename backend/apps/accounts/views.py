@@ -89,12 +89,13 @@ def magic_link_verify(request):
     if payload["tenant_id"] != tenant.schema_name:
         return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
     region = getattr(tenant, "region", None) or getattr(request, "region", "global")
+    # Email is unique per-region; include region in the lookup key.
     user, _ = User.objects.get_or_create(
         email=payload["email"],
+        region=region,
         defaults={
             "name": payload["email"].split("@")[0],
             "role": "student",
-            "region": region,
             "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
             "accessible_regions": [],
         },
@@ -381,13 +382,14 @@ def google_callback(request):
     # Region from the signed state — the request host at this point is the
     # OAuth callback domain (localhost), which is meaningless for region.
     region = state_data.get("region") or getattr(tenant, "region", None) or "global"
+    # Email is unique per-region; same person may have separate rows.
     user, created = User.objects.get_or_create(
         email=email,
+        region=region,
         defaults={
             "name": name,
             "role": default_role,
             "avatar_url": avatar,
-            "region": region,
             "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
             "accessible_regions": [],
         },

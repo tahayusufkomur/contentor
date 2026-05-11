@@ -26,12 +26,14 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
 
         region = tenant.region or "global"
         preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        # Email is unique per-region: same email may have separate rows in
+        # different regions, so the lookup key must include region.
         User.objects.get_or_create(
             email=owner_email,
+            region=region,
             defaults={
                 "name": owner_name,
                 "role": "coach",
-                "region": region,
                 "preferred_locale": preferred_locale,
                 "accessible_regions": [],
             },
@@ -81,6 +83,9 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
                 },
                 onboarding_completed=False,
             )
+            # Tenant schemas are isolated, but we still stamp region for
+            # consistency with the public row and so JWT issuance has the
+            # right value.
             User.objects.create_user(
                 email=owner_email,
                 name=owner_name,

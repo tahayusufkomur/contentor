@@ -8,7 +8,12 @@ from .managers import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
+    # Email is unique PER REGION, not globally. The same person may legitimately
+    # operate businesses in multiple regions; each region gets its own account
+    # row, its own preferences, and its own Stripe customer. JWT region claim
+    # plus TenantJWTAuthentication isolation already prevents cross-region
+    # leakage even with this looser key.
+    email = models.EmailField()
     name = models.CharField(max_length=150)
     avatar_url = models.URLField(blank=True, default="")
     role = models.CharField(
@@ -57,6 +62,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         app_label = "accounts"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["email", "region"],
+                name="accounts_user_email_region_unique",
+            ),
+        ]
 
     def __str__(self):
-        return self.email
+        return f"{self.email} [{self.region}]"

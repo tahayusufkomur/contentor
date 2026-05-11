@@ -82,15 +82,18 @@ class Command(BaseCommand):
         if not superuser_emails:
             return
 
-        # Create missing superusers
+        # Create missing superusers (region='global' is the platform-default;
+        # superusers can see both regions in admin via accessible_regions).
         for email in superuser_emails:
             user, created = User.objects.get_or_create(
                 email=email,
+                region="global",
                 defaults={
                     "name": email.split("@")[0],
                     "role": "owner",
                     "is_staff": True,
                     "is_superuser": True,
+                    "accessible_regions": ["global", "tr"],
                 },
             )
             if created:
