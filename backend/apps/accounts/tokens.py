@@ -47,6 +47,7 @@ def create_jwt(user, tenant) -> str:
         "user_id": user.id,
         "tenant_id": tenant.schema_name,
         "role": user.role,
+        "region": getattr(tenant, "region", None) or getattr(user, "region", "global"),
         "exp": datetime.now(tz=UTC) + timedelta(days=settings.JWT_EXPIRY_DAYS),
         "iat": datetime.now(tz=UTC),
     }

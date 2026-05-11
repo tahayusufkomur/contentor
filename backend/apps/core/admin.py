@@ -4,10 +4,28 @@ from django_tenants.admin import TenantAdminMixin
 from .models import Domain, PlatformPlan, Tenant, TenantUsage
 
 
+class RegionScopedAdminMixin:
+    """Filters list views by the logged-in superadmin's accessible_regions.
+
+    Superusers (is_superuser=True) bypass the filter and see everything.
+    A user with empty accessible_regions sees nothing — fail closed.
+    """
+
+    region_field = "region"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        user = request.user
+        if user.is_superuser:
+            return qs
+        allowed = getattr(user, "accessible_regions", None) or []
+        return qs.filter(**{f"{self.region_field}__in": allowed})
+
+
 @admin.register(Tenant)
-class TenantAdmin(TenantAdminMixin, admin.ModelAdmin):
-    list_display = ("name", "slug", "provisioning_status", "is_active", "created_at")
-    list_filter = ("provisioning_status", "is_active")
+class TenantAdmin(RegionScopedAdminMixin, TenantAdminMixin, admin.ModelAdmin):
+    list_display = ("name", "slug", "region", "billing_currency", "provisioning_status", "is_active", "created_at")
+    list_filter = ("region", "provisioning_status", "is_active")
 
 
 @admin.register(Domain)

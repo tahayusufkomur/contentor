@@ -49,10 +49,12 @@ DATABASE_ROUTERS = ("apps.core.routers.TenantRouter", "django_tenants.routers.Te
 AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
+    "apps.core.middleware.region.RegionResolverMiddleware",
     "apps.core.middleware.tenant.HeaderAwareTenantMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -133,10 +135,15 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+LANGUAGES = [
+    ("en", "English"),
+    ("tr", "Türkçe"),
+]
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 CONTENTOR_DOMAIN = os.environ.get("CONTENTOR_DOMAIN", "contentor.localhost")
 CONTENTOR_SUPERUSERS = [

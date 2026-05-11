@@ -1,12 +1,29 @@
 from django.db import models
 from django_tenants.models import DomainMixin, TenantMixin
 
+from .constants import CURRENCY_CHOICES, REGION_CHOICES, REGION_GLOBAL
+from .validators import validate_tenant_slug
+
 
 class Tenant(TenantMixin):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, max_length=63)
     owner_email = models.EmailField()
     is_active = models.BooleanField(default=True)
+    region = models.CharField(
+        max_length=8,
+        choices=REGION_CHOICES,
+        default=REGION_GLOBAL,
+        db_index=True,
+        help_text="Immutable. Set at signup from the request host.",
+    )
+    billing_currency = models.CharField(
+        max_length=3,
+        choices=CURRENCY_CHOICES,
+        blank=True,
+        default="",
+        help_text="Set at first Stripe checkout, immutable thereafter.",
+    )
     plan = models.ForeignKey(
         "PlatformPlan",
         on_delete=models.PROTECT,
@@ -36,6 +53,10 @@ class Tenant(TenantMixin):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super().clean()
+        validate_tenant_slug(self.slug)
 
 
 class Domain(DomainMixin):

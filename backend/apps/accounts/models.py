@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
+
+from apps.core.constants import LOCALE_CHOICES, REGION_CHOICES, REGION_GLOBAL
 
 from .managers import UserManager
 
@@ -16,6 +19,26 @@ class User(AbstractBaseUser, PermissionsMixin):
             ("student", "Student"),
         ],
         default="student",
+    )
+    region = models.CharField(
+        max_length=8,
+        choices=REGION_CHOICES,
+        default=REGION_GLOBAL,
+        db_index=True,
+        help_text="Immutable. The region the user signed up in.",
+    )
+    preferred_locale = models.CharField(
+        max_length=2,
+        choices=LOCALE_CHOICES,
+        blank=True,
+        default="",
+        help_text="Empty = fall back to tenant default; otherwise overrides.",
+    )
+    accessible_regions = ArrayField(
+        base_field=models.CharField(max_length=8, choices=REGION_CHOICES),
+        default=list,
+        blank=True,
+        help_text="Superadmin only: regions this user can see in Django admin.",
     )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
