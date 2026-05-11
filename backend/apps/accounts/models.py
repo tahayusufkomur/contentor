@@ -25,7 +25,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=REGION_CHOICES,
         default=REGION_GLOBAL,
         db_index=True,
-        help_text="Immutable. The region the user signed up in.",
+        help_text=(
+            "The region this user first signed up in. Informational only — "
+            "auth-time isolation is enforced by Tenant.region via JWT claims. "
+            "Same email may own tenants across multiple regions."
+        ),
     )
     preferred_locale = models.CharField(
         max_length=2,
@@ -38,6 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         base_field=models.CharField(max_length=8, choices=REGION_CHOICES),
         default=list,
         blank=True,
+        null=True,
         help_text="Superadmin only: regions this user can see in Django admin.",
     )
     is_active = models.BooleanField(default=True)

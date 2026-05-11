@@ -80,6 +80,7 @@ def magic_link_verify(request):
     serializer = MagicLinkVerifySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     from apps.core.i18n_helpers import msg
+    from apps.core.constants import REGION_DEFAULT_LOCALE
     try:
         payload = verify_magic_link_token(serializer.validated_data["token"])
     except Exception:
@@ -87,9 +88,16 @@ def magic_link_verify(request):
     tenant = connection.tenant
     if payload["tenant_id"] != tenant.schema_name:
         return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
+    region = getattr(tenant, "region", None) or getattr(request, "region", "global")
     user, _ = User.objects.get_or_create(
         email=payload["email"],
-        defaults={"name": payload["email"].split("@")[0], "role": "student"},
+        defaults={
+            "name": payload["email"].split("@")[0],
+            "role": "student",
+            "region": region,
+            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            "accessible_regions": [],
+        },
     )
     jwt_token = create_jwt(user, tenant)
     response = Response({"user": UserSerializer(user).data})
@@ -356,9 +364,18 @@ def google_callback(request):
     # Determine default role: coach on public schema (main), student on tenant
     default_role = "coach" if tenant.schema_name == "public" else "student"
 
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    region = getattr(tenant, "region", None) or getattr(request, "region", "global")
     user, created = User.objects.get_or_create(
         email=email,
-        defaults={"name": name, "role": default_role, "avatar_url": avatar},
+        defaults={
+            "name": name,
+            "role": default_role,
+            "avatar_url": avatar,
+            "region": region,
+            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            "accessible_regions": [],
+        },
     )
 
     if not created and avatar and not user.avatar_url:

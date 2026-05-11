@@ -17,7 +17,10 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
 
         tenant.create_schema(check_if_exists=True, verbosity=0)
 
-        # Create owner in main (public) schema if they don't exist yet
+        # Create owner in main (public) schema if they don't exist yet.
+        # If they do exist (e.g. they already own a tenant in another region),
+        # do NOT mutate their User.region — it tracks first-signup origin only.
+        # Cross-region isolation is enforced at the Tenant level via JWT claims.
         from apps.accounts.models import User
         from apps.core.constants import REGION_DEFAULT_LOCALE
 
@@ -30,6 +33,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
                 "role": "coach",
                 "region": region,
                 "preferred_locale": preferred_locale,
+                "accessible_regions": [],
             },
         )
 
@@ -84,6 +88,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
                 is_staff=True,
                 region=region,
                 preferred_locale=preferred_locale,
+                accessible_regions=[],
             )
 
         tenant.provisioning_status = "ready"
