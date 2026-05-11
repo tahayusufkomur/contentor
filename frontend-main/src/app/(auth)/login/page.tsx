@@ -4,21 +4,23 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Shield } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MagicLinkForm } from '@/components/auth/magic-link-form'
 
-const GOOGLE_ERRORS: Record<string, string> = {
-  google_denied: 'Google sign-in was cancelled.',
-  invalid_request: 'Invalid request. Please try again.',
-  invalid_state: 'Session expired. Please try again.',
-  tenant_mismatch: 'Authentication error. Please try again.',
-  token_exchange_failed: 'Could not connect to Google. Please try again.',
-  userinfo_failed: 'Could not retrieve your Google profile. Please try again.',
-  no_email: 'No email associated with this Google account.',
+const GOOGLE_ERROR_KEYS: Record<string, string> = {
+  google_denied: 'googleDenied',
+  invalid_request: 'invalidRequest',
+  invalid_state: 'invalidState',
+  tenant_mismatch: 'tenantMismatch',
+  token_exchange_failed: 'tokenExchangeFailed',
+  userinfo_failed: 'userinfoFailed',
+  no_email: 'noEmail',
 }
 
 export default function LoginPage() {
+  const t = useTranslations('auth.login')
   const searchParams = useSearchParams()
   const googleError = searchParams.get('error')
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -33,13 +35,13 @@ export default function LoginPage() {
           <Link href="/" className="text-xl font-bold tracking-tight text-foreground">
             Contentor
           </Link>
-          <CardTitle className="mt-2 text-lg">Platform Admin</CardTitle>
-          <CardDescription>Sign in to manage your platform.</CardDescription>
+          <CardTitle className="mt-2 text-lg">{t('title')}</CardTitle>
+          <CardDescription>{t('subtitle')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {googleError && (
             <p className="text-sm text-destructive text-center">
-              {GOOGLE_ERRORS[googleError] || 'Something went wrong. Please try again.'}
+              {GOOGLE_ERROR_KEYS[googleError] ? t(`googleErrors.${GOOGLE_ERROR_KEYS[googleError]}` as never) : t('googleErrors.generic')}
             </p>
           )}
           <Button
@@ -84,14 +86,14 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            {t('googleCta')}
           </Button>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or</span>
+              <span className="bg-card px-2 text-muted-foreground">{t('or')}</span>
             </div>
           </div>
           <MagicLinkForm />

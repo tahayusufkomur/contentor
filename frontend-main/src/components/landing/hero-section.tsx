@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TextureOverlay } from "@/components/ui/texture-overlay";
 
 export function HeroSection() {
+  const t = useTranslations("marketing.hero");
   return (
     <section className="relative overflow-hidden">
       {/* Warm gradient background */}
@@ -26,14 +28,14 @@ export function HeroSection() {
               className="mb-6 inline-flex items-center gap-1.5"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Free plan available — no credit card required
+              {t("badge")}
             </Badge>
 
             <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              Turn your expertise into a
+              {t("title1")}
               <br />
               <span className="relative inline-block text-primary">
-                thriving online business
+                {t("title2")}
                 {/* Hand-drawn wavy SVG underline */}
                 <svg
                   className="absolute -bottom-2 left-0 w-full"
@@ -54,9 +56,7 @@ export function HeroSection() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:mx-0 md:text-xl">
-              Launch your branded course platform in minutes. Sell courses, host live
-              classes for up to 10,000 students, and earn steady revenue — all with
-              zero technical skills.
+              {t("subtitle")}
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row md:justify-start">
@@ -65,7 +65,7 @@ export function HeroSection() {
                 className="h-12 px-8 text-base gap-2"
               >
                 <Link href="/signup">
-                  Start Free Today
+                  {t("ctaPrimary")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -77,13 +77,13 @@ export function HeroSection() {
               >
                 <Link href="#features">
                   <Play className="h-4 w-4" />
-                  Watch a 2-min demo
+                  {t("ctaSecondary")}
                 </Link>
               </Button>
             </div>
 
             <p className="mt-6 text-sm text-muted-foreground">
-              Free forever plan. No credit card. Set up in under 5 minutes.
+              {t("trustNote")}
             </p>
           </div>
 

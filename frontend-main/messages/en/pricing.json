@@ -1,0 +1,30 @@
+{
+  "title": "Simple, transparent pricing",
+  "subtitle": "Start free. Upgrade when you're ready to grow.",
+  "billed": {
+    "monthly": "Billed monthly",
+    "yearly": "Billed yearly",
+    "save": "Save 20%"
+  },
+  "plans": {
+    "free": {
+      "name": "Free",
+      "description": "Get started with the basics"
+    },
+    "starter": {
+      "name": "Starter",
+      "description": "For coaches building their audience"
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "For established creators scaling up"
+    }
+  },
+  "cta": "Start with this plan",
+  "ctaContact": "Contact sales",
+  "currentPlan": "Current plan",
+  "perMonth": "/ month",
+  "perYear": "/ year",
+  "comingSoon": "Pricing for your region is coming soon",
+  "comingSoonNote": "We're finalizing local pricing. Please check back shortly."
+}

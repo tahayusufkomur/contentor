@@ -114,6 +114,10 @@ services:
     volumes:
       - ./frontend-main/src:/app/src
       - ./frontend-main/public:/app/public
+      - ./frontend-main/messages:/app/messages
+      - ./frontend-main/next.config.mjs:/app/next.config.mjs
+      - ./frontend-main/middleware.ts:/app/middleware.ts
+      - ./frontend-main/package.json:/app/package.json
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.localhost}

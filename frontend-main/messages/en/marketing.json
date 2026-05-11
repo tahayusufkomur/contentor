@@ -1,0 +1,21 @@
+{
+  "hero": {
+    "badge": "Free plan available — no credit card required",
+    "title1": "Turn your expertise into a",
+    "title2": "thriving online business",
+    "subtitle": "Launch your branded course platform in minutes. Sell courses, host live classes for up to 10,000 students, and earn steady revenue — all with zero technical skills.",
+    "ctaPrimary": "Start Free Today",
+    "ctaSecondary": "Watch a 2-min demo",
+    "trustNote": "Free forever plan. No credit card. Set up in under 5 minutes."
+  },
+  "finalCta": {
+    "title": "Ready to turn your expertise into a business?",
+    "subtitle": "Join thousands of creators monetizing their content on Contentor.",
+    "ctaPrimary": "Start Free Today",
+    "ctaSecondary": "See pricing"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Everything you need to know about Contentor"
+  }
+}

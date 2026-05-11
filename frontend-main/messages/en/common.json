@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "signOut": "Sign out",
+    "dashboard": "Dashboard"
+  },
+  "footer": {
+    "tagline": "The platform for content creators to monetize their expertise.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "switchLanguage": "Türkçe",
+    "switchLanguageEnglish": "English",
+    "copyright": "© {year} Contentor. All rights reserved."
+  },
+  "regionBanner": {
+    "title": "Looking for Turkish?",
+    "description": "We have a Turkish version of this site.",
+    "cta": "Switch to Türkçe"
+  }
+}

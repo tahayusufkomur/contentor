@@ -1,0 +1,29 @@
+{
+  "nav": {
+    "features": "Özellikler",
+    "pricing": "Fiyatlandırma",
+    "faq": "SSS",
+    "signIn": "Giriş yap",
+    "getStarted": "Başla",
+    "signOut": "Çıkış yap",
+    "dashboard": "Panel"
+  },
+  "footer": {
+    "tagline": "İçerik üreticilerinin uzmanlıklarını gelire dönüştürmesi için platform.",
+    "product": "Ürün",
+    "company": "Şirket",
+    "legal": "Yasal",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "privacy": "Gizlilik",
+    "terms": "Koşullar",
+    "switchLanguage": "English",
+    "switchLanguageEnglish": "Türkçe",
+    "copyright": "© {year} Contentor. Tüm hakları saklıdır."
+  },
+  "regionBanner": {
+    "title": "İngilizce sürümü mü arıyorsunuz?",
+    "description": "Sitemizin İngilizce sürümü mevcut.",
+    "cta": "English'e geç"
+  }
+}

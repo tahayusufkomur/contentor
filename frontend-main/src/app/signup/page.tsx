@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Mail, Sparkles } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +14,7 @@ import { PlatformFooter } from '@/components/shared/platform-footer'
 type SignupState = 'form' | 'email-sent' | 'error'
 
 export default function SignupPage() {
+  const t = useTranslations('auth.signup')
   const [brandName, setBrandName] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -33,14 +35,14 @@ export default function SignupPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.detail || 'Something went wrong')
+        setError(data.detail || t('errors.generic'))
         setLoading(false)
         return
       }
       setState('email-sent')
       setLoading(false)
     } catch {
-      setError('Network error. Please try again.')
+      setError(t('errors.generic'))
       setLoading(false)
     }
   }
@@ -55,15 +57,14 @@ export default function SignupPage() {
               <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Mail className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle className="text-xl">Check your email</CardTitle>
+              <CardTitle className="text-xl">{t('verifyTitle')}</CardTitle>
               <CardDescription>
-                We sent a verification link to <strong className="text-foreground">{email}</strong>
+                {t('verifyDescription', { email })}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Click the link in your email to verify and create <strong className="text-foreground">{brandName}</strong>.
-                The link expires in 15 minutes.
+                <strong className="text-foreground">{brandName}</strong>
               </p>
             </CardContent>
           </Card>
@@ -82,37 +83,37 @@ export default function SignupPage() {
             <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="text-xl">Start your free trial</CardTitle>
-            <CardDescription>Set up your branded platform in minutes.</CardDescription>
+            <CardTitle className="text-xl">{t('title')}</CardTitle>
+            <CardDescription>{t('subtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="brandName">Brand Name</Label>
+                <Label htmlFor="brandName">{t('brandNameLabel')}</Label>
                 <Input
                   id="brandName"
-                  placeholder="My Awesome Academy"
+                  placeholder={t('brandNamePlaceholder')}
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="name">Your Name</Label>
+                <Label htmlFor="name">{t('nameLabel')}</Label>
                 <Input
                   id="name"
-                  placeholder="Jane Doe"
+                  placeholder={t('namePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('emailLabel')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -124,12 +125,12 @@ export default function SignupPage() {
                 </div>
               )}
               <Button type="submit" className="w-full" size="lg" loading={loading}>
-                {loading ? 'Creating...' : 'Create My Platform'}
+                {loading ? t('submitting') : t('submit')}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                Already have an account?{' '}
+                {t('alreadyHaveAccount')}{' '}
                 <Link href="/login" className="font-medium text-primary hover:underline">
-                  Sign in
+                  {t('signIn')}
                 </Link>
               </p>
             </form>

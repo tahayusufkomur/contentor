@@ -1,0 +1,21 @@
+{
+  "hero": {
+    "badge": "Ücretsiz plan mevcut — kredi kartı gerekmez",
+    "title1": "Uzmanlığınızı",
+    "title2": "büyüyen bir online işletmeye dönüştürün",
+    "subtitle": "Markalı kurs platformunuzu dakikalar içinde başlatın. Kurslar satın, 10.000 öğrenciye kadar canlı dersler verin ve düzenli gelir elde edin — hiç teknik bilgi gerekmeden.",
+    "ctaPrimary": "Bugün ücretsiz başla",
+    "ctaSecondary": "2 dakikalık demoyu izle",
+    "trustNote": "Sonsuza dek ücretsiz plan. Kredi kartı yok. 5 dakikadan kısa sürede kurulum."
+  },
+  "finalCta": {
+    "title": "Uzmanlığınızı işletmeye dönüştürmeye hazır mısınız?",
+    "subtitle": "İçeriklerini Contentor'da gelire dönüştüren binlerce üreticinin arasına katılın.",
+    "ctaPrimary": "Bugün ücretsiz başla",
+    "ctaSecondary": "Fiyatlara bak"
+  },
+  "faq": {
+    "title": "Sıkça sorulan sorular",
+    "subtitle": "Contentor hakkında bilmeniz gereken her şey"
+  }
+}

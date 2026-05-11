@@ -1,0 +1,30 @@
+{
+  "title": "Basit, şeffaf fiyatlandırma",
+  "subtitle": "Ücretsiz başlayın. Büyümeye hazır olduğunuzda yükseltin.",
+  "billed": {
+    "monthly": "Aylık faturalandırma",
+    "yearly": "Yıllık faturalandırma",
+    "save": "%20 tasarruf"
+  },
+  "plans": {
+    "free": {
+      "name": "Ücretsiz",
+      "description": "Temel özelliklerle başlayın"
+    },
+    "starter": {
+      "name": "Başlangıç",
+      "description": "Kitlesini büyüten koçlar için"
+    },
+    "pro": {
+      "name": "Pro",
+      "description": "Ölçeklenen kurumsal üreticiler için"
+    }
+  },
+  "cta": "Bu planla başla",
+  "ctaContact": "Satışla iletişime geç",
+  "currentPlan": "Mevcut plan",
+  "perMonth": "/ ay",
+  "perYear": "/ yıl",
+  "comingSoon": "Türkiye için fiyatlandırma yakında",
+  "comingSoonNote": "Yerel fiyatları belirliyoruz. Kısa süre içinde tekrar göz atın."
+}

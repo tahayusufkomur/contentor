@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import type { User } from "@/types/auth";
 
 export function PlatformHeader({ user }: { user?: User | null }) {
   const router = useRouter();
+  const t = useTranslations("common.nav");
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -50,13 +52,13 @@ export function PlatformHeader({ user }: { user?: User | null }) {
             href="#features"
             className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Features
+            {t("features")}
           </Link>
           <Link
             href="/pricing"
             className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Pricing
+            {t("pricing")}
           </Link>
           <ThemeToggle compact className="shrink-0" />
           {user ? (
@@ -65,7 +67,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                 href="/admin"
                 className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                Dashboard
+                {t("dashboard")}
               </Link>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">
@@ -79,7 +81,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                   className="h-8 gap-1.5"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  {t("signOut")}
                 </Button>
               </div>
             </>
@@ -89,14 +91,14 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                 href="/login"
                 className="nav-link text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                Sign In
+                {t("signIn")}
               </Link>
               <Button
                 asChild
                 size="sm"
                 className="h-8 border-0 bg-primary text-primary-foreground px-4 shadow-sm"
               >
-                <Link href="/signup">Get Started</Link>
+                <Link href="/signup">{t("getStarted")}</Link>
               </Button>
             </>
           )}
@@ -156,7 +158,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                   className="w-full justify-start gap-1.5"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  {t("signOut")}
                 </Button>
               </>
             ) : (
@@ -174,7 +176,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                   className="w-full border-0 bg-primary text-primary-foreground shadow-sm"
                 >
                   <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                    Get Started
+                    {t("getStarted")}
                   </Link>
                 </Button>
               </>
