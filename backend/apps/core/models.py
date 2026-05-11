@@ -86,6 +86,10 @@ class PlatformPlan(models.Model):
     max_streaming_hours = models.IntegerField(default=0)
     max_campaign_emails = models.IntegerField(default=0)
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
+    # Multi-currency prices. Shape:
+    #   {"USD": {"amount_cents": 1900, "stripe_price_id": "price_..."},
+    #    "TRY": {"amount_cents": 59900, "stripe_price_id": "price_..."}}
+    prices = models.JSONField(default=dict, blank=True)
     is_live_enabled = models.BooleanField(default=False)
 
     class Meta:
@@ -93,6 +97,25 @@ class PlatformPlan(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_price(self, currency: str) -> dict | None:
+        """Return {amount_cents, stripe_price_id} for the given currency, or None.
+
+        Falls back to legacy price_monthly + stripe_price_id (treated as USD) if
+        the prices JSONB doesn't have an entry. Callers should use this instead
+        of reading prices directly so a future migration to a PlanPrice table
+        is a one-place change.
+        """
+        if isinstance(self.prices, dict) and currency in self.prices:
+            entry = self.prices[currency]
+            if isinstance(entry, dict) and "amount_cents" in entry:
+                return entry
+        if currency == "USD" and self.price_monthly:
+            return {
+                "amount_cents": int(self.price_monthly * 100),
+                "stripe_price_id": self.stripe_price_id or "",
+            }
+        return None
 
 
 class TenantUsage(models.Model):

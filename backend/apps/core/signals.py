@@ -19,10 +19,12 @@ def tenant_pre_save(sender, instance, **kwargs):
             instance.billing_currency = REGION_DEFAULT_CURRENCY.get(instance.region, "USD")
         return
 
-    # Update: prevent region from being changed once set.
+    # Update: prevent region and billing_currency from being changed once set.
     try:
-        old = Tenant.objects.only("region").get(pk=instance.pk)
+        old = Tenant.objects.only("region", "billing_currency").get(pk=instance.pk)
     except Tenant.DoesNotExist:
         return
     if old.region and old.region != instance.region:
         raise ValidationError("Tenant.region is immutable once a tenant has been created.")
+    if old.billing_currency and old.billing_currency != instance.billing_currency:
+        raise ValidationError("Tenant.billing_currency is immutable once set.")
