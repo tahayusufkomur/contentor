@@ -5,6 +5,25 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
 
+class CrossRegionRejection(AuthenticationFailed):
+    """Raised when a JWT is valid but its region claim does not match the request region.
+
+    The Next.js middleware catches this and 302s the user to the correct region's apex.
+    """
+
+    def __init__(self, expected_region: str, token_region: str):
+        from apps.core.region_utils import region_apex
+
+        super().__init__(
+            {
+                "error": "CROSS_REGION",
+                "expected_region": expected_region,
+                "token_region": token_region,
+                "redirect_to": region_apex(token_region, scheme="https"),
+            }
+        )
+
+
 class TenantJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
         token = request.COOKIES.get("contentor_access_token")
@@ -24,6 +43,12 @@ class TenantJWTAuthentication(BaseAuthentication):
 
         if payload.get("tenant_id") != connection.tenant.schema_name:
             return None
+
+        # Cross-region check: a valid JWT for region X must not be honoured on region Y.
+        token_region = payload.get("region")
+        request_region = getattr(request, "region", None)
+        if token_region and request_region and token_region != request_region:
+            raise CrossRegionRejection(expected_region=request_region, token_region=token_region)
 
         from .models import User
 

@@ -63,7 +63,7 @@ services:
       - "traefik.http.routers.django-api.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`)"
       - "traefik.http.routers.django-api.entrypoints=web"
       - "traefik.http.routers.django-api.priority=10"
-      - "traefik.http.routers.django-admin.rule=(Host(`contentor.localhost`) || Host(`localhost`)) && (PathPrefix(`/admin`) || PathPrefix(`/static/admin`))"
+      - "traefik.http.routers.django-admin.rule=(Host(`contentor.localhost`) || Host(`localhost`) || Host(`tr.contentor.localhost`) || Host(`tr.localhost`)) && (PathPrefix(`/admin`) || PathPrefix(`/static/admin`))"
       - "traefik.http.routers.django-admin.entrypoints=web"
       - "traefik.http.routers.django-admin.priority=10"
       - "traefik.http.services.django.loadbalancer.server.port=8000"
@@ -121,7 +121,7 @@ services:
       - django
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextjs-main.rule=Host(`contentor.localhost`) || Host(`localhost`)"
+      - "traefik.http.routers.nextjs-main.rule=Host(`contentor.localhost`) || Host(`localhost`) || Host(`tr.contentor.localhost`) || Host(`tr.localhost`)"
       - "traefik.http.routers.nextjs-main.entrypoints=web"
       - "traefik.http.routers.nextjs-main.priority=2"
       - "traefik.http.services.nextjs-main.loadbalancer.server.port=3000"
