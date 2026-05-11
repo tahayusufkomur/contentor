@@ -233,13 +233,19 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 
-def _create_oauth_state(tenant_schema: str, origin: str) -> str:
-    """Create a signed JWT containing OAuth state (no cookies needed)."""
+def _create_oauth_state(tenant_schema: str, origin: str, region: str) -> str:
+    """Create a signed JWT containing OAuth state (no cookies needed).
+
+    Google enforces a single fixed redirect_uri, so the callback always lands
+    on one host (typically localhost). We carry the originating region inside
+    the signed state so the callback knows the user's intended region.
+    """
     from datetime import datetime, timedelta
 
     payload = {
         "tenant": tenant_schema,
         "origin": origin,
+        "region": region,
         "purpose": "google_oauth",
         "exp": datetime.now(tz=UTC) + timedelta(minutes=10),
         "iat": datetime.now(tz=UTC),
@@ -261,8 +267,15 @@ def _verify_oauth_state(state: str) -> dict:
 def google_login(request):
     tenant = connection.tenant
     origin = request.data.get("origin", "")
+    # Prefer region resolved from origin (where the user actually is) over
+    # request.region (which is correct here too, but origin is the authoritative
+    # signal for the post-OAuth redirect destination).
+    from apps.core.region_utils import resolve_host
+    from urllib.parse import urlparse
+    origin_host = urlparse(origin).hostname or ""
+    region = resolve_host(origin_host).region if origin_host else getattr(request, "region", "global")
 
-    state = _create_oauth_state(tenant.schema_name, origin)
+    state = _create_oauth_state(tenant.schema_name, origin, region)
 
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
@@ -365,7 +378,9 @@ def google_callback(request):
     default_role = "coach" if tenant.schema_name == "public" else "student"
 
     from apps.core.constants import REGION_DEFAULT_LOCALE
-    region = getattr(tenant, "region", None) or getattr(request, "region", "global")
+    # Region from the signed state — the request host at this point is the
+    # OAuth callback domain (localhost), which is meaningless for region.
+    region = state_data.get("region") or getattr(tenant, "region", None) or "global"
     user, created = User.objects.get_or_create(
         email=email,
         defaults={
@@ -382,5 +397,9 @@ def google_callback(request):
         user.avatar_url = avatar
         user.save(update_fields=["avatar_url"])
 
-    jwt_token = create_jwt(user, tenant)
+    # Pass region as an explicit override so the JWT carries the state region,
+    # not whatever the OAuth-callback's tenant happened to have. This is what
+    # lets the resulting cookie pass TenantJWTAuthentication's cross-region
+    # check when the user lands back on tr.contentor.app.
+    jwt_token = create_jwt(user, tenant, region=region)
     return HttpResponseRedirect(f"{origin}/callback?token={jwt_token}&source=google")

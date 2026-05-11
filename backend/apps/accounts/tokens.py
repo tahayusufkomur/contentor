@@ -43,12 +43,12 @@ def verify_signup_token(token: str) -> dict:
     return payload
 
 
-def create_jwt(user, tenant) -> str:
+def create_jwt(user, tenant, region: str | None = None) -> str:
     payload = {
         "user_id": user.id,
         "tenant_id": tenant.schema_name,
         "role": user.role,
-        "region": getattr(tenant, "region", None) or getattr(user, "region", "global"),
+        "region": region or getattr(tenant, "region", None) or getattr(user, "region", "global"),
         "exp": datetime.now(tz=UTC) + timedelta(days=settings.JWT_EXPIRY_DAYS),
         "iat": datetime.now(tz=UTC),
     }
