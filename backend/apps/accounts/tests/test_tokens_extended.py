@@ -64,22 +64,25 @@ class TestSignupTokens:
 
 
 class TestCreateJWT:
-    def _make_user_and_tenant(self, user_id=42, role="owner", schema="test_tenant"):
+    def _make_user_and_tenant(self, user_id=42, role="owner", schema="test_tenant", region="global"):
         user = Mock()
         user.id = user_id
         user.role = role
+        user.region = region
         tenant = Mock()
         tenant.schema_name = schema
+        tenant.region = region
         return user, tenant
 
     def test_create_jwt_contains_expected_fields(self):
-        """JWT payload must include user_id, tenant_id, role, exp, iat."""
-        user, tenant = self._make_user_and_tenant()
+        """JWT payload must include user_id, tenant_id, role, region, exp, iat."""
+        user, tenant = self._make_user_and_tenant(region="global")
         token = create_jwt(user, tenant)
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         assert payload["user_id"] == 42
         assert payload["tenant_id"] == "test_tenant"
         assert payload["role"] == "owner"
+        assert payload["region"] == "global"
         for field in ("exp", "iat"):
             assert field in payload, f"Missing field: {field}"
 
