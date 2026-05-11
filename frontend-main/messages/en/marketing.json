@@ -8,14 +8,159 @@
     "ctaSecondary": "Watch a 2-min demo",
     "trustNote": "Free forever plan. No credit card. Set up in under 5 minutes."
   },
-  "finalCta": {
-    "title": "Ready to turn your expertise into a business?",
-    "subtitle": "Join thousands of creators monetizing their content on Contentor.",
-    "ctaPrimary": "Start Free Today",
-    "ctaSecondary": "See pricing"
+  "socialProof": {
+    "tagline": "Trusted by yoga instructors, fitness coaches, music teachers, dance academies, and 500+ more creators",
+    "categories": {
+      "fitness": "Fitness",
+      "music": "Music",
+      "dance": "Dance",
+      "education": "Education",
+      "wellness": "Wellness"
+    }
+  },
+  "stats": {
+    "earned": {
+      "value": "$1M+",
+      "label": "Earned by creators on Contentor"
+    },
+    "students": {
+      "value": "10,000+",
+      "label": "Students in a single live class"
+    },
+    "launch": {
+      "value": "5 min",
+      "label": "Average time to launch"
+    }
+  },
+  "features": {
+    "title": "Built for creators who mean business",
+    "subtitle": "From course creation to payments, live teaching to automation — everything under your brand.",
+    "illustrations": {
+      "progress": "Progress",
+      "lessonsCount": "{count} lessons",
+      "live": "LIVE",
+      "watchingCount": "{count} watching",
+      "automationStep3": "Send welcome offer"
+    },
+    "items": {
+      "courses": {
+        "title": "Courses that sell themselves",
+        "description": "Build rich, structured courses with modules, lessons, and video content that keep students engaged from start to finish.",
+        "points": {
+          "video": "Video lessons with progress tracking",
+          "modular": "Modular course structure",
+          "enrollment": "Student enrollment management",
+          "drip": "Drip scheduling and upsells"
+        }
+      },
+      "live": {
+        "title": "Live classes for up to 10,000 students",
+        "description": "Run real-time sessions with your audience at any scale. Teach, interact, and record — all from one place.",
+        "points": {
+          "webrtc": "WebRTC video conferencing",
+          "chat": "Live chat during sessions",
+          "recording": "Automatic recording to cloud",
+          "scheduling": "Scheduling and reminders"
+        }
+      },
+      "branding": {
+        "title": "100% your brand, zero Contentor branding",
+        "description": "Your platform, your identity. Fully white-label with your own domain, colors, and typography — students never see us.",
+        "points": {
+          "domain": "Custom domain support",
+          "colors": "Brand colors and typography",
+          "whitelabel": "White-label experience",
+          "mobile": "Mobile-ready PWA"
+        }
+      },
+      "autopilot": {
+        "title": "Autopilot revenue",
+        "description": "Automate the repetitive tasks and earn steadily. From email sequences to subscription billing, let the system work for you.",
+        "points": {
+          "email": "Automated email sequences",
+          "subscriptions": "Recurring subscription billing",
+          "stripe": "Payment processing via Stripe",
+          "automation": "Student progress automation"
+        }
+      }
+    }
+  },
+  "testimonials": {
+    "title": "Creators love Contentor",
+    "items": {
+      "sarah": {
+        "quote": "Contentor made it incredibly easy to launch my yoga course platform. I was earning within a week.",
+        "name": "Sarah Chen",
+        "role": "Yoga Instructor"
+      },
+      "marcus": {
+        "quote": "The live class feature is a game-changer. I can teach 500+ students at once without any technical issues.",
+        "name": "Marcus Johnson",
+        "role": "Fitness Coach"
+      },
+      "priya": {
+        "quote": "Having my own branded platform instead of being on a marketplace made all the difference for my business.",
+        "name": "Priya Sharma",
+        "role": "Dance Academy"
+      }
+    }
+  },
+  "howItWorks": {
+    "title": "Up and running in minutes",
+    "steps": {
+      "one": {
+        "title": "Create your free account",
+        "description": "Sign up in under 2 minutes. No credit card required."
+      },
+      "two": {
+        "title": "Upload your content",
+        "description": "Add courses, set your prices, and customize your brand."
+      },
+      "three": {
+        "title": "Start earning",
+        "description": "Share your link and watch the revenue come in."
+      }
+    }
   },
   "faq": {
     "title": "Frequently asked questions",
-    "subtitle": "Everything you need to know about Contentor"
+    "subtitle": "Everything you need to know to get started.",
+    "items": {
+      "freePlan": {
+        "q": "Is there really a free plan?",
+        "a": "Yes! Our free plan is free forever — no credit card required. You can have up to 50 students and 3 courses. Upgrade anytime as you grow."
+      },
+      "technical": {
+        "q": "Do I need technical skills?",
+        "a": "Not at all. If you can use social media, you can use Contentor. Everything is drag-and-drop with no coding required."
+      },
+      "customDomain": {
+        "q": "Can I use my own domain?",
+        "a": "Absolutely. On our Starter plan and above, you can connect your own custom domain. Your students will never see the Contentor brand."
+      },
+      "payments": {
+        "q": "How do payments work?",
+        "a": "We integrate directly with Stripe. Payments go straight to your account — we never hold your money. You can sell one-time courses or recurring subscriptions."
+      },
+      "liveClasses": {
+        "q": "What about live class limits?",
+        "a": "Our Pro plan supports up to 10,000 concurrent students in a single live session. That's WebRTC-powered video with built-in chat and automatic recording."
+      },
+      "migration": {
+        "q": "Can I migrate from another platform?",
+        "a": "Yes. You can import your student list via CSV and recreate your courses easily. Our support team helps with migration for Pro plan users."
+      },
+      "contract": {
+        "q": "Is there a long-term contract?",
+        "a": "No contracts, no commitments. All plans are month-to-month. You can cancel or change plans anytime."
+      }
+    }
+  },
+  "finalCta": {
+    "title": "Your audience is waiting",
+    "subtitle": "Join 500+ creators already earning on Contentor. Start free — upgrade when you're ready.",
+    "ctaPrimary": "Start Free Today",
+    "ctaSecondary": "See pricing",
+    "trustNote": "Free forever plan. No credit card required."
   }
 }

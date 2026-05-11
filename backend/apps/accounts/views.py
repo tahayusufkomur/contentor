@@ -69,7 +69,8 @@ def magic_link_request(request):
         print(f"{link}")
         print(f"{'='*60}\n")
 
-    return Response({"detail": "If an account exists, a magic link has been sent."})
+    from apps.core.i18n_helpers import msg
+    return Response({"detail": msg(request, "magic_link_sent")})
 
 
 @api_view(["POST"])
@@ -78,13 +79,14 @@ def magic_link_request(request):
 def magic_link_verify(request):
     serializer = MagicLinkVerifySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    from apps.core.i18n_helpers import msg
     try:
         payload = verify_magic_link_token(serializer.validated_data["token"])
     except Exception:
-        return Response({"detail": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
     tenant = connection.tenant
     if payload["tenant_id"] != tenant.schema_name:
-        return Response({"detail": "Token not valid for this tenant"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
     user, _ = User.objects.get_or_create(
         email=payload["email"],
         defaults={"name": payload["email"].split("@")[0], "role": "student"},
@@ -149,9 +151,10 @@ def update_me(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def update_locale(request):
+    from apps.core.i18n_helpers import msg
     locale = (request.data.get("locale") or "").strip().lower()
     if locale not in ("en", "tr"):
-        return Response({"detail": "Unsupported locale"}, status=400)
+        return Response({"detail": msg(request, "unsupported_locale")}, status=400)
     user = request.user
     user.preferred_locale = locale
     user.save(update_fields=["preferred_locale"])

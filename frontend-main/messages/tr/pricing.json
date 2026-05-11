@@ -1,30 +1,92 @@
 {
   "title": "Basit, şeffaf fiyatlandırma",
-  "subtitle": "Ücretsiz başlayın. Büyümeye hazır olduğunuzda yükseltin.",
-  "billed": {
-    "monthly": "Aylık faturalandırma",
-    "yearly": "Yıllık faturalandırma",
-    "save": "%20 tasarruf"
+  "subtitle": "Ücretsiz başla, büyüdükçe ölçeklen. Gizli ücret yok.",
+  "popular": "Popüler",
+  "cta": "Başla",
+  "periods": {
+    "forever": "sonsuza dek",
+    "monthly": "/ay"
   },
   "plans": {
     "free": {
       "name": "Ücretsiz",
-      "description": "Temel özelliklerle başlayın"
+      "price": "₺0",
+      "period": "sonsuza dek",
+      "description": "Temel özelliklerle başlayın. Suyun sıcaklığını ölçmek için ideal.",
+      "features": {
+        "students": "50 öğrenciye kadar",
+        "storage": "1 GB depolama",
+        "courseBuilder": "Temel kurs oluşturucu",
+        "support": "Topluluk desteği",
+        "fee": "%10 işlem ücreti",
+        "live": "Canlı dersler",
+        "branding": "Özel markalama",
+        "domain": "Özel alan adı"
+      },
+      "included": ["students", "storage", "courseBuilder", "support", "fee"]
     },
     "starter": {
       "name": "Başlangıç",
-      "description": "Kitlesini büyüten koçlar için"
+      "price": "₺599",
+      "period": "/ay",
+      "description": "İşini büyütmeye hazır üreticiler için.",
+      "features": {
+        "students": "500 öğrenciye kadar",
+        "storage": "10 GB depolama",
+        "courseBuilder": "Gelişmiş kurs oluşturucu",
+        "live": "Canlı dersler",
+        "branding": "Özel markalama",
+        "campaigns": "E-posta kampanyaları (1.000/ay)",
+        "fee": "%5 işlem ücreti",
+        "domain": "Özel alan adı"
+      },
+      "included": ["students", "storage", "courseBuilder", "live", "branding", "campaigns", "fee"]
     },
     "pro": {
       "name": "Pro",
-      "description": "Ölçeklenen kurumsal üreticiler için"
+      "price": "₺1.499",
+      "period": "/ay",
+      "description": "Her şeye ihtiyaç duyan kurumsal işletmeler için.",
+      "features": {
+        "students": "Sınırsız öğrenci",
+        "storage": "100 GB depolama",
+        "courseBuilder": "Gelişmiş kurs oluşturucu",
+        "live": "Canlı dersler ve yayın",
+        "domain": "Özel alan adı",
+        "campaigns": "E-posta kampanyaları (10.000/ay)",
+        "fee": "%2 işlem ücreti",
+        "support": "Öncelikli destek"
+      },
+      "included": ["students", "storage", "courseBuilder", "live", "domain", "campaigns", "fee", "support"]
     }
   },
-  "cta": "Bu planla başla",
-  "ctaContact": "Satışla iletişime geç",
-  "currentPlan": "Mevcut plan",
-  "perMonth": "/ ay",
-  "perYear": "/ yıl",
+  "faq": {
+    "title": "Sıkça sorulan sorular",
+    "items": {
+      "switch": {
+        "q": "Planlar arasında istediğim zaman geçebilir miyim?",
+        "a": "Evet. Planınızı istediğiniz zaman yükseltebilir veya düşürebilirsiniz. Değişiklikler hemen geçerli olur ve faturalandırma oranlı yapılır."
+      },
+      "trial": {
+        "q": "Ücretsiz deneme var mı?",
+        "a": "Her plan 14 günlük ücretsiz deneme ile gelir. Başlamak için kredi kartı gerekmez."
+      },
+      "payments": {
+        "q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+        "a": "Tüm büyük kredi kartlarını, banka kartlarını ve PayPal'ı kabul ediyoruz. Kurumsal müşteriler fatura ile de ödeyebilir."
+      },
+      "limits": {
+        "q": "Plan limitlerimi aşarsam ne olur?",
+        "a": "Limitlerinize yaklaşırken sizi bilgilendireceğiz. Veri kaybı olmadan daha fazla kapasite için istediğiniz zaman yükseltebilirsiniz."
+      }
+    }
+  },
+  "cta2": {
+    "title": "Başlamaya hazır mısınız?",
+    "subtitle": "İçeriklerini Contentor'da gelire dönüştüren üreticilere katılın.",
+    "button": "Başla",
+    "trustNote": "Ücretsiz plan mevcut. Kredi kartı gerekmez."
+  },
   "comingSoon": "Türkiye için fiyatlandırma yakında",
   "comingSoonNote": "Yerel fiyatları belirliyoruz. Kısa süre içinde tekrar göz atın."
 }

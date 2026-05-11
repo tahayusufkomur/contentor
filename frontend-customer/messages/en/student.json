@@ -7,10 +7,28 @@
     "noContent": "Nothing here yet."
   },
   "auth": {
+    "welcomeTo": "Welcome to {brand}",
+    "fallbackBrand": "your account",
+    "signInToContinue": "Sign in to continue",
+    "googleCta": "Continue with Google",
+    "or": "or",
     "magicLinkLabel": "Email",
     "magicLinkPlaceholder": "you@example.com",
-    "magicLinkSubmit": "Send magic link",
-    "magicLinkSent": "Check your inbox for the link.",
-    "magicLinkError": "Could not send the link. Please try again."
+    "magicLinkSubmit": "Send Magic Link",
+    "magicLinkSubmitting": "Sending…",
+    "magicLinkSentTitle": "Check your email",
+    "magicLinkSentBody": "We sent a login link to {email}",
+    "magicLinkError": "Could not send the link. Please try again.",
+    "networkError": "Network error. Please try again.",
+    "googleErrors": {
+      "generic": "Something went wrong. Please try again.",
+      "googleDenied": "Google sign-in was cancelled.",
+      "invalidRequest": "Invalid request. Please try again.",
+      "invalidState": "Session expired. Please try again.",
+      "tenantMismatch": "Authentication error. Please try again.",
+      "tokenExchangeFailed": "Could not connect to Google. Please try again.",
+      "userinfoFailed": "Could not retrieve your Google profile. Please try again.",
+      "noEmail": "No email associated with this Google account."
+    }
   }
 }

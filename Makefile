@@ -78,6 +78,10 @@ test-backend: ## Run backend tests (alias for test)
 
 lint: ## Run all linters via pre-commit
 	pre-commit run --all-files
+	@$(MAKE) check-i18n
+
+check-i18n: ## Verify EN and TR catalogs have identical keys
+	node scripts/check-i18n-parity.mjs
 
 format: ## Auto-format backend (ruff) and frontend (prettier)
 	cd backend && ruff format .

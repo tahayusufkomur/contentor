@@ -1,6 +1,29 @@
 {
   "title": "Admin",
   "welcome": "Welcome, {name}",
+  "nav": {
+    "sections": {
+      "overview": "Overview",
+      "content": "Content",
+      "community": "Community",
+      "site": "Site",
+      "business": "Business"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "courses": "Courses",
+      "photos": "Photos",
+      "videos": "Videos",
+      "downloads": "Downloads",
+      "liveEvents": "Live Events",
+      "email": "Email",
+      "students": "Students",
+      "pages": "Pages",
+      "design": "Design",
+      "settings": "Settings",
+      "billing": "Billing"
+    }
+  },
   "settings": {
     "title": "Settings",
     "languageAndRegion": "Language & region",

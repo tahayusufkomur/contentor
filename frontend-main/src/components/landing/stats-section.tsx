@@ -1,12 +1,13 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { TextureOverlay } from "@/components/ui/texture-overlay";
 
-const stats = [
-  { value: "$1M+", label: "Earned by creators on Contentor" },
-  { value: "10,000+", label: "Students in a single live class" },
-  { value: "5 min", label: "Average time to launch" },
-];
+const STAT_KEYS = ["earned", "students", "launch"] as const;
 
 export function StatsSection() {
+  const t = useTranslations("marketing.stats");
   return (
     <section className="relative overflow-hidden bg-foreground px-6 py-24 text-background md:py-32">
       <TextureOverlay opacity={0.04} />
@@ -19,12 +20,12 @@ export function StatsSection() {
       />
 
       <div className="relative z-10 mx-auto grid max-w-4xl gap-8 text-center md:grid-cols-3">
-        {stats.map((s) => (
-          <div key={s.value}>
+        {STAT_KEYS.map((key) => (
+          <div key={key}>
             <p className="font-display text-primary text-4xl font-bold tracking-tighter md:text-5xl">
-              {s.value}
+              {t(`${key}.value`)}
             </p>
-            <p className="mt-2 text-sm text-background/60">{s.label}</p>
+            <p className="mt-2 text-sm text-background/60">{t(`${key}.label`)}</p>
           </div>
         ))}
       </div>

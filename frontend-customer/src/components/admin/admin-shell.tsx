@@ -14,50 +14,13 @@ import {
   Users,
   Video,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
 import type { NavSection } from "@/components/shared/app-sidebar";
 import type { User } from "@/types/auth";
-
-const navSections: NavSection[] = [
-  {
-    id: "overview",
-    label: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
-  },
-  {
-    id: "content",
-    label: "Content",
-    items: [
-      { label: "Courses", href: "/admin/courses", icon: BookOpen },
-      { label: "Photos", href: "/admin/photos", icon: ImageIcon },
-      { label: "Videos", href: "/admin/videos", icon: Film },
-      { label: "Downloads", href: "/admin/downloads", icon: Download },
-      { label: "Live Events", href: "/admin/live", icon: Video },
-      { label: "Email", href: "/admin/email", icon: Mail },
-    ],
-  },
-  {
-    id: "community",
-    label: "Community",
-    items: [{ label: "Students", href: "/admin/students", icon: Users }],
-  },
-  {
-    id: "site",
-    label: "Site",
-    items: [
-      { label: "Pages", href: "/admin/pages", icon: FileText },
-      { label: "Design", href: "/admin/design", icon: Palette },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
-    ],
-  },
-  {
-    id: "business",
-    label: "Business",
-    items: [{ label: "Billing", href: "/admin/billing", icon: CreditCard }],
-  },
-];
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -65,13 +28,54 @@ interface AdminShellProps {
 }
 
 export function AdminShell({ children, user }: AdminShellProps) {
+  const t = useTranslations("admin");
+
+  const navSections: NavSection[] = [
+    {
+      id: "overview",
+      label: t("nav.sections.overview"),
+      items: [{ label: t("nav.items.dashboard"), href: "/admin", icon: LayoutDashboard }],
+    },
+    {
+      id: "content",
+      label: t("nav.sections.content"),
+      items: [
+        { label: t("nav.items.courses"), href: "/admin/courses", icon: BookOpen },
+        { label: t("nav.items.photos"), href: "/admin/photos", icon: ImageIcon },
+        { label: t("nav.items.videos"), href: "/admin/videos", icon: Film },
+        { label: t("nav.items.downloads"), href: "/admin/downloads", icon: Download },
+        { label: t("nav.items.liveEvents"), href: "/admin/live", icon: Video },
+        { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
+      ],
+    },
+    {
+      id: "community",
+      label: t("nav.sections.community"),
+      items: [{ label: t("nav.items.students"), href: "/admin/students", icon: Users }],
+    },
+    {
+      id: "site",
+      label: t("nav.sections.site"),
+      items: [
+        { label: t("nav.items.pages"), href: "/admin/pages", icon: FileText },
+        { label: t("nav.items.design"), href: "/admin/design", icon: Palette },
+        { label: t("nav.items.settings"), href: "/admin/settings", icon: Settings },
+      ],
+    },
+    {
+      id: "business",
+      label: t("nav.sections.business"),
+      items: [{ label: t("nav.items.billing"), href: "/admin/billing", icon: CreditCard }],
+    },
+  ];
+
   return (
     <div className="flex h-screen">
-      <AppSidebar title="Admin" sections={navSections}>
+      <AppSidebar title={t("title")} sections={navSections}>
         {user && <UserMenu user={user} />}
       </AppSidebar>
       <div className="flex flex-1 flex-col overflow-hidden">
-        <MobileHeader title="Admin" sections={navSections} user={user} />
+        <MobileHeader title={t("title")} sections={navSections} user={user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>

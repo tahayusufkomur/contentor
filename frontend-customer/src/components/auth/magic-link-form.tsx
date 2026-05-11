@@ -1,11 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export function MagicLinkForm() {
+  const t = useTranslations('student.auth')
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -24,17 +27,16 @@ export function MagicLinkForm() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.detail || 'Something went wrong')
+        setError(data.detail || t('magicLinkError'))
         return
       }
-      // Demo tenants: instant redirect, no email needed
       if (data.demo_redirect) {
         window.location.href = data.demo_redirect
         return
       }
       setSent(true)
     } catch {
-      setError('Network error. Please try again.')
+      setError(t('networkError'))
     } finally {
       setLoading(false)
     }
@@ -43,9 +45,12 @@ export function MagicLinkForm() {
   if (sent) {
     return (
       <div className="text-center">
-        <h2 className="text-lg font-semibold">Check your email</h2>
+        <h2 className="text-lg font-semibold">{t('magicLinkSentTitle')}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          We sent a login link to <strong>{email}</strong>
+          {t.rich('magicLinkSentBody', {
+            email,
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
       </div>
     )
@@ -54,12 +59,19 @@ export function MagicLinkForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Label htmlFor="email">{t('magicLinkLabel')}</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder={t('magicLinkPlaceholder')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Sending...' : 'Send Magic Link'}
+        {loading ? t('magicLinkSubmitting') : t('magicLinkSubmit')}
       </Button>
     </form>
   )

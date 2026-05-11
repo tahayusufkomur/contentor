@@ -1,6 +1,29 @@
 {
   "title": "Yönetim",
   "welcome": "Hoş geldiniz, {name}",
+  "nav": {
+    "sections": {
+      "overview": "Genel Bakış",
+      "content": "İçerik",
+      "community": "Topluluk",
+      "site": "Site",
+      "business": "İş"
+    },
+    "items": {
+      "dashboard": "Panel",
+      "courses": "Kurslar",
+      "photos": "Fotoğraflar",
+      "videos": "Videolar",
+      "downloads": "İndirilenler",
+      "liveEvents": "Canlı Etkinlikler",
+      "email": "E-posta",
+      "students": "Öğrenciler",
+      "pages": "Sayfalar",
+      "design": "Tasarım",
+      "settings": "Ayarlar",
+      "billing": "Faturalandırma"
+    }
+  },
   "settings": {
     "title": "Ayarlar",
     "languageAndRegion": "Dil ve bölge",

@@ -7,10 +7,28 @@
     "noContent": "Henüz burada bir şey yok."
   },
   "auth": {
+    "welcomeTo": "{brand} platformuna hoş geldiniz",
+    "fallbackBrand": "hesabınız",
+    "signInToContinue": "Devam etmek için giriş yapın",
+    "googleCta": "Google ile devam et",
+    "or": "veya",
     "magicLinkLabel": "E-posta",
     "magicLinkPlaceholder": "siz@ornek.com",
     "magicLinkSubmit": "Sihirli bağlantı gönder",
-    "magicLinkSent": "Bağlantı için gelen kutunuzu kontrol edin.",
-    "magicLinkError": "Bağlantı gönderilemedi. Lütfen tekrar deneyin."
+    "magicLinkSubmitting": "Gönderiliyor…",
+    "magicLinkSentTitle": "E-postanızı kontrol edin",
+    "magicLinkSentBody": "{email} adresine bir giriş bağlantısı gönderdik",
+    "magicLinkError": "Bağlantı gönderilemedi. Lütfen tekrar deneyin.",
+    "networkError": "Ağ hatası. Lütfen tekrar deneyin.",
+    "googleErrors": {
+      "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+      "googleDenied": "Google girişi iptal edildi.",
+      "invalidRequest": "Geçersiz istek. Lütfen tekrar deneyin.",
+      "invalidState": "Oturum süresi doldu. Lütfen tekrar deneyin.",
+      "tenantMismatch": "Kimlik doğrulama hatası. Lütfen tekrar deneyin.",
+      "tokenExchangeFailed": "Google'a bağlanılamadı. Lütfen tekrar deneyin.",
+      "userinfoFailed": "Google profiliniz alınamadı. Lütfen tekrar deneyin.",
+      "noEmail": "Bu Google hesabıyla ilişkili e-posta yok."
+    }
   }
 }

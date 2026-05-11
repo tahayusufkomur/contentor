@@ -39,9 +39,10 @@ def creator_signup(request):
     serializer = CreatorSignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
+    from apps.core.i18n_helpers import msg
     slug = slugify(serializer.validated_data["brand_name"])[:63]
     if Tenant.objects.filter(slug=slug).exists():
-        return Response({"detail": "Brand name already taken"}, status=400)
+        return Response({"detail": msg(request, "brand_taken")}, status=400)
 
     email = serializer.validated_data["email"]
     name = serializer.validated_data["name"]
@@ -103,7 +104,7 @@ def creator_signup(request):
         print(f"{link}")
         print(f"{'='*60}\n")
 
-    return Response({"detail": "Verification email sent. Check your inbox."})
+    return Response({"detail": msg(request, "verification_sent")})
 
 
 @api_view(["POST"])
@@ -111,16 +112,17 @@ def creator_signup(request):
 @permission_classes([AllowAny])
 def creator_signup_verify(request):
     """Step 2: Verify email token and create the tenant."""
+    from apps.core.i18n_helpers import msg
     token = request.data.get("token")
     if not token:
-        return Response({"detail": "Token required"}, status=400)
+        return Response({"detail": msg(request, "token_required")}, status=400)
 
     from apps.accounts.tokens import verify_signup_token
 
     try:
         payload = verify_signup_token(token)
     except Exception:
-        return Response({"detail": "Invalid or expired token"}, status=400)
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
     email = payload["email"]
     name = payload["name"]
@@ -178,13 +180,14 @@ def creator_signup_verify(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def provisioning_status(request):
+    from apps.core.i18n_helpers import msg
     slug = request.query_params.get("slug")
     if not slug:
-        return Response({"detail": "slug parameter required"}, status=400)
+        return Response({"detail": msg(request, "slug_required")}, status=400)
     try:
         tenant = Tenant.objects.get(slug=slug)
     except Tenant.DoesNotExist:
-        return Response({"detail": "Tenant not found"}, status=404)
+        return Response({"detail": msg(request, "tenant_not_found")}, status=404)
     return Response(
         {
             "slug": tenant.slug,

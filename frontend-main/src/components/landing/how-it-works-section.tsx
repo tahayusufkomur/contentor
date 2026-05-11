@@ -1,43 +1,29 @@
-const steps = [
-  {
-    number: "1",
-    title: "Create your free account",
-    description: "Sign up in under 2 minutes. No credit card required.",
-  },
-  {
-    number: "2",
-    title: "Upload your content",
-    description: "Add courses, set your prices, and customize your brand.",
-  },
-  {
-    number: "3",
-    title: "Start earning",
-    description: "Share your link and watch the revenue come in.",
-  },
-];
+"use client";
+
+import { useTranslations } from "next-intl";
+
+const STEP_KEYS = ["one", "two", "three"] as const;
+const STEP_NUMBERS = { one: "1", two: "2", three: "3" } as const;
 
 export function HowItWorksSection() {
+  const t = useTranslations("marketing.howItWorks");
   return (
     <section className="px-6 py-32 md:py-40">
       <div className="mx-auto max-w-4xl">
         <h2 className="font-display text-center text-3xl font-bold tracking-tight md:text-4xl">
-          Up and running in minutes
+          {t("title")}
         </h2>
 
         <div className="relative mt-20 grid gap-8 md:grid-cols-3">
           <div className="absolute left-0 right-0 top-8 hidden h-px border-t border-primary/30 md:block" />
 
-          {steps.map((step) => (
-            <div key={step.number} className="text-center">
+          {STEP_KEYS.map((key) => (
+            <div key={key} className="text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary bg-background">
-                <span className="font-display text-xl font-bold">
-                  {step.number}
-                </span>
+                <span className="font-display text-xl font-bold">{STEP_NUMBERS[key]}</span>
               </div>
-              <h3 className="mt-6 text-lg font-semibold">{step.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {step.description}
-              </p>
+              <h3 className="mt-6 text-lg font-semibold">{t(`steps.${key}.title`)}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t(`steps.${key}.description`)}</p>
             </div>
           ))}
         </div>
