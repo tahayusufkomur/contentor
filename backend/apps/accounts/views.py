@@ -59,7 +59,9 @@ def magic_link_request(request):
 
     from apps.core.email import send_magic_link
 
-    sent = send_magic_link(email, link, brand_name)
+    # Locale: prefer request region's default, falling back to en.
+    locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
+    sent = send_magic_link(email, link, brand_name, locale=locale)
     if not sent:
         # Always print to console so the link is visible in `make logs`
         print(f"\n{'='*60}")

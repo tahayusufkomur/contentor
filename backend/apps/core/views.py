@@ -57,21 +57,41 @@ def creator_signup(request):
 
     from apps.core.email import send_email
 
+    # TR: needs native review.
+    locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
+    strings = {
+        "en": {
+            "subject": f"Verify your email — {brand_name}",
+            "heading": "Welcome to Contentor!",
+            "intro": f"Click the button below to verify your email and create <strong>{brand_name}</strong>.",
+            "button": "Verify &amp; Create My Platform",
+            "expires": f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
+            "copy_label": "Or copy:",
+        },
+        "tr": {
+            "subject": f"E-postanızı doğrulayın — {brand_name}",
+            "heading": "Contentor'a hoş geldiniz!",
+            "intro": f"E-postanızı doğrulamak ve <strong>{brand_name}</strong> platformunu oluşturmak için aşağıdaki düğmeye tıklayın.",
+            "button": "Doğrula ve Platformumu Oluştur",
+            "expires": f"Bu bağlantı {settings.MAGIC_LINK_EXPIRY_MINUTES} dakika içinde sona erer.",
+            "copy_label": "Veya kopyalayın:",
+        },
+    }[locale]
     sent = send_email(
         to=email,
-        subject=f"Verify your email — {brand_name}",
+        subject=strings["subject"],
         html=f"""
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #1a1a2e;">Welcome to Contentor!</h2>
-            <p style="color: #444;">Click the button below to verify your email and create <strong>{brand_name}</strong>.</p>
+            <h2 style="color: #1a1a2e;">{strings["heading"]}</h2>
+            <p style="color: #444;">{strings["intro"]}</p>
             <a href="{link}"
                style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
                       border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
-                Verify &amp; Create My Platform
+                {strings["button"]}
             </a>
-            <p style="color: #888; font-size: 13px;">This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.</p>
+            <p style="color: #888; font-size: 13px;">{strings["expires"]}</p>
             <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-                Or copy: <span style="word-break: break-all;">{link}</span>
+                {strings["copy_label"]} <span style="word-break: break-all;">{link}</span>
             </p>
         </div>
         """,
