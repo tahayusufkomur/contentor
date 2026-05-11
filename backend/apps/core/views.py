@@ -49,7 +49,8 @@ def creator_signup(request):
 
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(email, name, brand_name)
+    region = getattr(request, "region", "global")
+    token = create_signup_token(email, name, brand_name, region=region)
 
     scheme = "https" if request.is_secure() else "http"
     host = request.get_host()
@@ -124,18 +125,25 @@ def creator_signup_verify(request):
     email = payload["email"]
     name = payload["name"]
     brand_name = payload["brand_name"]
+    region = payload.get("region", "global")
     slug = slugify(brand_name)[:63]
 
+    # Build the tenant's FQDN based on region. TR tenants live under tr.{base}.
+    base_domain = settings.CONTENTOR_DOMAIN
+    tenant_fqdn = f"{slug}.tr.{base_domain}" if region == "tr" else f"{slug}.{base_domain}"
+
     if Tenant.objects.filter(slug=slug).exists():
-        # Tenant already created (e.g. user clicked link twice)
         tenant = Tenant.objects.get(slug=slug)
         return Response(
             {
                 "slug": slug,
                 "status": tenant.provisioning_status,
-                "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
+                "region": tenant.region,
+                "domain": tenant_fqdn,
             }
         )
+
+    from apps.core.constants import REGION_DEFAULT_CURRENCY, REGION_DEFAULT_LOCALE
 
     tenant = Tenant.objects.create(
         schema_name=slug,
@@ -144,9 +152,11 @@ def creator_signup_verify(request):
         subdomain=slug,
         owner_email=email,
         provisioning_status="pending",
+        region=region,
+        billing_currency=REGION_DEFAULT_CURRENCY.get(region, "USD"),
     )
     Domain.objects.create(
-        domain=f"{slug}.{settings.CONTENTOR_DOMAIN}",
+        domain=tenant_fqdn,
         tenant=tenant,
         is_primary=True,
     )
@@ -156,7 +166,9 @@ def creator_signup_verify(request):
         {
             "slug": slug,
             "status": "pending",
-            "domain": f"{slug}.{settings.CONTENTOR_DOMAIN}",
+            "region": region,
+            "domain": tenant_fqdn,
+            "locale": REGION_DEFAULT_LOCALE.get(region, "en"),
         },
         status=201,
     )

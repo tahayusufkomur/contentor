@@ -19,10 +19,18 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
 
         # Create owner in main (public) schema if they don't exist yet
         from apps.accounts.models import User
+        from apps.core.constants import REGION_DEFAULT_LOCALE
 
+        region = tenant.region or "global"
+        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
         User.objects.get_or_create(
             email=owner_email,
-            defaults={"name": owner_name, "role": "coach"},
+            defaults={
+                "name": owner_name,
+                "role": "coach",
+                "region": region,
+                "preferred_locale": preferred_locale,
+            },
         )
 
         # Create owner + config in tenant schema
@@ -31,6 +39,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
 
             TenantConfig.objects.create(
                 brand_name=tenant.name,
+                default_locale=preferred_locale,
                 enabled_modules=[
                     "courses",
                     "live",
@@ -68,7 +77,14 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
                 },
                 onboarding_completed=False,
             )
-            User.objects.create_user(email=owner_email, name=owner_name, role="owner", is_staff=True)
+            User.objects.create_user(
+                email=owner_email,
+                name=owner_name,
+                role="owner",
+                is_staff=True,
+                region=region,
+                preferred_locale=preferred_locale,
+            )
 
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])

@@ -23,11 +23,12 @@ def verify_magic_link_token(token: str) -> dict:
     return payload
 
 
-def create_signup_token(email: str, name: str, brand_name: str) -> str:
+def create_signup_token(email: str, name: str, brand_name: str, region: str = "global") -> str:
     payload = {
         "email": email,
         "name": name,
         "brand_name": brand_name,
+        "region": region,
         "purpose": "signup",
         "exp": datetime.now(tz=UTC) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
         "iat": datetime.now(tz=UTC),
