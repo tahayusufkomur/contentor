@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { formatDuration } from '@/lib/format'
 import { CheckCircle2, Circle, Clock, ListRestart } from 'lucide-react'
 import type { CourseDetail, Lesson, Progress } from '@/types/course'
 
@@ -11,12 +12,6 @@ interface LessonSidebarProps {
   onLessonSelect: (lesson: Lesson) => void
   autoPlay?: boolean
   onAutoPlayChange?: (autoPlay: boolean) => void
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSelect, autoPlay, onAutoPlayChange }: LessonSidebarProps) {

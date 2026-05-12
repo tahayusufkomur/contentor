@@ -6,7 +6,6 @@ and stays there forever. Locale is a downstream preference within a region.
 
 REGION_GLOBAL = "global"
 REGION_TR = "tr"
-REGIONS = (REGION_GLOBAL, REGION_TR)
 REGION_CHOICES = [
     (REGION_GLOBAL, "Global"),
     (REGION_TR, "Turkey"),
@@ -14,7 +13,6 @@ REGION_CHOICES = [
 
 LOCALE_EN = "en"
 LOCALE_TR = "tr"
-LOCALES = (LOCALE_EN, LOCALE_TR)
 LOCALE_CHOICES = [
     (LOCALE_EN, "English"),
     (LOCALE_TR, "Türkçe"),

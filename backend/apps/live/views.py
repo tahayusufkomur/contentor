@@ -401,14 +401,6 @@ def onsite_event_detail(request, pk):
 # ─── Calendar (unified) ──────────────────────────────────────────
 
 
-def _status_filter(user):
-    if not user.is_authenticated:
-        return ["scheduled", "live", "ended"]
-    if user.role in ("owner", "coach"):
-        return None  # no filter (includes draft)
-    return ["scheduled", "live", "ended"]
-
-
 def _apply_date_range(qs, date_from, date_to):
     if date_from:
         qs = qs.filter(scheduled_at__gte=date_from)

@@ -382,11 +382,3 @@ class ContentAccessService:
             )
         except ImportError:
             return set()
-
-
-# Backward-compatible shortcut used by existing views
-_default_service = ContentAccessService()
-
-
-def can_access(user, content) -> bool:
-    return _default_service.check_access(user, content)

@@ -5,14 +5,9 @@ import { EnrollButton } from '@/components/public/enroll-button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { formatDuration } from '@/lib/format'
 import { BookOpen, Clock, Lock, Play, User } from 'lucide-react'
 import type { CourseDetail, Module } from '@/types/course'
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-}
 
 function getTotalDuration(modules: Module[]): number {
   return modules.reduce(
