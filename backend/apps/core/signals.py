@@ -9,8 +9,10 @@ from .validators import validate_tenant_slug
 
 @receiver(pre_save, sender=Tenant)
 def tenant_pre_save(sender, instance, **kwargs):
-    # Always re-validate the slug — catches direct ORM creation, admin actions, and signup flows alike.
-    if instance.slug:
+    # Re-validate the slug — catches direct ORM creation, admin actions, and signup flows alike.
+    # The system `public` schema is exempt: it's the django-tenants base tenant
+    # row and intentionally uses the reserved slug.
+    if instance.slug and instance.schema_name != "public":
         validate_tenant_slug(instance.slug)
 
     if not instance.pk:

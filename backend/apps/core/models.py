@@ -56,7 +56,9 @@ class Tenant(TenantMixin):
 
     def clean(self):
         super().clean()
-        validate_tenant_slug(self.slug)
+        # The django-tenants base row uses the reserved slug intentionally.
+        if self.schema_name != "public":
+            validate_tenant_slug(self.slug)
 
 
 class Domain(DomainMixin):
