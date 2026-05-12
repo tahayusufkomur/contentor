@@ -51,6 +51,7 @@ AUTH_USER_MODEL = "accounts.User"
 MIDDLEWARE = [
     "apps.core.middleware.region.RegionResolverMiddleware",
     "apps.core.middleware.tenant.HeaderAwareTenantMiddleware",
+    "apps.core.middleware.demo_readonly.DemoReadOnlyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

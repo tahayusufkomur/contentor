@@ -1,3 +1,4 @@
+from django.db import connection
 from rest_framework import serializers
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
@@ -42,6 +43,16 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         sections = data.get("landing_sections")
         if isinstance(sections, dict):
             self._sign_landing_section_photos(sections)
+        # Tenant metadata — read directly from the active tenant row so the
+        # frontend knows whether to render the demo banner without a second
+        # round-trip.
+        tenant = getattr(connection, "tenant", None)
+        if tenant is not None:
+            slug = tenant.slug or ""
+            data["is_demo"] = bool(getattr(tenant, "is_demo", False))
+            data["tenant_name"] = tenant.name
+            data["tenant_slug"] = slug
+            data["demo_niche"] = slug[len("demo-"):] if slug.startswith("demo-") else ""
         return data
 
     def _sign_landing_section_photos(self, sections):

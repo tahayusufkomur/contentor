@@ -12,6 +12,7 @@ from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
 from apps.core.models import Domain, PlatformPlan, Tenant
+from apps.core.views_demo import DEMO_COACH_EMAIL, DEMO_STUDENT_EMAIL
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +75,9 @@ class Command(BaseCommand):
             owner_email=owner_email,
             plan=pro_plan,
             provisioning_status="ready",
+            is_demo=True,
         )
-        self.stdout.write(f"Created tenant: {tenant.name}")
+        self.stdout.write(f"Created tenant: {tenant.name} (is_demo=True)")
 
         Domain.objects.create(
             domain=tenant_data["domain"],
@@ -105,6 +107,7 @@ class Command(BaseCommand):
             photo_map = self._seed_photos(config_data, expanded_courses)
             self._seed_config(config_data, photo_map)
             owner = self._seed_owner(owner_email)
+            self._seed_demo_synthetic_users()
             courses = self._seed_courses(expanded_courses, owner, photo_map)
             self._seed_extra_videos(courses_data, TARGET_VIDEOS)
             self._seed_extra_photos(courses_data, config_data, TARGET_PHOTOS)
@@ -239,6 +242,25 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"  Owner: {email}")
         return owner
+
+    def _seed_demo_synthetic_users(self):
+        """Pre-seed the two users the demo entry endpoint hands out JWTs for.
+
+        Lives in the tenant schema; each demo tenant gets its own pair so a
+        visitor exploring yoga can't reuse a token from the pilates demo.
+        """
+        User.objects.create_user(
+            email=DEMO_COACH_EMAIL,
+            name="Demo Coach",
+            role="owner",
+            is_staff=True,
+        )
+        User.objects.create_user(
+            email=DEMO_STUDENT_EMAIL,
+            name="Demo Student",
+            role="student",
+        )
+        self.stdout.write(f"  Demo users: {DEMO_COACH_EMAIL}, {DEMO_STUDENT_EMAIL}")
 
     def _seed_courses(self, courses_data, instructor, photo_map):
         from apps.courses.models import Course, Lesson, Module, Video

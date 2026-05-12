@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed format
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format
 
 # ============================================================================
 # Help
@@ -12,7 +12,7 @@ help: ## Show this help
 	@grep -E '^(dev|dev-reset|down|build|restart|reset|logs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Database ---\033[0m"
-	@grep -E '^(migrate|migrate-shared|makemigrations|seed):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(migrate|migrate-shared|makemigrations|seed|seed-demos|seed-demos-force):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Quality ---\033[0m"
 	@grep -E '^(test|test-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -65,6 +65,12 @@ makemigrations: ## Generate new migration files
 
 seed: ## Seed plans, public tenant, and superusers
 	docker compose exec django python manage.py seed_plans
+
+seed-demos: ## Seed read-only marketing demo tenants for all niches
+	docker compose exec django python manage.py seed_all_demos
+
+seed-demos-force: ## Recreate all demo tenants from scratch
+	docker compose exec django python manage.py seed_all_demos --force
 
 # ============================================================================
 # Quality

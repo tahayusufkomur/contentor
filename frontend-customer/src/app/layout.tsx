@@ -5,6 +5,7 @@ import { getLocale, getMessages } from "next-intl/server";
 
 import { Toaster } from "sonner";
 
+import { DemoBanner } from "@/components/shared/demo-banner";
 import { RedirectToast } from "@/components/shared/redirect-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
@@ -71,6 +72,7 @@ export default async function RootLayout({
               <TenantThemeEnforcer />
               <Toaster position="top-center" richColors />
               <RedirectToast />
+              <DemoBanner />
               {children}
             </TenantProvider>
           </ThemeProvider>
