@@ -27,6 +27,7 @@ repos:
       - id: bandit
         args: [-r, backend/apps/, -c, backend/pyproject.toml, -ll]
         files: ^backend/
+        pass_filenames: false
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
