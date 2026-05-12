@@ -11,7 +11,6 @@ def migrate_subscription_to_paid(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("live", "0014_add_thumbnail_to_zoom_onsite"),
     ]

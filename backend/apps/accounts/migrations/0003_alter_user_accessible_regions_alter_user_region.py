@@ -5,20 +5,32 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0002_user_accessible_regions_user_preferred_locale_and_more'),
+        ("accounts", "0002_user_accessible_regions_user_preferred_locale_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='accessible_regions',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('global', 'Global'), ('tr', 'Turkey')], max_length=8), blank=True, default=list, help_text='Superadmin only: regions this user can see in Django admin.', null=True, size=None),
+            model_name="user",
+            name="accessible_regions",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(choices=[("global", "Global"), ("tr", "Turkey")], max_length=8),
+                blank=True,
+                default=list,
+                help_text="Superadmin only: regions this user can see in Django admin.",
+                null=True,
+                size=None,
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='region',
-            field=models.CharField(choices=[('global', 'Global'), ('tr', 'Turkey')], db_index=True, default='global', help_text='The region this user first signed up in. Informational only — auth-time isolation is enforced by Tenant.region via JWT claims. Same email may own tenants across multiple regions.', max_length=8),
+            model_name="user",
+            name="region",
+            field=models.CharField(
+                choices=[("global", "Global"), ("tr", "Turkey")],
+                db_index=True,
+                default="global",
+                help_text="The region this user first signed up in. Informational only — auth-time isolation is enforced by Tenant.region via JWT claims. Same email may own tenants across multiple regions.",
+                max_length=8,
+            ),
         ),
     ]

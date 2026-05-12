@@ -70,6 +70,7 @@ def magic_link_request(request):
         print(f"{'='*60}\n")
 
     from apps.core.i18n_helpers import msg
+
     return Response({"detail": msg(request, "magic_link_sent")})
 
 
@@ -79,8 +80,9 @@ def magic_link_request(request):
 def magic_link_verify(request):
     serializer = MagicLinkVerifySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    from apps.core.i18n_helpers import msg
     from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.i18n_helpers import msg
+
     try:
         payload = verify_magic_link_token(serializer.validated_data["token"])
     except Exception:
@@ -126,6 +128,7 @@ def magic_link_verify(request):
 def _tenant_default_locale(tenant) -> str:
     try:
         from apps.tenant_config.models import TenantConfig
+
         cfg = TenantConfig.objects.first()
         if cfg:
             return cfg.default_locale
@@ -161,6 +164,7 @@ def update_me(request):
 @permission_classes([IsAuthenticated])
 def update_locale(request):
     from apps.core.i18n_helpers import msg
+
     locale = (request.data.get("locale") or "").strip().lower()
     if locale not in ("en", "tr"):
         return Response({"detail": msg(request, "unsupported_locale")}, status=400)
@@ -271,8 +275,10 @@ def google_login(request):
     # Prefer region resolved from origin (where the user actually is) over
     # request.region (which is correct here too, but origin is the authoritative
     # signal for the post-OAuth redirect destination).
-    from apps.core.region_utils import resolve_host
     from urllib.parse import urlparse
+
+    from apps.core.region_utils import resolve_host
+
     origin_host = urlparse(origin).hostname or ""
     region = resolve_host(origin_host).region if origin_host else getattr(request, "region", "global")
 
@@ -379,6 +385,7 @@ def google_callback(request):
     default_role = "coach" if tenant.schema_name == "public" else "student"
 
     from apps.core.constants import REGION_DEFAULT_LOCALE
+
     # Region from the signed state — the request host at this point is the
     # OAuth callback domain (localhost), which is meaningless for region.
     region = state_data.get("region") or getattr(tenant, "region", None) or "global"

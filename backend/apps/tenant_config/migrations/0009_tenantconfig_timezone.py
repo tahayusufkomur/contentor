@@ -2,7 +2,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("tenant_config", "0008_backfill_logo_and_section_photos"),
     ]

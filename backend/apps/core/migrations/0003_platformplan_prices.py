@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0002_tenant_billing_currency_tenant_region'),
+        ("core", "0002_tenant_billing_currency_tenant_region"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='platformplan',
-            name='prices',
+            model_name="platformplan",
+            name="prices",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

@@ -4,20 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenant',
-            name='billing_currency',
-            field=models.CharField(blank=True, choices=[('USD', 'US Dollar'), ('TRY', 'Turkish Lira')], default='', help_text='Set at first Stripe checkout, immutable thereafter.', max_length=3),
+            model_name="tenant",
+            name="billing_currency",
+            field=models.CharField(
+                blank=True,
+                choices=[("USD", "US Dollar"), ("TRY", "Turkish Lira")],
+                default="",
+                help_text="Set at first Stripe checkout, immutable thereafter.",
+                max_length=3,
+            ),
         ),
         migrations.AddField(
-            model_name='tenant',
-            name='region',
-            field=models.CharField(choices=[('global', 'Global'), ('tr', 'Turkey')], db_index=True, default='global', help_text='Immutable. Set at signup from the request host.', max_length=8),
+            model_name="tenant",
+            name="region",
+            field=models.CharField(
+                choices=[("global", "Global"), ("tr", "Turkey")],
+                db_index=True,
+                default="global",
+                help_text="Immutable. Set at signup from the request host.",
+                max_length=8,
+            ),
         ),
     ]

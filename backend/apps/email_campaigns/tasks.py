@@ -21,6 +21,7 @@ def _build_recipient_summary(recipient_filter: dict) -> str:
             return "No courses selected"
         try:
             from apps.courses.models import Course
+
             names = list(Course.objects.filter(pk__in=course_ids).values_list("title", flat=True))
             return ", ".join(names) if names else f"{len(course_ids)} course(s)"
         except Exception:
@@ -101,17 +102,19 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
             for idx, recipient in enumerate(recipients):
                 if remaining_quota is not None and success >= remaining_quota:
                     remaining = recipients[idx:]
-                    CampaignRecipient.objects.bulk_create([
-                        CampaignRecipient(
-                            campaign=campaign,
-                            user_id=r["id"],
-                            user_name=r["name"] or "",
-                            user_email=r["email"] or "",
-                            status=RecipientStatus.FAILED,
-                            error_message="Email quota exceeded",
-                        )
-                        for r in remaining
-                    ])
+                    CampaignRecipient.objects.bulk_create(
+                        [
+                            CampaignRecipient(
+                                campaign=campaign,
+                                user_id=r["id"],
+                                user_name=r["name"] or "",
+                                user_email=r["email"] or "",
+                                status=RecipientStatus.FAILED,
+                                error_message="Email quota exceeded",
+                            )
+                            for r in remaining
+                        ]
+                    )
                     failure += len(remaining)
                     logger.warning("Quota reached mid-batch for campaign %s", campaign_id)
                     break

@@ -4,30 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('live', '0012_add_zoom_class_and_onsite_event'),
+        ("live", "0012_add_zoom_class_and_onsite_event"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='liveclass',
-            name='duration_minutes',
+            model_name="liveclass",
+            name="duration_minutes",
             field=models.PositiveIntegerField(default=60),
         ),
         migrations.AddField(
-            model_name='livestream',
-            name='duration_minutes',
+            model_name="livestream",
+            name="duration_minutes",
             field=models.PositiveIntegerField(default=60),
         ),
         migrations.AddField(
-            model_name='onsiteevent',
-            name='duration_minutes',
+            model_name="onsiteevent",
+            name="duration_minutes",
             field=models.PositiveIntegerField(default=60),
         ),
         migrations.AddField(
-            model_name='zoomclass',
-            name='duration_minutes',
+            model_name="zoomclass",
+            name="duration_minutes",
             field=models.PositiveIntegerField(default=60),
         ),
     ]

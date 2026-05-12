@@ -7,7 +7,6 @@ def migrate_subscription_to_paid(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("courses", "0009_enrollment_is_active"),
     ]

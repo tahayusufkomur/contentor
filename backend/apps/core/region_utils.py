@@ -1,7 +1,7 @@
 """Helpers to derive region info from request host and to build region apex URLs."""
 
 import re
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from django.conf import settings
 
@@ -14,7 +14,7 @@ from .constants import (
 
 class HostInfo(NamedTuple):
     region: str
-    tenant_slug: Optional[str]
+    tenant_slug: str | None
     locale: str
 
 

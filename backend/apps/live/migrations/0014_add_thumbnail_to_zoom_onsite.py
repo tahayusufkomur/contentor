@@ -5,31 +5,42 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('live', '0013_add_duration_minutes'),
-        ('media', '0001_initial'),
+        ("live", "0013_add_duration_minutes"),
+        ("media", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='onsiteevent',
-            name='thumbnail',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='onsite_events', to='media.photo'),
+            model_name="onsiteevent",
+            name="thumbnail",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="onsite_events",
+                to="media.photo",
+            ),
         ),
         migrations.AddField(
-            model_name='onsiteevent',
-            name='thumbnail_url',
-            field=models.CharField(blank=True, default='', max_length=2000),
+            model_name="onsiteevent",
+            name="thumbnail_url",
+            field=models.CharField(blank=True, default="", max_length=2000),
         ),
         migrations.AddField(
-            model_name='zoomclass',
-            name='thumbnail',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='zoom_classes', to='media.photo'),
+            model_name="zoomclass",
+            name="thumbnail",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="zoom_classes",
+                to="media.photo",
+            ),
         ),
         migrations.AddField(
-            model_name='zoomclass',
-            name='thumbnail_url',
-            field=models.CharField(blank=True, default='', max_length=2000),
+            model_name="zoomclass",
+            name="thumbnail_url",
+            field=models.CharField(blank=True, default="", max_length=2000),
         ),
     ]

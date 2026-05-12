@@ -4,15 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0010_tenantconfig_emailcraft_api_key'),
+        ("tenant_config", "0010_tenantconfig_emailcraft_api_key"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenantconfig',
-            name='default_locale',
-            field=models.CharField(choices=[('en', 'English'), ('tr', 'Türkçe')], default='en', help_text='Default UI language for this tenant. Coach-configurable.', max_length=2),
+            model_name="tenantconfig",
+            name="default_locale",
+            field=models.CharField(
+                choices=[("en", "English"), ("tr", "Türkçe")],
+                default="en",
+                help_text="Default UI language for this tenant. Coach-configurable.",
+                max_length=2,
+            ),
         ),
     ]
