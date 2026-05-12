@@ -3,6 +3,11 @@
   "subtitle": "Ücretsiz başla, büyüdükçe ölçeklen. Gizli ücret yok.",
   "popular": "Popüler",
   "cta": "Başla",
+  "ctaProcessing": "İşleniyor...",
+  "errors": {
+    "priceNotAvailable": "Bölgeniz için fiyatlandırma henüz mevcut değil. Lütfen destek ile iletişime geçin.",
+    "generic": "Ödeme başlatılırken bir sorun oluştu. Lütfen tekrar deneyin."
+  },
   "periods": {
     "forever": "sonsuza dek",
     "monthly": "/ay"

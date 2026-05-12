@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import bundles, payments, plans, store
+from .views import platform as platform_views
 
 urlpatterns = [
     # Bundles
@@ -22,4 +23,8 @@ urlpatterns = [
     ),
     # Subscribe (bypass – no real payment processing)
     path("subscribe/", payments.subscribe, name="subscribe"),
+    # Platform subscription (coach -> Contentor billing). Stripe-backed in M1.
+    path("platform/checkout/", platform_views.start_checkout, name="platform-checkout"),
+    path("platform/subscription/", platform_views.get_subscription, name="platform-subscription"),
+    path("platform/plans/", platform_views.list_plans, name="platform-plans-public"),
 ]

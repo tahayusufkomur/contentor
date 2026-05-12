@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django_tenants.models import DomainMixin, TenantMixin
 
@@ -60,6 +61,19 @@ class Tenant(TenantMixin):
         if self.schema_name != "public":
             validate_tenant_slug(self.slug)
 
+    @property
+    def is_subscription_active(self) -> bool:
+        """True iff a PlatformSubscription exists with status in {active, past_due}.
+
+        Free-tier tenants (no PlatformSubscription row) return False here; quota
+        helpers separately fall back to Free limits for them.
+        """
+        try:
+            sub = self.platform_subscription
+        except PlatformSubscription.DoesNotExist:
+            return False
+        return sub.status in ("active", "past_due")
+
 
 class Domain(DomainMixin):
     ssl_status = models.CharField(
@@ -119,6 +133,19 @@ class PlatformPlan(models.Model):
             }
         return None
 
+    @property
+    def is_free(self) -> bool:
+        """True if this plan represents the Free tier.
+
+        Recognized by name == BILLING_FREE_PLAN_NAME OR price_monthly == 0.
+        """
+        from django.conf import settings as _settings
+
+        free_name = getattr(_settings, "BILLING_FREE_PLAN_NAME", "Free")
+        if self.name and self.name.lower() == free_name.lower():
+            return True
+        return self.price_monthly == 0
+
 
 class TenantUsage(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="usage_records")
@@ -134,3 +161,106 @@ class TenantUsage(models.Model):
 
     def __str__(self):
         return f"{self.tenant.slug} - {self.month}"
+
+
+class PlatformSubscription(models.Model):
+    """Coach-to-platform subscription. Public-schema concern (SHARED_APPS).
+
+    Distinct from `apps.billing.Subscription`, which is the future
+    student-to-coach (tenant-scoped) subscription model.
+    """
+
+    STATUS_INCOMPLETE = "incomplete"
+    STATUS_ACTIVE = "active"
+    STATUS_PAST_DUE = "past_due"
+    STATUS_CANCELED = "canceled"
+    STATUS_CHOICES = [
+        (STATUS_INCOMPLETE, "Incomplete"),
+        (STATUS_ACTIVE, "Active"),
+        (STATUS_PAST_DUE, "Past due"),
+        (STATUS_CANCELED, "Canceled"),
+    ]
+
+    PROVIDER_STRIPE = "stripe"
+    PROVIDER_BYPASS = "bypass"
+    PROVIDER_CHOICES = [
+        (PROVIDER_STRIPE, "Stripe"),
+        (PROVIDER_BYPASS, "Bypass"),
+    ]
+
+    tenant = models.OneToOneField(
+        Tenant,
+        on_delete=models.CASCADE,
+        related_name="platform_subscription",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="platform_subscriptions",
+    )
+    plan = models.ForeignKey(
+        PlatformPlan,
+        on_delete=models.PROTECT,
+        related_name="platform_subscriptions",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_INCOMPLETE,
+    )
+    provider = models.CharField(
+        max_length=20,
+        choices=PROVIDER_CHOICES,
+        default=PROVIDER_STRIPE,
+    )
+    provider_subscription_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
+    provider_customer_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
+    current_period_start = models.DateTimeField(null=True, blank=True)
+    current_period_end = models.DateTimeField(null=True, blank=True)
+    cancel_at_period_end = models.BooleanField(default=False)
+    canceled_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["provider", "provider_subscription_id"],
+                condition=~models.Q(provider_subscription_id=""),
+                name="uniq_provider_subscription_id",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "current_period_end"]),
+        ]
+
+    def __str__(self):
+        return f"{self.tenant.slug} -> {self.plan.name} ({self.status})"
+
+
+class WebhookEvent(models.Model):
+    """Idempotency record for provider webhook events. Public schema."""
+
+    provider = models.CharField(max_length=20)
+    provider_event_id = models.CharField(max_length=255)
+    event_type = models.CharField(max_length=100)
+    payload = models.JSONField(default=dict, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    processing_error = models.TextField(blank=True, default="")
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["provider", "provider_event_id"],
+                name="uniq_provider_event_id",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["provider", "event_type"]),
+        ]
+
+    def __str__(self):
+        return f"{self.provider}:{self.provider_event_id} ({self.event_type})"

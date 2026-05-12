@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import include, path
 
 from apps.accounts.backends import AdminJWTBackend
+from apps.billing.views.webhooks import stripe_webhook
 from apps.core.views import health_check
 
 
@@ -24,6 +25,11 @@ def admin_auto_login(request):
 urlpatterns = [
     path("admin/login/", admin_auto_login, name="admin-auto-login"),
     path("admin/", admin.site.urls),
+    # Provider webhooks. MUST be declared before any `/api/v1/` route so they
+    # share the global URL resolver but bypass `TenantJWTAuthentication`.
+    # The webhook view sets `@authentication_classes([])` so DRF defaults do
+    # not run on it; region + tenant middleware skip `/api/webhooks/*`.
+    path("api/webhooks/stripe/", stripe_webhook, name="stripe-webhook"),
     path("api/health/", health_check, name="health-check"),
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/onboarding/", include("apps.core.urls_onboarding")),

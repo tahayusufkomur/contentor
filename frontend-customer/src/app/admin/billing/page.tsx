@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { CreditCard, Package, Plus, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { clientFetch } from '@/lib/api-client'
+import { SubscriptionTile } from './subscription/SubscriptionTile'
 
 interface Product {
   id: number
@@ -252,6 +254,15 @@ function PlansTab() {
 }
 
 export default function BillingPage() {
+  const searchParams = useSearchParams()
+  const checkoutFlag = searchParams.get('checkout')
+  const isCheckoutSuccess = checkoutFlag === 'success'
+  const isCheckoutCanceled = checkoutFlag === 'cancel'
+  const defaultTab = useMemo(
+    () => (isCheckoutSuccess || isCheckoutCanceled ? 'subscription' : 'products'),
+    [isCheckoutSuccess, isCheckoutCanceled],
+  )
+
   return (
     <div className="space-y-6">
       <div>
@@ -261,13 +272,21 @@ export default function BillingPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="products">
+      <Tabs defaultValue={defaultTab}>
         <TabsList>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="bundles">Bundles</TabsTrigger>
           <TabsTrigger value="plans">Subscription Plans</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="subscription">
+          <SubscriptionTile
+            pollUntilActive={isCheckoutSuccess}
+            showCanceledNotice={isCheckoutCanceled}
+          />
+        </TabsContent>
 
         <TabsContent value="products">
           <ProductsTab />

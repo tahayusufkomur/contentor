@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed format
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed format stripe-listen
 
 # ============================================================================
 # Help
@@ -97,3 +97,14 @@ shell: ## Open Django shell
 
 health-check: ## Check if the API is healthy
 	@curl -sf http://localhost/api/health/ && echo "OK" || echo "FAIL"
+
+# ============================================================================
+# Stripe
+# ============================================================================
+
+stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/
+	@command -v stripe >/dev/null 2>&1 || { \
+		echo "Stripe CLI not installed. Install with: brew install stripe/stripe-cli/stripe"; \
+		exit 1; \
+	}
+	stripe listen --forward-to http://localhost/api/webhooks/stripe/

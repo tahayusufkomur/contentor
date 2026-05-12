@@ -3,6 +3,11 @@
   "subtitle": "Start free and scale as you grow. No hidden fees.",
   "popular": "Popular",
   "cta": "Get Started",
+  "ctaProcessing": "Processing...",
+  "errors": {
+    "priceNotAvailable": "Pricing for your region isn't available yet. Please contact support.",
+    "generic": "Something went wrong starting checkout. Please try again."
+  },
   "periods": {
     "forever": "forever",
     "monthly": "/month"

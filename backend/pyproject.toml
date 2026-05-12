@@ -7,6 +7,9 @@ src = ["backend"]
 select = ["E", "F", "I", "S", "B", "UP", "N", "C4", "SIM", "TCH"]
 ignore = ["S101"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
