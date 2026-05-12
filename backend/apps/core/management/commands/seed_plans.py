@@ -22,22 +22,27 @@ class Command(BaseCommand):
         )
         if created:
             self.stdout.write("Created public tenant")
-            Domain.objects.get_or_create(
-                domain=settings.CONTENTOR_DOMAIN,
-                defaults={"tenant": public_tenant, "is_primary": True},
-            )
-            Domain.objects.get_or_create(
-                domain="localhost",
-                defaults={"tenant": public_tenant, "is_primary": False},
-            )
-            # Internal Docker hostname so Next.js → Django calls resolve a tenant
-            Domain.objects.get_or_create(
-                domain="django",
-                defaults={"tenant": public_tenant, "is_primary": False},
-            )
-            self.stdout.write("Created platform domains")
         else:
             self.stdout.write("Public tenant already exists")
+
+        # All marketing-apex hostnames point at the public tenant. We do this
+        # unconditionally (not gated on `created`) so adding new hosts (e.g.
+        # the TR apex) gets picked up by an existing install on the next seed.
+        platform_hosts = [
+            (settings.CONTENTOR_DOMAIN, True),  # contentor.localhost (or prod equivalent)
+            ("localhost", False),
+            ("django", False),  # internal Docker hostname for SSR fetches
+            # Turkish region apex — required for tr.localhost and
+            # tr.contentor.localhost routing into the public tenant.
+            ("tr.localhost", False),
+            (f"tr.{settings.CONTENTOR_DOMAIN}", False),
+        ]
+        for host, is_primary in platform_hosts:
+            Domain.objects.get_or_create(
+                domain=host,
+                defaults={"tenant": public_tenant, "is_primary": is_primary},
+            )
+        self.stdout.write("Platform domains ensured")
 
         plans = [
             {
