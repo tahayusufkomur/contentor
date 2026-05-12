@@ -87,4 +87,8 @@ export interface TenantConfig {
   landing_sections: LandingSections;
   timezone: string;
   onboarding_completed: boolean;
+  is_demo?: boolean;
+  tenant_name?: string;
+  tenant_slug?: string;
+  demo_niche?: string;
 }

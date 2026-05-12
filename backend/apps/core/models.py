@@ -44,6 +44,11 @@ class Tenant(TenantMixin):
         ],
         default="pending",
     )
+    is_demo = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     auto_create_schema = False
