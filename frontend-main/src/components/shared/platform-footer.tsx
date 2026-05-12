@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { LogoMark } from '@/components/shared/logo-mark'
 
 export function PlatformFooter() {
   const t = useTranslations('common.footer')
@@ -33,23 +34,26 @@ export function PlatformFooter() {
   ]
 
   return (
-    <footer className="border-t border-primary/20 bg-foreground text-background">
-      <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div>
-            <p className="text-lg font-bold tracking-tight text-background">Contentor</p>
-            <p className="mt-2 text-sm text-background/60">{t('tagline')}</p>
+    <footer className="relative mt-32 border-t border-border/60 bg-background">
+      <div className="mx-auto max-w-6xl px-6 py-16 md:px-8">
+        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="max-w-sm">
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <LogoMark size={32} />
+              <span className="text-[16px] font-semibold tracking-[-0.02em]">Contentor</span>
+            </Link>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t('tagline')}</p>
           </div>
 
           {sections.map((section) => (
             <div key={section.heading}>
-              <p className="mb-3 text-sm font-semibold text-background">{section.heading}</p>
-              <ul className="space-y-2">
+              <p className="text-eyebrow text-muted-foreground/80">{section.heading}</p>
+              <ul className="mt-4 space-y-3">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-background/60 transition-colors hover:text-primary"
+                      className="text-[13.5px] text-foreground/70 transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>
@@ -60,12 +64,8 @@ export function PlatformFooter() {
           ))}
         </div>
 
-        <div className="my-8 h-px bg-background/10" />
-
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <p className="text-sm text-background/60">
-            {t('copyright', { year: new Date().getFullYear() })}
-          </p>
+        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
+          <p>{t('copyright', { year: new Date().getFullYear() })}</p>
           <LanguageSwitcher />
         </div>
       </div>
@@ -75,11 +75,9 @@ export function PlatformFooter() {
 
 function LanguageSwitcher() {
   const t = useTranslations('common.footer')
-  // The switcher is a cross-domain anchor — we read window.location at render time on the client.
   if (typeof window === 'undefined') return null
   const host = window.location.host
   const path = window.location.pathname
-  // Derive the "other" apex by toggling tr. prefix
   const otherHost = host.startsWith('tr.')
     ? host.replace(/^tr\./, '')
     : `tr.${host}`
@@ -87,7 +85,7 @@ function LanguageSwitcher() {
   return (
     <a
       href={otherUrl}
-      className="text-sm text-background/60 transition-colors hover:text-primary underline-offset-2 hover:underline"
+      className="rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-[12.5px] text-foreground/70 backdrop-blur-md transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
     >
       {t('switchLanguage')}
     </a>

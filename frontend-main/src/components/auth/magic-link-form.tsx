@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,9 +39,12 @@ export function MagicLinkForm() {
   if (sent) {
     return (
       <div className="text-center">
-        <h2 className="text-lg font-semibold">Check your email</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          We sent a login link to <strong>{email}</strong>
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl glass-strong">
+          <Mail className="h-5 w-5 text-primary" />
+        </div>
+        <h2 className="mt-5 text-[17px] font-semibold tracking-[-0.015em]">Check your email</h2>
+        <p className="mt-2 text-[13.5px] text-muted-foreground">
+          We sent a login link to <strong className="text-foreground">{email}</strong>
         </p>
       </div>
     )
@@ -49,9 +53,11 @@ export function MagicLinkForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="magic-email" className="text-[13px] font-medium text-foreground/80">
+          Email
+        </Label>
         <Input
-          id="email"
+          id="magic-email"
           type="email"
           placeholder="you@example.com"
           value={email}
@@ -59,9 +65,11 @@ export function MagicLinkForm() {
           required
         />
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" className="w-full" loading={loading}>
-        {loading ? 'Sending...' : 'Send Magic Link'}
+      {error && (
+        <p className="text-[13px] text-destructive">{error}</p>
+      )}
+      <Button type="submit" variant="brand" size="lg" className="w-full" loading={loading}>
+        {loading ? 'Sending…' : 'Send Magic Link'}
       </Button>
     </form>
   )

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { AlertCircle, Loader2 } from 'lucide-react'
+import { AuthShell } from '@/components/auth/auth-shell'
 
 export default function CallbackPage() {
   const router = useRouter()
@@ -16,7 +18,6 @@ export default function CallbackPage() {
       return
     }
 
-    // Google OAuth callback: token is already a session JWT, just set the cookie
     if (source === 'google') {
       fetch('/api/auth/google', {
         method: 'POST',
@@ -35,7 +36,6 @@ export default function CallbackPage() {
       return
     }
 
-    // Magic link callback: token needs Django verification
     fetch('/api/auth/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -55,15 +55,23 @@ export default function CallbackPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-destructive">{error}</p>
-      </div>
+      <AuthShell eyebrow="Error" title="Something went wrong" subtitle={error}>
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong text-destructive">
+          <AlertCircle className="h-6 w-6" />
+        </div>
+      </AuthShell>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p>Verifying...</p>
-    </div>
+    <AuthShell
+      eyebrow="One moment"
+      title="Verifying"
+      subtitle="Signing you in securely…"
+    >
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong text-primary">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    </AuthShell>
   )
 }

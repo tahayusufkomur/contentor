@@ -3,11 +3,10 @@ import { Check, X } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import { PlatformHeader } from '@/components/shared/platform-header'
 import { PlatformFooter } from '@/components/shared/platform-footer'
+import { ScrollReveal } from '@/components/landing/scroll-reveal'
+import { Parallax } from '@/components/landing/parallax'
 import { getAuthUser } from '@/lib/auth'
 
 const PLAN_KEYS = ['free', 'starter', 'pro'] as const
@@ -30,104 +29,188 @@ export default async function PricingPage() {
   const t = await getTranslations('pricing')
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="relative flex min-h-screen flex-col bg-background">
       <PlatformHeader user={user} />
 
-      <section className="px-6 pb-16 pt-32 md:pt-40">
+      {/* Hero */}
+      <section className="hero-scroll-out relative isolate overflow-hidden px-6 pb-20 pt-28 md:pt-36">
+        <Parallax speed={-0.18} className="absolute inset-0 -z-10">
+          <div className="aurora animate-aurora" />
+        </Parallax>
+        <div className="grid-fade pointer-events-none absolute inset-0 -z-10 opacity-60" />
+
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
-            {t('title')}
+          <p className="animate-fade-in-up text-eyebrow text-muted-foreground/80">Pricing</p>
+          <h1
+            className="text-display mt-4 animate-fade-in-up text-5xl leading-[1.05] md:text-6xl lg:text-7xl"
+            style={{ animationDelay: '0.1s' }}
+          >
+            <span className="text-foreground/95">{t('title')}</span>
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground">{t('subtitle')}</p>
+          <p
+            className="mx-auto mt-5 max-w-xl animate-fade-in-up text-[17px] leading-relaxed text-muted-foreground md:text-lg"
+            style={{ animationDelay: '0.22s' }}
+          >
+            {t('subtitle')}
+          </p>
         </div>
       </section>
 
+      {/* Plans */}
       <section className="px-6 pb-32">
-        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
-          {PLAN_KEYS.map((key) => {
+        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
+          {PLAN_KEYS.map((key, idx) => {
             const highlighted = PLAN_HIGHLIGHT[key]
             const includedSet = new Set(
               (t.raw(`plans.${key}.included`) as string[]) ?? [],
             )
+
             return (
-              <Card
+              <ScrollReveal
                 key={key}
-                className={highlighted ? 'relative ring-2 ring-primary' : 'border'}
+                variant="scale"
+                fromScale={0.94}
+                duration={1}
+                delay={idx * 0.1}
               >
+              <div
+                className={`relative flex flex-col rounded-3xl p-8 transition-transform duration-300 hover:-translate-y-1 md:p-9 ${
+                  highlighted ? 'glass-strong shadow-glow-blue' : 'glass-pane'
+                }`}
+              >
+                {/* Aurora glow under highlighted plan */}
                 {highlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge>{t('popular')}</Badge>
-                  </div>
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-8 -top-10 -z-10 h-40 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] via-[oklch(0.55_0.24_270)] to-[oklch(0.7_0.2_210)] opacity-50 blur-3xl"
+                  />
                 )}
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold">{t(`plans.${key}.name`)}</CardTitle>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="font-display text-4xl font-bold tracking-tight text-foreground">
-                      {t(`plans.${key}.price`)}
+
+                <div className="flex items-baseline justify-between">
+                  <p className="text-eyebrow text-muted-foreground/80">
+                    {t(`plans.${key}.name`)}
+                  </p>
+                  {highlighted && (
+                    <span className="rounded-full border border-primary/20 bg-primary/[0.08] px-2.5 py-0.5 text-[10.5px] font-semibold tracking-[0.04em] text-primary">
+                      {t('popular')}
                     </span>
-                    <span className="text-sm text-muted-foreground">{t(`plans.${key}.period`)}</span>
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{t(`plans.${key}.description`)}</p>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col">
-                  <Separator className="mb-6" />
-                  <ul className="flex-1 space-y-3">
-                    {PLAN_FEATURE_KEYS[key].map((featureKey) => {
-                      const included = includedSet.has(featureKey)
-                      return (
-                        <li key={featureKey} className="flex items-start gap-3 text-sm">
+                  )}
+                </div>
+
+                <div className="mt-6 flex items-baseline gap-1.5">
+                  <span className="text-display text-5xl md:text-6xl">
+                    {t(`plans.${key}.price`)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {t(`plans.${key}.period`)}
+                  </span>
+                </div>
+
+                <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
+                  {t(`plans.${key}.description`)}
+                </p>
+
+                <div className="my-7 h-px bg-foreground/[0.08]" />
+
+                <ul className="flex-1 space-y-3">
+                  {PLAN_FEATURE_KEYS[key].map((featureKey) => {
+                    const included = includedSet.has(featureKey)
+                    return (
+                      <li key={featureKey} className="flex items-start gap-3">
+                        <span
+                          className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full ${
+                            included
+                              ? 'bg-primary/15 text-primary'
+                              : 'bg-foreground/[0.06] text-muted-foreground/40'
+                          }`}
+                          style={{ height: '1.125rem', width: '1.125rem' }}
+                        >
                           {included ? (
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                            <Check className="h-2.5 w-2.5" strokeWidth={3.5} />
                           ) : (
-                            <X className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" />
+                            <X className="h-2.5 w-2.5" strokeWidth={3.5} />
                           )}
-                          <span className={included ? 'text-foreground' : 'text-muted-foreground/60'}>
-                            {t(`plans.${key}.features.${featureKey}`)}
-                          </span>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                  <Button asChild className="mt-8 w-full" variant={highlighted ? 'default' : 'outline'}>
-                    <Link href="/signup">{t('cta')}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                        </span>
+                        <span
+                          className={`text-[13.5px] leading-relaxed ${
+                            included ? 'text-foreground/90' : 'text-muted-foreground/60'
+                          }`}
+                        >
+                          {t(`plans.${key}.features.${featureKey}`)}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+
+                <Button
+                  asChild
+                  variant={highlighted ? 'brand' : 'outline'}
+                  size="lg"
+                  className="mt-8 w-full"
+                >
+                  <Link href="/signup">{t('cta')}</Link>
+                </Button>
+              </div>
+              </ScrollReveal>
             )
           })}
         </div>
       </section>
 
-      <section className="border-t px-6 py-32 md:py-40">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="text-center font-display text-3xl font-bold tracking-tight md:text-4xl">
-            {t('faq.title')}
-          </h2>
+      {/* FAQ */}
+      <section className="px-6 py-28">
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal variant="blur" duration={1}>
+            <div className="text-center">
+              <p className="text-eyebrow text-muted-foreground/80">Questions</p>
+              <h2 className="text-display mt-4 text-4xl md:text-5xl">{t('faq.title')}</h2>
+            </div>
+          </ScrollReveal>
+
           <div className="mt-16 space-y-12">
-            {FAQ_KEYS.map((key) => (
-              <div key={key}>
-                <h3 className="font-display text-base font-semibold text-foreground">
-                  {t(`faq.items.${key}.q`)}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {t(`faq.items.${key}.a`)}
-                </p>
-              </div>
+            {FAQ_KEYS.map((key, i) => (
+              <ScrollReveal
+                key={key}
+                direction="up"
+                duration={0.9}
+                delay={i * 0.08}
+              >
+                <div>
+                  <h3 className="text-[16px] font-semibold tracking-[-0.015em] text-foreground">
+                    {t(`faq.items.${key}.q`)}
+                  </h3>
+                  <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                    {t(`faq.items.${key}.a`)}
+                  </p>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t px-6 py-32 md:py-40">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-            {t('cta2.title')}
-          </h2>
-          <p className="mt-4 text-muted-foreground">{t('cta2.subtitle')}</p>
-          <Button asChild size="lg" className="mt-8 h-12 gap-2 px-8 text-base">
-            <Link href="/signup">{t('cta2.button')}</Link>
-          </Button>
-          <p className="mt-3 text-sm text-muted-foreground/60">{t('cta2.trustNote')}</p>
+      {/* Final CTA */}
+      <section className="relative isolate overflow-hidden px-6 py-32 md:py-40">
+        <Parallax speed={-0.15} className="absolute inset-0 -z-10">
+          <div className="aurora-soft" />
+        </Parallax>
+
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal variant="zoom" duration={1.2}>
+            <div className="glass-pane p-12 text-center md:p-16">
+              <h2 className="text-display text-4xl md:text-5xl">{t('cta2.title')}</h2>
+              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
+                {t('cta2.subtitle')}
+              </p>
+              <Button asChild variant="brand" size="xl" className="mt-8">
+                <Link href="/signup">{t('cta2.button')}</Link>
+              </Button>
+              <p className="mt-4 text-[13px] text-muted-foreground/80">
+                {t('cta2.trustNote')}
+              </p>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

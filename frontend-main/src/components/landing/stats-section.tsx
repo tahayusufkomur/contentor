@@ -1,33 +1,38 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-
-import { TextureOverlay } from "@/components/ui/texture-overlay";
+import { Counter } from "@/components/landing/counter";
+import { Parallax } from "@/components/landing/parallax";
 
 const STAT_KEYS = ["earned", "students", "launch"] as const;
 
 export function StatsSection() {
   const t = useTranslations("marketing.stats");
   return (
-    <section className="relative overflow-hidden bg-foreground px-6 py-24 text-background md:py-32">
-      <TextureOverlay opacity={0.04} />
-      <div
-        className="bg-dot-pattern absolute inset-0 opacity-20"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px)",
-        }}
-      />
+    <section className="relative isolate overflow-hidden px-6 py-28 md:py-36">
+      <Parallax speed={-0.15} className="absolute inset-0 -z-10">
+        <div className="aurora-soft" />
+      </Parallax>
 
-      <div className="relative z-10 mx-auto grid max-w-4xl gap-8 text-center md:grid-cols-3">
-        {STAT_KEYS.map((key) => (
-          <div key={key}>
-            <p className="font-display text-primary text-4xl font-bold tracking-tighter md:text-5xl">
-              {t(`${key}.value`)}
-            </p>
-            <p className="mt-2 text-sm text-background/60">{t(`${key}.label`)}</p>
+      <div className="mx-auto max-w-5xl">
+        <div className="glass-pane relative overflow-hidden p-10 md:p-14">
+          <div className="grid gap-10 text-center md:grid-cols-3">
+            {STAT_KEYS.map((key, i) => (
+              <div
+                key={key}
+                className="relative animate-fade-in-up"
+                style={{ animationDelay: `${i * 0.12}s` }}
+              >
+                <p className="brand-gradient text-display text-5xl md:text-6xl">
+                  <Counter value={t(`${key}.value`)} duration={1600} />
+                </p>
+                <p className="mt-3 text-[14px] text-muted-foreground">
+                  {t(`${key}.label`)}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );

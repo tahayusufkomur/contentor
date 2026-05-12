@@ -1,12 +1,12 @@
+import { Plus, Users, DollarSign, BookOpen, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 
 const stats = [
-  { label: "Students", value: "142" },
-  { label: "Revenue", value: "$2.4k" },
-  { label: "Courses", value: "8" },
-  { label: "Completion", value: "96%" },
+  { label: "Students", value: "142", Icon: Users },
+  { label: "Revenue", value: "$2.4k", Icon: DollarSign },
+  { label: "Courses", value: "8", Icon: BookOpen },
+  { label: "Completion", value: "96%", Icon: TrendingUp },
 ];
 
 const courses = [
@@ -17,70 +17,106 @@ const courses = [
 
 export function ProductMockup() {
   return (
-    <section className="mx-auto max-w-5xl px-6 pb-32">
-      <div className="-rotate-1">
-        <div className="rounded-xl bg-background shadow-2xl shadow-primary/8">
-          {/* Browser chrome bar */}
-          <div className="flex items-center gap-2 border-b px-4 py-3">
+    <section className="relative mx-auto max-w-6xl px-6 pb-32">
+      {/* Glow under the frame */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-12 top-8 h-56 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] via-[oklch(0.6_0.22_260)] to-[oklch(0.7_0.2_210)] opacity-25 blur-3xl"
+      />
+
+      <div className="relative">
+        <div className="glass-pane overflow-hidden">
+          {/* Window chrome */}
+          <div className="flex items-center gap-3 border-b border-border/40 px-5 py-3">
             <div className="flex items-center gap-1.5">
-              <div className="h-3 w-3 rounded-full bg-red-400/60" />
-              <div className="h-3 w-3 rounded-full bg-yellow-400/60" />
-              <div className="h-3 w-3 rounded-full bg-green-400/60" />
+              <div className="h-3 w-3 rounded-full bg-[#FF5F57]/80" />
+              <div className="h-3 w-3 rounded-full bg-[#FEBC2E]/80" />
+              <div className="h-3 w-3 rounded-full bg-[#28C840]/80" />
             </div>
-            <div className="ml-3 flex-1 rounded-md bg-muted px-3 py-1 text-xs text-muted-foreground">
+            <div className="ml-2 inline-flex items-center gap-2 rounded-full bg-foreground/[0.04] px-3 py-1 text-[11px] font-medium text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               your-brand.contentor.app
             </div>
           </div>
 
-          {/* Dashboard content */}
-          <div className="p-6">
-            {/* Header row */}
-            <div className="mb-6 flex items-center justify-between">
-              <div className="h-7 w-48 rounded-md bg-muted" />
-              <Button
-                size="sm"
-                className="gap-1.5 bg-primary text-primary-foreground"
-              >
-                <Plus className="h-4 w-4" />
-                New Course
-              </Button>
-            </div>
+          {/* Body */}
+          <div className="grid grid-cols-1 gap-0 md:grid-cols-[220px_1fr]">
+            {/* Sidebar */}
+            <aside className="hidden flex-col gap-2 border-r border-border/40 p-5 md:flex">
+              <div className="text-eyebrow text-muted-foreground/80">Studio</div>
+              {["Dashboard", "Courses", "Students", "Live", "Email", "Settings"].map(
+                (label, i) => (
+                  <div
+                    key={label}
+                    className={`flex items-center gap-2 rounded-xl px-3 py-2 text-[13px] ${
+                      i === 0
+                        ? "bg-foreground/[0.06] font-medium text-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-foreground/30" />
+                    {label}
+                  </div>
+                ),
+              )}
+            </aside>
 
-            {/* Stat cards */}
-            <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-lg border bg-card p-4 text-card-foreground"
-                >
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+            {/* Main */}
+            <div className="p-6 md:p-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-eyebrow text-muted-foreground/70">Overview</p>
+                  <h3 className="text-headline mt-1 text-2xl">Good morning, Sarah</h3>
                 </div>
-              ))}
-            </div>
+                <Button variant="brand" size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  New Course
+                </Button>
+              </div>
 
-            {/* Course list */}
-            <div className="divide-y rounded-lg border">
-              {courses.map((course) => (
-                <div
-                  key={course.name}
-                  className="flex items-center justify-between px-4 py-3"
-                >
-                  <div>
-                    <p className="font-medium">{course.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {course.lessons} lessons
+              <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {stats.map(({ label, value, Icon }) => (
+                  <div
+                    key={label}
+                    className="rounded-2xl border border-border/50 bg-background/40 p-4 backdrop-blur-md"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-medium text-muted-foreground">
+                        {label}
+                      </p>
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground/70" />
+                    </div>
+                    <p className="mt-2 text-[22px] font-semibold tracking-[-0.02em]">
+                      {value}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      course.status === "Published" ? "default" : "secondary"
-                    }
+                ))}
+              </div>
+
+              <div className="mt-6 overflow-hidden rounded-2xl border border-border/50">
+                {courses.map((course, i) => (
+                  <div
+                    key={course.name}
+                    className={`flex items-center justify-between px-5 py-4 ${
+                      i !== courses.length - 1
+                        ? "border-b border-border/40"
+                        : ""
+                    }`}
                   >
-                    {course.status}
-                  </Badge>
-                </div>
-              ))}
+                    <div>
+                      <p className="text-[14px] font-medium">{course.name}</p>
+                      <p className="text-[12px] text-muted-foreground">
+                        {course.lessons} lessons
+                      </p>
+                    </div>
+                    <Badge
+                      variant={course.status === "Published" ? "success" : "outline"}
+                    >
+                      {course.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
