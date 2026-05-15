@@ -64,7 +64,7 @@ API prefix: `/api/v1/` (also `/api/health/`). WebSockets at `/ws/*` go to Daphne
 
 Two independent Next.js 14 apps, App Router, Tailwind + Radix UI:
 
-- **`frontend-main/`** — marketing site, signup, login, coach onboarding. Routed via `Host(contentor.localhost)`.
+- **`frontend-main/`** — marketing site, signup, login, coach onboarding. Routed via `Host(localhost)` / `Host(tr.localhost)` (dev) and `Host(contentor.app)` / `Host(tr.contentor.app)` (prod).
 - **`frontend-customer/`** — tenant-facing portal where students consume content. Routed via Traefik wildcard `HostRegexp(.+)` (catch-all). Adds Stream.io chat + video (`stream-chat-react`, `@stream-io/video-react-sdk`).
 
 ### Multi-Tenancy (critical — see also `~/.claude/.../memory/reference_multitenancy_patterns.md`)

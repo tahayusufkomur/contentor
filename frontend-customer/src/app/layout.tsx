@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
+import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
@@ -40,6 +41,13 @@ export default async function RootLayout({
 }) {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
+  // The customer app only ever runs on tenant subdomains. If the host doesn't
+  // resolve to a registered Tenant (e.g. cross-region slug like
+  // <tr-only-slug>.localhost), render 404 instead of painting a partial page
+  // whose API calls will all 404 against Django.
+  if (!config && slug !== "unknown") {
+    notFound();
+  }
   const locale = await getLocale();
   const messages = await getMessages();
 

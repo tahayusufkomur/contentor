@@ -17,24 +17,28 @@ export const configCache = new Map<string, { config: TenantConfig; timestamp: nu
 const CACHE_TTL = 60_000
 
 export async function fetchTenantConfig(slug: string): Promise<TenantConfig | null> {
-  const cached = configCache.get(slug)
+  if (!slug || slug === 'unknown') return null
+
+  // Prefer the live request host so TR tenants (<slug>.tr.<BASE_DOMAIN>) and
+  // custom domains resolve to the right Domain row. Fall back to a slug-built
+  // global hostname only when headers are unavailable (generateMetadata,
+  // manifest.ts), where the slug+BASE_DOMAIN guess is the best we can do.
+  const liveDomain = (await getTenantDomain()).split(':')[0]
+  const domain = liveDomain || `${slug}.${BASE_DOMAIN}`
+
+  const cached = configCache.get(domain)
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.config
   }
 
-  if (!slug || slug === 'unknown') return null
-
   try {
-    // Build domain from slug — getTenantDomain() can return empty in some
-    // server-side contexts (generateMetadata, manifest.ts)
-    const domain = `${slug}.${BASE_DOMAIN}`
     const res = await fetch(`${DJANGO_API_URL}/api/v1/admin/config/`, {
       headers: { 'X-Tenant-Domain': domain },
       cache: 'no-store',
     })
     if (!res.ok) return null
     const config: TenantConfig = await res.json()
-    configCache.set(slug, { config, timestamp: Date.now() })
+    configCache.set(domain, { config, timestamp: Date.now() })
     return config
   } catch {
     return null

@@ -44,6 +44,9 @@ frontend-main/node_modules/
 .DS_Store
 Thumbs.db
 
+# Claude worktrees (each is its own checkout; never tracked from main)
+.claude/
+
 # Superpowers
 .superpowers/
 backend/celerybeat-schedule

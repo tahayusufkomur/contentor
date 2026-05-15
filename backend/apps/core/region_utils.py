@@ -21,8 +21,8 @@ class HostInfo(NamedTuple):
 _TENANT_TR_RE = re.compile(r"^(?P<slug>[a-z0-9][a-z0-9-]*)\.tr\.(?P<base>.+)$")
 _TENANT_GLOBAL_RE = re.compile(r"^(?P<slug>[a-z0-9][a-z0-9-]*)\.(?P<base>.+)$")
 
-_TR_APEX_HOSTS = {"tr.contentor.app", "tr.contentor.localhost", "tr.localhost"}
-_GLOBAL_APEX_HOSTS = {"contentor.app", "contentor.localhost", "localhost"}
+_TR_APEX_HOSTS = {"tr.contentor.app", "tr.localhost"}
+_GLOBAL_APEX_HOSTS = {"contentor.app", "localhost"}
 
 
 def resolve_host(host: str) -> HostInfo:
@@ -58,8 +58,6 @@ def resolve_host(host: str) -> HostInfo:
 def region_apex(region: str, scheme: str = "https") -> str:
     base_domain = settings.CONTENTOR_DOMAIN
     if region == REGION_TR:
-        if base_domain == "contentor.localhost":
-            return f"{scheme}://tr.contentor.localhost"
         return f"{scheme}://tr.{base_domain}"
     return f"{scheme}://{base_domain}"
 

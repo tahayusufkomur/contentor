@@ -9,14 +9,13 @@ export const defaultLocale: Locale = 'en'
 
 export type Region = 'global' | 'tr'
 
-const TR_HOST_REGEX = /\.tr\.contentor\.(app|localhost)$/i
+// Matches both the apex (`tr.contentor.app`, `tr.localhost`) and any
+// tenant subdomain under it (`<slug>.tr.contentor.app`, `<slug>.tr.localhost`).
+const TR_HOST_REGEX = /(^|\.)tr\.(contentor\.app|localhost)$/i
 
 export function regionFromHost(host: string): Region {
   const h = (host || '').split(':')[0].toLowerCase()
-  if (TR_HOST_REGEX.test(h) || h === 'tr.contentor.app' || h === 'tr.contentor.localhost' || h === 'tr.localhost') {
-    return 'tr'
-  }
-  return 'global'
+  return TR_HOST_REGEX.test(h) ? 'tr' : 'global'
 }
 
 export function regionDefaultLocale(region: Region): Locale {

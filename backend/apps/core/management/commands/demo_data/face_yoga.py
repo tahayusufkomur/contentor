@@ -10,7 +10,7 @@ TENANT = {
     "slug": "demo-faceyoga",
     "subdomain": "demo-faceyoga",
     "schema_name": "demo_faceyoga",
-    "domain": "demo-faceyoga.contentor.localhost",
+    "domain": "demo-faceyoga.localhost",
 }
 
 CONFIG = {

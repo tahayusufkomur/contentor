@@ -10,7 +10,7 @@ TENANT = {
     "slug": "demo-bellydance",
     "subdomain": "demo-bellydance",
     "schema_name": "demo_bellydance",
-    "domain": "demo-bellydance.contentor.localhost",
+    "domain": "demo-bellydance.localhost",
 }
 
 CONFIG = {

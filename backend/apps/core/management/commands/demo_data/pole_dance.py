@@ -10,7 +10,7 @@ TENANT = {
     "slug": "demo-poledance",
     "subdomain": "demo-poledance",
     "schema_name": "demo_poledance",
-    "domain": "demo-poledance.contentor.localhost",
+    "domain": "demo-poledance.localhost",
 }
 
 CONFIG = {

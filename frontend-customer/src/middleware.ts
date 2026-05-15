@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'contentor.localhost'
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'localhost'
 
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''

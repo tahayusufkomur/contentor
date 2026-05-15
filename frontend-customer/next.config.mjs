@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 /** @type {import('next').NextConfig} */
-const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || "contentor.localhost";
+const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || "localhost";
 
 const nextConfig = {
   output: "standalone",

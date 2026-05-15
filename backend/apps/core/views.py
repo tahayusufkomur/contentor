@@ -42,7 +42,8 @@ def creator_signup(request):
     from apps.core.i18n_helpers import msg
 
     slug = slugify(serializer.validated_data["brand_name"])[:63]
-    if Tenant.objects.filter(slug=slug).exists():
+    region = getattr(request, "region", "global")
+    if Tenant.objects.filter(slug=slug, region=region).exists():
         return Response({"detail": msg(request, "brand_taken")}, status=400)
 
     email = serializer.validated_data["email"]
@@ -50,8 +51,6 @@ def creator_signup(request):
     brand_name = serializer.validated_data["brand_name"]
 
     from apps.accounts.tokens import create_signup_token
-
-    region = getattr(request, "region", "global")
     token = create_signup_token(email, name, brand_name, region=region)
 
     scheme = "https" if request.is_secure() else "http"
@@ -135,9 +134,12 @@ def creator_signup_verify(request):
     # Build the tenant's FQDN based on region. TR tenants live under tr.{base}.
     base_domain = settings.CONTENTOR_DOMAIN
     tenant_fqdn = f"{slug}.tr.{base_domain}" if region == "tr" else f"{slug}.{base_domain}"
+    # Schema names are globally unique in Postgres, so we prefix TR tenants
+    # to avoid colliding with a same-named brand in the global region.
+    schema_name = f"tr_{slug}" if region == "tr" else slug
 
-    if Tenant.objects.filter(slug=slug).exists():
-        tenant = Tenant.objects.get(slug=slug)
+    if Tenant.objects.filter(slug=slug, region=region).exists():
+        tenant = Tenant.objects.get(slug=slug, region=region)
         return Response(
             {
                 "slug": slug,
@@ -150,7 +152,7 @@ def creator_signup_verify(request):
     from apps.core.constants import REGION_DEFAULT_CURRENCY, REGION_DEFAULT_LOCALE
 
     tenant = Tenant.objects.create(
-        schema_name=slug,
+        schema_name=schema_name,
         name=brand_name,
         slug=slug,
         subdomain=slug,
@@ -187,14 +189,17 @@ def provisioning_status(request):
     slug = request.query_params.get("slug")
     if not slug:
         return Response({"detail": msg(request, "slug_required")}, status=400)
+    region = getattr(request, "region", "global")
     try:
-        tenant = Tenant.objects.get(slug=slug)
+        tenant = Tenant.objects.get(slug=slug, region=region)
     except Tenant.DoesNotExist:
         return Response({"detail": msg(request, "tenant_not_found")}, status=404)
+    base_domain = settings.CONTENTOR_DOMAIN
+    fqdn = f"{tenant.slug}.tr.{base_domain}" if tenant.region == "tr" else f"{tenant.slug}.{base_domain}"
     return Response(
         {
             "slug": tenant.slug,
             "status": tenant.provisioning_status,
-            "domain": f"{tenant.slug}.{settings.CONTENTOR_DOMAIN}",
+            "domain": fqdn,
         }
     )

@@ -6,11 +6,14 @@ export const locales = ['en', 'tr'] as const
 export type Locale = (typeof locales)[number]
 export const defaultLocale: Locale = 'en'
 
-const TR_APEX_HOSTS = new Set([
-  'tr.contentor.app',
-  'tr.contentor.localhost',
-  'tr.localhost',
-])
+// Apex pairs: each entry is [globalApex, trApex]. New deployments need only
+// to add a new pair (e.g. eu.contentor.app / tr.eu.contentor.app).
+const APEX_PAIRS: ReadonlyArray<readonly [string, string]> = [
+  ['contentor.app', 'tr.contentor.app'],
+  ['localhost', 'tr.localhost'],
+]
+const TR_APEX_HOSTS = new Set(APEX_PAIRS.map(([, tr]) => tr))
+const GLOBAL_APEX_HOSTS = new Set(APEX_PAIRS.map(([g]) => g))
 
 export type Region = 'global' | 'tr'
 
@@ -30,20 +33,12 @@ export function resolveHost(host: string): HostInfo {
 
   // TR apex match
   if (TR_APEX_HOSTS.has(h)) {
-    return {
-      region: 'tr',
-      locale: 'tr',
-      apex: h,
-      otherApex: trToGlobalApex(h),
-    }
+    return { region: 'tr', locale: 'tr', apex: h, otherApex: trToGlobalApex(h) }
   }
-  // TR subdomain (<slug>.tr.contentor.*)
-  if (TR_APEX_HOSTS.has(h.split('.').slice(-3).join('.'))) {
-    return {
-      region: 'tr',
-      locale: 'tr',
-      apex: h.split('.').slice(-3).join('.'),
-      otherApex: trToGlobalApex(h.split('.').slice(-3).join('.')),
+  // TR subdomain — any host ending in `.<trApex>`
+  for (const trApex of TR_APEX_HOSTS) {
+    if (h.endsWith(`.${trApex}`)) {
+      return { region: 'tr', locale: 'tr', apex: trApex, otherApex: trToGlobalApex(trApex) }
     }
   }
 
@@ -56,23 +51,23 @@ export function resolveHost(host: string): HostInfo {
 }
 
 function trToGlobalApex(apex: string): string {
-  if (apex === 'tr.contentor.app') return 'contentor.app'
-  if (apex === 'tr.contentor.localhost') return 'contentor.localhost'
-  if (apex === 'tr.localhost') return 'localhost'
+  for (const [g, tr] of APEX_PAIRS) {
+    if (apex === tr) return g
+  }
   return apex.replace(/^tr\./, '')
 }
 
 function globalToTrApex(host: string): string {
-  // host may be `contentor.app`, `localhost`, or `<slug>.contentor.app`
-  if (host === 'contentor.app' || host.endsWith('.contentor.app')) return 'tr.contentor.app'
-  if (host === 'contentor.localhost' || host.endsWith('.contentor.localhost')) return 'tr.contentor.localhost'
-  if (host === 'localhost') return 'tr.localhost'
+  for (const [g, tr] of APEX_PAIRS) {
+    if (host === g || host.endsWith(`.${g}`)) return tr
+  }
   return host
 }
 
 function globalApexFromHost(host: string): string {
-  if (host.endsWith('contentor.app')) return 'contentor.app'
-  if (host.endsWith('contentor.localhost')) return 'contentor.localhost'
+  for (const g of GLOBAL_APEX_HOSTS) {
+    if (host === g || host.endsWith(`.${g}`)) return g
+  }
   return 'localhost'
 }
 

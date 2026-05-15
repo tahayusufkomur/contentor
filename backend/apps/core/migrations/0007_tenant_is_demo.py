@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("core", "0006_backfill_free_plan"),
+        ("core", "0006_alter_tenant_slug_alter_tenant_subdomain_and_more"),
     ]
 
     operations = [
