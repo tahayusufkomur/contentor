@@ -49,6 +49,21 @@
       "active": "Active",
       "past_due": "Past due",
       "canceled": "Canceled"
+    },
+    "changePlan": {
+      "title": "Change plan",
+      "currentPlan": "Current plan",
+      "upgradeTo": "Upgrade to {plan}",
+      "downgrade": "Contact support to downgrade",
+      "comingSoonInCurrency": "Coming soon in {currency}",
+      "processing": "Processing...",
+      "error": "Could not start checkout. Please try again.",
+      "limits": {
+        "students": "{n} students",
+        "storage": "{n} GB storage",
+        "streamingHours": "{n} streaming hours/mo",
+        "campaignEmails": "{n} campaign emails/mo"
+      }
     }
   }
 }

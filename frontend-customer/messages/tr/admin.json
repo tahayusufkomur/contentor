@@ -49,6 +49,21 @@
       "active": "Aktif",
       "past_due": "Gecikmiş",
       "canceled": "İptal edildi"
+    },
+    "changePlan": {
+      "title": "Plan değiştir",
+      "currentPlan": "Mevcut plan",
+      "upgradeTo": "{plan}'a yükselt",
+      "downgrade": "Düşürmek için destekle iletişime geç",
+      "comingSoonInCurrency": "{currency} ile yakında",
+      "processing": "İşleniyor...",
+      "error": "Ödeme başlatılamadı. Lütfen tekrar deneyin.",
+      "limits": {
+        "students": "{n} öğrenci",
+        "storage": "{n} GB depolama",
+        "streamingHours": "Aylık {n} canlı yayın saati",
+        "campaignEmails": "Aylık {n} kampanya e-postası"
+      }
     }
   }
 }

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/shared/empty-state'
 import { clientFetch } from '@/lib/api-client'
+import { ChangePlanCard } from './subscription/ChangePlanCard'
 import { SubscriptionTile } from './subscription/SubscriptionTile'
 
 interface Product {
@@ -282,10 +283,13 @@ export default function BillingPage() {
         </TabsList>
 
         <TabsContent value="subscription">
-          <SubscriptionTile
-            pollUntilActive={isCheckoutSuccess}
-            showCanceledNotice={isCheckoutCanceled}
-          />
+          <div className="space-y-6">
+            <SubscriptionTile
+              pollUntilActive={isCheckoutSuccess}
+              showCanceledNotice={isCheckoutCanceled}
+            />
+            <ChangePlanCard />
+          </div>
         </TabsContent>
 
         <TabsContent value="products">

@@ -31,6 +31,18 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture()
+def coach_user(db):
+    """A minimal public-schema User row standing in for the tenant's coach."""
+    from apps.accounts.models import User
+
+    return User.objects.create_user(
+        email="coach-test@example.com",
+        name="Coach Test",
+        role="coach",
+    )
+
+
+@pytest.fixture()
 def plan(db):
     return PlatformPlan.objects.create(
         name="phase0-test-starter",
@@ -103,13 +115,15 @@ def test_stripe_provider_phase2_methods_raise_not_implemented():
         provider.cancel_subscription(provider_subscription_id="sub_x")
 
 
-def test_bypass_provider_create_checkout_session_emits_webhook_event(restore_public, shared_tenant, plan):
+def test_bypass_provider_create_checkout_session_emits_webhook_event(restore_public, shared_tenant, plan, coach_user):
     # The fixture `restore_public` ensures public-schema rows exist.
+    from apps.core.models import PlatformSubscription
+
     before = WebhookEvent.objects.filter(provider="bypass").count()
     provider = BypassProvider()
     session = provider.create_checkout_session(
         tenant=shared_tenant,
-        user=None,
+        user=coach_user,
         plan=plan,
         success_url="https://example.com/success",
         cancel_url="https://example.com/cancel",
@@ -124,3 +138,31 @@ def test_bypass_provider_create_checkout_session_emits_webhook_event(restore_pub
     assert last.event_type == "checkout.session.completed"
     assert last.payload["tenant_id"] == shared_tenant.pk
     assert last.payload["plan_id"] == plan.pk
+
+
+def test_bypass_provider_activates_platform_subscription_immediately(
+    restore_public, shared_tenant, plan, coach_user
+):
+    """Bypass mode must short-circuit the Stripe round trip so dev/test runs
+    without the Stripe CLI can still observe the post-checkout state."""
+    from apps.core.models import PlatformSubscription
+
+    BypassProvider().create_checkout_session(
+        tenant=shared_tenant,
+        user=coach_user,
+        plan=plan,
+        success_url="https://example.com/success",
+        cancel_url="https://example.com/cancel",
+        locale="en",
+    )
+
+    sub = PlatformSubscription.objects.get(tenant=shared_tenant)
+    assert sub.status == "active"
+    assert sub.provider == "bypass"
+    assert sub.plan_id == plan.pk
+    assert sub.current_period_start is not None
+    assert sub.current_period_end is not None
+
+    shared_tenant.refresh_from_db()
+    assert shared_tenant.plan_id == plan.pk
+    assert shared_tenant.is_subscription_active is True

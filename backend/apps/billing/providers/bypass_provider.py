@@ -41,11 +41,15 @@ class BypassProvider(PaymentProvider):
     ) -> CheckoutSession:
         # Import lazily — apps.core models aren't loaded when providers package
         # is imported at startup (no AppConfig.ready ordering guarantee).
-        from apps.core.models import WebhookEvent
+        from apps.core.models import PlatformSubscription, WebhookEvent
 
         del cancel_url, locale  # bypass doesn't render a real hosted page
 
         session_id = f"bypass_cs_{uuid.uuid4().hex}"
+        now = timezone.now()
+        period_end = now + timedelta(days=30)
+
+        # Synthetic webhook for observability parity with the Stripe adapter.
         WebhookEvent.objects.create(
             provider="bypass",
             provider_event_id=f"bypass_evt_{uuid.uuid4().hex}",
@@ -56,11 +60,38 @@ class BypassProvider(PaymentProvider):
                 "plan_id": plan.pk,
                 "session_id": session_id,
             },
+            processed_at=now,
         )
+
+        # Bypass is for dev/test — short-circuit the real Stripe round trip and
+        # transition the PlatformSubscription + tenant.plan immediately. This
+        # gives the same in-app state the Stripe webhook handlers produce on
+        # checkout.session.completed, so the Subscription tile and quota gates
+        # see the upgrade without needing the Stripe CLI running locally.
+        sub, _ = PlatformSubscription.objects.update_or_create(
+            tenant=tenant,
+            defaults={
+                "user": user if getattr(user, "pk", None) else None,
+                "plan": plan,
+                "status": "active",
+                "provider": "bypass",
+                "provider_subscription_id": f"bypass_sub_{uuid.uuid4().hex}",
+                "provider_customer_id": f"bypass_cus_{uuid.uuid4().hex}",
+                "current_period_start": now,
+                "current_period_end": period_end,
+                "cancel_at_period_end": False,
+                "canceled_at": None,
+            },
+        )
+        del sub  # explicitly unused; reserved for future logging
+
+        if tenant.plan_id != plan.pk:
+            tenant.plan = plan
+            tenant.save(update_fields=["plan"])
 
         return CheckoutSession(
             url=success_url,
-            expires_at=timezone.now() + timedelta(hours=1),
+            expires_at=now + timedelta(hours=1),
             provider_session_id=session_id,
         )
 

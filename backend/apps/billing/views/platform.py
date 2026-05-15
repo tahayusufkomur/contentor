@@ -209,33 +209,68 @@ def get_subscription(request):
     )
 
 
+_SUPPORTED_CURRENCIES = ("USD", "TRY")
+
+
+def _build_prices(plan: PlatformPlan) -> dict:
+    """Return per-currency price summary for `plan`.
+
+    Shape: `{"USD": {"amount_cents": int|None, "available": bool}, "TRY": {...}}`.
+    `available` reflects whether a non-empty `stripe_price_id` is configured —
+    the actual id is intentionally NOT exposed (provider details stay server-side).
+    """
+    raw = plan.prices if isinstance(plan.prices, dict) else {}
+    out: dict[str, dict] = {}
+    for ccy in _SUPPORTED_CURRENCIES:
+        entry = raw.get(ccy) or {}
+        out[ccy] = {
+            "amount_cents": entry.get("amount_cents"),
+            "available": bool(entry.get("stripe_price_id")),
+        }
+    return out
+
+
 @api_view(["GET"])
 @authentication_classes([])
 @permission_classes([AllowAny])
 def list_plans(request):
     """Public read-only list of platform plans, region-aware.
 
-    Used by the marketing pricing page to render CTA buttons with real plan
-    IDs. The shape is intentionally minimal — frontends already have
-    translated copy; they only need (id, name, price-by-currency).
+    Used by the marketing pricing page AND the in-tenant ChangePlanCard to
+    render plan tiers. Returns:
+
+      - `region` / `currency` — the region-default currency (back-compat for
+        the marketing page).
+      - `plans[]` — each entry has `id`, `name`, `is_free`, the legacy
+        flat `currency` / `amount_cents` (marketing page back-compat), a
+        full `prices` map keyed by currency, and the four limit fields
+        the frontend renders as feature bullets.
+
+    `stripe_price_id` is never returned — only a boolean `available` flag
+    per currency.
     """
     # `request.region` is set by RegionResolverMiddleware. Pricing page calls
     # this from the public schema (marketing apex), so region drives which
-    # currency we surface.
+    # currency we surface as the top-level default.
     region = getattr(request, "region", None) or "global"
     currency = REGION_DEFAULT_CURRENCY.get(region, "USD")
     plans_qs = PlatformPlan.objects.all().order_by("price_monthly")
     out = []
     for plan in plans_qs:
-        price_entry = (plan.prices or {}).get(currency, {}) if isinstance(plan.prices, dict) else {}
+        prices = _build_prices(plan)
+        default_entry = prices.get(currency, {})
         out.append(
             {
                 "id": plan.pk,
                 "name": plan.name,
                 "is_free": plan.is_free,
+                # Back-compat for the marketing pricing page which reads the
+                # flat currency + amount_cents at the plan root.
                 "currency": currency,
-                "amount_cents": price_entry.get("amount_cents"),
-                "stripe_price_id_present": bool(price_entry.get("stripe_price_id")),
+                "amount_cents": default_entry.get("amount_cents"),
+                "stripe_price_id_present": default_entry.get("available", False),
+                # Full per-currency price map for the in-tenant upgrade card.
+                "prices": prices,
                 "max_students": plan.max_students,
                 "max_storage_gb": plan.max_storage_gb,
                 "max_streaming_hours": plan.max_streaming_hours,

@@ -64,6 +64,13 @@ async function fetchPlans(): Promise<PlansResponse | null> {
   }
 }
 
+// TODO(phase-2): under each pricing CTA, surface a "Already have an account?
+// Manage your plan in your dashboard." link routing to
+// `https://{slug}.contentor.app/admin/billing` when a `tenant_slug` cookie is
+// present on the marketing apex. The marketing host can't read tenant-subdomain
+// cookies, so this requires a dedicated cookie set at login time. Left out of
+// Phase 1.5 to keep scope tight — `ChangePlanCard` on the tenant subdomain
+// covers the existing-coach upgrade path for now.
 export default async function PricingPage() {
   const user = await getAuthUser()
   const t = await getTranslations('pricing')
