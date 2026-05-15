@@ -40,6 +40,7 @@ def creator_signup(request):
     serializer.is_valid(raise_exception=True)
 
     from apps.core.i18n_helpers import msg
+
     slug = slugify(serializer.validated_data["brand_name"])[:63]
     if Tenant.objects.filter(slug=slug).exists():
         return Response({"detail": msg(request, "brand_taken")}, status=400)
@@ -113,6 +114,7 @@ def creator_signup(request):
 def creator_signup_verify(request):
     """Step 2: Verify email token and create the tenant."""
     from apps.core.i18n_helpers import msg
+
     token = request.data.get("token")
     if not token:
         return Response({"detail": msg(request, "token_required")}, status=400)
@@ -181,6 +183,7 @@ def creator_signup_verify(request):
 @permission_classes([AllowAny])
 def provisioning_status(request):
     from apps.core.i18n_helpers import msg
+
     slug = request.query_params.get("slug")
     if not slug:
         return Response({"detail": msg(request, "slug_required")}, status=400)

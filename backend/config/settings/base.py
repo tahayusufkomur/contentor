@@ -176,3 +176,35 @@ AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
 # --- GetStream Video ---
 GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
 GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")
+
+
+# --- Billing / Platform subscriptions ---
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None or raw == "":
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+# Bypass mode short-circuits Stripe in dev/test. Production refuses this in
+# `config.settings.prod`.
+BILLING_BYPASS_ENABLED = _env_bool("BILLING_BYPASS_ENABLED", True)
+
+# Days a `past_due` PlatformSubscription stays before the dunning sweep downgrades.
+PAST_DUE_GRACE_DAYS = int(os.environ.get("PAST_DUE_GRACE_DAYS", "7"))
+
+# Canonical name of the Free plan. Used by seed_plans and the dunning downgrade.
+BILLING_FREE_PLAN_NAME = os.environ.get("BILLING_FREE_PLAN_NAME", "Free")
+
+# Stripe credentials. Empty in dev/CI unless explicitly wired.
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+# Stripe Price IDs per plan and presentment currency. seed_plans reads these
+# into PlatformPlan.prices[currency].stripe_price_id. Empty values are allowed
+# in Phase 0; downstream callers must handle PRICE_NOT_AVAILABLE.
+STRIPE_PRICE_STARTER_USD = os.environ.get("STRIPE_PRICE_STARTER_USD", "")
+STRIPE_PRICE_PRO_USD = os.environ.get("STRIPE_PRICE_PRO_USD", "")
+STRIPE_PRICE_STARTER_TRY = os.environ.get("STRIPE_PRICE_STARTER_TRY", "")
+STRIPE_PRICE_PRO_TRY = os.environ.get("STRIPE_PRICE_PRO_TRY", "")

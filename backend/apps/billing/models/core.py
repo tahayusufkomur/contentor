@@ -93,6 +93,18 @@ class Payment(models.Model):
     subscription = models.ForeignKey(
         Subscription, null=True, blank=True, on_delete=models.SET_NULL, related_name="payments"
     )
+    # FK to a public-schema model. We set db_constraint=False because
+    # django-tenants creates the FK separately per tenant schema, which
+    # makes a cross-schema TRUNCATE on test teardown blow up. The integrity
+    # check is enforced at the ORM layer (and via webhook handlers in M1).
+    platform_subscription = models.ForeignKey(
+        "core.PlatformSubscription",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="payments",
+        db_constraint=False,
+    )
     metadata = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 

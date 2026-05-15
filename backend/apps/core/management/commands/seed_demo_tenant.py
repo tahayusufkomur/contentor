@@ -120,6 +120,7 @@ class Command(BaseCommand):
 
             # Collect all photos for random assignment to events
             from apps.media.models import Photo
+
             all_photos = list(Photo.objects.all())
 
             self._seed_live_classes(live_classes_data, owner, all_photos)
@@ -559,9 +560,7 @@ class Command(BaseCommand):
         days_ahead = day_of_week - now.weekday()
         if days_ahead <= 0:
             days_ahead += 7
-        next_date = (now + timedelta(days=days_ahead)).replace(
-            hour=hour, minute=minute, second=0, microsecond=0
-        )
+        next_date = (now + timedelta(days=days_ahead)).replace(hour=hour, minute=minute, second=0, microsecond=0)
 
         # 52 weeks past + 52 weeks future
         past_start = next_date - timedelta(weeks=52)
@@ -640,9 +639,7 @@ class Command(BaseCommand):
             template = onsite_data[count % len(onsite_data)]
             # Onsite events on Saturdays at 10:00
             days_to_sat = (5 - cursor.weekday()) % 7
-            scheduled_at = (cursor + timedelta(days=days_to_sat)).replace(
-                hour=10, minute=0, second=0, microsecond=0
-            )
+            scheduled_at = (cursor + timedelta(days=days_to_sat)).replace(hour=10, minute=0, second=0, microsecond=0)
             photo = random.choice(photos) if photos else None
 
             OnsiteEvent.objects.create(

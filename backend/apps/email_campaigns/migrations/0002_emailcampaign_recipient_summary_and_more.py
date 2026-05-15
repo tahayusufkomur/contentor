@@ -6,39 +6,51 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('email_campaigns', '0001_initial'),
+        ("email_campaigns", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='emailcampaign',
-            name='recipient_summary',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="emailcampaign",
+            name="recipient_summary",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
         migrations.AddField(
-            model_name='emailcampaign',
-            name='rendered_html',
-            field=models.TextField(blank=True, default=''),
+            model_name="emailcampaign",
+            name="rendered_html",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AlterField(
-            model_name='emailcampaign',
-            name='sender',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='email_campaigns', to=settings.AUTH_USER_MODEL),
+            model_name="emailcampaign",
+            name="sender",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="email_campaigns",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.CreateModel(
-            name='CampaignRecipient',
+            name="CampaignRecipient",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user_id', models.IntegerField()),
-                ('user_name', models.CharField(max_length=255)),
-                ('user_email', models.EmailField(max_length=254)),
-                ('status', models.CharField(choices=[('sent', 'Sent'), ('failed', 'Failed')], max_length=20)),
-                ('error_message', models.TextField(blank=True, default='')),
-                ('sent_at', models.DateTimeField(blank=True, null=True)),
-                ('campaign', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipients', to='email_campaigns.emailcampaign')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("user_id", models.IntegerField()),
+                ("user_name", models.CharField(max_length=255)),
+                ("user_email", models.EmailField(max_length=254)),
+                ("status", models.CharField(choices=[("sent", "Sent"), ("failed", "Failed")], max_length=20)),
+                ("error_message", models.TextField(blank=True, default="")),
+                ("sent_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "campaign",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="recipients",
+                        to="email_campaigns.emailcampaign",
+                    ),
+                ),
             ],
         ),
     ]

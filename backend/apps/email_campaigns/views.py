@@ -88,7 +88,9 @@ def setup_email(_request):
 
     api_key, error = _get_api_key()
     if error or not api_key:
-        return Response({"detail": error or "Failed to initialize email service."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response(
+            {"detail": error or "Failed to initialize email service."}, status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
 
     return Response({"ready": True, "provisioned": not had_api_key})
 

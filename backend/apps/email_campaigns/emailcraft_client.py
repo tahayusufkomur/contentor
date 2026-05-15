@@ -1,4 +1,5 @@
 import logging
+
 import requests
 from django.conf import settings
 
@@ -69,7 +70,10 @@ def _request_with_fallback(
         if not response.ok:
             logger.error(
                 "EmailCraft %s %s -> %s: %s",
-                method, url, response.status_code, response.text[:500],
+                method,
+                url,
+                response.status_code,
+                response.text[:500],
             )
         response.raise_for_status()
         return response

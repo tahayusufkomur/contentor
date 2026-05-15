@@ -8,6 +8,14 @@ class RegionResolverMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        # Provider webhooks (Stripe, etc.) land on the platform apex and must
+        # run in the public schema with no region binding. They identify the
+        # tenant via signed payload metadata, not the request host.
+        if request.path.startswith("/api/webhooks/"):
+            request.region = None
+            request.tenant_slug = None
+            request.host_locale = None
+            return self.get_response(request)
         host_header = request.META.get("HTTP_X_TENANT_DOMAIN") or request.get_host()
         info = resolve_host(host_header)
         request.region = info.region

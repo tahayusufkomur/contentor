@@ -58,20 +58,14 @@ def admin_stats(_request):
     students_count = User.objects.filter(role="student").count()
     courses_count = Course.objects.count()
 
-    gross_revenue = (
-        Payment.objects.filter(
-            payment_type__in=["one_time", "subscription"],
-            status__in=["completed", "partially_refunded"],
-        ).aggregate(total=Sum("amount"))["total"]
-        or Decimal("0.00")
-    )
-    refund_total = (
-        Payment.objects.filter(
-            payment_type="refund",
-            status="refunded",
-        ).aggregate(total=Sum("amount"))["total"]
-        or Decimal("0.00")
-    )
+    gross_revenue = Payment.objects.filter(
+        payment_type__in=["one_time", "subscription"],
+        status__in=["completed", "partially_refunded"],
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+    refund_total = Payment.objects.filter(
+        payment_type="refund",
+        status="refunded",
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
     revenue = max(gross_revenue - refund_total, Decimal("0.00"))
 
     photos_size = Photo.objects.aggregate(total=Sum("file_size"))["total"] or 0

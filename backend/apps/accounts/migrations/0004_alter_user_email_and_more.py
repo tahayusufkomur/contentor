@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0003_alter_user_accessible_regions_alter_user_region'),
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("accounts", "0003_alter_user_accessible_regions_alter_user_region"),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='email',
+            model_name="user",
+            name="email",
             field=models.EmailField(max_length=254),
         ),
         migrations.AddConstraint(
-            model_name='user',
-            constraint=models.UniqueConstraint(fields=('email', 'region'), name='accounts_user_email_region_unique'),
+            model_name="user",
+            constraint=models.UniqueConstraint(fields=("email", "region"), name="accounts_user_email_region_unique"),
         ),
     ]

@@ -1,32 +1,88 @@
-import Link from 'next/link'
 import { Check, X } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { PlatformHeader } from '@/components/shared/platform-header'
 import { PlatformFooter } from '@/components/shared/platform-footer'
 import { ScrollReveal } from '@/components/landing/scroll-reveal'
 import { Parallax } from '@/components/landing/parallax'
 import { getAuthUser } from '@/lib/auth'
+import { BASE_DOMAIN, DJANGO_API_URL } from '@/lib/constants'
+
+import { PricingCta } from './PricingCta'
 
 const PLAN_KEYS = ['free', 'starter', 'pro'] as const
+type PlanKey = (typeof PLAN_KEYS)[number]
 const FAQ_KEYS = ['switch', 'trial', 'payments', 'limits'] as const
 
-const PLAN_FEATURE_KEYS: Record<(typeof PLAN_KEYS)[number], readonly string[]> = {
+const PLAN_FEATURE_KEYS: Record<PlanKey, readonly string[]> = {
   free: ['students', 'storage', 'courseBuilder', 'support', 'fee', 'live', 'branding', 'domain'],
   starter: ['students', 'storage', 'courseBuilder', 'live', 'branding', 'campaigns', 'fee', 'domain'],
   pro: ['students', 'storage', 'courseBuilder', 'live', 'domain', 'campaigns', 'fee', 'support'],
 }
 
-const PLAN_HIGHLIGHT: Record<(typeof PLAN_KEYS)[number], boolean> = {
+const PLAN_HIGHLIGHT: Record<PlanKey, boolean> = {
   free: false,
   starter: true,
   pro: false,
 }
 
+// Maps server-side PlatformPlan.name (lowercased) to a PLAN_KEY. The seed
+// command writes "Free", "starter", "pro" — keep both casings tolerated.
+function planKeyFromName(name: string): PlanKey | null {
+  const lower = name.toLowerCase()
+  if (lower === 'free') return 'free'
+  if (lower === 'starter') return 'starter'
+  if (lower === 'pro') return 'pro'
+  return null
+}
+
+interface PlanSummary {
+  id: number
+  name: string
+  is_free: boolean
+  currency: string
+  amount_cents: number | null
+}
+
+interface PlansResponse {
+  region: string
+  currency: string
+  plans: PlanSummary[]
+}
+
+async function fetchPlans(): Promise<PlansResponse | null> {
+  try {
+    const res = await fetch(`${DJANGO_API_URL}/api/v1/billing/platform/plans/`, {
+      headers: { 'X-Tenant-Domain': BASE_DOMAIN },
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}
+
+// TODO(phase-2): under each pricing CTA, surface a "Already have an account?
+// Manage your plan in your dashboard." link routing to
+// `https://{slug}.contentor.app/admin/billing` when a `tenant_slug` cookie is
+// present on the marketing apex. The marketing host can't read tenant-subdomain
+// cookies, so this requires a dedicated cookie set at login time. Left out of
+// Phase 1.5 to keep scope tight — `ChangePlanCard` on the tenant subdomain
+// covers the existing-coach upgrade path for now.
 export default async function PricingPage() {
   const user = await getAuthUser()
   const t = await getTranslations('pricing')
+  const plansData = await fetchPlans()
+  const planIdByKey: Partial<Record<PlanKey, number>> = {}
+  for (const p of plansData?.plans ?? []) {
+    const key = planKeyFromName(p.name)
+    if (key != null) planIdByKey[key] = p.id
+  }
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
@@ -64,7 +120,7 @@ export default async function PricingPage() {
             const includedSet = new Set(
               (t.raw(`plans.${key}.included`) as string[]) ?? [],
             )
-
+            const planId = planIdByKey[key] ?? null
             return (
               <ScrollReveal
                 key={key}
@@ -143,14 +199,14 @@ export default async function PricingPage() {
                   })}
                 </ul>
 
-                <Button
-                  asChild
+                <PricingCta
+                  planId={planId}
+                  isFreePlan={key === 'free'}
+                  isAuthenticated={user != null}
                   variant={highlighted ? 'brand' : 'outline'}
                   size="lg"
                   className="mt-8 w-full"
-                >
-                  <Link href="/signup">{t('cta')}</Link>
-                </Button>
+                />
               </div>
               </ScrollReveal>
             )

@@ -7,7 +7,6 @@ def migrate_subscription_to_paid(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("downloads", "0002_rename_access_type_add_price"),
     ]

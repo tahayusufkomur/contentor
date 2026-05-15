@@ -31,5 +31,39 @@
     "defaultLocaleDescription": "New students inherit this language on first visit. Each student can override their preference.",
     "saved": "Saved.",
     "saveFailed": "Could not save. Please try again."
+  },
+  "subscription": {
+    "title": "Subscription",
+    "plan": "Plan",
+    "currency": "Currency",
+    "nextBillingDate": "Next billing date",
+    "provider": "Provider",
+    "freeNotice": "You're on the Free plan. Upgrade for more capacity.",
+    "cancelsOn": "Subscription cancels on {date}.",
+    "checkoutCanceled": "Checkout was canceled. Your plan was not changed.",
+    "noData": "No subscription data available.",
+    "error": "Could not load subscription. Please try again.",
+    "status": {
+      "free": "Free",
+      "incomplete": "Provisioning",
+      "active": "Active",
+      "past_due": "Past due",
+      "canceled": "Canceled"
+    },
+    "changePlan": {
+      "title": "Change plan",
+      "currentPlan": "Current plan",
+      "upgradeTo": "Upgrade to {plan}",
+      "downgrade": "Contact support to downgrade",
+      "comingSoonInCurrency": "Coming soon in {currency}",
+      "processing": "Processing...",
+      "error": "Could not start checkout. Please try again.",
+      "limits": {
+        "students": "{n} students",
+        "storage": "{n} GB storage",
+        "streamingHours": "{n} streaming hours/mo",
+        "campaignEmails": "{n} campaign emails/mo"
+      }
+    }
   }
 }

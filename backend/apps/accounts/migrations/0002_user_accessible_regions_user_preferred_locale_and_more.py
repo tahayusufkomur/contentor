@@ -5,25 +5,42 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='accessible_regions',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('global', 'Global'), ('tr', 'Turkey')], max_length=8), blank=True, default=list, help_text='Superadmin only: regions this user can see in Django admin.', size=None),
+            model_name="user",
+            name="accessible_regions",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(choices=[("global", "Global"), ("tr", "Turkey")], max_length=8),
+                blank=True,
+                default=list,
+                help_text="Superadmin only: regions this user can see in Django admin.",
+                size=None,
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='preferred_locale',
-            field=models.CharField(blank=True, choices=[('en', 'English'), ('tr', 'Türkçe')], default='', help_text='Empty = fall back to tenant default; otherwise overrides.', max_length=2),
+            model_name="user",
+            name="preferred_locale",
+            field=models.CharField(
+                blank=True,
+                choices=[("en", "English"), ("tr", "Türkçe")],
+                default="",
+                help_text="Empty = fall back to tenant default; otherwise overrides.",
+                max_length=2,
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='region',
-            field=models.CharField(choices=[('global', 'Global'), ('tr', 'Turkey')], db_index=True, default='global', help_text='Immutable. The region the user signed up in.', max_length=8),
+            model_name="user",
+            name="region",
+            field=models.CharField(
+                choices=[("global", "Global"), ("tr", "Turkey")],
+                db_index=True,
+                default="global",
+                help_text="Immutable. The region the user signed up in.",
+                max_length=8,
+            ),
         ),
     ]

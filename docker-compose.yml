@@ -60,7 +60,7 @@ services:
       start_period: 30s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.django-api.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`)"
+      - "traefik.http.routers.django-api.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`) || PathPrefix(`/api/webhooks`)"
       - "traefik.http.routers.django-api.entrypoints=web"
       - "traefik.http.routers.django-api.priority=10"
       - "traefik.http.routers.django-admin.rule=(Host(`contentor.localhost`) || Host(`localhost`) || Host(`tr.contentor.localhost`) || Host(`tr.localhost`)) && (PathPrefix(`/admin`) || PathPrefix(`/static/admin`))"

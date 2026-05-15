@@ -340,7 +340,9 @@ class TestStudentList:
 
     def test_limit_offset_returns_paginated_payload(self, owner, student):
         """When limit/offset are passed, API returns paginated shape."""
-        User.objects.create_user(email="student2@accountstest.com", name="Student Two", password="secret123", role="student")
+        User.objects.create_user(
+            email="student2@accountstest.com", name="Student Two", password="secret123", role="student"
+        )
         client = make_client(owner)
         response = client.get("/api/v1/auth/students/?limit=1&offset=0&ordering=name")
         assert response.status_code == 200, response.content
