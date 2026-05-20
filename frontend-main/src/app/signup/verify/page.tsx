@@ -1,117 +1,149 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { CheckCircle2, Loader2, AlertCircle, Rocket } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { AuthShell } from '@/components/auth/auth-shell'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { CheckCircle2, Loader2, AlertCircle, Rocket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/auth-shell";
 
-type VerifyState = 'verifying' | 'provisioning' | 'ready' | 'error'
+import { QuestionnaireStep } from "./QuestionnaireStep";
+
+type VerifyState =
+  | "verifying"
+  | "questionnaire"
+  | "provisioning"
+  | "ready"
+  | "error";
 
 function StateIcon({
   variant,
   children,
 }: {
-  variant: 'primary' | 'success' | 'destructive'
-  children: React.ReactNode
+  variant: "primary" | "success" | "destructive";
+  children: React.ReactNode;
 }) {
   const styles: Record<typeof variant, string> = {
-    primary: 'text-primary bg-primary/10',
-    success: 'text-emerald-500 bg-emerald-500/10',
-    destructive: 'text-destructive bg-destructive/10',
-  }
+    primary: "text-primary bg-primary/10",
+    success: "text-emerald-500 bg-emerald-500/10",
+    destructive: "text-destructive bg-destructive/10",
+  };
   return (
     <div
       className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong ${styles[variant]}`}
     >
       {children}
     </div>
-  )
+  );
 }
 
 export default function SignupVerifyPage() {
-  const searchParams = useSearchParams()
-  const [state, setState] = useState<VerifyState>('verifying')
-  const [error, setError] = useState('')
-  const [slug, setSlug] = useState('')
-  const [domain, setDomain] = useState('')
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const verifiedRef = useRef(false)
+  const t = useTranslations("auth.signup");
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const [state, setState] = useState<VerifyState>("verifying");
+  const [error, setError] = useState("");
+  const [slug, setSlug] = useState("");
+  const [domain, setDomain] = useState("");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const verifiedRef = useRef(false);
 
   useEffect(() => {
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current)
-    }
-  }, [])
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const startPolling = useCallback(
+    (tenantSlug: string) => {
+      pollRef.current = setInterval(async () => {
+        try {
+          const statusRes = await fetch(
+            `/api/v1/onboarding/status/?slug=${tenantSlug}`,
+            {
+              credentials: "same-origin",
+            },
+          );
+          if (statusRes.ok) {
+            const statusData = await statusRes.json();
+            if (statusData.status === "ready") {
+              if (pollRef.current) clearInterval(pollRef.current);
+              setDomain(statusData.domain);
+              setState("ready");
+            } else if (statusData.status === "failed") {
+              if (pollRef.current) clearInterval(pollRef.current);
+              setError(t("verify.errors.setupFailed"));
+              setState("error");
+            }
+          }
+        } catch {
+          // Keep polling
+        }
+      }, 2000);
+    },
+    [t],
+  );
+
+  const handleQuestionnaireSubmitted = useCallback(() => {
+    setState("provisioning");
+    startPolling(slug);
+  }, [slug, startPolling]);
 
   useEffect(() => {
-    if (verifiedRef.current) return
-    verifiedRef.current = true
+    if (verifiedRef.current) return;
+    verifiedRef.current = true;
 
-    const token = searchParams.get('token')
     if (!token) {
-      setError('No verification token provided')
-      setState('error')
-      return
+      setError(t("verify.errors.noToken"));
+      setState("error");
+      return;
     }
 
-    fetch('/api/v1/onboarding/signup/verify/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/v1/onboarding/signup/verify/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
-      credentials: 'same-origin',
+      credentials: "same-origin",
     })
       .then(async (res) => {
-        const data = await res.json()
+        const data = await res.json();
         if (!res.ok) {
-          setError(data.detail || 'Verification failed')
-          setState('error')
-          return
+          setError(data.detail || t("verify.errors.verificationFailed"));
+          setState("error");
+          return;
         }
 
-        setSlug(data.slug)
-        setDomain(data.domain)
+        setSlug(data.slug);
+        setDomain(data.domain);
 
-        if (data.status === 'ready') {
-          setState('ready')
-          return
+        // If the tenant is somehow already provisioned (idempotent re-verify
+        // after the user previously submitted the questionnaire), skip ahead.
+        if (data.status === "ready") {
+          setState("ready");
+          return;
+        }
+        // status === 'provisioning' means the questionnaire was already
+        // submitted in a previous session; resume polling.
+        if (data.status === "provisioning") {
+          setState("provisioning");
+          startPolling(data.slug);
+          return;
         }
 
-        setState('provisioning')
-        pollRef.current = setInterval(async () => {
-          try {
-            const statusRes = await fetch(`/api/v1/onboarding/status/?slug=${data.slug}`, {
-              credentials: 'same-origin',
-            })
-            if (statusRes.ok) {
-              const statusData = await statusRes.json()
-              if (statusData.status === 'ready') {
-                if (pollRef.current) clearInterval(pollRef.current)
-                setDomain(statusData.domain)
-                setState('ready')
-              } else if (statusData.status === 'failed') {
-                if (pollRef.current) clearInterval(pollRef.current)
-                setError('Setup failed. Please try again or contact support.')
-                setState('error')
-              }
-            }
-          } catch {
-            // Keep polling
-          }
-        }, 2000)
+        setState("questionnaire");
       })
       .catch(() => {
-        setError('Network error')
-        setState('error')
-      })
-  }, [searchParams])
+        setError(t("verify.errors.network"));
+        setState("error");
+      });
+  }, [token, t, startPolling]);
 
-  if (state === 'verifying') {
+  if (state === "verifying") {
     return (
       <AuthShell
-        eyebrow="Verification"
-        title="Verifying your email"
-        subtitle="Please wait while we verify your email address."
+        eyebrow={t("verify.verifyingEyebrow")}
+        title={t("verify.verifyingTitle")}
+        subtitle={t("verify.verifyingSubtitle")}
       >
         <StateIcon variant="primary">
           <Loader2 className="h-6 w-6 animate-spin" />
@@ -122,15 +154,24 @@ export default function SignupVerifyPage() {
           </div>
         </div>
       </AuthShell>
-    )
+    );
   }
 
-  if (state === 'provisioning') {
+  if (state === "questionnaire" && token) {
+    return (
+      <QuestionnaireStep
+        token={token}
+        onSubmitted={handleQuestionnaireSubmitted}
+      />
+    );
+  }
+
+  if (state === "provisioning") {
     return (
       <AuthShell
-        eyebrow="Setting up"
-        title="Crafting your platform"
-        subtitle="This usually takes less than a minute."
+        eyebrow={t("verify.provisioningEyebrow")}
+        title={t("verify.provisioningTitle")}
+        subtitle={t("verify.provisioningSubtitle")}
       >
         <StateIcon variant="primary">
           <Rocket className="h-6 w-6" />
@@ -138,42 +179,43 @@ export default function SignupVerifyPage() {
         <div className="mt-7 flex items-center justify-center gap-2 text-[14px] text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>
-            Creating <strong className="text-foreground">{domain || slug}</strong>
+            {t("verify.creating")}{" "}
+            <strong className="text-foreground">{domain || slug}</strong>
           </span>
         </div>
       </AuthShell>
-    )
+    );
   }
 
-  if (state === 'ready') {
+  if (state === "ready") {
     return (
       <AuthShell
-        eyebrow="Ready"
-        title="Your platform is ready"
-        subtitle="Sign in on your new platform to start adding content."
+        eyebrow={t("verify.readyEyebrow")}
+        title={t("verify.readyTitle")}
+        subtitle={t("verify.readySubtitle")}
       >
         <StateIcon variant="success">
           <CheckCircle2 className="h-6 w-6" />
         </StateIcon>
         <Button asChild variant="brand" size="lg" className="mt-7 w-full">
-          <a href={`http://${domain}`}>Open {domain} →</a>
+          <a href={`http://${domain}`}>{t("verify.openCta", { domain })}</a>
         </Button>
       </AuthShell>
-    )
+    );
   }
 
   return (
     <AuthShell
-      eyebrow="Error"
-      title="Something went wrong"
+      eyebrow={t("verify.errorEyebrow")}
+      title={t("verify.errorTitle")}
       subtitle={error}
     >
       <StateIcon variant="destructive">
         <AlertCircle className="h-6 w-6" />
       </StateIcon>
       <Button asChild variant="outline" size="lg" className="mt-7 w-full">
-        <a href="/signup">Try again</a>
+        <a href="/signup">{t("verify.tryAgain")}</a>
       </Button>
     </AuthShell>
-  )
+  );
 }

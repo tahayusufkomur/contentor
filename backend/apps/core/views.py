@@ -51,6 +51,7 @@ def creator_signup(request):
     brand_name = serializer.validated_data["brand_name"]
 
     from apps.accounts.tokens import create_signup_token
+
     token = create_signup_token(email, name, brand_name, region=region)
 
     scheme = "https" if request.is_secure() else "http"
@@ -73,7 +74,10 @@ def creator_signup(request):
         "tr": {
             "subject": f"E-postanızı doğrulayın — {brand_name}",
             "heading": "Contentor'a hoş geldiniz!",
-            "intro": f"E-postanızı doğrulamak ve <strong>{brand_name}</strong> platformunu oluşturmak için aşağıdaki düğmeye tıklayın.",
+            "intro": (
+                f"E-postanızı doğrulamak ve <strong>{brand_name}</strong> "
+                f"platformunu oluşturmak için aşağıdaki düğmeye tıklayın."
+            ),
             "button": "Doğrula ve Platformumu Oluştur",
             "expires": f"Bu bağlantı {settings.MAGIC_LINK_EXPIRY_MINUTES} dakika içinde sona erer.",
             "copy_label": "Veya kopyalayın:",
@@ -126,7 +130,6 @@ def creator_signup_verify(request):
         return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
     email = payload["email"]
-    name = payload["name"]
     brand_name = payload["brand_name"]
     region = payload.get("region", "global")
     slug = slugify(brand_name)[:63]
@@ -166,7 +169,9 @@ def creator_signup_verify(request):
         tenant=tenant,
         is_primary=True,
     )
-    provision_tenant.delay(tenant.id, email, name)
+    # Provisioning is enqueued from the onboarding template endpoint (or the
+    # skip endpoint) so we can seed niche content as part of the same task —
+    # this collapses provisioning + seeding into one progress screen.
 
     return Response(
         {
@@ -177,6 +182,98 @@ def creator_signup_verify(request):
             "locale": REGION_DEFAULT_LOCALE.get(region, "en"),
         },
         status=201,
+    )
+
+
+def _resolve_tenant_from_signup_token(request) -> tuple[dict | None, Tenant | None, Response | None]:
+    """Shared token + tenant lookup for the post-verify onboarding endpoints.
+
+    Returns (payload, tenant, error_response). Exactly one of (tenant, error)
+    is None on return.
+    """
+    from apps.accounts.tokens import verify_signup_token
+    from apps.core.i18n_helpers import msg
+
+    token = request.data.get("token")
+    if not token:
+        return None, None, Response({"detail": msg(request, "token_required")}, status=400)
+    try:
+        payload = verify_signup_token(token)
+    except Exception:
+        return None, None, Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+
+    region = payload.get("region", "global")
+    slug = slugify(payload["brand_name"])[:63]
+    try:
+        tenant = Tenant.objects.get(slug=slug, region=region)
+    except Tenant.DoesNotExist:
+        return None, None, Response({"detail": msg(request, "tenant_not_found")}, status=404)
+    if tenant.owner_email != payload["email"]:
+        return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
+    return payload, tenant, None
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def seed_from_template(request):
+    """Step 3a: record the coach's questionnaire answers and start provisioning.
+
+    Accepts the same signup token used for verify. The token is reusable here
+    because it's the only credential the coach has at this stage (no JWT yet).
+    """
+    from apps.core.seed_template import available_niches
+
+    payload, tenant, err = _resolve_tenant_from_signup_token(request)
+    if err is not None:
+        return err
+
+    niche = (request.data.get("niche") or "").strip()
+    goals = request.data.get("goals") or []
+    if not isinstance(goals, list) or not all(isinstance(g, str) for g in goals):
+        return Response({"detail": "goals must be a list of strings."}, status=400)
+    if niche not in available_niches():
+        return Response({"detail": f"Unknown niche '{niche}'."}, status=400)
+
+    # Idempotency: if seeding already kicked off, don't double-enqueue.
+    if tenant.template_seed_status in ("seeding", "ready"):
+        return Response(
+            {"slug": tenant.slug, "status": tenant.provisioning_status, "template_status": tenant.template_seed_status},
+        )
+
+    tenant.template_niche = niche
+    tenant.template_goals = goals[:20]  # cap; defensive against arbitrary payloads
+    tenant.template_seed_status = "seeding"
+    tenant.save(update_fields=["template_niche", "template_goals", "template_seed_status"])
+
+    provision_tenant.delay(tenant.id, payload["email"], payload["name"], niche)
+    return Response(
+        {"slug": tenant.slug, "status": "pending", "template_status": "seeding"},
+        status=202,
+    )
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def skip_template(request):
+    """Step 3b: coach opted out of templates — provision a blank tenant."""
+    payload, tenant, err = _resolve_tenant_from_signup_token(request)
+    if err is not None:
+        return err
+
+    if tenant.template_seed_status in ("seeding", "ready"):
+        return Response(
+            {"slug": tenant.slug, "status": tenant.provisioning_status, "template_status": tenant.template_seed_status},
+        )
+
+    tenant.template_seed_status = "skipped"
+    tenant.save(update_fields=["template_seed_status"])
+
+    provision_tenant.delay(tenant.id, payload["email"], payload["name"])
+    return Response(
+        {"slug": tenant.slug, "status": "pending", "template_status": "skipped"},
+        status=202,
     )
 
 

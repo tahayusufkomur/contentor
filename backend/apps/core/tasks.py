@@ -7,7 +7,13 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def provision_tenant(self, tenant_id, owner_email, owner_name):
+def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
+    """Provision the tenant schema, owner, and config.
+
+    If `niche` is set, also seed niche-themed content via the live-tenant
+    seeder. Seeding runs after the base provision so the seeder can assume an
+    owner + TenantConfig already exist.
+    """
     from apps.core.models import Tenant
 
     tenant = Tenant.objects.get(id=tenant_id)
@@ -96,6 +102,17 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
                 accessible_regions=[],
             )
 
+        if niche:
+            from apps.core.seed_template import TemplateSeedError, seed_template_into_tenant
+
+            try:
+                seed_template_into_tenant(tenant, niche, writer=logger.info)
+                tenant.template_seed_status = "ready"
+            except TemplateSeedError:
+                logger.exception("Template seed failed for tenant %s (niche=%s)", tenant.slug, niche)
+                tenant.template_seed_status = "failed"
+            tenant.save(update_fields=["template_seed_status"])
+
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
         logger.info("Tenant %s provisioned successfully", tenant.slug)
@@ -104,4 +121,4 @@ def provision_tenant(self, tenant_id, owner_email, owner_name):
         tenant.provisioning_status = "failed"
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Tenant provisioning failed for %s", tenant.slug)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc

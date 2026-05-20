@@ -50,6 +50,28 @@ class Tenant(TenantMixin):
         db_index=True,
         help_text="Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware.",
     )
+    template_niche = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        help_text="Niche key chosen during onboarding (matches a module under demo_data/).",
+    )
+    template_goals = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Multi-select goals captured during onboarding. Metadata only for now.",
+    )
+    template_seed_status = models.CharField(
+        max_length=20,
+        choices=[
+            ("pending", "Pending"),
+            ("seeding", "Seeding"),
+            ("ready", "Ready"),
+            ("skipped", "Skipped"),
+            ("failed", "Failed"),
+        ],
+        default="pending",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     auto_create_schema = False
