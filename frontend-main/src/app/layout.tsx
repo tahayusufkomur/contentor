@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Fraunces, Instrument_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { headers } from "next/headers";
@@ -7,18 +8,6 @@ import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { resolveHost } from "@/i18n/config";
 import "@/styles/globals.css";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
@@ -59,7 +48,7 @@ export default async function RootLayout({
         <link rel="alternate" hrefLang="x-default" href={`${scheme}://${region === "tr" ? otherApex : apex}`} />
       </head>
       <body
-        className={`${fraunces.variable} ${instrumentSans.variable} font-sans antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider

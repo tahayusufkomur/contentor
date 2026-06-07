@@ -1,7 +1,18 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  darkMode: 'class',
+  // The `dark:` variant must fire under EVERY dark-family theme — not just `.dark`.
+  // `matte` is intentionally excluded (it is a light theme).
+  darkMode: [
+    'variant',
+    [
+      '&:is(.dark, .dark *)',
+      '&:is(.midnight, .midnight *)',
+      '&:is(.graphite, .graphite *)',
+      '&:is(.graphite-plus, .graphite-plus *)',
+      '&:is(.graphite-bright, .graphite-bright *)',
+    ],
+  ],
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
@@ -39,39 +50,52 @@ const config: Config = {
           DEFAULT: 'var(--card)',
           foreground: 'var(--card-foreground)',
         },
+        'marketing-accent': {
+          DEFAULT: 'var(--marketing-accent)',
+          foreground: 'var(--marketing-accent-foreground)',
+        },
+        sidebar: {
+          DEFAULT: 'var(--sidebar)',
+          foreground: 'var(--sidebar-foreground)',
+          primary: 'var(--sidebar-primary)',
+          'primary-foreground': 'var(--sidebar-primary-foreground)',
+          accent: 'var(--sidebar-accent)',
+          'accent-foreground': 'var(--sidebar-accent-foreground)',
+          border: 'var(--sidebar-border)',
+          ring: 'var(--sidebar-ring)',
+        },
+        chart: {
+          1: 'var(--chart-1)',
+          2: 'var(--chart-2)',
+          3: 'var(--chart-3)',
+          4: 'var(--chart-4)',
+          5: 'var(--chart-5)',
+        },
+        // Legacy brand.* aliases — re-pointed to house tokens so existing
+        // (non-landing) pages adopt the house palette without breaking.
         brand: {
-          primary: 'var(--brand-primary)',
-          accent: 'var(--brand-accent)',
-          warm: 'var(--brand-warm)',
-          surface: 'var(--brand-surface)',
-          deep: 'var(--brand-deep)',
+          primary: 'var(--primary)',
+          accent: 'var(--marketing-accent)',
+          warm: 'var(--marketing-accent)',
+          surface: 'var(--card)',
+          deep: 'var(--foreground)',
         },
       },
       borderRadius: {
-        xl: 'calc(var(--radius) + 4px)',
+        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 2px)',
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 6px)',
-        sm: 'calc(var(--radius) - 10px)',
+        xl: 'calc(var(--radius) + 4px)',
+        '2xl': 'calc(var(--radius) + 8px)',
+        '3xl': 'calc(var(--radius) + 12px)',
+        '4xl': 'calc(var(--radius) + 16px)',
       },
       fontFamily: {
-        sans: [
-          'var(--font-sans)',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          '"SF Pro Display"',
-          '"SF Pro Text"',
-          'system-ui',
-          'sans-serif',
-        ],
-        display: [
-          'var(--font-display)',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          '"SF Pro Display"',
-          'system-ui',
-          'serif',
-        ],
-        mono: ['ui-monospace', '"SF Mono"', 'Menlo', 'monospace'],
+        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        // No serif in the house system — `display` aliases to the sans stack
+        // so legacy `.text-display`/`font-display` usages stay on-brand.
+        display: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'ui-monospace', 'monospace'],
       },
       boxShadow: {
         'glass-sm': '0 1px 1px rgba(0,0,0,0.04), 0 8px 24px -12px rgba(8,15,89,0.12)',

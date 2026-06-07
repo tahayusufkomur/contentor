@@ -4,7 +4,7 @@ import { ArrowUpRight, Clock, Globe2, Plus, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PlatformHeader } from '@/components/shared/platform-header'
 import { PlatformFooter } from '@/components/shared/platform-footer'
-import { LogoMark } from '@/components/shared/logo-mark'
+import { Monogram } from '@/components/shared/logo-mark'
 import { getAuthUser } from '@/lib/auth'
 import { getMyTenants, type MyTenant } from '@/lib/tenants'
 
@@ -22,9 +22,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
   return (
     <div className="glass-pane group relative flex flex-col p-7 transition-transform duration-300 hover:-translate-y-1">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl glass-strong">
-          <LogoMark size={28} />
-        </div>
+        <Monogram size={48} label={(tenant.name || tenant.slug || 'C').charAt(0).toUpperCase()} />
         <span
           className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${status.tone}`}
         >

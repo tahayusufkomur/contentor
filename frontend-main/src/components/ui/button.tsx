@@ -5,33 +5,34 @@ import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-full text-[15px] font-medium tracking-[-0.01em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] select-none',
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:border-destructive aria-invalid:ring-destructive/20",
   {
     variants: {
       variant: {
         default:
-          'bg-foreground text-background hover:bg-foreground/90 shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_-12px_rgba(0,0,0,0.18)] dark:shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_8px_24px_-8px_rgba(0,0,0,0.5)]',
+          'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
         destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
+          'bg-destructive text-white hover:bg-destructive/90 shadow-xs focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40',
         outline:
-          'border border-border bg-background/40 backdrop-blur-md text-foreground hover:bg-foreground/[0.04] hover:border-foreground/20',
+          'border bg-background text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs',
         ghost:
-          'text-foreground hover:bg-foreground/[0.06]',
+          'hover:bg-accent hover:text-accent-foreground',
         link:
           'text-primary underline-offset-4 hover:underline',
+        // Legacy "brand" — now the standard primary action in the house palette.
         brand:
-          'relative text-white bg-gradient-to-b from-[oklch(0.62_0.24_232)] via-[oklch(0.58_0.22_240)] to-[oklch(0.5_0.22_250)] shadow-[0_1px_0_0_rgba(255,255,255,0.18)_inset,0_8px_24px_-6px_oklch(0.6_0.24_232/0.55),0_2px_8px_-1px_rgba(0,0,0,0.18)] hover:brightness-110',
+          'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
         glass:
-          'glass text-foreground hover:bg-foreground/[0.06]',
+          'bg-card text-card-foreground border shadow-xs hover:bg-accent hover:text-accent-foreground',
       },
       size: {
-        default: 'h-10 px-5 py-2',
-        sm: 'h-9 px-4 text-sm',
-        lg: 'h-12 px-7 text-base',
-        xl: 'h-14 px-9 text-[17px]',
-        icon: 'h-10 w-10',
+        default: 'h-9 px-4 py-2',
+        sm: 'h-8 gap-1.5 px-3 text-xs',
+        lg: 'h-10 px-6',
+        xl: 'h-12 px-8 text-base',
+        icon: 'size-9',
       },
     },
     defaultVariants: {

@@ -15,29 +15,26 @@ function CourseIllustration({
   return (
     <div className="grid grid-cols-2 gap-3">
       {[
-        { bar: "from-[oklch(0.72_0.22_230)] to-[oklch(0.55_0.22_270)]", pct: 75, n: 12 },
-        { bar: "from-[oklch(0.78_0.18_220)] to-[oklch(0.62_0.24_232)]", pct: 40, n: 8 },
+        { bar: "bg-chart-1", pct: 75, n: 12 },
+        { bar: "bg-chart-2", pct: 40, n: 8 },
       ].map((c, i) => (
-        <div
-          key={i}
-          className="overflow-hidden rounded-2xl border border-border/60 bg-background/50 backdrop-blur-md"
-        >
-          <div className={`h-14 bg-gradient-to-br ${c.bar} opacity-80`} />
+        <div key={i} className="overflow-hidden rounded-lg border bg-card">
+          <div className={`h-14 ${c.bar} opacity-80`} />
           <div className="space-y-3 p-3.5">
-            <div className="h-2.5 w-3/4 rounded-full bg-foreground/10" />
+            <div className="h-2.5 w-3/4 rounded-full bg-muted" />
             <div>
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{progressLabel}</span>
-                <span>{c.pct}%</span>
+                <span className="tabular-nums">{c.pct}%</span>
               </div>
-              <div className="mt-1.5 h-1.5 w-full rounded-full bg-foreground/[0.06]">
+              <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted">
                 <div
-                  className="h-1.5 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] to-[oklch(0.55_0.22_270)]"
+                  className="h-1.5 rounded-full bg-marketing-accent"
                   style={{ width: `${c.pct}%` }}
                 />
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">{lessons(c.n)}</p>
+            <p className="text-xs text-muted-foreground">{lessons(c.n)}</p>
           </div>
         </div>
       ))}
@@ -53,22 +50,19 @@ function LiveClassIllustration({
   watching: (n: number) => string;
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl bg-foreground p-4 text-background">
+    <div className="overflow-hidden rounded-lg bg-foreground p-4 text-background">
       <div className="mb-3 flex items-center gap-2">
-        <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-        <span className="rounded-full bg-red-500/90 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white">
+        <span className="size-2 animate-pulse rounded-full bg-destructive" />
+        <span className="rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold tracking-wide text-white">
           {live}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-1.5">
         {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="aspect-video rounded-lg bg-gradient-to-br from-white/10 to-white/5"
-          />
+          <div key={i} className="aspect-video rounded-md bg-background/10" />
         ))}
       </div>
-      <div className="mt-3 text-center text-[11px] text-white/60">
+      <div className="mt-3 text-center text-xs text-background/60">
         {watching(847)}
       </div>
     </div>
@@ -78,24 +72,18 @@ function LiveClassIllustration({
 function BrandingIllustration() {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {[
-        { bar: "bg-[oklch(0.62_0.24_232)]", tint: "bg-[oklch(0.62_0.24_232)]/10" },
-        { bar: "bg-[oklch(0.78_0.18_220)]", tint: "bg-[oklch(0.78_0.18_220)]/10" },
-      ].map((c, i) => (
-        <div
-          key={i}
-          className="overflow-hidden rounded-2xl border border-border/60 bg-background/50 backdrop-blur-md"
-        >
-          <div className="flex items-center gap-1 bg-foreground/[0.04] px-2 py-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-400/80" />
-            <span className="h-1.5 w-1.5 rounded-full bg-yellow-400/80" />
-            <span className="h-1.5 w-1.5 rounded-full bg-green-400/80" />
+      {[{ bar: "bg-chart-1" }, { bar: "bg-chart-2" }].map((c, i) => (
+        <div key={i} className="overflow-hidden rounded-lg border bg-card">
+          <div className="flex items-center gap-1 bg-muted px-2 py-1.5">
+            <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+            <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+            <span className="size-1.5 rounded-full bg-muted-foreground/40" />
           </div>
           <div className={`h-2 ${c.bar}`} />
           <div className="space-y-2 p-2.5">
-            <div className={`h-8 rounded-md ${c.tint}`} />
-            <div className="h-1.5 w-3/4 rounded-full bg-foreground/10" />
-            <div className="h-1.5 w-1/2 rounded-full bg-foreground/10" />
+            <div className={`h-8 rounded-md ${c.bar} opacity-10`} />
+            <div className="h-1.5 w-3/4 rounded-full bg-muted" />
+            <div className="h-1.5 w-1/2 rounded-full bg-muted" />
           </div>
         </div>
       ))}
@@ -110,16 +98,16 @@ function AutomationIllustration({ step3 }: { step3: string }) {
       {steps.map((label, i) => (
         <div key={i} className="w-full">
           <div
-            className={`w-full rounded-xl border px-4 py-3 text-center text-[13px] font-medium backdrop-blur-md ${
+            className={`w-full rounded-md border px-4 py-3 text-center text-sm font-medium ${
               i === steps.length - 1
-                ? "border-primary/30 bg-primary/[0.08] text-foreground"
-                : "border-border/60 bg-background/50 text-foreground/85"
+                ? "border-marketing-accent/40 bg-marketing-accent/10 text-foreground"
+                : "bg-card text-muted-foreground"
             }`}
           >
             {label}
           </div>
           {i < steps.length - 1 && (
-            <div className="mx-auto my-1 h-4 w-px bg-foreground/15" />
+            <div className="mx-auto my-1 h-4 w-px bg-border" />
           )}
         </div>
       ))}
@@ -163,13 +151,13 @@ export function FeaturesSection() {
   return (
     <section id="features" className="relative px-6 py-32 md:py-40">
       <div className="mx-auto max-w-6xl">
-        <ScrollReveal variant="blur" duration={1}>
+        <ScrollReveal direction="up" duration={0.7}>
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-eyebrow text-muted-foreground/80">Capabilities</p>
-            <h2 className="text-display mt-4 text-4xl sm:text-5xl md:text-6xl">
+            <p className="text-eyebrow text-muted-foreground">Capabilities</p>
+            <h2 className="text-display mt-4 text-4xl text-foreground sm:text-5xl md:text-6xl">
               {t("title")}
             </h2>
-            <p className="mt-5 text-[17px] leading-relaxed text-muted-foreground md:text-lg">
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
               {t("subtitle")}
             </p>
           </div>
@@ -186,27 +174,24 @@ export function FeaturesSection() {
                   isRight ? "md:[&>*:first-child]:order-2" : ""
                 }`}
               >
-                <ScrollReveal
-                  direction={isRight ? "left" : "right"}
-                  duration={1}
-                >
+                <ScrollReveal direction="up" duration={0.7}>
                   <div>
-                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[oklch(0.72_0.22_230)] to-[oklch(0.55_0.24_270)] text-white shadow-glow-blue">
-                      <Icon className="h-5 w-5" />
+                    <div className="inline-flex size-11 items-center justify-center rounded-lg bg-marketing-accent/10 text-marketing-accent">
+                      <Icon className="size-5" />
                     </div>
-                    <h3 className="text-headline mt-6 text-3xl md:text-4xl">
+                    <h3 className="text-headline mt-6 text-3xl text-foreground md:text-4xl">
                       {t(`items.${key}.title`)}
                     </h3>
-                    <p className="mt-3 text-[16px] leading-relaxed text-muted-foreground">
+                    <p className="mt-3 text-base leading-relaxed text-muted-foreground">
                       {t(`items.${key}.description`)}
                     </p>
                     <ul className="mt-6 space-y-3">
                       {POINT_KEYS[key].map((pointKey) => (
                         <li key={pointKey} className="flex items-start gap-3">
-                          <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary/12 text-primary">
-                            <Check className="h-3 w-3" strokeWidth={3} />
+                          <span className="mt-0.5 flex size-5 items-center justify-center rounded-full bg-marketing-accent/15 text-marketing-accent">
+                            <Check className="size-3" strokeWidth={3} />
                           </span>
-                          <span className="text-[14.5px] text-foreground/85">
+                          <span className="text-sm text-foreground">
                             {t(`items.${key}.points.${pointKey}`)}
                           </span>
                         </li>
@@ -214,15 +199,9 @@ export function FeaturesSection() {
                     </ul>
                   </div>
                 </ScrollReveal>
-                <ScrollReveal
-                  variant="scale"
-                  fromScale={0.92}
-                  duration={1.1}
-                  delay={0.08}
-                >
-                  <div className="relative">
-                    <div className="absolute inset-x-8 top-6 -z-10 h-44 rounded-full bg-gradient-to-r from-[oklch(0.72_0.22_230)] to-[oklch(0.55_0.24_270)] opacity-20 blur-3xl" />
-                    <div className="glass-pane p-6">{illustrations[key]}</div>
+                <ScrollReveal direction="up" duration={0.7} delay={0.08}>
+                  <div className="rounded-xl border bg-card p-6 shadow-sm">
+                    {illustrations[key]}
                   </div>
                 </ScrollReveal>
               </div>

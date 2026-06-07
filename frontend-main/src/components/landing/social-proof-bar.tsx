@@ -11,20 +11,14 @@ export function SocialProofBar() {
     <section className="px-6 py-20">
       <div className="mx-auto max-w-4xl text-center">
         <ScrollReveal variant="blur" duration={0.9}>
-          <p className="text-eyebrow text-muted-foreground/80">
+          <p className="text-eyebrow text-muted-foreground">
             {t("tagline")}
           </p>
         </ScrollReveal>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
           {CATEGORY_KEYS.map((key, i) => (
-            <ScrollReveal
-              key={key}
-              variant="scale"
-              fromScale={0.8}
-              duration={0.7}
-              delay={0.06 * i}
-            >
-              <span className="rounded-full border border-border/60 bg-background/40 px-4 py-1.5 text-[13px] font-medium text-foreground/80 backdrop-blur-md">
+            <ScrollReveal key={key} direction="up" duration={0.6} delay={0.06 * i}>
+              <span className="rounded-full border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
                 {t(`categories.${key}`)}
               </span>
             </ScrollReveal>

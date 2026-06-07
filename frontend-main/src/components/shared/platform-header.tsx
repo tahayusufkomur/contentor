@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { LogoMark } from "@/components/shared/logo-mark";
+import { Wordmark } from "@/components/shared/logo-mark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types/auth";
@@ -15,13 +15,10 @@ function Logo() {
   return (
     <Link
       href="/"
-      className="flex items-center gap-2.5 select-none"
+      className="flex items-center select-none"
       aria-label="Contentor"
     >
-      <LogoMark size={32} priority />
-      <span className="text-[16px] font-semibold tracking-[-0.02em] text-foreground">
-        Contentor
-      </span>
+      <Wordmark className="text-base" />
     </Link>
   );
 }
@@ -50,10 +47,10 @@ export function PlatformHeader({ user }: { user?: User | null }) {
     <header className="sticky top-0 z-50 px-4 pt-4">
       <div
         className={cn(
-          "mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full px-4 transition-all duration-300 sm:px-5",
+          "mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full border px-4 transition-all duration-300 sm:px-5",
           scrolled
-            ? "glass-strong"
-            : "border border-transparent bg-background/40 backdrop-blur-md",
+            ? "border-border bg-background/80 shadow-sm backdrop-blur-sm"
+            : "border-transparent",
         )}
       >
         <Logo />
@@ -112,7 +109,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
         </div>
 
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground md:hidden"
+          className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle navigation"
         >
@@ -121,7 +118,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
       </div>
 
       {mobileOpen && (
-        <div className="glass-pane mx-auto mt-2 max-w-6xl rounded-2xl px-6 py-5 md:hidden">
+        <div className="mx-auto mt-2 max-w-6xl rounded-xl border bg-popover px-6 py-5 shadow-sm md:hidden">
           <nav className="flex flex-col gap-4">
             <Link
               href="#features"
@@ -137,7 +134,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
             >
               {t("pricing")}
             </Link>
-            <div className="h-px bg-foreground/10" />
+            <div className="h-px bg-border" />
             <ThemeToggle className="justify-start" />
             {user ? (
               <>

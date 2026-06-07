@@ -20,36 +20,36 @@ export default async function HomePage() {
 
       <HeroSection />
 
-      {/* Device mockup: cinematic scale-in like Apple iPhone reveals */}
-      <ScrollReveal variant="scale" fromScale={0.9} duration={1.2}>
+      {/* Clean house style: a single, restrained reveal motion throughout */}
+      <ScrollReveal direction="up" duration={0.7}>
         <ProductMockup />
       </ScrollReveal>
 
-      <ScrollReveal variant="blur" duration={1}>
+      <ScrollReveal direction="up" duration={0.7}>
         <SocialProofBar />
       </ScrollReveal>
 
-      <ScrollReveal direction="up" duration={1}>
+      <ScrollReveal direction="up" duration={0.7}>
         <FeaturesSection />
       </ScrollReveal>
 
-      <ScrollReveal variant="scale" fromScale={0.96} duration={1.1}>
+      <ScrollReveal direction="up" duration={0.7}>
         <StatsSection />
       </ScrollReveal>
 
-      <ScrollReveal direction="up" duration={1}>
+      <ScrollReveal direction="up" duration={0.7}>
         <HowItWorksSection />
       </ScrollReveal>
 
-      <ScrollReveal variant="blur" duration={1}>
+      <ScrollReveal direction="up" duration={0.7}>
         <TestimonialsSection />
       </ScrollReveal>
 
-      <ScrollReveal direction="up" duration={1}>
+      <ScrollReveal direction="up" duration={0.7}>
         <FaqSection />
       </ScrollReveal>
 
-      <ScrollReveal variant="zoom" duration={1.2}>
+      <ScrollReveal direction="up" duration={0.7}>
         <FinalCtaSection />
       </ScrollReveal>
 

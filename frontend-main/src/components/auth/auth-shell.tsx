@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LogoMark } from '@/components/shared/logo-mark'
+import { Wordmark } from '@/components/shared/logo-mark'
 
 interface AuthShellProps {
   eyebrow?: string
@@ -26,9 +26,8 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthSh
       <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
         {/* Brand panel */}
         <aside className="relative hidden flex-col justify-between p-12 lg:flex">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <LogoMark size={36} />
-            <span className="text-[16px] font-semibold tracking-[-0.02em]">Contentor</span>
+          <Link href="/" className="inline-flex items-center">
+            <Wordmark className="text-lg" />
           </Link>
 
           <div className="relative max-w-md">
@@ -57,9 +56,8 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthSh
         <main className="flex items-center justify-center px-5 py-12 sm:px-8 lg:p-12">
           <div className="w-full max-w-md">
             {/* mobile brand row */}
-            <div className="mb-8 flex items-center justify-center gap-2.5 lg:hidden">
-              <LogoMark size={32} />
-              <span className="text-[16px] font-semibold tracking-[-0.02em]">Contentor</span>
+            <div className="mb-8 flex items-center justify-center lg:hidden">
+              <Wordmark className="text-base" />
             </div>
 
             <div className="glass-pane p-8 md:p-9">

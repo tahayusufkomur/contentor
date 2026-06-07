@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { LogoMark } from '@/components/shared/logo-mark'
+import { Wordmark } from '@/components/shared/logo-mark'
 
 export function PlatformFooter() {
   const t = useTranslations('common.footer')
@@ -34,26 +34,25 @@ export function PlatformFooter() {
   ]
 
   return (
-    <footer className="relative mt-32 border-t border-border/60 bg-background">
+    <footer className="relative mt-32 border-t bg-background">
       <div className="mx-auto max-w-6xl px-6 py-16 md:px-8">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <LogoMark size={32} />
-              <span className="text-[16px] font-semibold tracking-[-0.02em]">Contentor</span>
+            <Link href="/" className="inline-flex items-center">
+              <Wordmark className="text-base" />
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t('tagline')}</p>
           </div>
 
           {sections.map((section) => (
             <div key={section.heading}>
-              <p className="text-eyebrow text-muted-foreground/80">{section.heading}</p>
+              <p className="text-eyebrow text-muted-foreground">{section.heading}</p>
               <ul className="mt-4 space-y-3">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-[13.5px] text-foreground/70 transition-colors hover:text-foreground"
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>
@@ -64,7 +63,7 @@ export function PlatformFooter() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
+        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <p>{t('copyright', { year: new Date().getFullYear() })}</p>
           <LanguageSwitcher />
         </div>
@@ -85,7 +84,7 @@ function LanguageSwitcher() {
   return (
     <a
       href={otherUrl}
-      className="rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-[12.5px] text-foreground/70 backdrop-blur-md transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+      className="rounded-full border bg-card px-3 py-1.5 text-xs text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
     >
       {t('switchLanguage')}
     </a>

@@ -3,22 +3,21 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium tracking-[-0.005em] transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'inline-flex w-fit items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] [&>svg]:size-3',
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-foreground text-background',
+        default: 'border-transparent bg-primary text-primary-foreground',
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
-        destructive: 'border-transparent bg-destructive text-destructive-foreground',
-        outline: 'border-border/70 bg-background/40 backdrop-blur-md text-foreground',
-        success: 'border-transparent bg-emerald-500/10 text-emerald-600 dark:text-emerald-300',
-        warning: 'border-transparent bg-amber-500/10 text-amber-600 dark:text-amber-300',
-        brand:
-          'border-primary/15 bg-primary/[0.08] text-primary backdrop-blur-md',
-        accent:
-          'border-transparent bg-accent/15 text-accent backdrop-blur-md',
-        glass:
-          'glass text-foreground border-transparent',
+        destructive: 'border-transparent bg-destructive text-white',
+        outline: 'border-border text-foreground',
+        // No semantic success/warning tokens in the house system — express
+        // positive state with the marketing accent, neutral with muted.
+        success: 'border-transparent bg-marketing-accent/15 text-marketing-accent',
+        warning: 'border-transparent bg-muted text-muted-foreground',
+        brand: 'border-transparent bg-primary/10 text-primary',
+        accent: 'border-transparent bg-accent text-accent-foreground',
+        glass: 'border-border bg-card text-card-foreground',
       },
     },
     defaultVariants: { variant: 'default' },
