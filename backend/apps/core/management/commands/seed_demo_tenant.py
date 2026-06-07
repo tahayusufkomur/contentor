@@ -79,12 +79,17 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"Created tenant: {tenant.name} (is_demo=True)")
 
+        # Derive the host from the active platform domain so demos resolve in
+        # every environment (demo-yoga.localhost in dev, demo-yoga.contentor.app
+        # in prod) — the marketing gallery builds the same `<subdomain>.<base>`
+        # host. The module's hardcoded "domain" is a dev-only reference.
+        demo_domain = f"{tenant_data['subdomain']}.{settings.CONTENTOR_DOMAIN}"
         Domain.objects.create(
-            domain=tenant_data["domain"],
+            domain=demo_domain,
             tenant=tenant,
             is_primary=True,
         )
-        self.stdout.write(f"Created domain: {tenant_data['domain']}")
+        self.stdout.write(f"Created domain: {demo_domain}")
 
         tenant.create_schema(check_if_exists=True, verbosity=0)
         self.stdout.write(f"Created schema: {tenant.schema_name}")
@@ -140,7 +145,7 @@ class Command(BaseCommand):
                     owner,
                 )
 
-        self.stdout.write(self.style.SUCCESS(f"\nDemo tenant ready at: {tenant_data['domain']}"))
+        self.stdout.write(self.style.SUCCESS(f"\nDemo tenant ready at: {demo_domain}"))
 
     # ------------------------------------------------------------------
     # Course multiplication
