@@ -6,18 +6,24 @@ from .base import *  # noqa: F401, F403
 from .base import _env_bool
 
 DEBUG = False
-SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 # --- Behind the Cloudflare tunnel ---------------------------------------------
-# TLS is terminated at Cloudflare's edge; the cloudflared -> Caddy -> Django hops
-# are plain HTTP. Trust the forwarded proto (Caddy forces it to https) so the
-# SSL redirect + secure cookies don't loop, and use the public host for URLs.
+# TLS is terminated at Cloudflare's edge; the cloudflared -> Caddy -> Django and
+# the internal Next.js (SSR) -> Django hops are plain HTTP. Trust the forwarded
+# proto (Caddy forces it to https) so secure cookies / CSRF see the real scheme
+# and absolute URLs use the public host.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
+
+# HTTPS is enforced at Cloudflare's edge (the only public path; the origin has no
+# public HTTP port). Django must NOT issue its own 301-to-https, or internal
+# service-to-service calls — the two Next.js apps fetching http://django:8000 for
+# SSR — get redirected to a TLS endpoint that doesn't exist and break.
+SECURE_SSL_REDIRECT = False
 
 # CSRF must trust the public origins, including any tenant subdomain. Django 4+
 # accepts a wildcard host in CSRF_TRUSTED_ORIGINS.

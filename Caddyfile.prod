@@ -57,7 +57,9 @@
 	}
 
 	# --- Everything else (every tenant subdomain) — customer portal ---
+	# The prod standalone image listens on 3000 (Dockerfile ENV PORT=3000), unlike
+	# dev which runs it on 3001. Each frontend is its own container, so no clash.
 	handle {
-		reverse_proxy nextjs-customer:3001
+		reverse_proxy nextjs-customer:3000
 	}
 }
