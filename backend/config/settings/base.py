@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "apps.core.middleware.tenant.HeaderAwareTenantMiddleware",
     "apps.core.middleware.demo_readonly.DemoReadOnlyMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",

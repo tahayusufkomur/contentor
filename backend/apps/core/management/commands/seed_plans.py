@@ -4,6 +4,59 @@ from django.core.management.base import BaseCommand
 from apps.accounts.models import User
 from apps.core.models import Domain, PlatformPlan, Tenant
 
+# ── Monthly plan prices ──────────────────────────────────────────────────────
+# Amounts are the source of truth, in each currency's smallest unit (USD cents,
+# TRY kuruş — both 2-decimal in Stripe). The actual Stripe Price objects are
+# created automatically from these on seed (see `_provision_stripe_price`); you
+# never create a Price in the dashboard or paste a price_id. Change a number
+# here and the next deploy provisions a fresh Price and re-points the plan.
+PLAN_AMOUNTS = {
+    "starter": {"USD": 1990, "TRY": 99900},   # $19.90 / ₺999.00
+    "pro": {"USD": 4990, "TRY": 249900},      # $49.90 / ₺2499.00
+}
+
+
+def _provision_stripe_price(stripe, *, plan_key, currency, amount_cents, log):
+    """Idempotently ensure a recurring monthly Stripe Price exists for this
+    plan+currency and return its id. Keyed by a stable `lookup_key` so the seed
+    re-running on every boot reuses the same Price; if the amount changed, a new
+    Price is created and the lookup_key transferred to it (Prices are immutable).
+    Returns "" on any Stripe error so seeding never hard-fails.
+    """
+    lookup_key = f"contentor_{plan_key}_{currency.lower()}_monthly"
+    cur = currency.lower()
+    try:
+        existing = stripe.Price.list(lookup_keys=[lookup_key], active=True, limit=1)
+        if existing.data:
+            price = existing.data[0]
+            if price.unit_amount == amount_cents and price.currency == cur:
+                return price.id  # unchanged — reuse
+
+        # Ensure one Product per plan (idempotent via metadata search).
+        found = stripe.Product.search(query=f"metadata['contentor_plan']:'{plan_key}'", limit=1)
+        if found.data:
+            product_id = found.data[0].id
+        else:
+            product_id = stripe.Product.create(
+                name=f"Contentor {plan_key.title()}",
+                metadata={"contentor_plan": plan_key},
+            ).id
+
+        price = stripe.Price.create(
+            product=product_id,
+            currency=cur,
+            unit_amount=amount_cents,
+            recurring={"interval": "month"},
+            lookup_key=lookup_key,
+            transfer_lookup_key=True,  # move the key off any prior (old-amount) Price
+            metadata={"contentor_plan": plan_key},
+        )
+        log(f"Provisioned Stripe price {price.id} ({plan_key}/{currency} {amount_cents})")
+        return price.id
+    except Exception as exc:  # noqa: BLE001 — log and continue; checkout will 422 if missing
+        log(f"WARNING: could not provision Stripe price for {plan_key}/{currency}: {exc}")
+        return ""
+
 
 class Command(BaseCommand):
     help = "Seed default platform plans, public tenant, and superusers"
@@ -46,13 +99,37 @@ class Command(BaseCommand):
 
         free_name = getattr(settings, "BILLING_FREE_PLAN_NAME", "Free")
 
-        # Stripe Price ID env mapping per (plan_name, currency).
-        price_ids = {
+        # An env var is honored ONLY if it's a real `price_...` id (a manual
+        # override); otherwise the Price is auto-provisioned from PLAN_AMOUNTS.
+        env_overrides = {
             ("starter", "USD"): settings.STRIPE_PRICE_STARTER_USD,
             ("starter", "TRY"): settings.STRIPE_PRICE_STARTER_TRY,
             ("pro", "USD"): settings.STRIPE_PRICE_PRO_USD,
             ("pro", "TRY"): settings.STRIPE_PRICE_PRO_TRY,
         }
+        stripe_client = None
+        if settings.STRIPE_SECRET_KEY:
+            try:
+                import stripe as stripe_client
+
+                stripe_client.api_key = settings.STRIPE_SECRET_KEY
+            except ImportError:
+                self.stdout.write(self.style.WARNING("stripe SDK not installed; skipping price provisioning"))
+                stripe_client = None
+
+        def resolve_price_id(plan_key, currency):
+            override = (env_overrides.get((plan_key, currency)) or "").strip()
+            if override.startswith("price_"):
+                return override
+            if stripe_client is None:
+                return ""
+            return _provision_stripe_price(
+                stripe_client,
+                plan_key=plan_key,
+                currency=currency,
+                amount_cents=PLAN_AMOUNTS[plan_key][currency],
+                log=self.stdout.write,
+            )
 
         plans = [
             {
@@ -77,12 +154,12 @@ class Command(BaseCommand):
                 "is_live_enabled": True,
                 "prices": {
                     "USD": {
-                        "amount_cents": 1900,
-                        "stripe_price_id": price_ids[("starter", "USD")],
+                        "amount_cents": PLAN_AMOUNTS["starter"]["USD"],
+                        "stripe_price_id": resolve_price_id("starter", "USD"),
                     },
                     "TRY": {
-                        "amount_cents": 65000,
-                        "stripe_price_id": price_ids[("starter", "TRY")],
+                        "amount_cents": PLAN_AMOUNTS["starter"]["TRY"],
+                        "stripe_price_id": resolve_price_id("starter", "TRY"),
                     },
                 },
             },
@@ -97,12 +174,12 @@ class Command(BaseCommand):
                 "is_live_enabled": True,
                 "prices": {
                     "USD": {
-                        "amount_cents": 4900,
-                        "stripe_price_id": price_ids[("pro", "USD")],
+                        "amount_cents": PLAN_AMOUNTS["pro"]["USD"],
+                        "stripe_price_id": resolve_price_id("pro", "USD"),
                     },
                     "TRY": {
-                        "amount_cents": 169000,
-                        "stripe_price_id": price_ids[("pro", "TRY")],
+                        "amount_cents": PLAN_AMOUNTS["pro"]["TRY"],
+                        "stripe_price_id": resolve_price_id("pro", "TRY"),
                     },
                 },
             },
@@ -124,24 +201,6 @@ class Command(BaseCommand):
             updated = Tenant.objects.filter(plan__isnull=True).update(plan=free_plan)
             if updated:
                 self.stdout.write(f"Backfilled Free plan onto {updated} tenant(s)")
-
-        # Optional Stripe Price ID validation. Only runs if both STRIPE_SECRET_KEY
-        # is set and the `stripe` SDK is importable. Phase 0 does not hard-require
-        # either — production setups will turn this on.
-        if settings.STRIPE_SECRET_KEY:
-            try:
-                import stripe
-
-                stripe.api_key = settings.STRIPE_SECRET_KEY
-                non_empty_ids = [pid for pid in price_ids.values() if pid]
-                for pid in non_empty_ids:
-                    try:
-                        stripe.Price.retrieve(pid)
-                        self.stdout.write(f"Validated Stripe price: {pid}")
-                    except Exception as exc:  # noqa: BLE001 — log and continue
-                        self.stdout.write(self.style.WARNING(f"Stripe price retrieve failed for {pid}: {exc}"))
-            except ImportError:
-                self.stdout.write(self.style.WARNING("stripe SDK not installed; skipping price validation"))
 
         # Sync superusers from CONTENTOR_SUPERUSERS env var
         superuser_emails = set(settings.CONTENTOR_SUPERUSERS)

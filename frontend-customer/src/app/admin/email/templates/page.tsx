@@ -73,7 +73,9 @@ export default function TemplatesPage() {
     if (tab !== "gallery" || galleryLoaded) return;
     listGallery()
       .then((data) => {
-        const g = asArray(data) as EmailTemplate[];
+        // Gallery items are GalleryTemplate (no created_at/updated_at); the grid
+        // + preview path only read id/name, so treat them as EmailTemplate.
+        const g = asArray(data) as unknown as EmailTemplate[];
         setGallery(g);
         setGalleryLoaded(true);
         fetchPreviews(g);

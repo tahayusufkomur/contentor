@@ -1,18 +1,210 @@
+# Contentor — home-server production stack.
+#
+# Fleet conventions: self-contained prod compose at repo root; one Caddy edge
+# proxy (contentor-caddy) on the shared external `edge` network behind the
+# Cloudflare tunnel; no published host ports; RAM + log caps on every service;
+# restart: unless-stopped. Secrets come from .env.prod (passed via --env-file by
+# deploy.sh). Internal service names are kept identical to the dev compose
+# (django/redis/postgres/...) so app env (REDIS_URL, POSTGRES_HOST, the Next API
+# URL fallback) carries over unchanged.
+name: contentor
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: contentor-caddy
+    restart: unless-stopped
+    mem_limit: 64m
+    logging: *logging
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+      - internal
+    depends_on:
+      - django
+      - django-channels
+      - nextjs-main
+      - nextjs-customer
+    healthcheck:
+      # 127.0.0.1 (not localhost): busybox wget resolves localhost->::1 but the
+      # admin API only listens on IPv4.
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:2019/config/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: contentor-postgres
+    restart: unless-stopped
+    mem_limit: 384m
+    logging: *logging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-contentor}
+      POSTGRES_USER: ${POSTGRES_USER:-contentor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required in .env.prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-contentor} -d ${POSTGRES_DB:-contentor}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: contentor-redis
+    restart: unless-stopped
+    mem_limit: 160m
+    logging: *logging
+    command: redis-server --maxmemory 96mb --maxmemory-policy allkeys-lru --save ""
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   django:
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --graceful-timeout 30
-    volumes: []
+    build:
+      context: ./backend
+    container_name: contentor-django
+    restart: unless-stopped
+    mem_limit: 512m
+    logging: *logging
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --graceful-timeout 30
+    env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # Forwarded-Proto so SECURE_SSL_REDIRECT doesn't 301 the internal probe.
+      test: ["CMD", "curl", "-fsS", "-H", "X-Forwarded-Proto: https", "http://localhost:8000/api/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
-  nextjs-customer:
-    command: node server.js
-    volumes: []
-
-  nextjs-main:
-    command: node server.js
-    volumes: []
+  django-channels:
+    build:
+      context: ./backend
+    container_name: contentor-channels
+    restart: unless-stopped
+    mem_limit: 256m
+    logging: *logging
+    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
+    env_file: .env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+    networks:
+      - internal
+    depends_on:
+      django:
+        condition: service_healthy
 
   celery-worker:
-    command: celery -A config.celery worker -l warning --concurrency=4
-    volumes: []
+    build:
+      context: ./backend
+    container_name: contentor-celery-worker
+    restart: unless-stopped
+    mem_limit: 384m
+    logging: *logging
+    command: celery -A config.celery worker -l warning --concurrency=2
+    env_file: .env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+    networks:
+      - internal
+    depends_on:
+      django:
+        condition: service_healthy
+
+  celery-beat:
+    build:
+      context: ./backend
+    container_name: contentor-celery-beat
+    restart: unless-stopped
+    mem_limit: 160m
+    logging: *logging
+    command: celery -A config.celery beat -l warning
+    env_file: .env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+    networks:
+      - internal
+    depends_on:
+      - celery-worker
+
+  nextjs-main:
+    build:
+      context: ./frontend-main
+      target: runner
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://django:8000}
+        NEXT_PUBLIC_BASE_DOMAIN: ${CONTENTOR_DOMAIN:-contentor.app}
+    container_name: contentor-nextjs-main
+    restart: unless-stopped
+    mem_limit: 256m
+    logging: *logging
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://django:8000}
+      - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.app}
+    networks:
+      - internal
+    depends_on:
+      - django
+
+  nextjs-customer:
+    build:
+      context: ./frontend-customer
+      target: runner
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://django:8000}
+        NEXT_PUBLIC_BASE_DOMAIN: ${CONTENTOR_DOMAIN:-contentor.app}
+        NEXT_PUBLIC_GETSTREAM_API_KEY: ${GETSTREAM_API_KEY:-}
+    container_name: contentor-nextjs-customer
+    restart: unless-stopped
+    mem_limit: 320m
+    logging: *logging
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://django:8000}
+      - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.app}
+      - NEXT_PUBLIC_GETSTREAM_API_KEY=${GETSTREAM_API_KEY:-}
+    networks:
+      - internal
+    depends_on:
+      - django
+
+networks:
+  # Shared with the cloudflared tunnel — created once on the host:
+  #   docker network create edge
+  edge:
+    external: true
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

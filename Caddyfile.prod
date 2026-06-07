@@ -1,0 +1,63 @@
+# Contentor edge proxy (home server). Caddy is the only edge-facing container;
+# it joins the shared `edge` network so the Cloudflare tunnel can route
+# contentor.app / tr.contentor.app / *.contentor.app to it. TLS is terminated at
+# Cloudflare's edge, so Caddy serves plain HTTP on :80.
+#
+# Tenancy is dynamic: this proxy never knows individual tenants. Any host that
+# isn't the marketing apex/locale falls through to the customer app, which (with
+# Django) resolves the tenant from the Host header. New tenants need no change
+# here — only a wildcard DNS record.
+{
+	admin 0.0.0.0:2019
+	auto_https off
+}
+
+:80 {
+	# --- Platform API, webhooks, health — on every host ---
+	@api path /api/v1/* /api/health* /api/webhooks/*
+	handle @api {
+		reverse_proxy django:8000 {
+			# cloudflared->Caddy is HTTP; tell Django the public scheme is HTTPS
+			# so SECURE_SSL_REDIRECT / secure cookies don't loop.
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# --- WebSockets (Channels/Daphne) — on every host ---
+	@ws path /ws/*
+	handle @ws {
+		reverse_proxy django-channels:8001 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# --- Django static (admin assets), served by WhiteNoise — on every host ---
+	@static path /static/*
+	handle @static {
+		reverse_proxy django:8000 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# --- Django admin — apex + locale only ---
+	@admin {
+		host contentor.app tr.contentor.app
+		path /admin /admin/*
+	}
+	handle @admin {
+		reverse_proxy django:8000 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# --- Marketing / signup / login site — apex + locale ---
+	@main host contentor.app tr.contentor.app
+	handle @main {
+		reverse_proxy nextjs-main:3000
+	}
+
+	# --- Everything else (every tenant subdomain) — customer portal ---
+	handle {
+		reverse_proxy nextjs-customer:3001
+	}
+}

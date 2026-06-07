@@ -1,0 +1,20 @@
+# rsync excludes for home-server deploy (deploy.sh --exclude-from). Leading-/ is
+# anchored to the repo root. Caches/.git/node_modules/.next are excluded centrally
+# by deploy.sh BASE_EXCLUDES. NEVER list .env.prod here — it must ship to the box.
+
+# Dev-only proxy + monitoring (prod uses Caddy on the edge network)
+/traefik/
+/monitoring/
+
+# Dev compose + dev env (prod uses docker-compose.prod.yml + .env.prod)
+/docker-compose.yml
+/.env
+/.env.example
+
+# Repo tooling not needed at runtime
+/docs/
+/scripts/
+/.pre-commit-config.yaml
+/.secrets.baseline
+/.ruff_cache/
+/tsconfig.tsbuildinfo

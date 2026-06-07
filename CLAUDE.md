@@ -101,3 +101,29 @@ Each personalized render counts against the MailCraft plan quota.
 - After each implementation stage: run `make dev` and verify before claiming done.
 - Never commit unless explicitly asked.
 - Always verify builds pass before claiming work is done.
+
+## Home-server deploy
+
+Contentor is hosted on the home server (old MacBook, Ubuntu) behind the shared
+Cloudflare tunnel, alongside the rest of the fleet (see `~/ws/home-server/`).
+Domain `contentor.app` (apex + `tr.` locale + `*.` tenant subdomains).
+
+- **Prod stack:** `docker-compose.prod.yml` at the repo root (self-contained;
+  NOT an override of the dev compose). One Caddy edge proxy `contentor-caddy` on
+  the external `edge` network is the only edge-facing container; everything else
+  is on the internal network with no published host ports. Dev still uses
+  `docker-compose.yml` + Traefik — untouched.
+- **Routing:** `Caddyfile.prod` does it all (no Traefik in prod). `/api/*`,
+  `/ws/*`, `/static/*` and apex `/admin/*` → Django/Daphne; apex + `tr.` →
+  `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
+  Tenancy is dynamic — Django resolves the tenant from the Host header; the proxy
+  needs no per-tenant config, only wildcard DNS.
+- **TLS:** terminated at Cloudflare's edge; cloudflared→Caddy→Django is HTTP.
+  Caddy forces `X-Forwarded-Proto https` to Django, which sets
+  `SECURE_PROXY_SSL_HEADER`. WhiteNoise serves admin static.
+- **Secrets:** `.env.prod` at repo root (gitignored, rsynced to the box; template
+  in `.env.prod.example`). Prod runs `config.settings.prod` with live Stripe —
+  `BILLING_BYPASS_ENABLED` MUST be false.
+- **Deploy:** from the Mac, `cd ~/ws/home-server && ./deploy.sh contentor`
+  (rsync + build + up + health). Tunnel ingress: `./deploy.sh edge`. The repo is
+  reached via a symlink at `~/ws/projects-active/home-server/contentor`.
