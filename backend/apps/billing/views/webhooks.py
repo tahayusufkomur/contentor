@@ -231,6 +231,9 @@ def _upsert_tenant_subscription(
     if not (provider_sub_id and plan_id and user_id):
         logger.warning("marketplace subscription event missing refs: sub=%s meta=%s", provider_sub_id, metadata)
         return
+    from apps.billing.views.payments import tenant_currency
+
+    billing_currency = tenant_currency(tenant)
     with tenant_context(tenant):
         from apps.billing.models import Subscription as TenantSub
         from apps.billing.models import SubscriptionPlan
@@ -247,7 +250,7 @@ def _upsert_tenant_subscription(
                 "student_id": int(user_id),
                 "plan": plan,
                 "billing_amount": plan.price,
-                "billing_currency": plan.currency,
+                "billing_currency": billing_currency,
                 "status": sub_status,
                 "provider_customer_id": provider_cust_id or "",
                 "cancel_at_period_end": cancel_at_period_end,

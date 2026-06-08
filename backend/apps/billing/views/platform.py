@@ -37,18 +37,23 @@ logger = logging.getLogger(__name__)
 
 
 def _tenant_origin(tenant) -> str:
-    """Return `https://<tenant primary host>` for the active tenant."""
-    primary = Domain.objects.filter(tenant=tenant, is_primary=True).first()
-    if primary:
-        return f"https://{primary.domain}"
-    # Fallback — build from region + subdomain. Matches `region_utils.tenant_apex`
-    # but uses tenant.subdomain (which is what django-tenants installs).
+    """Return `<scheme>://<tenant primary host>` for the active tenant.
+
+    Scheme is `settings.SITE_SCHEME` (https in prod; http in dev, where Traefik
+    has no TLS) so Stripe redirect/return URLs resolve in every environment.
+    """
     from django.conf import settings as dj_settings
 
+    scheme = getattr(dj_settings, "SITE_SCHEME", "https")
+    primary = Domain.objects.filter(tenant=tenant, is_primary=True).first()
+    if primary:
+        return f"{scheme}://{primary.domain}"
+    # Fallback — build from region + subdomain. Matches `region_utils.tenant_apex`
+    # but uses tenant.subdomain (which is what django-tenants installs).
     base = dj_settings.CONTENTOR_DOMAIN
     if tenant.region == REGION_TR:
-        return f"https://{tenant.subdomain}.tr.{base}"
-    return f"https://{tenant.subdomain}.{base}"
+        return f"{scheme}://{tenant.subdomain}.tr.{base}"
+    return f"{scheme}://{tenant.subdomain}.{base}"
 
 
 def _resolve_locale(user, tenant) -> str:

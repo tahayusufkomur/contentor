@@ -148,6 +148,9 @@ LANGUAGES = [
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
 CONTENTOR_DOMAIN = os.environ.get("CONTENTOR_DOMAIN", "contentor.localhost")
+# Scheme for building external (Stripe redirect/return) URLs. https in prod;
+# dev overrides to http (Traefik serves no TLS locally).
+SITE_SCHEME = os.environ.get("SITE_SCHEME", "https")
 CONTENTOR_SUPERUSERS = [
     email.strip() for email in os.environ.get("CONTENTOR_SUPERUSERS", "").split(",") if email.strip()
 ]

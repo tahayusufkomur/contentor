@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from apps.billing.providers import connect
 from apps.billing.providers.types import ProviderError
 from apps.core.access import ContentAccessService
+from apps.core.constants import REGION_DEFAULT_CURRENCY
 from apps.core.monetization import can_monetize
 from apps.core.permissions import IsOwner
 from apps.courses.models import Course, Enrollment
@@ -31,6 +32,21 @@ def _bypass_enabled() -> bool:
 def _to_cents(amount: Decimal) -> int:
     """Convert a 2-decimal money amount to Stripe minor units (USD cents / TRY kuruş)."""
     return int((amount * 100).to_integral_value())
+
+
+def tenant_currency(tenant) -> str:
+    """The currency a tenant charges in — its connected account's currency.
+
+    Locked at the coach's first platform checkout (`billing_currency`); falls
+    back to the region default. Content/plan prices are interpreted in this
+    currency, so the marketplace charge always matches the connected account
+    (a global/USD account can't be charged in TRY).
+    """
+    cur = (getattr(tenant, "billing_currency", "") or "").strip()
+    if cur:
+        return cur
+    region = getattr(tenant, "region", "") or "global"
+    return REGION_DEFAULT_CURRENCY.get(region, "USD")
 
 
 def _get_fee_pct() -> Decimal:
@@ -113,8 +129,10 @@ def payment_initialize(request):
     total_platform_fee = sum(r["platform_fee"] for r in resolved_items)
     total_submerchant_payout = sum(r["submerchant_payout"] for r in resolved_items)
 
-    # Determine currency from first item (items within one payment must share currency)
-    currency = getattr(resolved_items[0]["obj"], "currency", "TRY") if resolved_items else "TRY"
+    # The charge currency is the tenant's (connected account's) currency, so a
+    # global/USD coach is never charged in TRY. Content prices are amounts in
+    # that currency.
+    currency = tenant_currency(connection.tenant)
 
     # ── Bypass (dev/CI): synthesize a completed payment and grant access now ──
     if _bypass_enabled():
@@ -355,11 +373,13 @@ def grant_access_for_payment(payment):
                 Enrollment.objects.get_or_create(user_id=user_id, course=course, defaults={"payment_id": payment.pk})
 
 
-def _ensure_subscription_price(plan, account_id):
+def _ensure_subscription_price(plan, account_id, currency):
     """Ensure `plan` has a current connected-account Stripe Price; (re)provision per D1.
 
     A new Price is created only when missing or when the plan's amount changed —
-    existing subscribers keep their Stripe subscription's old Price.
+    existing subscribers keep their Stripe subscription's old Price. The Price is
+    minted in `currency` (the tenant's currency) so it matches the connected
+    account; the plan's `currency` field default never causes a mismatch.
     """
     amount_cents = _to_cents(Decimal(str(plan.price)))
     if plan.stripe_price_id and plan.stripe_price_amount_cents == amount_cents:
@@ -367,7 +387,7 @@ def _ensure_subscription_price(plan, account_id):
     price_id = connect.provision_subscription_price(
         account_id=account_id,
         product_name=plan.name,
-        currency=plan.currency,
+        currency=currency,
         amount_cents=amount_cents,
     )
     plan.stripe_price_id = price_id
@@ -454,7 +474,7 @@ def subscribe(request):
     from apps.billing.views.platform import _tenant_origin
 
     try:
-        price_id = _ensure_subscription_price(plan, tenant.stripe_account_id)
+        price_id = _ensure_subscription_price(plan, tenant.stripe_account_id, tenant_currency(tenant))
         origin = _tenant_origin(tenant)
         checkout = connect.create_subscription_checkout(
             account_id=tenant.stripe_account_id,
@@ -549,7 +569,7 @@ def subscription_change_plan(request, subscription_id):
     if sub.provider == "stripe" and sub.provider_subscription_id:
         try:
             account_id = connection.tenant.stripe_account_id
-            new_price_id = _ensure_subscription_price(new_plan, account_id)
+            new_price_id = _ensure_subscription_price(new_plan, account_id, tenant_currency(connection.tenant))
             connect.update_subscription_price(
                 account_id=account_id,
                 subscription_id=sub.provider_subscription_id,

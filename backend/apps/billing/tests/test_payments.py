@@ -130,6 +130,12 @@ def make_client(user=None):
 
 @pytest.mark.django_db(transaction=True)
 class TestPaymentInitialize:
+    """Exercises the bypass adapter (instant completed payment + access)."""
+
+    @pytest.fixture(autouse=True)
+    def _force_bypass(self, settings):
+        settings.BILLING_BYPASS_ENABLED = True
+
     def test_purchase_paid_course(self, student, paid_course):
         """Purchase a paid course: 201, payment created, enrollment created."""
         client = make_client(student)
@@ -328,6 +334,12 @@ class TestPaymentItemRefund:
 
 @pytest.mark.django_db(transaction=True)
 class TestSubscribe:
+    """Exercises the bypass adapter (instant active subscription)."""
+
+    @pytest.fixture(autouse=True)
+    def _force_bypass(self, settings):
+        settings.BILLING_BYPASS_ENABLED = True
+
     def test_subscribe_to_active_plan(self, student, active_plan):
         """Subscribe to an active plan: 201, subscription + payment created."""
         client = make_client(student)

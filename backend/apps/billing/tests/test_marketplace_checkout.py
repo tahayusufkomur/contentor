@@ -104,8 +104,8 @@ def test_initialize_creates_stripe_checkout(restore_public, owner, student, paid
     # fee = 4% of $100.00 = $4.00 -> 400 cents.
     assert kwargs["application_fee_cents"] == 400
     assert kwargs["line_items"][0]["price_data"]["unit_amount"] == 10000
-    # Content models carry no currency field today, so it defaults to TRY.
-    assert kwargs["line_items"][0]["price_data"]["currency"] == "try"
+    # Charge currency follows the tenant (global → USD), not a content default.
+    assert kwargs["line_items"][0]["price_data"]["currency"] == "usd"
     assert kwargs["metadata"]["payment_id"] == str(payment.pk)
 
 
