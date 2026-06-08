@@ -9,6 +9,11 @@ export interface Tenant {
   created_at: string
 }
 
+export interface PlatformPlanPriceEntry {
+  amount_cents: number
+  stripe_price_id?: string
+}
+
 export interface PlatformPlan {
   id: number
   name: string
@@ -19,6 +24,8 @@ export interface PlatformPlan {
   max_streaming_hours: number
   max_campaign_emails: number
   is_live_enabled: boolean
+  is_active: boolean
+  prices?: Record<string, PlatformPlanPriceEntry>
 }
 
 export interface PlatformDashboard {

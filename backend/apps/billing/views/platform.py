@@ -254,7 +254,7 @@ def list_plans(request):
     # currency we surface as the top-level default.
     region = getattr(request, "region", None) or "global"
     currency = REGION_DEFAULT_CURRENCY.get(region, "USD")
-    plans_qs = PlatformPlan.objects.all().order_by("price_monthly")
+    plans_qs = PlatformPlan.objects.filter(is_active=True).order_by("price_monthly")
     out = []
     for plan in plans_qs:
         prices = _build_prices(plan)

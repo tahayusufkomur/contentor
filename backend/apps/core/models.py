@@ -34,6 +34,12 @@ class Tenant(TenantMixin):
     )
     subdomain = models.CharField(max_length=63, unique=True)
     stripe_account_id = models.CharField(max_length=255, blank=True, default="")
+    # Connect (Express) payout-readiness, mirrored from the `account.updated`
+    # webhook. `charges_enabled` gates taking money; `payouts_enabled` gates
+    # money actually reaching the coach's bank. Both start False until Stripe
+    # onboarding completes.
+    stripe_charges_enabled = models.BooleanField(default=False)
+    stripe_payouts_enabled = models.BooleanField(default=False)
     iyzico_submerchant_id = models.CharField(max_length=255, blank=True, default="")
     provisioning_status = models.CharField(
         max_length=20,
@@ -134,6 +140,11 @@ class PlatformPlan(models.Model):
     #    "TRY": {"amount_cents": 59900, "stripe_price_id": "price_..."}}
     prices = models.JSONField(default=dict, blank=True)
     is_live_enabled = models.BooleanField(default=False)
+    # Archived plans stay in the DB (the Tenant.plan FK is PROTECT, so existing
+    # subscribers keep their plan) but drop out of the public pricing catalog so
+    # nobody new can subscribe. Archiving is blocked while tenants still
+    # reference the plan — migrate them off first.
+    is_active = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         app_label = "core"

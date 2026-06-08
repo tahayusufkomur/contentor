@@ -11,6 +11,12 @@ class SubscriptionPlan(models.Model):
     currency = models.CharField(max_length=3, default="TRY")
     sort_order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    # The recurring Stripe Price provisioned on the coach's connected account.
+    # `stripe_price_amount_cents` records the amount it was created for; when the
+    # plan price changes, a *new* Price is provisioned (D1 grandfathering) and
+    # both fields updated, leaving existing subscribers on their old Price.
+    stripe_price_id = models.CharField(max_length=255, blank=True, default="")
+    stripe_price_amount_cents = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -49,6 +55,16 @@ class Subscription(models.Model):
         choices=[("active", "Active"), ("past_due", "Past Due"), ("expired", "Expired")],
         default="active",
     )
+    # Provider linkage (Stripe Connect). `provider="bypass"` keeps the dev/CI
+    # path working with no real subscription.
+    provider = models.CharField(
+        max_length=20,
+        choices=[("stripe", "Stripe"), ("bypass", "Bypass")],
+        default="bypass",
+    )
+    provider_subscription_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
+    provider_customer_id = models.CharField(max_length=255, blank=True, default="")
+    cancel_at_period_end = models.BooleanField(default=False)
     current_period_start = models.DateTimeField()
     current_period_end = models.DateTimeField()
     cancelled_at = models.DateTimeField(null=True, blank=True)

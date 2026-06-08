@@ -13,6 +13,7 @@ import {
   Settings,
   Users,
   Video,
+  Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -65,7 +66,10 @@ export function AdminShell({ children, user }: AdminShellProps) {
     {
       id: "business",
       label: t("nav.sections.business"),
-      items: [{ label: t("nav.items.billing"), href: "/admin/billing", icon: CreditCard }],
+      items: [
+        { label: t("nav.items.billing"), href: "/admin/billing", icon: CreditCard },
+        { label: t("nav.items.payouts"), href: "/admin/payouts", icon: Wallet },
+      ],
     },
   ];
 

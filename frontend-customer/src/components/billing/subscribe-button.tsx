@@ -33,10 +33,16 @@ export function SubscribeButton({
   async function handleSubscribe() {
     setLoading(true)
     try {
-      await clientFetch('/api/v1/billing/subscribe/', {
+      const res = await clientFetch<{ checkout_url?: string }>('/api/v1/billing/subscribe/', {
         method: 'POST',
         body: JSON.stringify({ plan_id: planId }),
       })
+      // Real Stripe checkout (mode=subscription): redirect to the hosted page.
+      if (res?.checkout_url) {
+        window.location.href = res.checkout_url
+        return
+      }
+      // Bypass: subscription is active immediately.
       toast.success(`Subscribed to ${planName}!`)
       router.refresh()
     } catch (err) {

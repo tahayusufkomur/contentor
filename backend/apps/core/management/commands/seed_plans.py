@@ -3,59 +3,20 @@ from django.core.management.base import BaseCommand
 
 from apps.accounts.models import User
 from apps.core.models import Domain, PlatformPlan, Tenant
+from apps.core.stripe_pricing import provision_stripe_price
 
 # ── Monthly plan prices ──────────────────────────────────────────────────────
 # Amounts are the source of truth, in each currency's smallest unit (USD cents,
 # TRY kuruş — both 2-decimal in Stripe). The actual Stripe Price objects are
-# created automatically from these on seed (see `_provision_stripe_price`); you
+# created automatically from these on seed (see `provision_stripe_price`); you
 # never create a Price in the dashboard or paste a price_id. Change a number
 # here and the next deploy provisions a fresh Price and re-points the plan.
+# (Superadmins can also change amounts at runtime via the platform plan-edit
+# endpoint, which calls the same `provision_stripe_price` helper.)
 PLAN_AMOUNTS = {
     "starter": {"USD": 1990, "TRY": 99900},   # $19.90 / ₺999.00
     "pro": {"USD": 4990, "TRY": 249900},      # $49.90 / ₺2499.00
 }
-
-
-def _provision_stripe_price(stripe, *, plan_key, currency, amount_cents, log):
-    """Idempotently ensure a recurring monthly Stripe Price exists for this
-    plan+currency and return its id. Keyed by a stable `lookup_key` so the seed
-    re-running on every boot reuses the same Price; if the amount changed, a new
-    Price is created and the lookup_key transferred to it (Prices are immutable).
-    Returns "" on any Stripe error so seeding never hard-fails.
-    """
-    lookup_key = f"contentor_{plan_key}_{currency.lower()}_monthly"
-    cur = currency.lower()
-    try:
-        existing = stripe.Price.list(lookup_keys=[lookup_key], active=True, limit=1)
-        if existing.data:
-            price = existing.data[0]
-            if price.unit_amount == amount_cents and price.currency == cur:
-                return price.id  # unchanged — reuse
-
-        # Ensure one Product per plan (idempotent via metadata search).
-        found = stripe.Product.search(query=f"metadata['contentor_plan']:'{plan_key}'", limit=1)
-        if found.data:
-            product_id = found.data[0].id
-        else:
-            product_id = stripe.Product.create(
-                name=f"Contentor {plan_key.title()}",
-                metadata={"contentor_plan": plan_key},
-            ).id
-
-        price = stripe.Price.create(
-            product=product_id,
-            currency=cur,
-            unit_amount=amount_cents,
-            recurring={"interval": "month"},
-            lookup_key=lookup_key,
-            transfer_lookup_key=True,  # move the key off any prior (old-amount) Price
-            metadata={"contentor_plan": plan_key},
-        )
-        log(f"Provisioned Stripe price {price.id} ({plan_key}/{currency} {amount_cents})")
-        return price.id
-    except Exception as exc:  # noqa: BLE001 — log and continue; checkout will 422 if missing
-        log(f"WARNING: could not provision Stripe price for {plan_key}/{currency}: {exc}")
-        return ""
 
 
 class Command(BaseCommand):
@@ -107,24 +68,12 @@ class Command(BaseCommand):
             ("pro", "USD"): settings.STRIPE_PRICE_PRO_USD,
             ("pro", "TRY"): settings.STRIPE_PRICE_PRO_TRY,
         }
-        stripe_client = None
-        if settings.STRIPE_SECRET_KEY:
-            try:
-                import stripe as stripe_client
-
-                stripe_client.api_key = settings.STRIPE_SECRET_KEY
-            except ImportError:
-                self.stdout.write(self.style.WARNING("stripe SDK not installed; skipping price provisioning"))
-                stripe_client = None
-
         def resolve_price_id(plan_key, currency):
             override = (env_overrides.get((plan_key, currency)) or "").strip()
             if override.startswith("price_"):
                 return override
-            if stripe_client is None:
-                return ""
-            return _provision_stripe_price(
-                stripe_client,
+            # provision_stripe_price returns "" when Stripe is unconfigured.
+            return provision_stripe_price(
                 plan_key=plan_key,
                 currency=currency,
                 amount_cents=PLAN_AMOUNTS[plan_key][currency],

@@ -11,4 +11,5 @@ urlpatterns = [
         name="platform-tenant-detail",
     ),
     path("plans/", views_platform.platform_plans, name="platform-plans"),
+    path("plans/<int:pk>/", views_platform.platform_plan_detail, name="platform-plan-detail"),
 ]

@@ -91,6 +91,7 @@ Each personalized render counts against the MailCraft plan quota.
 
 ## Active Documentation
 
+- **`docs/REFERENCE.md`** — comprehensive project reference (architecture, domain model, auth/tenancy flows, billing, integrations, deploy, roadmap). **`docs/GLOSSARY.md`** — canonical terminology. Start here for full context.
 - `docs/superpowers/plans/` and `docs/superpowers/specs/` — recent feature work (Mar 19-25: zoom OAuth, course form consolidation, inline edit panel, email campaigns, email panel improvements).
 - Older platform-level planning lives in `../docs/plans/` and `../docs/specs/` (foundation doc + initial design) — historical reference, not actively maintained.
 

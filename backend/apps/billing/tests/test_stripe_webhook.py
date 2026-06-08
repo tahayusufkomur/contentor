@@ -19,6 +19,7 @@ from apps.accounts.models import User
 from apps.core.models import (
     PlatformPlan,
     PlatformSubscription,
+    Tenant,
     WebhookEvent,
 )
 
@@ -91,6 +92,25 @@ def _subscription_updated_event(*, sub_id, status_="active", event_id="evt_phase
                 "metadata": {},
             }
         },
+    }
+    return _wrap_event_dict(body)
+
+
+def _account_updated_event(
+    *, account_id, charges_enabled, payouts_enabled, tenant_id=None, event_id="evt_phaseB_acct"
+):
+    obj = {
+        "id": account_id,
+        "object": "account",
+        "charges_enabled": charges_enabled,
+        "payouts_enabled": payouts_enabled,
+        "metadata": {"tenant_id": str(tenant_id)} if tenant_id else {},
+    }
+    body = {
+        "id": event_id,
+        "type": "account.updated",
+        "account": account_id,
+        "data": {"object": obj},
     }
     return _wrap_event_dict(body)
 
@@ -216,6 +236,57 @@ def test_webhook_for_subscription_updated_updates_status(restore_public, coach, 
     sub = PlatformSubscription.objects.get(tenant=tenant)
     assert sub.status == PlatformSubscription.STATUS_PAST_DUE
     assert sub.current_period_end is not None
+
+
+@override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
+def test_webhook_account_updated_persists_connect_readiness(restore_public):
+    """account.updated mirrors charges/payouts onto the tenant (resolved by acct id)."""
+    tenant = restore_public
+    WebhookEvent.objects.filter(provider="stripe").delete()
+    Tenant.objects.filter(pk=tenant.pk).update(
+        stripe_account_id="acct_phaseB_1",
+        stripe_charges_enabled=False,
+        stripe_payouts_enabled=False,
+    )
+    client = APIClient()
+
+    event = _account_updated_event(
+        account_id="acct_phaseB_1", charges_enabled=True, payouts_enabled=True
+    )
+    with patch("stripe.Webhook.construct_event", return_value=event):
+        response = _post_webhook(client, event)
+
+    assert response.status_code == 200, response.content
+    assert response.json()["handled"] is True
+    tenant.refresh_from_db()
+    assert tenant.stripe_charges_enabled is True
+    assert tenant.stripe_payouts_enabled is True
+
+
+@override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
+def test_webhook_account_updated_binds_account_by_metadata(restore_public):
+    """When the acct id isn't yet on the tenant, fall back to metadata.tenant_id and bind it."""
+    tenant = restore_public
+    WebhookEvent.objects.filter(provider="stripe").delete()
+    Tenant.objects.filter(pk=tenant.pk).update(
+        stripe_account_id="", stripe_charges_enabled=False, stripe_payouts_enabled=False
+    )
+    client = APIClient()
+
+    event = _account_updated_event(
+        account_id="acct_phaseB_2",
+        charges_enabled=True,
+        payouts_enabled=False,
+        tenant_id=tenant.pk,
+    )
+    with patch("stripe.Webhook.construct_event", return_value=event):
+        response = _post_webhook(client, event)
+
+    assert response.status_code == 200, response.content
+    tenant.refresh_from_db()
+    assert tenant.stripe_account_id == "acct_phaseB_2"
+    assert tenant.stripe_charges_enabled is True
+    assert tenant.stripe_payouts_enabled is False
 
 
 @override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106

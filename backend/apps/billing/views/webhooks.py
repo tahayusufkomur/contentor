@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import traceback
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from django.db import IntegrityError, connection, transaction
@@ -42,6 +42,8 @@ _STRIPE_HANDLED = {
     "customer.subscription.created",
     "customer.subscription.updated",
     "invoice.paid",
+    # Connect (marketplace) — coach payout onboarding readiness (Phase B):
+    "account.updated",
     # Acknowledged-but-deferred (Phase 2):
     "customer.subscription.deleted",
     "invoice.payment_failed",
@@ -145,9 +147,233 @@ def _map_stripe_status(stripe_status: str) -> str:
     return mapping.get(stripe_status, PlatformSubscription.STATUS_INCOMPLETE)
 
 
+def _resolve_tenant_for_connect(event, metadata):
+    """Resolve the tenant for a connected-account (direct-charge) event.
+
+    Connect events carry the connected account id in the top-level `account`
+    field; resolve by `stripe_account_id`, falling back to `metadata.tenant_id`.
+    """
+    account_id = event.get("account") or ""
+    if account_id:
+        tenant = Tenant.objects.filter(stripe_account_id=account_id).first()
+        if tenant is not None:
+            return tenant
+    return _resolve_tenant(metadata)
+
+
+def _handle_marketplace_checkout_completed(event):
+    """Complete a student→coach one-time payment (direct charge) and grant access.
+
+    The `Payment` row lives in the tenant schema, so switch into it via
+    `tenant_context`. Idempotent: a replay finds the payment already completed
+    and no-ops.
+    """
+    session = event["data"]["object"]
+    metadata = session.get("metadata") or {}
+    payment_id = metadata.get("payment_id")
+    tenant = _resolve_tenant_for_connect(event, metadata)
+    if tenant is None or not payment_id:
+        logger.warning(
+            "marketplace checkout.session.completed missing tenant/payment_id: account=%s payment_id=%s",
+            event.get("account"),
+            payment_id,
+        )
+        return
+
+    provider_payment_id = session.get("payment_intent") or session.get("id") or ""
+    with tenant_context(tenant):
+        from apps.billing.models import Payment
+        from apps.billing.views.payments import grant_access_for_payment
+
+        payment = Payment.objects.filter(pk=int(payment_id)).first()
+        if payment is None:
+            logger.warning("marketplace payment %s not found in tenant=%s", payment_id, tenant.slug)
+            return
+        if payment.status != "completed":
+            payment.status = "completed"
+            payment.provider = "stripe"
+            payment.provider_payment_id = provider_payment_id
+            payment.save(update_fields=["status", "provider", "provider_payment_id"])
+        grant_access_for_payment(payment)
+
+
+def _connected_tenant(event):
+    """Return the tenant whose connected account this Connect event came from."""
+    account_id = event.get("account") or ""
+    if not account_id:
+        return None
+    return Tenant.objects.filter(stripe_account_id=account_id).first()
+
+
+def _tenant_sub_status(stripe_status: str) -> str:
+    """Map a Stripe subscription status to the tenant `Subscription` statuses."""
+    return {
+        "active": "active",
+        "trialing": "active",
+        "past_due": "past_due",
+        "unpaid": "past_due",
+        "incomplete": "past_due",
+        "canceled": "expired",
+        "incomplete_expired": "expired",
+    }.get(stripe_status, "past_due")
+
+
+def _upsert_tenant_subscription(
+    tenant, *, provider_sub_id, provider_cust_id, metadata, sub_status, period_start, period_end, cancel_at_period_end
+):
+    """Create/update a tenant `Subscription` from a connected-account event.
+
+    Runs inside the tenant schema. Keyed on `provider_subscription_id` so
+    checkout.session.completed and customer.subscription.* converge on one row.
+    """
+    plan_id = metadata.get("subscription_plan_id")
+    user_id = metadata.get("user_id")
+    if not (provider_sub_id and plan_id and user_id):
+        logger.warning("marketplace subscription event missing refs: sub=%s meta=%s", provider_sub_id, metadata)
+        return
+    with tenant_context(tenant):
+        from apps.billing.models import Subscription as TenantSub
+        from apps.billing.models import SubscriptionPlan
+
+        plan = SubscriptionPlan.objects.filter(pk=int(plan_id)).first()
+        if plan is None:
+            logger.warning("marketplace subscription for unknown plan=%s tenant=%s", plan_id, tenant.slug)
+            return
+        now = timezone.now()
+        TenantSub.objects.update_or_create(
+            provider="stripe",
+            provider_subscription_id=provider_sub_id,
+            defaults={
+                "student_id": int(user_id),
+                "plan": plan,
+                "billing_amount": plan.price,
+                "billing_currency": plan.currency,
+                "status": sub_status,
+                "provider_customer_id": provider_cust_id or "",
+                "cancel_at_period_end": cancel_at_period_end,
+                "current_period_start": period_start or now,
+                "current_period_end": period_end or (now + timedelta(days=30)),
+            },
+        )
+
+
+def _handle_marketplace_subscription_checkout(event):
+    """checkout.session.completed (mode=subscription) for a student→coach plan."""
+    session = event["data"]["object"]
+    metadata = session.get("metadata") or {}
+    tenant = _connected_tenant(event) or _resolve_tenant(metadata)
+    if tenant is None:
+        logger.warning("marketplace subscription checkout: unresolved tenant account=%s", event.get("account"))
+        return
+    _upsert_tenant_subscription(
+        tenant,
+        provider_sub_id=session.get("subscription") or "",
+        provider_cust_id=session.get("customer") or "",
+        metadata=metadata,
+        sub_status="active",
+        period_start=None,
+        period_end=None,
+        cancel_at_period_end=False,
+    )
+
+
+def _handle_marketplace_subscription_event(event, tenant):
+    """customer.subscription.created/updated for a connected account."""
+    sub_obj = event["data"]["object"]
+    _upsert_tenant_subscription(
+        tenant,
+        provider_sub_id=sub_obj.get("id") or "",
+        provider_cust_id=sub_obj.get("customer") or "",
+        metadata=sub_obj.get("metadata") or {},
+        sub_status=_tenant_sub_status(sub_obj.get("status", "")),
+        period_start=_ts_to_dt(sub_obj.get("current_period_start")),
+        period_end=_ts_to_dt(sub_obj.get("current_period_end")),
+        cancel_at_period_end=bool(sub_obj.get("cancel_at_period_end")),
+    )
+
+
+def _handle_marketplace_subscription_deleted(event, tenant):
+    """customer.subscription.deleted → expire the tenant Subscription."""
+    sub_obj = event["data"]["object"]
+    provider_sub_id = sub_obj.get("id") or ""
+    with tenant_context(tenant):
+        from apps.billing.models import Subscription as TenantSub
+
+        sub = TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
+        if sub is None:
+            return
+        sub.status = "expired"
+        sub.cancelled_at = timezone.now()
+        sub.save(update_fields=["status", "cancelled_at"])
+
+
+def _handle_marketplace_invoice_paid(event, tenant):
+    """invoice.paid → extend the period, apply a pending plan change, record a Payment."""
+    invoice = event["data"]["object"]
+    provider_sub_id = invoice.get("subscription") or ""
+    if not provider_sub_id:
+        return
+    with tenant_context(tenant):
+        from apps.billing.models import Payment
+        from apps.billing.models import Subscription as TenantSub
+
+        sub = TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
+        if sub is None:
+            return
+        new_period_end = _ts_to_dt(invoice.get("period_end"))
+        if new_period_end:
+            sub.current_period_end = new_period_end
+        if sub.status == "past_due":
+            sub.status = "active"
+        fields = ["current_period_end", "status"]
+        # Apply a scheduled plan change now that a new cycle has been billed.
+        if sub.pending_plan_id:
+            sub.plan_id = sub.pending_plan_id
+            sub.billing_amount = sub.pending_plan.price
+            sub.billing_currency = sub.pending_plan.currency
+            sub.pending_plan = None
+            fields += ["plan", "billing_amount", "billing_currency", "pending_plan"]
+        sub.save(update_fields=fields)
+
+        amount_cents = invoice.get("amount_paid") or invoice.get("amount_due") or 0
+        Payment.objects.create(
+            student_id=sub.student_id,
+            payment_type="subscription",
+            status="completed",
+            amount=Decimal(amount_cents) / Decimal(100),
+            platform_fee=Decimal("0.00"),
+            submerchant_payout=Decimal("0.00"),
+            currency=(invoice.get("currency") or sub.billing_currency or "USD").upper(),
+            provider="stripe",
+            provider_payment_id=invoice.get("payment_intent") or invoice.get("id") or "",
+            subscription=sub,
+            metadata={"invoice_id": invoice.get("id", "")},
+        )
+
+
+def _handle_marketplace_invoice_failed(event, tenant):
+    """invoice.payment_failed → mark the tenant Subscription past_due."""
+    invoice = event["data"]["object"]
+    provider_sub_id = invoice.get("subscription") or ""
+    if not provider_sub_id:
+        return
+    with tenant_context(tenant):
+        from apps.billing.models import Subscription as TenantSub
+
+        TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).update(status="past_due")
+
+
 def _handle_checkout_session_completed(event, webhook_event):
     session = event["data"]["object"]
     metadata = session.get("metadata") or {}
+    # Marketplace (student→coach) carries `payment_id` (one-time) or
+    # `subscription_plan_id` (recurring); platform (coach→Contentor) carries `plan_id`.
+    if metadata.get("payment_id"):
+        _handle_marketplace_checkout_completed(event)
+        return
+    if metadata.get("subscription_plan_id"):
+        _handle_marketplace_subscription_checkout(event)
+        return
     tenant = _resolve_tenant(metadata)
     user = _resolve_user(metadata)
     plan = _resolve_plan(metadata)
@@ -294,6 +520,37 @@ def _handle_invoice_paid(event):
         )
 
 
+def _handle_account_updated(event):
+    """Persist Connect payout-readiness from an `account.updated` event.
+
+    Connect events carry the connected account id in the top-level `account`
+    field; for `account.updated` the event object *is* that account. Resolve the
+    tenant by `stripe_account_id`, falling back to `metadata.tenant_id`, then
+    mirror `charges_enabled` / `payouts_enabled` onto the public-schema Tenant.
+    """
+    account = event["data"]["object"]
+    account_id = account.get("id") or event.get("account") or ""
+    if not account_id:
+        return
+
+    tenant = Tenant.objects.filter(stripe_account_id=account_id).first()
+    if tenant is None:
+        metadata = account.get("metadata") or {}
+        tenant = _resolve_tenant(metadata)
+        # First-seen account (created before we persisted the id, e.g. replay):
+        # bind the id so future lookups resolve directly.
+        if tenant is not None and not tenant.stripe_account_id:
+            Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id=account_id)
+    if tenant is None:
+        logger.warning("account.updated for unknown connected account=%s; ignoring", account_id)
+        return
+
+    Tenant.objects.filter(pk=tenant.pk).update(
+        stripe_charges_enabled=bool(account.get("charges_enabled")),
+        stripe_payouts_enabled=bool(account.get("payouts_enabled")),
+    )
+
+
 @csrf_exempt
 @api_view(["POST"])
 @authentication_classes([])
@@ -369,15 +626,37 @@ def stripe_webhook(request):
 
     try:
         with transaction.atomic():
+            # Connect events from a coach's connected account (marketplace,
+            # student→coach) carry an `account` field and act on the tenant
+            # `Subscription`; platform events (coach→Contentor) have none and act
+            # on `PlatformSubscription`.
+            connected = _connected_tenant(event_dict)
             if event_type == "checkout.session.completed":
                 _handle_checkout_session_completed(event_dict, webhook_event)
             elif event_type in ("customer.subscription.created", "customer.subscription.updated"):
-                _handle_subscription_event(event_dict)
+                if connected:
+                    _handle_marketplace_subscription_event(event_dict, connected)
+                else:
+                    _handle_subscription_event(event_dict)
+            elif event_type == "customer.subscription.deleted":
+                if connected:
+                    _handle_marketplace_subscription_deleted(event_dict, connected)
+                else:
+                    logger.info("Acknowledged platform subscription.deleted (deferred)")
             elif event_type == "invoice.paid":
-                _handle_invoice_paid(event_dict)
+                if connected:
+                    _handle_marketplace_invoice_paid(event_dict, connected)
+                else:
+                    _handle_invoice_paid(event_dict)
+            elif event_type == "invoice.payment_failed":
+                if connected:
+                    _handle_marketplace_invoice_failed(event_dict, connected)
+                else:
+                    logger.info("Acknowledged platform invoice.payment_failed (deferred)")
+            elif event_type == "account.updated":
+                _handle_account_updated(event_dict)
             else:
-                # Acknowledged Phase-2 events — log only.
-                logger.info("Acknowledged Stripe event (Phase 2 will handle): %s", event_type)
+                logger.info("Acknowledged Stripe event (no handler): %s", event_type)
 
         webhook_event.processed_at = timezone.now()
         webhook_event.save(update_fields=["processed_at"])

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, ShoppingCart, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,19 +14,24 @@ import { getCart, removeFromCart, clearCart } from '@/lib/cart'
 import type { CartItem } from '@/types/billing'
 
 interface PaymentInitializeResponse {
-  redirect_url?: string
-  payment_url?: string
+  payment_id: number
+  status: string
+  checkout_url?: string
   [key: string]: unknown
 }
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [cart, setCart] = useState<CartItem[]>([])
   const [paying, setPaying] = useState(false)
 
   useEffect(() => {
     setCart(getCart())
-  }, [])
+    if (searchParams.get('canceled')) {
+      toast.info('Checkout canceled — your cart is still here.')
+    }
+  }, [searchParams])
 
   const handleRemove = (item: CartItem) => {
     removeFromCart(item.content_type, item.object_id)
@@ -41,7 +46,7 @@ export default function CheckoutPage() {
     if (cart.length === 0) return
     setPaying(true)
     try {
-      await clientFetch<PaymentInitializeResponse>('/api/v1/billing/payments/initialize/', {
+      const res = await clientFetch<PaymentInitializeResponse>('/api/v1/billing/payments/initialize/', {
         method: 'POST',
         body: JSON.stringify({
           items: cart.map((item) => ({
@@ -50,6 +55,13 @@ export default function CheckoutPage() {
           })),
         }),
       })
+      // Real Stripe checkout: hand off to the hosted page. Keep the cart so a
+      // cancel returns the buyer here intact; the success page clears it.
+      if (res.checkout_url) {
+        window.location.href = res.checkout_url
+        return
+      }
+      // Bypass (dev/CI): payment already completed server-side.
       clearCart()
       toast.success('Payment successful! Redirecting to dashboard...')
       router.push('/dashboard')
