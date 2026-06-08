@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useRef } from "react"
-import { Users, Mail } from "lucide-react"
+import Link from "next/link"
+import { Users, Mail, Receipt } from "lucide-react"
 import { TableCell } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { clientFetch, batchedAsync } from "@/lib/api-client"
@@ -107,6 +108,7 @@ export default function StudentsPage() {
           { label: "Enrolled Courses", key: "enrolled" },
           { label: "Joined", key: "joined" },
           { label: "Last Active", key: "active" },
+          { label: "Payments", key: "payments" },
         ]}
         renderListRow={(student) => (
           <>
@@ -142,6 +144,16 @@ export default function StudentsPage() {
               {student.last_login
                 ? formatDate(student.last_login)
                 : "Never"}
+            </TableCell>
+            <TableCell>
+              <Link
+                href={`/admin/students/${student.id}`}
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Receipt className="h-3.5 w-3.5" />
+                View
+              </Link>
             </TableCell>
           </>
         )}

@@ -164,6 +164,91 @@ export default function PayoutsPage() {
           </CardContent>
         </Card>
       )}
+
+      {!loading && status?.is_paid_active && <EarningsCard />}
+    </div>
+  )
+}
+
+interface Earnings {
+  currency: string
+  gross_sales: string
+  net_payout: string
+  platform_fees: string
+  sales_count: number
+  refunded_total: string
+  stripe_balance: Record<string, { available?: number; pending?: number }> | null
+}
+
+function money(amount: string | number, currency: string) {
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount))
+  } catch {
+    return `${Number(amount).toFixed(2)} ${currency}`
+  }
+}
+
+function EarningsCard() {
+  const [data, setData] = useState<Earnings | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    clientFetch<Earnings>('/api/v1/billing/earnings/')
+      .then(setData)
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <Skeleton className="h-32 w-full" />
+  if (!data) return null
+
+  const cur = data.currency
+  const pending = data.stripe_balance?.[cur]?.pending
+  const available = data.stripe_balance?.[cur]?.available
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Earnings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Stat label="Net payout" value={money(data.net_payout, cur)} />
+          <Stat label="Gross sales" value={money(data.gross_sales, cur)} sub={`${data.sales_count} sales`} />
+          <Stat label="Platform fees" value={money(data.platform_fees, cur)} />
+          <Stat label="Refunded" value={money(data.refunded_total, cur)} />
+        </div>
+        {data.stripe_balance && (
+          <>
+            <Separator />
+            <div className="flex flex-wrap gap-6 text-sm">
+              <span className="text-muted-foreground">
+                On the way to your bank:{' '}
+                <span className="font-medium text-foreground">
+                  {money((pending ?? 0) / 100, cur)}
+                </span>
+              </span>
+              <span className="text-muted-foreground">
+                Available:{' '}
+                <span className="font-medium text-foreground">{money((available ?? 0) / 100, cur)}</span>
+              </span>
+            </div>
+          </>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Net payout is your share after the platform fee. Balances are settled by Stripe to your bank.
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-lg font-semibold text-foreground">{value}</p>
+      {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
     </div>
   )
 }

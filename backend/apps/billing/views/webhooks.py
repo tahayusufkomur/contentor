@@ -181,6 +181,12 @@ def _handle_marketplace_checkout_completed(event):
         return
 
     provider_payment_id = session.get("payment_intent") or session.get("id") or ""
+    # Best-effort hosted receipt link for the buyer's order history.
+    receipt_url = ""
+    if event.get("account") and provider_payment_id.startswith("pi_"):
+        from apps.billing.providers import connect
+
+        receipt_url = connect.retrieve_receipt_url(account_id=event["account"], payment_intent_id=provider_payment_id)
     with tenant_context(tenant):
         from apps.billing.models import Payment
         from apps.billing.views.payments import grant_access_for_payment
@@ -193,7 +199,9 @@ def _handle_marketplace_checkout_completed(event):
             payment.status = "completed"
             payment.provider = "stripe"
             payment.provider_payment_id = provider_payment_id
-            payment.save(update_fields=["status", "provider", "provider_payment_id"])
+            if receipt_url:
+                payment.metadata = {**(payment.metadata or {}), "receipt_url": receipt_url}
+            payment.save(update_fields=["status", "provider", "provider_payment_id", "metadata"])
         grant_access_for_payment(payment)
 
 
@@ -350,7 +358,10 @@ def _handle_marketplace_invoice_paid(event, tenant):
             provider="stripe",
             provider_payment_id=invoice.get("payment_intent") or invoice.get("id") or "",
             subscription=sub,
-            metadata={"invoice_id": invoice.get("id", "")},
+            metadata={
+                "invoice_id": invoice.get("id", ""),
+                "receipt_url": invoice.get("hosted_invoice_url", ""),
+            },
         )
 
 

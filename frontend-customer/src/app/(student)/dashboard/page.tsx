@@ -47,9 +47,14 @@ export default function DashboardPage() {
       <div className="flex items-center gap-3">
         <GraduationCap className="h-7 w-7 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">My Courses</h1>
-        <Button asChild variant="ghost" size="sm" className="ml-auto">
-          <Link href="/subscriptions">My subscriptions</Link>
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/orders">Orders</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/subscriptions">My subscriptions</Link>
+          </Button>
+        </div>
       </div>
 
       {courses.length === 0 ? (

@@ -241,6 +241,53 @@ def cancel_subscription(*, account_id: str, subscription_id: str, at_period_end:
         raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
 
 
+def refund_payment(*, account_id: str, payment_intent_id: str, amount_cents: int) -> str:
+    """Refund (part of) a direct charge on the connected account. Returns refund id.
+
+    D8: the platform keeps its application fee — we do **not** pass
+    `refund_application_fee`, so only the coach's share is returned to the buyer.
+    A partial `amount` lets us refund a single item from a multi-item charge.
+    """
+    stripe = _client()
+    try:
+        refund = stripe.Refund.create(
+            payment_intent=payment_intent_id,
+            amount=amount_cents,
+            stripe_account=account_id,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
+    return refund.id
+
+
+def retrieve_balance(*, account_id: str) -> dict:
+    """Return the connected account's balance: {currency: {available, pending}} in minor units."""
+    stripe = _client()
+    try:
+        bal = stripe.Balance.retrieve(stripe_account=account_id)
+    except Exception as exc:  # noqa: BLE001
+        raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
+    out: dict[str, dict[str, int]] = {}
+    for entry in bal.get("available", []):
+        out.setdefault(entry["currency"].upper(), {})["available"] = entry["amount"]
+    for entry in bal.get("pending", []):
+        out.setdefault(entry["currency"].upper(), {})["pending"] = entry["amount"]
+    return out
+
+
+def retrieve_receipt_url(*, account_id: str, payment_intent_id: str) -> str:
+    """Best-effort hosted receipt URL for a direct-charge PaymentIntent ("" on failure)."""
+    stripe = _client()
+    try:
+        pi = stripe.PaymentIntent.retrieve(payment_intent_id, expand=["latest_charge"], stripe_account=account_id)
+        charge = pi.get("latest_charge")
+        if isinstance(charge, dict):
+            return charge.get("receipt_url") or ""
+    except Exception:  # noqa: BLE001 — receipts are nice-to-have, never load-bearing
+        logger.warning("could not fetch receipt for %s", payment_intent_id)
+    return ""
+
+
 def retrieve_account_status(*, account_id: str) -> ConnectAccountStatus:
     """Read the connected account's current readiness from Stripe."""
     stripe = _client()

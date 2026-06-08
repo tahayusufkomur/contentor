@@ -296,6 +296,26 @@ def payment_item_refund(request, payment_id, item_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    # Issue the real refund on the connected account first (D8: the platform
+    # keeps its application fee — connect.refund_payment never reverses it). Only
+    # touch local state once Stripe confirms, so a failed refund leaves access
+    # intact. Bypass payments skip Stripe.
+    refund_provider_id = ""
+    if payment.provider == "stripe":
+        if not payment.provider_payment_id:
+            return Response(
+                {"detail": "No Stripe charge on file for this payment."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            refund_provider_id = connect.refund_payment(
+                account_id=connection.tenant.stripe_account_id,
+                payment_intent_id=payment.provider_payment_id,
+                amount_cents=_to_cents(payment_item.item_price),
+            )
+        except ProviderError as exc:
+            return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
     # Mark item as refunded
     payment_item.is_refunded = True
     payment_item.save(update_fields=["is_refunded"])
@@ -310,6 +330,7 @@ def payment_item_refund(request, payment_id, item_id):
         submerchant_payout=Decimal("0.00"),
         currency=payment.currency,
         provider=payment.provider,
+        provider_payment_id=refund_provider_id,
         original_payment=payment,
     )
 
@@ -336,6 +357,86 @@ def payment_item_refund(request, payment_id, item_id):
             "refund_payment_id": refund_payment.pk,
         },
         status=status.HTTP_200_OK,
+    )
+
+
+def _serialize_payment_item(item):
+    obj = item.content_object
+    return {
+        "id": item.pk,
+        "title": str(obj) if obj is not None else "(removed)",
+        "item_price": str(item.item_price),
+        "is_refunded": item.is_refunded,
+    }
+
+
+def _serialize_payment(payment, *, include_items=True):
+    data = {
+        "id": payment.pk,
+        "payment_type": payment.payment_type,
+        "status": payment.status,
+        "amount": str(payment.amount),
+        "currency": payment.currency,
+        "provider": payment.provider,
+        "created_at": payment.created_at.isoformat() if payment.created_at else None,
+        "receipt_url": (payment.metadata or {}).get("receipt_url", ""),
+    }
+    if include_items:
+        data["items"] = [_serialize_payment_item(i) for i in payment.items.all()]
+    return data
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_orders(request):
+    """The requesting student's order history (purchases + subscription charges)."""
+    payments = (
+        Payment.objects.filter(student=request.user, payment_type__in=("one_time", "subscription"))
+        .prefetch_related("items")
+        .order_by("-created_at")
+    )
+    return Response([_serialize_payment(p) for p in payments])
+
+
+@api_view(["GET"])
+@permission_classes([IsOwner])
+def student_payments(request, student_id):
+    """Coach view: one student's payment history in this tenant (for the refund UI)."""
+    payments = Payment.objects.filter(student_id=student_id).prefetch_related("items").order_by("-created_at")
+    return Response([_serialize_payment(p) for p in payments])
+
+
+@api_view(["GET"])
+@permission_classes([IsOwner])
+def earnings(request):
+    """Coach earnings: lifetime payout total from completed sales + live Stripe balance."""
+    from django.db.models import Count, Sum
+
+    sales = Payment.objects.filter(
+        payment_type__in=("one_time", "subscription"),
+        status__in=("completed", "partially_refunded"),
+    ).aggregate(gross=Sum("amount"), payout=Sum("submerchant_payout"), fees=Sum("platform_fee"), n=Count("id"))
+    refunded = Payment.objects.filter(payment_type="refund").aggregate(total=Sum("amount"), n=Count("id"))
+
+    balance = None
+    tenant = connection.tenant
+    if not _bypass_enabled() and tenant.stripe_account_id:
+        try:
+            balance = connect.retrieve_balance(account_id=tenant.stripe_account_id)
+        except ProviderError:
+            balance = None
+
+    return Response(
+        {
+            "currency": tenant_currency(tenant),
+            "gross_sales": str(sales["gross"] or 0),
+            "net_payout": str(sales["payout"] or 0),
+            "platform_fees": str(sales["fees"] or 0),
+            "sales_count": sales["n"] or 0,
+            "refunded_total": str(refunded["total"] or 0),
+            "refunded_count": refunded["n"] or 0,
+            "stripe_balance": balance,  # {CUR: {available, pending}} in minor units, or null
+        }
     )
 
 

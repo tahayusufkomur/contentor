@@ -17,6 +17,10 @@ urlpatterns = [
     # Payments
     path("payments/initialize/", payments.payment_initialize, name="payment-initialize"),
     path("payments/<int:payment_id>/", payments.payment_detail, name="payment-detail"),
+    # Order history / earnings (Phase E)
+    path("orders/", payments.my_orders, name="my-orders"),
+    path("earnings/", payments.earnings, name="earnings"),
+    path("students/<int:student_id>/payments/", payments.student_payments, name="student-payments"),
     path(
         "payments/<int:payment_id>/items/<int:item_id>/refund/",
         payments.payment_item_refund,
