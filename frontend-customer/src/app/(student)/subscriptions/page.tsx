@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { EmptyState } from '@/components/shared/empty-state'
 import { clientFetch } from '@/lib/api-client'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 interface MySubscription {
   id: number
@@ -18,6 +19,7 @@ interface MySubscription {
   status: string
   billing_amount: string
   billing_currency: string
+  billing_interval_months?: number
   cancel_at_period_end: boolean
   current_period_end: string | null
   pending_plan_name: string | null
@@ -28,6 +30,7 @@ interface PlanOption {
   name: string
   price: string
   currency: string
+  billing_interval_months?: number
 }
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'secondary'> = {
@@ -142,7 +145,7 @@ export default function SubscriptionsPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {sub.billing_amount} {sub.billing_currency}/mo
+                    {sub.billing_amount} {sub.billing_currency}{billingIntervalSuffix(sub.billing_interval_months)}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -183,7 +186,7 @@ export default function SubscriptionsPage() {
                           </option>
                           {otherPlans.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.name} — {p.price} {p.currency}/mo
+                              {p.name} — {p.price} {p.currency}{billingIntervalSuffix(p.billing_interval_months)}
                             </option>
                           ))}
                         </select>

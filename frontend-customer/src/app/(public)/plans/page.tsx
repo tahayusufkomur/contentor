@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { SubscribeButton } from '@/components/billing/subscribe-button'
 import { CreditCard, ArrowRight, Package } from 'lucide-react'
 import type { SubscriptionPlan } from '@/types/billing'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 export default async function PlansPage() {
   let plans: SubscriptionPlan[] = []
@@ -69,7 +70,7 @@ export default async function PlansPage() {
             <CardContent className="flex flex-1 flex-col space-y-5 pt-2">
               <div>
                 <span className="font-display text-4xl font-bold tabular-nums">{plan.price}</span>
-                <span className="ml-1 text-muted-foreground">{plan.currency}/mo</span>
+                <span className="ml-1 text-muted-foreground">{plan.currency}{billingIntervalSuffix(plan.billing_interval_months)}</span>
               </div>
 
               {plan.item_count !== undefined && plan.item_count > 0 && (
@@ -93,6 +94,7 @@ export default async function PlansPage() {
                     planName={plan.name}
                     price={plan.price}
                     currency={plan.currency}
+                    intervalMonths={plan.billing_interval_months}
                     className="w-full"
                   />
                 )}

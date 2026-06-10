@@ -69,6 +69,7 @@ export default function DashboardPage() {
           {courses.map((course) => {
             // If the API returns progress info, we can use it. Otherwise default to 0.
             const progressPercent = (course as any).progress_percent ?? 0
+            const viaSubscription = Boolean((course as any).via_subscription)
 
             return (
               <Card key={course.id} className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
@@ -88,7 +89,10 @@ export default function DashboardPage() {
                   </div>
                 )}
                 <CardContent className="p-4 space-y-3">
-                  <h3 className="font-semibold leading-snug">{course.title}</h3>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold leading-snug">{course.title}</h3>
+                    {viaSubscription && <Badge variant="secondary">In your plan</Badge>}
+                  </div>
                   <p className="text-sm text-muted-foreground">{course.instructor_name}</p>
 
                   {/* Progress bar */}

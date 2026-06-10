@@ -15,6 +15,7 @@ import { clientFetch } from '@/lib/api-client'
 import { ApiError } from '@/types/api'
 import { addToCart } from '@/lib/cart'
 import type { StoreItem, SubscriptionPlan } from '@/types/billing'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 type FilterType = 'all' | 'course' | 'download' | 'live_class' | 'live_stream' | 'bundle'
 
@@ -139,6 +140,7 @@ export default function StorePage() {
       object_id: item.id,
       title: item.title,
       price: item.price,
+      currency: item.currency,
       type: item.type,
     })
     toast.success(`"${item.title}" added to cart`)
@@ -200,7 +202,7 @@ export default function StorePage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-2xl font-bold tabular-nums">
-                    {plan.price} TL<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    {plan.price} {plan.currency}<span className="text-sm font-normal text-muted-foreground">{billingIntervalSuffix(plan.billing_interval_months)}</span>
                   </p>
                   <Button
                     className="w-full gap-2"
@@ -301,7 +303,7 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
             <Package className="h-3.5 w-3.5" />
             <span>{item.item_count} items</span>
             {item.original_price && (
-              <span className="line-through ml-1">{item.original_price} TL</span>
+              <span className="line-through ml-1">{item.original_price} {item.currency}</span>
             )}
           </div>
         )}
@@ -319,7 +321,7 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
               onClick={() => onAddToCart(item)}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
-              Add to Cart — {item.price} TL
+              Add to Cart — {item.price} {item.currency}
             </Button>
           )}
         </div>

@@ -153,14 +153,26 @@ def enroll(request, slug):
 # ──────────────────────────────────────────────
 
 
+def _has_unlocked_access(user, course) -> bool:
+    """Paid access paths that create no Enrollment row (direct purchase, bundle,
+    subscription plan). Free courses still require enrolling first."""
+    info = ContentAccessService().get_access_info(user, course)
+    return bool(info.has_access) and info.access_reason in ("purchased", "bundle", "subscription")
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def course_progress(request, slug):
     """GET: list all progress for a course. POST: create/update progress for a lesson."""
     course = get_object_or_404(Course, slug=slug)
     user = request.user
+    # Enrolled, unlocked (purchase/bundle/subscription/free), or staff.
     is_staff = user.role in ("owner", "coach")
-    if not is_staff and not Enrollment.objects.filter(user=user, course=course).exists():
+    if (
+        not is_staff
+        and not Enrollment.objects.filter(user=user, course=course).exists()
+        and not _has_unlocked_access(user, course)
+    ):
         return Response({"detail": "Not enrolled."}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == "GET":
@@ -189,9 +201,13 @@ def update_progress(request, slug, lesson_id):
     lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
 
     user = request.user
-    # Must be enrolled or owner/coach
+    # Must be enrolled, have access (purchase/bundle/subscription/free), or be staff.
     is_staff = user.role in ("owner", "coach")
-    if not is_staff and not Enrollment.objects.filter(user=user, course=course).exists():
+    if (
+        not is_staff
+        and not Enrollment.objects.filter(user=user, course=course).exists()
+        and not _has_unlocked_access(user, course)
+    ):
         return Response({"detail": "Not enrolled."}, status=status.HTTP_403_FORBIDDEN)
 
     progress, _created = Progress.objects.get_or_create(user=user, lesson=lesson)
@@ -209,11 +225,11 @@ def update_progress(request, slug, lesson_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def enrolled_courses(request):
-    """List courses the current user is enrolled in, with progress percentage."""
-    enrollments = Enrollment.objects.filter(user=request.user, is_active=True).select_related("course")
-    result = []
-    for enrollment in enrollments:
-        course = enrollment.course
+    """List the student's courses: enrollments plus courses unlocked by an
+    active subscription plan (which create no Enrollment row), each with a
+    progress percentage."""
+
+    def course_entry(course):
         total_lessons = Lesson.objects.filter(module__course=course).count()
         completed_lessons = Progress.objects.filter(
             user=request.user, lesson__module__course=course, completed=True
@@ -221,8 +237,39 @@ def enrolled_courses(request):
         progress_percent = round((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
         course_data = CourseListSerializer(course, context={"request": request}).data
         course_data["progress_percent"] = progress_percent
+        return course_data
+
+    result = []
+    seen_ids = set()
+    enrollments = Enrollment.objects.filter(user=request.user, is_active=True).select_related("course")
+    for enrollment in enrollments:
+        course_data = course_entry(enrollment.course)
         course_data["enrolled_at"] = enrollment.enrolled_at
         result.append(course_data)
+        seen_ids.add(enrollment.course_id)
+
+    # Courses included in an active subscription plan.
+    from django.contrib.contenttypes.models import ContentType
+    from django.utils import timezone
+
+    from apps.billing.models import Subscription, SubscriptionPlanAccess
+
+    now = timezone.now()
+    active_plan_ids = Subscription.objects.filter(
+        student=request.user, status="active", current_period_end__gt=now
+    ).values_list("plan_id", flat=True)
+    if active_plan_ids:
+        course_ct = ContentType.objects.get_for_model(Course)
+        sub_course_ids = set(
+            SubscriptionPlanAccess.objects.filter(plan_id__in=active_plan_ids, content_type=course_ct).values_list(
+                "object_id", flat=True
+            )
+        )
+        for course in Course.objects.filter(pk__in=sub_course_ids - seen_ids, is_published=True):
+            course_data = course_entry(course)
+            course_data["via_subscription"] = True
+            result.append(course_data)
+
     return Response(result)
 
 

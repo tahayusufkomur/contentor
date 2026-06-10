@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from rest_framework import serializers
 
-from apps.core.access import AccessInfo, ContentAccessService
+from apps.core.access import AccessInfo, ContentAccessService, content_currency
 
 from .models import DownloadFile
 
@@ -39,7 +39,7 @@ class DownloadFileSerializer(serializers.ModelSerializer):
                     has_access=False,
                     pricing_type=pricing_type,
                     price=obj.price,
-                    currency="TRY",
+                    currency=content_currency(obj),
                     unlock_methods=["purchase"],
                 )
             )

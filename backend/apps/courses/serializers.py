@@ -3,7 +3,7 @@ from dataclasses import asdict
 from django.db.models import Prefetch
 from rest_framework import serializers
 
-from apps.core.access import AccessInfo, ContentAccessService
+from apps.core.access import AccessInfo, ContentAccessService, content_currency
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 
 from .models import Course, Enrollment, Lesson, Module, Progress, Video
@@ -13,6 +13,7 @@ class LessonSerializer(serializers.ModelSerializer):
     video_signed_url = serializers.SerializerMethodField()
     video_url = serializers.SerializerMethodField()
     duration_seconds = serializers.SerializerMethodField()
+    content_html = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -43,6 +44,24 @@ class LessonSerializer(serializers.ModelSerializer):
             return obj.video.duration_seconds
         return obj.duration_seconds
 
+    def _is_unlocked(self, obj) -> bool:
+        """Whether the requester may see this lesson's paid content (video AND
+        written body). Mirrors the access decision made by CourseDetailSerializer,
+        which passes `course_has_access` in context."""
+        if obj.is_free_preview:
+            return True
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        if request.user.role in ("owner", "coach"):
+            return True
+        return bool(self.context.get("course_has_access"))
+
+    def get_content_html(self, obj):
+        # The lesson body is paid content just like the video — don't leak it
+        # to visitors/students who haven't unlocked the course.
+        return obj.content_html if self._is_unlocked(obj) else ""
+
     def get_video_signed_url(self, obj):
         s3_key = self._get_s3_key(obj)
         if not s3_key:
@@ -50,16 +69,7 @@ class LessonSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return None
-        user = request.user
-        # Owners and coaches always get signed URLs
-        if user.role in ("owner", "coach"):
-            return generate_presigned_download_url(s3_key)
-        # Free preview lessons get signed URLs for authenticated users
-        if obj.is_free_preview:
-            return generate_presigned_download_url(s3_key)
-        # Check access via context (passed from CourseDetailSerializer)
-        course_has_access = self.context.get("course_has_access")
-        if course_has_access:
+        if self._is_unlocked(obj):
             return generate_presigned_download_url(s3_key)
         return None
 
@@ -127,7 +137,7 @@ class CourseListSerializer(serializers.ModelSerializer):
                     has_access=False,
                     pricing_type=pricing_type,
                     price=obj.price,
-                    currency="TRY",
+                    currency=content_currency(obj),
                     unlock_methods=["purchase"],
                 )
             )
@@ -197,7 +207,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
                     has_access=False,
                     pricing_type=pricing_type,
                     price=obj.price,
-                    currency="TRY",
+                    currency=content_currency(obj),
                     unlock_methods=["purchase"],
                 )
             )

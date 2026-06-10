@@ -10,6 +10,7 @@ import {
   StreamVideoClient,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
+import { acquireCall, releaseCall } from "@/components/live/call-session";
 import { StreamChat, Channel as ChatChannel } from "stream-chat";
 import { clientFetch } from "@/lib/api-client";
 import StreamHostView from "./stream-host-view";
@@ -40,7 +41,9 @@ export default function LiveStreamRoom({
   const [tokenData, setTokenData] = useState<TokenResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
+  const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(
+    null,
+  );
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [chatChannel, setChatChannel] = useState<ChatChannel | null>(null);
   const [call, setCall] = useState<Call | null>(null);
@@ -70,8 +73,9 @@ export default function LiveStreamRoom({
 
     const streamUserId = `u${userId}`;
 
-    // Video client
-    const vc = new StreamVideoClient({
+    // Video client — getOrCreateInstance is StrictMode-safe (a second `new`
+    // client for the same user orphans the first call session).
+    const vc = StreamVideoClient.getOrCreateInstance({
       apiKey: tokenData.api_key,
       user: { id: streamUserId, name: userName, image: userImage },
       token: tokenData.token,
@@ -105,13 +109,10 @@ export default function LiveStreamRoom({
     if (!videoClient || !tokenData) return;
 
     let cancelled = false;
-    const newCall = videoClient.call("livestream", tokenData.call_id);
-
-    newCall
-      .join({ create: false })
+    const session = acquireCall(videoClient, "livestream", tokenData.call_id);
+    session.joinPromise
       .then(() => {
-        if (!cancelled) setCall(newCall);
-        else newCall.leave().catch(console.error);
+        if (!cancelled) setCall(session.call);
       })
       .catch(() => {
         if (!cancelled) setError("Failed to join the live stream.");
@@ -119,8 +120,8 @@ export default function LiveStreamRoom({
 
     return () => {
       cancelled = true;
-      newCall.leave().catch(console.error);
       setCall(null);
+      releaseCall("livestream", tokenData.call_id);
     };
   }, [videoClient, tokenData]);
 

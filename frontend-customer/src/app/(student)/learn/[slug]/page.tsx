@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { clientFetch } from '@/lib/api-client'
 import { VideoPlayer } from '@/components/student/video-player'
 import { LessonSidebar } from '@/components/student/lesson-sidebar'
@@ -10,6 +10,7 @@ import type { CourseDetail, Lesson, Progress } from '@/types/course'
 
 export default function LearnPage() {
   const params = useParams<{ slug: string }>()
+  const router = useRouter()
   const [course, setCourse] = useState<CourseDetail | null>(null)
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
   const [progressMap, setProgressMap] = useState<Record<number, Progress>>({})
@@ -23,6 +24,12 @@ export default function LearnPage() {
   function loadCourse() {
     clientFetch<CourseDetail>(`/api/v1/courses/${params.slug}/`)
       .then((data) => {
+        // Paid course the student hasn't unlocked — send them to the course
+        // page where the purchase/subscribe options live.
+        if (data.access_info && !data.access_info.has_access) {
+          router.replace(`/courses/${params.slug}`)
+          return
+        }
         setCourse(data)
         if (!currentLesson && data.modules.length > 0 && data.modules[0].lessons.length > 0) {
           setCurrentLesson(data.modules[0].lessons[0])

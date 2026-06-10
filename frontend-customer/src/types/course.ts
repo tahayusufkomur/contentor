@@ -57,6 +57,7 @@ export interface UnlockPlanOption {
   name: string
   price: string
   currency: string
+  billing_interval_months?: number
 }
 
 export interface UnlockOptions {

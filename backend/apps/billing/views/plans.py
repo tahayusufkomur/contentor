@@ -82,6 +82,8 @@ def plan_list(request):
                 "description": p.description,
                 "price": str(p.price),
                 "currency": p.currency,
+                "billing_interval_months": p.billing_interval_months,
+                "is_active": p.is_active,
                 "item_count": item_count,
                 "is_subscribed": p.id in subscribed_plan_ids,
             }
@@ -113,6 +115,7 @@ def plan_detail(request, pk):
             "description": plan.description,
             "price": str(plan.price),
             "currency": plan.currency,
+            "billing_interval_months": plan.billing_interval_months,
             "items": items,
             "is_subscribed": is_subscribed,
         }

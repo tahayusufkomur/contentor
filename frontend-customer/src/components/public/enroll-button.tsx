@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { ApiError } from '@/types/api'
 import { addToCart } from '@/lib/cart'
 import type { CourseDetail } from '@/types/course'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 interface EnrollButtonProps {
   course: CourseDetail
@@ -41,6 +42,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       object_id: course.id,
       title: course.title,
       price: course.price,
+      currency: opts?.purchase?.currency,
       type: 'course',
     })
     toast.success('Added to cart', { description: course.title })
@@ -157,6 +159,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
                     object_id: bundle.id,
                     title: bundle.name,
                     price: bundle.price,
+                    currency: bundle.currency,
                     type: 'bundle',
                   })
                   toast.success('Added to cart', { description: bundle.name })
@@ -191,7 +194,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
                 ) : (
                   <Zap className="h-4 w-4" />
                 )}
-                {plan.name} — {plan.price} {plan.currency}/mo
+                {plan.name} — {plan.price} {plan.currency}{billingIntervalSuffix(plan.billing_interval_months)}
               </Button>
             ))}
             <Button variant="ghost" size="sm" className="w-full" asChild>

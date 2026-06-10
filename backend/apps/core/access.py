@@ -5,6 +5,15 @@ from decimal import Decimal
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
+from apps.core.currency import tenant_charge_currency
+
+
+def content_currency(content) -> str:
+    """Content models have no currency column — prices are denominated in the
+    tenant's charge currency (what Stripe will actually charge)."""
+    return getattr(content, "currency", None) or tenant_charge_currency()
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +34,7 @@ class ContentAccessService:
     def get_access_info(self, user, content) -> AccessInfo:
         pricing_type = getattr(content, "pricing_type", "free")
         price = getattr(content, "price", None)
-        currency = getattr(content, "currency", "TRY")
+        currency = content_currency(content)
 
         # 1. Owner/Coach always access
         if hasattr(user, "role") and user.role in ("owner", "coach"):
@@ -101,7 +110,7 @@ class ContentAccessService:
                     has_access=True,
                     pricing_type=pricing_type,
                     price=getattr(item, "price", None),
-                    currency=getattr(item, "currency", "TRY"),
+                    currency=content_currency(item),
                     access_reason="owner",
                 )
             return result
@@ -124,7 +133,7 @@ class ContentAccessService:
                         has_access=False,
                         pricing_type=pricing_type,
                         price=getattr(item, "price", None),
-                        currency=getattr(item, "currency", "TRY"),
+                        currency=content_currency(item),
                         unlock_methods=unlock_methods,
                     )
             return result
@@ -143,7 +152,7 @@ class ContentAccessService:
         for item in items:
             pricing_type = getattr(item, "pricing_type", "free")
             price = getattr(item, "price", None)
-            currency = getattr(item, "currency", "TRY")
+            currency = content_currency(item)
 
             if pricing_type == "free":
                 result[item.pk] = AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free")
@@ -198,7 +207,7 @@ class ContentAccessService:
         if pricing_type == "paid" and price:
             options["purchase"] = {
                 "price": str(price),
-                "currency": getattr(content, "currency", "TRY"),
+                "currency": content_currency(content),
             }
 
         # 2. Bundles containing this content
@@ -218,7 +227,14 @@ class ContentAccessService:
         plans = SubscriptionPlan.objects.filter(pk__in=plan_ids, is_active=True)
         if plans.exists():
             options["plans"] = [
-                {"id": p.pk, "name": p.name, "price": str(p.price), "currency": p.currency} for p in plans
+                {
+                    "id": p.pk,
+                    "name": p.name,
+                    "price": str(p.price),
+                    "currency": p.currency,
+                    "billing_interval_months": p.billing_interval_months,
+                }
+                for p in plans
             ]
 
         return options

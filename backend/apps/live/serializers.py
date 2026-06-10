@@ -87,7 +87,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
             return asdict(access_map[obj.pk])
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
-            from apps.core.access import AccessInfo
+            from apps.core.access import AccessInfo, content_currency
 
             pricing_type = obj.pricing_type
             if pricing_type == "free":
@@ -97,7 +97,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
                     has_access=False,
                     pricing_type=pricing_type,
                     price=obj.price,
-                    currency=getattr(obj, "currency", "TRY"),
+                    currency=content_currency(obj),
                     unlock_methods=["purchase"],
                 )
             )
@@ -196,7 +196,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             return asdict(access_map[obj.pk])
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
-            from apps.core.access import AccessInfo
+            from apps.core.access import AccessInfo, content_currency
 
             pricing_type = obj.pricing_type
             if pricing_type == "free":
@@ -206,7 +206,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
                     has_access=False,
                     pricing_type=pricing_type,
                     price=obj.price,
-                    currency=getattr(obj, "currency", "TRY"),
+                    currency=content_currency(obj),
                     unlock_methods=["purchase"],
                 )
             )

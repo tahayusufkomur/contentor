@@ -510,3 +510,78 @@ class TestVideoDetail:
         client = make_client(student)
         resp = client.get(f"/api/v1/courses/videos/{video.pk}/")
         assert resp.status_code == 403, resp.content
+
+
+# ---------------------------------------------------------------------------
+# Tests: subscription-unlocked courses (no Enrollment row)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def paid_course_in_plan(tenant_ctx, owner, student):
+    """A paid published course unlocked for `student` via an active subscription."""
+    from datetime import timedelta
+
+    from django.contrib.contenttypes.models import ContentType
+    from django.utils import timezone
+
+    from apps.billing.models import Subscription, SubscriptionPlan, SubscriptionPlanAccess
+
+    course = Course.objects.create(
+        title="Plan Course",
+        slug="plan-course",
+        instructor=owner,
+        pricing_type="paid",
+        price=Decimal("59.00"),
+        is_published=True,
+    )
+    plan = SubscriptionPlan.objects.create(name="Pass", price=Decimal("49.00"), currency="USD")
+    SubscriptionPlanAccess.objects.create(
+        plan=plan, content_type=ContentType.objects.get_for_model(Course), object_id=course.pk
+    )
+    Subscription.objects.create(
+        student=student,
+        plan=plan,
+        billing_amount=plan.price,
+        billing_currency="USD",
+        status="active",
+        provider="bypass",
+        current_period_start=timezone.now(),
+        current_period_end=timezone.now() + timedelta(days=30),
+    )
+    return course
+
+
+@pytest.mark.django_db(transaction=True)
+class TestSubscriptionCourseAccess:
+    def test_enrolled_list_includes_subscription_courses(self, paid_course_in_plan, student):
+        """Courses unlocked by an active plan appear on the dashboard list,
+        flagged via_subscription, without an Enrollment row."""
+        client = make_client(student)
+        resp = client.get("/api/v1/courses/enrolled/")
+        assert resp.status_code == 200, resp.content
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["slug"] == "plan-course"
+        assert data[0]["via_subscription"] is True
+        assert "progress_percent" in data[0]
+
+    def test_subscription_student_can_track_progress(self, paid_course_in_plan, student):
+        """GET/POST progress works through subscription access (no enrollment)."""
+        module = Module.objects.create(course=paid_course_in_plan, title="M1", order=1)
+        lesson = Lesson.objects.create(module=module, title="L1", order=1, duration_seconds=60)
+        client = make_client(student)
+        assert client.get(f"/api/v1/courses/{paid_course_in_plan.slug}/progress/").status_code == 200
+        resp = client.post(
+            f"/api/v1/courses/{paid_course_in_plan.slug}/progress/",
+            {"lesson": lesson.pk, "completed": True},
+            format="json",
+        )
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["completed"] is True
+
+    def test_free_course_still_requires_enrollment_for_progress(self, published_course, student):
+        """The free-course contract is unchanged: no enrollment → 403."""
+        client = make_client(student)
+        resp = client.get(f"/api/v1/courses/{published_course.slug}/progress/")
+        assert resp.status_code == 403, resp.content

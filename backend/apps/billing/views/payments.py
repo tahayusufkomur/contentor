@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from apps.billing.providers import connect
 from apps.billing.providers.types import ProviderError
 from apps.core.access import ContentAccessService
-from apps.core.constants import REGION_DEFAULT_CURRENCY
+from apps.core.currency import tenant_charge_currency
 from apps.core.monetization import can_monetize
 from apps.core.permissions import IsOwner
 from apps.courses.models import Course, Enrollment
@@ -42,11 +42,7 @@ def tenant_currency(tenant) -> str:
     currency, so the marketplace charge always matches the connected account
     (a global/USD account can't be charged in TRY).
     """
-    cur = (getattr(tenant, "billing_currency", "") or "").strip()
-    if cur:
-        return cur
-    region = getattr(tenant, "region", "") or "global"
-    return REGION_DEFAULT_CURRENCY.get(region, "USD")
+    return tenant_charge_currency(tenant)
 
 
 def _get_fee_pct() -> Decimal:
@@ -401,20 +397,33 @@ def my_orders(request):
 @api_view(["GET"])
 @permission_classes([IsOwner])
 def student_payments(request, student_id):
-    """Coach view: one student's payment history in this tenant (for the refund UI)."""
-    payments = Payment.objects.filter(student_id=student_id).prefetch_related("items").order_by("-created_at")
+    """Coach view: one student's payment history in this tenant (for the refund UI).
+
+    Platform-subscription payments (the coach paying Contentor) are excluded —
+    this surface is marketplace sales only.
+    """
+    payments = (
+        Payment.objects.filter(student_id=student_id, platform_subscription__isnull=True)
+        .prefetch_related("items")
+        .order_by("-created_at")
+    )
     return Response([_serialize_payment(p) for p in payments])
 
 
 @api_view(["GET"])
 @permission_classes([IsOwner])
 def earnings(request):
-    """Coach earnings: lifetime payout total from completed sales + live Stripe balance."""
+    """Coach earnings: lifetime payout total from completed sales + live Stripe balance.
+
+    Excludes platform-subscription payments (`platform_subscription` set) — those
+    are the coach paying Contentor, not student revenue.
+    """
     from django.db.models import Count, Sum
 
     sales = Payment.objects.filter(
         payment_type__in=("one_time", "subscription"),
         status__in=("completed", "partially_refunded"),
+        platform_subscription__isnull=True,
     ).aggregate(gross=Sum("amount"), payout=Sum("submerchant_payout"), fees=Sum("platform_fee"), n=Count("id"))
     refunded = Payment.objects.filter(payment_type="refund").aggregate(total=Sum("amount"), n=Count("id"))
 
@@ -477,23 +486,31 @@ def grant_access_for_payment(payment):
 def _ensure_subscription_price(plan, account_id, currency):
     """Ensure `plan` has a current connected-account Stripe Price; (re)provision per D1.
 
-    A new Price is created only when missing or when the plan's amount changed —
-    existing subscribers keep their Stripe subscription's old Price. The Price is
-    minted in `currency` (the tenant's currency) so it matches the connected
-    account; the plan's `currency` field default never causes a mismatch.
+    A new Price is created only when missing or when the plan's amount or billing
+    cycle changed — existing subscribers keep their Stripe subscription's old
+    Price. The Price is minted in `currency` (the tenant's currency) so it
+    matches the connected account; the plan's `currency` field default never
+    causes a mismatch.
     """
     amount_cents = _to_cents(Decimal(str(plan.price)))
-    if plan.stripe_price_id and plan.stripe_price_amount_cents == amount_cents:
+    interval_months = plan.billing_interval_months or 1
+    if (
+        plan.stripe_price_id
+        and plan.stripe_price_amount_cents == amount_cents
+        and plan.stripe_price_interval_months == interval_months
+    ):
         return plan.stripe_price_id
     price_id = connect.provision_subscription_price(
         account_id=account_id,
         product_name=plan.name,
         currency=currency,
         amount_cents=amount_cents,
+        interval_months=interval_months,
     )
     plan.stripe_price_id = price_id
     plan.stripe_price_amount_cents = amount_cents
-    plan.save(update_fields=["stripe_price_id", "stripe_price_amount_cents"])
+    plan.stripe_price_interval_months = interval_months
+    plan.save(update_fields=["stripe_price_id", "stripe_price_amount_cents", "stripe_price_interval_months"])
     return price_id
 
 
@@ -536,7 +553,7 @@ def subscribe(request):
             status="active",
             provider="bypass",
             current_period_start=now,
-            current_period_end=now + timedelta(days=30),
+            current_period_end=now + timedelta(days=30 * (plan.billing_interval_months or 1)),
         )
         fee_pct = _get_fee_pct()
         platform_fee = (plan.price * fee_pct / Decimal("100")).quantize(Decimal("0.01"))
@@ -615,6 +632,7 @@ def my_subscriptions(request):
                 "status": s.status,
                 "billing_amount": str(s.billing_amount),
                 "billing_currency": s.billing_currency,
+                "billing_interval_months": s.plan.billing_interval_months if s.plan else 1,
                 "cancel_at_period_end": s.cancel_at_period_end,
                 "current_period_end": s.current_period_end.isoformat() if s.current_period_end else None,
                 "pending_plan_name": s.pending_plan.name if s.pending_plan else None,

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -9,14 +10,21 @@ class SubscriptionPlan(models.Model):
     description = models.TextField(blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="TRY")
+    # Billing cycle length in months: 1 = monthly, 12 = yearly, anything else
+    # is a custom cycle. Stripe caps recurring periods at 3 years (36 months).
+    billing_interval_months = models.PositiveIntegerField(
+        default=1, validators=[MinValueValidator(1), MaxValueValidator(36)]
+    )
     sort_order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
     # The recurring Stripe Price provisioned on the coach's connected account.
-    # `stripe_price_amount_cents` records the amount it was created for; when the
-    # plan price changes, a *new* Price is provisioned (D1 grandfathering) and
-    # both fields updated, leaving existing subscribers on their old Price.
+    # `stripe_price_amount_cents` / `stripe_price_interval_months` record what
+    # it was created for; when either changes, a *new* Price is provisioned
+    # (D1 grandfathering) and the fields updated, leaving existing subscribers
+    # on their old Price.
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     stripe_price_amount_cents = models.IntegerField(default=0)
+    stripe_price_interval_months = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

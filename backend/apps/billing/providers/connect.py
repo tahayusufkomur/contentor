@@ -67,6 +67,10 @@ def create_express_account(*, tenant, business_url: str = "") -> str:
     """
     stripe = _client()
     country = "TR" if getattr(tenant, "region", "") == "tr" else "US"
+    # Stripe requires a publicly resolvable business URL; drop dev hosts
+    # (tenant.localhost) rather than fail account creation.
+    if business_url and ".localhost" in business_url:
+        business_url = ""
     try:
         account = stripe.Account.create(
             type="express",
@@ -153,21 +157,32 @@ def create_marketplace_checkout(
     return MarketplaceCheckout(url=session.url, session_id=session.id)
 
 
-def provision_subscription_price(*, account_id: str, product_name: str, currency: str, amount_cents: int) -> str:
-    """Create a recurring monthly Price (and its Product) **on the connected account**.
+def provision_subscription_price(
+    *, account_id: str, product_name: str, currency: str, amount_cents: int, interval_months: int = 1
+) -> str:
+    """Create a recurring Price (and its Product) **on the connected account**.
+
+    `interval_months` is the billing cycle length (1 = monthly, 12 = yearly,
+    anything else a custom cycle); whole years are expressed as `year` intervals
+    so Stripe surfaces show "/year" instead of "every 12 months".
 
     Returns the new Price id. Called when a plan has no Price yet or its amount
-    changed — we never mutate an existing Price (Stripe Prices are immutable), so
-    existing subscribers stay on their old one (D1 grandfathering).
+    or cycle changed — we never mutate an existing Price (Stripe Prices are
+    immutable), so existing subscribers stay on their old one (D1 grandfathering).
     """
     stripe = _client()
+    months = max(1, int(interval_months or 1))
+    if months % 12 == 0:
+        recurring = {"interval": "year", "interval_count": months // 12}
+    else:
+        recurring = {"interval": "month", "interval_count": months}
     try:
         product = stripe.Product.create(name=product_name[:250], stripe_account=account_id)
         price = stripe.Price.create(
             product=product.id,
             currency=currency.lower(),
             unit_amount=amount_cents,
-            recurring={"interval": "month"},
+            recurring=recurring,
             stripe_account=account_id,
         )
     except Exception as exc:  # noqa: BLE001

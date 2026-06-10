@@ -10,13 +10,14 @@ from rest_framework.response import Response
 from apps.billing.models import Bundle, PaymentItem
 from apps.billing.serializers.store import StoreItemSerializer
 from apps.core.access import AccessInfo, ContentAccessService
+from apps.core.currency import tenant_charge_currency
 from apps.core.permissions import IsCoachOrOwner
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream
 
 
-def _unauthenticated_access_info(price, currency="TRY"):
+def _unauthenticated_access_info(price, currency=""):
     return asdict(
         AccessInfo(
             has_access=False,
@@ -42,6 +43,7 @@ def _bundle_original_price(bundle):
 def _collect_store_items():
     """Collect all paid/active content as raw dicts (no access_info yet)."""
     items = []
+    currency = tenant_charge_currency()
 
     # Courses: paid + published
     for course in Course.objects.filter(pricing_type="paid", is_published=True):
@@ -52,7 +54,7 @@ def _collect_store_items():
                 "description": course.description,
                 "type": "course",
                 "price": course.price,
-                "currency": "TRY",
+                "currency": currency,
                 "thumbnail_url": course.thumbnail_url or "",
                 "is_active": course.is_published,
                 "item_count": 0,
@@ -70,7 +72,7 @@ def _collect_store_items():
                 "description": "",
                 "type": "download",
                 "price": df.price,
-                "currency": "TRY",
+                "currency": currency,
                 "thumbnail_url": "",
                 "is_active": True,
                 "item_count": 0,
@@ -88,7 +90,7 @@ def _collect_store_items():
                 "description": lc.description,
                 "type": "live_class",
                 "price": lc.price,
-                "currency": "TRY",
+                "currency": currency,
                 "thumbnail_url": lc.thumbnail_url or "",
                 "is_active": True,
                 "item_count": 0,
@@ -106,7 +108,7 @@ def _collect_store_items():
                 "description": ls.description,
                 "type": "live_stream",
                 "price": ls.price,
-                "currency": "TRY",
+                "currency": currency,
                 "thumbnail_url": ls.thumbnail_url or "",
                 "is_active": True,
                 "item_count": 0,
@@ -195,7 +197,7 @@ def products_list(request):
 
     result = []
     for item in items:
-        obj = item.pop("_obj")
+        item.pop("_obj")
         item_type = item["type"]
         model_class = type_to_model.get(item_type)
         if model_class:

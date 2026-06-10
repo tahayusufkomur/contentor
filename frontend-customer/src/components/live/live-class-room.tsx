@@ -11,6 +11,7 @@ import {
 } from "@stream-io/video-react-sdk";
 
 import StreamVideoProvider from "./stream-video-provider";
+import { acquireCall, releaseCall } from "./call-session";
 import SpeakerView from "./speaker-view";
 import ControlBar from "./control-bar";
 import ParticipantsPanel from "./participants-panel";
@@ -107,27 +108,19 @@ function CallJoiner({ callId, role, liveClassId }: CallJoinerProps) {
     if (!client) return;
 
     let cancelled = false;
-    const newCall = client.call("default", callId);
-
-    newCall
-      .join({ create: false })
+    const session = acquireCall(client, "default", callId);
+    session.joinPromise
       .then(() => {
-        if (!cancelled) {
-          setCall(newCall);
-        } else {
-          newCall.leave().catch(console.error);
-        }
+        if (!cancelled) setCall(session.call);
       })
       .catch(() => {
-        if (!cancelled) {
-          setJoinError("Failed to join the live class.");
-        }
+        if (!cancelled) setJoinError("Failed to join the live class.");
       });
 
     return () => {
       cancelled = true;
-      newCall.leave().catch(console.error);
       setCall(null);
+      releaseCall("default", callId);
     };
   }, [client, callId]);
 
@@ -248,15 +241,24 @@ function MeetingRoom({ role, liveClassId }: MeetingRoomProps) {
       onMouseMove={handleMouseMove}
     >
       {/* Video area */}
-      <div className={`flex flex-1 min-h-0 ${isFullscreen ? "p-0 gap-0" : "p-1.5 gap-1.5 sm:p-3 sm:gap-3"}`}>
+      <div
+        className={`flex flex-1 min-h-0 ${isFullscreen ? "p-0 gap-0" : "p-1.5 gap-1.5 sm:p-3 sm:gap-3"}`}
+      >
         <div className="flex-1 min-w-0 min-h-0">
-          <SpeakerView isHost={isHost} isFullscreen={isFullscreen} fitScreen={fitScreen} hideFilmstrip={isFullscreen && !showOverlay} />
+          <SpeakerView
+            isHost={isHost}
+            isFullscreen={isFullscreen}
+            fitScreen={fitScreen}
+            hideFilmstrip={isFullscreen && !showOverlay}
+          />
         </div>
         {/* Participants panel — full overlay on mobile, sidebar on desktop */}
         {showParticipants && (
           <div
             className={`transition-opacity duration-300 ${
-              isFullscreen && !showOverlay ? "opacity-0 pointer-events-none" : "opacity-100"
+              isFullscreen && !showOverlay
+                ? "opacity-0 pointer-events-none"
+                : "opacity-100"
             } ${
               isFullscreen
                 ? "absolute right-3 top-3 bottom-16 w-72 z-40"
@@ -274,7 +276,9 @@ function MeetingRoom({ role, liveClassId }: MeetingRoomProps) {
       {/* Control bar */}
       <div
         className={`flex justify-center pb-2 px-2 sm:pb-4 sm:px-4 shrink-0 transition-opacity duration-300 ${
-          isFullscreen && !showOverlay ? "opacity-0 pointer-events-none" : "opacity-100"
+          isFullscreen && !showOverlay
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100"
         } ${isFullscreen ? "absolute bottom-0 left-0 right-0 z-40" : ""}`}
       >
         <ControlBar

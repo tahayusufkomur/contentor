@@ -20,7 +20,11 @@ export function PriceBadge({ accessInfo, price, pricingType }: PriceBadgeProps) 
 
   const effectivePrice = accessInfo?.price ?? price
   if (effectivePricingType === 'paid' && effectivePrice) {
-    return <Badge variant="default">{effectivePrice} TL</Badge>
+    return (
+      <Badge variant="default">
+        {effectivePrice} {accessInfo?.currency ?? ''}
+      </Badge>
+    )
   }
 
   return <Badge variant="default">Paid</Badge>

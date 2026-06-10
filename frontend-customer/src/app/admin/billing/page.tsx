@@ -12,12 +12,14 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { clientFetch } from '@/lib/api-client'
 import { ChangePlanCard } from './subscription/ChangePlanCard'
 import { SubscriptionTile } from './subscription/SubscriptionTile'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 interface Product {
   id: number
   title: string
   type: string
   price: string
+  currency: string
   sales?: number
 }
 
@@ -33,6 +35,8 @@ interface Plan {
   id: number
   name: string
   price: string
+  currency: string
+  billing_interval_months?: number
   is_active: boolean
 }
 
@@ -112,7 +116,9 @@ function ProductsTab() {
                   <ProductTypeBadge type={p.type} />
                 </td>
                 <td className="px-4 py-3 font-medium">{p.title}</td>
-                <td className="px-4 py-3">${p.price}</td>
+                <td className="px-4 py-3">
+                  {p.price} {p.currency}
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">{p.sales ?? 0}</td>
               </tr>
             ))
@@ -234,7 +240,10 @@ function PlansTab() {
             plans.map((p) => (
               <tr key={p.id} className="border-b last:border-0">
                 <td className="px-4 py-3 font-medium">{p.name}</td>
-                <td className="px-4 py-3">${p.price}</td>
+                <td className="px-4 py-3">
+                  {p.price} {p.currency}
+                  {billingIntervalSuffix(p.billing_interval_months)}
+                </td>
                 <td className="px-4 py-3">
                   <Badge variant={p.is_active ? 'success' : 'secondary'}>
                     {p.is_active ? 'Active' : 'Inactive'}

@@ -7,12 +7,14 @@ import { clientFetch } from '@/lib/api-client'
 import { ApiError } from '@/types/api'
 import { Loader2, Zap } from 'lucide-react'
 import { toast } from 'sonner'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 interface SubscribeButtonProps {
   planId: number
   planName: string
   price: string
   currency: string
+  intervalMonths?: number
   className?: string
   variant?: 'default' | 'outline'
   size?: 'default' | 'sm' | 'lg'
@@ -23,6 +25,7 @@ export function SubscribeButton({
   planName,
   price,
   currency,
+  intervalMonths,
   className,
   variant = 'default',
   size = 'default',
@@ -74,7 +77,7 @@ export function SubscribeButton({
       ) : (
         <Zap className="mr-2 h-4 w-4" />
       )}
-      Subscribe — {price} {currency}/mo
+      Subscribe — {price} {currency}{billingIntervalSuffix(intervalMonths)}
     </Button>
   )
 }

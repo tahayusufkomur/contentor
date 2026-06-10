@@ -41,6 +41,8 @@ export default function CheckoutPage() {
 
   const total = cart.reduce((sum, item) => sum + parseFloat(item.price || '0'), 0)
   const totalFormatted = total.toFixed(2)
+  // All items on a tenant are priced in the tenant's single charge currency.
+  const cartCurrency = cart.find((item) => item.currency)?.currency ?? ''
 
   const handlePay = async () => {
     if (cart.length === 0) return
@@ -114,7 +116,7 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 <div className="text-right flex items-center gap-3 shrink-0">
-                  <span className="font-semibold tabular-nums">{item.price} TL</span>
+                  <span className="font-semibold tabular-nums">{item.price} {item.currency ?? ''}</span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -145,7 +147,7 @@ export default function CheckoutPage() {
                   <span className="text-muted-foreground truncate max-w-[160px]">
                     {item.title}
                   </span>
-                  <span className="tabular-nums shrink-0 ml-2">{item.price} TL</span>
+                  <span className="tabular-nums shrink-0 ml-2">{item.price} {item.currency ?? ''}</span>
                 </div>
               ))}
 
@@ -153,7 +155,7 @@ export default function CheckoutPage() {
 
               <div className="flex justify-between font-semibold text-base">
                 <span>Total</span>
-                <span className="tabular-nums">{totalFormatted} TL</span>
+                <span className="tabular-nums">{totalFormatted} {cartCurrency}</span>
               </div>
 
               <Button
@@ -168,7 +170,7 @@ export default function CheckoutPage() {
                     Processing...
                   </>
                 ) : (
-                  <>Pay {totalFormatted} TL</>
+                  <>Pay {totalFormatted} {cartCurrency}</>
                 )}
               </Button>
             </CardContent>

@@ -49,6 +49,7 @@ export interface CartItem {
   object_id: number
   title: string
   price: string
+  currency?: string
   type: string
 }
 
@@ -58,6 +59,7 @@ export interface SubscriptionPlan {
   description: string
   price: string
   currency: string
+  billing_interval_months?: number
   item_count?: number
   is_subscribed?: boolean
 }

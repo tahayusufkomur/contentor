@@ -99,7 +99,9 @@ def test_subscribe_provisions_price_and_returns_checkout(restore_public, student
 def test_subscribe_reuses_price_when_amount_unchanged(restore_public, student, plan):
     tenant = restore_public
     _set_account(tenant)
-    SubscriptionPlan.objects.filter(pk=plan.pk).update(stripe_price_id="price_existing", stripe_price_amount_cents=2000)
+    SubscriptionPlan.objects.filter(pk=plan.pk).update(
+        stripe_price_id="price_existing", stripe_price_amount_cents=2000, stripe_price_interval_months=1
+    )
 
     checkout = MarketplaceCheckout(url="https://checkout.stripe.com/c/pay/cs_x", session_id="cs_x")
     with (
@@ -111,6 +113,35 @@ def test_subscribe_reuses_price_when_amount_unchanged(restore_public, student, p
 
     assert resp.status_code == 201, resp.content
     mk_price.assert_not_called()  # amount unchanged → existing Price reused
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False)
+def test_subscribe_reprovisions_price_when_interval_changes(restore_public, student, plan):
+    """Changing the billing cycle (e.g. monthly → yearly) needs a new Stripe
+    Price, exactly like a price change (Prices are immutable; D1 grandfathering)."""
+    tenant = restore_public
+    _set_account(tenant)
+    SubscriptionPlan.objects.filter(pk=plan.pk).update(
+        stripe_price_id="price_existing",
+        stripe_price_amount_cents=2000,
+        stripe_price_interval_months=1,
+        billing_interval_months=12,
+    )
+
+    checkout = MarketplaceCheckout(url="https://checkout.stripe.com/c/pay/cs_y", session_id="cs_y")
+    with (
+        patch("apps.billing.views.payments.can_monetize", return_value=True),
+        patch("apps.billing.providers.connect.provision_subscription_price", return_value="price_yearly") as mk_price,
+        patch("apps.billing.providers.connect.create_subscription_checkout", return_value=checkout),
+    ):
+        resp = _client(student).post(SUBSCRIBE_URL, {"plan_id": plan.pk}, format="json")
+
+    assert resp.status_code == 201, resp.content
+    mk_price.assert_called_once()
+    assert mk_price.call_args.kwargs["interval_months"] == 12
+    plan.refresh_from_db()
+    assert plan.stripe_price_id == "price_yearly"
+    assert plan.stripe_price_interval_months == 12
 
 
 @override_settings(BILLING_BYPASS_ENABLED=False)
@@ -350,3 +381,62 @@ def test_webhook_invoice_paid_applies_pending_plan_and_records_payment(restore_p
         assert sub.plan_id == new_plan_id  # pending plan applied
         assert sub.pending_plan_id is None
         assert Payment.objects.filter(subscription_id=sub_pk, amount=Decimal("30.00")).exists()
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_WEBHOOK_SECRET="whsec_subd")  # noqa: S106
+def test_webhook_first_invoice_paid_bootstraps_subscription(restore_public):
+    """Stripe often delivers the first invoice.paid *before*
+    checkout.session.completed / customer.subscription.created (observed live).
+    The handler must bootstrap the Subscription from the invoice's embedded
+    subscription metadata so the first charge is recorded, not dropped."""
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_subd_wh4")
+    with tenant_context(tenant):
+        student = User.objects.create_user(
+            email="s4@subdwh.test",
+            name="S",
+            password=_PW,
+            role="student",  # noqa: S106
+        )
+        plan = SubscriptionPlan.objects.create(name="First", price=Decimal("49.00"), currency="USD")
+        plan_id, student_id = plan.pk, student.pk
+        assert not Subscription.objects.filter(provider_subscription_id="sub_subd_4").exists()
+
+    paid = _FakeEvent(
+        {
+            "id": "evt_subd_first_paid",
+            "type": "invoice.paid",
+            "account": "acct_subd_wh4",
+            "data": {
+                "object": {
+                    # New-API shape: subscription ref + metadata under `parent`.
+                    "parent": {
+                        "subscription_details": {
+                            "subscription": "sub_subd_4",
+                            "metadata": {
+                                "subscription_plan_id": str(plan_id),
+                                "user_id": str(student_id),
+                                "tenant_id": str(tenant.pk),
+                            },
+                        }
+                    },
+                    "customer": "cus_subd_4",
+                    "amount_paid": 4900,
+                    "currency": "usd",
+                    "lines": {"data": [{"period": {"end": int(datetime(2026, 8, 1, tzinfo=UTC).timestamp())}}]},
+                    "payment_intent": "pi_subd_4",
+                    "id": "in_subd_4",
+                }
+            },
+        }
+    )
+    assert _post_webhook(paid).status_code == 200
+    with tenant_context(tenant):
+        sub = Subscription.objects.get(provider_subscription_id="sub_subd_4")
+        assert sub.status == "active"
+        assert sub.student_id == student_id
+        assert sub.plan_id == plan_id
+        payment = Payment.objects.get(subscription_id=sub.pk)
+        assert payment.amount == Decimal("49.00")
+        assert payment.payment_type == "subscription"
+        assert payment.status == "completed"

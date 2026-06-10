@@ -421,6 +421,7 @@ class Command(BaseCommand):
                 description=plan_data.get("description", ""),
                 price=Decimal(plan_data["price"]),
                 currency=plan_data.get("currency", "TRY"),
+                billing_interval_months=plan_data.get("billing_interval_months", 1),
                 sort_order=plan_data.get("sort_order", 0),
             )
             for idx in plan_data.get("access_course_indices", []):

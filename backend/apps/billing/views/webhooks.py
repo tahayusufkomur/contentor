@@ -56,6 +56,55 @@ def _ts_to_dt(ts):
     return datetime.fromtimestamp(int(ts), tz=UTC)
 
 
+def _sub_period(sub_obj):
+    """(start, end) datetimes for a Stripe Subscription payload, across API versions.
+
+    Pre-2025 versions expose `current_period_start/end` at the top level; newer
+    versions (e.g. clover) moved them onto each subscription item.
+    """
+    start = sub_obj.get("current_period_start")
+    end = sub_obj.get("current_period_end")
+    if start is None or end is None:
+        items = (sub_obj.get("items") or {}).get("data") or []
+        if items:
+            start = start if start is not None else items[0].get("current_period_start")
+            end = end if end is not None else items[0].get("current_period_end")
+    return _ts_to_dt(start), _ts_to_dt(end)
+
+
+def _invoice_subscription_id(invoice) -> str:
+    """Subscription id from an Invoice payload, across API versions.
+
+    Legacy versions carry a top-level `subscription`; newer versions moved it to
+    `parent.subscription_details.subscription` (and onto each line item).
+    """
+    sub = invoice.get("subscription")
+    if isinstance(sub, dict):
+        return sub.get("id") or ""
+    if sub:
+        return sub
+    details = (invoice.get("parent") or {}).get("subscription_details") or {}
+    sub = details.get("subscription")
+    if isinstance(sub, dict):
+        return sub.get("id") or ""
+    return sub or ""
+
+
+def _invoice_period_end(invoice):
+    """Billing-period end from an Invoice payload.
+
+    Prefer the first line item's period (the subscription's actual cycle); the
+    top-level `period_end` is the invoice's own period and can equal creation
+    time for the first invoice.
+    """
+    lines = (invoice.get("lines") or {}).get("data") or []
+    if lines:
+        period = lines[0].get("period") or {}
+        if period.get("end"):
+            return _ts_to_dt(period["end"])
+    return _ts_to_dt(invoice.get("period_end"))
+
+
 def _resolve_tenant(metadata: dict) -> Tenant | None:
     tid = metadata.get("tenant_id") if isinstance(metadata, dict) else None
     if not tid:
@@ -103,8 +152,7 @@ def _upsert_subscription_from_event(*, tenant, user, plan, session_obj, subscrip
     period_end = None
     sub_status = PlatformSubscription.STATUS_ACTIVE
     if subscription_obj is not None:
-        period_start = _ts_to_dt(subscription_obj.get("current_period_start"))
-        period_end = _ts_to_dt(subscription_obj.get("current_period_end"))
+        period_start, period_end = _sub_period(subscription_obj)
         raw_status = subscription_obj.get("status", "active")
         sub_status = _map_stripe_status(raw_status)
 
@@ -263,7 +311,8 @@ def _upsert_tenant_subscription(
                 "provider_customer_id": provider_cust_id or "",
                 "cancel_at_period_end": cancel_at_period_end,
                 "current_period_start": period_start or now,
-                "current_period_end": period_end or (now + timedelta(days=30)),
+                # Fallback until the next subscription webhook carries real periods.
+                "current_period_end": period_end or (now + timedelta(days=30 * (plan.billing_interval_months or 1))),
             },
         )
 
@@ -291,14 +340,15 @@ def _handle_marketplace_subscription_checkout(event):
 def _handle_marketplace_subscription_event(event, tenant):
     """customer.subscription.created/updated for a connected account."""
     sub_obj = event["data"]["object"]
+    period_start, period_end = _sub_period(sub_obj)
     _upsert_tenant_subscription(
         tenant,
         provider_sub_id=sub_obj.get("id") or "",
         provider_cust_id=sub_obj.get("customer") or "",
         metadata=sub_obj.get("metadata") or {},
         sub_status=_tenant_sub_status(sub_obj.get("status", "")),
-        period_start=_ts_to_dt(sub_obj.get("current_period_start")),
-        period_end=_ts_to_dt(sub_obj.get("current_period_end")),
+        period_start=period_start,
+        period_end=period_end,
         cancel_at_period_end=bool(sub_obj.get("cancel_at_period_end")),
     )
 
@@ -318,10 +368,21 @@ def _handle_marketplace_subscription_deleted(event, tenant):
         sub.save(update_fields=["status", "cancelled_at"])
 
 
+def _invoice_subscription_metadata(invoice) -> dict:
+    """The subscription's metadata as embedded on the invoice (new API: under
+    `parent.subscription_details`; older: `subscription_details`)."""
+    for container in (invoice.get("parent") or {}, invoice):
+        details = container.get("subscription_details") or {}
+        meta = details.get("metadata")
+        if meta:
+            return meta
+    return {}
+
+
 def _handle_marketplace_invoice_paid(event, tenant):
     """invoice.paid → extend the period, apply a pending plan change, record a Payment."""
     invoice = event["data"]["object"]
-    provider_sub_id = invoice.get("subscription") or ""
+    provider_sub_id = _invoice_subscription_id(invoice)
     if not provider_sub_id:
         return
     with tenant_context(tenant):
@@ -330,8 +391,25 @@ def _handle_marketplace_invoice_paid(event, tenant):
 
         sub = TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
         if sub is None:
+            # First-invoice race: Stripe often delivers invoice.paid *before*
+            # checkout.session.completed / customer.subscription.created, so the
+            # row may not exist yet. Bootstrap it from the invoice's embedded
+            # subscription metadata so the first charge is never dropped.
+            _upsert_tenant_subscription(
+                tenant,
+                provider_sub_id=provider_sub_id,
+                provider_cust_id=invoice.get("customer") or "",
+                metadata=_invoice_subscription_metadata(invoice),
+                sub_status="active",
+                period_start=None,
+                period_end=None,
+                cancel_at_period_end=False,
+            )
+            sub = TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
+        if sub is None:
+            logger.warning("marketplace invoice.paid: unresolved subscription %s", provider_sub_id)
             return
-        new_period_end = _ts_to_dt(invoice.get("period_end"))
+        new_period_end = _invoice_period_end(invoice)
         if new_period_end:
             sub.current_period_end = new_period_end
         if sub.status == "past_due":
@@ -368,7 +446,7 @@ def _handle_marketplace_invoice_paid(event, tenant):
 def _handle_marketplace_invoice_failed(event, tenant):
     """invoice.payment_failed → mark the tenant Subscription past_due."""
     invoice = event["data"]["object"]
-    provider_sub_id = invoice.get("subscription") or ""
+    provider_sub_id = _invoice_subscription_id(invoice)
     if not provider_sub_id:
         return
     with tenant_context(tenant):
@@ -421,8 +499,7 @@ def _handle_subscription_event(event):
     provider_sub_id = sub_obj.get("id", "")
     provider_cust_id = sub_obj.get("customer", "")
     mapped_status = _map_stripe_status(sub_obj.get("status", ""))
-    period_start = _ts_to_dt(sub_obj.get("current_period_start"))
-    period_end = _ts_to_dt(sub_obj.get("current_period_end"))
+    period_start, period_end = _sub_period(sub_obj)
     cancel_at_period_end = bool(sub_obj.get("cancel_at_period_end"))
 
     sub = None
@@ -488,7 +565,7 @@ def _handle_invoice_paid(event):
     silently.
     """
     invoice = event["data"]["object"]
-    sub_id = invoice.get("subscription") or ""
+    sub_id = _invoice_subscription_id(invoice)
     if not sub_id:
         return
 
@@ -497,7 +574,7 @@ def _handle_invoice_paid(event):
         logger.info("invoice.paid for unknown sub=%s; nothing to do", sub_id)
         return
 
-    new_period_end = _ts_to_dt(invoice.get("period_end"))
+    new_period_end = _invoice_period_end(invoice)
     if new_period_end:
         sub.current_period_end = new_period_end
     if sub.status == PlatformSubscription.STATUS_PAST_DUE:

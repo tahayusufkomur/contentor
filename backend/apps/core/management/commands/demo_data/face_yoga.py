@@ -510,6 +510,7 @@ SUBSCRIPTION_PLANS = [
     {
         "name": "Annual Pass",
         "description": "Full year of unlimited access — save 40% compared to monthly.",
+        "billing_interval_months": 12,
         "price": "349.00",
         "currency": "TRY",
         "sort_order": 2,

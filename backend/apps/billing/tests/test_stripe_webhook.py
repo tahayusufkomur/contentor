@@ -96,9 +96,7 @@ def _subscription_updated_event(*, sub_id, status_="active", event_id="evt_phase
     return _wrap_event_dict(body)
 
 
-def _account_updated_event(
-    *, account_id, charges_enabled, payouts_enabled, tenant_id=None, event_id="evt_phaseB_acct"
-):
+def _account_updated_event(*, account_id, charges_enabled, payouts_enabled, tenant_id=None, event_id="evt_phaseB_acct"):
     obj = {
         "id": account_id,
         "object": "account",
@@ -250,9 +248,7 @@ def test_webhook_account_updated_persists_connect_readiness(restore_public):
     )
     client = APIClient()
 
-    event = _account_updated_event(
-        account_id="acct_phaseB_1", charges_enabled=True, payouts_enabled=True
-    )
+    event = _account_updated_event(account_id="acct_phaseB_1", charges_enabled=True, payouts_enabled=True)
     with patch("stripe.Webhook.construct_event", return_value=event):
         response = _post_webhook(client, event)
 
@@ -287,6 +283,39 @@ def test_webhook_account_updated_binds_account_by_metadata(restore_public):
     assert tenant.stripe_account_id == "acct_phaseB_2"
     assert tenant.stripe_charges_enabled is True
     assert tenant.stripe_payouts_enabled is False
+
+
+def test_payload_helpers_support_new_stripe_api_versions():
+    """Newer Stripe API versions (2025+) moved subscription periods onto items
+    and the invoice's subscription ref under `parent.subscription_details`.
+    The helpers must read both the legacy and new shapes (found live: a clover
+    sandbox produced period_end=None with the legacy reads)."""
+    from apps.billing.views.webhooks import (
+        _invoice_period_end,
+        _invoice_subscription_id,
+        _sub_period,
+    )
+
+    # New shape: period lives on subscription items.
+    start, end = _sub_period({"items": {"data": [{"current_period_start": 100, "current_period_end": 200}]}})
+    assert int(start.timestamp()) == 100
+    assert int(end.timestamp()) == 200
+    # Legacy shape still wins when present.
+    start, end = _sub_period({"current_period_start": 1, "current_period_end": 2})
+    assert int(start.timestamp()) == 1
+    assert int(end.timestamp()) == 2
+
+    # New invoice shape: subscription under parent; period on line items.
+    inv = {
+        "parent": {"subscription_details": {"subscription": "sub_new"}},
+        "lines": {"data": [{"period": {"end": 300}}]},
+        "period_end": 50,
+    }
+    assert _invoice_subscription_id(inv) == "sub_new"
+    assert int(_invoice_period_end(inv).timestamp()) == 300
+    # Legacy invoice shape.
+    assert _invoice_subscription_id({"subscription": "sub_old"}) == "sub_old"
+    assert int(_invoice_period_end({"period_end": 50}).timestamp()) == 50
 
 
 @override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106

@@ -123,8 +123,9 @@ def seed_template_into_tenant(
             if downloads_data:
                 _seed_downloads(downloads_data)
 
-            sub_plans = _seed_subscription_plans(plans_data, courses)
-            bundles = _seed_bundles(bundles_data, courses)
+            charge_currency = _tenant_charge_currency(tenant)
+            sub_plans = _seed_subscription_plans(plans_data, courses, charge_currency)
+            bundles = _seed_bundles(bundles_data, courses, charge_currency)
 
             from apps.media.models import Photo
 
@@ -270,6 +271,7 @@ def _seed_courses(courses_data, instructor, photo_map):
     created = []
     for course_data in courses_data:
         course_fields = {k: v for k, v in course_data.items() if k not in ("lessons", "module_title")}
+        course_fields = _coerce_pricing(course_fields)
         # Force draft state — coach should review before publishing to students.
         course_fields["is_published"] = False
         lessons_data = course_data["lessons"]
@@ -356,14 +358,33 @@ def _seed_extra_photos(base_courses, config_data, target):
         )
 
 
+def _coerce_pricing(data: dict) -> dict:
+    """Demote 'paid' entries with a missing/zero price to free — several niche
+    templates ship paid items without an amount, which would seed an unbuyable
+    'paid for 0' storefront item."""
+    if data.get("pricing_type") == "paid" and not float(data.get("price") or 0):
+        data = dict(data)
+        data["pricing_type"] = "free"
+        data["price"] = 0
+    return data
+
+
 def _seed_downloads(downloads_data):
     from apps.downloads.models import DownloadFile
 
     for dl in downloads_data:
-        DownloadFile.objects.create(**dl)
+        DownloadFile.objects.create(**_coerce_pricing(dl))
 
 
-def _seed_subscription_plans(plans_data, courses):
+def _tenant_charge_currency(tenant) -> str:
+    """Currency the tenant charges students in — keep seeded prices consistent
+    with what Stripe will actually charge."""
+    from apps.core.currency import tenant_charge_currency
+
+    return tenant_charge_currency(tenant)
+
+
+def _seed_subscription_plans(plans_data, courses, currency="TRY"):
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
@@ -378,7 +399,8 @@ def _seed_subscription_plans(plans_data, courses):
             name=plan_data["name"],
             description=plan_data.get("description", ""),
             price=Decimal(plan_data["price"]),
-            currency=plan_data.get("currency", "TRY"),
+            currency=plan_data.get("currency") or currency,
+            billing_interval_months=plan_data.get("billing_interval_months", 1),
             sort_order=plan_data.get("sort_order", 0),
         )
         for idx in plan_data.get("access_course_indices", []):
@@ -392,7 +414,7 @@ def _seed_subscription_plans(plans_data, courses):
     return created
 
 
-def _seed_bundles(bundles_data, courses):
+def _seed_bundles(bundles_data, courses, currency="TRY"):
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import Bundle, BundleItem
@@ -407,7 +429,7 @@ def _seed_bundles(bundles_data, courses):
             name=bundle_data["name"],
             description=bundle_data.get("description", ""),
             price=Decimal(bundle_data["price"]),
-            currency=bundle_data.get("currency", "TRY"),
+            currency=bundle_data.get("currency") or currency,
         )
         for idx in bundle_data.get("course_indices", []):
             if idx < len(courses):
@@ -437,7 +459,7 @@ def _seed_live_classes(live_classes_data, instructor, photos):
     cursor = start
     count = 0
     while cursor < end:
-        template = live_classes_data[count % len(live_classes_data)]
+        template = _coerce_pricing(live_classes_data[count % len(live_classes_data)])
         scheduled_at = cursor.replace(hour=10 + secrets.randbelow(11), minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
         LiveClass.objects.create(
@@ -465,7 +487,7 @@ def _seed_live_streams(live_streams_data, instructor, photos):
     cursor = start
     count = 0
     while cursor < end:
-        template = live_streams_data[count % len(live_streams_data)]
+        template = _coerce_pricing(live_streams_data[count % len(live_streams_data)])
         scheduled_at = cursor.replace(hour=20, minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
         LiveStream.objects.create(
@@ -493,7 +515,7 @@ def _seed_zoom_classes(zoom_data, instructor, photos):
     cursor = start
     count = 0
     while cursor < end:
-        template = zoom_data[count % len(zoom_data)]
+        template = _coerce_pricing(zoom_data[count % len(zoom_data)])
         scheduled_at = cursor.replace(hour=14 + secrets.randbelow(6), minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
         ZoomClass.objects.create(
@@ -523,7 +545,7 @@ def _seed_onsite_events(onsite_data, instructor, photos):
     cursor = start
     count = 0
     while cursor < end:
-        template = onsite_data[count % len(onsite_data)]
+        template = _coerce_pricing(onsite_data[count % len(onsite_data)])
         days_to_sat = (5 - cursor.weekday()) % 7
         scheduled_at = (cursor + timedelta(days=days_to_sat)).replace(hour=10, minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None

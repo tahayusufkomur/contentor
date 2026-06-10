@@ -9,6 +9,7 @@ import { SubscribeButton } from '@/components/billing/subscribe-button'
 import { Button } from '@/components/ui/button'
 import { BookOpen, CreditCard, Radio, Tv, Download, ArrowLeft, Package, CheckCircle2 } from 'lucide-react'
 import type { SubscriptionPlanDetail, PlanAccessItem } from '@/types/billing'
+import { billingIntervalSuffix } from '@/lib/billing-interval'
 
 const TYPE_CONFIG: Record<string, { label: string; icon: typeof BookOpen; href?: (item: PlanAccessItem) => string }> = {
   course: {
@@ -145,7 +146,7 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
             <CardContent className="space-y-4 p-6">
               <div className="text-center">
                 <p className="font-display text-3xl font-bold tabular-nums">
-                  {plan.price} <span className="text-lg font-normal text-muted-foreground">{plan.currency}/mo</span>
+                  {plan.price} <span className="text-lg font-normal text-muted-foreground">{plan.currency}{billingIntervalSuffix(plan.billing_interval_months)}</span>
                 </p>
               </div>
               {plan.is_subscribed ? (
@@ -159,6 +160,7 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
                   planName={plan.name}
                   price={plan.price}
                   currency={plan.currency}
+                  intervalMonths={plan.billing_interval_months}
                   className="w-full"
                 />
               )}
