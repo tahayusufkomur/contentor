@@ -39,10 +39,11 @@
 		}
 	}
 
-	# --- Django admin — apex + locale only ---
+	# --- Django admin — apex + locale only, at /django-admin (apex /admin/*
+	# is the superadmin SPA served by nextjs-main below) ---
 	@admin {
 		host contentor.app tr.contentor.app
-		path /admin /admin/*
+		path /django-admin /django-admin/*
 	}
 	handle @admin {
 		reverse_proxy django:8000 {

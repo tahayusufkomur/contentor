@@ -57,7 +57,8 @@ export default function TenantsPage() {
   const filtered = tenants.filter(
     (t) =>
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.slug.toLowerCase().includes(search.toLowerCase()),
+      t.slug.toLowerCase().includes(search.toLowerCase()) ||
+      (t.owner_email || '').toLowerCase().includes(search.toLowerCase()),
   )
 
   if (error) {
@@ -114,6 +115,8 @@ export default function TenantsPage() {
                   <TableHead>Name</TableHead>
                   <TableHead className="hidden md:table-cell">Slug</TableHead>
                   <TableHead>Plan</TableHead>
+                  <TableHead className="hidden lg:table-cell">Subscription</TableHead>
+                  <TableHead className="hidden lg:table-cell">Payments</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Created</TableHead>
                 </TableRow>
@@ -135,6 +138,22 @@ export default function TenantsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{tenant.plan_name || 'None'}</Badge>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {tenant.subscription_status ? (
+                        <Badge variant={tenant.subscription_status === 'active' ? 'success' : 'warning'}>
+                          {tenant.subscription_status.replace('_', ' ')}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">free</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {tenant.stripe_charges_enabled ? (
+                        <Badge variant="success">enabled</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusBadgeVariant(tenant)}>

@@ -10,6 +10,7 @@ _VALID_CURRENCIES = {c[0] for c in CURRENCY_CHOICES}
 
 class TenantListSerializer(serializers.ModelSerializer):
     plan_name = serializers.CharField(source="plan.name", default=None)
+    subscription_status = serializers.CharField(source="platform_subscription.status", default=None)
 
     class Meta:
         model = Tenant
@@ -21,6 +22,9 @@ class TenantListSerializer(serializers.ModelSerializer):
             "is_active",
             "provisioning_status",
             "plan_name",
+            "subscription_status",
+            "stripe_charges_enabled",
+            "stripe_payouts_enabled",
             "created_at",
         ]
 
@@ -40,6 +44,9 @@ class TenantDetailSerializer(serializers.ModelSerializer):
             "plan_name",
             "subdomain",
             "stripe_account_id",
+            "stripe_charges_enabled",
+            "stripe_payouts_enabled",
+            "billing_currency",
             "iyzico_submerchant_id",
             "created_at",
         ]

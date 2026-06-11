@@ -64,10 +64,10 @@ def magic_link_request(request):
     sent = send_magic_link(email, link, brand_name, locale=locale)
     if not sent:
         # Always print to console so the link is visible in `make logs`
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"MAGIC LINK for {email}:")
         print(f"{link}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     from apps.core.i18n_helpers import msg
 
@@ -104,24 +104,9 @@ def magic_link_verify(request):
     )
     jwt_token = create_jwt(user, tenant)
     response = Response({"user": UserSerializer(user).data})
-    response.set_cookie(
-        "contentor_access_token",
-        jwt_token,
-        httponly=True,
-        secure=False,
-        samesite="Lax",
-        max_age=86400 * 7,
-    )
+    _set_session_cookie(response, jwt_token)
     # Readable locale cookie — edge middleware in Next.js reads this without decoding the JWT.
-    locale = user.preferred_locale or _tenant_default_locale(tenant) or "en"
-    response.set_cookie(
-        "user-locale",
-        locale,
-        httponly=False,
-        secure=False,
-        samesite="Lax",
-        max_age=86400 * 365,
-    )
+    _set_locale_cookie(response, user, tenant)
     return response
 
 
@@ -142,13 +127,146 @@ def _tenant_default_locale(tenant) -> str:
 def logout(request):
     response = Response({"detail": "Logged out"})
     response.delete_cookie("contentor_access_token")
+    response.delete_cookie("contentor_impersonator_return")
+    return response
+
+
+SESSION_COOKIE = "contentor_access_token"
+IMPERSONATOR_RETURN_COOKIE = "contentor_impersonator_return"
+
+
+def _set_session_cookie(response, jwt_token, *, max_age=86400 * 7):
+    response.set_cookie(SESSION_COOKIE, jwt_token, httponly=True, secure=False, samesite="Lax", max_age=max_age)
+
+
+def _set_locale_cookie(response, user, tenant):
+    locale = user.preferred_locale or _tenant_default_locale(tenant) or "en"
+    response.set_cookie("user-locale", locale, httponly=False, secure=False, samesite="Lax", max_age=86400 * 365)
+
+
+def _decode_session(token):
+    """Decode an existing session JWT, or None if missing/invalid/expired."""
+    if not token:
+        return None
+    try:
+        return jwt_lib.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    except Exception:
+        return None
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def impersonate_verify(request):
+    """Redeem a one-time impersonation token for a session on this tenant.
+
+    Authorization rides entirely on the signed token (the caller may have no
+    session on this domain), so this endpoint takes no auth class — mirrors
+    magic-link verify.
+    """
+    from apps.core.i18n_helpers import msg
+
+    from .tokens import verify_impersonation_token
+
+    token = request.data.get("token", "")
+    try:
+        payload = verify_impersonation_token(token)
+    except Exception:
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
+
+    tenant = connection.tenant
+    if payload["tenant_id"] != tenant.schema_name:
+        return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
+
+    # Single-use: burn the jti. If Redis is unavailable we log and proceed —
+    # the 120s expiry still bounds replay.
+    jti = payload.get("jti", "")
+    try:
+        from django_redis import get_redis_connection
+
+        redis = get_redis_connection("default")
+        if not redis.set(f"imp:used:{jti}", "1", nx=True, ex=130):
+            return Response({"detail": "This impersonation link was already used."}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception:
+        logger.warning("impersonation replay-protection unavailable (redis); proceeding for jti=%s", jti)
+
+    try:
+        target = User.objects.get(id=payload["target_user_id"])
+    except User.DoesNotExist:
+        return Response({"detail": "Target account no longer exists."}, status=status.HTTP_404_NOT_FOUND)
+
+    imp_claim = {"by": payload.get("impersonator_email", ""), "scope": payload.get("scope", "")}
+    session_jwt = create_jwt(target, tenant, extra_claims={"imp": imp_claim})
+
+    response = Response({"user": UserSerializer(target).data, "impersonating": imp_claim})
+
+    # Studio scope only (coach→student, same person & domain): keep the coach's
+    # own token so "Exit" restores them in place. Platform scope (superadmin,
+    # arriving cross-domain) must NOT adopt whatever session happens to sit on
+    # the subdomain — its exit clears the tenant session and returns to apex.
+    existing = _decode_session(request.COOKIES.get(SESSION_COOKIE))
+    if (
+        imp_claim["scope"] == "studio"
+        and existing
+        and existing.get("tenant_id") == tenant.schema_name
+        and existing.get("role") in ("owner", "coach")
+        and not existing.get("imp")
+    ):
+        response.set_cookie(
+            IMPERSONATOR_RETURN_COOKIE,
+            request.COOKIES[SESSION_COOKIE],
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+            max_age=86400,
+        )
+    else:
+        # Clear any stale return cookie so a prior studio session can't leak
+        # into this one's exit.
+        response.delete_cookie(IMPERSONATOR_RETURN_COOKIE)
+
+    _set_session_cookie(response, session_jwt)
+    _set_locale_cookie(response, target, tenant)
+    logger.info("impersonation redeemed: by=%s as=%s tenant=%s", imp_claim["by"], target.email, tenant.schema_name)
+    return response
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def impersonate_stop(request):
+    """End an impersonated session.
+
+    Restores the impersonator's own session if one was stashed (coach→student),
+    otherwise just clears the session (superadmin, whose real session lives on
+    the apex domain).
+    """
+    tenant = connection.tenant
+    return_token = request.COOKIES.get(IMPERSONATOR_RETURN_COOKIE)
+    restored = _decode_session(return_token)
+
+    if restored and restored.get("tenant_id") == tenant.schema_name:
+        user = User.objects.filter(id=restored.get("user_id")).first()
+        response = Response({"restored": True, "user": UserSerializer(user).data if user else None})
+        _set_session_cookie(response, return_token)
+        response.delete_cookie(IMPERSONATOR_RETURN_COOKIE)
+        return response
+
+    response = Response({"restored": False})
+    response.delete_cookie(SESSION_COOKIE)
+    response.delete_cookie(IMPERSONATOR_RETURN_COOKIE)
     return response
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me(request):
-    return Response(UserSerializer(request.user).data)
+    data = UserSerializer(request.user).data
+    # Surface the impersonation banner state straight from the signed session
+    # claim — it can't be spoofed by setting a cookie.
+    auth = request.auth if isinstance(request.auth, dict) else {}
+    if auth.get("imp"):
+        data["impersonating"] = auth["imp"]
+    return Response(data)
 
 
 @api_view(["PATCH"])

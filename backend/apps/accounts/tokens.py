@@ -43,7 +43,7 @@ def verify_signup_token(token: str) -> dict:
     return payload
 
 
-def create_jwt(user, tenant, region: str | None = None) -> str:
+def create_jwt(user, tenant, region: str | None = None, extra_claims: dict | None = None) -> str:
     payload = {
         "user_id": user.id,
         "tenant_id": tenant.schema_name,
@@ -52,4 +52,37 @@ def create_jwt(user, tenant, region: str | None = None) -> str:
         "exp": datetime.now(tz=UTC) + timedelta(days=settings.JWT_EXPIRY_DAYS),
         "iat": datetime.now(tz=UTC),
     }
+    if extra_claims:
+        payload.update(extra_claims)
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+# Impersonation: a privileged admin (superadmin or coach) mints a one-time,
+# short-lived token authorizing a login *as* another user. It is redeemed on
+# the target tenant's domain (`impersonate_verify`), which exchanges it for a
+# normal session JWT carrying an `imp` claim so the session knows — and can
+# surface — that it is impersonated. The `jti` makes it single-use.
+IMPERSONATION_EXPIRY_SECONDS = 120
+
+
+def create_impersonation_token(
+    *, tenant_schema: str, target_user_id: int, impersonator_email: str, scope: str, jti: str
+) -> str:
+    payload = {
+        "purpose": "impersonation",
+        "tenant_id": tenant_schema,
+        "target_user_id": target_user_id,
+        "impersonator_email": impersonator_email,
+        "scope": scope,  # "platform" (superadmin) | "studio" (coach)
+        "jti": jti,
+        "exp": datetime.now(tz=UTC) + timedelta(seconds=IMPERSONATION_EXPIRY_SECONDS),
+        "iat": datetime.now(tz=UTC),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+def verify_impersonation_token(token: str) -> dict:
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    if payload.get("purpose") != "impersonation":
+        raise jwt.InvalidTokenError("Invalid token purpose")
+    return payload

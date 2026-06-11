@@ -24,6 +24,9 @@ SHARED_APPS = [
     "corsheaders",
     "apps.core",
     "apps.accounts",
+    # No models — registers API admin sites for both SPAs via admin_panels.py
+    # autodiscovery.
+    "apps.adminkit",
 ]
 
 TENANT_APPS = [

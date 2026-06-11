@@ -12,4 +12,11 @@ urlpatterns = [
     ),
     path("plans/", views_platform.platform_plans, name="platform-plans"),
     path("plans/<int:pk>/", views_platform.platform_plan_detail, name="platform-plan-detail"),
+    path("subscriptions/", views_platform.platform_subscriptions, name="platform-subscriptions"),
+    path("webhook-events/", views_platform.platform_webhook_events, name="platform-webhook-events"),
+    path(
+        "webhook-events/<int:pk>/",
+        views_platform.platform_webhook_event_detail,
+        name="platform-webhook-event-detail",
+    ),
 ]

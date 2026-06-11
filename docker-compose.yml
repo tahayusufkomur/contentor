@@ -63,7 +63,9 @@ services:
       - "traefik.http.routers.django-api.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`) || PathPrefix(`/api/webhooks`)"
       - "traefik.http.routers.django-api.entrypoints=web"
       - "traefik.http.routers.django-api.priority=10"
-      - "traefik.http.routers.django-admin.rule=(Host(`localhost`) || Host(`tr.localhost`)) && (PathPrefix(`/admin`) || PathPrefix(`/static/admin`))"
+      # Django admin at /django-admin — apex /admin/* falls through to the
+      # nextjs-main router (the superadmin SPA).
+      - "traefik.http.routers.django-admin.rule=(Host(`localhost`) || Host(`tr.localhost`)) && (PathPrefix(`/django-admin`) || PathPrefix(`/static/admin`))"
       - "traefik.http.routers.django-admin.entrypoints=web"
       - "traefik.http.routers.django-admin.priority=10"
       - "traefik.http.services.django.loadbalancer.server.port=8000"

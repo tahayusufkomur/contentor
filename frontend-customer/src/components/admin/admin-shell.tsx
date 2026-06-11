@@ -3,6 +3,7 @@
 import {
   BookOpen,
   CreditCard,
+  Database,
   Download,
   Film,
   Image as ImageIcon,
@@ -18,6 +19,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import { AppSidebar } from "@/components/shared/app-sidebar";
+import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
 import type { NavSection } from "@/components/shared/app-sidebar";
@@ -69,6 +71,9 @@ export function AdminShell({ children, user }: AdminShellProps) {
       items: [
         { label: t("nav.items.billing"), href: "/admin/billing", icon: CreditCard },
         { label: t("nav.items.payouts"), href: "/admin/payouts", icon: Wallet },
+        // Schema-driven admin kit: model labels come from the API, so the
+        // entry point keeps a plain (untranslated) label.
+        { label: "Data", href: "/admin/m", icon: Database },
       ],
     },
   ];
@@ -82,6 +87,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
         <MobileHeader title={t("title")} sections={navSections} user={user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
+      <ImpersonationBanner />
     </div>
   );
 }

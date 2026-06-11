@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Mail, CreditCard, Calendar } from 'lucide-react'
+import { ArrowLeft, Globe, Mail, CreditCard, Calendar, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,8 +21,36 @@ interface TenantDetail {
   plan_name: string | null
   subdomain: string
   stripe_account_id: string
+  stripe_charges_enabled: boolean
+  stripe_payouts_enabled: boolean
+  billing_currency: string
   iyzico_submerchant_id: string
   created_at: string
+  platform_subscription: {
+    plan: string
+    status: string
+    provider: string
+    cancel_at_period_end: boolean
+    current_period_end: string | null
+  } | null
+  usage: {
+    month: string
+    student_count: number
+    storage_bytes: number
+    streaming_minutes: number
+    emails_sent: number
+  } | null
+  marketplace: {
+    gross_by_currency: Record<string, string>
+    fees_by_currency: Record<string, string>
+    payment_count: number
+  }
+}
+
+function currencyMap(map: Record<string, string> | undefined): string {
+  if (!map) return '\u2014'
+  const parts = Object.entries(map).map(([cur, amount]) => `${amount} ${cur}`)
+  return parts.length ? parts.join(' \u00b7 ') : '\u2014'
 }
 
 function DetailSkeleton() {
@@ -140,6 +168,12 @@ export default function TenantDetailPage() {
           <p className="mt-1 text-sm text-muted-foreground">{tenant.slug}</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="sm">
+            <a href={`http://${tenant.subdomain}`} target="_blank" rel="noreferrer">
+              <ExternalLink className="mr-1 h-4 w-4" />
+              Open site
+            </a>
+          </Button>
           <span className="text-sm text-muted-foreground">
             {tenant.is_active ? 'Enabled' : 'Disabled'}
           </span>
@@ -194,6 +228,105 @@ export default function TenantDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Monetization */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Monetization</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Platform subscription</p>
+              {tenant.platform_subscription ? (
+                <div className="text-right">
+                  <Badge
+                    variant={tenant.platform_subscription.status === 'active' ? 'success' : 'warning'}
+                  >
+                    {tenant.platform_subscription.plan} · {tenant.platform_subscription.status}
+                    {tenant.platform_subscription.cancel_at_period_end ? ' · canceling' : ''}
+                  </Badge>
+                  {tenant.platform_subscription.current_period_end && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      renews {new Date(tenant.platform_subscription.current_period_end).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Badge variant="secondary">free</Badge>
+              )}
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Accepting payments</p>
+              <Badge variant={tenant.stripe_charges_enabled ? 'success' : 'secondary'}>
+                {tenant.stripe_charges_enabled ? 'enabled' : 'not set up'}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Payouts</p>
+              <Badge variant={tenant.stripe_payouts_enabled ? 'success' : 'secondary'}>
+                {tenant.stripe_payouts_enabled ? 'enabled' : 'not set up'}
+              </Badge>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Sales volume</p>
+              <p className="text-sm tabular-nums text-foreground">
+                {currencyMap(tenant.marketplace?.gross_by_currency)}
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Platform fees earned</p>
+              <p className="text-sm tabular-nums text-foreground">
+                {currencyMap(tenant.marketplace?.fees_by_currency)}
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Payments</p>
+              <p className="text-sm tabular-nums text-foreground">
+                {tenant.marketplace?.payment_count ?? 0}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Usage</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {tenant.usage ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">Month</p>
+                  <p className="text-sm text-foreground">{tenant.usage.month}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">Students</p>
+                  <p className="text-sm tabular-nums text-foreground">{tenant.usage.student_count}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">Storage</p>
+                  <p className="text-sm tabular-nums text-foreground">
+                    {(tenant.usage.storage_bytes / 1024 / 1024).toFixed(1)} MB
+                  </p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">Streaming minutes</p>
+                  <p className="text-sm tabular-nums text-foreground">{tenant.usage.streaming_minutes}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-muted-foreground">Emails sent</p>
+                  <p className="text-sm tabular-nums text-foreground">{tenant.usage.emails_sent}</p>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No usage recorded yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

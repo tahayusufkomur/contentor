@@ -13,18 +13,20 @@ from apps.core.views import health_check
 def admin_auto_login(request):
     """Auto-login to Django admin if user has a valid JWT cookie."""
     if request.user.is_authenticated and request.user.is_staff:
-        return HttpResponseRedirect("/admin/")
+        return HttpResponseRedirect("/django-admin/")
     backend = AdminJWTBackend()
     user = backend.authenticate(request)
     if user:
         login(request, user, backend="apps.accounts.backends.AdminJWTBackend")
-        return HttpResponseRedirect("/admin/")
-    return HttpResponseRedirect("/admin/login/")
+        return HttpResponseRedirect("/django-admin/")
+    return HttpResponseRedirect("/django-admin/login/")
 
 
 urlpatterns = [
-    path("admin/login/", admin_auto_login, name="admin-auto-login"),
-    path("admin/", admin.site.urls),
+    # Django admin lives at /django-admin/ — apex /admin/* is the superadmin
+    # SPA (frontend-main), which the edge proxies route to Next.js.
+    path("django-admin/login/", admin_auto_login, name="admin-auto-login"),
+    path("django-admin/", admin.site.urls),
     # Provider webhooks. MUST be declared before any `/api/v1/` route so they
     # share the global URL resolver but bypass `TenantJWTAuthentication`.
     # The webhook view sets `@authentication_classes([])` so DRF defaults do
@@ -36,6 +38,10 @@ urlpatterns = [
     path("api/v1/onboarding/", include("apps.core.urls_onboarding")),
     path("api/v1/admin/", include("apps.tenant_config.urls")),
     path("api/v1/platform/", include("apps.core.urls_platform")),
+    # Schema-driven admin kit: superadmin (public schema) + coach studio
+    # (tenant schema) sites. See apps/adminkit/.
+    path("api/v1/platform-admin/", include("apps.adminkit.urls_platform")),
+    path("api/v1/studio-admin/", include("apps.adminkit.urls_studio")),
     path("api/v1/me/", include("apps.core.urls_me")),
     path("api/v1/upload/", include("apps.core.urls_upload")),
     path("api/v1/courses/", include("apps.courses.urls")),

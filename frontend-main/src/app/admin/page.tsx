@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Users, UserCheck, GraduationCap, HardDrive } from 'lucide-react'
+import { Users, UserCheck, GraduationCap, HardDrive, Banknote, Percent, Receipt, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { PlatformDashboard } from '@/types/tenant'
+import { formatCurrencyMap, type PlatformDashboard } from '@/types/tenant'
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -121,6 +121,31 @@ export default function AdminDashboardPage() {
     { label: 'Active Tenants', value: data.active_tenants, description: 'Currently active', icon: UserCheck },
     { label: 'Total Students', value: data.total_students, description: 'Across all tenants', icon: GraduationCap },
     { label: 'Storage Used', value: formatBytes(data.total_storage_bytes), description: 'Total platform storage', icon: HardDrive },
+    {
+      label: 'Subscription MRR',
+      value: formatCurrencyMap(data.platform_subscriptions?.mrr_by_currency),
+      description: `${data.platform_subscriptions?.active_subscriptions ?? 0} active coach subscriptions`,
+      icon: Banknote,
+    },
+    {
+      label: 'Marketplace Fees',
+      value: formatCurrencyMap(data.marketplace?.fees_by_currency),
+      description: 'Platform cut of student payments',
+      icon: Percent,
+    },
+    {
+      label: 'Marketplace Volume',
+      value: formatCurrencyMap(data.marketplace?.gross_by_currency),
+      description: `${data.marketplace?.payment_count ?? 0} payments · ${data.monetization_ready_tenants ?? 0} coaches accepting payments`,
+      icon: Receipt,
+    },
+    {
+      label: 'Webhook Failures',
+      value: data.webhook_failures ?? 0,
+      description: 'Events with processing errors',
+      icon: AlertTriangle,
+      href: '/admin/webhooks',
+    },
   ]
 
   return (
@@ -134,17 +159,26 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon
-          return (
-            <Card key={stat.label}>
+          const card = (
+            <Card key={stat.label} className="h-full">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
                 <Icon className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className={`font-bold text-foreground ${String(stat.value).length > 12 ? 'text-xl' : 'text-3xl'}`}>
+                  {stat.value}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">{stat.description}</p>
               </CardContent>
             </Card>
+          )
+          return 'href' in stat && stat.href ? (
+            <Link key={stat.label} href={stat.href} className="block">
+              {card}
+            </Link>
+          ) : (
+            card
           )
         })}
       </div>
