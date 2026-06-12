@@ -84,14 +84,13 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     logging: *logging
-    # --error-logfile -: worker lifecycle/crashes/timeouts to stdout.
-    # --access-logfile -: one line per request (real client via X-Forwarded-For,
-    #   since we sit behind Caddy). Drop --access-logfile if the 15s healthcheck
-    #   hits get too noisy.
+    # --error-logfile -: worker lifecycle/crashes/timeouts to stdout. Access
+    # logging is intentionally off (the 15s healthcheck would flood it); request
+    # errors still surface via Django's django.request logger, and app-level
+    # business events are logged explicitly.
     command: >
       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --graceful-timeout 30
-      --error-logfile - --access-logfile -
-      --access-logformat '%({x-forwarded-for}i)s "%(r)s" %(s)s %(b)sb %(M)sms "%(a)s"'
+      --error-logfile -
     env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
