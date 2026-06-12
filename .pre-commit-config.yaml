@@ -50,3 +50,8 @@ repos:
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|css|json)$
         pass_filenames: true
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
