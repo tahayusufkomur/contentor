@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.2
+    image: traefik:v3.7
     ports:
       - "80:80"
       - "8080:8080"
@@ -69,22 +69,6 @@ services:
       - "traefik.http.routers.django-admin.entrypoints=web"
       - "traefik.http.routers.django-admin.priority=10"
       - "traefik.http.services.django.loadbalancer.server.port=8000"
-
-  django-channels:
-    build:
-      context: ./backend
-    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
-    volumes:
-      - ./backend:/app/backend
-    env_file: .env
-    depends_on:
-      django:
-        condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.channels.rule=PathPrefix(`/ws`)"
-      - "traefik.http.routers.channels.entrypoints=web"
-      - "traefik.http.services.channels.loadbalancer.server.port=8001"
 
   nextjs-customer:
     build:

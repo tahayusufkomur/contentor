@@ -23,14 +23,6 @@
 		}
 	}
 
-	# --- WebSockets (Channels/Daphne) — on every host ---
-	@ws path /ws/*
-	handle @ws {
-		reverse_proxy django-channels:8001 {
-			header_up X-Forwarded-Proto https
-		}
-	}
-
 	# --- Django static (admin assets), served by WhiteNoise — on every host ---
 	@static path /static/*
 	handle @static {

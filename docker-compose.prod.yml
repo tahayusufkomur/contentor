@@ -31,7 +31,6 @@ services:
       - internal
     depends_on:
       - django
-      - django-channels
       - nextjs-main
       - nextjs-customer
     healthcheck:
@@ -103,23 +102,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
-
-  django-channels:
-    build:
-      context: ./backend
-    container_name: contentor-channels
-    restart: unless-stopped
-    mem_limit: 256m
-    logging: *logging
-    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
-    env_file: .env.prod
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings.prod
-    networks:
-      - internal
-    depends_on:
-      django:
-        condition: service_healthy
 
   celery-worker:
     build:

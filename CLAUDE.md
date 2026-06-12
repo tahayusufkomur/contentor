@@ -10,7 +10,7 @@ Guidance for Claude Code when working in the Contentor repository.
 - **Student** = end user inside a tenant
 - **Superadmin** = main app owner (us)
 
-Production stack: Django 5.1 + DRF + django-tenants + Postgres 17 + Redis 7 + Celery + Daphne (Channels) + 2× Next.js 14 + Traefik v3.2.
+Production stack: Django 5.1 + DRF + django-tenants + Postgres 17 + Redis 7 + Celery + 2× Next.js 14, behind Caddy in prod (dev uses Traefik v3.x).
 
 ## Commands
 
@@ -58,7 +58,7 @@ Tenant routing: `apps.core.routers.TenantRouter` keeps tenant-only apps out of t
 
 Auth: JWT-based. `TenantJWTAuthentication` is the default DRF auth class — public endpoints (magic link, OAuth, signup) MUST set `@authentication_classes([])`, `AllowAny` alone is not enough.
 
-API prefix: `/api/v1/` (also `/api/health/`). WebSockets at `/ws/*` go to Daphne.
+API prefix: `/api/v1/` (also `/api/health/`).
 
 ### Frontend
 
@@ -76,9 +76,9 @@ Two independent Next.js 14 apps, App Router, Tailwind + Radix UI:
 
 ### Docker Services (`docker-compose.yml`)
 
-`traefik` (80/8080), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `django-channels` (Daphne :8001, depends on django service_healthy), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
+`traefik` (80/8080), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
 
-Only the gunicorn entrypoint runs migrations + collectstatic — daphne/celery skip to avoid races.
+Only the gunicorn entrypoint runs migrations + collectstatic — celery skips to avoid races.
 
 ## MailCraft Integration
 
@@ -115,7 +115,7 @@ Domain `contentor.app` (apex + `tr.` locale + `*.` tenant subdomains).
   is on the internal network with no published host ports. Dev still uses
   `docker-compose.yml` + Traefik — untouched.
 - **Routing:** `Caddyfile.prod` does it all (no Traefik in prod). `/api/*`,
-  `/ws/*`, `/static/*` and apex `/admin/*` → Django/Daphne; apex + `tr.` →
+  `/static/*` and apex `/django-admin/*` → Django; apex + `tr.` →
   `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
   Tenancy is dynamic — Django resolves the tenant from the Host header; the proxy
   needs no per-tenant config, only wildcard DNS.
