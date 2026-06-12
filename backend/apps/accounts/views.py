@@ -37,6 +37,7 @@ def magic_link_request(request):
     email = serializer.validated_data["email"]
     tenant = connection.tenant
     token = create_magic_link_token(email, tenant.schema_name, tenant.slug)
+    logger.info("magic link requested email=%s tenant=%s", email, tenant.slug)
 
     # Demo tenants: bypass email, return token directly for instant login
     if tenant.slug.startswith("demo-"):
@@ -92,7 +93,7 @@ def magic_link_verify(request):
         return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
     region = getattr(tenant, "region", None) or getattr(request, "region", "global")
     # Email is unique per-region; include region in the lookup key.
-    user, _ = User.objects.get_or_create(
+    user, created = User.objects.get_or_create(
         email=payload["email"],
         region=region,
         defaults={
@@ -103,6 +104,12 @@ def magic_link_verify(request):
         },
     )
     jwt_token = create_jwt(user, tenant)
+    logger.info(
+        "login via magic link email=%s tenant=%s new_student=%s",
+        user.email,
+        tenant.slug,
+        created,
+    )
     response = Response({"user": UserSerializer(user).data})
     _set_session_cookie(response, jwt_token)
     # Readable locale cookie — edge middleware in Next.js reads this without decoding the JWT.
@@ -125,6 +132,7 @@ def _tenant_default_locale(tenant) -> str:
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
+    logger.info("logout user=%s", getattr(request.user, "email", "anonymous"))
     response = Response({"detail": "Logged out"})
     response.delete_cookie("contentor_access_token")
     response.delete_cookie("contentor_impersonator_return")

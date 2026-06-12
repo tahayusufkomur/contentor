@@ -84,7 +84,14 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     logging: *logging
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --graceful-timeout 30
+    # --error-logfile -: worker lifecycle/crashes/timeouts to stdout.
+    # --access-logfile -: one line per request (real client via X-Forwarded-For,
+    #   since we sit behind Caddy). Drop --access-logfile if the 15s healthcheck
+    #   hits get too noisy.
+    command: >
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --graceful-timeout 30
+      --error-logfile - --access-logfile -
+      --access-logformat '%({x-forwarded-for}i)s "%(r)s" %(s)s %(b)sb %(M)sms "%(a)s"'
     env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod

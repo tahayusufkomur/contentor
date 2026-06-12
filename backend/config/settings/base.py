@@ -215,3 +215,61 @@ STRIPE_PRICE_STARTER_USD = os.environ.get("STRIPE_PRICE_STARTER_USD", "")
 STRIPE_PRICE_PRO_USD = os.environ.get("STRIPE_PRICE_PRO_USD", "")
 STRIPE_PRICE_STARTER_TRY = os.environ.get("STRIPE_PRICE_STARTER_TRY", "")
 STRIPE_PRICE_PRO_TRY = os.environ.get("STRIPE_PRICE_PRO_TRY", "")
+
+# --- Logging ------------------------------------------------------------------
+# Everything goes to stdout so `docker logs` / the fleet telemetry collector see
+# it. App loggers (`apps.*`) emit at DJANGO_LOG_LEVEL (default INFO) so business
+# events — signups, logins, tenant provisioning, Stripe webhooks, campaign sends
+# — are visible in prod without flipping DEBUG. Each line carries the active
+# tenant schema via TenantContextFilter. Tune verbosity with DJANGO_LOG_LEVEL.
+LOG_LEVEL = os.environ.get("DJANGO_LOG_LEVEL", "INFO").upper()
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "tenant_context": {"()": "apps.core.logging.TenantContextFilter"},
+    },
+    "formatters": {
+        "console": {
+            "format": "%(asctime)s %(levelname)-7s %(name)s [tenant=%(tenant)s] %(message)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "formatter": "console",
+            "filters": ["tenant_context"],
+        },
+    },
+    # Root catches anything unconfigured at WARNING so third-party noise stays
+    # quiet while real problems still surface.
+    "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        # Our code — the events we actually want to watch.
+        "apps": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "config": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        # Django framework: keep request errors (5xx → ERROR, 4xx → WARNING).
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "django.server": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # SQL is firehose-level; only show it when explicitly asked.
+        "django.db.backends": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "celery": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # Chatty libraries — clamp to WARNING.
+        "urllib3": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "botocore": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "boto3": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "s3transfer": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "stripe": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "asyncio": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+    },
+}
+
+# Let Django's LOGGING config (above) own logging in the celery worker/beat
+# processes too, instead of celery hijacking the root logger. The actual wiring
+# is the `setup_logging` signal in config/celery.py.
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False

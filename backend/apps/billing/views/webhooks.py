@@ -179,6 +179,13 @@ def _upsert_subscription_from_event(*, tenant, user, plan, session_obj, subscrip
     if provider_cust_id and not user.payment_customer_id:
         User.objects.filter(pk=user.pk).update(payment_customer_id=provider_cust_id)
 
+    logger.info(
+        "platform subscription upserted tenant=%s plan=%s status=%s sub=%s",
+        tenant.slug,
+        getattr(plan, "slug", plan.pk),
+        sub_status,
+        provider_sub_id or "-",
+    )
     return sub
 
 
@@ -251,6 +258,12 @@ def _handle_marketplace_checkout_completed(event):
                 payment.metadata = {**(payment.metadata or {}), "receipt_url": receipt_url}
             payment.save(update_fields=["status", "provider", "provider_payment_id", "metadata"])
         grant_access_for_payment(payment)
+        logger.info(
+            "marketplace payment completed tenant=%s payment=%s amount=%s",
+            tenant.slug,
+            payment_id,
+            getattr(payment, "amount", "?"),
+        )
 
 
 def _connected_tenant(event):
@@ -314,6 +327,13 @@ def _upsert_tenant_subscription(
                 # Fallback until the next subscription webhook carries real periods.
                 "current_period_end": period_end or (now + timedelta(days=30 * (plan.billing_interval_months or 1))),
             },
+        )
+        logger.info(
+            "marketplace subscription upserted tenant=%s plan=%s status=%s sub=%s",
+            tenant.slug,
+            plan.pk,
+            sub_status,
+            provider_sub_id,
         )
 
 
@@ -440,6 +460,13 @@ def _handle_marketplace_invoice_paid(event, tenant):
                 "invoice_id": invoice.get("id", ""),
                 "receipt_url": invoice.get("hosted_invoice_url", ""),
             },
+        )
+        logger.info(
+            "marketplace payment recorded tenant=%s sub=%s student=%s amount=%s",
+            tenant.slug,
+            provider_sub_id,
+            sub.student_id,
+            Decimal(amount_cents) / Decimal(100),
         )
 
 
@@ -604,6 +631,13 @@ def _handle_invoice_paid(event):
                 platform_subscription_id=sub.pk,
                 metadata={"invoice_id": invoice.get("id", "")},
             )
+            logger.info(
+                "platform payment recorded tenant=%s sub=%s amount=%s %s",
+                tenant.slug,
+                sub_id,
+                Decimal(amount_cents) / Decimal(100),
+                currency,
+            )
     except Exception:  # noqa: BLE001 — payment record is bookkeeping, not load-bearing
         logger.exception(
             "Failed to record platform-subscription Payment for sub=%s; subscription state updated regardless",
@@ -715,6 +749,7 @@ def stripe_webhook(request):
             status=status.HTTP_200_OK,
         )
 
+    logger.info("stripe webhook received type=%s id=%s", event_type, event_id)
     try:
         with transaction.atomic():
             # Connect events from a coach's connected account (marketplace,
@@ -751,6 +786,7 @@ def stripe_webhook(request):
 
         webhook_event.processed_at = timezone.now()
         webhook_event.save(update_fields=["processed_at"])
+        logger.info("stripe webhook processed type=%s id=%s", event_type, event_id)
     except Exception:  # noqa: BLE001 — record + re-raise for Stripe retry
         webhook_event.processing_error = traceback.format_exc()
         webhook_event.save(update_fields=["processing_error"])

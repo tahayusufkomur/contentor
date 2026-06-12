@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
@@ -10,6 +12,8 @@ from rest_framework.response import Response
 from .models import Domain, Tenant
 from .serializers import CreatorSignupSerializer
 from .tasks import provision_tenant
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -53,6 +57,7 @@ def creator_signup(request):
     from apps.accounts.tokens import create_signup_token
 
     token = create_signup_token(email, name, brand_name, region=region)
+    logger.info("creator signup requested email=%s brand=%s region=%s", email, brand_name, region)
 
     scheme = "https" if request.is_secure() else "http"
     host = request.get_host()
@@ -168,6 +173,13 @@ def creator_signup_verify(request):
         domain=tenant_fqdn,
         tenant=tenant,
         is_primary=True,
+    )
+    logger.info(
+        "tenant created slug=%s schema=%s region=%s owner=%s",
+        slug,
+        schema_name,
+        region,
+        email,
     )
     # Provisioning is enqueued from the onboarding template endpoint (or the
     # skip endpoint) so we can seed niche content as part of the same task —
