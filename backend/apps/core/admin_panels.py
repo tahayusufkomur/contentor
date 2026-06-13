@@ -82,12 +82,22 @@ class PlatformPlanAdmin(ModelAdmin):
 class TenantAdmin(ModelAdmin):
     icon = "building-2"
     description = "Coach workspaces. Provisioning owns creation; edit sparingly."
-    list_display = ("name", "slug", "owner_email", "region", "plan", "provisioning_status", "is_active", "created_at")
+    list_display = (
+        "name",
+        "slug",
+        "owner_email",
+        "region",
+        "plan",
+        "provisioning_status",
+        "is_active",
+        "is_published",
+        "created_at",
+    )
     search_fields = ("name", "slug", "owner_email")
-    list_filters = ("is_active", "region", "provisioning_status", "plan", "is_demo")
+    list_filters = ("is_active", "is_published", "region", "provisioning_status", "plan", "is_demo")
     ordering = ("-created_at",)
     list_select_related = ("plan",)
-    fields = ("name", "plan", "is_active")
+    fields = ("name", "plan", "is_active", "is_published")
     readonly_fields = (
         "slug",
         "subdomain",

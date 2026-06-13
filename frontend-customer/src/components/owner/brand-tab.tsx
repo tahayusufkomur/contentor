@@ -4,9 +4,8 @@ import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { PhotoPicker } from "@/components/admin/photo-picker";
+import { LogoUploader } from "@/components/owner/logo-uploader";
 import type { TenantConfig } from "@/types/tenant";
-import type { Photo } from "@/types/photo";
 
 const FONTS = [
   "Inter",
@@ -39,15 +38,7 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
 
       <div className="space-y-1.5">
         <Label>Logo</Label>
-        <PhotoPicker
-          value={config.logo_url}
-          previewUrl={config.logo_url}
-          onSelect={(photo: Photo) =>
-            onChange({ logo_url: photo.s3_key, logo_id: photo.id })
-          }
-          onClear={() => onChange({ logo_url: "", logo_id: null })}
-          label="Choose logo"
-        />
+        <LogoUploader logoUrl={config.logo_url} onChange={(patch) => onChange(patch)} />
       </div>
 
       <div className="space-y-2">

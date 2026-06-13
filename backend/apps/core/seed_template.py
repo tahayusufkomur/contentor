@@ -151,6 +151,7 @@ _CONFIG_SKIP_KEYS = {"brand_name", "default_locale", "onboarding_completed"}
 
 
 def _merge_config(tenant, config_data: dict, photo_map: dict) -> None:
+    from apps.tenant_config.defaults import pages_from_landing_sections
     from apps.tenant_config.models import TenantConfig
 
     config = TenantConfig.objects.first()
@@ -159,7 +160,9 @@ def _merge_config(tenant, config_data: dict, photo_map: dict) -> None:
         # template re-run hits a freshly-wiped tenant, fall back to create.
         merged = {k: v for k, v in config_data.items() if k not in _CONFIG_SKIP_KEYS}
         merged["brand_name"] = tenant.name
-        _inject_photo_ids(merged.get("landing_sections", {}), photo_map)
+        sections = merged.get("landing_sections", {})
+        _inject_photo_ids(sections, photo_map)
+        merged["pages"] = pages_from_landing_sections(sections, brand_name=tenant.name)
         TenantConfig.objects.create(**merged)
         return
 
@@ -172,6 +175,9 @@ def _merge_config(tenant, config_data: dict, photo_map: dict) -> None:
             value = dict(value)
             _inject_photo_ids(value, photo_map)
         setattr(config, key, value)
+    # Derive the builder pages from the (photo-injected) niche landing sections,
+    # replacing the placeholder defaults provision created.
+    config.pages = pages_from_landing_sections(config.landing_sections or {}, brand_name=config.brand_name)
     config.save()
 
 

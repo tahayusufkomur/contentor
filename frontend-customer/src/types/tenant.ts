@@ -71,6 +71,39 @@ export interface LandingSections {
   cta?: LandingCta;
 }
 
+// ---------------------------------------------------------------------------
+// Website builder (pages + blocks). Supersedes LandingSections above.
+// ---------------------------------------------------------------------------
+
+/** An image field value. The serializer re-signs `url` from `photo_id` on read. */
+export interface BlockImage {
+  url: string | null;
+  photo_id: string | null;
+}
+
+/** A video field value — an external embed URL or a signed library-video URL. */
+export interface BlockVideo {
+  url: string | null;
+  video_id: number | null;
+}
+
+/** A single block: an `id`, a `type` from the registry, and a flat content bag. */
+export interface Block {
+  id: string;
+  type: string;
+  enabled?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [field: string]: any;
+}
+
+export interface PageConfig {
+  blocks: Block[];
+}
+
+export type PageKey = "home" | "about" | "courses" | "pricing" | "faq" | "contact";
+
+export type PagesConfig = Partial<Record<PageKey, PageConfig>>;
+
 export interface TenantConfig {
   id: number;
   brand_name: string;
@@ -84,11 +117,17 @@ export interface TenantConfig {
   social_links: Record<string, string>;
   meta_description: string;
   navbar_config: NavbarConfig;
+  /** Legacy single-page config. Superseded by `pages`; kept for back-compat. */
   landing_sections: LandingSections;
+  /** Website-builder content, keyed by page. */
+  pages?: PagesConfig;
   timezone: string;
   onboarding_completed: boolean;
   is_demo?: boolean;
   tenant_name?: string;
   tenant_slug?: string;
   demo_niche?: string;
+  /** Publish gate: when false the public site is hidden behind a preview gate. */
+  is_published?: boolean;
+  has_preview_password?: boolean;
 }

@@ -5,6 +5,7 @@ which is locked to superusers managing the whole platform.
 """
 
 from django.conf import settings
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -46,6 +47,8 @@ def my_tenants(request):
                 "slug": tenant.slug,
                 "region": tenant.region,
                 "is_active": tenant.is_active,
+                "is_published": tenant.is_published,
+                "has_preview_password": bool(tenant.preview_password),
                 "provisioning_status": tenant.provisioning_status,
                 "plan_name": tenant.plan.name if tenant.plan else None,
                 "domain": domain_name,
@@ -54,3 +57,39 @@ def my_tenants(request):
             }
         )
     return Response(data)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def update_my_tenant(request, slug):
+    """Let a coach manage their own tenant's publish gate.
+
+    Editable: ``is_published`` (go live / hide) and ``preview_password`` (the
+    password that unlocks the site while unpublished). Ownership is enforced by
+    matching the tenant's ``owner_email`` to the requester.
+    """
+    email = (request.user.email or "").lower()
+    try:
+        tenant = Tenant.objects.exclude(schema_name="public").get(slug=slug, owner_email__iexact=email)
+    except Tenant.DoesNotExist:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    updated = []
+    if "is_published" in request.data:
+        tenant.is_published = bool(request.data["is_published"])
+        updated.append("is_published")
+    if "preview_password" in request.data:
+        password = request.data["preview_password"]
+        tenant.preview_password = "" if password is None else str(password)[:128]
+        updated.append("preview_password")
+
+    if updated:
+        tenant.save(update_fields=updated)
+
+    return Response(
+        {
+            "slug": tenant.slug,
+            "is_published": tenant.is_published,
+            "has_preview_password": bool(tenant.preview_password),
+        }
+    )

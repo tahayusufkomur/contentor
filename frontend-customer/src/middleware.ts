@@ -18,6 +18,8 @@ export function middleware(request: NextRequest) {
   }
 
   headers.set('x-tenant-domain', hostname)
+  // Expose the path so the root layout can let auth routes bypass the publish gate.
+  headers.set('x-pathname', request.nextUrl.pathname)
 
   // Dev override
   if (process.env.NODE_ENV === 'development') {

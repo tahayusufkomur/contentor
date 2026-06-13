@@ -24,7 +24,14 @@ class TenantConfig(models.Model):
     social_links = models.JSONField(default=dict)
     meta_description = models.TextField(blank=True, default="")
     navbar_config = models.JSONField(default=dict)
+    # Legacy single-page landing config. Superseded by ``pages`` (the website
+    # builder); kept populated as a backfill source / safety net. Drop in a
+    # later migration once ``pages`` is proven in production.
     landing_sections = models.JSONField(default=dict)
+    # Website-builder content: a dict keyed by page (home/about/courses/
+    # pricing/faq/contact), each an ordered list of theme-locked blocks. See
+    # apps.tenant_config.defaults for the catalog and conversion helpers.
+    pages = models.JSONField(default=dict, blank=True)
     timezone = models.CharField(max_length=50, default="UTC")
     default_locale = models.CharField(
         max_length=2,

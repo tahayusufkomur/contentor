@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Sans } from "next/font/google";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -7,12 +8,35 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Toaster } from "sonner";
 
 import { DemoBanner } from "@/components/shared/demo-banner";
+import { PreviewGate } from "@/components/shared/preview-gate";
 import { RedirectToast } from "@/components/shared/redirect-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
+
+// Routes that must stay reachable even when the site is unpublished, so the
+// owner can log in to preview.
+const GATE_BYPASS_PREFIXES = ["/login", "/callback", "/impersonate"];
+
+async function isSiteGated(config: Awaited<ReturnType<typeof fetchTenantConfig>>, slug: string): Promise<boolean> {
+  if (!config) return false;
+  const published = (config.is_published ?? true) || config.is_demo === true;
+  if (published) return false;
+
+  const hdrs = await headers();
+  const pathname = hdrs.get("x-pathname") || "";
+  if (GATE_BYPASS_PREFIXES.some((p) => pathname.startsWith(p))) return false;
+
+  const cookieStore = await cookies();
+  if (cookieStore.get("contentor_preview")?.value === (config.tenant_slug || slug)) return false;
+
+  const user = await getAuthUser();
+  const isOwner = user?.role === "owner" || user?.role === "coach";
+  return !isOwner;
+}
 
 import "@/styles/globals.css";
 
@@ -48,6 +72,7 @@ export default async function RootLayout({
   if (!config && slug !== "unknown") {
     notFound();
   }
+  const gated = await isSiteGated(config, slug);
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -79,9 +104,15 @@ export default async function RootLayout({
             <TenantProvider config={config}>
               <TenantThemeEnforcer />
               <Toaster position="top-center" richColors />
-              <RedirectToast />
-              <DemoBanner />
-              {children}
+              {gated ? (
+                <PreviewGate brandName={config?.brand_name} hasPassword={config?.has_preview_password} />
+              ) : (
+                <>
+                  <RedirectToast />
+                  <DemoBanner />
+                  {children}
+                </>
+              )}
             </TenantProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

@@ -7,6 +7,8 @@ export interface MyTenant {
   slug: string
   region: 'global' | 'tr'
   is_active: boolean
+  is_published: boolean
+  has_preview_password: boolean
   provisioning_status: 'pending' | 'provisioning' | 'ready' | 'failed'
   plan_name: string | null
   domain: string

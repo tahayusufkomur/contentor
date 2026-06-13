@@ -8,6 +8,9 @@ SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 DEMO_EXEMPT_PATH_PREFIXES = (
     "/api/v1/demo/",
     "/api/health/",
+    # The public contact form must work on demo tenants; the view itself
+    # no-ops the email send when the tenant is a demo.
+    "/api/v1/contact/",
 )
 
 
@@ -31,7 +34,7 @@ class DemoReadOnlyMiddleware:
             and not any(request.path.startswith(p) for p in DEMO_EXEMPT_PATH_PREFIXES)
         ):
             slug = tenant.slug or ""
-            niche = slug[len("demo-"):] if slug.startswith("demo-") else slug
+            niche = slug[len("demo-") :] if slug.startswith("demo-") else slug
             return JsonResponse(
                 {
                     "detail": "demo_readonly",

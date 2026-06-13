@@ -7,6 +7,7 @@ import { PlatformFooter } from '@/components/shared/platform-footer'
 import { Monogram } from '@/components/shared/logo-mark'
 import { getAuthUser } from '@/lib/auth'
 import { getMyTenants, type MyTenant } from '@/lib/tenants'
+import { PublishControls } from '@/components/dashboard/publish-controls'
 
 const STATUS_COPY: Record<MyTenant['provisioning_status'], { label: string; tone: string }> = {
   ready: { label: 'Live', tone: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300' },
@@ -72,6 +73,14 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
           <a href={tenant.studio_url}>Preview</a>
         </Button>
       </div>
+
+      {isReady && (
+        <PublishControls
+          slug={tenant.slug}
+          initialPublished={tenant.is_published}
+          initialHasPassword={tenant.has_preview_password}
+        />
+      )}
     </div>
   )
 }

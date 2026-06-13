@@ -56,6 +56,16 @@ class Tenant(TenantMixin):
         db_index=True,
         help_text="Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware.",
     )
+    is_published = models.BooleanField(
+        default=False,
+        help_text="When false, the public site is hidden behind a preview gate until the coach marks it ready.",
+    )
+    preview_password = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="Optional password that unlocks the public site while it is unpublished.",
+    )
     template_niche = models.CharField(
         max_length=64,
         blank=True,

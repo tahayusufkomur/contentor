@@ -47,11 +47,13 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
 
         # Create owner + config in tenant schema
         with tenant_context(tenant):
+            from apps.tenant_config.defaults import default_pages
             from apps.tenant_config.models import TenantConfig
 
             TenantConfig.objects.create(
                 brand_name=tenant.name,
                 default_locale=preferred_locale,
+                pages=default_pages(tenant.name),
                 enabled_modules=[
                     "courses",
                     "live",
