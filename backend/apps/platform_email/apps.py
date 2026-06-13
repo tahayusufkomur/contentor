@@ -1,0 +1,8 @@
+from django.apps import AppConfig
+
+
+class PlatformEmailConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.platform_email"
+    label = "platform_email"
+    verbose_name = "Platform Email"

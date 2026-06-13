@@ -74,12 +74,64 @@ interface PlanSummary {
   is_free: boolean;
   currency: string;
   amount_cents: number | null;
+  max_students: number;
+  max_storage_gb: number;
+  max_streaming_hours: number;
+  max_campaign_emails: number;
+  transaction_fee_pct: string;
+  is_live_enabled: boolean;
 }
 
 interface PlansResponse {
   region: string;
   currency: string;
   plans: PlanSummary[];
+}
+
+/** Format a minor-unit amount in the plan's currency (e.g. 1900 USD → "$19"). */
+function formatPrice(currency: string, amountCents: number | null): string {
+  const amount = (amountCents ?? 0) / 100;
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${amount} ${currency}`;
+  }
+}
+
+/** A limit of 0 means "unlimited" across the platform plan model. */
+function limitText(value: number, unit: string, plural: string): string {
+  if (value <= 0) return `Unlimited ${plural}`;
+  return `${value.toLocaleString()} ${unit}`;
+}
+
+/**
+ * Quantitative feature bullets are derived from the live plan record; purely
+ * descriptive ones (course builder, branding, domain, support) stay in i18n.
+ */
+function dynamicFeatureLabel(
+  featureKey: string,
+  plan: PlanSummary,
+): string | null {
+  switch (featureKey) {
+    case "students":
+      return plan.max_students <= 0
+        ? "Unlimited students"
+        : `Up to ${plan.max_students.toLocaleString()} students`;
+    case "storage":
+      return limitText(plan.max_storage_gb, "GB storage", "storage");
+    case "fee":
+      return `${Number(plan.transaction_fee_pct)}% transaction fee`;
+    case "campaigns":
+      return plan.max_campaign_emails <= 0
+        ? "Email campaigns"
+        : `Email campaigns (${plan.max_campaign_emails.toLocaleString()}/mo)`;
+    default:
+      return null; // descriptive — fall back to i18n
+  }
 }
 
 async function fetchPlans(): Promise<PlansResponse | null> {
@@ -109,10 +161,10 @@ export default async function PricingPage() {
   const user = await getAuthUser();
   const t = await getTranslations("pricing");
   const plansData = await fetchPlans();
-  const planIdByKey: Partial<Record<PlanKey, number>> = {};
+  const planByKey: Partial<Record<PlanKey, PlanSummary>> = {};
   for (const p of plansData?.plans ?? []) {
     const key = planKeyFromName(p.name);
-    if (key != null) planIdByKey[key] = p.id;
+    if (key != null) planByKey[key] = p;
   }
 
   return (
@@ -150,10 +202,25 @@ export default async function PricingPage() {
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
           {PLAN_KEYS.map((key, idx) => {
             const highlighted = PLAN_HIGHLIGHT[key];
+            const plan = planByKey[key] ?? null;
             const includedSet = new Set(
               (t.raw(`plans.${key}.included`) as string[]) ?? [],
             );
-            const planId = planIdByKey[key] ?? null;
+            // Reflect live capabilities the backend actually grants.
+            if (plan) {
+              if (plan.is_live_enabled) includedSet.add("live");
+              else includedSet.delete("live");
+              if (plan.max_campaign_emails > 0) includedSet.add("campaigns");
+              else includedSet.delete("campaigns");
+            }
+            const planId = plan?.id ?? null;
+            // Price comes from the backend when the plan resolved; otherwise the
+            // i18n fallback keeps the page rendering if the API is unavailable.
+            const priceDisplay = plan
+              ? plan.is_free
+                ? t(`plans.${key}.price`)
+                : formatPrice(plan.currency, plan.amount_cents)
+              : t(`plans.${key}.price`);
             return (
               <ScrollReveal
                 key={key}
@@ -188,7 +255,7 @@ export default async function PricingPage() {
 
                   <div className="mt-6 flex items-baseline gap-1.5">
                     <span className="text-display text-5xl md:text-6xl">
-                      {t(`plans.${key}.price`)}
+                      {priceDisplay}
                     </span>
                     <span className="text-sm text-muted-foreground">
                       {t(`plans.${key}.period`)}
@@ -230,7 +297,8 @@ export default async function PricingPage() {
                                 : "text-muted-foreground/60"
                             }`}
                           >
-                            {t(`plans.${key}.features.${featureKey}`)}
+                            {(plan && dynamicFeatureLabel(featureKey, plan)) ??
+                              t(`plans.${key}.features.${featureKey}`)}
                           </span>
                         </li>
                       );

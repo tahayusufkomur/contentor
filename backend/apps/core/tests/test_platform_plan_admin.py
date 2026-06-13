@@ -80,7 +80,7 @@ def test_superuser_updates_limits_and_fee(superuser, starter_plan):
     assert starter_plan.prices["USD"]["stripe_price_id"] == "price_old_usd"
 
 
-@patch("apps.core.views_platform.provision_stripe_price", return_value="price_new_usd")
+@patch("apps.core.stripe_pricing.provision_stripe_price", return_value="price_new_usd")
 def test_amount_change_provisions_new_price(mock_provision, superuser, starter_plan):
     resp = _client(superuser).patch(
         _url(starter_plan.pk),
@@ -99,7 +99,7 @@ def test_amount_change_provisions_new_price(mock_provision, superuser, starter_p
     mock_provision.assert_called_once_with(plan_key="starter", currency="USD", amount_cents=2490)
 
 
-@patch("apps.core.views_platform.provision_stripe_price", return_value="")
+@patch("apps.core.stripe_pricing.provision_stripe_price", return_value="")
 def test_amount_change_without_stripe_keeps_old_price_id(mock_provision, superuser, starter_plan):
     resp = _client(superuser).patch(
         _url(starter_plan.pk),
@@ -140,7 +140,7 @@ def test_get_detail_returns_plan(superuser, starter_plan):
     assert resp.json()["name"] == "starter"
 
 
-@patch("apps.core.views_platform.provision_stripe_price", return_value="price_new_pro_usd")
+@patch("apps.core.stripe_pricing.provision_stripe_price", return_value="price_new_pro_usd")
 def test_create_plan_provisions_prices(mock_provision, superuser, starter_plan):
     resp = _client(superuser).post(
         _LIST_URL,

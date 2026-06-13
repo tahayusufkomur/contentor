@@ -27,6 +27,8 @@ SHARED_APPS = [
     # No models — registers API admin sites for both SPAs via admin_panels.py
     # autodiscovery.
     "apps.adminkit",
+    # Platform-level email campaigns (public schema; superadmin → coaches).
+    "apps.platform_email",
 ]
 
 TENANT_APPS = [

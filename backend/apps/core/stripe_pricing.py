@@ -15,6 +15,7 @@ is therefore a deliberate, manual action, never a side effect of editing.
 from __future__ import annotations
 
 import logging
+from decimal import Decimal
 from typing import Any, Callable
 
 from django.conf import settings
@@ -89,3 +90,36 @@ def provision_stripe_price(
     except Exception as exc:  # noqa: BLE001 — log and continue; checkout 422s if missing
         log(f"WARNING: could not provision Stripe price for {plan_key}/{currency}: {exc}")
         return ""
+
+
+def apply_amounts(plan, amounts: dict[str, int], update_fields: set[str]) -> None:
+    """Provision a fresh Stripe Price per changed currency and re-point `plan`.
+
+    `amounts` maps an upper-case currency code to an integer minor-unit amount
+    (e.g. ``{"USD": 1900}``). Grandfathering (see module docstring): existing
+    subscribers keep their old Price; only the plan's pointer moves. When Stripe
+    is unconfigured (dev/CI) the helper returns "" and we preserve any prior id
+    rather than blanking it. Mutates `plan` in place and records touched columns
+    on `update_fields`; the caller is responsible for ``plan.save(...)``.
+
+    Shared by the bespoke plan-edit endpoint (`views_platform`) and the
+    admin-kit `PlatformPlanAdmin` perform hooks so provisioning lives in one
+    place.
+    """
+    prices = dict(plan.prices or {})
+    plan_key = plan.name.lower()
+    for currency, amount_cents in amounts.items():
+        new_price_id = provision_stripe_price(plan_key=plan_key, currency=currency, amount_cents=amount_cents)
+        entry = dict(prices.get(currency) or {})
+        entry["amount_cents"] = amount_cents
+        if new_price_id:
+            entry["stripe_price_id"] = new_price_id
+        else:
+            entry.setdefault("stripe_price_id", "")
+        prices[currency] = entry
+        # Keep the legacy USD fallback (price_monthly, in whole units) in sync.
+        if currency == "USD":
+            plan.price_monthly = Decimal(amount_cents) / 100
+            update_fields.add("price_monthly")
+    plan.prices = prices
+    update_fields.add("prices")

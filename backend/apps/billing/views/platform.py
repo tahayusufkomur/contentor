@@ -280,6 +280,8 @@ def list_plans(request):
                 "max_storage_gb": plan.max_storage_gb,
                 "max_streaming_hours": plan.max_streaming_hours,
                 "max_campaign_emails": plan.max_campaign_emails,
+                "transaction_fee_pct": str(plan.transaction_fee_pct),
+                "is_live_enabled": plan.is_live_enabled,
             }
         )
     return Response({"region": region, "currency": currency, "plans": out}, status=status.HTTP_200_OK)

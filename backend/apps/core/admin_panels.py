@@ -1,11 +1,14 @@
 """Platform admin-kit registrations (superadmin SPA, public-schema models)."""
 
+from decimal import Decimal
+
 from apps.accounts.impersonation import impersonate_tenant_admin
 from apps.accounts.models import User
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import platform_site
 
 from .models import PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
+from .stripe_pricing import apply_amounts
 
 
 @platform_site.register(PlatformPlan)
@@ -32,6 +35,35 @@ class PlatformPlanAdmin(ModelAdmin):
     )
     # Tenant.plan is PROTECT — archiving (is_active=False) is the removal path.
     can_delete = False
+    # `prices` carries the canonical per-currency amounts the form edits as JSON,
+    # e.g. {"USD": {"amount_cents": 1900}, "TRY": {"amount_cents": 59900}}.
+
+    def _sync_pricing(self, plan):
+        """Provision Stripe Prices from the just-saved plan, mirroring the
+        bespoke plan editor. Paid plans only — Free coaches can never charge."""
+        if plan.is_free:
+            return
+        amounts: dict[str, int] = {}
+        for currency, entry in (plan.prices or {}).items():
+            if isinstance(entry, dict) and entry.get("amount_cents"):
+                amounts[str(currency).upper()] = int(entry["amount_cents"])
+        # Fall back to the legacy USD price_monthly when prices has no USD entry.
+        if "USD" not in amounts and plan.price_monthly:
+            amounts["USD"] = int(Decimal(str(plan.price_monthly)) * 100)
+        if not amounts:
+            return
+        update_fields: set[str] = set()
+        apply_amounts(plan, amounts, update_fields)
+        if update_fields:
+            plan.save(update_fields=list(update_fields))
+
+    def perform_create(self, request, serializer):
+        plan = serializer.save()
+        self._sync_pricing(plan)
+
+    def perform_update(self, request, serializer):
+        plan = serializer.save()
+        self._sync_pricing(plan)
 
     @admin_action(
         label="Archive", style="danger", confirm="Archive selected plans? They disappear from the pricing catalog."
@@ -98,6 +130,14 @@ class TenantAdmin(ModelAdmin):
         if tenant is None:
             return {"detail": "Tenant not found."}
         return impersonate_tenant_admin(request, tenant, scope="platform")
+
+    @admin_action(label="Details", row=True)
+    def details(self, request, queryset):
+        """Open the read-only tenant drill-down (usage, monetization, marketplace)."""
+        tenant = queryset.first()
+        if tenant is None:
+            return {"detail": "Tenant not found."}
+        return {"redirect": f"/admin/tenants/{tenant.slug}"}
 
 
 @platform_site.register(User)

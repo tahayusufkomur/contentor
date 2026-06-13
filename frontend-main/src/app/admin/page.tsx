@@ -1,11 +1,20 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Users, UserCheck, GraduationCap, HardDrive, Banknote, Percent, Receipt, AlertTriangle } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Users,
+  UserCheck,
+  GraduationCap,
+  HardDrive,
+  Banknote,
+  Percent,
+  Receipt,
+  AlertTriangle,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -13,28 +22,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { formatCurrencyMap, type PlatformDashboard } from '@/types/tenant'
+} from "@/components/ui/table";
+import { formatCurrencyMap, type PlatformDashboard } from "@/types/tenant";
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
 interface DashboardTenant {
-  name: string
-  slug: string
-  plan_name: string | null
-  provisioning_status: string
-  is_active: boolean
-  created_at: string
+  name: string;
+  slug: string;
+  plan_name: string | null;
+  provisioning_status: string;
+  is_active: boolean;
+  created_at: string;
 }
 
 interface DashboardData extends PlatformDashboard {
-  recent_tenants?: DashboardTenant[]
+  recent_tenants?: DashboardTenant[];
 }
 
 function StatSkeleton() {
@@ -49,7 +58,7 @@ function StatSkeleton() {
         <Skeleton className="mt-2 h-3 w-16" />
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function TableSkeleton() {
@@ -66,28 +75,30 @@ function TableSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-function statusBadgeVariant(status: string): 'success' | 'warning' | 'destructive' {
-  if (status === 'ready') return 'success'
-  if (status === 'pending' || status === 'provisioning') return 'warning'
-  return 'destructive'
+function statusBadgeVariant(
+  status: string,
+): "success" | "warning" | "destructive" {
+  if (status === "ready") return "success";
+  if (status === "pending" || status === "provisioning") return "warning";
+  return "destructive";
 }
 
 export default function AdminDashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [error, setError] = useState('')
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch('/api/v1/platform/dashboard/', { credentials: 'same-origin' })
+    fetch("/api/v1/platform/dashboard/", { credentials: "same-origin" })
       .then(async (res) => {
-        if (!res.ok) throw new Error('Failed to load dashboard')
-        return res.json()
+        if (!res.ok) throw new Error("Failed to load dashboard");
+        return res.json();
       })
       .then(setData)
-      .catch((err) => setError(err.message))
-  }, [])
+      .catch((err) => setError(err.message));
+  }, []);
 
   if (error) {
     return (
@@ -96,15 +107,19 @@ export default function AdminDashboardPage() {
           <p className="text-sm text-destructive">{error}</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!data) {
     return (
       <div className="space-y-6 p-4 md:p-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Platform overview and recent activity.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Dashboard
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Platform overview and recent activity.
+          </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -113,73 +128,106 @@ export default function AdminDashboardPage() {
         </div>
         <TableSkeleton />
       </div>
-    )
+    );
   }
 
   const stats = [
-    { label: 'Total Tenants', value: data.total_tenants, description: 'All registered tenants', icon: Users },
-    { label: 'Active Tenants', value: data.active_tenants, description: 'Currently active', icon: UserCheck },
-    { label: 'Total Students', value: data.total_students, description: 'Across all tenants', icon: GraduationCap },
-    { label: 'Storage Used', value: formatBytes(data.total_storage_bytes), description: 'Total platform storage', icon: HardDrive },
     {
-      label: 'Subscription MRR',
+      label: "Total Tenants",
+      value: data.total_tenants,
+      description: "All registered tenants",
+      icon: Users,
+      href: "/admin/m/tenants",
+    },
+    {
+      label: "Active Tenants",
+      value: data.active_tenants,
+      description: "Currently active",
+      icon: UserCheck,
+      href: "/admin/m/tenants",
+    },
+    {
+      label: "Total Students",
+      value: data.total_students,
+      description: "Across all tenants",
+      icon: GraduationCap,
+    },
+    {
+      label: "Storage Used",
+      value: formatBytes(data.total_storage_bytes),
+      description: "Total platform storage",
+      icon: HardDrive,
+    },
+    {
+      label: "Subscription MRR",
       value: formatCurrencyMap(data.platform_subscriptions?.mrr_by_currency),
       description: `${data.platform_subscriptions?.active_subscriptions ?? 0} active coach subscriptions`,
       icon: Banknote,
+      href: "/admin/m/platform-subscriptions",
     },
     {
-      label: 'Marketplace Fees',
+      label: "Marketplace Fees",
       value: formatCurrencyMap(data.marketplace?.fees_by_currency),
-      description: 'Platform cut of student payments',
+      description: "Platform cut of student payments",
       icon: Percent,
     },
     {
-      label: 'Marketplace Volume',
+      label: "Marketplace Volume",
       value: formatCurrencyMap(data.marketplace?.gross_by_currency),
       description: `${data.marketplace?.payment_count ?? 0} payments · ${data.monetization_ready_tenants ?? 0} coaches accepting payments`,
       icon: Receipt,
     },
     {
-      label: 'Webhook Failures',
+      label: "Webhook Failures",
       value: data.webhook_failures ?? 0,
-      description: 'Events with processing errors',
+      description: "Events with processing errors",
       icon: AlertTriangle,
-      href: '/admin/webhooks',
+      href: "/admin/m/webhook-events",
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Platform overview and recent activity.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Dashboard
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Platform overview and recent activity.
+        </p>
       </div>
 
       {/* Stats grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
-          const Icon = stat.icon
+          const Icon = stat.icon;
           const card = (
             <Card key={stat.label} className="h-full">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.label}
+                </CardTitle>
                 <Icon className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <p className={`font-bold text-foreground ${String(stat.value).length > 12 ? 'text-xl' : 'text-3xl'}`}>
+                <p
+                  className={`font-bold text-foreground ${String(stat.value).length > 12 ? "text-xl" : "text-3xl"}`}
+                >
                   {stat.value}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">{stat.description}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {stat.description}
+                </p>
               </CardContent>
             </Card>
-          )
-          return 'href' in stat && stat.href ? (
+          );
+          return "href" in stat && stat.href ? (
             <Link key={stat.label} href={stat.href} className="block">
               {card}
             </Link>
           ) : (
             card
-          )
+          );
         })}
       </div>
 
@@ -189,7 +237,7 @@ export default function AdminDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Recent Tenants</CardTitle>
             <Link
-              href="/admin/tenants"
+              href="/admin/m/tenants"
               className="text-sm font-medium text-primary hover:underline"
             >
               View all
@@ -215,13 +263,19 @@ export default function AdminDashboardPage() {
                       >
                         {tenant.name}
                       </Link>
-                      <p className="text-xs text-muted-foreground">{tenant.slug}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {tenant.slug}
+                      </p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{tenant.plan_name || 'None'}</Badge>
+                      <Badge variant="secondary">
+                        {tenant.plan_name || "None"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusBadgeVariant(tenant.provisioning_status)}>
+                      <Badge
+                        variant={statusBadgeVariant(tenant.provisioning_status)}
+                      >
                         {tenant.provisioning_status}
                       </Badge>
                     </TableCell>
@@ -236,5 +290,5 @@ export default function AdminDashboardPage() {
         </Card>
       )}
     </div>
-  )
+  );
 }

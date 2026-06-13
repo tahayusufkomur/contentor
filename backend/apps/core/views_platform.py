@@ -19,7 +19,7 @@ from .serializers_platform import (
     TenantDetailSerializer,
     TenantListSerializer,
 )
-from .stripe_pricing import provision_stripe_price
+from .stripe_pricing import apply_amounts as _apply_amounts
 
 logger = logging.getLogger(__name__)
 
@@ -31,32 +31,6 @@ _PLAN_SCALAR_FIELDS = (
     "max_campaign_emails",
     "is_live_enabled",
 )
-
-
-def _apply_amounts(plan, amounts, update_fields):
-    """Provision a fresh Stripe Price per changed currency and re-point `plan`.
-
-    Grandfathering (D1): existing subscribers keep their old Price; only the
-    plan's pointer moves. When Stripe is unconfigured (dev/CI) the helper
-    returns "" and we preserve any prior id rather than blanking it.
-    """
-    prices = dict(plan.prices or {})
-    plan_key = plan.name.lower()
-    for currency, amount_cents in amounts.items():
-        new_price_id = provision_stripe_price(plan_key=plan_key, currency=currency, amount_cents=amount_cents)
-        entry = dict(prices.get(currency) or {})
-        entry["amount_cents"] = amount_cents
-        if new_price_id:
-            entry["stripe_price_id"] = new_price_id
-        else:
-            entry.setdefault("stripe_price_id", "")
-        prices[currency] = entry
-        # Keep the legacy USD fallback (price_monthly, in whole units) in sync.
-        if currency == "USD":
-            plan.price_monthly = Decimal(amount_cents) / 100
-            update_fields.add("price_monthly")
-    plan.prices = prices
-    update_fields.add("prices")
 
 
 def _platform_mrr():
