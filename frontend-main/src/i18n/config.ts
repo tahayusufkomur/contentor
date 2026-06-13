@@ -36,7 +36,7 @@ export function resolveHost(host: string): HostInfo {
     return { region: 'tr', locale: 'tr', apex: h, otherApex: trToGlobalApex(h) }
   }
   // TR subdomain — any host ending in `.<trApex>`
-  for (const trApex of TR_APEX_HOSTS) {
+  for (const trApex of Array.from(TR_APEX_HOSTS)) {
     if (h.endsWith(`.${trApex}`)) {
       return { region: 'tr', locale: 'tr', apex: trApex, otherApex: trToGlobalApex(trApex) }
     }
@@ -65,7 +65,7 @@ function globalToTrApex(host: string): string {
 }
 
 function globalApexFromHost(host: string): string {
-  for (const g of GLOBAL_APEX_HOSTS) {
+  for (const g of Array.from(GLOBAL_APEX_HOSTS)) {
     if (host === g || host.endsWith(`.${g}`)) return g
   }
   return 'localhost'
