@@ -11,6 +11,10 @@ import type { BlockComponentProps } from "@/lib/blocks/types";
 
 export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
   const plans: SubscriptionPlan[] = dynamicData ?? [];
+  const gridClass =
+    data.layout === "compact"
+      ? "mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      : "mx-auto grid max-w-4xl gap-6 sm:grid-cols-2";
 
   return (
     <section className="py-16">
@@ -33,7 +37,7 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
             description="There are no subscription plans available right now. Check back later!"
           />
         ) : (
-          <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2">
+          <div className={gridClass}>
             {plans.map((plan, i) => (
               <Card
                 key={plan.id}

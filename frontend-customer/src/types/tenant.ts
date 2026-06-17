@@ -87,11 +87,23 @@ export interface BlockVideo {
   video_id: number | null;
 }
 
+/** Optional, theme-safe per-block style override (hybrid theme-lock). Values are
+ *  clamped server-side to a small allowlist; see backend `defaults.py`. */
+export interface BlockStyleOverride {
+  /** Theme-token background: muted | card | accent | primary (default = none). */
+  background?: string;
+  /** Vertical spacing step: none | compact | normal | spacious. */
+  spacing?: string;
+  /** Text alignment: left | center | right. */
+  align?: string;
+}
+
 /** A single block: an `id`, a `type` from the registry, and a flat content bag. */
 export interface Block {
   id: string;
   type: string;
   enabled?: boolean;
+  style?: BlockStyleOverride;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [field: string]: any;
 }
@@ -100,9 +112,28 @@ export interface PageConfig {
   blocks: Block[];
 }
 
-export type PageKey = "home" | "about" | "courses" | "pricing" | "faq" | "contact";
+export type PageKey =
+  | "home"
+  | "about"
+  | "courses"
+  | "pricing"
+  | "faq"
+  | "contact";
 
 export type PagesConfig = Partial<Record<PageKey, PageConfig>>;
+
+/** A page template — a named set of pre-arranged blocks a coach can apply to a
+ *  page. Built-in templates ship in the frontend (with `pageKeys`/`description`);
+ *  coach-saved templates persist in `TenantConfig.page_templates`. */
+export interface PageTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  /** Built-in only: which pages this template is offered for. */
+  pageKeys?: PageKey[];
+  blocks: Block[];
+}
 
 export interface TenantConfig {
   id: number;
@@ -121,6 +152,8 @@ export interface TenantConfig {
   landing_sections: LandingSections;
   /** Website-builder content, keyed by page. */
   pages?: PagesConfig;
+  /** Coach-saved page templates ("my templates"). */
+  page_templates?: PageTemplate[];
   timezone: string;
   onboarding_completed: boolean;
   is_demo?: boolean;

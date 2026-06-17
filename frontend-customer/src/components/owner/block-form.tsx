@@ -1,6 +1,7 @@
 "use client";
 
 import { FieldRenderer } from "./field-renderer";
+import { StyleControls } from "./style-controls";
 import { getBlockDef } from "@/lib/blocks/registry";
 import type { Block } from "@/types/tenant";
 
@@ -12,7 +13,11 @@ interface BlockFormProps {
 export function BlockForm({ block, onChange }: BlockFormProps) {
   const def = getBlockDef(block.type);
   if (!def) {
-    return <p className="text-xs text-muted-foreground">This block type isn&apos;t editable here.</p>;
+    return (
+      <p className="text-xs text-muted-foreground">
+        This block type isn&apos;t editable here.
+      </p>
+    );
   }
   return (
     <div className="space-y-3">
@@ -27,6 +32,7 @@ export function BlockForm({ block, onChange }: BlockFormProps) {
           />
         );
       })}
+      <StyleControls block={block} onChange={onChange} />
     </div>
   );
 }

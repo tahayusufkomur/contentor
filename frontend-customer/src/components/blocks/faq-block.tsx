@@ -14,17 +14,65 @@ export function FaqBlock({ data }: BlockComponentProps) {
   const [open, setOpen] = useState<number | null>(null);
   const items: FaqItem[] = (data.items ?? []).filter((it: FaqItem) => it?.q);
   if (!items.length) return null;
+  const layout = data.layout || "accordion";
+
+  const heading = data.heading && (
+    <h2 className="mb-10 text-center font-display text-3xl font-bold tracking-tight">
+      {data.heading}
+    </h2>
+  );
+
+  // Two columns: all answers shown, in a 2-up grid.
+  if (layout === "columns") {
+    return (
+      <section className="py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          {heading}
+          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
+            {items.map((item, i) => (
+              <div key={i}>
+                <h3 className="font-semibold">{item.q}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {item.a}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Open list: all answers shown, single column.
+  if (layout === "open") {
+    return (
+      <section className="py-16">
+        <div className="mx-auto max-w-3xl space-y-6 px-4">
+          {heading}
+          {items.map((item, i) => (
+            <div key={i}>
+              <h3 className="font-semibold">{item.q}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {item.a}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // Accordion (default): collapsible.
   return (
     <section className="py-16">
       <div className="mx-auto max-w-3xl px-4">
-        {data.heading && (
-          <h2 className="mb-10 text-center font-display text-3xl font-bold tracking-tight">
-            {data.heading}
-          </h2>
-        )}
+        {heading}
         <div className="space-y-2">
           {items.map((item, i) => (
-            <div key={i} className="overflow-hidden rounded-lg border bg-background">
+            <div
+              key={i}
+              className="overflow-hidden rounded-lg border bg-background"
+            >
               <button
                 className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium transition-colors hover:bg-accent/50"
                 onClick={() => setOpen(open === i ? null : i)}
@@ -38,7 +86,9 @@ export function FaqBlock({ data }: BlockComponentProps) {
                 />
               </button>
               {open === i && (
-                <div className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground">{item.a}</div>
+                <div className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground">
+                  {item.a}
+                </div>
               )}
             </div>
           ))}

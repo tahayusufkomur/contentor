@@ -9,14 +9,19 @@ page keys, each holding an ordered list of blocks::
       ...
     }
 
-Blocks are theme-locked: they carry content (text/images/links) only — never
-colors, fonts, or spacing. The chosen theme supplies all styling.
+Blocks are theme-locked by default: they carry content (text/images/links) and
+the chosen theme supplies all styling. A block may *additionally* carry an
+optional, tightly-clamped ``style`` override — a theme-token background, a
+vertical-spacing step, and text alignment (see ``BLOCK_STYLE_ALLOWLIST`` /
+``sanitize_block_style``). Overrides are theme-token-first (never raw colors),
+so pages stay on-brand and dark-mode-safe; an unstyled block renders exactly as
+before.
 
 This module is the single source of truth for the page keys, the block-type
-catalog, the new-tenant default content, and the one-way conversion from the
-legacy ``landing_sections`` shape. It contains only pure-Python data helpers
-(no model access) so it can be imported safely from migrations, serializers,
-and the seed commands alike.
+catalog, the per-block style-override allowlist, the new-tenant default content,
+and the one-way conversion from the legacy ``landing_sections`` shape. It
+contains only pure-Python data helpers (no model access) so it can be imported
+safely from migrations, serializers, and the seed commands alike.
 """
 
 from __future__ import annotations
@@ -49,6 +54,113 @@ DYNAMIC_BLOCK_TYPES = (
     "storeProducts",
 )
 KNOWN_BLOCK_TYPES = frozenset(CONTENT_BLOCK_TYPES + DYNAMIC_BLOCK_TYPES)
+
+# --- Optional per-block style overrides (hybrid theme-lock) ------------------
+# Theme-token-first overrides a coach may set on a block. Theme-lock stays the
+# default: a block with no ``style`` (or an empty one) renders exactly as the
+# theme dictates. Backgrounds are theme TOKENS, never raw colors, so dark mode
+# and theme switching keep working and pages can't go off-brand.
+STYLE_BACKGROUND_TOKENS = ("default", "muted", "card", "accent", "primary")
+STYLE_SPACING_VALUES = ("none", "compact", "normal", "spacious")
+STYLE_ALIGN_VALUES = ("left", "center", "right")
+
+# Which override keys each block type may carry. Server-authoritative: the
+# frontend may surface a subset of controls, but must never widen this set.
+# Structural/dynamic blocks get only outer chrome (background/spacing) so their
+# themed inner cards stay consistent.
+BLOCK_STYLE_ALLOWLIST = {
+    # hero has its own layout presets + background image, so no generic style
+    # overrides (a token background would be hidden behind the image, and its
+    # height is min-height-driven so a padding/spacing override does nothing).
+    "hero": frozenset(),
+    "richText": frozenset({"background", "spacing", "align"}),
+    "imageText": frozenset({"background", "spacing"}),
+    "cta": frozenset({"background", "spacing", "align"}),
+    "stats": frozenset({"background", "spacing", "align"}),
+    "testimonials": frozenset({"background", "spacing"}),
+    "faq": frozenset({"background", "spacing"}),
+    "logos": frozenset({"background", "spacing"}),
+    "banner": frozenset({"align"}),
+    "gallery": frozenset({"spacing"}),
+    "video": frozenset({"spacing"}),
+    "contact": frozenset({"background", "spacing"}),
+    # Dynamic blocks render themed inner cards — only outer spacing, never a
+    # background that would force the card text out of contrast.
+    "courseGrid": frozenset({"spacing"}),
+    "pricingPlans": frozenset({"spacing"}),
+    "upcomingEvents": frozenset({"spacing"}),
+    "storeProducts": frozenset({"spacing"}),
+}
+
+
+def sanitize_block_style(block_type, style):
+    """Clamp a block's optional ``style`` override to the per-type allowlist.
+
+    Returns a dict containing only allowlisted keys with enum-valid values, or
+    ``None`` when nothing valid remains. Theme-safe by construction: unknown
+    keys/values are dropped (not rejected — preserving forward-compat with the
+    frontend), and no-op values (``default`` background, ``normal`` spacing) are
+    omitted so an unstyled block serialises byte-for-byte as before.
+    """
+    if not isinstance(style, dict):
+        return None
+    allowed = BLOCK_STYLE_ALLOWLIST.get(block_type, frozenset())
+    out = {}
+    background = style.get("background")
+    if "background" in allowed and background in STYLE_BACKGROUND_TOKENS and background != "default":
+        out["background"] = background
+    spacing = style.get("spacing")
+    if "spacing" in allowed and spacing in STYLE_SPACING_VALUES and spacing != "normal":
+        out["spacing"] = spacing
+    align = style.get("align")
+    if "align" in allowed and align in STYLE_ALIGN_VALUES:
+        out["align"] = align
+    return out or None
+
+
+# --- Rich-text (HTML) fields ------------------------------------------------
+# Block fields whose value is coach-authored rich text. Sanitised to a safe
+# tag/attribute allowlist on save (server-authoritative), so the stored HTML can
+# never carry scripts/event-handlers/unsafe URLs and is safe to render directly.
+RICH_TEXT_FIELDS = frozenset({"body"})
+
+_RICH_TEXT_TAGS = {
+    "p",
+    "br",
+    "strong",
+    "b",
+    "em",
+    "i",
+    "u",
+    "s",
+    "ul",
+    "ol",
+    "li",
+    "a",
+    "blockquote",
+    "span",
+    "div",
+    "h2",
+    "h3",
+    "h4",
+}
+_RICH_TEXT_ATTRS = {"a": {"href", "title"}}
+
+
+def sanitize_rich_text(value):
+    """Clamp a rich-text HTML value to a safe tag/attribute allowlist.
+
+    Strips scripts, event handlers, and unsafe URL schemes (nh3 only keeps
+    http/https/mailto on links). Non-string input becomes ``""``. Plain text
+    (no tags) passes through unchanged.
+    """
+    if not isinstance(value, str):
+        return ""
+    if not value:
+        return value
+    import nh3
+
+    return nh3.clean(value, tags=_RICH_TEXT_TAGS, attributes=_RICH_TEXT_ATTRS)
 
 
 def _image(url=None, photo_id=None):

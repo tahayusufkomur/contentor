@@ -5,6 +5,7 @@
 export type FieldType =
   | "text"
   | "textarea"
+  | "richtext"
   | "number"
   | "select"
   | "toggle"

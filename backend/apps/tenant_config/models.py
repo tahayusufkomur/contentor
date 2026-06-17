@@ -32,6 +32,11 @@ class TenantConfig(models.Model):
     # pricing/faq/contact), each an ordered list of theme-locked blocks. See
     # apps.tenant_config.defaults for the catalog and conversion helpers.
     pages = models.JSONField(default=dict, blank=True)
+    # Coach-saved page templates ("my templates"): a list of
+    # ``{id, name, category, blocks: [...]}`` the coach can re-apply to any
+    # page. Built-in starter templates live in the frontend; only the coach's
+    # own saved ones persist here. Same block shape + validation as ``pages``.
+    page_templates = models.JSONField(default=list, blank=True)
     timezone = models.CharField(max_length=50, default="UTC")
     default_locale = models.CharField(
         max_length=2,

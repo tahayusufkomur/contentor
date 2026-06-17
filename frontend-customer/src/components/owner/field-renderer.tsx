@@ -1,10 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PhotoPicker } from "@/components/admin/photo-picker";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Trash2,
+  Pencil,
+  Link2,
+} from "lucide-react";
+import { useRichEditor } from "@/components/owner/rich-editor";
+import { LinkPickerModal } from "@/components/owner/link-picker";
+import { RichHtml } from "@/components/blocks/rich-html";
 import type { FieldSchema } from "@/lib/blocks/field-schema";
 import type { Photo } from "@/types/photo";
 
@@ -33,18 +44,22 @@ function FieldLabel({ field }: { field: FieldSchema }) {
 export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
   switch (field.type) {
     case "text":
-    case "link":
       return (
         <div className="space-y-1">
           <FieldLabel field={field} />
           <Input
             value={value ?? ""}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={field.placeholder ?? (field.type === "link" ? "/path or https://…" : "")}
+            placeholder={field.placeholder ?? ""}
           />
-          {field.helpText && <p className="text-xs text-muted-foreground">{field.helpText}</p>}
+          {field.helpText && (
+            <p className="text-xs text-muted-foreground">{field.helpText}</p>
+          )}
         </div>
       );
+
+    case "link":
+      return <LinkField field={field} value={value} onChange={onChange} />;
 
     case "number":
       return (
@@ -53,7 +68,9 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
           <Input
             type="number"
             value={value ?? ""}
-            onChange={(e) => onChange(e.target.value === "" ? "" : Number(e.target.value))}
+            onChange={(e) =>
+              onChange(e.target.value === "" ? "" : Number(e.target.value))
+            }
             placeholder={field.placeholder}
           />
         </div>
@@ -77,7 +94,11 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
       return (
         <div className="space-y-1">
           <FieldLabel field={field} />
-          <select className={selectClass} value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
+          <select
+            className={selectClass}
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+          >
             {field.options?.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -102,7 +123,9 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
           <PhotoPicker
             value={value?.photo_id ?? null}
             previewUrl={value?.url ?? null}
-            onSelect={(photo: Photo) => onChange({ url: photo.signed_url, photo_id: photo.id })}
+            onSelect={(photo: Photo) =>
+              onChange({ url: photo.signed_url, photo_id: photo.id })
+            }
             onClear={() => onChange({ url: null, photo_id: null })}
             label="Choose image"
           />
@@ -115,12 +138,19 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
           <FieldLabel field={field} />
           <Input
             value={value?.url ?? ""}
-            onChange={(e) => onChange({ url: e.target.value || null, video_id: null })}
+            onChange={(e) =>
+              onChange({ url: e.target.value || null, video_id: null })
+            }
             placeholder="YouTube / Vimeo URL"
           />
-          {field.helpText && <p className="text-xs text-muted-foreground">{field.helpText}</p>}
+          {field.helpText && (
+            <p className="text-xs text-muted-foreground">{field.helpText}</p>
+          )}
         </div>
       );
+
+    case "richtext":
+      return <RichTextField field={field} value={value} onChange={onChange} />;
 
     case "repeater":
       return <RepeaterField field={field} value={value} onChange={onChange} />;
@@ -128,6 +158,92 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
     default:
       return null;
   }
+}
+
+function RichTextField({ field, value, onChange }: FieldRendererProps) {
+  const richEditor = useRichEditor();
+
+  // Fallback to a plain textarea if the rich-editor provider isn't mounted.
+  if (!richEditor) {
+    return (
+      <div className="space-y-1">
+        <FieldLabel field={field} />
+        <textarea
+          className={textareaClass}
+          rows={4}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.placeholder}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <FieldLabel field={field} />
+      <div className="rounded-md border bg-background p-2">
+        {value ? (
+          <RichHtml
+            html={value}
+            className="max-h-24 overflow-hidden text-sm text-muted-foreground"
+          />
+        ) : (
+          <p className="text-sm text-muted-foreground/60">No text yet.</p>
+        )}
+        <button
+          type="button"
+          onClick={() =>
+            richEditor.openRichEditor({
+              value: value ?? "",
+              title: field.label,
+              onSave: onChange,
+            })
+          }
+          className="mt-2 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5"
+        >
+          <Pencil className="h-3.5 w-3.5" /> Edit text
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function LinkField({ field, value, onChange }: FieldRendererProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  return (
+    <div className="space-y-1">
+      <FieldLabel field={field} />
+      <div className="flex gap-1.5">
+        <Input
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.placeholder ?? "/path or https://…"}
+        />
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          title="Choose a page or content"
+          className="flex shrink-0 items-center gap-1 rounded-md border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-foreground"
+        >
+          <Link2 className="h-3.5 w-3.5" /> Browse
+        </button>
+      </div>
+      {field.helpText && (
+        <p className="text-xs text-muted-foreground">{field.helpText}</p>
+      )}
+      {pickerOpen && (
+        <LinkPickerModal
+          initialValue={value ?? ""}
+          onPick={(href) => {
+            onChange(href);
+            setPickerOpen(false);
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+    </div>
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -216,7 +332,8 @@ function RepeaterField({ field, value, onChange }: FieldRendererProps) {
         disabled={atMax}
         className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed py-2 text-xs text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:opacity-40"
       >
-        <Plus className="h-3.5 w-3.5" /> Add {field.itemLabel?.toLowerCase() ?? "item"}
+        <Plus className="h-3.5 w-3.5" /> Add{" "}
+        {field.itemLabel?.toLowerCase() ?? "item"}
       </button>
     </div>
   );

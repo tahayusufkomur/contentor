@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 function toEmbedUrl(url: string): string | null {
@@ -12,13 +13,20 @@ export function VideoBlock({ data }: BlockComponentProps) {
   const url = data.video?.url as string | undefined;
   if (!url) return null;
   const embed = toEmbedUrl(url);
+  const layout = data.layout || "standard";
+  const width =
+    layout === "full" ? "max-w-none" : layout === "wide" ? "max-w-6xl" : "max-w-4xl";
+  const frame = layout === "full" ? "" : "rounded-2xl border";
+
   return (
     <section className="py-16">
-      <div className="mx-auto max-w-4xl px-4">
+      <div className={cn("mx-auto px-4", width)}>
         {data.heading && (
-          <h2 className="mb-8 text-center font-display text-3xl font-bold tracking-tight">{data.heading}</h2>
+          <h2 className="mb-8 text-center font-display text-3xl font-bold tracking-tight">
+            {data.heading}
+          </h2>
         )}
-        <div className="aspect-video overflow-hidden rounded-2xl border bg-black">
+        <div className={cn("aspect-video overflow-hidden bg-black", frame)}>
           {embed ? (
             <iframe
               src={embed}

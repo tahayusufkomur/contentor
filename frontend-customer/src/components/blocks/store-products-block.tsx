@@ -20,21 +20,78 @@ export function StoreProductsBlock({ data, dynamicData }: BlockComponentProps) {
   const limit = Number(data.limit) || 8;
   items = items.slice(0, limit);
   if (!items.length) return null;
+  const layout = data.layout || "grid";
 
+  const header = (
+    <div className="mb-8 flex items-center justify-between">
+      {data.heading && (
+        <h2 className="font-display text-3xl font-bold tracking-tight">
+          {data.heading}
+        </h2>
+      )}
+      <Button asChild variant="ghost" size="sm" className="gap-1">
+        <Link href="/store">
+          Browse store
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </Button>
+    </div>
+  );
+
+  // List: stacked rows, small thumbnail on the left.
+  if (layout === "list") {
+    return (
+      <section className="py-16">
+        <div className="mx-auto max-w-3xl px-4">
+          {header}
+          <div className="space-y-3">
+            {items.map((item) => (
+              <Link key={`${item.type}-${item.id}`} href="/store" className="block">
+                <Card className="overflow-hidden transition-all hover:shadow-md">
+                  <CardContent className="flex items-center gap-4 p-3">
+                    {item.thumbnail_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.thumbnail_url}
+                        alt={item.title}
+                        className="h-16 w-24 shrink-0 rounded-md object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-primary/20 to-primary/5">
+                        <span className="text-2xl font-bold text-primary/30">
+                          {item.title.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {TYPE_LABELS[item.type] ?? item.type}
+                      </Badge>
+                      <h3 className="mt-1 font-semibold leading-snug line-clamp-1">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <div className="shrink-0">
+                      <PriceBadge
+                        accessInfo={item.access_info}
+                        price={item.price}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Grid (default).
   return (
     <section className="py-16">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mb-8 flex items-center justify-between">
-          {data.heading && (
-            <h2 className="font-display text-3xl font-bold tracking-tight">{data.heading}</h2>
-          )}
-          <Button asChild variant="ghost" size="sm" className="gap-1">
-            <Link href="/store">
-              Browse store
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </Button>
-        </div>
+        {header}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((item) => (
             <Link key={`${item.type}-${item.id}`} href="/store">
@@ -48,14 +105,18 @@ export function StoreProductsBlock({ data, dynamicData }: BlockComponentProps) {
                   />
                 ) : (
                   <div className="flex h-40 items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                    <span className="text-4xl font-bold text-primary/30">{item.title.charAt(0)}</span>
+                    <span className="text-4xl font-bold text-primary/30">
+                      {item.title.charAt(0)}
+                    </span>
                   </div>
                 )}
                 <CardContent className="space-y-3 p-4">
                   <Badge variant="secondary" className="text-xs">
                     {TYPE_LABELS[item.type] ?? item.type}
                   </Badge>
-                  <h3 className="font-semibold leading-snug line-clamp-2">{item.title}</h3>
+                  <h3 className="font-semibold leading-snug line-clamp-2">
+                    {item.title}
+                  </h3>
                   <PriceBadge accessInfo={item.access_info} price={item.price} />
                 </CardContent>
               </Card>

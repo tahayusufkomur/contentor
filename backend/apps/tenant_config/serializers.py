@@ -5,7 +5,14 @@ from rest_framework import serializers
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 
-from .defaults import KNOWN_BLOCK_TYPES, KNOWN_PAGE_KEYS, pages_from_landing_sections
+from .defaults import (
+    KNOWN_BLOCK_TYPES,
+    KNOWN_PAGE_KEYS,
+    RICH_TEXT_FIELDS,
+    pages_from_landing_sections,
+    sanitize_block_style,
+    sanitize_rich_text,
+)
 from .models import TenantConfig, TenantTheme
 
 # href/url string values starting with these schemes are stripped on write —
@@ -21,8 +28,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
 
     def validate_pages(self, value):
         """Defensively shape the builder payload: only known pages/blocks,
-        each block gets a string id and an ``enabled`` flag, unsafe URLs
-        stripped. Permissive on extra fields (forward-compat with the frontend).
+        each block gets a string id and an ``enabled`` flag, its optional style
+        override is clamped, and unsafe URLs are stripped. Permissive on extra
+        fields (forward-compat with the frontend).
         """
         if not isinstance(value, dict):
             raise serializers.ValidationError("pages must be an object.")
@@ -30,17 +38,33 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         for page_key, page in value.items():
             if page_key not in KNOWN_PAGE_KEYS or not isinstance(page, dict):
                 continue
-            blocks = []
-            for block in page.get("blocks", []) or []:
-                if not isinstance(block, dict) or block.get("type") not in KNOWN_BLOCK_TYPES:
-                    continue
-                block = dict(block)
-                if not isinstance(block.get("id"), str) or not block["id"]:
-                    block["id"] = f"blk_{uuid4().hex[:8]}"
-                block.setdefault("enabled", True)
-                _scrub_unsafe_urls(block)
-                blocks.append(block)
+            blocks = [b for b in (_clean_block(raw) for raw in page.get("blocks", []) or []) if b is not None]
             cleaned[page_key] = {"blocks": blocks}
+        return cleaned
+
+    def validate_page_templates(self, value):
+        """Shape coach-saved page templates exactly like live pages: known
+        block types only, string ids, clamped styles, unsafe URLs stripped.
+        Capped to keep the config payload bounded.
+        """
+        if not isinstance(value, list):
+            raise serializers.ValidationError("page_templates must be a list.")
+        cleaned = []
+        for tmpl in value[:50]:
+            if not isinstance(tmpl, dict):
+                continue
+            tid = tmpl.get("id")
+            if not isinstance(tid, str) or not tid:
+                tid = f"tmpl_{uuid4().hex[:8]}"
+            blocks = [b for b in (_clean_block(raw) for raw in tmpl.get("blocks", []) or []) if b is not None]
+            cleaned.append(
+                {
+                    "id": tid,
+                    "name": str(tmpl.get("name") or "Untitled")[:120],
+                    "category": str(tmpl.get("category") or "")[:40],
+                    "blocks": blocks,
+                }
+            )
         return cleaned
 
     class Meta:
@@ -60,6 +84,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "navbar_config",
             "landing_sections",
             "pages",
+            "page_templates",
             "timezone",
             "onboarding_completed",
         ]
@@ -82,7 +107,11 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             pages = pages_from_landing_sections(instance.landing_sections or {}, instance.brand_name)
             data["pages"] = pages
         if isinstance(pages, dict):
-            self._sign_pages(pages)
+            self._sign_tree(pages)
+        # Saved page templates capture the coach's real images — re-sign them too.
+        templates = data.get("page_templates")
+        if isinstance(templates, list):
+            self._sign_tree(templates)
         # Tenant metadata — read directly from the active tenant row so the
         # frontend knows whether to render the demo banner without a second
         # round-trip.
@@ -134,17 +163,19 @@ class TenantConfigSerializer(serializers.ModelSerializer):
                         photo = photo_map[str(pid)]
                         section_data[url_key] = generate_presigned_download_url(photo.s3_key)
 
-    def _sign_pages(self, pages):
-        """Re-sign every asset URL in the builder tree.
+    def _sign_tree(self, node):
+        """Re-sign every asset URL anywhere in a builder tree.
 
         Builder blocks store image fields as ``{"url", "photo_id"}`` and video
         fields as ``{"url", "video_id"}``. Presigned URLs expire, so on every
         read we re-derive ``url`` from the referenced asset. One bulk query per
-        asset type (no N+1) regardless of how many blocks/pages reference them.
+        asset type (no N+1) regardless of how many blocks reference them. Works
+        on any node — the ``pages`` dict or the ``page_templates`` list — since
+        the collectors/signers recurse over both dicts and lists.
         """
         photo_ids: set[str] = set()
         video_ids: set[str] = set()
-        _collect_asset_ids(pages, photo_ids, video_ids)
+        _collect_asset_ids(node, photo_ids, video_ids)
 
         photo_map = {}
         if photo_ids:
@@ -160,7 +191,33 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             for video in Video.objects.filter(pk__in=video_ids):
                 video_map[str(video.pk)] = video.s3_key
 
-        _sign_assets(pages, photo_map, video_map)
+        _sign_assets(node, photo_map, video_map)
+
+
+def _clean_block(raw):
+    """Defensively shape one builder block: known type, string id, ``enabled``
+    flag, clamped ``style`` override, unsafe URLs stripped. Returns the cleaned
+    block dict, or ``None`` if it should be dropped (missing/unknown type).
+
+    Shared by ``validate_pages`` and ``validate_page_templates`` so live pages
+    and saved templates are sanitised identically.
+    """
+    if not isinstance(raw, dict) or raw.get("type") not in KNOWN_BLOCK_TYPES:
+        return None
+    block = dict(raw)
+    if not isinstance(block.get("id"), str) or not block["id"]:
+        block["id"] = f"blk_{uuid4().hex[:8]}"
+    block.setdefault("enabled", True)
+    style = sanitize_block_style(block["type"], block.get("style"))
+    if style:
+        block["style"] = style
+    else:
+        block.pop("style", None)
+    for field in RICH_TEXT_FIELDS:
+        if isinstance(block.get(field), str):
+            block[field] = sanitize_rich_text(block[field])
+    _scrub_unsafe_urls(block)
+    return block
 
 
 def _collect_asset_ids(node, photo_ids, video_ids):

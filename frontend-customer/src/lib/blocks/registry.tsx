@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { Block } from "@/types/tenant";
 import type { BlockDefinition, BlockGroup, DynamicDataKey } from "./types";
+import type { FieldSchema } from "./field-schema";
 
 import { HeroBlock } from "@/components/blocks/hero-block";
 import { RichTextBlock } from "@/components/blocks/rich-text-block";
@@ -39,6 +40,18 @@ import { StoreProductsBlock } from "@/components/blocks/store-products-block";
 const EMPTY_IMAGE = { url: null, photo_id: null };
 const EMPTY_VIDEO = { url: null, video_id: null };
 
+/** A "Layout" select field. Each entry is `[value, label]`; the first value is
+ *  the block's default layout (kept in `defaultData.layout`). Every block has
+ *  one so a coach can switch structural arrangement without losing content. */
+function layoutField(options: [string, string][]): FieldSchema {
+  return {
+    key: "layout",
+    label: "Layout",
+    type: "select",
+    options: options.map(([value, label]) => ({ label, value })),
+  };
+}
+
 export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
   hero: {
     type: "hero",
@@ -47,6 +60,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "content",
     component: HeroBlock,
     defaultData: {
+      layout: "centered",
       heading: "Welcome",
       subheading: "A short, compelling tagline.",
       ctaText: "Get started",
@@ -54,11 +68,21 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       bgImage: { ...EMPTY_IMAGE },
     },
     fields: [
+      layoutField([
+        ["centered", "Centered (full-bleed image)"],
+        ["split", "Split (text + image)"],
+        ["minimal", "Minimal (no image)"],
+      ]),
       { key: "heading", label: "Headline", type: "text", required: true },
       { key: "subheading", label: "Subheadline", type: "text" },
       { key: "ctaText", label: "Button text", type: "text" },
       { key: "ctaHref", label: "Button link", type: "link" },
-      { key: "bgImage", label: "Background image", type: "image" },
+      {
+        key: "bgImage",
+        label: "Image",
+        type: "image",
+        helpText: "Used as the background (Centered) or side image (Split).",
+      },
     ],
   },
   richText: {
@@ -67,10 +91,25 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: AlignLeft,
     group: "content",
     component: RichTextBlock,
-    defaultData: { heading: "Heading", body: "" },
+    defaultData: { layout: "standard", heading: "Heading", headingLevel: "h2", body: "" },
     fields: [
+      layoutField([
+        ["standard", "Standard"],
+        ["centered", "Centered"],
+        ["wide", "Wide"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
-      { key: "body", label: "Body", type: "textarea" },
+      {
+        key: "headingLevel",
+        label: "Heading level",
+        type: "select",
+        options: [
+          { label: "H2 (large)", value: "h2" },
+          { label: "H3 (medium)", value: "h3" },
+          { label: "H4 (small)", value: "h4" },
+        ],
+      },
+      { key: "body", label: "Body", type: "richtext" },
     ],
   },
   imageText: {
@@ -79,14 +118,36 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: Columns2,
     group: "content",
     component: ImageTextBlock,
-    defaultData: { heading: "Heading", body: "", image: { ...EMPTY_IMAGE }, imagePosition: "right" },
+    defaultData: {
+      layout: "split",
+      heading: "Heading",
+      headingLevel: "h2",
+      body: "",
+      image: { ...EMPTY_IMAGE },
+      imagePosition: "right",
+    },
     fields: [
+      layoutField([
+        ["split", "Side by side"],
+        ["stacked", "Stacked"],
+        ["card", "Card"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
-      { key: "body", label: "Body", type: "textarea" },
+      {
+        key: "headingLevel",
+        label: "Heading level",
+        type: "select",
+        options: [
+          { label: "H2 (large)", value: "h2" },
+          { label: "H3 (medium)", value: "h3" },
+          { label: "H4 (small)", value: "h4" },
+        ],
+      },
+      { key: "body", label: "Body", type: "richtext" },
       { key: "image", label: "Image", type: "image" },
       {
         key: "imagePosition",
-        label: "Image position",
+        label: "Image position (Side by side)",
         type: "select",
         options: [
           { label: "Right", value: "right" },
@@ -101,8 +162,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: Images,
     group: "content",
     component: GalleryBlock,
-    defaultData: { heading: "Gallery", items: [] },
+    defaultData: { layout: "grid", heading: "Gallery", items: [] },
     fields: [
+      layoutField([
+        ["grid", "Grid"],
+        ["masonry", "Masonry"],
+        ["carousel", "Carousel"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "items",
@@ -122,8 +188,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: Quote,
     group: "content",
     component: TestimonialsBlock,
-    defaultData: { heading: "What students say", items: [] },
+    defaultData: { layout: "cards", heading: "What students say", items: [] },
     fields: [
+      layoutField([
+        ["cards", "Cards"],
+        ["quote", "Large quote"],
+        ["list", "List"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "items",
@@ -144,8 +215,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: HelpCircle,
     group: "content",
     component: FaqBlock,
-    defaultData: { heading: "Frequently asked questions", items: [] },
+    defaultData: { layout: "accordion", heading: "Frequently asked questions", items: [] },
     fields: [
+      layoutField([
+        ["accordion", "Accordion"],
+        ["open", "Open list"],
+        ["columns", "Two columns"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "items",
@@ -165,8 +241,18 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: MousePointerClick,
     group: "content",
     component: CtaBlock,
-    defaultData: { heading: "Ready to start?", buttonText: "Join now", buttonHref: "/courses" },
+    defaultData: {
+      layout: "centered",
+      heading: "Ready to start?",
+      buttonText: "Join now",
+      buttonHref: "/courses",
+    },
     fields: [
+      layoutField([
+        ["centered", "Centered"],
+        ["banner", "Banner"],
+        ["split", "Split"],
+      ]),
       { key: "heading", label: "Heading", type: "text", required: true },
       { key: "buttonText", label: "Button text", type: "text" },
       { key: "buttonHref", label: "Button link", type: "link" },
@@ -178,8 +264,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: BarChart3,
     group: "content",
     component: StatsBlock,
-    defaultData: { heading: "", items: [] },
+    defaultData: { layout: "cards", heading: "", items: [] },
     fields: [
+      layoutField([
+        ["cards", "Cards"],
+        ["plain", "Plain"],
+        ["band", "Band"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "items",
@@ -199,8 +290,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: Building2,
     group: "content",
     component: LogosBlock,
-    defaultData: { heading: "As featured in", items: [] },
+    defaultData: { layout: "row", heading: "As featured in", items: [] },
     fields: [
+      layoutField([
+        ["row", "Row"],
+        ["grid", "Grid"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "items",
@@ -220,10 +315,20 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: VideoIcon,
     group: "content",
     component: VideoBlock,
-    defaultData: { heading: "", video: { ...EMPTY_VIDEO } },
+    defaultData: { layout: "standard", heading: "", video: { ...EMPTY_VIDEO } },
     fields: [
+      layoutField([
+        ["standard", "Standard"],
+        ["wide", "Wide"],
+        ["full", "Full width"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
-      { key: "video", label: "Video", type: "video", helpText: "Paste a YouTube/Vimeo link or pick a library video." },
+      {
+        key: "video",
+        label: "Video",
+        type: "video",
+        helpText: "Paste a YouTube/Vimeo link or pick a library video.",
+      },
     ],
   },
   banner: {
@@ -232,8 +337,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: Flag,
     group: "content",
     component: BannerBlock,
-    defaultData: { text: "Announcement", linkText: "", linkHref: "" },
+    defaultData: { layout: "bar", text: "Announcement", linkText: "", linkHref: "" },
     fields: [
+      layoutField([
+        ["bar", "Bar"],
+        ["full", "Full width"],
+        ["soft", "Soft"],
+      ]),
       { key: "text", label: "Text", type: "text", required: true },
       { key: "linkText", label: "Link text", type: "text" },
       { key: "linkHref", label: "Link", type: "link" },
@@ -246,12 +356,18 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "content",
     component: ContactBlock,
     defaultData: {
+      layout: "centered",
       heading: "Get in touch",
       intro: "Have a question? Send us a message.",
       submitLabel: "Send message",
       successMessage: "Thanks! We'll get back to you soon.",
     },
     fields: [
+      layoutField([
+        ["centered", "Centered"],
+        ["split", "Split"],
+        ["card", "Card"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "intro", label: "Intro text", type: "textarea" },
       { key: "submitLabel", label: "Submit button label", type: "text" },
@@ -267,8 +383,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: CourseGridBlock,
     dynamicDataKey: "courses",
-    defaultData: { heading: "Courses", limit: 0 },
+    defaultData: { layout: "standard", heading: "Courses", limit: 0 },
     fields: [
+      layoutField([
+        ["standard", "Left heading"],
+        ["centered", "Centered heading"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "limit", label: "Max courses (0 = all)", type: "number" },
     ],
@@ -280,8 +400,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: PricingPlansBlock,
     dynamicDataKey: "plans",
-    defaultData: { heading: "Plans & Pricing", subheading: "" },
+    defaultData: { layout: "cards", heading: "Plans & Pricing", subheading: "" },
     fields: [
+      layoutField([
+        ["cards", "Cards"],
+        ["compact", "Compact"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "subheading", label: "Subheading", type: "text" },
     ],
@@ -293,8 +417,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: UpcomingEventsBlock,
     dynamicDataKey: "events",
-    defaultData: { heading: "Upcoming events", limit: 6 },
+    defaultData: { layout: "grid", heading: "Upcoming events", limit: 6 },
     fields: [
+      layoutField([
+        ["grid", "Grid"],
+        ["list", "List"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "limit", label: "Max events", type: "number" },
     ],
@@ -306,8 +434,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: StoreProductsBlock,
     dynamicDataKey: "storeProducts",
-    defaultData: { heading: "Shop", limit: 8 },
+    defaultData: { layout: "grid", heading: "Shop", limit: 8 },
     fields: [
+      layoutField([
+        ["grid", "Grid"],
+        ["list", "List"],
+      ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "limit", label: "Max products", type: "number" },
     ],
@@ -334,12 +466,21 @@ export function dynamicKeysForBlocks(blocks: Block[]): Set<DynamicDataKey> {
   return keys;
 }
 
+/** A fresh, unique block id (`blk_xxxxxxxx`). Used for new blocks, duplicated
+ *  blocks, and re-minting ids when a page template is applied. */
+export function mintBlockId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? `blk_${crypto.randomUUID().slice(0, 8)}`
+    : `blk_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /** Build a fresh block of the given type with a unique id + default content. */
 export function newBlock(type: string): Block {
   const def = BLOCK_REGISTRY[type];
-  const id =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? `blk_${crypto.randomUUID().slice(0, 8)}`
-      : `blk_${Math.random().toString(36).slice(2, 10)}`;
-  return { id, type, enabled: true, ...structuredClone(def?.defaultData ?? {}) };
+  return {
+    id: mintBlockId(),
+    type,
+    enabled: true,
+    ...structuredClone(def?.defaultData ?? {}),
+  };
 }

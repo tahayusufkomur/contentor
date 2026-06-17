@@ -11,37 +11,95 @@ const TYPE_LABELS: Record<string, string> = {
   onsite_event: "Event",
 };
 
+const fmtWhen = (d: Date) =>
+  d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 export function UpcomingEventsBlock({ data, dynamicData }: BlockComponentProps) {
   let events: CalendarEvent[] = dynamicData ?? [];
   const limit = Number(data.limit) || 6;
   events = events.slice(0, limit);
   if (!events.length) return null;
+  const layout = data.layout || "grid";
 
+  const heading = data.heading && (
+    <h2 className="mb-8 font-display text-3xl font-bold tracking-tight">
+      {data.heading}
+    </h2>
+  );
+
+  // List: stacked horizontal rows.
+  if (layout === "list") {
+    return (
+      <section className="py-16">
+        <div className="mx-auto max-w-3xl px-4">
+          {heading}
+          <div className="space-y-3">
+            {events.map((event) => {
+              const when = new Date(event.scheduled_at);
+              return (
+                <Link
+                  key={`${event.type}-${event.id}`}
+                  href={`/calendar/${event.type}/${event.id}`}
+                  className="block"
+                >
+                  <Card className="transition-all hover:shadow-md">
+                    <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
+                      <Badge variant="secondary" className="text-xs">
+                        {TYPE_LABELS[event.type] ?? event.type}
+                      </Badge>
+                      <span className="flex-1 font-semibold leading-snug">
+                        {event.title}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {fmtWhen(when)}
+                      </span>
+                      {event.location && (
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {event.location}
+                        </span>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Grid (default).
   return (
     <section className="py-16">
       <div className="mx-auto max-w-7xl px-4">
-        {data.heading && (
-          <h2 className="mb-8 font-display text-3xl font-bold tracking-tight">{data.heading}</h2>
-        )}
+        {heading}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
             const when = new Date(event.scheduled_at);
             return (
-              <Link key={`${event.type}-${event.id}`} href={`/calendar/${event.type}/${event.id}`}>
+              <Link
+                key={`${event.type}-${event.id}`}
+                href={`/calendar/${event.type}/${event.id}`}
+              >
                 <Card className="group h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
                   <CardContent className="space-y-3 p-5">
                     <Badge variant="secondary" className="text-xs">
                       {TYPE_LABELS[event.type] ?? event.type}
                     </Badge>
-                    <h3 className="font-semibold leading-snug line-clamp-2">{event.title}</h3>
+                    <h3 className="font-semibold leading-snug line-clamp-2">
+                      {event.title}
+                    </h3>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <CalendarDays className="h-3.5 w-3.5" />
-                      {when.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {fmtWhen(when)}
                     </div>
                     {event.location && (
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">

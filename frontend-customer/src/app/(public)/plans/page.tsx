@@ -1,6 +1,6 @@
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { fetchDynamicData } from "@/lib/blocks/fetch-dynamic-data";
-import { PageRenderer } from "@/components/blocks/page-renderer";
+import { PageView } from "@/components/blocks/page-view";
 import { PAGE_LABELS } from "@/lib/blocks/pages";
 
 export const dynamic = "force-dynamic";
@@ -10,5 +10,5 @@ export default async function PlansPage() {
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.pricing?.blocks ?? [];
   const dynamicData = await fetchDynamicData(blocks);
-  return <PageRenderer blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.pricing} />;
+  return <PageView pageKey="pricing" blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.pricing} />;
 }
