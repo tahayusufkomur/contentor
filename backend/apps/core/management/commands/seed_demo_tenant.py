@@ -11,8 +11,8 @@ from django.utils import timezone
 from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
-from apps.core.models import Domain, PlatformPlan, Tenant
 from apps.core.demo.views import DEMO_COACH_EMAIL, DEMO_STUDENT_EMAIL
+from apps.core.models import Domain, PlatformPlan, Tenant
 
 logger = logging.getLogger(__name__)
 

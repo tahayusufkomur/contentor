@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from ..currency import tenant_charge_currency
 from ..models import PlatformPlan, PlatformSubscription, Tenant, TenantUsage, WebhookEvent
 from ..permissions import IsSuperUser
+from ..stripe_pricing import apply_amounts as _apply_amounts
 from .serializers import (
     PlatformPlanCreateSerializer,
     PlatformPlanSerializer,
@@ -19,7 +20,6 @@ from .serializers import (
     TenantDetailSerializer,
     TenantListSerializer,
 )
-from ..stripe_pricing import apply_amounts as _apply_amounts
 
 logger = logging.getLogger(__name__)
 
