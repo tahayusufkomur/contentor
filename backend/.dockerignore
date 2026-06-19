@@ -1,0 +1,36 @@
+# Keep the backend build context lean. The image installs deps from
+# requirements/ and runs collectstatic in the entrypoint, so none of the local
+# caches, runtime files, or collected static below belong in the image.
+
+# VCS
+.git
+.gitignore
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Local env / secrets (never bake these in)
+.env
+.env.*
+
+# Runtime / generated artifacts (regenerated in-container)
+celerybeat-schedule
+celerybeat-schedule.*
+staticfiles/
+*.sqlite3
+.coverage
+htmlcov/
+
+# OS / editor cruft
+.DS_Store
+*.swp
