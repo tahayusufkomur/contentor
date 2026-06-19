@@ -1,4 +1,6 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config
+
+PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
 # ============================================================================
 # Help
@@ -19,6 +21,9 @@ help: ## Show this help
 	@echo ""
 	@echo "\033[1;33m--- Utilities ---\033[0m"
 	@grep -E '^(shell|health-check):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "\033[1;33m--- Deploy ---\033[0m"
+	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
 # ============================================================================
@@ -114,3 +119,16 @@ stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/
 		exit 1; \
 	}
 	stripe listen --forward-to http://localhost/api/webhooks/stripe/
+
+# ============================================================================
+# Deploy (prod runs remotely on the home server via deploy.sh)
+# ============================================================================
+
+deploy: ## Deploy contentor to the home server (rsync + build + up + health)
+	cd ~/ws/home-server && ./deploy.sh contentor
+
+prod-build: ## Build the prod images locally (catches prod build breaks; no network needed)
+	$(PROD_COMPOSE) build
+
+prod-config: ## Validate the prod compose + .env.prod interpolation
+	$(PROD_COMPOSE) config >/dev/null && echo "prod compose OK"
