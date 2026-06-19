@@ -400,7 +400,16 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: CourseGridBlock,
     dynamicDataKey: "courses",
-    defaultData: { layout: "standard", heading: "Courses", limit: 0 },
+    defaultData: {
+      layout: "standard",
+      heading: "Courses",
+      limit: 0,
+      columns: "3",
+      cardStyle: "elevated",
+      showFilters: true,
+      showPrice: true,
+      showMeta: true,
+    },
     fields: [
       layoutField([
         ["standard", "Left heading"],
@@ -408,6 +417,30 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "limit", label: "Max courses (0 = all)", type: "number" },
+      {
+        key: "columns",
+        label: "Columns",
+        type: "select",
+        options: [
+          { label: "2 columns", value: "2" },
+          { label: "3 columns", value: "3" },
+          { label: "4 columns", value: "4" },
+        ],
+      },
+      {
+        key: "cardStyle",
+        label: "Card style",
+        type: "select",
+        options: [
+          { label: "Elevated", value: "elevated" },
+          { label: "Bordered", value: "bordered" },
+          { label: "Minimal", value: "minimal" },
+          { label: "Overlay", value: "overlay" },
+        ],
+      },
+      { key: "showFilters", label: "Show search & filters", type: "toggle" },
+      { key: "showPrice", label: "Show price", type: "toggle" },
+      { key: "showMeta", label: "Show instructor & lessons", type: "toggle" },
     ],
   },
   pricingPlans: {
