@@ -65,10 +65,10 @@ Cloudflare Tunnel. TLS terminates at Cloudflare.
                   ┌───────▼────────┐                                                          │
                   │     Caddy      │  Caddyfile routes by host + path (both dev and prod)     │
                   └───┬────────┬───┘                                                          │
-       /api,/ws,/static,apex/admin │        apex + tr. │        every other host (tenants)    │
+       /api,/static,apex/admin     │        apex + tr. │        every other host (tenants)    │
                   ┌───▼───┐    ┌───▼─────────┐    ┌────▼──────────────┐                       │
                   │Django │    │ nextjs-main │    │ nextjs-customer    │◄──── SSR fetch ───────┘
-                  │Daphne │    │ (marketing) │    │ (tenant portal)    │   (sends X-Tenant-Domain)
+                  │       │    │ (marketing) │    │ (tenant portal)    │   (sends X-Tenant-Domain)
                   └───┬───┘    └─────────────┘    └────────────────────┘
         ┌─────────────┼───────────────┐
    ┌────▼───┐   ┌──────▼─────┐   ┌─────▼──────┐
@@ -78,10 +78,9 @@ Cloudflare Tunnel. TLS terminates at Cloudflare.
 ```
 
 **Services** (`docker-compose.yml` dev / `docker-compose.prod.yml` prod):
-`caddy`, `postgres`, `redis`, `django` (Gunicorn :8000), `django-channels`
-(Daphne :8001), `nextjs-main` (:3000), `nextjs-customer` (:3000), `celery-worker`,
-`celery-beat`. Dev adds an optional `--profile monitoring` (Prometheus, Grafana, Loki,
-cAdvisor).
+`caddy`, `postgres`, `redis`, `django` (Gunicorn :8000), `nextjs-main` (:3000),
+`nextjs-customer` (:3000), `celery-worker`, `celery-beat`. Dev adds an optional
+`--profile monitoring` (Prometheus, Grafana, Loki, cAdvisor).
 
 > **Path note:** the canonical repo is `~/ws/projects-in-progress/contentor`. It is
 > symlinked into the fleet at `~/ws/projects-active/home-server/contentor`. Both point
