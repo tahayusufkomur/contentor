@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { CourseCatalogClient } from "@/components/public/course-catalog-client";
+import type { CourseCardVariant } from "@/components/public/course-card";
 import type { Course } from "@/types/course";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
@@ -22,7 +23,14 @@ export function CourseGridBlock({ data, dynamicData }: BlockComponentProps) {
             {data.heading}
           </h2>
         )}
-        <CourseCatalogClient courses={courses} />
+        <CourseCatalogClient
+          courses={courses}
+          columns={Number(data.columns) || 3}
+          cardStyle={(data.cardStyle as CourseCardVariant) || "elevated"}
+          showFilters={data.showFilters !== false}
+          showPrice={data.showPrice !== false}
+          showMeta={data.showMeta !== false}
+        />
       </div>
     </section>
   );
