@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.core.views_contact import contact_submit
+from apps.core.contact.views import contact_submit
 
 urlpatterns = [
     path("", contact_submit, name="contact-submit"),
