@@ -22,8 +22,11 @@ services:
     restart: unless-stopped
     mem_limit: 64m
     logging: *logging
+    environment:
+      - CONTENTOR_DOMAIN=${CONTENTOR_DOMAIN:-contentor.app}
+      - FORWARDED_PROTO=https
     volumes:
-      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
