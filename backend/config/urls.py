@@ -47,7 +47,7 @@ urlpatterns = [
     # (tenant schema) sites. See apps/adminkit/.
     path("api/v1/platform-admin/", include("apps.adminkit.urls_platform")),
     path("api/v1/studio-admin/", include("apps.adminkit.urls_studio")),
-    path("api/v1/me/", include("apps.core.urls_me")),
+    path("api/v1/me/", include("apps.core.me.urls")),
     path("api/v1/upload/", include("apps.core.uploads.urls")),
     path("api/v1/courses/", include("apps.courses.urls")),
     path("api/v1/downloads/", include("apps.downloads.urls")),
