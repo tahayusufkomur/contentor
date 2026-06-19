@@ -14,9 +14,10 @@ export type StyleControl = "background" | "spacing" | "align";
 // Each color preset pairs a surface token with its contrasting foreground, and
 // forces that foreground onto the block's text elements (headings, paragraphs,
 // list items, spans) — so a background change always keeps text readable,
-// regardless of the text colors a block hard-codes. Links/buttons are left
-// alone (they carry their own on-brand styling). Full class strings are spelled
-// out as literals so Tailwind's JIT scanner generates them.
+// regardless of the text colors a block hard-codes. On the Brand/Accent
+// backgrounds, buttons flip to an inverse fill and links take the contrasting
+// foreground so they stay visible. Full class strings are spelled out as
+// literals so Tailwind's JIT scanner generates them.
 const BACKGROUND_CLASSES: Record<string, string> = {
   muted:
     "[&>*]:!bg-muted [&>*]:!text-foreground [&_h1]:!text-foreground [&_h2]:!text-foreground [&_h3]:!text-foreground [&_h4]:!text-foreground [&_p]:!text-foreground [&_li]:!text-foreground [&_span]:!text-foreground",
@@ -35,9 +36,9 @@ const SPACING_CLASSES: Record<string, string> = {
 };
 
 const ALIGN_CLASSES: Record<string, string> = {
-  left: "[&>*]:!text-left",
-  center: "[&>*]:!text-center",
-  right: "[&>*]:!text-right",
+  left: "[&>*]:!text-left [&>*]:!justify-start",
+  center: "[&>*]:!text-center [&>*]:!justify-center",
+  right: "[&>*]:!text-right [&>*]:!justify-end",
 };
 
 /** Tailwind classes for a block's optional style override, applied by the
