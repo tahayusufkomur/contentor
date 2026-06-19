@@ -76,7 +76,7 @@ Two independent Next.js 14 apps, App Router, Tailwind + Radix UI:
 
 ### Docker Services (`docker-compose.yml`)
 
-`caddy` (:80), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
+`caddy` (:80), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `nextjs-main` (:3000), `nextjs-customer` (:3000), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
 
 Only the gunicorn entrypoint runs migrations + collectstatic — celery skips to avoid races.
 

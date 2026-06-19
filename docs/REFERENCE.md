@@ -79,7 +79,7 @@ Cloudflare Tunnel. TLS terminates at Cloudflare.
 
 **Services** (`docker-compose.yml` dev / `docker-compose.prod.yml` prod):
 `caddy`, `postgres`, `redis`, `django` (Gunicorn :8000), `django-channels`
-(Daphne :8001), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`,
+(Daphne :8001), `nextjs-main` (:3000), `nextjs-customer` (:3000), `celery-worker`,
 `celery-beat`. Dev adds an optional `--profile monitoring` (Prometheus, Grafana, Loki,
 cAdvisor).
 
@@ -435,8 +435,8 @@ Useful: `make dev-reset`, `make migrate` / `make migrate-shared` / `make makemig
 - Self-contained `docker-compose.prod.yml` (NOT an override) running
   `config.settings.prod`. One `contentor-caddy` edge container on the external `edge`
   network; everything else internal with **no published host ports**.
-- `Caddyfile.prod` does all routing: `/api/*`, `/ws/*`, `/static/*`, apex `/admin/*` →
-  Django/Daphne; apex + `tr.` → `nextjs-main`; every other host → `nextjs-customer`.
+- The parametrized `Caddyfile` does all routing: `/api/*`, `/static/*`, apex
+  `/django-admin/*` → Django; apex + `tr.` → `nextjs-main`; every other host → `nextjs-customer`.
 - TLS at Cloudflare; cloudflared→Caddy→Django is HTTP, Caddy forces
   `X-Forwarded-Proto: https`; WhiteNoise serves admin static.
 - **Only the Gunicorn entrypoint** runs migrations + `collectstatic` + `seed_plans`;
