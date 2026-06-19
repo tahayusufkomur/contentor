@@ -84,6 +84,8 @@ export function styleControlsFor(type: string): StyleControl[] {
 /** Tailwind classes for a section heading at the given level (h2/h3/h4). */
 export function headingClasses(level?: string): string {
   switch (level) {
+    case "h1":
+      return "font-display text-4xl font-bold tracking-tight md:text-5xl";
     case "h3":
       return "font-display text-2xl font-bold tracking-tight";
     case "h4":

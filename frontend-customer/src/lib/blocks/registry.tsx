@@ -110,6 +110,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         label: "Heading level",
         type: "select",
         options: [
+          { label: "H1 (largest)", value: "h1" },
           { label: "H2 (large)", value: "h2" },
           { label: "H3 (medium)", value: "h3" },
           { label: "H4 (small)", value: "h4" },
@@ -144,6 +145,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         label: "Heading level",
         type: "select",
         options: [
+          { label: "H1 (largest)", value: "h1" },
           { label: "H2 (large)", value: "h2" },
           { label: "H3 (medium)", value: "h3" },
           { label: "H4 (small)", value: "h4" },
