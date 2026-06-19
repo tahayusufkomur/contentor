@@ -1,6 +1,6 @@
 """User-scoped endpoints (for authenticated users who are not superusers).
 
-Exposes data filtered to the requesting user. Distinct from `views_platform`,
+Exposes data filtered to the requesting user. Distinct from `platform.views`,
 which is locked to superusers managing the whole platform.
 """
 

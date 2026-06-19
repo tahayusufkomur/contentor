@@ -1,7 +1,7 @@
 """Reusable Stripe Price provisioning for platform plans.
 
 Both `seed_plans` (boot-time) and the superadmin plan-edit endpoint
-(`views_platform.platform_plan_detail`) call `provision_stripe_price` so the
+(`platform.views.platform_plan_detail`) call `provision_stripe_price` so the
 grandfathering behavior lives in exactly one place.
 
 Grandfathering: each plan+currency owns a stable `lookup_key`. Stripe Prices are
@@ -102,7 +102,7 @@ def apply_amounts(plan, amounts: dict[str, int], update_fields: set[str]) -> Non
     rather than blanking it. Mutates `plan` in place and records touched columns
     on `update_fields`; the caller is responsible for ``plan.save(...)``.
 
-    Shared by the bespoke plan-edit endpoint (`views_platform`) and the
+    Shared by the bespoke plan-edit endpoint (`platform.views`) and the
     admin-kit `PlatformPlanAdmin` perform hooks so provisioning lives in one
     place.
     """

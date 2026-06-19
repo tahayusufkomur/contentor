@@ -2,8 +2,8 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from .constants import CURRENCY_CHOICES
-from .models import PlatformPlan, Tenant
+from ..constants import CURRENCY_CHOICES
+from ..models import PlatformPlan, Tenant
 
 _VALID_CURRENCIES = {c[0] for c in CURRENCY_CHOICES}
 
