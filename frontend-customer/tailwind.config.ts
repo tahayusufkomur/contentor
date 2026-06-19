@@ -33,6 +33,10 @@ const config: Config = {
           DEFAULT: 'var(--accent)',
           foreground: 'var(--accent-foreground)',
         },
+        'marketing-accent': {
+          DEFAULT: 'var(--marketing-accent)',
+          foreground: 'var(--marketing-accent-foreground)',
+        },
         popover: {
           DEFAULT: 'var(--popover)',
           foreground: 'var(--popover-foreground)',
