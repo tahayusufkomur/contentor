@@ -51,7 +51,7 @@ Layout: `config/` (project) + `apps/` (Django apps). Settings split into `base.p
 - `apps.downloads` — file/resource downloads
 - `apps.live` — video sessions via Stream.io (`getstream` SDK in `apps/live/stream_service.py`)
 - `apps.media` — S3 / Hetzner object storage uploads (boto3)
-- `apps.billing` — plans, subscriptions, payments (model supports `iyzico` / `stripe` / `bypass` choices — SDKs not yet wired)
+- `apps.billing` — plans, subscriptions, payments via **Stripe Connect** (marketplace: `providers/connect.py`, `stripe_provider.py`, webhooks); `bypass` provider for dev/CI. (`iyzico` is a declared provider choice but not yet implemented.)
 - `apps.email_campaigns` — outbound campaigns; integrates MailCraft via `django-contentor-email-builder`
 
 Tenant routing: `apps.core.routers.TenantRouter` keeps tenant-only apps out of the public schema.

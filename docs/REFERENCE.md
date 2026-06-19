@@ -46,7 +46,8 @@ single most common source of confusion:
 ## 2. Tech stack & topology
 
 **Backend:** Django 5.1 + Django REST Framework, `django-tenants` (schema-per-tenant),
-Celery (worker + beat) on Redis, Daphne/Channels for WebSockets, Gunicorn for HTTP.
+Celery (worker + beat) on Redis, Gunicorn for HTTP. Realtime chat/video is via
+Stream.io (external SaaS), so the app serves no WebSockets of its own.
 
 **Frontends:** two independent Next.js 14 (App Router) apps — `frontend-main` and
 `frontend-customer` — Tailwind + Radix UI, `next-intl` for i18n.
@@ -439,7 +440,7 @@ Useful: `make dev-reset`, `make migrate` / `make migrate-shared` / `make makemig
 - TLS at Cloudflare; cloudflared→Caddy→Django is HTTP, Caddy forces
   `X-Forwarded-Proto: https`; WhiteNoise serves admin static.
 - **Only the Gunicorn entrypoint** runs migrations + `collectstatic` + `seed_plans`;
-  Daphne/Celery skip them to avoid races (`backend/scripts/entrypoint.sh`).
+  Celery (worker + beat) skips them to avoid races (`backend/scripts/entrypoint.sh`).
 - **Deploy:** from the Mac, `cd ~/ws/home-server && ./deploy.sh contentor` (rsync + build
   + up + health). Tunnel ingress: `./deploy.sh edge`. Secrets in `.env.prod` (gitignored,
   rsynced; template `.env.prod.example`).
@@ -478,7 +479,7 @@ Templates: `backend/.env.example`, root `.env.example` (dev), `.env.prod.example
 3. **Build tenant domains from the slug** in `generateMetadata`/`manifest.ts`.
 4. **Webhooks** mount **outside** `/api/v1` and outside auth, and force the `public` schema.
 5. **`region` and `billing_currency` are immutable** once set.
-6. **Only Gunicorn runs migrations** — never add migrate steps to Daphne/Celery entrypoints.
+6. **Only Gunicorn runs migrations** — never add migrate steps to Celery worker/beat entrypoints.
 7. **`make migrate` = all tenant schemas; `make migrate-shared` = public only.** A new
    shared model needs both paths considered.
 8. **Quotas are log-only today** — don't assume a limit is enforced until Phase 3.
