@@ -106,6 +106,9 @@ class Payment(models.Model):
     platform_fee = models.DecimalField(max_digits=10, decimal_places=2)
     submerchant_payout = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3)
+    # Providers: `stripe` (live, via Stripe Connect) and `bypass` (dev/CI).
+    # `iyzico` is a planned Turkish gateway — kept on the TR roadmap but not yet
+    # implemented (no provider in apps/billing/providers/).
     provider = models.CharField(
         max_length=20,
         choices=[("iyzico", "iyzico"), ("stripe", "Stripe"), ("bypass", "Bypass")],
