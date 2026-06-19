@@ -48,6 +48,7 @@ function layoutField(options: [string, string][]): FieldSchema {
     key: "layout",
     label: "Layout",
     type: "select",
+    display: "icons",
     options: options.map(([value, label]) => ({ label, value })),
   };
 }
@@ -91,7 +92,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: AlignLeft,
     group: "content",
     component: RichTextBlock,
-    defaultData: { layout: "standard", heading: "Heading", headingLevel: "h2", body: "" },
+    defaultData: {
+      layout: "standard",
+      heading: "Heading",
+      headingLevel: "h2",
+      body: "",
+    },
     fields: [
       layoutField([
         ["standard", "Standard"],
@@ -215,7 +221,11 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: HelpCircle,
     group: "content",
     component: FaqBlock,
-    defaultData: { layout: "accordion", heading: "Frequently asked questions", items: [] },
+    defaultData: {
+      layout: "accordion",
+      heading: "Frequently asked questions",
+      items: [],
+    },
     fields: [
       layoutField([
         ["accordion", "Accordion"],
@@ -337,7 +347,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     icon: Flag,
     group: "content",
     component: BannerBlock,
-    defaultData: { layout: "bar", text: "Announcement", linkText: "", linkHref: "" },
+    defaultData: {
+      layout: "bar",
+      text: "Announcement",
+      linkText: "",
+      linkHref: "",
+    },
     fields: [
       layoutField([
         ["bar", "Bar"],
@@ -400,7 +415,11 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: PricingPlansBlock,
     dynamicDataKey: "plans",
-    defaultData: { layout: "cards", heading: "Plans & Pricing", subheading: "" },
+    defaultData: {
+      layout: "cards",
+      heading: "Plans & Pricing",
+      subheading: "",
+    },
     fields: [
       layoutField([
         ["cards", "Cards"],

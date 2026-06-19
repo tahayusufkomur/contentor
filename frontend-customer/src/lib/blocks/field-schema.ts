@@ -26,6 +26,9 @@ export interface FieldSchema {
   helpText?: string;
   /** Options for `select`. */
   options?: { label: string; value: string }[];
+  /** `select` only: render the options as an icon-tile picker instead of a
+   *  dropdown (each option's icon is resolved by value in the renderer). */
+  display?: "icons";
   /** Conditional visibility based on the current block data. */
   showWhen?: (data: Data) => boolean;
   /** `repeater` only: sub-field schema for each row. */

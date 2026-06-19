@@ -12,12 +12,60 @@ import {
   Trash2,
   Pencil,
   Link2,
+  AlignCenter,
+  AlignLeft,
+  AlignJustify,
+  Columns2,
+  LayoutGrid,
+  LayoutDashboard,
+  LayoutTemplate,
+  List,
+  Quote,
+  Rows3,
+  Square,
+  RectangleHorizontal,
+  GalleryHorizontal,
+  Minus,
+  PanelTop,
+  Flag,
+  type LucideIcon,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useRichEditor } from "@/components/owner/rich-editor";
 import { LinkPickerModal } from "@/components/owner/link-picker";
 import { RichHtml } from "@/components/blocks/rich-html";
 import type { FieldSchema } from "@/lib/blocks/field-schema";
 import type { Photo } from "@/types/photo";
+
+// Icon for each known layout value, used by the icon-tile layout picker. The
+// label always accompanies the icon, so an approximate glyph is fine; unknown
+// values fall back to a generic layout icon.
+const LAYOUT_ICONS: Record<string, LucideIcon> = {
+  centered: AlignCenter,
+  split: Columns2,
+  columns: Columns2,
+  standard: AlignLeft,
+  plain: AlignLeft,
+  open: AlignLeft,
+  minimal: Minus,
+  wide: RectangleHorizontal,
+  full: RectangleHorizontal,
+  band: RectangleHorizontal,
+  grid: LayoutGrid,
+  cards: LayoutGrid,
+  card: Square,
+  soft: Square,
+  masonry: LayoutDashboard,
+  list: List,
+  accordion: Rows3,
+  stacked: Rows3,
+  row: Rows3,
+  compact: AlignJustify,
+  carousel: GalleryHorizontal,
+  quote: Quote,
+  bar: PanelTop,
+  banner: Flag,
+};
 
 const textareaClass =
   "w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
@@ -91,6 +139,11 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
       );
 
     case "select":
+      if (field.display === "icons") {
+        return (
+          <IconSelectField field={field} value={value} onChange={onChange} />
+        );
+      }
       return (
         <div className="space-y-1">
           <FieldLabel field={field} />
@@ -158,6 +211,43 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
     default:
       return null;
   }
+}
+
+/** A `select` rendered as a grid of icon tiles (used for the per-block Layout
+ *  picker). Each tile shows the layout's icon above its label and highlights
+ *  the current selection — clearer at a glance than a dropdown. */
+function IconSelectField({ field, value, onChange }: FieldRendererProps) {
+  return (
+    <div className="space-y-1">
+      <FieldLabel field={field} />
+      <div className="grid grid-cols-3 gap-1.5">
+        {field.options?.map((opt) => {
+          const Icon = LAYOUT_ICONS[opt.value] ?? LayoutTemplate;
+          const active = (value ?? "") === opt.value;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(opt.value)}
+              title={opt.label}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-md border px-1.5 py-2 text-center text-[11px] leading-tight transition-colors",
+                active
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="line-clamp-2">{opt.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {field.helpText && (
+        <p className="text-xs text-muted-foreground">{field.helpText}</p>
+      )}
+    </div>
+  );
 }
 
 function RichTextField({ field, value, onChange }: FieldRendererProps) {

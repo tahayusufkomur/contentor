@@ -7,6 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 import { BlockRenderer } from "@/components/blocks/block-renderer";
 import { useOptionalEditorStore } from "./editor-store";
+import { useEditMode } from "../edit-mode";
 import { SortableBlockShell } from "./sortable-block-shell";
 import { DropZone } from "./drop-zone";
 import type { Block, PageKey } from "@/types/tenant";
@@ -32,10 +33,15 @@ export function EditModeCanvas({
   dynamicData,
 }: EditModeCanvasProps) {
   const store = useOptionalEditorStore();
+  const editMode = useEditMode();
   const liveBlocks = store ? store.blocksFor(pageKey) : blocks;
 
-  // Match PageRenderer's full-bleed wrapper so the canvas mirrors the live page.
-  if (!store) {
+  // Outside edit mode (or with no store), render the page read-only — the same
+  // static output a visitor sees — so the coach previews their site as-is. The
+  // editing chrome (drag handles, selection, inline text) only appears when the
+  // coach has explicitly turned edit mode on. Matches PageRenderer's full-bleed
+  // wrapper so the canvas mirrors the live page.
+  if (!store || !editMode) {
     return (
       <div className="-mx-4 -mt-8 md:-mx-6">
         {liveBlocks.map((block) => (
