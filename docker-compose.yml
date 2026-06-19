@@ -1,17 +1,24 @@
 services:
-  traefik:
-    image: traefik:v3.7
+  caddy:
+    image: caddy:2-alpine
+    container_name: contentor-caddy-dev
     ports:
       - "80:80"
-      - "8080:8080"
+    environment:
+      - CONTENTOR_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
+      - FORWARDED_PROTO=http
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik:/etc/traefik
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - django
+      - nextjs-main
+      - nextjs-customer
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck"]
-      interval: 10s
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:2019/config/"]
+      interval: 15s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 20s
 
   postgres:
     image: postgres:17-alpine
@@ -58,23 +65,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.django-api.rule=PathPrefix(`/api/v1`) || PathPrefix(`/api/health`) || PathPrefix(`/api/webhooks`)"
-      - "traefik.http.routers.django-api.entrypoints=web"
-      - "traefik.http.routers.django-api.priority=10"
-      # Django admin at /django-admin — apex /admin/* falls through to the
-      # nextjs-main router (the superadmin SPA).
-      - "traefik.http.routers.django-admin.rule=(Host(`localhost`) || Host(`tr.localhost`)) && (PathPrefix(`/django-admin`) || PathPrefix(`/static/admin`))"
-      - "traefik.http.routers.django-admin.entrypoints=web"
-      - "traefik.http.routers.django-admin.priority=10"
-      - "traefik.http.services.django.loadbalancer.server.port=8000"
 
   nextjs-customer:
     build:
       context: ./frontend-customer
       target: dev
-    command: npm run dev -- -p 3001
+    command: npm run dev -- -p 3000
     volumes:
       - ./frontend-customer/src:/app/src
       - ./frontend-customer/public:/app/public
@@ -87,12 +83,6 @@ services:
       - NEXT_PUBLIC_GETSTREAM_API_KEY=${GETSTREAM_API_KEY}
     depends_on:
       - django
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nextjs-customer.rule=HostRegexp(`.+`)"
-      - "traefik.http.routers.nextjs-customer.entrypoints=web"
-      - "traefik.http.routers.nextjs-customer.priority=1"
-      - "traefik.http.services.nextjs-customer.loadbalancer.server.port=3001"
 
   nextjs-main:
     build:
@@ -111,12 +101,6 @@ services:
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
     depends_on:
       - django
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nextjs-main.rule=Host(`localhost`) || Host(`tr.localhost`)"
-      - "traefik.http.routers.nextjs-main.entrypoints=web"
-      - "traefik.http.routers.nextjs-main.priority=2"
-      - "traefik.http.services.nextjs-main.loadbalancer.server.port=3000"
 
   celery-worker:
     build:
