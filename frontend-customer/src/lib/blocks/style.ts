@@ -81,7 +81,7 @@ export function styleControlsFor(type: string): StyleControl[] {
   return STYLE_CONTROLS[type] ?? [];
 }
 
-/** Tailwind classes for a section heading at the given level (h2/h3/h4). */
+/** Tailwind classes for a section heading at the given level (h1/h2/h3/h4). */
 export function headingClasses(level?: string): string {
   switch (level) {
     case "h1":
