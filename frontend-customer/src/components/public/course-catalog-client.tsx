@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { CourseCard } from '@/components/public/course-card'
+import { CourseCard, type CourseCardVariant } from '@/components/public/course-card'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Search, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -11,11 +11,29 @@ import type { Course } from '@/types/course'
 
 type Filter = 'all' | 'free' | 'paid' | 'accessible'
 
-interface CourseCatalogClientProps {
-  courses: Course[]
+const COLUMN_CLASSES: Record<number, string> = {
+  2: 'grid gap-4 sm:grid-cols-2',
+  3: 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3',
+  4: 'grid gap-4 sm:grid-cols-2 lg:grid-cols-4',
 }
 
-export function CourseCatalogClient({ courses }: CourseCatalogClientProps) {
+interface CourseCatalogClientProps {
+  courses: Course[]
+  columns?: number
+  showFilters?: boolean
+  cardStyle?: CourseCardVariant
+  showPrice?: boolean
+  showMeta?: boolean
+}
+
+export function CourseCatalogClient({
+  courses,
+  columns = 3,
+  showFilters = true,
+  cardStyle = 'elevated',
+  showPrice = true,
+  showMeta = true,
+}: CourseCatalogClientProps) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
 
@@ -47,33 +65,35 @@ export function CourseCatalogClient({ courses }: CourseCatalogClientProps) {
   return (
     <div className="space-y-6">
       {/* Search and filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search courses..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+      {showFilters && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search courses..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex gap-2">
+            {filters.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={cn(
+                  'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
+                  filter === f.value
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border bg-background text-foreground hover:bg-accent',
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2">
-          {filters.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              className={cn(
-                'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
-                filter === f.value
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-background text-foreground hover:bg-accent',
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Course grid */}
       {filtered.length === 0 ? (
@@ -87,9 +107,15 @@ export function CourseCatalogClient({ courses }: CourseCatalogClientProps) {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={COLUMN_CLASSES[columns] ?? COLUMN_CLASSES[3]}>
           {filtered.map((course) => (
-            <CourseCard key={course.id} course={course} />
+            <CourseCard
+              key={course.id}
+              course={course}
+              variant={cardStyle}
+              showPrice={showPrice}
+              showMeta={showMeta}
+            />
           ))}
         </div>
       )}
