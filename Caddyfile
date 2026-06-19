@@ -19,7 +19,7 @@
 		reverse_proxy django:8000 {
 			# cloudflared->Caddy is HTTP; tell Django the public scheme is HTTPS
 			# so SECURE_SSL_REDIRECT / secure cookies don't loop.
-			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Proto {$FORWARDED_PROTO:http}
 		}
 	}
 
@@ -27,24 +27,24 @@
 	@static path /static/*
 	handle @static {
 		reverse_proxy django:8000 {
-			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Proto {$FORWARDED_PROTO:http}
 		}
 	}
 
 	# --- Django admin — apex + locale only, at /django-admin (apex /admin/*
 	# is the superadmin SPA served by nextjs-main below) ---
 	@admin {
-		host contentor.app tr.contentor.app
+		host {$CONTENTOR_DOMAIN:localhost} tr.{$CONTENTOR_DOMAIN:localhost}
 		path /django-admin /django-admin/*
 	}
 	handle @admin {
 		reverse_proxy django:8000 {
-			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-Proto {$FORWARDED_PROTO:http}
 		}
 	}
 
 	# --- Marketing / signup / login site — apex + locale ---
-	@main host contentor.app tr.contentor.app
+	@main host {$CONTENTOR_DOMAIN:localhost} tr.{$CONTENTOR_DOMAIN:localhost}
 	handle @main {
 		reverse_proxy nextjs-main:3000
 	}
