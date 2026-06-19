@@ -22,9 +22,9 @@ const BACKGROUND_CLASSES: Record<string, string> = {
     "[&>*]:!bg-muted [&>*]:!text-foreground [&_h1]:!text-foreground [&_h2]:!text-foreground [&_h3]:!text-foreground [&_h4]:!text-foreground [&_p]:!text-foreground [&_li]:!text-foreground [&_span]:!text-foreground",
   card: "[&>*]:!bg-card [&>*]:!text-card-foreground [&_h1]:!text-card-foreground [&_h2]:!text-card-foreground [&_h3]:!text-card-foreground [&_h4]:!text-card-foreground [&_p]:!text-card-foreground [&_li]:!text-card-foreground [&_span]:!text-card-foreground",
   accent:
-    "[&>*]:!bg-accent [&>*]:!text-accent-foreground [&_h1]:!text-accent-foreground [&_h2]:!text-accent-foreground [&_h3]:!text-accent-foreground [&_h4]:!text-accent-foreground [&_p]:!text-accent-foreground [&_li]:!text-accent-foreground [&_span]:!text-accent-foreground",
+    "[&>*]:!bg-accent [&>*]:!text-accent-foreground [&_h1]:!text-accent-foreground [&_h2]:!text-accent-foreground [&_h3]:!text-accent-foreground [&_h4]:!text-accent-foreground [&_p]:!text-accent-foreground [&_li]:!text-accent-foreground [&_span]:!text-accent-foreground [&_a]:!text-accent-foreground [&_strong]:!text-accent-foreground [&_small]:!text-accent-foreground [&_label]:!text-accent-foreground [&_[data-slot=button]]:!bg-accent-foreground [&_[data-slot=button]]:!text-accent",
   primary:
-    "[&>*]:!bg-primary [&>*]:!text-primary-foreground [&_h1]:!text-primary-foreground [&_h2]:!text-primary-foreground [&_h3]:!text-primary-foreground [&_h4]:!text-primary-foreground [&_p]:!text-primary-foreground [&_li]:!text-primary-foreground [&_span]:!text-primary-foreground",
+    "[&>*]:!bg-primary [&>*]:!text-primary-foreground [&_h1]:!text-primary-foreground [&_h2]:!text-primary-foreground [&_h3]:!text-primary-foreground [&_h4]:!text-primary-foreground [&_p]:!text-primary-foreground [&_li]:!text-primary-foreground [&_span]:!text-primary-foreground [&_a]:!text-primary-foreground [&_strong]:!text-primary-foreground [&_small]:!text-primary-foreground [&_label]:!text-primary-foreground [&_[data-slot=button]]:!bg-primary-foreground [&_[data-slot=button]]:!text-primary",
 };
 
 const SPACING_CLASSES: Record<string, string> = {
