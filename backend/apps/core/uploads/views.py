@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import build_s3_path, generate_presigned_upload_url
 
-from .serializers_upload import PresignRequestSerializer, UploadCompleteSerializer
+from .serializers import PresignRequestSerializer, UploadCompleteSerializer
 
 
 @api_view(["POST"])
