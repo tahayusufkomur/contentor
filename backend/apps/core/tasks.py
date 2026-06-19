@@ -105,7 +105,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
             )
 
         if niche:
-            from apps.core.seed_template import TemplateSeedError, seed_template_into_tenant
+            from apps.core.demo.seed_template import TemplateSeedError, seed_template_into_tenant
 
             try:
                 seed_template_into_tenant(tenant, niche, writer=logger.info)

@@ -34,7 +34,7 @@ urlpatterns = [
     path("api/webhooks/stripe/", stripe_webhook, name="stripe-webhook"),
     path("api/health/", health_check, name="health-check"),
     path("api/v1/auth/", include("apps.accounts.urls")),
-    path("api/v1/demo/", include("apps.core.urls_demo")),
+    path("api/v1/demo/", include("apps.core.demo.urls")),
     path("api/v1/onboarding/", include("apps.core.urls_onboarding")),
     path("api/v1/contact/", include("apps.core.contact.urls")),
     path("api/v1/preview/", include("apps.core.urls_preview")),

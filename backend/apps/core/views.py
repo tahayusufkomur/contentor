@@ -234,7 +234,7 @@ def seed_from_template(request):
     Accepts the same signup token used for verify. The token is reusable here
     because it's the only credential the coach has at this stage (no JWT yet).
     """
-    from apps.core.seed_template import available_niches
+    from apps.core.demo.seed_template import available_niches
 
     payload, tenant, err = _resolve_tenant_from_signup_token(request)
     if err is not None:
