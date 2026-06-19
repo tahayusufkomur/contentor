@@ -4,13 +4,13 @@ Guidance for Claude Code when working in the Contentor repository.
 
 ## Project Overview
 
-**Contentor** — multi-tenant SaaS platform for content creators ("coaches"). Coaches sign up and get a tenant subdomain where they sell courses, downloads, live sessions, and run email campaigns to their students. Each tenant is isolated via PostgreSQL schema-per-tenant (`django-tenants`), routed by Traefik.
+**Contentor** — multi-tenant SaaS platform for content creators ("coaches"). Coaches sign up and get a tenant subdomain where they sell courses, downloads, live sessions, and run email campaigns to their students. Each tenant is isolated via PostgreSQL schema-per-tenant (`django-tenants`), routed by Caddy.
 
 - **Coach** = tenant owner (paying customer)
 - **Student** = end user inside a tenant
 - **Superadmin** = main app owner (us)
 
-Production stack: Django 5.1 + DRF + django-tenants + Postgres 17 + Redis 7 + Celery + 2× Next.js 14, behind Caddy in prod (dev uses Traefik v3.x).
+Production stack: Django 5.1 + DRF + django-tenants + Postgres 17 + Redis 7 + Celery + 2× Next.js 14, behind Caddy in both dev and prod.
 
 ## Commands
 
@@ -65,18 +65,18 @@ API prefix: `/api/v1/` (also `/api/health/`).
 Two independent Next.js 14 apps, App Router, Tailwind + Radix UI:
 
 - **`frontend-main/`** — marketing site, signup, login, coach onboarding. Routed via `Host(localhost)` / `Host(tr.localhost)` (dev) and `Host(contentor.app)` / `Host(tr.contentor.app)` (prod).
-- **`frontend-customer/`** — tenant-facing portal where students consume content. Routed via Traefik wildcard `HostRegexp(.+)` (catch-all). Adds Stream.io chat + video (`stream-chat-react`, `@stream-io/video-react-sdk`).
+- **`frontend-customer/`** — tenant-facing portal where students consume content. Routed via Caddy catch-all (any host that isn't the marketing apex/locale). Adds Stream.io chat + video (`stream-chat-react`, `@stream-io/video-react-sdk`).
 
 ### Multi-Tenancy (critical — see also `~/.claude/.../memory/reference_multitenancy_patterns.md`)
 
-- Browser → `/api/v1/*` → Django (direct via Traefik, NOT proxied through Next.js).
+- Browser → `/api/v1/*` → Django (direct via Caddy, NOT proxied through Next.js).
 - Next.js server-side `fetch()` → Django MUST send `X-Tenant-Domain` header. Node's undici silently drops custom `Host`, so `Host: django` resolves to public.
 - Build tenant domain from slug (`${slug}.${BASE_DOMAIN}`) — don't rely on `getTenantDomain()` in `generateMetadata` / `manifest.ts` (returns empty there).
 - Tenant signup creates user in BOTH public (role=coach) and tenant (role=owner, is_staff). Magic link auto-registers students in tenant schema.
 
 ### Docker Services (`docker-compose.yml`)
 
-`traefik` (80/8080), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
+`caddy` (:80), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
 
 Only the gunicorn entrypoint runs migrations + collectstatic — celery skips to avoid races.
 
@@ -112,11 +112,11 @@ Domain `contentor.app` (apex + `tr.` locale + `*.` tenant subdomains).
 - **Prod stack:** `docker-compose.prod.yml` at the repo root (self-contained;
   NOT an override of the dev compose). One Caddy edge proxy `contentor-caddy` on
   the external `edge` network is the only edge-facing container; everything else
-  is on the internal network with no published host ports. Dev still uses
-  `docker-compose.yml` + Traefik — untouched.
-- **Routing:** `Caddyfile.prod` does it all (no Traefik in prod). `/api/*`,
-  `/static/*` and apex `/django-admin/*` → Django; apex + `tr.` →
-  `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
+  is on the internal network with no published host ports.
+- **Routing:** one parametrized `Caddyfile` (env vars `CONTENTOR_DOMAIN` and
+  `FORWARDED_PROTO`) serves both dev and prod. `/api/*`, `/static/*` and apex
+  `/django-admin/*` → Django; apex + `tr.` → `nextjs-main`; every other host
+  (tenant subdomains) → `nextjs-customer` (Caddy catch-all).
   Tenancy is dynamic — Django resolves the tenant from the Host header; the proxy
   needs no per-tenant config, only wildcard DNS.
 - **TLS:** terminated at Cloudflare's edge; cloudflared→Caddy→Django is HTTP.

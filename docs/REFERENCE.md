@@ -54,8 +54,8 @@ Celery (worker + beat) on Redis, Daphne/Channels for WebSockets, Gunicorn for HT
 **Data:** PostgreSQL 17, Redis 7 (cache + Celery broker), Hetzner S3-compatible object
 storage (`contentor-prod` bucket) via boto3.
 
-**Edge:** dev = Traefik v3.2; prod = a single Caddy edge container on the home server,
-fronted by a shared Cloudflare Tunnel. TLS terminates at Cloudflare.
+**Edge:** a single Caddy edge container in both dev and prod; prod is fronted by a shared
+Cloudflare Tunnel. TLS terminates at Cloudflare.
 
 ```
                           ┌─────────────── Browser (tenant subdomain or apex) ───────────────┐
@@ -63,8 +63,7 @@ fronted by a shared Cloudflare Tunnel. TLS terminates at Cloudflare.
                   Cloudflare edge (TLS)                                                       │
                           │ cloudflared (HTTP)                                                │
                   ┌───────▼────────┐                                                          │
-                  │  Caddy (prod)  │  Caddyfile.prod routes by host + path                    │
-                  │  Traefik (dev) │                                                          │
+                  │     Caddy      │  Caddyfile routes by host + path (both dev and prod)     │
                   └───┬────────┬───┘                                                          │
        /api,/ws,/static,apex/admin │        apex + tr. │        every other host (tenants)    │
                   ┌───▼───┐    ┌───▼─────────┐    ┌────▼──────────────┐                       │
@@ -79,7 +78,7 @@ fronted by a shared Cloudflare Tunnel. TLS terminates at Cloudflare.
 ```
 
 **Services** (`docker-compose.yml` dev / `docker-compose.prod.yml` prod):
-`traefik`/`caddy`, `postgres`, `redis`, `django` (Gunicorn :8000), `django-channels`
+`caddy`, `postgres`, `redis`, `django` (Gunicorn :8000), `django-channels`
 (Daphne :8001), `nextjs-main` (:3000), `nextjs-customer` (:3001), `celery-worker`,
 `celery-beat`. Dev adds an optional `--profile monitoring` (Prometheus, Grafana, Loki,
 cAdvisor).
@@ -425,8 +424,8 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
 
 ### Dev
 
-`make dev` (compose up --build, hot-reload). Traefik routes `/api/v1`, `/api/health`,
-`/api/webhooks` → Django; `/ws` → Daphne; apex → `nextjs-main`; wildcard → `nextjs-customer`.
+`make dev` (compose up --build, hot-reload). Caddy (parametrized `Caddyfile`, `CONTENTOR_DOMAIN=localhost`) routes `/api/v1`, `/api/health`,
+`/api/webhooks` and `/static/*` → Django; apex + `tr.localhost` → `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
 Useful: `make dev-reset`, `make migrate` / `make migrate-shared` / `make makemigrations`,
 `make seed`, `make test`, `make lint`, `make format`, `make shell`, `make health-check`.
 (Full list: `make help`.)
