@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- **`apps.usage` is a SHARED app** (add to `SHARED_APPS` in `backend/config/settings/base.py`, NOT `TENANT_APPS`). `UsageEvent` lives in the public schema; the `tenant` FK (`"core.Tenant"`) records attribution.
+- **`apps.usage` is a TENANT app** (add to `TENANT_APPS` in `backend/config/settings/base.py`, NOT `SHARED_APPS`). `UsageEvent` lives in **each tenant's schema** with a real `user` FK to that tenant's users (students live in the tenant schema). **No `tenant` column** — the schema identifies the tenant. (Revised from the original public/shared design: students aren't in the public schema, so a public FK to them is impossible.)
 - **Students only:** the capture endpoint records only when `request.user.role == "student"` (coaches/owners are out of scope). The client reporter does not fire on `/admin/*`.
 - **Tenant-test convention** (the same as `apps/notifications/tests/`): backend tests use `@pytest.mark.django_db(transaction=True)`, depend on the `tenant_ctx` fixture (from `backend/conftest.py`), and create users via `User.objects.create_user(email=, name=, password=, role=)` from `apps.accounts.models` — NOT bare `django_db`/`django_user_model`. The current tenant in a request is `connection.tenant` (`from django.db import connection`); API tests use `APIClient(HTTP_HOST="shared-test.localhost")`. Mirror `backend/apps/notifications/tests/test_api.py`.
 - **Privacy:** store only coarse `platform` (ios/android/desktop/other) derived from the UA — never the raw User-Agent.
@@ -26,14 +26,14 @@
 
 **Files:**
 - Create: `backend/apps/usage/__init__.py`, `apps.py`, `models.py`, `tests/__init__.py`, `tests/test_models.py`
-- Modify: `backend/config/settings/base.py` (SHARED_APPS), `backend/apps/accounts/models.py` (User fields)
+- Modify: `backend/config/settings/base.py` (TENANT_APPS), `backend/apps/accounts/models.py` (User fields)
 
 **Interfaces:**
-- Produces: `UsageEvent(user, tenant, mode, platform, day, created_at)` unique on `(user, tenant, mode, platform, day)`; `User.last_display_mode`, `User.last_platform`, `User.first_pwa_at`. Consumed by Tasks 2 & 4.
+- Produces: `UsageEvent(user, mode, platform, day, created_at)` (tenant-schema model, no tenant column) unique on `(user, mode, platform, day)`; `User.last_display_mode`, `User.last_platform`, `User.first_pwa_at`. Consumed by Tasks 2 & 4.
 
 - [ ] **Step 1: Register the app**
 
-In `backend/config/settings/base.py`, add `"apps.usage"` to the `SHARED_APPS` list (e.g. after `"apps.accounts"`).
+In `backend/config/settings/base.py`, add `"apps.usage"` to the `TENANT_APPS` list (NOT `SHARED_APPS`).
 
 - [ ] **Step 2: App config + package**
 
@@ -60,16 +60,16 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 
 from apps.accounts.models import User
-from apps.core.models import Tenant
 from apps.usage.models import UsageEvent
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def test_usage_event_dedupes_per_day(tenant_ctx):
+    # tenant_ctx runs in the tenant schema, where both the student User and the
+    # tenant-app UsageEvent live — so the real user FK resolves cleanly.
     user = User.objects.create_user(email="s@u.com", name="S", password="x", role="student")
-    tenant = Tenant.objects.first()  # the shared test tenant
-    kwargs = dict(user=user, tenant=tenant, mode="pwa", platform="ios", day=date(2026, 6, 20))
+    kwargs = dict(user=user, mode="pwa", platform="ios", day=date(2026, 6, 20))
     UsageEvent.objects.create(**kwargs)
     with pytest.raises(IntegrityError):
         with transaction.atomic():
@@ -109,9 +109,6 @@ class UsageEvent(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="usage_events"
     )
-    tenant = models.ForeignKey(
-        "core.Tenant", on_delete=models.CASCADE, related_name="usage_events"
-    )
     mode = models.CharField(max_length=10, choices=MODE_CHOICES)
     platform = models.CharField(max_length=10, choices=PLATFORM_CHOICES)
     day = models.DateField()
@@ -119,7 +116,7 @@ class UsageEvent(models.Model):
 
     class Meta:
         app_label = "usage"
-        unique_together = ("user", "tenant", "mode", "platform", "day")
+        unique_together = ("user", "mode", "platform", "day")
 
     def __str__(self) -> str:
         return f"UsageEvent<{self.user_id}:{self.mode}/{self.platform}:{self.day}>"
@@ -161,7 +158,7 @@ git commit -m "feat(usage): shared UsageEvent model + denormalized PWA fields on
 - Modify: `backend/apps/core/me/urls.py`
 
 **Interfaces:**
-- Consumes: `UsageEvent`, `User` fields (Task 1), `connection.tenant`.
+- Consumes: `UsageEvent`, `User` fields (Task 1). Writes happen in the request's tenant schema automatically (customer subdomain).
 - Produces: `POST /api/v1/me/usage/` body `{mode, platform}` → 204; records only for `role=="student"`; idempotent per day; updates `User` last-seen + `first_pwa_at`.
 
 - [ ] **Step 1: Write the failing test**
@@ -234,7 +231,6 @@ Expected: FAIL (404 — route not wired).
 Create `backend/apps/usage/views.py`:
 
 ```python
-from django.db import connection
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -260,9 +256,10 @@ def record_usage(request):
     if getattr(user, "role", None) != "student":
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    # The request runs in the tenant's schema (customer subdomain), so this row
+    # lands in that tenant — no tenant column needed.
     UsageEvent.objects.get_or_create(
         user=user,
-        tenant=connection.tenant,
         mode=mode,
         platform=platform,
         day=timezone.now().date(),
@@ -493,6 +490,6 @@ git commit -m "feat(usage): expose + show last PWA/browser mode per student in c
 
 **Placeholder scan:** Code is complete. The one open-ended step is Task 4 Step 5's frontend placement (depends on the real student-list markup) — it ships a concrete badge snippet + type addition and a clear "display-only, match existing row" instruction, which is an integration placement, not a missing-logic placeholder.
 
-**Type consistency:** `mode` ∈ {pwa, browser} and `platform` ∈ {ios, android, desktop, other} are identical across the model (Task 1), endpoint validation (Task 2), reporter (Task 3), and badge (Task 4); `UsageEvent` field names and the three `User` fields match across all tasks; `connection.tenant` is the tenant source in Task 2 matching the Global Constraints.
+**Type consistency:** `mode` ∈ {pwa, browser} and `platform` ∈ {ios, android, desktop, other} are identical across the model (Task 1), endpoint validation (Task 2), reporter (Task 3), and badge (Task 4); `UsageEvent` field names and the three `User` fields match across all tasks; `UsageEvent` is a tenant-schema model (no tenant column) written in the request's tenant context, per the Global Constraints.
 
 **Out of scope (Phase B/C):** `/api/v1/admin/usage/summary/`, coach dashboard widget, superadmin platform-wide endpoint + widget.

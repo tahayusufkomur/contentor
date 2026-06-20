@@ -26,22 +26,23 @@ Plus the raw capture that underpins all three. (Install **nudge** already ships 
 - Per-event device detail beyond coarse platform (no raw User-Agent stored — privacy).
 - Real-time; daily granularity is enough.
 
-## Architecture decision (Approach 1, chosen)
+## Architecture decision (Approach 2, chosen)
 
-Telemetry lives in the **public schema** as a shared app `apps.usage`, with a `tenant` FK for attribution. One source feeds all three surfaces: superadmin aggregation is a single query, the coach dashboard filters by tenant, and per-student display reads denormalized fields on the (shared) `User`. Rejected: per-tenant-schema events + rollup job (more moving parts for the same result); 3rd-party (can't surface per-student inside our own admin, messy multi-tenant separation).
+**Revised from the original Approach 1.** Implementation surfaced that students live in the **tenant** schema, not public (per CLAUDE.md: magic-link students are auto-registered in the tenant schema; only coaches exist in public). A public-schema event table therefore **cannot hold a real FK to a student**.
 
-## Data model — new shared app `apps.usage`
+So telemetry lives **per-tenant**: `apps.usage` is a **TENANT app** and `UsageEvent` sits in each tenant's own schema with a real `user` FK to that tenant's users. Per-student display and the coach dashboard are naturally tenant-scoped with full referential integrity (the schema *is* the tenant — no `tenant` column needed). The superadmin platform-wide view (Phase C) aggregates across tenants by iterating tenant schemas (or a periodic rollup). Rejected: public table with a user FK (impossible — students aren't in public); public table with a FK-less `user_id` int (keeps superadmin a single query but loses integrity); 3rd-party (can't surface per-student in our own admin).
 
-Register `"apps.usage"` in **SHARED_APPS** (public schema).
+## Data model — new TENANT app `apps.usage`
 
-`UsageEvent`:
-- `user` → FK `settings.AUTH_USER_MODEL`
-- `tenant` → FK to the django-tenants tenant model (the `get_tenant_model()` model in `apps.core`; reference by its concrete label, e.g. `"core.Tenant"` — verify the exact name at implementation)
+Register `"apps.usage"` in **TENANT_APPS** (per-tenant schema).
+
+`UsageEvent` (lives in the tenant schema — no tenant column; the schema identifies the tenant):
+- `user` → FK `settings.AUTH_USER_MODEL` (the tenant's user, e.g. a student)
 - `mode` — `CharField(choices=[("pwa","PWA"),("browser","Browser")])`
 - `platform` — `CharField(choices=[("ios","iOS"),("android","Android"),("desktop","Desktop"),("other","Other")])`
 - `day` — `DateField`
 - `created_at` — `DateTimeField(auto_now_add=True)`
-- `Meta.unique_together = ("user","tenant","mode","platform","day")` → self-dedupes to one row/day per dimension.
+- `Meta.unique_together = ("user","mode","platform","day")` → self-dedupes to one row/day per dimension.
 
 Denormalized on `User` (`apps.accounts`, shared — shared migration):
 - `last_display_mode` — `CharField(blank=True, default="")`
@@ -55,23 +56,21 @@ Denormalized on `User` (`apps.accounts`, shared — shared migration):
   - `platform` = coarse from `navigator.userAgent`: iphone/ipad/ipod → `ios`, android → `android`, else `desktop` (→ `other` only if UA missing).
   Then POSTs `{mode, platform}` to `/api/v1/me/usage/` via `clientFetch` and sets the `sessionStorage` flag (so it fires at most once per browser session). Failures are swallowed (telemetry must never break the page).
 - **Endpoint** `POST /api/v1/me/usage/` (default `TenantJWTAuthentication`, `IsAuthenticated`):
-  - Validate `mode`/`platform` against the choices (400 otherwise).
-  - Resolve the tenant from `connection.tenant` (django-tenants); `user = request.user`.
-  - `UsageEvent.objects.get_or_create(user=user, tenant=tenant, mode=mode, platform=platform, day=timezone.now().date())` (idempotent).
+  - Validate `mode`/`platform` against the choices (400 otherwise). Record only when `request.user.role == "student"` (else 204 no-op).
+  - `UsageEvent.objects.get_or_create(user=request.user, mode=mode, platform=platform, day=timezone.now().date())` (idempotent). The request runs in the tenant's schema (customer subdomain), so the row lands in that tenant — no `tenant` column needed.
   - Update `User`: set `last_display_mode`, `last_platform`; set `first_pwa_at = now()` if `mode == "pwa"` and it's null. `save(update_fields=[...])`.
   - Return `204`.
-  - `UsageEvent` is a SHARED-app model → django-tenants writes it to the public schema regardless of the request's tenant; the `tenant` FK records attribution.
 
 ## Read surfaces
 
 1. **Per-student (coach admin):** add `last_display_mode` + `last_platform` to the student serializer (the coach's student list/detail already serializes `User`). Frontend shows a small badge (e.g. `📱 PWA · iOS` / `🌐 Browser`). No new query — denormalized fields.
-2. **Coach dashboard** — `GET /api/v1/admin/usage/summary/?days=30` (owner/coach only, tenant-scoped to `connection.tenant`): returns `{ pwa_sessions, browser_sessions, pwa_pct, installed_students, daily: [{day, pwa, browser}] }` aggregated from `UsageEvent` filtered by the current tenant. A widget on the coach `/admin` dashboard renders the split + trend + install count.
-3. **Superadmin dashboard** — endpoint in the platform/superadmin API (no tenant filter): platform-wide totals + `by_tenant: [{tenant, pwa_pct, installed}]`. A widget in the superadmin panel.
+2. **Coach dashboard** — `GET /api/v1/admin/usage/summary/?days=30` (owner/coach only): returns `{ pwa_sessions, browser_sessions, pwa_pct, installed_students, daily: [{day, pwa, browser}] }` aggregated from the tenant's own `UsageEvent` rows (naturally scoped — the request runs in that tenant's schema, no tenant filter needed). A widget on the coach `/admin` dashboard renders the split + trend + install count.
+3. **Superadmin dashboard** — platform/superadmin API that aggregates **across tenants** by iterating tenant schemas (the `send_live_reminders`/`email_campaigns` pattern: loop tenants, `with tenant_context(tenant):` count) or a nightly rollup into a public summary table: platform-wide totals + `by_tenant: [{tenant, pwa_pct, installed}]`. A widget in the superadmin panel. (Phase C decides iterate-live vs rollup based on tenant count.)
 
 ## Cross-cutting
 
 - **Privacy:** only coarse `platform` is derived from the UA; the raw User-Agent is never stored. Daily dedupe means at most one row per user/mode/platform/day.
-- **Multi-tenancy:** `UsageEvent` is shared/public with a `tenant` FK; coach reads filter by `connection.tenant`; superadmin reads span all tenants. Per-student `User` fields are global to the user (one person, one device profile) — acceptable for the coach's view.
+- **Multi-tenancy:** `UsageEvent` lives in each tenant's schema (real `user` FK, full integrity); coach reads are naturally scoped to the active tenant; the superadmin spans tenants by iterating schemas (or a rollup). The denormalized `User` last-seen fields are written on the tenant's user row (students live in the tenant schema), so the coach's student list reads them directly.
 - **Auth:** capture + coach summary use `TenantJWTAuthentication`; superadmin endpoint uses the existing superadmin auth/permission.
 - **i18n:** new student-facing strings: none (reporter is invisible). Admin/dashboard labels → `en` + `tr`.
 - **Failure isolation:** the client reporter and the capture endpoint must degrade silently; a telemetry failure never affects the page or the user's request.
@@ -89,6 +88,6 @@ Denormalized on `User` (`apps.accounts`, shared — shared migration):
 
 ## Risks / open questions
 
-- **Tenant FK from a shared model** to the django-tenants tenant model — confirm the concrete model label and that the FK/migration behaves in the public schema (verify against `apps.core` at implementation).
+- **Superadmin aggregation cost (Phase C)** — iterating tenant schemas to count events is O(tenants); fine at current scale, but Phase C should decide iterate-live vs a nightly rollup into a public summary table once tenant count grows.
 - **`day` timezone** — uses server (UTC) date; trend buckets are UTC days. Acceptable for adoption metrics; revisit if per-tenant-tz buckets are ever needed.
-- **Multi-tenant student identity** — a user who is a student in several tenants has one global `last_display_mode` on `User`; per-tenant `UsageEvent` rows still attribute sessions correctly, so dashboards stay accurate.
+- **Multi-tenant student identity** — students are per-tenant rows (magic-link registers them in each tenant's schema), so `last_display_mode` and `UsageEvent` are naturally per-tenant; no cross-tenant bleed.
