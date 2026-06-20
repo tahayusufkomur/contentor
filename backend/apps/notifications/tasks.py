@@ -41,12 +41,18 @@ def send_live_reminders() -> None:
 
 
 @shared_task
-def fanout_new_content(course_id: int) -> None:
+def fanout_new_content(course_id: int, schema_name: str) -> None:
     from apps.courses.models import Course
 
     from .payloads import new_content_payload
 
-    course = Course.objects.filter(pk=course_id).first()
-    if not course:
+    tenant_model = get_tenant_model()
+    try:
+        tenant = tenant_model.objects.get(schema_name=schema_name)
+    except tenant_model.DoesNotExist:
         return
-    broadcast_to_tenant(new_content_payload(course.title, f"/courses/{course.slug}"))
+    with tenant_context(tenant):
+        course = Course.objects.filter(pk=course_id).first()
+        if not course:
+            return
+        broadcast_to_tenant(new_content_payload(course.title, f"/courses/{course.slug}"))
