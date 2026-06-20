@@ -4,5 +4,8 @@
   "iosHint": "Tap the Share icon, then \"Add to Home Screen\"",
   "dismiss": "Dismiss",
   "updateAvailable": "A new version is available",
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "enablePush": "Get notified about live classes and new lessons",
+  "enable": "Turn on",
+  "notNow": "Not now"
 }

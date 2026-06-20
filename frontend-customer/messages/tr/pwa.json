@@ -4,5 +4,8 @@
   "iosHint": "Paylaş simgesine dokunun, ardından \"Ana Ekrana Ekle\"",
   "dismiss": "Kapat",
   "updateAvailable": "Yeni bir sürüm mevcut",
-  "refresh": "Yenile"
+  "refresh": "Yenile",
+  "enablePush": "Canlı dersler ve yeni içeriklerden haberdar olun",
+  "enable": "Aç",
+  "notNow": "Şimdi değil"
 }
