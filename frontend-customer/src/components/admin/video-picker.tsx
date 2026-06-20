@@ -23,6 +23,7 @@ interface VideoPickerProps {
   value: number | null
   previewUrl: string | null
   onChange: (videoId: number | null, signedUrl: string | null) => void
+  allowUrl?: boolean
 }
 
 function extractDuration(file: File): Promise<number> {
@@ -41,7 +42,7 @@ function extractDuration(file: File): Promise<number> {
   })
 }
 
-export function VideoPicker({ value, previewUrl, onChange }: VideoPickerProps) {
+export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: VideoPickerProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [videos, setVideos] = useState<VideoItem[]>([])
@@ -91,7 +92,7 @@ export function VideoPicker({ value, previewUrl, onChange }: VideoPickerProps) {
           body: JSON.stringify({
             filename: file.name,
             content_type: file.type,
-            category: "video",
+            category: "library",
           }),
         }
       )
@@ -117,9 +118,10 @@ export function VideoPicker({ value, previewUrl, onChange }: VideoPickerProps) {
         method: "POST",
         body: JSON.stringify({
           s3_key,
-          category: "video",
+          category: "library",
           video_id: videoData.id,
           duration_seconds,
+          file_size: file.size,
         }),
       })
 
@@ -171,6 +173,15 @@ export function VideoPicker({ value, previewUrl, onChange }: VideoPickerProps) {
           )}
         </div>
       </div>
+
+      {allowUrl && (
+        <Input
+          value={value == null ? (previewUrl ?? "") : ""}
+          onChange={(e) => onChange(null, e.target.value || null)}
+          placeholder="YouTube, Vimeo, or direct video URL"
+          className="text-sm"
+        />
+      )}
 
       {open && (
         <div className="rounded-lg border bg-card p-4 space-y-3">
