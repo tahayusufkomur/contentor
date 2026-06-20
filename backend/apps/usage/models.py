@@ -14,9 +14,6 @@ class UsageEvent(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="usage_events"
     )
-    tenant = models.ForeignKey(
-        "core.Tenant", on_delete=models.CASCADE, related_name="usage_events"
-    )
     mode = models.CharField(max_length=10, choices=MODE_CHOICES)
     platform = models.CharField(max_length=10, choices=PLATFORM_CHOICES)
     day = models.DateField()
@@ -24,7 +21,7 @@ class UsageEvent(models.Model):
 
     class Meta:
         app_label = "usage"
-        unique_together = ("user", "tenant", "mode", "platform", "day")
+        unique_together = ("user", "mode", "platform", "day")
 
     def __str__(self) -> str:
         return f"UsageEvent<{self.user_id}:{self.mode}/{self.platform}:{self.day}>"

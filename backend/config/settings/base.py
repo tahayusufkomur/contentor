@@ -24,7 +24,6 @@ SHARED_APPS = [
     "corsheaders",
     "apps.core",
     "apps.accounts",
-    "apps.usage",
     # No models — registers API admin sites for both SPAs via admin_panels.py
     # autodiscovery.
     "apps.adminkit",
@@ -47,6 +46,7 @@ TENANT_APPS = [
     "apps.billing",
     "apps.email_campaigns",
     "apps.notifications",
+    "apps.usage",
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
