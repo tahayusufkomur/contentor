@@ -19,6 +19,7 @@ import {
 import type { Block } from "@/types/tenant";
 import type { BlockDefinition, BlockGroup, DynamicDataKey } from "./types";
 import type { FieldSchema } from "./field-schema";
+import { exampleFor } from "./examples";
 
 import { HeroBlock } from "@/components/blocks/hero-block";
 import { RichTextBlock } from "@/components/blocks/rich-text-block";
@@ -528,13 +529,17 @@ export function mintBlockId(): string {
     : `blk_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** Build a fresh block of the given type with a unique id + default content. */
-export function newBlock(type: string): Block {
+/** Build a fresh block of the given type with a unique id + niche-aware example
+ *  content. Static content blocks (hero, testimonials, faq, …) are seeded with
+ *  example copy matching the tenant's `niche` (generic fallback when unknown);
+ *  media/dynamic blocks have no example and keep their `defaultData`. */
+export function newBlock(type: string, niche?: string): Block {
   const def = BLOCK_REGISTRY[type];
   return {
     id: mintBlockId(),
     type,
     enabled: true,
     ...structuredClone(def?.defaultData ?? {}),
+    ...structuredClone(exampleFor(type, niche)),
   };
 }
