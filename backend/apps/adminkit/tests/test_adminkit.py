@@ -62,12 +62,18 @@ def plans(tenant_ctx):
 
 def test_studio_site_meta_lists_models_per_role(owner, coach, student):
     body = make_client(owner).get("/api/v1/studio-admin/meta/").json()
-    assert {m["key"] for m in body["models"]} == {"courses", "subscription-plans", "bundles", "payments", "users"}
+    assert {m["key"] for m in body["models"]} == {
+        "courses", "subscription-plans", "bundles", "payments", "users",
+        "filter-groups", "filter-options",
+    }
 
-    # Billing admins require the owner role; a coach sees only courses + users
-    # (users carries the "log in as student" action, open to coaches).
+    # Billing admins require the owner role; a coach sees courses + users +
+    # the coach-managed filter taxonomy. (users carries the "log in as student"
+    # action, open to coaches.)
     body = make_client(coach).get("/api/v1/studio-admin/meta/").json()
-    assert {m["key"] for m in body["models"]} == {"courses", "users"}
+    assert {m["key"] for m in body["models"]} == {
+        "courses", "users", "filter-groups", "filter-options",
+    }
 
     assert make_client(student).get("/api/v1/studio-admin/meta/").status_code == 403
 
