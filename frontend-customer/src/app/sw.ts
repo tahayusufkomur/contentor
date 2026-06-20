@@ -49,3 +49,41 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+self.addEventListener("push", (event) => {
+  const data = (() => {
+    try {
+      return JSON.parse(event.data?.text() ?? "{}");
+    } catch {
+      return {};
+    }
+  })();
+  const title = data.title ?? "Notification";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body ?? "",
+      icon: data.icon ?? "/pwa-icon?size=192",
+      badge: "/pwa-icon?size=192",
+      tag: data.tag,
+      data: { url: data.url ?? "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/";
+  event.waitUntil(
+    (async () => {
+      const clientList = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of clientList) {
+        if ("focus" in client) {
+          await client.focus();
+          if ("navigate" in client) await (client as WindowClient).navigate(url);
+          return;
+        }
+      }
+      await self.clients.openWindow(url);
+    })(),
+  );
+});
