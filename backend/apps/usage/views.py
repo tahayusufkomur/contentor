@@ -1,3 +1,6 @@
+import contextlib
+
+from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -24,13 +27,16 @@ def record_usage(request):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     # The request runs in the tenant's schema (customer subdomain), so this row
-    # lands in that tenant — no tenant column needed.
-    UsageEvent.objects.get_or_create(
-        user=user,
-        mode=mode,
-        platform=platform,
-        day=timezone.now().date(),
-    )
+    # lands in that tenant — no tenant column needed. Guard the unique-constraint
+    # race from a concurrent double-POST (two tabs): today's row already exists,
+    # so swallow it rather than 500.
+    with contextlib.suppress(IntegrityError):
+        UsageEvent.objects.get_or_create(
+            user=user,
+            mode=mode,
+            platform=platform,
+            day=timezone.now().date(),
+        )
 
     fields = []
     if user.last_display_mode != mode:
