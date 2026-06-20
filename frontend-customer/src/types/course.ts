@@ -19,12 +19,24 @@ export interface Module {
   lessons: Lesson[]
 }
 
-export interface CourseCategory {
+// Custom faceted filters (a coach-defined "Filter" with "Options").
+export interface FilterOption {
   id: number
   name: string
   slug: string
   order?: number
-  course_count?: number
+  group: number
+  group_name: string
+  group_slug: string
+}
+
+export interface FilterGroup {
+  id: number
+  name: string
+  slug: string
+  applies_to: 'course' | 'event' | 'both'
+  order: number
+  options: FilterOption[]
 }
 
 export interface Course {
@@ -43,7 +55,7 @@ export interface Course {
   order: number
   lesson_count?: number
   enrolled_count?: number
-  categories?: { id: number; name: string; slug: string }[]
+  filter_options?: FilterOption[]
   created_at?: string
   updated_at?: string
   access_info?: AccessInfo

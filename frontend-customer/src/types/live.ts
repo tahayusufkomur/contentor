@@ -90,6 +90,7 @@ export interface CalendarEvent {
   ended_at: string | null
   location: string
   thumbnail_signed_url: string | null
+  filter_options?: import('./course').FilterOption[]
 }
 
 export interface CalendarEventDetail extends CalendarEvent {
