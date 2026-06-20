@@ -10,6 +10,7 @@ export interface DownloadFile {
   pricing_type: 'free' | 'paid'
   price: string
   tags?: Tag[]
+  tag_ids?: number[]
   created_at: string
   access_info?: AccessInfo
 }

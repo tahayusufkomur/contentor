@@ -191,6 +191,7 @@ export default function VideosPage() {
   const videoFields: FieldConfig<VideoItem>[] = [
     { key: "title", label: "Title", type: "text", required: true },
     { key: "description", label: "Description", type: "textarea" },
+    { key: "tag_ids", label: "Tags", type: "tags", tagScope: "video" },
   ]
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
@@ -201,6 +202,7 @@ export default function VideosPage() {
         body: JSON.stringify({
           title: values.title,
           description: values.description,
+          tag_ids: values.tag_ids ?? [],
         }),
       })
       toast.success("Video updated")
@@ -582,7 +584,7 @@ export default function VideosPage() {
             <TableRow>
               <TableCell colSpan={7} className="p-0">
                 <InlineEditPanel
-                  item={video}
+                  item={{ ...video, tag_ids: (video.tags ?? []).map((t) => t.id) }}
                   fields={videoFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}

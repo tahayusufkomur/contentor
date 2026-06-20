@@ -11,5 +11,6 @@ export interface Photo {
   height: number | null
   signed_url: string | null
   tags?: Tag[]
+  tag_ids?: number[]
   created_at: string
 }

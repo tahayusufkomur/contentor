@@ -23,6 +23,7 @@ import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react"
 import { PhotoPicker } from "@/components/admin/photo-picker"
 import { VideoPicker } from "@/components/admin/video-picker"
 import { FilterPicker } from "@/components/admin/filter-picker"
+import { TagInput } from "@/components/admin/tag-input"
 import { formatDuration } from "@/lib/format"
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course"
 import type { Photo } from "@/types/photo"
@@ -39,6 +40,9 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
   const [saving, setSaving] = useState(false)
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>(
     initialCourse?.filter_options?.map((o) => o.id) ?? [],
+  )
+  const [tagIds, setTagIds] = useState<number[]>(
+    initialCourse?.tags?.map((t) => t.id) ?? [],
   )
 
   // Create-mode form state
@@ -83,7 +87,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
       try {
         const created = await clientFetch<Course>("/api/v1/courses/", {
           method: "POST",
-          body: JSON.stringify({ ...createForm, filter_option_ids: filterOptionIds }),
+          body: JSON.stringify({ ...createForm, filter_option_ids: filterOptionIds, tag_ids: tagIds }),
         })
         toast.success("Course created")
         router.push(`/admin/courses/${created.slug}`)
@@ -109,6 +113,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
           price: course.price,
           is_published: course.is_published,
           filter_option_ids: filterOptionIds,
+          tag_ids: tagIds,
         }),
       })
       toast.success("Course saved")
@@ -317,6 +322,10 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
           <div className="space-y-1.5">
             <Label>Filters</Label>
             <FilterPicker value={filterOptionIds} onChange={setFilterOptionIds} scope="course" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Tags</Label>
+            <TagInput value={tagIds} onChange={setTagIds} scope="course" />
           </div>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : isCreate ? "Create Course" : "Save Changes"}

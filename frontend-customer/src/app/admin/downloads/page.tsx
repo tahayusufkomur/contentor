@@ -163,6 +163,7 @@ export default function AdminDownloadsPage() {
       placeholder: "0.00",
       showWhen: (v) => v.pricing_type === "paid",
     },
+    { key: "tag_ids", label: "Tags", type: "tags", tagScope: "download" },
   ]
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
@@ -173,6 +174,7 @@ export default function AdminDownloadsPage() {
         body: JSON.stringify({
           title: values.title,
           pricing_type: values.pricing_type,
+          tag_ids: values.tag_ids ?? [],
           ...(values.pricing_type === "paid" && values.price
             ? { price: parseFloat(values.price as string) }
             : {}),
@@ -428,7 +430,7 @@ export default function AdminDownloadsPage() {
             <TableRow>
               <TableCell colSpan={7} className="p-0">
                 <InlineEditPanel
-                  item={dl}
+                  item={{ ...dl, tag_ids: (dl.tags ?? []).map((t) => t.id) }}
                   fields={downloadFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}

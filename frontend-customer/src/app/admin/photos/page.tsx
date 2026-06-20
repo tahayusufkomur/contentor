@@ -117,6 +117,7 @@ export default function PhotosPage() {
   const photoFields: FieldConfig<Photo>[] = [
     { key: "title", label: "Title", type: "text", required: true },
     { key: "alt_text", label: "Alt Text", type: "text" },
+    { key: "tag_ids", label: "Tags", type: "tags", tagScope: "photo" },
   ]
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
@@ -124,7 +125,11 @@ export default function PhotosPage() {
     try {
       await clientFetch(`/api/v1/photos/${editingId}/`, {
         method: "PUT",
-        body: JSON.stringify({ title: values.title, alt_text: values.alt_text }),
+        body: JSON.stringify({
+          title: values.title,
+          alt_text: values.alt_text,
+          tag_ids: values.tag_ids ?? [],
+        }),
       })
       toast.success("Photo updated")
       setEditingId(null)
@@ -305,7 +310,7 @@ export default function PhotosPage() {
             <TableRow>
               <TableCell colSpan={6} className="p-0">
                 <InlineEditPanel
-                  item={photo}
+                  item={{ ...photo, tag_ids: (photo.tags ?? []).map((t) => t.id) }}
                   fields={photoFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}

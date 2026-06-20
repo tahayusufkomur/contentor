@@ -16,15 +16,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { PhotoPicker } from "@/components/admin/photo-picker"
 import { VideoPicker } from "@/components/admin/video-picker"
 import { FilterPicker } from "@/components/admin/filter-picker"
+import { TagInput } from "@/components/admin/tag-input"
 import { Loader2 } from "lucide-react"
 import type { Photo } from "@/types/photo"
+import type { TagScope } from "@/types/course"
 
 // --- Types ---
 
 export interface FieldConfig<T> {
   key: keyof T & string
   label: string
-  type: "text" | "number" | "select" | "toggle" | "datetime" | "textarea" | "image" | "video" | "filterOptions"
+  type: "text" | "number" | "select" | "toggle" | "datetime" | "textarea" | "image" | "video" | "filterOptions" | "tags"
   options?: { label: string; value: string }[]
   showWhen?: (values: Record<string, unknown>) => boolean
   placeholder?: string
@@ -33,6 +35,8 @@ export interface FieldConfig<T> {
   previewUrlKey?: keyof T & string
   /** For filterOptions fields: which filters to offer. */
   filterScope?: "course" | "event"
+  /** For tags fields: which content-type tag pool to draw from. */
+  tagScope?: TagScope
 }
 
 export interface InlineEditPanelProps<T> {
@@ -58,7 +62,11 @@ export function InlineEditPanel<T extends Record<string, any>>({
     for (const f of fields) {
       init[f.key] =
         item[f.key] ??
-        (f.type === "toggle" ? false : f.type === "filterOptions" ? [] : "")
+        (f.type === "toggle"
+          ? false
+          : f.type === "filterOptions" || f.type === "tags"
+            ? []
+            : "")
     }
     return init
   })
@@ -115,7 +123,8 @@ export function InlineEditPanel<T extends Record<string, any>>({
               field.type === "textarea" ||
               field.type === "image" ||
               field.type === "video" ||
-              field.type === "filterOptions"
+              field.type === "filterOptions" ||
+              field.type === "tags"
                 ? "sm:col-span-2 lg:col-span-3"
                 : ""
             }
@@ -229,6 +238,14 @@ export function InlineEditPanel<T extends Record<string, any>>({
             {field.type === "filterOptions" && (
               <FilterPicker
                 scope={field.filterScope ?? "event"}
+                value={(values[field.key] as number[]) ?? []}
+                onChange={(ids) => setValue(field.key, ids)}
+              />
+            )}
+
+            {field.type === "tags" && (
+              <TagInput
+                scope={field.tagScope ?? "course"}
                 value={(values[field.key] as number[]) ?? []}
                 onChange={(ids) => setValue(field.key, ids)}
               />
