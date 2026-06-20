@@ -44,6 +44,21 @@ def test_invalid_mode_returns_400(tenant_ctx):
     assert res.status_code == 400
 
 
+def test_invalid_platform_returns_400(tenant_ctx):
+    student = User.objects.create_user(email="s4@u.com", name="S4", password="x", role="student")
+    res = _client(student).post(
+        "/api/v1/me/usage/", {"mode": "pwa", "platform": "nope"}, format="json"
+    )
+    assert res.status_code == 400
+
+
+def test_missing_fields_returns_400(tenant_ctx):
+    student = User.objects.create_user(email="s5@u.com", name="S5", password="x", role="student")
+    res = _client(student).post("/api/v1/me/usage/", {}, format="json")
+    assert res.status_code == 400
+    assert UsageEvent.objects.filter(user=student).count() == 0
+
+
 def test_non_student_records_nothing(tenant_ctx):
     coach = User.objects.create_user(email="c@u.com", name="C", password="x", role="owner")
     res = _client(coach).post(
