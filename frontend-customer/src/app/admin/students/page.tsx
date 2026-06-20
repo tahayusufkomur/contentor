@@ -24,6 +24,8 @@ interface Student {
   date_joined: string
   last_login: string | null
   enrolled_count: number
+  last_display_mode?: string
+  last_platform?: string
 }
 
 function getInitials(name: string) {
@@ -128,6 +130,12 @@ export default function StudentsPage() {
                     <Mail className="h-3 w-3" />
                     {student.email}
                   </p>
+                  {student.last_display_mode && (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs text-muted-foreground">
+                      {student.last_display_mode === "pwa" ? "📱 PWA" : "🌐 Web"}
+                      {student.last_platform ? ` · ${student.last_platform}` : ""}
+                    </span>
+                  )}
                 </div>
               </div>
             </TableCell>
