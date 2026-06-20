@@ -122,6 +122,10 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             data["tenant_name"] = tenant.name
             data["tenant_slug"] = slug
             data["demo_niche"] = slug[len("demo-") :] if slug.startswith("demo-") else ""
+            # Unified niche: prefer the real-tenant template niche, fall back to
+            # the demo niche. Read-only — the builder uses it to seed new blocks
+            # with niche-appropriate example content.
+            data["niche"] = getattr(tenant, "template_niche", "") or data["demo_niche"]
             # Publish gate: the customer app hides the site behind a preview
             # gate when it isn't published (owners + valid preview cookie pass).
             data["is_published"] = bool(getattr(tenant, "is_published", True))
