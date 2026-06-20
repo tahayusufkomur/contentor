@@ -7,10 +7,11 @@ export const dynamic = "force-dynamic";
 
 const SIZES: Record<string, number> = { "180": 180, "192": 192, "512": 512 };
 
-export async function GET(request: Request): Promise<ImageResponse> {
+export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const size = SIZES[searchParams.get("size") ?? "512"] ?? 512;
   const maskable = searchParams.get("purpose") === "maskable";
+  const version = searchParams.get("v");
 
   const slug = await getTenantSlug();
   const config = slug !== "__platform__" ? await fetchTenantConfig(slug) : null;
@@ -67,7 +68,8 @@ export async function GET(request: Request): Promise<ImageResponse> {
         width: size,
         height: size,
         headers: {
-          "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+          // Versioned URL (?v=<logo_id>) is immutable; unversioned must revalidate.
+          "Cache-Control": version ? "public, max-age=31536000, immutable" : "public, max-age=0, must-revalidate",
         },
       },
     );
