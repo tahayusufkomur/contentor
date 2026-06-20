@@ -48,8 +48,14 @@ export function InstallPrompt() {
   const install = async () => {
     if (!deferred) return;
     await deferred.prompt();
-    await deferred.userChoice;
-    dismiss();
+    const { outcome } = await deferred.userChoice;
+    if (outcome === "accepted") {
+      dismiss();
+    } else {
+      // User declined Chrome's native dialog — hide the button but don't
+      // permanently dismiss; they can still install later.
+      setDeferred(null);
+    }
   };
 
   // Never show inside the coach admin, in standalone, after dismissal, or with
