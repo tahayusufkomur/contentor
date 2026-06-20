@@ -69,12 +69,23 @@ def test_subscribe_returns_201(student):
 
 
 def test_subscribe_upserts_idempotent(student):
-    """Posting the same endpoint twice must result in exactly one row."""
+    """Posting the same endpoint twice keeps one row AND refreshes its keys."""
     client = make_client(user=student)
-    body = {"endpoint": "https://fcm.example.com/push/9", "keys": {"p256dh": "p", "auth": "a"}}
-    client.post("/api/v1/notifications/subscribe/", body, format="json")
-    client.post("/api/v1/notifications/subscribe/", body, format="json")
-    assert PushSubscription.objects.filter(endpoint="https://fcm.example.com/push/9").count() == 1
+    endpoint = "https://fcm.example.com/push/9"
+    client.post(
+        "/api/v1/notifications/subscribe/",
+        {"endpoint": endpoint, "keys": {"p256dh": "p", "auth": "a"}},
+        format="json",
+    )
+    client.post(
+        "/api/v1/notifications/subscribe/",
+        {"endpoint": endpoint, "keys": {"p256dh": "p2", "auth": "a2"}},
+        format="json",
+    )
+    rows = PushSubscription.objects.filter(endpoint=endpoint)
+    assert rows.count() == 1
+    row = rows.get()
+    assert (row.p256dh, row.auth) == ("p2", "a2")
 
 
 def test_subscribe_requires_auth(tenant_ctx):
