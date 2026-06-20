@@ -19,6 +19,14 @@ export interface Module {
   lessons: Lesson[]
 }
 
+export interface CourseCategory {
+  id: number
+  name: string
+  slug: string
+  order?: number
+  course_count?: number
+}
+
 export interface Course {
   id: number
   title: string
@@ -35,6 +43,7 @@ export interface Course {
   order: number
   lesson_count?: number
   enrolled_count?: number
+  categories?: { id: number; name: string; slug: string }[]
   created_at?: string
   updated_at?: string
   access_info?: AccessInfo

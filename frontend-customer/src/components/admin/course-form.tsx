@@ -22,6 +22,7 @@ import { toast } from "sonner"
 import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react"
 import { PhotoPicker } from "@/components/admin/photo-picker"
 import { VideoPicker } from "@/components/admin/video-picker"
+import { CategoryPicker } from "@/components/admin/category-picker"
 import { formatDuration } from "@/lib/format"
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course"
 import type { Photo } from "@/types/photo"
@@ -36,6 +37,9 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
   const isCreate = !initialCourse
   const [course, setCourse] = useState<CourseDetail | null>(initialCourse ?? null)
   const [saving, setSaving] = useState(false)
+  const [categoryIds, setCategoryIds] = useState<number[]>(
+    initialCourse?.categories?.map((c) => c.id) ?? [],
+  )
 
   // Create-mode form state
   const [createForm, setCreateForm] = useState({
@@ -79,7 +83,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
       try {
         const created = await clientFetch<Course>("/api/v1/courses/", {
           method: "POST",
-          body: JSON.stringify(createForm),
+          body: JSON.stringify({ ...createForm, category_ids: categoryIds }),
         })
         toast.success("Course created")
         router.push(`/admin/courses/${created.slug}`)
@@ -104,6 +108,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
           pricing_type: course.pricing_type,
           price: course.price,
           is_published: course.is_published,
+          category_ids: categoryIds,
         }),
       })
       toast.success("Course saved")
@@ -308,6 +313,10 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
             <Label htmlFor="published">
               {isCreate ? "Publish immediately" : "Published"}
             </Label>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Categories</Label>
+            <CategoryPicker value={categoryIds} onChange={setCategoryIds} />
           </div>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : isCreate ? "Create Course" : "Save Changes"}
