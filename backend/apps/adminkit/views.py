@@ -51,6 +51,7 @@ class AdminKitViewSet(viewsets.ModelViewSet):
             if any("__" in f for f in admin.search_fields):
                 queryset = queryset.distinct()
 
+        needs_distinct = False
         for name in admin.list_filters:
             raw = params.get(name, "").strip()
             if raw == "":
@@ -59,6 +60,13 @@ class AdminKitViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(**{name: raw.lower() == "true"})
             else:
                 queryset = queryset.filter(**{name: raw})
+                try:
+                    if admin.model._meta.get_field(name).many_to_many:
+                        needs_distinct = True
+                except Exception:
+                    pass
+        if needs_distinct:
+            queryset = queryset.distinct()
 
         ordering = params.get("ordering", "").strip() or (admin.ordering[0] if admin.ordering else "")
         if ordering:

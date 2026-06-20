@@ -132,21 +132,49 @@ def field_schema(admin, name, field) -> dict:
     return schema
 
 
+def _relation_filter_choices(model, name):
+    """If `name` is a FK or M2M on `model`, return its options as filter
+    choices `[{value, label}]`; otherwise None. Lets `list_filters` target a
+    relation (e.g. an M2M tag) even when it isn't a serializer field."""
+    try:
+        field = model._meta.get_field(name)
+    except FieldDoesNotExist:
+        return None
+    if getattr(field, "is_relation", False) and (
+        getattr(field, "many_to_many", False) or getattr(field, "many_to_one", False)
+    ):
+        related = field.related_model
+        return [{"value": obj.pk, "label": str(obj)} for obj in related.objects.all()]
+    return None
+
+
 def filter_schema(admin) -> list[dict]:
     """Filter descriptors for `list_filters`: boolean/choice/fk get selects,
-    everything else a text input matched exactly."""
+    a relation (FK/M2M) becomes a choice of its related objects, everything
+    else a text input matched exactly."""
     serializer = build_serializer(admin)()
     out = []
     for name in admin.list_filters:
         field = serializer.fields.get(name)
-        if field is None:
+        if field is not None:
+            schema = field_schema(admin, name, field)
+            ftype = schema["type"] if schema["type"] in ("boolean", "choice", "fk") else "string"
+            entry = {"name": name, "label": schema["label"], "type": ftype}
+            if "choices" in schema:
+                entry["choices"] = schema["choices"]
+            out.append(entry)
             continue
-        schema = field_schema(admin, name, field)
-        ftype = schema["type"] if schema["type"] in ("boolean", "choice", "fk") else "string"
-        entry = {"name": name, "label": schema["label"], "type": ftype}
-        if "choices" in schema:
-            entry["choices"] = schema["choices"]
-        out.append(entry)
+        # Not a serializer field — support relations (e.g. an M2M tag) directly.
+        choices = _relation_filter_choices(admin.model, name)
+        if choices is not None:
+            out.append(
+                {
+                    "name": name,
+                    "label": name.replace("_", " ").title(),
+                    "type": "choice",
+                    "choices": choices,
+                }
+            )
     return out
 
 
