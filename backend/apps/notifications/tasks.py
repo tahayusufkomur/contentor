@@ -38,3 +38,15 @@ def send_live_reminders() -> None:
                 _send_reminders_for_current_tenant()
             except Exception:  # noqa: BLE001  one tenant must not break the rest
                 logger.exception("live reminder fan-out failed for %s", tenant.schema_name)
+
+
+@shared_task
+def fanout_new_content(course_id: int) -> None:
+    from apps.courses.models import Course
+
+    from .payloads import new_content_payload
+
+    course = Course.objects.filter(pk=course_id).first()
+    if not course:
+        return
+    broadcast_to_tenant(new_content_payload(course.title, f"/courses/{course.slug}"))
