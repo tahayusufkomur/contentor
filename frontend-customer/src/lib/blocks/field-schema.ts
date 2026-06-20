@@ -12,7 +12,8 @@ export type FieldType =
   | "link"
   | "image"
   | "video"
-  | "repeater";
+  | "repeater"
+  | "filterGroups";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Data = Record<string, any>;
@@ -29,6 +30,8 @@ export interface FieldSchema {
   /** `select` only: render the options as an icon-tile picker instead of a
    *  dropdown (each option's icon is resolved by value in the renderer). */
   display?: "icons";
+  /** `filterGroups` only: which filters to offer (courses vs events). */
+  filterScope?: "course" | "event";
   /** Conditional visibility based on the current block data. */
   showWhen?: (data: Data) => boolean;
   /** `repeater` only: sub-field schema for each row. */

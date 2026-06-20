@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { clientFetch } from "@/lib/api-client";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PhotoPicker } from "@/components/admin/photo-picker";
@@ -37,6 +38,7 @@ import { LinkPickerModal } from "@/components/owner/link-picker";
 import { RichHtml } from "@/components/blocks/rich-html";
 import type { FieldSchema } from "@/lib/blocks/field-schema";
 import type { Photo } from "@/types/photo";
+import type { FilterGroup } from "@/types/course";
 
 // Icon for each known layout value, used by the icon-tile layout picker. The
 // label always accompanies the icon, so an approximate glyph is fine; unknown
@@ -210,6 +212,9 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
     case "repeater":
       return <RepeaterField field={field} value={value} onChange={onChange} />;
 
+    case "filterGroups":
+      return <FilterGroupsField field={field} value={value} onChange={onChange} />;
+
     default:
       return null;
   }
@@ -333,6 +338,65 @@ function LinkField({ field, value, onChange }: FieldRendererProps) {
           }}
           onClose={() => setPickerOpen(false)}
         />
+      )}
+    </div>
+  );
+}
+
+/** Lets the coach choose which of their Filters a dynamic block exposes as
+ *  public facets. Value is an array of FilterGroup ids; the block then shows a
+ *  facet per chosen filter. */
+function FilterGroupsField({ field, value, onChange }: FieldRendererProps) {
+  const [groups, setGroups] = useState<FilterGroup[]>([]);
+  const selected: number[] = Array.isArray(value) ? value : [];
+  const scope = field.filterScope ?? "course";
+
+  const load = useCallback(async () => {
+    try {
+      const data = await clientFetch<FilterGroup[]>(
+        `/api/v1/filters/groups/?applies_to=${scope}`,
+      );
+      setGroups(data);
+    } catch {
+      // ignore
+    }
+  }, [scope]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function toggle(id: number) {
+    onChange(selected.includes(id) ? selected.filter((v) => v !== id) : [...selected, id]);
+  }
+
+  return (
+    <div className="space-y-1">
+      <FieldLabel field={field} />
+      {groups.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          No filters yet. Create filters in the studio admin to show them here.
+        </p>
+      ) : (
+        <div className="space-y-1">
+          {groups.map((g) => (
+            <label
+              key={g.id}
+              className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-accent"
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(g.id)}
+                onChange={() => toggle(g.id)}
+                className="accent-primary"
+              />
+              <span>{g.name}</span>
+            </label>
+          ))}
+        </div>
+      )}
+      {field.helpText && (
+        <p className="text-xs text-muted-foreground">{field.helpText}</p>
       )}
     </div>
   );

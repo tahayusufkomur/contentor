@@ -410,6 +410,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       showFilters: true,
       showPrice: true,
       showMeta: true,
+      filterGroups: [],
     },
     fields: [
       layoutField([
@@ -442,6 +443,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       { key: "showFilters", label: "Show search & filters", type: "toggle" },
       { key: "showPrice", label: "Show price", type: "toggle" },
       { key: "showMeta", label: "Show instructor & lessons", type: "toggle" },
+      {
+        key: "filterGroups",
+        label: "Filter facets",
+        type: "filterGroups",
+        filterScope: "course",
+        helpText: "Pick which filters appear as facets visitors can browse by.",
+      },
     ],
   },
   pricingPlans: {
@@ -472,7 +480,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: UpcomingEventsBlock,
     dynamicDataKey: "events",
-    defaultData: { layout: "grid", heading: "Upcoming events", limit: 6 },
+    defaultData: { layout: "grid", heading: "Upcoming events", limit: 6, filterGroups: [] },
     fields: [
       layoutField([
         ["grid", "Grid"],
@@ -480,6 +488,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "limit", label: "Max events", type: "number" },
+      {
+        key: "filterGroups",
+        label: "Filter facets",
+        type: "filterGroups",
+        filterScope: "event",
+        helpText: "Pick which filters appear as facets visitors can browse by.",
+      },
     ],
   },
   storeProducts: {
