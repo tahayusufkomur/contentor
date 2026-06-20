@@ -6,7 +6,16 @@ from rest_framework import serializers
 from apps.core.access import AccessInfo, ContentAccessService, content_currency
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 
-from .models import Course, Enrollment, Lesson, Module, Progress, Video
+from .models import Course, CourseCategory, Enrollment, Lesson, Module, Progress, Video
+
+
+class CourseCategorySerializer(serializers.ModelSerializer):
+    course_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = CourseCategory
+        fields = ["id", "name", "slug", "order", "course_count"]
+        read_only_fields = ["id", "slug", "course_count"]
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -88,6 +97,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     enrolled_count = serializers.SerializerMethodField()
     thumbnail_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
+    categories = CourseCategorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -109,6 +119,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "enrolled_count",
             "thumbnail_signed_url",
             "access_info",
+            "categories",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -153,6 +164,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     unlock_options = serializers.SerializerMethodField()
+    categories = CourseCategorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -177,6 +189,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "thumbnail_signed_url",
             "access_info",
             "unlock_options",
+            "categories",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -237,6 +250,13 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
 
 class CourseCreateUpdateSerializer(serializers.ModelSerializer):
+    category_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=CourseCategory.objects.all(),
+        source="categories",
+        required=False,
+    )
+
     class Meta:
         model = Course
         fields = [
@@ -248,6 +268,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "pricing_type",
             "is_published",
             "order",
+            "category_ids",
         ]
 
 
