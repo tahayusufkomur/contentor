@@ -36,6 +36,17 @@ export function CourseCatalogClient({
 }: CourseCatalogClientProps) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
+  const [categoryId, setCategoryId] = useState<number | null>(null)
+
+  const categories = useMemo(() => {
+    const map = new Map<number, { id: number; name: string }>()
+    for (const c of courses) {
+      for (const cat of c.categories ?? []) {
+        if (!map.has(cat.id)) map.set(cat.id, { id: cat.id, name: cat.name })
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
+  }, [courses])
 
   const filtered = useMemo(() => {
     let result = courses
@@ -50,8 +61,12 @@ export function CourseCatalogClient({
     if (filter === 'free') result = result.filter((c) => c.pricing_type === 'free')
     if (filter === 'paid') result = result.filter((c) => c.pricing_type !== 'free')
     if (filter === 'accessible') result = result.filter((c) => c.access_info?.has_access)
+    if (categoryId != null)
+      result = result.filter((c) =>
+        (c.categories ?? []).some((cat) => cat.id === categoryId),
+      )
     return result
-  }, [courses, search, filter])
+  }, [courses, search, filter, categoryId])
 
   const hasAccessible = courses.some((c) => c.access_info?.has_access && c.pricing_type !== 'free')
 
@@ -66,32 +81,65 @@ export function CourseCatalogClient({
     <div className="space-y-6">
       {/* Search and filters */}
       {showFilters && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative max-w-sm flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search courses..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
+        <div className="space-y-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search courses..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex gap-2">
+              {filters.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setFilter(f.value)}
+                  className={cn(
+                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
+                    filter === f.value
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background text-foreground hover:bg-accent',
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {filters.map((f) => (
+
+          {/* Category pills — only when the coach has defined categories */}
+          {categories.length > 0 && (
+            <div className="flex flex-wrap gap-2">
               <button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
+                onClick={() => setCategoryId(null)}
                 className={cn(
                   'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
-                  filter === f.value
+                  categoryId === null
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-background text-foreground hover:bg-accent',
                 )}
               >
-                {f.label}
+                All categories
               </button>
-            ))}
-          </div>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryId(cat.id)}
+                  className={cn(
+                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
+                    categoryId === cat.id
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background text-foreground hover:bg-accent',
+                  )}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
