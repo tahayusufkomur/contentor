@@ -3,6 +3,41 @@ from django.db import models
 from django.utils.text import slugify
 
 
+class CourseCategory(models.Model):
+    """A coach-defined, per-tenant category (tag) for grouping courses."""
+
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=120, unique=True)
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "courses"
+        ordering = ["order", "name"]
+        verbose_name_plural = "Course categories"
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def course_count(self):
+        return self.courses.count()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)[:120] or "category"
+            original_slug = self.slug
+            counter = 1
+            while (
+                CourseCategory.objects.filter(slug=self.slug)
+                .exclude(pk=self.pk)
+                .exists()
+            ):
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
+
+
 class Course(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True)
@@ -11,6 +46,9 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="courses_taught",
+    )
+    categories = models.ManyToManyField(
+        CourseCategory, blank=True, related_name="courses"
     )
     thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
     thumbnail = models.ForeignKey(
