@@ -104,6 +104,10 @@ export interface MediaBrowserProps<T> {
   persistKey?: string
   /** Render an expanded row (e.g. inline edit panel) below a list item. Return null to hide. */
   renderExpandedRow?: (item: T) => ReactNode | null
+  /** Extra filter controls (e.g. a tag-filter bar) rendered under the toolbar. */
+  filterSlot?: ReactNode
+  /** Bump this whenever filterSlot's selection changes to force a reload. */
+  filterKey?: string | number
 }
 
 export interface MediaBrowserHandle {
@@ -144,6 +148,8 @@ function MediaBrowserInner<T>(
     onDelete,
     persistKey,
     renderExpandedRow,
+    filterSlot,
+    filterKey,
   }: MediaBrowserProps<T>,
   ref: React.ForwardedRef<MediaBrowserHandle>
 ) {
@@ -308,11 +314,11 @@ function MediaBrowserInner<T>(
     setRestored(true)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // initial load + reset on ordering change (waits for restore)
+  // initial load + reset on ordering / filter change (waits for restore)
   useEffect(() => {
     if (!restored) return
     load(true)
-  }, [restored, ordering]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [restored, ordering, filterKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // debounced search (skip initial mount — ordering effect handles the first load)
   useEffect(() => {
@@ -476,7 +482,8 @@ function MediaBrowserInner<T>(
   )
 
   const toolbar = (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <div className="flex items-center gap-2 flex-1">
         {selectable && items.length > 0 && (
           <Button
@@ -561,6 +568,8 @@ function MediaBrowserInner<T>(
           </div>
         )}
       </div>
+      </div>
+      {filterSlot}
     </div>
   )
 

@@ -27,6 +27,7 @@ import {
   type FetchPageResult,
 } from "@/components/admin/media-browser"
 import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
+import { TagFilterBar } from "@/components/admin/tag-filter-bar"
 import type { DownloadFile } from "@/types/download"
 
 export const dynamic = "force-dynamic"
@@ -62,6 +63,8 @@ export default function AdminDownloadsPage() {
     pricing_type: "free" as "free" | "paid",
   })
 
+  const [tagFilter, setTagFilter] = useState<number[]>([])
+
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<DownloadFile>> => {
       const sp = new URLSearchParams()
@@ -69,6 +72,7 @@ export default function AdminDownloadsPage() {
       sp.set("offset", String(params.offset))
       sp.set("ordering", params.ordering)
       if (params.search) sp.set("search", params.search)
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
       const data = await clientFetch<{
         results: DownloadFile[]
         next: string | null
@@ -76,7 +80,7 @@ export default function AdminDownloadsPage() {
       }>(`/api/v1/downloads/?${sp.toString()}`)
       return { results: data.results, next: data.next, count: data.count }
     },
-    []
+    [tagFilter]
   )
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -303,6 +307,8 @@ export default function AdminDownloadsPage() {
         ref={browserRef}
         persistKey="downloads"
         fetchPage={fetchPage}
+        filterKey={tagFilter.join(",")}
+        filterSlot={<TagFilterBar scope="download" value={tagFilter} onChange={setTagFilter} />}
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={Download}

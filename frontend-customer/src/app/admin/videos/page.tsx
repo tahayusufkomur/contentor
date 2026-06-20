@@ -29,6 +29,7 @@ import {
   type FetchPageResult,
 } from "@/components/admin/media-browser"
 import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
+import { TagFilterBar } from "@/components/admin/tag-filter-bar"
 import { useChunkedUpload } from "@/hooks/use-chunked-upload"
 import { cn } from "@/lib/utils"
 
@@ -95,6 +96,8 @@ export default function VideosPage() {
 
   const upload = useChunkedUpload()
 
+  const [tagFilter, setTagFilter] = useState<number[]>([])
+
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<VideoItem>> => {
       const sp = new URLSearchParams()
@@ -102,6 +105,7 @@ export default function VideosPage() {
       sp.set("offset", String(params.offset))
       sp.set("ordering", params.ordering)
       if (params.search) sp.set("search", params.search)
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
       const data = await clientFetch<{
         results: VideoItem[]
         next: string | null
@@ -109,7 +113,7 @@ export default function VideosPage() {
       }>(`/api/v1/courses/videos/?${sp.toString()}`)
       return { results: data.results, next: data.next, count: data.count }
     },
-    []
+    [tagFilter]
   )
 
   // ---- file selection ----
@@ -449,6 +453,8 @@ export default function VideosPage() {
         ref={browserRef}
         persistKey="videos"
         fetchPage={fetchPage}
+        filterKey={tagFilter.join(",")}
+        filterSlot={<TagFilterBar scope="video" value={tagFilter} onChange={setTagFilter} />}
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={Video}

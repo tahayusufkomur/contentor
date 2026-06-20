@@ -20,6 +20,7 @@ import {
   type FetchPageResult,
 } from "@/components/admin/media-browser"
 import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
+import { TagFilterBar } from "@/components/admin/tag-filter-bar"
 import type { Photo } from "@/types/photo"
 
 export const dynamic = "force-dynamic"
@@ -45,6 +46,7 @@ export default function PhotosPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [tagFilter, setTagFilter] = useState<number[]>([])
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Photo>> => {
@@ -53,6 +55,7 @@ export default function PhotosPage() {
       sp.set("offset", String(params.offset))
       sp.set("ordering", params.ordering)
       if (params.search) sp.set("search", params.search)
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
       const data = await clientFetch<{
         results: Photo[]
         next: string | null
@@ -60,7 +63,7 @@ export default function PhotosPage() {
       }>(`/api/v1/photos/?${sp.toString()}`)
       return { results: data.results, next: data.next, count: data.count }
     },
-    []
+    [tagFilter]
   )
 
   async function handleUpload(file: File) {
@@ -199,6 +202,8 @@ export default function PhotosPage() {
         ref={browserRef}
         persistKey="photos"
         fetchPage={fetchPage}
+        filterKey={tagFilter.join(",")}
+        filterSlot={<TagFilterBar scope="photo" value={tagFilter} onChange={setTagFilter} />}
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={ImageIcon}

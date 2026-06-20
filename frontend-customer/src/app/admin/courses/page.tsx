@@ -16,6 +16,7 @@ import {
   type BulkSelection,
 } from "@/components/admin/media-browser"
 import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
+import { TagFilterBar } from "@/components/admin/tag-filter-bar"
 import type { Course } from "@/types/course"
 
 export const dynamic = "force-dynamic"
@@ -47,6 +48,7 @@ export default function AdminCoursesPage() {
   const browserRef = useRef<MediaBrowserHandle>(null)
   const [editingSlug, setEditingSlug] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [tagFilter, setTagFilter] = useState<number[]>([])
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Course>> => {
@@ -55,6 +57,7 @@ export default function AdminCoursesPage() {
       sp.set("offset", String(params.offset))
       sp.set("ordering", params.ordering)
       if (params.search) sp.set("search", params.search)
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
       const data = await clientFetch<
         | { results: Course[]; next: string | null; count: number }
         | Course[]
@@ -65,7 +68,7 @@ export default function AdminCoursesPage() {
       }
       return { results: data.results, next: data.next, count: data.count }
     },
-    []
+    [tagFilter]
   )
 
   async function handleBulkDelete(selection: BulkSelection) {
@@ -126,6 +129,8 @@ export default function AdminCoursesPage() {
         ref={browserRef}
         persistKey="courses"
         fetchPage={fetchPage}
+        filterKey={tagFilter.join(",")}
+        filterSlot={<TagFilterBar scope="course" value={tagFilter} onChange={setTagFilter} />}
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={BookOpen}

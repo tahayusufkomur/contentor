@@ -30,6 +30,7 @@ import {
 import { InlineEditPanel, type FieldConfig } from '@/components/admin/inline-edit-panel'
 import { FilterPicker } from '@/components/admin/filter-picker'
 import { TagInput } from '@/components/admin/tag-input'
+import { TagFilterBar } from '@/components/admin/tag-filter-bar'
 import type { FilterOption, Tag } from '@/types/course'
 
 // ─── Shared types & config ─────────────────────────────────────────
@@ -117,12 +118,17 @@ interface PaginatedResponse<T> {
   count: number
 }
 
-async function fetchAdminListPage<T>(path: string, params: FetchPageParams): Promise<FetchPageResult<T>> {
+async function fetchAdminListPage<T>(
+  path: string,
+  params: FetchPageParams,
+  extra?: Record<string, string>,
+): Promise<FetchPageResult<T>> {
   const sp = new URLSearchParams()
   sp.set('limit', String(params.limit))
   sp.set('offset', String(params.offset))
   sp.set('ordering', params.ordering)
   if (params.search) sp.set('search', params.search)
+  for (const [k, v] of Object.entries(extra ?? {})) if (v) sp.set(k, v)
 
   const data = await clientFetch<PaginatedResponse<T> | T[]>(`${path}?${sp.toString()}`)
   if (Array.isArray(data)) {
@@ -170,10 +176,11 @@ function LiveClassesTab() {
   const [scheduledAt, setScheduledAt] = useState('')
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
   const [tagIds, setTagIds] = useState<number[]>([])
+  const [tagFilter, setTagFilter] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<LiveClass>> => {
-    return fetchAdminListPage<LiveClass>('/api/v1/live/', params)
-  }, [])
+    return fetchAdminListPage<LiveClass>('/api/v1/live/', params, { tags: tagFilter.join(',') })
+  }, [tagFilter])
 
   function resetForm() { setTitle(''); setDescription(''); setPricingType('free'); setPrice(''); setAutoRecording(false); setScheduledAt(''); setFilterOptionIds([]); setTagIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
@@ -244,7 +251,7 @@ function LiveClassesTab() {
       )}
 
       <MediaBrowser<LiveClass>
-        ref={browserRef} persistKey="live-classes" fetchPage={fetchPage} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
+        ref={browserRef} persistKey="live-classes" fetchPage={fetchPage} filterKey={tagFilter.join(',')} filterSlot={<TagFilterBar scope="event" value={tagFilter} onChange={setTagFilter} />} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
         emptyIcon={Video} emptyMessage="No live classes yet. Create one to get started." getItemId={(lc) => lc.id}
         onDelete={async (selection) => { await batchedAsync(selection.ids.map((id) => () => clientFetch(`/api/v1/live/${id}/`, { method: 'DELETE' }).catch(() => {}))); toast.success('Live classes deleted'); browserRef.current?.refresh() }}
         listColumns={[{ label: 'Status', key: 'status' }, { label: 'Title', key: 'title' }, { label: 'Date', key: 'date' }, { label: 'Pricing', key: 'pricing' }, { label: 'Actions', key: 'actions' }]}
@@ -303,10 +310,11 @@ function LiveStreamsTab() {
   const [scheduledAt, setScheduledAt] = useState('')
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
   const [tagIds, setTagIds] = useState<number[]>([])
+  const [tagFilter, setTagFilter] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<LiveStream>> => {
-    return fetchAdminListPage<LiveStream>('/api/v1/live-streams/', params)
-  }, [])
+    return fetchAdminListPage<LiveStream>('/api/v1/live-streams/', params, { tags: tagFilter.join(',') })
+  }, [tagFilter])
 
   function resetForm() { setTitle(''); setDescription(''); setPricingType('free'); setPrice(''); setAutoRecording(false); setScheduledAt(''); setFilterOptionIds([]); setTagIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
@@ -377,7 +385,7 @@ function LiveStreamsTab() {
       )}
 
       <MediaBrowser<LiveStream>
-        ref={browserRef} persistKey="live-streams" fetchPage={fetchPage} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
+        ref={browserRef} persistKey="live-streams" fetchPage={fetchPage} filterKey={tagFilter.join(',')} filterSlot={<TagFilterBar scope="event" value={tagFilter} onChange={setTagFilter} />} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
         emptyIcon={Radio} emptyMessage="No live streams yet. Create one to get started." getItemId={(ls) => ls.id}
         onDelete={async (selection) => { await batchedAsync(selection.ids.map((id) => () => clientFetch(`/api/v1/live-streams/${id}/`, { method: 'DELETE' }).catch(() => {}))); toast.success('Live streams deleted'); browserRef.current?.refresh() }}
         listColumns={[{ label: 'Status', key: 'status' }, { label: 'Title', key: 'title' }, { label: 'Date', key: 'date' }, { label: 'Pricing', key: 'pricing' }, { label: 'Actions', key: 'actions' }]}
@@ -436,10 +444,11 @@ function ZoomClassesTab() {
   const [scheduledAt, setScheduledAt] = useState('')
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
   const [tagIds, setTagIds] = useState<number[]>([])
+  const [tagFilter, setTagFilter] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<ZoomClass>> => {
-    return fetchAdminListPage<ZoomClass>('/api/v1/zoom-classes/', params)
-  }, [])
+    return fetchAdminListPage<ZoomClass>('/api/v1/zoom-classes/', params, { tags: tagFilter.join(',') })
+  }, [tagFilter])
 
   function resetForm() { setTitle(''); setDescription(''); setZoomLink(''); setPricingType('free'); setPrice(''); setScheduledAt(''); setFilterOptionIds([]); setTagIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
@@ -502,7 +511,7 @@ function ZoomClassesTab() {
       )}
 
       <MediaBrowser<ZoomClass>
-        ref={browserRef} persistKey="zoom-classes" fetchPage={fetchPage} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
+        ref={browserRef} persistKey="zoom-classes" fetchPage={fetchPage} filterKey={tagFilter.join(',')} filterSlot={<TagFilterBar scope="event" value={tagFilter} onChange={setTagFilter} />} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
         emptyIcon={ExternalLink} emptyMessage="No Zoom classes yet. Create one to get started." getItemId={(zc) => zc.id}
         onDelete={async (selection) => { await batchedAsync(selection.ids.map((id) => () => clientFetch(`/api/v1/zoom-classes/${id}/`, { method: 'DELETE' }).catch(() => {}))); toast.success('Zoom classes deleted'); browserRef.current?.refresh() }}
         listColumns={[{ label: 'Status', key: 'status' }, { label: 'Title', key: 'title' }, { label: 'Date', key: 'date' }, { label: 'Pricing', key: 'pricing' }, { label: 'Actions', key: 'actions' }]}
@@ -568,10 +577,11 @@ function OnsiteEventsTab() {
   const [scheduledAt, setScheduledAt] = useState('')
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
   const [tagIds, setTagIds] = useState<number[]>([])
+  const [tagFilter, setTagFilter] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<OnsiteEvent>> => {
-    return fetchAdminListPage<OnsiteEvent>('/api/v1/onsite-events/', params)
-  }, [])
+    return fetchAdminListPage<OnsiteEvent>('/api/v1/onsite-events/', params, { tags: tagFilter.join(',') })
+  }, [tagFilter])
 
   function resetForm() { setTitle(''); setDescription(''); setLocation(''); setAddress(''); setMaxCapacity(''); setPricingType('free'); setPrice(''); setScheduledAt(''); setFilterOptionIds([]); setTagIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
@@ -640,7 +650,7 @@ function OnsiteEventsTab() {
       )}
 
       <MediaBrowser<OnsiteEvent>
-        ref={browserRef} persistKey="onsite-events" fetchPage={fetchPage} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
+        ref={browserRef} persistKey="onsite-events" fetchPage={fetchPage} filterKey={tagFilter.join(',')} filterSlot={<TagFilterBar scope="event" value={tagFilter} onChange={setTagFilter} />} sortOptions={SORT_OPTIONS} defaultSort="-created_at" galleryEnabled={false}
         emptyIcon={MapPin} emptyMessage="No on-site events yet. Create one to get started." getItemId={(ev) => ev.id}
         onDelete={async (selection) => { await batchedAsync(selection.ids.map((id) => () => clientFetch(`/api/v1/onsite-events/${id}/`, { method: 'DELETE' }).catch(() => {}))); toast.success('Events deleted'); browserRef.current?.refresh() }}
         listColumns={[{ label: 'Status', key: 'status' }, { label: 'Title', key: 'title' }, { label: 'Date', key: 'date' }, { label: 'Location', key: 'location' }, { label: 'Pricing', key: 'pricing' }, { label: 'Actions', key: 'actions' }]}
