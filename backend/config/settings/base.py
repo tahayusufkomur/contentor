@@ -189,6 +189,15 @@ AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
 GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
 GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")
 
+# --- Web Push (VAPID) ---
+# Generate a keypair once with: vapid --gen ; vapid --applicationServerKey
+# Store VAPID_PRIVATE_KEY as a double-quoted multi-line PEM in .env (python-dotenv
+# supports this). VAPID_PUBLIC_KEY is the base64url Application Server Key printed
+# by `vapid --applicationServerKey`.
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "mailto:admin@contentor.app")
+
 
 # --- Billing / Platform subscriptions ---
 def _env_bool(name: str, default: bool) -> bool:
