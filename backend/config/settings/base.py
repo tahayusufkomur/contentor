@@ -38,6 +38,7 @@ TENANT_APPS = [
     "apps.accounts",
     "apps.tenant_config",
     "apps.filters",
+    "apps.tags",
     "apps.courses",
     "apps.downloads",
     "apps.live",
