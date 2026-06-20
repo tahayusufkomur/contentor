@@ -20,21 +20,25 @@ export function SwUpdateToast() {
       });
     };
 
+    const onUpdateFound = () => {
+      const installing = reg?.installing;
+      if (!installing) return;
+      installing.addEventListener("statechange", () => {
+        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          notify();
+        }
+      });
+    };
+
     navigator.serviceWorker.getRegistration().then((registration) => {
       if (!registration) return;
       reg = registration;
-      reg.addEventListener("updatefound", () => {
-        const installing = reg?.installing;
-        if (!installing) return;
-        installing.addEventListener("statechange", () => {
-          // A new worker reached "installed" while a controller already exists
-          // → this is an update, not a first install.
-          if (installing.state === "installed" && navigator.serviceWorker.controller) {
-            notify();
-          }
-        });
-      });
+      reg.addEventListener("updatefound", onUpdateFound);
     });
+
+    return () => {
+      reg?.removeEventListener("updatefound", onUpdateFound);
+    };
   }, [t]);
 
   return null;
