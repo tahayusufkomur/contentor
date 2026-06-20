@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -16,6 +16,7 @@ import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
+import { getThemePalette } from "@/lib/themes";
 
 // Routes that must stay reachable even when the site is unpublished, so the
 // owner can log in to preview.
@@ -48,13 +49,34 @@ const instrumentSans = Instrument_Sans({
 
 export const dynamic = "force-dynamic";
 
+export async function generateViewport(): Promise<Viewport> {
+  const slug = await getTenantSlug();
+  const config = await fetchTenantConfig(slug);
+  const theme = getThemePalette(config?.theme);
+
+  return {
+    themeColor: theme.primaryHex,
+    viewportFit: "cover",
+  };
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
+  const name = config?.brand_name || "Welcome";
+  const v = config?.logo_id ?? "default";
 
   return {
-    title: config?.brand_name || "Welcome",
+    title: name,
     description: config?.meta_description || "",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: name,
+    },
+    icons: {
+      apple: [{ url: `/pwa-icon?size=180&v=${v}`, sizes: "180x180" }],
+    },
   };
 }
 
