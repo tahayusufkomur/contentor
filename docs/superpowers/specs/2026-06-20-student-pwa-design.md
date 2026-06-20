@@ -234,9 +234,8 @@ gating correct.
   own. Phase 2 depends on Phase 1; Phase 3 depends on Phase 2 (needs the SW).
 - **Subagent-driven implementation:** each plan is decomposed into discrete,
   independently-verifiable tasks dispatched to subagents.
-- Phase 3 is the heaviest (backend + frontend + admin surface); it may itself
-  split into 3a (subscription plumbing + opt-in) and 3b (triggers + broadcast)
-  during planning.
+- Phase 3 is the heaviest (backend + frontend + admin surface) but is built as a
+  single undivided plan (no 3a/3b split).
 
 ## Risks / open questions
 
@@ -247,7 +246,5 @@ gating correct.
 - **`ImageResponse` fetching signed S3 logos** adds latency → rely on the icon
   cache; consider a tiny in-memory/edge cache.
 - **Beat tenant iteration** cost + reminder dedupe correctness at scale.
-- **Order push vs existing email** — confirm we want both or push is redundant
-  (cheap to drop trigger #3 if so).
 - **Mobile-readiness of student pages** — Phase 1 audit may surface more UI work
   than expected; keep fixes scoped.

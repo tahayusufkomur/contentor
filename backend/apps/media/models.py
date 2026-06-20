@@ -12,6 +12,7 @@ class Photo(models.Model):
     file_size = models.BigIntegerField(default=0)
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
+    tags = models.ManyToManyField("tags.Tag", blank=True, related_name="photos")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

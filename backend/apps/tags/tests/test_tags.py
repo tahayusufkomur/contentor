@@ -109,3 +109,28 @@ class TestEndpoints:
         )
         assert resp.status_code == 403, resp.content
         assert not Tag.objects.filter(name="Nope").exists()
+
+
+@pytest.mark.django_db(transaction=True)
+class TestScopedAssignment:
+    """The content-type serializers only accept tags from their own pool."""
+
+    def test_course_serializer_assigns_course_tag(self, tenant_ctx, owner):
+        from apps.courses.models import Course
+        from apps.courses.serializers import CourseCreateUpdateSerializer
+
+        tag = Tag.objects.create(scope="course", name="Featured")
+        ser = CourseCreateUpdateSerializer(data={"title": "Yoga", "tag_ids": [tag.pk]})
+        assert ser.is_valid(), ser.errors
+        course = ser.save(instructor=owner)
+        assert list(course.tags.values_list("pk", flat=True)) == [tag.pk]
+        assert isinstance(course, Course)
+
+    def test_course_serializer_rejects_foreign_scope_tag(self, tenant_ctx, owner):
+        from apps.courses.serializers import CourseCreateUpdateSerializer
+
+        video_tag = Tag.objects.create(scope="video", name="Tutorial")
+        ser = CourseCreateUpdateSerializer(data={"title": "Yoga", "tag_ids": [video_tag.pk]})
+        # A video-pool tag is invisible to the course-scoped queryset.
+        assert not ser.is_valid()
+        assert "tag_ids" in ser.errors

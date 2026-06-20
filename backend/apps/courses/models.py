@@ -15,6 +15,7 @@ class Course(models.Model):
     filter_options = models.ManyToManyField(
         "filters.FilterOption", blank=True, related_name="courses"
     )
+    tags = models.ManyToManyField("tags.Tag", blank=True, related_name="courses")
     thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
     thumbnail = models.ForeignKey(
         "media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="courses"
@@ -90,6 +91,7 @@ class Video(models.Model):
     thumbnail = models.ForeignKey(
         "media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="videos"
     )
+    tags = models.ManyToManyField("tags.Tag", blank=True, related_name="videos")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

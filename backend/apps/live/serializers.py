@@ -5,6 +5,7 @@ from rest_framework import serializers
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
+from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
@@ -18,6 +19,11 @@ def _filter_option_ids_field():
     )
 
 
+def _tag_ids_field():
+    # All four event models share the single "event" tag pool.
+    return tag_ids_field("event")
+
+
 def _get_thumbnail_signed_url(obj):
     if obj.thumbnail_id and obj.thumbnail and obj.thumbnail.s3_key:
         return generate_presigned_download_url(obj.thumbnail.s3_key)
@@ -29,6 +35,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
     recording_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = LiveClass
@@ -54,6 +61,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "created_at",
             "access_info",
             "filter_options",
+            "tags",
         ]
         read_only_fields = [
             "id",
@@ -122,6 +130,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
 
 class LiveClassCreateSerializer(serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
+    tag_ids = _tag_ids_field()
 
     class Meta:
         model = LiveClass
@@ -135,6 +144,7 @@ class LiveClassCreateSerializer(serializers.ModelSerializer):
             "auto_recording",
             "scheduled_at",
             "filter_option_ids",
+            "tag_ids",
         ]
 
 
@@ -143,6 +153,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
     recording_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = LiveStream
@@ -168,6 +179,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             "created_at",
             "access_info",
             "filter_options",
+            "tags",
         ]
         read_only_fields = [
             "id",
@@ -236,6 +248,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
 
 class LiveStreamCreateSerializer(serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
+    tag_ids = _tag_ids_field()
 
     class Meta:
         model = LiveStream
@@ -249,11 +262,13 @@ class LiveStreamCreateSerializer(serializers.ModelSerializer):
             "auto_recording",
             "scheduled_at",
             "filter_option_ids",
+            "tag_ids",
         ]
 
 
 class ZoomClassSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = ZoomClass
@@ -272,12 +287,14 @@ class ZoomClassSerializer(serializers.ModelSerializer):
             "ended_at",
             "created_at",
             "filter_options",
+            "tags",
         ]
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
 
 class ZoomClassCreateSerializer(serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
+    tag_ids = _tag_ids_field()
 
     class Meta:
         model = ZoomClass
@@ -290,11 +307,13 @@ class ZoomClassCreateSerializer(serializers.ModelSerializer):
             "price",
             "scheduled_at",
             "filter_option_ids",
+            "tag_ids",
         ]
 
 
 class OnsiteEventSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = OnsiteEvent
@@ -314,12 +333,14 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "ended_at",
             "created_at",
             "filter_options",
+            "tags",
         ]
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
 
 class OnsiteEventCreateSerializer(serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
+    tag_ids = _tag_ids_field()
 
     class Meta:
         model = OnsiteEvent
@@ -333,6 +354,7 @@ class OnsiteEventCreateSerializer(serializers.ModelSerializer):
             "price",
             "scheduled_at",
             "filter_option_ids",
+            "tag_ids",
         ]
 
 

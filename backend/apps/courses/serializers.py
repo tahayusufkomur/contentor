@@ -7,6 +7,7 @@ from apps.core.access import AccessInfo, ContentAccessService, content_currency
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
+from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import Course, Enrollment, Lesson, Module, Progress, Video
 
@@ -91,6 +92,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -113,6 +115,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "thumbnail_signed_url",
             "access_info",
             "filter_options",
+            "tags",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -158,6 +161,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     access_info = serializers.SerializerMethodField()
     unlock_options = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -183,6 +187,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "access_info",
             "unlock_options",
             "filter_options",
+            "tags",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -249,6 +254,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         source="filter_options",
         required=False,
     )
+    tag_ids = tag_ids_field("course")
 
     class Meta:
         model = Course
@@ -262,6 +268,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "is_published",
             "order",
             "filter_option_ids",
+            "tag_ids",
         ]
 
 
@@ -294,6 +301,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 
 class VideoSerializer(serializers.ModelSerializer):
     video_signed_url = serializers.SerializerMethodField()
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = Video
@@ -306,6 +314,7 @@ class VideoSerializer(serializers.ModelSerializer):
             "file_size",
             "thumbnail_url",
             "video_signed_url",
+            "tags",
             "created_at",
             "updated_at",
         ]
@@ -318,9 +327,11 @@ class VideoSerializer(serializers.ModelSerializer):
 
 
 class VideoCreateSerializer(serializers.ModelSerializer):
+    tag_ids = tag_ids_field("video")
+
     class Meta:
         model = Video
-        fields = ["title", "description", "s3_key", "duration_seconds", "thumbnail_url"]
+        fields = ["title", "description", "s3_key", "duration_seconds", "thumbnail_url", "tag_ids"]
 
 
 class ProgressSerializer(serializers.ModelSerializer):

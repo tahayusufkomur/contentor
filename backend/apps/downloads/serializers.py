@@ -3,12 +3,14 @@ from dataclasses import asdict
 from rest_framework import serializers
 
 from apps.core.access import AccessInfo, ContentAccessService, content_currency
+from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import DownloadFile
 
 
 class DownloadFileSerializer(serializers.ModelSerializer):
     access_info = serializers.SerializerMethodField()
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = DownloadFile
@@ -22,6 +24,7 @@ class DownloadFileSerializer(serializers.ModelSerializer):
             "price",
             "created_at",
             "access_info",
+            "tags",
         ]
         read_only_fields = ["id", "download_count", "created_at"]
 
@@ -48,6 +51,8 @@ class DownloadFileSerializer(serializers.ModelSerializer):
 
 
 class DownloadFileCreateSerializer(serializers.ModelSerializer):
+    tag_ids = tag_ids_field("download")
+
     class Meta:
         model = DownloadFile
-        fields = ["title", "file_url", "file_size", "pricing_type", "price"]
+        fields = ["title", "file_url", "file_size", "pricing_type", "price", "tag_ids"]
