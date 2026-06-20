@@ -2,5 +2,6 @@
   "title": "Duyuru gönder",
   "placeholder": "Tüm öğrencilerinize mesaj…",
   "send": "Gönder",
-  "sent": "Duyuru gönderildi"
+  "sent": "Duyuru gönderildi",
+  "failed": "Duyuru gönderilemedi"
 }

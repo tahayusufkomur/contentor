@@ -1,5 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import { randomUUID } from "crypto";
 import createNextIntlPlugin from "next-intl/plugin";
 import withSerwistInit from "@serwist/next";
 
@@ -36,7 +37,7 @@ const nextConfig = {
   },
 };
 
-const revision = crypto.randomUUID();
+const revision = randomUUID();
 
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",

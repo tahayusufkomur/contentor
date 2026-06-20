@@ -23,6 +23,8 @@ export default function BroadcastPage() {
       });
       toast.success(t("sent"));
       setMessage("");
+    } catch {
+      toast.error(t("failed"));
     } finally {
       setSending(false);
     }
