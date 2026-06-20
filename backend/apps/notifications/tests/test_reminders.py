@@ -63,8 +63,13 @@ def test_paid_event_targets_only_users_with_access(tenant_ctx):
     _student(2)
     event = _upcoming(coach, title="Paid Masterclass", pricing_type="paid", price=20)
 
-    # ContentAccessService is tested in apps/core; here we stub it to assert the
-    # targeting wires it in — only s1 has access.
+    # subscriptions_with_access imports ContentAccessService lazily from
+    # apps.core.access (deferred, to dodge a circular import), so patching it at
+    # that definition site is what the function actually picks up. The service
+    # itself is tested in apps/core; here we stub it to prove the targeting wires
+    # it in. Only s1 is granted access; the coach has no PushSubscription, so the
+    # eligible set is exactly {s1} (note: owner/coach would pass check_access, but
+    # they don't opt into student push).
     with patch("apps.core.access.ContentAccessService") as Svc:
         Svc.return_value.check_access.side_effect = lambda user, content: user.pk == s1.pk
         eligible = list(subscriptions_with_access(event))
