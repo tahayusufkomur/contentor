@@ -1,11 +1,16 @@
 import contextlib
+from datetime import timedelta
 
 from django.db import IntegrityError
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from apps.accounts.models import User
+from apps.core.permissions import IsCoachOrOwner
 
 from .models import UsageEvent
 
@@ -52,3 +57,46 @@ def record_usage(request):
         user.save(update_fields=fields)
 
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def usage_summary(request):
+    try:
+        days = int(request.query_params.get("days", 30))
+    except (TypeError, ValueError):
+        days = 30
+    days = max(1, min(days, 365))
+    cutoff = timezone.now().date() - timedelta(days=days - 1)
+
+    qs = UsageEvent.objects.filter(day__gte=cutoff)
+    totals = qs.aggregate(
+        pwa=Count("id", filter=Q(mode="pwa")),
+        browser=Count("id", filter=Q(mode="browser")),
+    )
+    pwa_sessions = totals["pwa"] or 0
+    browser_sessions = totals["browser"] or 0
+    total = pwa_sessions + browser_sessions
+    pwa_pct = round(pwa_sessions / total * 100) if total else 0
+
+    installed_students = User.objects.filter(role="student", first_pwa_at__isnull=False).count()
+
+    daily = [
+        {"day": row["day"].isoformat(), "pwa": row["pwa"], "browser": row["browser"]}
+        for row in qs.values("day")
+        .annotate(
+            pwa=Count("id", filter=Q(mode="pwa")),
+            browser=Count("id", filter=Q(mode="browser")),
+        )
+        .order_by("day")
+    ]
+
+    return Response(
+        {
+            "pwa_sessions": pwa_sessions,
+            "browser_sessions": browser_sessions,
+            "pwa_pct": pwa_pct,
+            "installed_students": installed_students,
+            "daily": daily,
+        }
+    )
