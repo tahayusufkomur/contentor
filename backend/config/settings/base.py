@@ -37,6 +37,7 @@ TENANT_APPS = [
     "django.contrib.admin",
     "apps.accounts",
     "apps.tenant_config",
+    "apps.filters",
     "apps.courses",
     "apps.downloads",
     "apps.live",
