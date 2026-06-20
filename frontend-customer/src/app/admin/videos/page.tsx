@@ -42,6 +42,8 @@ interface VideoItem {
   duration_seconds: number
   file_size: number
   video_signed_url: string | null
+  tags?: import("@/types/course").Tag[]
+  tag_ids?: number[]
   created_at: string
 }
 

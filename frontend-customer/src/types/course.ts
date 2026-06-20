@@ -39,6 +39,17 @@ export interface FilterGroup {
   options: FilterOption[]
 }
 
+// Flat, free-text admin tags. Each tag belongs to one content-type pool
+// (course/video/photo/download/event). Admin-only — used to group and filter.
+export type TagScope = 'course' | 'video' | 'photo' | 'download' | 'event'
+
+export interface Tag {
+  id: number
+  name: string
+  slug: string
+  scope: TagScope
+}
+
 export interface Course {
   id: number
   title: string
@@ -56,6 +67,7 @@ export interface Course {
   lesson_count?: number
   enrolled_count?: number
   filter_options?: FilterOption[]
+  tags?: Tag[]
   created_at?: string
   updated_at?: string
   access_info?: AccessInfo

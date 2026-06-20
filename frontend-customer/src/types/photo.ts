@@ -1,3 +1,5 @@
+import type { Tag } from './course'
+
 export interface Photo {
   id: string
   s3_key: string
@@ -8,5 +10,6 @@ export interface Photo {
   width: number | null
   height: number | null
   signed_url: string | null
+  tags?: Tag[]
   created_at: string
 }

@@ -1,4 +1,5 @@
 import type { AccessInfo } from './billing'
+import type { Tag } from './course'
 
 export interface DownloadFile {
   id: number
@@ -8,6 +9,7 @@ export interface DownloadFile {
   download_count: number
   pricing_type: 'free' | 'paid'
   price: string
+  tags?: Tag[]
   created_at: string
   access_info?: AccessInfo
 }

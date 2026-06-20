@@ -21,6 +21,8 @@ export interface LiveClass {
   access_info?: AccessInfo
   filter_options?: import('./course').FilterOption[]
   filter_option_ids?: number[]
+  tags?: import('./course').Tag[]
+  tag_ids?: number[]
 }
 
 export interface LiveStream {
@@ -44,6 +46,8 @@ export interface LiveStream {
   access_info?: AccessInfo
   filter_options?: import('./course').FilterOption[]
   filter_option_ids?: number[]
+  tags?: import('./course').Tag[]
+  tag_ids?: number[]
 }
 
 export interface ZoomClass {
@@ -62,6 +66,8 @@ export interface ZoomClass {
   created_at: string
   filter_options?: import('./course').FilterOption[]
   filter_option_ids?: number[]
+  tags?: import('./course').Tag[]
+  tag_ids?: number[]
 }
 
 export interface OnsiteEvent {
@@ -81,6 +87,8 @@ export interface OnsiteEvent {
   created_at: string
   filter_options?: import('./course').FilterOption[]
   filter_option_ids?: number[]
+  tags?: import('./course').Tag[]
+  tag_ids?: number[]
 }
 
 export type CalendarEventType = 'live_class' | 'live_stream' | 'onsite_event'
