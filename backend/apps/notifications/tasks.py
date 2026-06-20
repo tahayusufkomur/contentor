@@ -56,3 +56,16 @@ def fanout_new_content(course_id: int, schema_name: str) -> None:
         if not course:
             return
         broadcast_to_tenant(new_content_payload(course.title, f"/courses/{course.slug}"))
+
+
+@shared_task
+def fanout_broadcast(message: str, schema_name: str) -> None:
+    from .payloads import broadcast_payload
+
+    tenant_model = get_tenant_model()
+    try:
+        tenant = tenant_model.objects.get(schema_name=schema_name)
+    except tenant_model.DoesNotExist:
+        return
+    with tenant_context(tenant):
+        broadcast_to_tenant(broadcast_payload(message))

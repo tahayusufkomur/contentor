@@ -39,6 +39,7 @@ urlpatterns = [
     path("api/v1/contact/", include("apps.core.contact.urls")),
     path("api/v1/preview/", include("apps.core.preview.urls")),
     path("api/v1/admin/", include("apps.tenant_config.urls")),
+    path("api/v1/admin/", include("apps.notifications.admin_urls")),
     # Platform email lives under /platform/email/ — declare before the broader
     # /platform/ include so its routes resolve first.
     path("api/v1/platform/email/", include("apps.platform_email.urls")),
