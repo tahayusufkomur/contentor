@@ -2,5 +2,7 @@
   "installPrompt": "Install this app on your home screen",
   "install": "Install",
   "iosHint": "Tap the Share icon, then \"Add to Home Screen\"",
-  "dismiss": "Dismiss"
+  "dismiss": "Dismiss",
+  "updateAvailable": "A new version is available",
+  "refresh": "Refresh"
 }

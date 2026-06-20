@@ -11,6 +11,7 @@ import { DemoBanner } from "@/components/shared/demo-banner";
 import { InstallPrompt } from "@/components/shared/install-prompt";
 import { PreviewGate } from "@/components/shared/preview-gate";
 import { RedirectToast } from "@/components/shared/redirect-toast";
+import { SwUpdateToast } from "@/components/shared/sw-update-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { TenantProvider } from "@/components/shared/tenant-provider";
@@ -135,6 +136,7 @@ export default async function RootLayout({
                   <DemoBanner />
                   {children}
                   <InstallPrompt />
+                  <SwUpdateToast />
                 </>
               )}
             </TenantProvider>
