@@ -8,6 +8,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Toaster } from "sonner";
 
 import { DemoBanner } from "@/components/shared/demo-banner";
+import { InstallPrompt } from "@/components/shared/install-prompt";
 import { PreviewGate } from "@/components/shared/preview-gate";
 import { RedirectToast } from "@/components/shared/redirect-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
@@ -133,6 +134,7 @@ export default async function RootLayout({
                   <RedirectToast />
                   <DemoBanner />
                   {children}
+                  <InstallPrompt />
                 </>
               )}
             </TenantProvider>

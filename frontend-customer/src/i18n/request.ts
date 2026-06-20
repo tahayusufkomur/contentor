@@ -18,14 +18,15 @@ export default getRequestConfig(async () => {
     locale = regionDefaultLocale(region)
   }
 
-  const [admin, student, common] = await Promise.all([
+  const [admin, student, common, pwa] = await Promise.all([
     import(`../../messages/${locale}/admin.json`).then(m => m.default),
     import(`../../messages/${locale}/student.json`).then(m => m.default),
     import(`../../messages/${locale}/common.json`).then(m => m.default),
+    import(`../../messages/${locale}/pwa.json`).then(m => m.default),
   ])
 
   return {
     locale,
-    messages: { admin, student, common },
+    messages: { admin, student, common, pwa },
   }
 })
