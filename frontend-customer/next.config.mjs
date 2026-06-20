@@ -1,6 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import createNextIntlPlugin from "next-intl/plugin";
+import withSerwistInit from "@serwist/next";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
@@ -35,4 +36,14 @@ const nextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+const revision = crypto.randomUUID();
+
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  cacheOnNavigation: true,
+  disable: process.env.NODE_ENV === "development" && process.env.SERWIST_DEV !== "1",
+  additionalPrecacheEntries: [{ url: "/offline.html", revision }],
+});
+
+export default withSerwist(withNextIntl(nextConfig));
