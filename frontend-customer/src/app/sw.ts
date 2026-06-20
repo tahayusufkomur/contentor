@@ -17,12 +17,12 @@ const NEVER_CACHE: RegExp[] = [
   /^\/checkout(\/|$)/,
   /^\/api\/v1\/(auth|billing)(\/|$)/,
 ];
-const NEVER_CACHE_HOSTS = ["stripe.com", "stream-io-api.com", "getstream.io"];
+const NEVER_CACHE_HOSTS: readonly string[] = ["stripe.com", "stream-io-api.com", "getstream.io"];
 
 const guardedCache: RuntimeCaching[] = [
   {
     matcher({ url, sameOrigin }) {
-      if (!sameOrigin) return NEVER_CACHE_HOSTS.some((h) => url.hostname.endsWith(h));
+      if (!sameOrigin) return NEVER_CACHE_HOSTS.some((h) => url.hostname === h || url.hostname.endsWith("." + h));
       return NEVER_CACHE.some((re) => re.test(url.pathname));
     },
     handler: new NetworkOnly(),
