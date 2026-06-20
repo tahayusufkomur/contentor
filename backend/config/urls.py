@@ -50,6 +50,7 @@ urlpatterns = [
     path("api/v1/me/", include("apps.core.me.urls")),
     path("api/v1/upload/", include("apps.core.uploads.urls")),
     path("api/v1/courses/", include("apps.courses.urls")),
+    path("api/v1/filters/", include("apps.filters.urls")),
     path("api/v1/downloads/", include("apps.downloads.urls")),
     path("api/v1/live/", include("apps.live.urls")),
     path("api/v1/live-streams/", include(("apps.live.urls_streams", "live_streams"))),
