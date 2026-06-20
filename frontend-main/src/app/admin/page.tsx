@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrencyMap, type PlatformDashboard } from "@/types/tenant";
+import { PlatformUsageCard } from "@/components/admin/platform-usage-card";
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -230,6 +231,9 @@ export default function AdminDashboardPage() {
           );
         })}
       </div>
+
+      {/* App adoption */}
+      <PlatformUsageCard />
 
       {/* Recent Tenants */}
       {data.recent_tenants && data.recent_tenants.length > 0 && (
