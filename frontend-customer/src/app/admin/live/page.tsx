@@ -28,6 +28,7 @@ import {
   type FetchPageResult,
 } from '@/components/admin/media-browser'
 import { InlineEditPanel, type FieldConfig } from '@/components/admin/inline-edit-panel'
+import { FilterPicker } from '@/components/admin/filter-picker'
 
 // ─── Shared types & config ─────────────────────────────────────────
 
@@ -159,18 +160,20 @@ function LiveClassesTab() {
   const [price, setPrice] = useState('')
   const [autoRecording, setAutoRecording] = useState(false)
   const [scheduledAt, setScheduledAt] = useState('')
+  const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<LiveClass>> => {
     return fetchAdminListPage<LiveClass>('/api/v1/live/', params)
   }, [])
 
-  function resetForm() { setTitle(''); setDescription(''); setPricingType('free'); setPrice(''); setAutoRecording(false); setScheduledAt('') }
+  function resetForm() { setTitle(''); setDescription(''); setPricingType('free'); setPrice(''); setAutoRecording(false); setScheduledAt(''); setFilterOptionIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
 
   async function handleSave() {
     setSaving(true)
     try {
       const body = JSON.stringify({
+        filter_option_ids: filterOptionIds,
         title, description, pricing_type: pricingType, auto_recording: autoRecording,
         ...(scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         ...(pricingType !== 'free' && price ? { price: parseFloat(price) } : {}),
@@ -222,6 +225,7 @@ function LiveClassesTab() {
           </div>
           <div className="space-y-2"><Label>Scheduled Date</Label><Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /></div>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={autoRecording} onChange={(e) => setAutoRecording(e.target.checked)} className="h-4 w-4 rounded border-input" /><span className="text-sm">Auto-record this class</span></label>
+          <div className="space-y-2"><Label>Filters</Label><FilterPicker scope="event" value={filterOptionIds} onChange={setFilterOptionIds} /></div>
           <div className="flex gap-2"><Button onClick={handleSave} disabled={!title.trim() || saving}>{saving ? 'Saving...' : 'Create'}</Button><Button variant="ghost" onClick={() => { setShowForm(false); resetForm() }}>Cancel</Button></div>
         </div>
       )}
@@ -282,18 +286,20 @@ function LiveStreamsTab() {
   const [price, setPrice] = useState('')
   const [autoRecording, setAutoRecording] = useState(false)
   const [scheduledAt, setScheduledAt] = useState('')
+  const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<LiveStream>> => {
     return fetchAdminListPage<LiveStream>('/api/v1/live-streams/', params)
   }, [])
 
-  function resetForm() { setTitle(''); setDescription(''); setPricingType('free'); setPrice(''); setAutoRecording(false); setScheduledAt('') }
+  function resetForm() { setTitle(''); setDescription(''); setPricingType('free'); setPrice(''); setAutoRecording(false); setScheduledAt(''); setFilterOptionIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
 
   async function handleSave() {
     setSaving(true)
     try {
       const body = JSON.stringify({
+        filter_option_ids: filterOptionIds,
         title, description, pricing_type: pricingType, auto_recording: autoRecording,
         ...(scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         ...(pricingType !== 'free' && price ? { price: parseFloat(price) } : {}),
@@ -345,6 +351,7 @@ function LiveStreamsTab() {
           </div>
           <div className="space-y-2"><Label>Scheduled Date</Label><Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /></div>
           <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={autoRecording} onChange={(e) => setAutoRecording(e.target.checked)} className="h-4 w-4 rounded border-input" /><span className="text-sm">Auto-record this stream</span></label>
+          <div className="space-y-2"><Label>Filters</Label><FilterPicker scope="event" value={filterOptionIds} onChange={setFilterOptionIds} /></div>
           <div className="flex gap-2"><Button onClick={handleSave} disabled={!title.trim() || saving}>{saving ? 'Saving...' : 'Create'}</Button><Button variant="ghost" onClick={() => { setShowForm(false); resetForm() }}>Cancel</Button></div>
         </div>
       )}
@@ -405,18 +412,20 @@ function ZoomClassesTab() {
   const [pricingType, setPricingType] = useState('free')
   const [price, setPrice] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
+  const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<ZoomClass>> => {
     return fetchAdminListPage<ZoomClass>('/api/v1/zoom-classes/', params)
   }, [])
 
-  function resetForm() { setTitle(''); setDescription(''); setZoomLink(''); setPricingType('free'); setPrice(''); setScheduledAt('') }
+  function resetForm() { setTitle(''); setDescription(''); setZoomLink(''); setPricingType('free'); setPrice(''); setScheduledAt(''); setFilterOptionIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
 
   async function handleSave() {
     setSaving(true)
     try {
       const body = JSON.stringify({
+        filter_option_ids: filterOptionIds,
         title, description, zoom_link: zoomLink, pricing_type: pricingType,
         ...(scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         ...(pricingType !== 'free' && price ? { price: parseFloat(price) } : {}),
@@ -460,6 +469,7 @@ function ZoomClassesTab() {
             <div className="space-y-2"><Label>Access</Label><select value={pricingType} onChange={(e) => setPricingType(e.target.value)} className={selectClasses}><option value="free">Free</option><option value="paid">Paid</option></select></div>
             {pricingType !== 'free' && <div className="space-y-2"><Label>Price</Label><Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0.00" /></div>}
           </div>
+          <div className="space-y-2"><Label>Filters</Label><FilterPicker scope="event" value={filterOptionIds} onChange={setFilterOptionIds} /></div>
           <div className="flex gap-2"><Button onClick={handleSave} disabled={!title.trim() || saving}>{saving ? 'Saving...' : 'Create'}</Button><Button variant="ghost" onClick={() => { setShowForm(false); resetForm() }}>Cancel</Button></div>
         </div>
       )}
@@ -527,18 +537,20 @@ function OnsiteEventsTab() {
   const [pricingType, setPricingType] = useState('free')
   const [price, setPrice] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
+  const [filterOptionIds, setFilterOptionIds] = useState<number[]>([])
 
   const fetchPage = useCallback(async (params: FetchPageParams): Promise<FetchPageResult<OnsiteEvent>> => {
     return fetchAdminListPage<OnsiteEvent>('/api/v1/onsite-events/', params)
   }, [])
 
-  function resetForm() { setTitle(''); setDescription(''); setLocation(''); setAddress(''); setMaxCapacity(''); setPricingType('free'); setPrice(''); setScheduledAt('') }
+  function resetForm() { setTitle(''); setDescription(''); setLocation(''); setAddress(''); setMaxCapacity(''); setPricingType('free'); setPrice(''); setScheduledAt(''); setFilterOptionIds([]) }
   function openCreate() { resetForm(); setShowForm(true) }
 
   async function handleSave() {
     setSaving(true)
     try {
       const body = JSON.stringify({
+        filter_option_ids: filterOptionIds,
         title, description, location, address, pricing_type: pricingType,
         ...(scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         ...(maxCapacity ? { max_capacity: parseInt(maxCapacity) } : {}),
@@ -588,6 +600,7 @@ function OnsiteEventsTab() {
             <div className="space-y-2"><Label>Access</Label><select value={pricingType} onChange={(e) => setPricingType(e.target.value)} className={selectClasses}><option value="free">Free</option><option value="paid">Paid</option></select></div>
             {pricingType !== 'free' && <div className="space-y-2"><Label>Price</Label><Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0.00" /></div>}
           </div>
+          <div className="space-y-2"><Label>Filters</Label><FilterPicker scope="event" value={filterOptionIds} onChange={setFilterOptionIds} /></div>
           <div className="flex gap-2"><Button onClick={handleSave} disabled={!title.trim() || saving}>{saving ? 'Saving...' : 'Create'}</Button><Button variant="ghost" onClick={() => { setShowForm(false); resetForm() }}>Cancel</Button></div>
         </div>
       )}
