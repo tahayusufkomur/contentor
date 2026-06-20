@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bell,
   BookOpen,
   CreditCard,
   Database,
@@ -54,7 +55,10 @@ export function AdminShell({ children, user }: AdminShellProps) {
     {
       id: "community",
       label: t("nav.sections.community"),
-      items: [{ label: t("nav.items.students"), href: "/admin/students", icon: Users }],
+      items: [
+        { label: t("nav.items.students"), href: "/admin/students", icon: Users },
+        { label: t("nav.items.notifications"), href: "/admin/notifications", icon: Bell },
+      ],
     },
     {
       id: "site",
