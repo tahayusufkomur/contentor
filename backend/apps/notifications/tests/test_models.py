@@ -1,4 +1,6 @@
 import pytest
+from django.db import transaction
+from django.db.utils import IntegrityError
 
 from apps.accounts.models import User
 from apps.notifications.models import LiveReminderLog, PushSubscription
@@ -20,10 +22,11 @@ def test_push_subscription_endpoint_unique(student):
     PushSubscription.objects.create(
         user=student, endpoint="https://push/1", p256dh="p", auth="a"
     )
-    with pytest.raises(Exception):
-        PushSubscription.objects.create(
-            user=student, endpoint="https://push/1", p256dh="q", auth="b"
-        )
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            PushSubscription.objects.create(
+                user=student, endpoint="https://push/1", p256dh="q", auth="b"
+            )
 
 
 def test_live_reminder_log_dedupes_by_key(tenant_ctx):
