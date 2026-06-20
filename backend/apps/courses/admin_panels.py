@@ -3,7 +3,23 @@
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import studio_site
 
-from .models import Course
+from .models import Course, CourseCategory
+
+
+@studio_site.register(CourseCategory)
+class CourseCategoryAdmin(ModelAdmin):
+    icon = "tag"
+    description = "Group your courses. Assign categories to a course in the course builder."
+    list_display = ("name", "order", "course_count", "created_at")
+    search_fields = ("name",)
+    ordering = ("order", "name")
+    fields = ("name", "order")
+    readonly_fields = ("slug",)
+
+    def course_count(self, obj):
+        return obj.courses.count()
+
+    course_count.short_description = "Courses"
 
 
 @studio_site.register(Course)
