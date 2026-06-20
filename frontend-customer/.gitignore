@@ -1,3 +1,4 @@
-# Serwist-generated service worker
+# Serwist-generated service worker + internal worker chunks
 public/sw.js
-public/sw.js.map
+public/sw.js*.map
+public/swe-worker-*.js
