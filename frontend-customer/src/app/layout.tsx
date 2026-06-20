@@ -17,6 +17,7 @@ import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { UsageReporter } from "@/components/shared/usage-reporter";
 import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { getThemePalette } from "@/lib/themes";
@@ -139,6 +140,7 @@ export default async function RootLayout({
                   <InstallPrompt />
                   <SwUpdateToast />
                   <PushOptIn />
+                  <UsageReporter />
                 </>
               )}
             </TenantProvider>
