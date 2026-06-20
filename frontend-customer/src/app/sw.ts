@@ -1,6 +1,6 @@
 import { defaultCache } from "@serwist/next/worker";
-import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist } from "serwist";
+import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from "serwist";
+import { NetworkOnly, Serwist } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -10,12 +10,32 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Never cache auth, billing/checkout, or third-party payment/chat traffic.
+// These match first, so defaultCache never sees them.
+const NEVER_CACHE: RegExp[] = [
+  /^\/admin(\/|$)/,
+  /^\/checkout(\/|$)/,
+  /^\/api\/v1\/(auth|billing)(\/|$)/,
+];
+const NEVER_CACHE_HOSTS = ["stripe.com", "stream-io-api.com", "getstream.io"];
+
+const guardedCache: RuntimeCaching[] = [
+  {
+    matcher({ url, sameOrigin }) {
+      if (!sameOrigin) return NEVER_CACHE_HOSTS.some((h) => url.hostname.endsWith(h));
+      return NEVER_CACHE.some((re) => re.test(url.pathname));
+    },
+    handler: new NetworkOnly(),
+  },
+  ...defaultCache,
+];
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: guardedCache,
   fallbacks: {
     entries: [
       {
