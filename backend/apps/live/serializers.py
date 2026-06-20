@@ -3,8 +3,19 @@ from dataclasses import asdict
 from rest_framework import serializers
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
+from apps.filters.models import FilterOption
+from apps.filters.serializers import FilterOptionSerializer
 
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
+
+
+def _filter_option_ids_field():
+    return serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=FilterOption.objects.all(),
+        source="filter_options",
+        required=False,
+    )
 
 
 def _get_thumbnail_signed_url(obj):
@@ -17,6 +28,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
     recording_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
+    filter_options = FilterOptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = LiveClass
@@ -41,6 +53,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "ended_at",
             "created_at",
             "access_info",
+            "filter_options",
         ]
         read_only_fields = [
             "id",
@@ -108,6 +121,8 @@ class LiveClassSerializer(serializers.ModelSerializer):
 
 
 class LiveClassCreateSerializer(serializers.ModelSerializer):
+    filter_option_ids = _filter_option_ids_field()
+
     class Meta:
         model = LiveClass
         fields = [
@@ -119,6 +134,7 @@ class LiveClassCreateSerializer(serializers.ModelSerializer):
             "thumbnail",
             "auto_recording",
             "scheduled_at",
+            "filter_option_ids",
         ]
 
 
@@ -126,6 +142,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
     recording_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
+    filter_options = FilterOptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = LiveStream
@@ -150,6 +167,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             "ended_at",
             "created_at",
             "access_info",
+            "filter_options",
         ]
         read_only_fields = [
             "id",
@@ -217,6 +235,8 @@ class LiveStreamSerializer(serializers.ModelSerializer):
 
 
 class LiveStreamCreateSerializer(serializers.ModelSerializer):
+    filter_option_ids = _filter_option_ids_field()
+
     class Meta:
         model = LiveStream
         fields = [
@@ -228,10 +248,13 @@ class LiveStreamCreateSerializer(serializers.ModelSerializer):
             "thumbnail",
             "auto_recording",
             "scheduled_at",
+            "filter_option_ids",
         ]
 
 
 class ZoomClassSerializer(serializers.ModelSerializer):
+    filter_options = FilterOptionSerializer(many=True, read_only=True)
+
     class Meta:
         model = ZoomClass
         fields = [
@@ -248,17 +271,31 @@ class ZoomClassSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "created_at",
+            "filter_options",
         ]
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
 
 class ZoomClassCreateSerializer(serializers.ModelSerializer):
+    filter_option_ids = _filter_option_ids_field()
+
     class Meta:
         model = ZoomClass
-        fields = ["title", "description", "zoom_link", "zoom_meeting_id", "pricing_type", "price", "scheduled_at"]
+        fields = [
+            "title",
+            "description",
+            "zoom_link",
+            "zoom_meeting_id",
+            "pricing_type",
+            "price",
+            "scheduled_at",
+            "filter_option_ids",
+        ]
 
 
 class OnsiteEventSerializer(serializers.ModelSerializer):
+    filter_options = FilterOptionSerializer(many=True, read_only=True)
+
     class Meta:
         model = OnsiteEvent
         fields = [
@@ -276,11 +313,14 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "created_at",
+            "filter_options",
         ]
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
 
 class OnsiteEventCreateSerializer(serializers.ModelSerializer):
+    filter_option_ids = _filter_option_ids_field()
+
     class Meta:
         model = OnsiteEvent
         fields = [
@@ -292,6 +332,7 @@ class OnsiteEventCreateSerializer(serializers.ModelSerializer):
             "pricing_type",
             "price",
             "scheduled_at",
+            "filter_option_ids",
         ]
 
 
@@ -308,6 +349,7 @@ class CalendarEventSerializer(serializers.Serializer):
     ended_at = serializers.DateTimeField(allow_null=True)
     location = serializers.CharField(allow_blank=True, default="")
     thumbnail_signed_url = serializers.CharField(allow_null=True, default=None)
+    filter_options = serializers.ListField(child=serializers.DictField(), required=False, default=list)
 
 
 class AccessInfoSerializer(serializers.Serializer):

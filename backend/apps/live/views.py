@@ -410,6 +410,8 @@ def _apply_date_range(qs, date_from, date_to):
 
 
 def _to_calendar_event(obj, event_type, thumbnail_url=None):
+    from apps.filters.serializers import FilterOptionSerializer
+
     return {
         "id": obj.id,
         "type": event_type,
@@ -423,6 +425,7 @@ def _to_calendar_event(obj, event_type, thumbnail_url=None):
         "ended_at": obj.computed_ended_at,
         "location": getattr(obj, "location", ""),
         "thumbnail_signed_url": thumbnail_url,
+        "filter_options": FilterOptionSerializer(obj.filter_options.all(), many=True).data,
     }
 
 
@@ -445,24 +448,24 @@ def calendar_events(request):
     want_onsite = not type_filter or "onsite_event" in type_filter
 
     if want_live_class:
-        qs = _apply_date_range(LiveClass.objects.filter(scheduled_at__isnull=False), date_from, date_to)
+        qs = _apply_date_range(LiveClass.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to)
         for obj in qs:
             thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
             events.append(_to_calendar_event(obj, "live_class", thumb))
 
-        qs = _apply_date_range(ZoomClass.objects.filter(scheduled_at__isnull=False), date_from, date_to)
+        qs = _apply_date_range(ZoomClass.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to)
         for obj in qs:
             thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
             events.append(_to_calendar_event(obj, "live_class", thumb))
 
     if want_live_stream:
-        qs = _apply_date_range(LiveStream.objects.filter(scheduled_at__isnull=False), date_from, date_to)
+        qs = _apply_date_range(LiveStream.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to)
         for obj in qs:
             thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
             events.append(_to_calendar_event(obj, "live_stream", thumb))
 
     if want_onsite:
-        qs = _apply_date_range(OnsiteEvent.objects.filter(scheduled_at__isnull=False), date_from, date_to)
+        qs = _apply_date_range(OnsiteEvent.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to)
         for obj in qs:
             thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
             events.append(_to_calendar_event(obj, "onsite_event", thumb))
