@@ -7,5 +7,6 @@
   "refresh": "Refresh",
   "enablePush": "Get notified about live classes and new lessons",
   "enable": "Turn on",
-  "notNow": "Not now"
+  "notNow": "Not now",
+  "pushFailed": "Could not enable notifications"
 }

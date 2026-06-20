@@ -30,9 +30,14 @@ export function PushOptIn() {
   };
 
   const enable = async () => {
-    const ok = await subscribeToPush();
-    if (!ok) toast.error(t("enablePush"));
-    dismiss();
+    try {
+      const ok = await subscribeToPush();
+      if (!ok) toast.error(t("pushFailed"));
+    } catch {
+      toast.error(t("pushFailed"));
+    } finally {
+      dismiss();
+    }
   };
 
   return (
@@ -40,6 +45,7 @@ export function PushOptIn() {
       className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm text-foreground shadow-lg"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
       role="dialog"
+      aria-label={t("enablePush")}
     >
       <span className="flex-1">{t("enablePush")}</span>
       <button onClick={enable} className="rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-foreground">

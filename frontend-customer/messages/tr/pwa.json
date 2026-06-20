@@ -7,5 +7,6 @@
   "refresh": "Yenile",
   "enablePush": "Canlı dersler ve yeni içeriklerden haberdar olun",
   "enable": "Aç",
-  "notNow": "Şimdi değil"
+  "notNow": "Şimdi değil",
+  "pushFailed": "Bildirimler açılamadı"
 }
