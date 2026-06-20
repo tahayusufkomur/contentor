@@ -29,6 +29,7 @@ import {
 } from '@/components/admin/media-browser'
 import { InlineEditPanel, type FieldConfig } from '@/components/admin/inline-edit-panel'
 import { FilterPicker } from '@/components/admin/filter-picker'
+import type { FilterOption } from '@/types/course'
 
 // ─── Shared types & config ─────────────────────────────────────────
 
@@ -43,6 +44,8 @@ interface LiveItem {
   scheduled_at: string | null
   started_at: string | null
   ended_at: string | null
+  filter_options?: FilterOption[]
+  filter_option_ids?: number[]
 }
 
 interface LiveClass extends LiveItem {
@@ -146,6 +149,7 @@ const liveClassFields: FieldConfig<LiveClass>[] = [
   { key: 'pricing_type', label: 'Access', type: 'select', options: [{ label: 'Free', value: 'free' }, { label: 'Paid', value: 'paid' }] },
   { key: 'price', label: 'Price', type: 'number', placeholder: '0.00', showWhen: (v) => v.pricing_type === 'paid' },
   { key: 'scheduled_at', label: 'Scheduled Date', type: 'datetime' },
+  { key: 'filter_option_ids', label: 'Filters', type: 'filterOptions', filterScope: 'event' },
 ]
 
 function LiveClassesTab() {
@@ -190,6 +194,7 @@ function LiveClassesTab() {
       await clientFetch(`/api/v1/live/${editingId}/`, {
         method: 'PUT',
         body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
           title: values.title, description: values.description, pricing_type: values.pricing_type,
           ...(values.scheduled_at ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() } : {}),
           ...(values.pricing_type === 'paid' && values.price ? { price: parseFloat(values.price as string) } : {}),
@@ -254,7 +259,7 @@ function LiveClassesTab() {
           editingId === lc.id ? (
             <TableRow>
               <TableCell colSpan={6} className="p-0">
-                <InlineEditPanel item={{ ...lc, scheduled_at: toLocalDatetimeValue(lc.scheduled_at) }} fields={liveClassFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
+                <InlineEditPanel item={{ ...lc, scheduled_at: toLocalDatetimeValue(lc.scheduled_at), filter_option_ids: (lc.filter_options ?? []).map((o) => o.id) }} fields={liveClassFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
               </TableCell>
             </TableRow>
           ) : null
@@ -272,6 +277,7 @@ const liveStreamFields: FieldConfig<LiveStream>[] = [
   { key: 'pricing_type', label: 'Access', type: 'select', options: [{ label: 'Free', value: 'free' }, { label: 'Paid', value: 'paid' }] },
   { key: 'price', label: 'Price', type: 'number', placeholder: '0.00', showWhen: (v) => v.pricing_type === 'paid' },
   { key: 'scheduled_at', label: 'Scheduled Date', type: 'datetime' },
+  { key: 'filter_option_ids', label: 'Filters', type: 'filterOptions', filterScope: 'event' },
 ]
 
 function LiveStreamsTab() {
@@ -316,6 +322,7 @@ function LiveStreamsTab() {
       await clientFetch(`/api/v1/live-streams/${editingId}/`, {
         method: 'PUT',
         body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
           title: values.title, description: values.description, pricing_type: values.pricing_type,
           ...(values.scheduled_at ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() } : {}),
           ...(values.pricing_type === 'paid' && values.price ? { price: parseFloat(values.price as string) } : {}),
@@ -380,7 +387,7 @@ function LiveStreamsTab() {
           editingId === ls.id ? (
             <TableRow>
               <TableCell colSpan={6} className="p-0">
-                <InlineEditPanel item={{ ...ls, scheduled_at: toLocalDatetimeValue(ls.scheduled_at) }} fields={liveStreamFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
+                <InlineEditPanel item={{ ...ls, scheduled_at: toLocalDatetimeValue(ls.scheduled_at), filter_option_ids: (ls.filter_options ?? []).map((o) => o.id) }} fields={liveStreamFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
               </TableCell>
             </TableRow>
           ) : null
@@ -399,6 +406,7 @@ const zoomClassFields: FieldConfig<ZoomClass>[] = [
   { key: 'pricing_type', label: 'Access', type: 'select', options: [{ label: 'Free', value: 'free' }, { label: 'Paid', value: 'paid' }] },
   { key: 'price', label: 'Price', type: 'number', placeholder: '0.00', showWhen: (v) => v.pricing_type === 'paid' },
   { key: 'scheduled_at', label: 'Scheduled Date', type: 'datetime' },
+  { key: 'filter_option_ids', label: 'Filters', type: 'filterOptions', filterScope: 'event' },
 ]
 
 function ZoomClassesTab() {
@@ -442,6 +450,7 @@ function ZoomClassesTab() {
       await clientFetch(`/api/v1/zoom-classes/${editingId}/`, {
         method: 'PUT',
         body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
           title: values.title, description: values.description, zoom_link: values.zoom_link, pricing_type: values.pricing_type,
           ...(values.scheduled_at ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() } : {}),
           ...(values.pricing_type === 'paid' && values.price ? { price: parseFloat(values.price as string) } : {}),
@@ -501,7 +510,7 @@ function ZoomClassesTab() {
           editingId === zc.id ? (
             <TableRow>
               <TableCell colSpan={6} className="p-0">
-                <InlineEditPanel item={{ ...zc, scheduled_at: toLocalDatetimeValue(zc.scheduled_at) }} fields={zoomClassFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
+                <InlineEditPanel item={{ ...zc, scheduled_at: toLocalDatetimeValue(zc.scheduled_at), filter_option_ids: (zc.filter_options ?? []).map((o) => o.id) }} fields={zoomClassFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
               </TableCell>
             </TableRow>
           ) : null
@@ -522,6 +531,7 @@ const onsiteEventFields: FieldConfig<OnsiteEvent>[] = [
   { key: 'pricing_type', label: 'Access', type: 'select', options: [{ label: 'Free', value: 'free' }, { label: 'Paid', value: 'paid' }] },
   { key: 'price', label: 'Price', type: 'number', placeholder: '0.00', showWhen: (v) => v.pricing_type === 'paid' },
   { key: 'scheduled_at', label: 'Scheduled Date', type: 'datetime' },
+  { key: 'filter_option_ids', label: 'Filters', type: 'filterOptions', filterScope: 'event' },
 ]
 
 function OnsiteEventsTab() {
@@ -568,6 +578,7 @@ function OnsiteEventsTab() {
       await clientFetch(`/api/v1/onsite-events/${editingId}/`, {
         method: 'PUT',
         body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
           title: values.title, description: values.description, location: values.location, address: values.address, pricing_type: values.pricing_type,
           ...(values.scheduled_at ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() } : {}),
           ...(values.max_capacity ? { max_capacity: parseInt(values.max_capacity as string) } : {}),
@@ -632,7 +643,7 @@ function OnsiteEventsTab() {
           editingId === ev.id ? (
             <TableRow>
               <TableCell colSpan={7} className="p-0">
-                <InlineEditPanel item={{ ...ev, scheduled_at: toLocalDatetimeValue(ev.scheduled_at), max_capacity: ev.max_capacity ? String(ev.max_capacity) : '' } as unknown as OnsiteEvent} fields={onsiteEventFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
+                <InlineEditPanel item={{ ...ev, scheduled_at: toLocalDatetimeValue(ev.scheduled_at), max_capacity: ev.max_capacity ? String(ev.max_capacity) : '', filter_option_ids: (ev.filter_options ?? []).map((o) => o.id) } as unknown as OnsiteEvent} fields={onsiteEventFields} onSave={handleInlineUpdate} onCancel={() => setEditingId(null)} saving={saving} />
               </TableCell>
             </TableRow>
           ) : null

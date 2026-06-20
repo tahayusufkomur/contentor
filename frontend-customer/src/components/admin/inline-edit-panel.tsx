@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { PhotoPicker } from "@/components/admin/photo-picker"
 import { VideoPicker } from "@/components/admin/video-picker"
+import { FilterPicker } from "@/components/admin/filter-picker"
 import { Loader2 } from "lucide-react"
 import type { Photo } from "@/types/photo"
 
@@ -23,13 +24,15 @@ import type { Photo } from "@/types/photo"
 export interface FieldConfig<T> {
   key: keyof T & string
   label: string
-  type: "text" | "number" | "select" | "toggle" | "datetime" | "textarea" | "image" | "video"
+  type: "text" | "number" | "select" | "toggle" | "datetime" | "textarea" | "image" | "video" | "filterOptions"
   options?: { label: string; value: string }[]
   showWhen?: (values: Record<string, unknown>) => boolean
   placeholder?: string
   required?: boolean
   /** For image fields: the key on the item that holds the preview URL */
   previewUrlKey?: keyof T & string
+  /** For filterOptions fields: which filters to offer. */
+  filterScope?: "course" | "event"
 }
 
 export interface InlineEditPanelProps<T> {
@@ -53,7 +56,9 @@ export function InlineEditPanel<T extends Record<string, any>>({
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     const init: Record<string, unknown> = {}
     for (const f of fields) {
-      init[f.key] = item[f.key] ?? (f.type === "toggle" ? false : "")
+      init[f.key] =
+        item[f.key] ??
+        (f.type === "toggle" ? false : f.type === "filterOptions" ? [] : "")
     }
     return init
   })
@@ -107,7 +112,10 @@ export function InlineEditPanel<T extends Record<string, any>>({
           <div
             key={field.key}
             className={
-              field.type === "textarea" || field.type === "image" || field.type === "video"
+              field.type === "textarea" ||
+              field.type === "image" ||
+              field.type === "video" ||
+              field.type === "filterOptions"
                 ? "sm:col-span-2 lg:col-span-3"
                 : ""
             }
@@ -215,6 +223,14 @@ export function InlineEditPanel<T extends Record<string, any>>({
                     [field.key]: signedUrl,
                   }))
                 }}
+              />
+            )}
+
+            {field.type === "filterOptions" && (
+              <FilterPicker
+                scope={field.filterScope ?? "event"}
+                value={(values[field.key] as number[]) ?? []}
+                onChange={(ids) => setValue(field.key, ids)}
               />
             )}
           </div>
