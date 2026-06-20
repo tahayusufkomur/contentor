@@ -55,6 +55,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     payment_customer_id = models.CharField(max_length=255, blank=True, default="")
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
+    last_display_mode = models.CharField(max_length=10, blank=True, default="")
+    last_platform = models.CharField(max_length=10, blank=True, default="")
+    first_pwa_at = models.DateTimeField(null=True, blank=True)
 
     objects = UserManager()
     USERNAME_FIELD = "email"
