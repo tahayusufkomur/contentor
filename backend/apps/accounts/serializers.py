@@ -15,7 +15,18 @@ class StudentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email", "name", "avatar_url", "role", "date_joined", "last_login", "enrolled_count", "last_display_mode", "last_platform"]
+        fields = [
+            "id",
+            "email",
+            "name",
+            "avatar_url",
+            "role",
+            "date_joined",
+            "last_login",
+            "enrolled_count",
+            "last_display_mode",
+            "last_platform",
+        ]
         read_only_fields = fields
 
     def get_enrolled_count(self, obj):

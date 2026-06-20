@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,17 +14,30 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UsageEvent',
+            name="UsageEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('mode', models.CharField(choices=[('pwa', 'PWA'), ('browser', 'Browser')], max_length=10)),
-                ('platform', models.CharField(choices=[('ios', 'iOS'), ('android', 'Android'), ('desktop', 'Desktop'), ('other', 'Other')], max_length=10)),
-                ('day', models.DateField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='usage_events', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("mode", models.CharField(choices=[("pwa", "PWA"), ("browser", "Browser")], max_length=10)),
+                (
+                    "platform",
+                    models.CharField(
+                        choices=[("ios", "iOS"), ("android", "Android"), ("desktop", "Desktop"), ("other", "Other")],
+                        max_length=10,
+                    ),
+                ),
+                ("day", models.DateField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="usage_events",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('user', 'mode', 'platform', 'day')},
+                "unique_together": {("user", "mode", "platform", "day")},
             },
         ),
     ]

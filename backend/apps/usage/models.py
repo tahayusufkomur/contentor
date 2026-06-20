@@ -11,9 +11,7 @@ class UsageEvent(models.Model):
         ("other", "Other"),
     ]
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="usage_events"
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="usage_events")
     mode = models.CharField(max_length=10, choices=MODE_CHOICES)
     platform = models.CharField(max_length=10, choices=PLATFORM_CHOICES)
     day = models.DateField()
