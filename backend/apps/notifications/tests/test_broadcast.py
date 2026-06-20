@@ -61,8 +61,33 @@ def test_owner_broadcast_enqueues(tenant_ctx):
     assert res.status_code == 202
     task.delay.assert_called_once()
     assert task.delay.call_args.args[0] == "Live Q&A Friday!"
-    # second arg is the schema_name (from connection.schema_name)
-    assert isinstance(task.delay.call_args.args[1], str)
+    # second arg is the schema_name (from connection.schema_name) — must be a
+    # non-empty schema so the worker re-enters the right tenant.
+    assert task.delay.call_args.args[1]
+
+
+# ---------------------------------------------------------------------------
+# Test B2: coach can also broadcast (role gate allows owner AND coach)
+# ---------------------------------------------------------------------------
+
+
+def test_coach_can_broadcast(tenant_ctx):
+    coach = User.objects.create_user(
+        email="coach@broadcasttest.com",
+        name="Coach",
+        password="secret123",
+        role="coach",
+    )
+    client = APIClient(HTTP_HOST=SHARED_DOMAIN)
+    client.force_authenticate(user=coach)
+    with patch("apps.notifications.views.fanout_broadcast") as task:
+        res = client.post(
+            "/api/v1/admin/notifications/broadcast/",
+            {"message": "Welcome!"},
+            format="json",
+        )
+    assert res.status_code == 202
+    task.delay.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
