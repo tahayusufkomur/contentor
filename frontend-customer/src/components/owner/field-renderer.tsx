@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PhotoPicker } from "@/components/admin/photo-picker";
+import { VideoPicker } from "@/components/admin/video-picker";
 import {
   ChevronDown,
   ChevronUp,
@@ -189,12 +190,13 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
       return (
         <div className="space-y-1">
           <FieldLabel field={field} />
-          <Input
-            value={value?.url ?? ""}
-            onChange={(e) =>
-              onChange({ url: e.target.value || null, video_id: null })
+          <VideoPicker
+            allowUrl
+            value={value?.video_id ?? null}
+            previewUrl={value?.url ?? null}
+            onChange={(videoId, signedUrl) =>
+              onChange({ url: signedUrl, video_id: videoId })
             }
-            placeholder="YouTube / Vimeo URL"
           />
           {field.helpText && (
             <p className="text-xs text-muted-foreground">{field.helpText}</p>
