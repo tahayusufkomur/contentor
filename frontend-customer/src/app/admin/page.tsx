@@ -15,6 +15,7 @@ import {
   Users,
   DollarSign,
 } from 'lucide-react'
+import { UsageAdoptionCard } from '@/components/admin/usage-adoption-card'
 
 export const dynamic = 'force-dynamic'
 
@@ -105,6 +106,11 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             ))}
+      </div>
+
+      {/* App adoption */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <UsageAdoptionCard />
       </div>
 
       {/* Quick actions */}
