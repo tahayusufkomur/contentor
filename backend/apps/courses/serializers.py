@@ -5,17 +5,10 @@ from rest_framework import serializers
 
 from apps.core.access import AccessInfo, ContentAccessService, content_currency
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
+from apps.filters.models import FilterOption
+from apps.filters.serializers import FilterOptionSerializer
 
-from .models import Course, CourseCategory, Enrollment, Lesson, Module, Progress, Video
-
-
-class CourseCategorySerializer(serializers.ModelSerializer):
-    course_count = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = CourseCategory
-        fields = ["id", "name", "slug", "order", "course_count"]
-        read_only_fields = ["id", "slug", "course_count"]
+from .models import Course, Enrollment, Lesson, Module, Progress, Video
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -97,7 +90,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     enrolled_count = serializers.SerializerMethodField()
     thumbnail_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
-    categories = CourseCategorySerializer(many=True, read_only=True)
+    filter_options = FilterOptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -119,7 +112,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "enrolled_count",
             "thumbnail_signed_url",
             "access_info",
-            "categories",
+            "filter_options",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -164,7 +157,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     unlock_options = serializers.SerializerMethodField()
-    categories = CourseCategorySerializer(many=True, read_only=True)
+    filter_options = FilterOptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -189,7 +182,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "thumbnail_signed_url",
             "access_info",
             "unlock_options",
-            "categories",
+            "filter_options",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -250,10 +243,10 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
 
 class CourseCreateUpdateSerializer(serializers.ModelSerializer):
-    category_ids = serializers.PrimaryKeyRelatedField(
+    filter_option_ids = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=CourseCategory.objects.all(),
-        source="categories",
+        queryset=FilterOption.objects.all(),
+        source="filter_options",
         required=False,
     )
 
@@ -268,7 +261,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "pricing_type",
             "is_published",
             "order",
-            "category_ids",
+            "filter_option_ids",
         ]
 
 
