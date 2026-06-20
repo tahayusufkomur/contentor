@@ -2,9 +2,14 @@
 
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { CourseCard, type CourseCardVariant } from '@/components/public/course-card'
 import { EmptyState } from '@/components/shared/empty-state'
+import {
+  FacetPills,
+  buildFacets,
+  matchesFacets,
+  type FacetSelection,
+} from '@/components/public/facet-pills'
 import { Search, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Course } from '@/types/course'
@@ -24,6 +29,8 @@ interface CourseCatalogClientProps {
   cardStyle?: CourseCardVariant
   showPrice?: boolean
   showMeta?: boolean
+  /** FilterGroup ids the coach chose to expose as facets on this block. */
+  filterGroupIds?: number[]
 }
 
 export function CourseCatalogClient({
@@ -33,20 +40,16 @@ export function CourseCatalogClient({
   cardStyle = 'elevated',
   showPrice = true,
   showMeta = true,
+  filterGroupIds = [],
 }: CourseCatalogClientProps) {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
-  const [categoryId, setCategoryId] = useState<number | null>(null)
+  const [facetSel, setFacetSel] = useState<FacetSelection>({})
 
-  const categories = useMemo(() => {
-    const map = new Map<number, { id: number; name: string }>()
-    for (const c of courses) {
-      for (const cat of c.categories ?? []) {
-        if (!map.has(cat.id)) map.set(cat.id, { id: cat.id, name: cat.name })
-      }
-    }
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }, [courses])
+  const facets = useMemo(
+    () => buildFacets(courses, filterGroupIds),
+    [courses, filterGroupIds],
+  )
 
   const filtered = useMemo(() => {
     let result = courses
@@ -61,12 +64,9 @@ export function CourseCatalogClient({
     if (filter === 'free') result = result.filter((c) => c.pricing_type === 'free')
     if (filter === 'paid') result = result.filter((c) => c.pricing_type !== 'free')
     if (filter === 'accessible') result = result.filter((c) => c.access_info?.has_access)
-    if (categoryId != null)
-      result = result.filter((c) =>
-        (c.categories ?? []).some((cat) => cat.id === categoryId),
-      )
+    result = result.filter((c) => matchesFacets(c, facetSel))
     return result
-  }, [courses, search, filter, categoryId])
+  }, [courses, search, filter, facetSel])
 
   const hasAccessible = courses.some((c) => c.access_info?.has_access && c.pricing_type !== 'free')
 
@@ -110,36 +110,8 @@ export function CourseCatalogClient({
             </div>
           </div>
 
-          {/* Category pills — only when the coach has defined categories */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setCategoryId(null)}
-                className={cn(
-                  'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
-                  categoryId === null
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background text-foreground hover:bg-accent',
-                )}
-              >
-                All categories
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategoryId(cat.id)}
-                  className={cn(
-                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors',
-                    categoryId === cat.id
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-background text-foreground hover:bg-accent',
-                  )}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Coach-curated filter facets */}
+          <FacetPills facets={facets} selected={facetSel} onChange={setFacetSel} />
         </div>
       )}
 
