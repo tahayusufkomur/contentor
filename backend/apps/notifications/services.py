@@ -21,6 +21,7 @@ def _vapid_key_path() -> str:
     path = os.path.join(tempfile.gettempdir(), "contentor_vapid_private.pem")
     with open(path, "w") as fh:
         fh.write(settings.VAPID_PRIVATE_KEY)
+    os.chmod(path, 0o600)  # private key — owner-only
     return path
 
 
