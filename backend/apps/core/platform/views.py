@@ -1,9 +1,11 @@
 import logging
 from collections import defaultdict
+from datetime import timedelta
 from decimal import Decimal
 
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_tenants.utils import tenant_context
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -374,5 +376,73 @@ def platform_webhook_event_detail(request, pk):
             "processed_at": event.processed_at,
             "processing_error": event.processing_error,
             "payload": event.payload,
+        }
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_usage(request):
+    """Platform-wide PWA-adoption rollup across all active tenants.
+
+    Iterates tenant schemas — fine at the current fleet size, same approach as
+    `_marketplace_totals`; revisit with a nightly rollup table if tenant count
+    grows. Per tenant: count last-`days` UsageEvent rows by mode + students with
+    a recorded first PWA load. A broken schema is skipped, never 500s the page.
+    """
+    try:
+        days = int(request.query_params.get("days", 30))
+    except (TypeError, ValueError):
+        days = 30
+    days = max(1, min(days, 365))
+    cutoff = timezone.now().date() - timedelta(days=days - 1)
+
+    tenants = Tenant.objects.exclude(schema_name="public").filter(is_active=True)
+    total_pwa = 0
+    total_browser = 0
+    total_installed = 0
+    by_tenant = []
+    for tenant in tenants:
+        try:
+            with tenant_context(tenant):
+                from apps.accounts.models import User
+                from apps.usage.models import UsageEvent
+
+                totals = UsageEvent.objects.filter(day__gte=cutoff).aggregate(
+                    pwa=Count("id", filter=Q(mode="pwa")),
+                    browser=Count("id", filter=Q(mode="browser")),
+                )
+                pwa = totals["pwa"] or 0
+                browser = totals["browser"] or 0
+                installed = User.objects.filter(role="student", first_pwa_at__isnull=False).count()
+        except Exception:  # noqa: BLE001, S112 — a broken schema must not take down the dashboard
+            logger.warning("platform usage: skipping tenant %s", tenant.slug, exc_info=True)
+            continue
+
+        total_pwa += pwa
+        total_browser += browser
+        total_installed += installed
+        if pwa or browser or installed:
+            sessions = pwa + browser
+            by_tenant.append(
+                {
+                    "tenant": tenant.name,
+                    "slug": tenant.slug,
+                    "installed": installed,
+                    "pwa_sessions": pwa,
+                    "browser_sessions": browser,
+                    "pwa_pct": round(pwa / sessions * 100) if sessions else 0,
+                }
+            )
+
+    by_tenant.sort(key=lambda r: (r["installed"], r["pwa_sessions"]), reverse=True)
+    grand_total = total_pwa + total_browser
+    return Response(
+        {
+            "installed_students": total_installed,
+            "pwa_sessions": total_pwa,
+            "browser_sessions": total_browser,
+            "pwa_pct": round(total_pwa / grand_total * 100) if grand_total else 0,
+            "by_tenant": by_tenant,
         }
     )
