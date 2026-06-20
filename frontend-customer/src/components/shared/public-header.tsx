@@ -38,7 +38,7 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
     user?.role === "owner" || user?.role === "coach" ? "/admin" : "/dashboard";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md pt-safe">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold">
           {config?.logo_url ? (

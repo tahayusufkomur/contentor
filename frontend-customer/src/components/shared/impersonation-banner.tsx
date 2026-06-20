@@ -51,7 +51,7 @@ export function ImpersonationBanner() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-amber-500/40 bg-amber-500/95 text-amber-950 shadow-lg">
+    <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-amber-500/40 bg-amber-500/95 text-amber-950 shadow-lg pb-safe">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 text-sm">
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4 shrink-0" />

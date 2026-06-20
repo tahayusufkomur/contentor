@@ -166,3 +166,11 @@
 .animate-float-up {
   animation: float-up 2s ease-out forwards;
 }
+
+/* PWA standalone: keep fixed/sticky chrome clear of the notch & home indicator. */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
