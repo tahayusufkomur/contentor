@@ -42,7 +42,7 @@ export function BlocksTab({
     setConfirmingId(null);
   };
   const add = (type: string) => {
-    store.insertBlock(pageKey, newBlock(type));
+    store.insertBlock(pageKey, newBlock(type, store.niche));
     setAdding(false);
   };
 

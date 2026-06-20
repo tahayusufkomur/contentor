@@ -160,6 +160,9 @@ export interface TenantConfig {
   tenant_name?: string;
   tenant_slug?: string;
   demo_niche?: string;
+  /** Unified niche (real-tenant template niche, else demo niche). Used by the
+   *  site builder to seed new blocks with niche-appropriate example content. */
+  niche?: string;
   /** Publish gate: when false the public site is hidden behind a preview gate. */
   is_published?: boolean;
   has_preview_password?: boolean;

@@ -205,6 +205,8 @@ function reducer(state: EditorState, action: Action): EditorState {
 }
 
 export interface EditorStore extends EditorState {
+  /** The tenant's niche (for seeding new blocks with example content). */
+  niche: string;
   canUndo: boolean;
   canRedo: boolean;
   blocksFor(pageKey: PageKey): Block[];
@@ -241,12 +243,14 @@ export function useOptionalEditorStore(): EditorStore | null {
 interface EditorStoreProviderProps {
   initialPages: PagesConfig | undefined;
   onPagesChange: (pages: PagesConfig) => void;
+  niche?: string;
   children: React.ReactNode;
 }
 
 export function EditorStoreProvider({
   initialPages,
   onPagesChange,
+  niche = "",
   children,
 }: EditorStoreProviderProps) {
   const [state, dispatch] = useReducer(reducer, null, () => ({
@@ -273,6 +277,7 @@ export function EditorStoreProvider({
   const store = useMemo<EditorStore>(
     () => ({
       ...state,
+      niche,
       canUndo: state.past.length > 0,
       canRedo: state.future.length > 0,
       blocksFor: (pageKey) => state.pages[pageKey]?.blocks ?? [],
@@ -294,7 +299,7 @@ export function EditorStoreProvider({
       undo: () => dispatch({ type: "undo" }),
       redo: () => dispatch({ type: "redo" }),
     }),
-    [state],
+    [state, niche],
   );
 
   return (

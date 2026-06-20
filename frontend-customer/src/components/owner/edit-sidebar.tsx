@@ -202,6 +202,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       <EditorStoreProvider
         initialPages={config.pages}
         onPagesChange={(pages) => handleChange({ pages })}
+        niche={config.niche}
       >
         <RichEditorProvider>
           <CanvasDndProvider activePageKey={activePageKey}>
