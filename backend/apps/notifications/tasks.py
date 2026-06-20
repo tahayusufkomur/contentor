@@ -9,7 +9,7 @@ from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 from .models import LiveReminderLog
 from .payloads import live_reminder_payload
-from .services import broadcast_to_tenant
+from .services import broadcast_to_tenant, send_to_subscriptions, subscriptions_with_access
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,9 @@ def _send_reminders_for_current_tenant() -> None:
             _, created = LiveReminderLog.objects.get_or_create(key=key)
             if not created:
                 continue
-            broadcast_to_tenant(live_reminder_payload(event.title))
+            # Only remind students who can actually attend (free → everyone,
+            # paid → purchasers/subscribers). New-content + broadcast stay broad.
+            send_to_subscriptions(subscriptions_with_access(event), live_reminder_payload(event.title))
 
 
 @shared_task

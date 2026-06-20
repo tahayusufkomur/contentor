@@ -180,14 +180,19 @@ events; coaches can broadcast.
   logo), badge, url, tag}`, sends per subscription, deletes on `404/410`. Runs in
   the correct tenant schema context.
 - **Triggers** (each → a Celery task, tenant-aware):
+  Audience is **asymmetric** by intent: reminders go only to students who can
+  attend; the new-content announcement and broadcast go broad.
   1. **Live-class reminder** — beat task (every 5 min) scans live events with
-     `scheduled_at` in the next ~15 min not yet reminded; a `reminder_sent` flag
-     dedupes; fan-out to eligible students (`apps/core/access.py`). Adds a beat
-     schedule to `config/celery.py`, iterating tenants.
-  2. **New content published** — hook on `Course.is_published` False→True (and
-     new lessons) → fan-out to enrolled students.
+     `scheduled_at` in the next ~15 min not yet reminded; deduped via a
+     `LiveReminderLog` row per event. Fans out **only to students with access**
+     to that event (`subscriptions_with_access` → free = everyone, paid =
+     purchasers/subscribers via `apps/core/access.py`), so non-attendees aren't
+     reminded. Adds a beat schedule to `config/celery.py`, iterating tenants.
+  2. **New content published** — `Course.is_published` False→True → fan-out to
+     **all opted-in tenant subscribers** (a discovery/announcement: a brand-new
+     course has no enrollments yet, so access-scoping it would reach no one).
   3. **Coach broadcast** — `POST /api/v1/admin/notifications/broadcast/`
-     (owner/coach only) → fan-out custom message to all tenant students.
+     (owner/coach only) → fan-out custom message to **all** tenant subscribers.
 
 ### Frontend
 - **Opt-in** `components/shared/push-optin.tsx`: shown only when standalone

@@ -67,3 +67,23 @@ def broadcast_to_tenant(payload: dict) -> int:
     Returns the count of successful deliveries.
     """
     return send_to_subscriptions(PushSubscription.objects.all(), payload)
+
+
+def subscriptions_with_access(content):
+    """PushSubscriptions whose user can access *content*.
+
+    Free content is accessible to everyone, so every subscription is returned
+    without a per-user check. For paid content, each subscriber is filtered
+    through ContentAccessService (direct purchase / bundle / active
+    subscription) — so e.g. a live-class reminder only reaches students who can
+    actually attend.
+    """
+    subs = PushSubscription.objects.select_related("user")
+    if getattr(content, "pricing_type", "free") == "free":
+        return subs
+
+    from apps.core.access import ContentAccessService
+
+    service = ContentAccessService()
+    eligible_ids = [sub.pk for sub in subs if service.check_access(sub.user, content)]
+    return PushSubscription.objects.filter(pk__in=eligible_ids)
