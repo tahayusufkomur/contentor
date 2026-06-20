@@ -11,8 +11,9 @@ from apps.core.access import ContentAccessService
 from apps.core.pagination import StandardPagination, apply_ordering
 from apps.core.permissions import IsCoachOrOwner
 
-from .models import Course, Enrollment, Lesson, Module, Progress, Video
+from .models import Course, CourseCategory, Enrollment, Lesson, Module, Progress, Video
 from .serializers import (
+    CourseCategorySerializer,
     CourseCreateUpdateSerializer,
     CourseDetailSerializer,
     CourseListSerializer,
@@ -386,4 +387,43 @@ def video_detail(request, pk):
 
     if request.method == "DELETE":
         video.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ──────────────────────────────────────────────
+# Course categories (coach-managed taxonomy)
+# ──────────────────────────────────────────────
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def category_list_create(request):
+    if request.method == "GET":
+        qs = CourseCategory.objects.all()
+        return Response(CourseCategorySerializer(qs, many=True).data)
+
+    serializer = CourseCategorySerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    category = serializer.save()
+    return Response(
+        CourseCategorySerializer(category).data, status=status.HTTP_201_CREATED
+    )
+
+
+@api_view(["GET", "PUT", "DELETE"])
+@permission_classes([IsCoachOrOwner])
+def category_detail(request, pk):
+    category = get_object_or_404(CourseCategory, pk=pk)
+
+    if request.method == "GET":
+        return Response(CourseCategorySerializer(category).data)
+
+    if request.method == "PUT":
+        serializer = CourseCategorySerializer(category, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(CourseCategorySerializer(category).data)
+
+    if request.method == "DELETE":
+        category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
