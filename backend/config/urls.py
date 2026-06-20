@@ -61,6 +61,7 @@ urlpatterns = [
     path("api/v1/photos/", include("apps.media.urls")),
     path("api/v1/billing/", include("apps.billing.urls")),
     path("api/v1/email/", include("apps.email_campaigns.urls")),
+    path("api/v1/notifications/", include("apps.notifications.urls")),
 ]
 
 if settings.DEBUG:
