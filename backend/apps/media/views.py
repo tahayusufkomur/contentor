@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from apps.core.pagination import StandardPagination, apply_ordering
+from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner
 
 from .models import Photo
@@ -17,6 +17,7 @@ def photo_list_create(request):
         search = request.query_params.get("search", "").strip()
         if search:
             qs = qs.filter(title__icontains=search)
+        qs = apply_tag_filter(qs, request)
         qs = apply_ordering(qs, request, ["title", "created_at", "file_size"])
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, request)

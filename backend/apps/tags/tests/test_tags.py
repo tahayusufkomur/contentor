@@ -134,3 +134,31 @@ class TestScopedAssignment:
         # A video-pool tag is invisible to the course-scoped queryset.
         assert not ser.is_valid()
         assert "tag_ids" in ser.errors
+
+
+@pytest.mark.django_db(transaction=True)
+class TestTagListFilter:
+    def test_course_list_filters_by_tag(self, tenant_ctx, owner):
+        from apps.courses.models import Course
+
+        tag = Tag.objects.create(scope="course", name="Featured")
+        tagged = Course.objects.create(title="Tagged", slug="tagged-course", instructor=owner)
+        tagged.tags.add(tag)
+        Course.objects.create(title="Plain", slug="plain-course", instructor=owner)
+
+        rows = make_client(owner).get(f"/api/v1/courses/?tags={tag.pk}").json()
+        slugs = {c["slug"] for c in rows}
+        assert "tagged-course" in slugs
+        assert "plain-course" not in slugs
+
+    def test_adminkit_course_filter_schema_lists_tags(self, tenant_ctx):
+        from apps.adminkit.introspection import filter_schema
+        from apps.adminkit.sites import studio_site
+        from apps.courses.models import Course
+
+        tag = Tag.objects.create(scope="course", name="Promoted")
+        admin = next(a for a in studio_site._registry.values() if a.model is Course)
+        entry = next((f for f in filter_schema(admin) if f["name"] == "tags"), None)
+        assert entry is not None
+        assert entry["type"] == "choice"
+        assert any(c["value"] == tag.pk for c in entry["choices"])

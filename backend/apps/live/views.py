@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
-from apps.core.pagination import StandardPagination, apply_ordering
+from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner
 
 from . import stream_service
@@ -40,6 +40,7 @@ def _search_and_order_live_queryset(request, qs):
     search = request.query_params.get("search", "").strip()
     if search:
         qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
+    qs = apply_tag_filter(qs, request)
     return apply_ordering(qs, request, ["title", "created_at", "scheduled_at"])
 
 

@@ -12,7 +12,7 @@ class CourseAdmin(ModelAdmin):
     description = "Quick edits and publishing. Build course content in Content → Courses."
     list_display = ("title", "pricing_type", "price", "is_published", "order", "created_at")
     search_fields = ("title",)
-    list_filters = ("is_published", "pricing_type", "filter_options")
+    list_filters = ("is_published", "pricing_type", "filter_options", "tags")
     ordering = ("order",)
     fields = ("title", "description", "pricing_type", "price", "is_published", "order")
     readonly_fields = ("slug",)

@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
-from apps.core.pagination import StandardPagination, apply_ordering
+from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner
 
 from .models import Course, Enrollment, Lesson, Module, Progress, Video
@@ -57,6 +57,7 @@ def _course_list(request):
     if pricing_type:
         qs = qs.filter(pricing_type=pricing_type)
 
+    qs = apply_tag_filter(qs, request)
     qs = apply_ordering(qs, request, ["title", "created_at"])
     paginate = "limit" in request.query_params or "offset" in request.query_params
 
@@ -359,6 +360,7 @@ def video_list_create(request):
         search = request.query_params.get("search")
         if search:
             qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
+        qs = apply_tag_filter(qs, request)
         qs = apply_ordering(qs, request, ["title", "created_at", "file_size", "duration_seconds"])
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, request)
