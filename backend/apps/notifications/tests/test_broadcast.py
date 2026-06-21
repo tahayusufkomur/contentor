@@ -39,11 +39,11 @@ def test_student_cannot_broadcast(tenant_ctx):
 
 
 # ---------------------------------------------------------------------------
-# Test B: owner can broadcast and enqueues the task
+# Test B: owner can broadcast
 # ---------------------------------------------------------------------------
 
 
-def test_owner_broadcast_enqueues(tenant_ctx):
+def test_owner_broadcast_succeeds(tenant_ctx):
     owner = User.objects.create_user(
         email="owner@broadcasttest.com",
         name="Owner",
@@ -52,7 +52,7 @@ def test_owner_broadcast_enqueues(tenant_ctx):
     )
     client = APIClient(HTTP_HOST=SHARED_DOMAIN)
     client.force_authenticate(user=owner)
-    with patch("apps.notifications.views.fanout_broadcast") as task:
+    with patch("apps.notifications.views.broadcast_to_tenant") as mock_broadcast:
         res = client.post(
             "/api/v1/admin/notifications/broadcast/",
             {"message": "Live Q&A Friday!"},
@@ -63,11 +63,10 @@ def test_owner_broadcast_enqueues(tenant_ctx):
     # (Cloudflare) that drops Content-Length, a 202 empty body made res.json()
     # throw → a false "Could not send announcement" even though the task queued.
     assert res.status_code == 204
-    task.delay.assert_called_once()
-    assert task.delay.call_args.args[0] == "Live Q&A Friday!"
-    # second arg is the schema_name (from connection.schema_name) — must be a
-    # non-empty schema so the worker re-enters the right tenant.
-    assert task.delay.call_args.args[1]
+    mock_broadcast.assert_called_once()
+    payload = mock_broadcast.call_args.args[0]
+    assert payload["body"] == "Live Q&A Friday!"
+    assert payload["tag"] == "broadcast"
 
 
 # ---------------------------------------------------------------------------
@@ -84,14 +83,14 @@ def test_coach_can_broadcast(tenant_ctx):
     )
     client = APIClient(HTTP_HOST=SHARED_DOMAIN)
     client.force_authenticate(user=coach)
-    with patch("apps.notifications.views.fanout_broadcast") as task:
+    with patch("apps.notifications.views.broadcast_to_tenant") as mock_broadcast:
         res = client.post(
             "/api/v1/admin/notifications/broadcast/",
             {"message": "Welcome!"},
             format="json",
         )
     assert res.status_code == 204
-    task.delay.assert_called_once()
+    mock_broadcast.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

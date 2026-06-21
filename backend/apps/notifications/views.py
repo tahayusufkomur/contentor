@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db import connection
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -10,8 +9,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import PushSubscription
+from .payloads import _brand
 from .serializers import SubscribeSerializer
-from .tasks import fanout_broadcast
+from .services import broadcast_to_tenant
 
 
 @api_view(["GET"])
@@ -56,7 +56,10 @@ def broadcast(request):
     message = (request.data.get("message") or "").strip()
     if not message:
         return Response({"detail": "message required"}, status=status.HTTP_400_BAD_REQUEST)
-    fanout_broadcast.delay(message, connection.schema_name)
+    b = _brand()
+    broadcast_to_tenant(
+        {"title": b["brand"], "body": message, "icon": b["icon"], "url": "/", "tag": "broadcast"}
+    )
     # 204, not 202: the frontend's clientFetch skips body-parsing only on a 204
     # (by status) or Content-Length:0. A 202 with an empty body slips past that
     # behind proxies that drop Content-Length (Cloudflare → chunked), so res.json()

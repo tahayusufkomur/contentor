@@ -38,7 +38,7 @@ class Announcement(models.Model):
     body = models.TextField(blank=True, default="")  # sanitized HTML
     link = models.CharField(max_length=500, blank=True, default="")
     filters_json = models.JSONField(default=dict, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="sent")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="scheduled")
     scheduled_at = models.DateTimeField(null=True, blank=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
