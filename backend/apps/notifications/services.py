@@ -69,6 +69,46 @@ def broadcast_to_tenant(payload: dict) -> int:
     return send_to_subscriptions(PushSubscription.objects.all(), payload)
 
 
+def send_announcement_to_recipients(announcement) -> None:
+    """Materialize recipients for the announcement's audience snapshot, push to
+    those with subscriptions, and finalize denormalized counts + status."""
+    from django.utils import timezone
+
+    from .audience import resolve_audience
+    from .models import AnnouncementRecipient
+    from .payloads import announcement_payload
+
+    audience = list(resolve_audience(announcement.filters_json))
+    AnnouncementRecipient.objects.bulk_create(
+        [AnnouncementRecipient(announcement=announcement, user=u) for u in audience],
+        ignore_conflicts=True,
+    )
+
+    payload = announcement_payload(announcement.title, announcement.body, url=announcement.link or "/announcements")
+    push_sent = 0
+    for recipient in announcement.recipients.select_related("user"):
+        subs = list(PushSubscription.objects.filter(user=recipient.user))
+        if not subs:
+            continue
+        ok = any(send_to_subscription(sub, payload) for sub in subs)
+        if ok:
+            recipient.push_status = "sent"
+            push_sent += 1
+        else:
+            # dead-subscription cleanup already happened inside send_to_subscription;
+            # if the row is gone the push was to an expired endpoint.
+            recipient.push_status = (
+                "failed" if PushSubscription.objects.filter(user=recipient.user).exists() else "expired"
+            )
+        recipient.save(update_fields=["push_status"])
+
+    announcement.recipient_count = len(audience)
+    announcement.push_sent_count = push_sent
+    announcement.status = "sent"
+    announcement.sent_at = timezone.now()
+    announcement.save(update_fields=["recipient_count", "push_sent_count", "status", "sent_at"])
+
+
 def subscriptions_with_access(content):
     """PushSubscriptions whose user can access *content*.
 
