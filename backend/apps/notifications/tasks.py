@@ -75,9 +75,15 @@ def fanout_announcement(announcement_id: int, schema_name: str) -> None:
     except tenant_model.DoesNotExist:
         return
     with tenant_context(tenant):
-        announcement = Announcement.objects.filter(pk=announcement_id).first()
-        if announcement is None or announcement.status == "sent":
+        # Atomic claim: only one worker can transition scheduled -> sent.
+        # A concurrent/duplicate dispatch (slow fanout re-enqueued by beat)
+        # claims 0 rows and returns without re-sending.
+        claimed = Announcement.objects.filter(
+            pk=announcement_id, status="scheduled"
+        ).update(status="sent")
+        if not claimed:
             return
+        announcement = Announcement.objects.get(pk=announcement_id)
         send_announcement_to_recipients(announcement)
 
 

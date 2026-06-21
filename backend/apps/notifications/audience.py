@@ -1,7 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from apps.accounts.models import User
 
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
 
-def _load_content(content_type: str, content_id):
+
+def _load_content(content_type: str | None, content_id):
     """Resolve a (type, id) pair to a content instance, or None."""
     if not content_type or not content_id:
         return None
@@ -16,7 +23,7 @@ def _load_content(content_type: str, content_id):
     return None
 
 
-def resolve_audience(filters: dict):
+def resolve_audience(filters: dict) -> "QuerySet[User]":
     """Students matching the filter dict. See plan/spec for filter keys."""
     filters = filters or {}
     qs = User.objects.filter(role="student")
@@ -31,7 +38,7 @@ def resolve_audience(filters: dict):
             platform = [platform]
         qs = qs.filter(last_platform__in=platform)
 
-    if filters.get("push_enabled"):
+    if filters.get("push_enabled") is True:
         qs = qs.filter(push_subscriptions__isnull=False).distinct()
 
     content = _load_content(filters.get("content_type"), filters.get("content_id"))

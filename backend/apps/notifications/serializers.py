@@ -58,6 +58,9 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
         ]
 
     def get_read_count(self, obj):
+        annotated = getattr(obj, "read_count_annotated", None)
+        if annotated is not None:
+            return annotated
         return obj.recipients.filter(read_at__isnull=False).count()
 
 

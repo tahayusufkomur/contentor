@@ -1,4 +1,5 @@
 from django.db import connection
+from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -25,7 +26,9 @@ def announcement_preview(request):
 @permission_classes([IsCoachOrOwner])
 def announcement_collection(request):
     if request.method == "GET":
-        qs = Announcement.objects.all()
+        qs = Announcement.objects.annotate(
+            read_count_annotated=Count("recipients", filter=Q(recipients__read_at__isnull=False))
+        )
         return Response(AnnouncementListSerializer(qs, many=True).data)
 
     serializer = AnnouncementCreateSerializer(data=request.data)

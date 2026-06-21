@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from apps.accounts.models import User
@@ -53,3 +55,29 @@ def test_push_enabled_filter(students):
 def test_counts(students):
     counts = audience_counts({})
     assert counts == {"audience": 2, "push_reachable": 1}
+
+
+def test_content_access_filter(tenant_ctx):
+    """resolve_audience with content_type/content_id only returns students
+    for whom ContentAccessService.check_access returns True."""
+    allowed = User.objects.create_user(email="allowed@m.com", name="A", password="x", role="student")  # noqa: S106
+    denied = User.objects.create_user(email="denied@m.com", name="D", password="x", role="student")  # noqa: S106
+
+    # Stub content object — just needs to be truthy; _load_content is also patched.
+    fake_content = object()
+
+    def _fake_load(content_type, content_id):
+        return fake_content
+
+    def _fake_check_access(user, content):
+        return user.email == "allowed@m.com"
+
+    with (
+        patch("apps.notifications.audience._load_content", side_effect=_fake_load),
+        patch("apps.core.access.ContentAccessService.check_access", side_effect=_fake_check_access),
+    ):
+        qs = resolve_audience({"content_type": "course", "content_id": 1})
+
+    ids = list(qs.values_list("id", flat=True))
+    assert allowed.id in ids
+    assert denied.id not in ids

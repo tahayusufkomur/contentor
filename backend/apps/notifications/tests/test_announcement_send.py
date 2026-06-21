@@ -46,3 +46,21 @@ def test_send_marks_failed(coach):
     assert AnnouncementRecipient.objects.filter(announcement=a, push_status="failed").count() == 1
     a.refresh_from_db()
     assert a.push_sent_count == 0
+
+
+def test_send_marks_expired_when_subscription_deleted_during_send(coach):
+    """When send_to_subscription returns False AND deletes the sub (dead endpoint
+    cleanup), the recipient's push_status must be 'expired'."""
+    student = _student("x@m.com", with_sub=True)
+    a = Announcement.objects.create(title="Expired", body="x", created_by=coach, filters_json={})
+
+    def _send_and_delete(sub, payload):
+        sub.delete()
+        return False
+
+    with patch.object(services, "send_to_subscription", side_effect=_send_and_delete):
+        services.send_announcement_to_recipients(a)
+
+    recipient = AnnouncementRecipient.objects.get(announcement=a, user=student)
+    assert recipient.push_status == "expired"
+    assert not PushSubscription.objects.filter(user=student).exists()
