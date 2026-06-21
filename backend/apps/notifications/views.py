@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -8,10 +9,8 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import PushSubscription
-from .payloads import _brand
-from .serializers import SubscribeSerializer
-from .services import broadcast_to_tenant
+from .models import AnnouncementRecipient, PushSubscription
+from .serializers import FeedItemSerializer, SubscribeSerializer
 
 
 @api_view(["GET"])
@@ -42,28 +41,27 @@ def subscribe(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def unsubscribe(request):
-    PushSubscription.objects.filter(
-        endpoint=request.data.get("endpoint", ""), user=request.user
-    ).delete()
+    PushSubscription.objects.filter(endpoint=request.data.get("endpoint", ""), user=request.user).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def feed(request):
+    rows = (
+        AnnouncementRecipient.objects.filter(user=request.user)
+        .select_related("announcement")
+        .order_by("-announcement__created_at")
+    )
+    unread = rows.filter(read_at__isnull=True).count()
+    return Response({"items": FeedItemSerializer(rows, many=True).data, "unread_count": unread})
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def broadcast(request):
-    if getattr(request.user, "role", None) not in ("owner", "coach"):
-        return Response(status=status.HTTP_403_FORBIDDEN)
-    message = (request.data.get("message") or "").strip()
-    if not message:
-        return Response({"detail": "message required"}, status=status.HTTP_400_BAD_REQUEST)
-    b = _brand()
-    broadcast_to_tenant(
-        {"title": b["brand"], "body": message, "icon": b["icon"], "url": "/", "tag": "broadcast"}
+def feed_read(request, pk):
+    AnnouncementRecipient.objects.filter(announcement_id=pk, user=request.user, read_at__isnull=True).update(
+        read_at=timezone.now()
     )
-    # 204, not 202: the frontend's clientFetch skips body-parsing only on a 204
-    # (by status) or Content-Length:0. A 202 with an empty body slips past that
-    # behind proxies that drop Content-Length (Cloudflare → chunked), so res.json()
-    # throws on the empty body and the UI falsely reports "Could not send
-    # announcement" even though the fan-out task was queued. 204 matches the rest
-    # of the app's empty-success responses and is parse-safe everywhere.
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    unread = AnnouncementRecipient.objects.filter(user=request.user, read_at__isnull=True).count()
+    return Response({"unread_count": unread})
