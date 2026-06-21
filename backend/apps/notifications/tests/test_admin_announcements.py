@@ -61,6 +61,30 @@ def test_patch_blocked_once_sent(coach):
     assert res.status_code == 409
 
 
+def test_patch_clear_schedule_sends_now(coach):
+    """Clearing scheduled_at via PATCH must enqueue fanout, not set status=sent directly."""
+    future = timezone.now() + timedelta(hours=2)
+    a = Announcement.objects.create(
+        title="Scheduled",
+        body="x",
+        created_by=coach,
+        status="scheduled",
+        scheduled_at=future,
+    )
+    with patch("apps.notifications.admin_views.fanout_announcement.delay") as mock:
+        res = client(coach).patch(
+            f"/api/v1/admin/notifications/announcements/{a.id}/",
+            {"scheduled_at": None},
+            format="json",
+        )
+    assert res.status_code == 200
+    a.refresh_from_db()
+    # status must remain "scheduled" — fanout flips it after delivery
+    assert a.status == "scheduled"
+    assert a.scheduled_at is None
+    assert mock.call_count == 1
+
+
 def test_non_coach_forbidden(tenant_ctx):
     stu = User.objects.create_user(email="s@m.com", name="S", password="x", role="student")  # noqa: S106
     res = client(stu).get("/api/v1/admin/notifications/announcements/")

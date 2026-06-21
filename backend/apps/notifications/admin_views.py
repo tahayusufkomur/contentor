@@ -74,9 +74,12 @@ def announcement_detail(request, pk):
             setattr(announcement, model_field, serializer.validated_data[field])
     if "filters" in serializer.validated_data:
         announcement.filters_json = serializer.validated_data["filters"]
+    send_now = False
     if "scheduled_at" in serializer.validated_data:
         sched = serializer.validated_data["scheduled_at"]
         announcement.scheduled_at = sched
-        announcement.status = "scheduled" if sched else "sent"
+        send_now = not sched
     announcement.save()
+    if send_now:
+        fanout_announcement.delay(announcement.id, connection.schema_name)
     return Response(AnnouncementDetailSerializer(announcement).data)
