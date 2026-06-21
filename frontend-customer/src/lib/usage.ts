@@ -3,7 +3,7 @@ import { isStandalone } from "@/lib/push";
 
 const REPORTED_KEY = "usage-reported";
 
-function detectPlatform(): "ios" | "android" | "desktop" | "other" {
+export function detectPlatform(): "ios" | "android" | "desktop" | "other" {
   if (typeof navigator === "undefined") return "other";
   const ua = navigator.userAgent || "";
   if (/iphone|ipad|ipod/i.test(ua)) return "ios";

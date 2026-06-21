@@ -8,5 +8,27 @@
   "enablePush": "Get notified about live classes and new lessons",
   "enable": "Turn on",
   "notNow": "Not now",
-  "pushFailed": "Could not enable notifications"
+  "pushFailed": "Could not enable notifications",
+  "guide": {
+    "title": "Install the app",
+    "subtitle": "Add this app to your home screen for the fastest access — it opens full-screen, like a native app.",
+    "installNow": "Install app",
+    "orManual": "Or follow the steps below.",
+    "tabIos": "iPhone",
+    "tabAndroid": "Android",
+    "iosStep1": "Tap the Share button in the toolbar.",
+    "iosStep2": "Scroll down and tap “Add to Home Screen”.",
+    "iosStep3": "Tap “Add” — the app appears on your home screen.",
+    "iosAddLabel": "Add to Home Screen",
+    "iosAddButton": "Add",
+    "iosNote": "Open this page in Safari — other iPhone browsers can’t add to the home screen.",
+    "androidStep1": "Tap the ⋮ menu in the top-right.",
+    "androidStep2": "Tap “Install app” (or “Add to Home screen”).",
+    "androidStep3": "Tap “Install” to confirm.",
+    "androidInstallLabel": "Install app",
+    "androidInstallButton": "Install",
+    "desktopNote": "On a computer, click the install icon in your browser’s address bar.",
+    "installedTitle": "You’re all set!",
+    "installedBody": "The app is installed on your device."
+  }
 }

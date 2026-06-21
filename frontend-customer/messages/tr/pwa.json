@@ -8,5 +8,27 @@
   "enablePush": "Canlı dersler ve yeni içeriklerden haberdar olun",
   "enable": "Aç",
   "notNow": "Şimdi değil",
-  "pushFailed": "Bildirimler açılamadı"
+  "pushFailed": "Bildirimler açılamadı",
+  "guide": {
+    "title": "Uygulamayı yükleyin",
+    "subtitle": "En hızlı erişim için uygulamayı ana ekranınıza ekleyin — tam ekran açılır, yerel uygulama gibi.",
+    "installNow": "Uygulamayı yükle",
+    "orManual": "Veya aşağıdaki adımları izleyin.",
+    "tabIos": "iPhone",
+    "tabAndroid": "Android",
+    "iosStep1": "Araç çubuğundaki Paylaş düğmesine dokunun.",
+    "iosStep2": "Aşağı kaydırın ve “Ana Ekrana Ekle”'ye dokunun.",
+    "iosStep3": "“Ekle”'ye dokunun — uygulama ana ekranınızda belirir.",
+    "iosAddLabel": "Ana Ekrana Ekle",
+    "iosAddButton": "Ekle",
+    "iosNote": "Bu sayfayı Safari'de açın — diğer iPhone tarayıcıları ana ekrana ekleyemez.",
+    "androidStep1": "Sağ üstteki ⋮ menüsüne dokunun.",
+    "androidStep2": "“Uygulamayı yükle” (veya “Ana ekrana ekle”)'ye dokunun.",
+    "androidStep3": "Onaylamak için “Yükle”'ye dokunun.",
+    "androidInstallLabel": "Uygulamayı yükle",
+    "androidInstallButton": "Yükle",
+    "desktopNote": "Bilgisayarda, tarayıcınızın adres çubuğundaki yükle simgesine tıklayın.",
+    "installedTitle": "Her şey hazır!",
+    "installedBody": "Uygulama cihazınıza yüklendi."
+  }
 }
