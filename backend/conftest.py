@@ -32,7 +32,7 @@ from apps.courses.models import Course, Enrollment, Lesson, Module, Progress, Vi
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream
 from apps.media.models import Photo
-from apps.notifications.models import LiveReminderLog, PushSubscription
+from apps.notifications.models import Announcement, AnnouncementRecipient, LiveReminderLog, PushSubscription
 
 SHARED_SCHEMA = "shared_test"
 SHARED_DOMAIN = "shared-test.localhost"
@@ -96,7 +96,7 @@ def _clear_rate_limits():
         redis = get_redis_connection("default")
         for key in redis.keys("ratelimit:*"):
             redis.delete(key)
-    except Exception:
+    except Exception:  # noqa: S110
         pass
 
 
@@ -124,6 +124,8 @@ def tenant_ctx(restore_public):
         DownloadFile.objects.all().delete()
         Photo.objects.all().delete()
         Course.objects.all().delete()
+        AnnouncementRecipient.objects.all().delete()
+        Announcement.objects.all().delete()
         PushSubscription.objects.all().delete()
         LiveReminderLog.objects.all().delete()
         User.objects.all().delete()
