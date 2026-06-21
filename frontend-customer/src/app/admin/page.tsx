@@ -16,6 +16,7 @@ import {
   DollarSign,
 } from 'lucide-react'
 import { UsageAdoptionCard } from '@/components/admin/usage-adoption-card'
+import { PublishCard } from '@/components/admin/publish-card'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +77,8 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back. Here is an overview of your platform.</p>
       </div>
+
+      <PublishCard />
 
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
