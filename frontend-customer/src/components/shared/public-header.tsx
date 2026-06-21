@@ -66,6 +66,12 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/install"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Install app
+          </Link>
 
           {allowDarkMode && <ThemeToggle compact className="shrink-0" />}
 
@@ -145,6 +151,13 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/install"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMobileOpen(false)}
+            >
+              Install app
+            </Link>
             {user ? (
               <>
                 <Link

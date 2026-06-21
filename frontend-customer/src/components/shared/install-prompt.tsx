@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import { useTranslations } from "next-intl";
 
@@ -70,7 +71,12 @@ export function InstallPrompt() {
       role="dialog"
       aria-live="polite"
     >
-      <span className="flex-1">{deferred ? t("installPrompt") : t("iosHint")}</span>
+      <span className="flex-1">
+        {deferred ? t("installPrompt") : t("iosHint")}{" "}
+        <Link href="/install" className="font-medium text-primary underline underline-offset-2">
+          {t("howToInstall")}
+        </Link>
+      </span>
       {deferred && (
         <button
           onClick={install}

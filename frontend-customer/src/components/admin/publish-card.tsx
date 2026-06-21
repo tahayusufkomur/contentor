@@ -91,6 +91,12 @@ export function PublishCard() {
     toast.success('Link copied')
   }
 
+  function copyInstallGuide() {
+    if (!tenant) return
+    void navigator.clipboard?.writeText(`${tenant.studio_url}/install`)
+    toast.success("Install-guide link copied")
+  }
+
   if (loading) {
     return (
       <Card>
@@ -137,6 +143,9 @@ export function PublishCard() {
               </Button>
               <Button variant="ghost" size="sm" className="gap-1" onClick={copyLink}>
                 <Copy className="h-3.5 w-3.5" /> Copy link
+              </Button>
+              <Button variant="ghost" size="sm" className="gap-1" onClick={copyInstallGuide}>
+                <Copy className="h-3.5 w-3.5" /> Share install guide
               </Button>
               <Button variant="outline" size="sm" onClick={unpublish} disabled={busy}>
                 Unpublish

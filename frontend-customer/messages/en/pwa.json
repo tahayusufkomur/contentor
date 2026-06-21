@@ -9,6 +9,7 @@
   "enable": "Turn on",
   "notNow": "Not now",
   "pushFailed": "Could not enable notifications",
+  "howToInstall": "How to install",
   "guide": {
     "title": "Install the app",
     "subtitle": "Add this app to your home screen for the fastest access — it opens full-screen, like a native app.",
