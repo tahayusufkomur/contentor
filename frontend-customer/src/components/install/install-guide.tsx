@@ -5,10 +5,13 @@ import { useTranslations } from "next-intl";
 import { detectPlatform } from "@/lib/usage";
 import { isStandalone } from "@/lib/push";
 import {
-  ConfirmDialog,
+  AndroidConfirmStep,
+  AndroidInstallStep,
+  AndroidMenuStep,
   InstalledCheck,
-  MenuSheet,
-  ToolbarIcon,
+  IosAddStep,
+  IosConfirmStep,
+  IosShareStep,
 } from "@/components/install/install-illustrations";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -58,14 +61,14 @@ export function InstallGuide() {
   const steps =
     tab === "ios"
       ? [
-          { art: <ToolbarIcon variant="share" className="h-28 w-auto" />, text: t("guide.iosStep1") },
-          { art: <MenuSheet side="bottom" label={t("guide.iosAddLabel")} className="h-28 w-auto" />, text: t("guide.iosStep2") },
-          { art: <ConfirmDialog label={t("guide.iosAddButton")} className="h-28 w-auto" />, text: t("guide.iosStep3") },
+          { art: <IosShareStep className="h-32 w-auto" />, text: t("guide.iosStep1") },
+          { art: <IosAddStep label={t("guide.iosAddLabel")} className="h-32 w-auto" />, text: t("guide.iosStep2") },
+          { art: <IosConfirmStep label={t("guide.iosAddButton")} className="h-32 w-auto" />, text: t("guide.iosStep3") },
         ]
       : [
-          { art: <ToolbarIcon variant="menu" className="h-28 w-auto" />, text: t("guide.androidStep1") },
-          { art: <MenuSheet side="top" label={t("guide.androidInstallLabel")} className="h-28 w-auto" />, text: t("guide.androidStep2") },
-          { art: <ConfirmDialog label={t("guide.androidInstallButton")} className="h-28 w-auto" />, text: t("guide.androidStep3") },
+          { art: <AndroidMenuStep className="h-32 w-auto" />, text: t("guide.androidStep1") },
+          { art: <AndroidInstallStep label={t("guide.androidInstallLabel")} className="h-32 w-auto" />, text: t("guide.androidStep2") },
+          { art: <AndroidConfirmStep label={t("guide.androidInstallButton")} className="h-32 w-auto" />, text: t("guide.androidStep3") },
         ];
 
   return (
