@@ -34,7 +34,7 @@ def test_live_reminder_log_dedupes_by_key(tenant_ctx):
 def test_announcement_defaults(tenant_ctx):
     coach = User.objects.create_user(email="c@m.com", name="C", password="x", role="owner")  # noqa: S106
     a = Announcement.objects.create(title="Hi", body="<p>Hi</p>", created_by=coach)
-    assert a.status == "sent"
+    assert a.status == "scheduled"
     assert a.scheduled_at is None
     assert a.recipient_count == 0 and a.push_sent_count == 0
 

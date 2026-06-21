@@ -9,7 +9,12 @@ from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 from .models import LiveReminderLog
 from .payloads import live_reminder_payload
-from .services import broadcast_to_tenant, send_to_subscriptions, subscriptions_with_access
+from .services import (
+    broadcast_to_tenant,
+    send_announcement_to_recipients,
+    send_to_subscriptions,
+    subscriptions_with_access,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +66,8 @@ def fanout_new_content(course_id: int, schema_name: str) -> None:
 
 
 @shared_task
-def fanout_broadcast(message: str, schema_name: str) -> None:
-    from .payloads import broadcast_payload
+def fanout_announcement(announcement_id: int, schema_name: str) -> None:
+    from .models import Announcement
 
     tenant_model = get_tenant_model()
     try:
@@ -70,4 +75,22 @@ def fanout_broadcast(message: str, schema_name: str) -> None:
     except tenant_model.DoesNotExist:
         return
     with tenant_context(tenant):
-        broadcast_to_tenant(broadcast_payload(message))
+        announcement = Announcement.objects.filter(pk=announcement_id).first()
+        if announcement is None or announcement.status == "sent":
+            return
+        send_announcement_to_recipients(announcement)
+
+
+@shared_task
+def dispatch_due_announcements() -> None:
+    from .models import Announcement
+
+    now = timezone.now()
+    for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+        with tenant_context(tenant):
+            try:
+                due = Announcement.objects.filter(status="scheduled", scheduled_at__lte=now)
+                for announcement in due:
+                    fanout_announcement.delay(announcement.id, tenant.schema_name)
+            except Exception:  # noqa: BLE001  one tenant must not break the rest
+                logger.exception("announcement dispatch failed for %s", tenant.schema_name)
