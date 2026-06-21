@@ -58,7 +58,11 @@ def test_owner_broadcast_enqueues(tenant_ctx):
             {"message": "Live Q&A Friday!"},
             format="json",
         )
-    assert res.status_code == 202
+    # 204 (not 202) — the app's empty-body success convention. clientFetch only
+    # skips JSON parsing on 204 (by status) or Content-Length:0; behind a proxy
+    # (Cloudflare) that drops Content-Length, a 202 empty body made res.json()
+    # throw → a false "Could not send announcement" even though the task queued.
+    assert res.status_code == 204
     task.delay.assert_called_once()
     assert task.delay.call_args.args[0] == "Live Q&A Friday!"
     # second arg is the schema_name (from connection.schema_name) — must be a
@@ -86,7 +90,7 @@ def test_coach_can_broadcast(tenant_ctx):
             {"message": "Welcome!"},
             format="json",
         )
-    assert res.status_code == 202
+    assert res.status_code == 204
     task.delay.assert_called_once()
 
 

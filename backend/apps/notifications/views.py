@@ -57,4 +57,10 @@ def broadcast(request):
     if not message:
         return Response({"detail": "message required"}, status=status.HTTP_400_BAD_REQUEST)
     fanout_broadcast.delay(message, connection.schema_name)
-    return Response(status=status.HTTP_202_ACCEPTED)
+    # 204, not 202: the frontend's clientFetch skips body-parsing only on a 204
+    # (by status) or Content-Length:0. A 202 with an empty body slips past that
+    # behind proxies that drop Content-Length (Cloudflare → chunked), so res.json()
+    # throws on the empty body and the UI falsely reports "Could not send
+    # announcement" even though the fan-out task was queued. 204 matches the rest
+    # of the app's empty-success responses and is parse-safe everywhere.
+    return Response(status=status.HTTP_204_NO_CONTENT)
