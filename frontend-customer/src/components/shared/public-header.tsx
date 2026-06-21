@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
 import { BookOpen, LogOut, Menu, User as UserIcon, X, Zap } from "lucide-react";
 import type { User } from "@/types/auth";
+import AnnouncementBell from "@/components/shared/announcement-bell";
 
 export function PublicHeader({ user, hasSubscription }: { user?: User | null; hasSubscription?: boolean }) {
   const config = useTenant();
@@ -86,6 +87,7 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
                   : "Dashboard"}
               </Link>
               <div className="flex items-center gap-3">
+                <AnnouncementBell />
                 <span className="text-sm text-muted-foreground">
                   {user.name || user.email}
                 </span>
