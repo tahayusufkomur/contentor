@@ -51,7 +51,7 @@ export function LinkPickerModal({
   onClose,
 }: {
   initialValue?: string;
-  onPick: (href: string) => void;
+  onPick: (href: string, label?: string) => void;
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("pages");
@@ -186,14 +186,18 @@ export function LinkPickerModal({
                   value={custom}
                   onChange={(e) => setCustom(e.target.value)}
                   onKeyDown={(e) =>
-                    e.key === "Enter" && custom.trim() && onPick(custom.trim())
+                    e.key === "Enter" &&
+                    custom.trim() &&
+                    onPick(custom.trim(), custom.trim())
                   }
                   placeholder="/path or https://…"
                   className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
                 <button
                   type="button"
-                  onClick={() => custom.trim() && onPick(custom.trim())}
+                  onClick={() =>
+                    custom.trim() && onPick(custom.trim(), custom.trim())
+                  }
                   disabled={!custom.trim()}
                   className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
@@ -210,7 +214,7 @@ export function LinkPickerModal({
                   <button
                     key={target.href}
                     type="button"
-                    onClick={() => onPick(target.href)}
+                    onClick={() => onPick(target.href, target.label)}
                     className="flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors hover:border-primary hover:bg-primary/5"
                   >
                     <span className="font-medium">{target.label}</span>
