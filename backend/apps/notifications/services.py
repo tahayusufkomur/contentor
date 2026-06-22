@@ -7,6 +7,8 @@ from functools import lru_cache
 from django.conf import settings
 from pywebpush import WebPushException, webpush
 
+from apps.core.email import send_email
+
 from .models import PushSubscription
 
 logger = logging.getLogger(__name__)
@@ -110,6 +112,47 @@ def send_announcement_to_recipients(announcement) -> None:
     announcement.status = "sent"
     announcement.sent_at = timezone.now()
     announcement.save(update_fields=["recipient_count", "push_sent_count", "status", "sent_at"])
+
+    if announcement.also_email:
+        send_announcement_emails(announcement)
+
+
+def send_announcement_emails(announcement) -> int:
+    """Send the announcement as a theme-branded email to its recipients who have
+    an email address and have not opted out. Returns the number emailed."""
+    from django.db import connection
+
+    from apps.tenant_config.models import TenantConfig
+
+    from . import email_render
+    from .models import EmailOptOut
+
+    cfg = TenantConfig.objects.first()
+    tenant = connection.tenant
+    base_url = email_render.tenant_base_url(tenant)
+    opted_out = {e.lower() for e in EmailOptOut.objects.values_list("email", flat=True)}
+
+    sent = 0
+    for recipient in announcement.recipients.select_related("user"):
+        email = (recipient.user.email or "").strip()
+        if not email or email.lower() in opted_out:
+            continue
+        announcement.email_unsub_url = email_render.unsubscribe_url(
+            tenant, user_id=recipient.user_id, email=email
+        )
+        subject, html = email_render.announcement_email_html(announcement, cfg, base_url)
+        ok = send_email(
+            email,
+            subject,
+            html,
+            from_name=(cfg.brand_name if cfg else ""),
+            headers={"List-Unsubscribe": f"<{announcement.email_unsub_url}>"},
+        )
+        recipient.email_status = "sent" if ok else "failed"
+        recipient.save(update_fields=["email_status"])
+        if ok:
+            sent += 1
+    return sent
 
 
 def subscriptions_with_access(content):
