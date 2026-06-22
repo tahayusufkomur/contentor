@@ -90,7 +90,10 @@ def send_announcement_to_recipients(announcement) -> None:
         subs = list(PushSubscription.objects.filter(user=recipient.user))
         if not subs:
             continue
-        ok = any(send_to_subscription(sub, payload) for sub in subs)
+        # Push to EVERY device the user has — materialize the list so a
+        # short-circuiting any() can't stop at the first success and skip later
+        # subscriptions (e.g. a reinstalled PWA whose stale old endpoint still 201s).
+        ok = any([send_to_subscription(sub, payload) for sub in subs])
         if ok:
             recipient.push_status = "sent"
             push_sent += 1

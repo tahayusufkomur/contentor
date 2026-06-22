@@ -9,6 +9,9 @@ if [[ "$1" == "gunicorn" ]]; then
     echo "Running shared schema migrations..."
     python manage.py migrate_schemas --shared --verbosity 0
 
+    echo "Running tenant schema migrations..."
+    python manage.py migrate_schemas --tenant --verbosity 0
+
     echo "Collecting static files..."
     python manage.py collectstatic --noinput --verbosity 0
 

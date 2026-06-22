@@ -38,6 +38,23 @@ def test_send_materializes_and_pushes(coach):
     assert AnnouncementRecipient.objects.get(announcement=a, user=s_nopush).push_status == "none"
 
 
+def test_send_pushes_to_every_subscription_of_a_user(coach):
+    """A user with multiple device subscriptions must be pushed on EVERY one.
+    A short-circuiting any() would stop at the first success and skip later
+    devices (e.g. a reinstalled PWA whose old subscription still 201s)."""
+    student = _student("multi@m.com", with_sub=False)
+    PushSubscription.objects.create(user=student, endpoint="https://p/old", p256dh="p", auth="a")
+    PushSubscription.objects.create(user=student, endpoint="https://p/new", p256dh="p", auth="a")
+    a = Announcement.objects.create(title="Multi", body="x", created_by=coach, filters_json={})
+
+    with patch.object(services, "send_to_subscription", return_value=True) as mock:
+        services.send_announcement_to_recipients(a)
+
+    assert mock.call_count == 2  # both devices, not just the first
+    a.refresh_from_db()
+    assert a.push_sent_count == 1  # one recipient (user), counted once
+
+
 def test_send_marks_failed(coach):
     _student("p@m.com", with_sub=True)
     a = Announcement.objects.create(title="Hi", body="x", created_by=coach, filters_json={})
