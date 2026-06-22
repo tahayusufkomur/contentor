@@ -6,7 +6,9 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
-def send_email(to: str, subject: str, html: str, from_name: str = "") -> bool:
+def send_email(
+    to: str, subject: str, html: str, from_name: str = "", headers: dict | None = None
+) -> bool:
     if not settings.RESEND_API_KEY:
         logger.warning("RESEND_API_KEY not set, logging email instead")
         logger.info("Email to=%s subject=%s", to, subject)
@@ -18,15 +20,17 @@ def send_email(to: str, subject: str, html: str, from_name: str = "") -> bool:
     if from_name:
         from_email = f"{from_name} <{settings.RESEND_FROM_EMAIL}>"
 
+    payload = {
+        "from": from_email,
+        "to": [to],
+        "subject": subject,
+        "html": html,
+    }
+    if headers:
+        payload["headers"] = headers
+
     try:
-        resend.Emails.send(
-            {
-                "from": from_email,
-                "to": [to],
-                "subject": subject,
-                "html": html,
-            }
-        )
+        resend.Emails.send(payload)
         return True
     except Exception:
         logger.exception("Failed to send email to %s", to)
