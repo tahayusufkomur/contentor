@@ -45,6 +45,7 @@ class Announcement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     recipient_count = models.PositiveIntegerField(default=0)
     push_sent_count = models.PositiveIntegerField(default=0)
+    also_email = models.BooleanField(default=False)
 
     class Meta:
         app_label = "notifications"
@@ -61,12 +62,34 @@ class AnnouncementRecipient(models.Model):
         ("failed", "Failed"),
         ("expired", "Expired"),
     ]
+    EMAIL_CHOICES = [
+        ("none", "None"),
+        ("sent", "Sent"),
+        ("failed", "Failed"),
+    ]
 
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name="recipients")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     push_status = models.CharField(max_length=10, choices=PUSH_CHOICES, default="none")
+    email_status = models.CharField(max_length=10, choices=EMAIL_CHOICES, default="none")
     read_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = "notifications"
         unique_together = ("announcement", "user")
+
+
+class EmailOptOut(models.Model):
+    """A student who has opted out of announcement emails (per-tenant)."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
+    email = models.CharField(max_length=254, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "notifications"
+
+    def __str__(self) -> str:
+        return f"EmailOptOut<{self.email}>"

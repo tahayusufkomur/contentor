@@ -3,9 +3,23 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 
 from apps.accounts.models import User
-from apps.notifications.models import Announcement, AnnouncementRecipient, LiveReminderLog, PushSubscription
+from apps.notifications.models import (
+    Announcement,
+    AnnouncementRecipient,
+    EmailOptOut,
+    LiveReminderLog,
+    PushSubscription,
+)
 
 pytestmark = pytest.mark.django_db(transaction=True)
+
+
+def test_email_fields_and_optout(tenant_ctx):
+    a = Announcement.objects.create(title="T", body="b", filters_json={})
+    assert a.also_email is False
+    EmailOptOut.objects.create(email="x@y.com")
+    assert EmailOptOut.objects.filter(email="x@y.com").exists()
+    assert "email_status" in [f.name for f in AnnouncementRecipient._meta.fields]
 
 
 @pytest.fixture()
