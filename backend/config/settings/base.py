@@ -300,15 +300,17 @@ DOMAINS_DEFAULT_CURRENCY = "EUR"
 # ISO 4217. 1 USD = N units of the currency.
 DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92, "TRY": 32.0}
 
-# AWS Route 53 Domains
+# AWS Route 53 Domains. Dedicated credentials — the AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY above are the Hetzner S3 object-storage keys (boto3),
+# which are a DIFFERENT account; Route 53 must not reuse them.
 AWS_ROUTE53_REGION = os.environ.get("AWS_ROUTE53_REGION", "us-east-1")
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+AWS_ROUTE53_ACCESS_KEY_ID = os.environ.get("AWS_ROUTE53_ACCESS_KEY_ID", "")
+AWS_ROUTE53_SECRET_ACCESS_KEY = os.environ.get("AWS_ROUTE53_SECRET_ACCESS_KEY", "")
 
 # Cloudflare
 CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "")
 CLOUDFLARE_ACCOUNT_ID = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
 CLOUDFLARE_TUNNEL_HOSTNAME = os.environ.get("CLOUDFLARE_TUNNEL_HOSTNAME", "")
 
-# Resend (sender auth) — reuses the campaign Resend key if already set.
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+# Resend sender-auth reuses the existing RESEND_API_KEY defined above (used by
+# apps.platform_email / apps.email_campaigns) — no separate key needed.

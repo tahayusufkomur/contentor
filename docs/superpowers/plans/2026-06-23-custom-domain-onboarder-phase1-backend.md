@@ -140,10 +140,12 @@ DOMAINS_DEFAULT_CURRENCY = "EUR"
 # ISO 4217. 1 USD = N units of the currency.
 DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92, "TRY": 32.0}
 
-# AWS Route 53 Domains
+# AWS Route 53 Domains. Dedicated credentials — AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY already exist in base.py for Hetzner S3 (boto3), a
+# DIFFERENT account; Route 53 must not reuse them.
 AWS_ROUTE53_REGION = os.environ.get("AWS_ROUTE53_REGION", "us-east-1")
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+AWS_ROUTE53_ACCESS_KEY_ID = os.environ.get("AWS_ROUTE53_ACCESS_KEY_ID", "")
+AWS_ROUTE53_SECRET_ACCESS_KEY = os.environ.get("AWS_ROUTE53_SECRET_ACCESS_KEY", "")
 
 # Cloudflare
 CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "")
@@ -742,8 +744,8 @@ class Route53Registrar(Registrar):
             self._client = boto3.client(
                 "route53domains",
                 region_name=settings.AWS_ROUTE53_REGION,
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID or None,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY or None,
+                aws_access_key_id=settings.AWS_ROUTE53_ACCESS_KEY_ID or None,
+                aws_secret_access_key=settings.AWS_ROUTE53_SECRET_ACCESS_KEY or None,
             )
         return self._client
 
