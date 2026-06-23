@@ -65,3 +65,5 @@ if BILLING_BYPASS_ENABLED:
 
 # Silence unused-import warnings; the import is for side-effect (re-export).
 _ = os
+
+DOMAINS_BYPASS_ENABLED = False

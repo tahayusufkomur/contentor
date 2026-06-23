@@ -4,3 +4,5 @@ DEBUG = True
 
 # Dev serves over http (Traefik has no local TLS); Stripe redirect URLs must match.
 SITE_SCHEME = "http"
+
+DOMAINS_BYPASS_ENABLED = True

@@ -29,6 +29,7 @@ SHARED_APPS = [
     "apps.adminkit",
     # Platform-level email campaigns (public schema; superadmin → coaches).
     "apps.platform_email",
+    "apps.domains",
 ]
 
 TENANT_APPS = [
@@ -288,3 +289,26 @@ LOGGING = {
 # processes too, instead of celery hijacking the root logger. The actual wiring
 # is the `setup_logging` signal in config/celery.py.
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+
+# --- Custom domains (apps.domains) -------------------------------------------
+# When true, registrar/Cloudflare/Resend use deterministic fakes (no live API
+# calls or real purchases). Overridden per-environment below.
+DOMAINS_BYPASS_ENABLED = True
+DOMAINS_MARKUP_MULTIPLIER = 1.20
+DOMAINS_DEFAULT_CURRENCY = "EUR"
+# Static USD->currency FX table (markup + ceil rounding absorbs drift). Keyed by
+# ISO 4217. 1 USD = N units of the currency.
+DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92, "TRY": 32.0}
+
+# AWS Route 53 Domains
+AWS_ROUTE53_REGION = os.environ.get("AWS_ROUTE53_REGION", "us-east-1")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+
+# Cloudflare
+CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "")
+CLOUDFLARE_ACCOUNT_ID = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+CLOUDFLARE_TUNNEL_HOSTNAME = os.environ.get("CLOUDFLARE_TUNNEL_HOSTNAME", "")
+
+# Resend (sender auth) — reuses the campaign Resend key if already set.
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
