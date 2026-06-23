@@ -34,6 +34,7 @@ from apps.accounts.models import User
 from apps.billing.providers.stripe_provider import StripeProvider
 from apps.billing.providers.types import InvalidWebhookSignature
 from apps.core.models import PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
+from apps.domains.webhooks import handle_domain_event
 
 logger = logging.getLogger(__name__)
 
@@ -752,37 +753,40 @@ def stripe_webhook(request):
     logger.info("stripe webhook received type=%s id=%s", event_type, event_id)
     try:
         with transaction.atomic():
-            # Connect events from a coach's connected account (marketplace,
-            # student→coach) carry an `account` field and act on the tenant
-            # `Subscription`; platform events (coach→Contentor) have none and act
-            # on `PlatformSubscription`.
-            connected = _connected_tenant(event_dict)
-            if event_type == "checkout.session.completed":
-                _handle_checkout_session_completed(event_dict, webhook_event)
-            elif event_type in ("customer.subscription.created", "customer.subscription.updated"):
-                if connected:
-                    _handle_marketplace_subscription_event(event_dict, connected)
-                else:
-                    _handle_subscription_event(event_dict)
-            elif event_type == "customer.subscription.deleted":
-                if connected:
-                    _handle_marketplace_subscription_deleted(event_dict, connected)
-                else:
-                    logger.info("Acknowledged platform subscription.deleted (deferred)")
-            elif event_type == "invoice.paid":
-                if connected:
-                    _handle_marketplace_invoice_paid(event_dict, connected)
-                else:
-                    _handle_invoice_paid(event_dict)
-            elif event_type == "invoice.payment_failed":
-                if connected:
-                    _handle_marketplace_invoice_failed(event_dict, connected)
-                else:
-                    logger.info("Acknowledged platform invoice.payment_failed (deferred)")
-            elif event_type == "account.updated":
-                _handle_account_updated(event_dict)
+            if handle_domain_event(event_dict):
+                logger.info("stripe webhook handled by domains app type=%s id=%s", event_type, event_id)
             else:
-                logger.info("Acknowledged Stripe event (no handler): %s", event_type)
+                # Connect events from a coach's connected account (marketplace,
+                # student→coach) carry an `account` field and act on the tenant
+                # `Subscription`; platform events (coach→Contentor) have none and act
+                # on `PlatformSubscription`.
+                connected = _connected_tenant(event_dict)
+                if event_type == "checkout.session.completed":
+                    _handle_checkout_session_completed(event_dict, webhook_event)
+                elif event_type in ("customer.subscription.created", "customer.subscription.updated"):
+                    if connected:
+                        _handle_marketplace_subscription_event(event_dict, connected)
+                    else:
+                        _handle_subscription_event(event_dict)
+                elif event_type == "customer.subscription.deleted":
+                    if connected:
+                        _handle_marketplace_subscription_deleted(event_dict, connected)
+                    else:
+                        logger.info("Acknowledged platform subscription.deleted (deferred)")
+                elif event_type == "invoice.paid":
+                    if connected:
+                        _handle_marketplace_invoice_paid(event_dict, connected)
+                    else:
+                        _handle_invoice_paid(event_dict)
+                elif event_type == "invoice.payment_failed":
+                    if connected:
+                        _handle_marketplace_invoice_failed(event_dict, connected)
+                    else:
+                        logger.info("Acknowledged platform invoice.payment_failed (deferred)")
+                elif event_type == "account.updated":
+                    _handle_account_updated(event_dict)
+                else:
+                    logger.info("Acknowledged Stripe event (no handler): %s", event_type)
 
         webhook_event.processed_at = timezone.now()
         webhook_event.save(update_fields=["processed_at"])
