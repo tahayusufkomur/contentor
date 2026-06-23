@@ -14,7 +14,7 @@ from .models import CustomDomain, DomainSubscription
 from .pricing import compute_price
 from .registrar import get_registrar
 from .registrar.types import RegistrarError
-from .serializers import DomainResultSerializer
+from .serializers import CustomDomainSerializer, DomainResultSerializer
 
 
 def _currency() -> str:
@@ -111,3 +111,47 @@ def checkout(request):
         return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
     return Response({"checkout_url": session.url, "custom_domain_id": cd.id})
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def current(request):
+    cd = CustomDomain.objects.filter(tenant=connection.tenant).order_by("-created_at").first()
+    return Response({"custom_domain": CustomDomainSerializer(cd).data if cd else None})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def retry(request, pk: int):
+    cd = CustomDomain.objects.filter(tenant=connection.tenant, pk=pk).first()
+    if cd is None:
+        return Response({"error": "NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+    if cd.provisioning_status != "failed":
+        return Response({"error": "NOT_FAILED", "detail": "Only failed domains can retry."}, status=status.HTTP_409_CONFLICT)
+    from .tasks import provision_domain
+    provision_domain.delay(cd.id)
+    return Response({"custom_domain": CustomDomainSerializer(cd).data})
+
+
+@api_view(["DELETE"])
+@permission_classes([IsCoachOrOwner])
+def destroy(request, pk: int):
+    from apps.core.models import Domain
+
+    cd = CustomDomain.objects.filter(tenant=connection.tenant, pk=pk).first()
+    if cd is None:
+        return Response({"error": "NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+    Domain.objects.filter(domain=cd.domain, tenant=connection.tenant).delete()
+    cd.provisioning_status = "lapsed"
+    cd.save(update_fields=["provisioning_status", "updated_at"])
+    # Best-effort Stripe cancellation.
+    sub = getattr(cd, "subscription", None)
+    if sub and sub.provider_subscription_id and not settings.DOMAINS_BYPASS_ENABLED:
+        try:
+            import stripe
+
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            stripe.Subscription.delete(sub.provider_subscription_id)
+        except Exception:  # noqa: BLE001 — teardown is best-effort
+            pass
+    return Response(status=status.HTTP_204_NO_CONTENT)
