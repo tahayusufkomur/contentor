@@ -57,6 +57,7 @@ def test_checkout_rejects_taken_domain(owner, settings):
 
 def test_checkout_cleans_up_on_provider_error(owner, settings):
     from unittest.mock import patch
+
     from apps.billing.providers.types import ProviderError
 
     settings.DOMAINS_BYPASS_ENABLED = True

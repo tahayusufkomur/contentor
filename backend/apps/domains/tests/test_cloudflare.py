@@ -41,15 +41,17 @@ def test_ssl_status_active():
 
 
 def test_client_wraps_unsuccessful_response(settings):
-    settings.CLOUDFLARE_API_TOKEN = "t"
+    settings.CLOUDFLARE_API_TOKEN = "t"  # noqa: S105
     settings.CLOUDFLARE_ACCOUNT_ID = "acct"
-    with patch("apps.domains.cloudflare.client.requests.request", return_value=_resp(success=False)):
-        with pytest.raises(CloudflareError):
-            CloudflareClient().get_ssl_status(zone_id="z1")
+    with (
+        patch("apps.domains.cloudflare.client.requests.request", return_value=_resp(success=False)),
+        pytest.raises(CloudflareError),
+    ):
+        CloudflareClient().get_ssl_status(zone_id="z1")
 
 
 def test_enable_email_routing_uses_correct_endpoints_and_verbs(settings):
-    settings.CLOUDFLARE_API_TOKEN = "t"
+    settings.CLOUDFLARE_API_TOKEN = "t"  # noqa: S105
     settings.CLOUDFLARE_ACCOUNT_ID = "acct"
     with patch("apps.domains.cloudflare.client.requests.request", return_value=_resp(result={})) as req:
         CloudflareClient().enable_email_routing(zone_id="z1", forward_to="coach@x.com")

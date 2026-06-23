@@ -1,4 +1,7 @@
+from datetime import UTC
 from unittest.mock import MagicMock
+
+import pytest
 
 from apps.domains.registrar.route53 import Route53Registrar
 from apps.domains.registrar.types import DomainAvailability, RegistrarError
@@ -56,17 +59,16 @@ def test_aws_error_wrapped():
     client = MagicMock()
     client.check_domain_availability.side_effect = Exception("boom")
     reg = _registrar_with_client(client)
-    try:
+    with pytest.raises(RegistrarError) as exc_info:
         reg.check_availability("x.com")
-        assert False, "expected RegistrarError"
-    except RegistrarError as exc:
-        assert exc.code == "REGISTRAR_ERROR"
+    assert exc_info.value.code == "REGISTRAR_ERROR"
 
 
 def test_renew_passes_current_expiry_year():
-    from datetime import datetime, timezone
+    from datetime import datetime
+
     client = MagicMock()
-    client.get_domain_detail.return_value = {"ExpirationDate": datetime(2026, 6, 23, tzinfo=timezone.utc)}
+    client.get_domain_detail.return_value = {"ExpirationDate": datetime(2026, 6, 23, tzinfo=UTC)}
     client.renew_domain.return_value = {"OperationId": "op-renew-1"}
     reg = _registrar_with_client(client)
     out = reg.renew(domain="freecoach.com")

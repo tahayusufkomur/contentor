@@ -16,7 +16,7 @@ def provision_domain(self, custom_domain_id: int) -> None:
     try:
         provision(cd)
     except Exception as exc:  # noqa: BLE001 — retry transient failures (e.g. SSL pending)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 @shared_task

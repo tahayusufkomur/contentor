@@ -127,8 +127,11 @@ def retry(request, pk: int):
     if cd is None:
         return Response({"error": "NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
     if cd.provisioning_status != "failed":
-        return Response({"error": "NOT_FAILED", "detail": "Only failed domains can retry."}, status=status.HTTP_409_CONFLICT)
+        return Response(
+            {"error": "NOT_FAILED", "detail": "Only failed domains can retry."}, status=status.HTTP_409_CONFLICT
+        )
     from .tasks import provision_domain
+
     provision_domain.delay(cd.id)
     return Response({"custom_domain": CustomDomainSerializer(cd).data})
 
@@ -152,6 +155,6 @@ def destroy(request, pk: int):
 
             stripe.api_key = settings.STRIPE_SECRET_KEY
             stripe.Subscription.delete(sub.provider_subscription_id)
-        except Exception:  # noqa: BLE001 — teardown is best-effort
+        except Exception:  # noqa: BLE001, S110 — teardown is best-effort
             pass
     return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,4 +1,5 @@
 import pytest
+from django.db import IntegrityError
 
 from apps.domains.models import CustomDomain, DomainSubscription
 
@@ -21,12 +22,16 @@ def test_create_custom_domain(restore_public):
 
 def test_domain_is_unique(restore_public):
     CustomDomain.objects.create(tenant=restore_public, domain="dupe.com", cost_minor=1, price_minor=1, currency="EUR")
-    with pytest.raises(Exception):
-        CustomDomain.objects.create(tenant=restore_public, domain="dupe.com", cost_minor=1, price_minor=1, currency="EUR")
+    with pytest.raises(IntegrityError):
+        CustomDomain.objects.create(
+            tenant=restore_public, domain="dupe.com", cost_minor=1, price_minor=1, currency="EUR"
+        )
 
 
 def test_subscription_one_to_one(restore_public):
-    cd = CustomDomain.objects.create(tenant=restore_public, domain="sub.com", cost_minor=1, price_minor=1, currency="EUR")
+    cd = CustomDomain.objects.create(
+        tenant=restore_public, domain="sub.com", cost_minor=1, price_minor=1, currency="EUR"
+    )
     sub = DomainSubscription.objects.create(tenant=restore_public, custom_domain=cd)
     assert cd.subscription == sub
     assert sub.status == "incomplete"

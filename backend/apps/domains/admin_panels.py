@@ -19,9 +19,22 @@ class CustomDomainAdmin(ModelAdmin):
     can_delete = False
     # Read-only: domains are managed via the provisioning pipeline, not hand-edited.
     readonly_fields = (
-        "domain", "tenant", "registrar", "registrar_status", "cloudflare_zone_id",
-        "resend_domain_id", "forward_to_email", "cost_minor", "price_minor", "currency",
-        "fx_rate", "provisioning_status", "failed_step", "expires_at", "auto_renew", "is_primary",
+        "domain",
+        "tenant",
+        "registrar",
+        "registrar_status",
+        "cloudflare_zone_id",
+        "resend_domain_id",
+        "forward_to_email",
+        "cost_minor",
+        "price_minor",
+        "currency",
+        "fx_rate",
+        "provisioning_status",
+        "failed_step",
+        "expires_at",
+        "auto_renew",
+        "is_primary",
     )
 
 
@@ -37,6 +50,12 @@ class DomainSubscriptionAdmin(ModelAdmin):
     ordering = ("-created_at",)
     can_delete = False
     readonly_fields = (
-        "tenant", "custom_domain", "provider", "provider_subscription_id",
-        "provider_customer_id", "status", "current_period_start", "current_period_end",
+        "tenant",
+        "custom_domain",
+        "provider",
+        "provider_subscription_id",
+        "provider_customer_id",
+        "status",
+        "current_period_start",
+        "current_period_end",
     )

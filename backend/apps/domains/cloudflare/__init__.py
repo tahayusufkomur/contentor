@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 
-from .base import Cloudflare
+if TYPE_CHECKING:
+    from .base import Cloudflare
 
 
 def get_cloudflare() -> Cloudflare:

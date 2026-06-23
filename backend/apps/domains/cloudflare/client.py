@@ -28,9 +28,7 @@ class CloudflareClient(Cloudflare):
         return data["result"]
 
     def create_zone(self, domain: str) -> dict:
-        result = self._request(
-            "POST", "/zones", {"name": domain, "account": {"id": self._account_id}, "type": "full"}
-        )
+        result = self._request("POST", "/zones", {"name": domain, "account": {"id": self._account_id}, "type": "full"})
         return {"zone_id": result["id"], "name_servers": result.get("name_servers", [])}
 
     def upsert_dns_record(self, *, zone_id: str, type: str, name: str, content: str, proxied: bool = True) -> str:

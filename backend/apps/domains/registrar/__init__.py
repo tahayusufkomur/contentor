@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 
-from .base import Registrar
+if TYPE_CHECKING:
+    from .base import Registrar
 
 
 def get_registrar() -> Registrar:

@@ -9,8 +9,13 @@ pytestmark = pytest.mark.django_db
 
 def _make(restore_public, domain="freecoach.com"):
     return CustomDomain.objects.create(
-        tenant=restore_public, domain=domain, cost_minor=999, price_minor=1200, currency="EUR",
-        forward_to_email="coach@personal.com", contact={"Email": "coach@personal.com"},
+        tenant=restore_public,
+        domain=domain,
+        cost_minor=999,
+        price_minor=1200,
+        currency="EUR",
+        forward_to_email="coach@personal.com",
+        contact={"Email": "coach@personal.com"},
         provisioning_status="pending",
     )
 

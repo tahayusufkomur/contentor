@@ -37,7 +37,9 @@ def _step_dns_records(cd) -> None:
 
     tunnel = settings.CLOUDFLARE_TUNNEL_HOSTNAME or "tunnel.contentor.app"
     cf.upsert_dns_record(zone_id=cd.cloudflare_zone_id, type="CNAME", name=cd.domain, content=tunnel, proxied=True)
-    cf.upsert_dns_record(zone_id=cd.cloudflare_zone_id, type="CNAME", name=f"www.{cd.domain}", content=tunnel, proxied=True)
+    cf.upsert_dns_record(
+        zone_id=cd.cloudflare_zone_id, type="CNAME", name=f"www.{cd.domain}", content=tunnel, proxied=True
+    )
 
 
 def _step_email_auth(cd) -> None:

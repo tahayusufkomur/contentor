@@ -15,4 +15,13 @@ class DomainResultSerializer(serializers.Serializer):
 class CustomDomainSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomDomain
-        fields = ["id", "domain", "provisioning_status", "failed_step", "price_minor", "currency", "expires_at", "is_primary"]
+        fields = [
+            "id",
+            "domain",
+            "provisioning_status",
+            "failed_step",
+            "price_minor",
+            "currency",
+            "expires_at",
+            "is_primary",
+        ]
