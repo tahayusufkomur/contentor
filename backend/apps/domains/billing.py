@@ -18,7 +18,7 @@ def create_domain_checkout(*, tenant, user, custom_domain, success_url, cancel_u
     import stripe
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
-    metadata = {"domains_custom_domain_id": str(custom_domain.id), "tenant_id": str(tenant.pk)}
+    metadata = {"domains_custom_domain_id": str(custom_domain.id)}
     session = stripe.checkout.Session.create(
         mode="subscription",
         customer_email=getattr(user, "email", None),

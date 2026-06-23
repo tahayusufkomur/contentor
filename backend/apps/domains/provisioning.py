@@ -32,6 +32,8 @@ def _step_dns_zone(cd) -> None:
 
 
 def _step_dns_records(cd) -> None:
+    if cd.dns_records_done:
+        return
     cf = get_cloudflare()
     from django.conf import settings
 
@@ -40,6 +42,8 @@ def _step_dns_records(cd) -> None:
     cf.upsert_dns_record(
         zone_id=cd.cloudflare_zone_id, type="CNAME", name=f"www.{cd.domain}", content=tunnel, proxied=True
     )
+    cd.dns_records_done = True
+    cd.save(update_fields=["dns_records_done", "updated_at"])
 
 
 def _step_email_auth(cd) -> None:

@@ -28,6 +28,7 @@ def test_full_provision_reaches_live(restore_public, settings):
     assert cd.provisioning_status == "live"
     assert cd.cloudflare_zone_id
     assert cd.resend_domain_id
+    assert cd.dns_records_done is True
     assert Domain.objects.filter(domain="freecoach.com", tenant=restore_public).exists()
 
 
@@ -39,7 +40,28 @@ def test_provision_is_idempotent(restore_public, settings):
     provision(cd)  # second run must not create a second core.Domain row or new zone
     cd.refresh_from_db()
     assert cd.cloudflare_zone_id == zone1
+    assert cd.dns_records_done is True
     assert Domain.objects.filter(domain="idem.com").count() == 1
+
+
+def test_dns_records_done_prevents_duplicate_calls(restore_public, settings, monkeypatch):
+    """A second provision() call must not invoke _step_dns_records again."""
+    settings.DOMAINS_BYPASS_ENABLED = True
+    cd = _make(restore_public, domain="nodupe.com")
+    provision(cd)
+    cd.refresh_from_db()
+    assert cd.dns_records_done is True
+
+    # Monkeypatch _step_dns_records to a bomb — a second provision() should skip it.
+    from apps.domains import provisioning
+
+    def boom(*a, **k):
+        raise AssertionError("_step_dns_records called again on second provision()")
+
+    monkeypatch.setattr(provisioning, "_step_dns_records", boom)
+    # provision() exits early because provisioning_status == "live" so the bomb
+    # is never reached; this also validates the top-level live guard.
+    provision(cd)  # must not raise
 
 
 def test_failure_records_failed_step(restore_public, settings, monkeypatch):

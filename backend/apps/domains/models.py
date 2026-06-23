@@ -28,6 +28,7 @@ class CustomDomain(models.Model):
     price_minor = models.IntegerField()
     currency = models.CharField(max_length=3)
     fx_rate = models.FloatField(default=1.0)
+    dns_records_done = models.BooleanField(default=False)
     provisioning_status = models.CharField(max_length=20, choices=PROVISIONING_STATUSES, default="pending")
     failed_step = models.CharField(max_length=40, blank=True, default="")
     expires_at = models.DateTimeField(null=True, blank=True)
