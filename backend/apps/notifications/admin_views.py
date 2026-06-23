@@ -6,14 +6,18 @@ from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
 
+from apps.tenant_config.models import TenantConfig
+
 from .audience import audience_counts
-from .models import Announcement
+from .models import Announcement, AnnouncementTemplate
 from .serializers import (
     AnnouncementCreateSerializer,
     AnnouncementDetailSerializer,
     AnnouncementListSerializer,
+    AnnouncementTemplateSerializer,
 )
 from .tasks import fanout_announcement
+from .templates_builtin import builtin_templates
 
 
 @api_view(["POST"])
@@ -52,6 +56,28 @@ def announcement_collection(request):
     if not scheduled_at:
         fanout_announcement.delay(announcement.id, connection.schema_name)
     return Response(AnnouncementDetailSerializer(announcement).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def template_collection(request):
+    if request.method == "GET":
+        cfg = TenantConfig.objects.first()
+        brand = cfg.brand_name if cfg else ""
+        custom = AnnouncementTemplateSerializer(AnnouncementTemplate.objects.all(), many=True).data
+        return Response(builtin_templates(brand) + list(custom))
+
+    serializer = AnnouncementTemplateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    obj = AnnouncementTemplate.objects.create(created_by=request.user, **serializer.validated_data)
+    return Response(AnnouncementTemplateSerializer(obj).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsCoachOrOwner])
+def template_detail(request, pk):
+    AnnouncementTemplate.objects.filter(pk=pk).delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["GET", "PATCH", "DELETE"])

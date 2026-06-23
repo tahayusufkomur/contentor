@@ -79,6 +79,28 @@ class AnnouncementRecipient(models.Model):
         unique_together = ("announcement", "user")
 
 
+class AnnouncementTemplate(models.Model):
+    """A coach-saved reusable announcement (custom templates only; built-ins
+    live in code in templates_builtin.py)."""
+
+    name = models.CharField(max_length=120)
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True, default="")
+    link = models.CharField(max_length=500, blank=True, default="")
+    link_label = models.CharField(max_length=200, blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "notifications"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"AnnouncementTemplate<{self.pk}:{self.name}>"
+
+
 class EmailOptOut(models.Model):
     """A student who has opted out of announcement emails (per-tenant)."""
 

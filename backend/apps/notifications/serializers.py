@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.tenant_config.defaults import sanitize_rich_text
 
-from .models import Announcement, AnnouncementRecipient
+from .models import Announcement, AnnouncementRecipient, AnnouncementTemplate
 
 
 class SubscribeSerializer(serializers.Serializer):
@@ -71,6 +71,21 @@ class AnnouncementDetailSerializer(AnnouncementListSerializer):
 
     class Meta(AnnouncementListSerializer.Meta):
         fields = AnnouncementListSerializer.Meta.fields + ["body", "link", "filters", "recipients"]
+
+
+class AnnouncementTemplateSerializer(serializers.ModelSerializer):
+    builtin = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AnnouncementTemplate
+        fields = ["id", "name", "title", "body", "link", "link_label", "builtin"]
+        read_only_fields = ["id"]
+
+    def get_builtin(self, obj):
+        return False
+
+    def validate_body(self, value):
+        return sanitize_rich_text(value)
 
 
 class FeedItemSerializer(serializers.ModelSerializer):
