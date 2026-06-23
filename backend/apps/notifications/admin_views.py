@@ -9,12 +9,13 @@ from apps.core.permissions import IsCoachOrOwner
 from apps.tenant_config.models import TenantConfig
 
 from .audience import audience_counts
-from .models import Announcement, AnnouncementTemplate
+from .models import Announcement, AnnouncementTemplate, RecurringAnnouncement
 from .serializers import (
     AnnouncementCreateSerializer,
     AnnouncementDetailSerializer,
     AnnouncementListSerializer,
     AnnouncementTemplateSerializer,
+    RecurringAnnouncementSerializer,
 )
 from .tasks import fanout_announcement
 from .templates_builtin import builtin_templates
@@ -78,6 +79,36 @@ def template_collection(request):
 def template_detail(request, pk):
     AnnouncementTemplate.objects.filter(pk=pk).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def recurring_collection(request):
+    if request.method == "GET":
+        qs = RecurringAnnouncement.objects.all()
+        return Response(RecurringAnnouncementSerializer(qs, many=True).data)
+
+    serializer = RecurringAnnouncementSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    obj = serializer.save(created_by=request.user)
+    return Response(RecurringAnnouncementSerializer(obj).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "PATCH", "DELETE"])
+@permission_classes([IsCoachOrOwner])
+def recurring_detail(request, pk):
+    rule = RecurringAnnouncement.objects.filter(pk=pk).first()
+    if rule is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    if request.method == "GET":
+        return Response(RecurringAnnouncementSerializer(rule).data)
+    if request.method == "DELETE":
+        rule.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    serializer = RecurringAnnouncementSerializer(rule, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(RecurringAnnouncementSerializer(rule).data)
 
 
 @api_view(["GET", "PATCH", "DELETE"])

@@ -2,8 +2,15 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.tenant_config.defaults import sanitize_rich_text
+from apps.tenant_config.models import TenantConfig
 
-from .models import Announcement, AnnouncementRecipient, AnnouncementTemplate
+from . import recurrence as rec
+from .models import (
+    Announcement,
+    AnnouncementRecipient,
+    AnnouncementTemplate,
+    RecurringAnnouncement,
+)
 
 
 class SubscribeSerializer(serializers.Serializer):
@@ -86,6 +93,58 @@ class AnnouncementTemplateSerializer(serializers.ModelSerializer):
 
     def validate_body(self, value):
         return sanitize_rich_text(value)
+
+
+class RecurringAnnouncementSerializer(serializers.ModelSerializer):
+    filters = serializers.JSONField(source="filters_json", required=False, default=dict)
+
+    class Meta:
+        model = RecurringAnnouncement
+        fields = [
+            "id", "title", "body", "link", "link_label", "filters", "also_email",
+            "frequency", "send_time", "weekday", "day_of_month",
+            "start_date", "end_date", "next_run_at", "is_active",
+        ]
+        read_only_fields = ["id", "next_run_at"]
+
+    def validate_body(self, value):
+        return sanitize_rich_text(value)
+
+    def _get(self, data, key):
+        return data.get(key, getattr(self.instance, key, None))
+
+    def validate(self, data):
+        freq = self._get(data, "frequency")
+        if freq == "weekly" and self._get(data, "weekday") is None:
+            raise serializers.ValidationError({"weekday": "Required for weekly."})
+        if freq == "monthly" and self._get(data, "day_of_month") is None:
+            raise serializers.ValidationError({"day_of_month": "Required for monthly."})
+        sd, ed = self._get(data, "start_date"), self._get(data, "end_date")
+        if ed and sd and ed < sd:
+            raise serializers.ValidationError({"end_date": "Must be on/after start date."})
+        return data
+
+    def _compute_next(self, instance):
+        cfg = TenantConfig.objects.first()
+        tz_name = cfg.timezone if cfg else "UTC"
+        instance.next_run_at = rec.next_occurrence(
+            frequency=instance.frequency, send_time=instance.send_time,
+            weekday=instance.weekday, day_of_month=instance.day_of_month,
+            after_utc=timezone.now(), tz_name=tz_name, start_date=instance.start_date,
+        )
+
+    def create(self, validated):
+        obj = RecurringAnnouncement(**validated)
+        self._compute_next(obj)
+        obj.save()
+        return obj
+
+    def update(self, instance, validated):
+        for k, v in validated.items():
+            setattr(instance, k, v)
+        self._compute_next(instance)
+        instance.save()
+        return instance
 
 
 class FeedItemSerializer(serializers.ModelSerializer):

@@ -10,4 +10,7 @@ urlpatterns = [
     # Templates
     path("notifications/templates/", admin_views.template_collection, name="announcement-templates"),
     path("notifications/templates/<int:pk>/", admin_views.template_detail, name="announcement-template-detail"),
+    # Recurring announcements
+    path("notifications/recurring/", admin_views.recurring_collection, name="recurring-collection"),
+    path("notifications/recurring/<int:pk>/", admin_views.recurring_detail, name="recurring-detail"),
 ]
