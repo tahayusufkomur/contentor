@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { useTranslations } from "next-intl";
+import { X } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -88,9 +89,9 @@ export function InstallPrompt() {
       <button
         onClick={dismiss}
         aria-label={t("dismiss")}
-        className="rounded-md px-2 py-1 text-muted-foreground hover:text-foreground"
+        className="rounded-md px-2 py-1 text-muted-foreground transition-colors hover:text-foreground"
       >
-        ✕
+        <X className="h-4 w-4" />
       </button>
     </div>
   );

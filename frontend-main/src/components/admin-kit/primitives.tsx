@@ -18,6 +18,7 @@ import {
   Receipt,
   Users,
   Webhook,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -135,8 +136,13 @@ export function KitBanner({
   return (
     <div className={`flex items-start justify-between gap-3 rounded-md border px-4 py-2.5 text-sm ${tone}`}>
       <p>{message}</p>
-      <button type="button" onClick={onDismiss} className="font-medium opacity-70 hover:opacity-100">
-        ✕
+      <button
+        type="button"
+        onClick={onDismiss}
+        aria-label="Dismiss"
+        className="opacity-70 transition-opacity hover:opacity-100"
+      >
+        <X className="h-4 w-4" />
       </button>
     </div>
   )

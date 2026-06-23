@@ -3,17 +3,17 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Activity,
   ArrowLeft,
   ArrowRight,
   Brush,
   Check,
   Dumbbell,
+  Flame,
   Flower2,
   Loader2,
-  Moon,
-  Smile,
-  Sparkles,
+  Music4,
+  ScanFace,
+  Wind,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,8 +24,6 @@ import { ApiError } from "@/types/api";
 interface NicheOption {
   key: string;
   Icon: LucideIcon;
-  /** OKLCH endpoints for the icon's gradient orb. */
-  gradient: [string, string];
 }
 
 interface GoalOption {
@@ -35,41 +33,13 @@ interface GoalOption {
 // Niche keys must match Python module names under
 // backend/apps/core/management/commands/demo_data/.
 const NICHE_OPTIONS: NicheOption[] = [
-  {
-    key: "yoga",
-    Icon: Flower2,
-    gradient: ["oklch(0.72 0.16 160)", "oklch(0.58 0.18 200)"],
-  },
-  {
-    key: "pilates",
-    Icon: Activity,
-    gradient: ["oklch(0.62 0.18 270)", "oklch(0.55 0.22 305)"],
-  },
-  {
-    key: "fitness",
-    Icon: Dumbbell,
-    gradient: ["oklch(0.72 0.18 50)", "oklch(0.58 0.22 25)"],
-  },
-  {
-    key: "pole_dance",
-    Icon: Sparkles,
-    gradient: ["oklch(0.72 0.2 350)", "oklch(0.55 0.24 330)"],
-  },
-  {
-    key: "belly_dance",
-    Icon: Moon,
-    gradient: ["oklch(0.78 0.16 75)", "oklch(0.6 0.2 30)"],
-  },
-  {
-    key: "face_yoga",
-    Icon: Smile,
-    gradient: ["oklch(0.82 0.1 25)", "oklch(0.68 0.18 355)"],
-  },
-  {
-    key: "makeup",
-    Icon: Brush,
-    gradient: ["oklch(0.7 0.2 0)", "oklch(0.55 0.24 320)"],
-  },
+  { key: "yoga", Icon: Flower2 },
+  { key: "pilates", Icon: Wind },
+  { key: "fitness", Icon: Dumbbell },
+  { key: "pole_dance", Icon: Flame },
+  { key: "belly_dance", Icon: Music4 },
+  { key: "face_yoga", Icon: ScanFace },
+  { key: "makeup", Icon: Brush },
 ];
 
 const GOAL_OPTIONS: GoalOption[] = [
@@ -336,7 +306,7 @@ function NicheTile({
   delayMs: number;
   active: boolean;
 }) {
-  const { Icon, key, gradient } = opt;
+  const { Icon, key } = opt;
   return (
     <button
       type="button"
@@ -346,27 +316,18 @@ function NicheTile({
         active ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
       } ${
         selected
-          ? "border-foreground/30 bg-foreground/[0.05] shadow-[0_8px_24px_-12px_rgba(0,0,0,0.3)]"
+          ? "border-primary bg-primary/[0.06]"
           : "border-foreground/[0.08] bg-foreground/[0.02] hover:border-foreground/20 hover:bg-foreground/[0.04]"
       }`}
     >
       <span
-        aria-hidden
-        className={`absolute -right-4 -top-4 h-16 w-16 rounded-full blur-2xl transition-opacity duration-500 ${
-          selected ? "opacity-60" : "opacity-0 group-hover:opacity-30"
+        className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-300 ${
+          selected
+            ? "bg-primary text-primary-foreground"
+            : "bg-foreground/[0.06] text-foreground/70 group-hover:bg-foreground/[0.1] group-hover:text-foreground"
         }`}
-        style={{
-          background: `radial-gradient(circle, ${gradient[0]}, transparent 70%)`,
-        }}
-      />
-
-      <span
-        className="flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-[0_4px_12px_-3px_rgba(0,0,0,0.35)]"
-        style={{
-          background: `linear-gradient(135deg, ${gradient[0]}, ${gradient[1]})`,
-        }}
       >
-        <Icon className="h-4 w-4" strokeWidth={2} />
+        <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
       </span>
 
       <div className="mt-2.5 w-full">
@@ -379,7 +340,7 @@ function NicheTile({
       </div>
 
       {selected && (
-        <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background">
+        <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <Check className="h-3 w-3" strokeWidth={3} />
         </span>
       )}
@@ -409,14 +370,14 @@ function GoalRow({
         active ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
       } ${
         checked
-          ? "border-foreground/30 bg-foreground/[0.05]"
+          ? "border-primary bg-primary/[0.06]"
           : "border-foreground/[0.08] bg-foreground/[0.02] hover:border-foreground/20 hover:bg-foreground/[0.04]"
       }`}
     >
       <span
         className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
           checked
-            ? "border-foreground bg-foreground text-background"
+            ? "border-primary bg-primary text-primary-foreground"
             : "border-foreground/30 bg-transparent"
         }`}
       >

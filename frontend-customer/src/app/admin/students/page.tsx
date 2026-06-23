@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from "react"
 import Link from "next/link"
-import { Users, Mail, Receipt } from "lucide-react"
+import { Users, Mail, Receipt, Smartphone, Globe } from "lucide-react"
 import { TableCell } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { clientFetch, batchedAsync } from "@/lib/api-client"
@@ -132,7 +132,12 @@ export default function StudentsPage() {
                   </p>
                   {student.last_display_mode && (
                     <span className="inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs text-muted-foreground">
-                      {student.last_display_mode === "pwa" ? "📱 PWA" : "🌐 Web"}
+                      {student.last_display_mode === "pwa" ? (
+                        <Smartphone className="h-3 w-3" />
+                      ) : (
+                        <Globe className="h-3 w-3" />
+                      )}
+                      {student.last_display_mode === "pwa" ? "PWA" : "Web"}
                       {student.last_platform ? ` · ${student.last_platform}` : ""}
                     </span>
                   )}

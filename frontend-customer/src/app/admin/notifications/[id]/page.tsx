@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useParams } from "next/navigation";
+import { Check, Circle } from "lucide-react";
 
 import { AnnouncementDetail, getAnnouncement } from "@/lib/announcements";
 
@@ -56,7 +57,14 @@ export default function ReceiptPage() {
             <span>{r.name}</span>
             <span className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>{r.push_status}</span>
-              <span>{r.read_at ? "✓ read" : "— unread"}</span>
+              <span className="inline-flex items-center gap-1">
+                {r.read_at ? (
+                  <Check className="h-3 w-3" />
+                ) : (
+                  <Circle className="h-3 w-3" />
+                )}
+                {r.read_at ? "read" : "unread"}
+              </span>
             </span>
           </div>
         ))}

@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   FileText,
+  Globe,
   Link2,
   Loader2,
   Mail,
+  Megaphone,
   Search,
+  Smartphone,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -279,9 +282,14 @@ export default function AnnouncementCompose({
                   app_type: f.app_type === t ? undefined : t,
                 }))
               }
-              className={`rounded-full border px-3 py-1 ${filters.app_type === t ? "bg-primary text-primary-foreground" : "border-border"}`}
+              className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 ${filters.app_type === t ? "bg-primary text-primary-foreground" : "border-border"}`}
             >
-              {t === "pwa" ? "📱 PWA" : "🌐 Browser"}
+              {t === "pwa" ? (
+                <Smartphone className="h-3.5 w-3.5" />
+              ) : (
+                <Globe className="h-3.5 w-3.5" />
+              )}
+              {t === "pwa" ? "PWA" : "Browser"}
             </button>
           ))}
           {PLATFORMS.map((p) => (
@@ -321,7 +329,8 @@ export default function AnnouncementCompose({
           </div>
         ) : (
           <div className="rounded-lg border border-border bg-background p-2.5">
-            📣 Goes to{" "}
+            <Megaphone className="mr-1 inline h-4 w-4 align-[-3px]" />
+            Goes to{" "}
             <strong className="text-foreground">{reach.audience}</strong>{" "}
             student
             {reach.audience === 1 ? "" : "s"} in their feed

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
+import { Repeat } from "lucide-react";
 
 import {
   RecurringAnnouncement,
@@ -78,7 +79,8 @@ export default function AnnouncementRecurringList({
           <div className="flex-1">
             <div className="font-medium">{r.title}</div>
             <div className="text-xs text-muted-foreground">
-              🔁 {summary(r)}
+              <Repeat className="mr-1 inline h-3 w-3 align-[-2px]" />
+              {summary(r)}
               {r.is_active ? (
                 <>
                   {" "}
