@@ -9,6 +9,7 @@ from apps.notifications.models import (
     EmailOptOut,
     LiveReminderLog,
     PushSubscription,
+    RecurringAnnouncement,
 )
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -20,6 +21,19 @@ def test_email_fields_and_optout(tenant_ctx):
     EmailOptOut.objects.create(email="x@y.com")
     assert EmailOptOut.objects.filter(email="x@y.com").exists()
     assert "email_status" in [f.name for f in AnnouncementRecipient._meta.fields]
+
+
+def test_recurring_defaults(tenant_ctx):
+    from datetime import date, time
+
+    from django.utils import timezone
+
+    r = RecurringAnnouncement.objects.create(
+        title="Daily", body="b", filters_json={}, frequency="daily",
+        send_time=time(9, 0), start_date=date(2026, 6, 1), next_run_at=timezone.now(),
+    )
+    assert r.is_active is True
+    assert r.also_email is False
 
 
 @pytest.fixture()

@@ -46,6 +46,9 @@ class Announcement(models.Model):
     recipient_count = models.PositiveIntegerField(default=0)
     push_sent_count = models.PositiveIntegerField(default=0)
     also_email = models.BooleanField(default=False)
+    recurrence = models.ForeignKey(
+        "RecurringAnnouncement", on_delete=models.SET_NULL, null=True, blank=True, related_name="instances"
+    )
 
     class Meta:
         app_label = "notifications"
@@ -53,6 +56,38 @@ class Announcement(models.Model):
 
     def __str__(self) -> str:
         return f"Announcement<{self.pk}:{self.title[:32]}>"
+
+
+class RecurringAnnouncement(models.Model):
+    """A rule that spawns ordinary Announcements on a simple repeating schedule."""
+
+    FREQ = [("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly")]
+
+    title = models.CharField(max_length=200)
+    body = models.TextField(blank=True, default="")
+    link = models.CharField(max_length=500, blank=True, default="")
+    link_label = models.CharField(max_length=200, blank=True, default="")
+    filters_json = models.JSONField(default=dict, blank=True)
+    also_email = models.BooleanField(default=False)
+    frequency = models.CharField(max_length=10, choices=FREQ)
+    send_time = models.TimeField()
+    weekday = models.SmallIntegerField(null=True, blank=True)  # 0=Mon..6=Sun (weekly)
+    day_of_month = models.SmallIntegerField(null=True, blank=True)  # 1..31 (monthly)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)  # null = "until I stop"
+    next_run_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "notifications"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"RecurringAnnouncement<{self.pk}:{self.title[:24]}:{self.frequency}>"
 
 
 class AnnouncementRecipient(models.Model):
