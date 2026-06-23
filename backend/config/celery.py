@@ -18,6 +18,10 @@ app.conf.beat_schedule = {
         "task": "apps.notifications.tasks.dispatch_due_announcements",
         "schedule": crontab(minute="*"),
     },
+    "dispatch-due-recurrences": {
+        "task": "apps.notifications.tasks.dispatch_due_recurrences",
+        "schedule": crontab(minute="*"),
+    },
 }
 
 

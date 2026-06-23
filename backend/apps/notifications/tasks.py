@@ -100,3 +100,43 @@ def dispatch_due_announcements() -> None:
                     fanout_announcement.delay(announcement.id, tenant.schema_name)
             except Exception:  # noqa: BLE001  one tenant must not break the rest
                 logger.exception("announcement dispatch failed for %s", tenant.schema_name)
+
+
+@shared_task
+def dispatch_due_recurrences() -> None:
+    for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+        with tenant_context(tenant):
+            try:
+                _dispatch_recurrences_for_current_tenant()
+            except Exception:  # noqa: BLE001  one tenant must not break the rest
+                logger.exception("recurrence dispatch failed for %s", tenant.schema_name)
+
+
+def _dispatch_recurrences_for_current_tenant() -> None:
+    from apps.tenant_config.models import TenantConfig
+
+    from . import recurrence as rec
+    from .models import Announcement, RecurringAnnouncement
+    from .services import send_announcement_to_recipients
+
+    now = timezone.now()
+    cfg = TenantConfig.objects.first()
+    tz_name = cfg.timezone if cfg else "UTC"
+    for rule in RecurringAnnouncement.objects.filter(is_active=True, next_run_at__lte=now):
+        old_next = rule.next_run_at
+        new_next = rec.next_occurrence(
+            frequency=rule.frequency, send_time=rule.send_time, weekday=rule.weekday,
+            day_of_month=rule.day_of_month, after_utc=now, tz_name=tz_name, start_date=rule.start_date,
+        )
+        still_active = not (rule.end_date and new_next.date() > rule.end_date)
+        # Exactly-once claim: only the worker that advances next_run_at spawns.
+        claimed = RecurringAnnouncement.objects.filter(pk=rule.pk, next_run_at=old_next).update(
+            next_run_at=new_next, is_active=still_active
+        )
+        if not claimed:
+            continue
+        ann = Announcement.objects.create(
+            title=rule.title, body=rule.body, link=rule.link, filters_json=rule.filters_json,
+            also_email=rule.also_email, status="scheduled", recurrence=rule,
+        )
+        send_announcement_to_recipients(ann)
