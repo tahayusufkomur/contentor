@@ -76,11 +76,14 @@ export interface RecurringAnnouncement {
 }
 
 export const previewAudience = (filters: AnnouncementFilters) =>
-  clientFetch<{ audience: number; push_reachable: number }>(`${BASE}/preview/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ filters }),
-  });
+  clientFetch<{ audience: number; push_reachable: number }>(
+    `${BASE}/preview/`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filters }),
+    },
+  );
 
 export const createAnnouncement = (payload: {
   title: string;
@@ -96,8 +99,10 @@ export const createAnnouncement = (payload: {
     body: JSON.stringify(payload),
   });
 
-export const listAnnouncements = () => clientFetch<AnnouncementListItem[]>(`${BASE}/`);
-export const getAnnouncement = (id: number) => clientFetch<AnnouncementDetail>(`${BASE}/${id}/`);
+export const listAnnouncements = () =>
+  clientFetch<AnnouncementListItem[]>(`${BASE}/`);
+export const getAnnouncement = (id: number) =>
+  clientFetch<AnnouncementDetail>(`${BASE}/${id}/`);
 export const patchAnnouncement = (
   id: number,
   payload: Partial<{
@@ -117,14 +122,20 @@ export const deleteAnnouncement = (id: number) =>
   clientFetch<void>(`${BASE}/${id}/`, { method: "DELETE" });
 
 export const getFeed = () =>
-  clientFetch<{ items: FeedItem[]; unread_count: number }>("/api/v1/notifications/feed/");
+  clientFetch<{ items: FeedItem[]; unread_count: number }>(
+    "/api/v1/notifications/feed/",
+  );
 export const markRead = (id: number) =>
-  clientFetch<{ unread_count: number }>(`/api/v1/notifications/feed/${id}/read/`, {
-    method: "POST",
-  });
+  clientFetch<{ unread_count: number }>(
+    `/api/v1/notifications/feed/${id}/read/`,
+    {
+      method: "POST",
+    },
+  );
 
 // Templates
-export const listTemplates = () => clientFetch<AnnouncementTemplate[]>(`${ADMIN_BASE}/templates/`);
+export const listTemplates = () =>
+  clientFetch<AnnouncementTemplate[]>(`${ADMIN_BASE}/templates/`);
 export const saveTemplate = (payload: {
   name: string;
   title: string;
@@ -141,7 +152,8 @@ export const deleteTemplate = (id: number) =>
   clientFetch<void>(`${ADMIN_BASE}/templates/${id}/`, { method: "DELETE" });
 
 // Recurring
-export const listRecurring = () => clientFetch<RecurringAnnouncement[]>(`${ADMIN_BASE}/recurring/`);
+export const listRecurring = () =>
+  clientFetch<RecurringAnnouncement[]>(`${ADMIN_BASE}/recurring/`);
 export const createRecurring = (
   payload: Partial<RecurringAnnouncement> & { filters: AnnouncementFilters },
 ) =>
@@ -150,7 +162,10 @@ export const createRecurring = (
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-export const patchRecurring = (id: number, payload: Partial<RecurringAnnouncement>) =>
+export const patchRecurring = (
+  id: number,
+  payload: Partial<RecurringAnnouncement>,
+) =>
   clientFetch<RecurringAnnouncement>(`${ADMIN_BASE}/recurring/${id}/`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
