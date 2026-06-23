@@ -53,3 +53,15 @@ def test_checkout_rejects_taken_domain(owner, settings):
     client = _client(owner)
     resp = client.post("/api/v1/domains/checkout/", {"domain": "taken-x.com"}, format="json")
     assert resp.status_code == 409, resp.content
+
+
+def test_checkout_cleans_up_on_provider_error(owner, settings):
+    from unittest.mock import patch
+    from apps.billing.providers.types import ProviderError
+
+    settings.DOMAINS_BYPASS_ENABLED = True
+    client = _client(owner)
+    with patch("apps.domains.views.create_domain_checkout", side_effect=ProviderError("boom")):
+        resp = client.post("/api/v1/domains/checkout/", {"domain": "cleanup.com"}, format="json")
+    assert resp.status_code == 502, resp.content
+    assert not CustomDomain.objects.filter(domain="cleanup.com").exists()

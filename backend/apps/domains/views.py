@@ -107,6 +107,7 @@ def checkout(request):
             tenant=tenant, user=request.user, custom_domain=cd, success_url=success, cancel_url=cancel
         )
     except ProviderError as exc:
+        cd.delete()  # roll back the orphaned domain (cascades to DomainSubscription)
         return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
     return Response({"checkout_url": session.url, "custom_domain_id": cd.id})
