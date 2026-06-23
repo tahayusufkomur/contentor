@@ -86,5 +86,13 @@ class Route53Registrar(Registrar):
         )
 
     def renew(self, *, domain: str) -> RegisterResult:
-        resp = self._wrap(self.client.renew_domain, DomainName=domain, DurationInYears=1)
+        detail = self._wrap(self.client.get_domain_detail, DomainName=domain)
+        # ExpirationDate is a timezone-aware datetime; RenewDomain needs the year.
+        current_expiry_year = detail["ExpirationDate"].year
+        resp = self._wrap(
+            self.client.renew_domain,
+            DomainName=domain,
+            DurationInYears=1,
+            CurrentExpiryYear=current_expiry_year,
+        )
         return RegisterResult(domain=domain, operation_id=resp["OperationId"])
