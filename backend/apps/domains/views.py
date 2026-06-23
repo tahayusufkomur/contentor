@@ -11,6 +11,7 @@ from apps.core.permissions import IsCoachOrOwner
 from .pricing import compute_price
 from .registrar import get_registrar
 from .registrar.types import RegistrarError
+from .serializers import DomainResultSerializer
 
 
 def _currency() -> str:
@@ -45,4 +46,9 @@ def search(request):
         suggestions = [_priced(reg, s, currency) for s in reg.suggest(q)]
     except RegistrarError as exc:
         return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
-    return Response({"results": results, "suggestions": suggestions})
+    return Response(
+        {
+            "results": DomainResultSerializer(results, many=True).data,
+            "suggestions": DomainResultSerializer(suggestions, many=True).data,
+        }
+    )
