@@ -22,6 +22,7 @@ class AnnouncementCreateSerializer(serializers.Serializer):
     link = serializers.CharField(max_length=500, allow_blank=True, required=False, default="")
     filters = serializers.DictField(required=False, default=dict)
     scheduled_at = serializers.DateTimeField(required=False, allow_null=True)
+    also_email = serializers.BooleanField(required=False, default=False)
 
     def validate_body(self, value):
         return sanitize_rich_text(value)

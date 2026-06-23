@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import (
@@ -9,7 +10,8 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import AnnouncementRecipient, PushSubscription
+from . import email_render
+from .models import AnnouncementRecipient, EmailOptOut, PushSubscription
 from .serializers import FeedItemSerializer, SubscribeSerializer
 
 
@@ -18,6 +20,19 @@ from .serializers import FeedItemSerializer, SubscribeSerializer
 @permission_classes([AllowAny])
 def vapid_key(request):
     return Response({"public_key": settings.VAPID_PUBLIC_KEY})
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def email_unsubscribe(request):
+    data = email_render.decode_unsubscribe(request.GET.get("t", ""))
+    if not data:
+        return HttpResponse("Invalid or expired link.", status=400)
+    email = (data.get("email") or "").strip().lower()
+    if email:
+        EmailOptOut.objects.get_or_create(email=email, defaults={"user_id": data.get("user_id")})
+    return HttpResponse("You've been unsubscribed from these emails.", status=200)
 
 
 @api_view(["POST"])

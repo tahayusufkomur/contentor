@@ -8,4 +8,5 @@ urlpatterns = [
     path("unsubscribe/", views.unsubscribe, name="push-unsubscribe"),
     path("feed/", views.feed, name="announcement-feed"),
     path("feed/<int:pk>/read/", views.feed_read, name="announcement-feed-read"),
+    path("email/unsubscribe/", views.email_unsubscribe, name="email-unsubscribe"),
 ]

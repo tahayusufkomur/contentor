@@ -41,6 +41,7 @@ def announcement_collection(request):
         link=data.get("link", ""),
         filters_json=data.get("filters", {}),
         scheduled_at=scheduled_at,
+        also_email=data.get("also_email", False),
         status="scheduled",  # pending until fanout delivers, then -> "sent"
         created_by=request.user,
     )
