@@ -65,9 +65,11 @@ def _apex_origin() -> str:
 
 
 def _safe_return_path(raw: str | None) -> str | None:
-    """Return a safe relative path (starts with single '/'), or None if invalid."""
+    """Return a safe relative path (starts with a single '/', no '\\' or '?'), or None."""
     path = (raw or "/dashboard").strip()
     if not path.startswith("/") or path.startswith("//"):
+        return None
+    if "\\" in path or "?" in path:
         return None
     return path
 

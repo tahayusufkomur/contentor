@@ -93,3 +93,27 @@ def test_checkout_rejects_unsafe_return_path(owner, settings):
     )
     assert resp.status_code == 400
     assert resp.json()["error"] == "BAD_RETURN_PATH"
+
+
+def test_checkout_rejects_backslash_in_return_path(owner, settings):
+    settings.DOMAINS_BYPASS_ENABLED = True
+    client = _client(owner)
+    resp = client.post(
+        "/api/v1/domains/checkout/",
+        {"domain": "apexcoach3.com", "return_path": "/\\evil.com"},
+        format="json",
+    )
+    assert resp.status_code == 400
+    assert resp.json()["error"] == "BAD_RETURN_PATH"
+
+
+def test_checkout_rejects_query_in_return_path(owner, settings):
+    settings.DOMAINS_BYPASS_ENABLED = True
+    client = _client(owner)
+    resp = client.post(
+        "/api/v1/domains/checkout/",
+        {"domain": "apexcoach4.com", "return_path": "/dashboard?evil=true"},
+        format="json",
+    )
+    assert resp.status_code == 400
+    assert resp.json()["error"] == "BAD_RETURN_PATH"
