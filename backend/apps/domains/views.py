@@ -57,9 +57,19 @@ def search(request):
     )
 
 
-def _origin(request) -> str:
-    scheme = "https" if request.is_secure() else "http"
-    return f"{scheme}://{request.get_host()}"
+def _apex_origin() -> str:
+    """Return the apex origin for Stripe redirect URLs."""
+    from django.conf import settings as s
+
+    return f"{getattr(s, 'SITE_SCHEME', 'https')}://{s.CONTENTOR_DOMAIN}"
+
+
+def _safe_return_path(raw: str | None) -> str | None:
+    """Return a safe relative path (starts with single '/'), or None if invalid."""
+    path = (raw or "/dashboard").strip()
+    if not path.startswith("/") or path.startswith("//"):
+        return None
+    return path
 
 
 @api_view(["POST"])
@@ -69,6 +79,13 @@ def checkout(request):
     if not domain:
         return Response(
             {"error": "DOMAIN_REQUIRED", "detail": "domain is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return_path = _safe_return_path(request.data.get("return_path"))
+    if return_path is None:
+        return Response(
+            {"error": "BAD_RETURN_PATH", "detail": "return_path must be a relative path."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     tenant = connection.tenant
@@ -100,8 +117,9 @@ def checkout(request):
         )
         DomainSubscription.objects.create(tenant=tenant, custom_domain=cd, status="incomplete")
 
-    success = f"{_origin(request)}/settings/domain"
-    cancel = f"{_origin(request)}/settings/domain?canceled=1"
+    apex = _apex_origin()
+    success = f"{apex}{return_path}"
+    cancel = f"{apex}{return_path}?canceled=1"
     try:
         session = create_domain_checkout(
             tenant=tenant, user=request.user, custom_domain=cd, success_url=success, cancel_url=cancel
