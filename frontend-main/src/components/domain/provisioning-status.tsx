@@ -30,6 +30,7 @@ export function ProvisioningStatus({
 }) {
   const [cd, setCd] = useState<CustomDomainStatus | null>(null)
   const [retrying, setRetrying] = useState(false)
+  const [pollKey, setPollKey] = useState(0)
   const onLiveRef = useRef(onLive)
   onLiveRef.current = onLive
 
@@ -46,6 +47,9 @@ export function ProvisioningStatus({
           onLiveRef.current(custom_domain)
           return
         }
+        if (custom_domain?.provisioning_status === 'failed') {
+          return
+        }
       } catch {
         // transient — keep polling
       }
@@ -56,7 +60,7 @@ export function ProvisioningStatus({
       active = false
       clearTimeout(timer)
     }
-  }, [slug, host])
+  }, [slug, host, pollKey])
 
   const failed = cd?.provisioning_status === 'failed'
   const current = stepIndex(cd?.provisioning_status ?? 'registering')
@@ -66,6 +70,7 @@ export function ProvisioningStatus({
     setRetrying(true)
     try {
       await retryProvision(slug, host, cd.id)
+      setPollKey((k) => k + 1)
     } finally {
       setRetrying(false)
     }
