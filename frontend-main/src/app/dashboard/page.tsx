@@ -8,6 +8,7 @@ import { Monogram } from '@/components/shared/logo-mark'
 import { getAuthUser } from '@/lib/auth'
 import { getMyTenants, type MyTenant } from '@/lib/tenants'
 import { PublishControls } from '@/components/dashboard/publish-controls'
+import { PlatformCardDomainCta } from '@/components/dashboard/platform-card-domain-cta'
 
 const STATUS_COPY: Record<MyTenant['provisioning_status'], { label: string; tone: string }> = {
   ready: { label: 'Live', tone: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300' },
@@ -72,6 +73,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
         <Button asChild variant="ghost" size="sm">
           <a href={tenant.studio_url}>Preview</a>
         </Button>
+        <PlatformCardDomainCta slug={tenant.slug} />
       </div>
 
       {isReady && (
