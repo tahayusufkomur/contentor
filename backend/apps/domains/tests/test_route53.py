@@ -1,7 +1,8 @@
 from datetime import UTC
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+from botocore.exceptions import PartialCredentialsError
 
 from apps.domains.registrar.route53 import Route53Registrar
 from apps.domains.registrar.types import DomainAvailability, RegistrarError
@@ -11,6 +12,20 @@ def _registrar_with_client(client):
     reg = Route53Registrar()
     reg._client = client  # inject mock
     return reg
+
+
+def test_client_init_failure_wrapped_as_registrar_error():
+    """A partial/invalid AWS cred must surface as RegistrarError (502), not 500."""
+    reg = Route53Registrar()  # no injected client → exercises the lazy boto3.client()
+    with (
+        patch(
+            "apps.domains.registrar.route53.boto3.client",
+            side_effect=PartialCredentialsError(provider="explicit", cred_var="aws_secret_access_key"),
+        ),
+        pytest.raises(RegistrarError) as exc,
+    ):
+        reg.check_availability("gorkemhanci.com")
+    assert exc.value.code == "REGISTRAR_MISCONFIGURED"
 
 
 def test_check_availability_available():

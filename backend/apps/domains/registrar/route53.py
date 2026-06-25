@@ -20,12 +20,21 @@ class Route53Registrar(Registrar):
     @property
     def client(self):
         if self._client is None:
-            self._client = boto3.client(
-                "route53domains",
-                region_name=settings.AWS_ROUTE53_REGION,
-                aws_access_key_id=settings.AWS_ROUTE53_ACCESS_KEY_ID or None,
-                aws_secret_access_key=settings.AWS_ROUTE53_SECRET_ACCESS_KEY or None,
-            )
+            try:
+                self._client = boto3.client(
+                    "route53domains",
+                    region_name=settings.AWS_ROUTE53_REGION or "us-east-1",
+                    aws_access_key_id=settings.AWS_ROUTE53_ACCESS_KEY_ID or None,
+                    aws_secret_access_key=settings.AWS_ROUTE53_SECRET_ACCESS_KEY or None,
+                )
+            except Exception as exc:  # noqa: BLE001 — partial/invalid creds, bad region, etc.
+                # Surface as a clean registrar error (→ 502) instead of an opaque
+                # 500: client creation happens here, outside _wrap. A common cause
+                # is AWS_ROUTE53_ACCESS_KEY_ID set without AWS_ROUTE53_SECRET_ACCESS_KEY.
+                raise RegistrarError(
+                    f"Route 53 client init failed (check AWS_ROUTE53_* credentials): {exc}",
+                    code="REGISTRAR_MISCONFIGURED",
+                ) from exc
         return self._client
 
     def _wrap(self, fn, *args, **kwargs):
