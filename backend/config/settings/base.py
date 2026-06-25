@@ -302,8 +302,9 @@ DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92, "TRY": 32.0}
 
 # AWS Route 53 Domains. Dedicated credentials — the AWS_ACCESS_KEY_ID /
 # AWS_SECRET_ACCESS_KEY above are the Hetzner S3 object-storage keys (boto3),
-# which are a DIFFERENT account; Route 53 must not reuse them.
-AWS_ROUTE53_REGION = os.environ.get("AWS_ROUTE53_REGION", "us-east-1")
+# which are a DIFFERENT account; Route 53 must not reuse them. The region is NOT
+# configurable: Route 53 Domains is a global service pinned to us-east-1 in the
+# registrar client (see apps/domains/registrar/route53.py).
 AWS_ROUTE53_ACCESS_KEY_ID = os.environ.get("AWS_ROUTE53_ACCESS_KEY_ID", "")
 AWS_ROUTE53_SECRET_ACCESS_KEY = os.environ.get("AWS_ROUTE53_SECRET_ACCESS_KEY", "")
 

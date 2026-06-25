@@ -23,7 +23,11 @@ class Route53Registrar(Registrar):
             try:
                 self._client = boto3.client(
                     "route53domains",
-                    region_name=settings.AWS_ROUTE53_REGION or "us-east-1",
+                    # Route 53 Domains is a global service with a single endpoint in
+                    # us-east-1 (no route53domains.<other-region> exists). Pin it so a
+                    # general AWS_REGION (e.g. eu-central-1) can't point us at a
+                    # non-existent endpoint.
+                    region_name="us-east-1",
                     aws_access_key_id=settings.AWS_ROUTE53_ACCESS_KEY_ID or None,
                     aws_secret_access_key=settings.AWS_ROUTE53_SECRET_ACCESS_KEY or None,
                 )

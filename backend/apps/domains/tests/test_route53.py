@@ -14,6 +14,14 @@ def _registrar_with_client(client):
     return reg
 
 
+def test_client_pinned_to_us_east_1():
+    """Route 53 Domains has only a us-east-1 endpoint; the client must pin it."""
+    reg = Route53Registrar()
+    with patch("apps.domains.registrar.route53.boto3.client") as mock_client:
+        _ = reg.client
+    assert mock_client.call_args.kwargs["region_name"] == "us-east-1"
+
+
 def test_client_init_failure_wrapped_as_registrar_error():
     """A partial/invalid AWS cred must surface as RegistrarError (502), not 500."""
     reg = Route53Registrar()  # no injected client → exercises the lazy boto3.client()
