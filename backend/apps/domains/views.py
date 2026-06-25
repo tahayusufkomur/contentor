@@ -59,8 +59,25 @@ def _safe_return_path(raw: str | None) -> str | None:
 # ---------------------------------------------------------------------------
 
 
+def _normalize_query(raw: str | None) -> str:
+    """Coerce a coach's input into a registrable domain.
+
+    Coaches type a brand name, not a FQDN. Route 53 needs a domain with a TLD
+    (a bare keyword raises InvalidInput), so default a TLD-less query to `.com`.
+    Also strips a leading scheme / `www.` and trailing slashes if pasted.
+    """
+    q = (raw or "").strip().lower()
+    for prefix in ("https://", "http://", "www."):
+        if q.startswith(prefix):
+            q = q[len(prefix) :]
+    q = q.strip("/").split("/")[0]
+    if q and "." not in q:
+        q = f"{q}.com"
+    return q
+
+
 def _search_response(tenant, q: str | None) -> Response:
-    q = (q or "").strip().lower()
+    q = _normalize_query(q)
     if not q:
         return Response({"error": "QUERY_REQUIRED", "detail": "q is required."}, status=status.HTTP_400_BAD_REQUEST)
     reg = get_registrar()

@@ -84,6 +84,31 @@ def test_account_endpoint_requires_auth(public_host):
     assert resp.status_code in (401, 403)
 
 
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("gorkemhanci", "gorkemhanci.com"),  # bare keyword -> .com
+        ("gorkemhanci.com", "gorkemhanci.com"),  # already a domain -> unchanged
+        ("gorkemhanci.io", "gorkemhanci.io"),  # other TLD kept
+        ("  GorkemHanci  ", "gorkemhanci.com"),  # trimmed + lowercased
+        ("https://gorkemhanci.com/", "gorkemhanci.com"),  # scheme + slash stripped
+        ("www.gorkemhanci.net", "gorkemhanci.net"),  # www. stripped
+    ],
+)
+def test_normalize_query(raw, expected):
+    from apps.domains.views import _normalize_query
+
+    assert _normalize_query(raw) == expected
+
+
+def test_account_search_appends_tld_for_bare_keyword(public_host, owner, settings):
+    settings.DOMAINS_BYPASS_ENABLED = True
+    resp = _client(owner).get("/api/v1/me/tenants/shared-test/domain/search/?q=gorkemhanci")
+    assert resp.status_code == 200, resp.content
+    domains = [r["domain"] for r in resp.json()["results"]]
+    assert "gorkemhanci.com" in domains
+
+
 def test_account_checkout_creates_domain_for_owner(public_host, owner, settings):
     from apps.domains.models import CustomDomain
 
