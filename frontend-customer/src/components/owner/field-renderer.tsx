@@ -35,6 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useRichEditor } from "@/components/owner/rich-editor";
 import { LinkPickerModal } from "@/components/owner/link-picker";
+import { StepSlider } from "@/components/owner/step-slider";
 import { RichHtml } from "@/components/blocks/rich-html";
 import type { FieldSchema } from "@/lib/blocks/field-schema";
 import type { Photo } from "@/types/photo";
@@ -72,8 +73,6 @@ const LAYOUT_ICONS: Record<string, LucideIcon> = {
 
 const textareaClass =
   "w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
-const selectClass =
-  "h-9 w-full rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
 interface FieldRendererProps {
   field: FieldSchema;
@@ -147,20 +146,41 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
           <IconSelectField field={field} value={value} onChange={onChange} />
         );
       }
+      // Ordered "how much" settings → snap-slider.
+      if (field.display === "slider") {
+        return (
+          <div className="space-y-1.5">
+            <FieldLabel field={field} />
+            <StepSlider
+              options={field.options ?? []}
+              value={value}
+              onChange={onChange}
+              label={field.label}
+            />
+          </div>
+        );
+      }
+      // Distinct choices → one-click buttons (no dropdowns).
       return (
         <div className="space-y-1">
           <FieldLabel field={field} />
-          <select
-            className={selectClass}
-            value={value ?? ""}
-            onChange={(e) => onChange(e.target.value)}
-          >
+          <div className="flex flex-wrap gap-1">
             {field.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <button
+                type="button"
+                key={opt.value}
+                onClick={() => onChange(opt.value)}
+                className={cn(
+                  "rounded-md border px-2 py-1 text-xs transition-colors",
+                  (value ?? "") === opt.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                )}
+              >
                 {opt.label}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       );
 

@@ -68,6 +68,8 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       ctaText: "Get started",
       ctaHref: "/courses",
       bgImage: { ...EMPTY_IMAGE },
+      overlay: "dark",
+      overlayStrength: "medium",
     },
     fields: [
       layoutField([
@@ -84,6 +86,33 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         label: "Image",
         type: "image",
         helpText: "Used as the background (Centered) or side image (Split).",
+      },
+      {
+        key: "overlay",
+        label: "Image shade",
+        type: "select",
+        helpText: "Shade the background photo so the headline stays readable.",
+        showWhen: (d) => (d.layout ?? "centered") === "centered",
+        options: [
+          { label: "None", value: "none" },
+          { label: "Dark", value: "dark" },
+          { label: "Light", value: "light" },
+        ],
+      },
+      {
+        key: "overlayStrength",
+        label: "Shade strength",
+        type: "select",
+        display: "slider",
+        showWhen: (d) =>
+          (d.layout ?? "centered") === "centered" &&
+          !!d.overlay &&
+          d.overlay !== "none",
+        options: [
+          { label: "Light", value: "light" },
+          { label: "Medium", value: "medium" },
+          { label: "Strong", value: "strong" },
+        ],
       },
     ],
   },
@@ -108,13 +137,14 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "headingLevel",
-        label: "Heading level",
+        label: "Heading size",
         type: "select",
+        display: "slider",
         options: [
-          { label: "H1 (largest)", value: "h1" },
-          { label: "H2 (large)", value: "h2" },
-          { label: "H3 (medium)", value: "h3" },
-          { label: "H4 (small)", value: "h4" },
+          { label: "Largest", value: "h1" },
+          { label: "Large", value: "h2" },
+          { label: "Medium", value: "h3" },
+          { label: "Small", value: "h4" },
         ],
       },
       { key: "body", label: "Body", type: "richtext" },
@@ -143,13 +173,14 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       { key: "heading", label: "Heading", type: "text" },
       {
         key: "headingLevel",
-        label: "Heading level",
+        label: "Heading size",
         type: "select",
+        display: "slider",
         options: [
-          { label: "H1 (largest)", value: "h1" },
-          { label: "H2 (large)", value: "h2" },
-          { label: "H3 (medium)", value: "h3" },
-          { label: "H4 (small)", value: "h4" },
+          { label: "Largest", value: "h1" },
+          { label: "Large", value: "h2" },
+          { label: "Medium", value: "h3" },
+          { label: "Small", value: "h4" },
         ],
       },
       { key: "body", label: "Body", type: "richtext" },
@@ -212,7 +243,21 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         itemLabel: "Testimonial",
         itemFields: [
           { key: "name", label: "Name", type: "text", required: true },
+          { key: "role", label: "Role / company", type: "text" },
           { key: "text", label: "Quote", type: "textarea", required: true },
+          {
+            key: "rating",
+            label: "Rating",
+            type: "select",
+            options: [
+              { label: "None", value: "" },
+              { label: "1", value: "1" },
+              { label: "2", value: "2" },
+              { label: "3", value: "3" },
+              { label: "4", value: "4" },
+              { label: "5", value: "5" },
+            ],
+          },
           { key: "avatar", label: "Avatar", type: "image" },
         ],
       },
@@ -269,6 +314,13 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       { key: "heading", label: "Heading", type: "text", required: true },
       { key: "buttonText", label: "Button text", type: "text" },
       { key: "buttonHref", label: "Button link", type: "link" },
+      {
+        key: "secondaryButtonText",
+        label: "Secondary button text",
+        type: "text",
+        helpText: "Optional second button (outlined).",
+      },
+      { key: "secondaryButtonHref", label: "Secondary button link", type: "link" },
     ],
   },
   stats: {
@@ -355,6 +407,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       text: "Announcement",
       linkText: "",
       linkHref: "",
+      dismissible: false,
     },
     fields: [
       layoutField([
@@ -365,6 +418,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       { key: "text", label: "Text", type: "text", required: true },
       { key: "linkText", label: "Link text", type: "text" },
       { key: "linkHref", label: "Link", type: "link" },
+      {
+        key: "dismissible",
+        label: "Allow visitors to dismiss",
+        type: "toggle",
+        helpText: "Adds an X so visitors can close it; their choice is remembered.",
+      },
     ],
   },
   contact: {
@@ -423,10 +482,11 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         key: "columns",
         label: "Columns",
         type: "select",
+        display: "slider",
         options: [
-          { label: "2 columns", value: "2" },
-          { label: "3 columns", value: "3" },
-          { label: "4 columns", value: "4" },
+          { label: "2", value: "2" },
+          { label: "3", value: "3" },
+          { label: "4", value: "4" },
         ],
       },
       {
@@ -546,8 +606,9 @@ export function mintBlockId(): string {
 
 /** Build a fresh block of the given type with a unique id + niche-aware example
  *  content. Static content blocks (hero, testimonials, faq, …) are seeded with
- *  example copy matching the tenant's `niche` (generic fallback when unknown);
- *  media/dynamic blocks have no example and keep their `defaultData`. */
+ *  example copy matching the tenant's `niche` (generic fallback when unknown).
+ *  Media/dynamic blocks get example heading/intro text too; their images and
+ *  live items (courses/plans/events/products) still come from the coach. */
 export function newBlock(type: string, niche?: string): Block {
   const def = BLOCK_REGISTRY[type];
   return {

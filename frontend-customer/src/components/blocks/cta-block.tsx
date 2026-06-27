@@ -8,13 +8,24 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
   if (!editable && !data.heading) return null;
   const layout = data.layout || "centered";
 
-  const button = data.buttonText && data.buttonHref && (
+  const primary = data.buttonText && data.buttonHref && (
     <Button asChild size="lg" className="gap-2">
       <Link href={data.buttonHref}>
         {data.buttonText}
         <ArrowRight className="h-4 w-4" />
       </Link>
     </Button>
+  );
+  const secondary = data.secondaryButtonText && data.secondaryButtonHref && (
+    <Button asChild size="lg" variant="outline">
+      <Link href={data.secondaryButtonHref}>{data.secondaryButtonText}</Link>
+    </Button>
+  );
+  const buttons = (primary || secondary) && (
+    <div className="flex flex-wrap items-center gap-3">
+      {primary}
+      {secondary}
+    </div>
   );
 
   // Banner: filled primary band with heading + button side by side.
@@ -30,7 +41,7 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
             editable={editable}
             placeholder="Your call to action"
           />
-          {button && <div className="shrink-0">{button}</div>}
+          {buttons && <div className="shrink-0">{buttons}</div>}
         </div>
       </section>
     );
@@ -49,7 +60,7 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
             editable={editable}
             placeholder="Your call to action"
           />
-          {button && <div className="shrink-0">{button}</div>}
+          {buttons && <div className="shrink-0">{buttons}</div>}
         </div>
       </section>
     );
@@ -67,7 +78,7 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
           editable={editable}
           placeholder="Your call to action"
         />
-        {button && <div className="mt-8">{button}</div>}
+        {buttons && <div className="mt-8 flex justify-center">{buttons}</div>}
       </div>
     </section>
   );

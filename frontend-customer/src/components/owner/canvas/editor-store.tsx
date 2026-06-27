@@ -9,6 +9,11 @@ import {
   useRef,
 } from "react";
 import { mintBlockId } from "@/lib/blocks/registry";
+import { clientFetch } from "@/lib/api-client";
+import {
+  applyExampleImages,
+  type ExamplePhoto,
+} from "@/lib/blocks/example-images";
 import type { Block, PageKey, PagesConfig } from "@/types/tenant";
 
 // ---------------------------------------------------------------------------
@@ -274,6 +279,22 @@ export function EditorStoreProvider({
     onPagesChangeRef.current(state.pages);
   }, [state.pages]);
 
+  // The tenant's photo library, fetched once, used to auto-fill freshly added
+  // image blocks (hero / image+text / gallery / testimonials) with random
+  // existing photos so they land visually complete.
+  const examplePhotosRef = useRef<ExamplePhoto[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    clientFetch<{ results: ExamplePhoto[] }>("/api/v1/photos/")
+      .then((d) => {
+        if (!cancelled) examplePhotosRef.current = d.results ?? [];
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const store = useMemo<EditorStore>(
     () => ({
       ...state,
@@ -282,7 +303,12 @@ export function EditorStoreProvider({
       canRedo: state.future.length > 0,
       blocksFor: (pageKey) => state.pages[pageKey]?.blocks ?? [],
       insertBlock: (pageKey, block, index) =>
-        dispatch({ type: "insert", pageKey, block, index }),
+        dispatch({
+          type: "insert",
+          pageKey,
+          block: applyExampleImages(block, examplePhotosRef.current),
+          index,
+        }),
       removeBlock: (pageKey, id) => dispatch({ type: "remove", pageKey, id }),
       duplicateBlock: (pageKey, id) =>
         dispatch({ type: "duplicate", pageKey, id }),

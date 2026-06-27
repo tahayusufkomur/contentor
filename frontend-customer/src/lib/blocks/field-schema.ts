@@ -27,9 +27,10 @@ export interface FieldSchema {
   helpText?: string;
   /** Options for `select`. */
   options?: { label: string; value: string }[];
-  /** `select` only: render the options as an icon-tile picker instead of a
-   *  dropdown (each option's icon is resolved by value in the renderer). */
-  display?: "icons";
+  /** `select` only: how to render the options. `icons` = icon-tile picker (icon
+   *  resolved by value in the renderer); `slider` = labelled snap-slider for
+   *  ordered "how much" settings. Omitted = one-click buttons (no dropdown). */
+  display?: "icons" | "slider";
   /** `filterGroups` only: which filters to offer (courses vs events). */
   filterScope?: "course" | "event";
   /** Conditional visibility based on the current block data. */

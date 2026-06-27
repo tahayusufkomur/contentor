@@ -7,9 +7,10 @@
 // working. The allowlist here mirrors the server's `BLOCK_STYLE_ALLOWLIST`
 // (backend `defaults.py`), which is authoritative.
 
+import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 
-export type StyleControl = "background" | "spacing" | "align";
+export type StyleControl = "background" | "spacing" | "align" | "textColor";
 
 // Each color preset pairs a surface token with its contrasting foreground, and
 // forces that foreground onto the block's text elements (headings, paragraphs,
@@ -41,40 +42,78 @@ const ALIGN_CLASSES: Record<string, string> = {
   right: "[&>*]:!text-right [&>*]:!justify-end",
 };
 
+// Per-block text-colour override. Values are theme TOKENS (foreground stays the
+// no-override default; `muted` → muted-foreground, `brand` → primary) so coach
+// text stays on-brand and dark-mode-safe. Forced onto headings + body text with
+// `!important` (mirroring BACKGROUND_CLASSES). When a block also has a coloured
+// background, the renderer composes these LAST so text colour wins (tailwind-
+// merge collapses the same-variant text-colour conflict to this value).
+const TEXT_COLOR_CLASSES: Record<string, string> = {
+  muted:
+    "[&_h1]:!text-muted-foreground [&_h2]:!text-muted-foreground [&_h3]:!text-muted-foreground [&_h4]:!text-muted-foreground [&_p]:!text-muted-foreground [&_li]:!text-muted-foreground [&_span]:!text-muted-foreground",
+  brand:
+    "[&_h1]:!text-primary [&_h2]:!text-primary [&_h3]:!text-primary [&_h4]:!text-primary [&_p]:!text-primary [&_li]:!text-primary [&_span]:!text-primary",
+};
+
+// Dynamic (live-data) blocks render themed inner cards whose titles are <h3>;
+// their section heading is <h1>/<h2>. Text colour there targets the section
+// heading ONLY so cards keep guaranteed contrast.
+const TEXT_COLOR_HEADING_CLASSES: Record<string, string> = {
+  muted: "[&_h1]:!text-muted-foreground [&_h2]:!text-muted-foreground",
+  brand: "[&_h1]:!text-primary [&_h2]:!text-primary",
+};
+
+// Block types whose text colour applies to the section heading only (see above).
+const HEADING_ONLY_TEXT_COLOR_TYPES = new Set([
+  "courseGrid",
+  "pricingPlans",
+  "upcomingEvents",
+  "storeProducts",
+]);
+
 /** Tailwind classes for a block's optional style override, applied by the
  *  renderer as a wrapper. Returns "" when there's no (effective) override. */
-export function blockStyleClasses(block: Pick<Block, "style">): string {
+export function blockStyleClasses(block: Pick<Block, "style" | "type">): string {
   const s = block.style;
   if (!s) return "";
-  return [
+  const textColor =
+    s.textColor &&
+    (HEADING_ONLY_TEXT_COLOR_TYPES.has(block.type)
+      ? TEXT_COLOR_HEADING_CLASSES[s.textColor]
+      : TEXT_COLOR_CLASSES[s.textColor]);
+  // `cn` composes with tailwind-merge; textColor goes LAST so it wins over a
+  // background preset's forced foreground (same-variant conflict collapses to it).
+  return cn(
     s.background && BACKGROUND_CLASSES[s.background],
     s.spacing && SPACING_CLASSES[s.spacing],
     s.align && ALIGN_CLASSES[s.align],
-  ]
-    .filter(Boolean)
-    .join(" ");
+    textColor,
+  );
 }
 
 // Which style controls the editor surfaces per block type (a subset of — never
 // wider than — the server allowlist). Structural/dynamic blocks get outer
 // chrome only so their themed inner cards stay consistent.
 export const STYLE_CONTROLS: Record<string, StyleControl[]> = {
-  hero: [], // hero uses layout presets instead of generic style overrides
-  richText: ["background", "spacing", "align"],
-  imageText: ["background", "spacing"],
-  cta: ["background", "spacing", "align"],
-  stats: ["background", "spacing", "align"],
-  testimonials: ["background", "spacing"],
-  faq: ["background", "spacing"],
-  logos: ["background", "spacing"],
-  banner: ["align"],
-  gallery: ["spacing"],
-  video: ["spacing"],
-  contact: ["background", "spacing"],
-  courseGrid: ["spacing"],
-  pricingPlans: ["spacing"],
-  upcomingEvents: ["spacing"],
-  storeProducts: ["spacing"],
+  // hero: background/spacing come from its layout presets + image, but text
+  // colour applies (image legibility is handled by the hero's image-shade fields).
+  hero: ["textColor"],
+  richText: ["background", "spacing", "align", "textColor"],
+  imageText: ["background", "spacing", "textColor"],
+  cta: ["background", "spacing", "align", "textColor"],
+  stats: ["background", "spacing", "align", "textColor"],
+  testimonials: ["background", "spacing", "textColor"],
+  faq: ["background", "spacing", "textColor"],
+  logos: ["background", "spacing", "textColor"],
+  banner: ["align", "textColor"],
+  gallery: ["spacing", "textColor"],
+  video: ["spacing", "textColor"],
+  contact: ["background", "spacing", "textColor"],
+  // Dynamic blocks: text colour applies to the section heading only (cards stay themed).
+  courseGrid: ["spacing", "textColor"],
+  pricingPlans: ["spacing", "textColor"],
+  upcomingEvents: ["spacing", "textColor"],
+  storeProducts: ["spacing", "textColor"],
 };
 
 export function styleControlsFor(type: string): StyleControl[] {
@@ -120,6 +159,11 @@ export const STYLE_OPTIONS: Record<
     { label: "Center", value: "center" },
     { label: "Right", value: "right" },
   ],
+  textColor: [
+    { label: "Default", value: "default" },
+    { label: "Muted", value: "muted" },
+    { label: "Brand", value: "brand" },
+  ],
 };
 
 /** The value treated as "no override" for a control (cleared from `style`).
@@ -129,4 +173,5 @@ export const STYLE_DEFAULTS: Record<StyleControl, string> = {
   background: "default",
   spacing: "normal",
   align: "auto",
+  textColor: "default",
 };

@@ -3,7 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PriceBadge } from "@/components/billing/price-badge";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
+import { BlockPlaceholder } from "./block-placeholder";
 import type { StoreItem } from "@/types/billing";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
@@ -15,11 +16,22 @@ const TYPE_LABELS: Record<string, string> = {
   bundle: "Bundle",
 };
 
-export function StoreProductsBlock({ data, dynamicData }: BlockComponentProps) {
+export function StoreProductsBlock({
+  data,
+  dynamicData,
+  editable,
+}: BlockComponentProps) {
   let items: StoreItem[] = dynamicData ?? [];
   const limit = Number(data.limit) || 8;
   items = items.slice(0, limit);
-  if (!items.length) return null;
+  if (!items.length)
+    return editable ? (
+      <BlockPlaceholder
+        icon={ShoppingBag}
+        title="Your products will appear here"
+        description="Add a course, download or session and it'll appear here."
+      />
+    ) : null;
   const layout = data.layout || "grid";
 
   const header = (
@@ -54,6 +66,7 @@ export function StoreProductsBlock({ data, dynamicData }: BlockComponentProps) {
                       <img
                         src={item.thumbnail_url}
                         alt={item.title}
+                        loading="lazy"
                         className="h-16 w-24 shrink-0 rounded-md object-cover"
                       />
                     ) : (
@@ -101,6 +114,7 @@ export function StoreProductsBlock({ data, dynamicData }: BlockComponentProps) {
                   <img
                     src={item.thumbnail_url}
                     alt={item.title}
+                    loading="lazy"
                     className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (

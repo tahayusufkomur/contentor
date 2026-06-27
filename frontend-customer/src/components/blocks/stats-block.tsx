@@ -1,3 +1,5 @@
+import { BarChart3 } from "lucide-react";
+import { BlockPlaceholder } from "./block-placeholder";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 interface StatItem {
@@ -5,11 +7,18 @@ interface StatItem {
   label?: string;
 }
 
-export function StatsBlock({ data }: BlockComponentProps) {
+export function StatsBlock({ data, editable }: BlockComponentProps) {
   const items: StatItem[] = (data.items ?? []).filter(
     (it: StatItem) => it?.value || it?.label,
   );
-  if (!items.length) return null;
+  if (!items.length)
+    return editable ? (
+      <BlockPlaceholder
+        icon={BarChart3}
+        title="No stats yet"
+        description="Add your first stat from the editor panel on the left."
+      />
+    ) : null;
   const layout = data.layout || "cards";
 
   const heading = data.heading && (

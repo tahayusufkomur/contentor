@@ -25,7 +25,7 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
       )}
       {(data.body || editable) && (
         <EditableBody
-          className="mt-4 leading-relaxed text-muted-foreground"
+          className="mt-4 leading-relaxed text-foreground/90"
           value={data.body}
           field="body"
           editable={editable}
@@ -46,6 +46,7 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
               <img
                 src={img}
                 alt={data.heading || ""}
+                loading="lazy"
                 className="max-h-[26rem] w-full rounded-2xl object-cover"
               />
             </div>
@@ -76,6 +77,7 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
                 <img
                   src={img}
                   alt={data.heading || ""}
+                  loading="lazy"
                   className="h-full max-h-[28rem] w-full object-cover"
                 />
               </div>
@@ -104,6 +106,7 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
               <img
                 src={img}
                 alt={data.heading || ""}
+                loading="lazy"
                 className="max-h-80 w-full rounded-2xl object-cover"
               />
             </div>

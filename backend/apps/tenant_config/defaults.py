@@ -63,33 +63,39 @@ KNOWN_BLOCK_TYPES = frozenset(CONTENT_BLOCK_TYPES + DYNAMIC_BLOCK_TYPES)
 STYLE_BACKGROUND_TOKENS = ("default", "muted", "card", "accent", "primary")
 STYLE_SPACING_VALUES = ("none", "compact", "normal", "spacious")
 STYLE_ALIGN_VALUES = ("left", "center", "right")
+# Text colour is a theme TOKEN too (foreground / muted-foreground / primary) so
+# coach-set text stays on-brand and dark-mode-safe. "default" is the no-op.
+STYLE_TEXT_COLOR_TOKENS = ("default", "muted", "brand")
 
 # Which override keys each block type may carry. Server-authoritative: the
 # frontend may surface a subset of controls, but must never widen this set.
 # Structural/dynamic blocks get only outer chrome (background/spacing) so their
 # themed inner cards stay consistent.
 BLOCK_STYLE_ALLOWLIST = {
-    # hero has its own layout presets + background image, so no generic style
-    # overrides (a token background would be hidden behind the image, and its
-    # height is min-height-driven so a padding/spacing override does nothing).
-    "hero": frozenset(),
-    "richText": frozenset({"background", "spacing", "align"}),
-    "imageText": frozenset({"background", "spacing"}),
-    "cta": frozenset({"background", "spacing", "align"}),
-    "stats": frozenset({"background", "spacing", "align"}),
-    "testimonials": frozenset({"background", "spacing"}),
-    "faq": frozenset({"background", "spacing"}),
-    "logos": frozenset({"background", "spacing"}),
-    "banner": frozenset({"align"}),
-    "gallery": frozenset({"spacing"}),
-    "video": frozenset({"spacing"}),
-    "contact": frozenset({"background", "spacing"}),
+    # hero has its own layout presets + background image, so no generic
+    # background/spacing override (a token background would be hidden behind the
+    # image, and its height is min-height-driven so spacing does nothing). It
+    # still allows textColor for its no-image layouts; image legibility is
+    # handled by the hero's own image-shade fields.
+    "hero": frozenset({"textColor"}),
+    "richText": frozenset({"background", "spacing", "align", "textColor"}),
+    "imageText": frozenset({"background", "spacing", "textColor"}),
+    "cta": frozenset({"background", "spacing", "align", "textColor"}),
+    "stats": frozenset({"background", "spacing", "align", "textColor"}),
+    "testimonials": frozenset({"background", "spacing", "textColor"}),
+    "faq": frozenset({"background", "spacing", "textColor"}),
+    "logos": frozenset({"background", "spacing", "textColor"}),
+    "banner": frozenset({"align", "textColor"}),
+    "gallery": frozenset({"spacing", "textColor"}),
+    "video": frozenset({"spacing", "textColor"}),
+    "contact": frozenset({"background", "spacing", "textColor"}),
     # Dynamic blocks render themed inner cards — only outer spacing, never a
-    # background that would force the card text out of contrast.
-    "courseGrid": frozenset({"spacing"}),
-    "pricingPlans": frozenset({"spacing"}),
-    "upcomingEvents": frozenset({"spacing"}),
-    "storeProducts": frozenset({"spacing"}),
+    # background that would force the card text out of contrast. textColor is
+    # allowed but applied to the section heading only (cards stay themed).
+    "courseGrid": frozenset({"spacing", "textColor"}),
+    "pricingPlans": frozenset({"spacing", "textColor"}),
+    "upcomingEvents": frozenset({"spacing", "textColor"}),
+    "storeProducts": frozenset({"spacing", "textColor"}),
 }
 
 
@@ -115,6 +121,9 @@ def sanitize_block_style(block_type, style):
     align = style.get("align")
     if "align" in allowed and align in STYLE_ALIGN_VALUES:
         out["align"] = align
+    text_color = style.get("textColor")
+    if "textColor" in allowed and text_color in STYLE_TEXT_COLOR_TOKENS and text_color != "default":
+        out["textColor"] = text_color
     return out or None
 
 

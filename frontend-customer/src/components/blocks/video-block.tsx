@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { Video } from "lucide-react";
+import { BlockPlaceholder } from "./block-placeholder";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 function toEmbedUrl(url: string): string | null {
@@ -9,9 +11,16 @@ function toEmbedUrl(url: string): string | null {
   return null;
 }
 
-export function VideoBlock({ data }: BlockComponentProps) {
+export function VideoBlock({ data, editable }: BlockComponentProps) {
   const url = data.video?.url as string | undefined;
-  if (!url) return null;
+  if (!url)
+    return editable ? (
+      <BlockPlaceholder
+        icon={Video}
+        title="No video yet"
+        description="Paste a YouTube or Vimeo link, or pick a library video, on the left."
+      />
+    ) : null;
   const embed = toEmbedUrl(url);
   const layout = data.layout || "standard";
   const width =

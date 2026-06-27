@@ -96,6 +96,8 @@ export interface BlockStyleOverride {
   spacing?: string;
   /** Text alignment: left | center | right. */
   align?: string;
+  /** Theme-token text colour: muted | brand (default = none, uses the theme). */
+  textColor?: string;
 }
 
 /** A single block: an `id`, a `type` from the registry, and a flat content bag. */

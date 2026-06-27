@@ -1,7 +1,9 @@
-// Niche-aware example content for newly-added blocks. When a coach adds a static
-// content block in the builder, `newBlock(type, niche)` merges the matching
-// example overrides (below) onto the block's `defaultData`, so the block lands
-// pre-filled with illustrative, on-topic content instead of an empty shell.
+// Niche-aware example content for newly-added blocks. When a coach adds a block
+// in the builder, `newBlock(type, niche)` merges the matching example overrides
+// (below) onto the block's `defaultData`, so the block lands pre-filled with
+// illustrative, on-topic content instead of an empty shell. Every block type has
+// auto content; media/dynamic blocks fill heading/intro text only (their images
+// and live items come from the coach's own assets).
 //
 // Copy for hero / imageText / testimonials / faq / cta is transcribed from the
 // niche seed modules (backend `apps/core/management/commands/demo_data/<niche>.py`
@@ -17,6 +19,9 @@
 //   cta          { heading, buttonText, buttonHref }
 //   stats        { heading, items: [{ value, label }] }
 //   banner       { text, linkText, linkHref }
+//   contact      { heading, intro }
+//   pricingPlans { heading, subheading }
+//   gallery / logos / video / courseGrid / upcomingEvents / storeProducts { heading }
 
 export type NicheKey =
   | "yoga"
@@ -99,6 +104,37 @@ export const GENERIC_EXAMPLES: Record<string, BlockExample> = {
     text: "New courses just added — start learning today.",
     linkText: "Browse programs",
     linkHref: "/courses",
+  },
+  // Media + dynamic blocks: auto content fills the heading/intro text only — the
+  // images, videos and live items (courses/plans/events/products) come from the
+  // coach's own assets, so they're left for the coach to add.
+  contact: {
+    heading: "Get in touch",
+    intro:
+      "Have a question or want to work together? Send a message and I'll get back to you soon.",
+  },
+  gallery: {
+    heading: "A look inside",
+  },
+  logos: {
+    heading: "As featured in",
+  },
+  video: {
+    heading: "Watch a quick introduction",
+  },
+  courseGrid: {
+    heading: "Explore the programs",
+  },
+  pricingPlans: {
+    heading: "Plans & pricing",
+    subheading:
+      "Pick the plan that fits where you are right now — upgrade anytime.",
+  },
+  upcomingEvents: {
+    heading: "Upcoming live sessions",
+  },
+  storeProducts: {
+    heading: "From the shop",
   },
 };
 

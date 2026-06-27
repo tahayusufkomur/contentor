@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { StepSlider } from "./step-slider";
 import {
   styleControlsFor,
   STYLE_OPTIONS,
@@ -13,6 +14,7 @@ const LABELS: Record<StyleControl, string> = {
   background: "Background",
   spacing: "Spacing",
   align: "Text alignment",
+  textColor: "Text color",
 };
 
 interface StyleControlsProps {
@@ -46,23 +48,32 @@ export function StyleControls({ block, onChange }: StyleControlsProps) {
             <label className="text-xs text-muted-foreground">
               {LABELS[control]}
             </label>
-            <div className="flex flex-wrap gap-1">
-              {STYLE_OPTIONS[control].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setStyle(control, opt.value)}
-                  className={cn(
-                    "rounded-md border px-2 py-1 text-xs transition-colors",
-                    current === opt.value
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            {control === "spacing" ? (
+              <StepSlider
+                options={STYLE_OPTIONS[control]}
+                value={current}
+                onChange={(v) => setStyle(control, v)}
+                label={LABELS[control]}
+              />
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {STYLE_OPTIONS[control].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setStyle(control, opt.value)}
+                    className={cn(
+                      "rounded-md border px-2 py-1 text-xs transition-colors",
+                      current === opt.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}

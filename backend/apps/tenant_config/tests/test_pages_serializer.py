@@ -46,6 +46,42 @@ class TestValidatePagesStyle:
         assert "style" not in out["home"]["blocks"][0]
         assert "style" not in out["home"]["blocks"][1]
 
+    def test_text_color_kept_on_content_and_dynamic_blocks(self):
+        # textColor is allowed on every block (content blocks colour heading+body,
+        # dynamic blocks colour the section heading) and sits alongside other
+        # overrides. hero allows it too (no-image layouts).
+        out = TenantConfigSerializer().validate_pages(
+            {
+                "home": {
+                    "blocks": [
+                        {"id": "a", "type": "richText", "style": {"textColor": "brand"}},
+                        {"id": "b", "type": "courseGrid", "style": {"textColor": "muted", "spacing": "compact"}},
+                        {"id": "c", "type": "hero", "style": {"textColor": "muted"}},
+                    ]
+                }
+            }
+        )
+        blocks = out["home"]["blocks"]
+        assert blocks[0]["style"] == {"textColor": "brand"}
+        assert blocks[1]["style"] == {"textColor": "muted", "spacing": "compact"}
+        assert blocks[2]["style"] == {"textColor": "muted"}
+
+    def test_text_color_noop_and_invalid_dropped(self):
+        # "default" is the no-op (cleared like background:default); unknown values
+        # (e.g. a raw colour) are dropped so pages stay theme-safe.
+        out = TenantConfigSerializer().validate_pages(
+            {
+                "home": {
+                    "blocks": [
+                        {"id": "a", "type": "richText", "style": {"textColor": "default"}},
+                        {"id": "b", "type": "richText", "style": {"textColor": "#ff0000"}},
+                    ]
+                }
+            }
+        )
+        assert "style" not in out["home"]["blocks"][0]
+        assert "style" not in out["home"]["blocks"][1]
+
     def test_invalid_and_disallowed_style_values_are_dropped(self):
         out = TenantConfigSerializer().validate_pages(
             {

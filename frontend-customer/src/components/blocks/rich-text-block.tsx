@@ -25,7 +25,7 @@ export function RichTextBlock({ data, editable }: BlockComponentProps) {
         )}
         {(data.body || editable) && (
           <EditableBody
-            className="mt-4 leading-relaxed text-muted-foreground"
+            className="mt-4 leading-relaxed text-foreground/90"
             value={data.body}
             field="body"
             editable={editable}

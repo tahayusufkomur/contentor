@@ -1,3 +1,5 @@
+import { Building2 } from "lucide-react";
+import { BlockPlaceholder } from "./block-placeholder";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 interface LogoItem {
@@ -8,11 +10,18 @@ interface LogoItem {
 const LOGO_IMG =
   "h-10 w-auto opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0";
 
-export function LogosBlock({ data }: BlockComponentProps) {
+export function LogosBlock({ data, editable }: BlockComponentProps) {
   const items: LogoItem[] = (data.items ?? []).filter(
     (it: LogoItem) => it?.image?.url,
   );
-  if (!items.length) return null;
+  if (!items.length)
+    return editable ? (
+      <BlockPlaceholder
+        icon={Building2}
+        title="No logos yet"
+        description="Add logos from the editor panel on the left."
+      />
+    ) : null;
   const layout = data.layout || "row";
 
   return (
@@ -31,7 +40,7 @@ export function LogosBlock({ data }: BlockComponentProps) {
                 className="flex items-center justify-center bg-background p-8"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image!.url!} alt={item.alt || ""} className={LOGO_IMG} />
+                <img src={item.image!.url!} alt={item.alt || ""} loading="lazy" className={LOGO_IMG} />
               </div>
             ))}
           </div>
@@ -39,7 +48,7 @@ export function LogosBlock({ data }: BlockComponentProps) {
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
             {items.map((item, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={item.image!.url!} alt={item.alt || ""} className={LOGO_IMG} />
+              <img key={i} src={item.image!.url!} alt={item.alt || ""} loading="lazy" className={LOGO_IMG} />
             ))}
           </div>
         )}

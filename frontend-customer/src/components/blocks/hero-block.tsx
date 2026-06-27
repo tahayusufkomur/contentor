@@ -1,8 +1,23 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { InlineText } from "./inline-text";
 import type { BlockComponentProps } from "@/lib/blocks/types";
+
+// Fixed scrim layers for the Centered hero's background photo. A photo isn't
+// theme-aware, so these are deliberately fixed black/white (the one sanctioned
+// non-token colour, like text-white on destructive surfaces).
+const DARK_SCRIM: Record<string, string> = {
+  light: "bg-black/30",
+  medium: "bg-black/50",
+  strong: "bg-black/70",
+};
+const LIGHT_SCRIM: Record<string, string> = {
+  light: "bg-white/40",
+  medium: "bg-white/60",
+  strong: "bg-white/75",
+};
 
 export function HeroBlock({ data, editable }: BlockComponentProps) {
   const bg = data.bgImage?.url as string | undefined;
@@ -11,10 +26,36 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
       ? data.layout
       : "centered";
 
+  // Image shade applies only to the Centered full-bleed photo. Defaults to a
+  // medium dark scrim so a hero with a photo is readable out of the box; the
+  // coach can pick a lighter/stronger shade or turn it off ("none").
+  const shade =
+    bg && layout === "centered" ? (data.overlay as string) || "dark" : "none";
+  const strength = (data.overlayStrength as string) || "medium";
+  const scrimClass =
+    shade === "dark"
+      ? DARK_SCRIM[strength] ?? DARK_SCRIM.medium
+      : shade === "light"
+        ? LIGHT_SCRIM[strength] ?? LIGHT_SCRIM.medium
+        : null;
+  // Auto-flip the hero text for legibility over the scrim. Kept non-important so
+  // an explicit "Text color" override (Style panel) still wins over it.
+  const headingColor =
+    shade === "dark" ? "text-white" : shade === "light" ? "text-black" : "";
+  const subColor =
+    shade === "dark"
+      ? "text-white/80"
+      : shade === "light"
+        ? "text-black/70"
+        : "text-muted-foreground";
+
   const heading = (
     <InlineText
       as="h1"
-      className="font-display text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl"
+      className={cn(
+        "font-display text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl",
+        headingColor,
+      )}
       value={data.heading}
       field="heading"
       editable={editable}
@@ -24,7 +65,7 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
   const subheading = (data.subheading || editable) && (
     <InlineText
       as="p"
-      className="mt-5 text-lg text-muted-foreground md:text-xl"
+      className={cn("mt-5 text-lg md:text-xl", subColor)}
       value={data.subheading}
       field="subheading"
       editable={editable}
@@ -78,7 +119,7 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
     );
   }
 
-  // Centered (default): full-bleed background image with an overlay.
+  // Centered (default): full-bleed background image with an optional shade.
   return (
     <section
       className="relative flex min-h-[60vh] flex-col items-center justify-center py-20 text-center"
@@ -92,9 +133,7 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
           : undefined
       }
     >
-      {bg && (
-        <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
-      )}
+      {scrimClass && <div className={cn("absolute inset-0", scrimClass)} />}
       <div className="relative z-10 mx-auto max-w-3xl px-4">
         {heading}
         {subheading}

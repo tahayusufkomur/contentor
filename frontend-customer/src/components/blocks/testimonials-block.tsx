@@ -1,8 +1,13 @@
+import { Quote, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BlockPlaceholder } from "./block-placeholder";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 interface TestimonialItem {
   name?: string;
   text?: string;
+  role?: string;
+  rating?: string;
   avatar?: { url: string | null };
 }
 
@@ -18,6 +23,7 @@ function Avatar({
     <img
       src={item.avatar.url}
       alt={item.name || ""}
+      loading="lazy"
       className={`${size} rounded-full object-cover`}
     />
   ) : (
@@ -29,9 +35,47 @@ function Avatar({
   );
 }
 
-export function TestimonialsBlock({ data }: BlockComponentProps) {
+function Stars({ rating }: { rating?: string }) {
+  const n = Number(rating) || 0;
+  if (n < 1) return null;
+  return (
+    <div className="flex gap-0.5" aria-label={`Rated ${n} out of 5`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={cn(
+            "h-4 w-4",
+            i < n
+              ? "fill-primary text-primary"
+              : "fill-transparent text-muted-foreground/30",
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+function NameLine({ item }: { item: TestimonialItem }) {
+  return (
+    <div>
+      <span className="text-sm font-medium">{item.name}</span>
+      {item.role && (
+        <span className="block text-xs text-muted-foreground">{item.role}</span>
+      )}
+    </div>
+  );
+}
+
+export function TestimonialsBlock({ data, editable }: BlockComponentProps) {
   const items: TestimonialItem[] = data.items ?? [];
-  if (!items.length) return null;
+  if (!items.length)
+    return editable ? (
+      <BlockPlaceholder
+        icon={Quote}
+        title="No testimonials yet"
+        description="Add your first testimonial from the editor panel on the left."
+      />
+    ) : null;
   const layout = data.layout || "cards";
 
   const heading = data.heading && (
@@ -48,12 +92,17 @@ export function TestimonialsBlock({ data }: BlockComponentProps) {
           {heading}
           {items.map((item, i) => (
             <figure key={i} className="text-center">
+              {item.rating && (
+                <div className="mb-4 flex justify-center">
+                  <Stars rating={item.rating} />
+                </div>
+              )}
               <blockquote className="font-display text-2xl font-medium leading-relaxed md:text-3xl">
                 &ldquo;{item.text}&rdquo;
               </blockquote>
               <figcaption className="mt-6 flex items-center justify-center gap-3">
                 <Avatar item={item} />
-                <span className="text-sm font-medium">{item.name}</span>
+                <NameLine item={item} />
               </figcaption>
             </figure>
           ))}
@@ -74,10 +123,23 @@ export function TestimonialsBlock({ data }: BlockComponentProps) {
                 <Avatar item={item} size="h-11 w-11" />
               </div>
               <div>
+                {item.rating && (
+                  <div className="mb-1.5">
+                    <Stars rating={item.rating} />
+                  </div>
+                )}
                 <p className="leading-relaxed text-muted-foreground">
                   &ldquo;{item.text}&rdquo;
                 </p>
-                <p className="mt-2 text-sm font-medium">{item.name}</p>
+                <p className="mt-2 text-sm font-medium">
+                  {item.name}
+                  {item.role && (
+                    <span className="font-normal text-muted-foreground">
+                      {" "}
+                      · {item.role}
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           ))}
@@ -94,12 +156,13 @@ export function TestimonialsBlock({ data }: BlockComponentProps) {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item, i) => (
             <div key={i} className="space-y-4 rounded-xl border bg-background p-6">
+              {item.rating && <Stars rating={item.rating} />}
               <p className="leading-relaxed text-muted-foreground">
                 &ldquo;{item.text}&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <Avatar item={item} />
-                <span className="text-sm font-medium">{item.name}</span>
+                <NameLine item={item} />
               </div>
             </div>
           ))}
