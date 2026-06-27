@@ -47,7 +47,11 @@ import "@/styles/globals.css";
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  // Expose the default font under its own variable so it never shadows the
+  // tenant's `--font-sans` override (which is injected at :root by
+  // TenantThemeStyle / the builder live preview). globals.css points
+  // `--font-sans` at this as the fallback default.
+  variable: "--font-instrument",
   display: "swap",
 });
 
@@ -103,7 +107,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className={instrumentSans.variable} suppressHydrationWarning>
       <head>
         {config && <TenantThemeStyle config={config} />}
         {config?.font_family && (
@@ -114,7 +118,7 @@ export default async function RootLayout({
         )}
       </head>
       <body
-        className={`${instrumentSans.variable} bg-cinematic min-h-screen font-sans antialiased`}
+        className={`bg-cinematic min-h-screen font-sans antialiased`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
