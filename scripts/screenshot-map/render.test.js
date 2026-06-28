@@ -26,3 +26,12 @@ test("render produces self-contained html with both frontends and inlined thumbn
   assert.match(html, /abc1234/);
   assert.ok(!/<img src="\/[^"]/.test(html)); // no external image refs
 });
+
+test("render escapes hostile user-derived strings", () => {
+  const results = [
+    { frontend: "main", area: "admin", role: "superadmin", url: "/x?<script>alert(1)</script>", status: "ok", note: "", png: null },
+  ];
+  const html = render(results, { generatedAt: "t", commit: "c", summary: summarize(results) });
+  assert.ok(!html.includes("<script>alert(1)</script>"));
+  assert.ok(html.includes("&lt;script&gt;"));
+});

@@ -45,7 +45,7 @@ function summarize(results) {
 function card(r) {
   const img = dataUri(r.png);
   const thumb = img
-    ? `<img src="${img}" loading="lazy" alt="">`
+    ? `<img src="${escapeHtml(img)}" loading="lazy" alt="">`
     : `<div class="noimg">${escapeHtml(r.status)}</div>`;
   return `<div class="card status-${escapeHtml(r.status)}">
     ${thumb}
