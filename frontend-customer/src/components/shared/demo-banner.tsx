@@ -12,7 +12,9 @@ import { BASE_DOMAIN } from '@/lib/constants'
  */
 export function DemoBanner() {
   const config = useTenant()
-  if (!config?.is_demo) return null
+  // Hidden when this isn't a demo, or when demo read-only is disabled (local dev) —
+  // there's nothing read-only to advertise and the tenant is fully editable.
+  if (!config?.is_demo || config.demo_readonly === false) return null
 
   const niche = config.demo_niche || ''
   const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')

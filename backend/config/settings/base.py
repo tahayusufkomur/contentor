@@ -213,6 +213,11 @@ def _env_bool(name: str, default: bool) -> bool:
 # `config.settings.prod`.
 BILLING_BYPASS_ENABLED = _env_bool("BILLING_BYPASS_ENABLED", True)
 
+# Demo tenants (is_demo=True) reject mutating requests and show a read-only banner.
+# Disable locally (dev.py sets this False) to make demo tenants fully interactive
+# for testing. MUST stay True in production so marketing demos can't be edited.
+DEMO_READONLY_ENABLED = _env_bool("DEMO_READONLY_ENABLED", True)
+
 # Days a `past_due` PlatformSubscription stays before the dunning sweep downgrades.
 PAST_DUE_GRACE_DAYS = int(os.environ.get("PAST_DUE_GRACE_DAYS", "7"))
 

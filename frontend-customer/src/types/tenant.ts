@@ -159,6 +159,9 @@ export interface TenantConfig {
   timezone: string;
   onboarding_completed: boolean;
   is_demo?: boolean;
+  /** Whether demo read-only enforcement is active (off locally). When false, the
+   * demo banner is hidden and the tenant is editable. */
+  demo_readonly?: boolean;
   tenant_name?: string;
   tenant_slug?: string;
   demo_niche?: string;

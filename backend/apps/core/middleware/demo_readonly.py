@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
 
@@ -28,7 +29,8 @@ class DemoReadOnlyMiddleware:
     def __call__(self, request):
         tenant = getattr(connection, "tenant", None)
         if (
-            tenant is not None
+            getattr(settings, "DEMO_READONLY_ENABLED", True)
+            and tenant is not None
             and getattr(tenant, "is_demo", False)
             and request.method not in SAFE_METHODS
             and not any(request.path.startswith(p) for p in DEMO_EXEMPT_PATH_PREFIXES)

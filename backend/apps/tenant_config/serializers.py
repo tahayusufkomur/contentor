@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import connection
 from rest_framework import serializers
 
@@ -119,6 +120,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         if tenant is not None:
             slug = tenant.slug or ""
             data["is_demo"] = bool(getattr(tenant, "is_demo", False))
+            # Whether demo read-only enforcement is active. Off locally so the
+            # frontend can hide the demo banner and allow editing while testing.
+            data["demo_readonly"] = bool(getattr(settings, "DEMO_READONLY_ENABLED", True))
             data["tenant_name"] = tenant.name
             data["tenant_slug"] = slug
             data["demo_niche"] = slug[len("demo-") :] if slug.startswith("demo-") else ""
