@@ -132,3 +132,6 @@ prod-build: ## Build the prod images locally (catches prod build breaks; no netw
 
 prod-config: ## Validate the prod compose + .env.prod interpolation
 	$(PROD_COMPOSE) config >/dev/null && echo "prod compose OK"
+
+screenshot-map: ## Generate the visual sitemap of both frontends (docs/screenshot-map/index.html)
+	cd scripts/screenshot-map && npm install --silent && npx playwright install chromium && node index.js

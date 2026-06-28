@@ -51,3 +51,6 @@ Thumbs.db
 # Superpowers
 .superpowers/
 backend/celerybeat-schedule
+
+# Generated screenshot map (regenerate with `make screenshot-map`)
+docs/screenshot-map/
