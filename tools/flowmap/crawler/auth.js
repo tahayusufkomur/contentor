@@ -35,7 +35,9 @@ function mintSessionJwt(role, tenantSlug) {
 }
 
 async function getContext(browser, { role, host, tenantSlug }) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  // deviceScaleFactor 2 captures at 2x (2880×1800) so the downscaled thumb/full
+  // images stay crisp — flows are small, so the extra capture cost is affordable.
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
   if (role !== "anon") {
     const jwt = mintSessionJwt(role, role === "superadmin" ? "" : tenantSlug);
     await context.addCookies([sessionCookie(jwt, host)]);

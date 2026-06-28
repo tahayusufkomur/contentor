@@ -55,21 +55,43 @@ async function showFlow(id) {
     container: cyEl,
     elements,
     style: [
-      { selector: "node[img]", style: { width: 150, height: 94, shape: "round-rectangle", "background-fit": "cover", "background-image": "data(img)", "background-color": "#1b1f2a", "border-width": 2, "border-color": "#3b4252", label: "data(label)", "font-size": 8, color: "#c7ccd6", "text-valign": "bottom", "text-margin-y": 4, "text-max-width": 150, "text-wrap": "ellipsis" } },
-      { selector: "node[!img]", style: { width: 150, height: 94, shape: "round-rectangle", "background-color": "#222a3a", "border-width": 2, "border-color": "#3b4252", label: "data(label)", "font-size": 8, color: "#9aa1ad", "text-valign": "bottom", "text-margin-y": 4, "text-max-width": 150, "text-wrap": "ellipsis" } },
-      { selector: "edge", style: { width: 1.5, "line-color": "#5b6477", "target-arrow-color": "#5b6477", "target-arrow-shape": "triangle", "arrow-scale": 0.9, "curve-style": "bezier", label: "data(label)", "font-size": 8, color: "#9aa1ad", "text-background-color": "#0f1115", "text-background-opacity": 1, "text-background-padding": 2 } },
+      { selector: "node[img]", style: { width: 256, height: 160, shape: "round-rectangle", "background-fit": "cover", "background-image": "data(img)", "background-color": "#1b1f2a", "border-width": 2, "border-color": "#3b4252", label: "data(label)", "font-size": 10, color: "#c7ccd6", "text-valign": "bottom", "text-margin-y": 5, "text-max-width": 256, "text-wrap": "ellipsis" } },
+      { selector: "node[!img]", style: { width: 256, height: 160, shape: "round-rectangle", "background-color": "#222a3a", "border-width": 2, "border-color": "#3b4252", label: "data(label)", "font-size": 10, color: "#9aa1ad", "text-valign": "bottom", "text-margin-y": 5, "text-max-width": 256, "text-wrap": "ellipsis" } },
+      { selector: "node:selected", style: { "border-width": 3, "border-color": "#7aa2f7" } },
+      { selector: "edge", style: { width: 1.5, "line-color": "#5b6477", "target-arrow-color": "#5b6477", "target-arrow-shape": "triangle", "arrow-scale": 1, "curve-style": "bezier", label: "data(label)", "font-size": 10, color: "#9aa1ad", "text-background-color": "#0f1115", "text-background-opacity": 1, "text-background-padding": 3 } },
     ],
-    layout: { name: "dagre", rankDir: "LR", nodeSep: 30, rankSep: 80, padding: 30 },
+    layout: { name: "dagre", rankDir: "LR", nodeSep: 44, rankSep: 130, padding: 40 },
   });
 
-  cy.on("dbltap", "node", async (e) => {
-    const s = await (await fetch("/api/screens/" + encodeURIComponent(e.target.id))).json();
-    if (!s || !s.full) return;
-    document.getElementById("lbimg").src = s.full;
-    document.getElementById("lbcap").textContent = (s.url || "") + "  ·  " + (s.role || "");
-    lb.style.display = "flex";
+  // Cytoscape has no reliable built-in double-tap, so detect it: two taps on the
+  // same node within 350ms opens the full screenshot. Single tap stays free.
+  let last = { id: null, t: 0 };
+  cy.on("tap", "node", (e) => {
+    const id = e.target.id();
+    const now = Date.now();
+    if (last.id === id && now - last.t < 350) {
+      last = { id: null, t: 0 };
+      openLightbox(id);
+    } else {
+      last = { id, t: now };
+    }
   });
 }
 
-lb.addEventListener("click", () => { lb.style.display = "none"; });
+async function openLightbox(key) {
+  const s = await (await fetch("/api/screens/" + encodeURIComponent(key))).json();
+  if (!s || !s.full) return;
+  document.getElementById("lbimg").src = s.full;
+  document.getElementById("lbcap").textContent = (s.url || key) + "  ·  " + (s.role || "");
+  lb.style.display = "flex";
+}
+
+function closeLightbox() {
+  lb.style.display = "none";
+  document.getElementById("lbimg").src = "";
+}
+lb.addEventListener("click", closeLightbox);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeLightbox();
+});
 loadFlows();
