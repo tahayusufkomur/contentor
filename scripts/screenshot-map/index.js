@@ -18,7 +18,7 @@ function preflight() {
   for (const host of new Set(frontends.map((f) => f.host))) {
     try {
       // Caddy routes by Host header; curl localhost so we don't depend on *.localhost DNS.
-      execSync(`curl -sf -o /dev/null -H "Host: ${host}" http://localhost/`, { timeout: 10000 });
+      execSync(`curl -sf --max-time 8 -o /dev/null -H "Host: ${host}" http://localhost/`, { timeout: 10000 });
     } catch {
       console.error(`✗ ${host} not reachable via Caddy. Run: make dev && make seed && make seed-demos`);
       process.exit(1);
@@ -31,23 +31,25 @@ async function main() {
   const browser = await chromium.launch();
   const results = [];
 
-  for (const fe of frontends) {
-    const routes = discover(fe, REPO_ROOT);
-    const roles = [...new Set(routes.map((r) => r.role))];
-    const contexts = {};
-    for (const role of roles) {
-      contexts[role] = await getContext(browser, { role, host: fe.host, tenantSlug: targets.tenantSlug });
+  try {
+    for (const fe of frontends) {
+      const routes = discover(fe, REPO_ROOT);
+      const roles = [...new Set(routes.map((r) => r.role))];
+      const contexts = {};
+      for (const role of roles) {
+        contexts[role] = await getContext(browser, { role, host: fe.host, tenantSlug: targets.tenantSlug });
+      }
+      for (const route of routes) {
+        process.stdout.write(`· ${fe.name} ${route.url} … `);
+        const res = await capturePage(contexts[route.role], route, targets);
+        console.log(res.status);
+        results.push(res);
+      }
+      for (const role of roles) await contexts[role].close();
     }
-    for (const route of routes) {
-      process.stdout.write(`· ${fe.name} ${route.url} … `);
-      const res = await capturePage(contexts[route.role], route, targets);
-      console.log(res.status);
-      results.push(res);
-    }
-    for (const role of roles) await contexts[role].close();
+  } finally {
+    await browser.close();
   }
-
-  await browser.close();
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const commit = execSync("git rev-parse --short HEAD", { cwd: REPO_ROOT }).toString().trim();

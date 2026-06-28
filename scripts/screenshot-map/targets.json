@@ -1,4 +1,5 @@
 {
+  "_comment": "tenantSlug/tenantHost must match a locally seeded demo tenant (run make seed-demos and check). If wrong, all dynamic routes show as skipped.",
   "tenantSlug": "demo-yoga",
   "tenantHost": "demo-yoga.localhost",
   "mainHost": "localhost",
