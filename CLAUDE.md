@@ -115,7 +115,14 @@ Three ways Claude operates it:
   `GET /api/flows/:id`, `DELETE /api/flows/:id`, `GET /api/screens` (valid keys), `POST /api/reset`.
   Steps must reference existing screen keys (unknown keys are accepted but flagged as warnings).
 - **Rebuild:** `make flowmap-register` re-crawls (needs the dev stack up + seeded) and re-identifies
-  flows via `claude -p`; `ARGS=--reset` wipes first.
+  flows via `claude -p`; `ARGS=--reset` wipes first, `ARGS=--screens-only` refreshes every screen's
+  screenshot but keeps the existing flows. Dynamic routes (`[slug]`/`[id]`) resolve to real seeded
+  instances via `crawler/targets.json` (`dynamic` map, keyed by frontend then route url) — the crawl
+  reports its coverage (goal: 0 skipped / 0 errored).
+- **Verify one flow end-to-end:** `node --experimental-sqlite tools/flowmap/walk.js <flowId>` logs in
+  per role and live-walks every step of a flow, screenshotting each into `walk-shots/flow-<id>/` and
+  reporting per-step `ok`/`error`/`skipped` — use it (e.g. via a subagent per flow) to confirm a
+  journey renders real pages with no errored screenshots.
 
 Design + plan: `docs/superpowers/specs/2026-06-28-flowmap-service-design.md` and
 `docs/superpowers/plans/2026-06-28-flowmap-service.md`.
