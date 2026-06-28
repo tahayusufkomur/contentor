@@ -1,5 +1,15 @@
 const { DatabaseSync } = require("node:sqlite");
 
+// A flow's cluster role: the highest-privilege role among its screens; if it only
+// touches public/anon screens (e.g. a signup flow), fall back to a role word in its
+// name, else "anon" (shown as "Public"). Used to group the sidebar by actor.
+const ROLE_PRIORITY = ["superadmin", "coach", "student"];
+function primaryRole(roleCounts, name) {
+  for (const r of ROLE_PRIORITY) if (roleCounts[r]) return r;
+  const m = /superadmin|coach|student/i.exec(name || "");
+  return m ? m[0].toLowerCase() : "anon";
+}
+
 function open(dbPath) {
   const db = new DatabaseSync(dbPath);
   db.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
@@ -43,11 +53,22 @@ function open(dbPath) {
       return flowId;
     },
     listFlows() {
-      return db.prepare(`
+      const flows = db.prepare(`
         SELECT f.id, f.name, f.description,
           (SELECT COUNT(*) FROM flow_steps s WHERE s.flow_id = f.id) AS stepCount
         FROM flows f ORDER BY f.id
       `).all();
+      const roleStmt = db.prepare(`
+        SELECT sc.role AS role, COUNT(*) AS n
+        FROM flow_steps st JOIN screens sc ON sc.key IN (st.from_key, st.to_key)
+        WHERE st.flow_id = ? GROUP BY sc.role
+      `);
+      for (const f of flows) {
+        const counts = {};
+        for (const row of roleStmt.all(f.id)) counts[row.role || "anon"] = row.n;
+        f.role = primaryRole(counts, f.name);
+      }
+      return flows;
     },
     getFlow(id) {
       const flow = db.prepare(`SELECT id, name, description FROM flows WHERE id = ?`).get(id);

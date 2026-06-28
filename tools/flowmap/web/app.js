@@ -19,7 +19,14 @@ async function loadFlows() {
     flowsEl.innerHTML = '<div class="empty">No flows registered yet. Run <code>make flowmap-register</code>.</div>';
     return;
   }
-  flows.forEach((f, i) => {
+  // Group flows by their primary role so the sidebar reads superadmin / coach /
+  // student / public instead of one long list.
+  const ROLE_ORDER = ["superadmin", "coach", "student", "anon"];
+  const ROLE_LABEL = { superadmin: "Superadmin", coach: "Coach", student: "Student", anon: "Public" };
+  const groups = {};
+  flows.forEach((f) => { (groups[f.role || "anon"] ||= []).push(f); });
+
+  const makeBtn = (f) => {
     const btn = document.createElement("button");
     btn.className = "flow";
     btn.append(document.createTextNode(f.name));
@@ -32,9 +39,24 @@ async function loadFlows() {
       btn.classList.add("active");
       showFlow(f.id);
     };
-    flowsEl.append(btn);
-    if (i === 0) btn.click();
-  });
+    return btn;
+  };
+
+  let firstBtn = null;
+  for (const role of ROLE_ORDER) {
+    const list = groups[role];
+    if (!list || !list.length) continue;
+    const h = document.createElement("h2");
+    h.className = "role-group";
+    h.textContent = ROLE_LABEL[role] || role;
+    flowsEl.append(h);
+    for (const f of list) {
+      const btn = makeBtn(f);
+      flowsEl.append(btn);
+      if (!firstBtn) firstBtn = btn;
+    }
+  }
+  if (firstBtn) firstBtn.click();
 }
 
 async function showFlow(id) {
