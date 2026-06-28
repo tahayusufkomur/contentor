@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Wordmark } from '@/components/shared/logo-mark'
 
@@ -74,13 +75,16 @@ export function PlatformFooter() {
 
 function LanguageSwitcher() {
   const t = useTranslations('common.footer')
-  if (typeof window === 'undefined') return null
-  const host = window.location.host
-  const path = window.location.pathname
-  const otherHost = host.startsWith('tr.')
-    ? host.replace(/^tr\./, '')
-    : `tr.${host}`
-  const otherUrl = `${window.location.protocol}//${otherHost}${path}`
+  // The other-locale URL is derived from window.location, which only exists in the
+  // browser. Compute it after mount so the server and the first client render produce
+  // identical markup (the <a> with no href) — branching on `typeof window` during render
+  // made the server emit nothing and the client an <a>, causing a hydration mismatch.
+  const [otherUrl, setOtherUrl] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    const host = window.location.host
+    const otherHost = host.startsWith('tr.') ? host.replace(/^tr\./, '') : `tr.${host}`
+    setOtherUrl(`${window.location.protocol}//${otherHost}${window.location.pathname}`)
+  }, [])
   return (
     <a
       href={otherUrl}

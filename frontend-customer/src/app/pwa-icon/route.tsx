@@ -5,7 +5,7 @@ import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
-const SIZES: Record<string, number> = { "180": 180, "192": 192, "512": 512 };
+const SIZES: Record<string, number> = { "32": 32, "180": 180, "192": 192, "512": 512 };
 
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);

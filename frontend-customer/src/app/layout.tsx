@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans } from "next/font/google";
 import { cookies, headers } from "next/headers";
-import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
@@ -19,6 +18,7 @@ import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { UsageReporter } from "@/components/shared/usage-reporter";
 import { getAuthUser } from "@/lib/auth";
+import { COOKIE_NAME } from "@/lib/constants";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { getThemePalette } from "@/lib/themes";
 
@@ -83,6 +83,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: name,
     },
     icons: {
+      // Tenant-branded favicon via the dynamic icon route — without an explicit
+      // icon link the browser falls back to /favicon.ico, which 404s.
+      icon: [{ url: `/pwa-icon?size=32&v=${v}`, sizes: "32x32", type: "image/png" }],
       apple: [{ url: `/pwa-icon?size=180&v=${v}`, sizes: "180x180" }],
     },
   };
@@ -97,12 +100,28 @@ export default async function RootLayout({
   const config = await fetchTenantConfig(slug);
   // The customer app only ever runs on tenant subdomains. If the host doesn't
   // resolve to a registered Tenant (e.g. cross-region slug like
-  // <tr-only-slug>.localhost), render 404 instead of painting a partial page
-  // whose API calls will all 404 against Django.
+  // <tr-only-slug>.localhost), show a 404 instead of painting a partial page
+  // whose API calls will all 404 against Django. We render the not-found page
+  // ourselves rather than calling notFound() — notFound() is disallowed in the
+  // root layout (NotAllowedRootNotFoundError), and fetchTenantConfig already
+  // retries transient failures so this branch means the tenant truly is unknown.
   if (!config && slug !== "unknown") {
-    notFound();
+    const locale = await getLocale();
+    return (
+      <html lang={locale} className={instrumentSans.variable}>
+        <body className="bg-cinematic min-h-screen font-sans antialiased">
+          <main className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
+            <h1 className="text-2xl font-semibold">Site not found</h1>
+            <p className="text-muted-foreground max-w-md text-sm">
+              There’s no Contentor site at this address. Check the link or contact the site owner.
+            </p>
+          </main>
+        </body>
+      </html>
+    );
   }
   const gated = await isSiteGated(config, slug);
+  const hasSession = Boolean((await cookies()).get(COOKIE_NAME)?.value);
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -144,7 +163,7 @@ export default async function RootLayout({
                   <InstallPrompt />
                   <SwUpdateToast />
                   <PushOptIn />
-                  <UsageReporter />
+                  <UsageReporter authed={hasSession} />
                 </>
               )}
             </TenantProvider>
