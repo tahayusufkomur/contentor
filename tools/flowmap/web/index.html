@@ -11,10 +11,13 @@
   <aside id="sidebar"><h1>Flows</h1><div id="flows"></div></aside>
   <main id="cy"></main>
   <div id="lb">
-    <button id="lbprev" class="lbnav" aria-label="Previous screen">&#8249;</button>
+    <button id="lbprev" class="lbnav" aria-label="Back">&#8249;</button>
     <img id="lbimg" alt="" />
-    <button id="lbnext" class="lbnav" aria-label="Next screen">&#8250;</button>
-    <div class="cap" id="lbcap"></div>
+    <button id="lbnext" class="lbnav" aria-label="Next">&#8250;</button>
+    <div id="lbbar">
+      <div class="cap" id="lbcap"></div>
+      <div id="lbopts"></div>
+    </div>
   </div>
   <script src="/vendor/cytoscape.min.js"></script>
   <script src="/vendor/dagre.min.js"></script>

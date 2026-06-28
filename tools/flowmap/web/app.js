@@ -5,8 +5,12 @@ const flowsEl = document.getElementById("flows");
 const cyEl = document.getElementById("cy");
 const lb = document.getElementById("lb");
 let cy = null;
-let flowKeys = []; // ordered screen keys of the current flow (for lightbox navigation)
-let lbIndex = -1;
+// Lightbox navigation follows the flow's DAG: from the current screen you step along
+// outgoing edges (choosing at branches), and Back retraces the path you took.
+let flowOut = {}; // key -> [{ to, label }] outgoing edges
+let flowByKey = {}; // key -> { url, role }
+let lbHistory = []; // keys visited to reach the current one
+let lbCurrent = null;
 
 async function loadFlows() {
   const flows = await (await fetch("/api/flows")).json();
@@ -48,12 +52,16 @@ async function showFlow(id) {
     if (s.thumb) data.img = s.thumb;
     elements.push({ data });
   };
+  flowOut = {};
+  flowByKey = {};
   flow.steps.forEach((st, i) => {
     addNode(st.from);
     addNode(st.to);
+    (flowOut[st.from] ||= []).push({ to: st.to, label: st.label || "" });
     elements.push({ data: { id: "e" + i, source: st.from, target: st.to, label: st.label || "" } });
   });
-  flowKeys = order; // step order, used to navigate the lightbox with ‹ ›/arrows
+  for (const k of order) flowByKey[k] = byKey[k] || { url: k, role: "" };
+  void order;
 
   if (cy) cy.destroy();
   cy = cytoscape({
@@ -76,29 +84,56 @@ function isOpen() {
   return lb.style.display !== "none" && lb.style.display !== "";
 }
 
+const optsEl = document.getElementById("lbopts");
+
+function labelFor(key) {
+  return (flowByKey[key] && flowByKey[key].url) || key;
+}
+
 async function showScreen(key) {
   const s = await (await fetch("/api/screens/" + encodeURIComponent(key))).json();
   if (!s || !s.full) return;
+  lbCurrent = key;
   document.getElementById("lbimg").src = s.full;
-  const pos = flowKeys.length > 1 ? `   (${lbIndex + 1}/${flowKeys.length})` : "";
-  document.getElementById("lbcap").textContent = (s.url || key) + "  ·  " + (s.role || "") + pos;
-  // Only offer navigation when the flow has more than one screen.
-  const show = flowKeys.length > 1 ? "flex" : "none";
-  document.getElementById("lbprev").style.display = show;
-  document.getElementById("lbnext").style.display = show;
+  document.getElementById("lbcap").textContent = (s.url || key) + "  ·  " + (s.role || "");
+
+  // Back button is available whenever we've stepped into the flow.
+  document.getElementById("lbprev").style.display = lbHistory.length ? "flex" : "none";
+
+  // Forward: the outgoing edges of this screen. One edge → the › button follows it;
+  // several edges (a branch) → a labelled, numbered option per branch so you choose.
+  const outs = flowOut[key] || [];
+  document.getElementById("lbnext").style.display = outs.length === 1 ? "flex" : "none";
+  optsEl.innerHTML = "";
+  if (outs.length > 1) {
+    outs.forEach((o, i) => {
+      const b = document.createElement("button");
+      b.className = "lbopt";
+      b.textContent = `${i + 1}. ${o.label || labelFor(o.to)} →`;
+      b.addEventListener("click", (e) => { e.stopPropagation(); goForward(o.to); });
+      optsEl.append(b);
+    });
+  }
   lb.style.display = "flex";
 }
 
 function openLightbox(key) {
-  const i = flowKeys.indexOf(key);
-  lbIndex = i >= 0 ? i : 0;
-  showScreen(flowKeys[lbIndex] ?? key);
+  lbHistory = [];
+  showScreen(key);
 }
 
-function step(delta) {
-  if (!isOpen() || flowKeys.length < 2) return;
-  lbIndex = (lbIndex + delta + flowKeys.length) % flowKeys.length;
-  showScreen(flowKeys[lbIndex]);
+function goForward(toKey) {
+  if (lbCurrent != null) lbHistory.push(lbCurrent);
+  showScreen(toKey);
+}
+
+function goForwardNth(n) {
+  const outs = flowOut[lbCurrent] || [];
+  if (outs[n]) goForward(outs[n].to);
+}
+
+function goBack() {
+  if (lbHistory.length) showScreen(lbHistory.pop());
 }
 
 function closeLightbox() {
@@ -106,14 +141,16 @@ function closeLightbox() {
   document.getElementById("lbimg").src = "";
 }
 
-// Clicking the backdrop/image closes; the nav buttons navigate (and must not close).
+// Clicking the backdrop/image closes; the nav controls drive and must not close.
 lb.addEventListener("click", closeLightbox);
-document.getElementById("lbprev").addEventListener("click", (e) => { e.stopPropagation(); step(-1); });
-document.getElementById("lbnext").addEventListener("click", (e) => { e.stopPropagation(); step(1); });
+document.getElementById("lbbar").addEventListener("click", (e) => e.stopPropagation());
+document.getElementById("lbprev").addEventListener("click", (e) => { e.stopPropagation(); goBack(); });
+document.getElementById("lbnext").addEventListener("click", (e) => { e.stopPropagation(); goForwardNth(0); });
 document.addEventListener("keydown", (e) => {
   if (!isOpen()) return;
   if (e.key === "Escape") closeLightbox();
-  else if (e.key === "ArrowLeft") step(-1);
-  else if (e.key === "ArrowRight") step(1);
+  else if (e.key === "ArrowLeft" || e.key === "Backspace") { e.preventDefault(); goBack(); }
+  else if (e.key === "ArrowRight") goForwardNth(0); // follow the first (or only) branch
+  else if (/^[1-9]$/.test(e.key)) goForwardNth(Number(e.key) - 1);
 });
 loadFlows();

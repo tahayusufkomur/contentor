@@ -18,3 +18,8 @@ body { display: flex; height: 100vh; }
 .lbnav:hover { background: #1b1f2a; border-color: #3b4252; }
 #lbprev { left: 3vw; }
 #lbnext { right: 3vw; }
+#lbbar { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: default; }
+#lbopts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 86vw; }
+#lbopts:empty { display: none; }
+.lbopt { background: rgba(20,22,28,.92); border: 1px solid #2b3040; color: #e7e9ee; padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+.lbopt:hover { background: #1b1f2a; border-color: #7aa2f7; }
