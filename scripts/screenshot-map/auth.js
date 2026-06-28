@@ -22,7 +22,16 @@ function mintSessionJwt(role, tenantSlug) {
     "python", "manage.py", "issue_login_token", "--role", role,
   ];
   if (tenantSlug) args.push("--tenant", tenantSlug);
-  return execFileSync("docker", args, { cwd: REPO_ROOT, encoding: "utf8" }).trim();
+  try {
+    return execFileSync("docker", args, {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    }).trim();
+  } catch (err) {
+    const detail = (err.stderr || err.stdout || err.message || "").toString().trim();
+    throw new Error(`issue_login_token failed for role=${role}: ${detail}`);
+  }
 }
 
 async function getContext(browser, { role, host, tenantSlug }) {
