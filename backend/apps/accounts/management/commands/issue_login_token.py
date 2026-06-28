@@ -37,7 +37,7 @@ class Command(BaseCommand):
                     "name": "Contentor Platform",
                     "slug": "public",
                     "subdomain": "public",
-                    "owner_email": "",
+                    "owner_email": "admin@contentor.app",
                 },
             )
             user = User.objects.filter(is_superuser=True).order_by("id").first()
