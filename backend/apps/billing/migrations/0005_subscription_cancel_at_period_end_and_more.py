@@ -4,40 +4,41 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('billing', '0004_payment_platform_subscription'),
+        ("billing", "0004_payment_platform_subscription"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='cancel_at_period_end',
+            model_name="subscription",
+            name="cancel_at_period_end",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='provider',
-            field=models.CharField(choices=[('stripe', 'Stripe'), ('bypass', 'Bypass')], default='bypass', max_length=20),
+            model_name="subscription",
+            name="provider",
+            field=models.CharField(
+                choices=[("stripe", "Stripe"), ("bypass", "Bypass")], default="bypass", max_length=20
+            ),
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='provider_customer_id',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="subscription",
+            name="provider_customer_id",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='provider_subscription_id',
-            field=models.CharField(blank=True, db_index=True, default='', max_length=255),
+            model_name="subscription",
+            name="provider_subscription_id",
+            field=models.CharField(blank=True, db_index=True, default="", max_length=255),
         ),
         migrations.AddField(
-            model_name='subscriptionplan',
-            name='stripe_price_amount_cents',
+            model_name="subscriptionplan",
+            name="stripe_price_amount_cents",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='subscriptionplan',
-            name='stripe_price_id',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="subscriptionplan",
+            name="stripe_price_id",
+            field=models.CharField(blank=True, default="", max_length=255),
         ),
     ]

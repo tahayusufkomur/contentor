@@ -13,10 +13,7 @@ class Migration(migrations.Migration):
             field=models.BooleanField(
                 db_index=True,
                 default=False,
-                help_text=(
-                    "Read-only marketing demo. Mutating requests are rejected "
-                    "by DemoReadOnlyMiddleware."
-                ),
+                help_text=("Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware."),
             ),
         ),
     ]

@@ -101,9 +101,7 @@ def test_subscribe_requires_auth(tenant_ctx):
 
 
 def test_unsubscribe_returns_204(student):
-    PushSubscription.objects.create(
-        user=student, endpoint="https://fcm.example.com/push/3", p256dh="p", auth="a"
-    )
+    PushSubscription.objects.create(user=student, endpoint="https://fcm.example.com/push/3", p256dh="p", auth="a")
     client = make_client(user=student)
     res = client.post(
         "/api/v1/notifications/unsubscribe/",

@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0004_alter_user_email_and_more'),
+        ("accounts", "0004_alter_user_email_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='first_pwa_at',
+            model_name="user",
+            name="first_pwa_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='user',
-            name='last_display_mode',
-            field=models.CharField(blank=True, default='', max_length=10),
+            model_name="user",
+            name="last_display_mode",
+            field=models.CharField(blank=True, default="", max_length=10),
         ),
         migrations.AddField(
-            model_name='user',
-            name='last_platform',
-            field=models.CharField(blank=True, default='', max_length=10),
+            model_name="user",
+            name="last_platform",
+            field=models.CharField(blank=True, default="", max_length=10),
         ),
     ]

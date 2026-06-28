@@ -23,9 +23,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         demo_dir = Path(__file__).parent / "demo_data"
-        niches = sorted(
-            f.stem for f in demo_dir.glob("*.py") if f.stem != "__init__"
-        )
+        niches = sorted(f.stem for f in demo_dir.glob("*.py") if f.stem != "__init__")
 
         if not niches:
             self.stdout.write(self.style.WARNING("No niche modules found."))

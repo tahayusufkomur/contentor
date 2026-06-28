@@ -29,8 +29,13 @@ def test_recurring_defaults(tenant_ctx):
     from django.utils import timezone
 
     r = RecurringAnnouncement.objects.create(
-        title="Daily", body="b", filters_json={}, frequency="daily",
-        send_time=time(9, 0), start_date=date(2026, 6, 1), next_run_at=timezone.now(),
+        title="Daily",
+        body="b",
+        filters_json={},
+        frequency="daily",
+        send_time=time(9, 0),
+        start_date=date(2026, 6, 1),
+        next_run_at=timezone.now(),
     )
     assert r.is_active is True
     assert r.also_email is False

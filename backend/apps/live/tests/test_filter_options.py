@@ -15,9 +15,7 @@ SHARED_DOMAIN = "shared-test.localhost"
 
 @pytest.fixture()
 def owner(tenant_ctx):
-    return User.objects.create_user(
-        email="owner@eventfilter.com", name="Owner", password="secret123", role="owner"
-    )
+    return User.objects.create_user(email="owner@eventfilter.com", name="Owner", password="secret123", role="owner")
 
 
 def make_client(user=None):
@@ -46,9 +44,7 @@ class TestEventFilterOptions:
 
     def test_calendar_feed_includes_filter_options(self, tenant_ctx, owner, option):
         when = timezone.now() + timedelta(days=2)
-        lc = LiveClass.objects.create(
-            title="Scheduled Class", instructor=owner, pricing_type="free", scheduled_at=when
-        )
+        lc = LiveClass.objects.create(title="Scheduled Class", instructor=owner, pricing_type="free", scheduled_at=when)
         lc.filter_options.add(option)
         frm = (when - timedelta(days=1)).date().isoformat()
         to = (when + timedelta(days=1)).date().isoformat()

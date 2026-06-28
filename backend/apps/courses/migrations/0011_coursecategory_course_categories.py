@@ -4,29 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('courses', '0010_simplify_pricing_type'),
+        ("courses", "0010_simplify_pricing_type"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CourseCategory',
+            name="CourseCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(max_length=120, unique=True)),
-                ('order', models.IntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=100)),
+                ("slug", models.SlugField(max_length=120, unique=True)),
+                ("order", models.IntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'verbose_name_plural': 'Course categories',
-                'ordering': ['order', 'name'],
+                "verbose_name_plural": "Course categories",
+                "ordering": ["order", "name"],
             },
         ),
         migrations.AddField(
-            model_name='course',
-            name='categories',
-            field=models.ManyToManyField(blank=True, related_name='courses', to='courses.coursecategory'),
+            model_name="course",
+            name="categories",
+            field=models.ManyToManyField(blank=True, related_name="courses", to="courses.coursecategory"),
         ),
     ]

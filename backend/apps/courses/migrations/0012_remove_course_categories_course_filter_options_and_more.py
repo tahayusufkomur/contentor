@@ -4,23 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('courses', '0011_coursecategory_course_categories'),
-        ('filters', '0001_initial'),
+        ("courses", "0011_coursecategory_course_categories"),
+        ("filters", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='course',
-            name='categories',
+            model_name="course",
+            name="categories",
         ),
         migrations.AddField(
-            model_name='course',
-            name='filter_options',
-            field=models.ManyToManyField(blank=True, related_name='courses', to='filters.filteroption'),
+            model_name="course",
+            name="filter_options",
+            field=models.ManyToManyField(blank=True, related_name="courses", to="filters.filteroption"),
         ),
         migrations.DeleteModel(
-            name='CourseCategory',
+            name="CourseCategory",
         ),
     ]

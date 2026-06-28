@@ -12,9 +12,7 @@ class Course(models.Model):
         on_delete=models.CASCADE,
         related_name="courses_taught",
     )
-    filter_options = models.ManyToManyField(
-        "filters.FilterOption", blank=True, related_name="courses"
-    )
+    filter_options = models.ManyToManyField("filters.FilterOption", blank=True, related_name="courses")
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="courses")
     thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
     thumbnail = models.ForeignKey(

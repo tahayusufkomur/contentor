@@ -14,9 +14,7 @@ SHARED_DOMAIN = "shared-test.localhost"
 
 @pytest.fixture()
 def owner(tenant_ctx):
-    return User.objects.create_user(
-        email="owner@coursefilter.com", name="Owner", password="secret123", role="owner"
-    )
+    return User.objects.create_user(email="owner@coursefilter.com", name="Owner", password="secret123", role="owner")
 
 
 def make_client(user=None):
@@ -49,9 +47,7 @@ class TestCourseFilterOptions:
 
     def test_update_filter_option_ids(self, tenant_ctx, owner, options):
         a, b = options
-        course = Course.objects.create(
-            title="C", slug="c", instructor=owner, pricing_type="free", price=Decimal("0")
-        )
+        course = Course.objects.create(title="C", slug="c", instructor=owner, pricing_type="free", price=Decimal("0"))
         course.filter_options.add(a)
         resp = make_client(owner).put(
             f"/api/v1/courses/{course.slug}/",

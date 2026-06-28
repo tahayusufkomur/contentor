@@ -6,27 +6,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('notifications', '0004_announcement_also_email_and_more'),
+        ("notifications", "0004_announcement_also_email_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AnnouncementTemplate',
+            name="AnnouncementTemplate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=120)),
-                ('title', models.CharField(max_length=200)),
-                ('body', models.TextField(blank=True, default='')),
-                ('link', models.CharField(blank=True, default='', max_length=500)),
-                ('link_label', models.CharField(blank=True, default='', max_length=200)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('created_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=120)),
+                ("title", models.CharField(max_length=200)),
+                ("body", models.TextField(blank=True, default="")),
+                ("link", models.CharField(blank=True, default="", max_length=500)),
+                ("link_label", models.CharField(blank=True, default="", max_length=200)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

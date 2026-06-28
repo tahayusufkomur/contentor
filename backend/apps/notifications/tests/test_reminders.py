@@ -14,15 +14,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def _coach():
-    return User.objects.create_user(
-        email="coach@remtest.com", name="Coach", password="secret123", role="owner"
-    )
+    return User.objects.create_user(email="coach@remtest.com", name="Coach", password="secret123", role="owner")
 
 
 def _student(n: int) -> User:
-    user = User.objects.create_user(
-        email=f"s{n}@remtest.com", name=f"S{n}", password="secret123", role="student"
-    )
+    user = User.objects.create_user(email=f"s{n}@remtest.com", name=f"S{n}", password="secret123", role="student")
     PushSubscription.objects.create(user=user, endpoint=f"https://push/{n}", p256dh="p", auth="a")
     return user
 

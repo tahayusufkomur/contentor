@@ -4,28 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0007_tenant_is_demo'),
+        ("core", "0007_tenant_is_demo"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='tenant',
-            name='core_tenant_slug_region_unique',
+            model_name="tenant",
+            name="core_tenant_slug_region_unique",
         ),
         migrations.RemoveConstraint(
-            model_name='tenant',
-            name='core_tenant_subdomain_region_unique',
+            model_name="tenant",
+            name="core_tenant_subdomain_region_unique",
         ),
         migrations.AlterField(
-            model_name='tenant',
-            name='slug',
+            model_name="tenant",
+            name="slug",
             field=models.SlugField(max_length=63, unique=True),
         ),
         migrations.AlterField(
-            model_name='tenant',
-            name='subdomain',
+            model_name="tenant",
+            name="subdomain",
             field=models.CharField(max_length=63, unique=True),
         ),
     ]

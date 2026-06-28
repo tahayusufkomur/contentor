@@ -14,8 +14,8 @@ from apps.core.stripe_pricing import provision_stripe_price
 # (Superadmins can also change amounts at runtime via the platform plan-edit
 # endpoint, which calls the same `provision_stripe_price` helper.)
 PLAN_AMOUNTS = {
-    "starter": {"USD": 1990, "TRY": 99900},   # $19.90 / ₺999.00
-    "pro": {"USD": 4990, "TRY": 249900},      # $49.90 / ₺2499.00
+    "starter": {"USD": 1990, "TRY": 99900},  # $19.90 / ₺999.00
+    "pro": {"USD": 4990, "TRY": 249900},  # $49.90 / ₺2499.00
 }
 
 
@@ -68,6 +68,7 @@ class Command(BaseCommand):
             ("pro", "USD"): settings.STRIPE_PRICE_PRO_USD,
             ("pro", "TRY"): settings.STRIPE_PRICE_PRO_TRY,
         }
+
         def resolve_price_id(plan_key, currency):
             override = (env_overrides.get((plan_key, currency)) or "").strip()
             if override.startswith("price_"):

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("core", "0005_backfill_free_plan"),
     ]
@@ -22,9 +21,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="tenant",
-            constraint=models.UniqueConstraint(
-                fields=("slug", "region"), name="core_tenant_slug_region_unique"
-            ),
+            constraint=models.UniqueConstraint(fields=("slug", "region"), name="core_tenant_slug_region_unique"),
         ),
         migrations.AddConstraint(
             model_name="tenant",

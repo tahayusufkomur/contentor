@@ -137,9 +137,7 @@ def send_announcement_emails(announcement) -> int:
         email = (recipient.user.email or "").strip()
         if not email or email.lower() in opted_out:
             continue
-        announcement.email_unsub_url = email_render.unsubscribe_url(
-            tenant, user_id=recipient.user_id, email=email
-        )
+        announcement.email_unsub_url = email_render.unsubscribe_url(tenant, user_id=recipient.user_id, email=email)
         subject, html = email_render.announcement_email_html(announcement, cfg, base_url)
         ok = send_email(
             email,

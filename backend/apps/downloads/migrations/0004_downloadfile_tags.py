@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('downloads', '0003_simplify_pricing_type'),
-        ('tags', '0001_initial'),
+        ("downloads", "0003_simplify_pricing_type"),
+        ("tags", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='downloadfile',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='downloads', to='tags.tag'),
+            model_name="downloadfile",
+            name="tags",
+            field=models.ManyToManyField(blank=True, related_name="downloads", to="tags.tag"),
         ),
     ]

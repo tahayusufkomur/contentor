@@ -78,9 +78,7 @@ def fanout_announcement(announcement_id: int, schema_name: str) -> None:
         # Atomic claim: only one worker can transition scheduled -> sent.
         # A concurrent/duplicate dispatch (slow fanout re-enqueued by beat)
         # claims 0 rows and returns without re-sending.
-        claimed = Announcement.objects.filter(
-            pk=announcement_id, status="scheduled"
-        ).update(status="sent")
+        claimed = Announcement.objects.filter(pk=announcement_id, status="scheduled").update(status="sent")
         if not claimed:
             return
         announcement = Announcement.objects.get(pk=announcement_id)
@@ -125,8 +123,13 @@ def _dispatch_recurrences_for_current_tenant() -> None:
     for rule in RecurringAnnouncement.objects.filter(is_active=True, next_run_at__lte=now):
         old_next = rule.next_run_at
         new_next = rec.next_occurrence(
-            frequency=rule.frequency, send_time=rule.send_time, weekday=rule.weekday,
-            day_of_month=rule.day_of_month, after_utc=now, tz_name=tz_name, start_date=rule.start_date,
+            frequency=rule.frequency,
+            send_time=rule.send_time,
+            weekday=rule.weekday,
+            day_of_month=rule.day_of_month,
+            after_utc=now,
+            tz_name=tz_name,
+            start_date=rule.start_date,
         )
         still_active = not (rule.end_date and new_next.date() > rule.end_date)
         # Exactly-once claim: only the worker that advances next_run_at spawns.
@@ -136,7 +139,12 @@ def _dispatch_recurrences_for_current_tenant() -> None:
         if not claimed:
             continue
         ann = Announcement.objects.create(
-            title=rule.title, body=rule.body, link=rule.link, filters_json=rule.filters_json,
-            also_email=rule.also_email, status="scheduled", recurrence=rule,
+            title=rule.title,
+            body=rule.body,
+            link=rule.link,
+            filters_json=rule.filters_json,
+            also_email=rule.also_email,
+            status="scheduled",
+            recurrence=rule,
         )
         send_announcement_to_recipients(ann)

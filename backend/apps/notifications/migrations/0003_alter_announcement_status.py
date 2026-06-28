@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('notifications', '0002_announcement_announcementrecipient'),
+        ("notifications", "0002_announcement_announcementrecipient"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='announcement',
-            name='status',
-            field=models.CharField(choices=[('scheduled', 'Scheduled'), ('sent', 'Sent')], default='scheduled', max_length=10),
+            model_name="announcement",
+            name="status",
+            field=models.CharField(
+                choices=[("scheduled", "Scheduled"), ("sent", "Sent")], default="scheduled", max_length=10
+            ),
         ),
     ]

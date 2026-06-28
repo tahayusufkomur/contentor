@@ -15,8 +15,9 @@ is therefore a deliberate, manual action, never a side effect of editing.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from decimal import Decimal
-from typing import Any, Callable
+from typing import Any
 
 from django.conf import settings
 

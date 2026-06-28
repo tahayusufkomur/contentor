@@ -22,9 +22,7 @@ def student(tenant_ctx):
 
 
 def _make_sub(user, endpoint="https://push/1"):
-    return PushSubscription.objects.create(
-        user=user, endpoint=endpoint, p256dh="p", auth="a"
-    )
+    return PushSubscription.objects.create(user=user, endpoint=endpoint, p256dh="p", auth="a")
 
 
 def test_send_success_passes_payload(student):

@@ -77,9 +77,7 @@ class RecurringAnnouncement(models.Model):
     end_date = models.DateField(null=True, blank=True)  # null = "until I stop"
     next_run_at = models.DateTimeField()
     is_active = models.BooleanField(default=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
-    )
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -123,9 +121,7 @@ class AnnouncementTemplate(models.Model):
     body = models.TextField(blank=True, default="")
     link = models.CharField(max_length=500, blank=True, default="")
     link_label = models.CharField(max_length=200, blank=True, default="")
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
-    )
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

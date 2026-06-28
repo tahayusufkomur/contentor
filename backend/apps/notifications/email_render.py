@@ -27,9 +27,7 @@ def tenant_base_url(tenant) -> str:
 
 
 def unsubscribe_url(tenant, *, user_id=None, email=None) -> str:
-    token = signing.dumps(
-        {"schema": tenant.schema_name, "user_id": user_id, "email": email}, salt=_SALT
-    )
+    token = signing.dumps({"schema": tenant.schema_name, "user_id": user_id, "email": email}, salt=_SALT)
     return f"{tenant_base_url(tenant)}/api/v1/notifications/email/unsubscribe/?t={token}"
 
 

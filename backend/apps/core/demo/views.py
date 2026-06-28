@@ -42,7 +42,7 @@ def demo_enter(request):
 
     token = create_jwt(user, tenant)
     slug = tenant.slug or ""
-    niche = slug[len("demo-"):] if slug.startswith("demo-") else slug
+    niche = slug[len("demo-") :] if slug.startswith("demo-") else slug
 
     return Response(
         {

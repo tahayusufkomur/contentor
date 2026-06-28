@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0010_platformplan_is_active'),
+        ("core", "0010_platformplan_is_active"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenant',
-            name='stripe_charges_enabled',
+            model_name="tenant",
+            name="stripe_charges_enabled",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='tenant',
-            name='stripe_payouts_enabled',
+            model_name="tenant",
+            name="stripe_payouts_enabled",
             field=models.BooleanField(default=False),
         ),
     ]

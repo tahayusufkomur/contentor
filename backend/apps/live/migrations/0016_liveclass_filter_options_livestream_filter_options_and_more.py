@@ -4,31 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('filters', '0001_initial'),
-        ('live', '0015_simplify_pricing_type'),
+        ("filters", "0001_initial"),
+        ("live", "0015_simplify_pricing_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='liveclass',
-            name='filter_options',
-            field=models.ManyToManyField(blank=True, related_name='live_classes', to='filters.filteroption'),
+            model_name="liveclass",
+            name="filter_options",
+            field=models.ManyToManyField(blank=True, related_name="live_classes", to="filters.filteroption"),
         ),
         migrations.AddField(
-            model_name='livestream',
-            name='filter_options',
-            field=models.ManyToManyField(blank=True, related_name='live_streams', to='filters.filteroption'),
+            model_name="livestream",
+            name="filter_options",
+            field=models.ManyToManyField(blank=True, related_name="live_streams", to="filters.filteroption"),
         ),
         migrations.AddField(
-            model_name='onsiteevent',
-            name='filter_options',
-            field=models.ManyToManyField(blank=True, related_name='onsite_events', to='filters.filteroption'),
+            model_name="onsiteevent",
+            name="filter_options",
+            field=models.ManyToManyField(blank=True, related_name="onsite_events", to="filters.filteroption"),
         ),
         migrations.AddField(
-            model_name='zoomclass',
-            name='filter_options',
-            field=models.ManyToManyField(blank=True, related_name='zoom_classes', to='filters.filteroption'),
+            model_name="zoomclass",
+            name="filter_options",
+            field=models.ManyToManyField(blank=True, related_name="zoom_classes", to="filters.filteroption"),
         ),
     ]

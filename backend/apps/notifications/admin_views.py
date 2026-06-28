@@ -5,7 +5,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
-
 from apps.tenant_config.models import TenantConfig
 
 from .audience import audience_counts

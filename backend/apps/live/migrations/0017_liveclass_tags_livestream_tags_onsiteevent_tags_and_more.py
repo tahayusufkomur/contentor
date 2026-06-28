@@ -4,31 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('live', '0016_liveclass_filter_options_livestream_filter_options_and_more'),
-        ('tags', '0001_initial'),
+        ("live", "0016_liveclass_filter_options_livestream_filter_options_and_more"),
+        ("tags", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='liveclass',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='live_classes', to='tags.tag'),
+            model_name="liveclass",
+            name="tags",
+            field=models.ManyToManyField(blank=True, related_name="live_classes", to="tags.tag"),
         ),
         migrations.AddField(
-            model_name='livestream',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='live_streams', to='tags.tag'),
+            model_name="livestream",
+            name="tags",
+            field=models.ManyToManyField(blank=True, related_name="live_streams", to="tags.tag"),
         ),
         migrations.AddField(
-            model_name='onsiteevent',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='onsite_events', to='tags.tag'),
+            model_name="onsiteevent",
+            name="tags",
+            field=models.ManyToManyField(blank=True, related_name="onsite_events", to="tags.tag"),
         ),
         migrations.AddField(
-            model_name='zoomclass',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='zoom_classes', to='tags.tag'),
+            model_name="zoomclass",
+            name="tags",
+            field=models.ManyToManyField(blank=True, related_name="zoom_classes", to="tags.tag"),
         ),
     ]

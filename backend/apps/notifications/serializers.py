@@ -101,9 +101,21 @@ class RecurringAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecurringAnnouncement
         fields = [
-            "id", "title", "body", "link", "link_label", "filters", "also_email",
-            "frequency", "send_time", "weekday", "day_of_month",
-            "start_date", "end_date", "next_run_at", "is_active",
+            "id",
+            "title",
+            "body",
+            "link",
+            "link_label",
+            "filters",
+            "also_email",
+            "frequency",
+            "send_time",
+            "weekday",
+            "day_of_month",
+            "start_date",
+            "end_date",
+            "next_run_at",
+            "is_active",
         ]
         read_only_fields = ["id", "next_run_at"]
 
@@ -128,9 +140,13 @@ class RecurringAnnouncementSerializer(serializers.ModelSerializer):
         cfg = TenantConfig.objects.first()
         tz_name = cfg.timezone if cfg else "UTC"
         instance.next_run_at = rec.next_occurrence(
-            frequency=instance.frequency, send_time=instance.send_time,
-            weekday=instance.weekday, day_of_month=instance.day_of_month,
-            after_utc=timezone.now(), tz_name=tz_name, start_date=instance.start_date,
+            frequency=instance.frequency,
+            send_time=instance.send_time,
+            weekday=instance.weekday,
+            day_of_month=instance.day_of_month,
+            after_utc=timezone.now(),
+            tz_name=tz_name,
+            start_date=instance.start_date,
         )
 
     def create(self, validated):

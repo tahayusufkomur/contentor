@@ -48,9 +48,7 @@ class FilterOption(models.Model):
     class Meta:
         app_label = "filters"
         ordering = ["order", "name"]
-        constraints = [
-            models.UniqueConstraint(fields=["group", "slug"], name="uniq_option_slug_per_group")
-        ]
+        constraints = [models.UniqueConstraint(fields=["group", "slug"], name="uniq_option_slug_per_group")]
 
     def __str__(self):
         return f"{self.group.name}: {self.name}"
@@ -60,11 +58,7 @@ class FilterOption(models.Model):
             self.slug = slugify(self.name)[:120] or "option"
             base = self.slug
             counter = 1
-            while (
-                FilterOption.objects.filter(group=self.group, slug=self.slug)
-                .exclude(pk=self.pk)
-                .exists()
-            ):
+            while FilterOption.objects.filter(group=self.group, slug=self.slug).exclude(pk=self.pk).exists():
                 self.slug = f"{base}-{counter}"
                 counter += 1
         super().save(*args, **kwargs)

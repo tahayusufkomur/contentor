@@ -25,6 +25,7 @@ def test_publishing_a_course_enqueues_fanout(tenant_ctx):
         course.is_published = True
         course.save()
     from django.db import connection
+
     task.delay.assert_called_once_with(course.pk, connection.schema_name)
 
 

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0009_tenant_template_seed_fields'),
+        ("core", "0009_tenant_template_seed_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='platformplan',
-            name='is_active',
+            model_name="platformplan",
+            name="is_active",
             field=models.BooleanField(db_index=True, default=True),
         ),
     ]

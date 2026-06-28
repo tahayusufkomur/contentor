@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,23 +14,30 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='LiveReminderLog',
+            name="LiveReminderLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.CharField(max_length=120, unique=True)),
-                ('sent_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("key", models.CharField(max_length=120, unique=True)),
+                ("sent_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='PushSubscription',
+            name="PushSubscription",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('endpoint', models.URLField(max_length=500, unique=True)),
-                ('p256dh', models.CharField(max_length=255)),
-                ('auth', models.CharField(max_length=255)),
-                ('user_agent', models.CharField(blank=True, default='', max_length=255)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='push_subscriptions', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("endpoint", models.URLField(max_length=500, unique=True)),
+                ("p256dh", models.CharField(max_length=255)),
+                ("auth", models.CharField(max_length=255)),
+                ("user_agent", models.CharField(blank=True, default="", max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="push_subscriptions",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

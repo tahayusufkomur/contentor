@@ -5,20 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('billing', '0005_subscription_cancel_at_period_end_and_more'),
+        ("billing", "0005_subscription_cancel_at_period_end_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscriptionplan',
-            name='billing_interval_months',
-            field=models.PositiveIntegerField(default=1, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(36)]),
+            model_name="subscriptionplan",
+            name="billing_interval_months",
+            field=models.PositiveIntegerField(
+                default=1,
+                validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(36)],
+            ),
         ),
         migrations.AddField(
-            model_name='subscriptionplan',
-            name='stripe_price_interval_months',
+            model_name="subscriptionplan",
+            name="stripe_price_interval_months",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

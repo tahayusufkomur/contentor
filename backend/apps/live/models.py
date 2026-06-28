@@ -36,9 +36,7 @@ class LiveClass(_EventStatusMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="live_classes",
     )
-    filter_options = models.ManyToManyField(
-        "filters.FilterOption", blank=True, related_name="live_classes"
-    )
+    filter_options = models.ManyToManyField("filters.FilterOption", blank=True, related_name="live_classes")
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="live_classes")
     status = models.CharField(
         max_length=20,
@@ -107,9 +105,7 @@ class LiveStream(_EventStatusMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="live_streams",
     )
-    filter_options = models.ManyToManyField(
-        "filters.FilterOption", blank=True, related_name="live_streams"
-    )
+    filter_options = models.ManyToManyField("filters.FilterOption", blank=True, related_name="live_streams")
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="live_streams")
     status = models.CharField(
         max_length=20,
@@ -179,9 +175,7 @@ class ZoomClass(_EventStatusMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="zoom_classes",
     )
-    filter_options = models.ManyToManyField(
-        "filters.FilterOption", blank=True, related_name="zoom_classes"
-    )
+    filter_options = models.ManyToManyField("filters.FilterOption", blank=True, related_name="zoom_classes")
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="zoom_classes")
     status = models.CharField(
         max_length=20,
@@ -237,9 +231,7 @@ class OnsiteEvent(_EventStatusMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="onsite_events",
     )
-    filter_options = models.ManyToManyField(
-        "filters.FilterOption", blank=True, related_name="onsite_events"
-    )
+    filter_options = models.ManyToManyField("filters.FilterOption", blank=True, related_name="onsite_events")
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="onsite_events")
     status = models.CharField(
         max_length=20,

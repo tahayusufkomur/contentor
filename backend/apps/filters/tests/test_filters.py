@@ -12,9 +12,7 @@ SHARED_DOMAIN = "shared-test.localhost"
 
 @pytest.fixture()
 def owner(tenant_ctx):
-    return User.objects.create_user(
-        email="owner@filtertest.com", name="Owner", password="secret123", role="owner"
-    )
+    return User.objects.create_user(email="owner@filtertest.com", name="Owner", password="secret123", role="owner")
 
 
 @pytest.fixture()
@@ -61,17 +59,13 @@ class TestEndpoints:
         assert resp.json()["applies_to"] == "course"
 
     def test_student_cannot_create_group(self, tenant_ctx, student):
-        resp = make_client(student).post(
-            "/api/v1/filters/groups/", {"name": "Nope"}, format="json"
-        )
+        resp = make_client(student).post("/api/v1/filters/groups/", {"name": "Nope"}, format="json")
         assert resp.status_code == 403, resp.content
         assert not FilterGroup.objects.filter(name="Nope").exists()
 
     def test_create_option_under_group(self, tenant_ctx, owner):
         g = FilterGroup.objects.create(name="Level")
-        resp = make_client(owner).post(
-            "/api/v1/filters/options/", {"group": g.pk, "name": "Beginner"}, format="json"
-        )
+        resp = make_client(owner).post("/api/v1/filters/options/", {"group": g.pk, "name": "Beginner"}, format="json")
         assert resp.status_code == 201, resp.content
         assert resp.json()["group_name"] == "Level"
         assert g.options.filter(name="Beginner").exists()

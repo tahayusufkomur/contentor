@@ -23,7 +23,7 @@ def _load_content(content_type: str | None, content_id):
     return None
 
 
-def resolve_audience(filters: dict) -> "QuerySet[User]":
+def resolve_audience(filters: dict) -> QuerySet[User]:
     """Students matching the filter dict. See plan/spec for filter keys."""
     filters = filters or {}
     qs = User.objects.filter(role="student")

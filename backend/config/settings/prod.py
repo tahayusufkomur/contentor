@@ -39,9 +39,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Cross-origin API access (e.g. apex calling a tenant API). The regex covers
 # every *.contentor.app subdomain; the explicit list is an optional add-on.
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    o.strip() for o in os.environ.get("DJANGO_CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()
-]
+CORS_ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("DJANGO_CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()]
 CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://([a-z0-9-]+\.)*contentor\.app$"]
 
 # WhiteNoise serves collected static (incl. the Django admin) straight from the
@@ -60,7 +58,7 @@ STORAGES = {
 BILLING_BYPASS_ENABLED = _env_bool("BILLING_BYPASS_ENABLED", False)
 if BILLING_BYPASS_ENABLED:
     raise ImproperlyConfigured(
-        "BILLING_BYPASS_ENABLED must be false in production. " "Unset the env var or set it to 'false'."
+        "BILLING_BYPASS_ENABLED must be false in production. Unset the env var or set it to 'false'."
     )
 
 # Silence unused-import warnings; the import is for side-effect (re-export).

@@ -14,16 +14,12 @@ SHARED_DOMAIN = "shared-test.localhost"
 
 @pytest.fixture()
 def owner(tenant_ctx):
-    return User.objects.create_user(
-        email="owner@tagtest.com", name="Owner", password="secret123", role="owner"
-    )
+    return User.objects.create_user(email="owner@tagtest.com", name="Owner", password="secret123", role="owner")
 
 
 @pytest.fixture()
 def student(tenant_ctx):
-    return User.objects.create_user(
-        email="student@tagtest.com", name="Student", password="secret123", role="student"
-    )
+    return User.objects.create_user(email="student@tagtest.com", name="Student", password="secret123", role="student")
 
 
 def make_client(user=None):
@@ -53,31 +49,23 @@ class TestModels:
 @pytest.mark.django_db(transaction=True)
 class TestEndpoints:
     def test_coach_creates_tag(self, tenant_ctx, owner):
-        resp = make_client(owner).post(
-            "/api/v1/tags/", {"scope": "video", "name": "Tutorial"}, format="json"
-        )
+        resp = make_client(owner).post("/api/v1/tags/", {"scope": "video", "name": "Tutorial"}, format="json")
         assert resp.status_code == 201, resp.content
         body = resp.json()
         assert body["scope"] == "video"
         assert body["slug"] == "tutorial"
 
     def test_create_is_get_or_create_within_scope(self, tenant_ctx, owner):
-        first = make_client(owner).post(
-            "/api/v1/tags/", {"scope": "course", "name": "Webinar"}, format="json"
-        )
+        first = make_client(owner).post("/api/v1/tags/", {"scope": "course", "name": "Webinar"}, format="json")
         assert first.status_code == 201, first.content
-        again = make_client(owner).post(
-            "/api/v1/tags/", {"scope": "course", "name": "  Webinar "}, format="json"
-        )
+        again = make_client(owner).post("/api/v1/tags/", {"scope": "course", "name": "  Webinar "}, format="json")
         # Same name in the same scope returns the existing tag, no duplicate.
         assert again.status_code == 200, again.content
         assert again.json()["id"] == first.json()["id"]
         assert Tag.objects.filter(scope="course", slug="webinar").count() == 1
 
     def test_create_rejects_bad_scope(self, tenant_ctx, owner):
-        resp = make_client(owner).post(
-            "/api/v1/tags/", {"scope": "nope", "name": "X"}, format="json"
-        )
+        resp = make_client(owner).post("/api/v1/tags/", {"scope": "nope", "name": "X"}, format="json")
         assert resp.status_code == 400, resp.content
 
     def test_list_filtered_by_scope(self, tenant_ctx, owner):
@@ -91,9 +79,7 @@ class TestEndpoints:
 
     def test_rename_reslugs(self, tenant_ctx, owner):
         t = Tag.objects.create(scope="download", name="Old")
-        resp = make_client(owner).patch(
-            f"/api/v1/tags/{t.pk}/", {"name": "New Name"}, format="json"
-        )
+        resp = make_client(owner).patch(f"/api/v1/tags/{t.pk}/", {"name": "New Name"}, format="json")
         assert resp.status_code == 200, resp.content
         assert resp.json()["slug"] == "new-name"
 
@@ -104,9 +90,7 @@ class TestEndpoints:
         assert not Tag.objects.filter(pk=t.pk).exists()
 
     def test_student_cannot_create(self, tenant_ctx, student):
-        resp = make_client(student).post(
-            "/api/v1/tags/", {"scope": "course", "name": "Nope"}, format="json"
-        )
+        resp = make_client(student).post("/api/v1/tags/", {"scope": "course", "name": "Nope"}, format="json")
         assert resp.status_code == 403, resp.content
         assert not Tag.objects.filter(name="Nope").exists()
 

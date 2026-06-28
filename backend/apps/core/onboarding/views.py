@@ -86,10 +86,10 @@ def creator_signup(request):
         """,
     )
     if not sent:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"SIGNUP VERIFICATION for {email}:")
         print(f"{link}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     return Response({"detail": msg(request, "verification_sent")})
 

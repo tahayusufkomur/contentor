@@ -5,39 +5,49 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='FilterGroup',
+            name="FilterGroup",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(max_length=120, unique=True)),
-                ('applies_to', models.CharField(choices=[('course', 'Courses'), ('event', 'Events'), ('both', 'Both')], default='both', max_length=10)),
-                ('order', models.IntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=100)),
+                ("slug", models.SlugField(max_length=120, unique=True)),
+                (
+                    "applies_to",
+                    models.CharField(
+                        choices=[("course", "Courses"), ("event", "Events"), ("both", "Both")],
+                        default="both",
+                        max_length=10,
+                    ),
+                ),
+                ("order", models.IntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['order', 'name'],
+                "ordering": ["order", "name"],
             },
         ),
         migrations.CreateModel(
-            name='FilterOption',
+            name="FilterOption",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(max_length=120)),
-                ('order', models.IntegerField(default=0)),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='options', to='filters.filtergroup')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=100)),
+                ("slug", models.SlugField(max_length=120)),
+                ("order", models.IntegerField(default=0)),
+                (
+                    "group",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="options", to="filters.filtergroup"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['order', 'name'],
-                'constraints': [models.UniqueConstraint(fields=('group', 'slug'), name='uniq_option_slug_per_group')],
+                "ordering": ["order", "name"],
+                "constraints": [models.UniqueConstraint(fields=("group", "slug"), name="uniq_option_slug_per_group")],
             },
         ),
     ]

@@ -117,7 +117,6 @@ def test_stripe_provider_phase2_methods_raise_not_implemented():
 
 def test_bypass_provider_create_checkout_session_emits_webhook_event(restore_public, shared_tenant, plan, coach_user):
     # The fixture `restore_public` ensures public-schema rows exist.
-    from apps.core.models import PlatformSubscription
 
     before = WebhookEvent.objects.filter(provider="bypass").count()
     provider = BypassProvider()
@@ -140,9 +139,7 @@ def test_bypass_provider_create_checkout_session_emits_webhook_event(restore_pub
     assert last.payload["plan_id"] == plan.pk
 
 
-def test_bypass_provider_activates_platform_subscription_immediately(
-    restore_public, shared_tenant, plan, coach_user
-):
+def test_bypass_provider_activates_platform_subscription_immediately(restore_public, shared_tenant, plan, coach_user):
     """Bypass mode must short-circuit the Stripe round trip so dev/test runs
     without the Stripe CLI can still observe the post-checkout state."""
     from apps.core.models import PlatformSubscription

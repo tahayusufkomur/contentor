@@ -26,9 +26,7 @@ class Tag(models.Model):
     class Meta:
         app_label = "tags"
         ordering = ["name"]
-        constraints = [
-            models.UniqueConstraint(fields=["scope", "slug"], name="uniq_tag_slug_per_scope")
-        ]
+        constraints = [models.UniqueConstraint(fields=["scope", "slug"], name="uniq_tag_slug_per_scope")]
 
     def __str__(self):
         return f"{self.get_scope_display()}: {self.name}"
@@ -38,11 +36,7 @@ class Tag(models.Model):
             self.slug = slugify(self.name)[:120] or "tag"
             base = self.slug
             counter = 1
-            while (
-                Tag.objects.filter(scope=self.scope, slug=self.slug)
-                .exclude(pk=self.pk)
-                .exists()
-            ):
+            while Tag.objects.filter(scope=self.scope, slug=self.slug).exclude(pk=self.pk).exists():
                 self.slug = f"{base}-{counter}"
                 counter += 1
         super().save(*args, **kwargs)

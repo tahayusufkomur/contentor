@@ -14,9 +14,7 @@ from apps.core import stripe_pricing
 
 def test_returns_empty_when_stripe_unconfigured():
     with patch.object(stripe_pricing, "_stripe_client", return_value=None):
-        out = stripe_pricing.provision_stripe_price(
-            plan_key="starter", currency="USD", amount_cents=1990
-        )
+        out = stripe_pricing.provision_stripe_price(plan_key="starter", currency="USD", amount_cents=1990)
     assert out == ""
 
 

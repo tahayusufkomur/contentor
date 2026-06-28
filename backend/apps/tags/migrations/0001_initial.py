@@ -4,25 +4,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Tag',
+            name="Tag",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(max_length=120)),
-                ('scope', models.CharField(choices=[('course', 'Courses'), ('video', 'Videos'), ('photo', 'Photos'), ('download', 'Downloads'), ('event', 'Live events')], max_length=10)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=100)),
+                ("slug", models.SlugField(max_length=120)),
+                (
+                    "scope",
+                    models.CharField(
+                        choices=[
+                            ("course", "Courses"),
+                            ("video", "Videos"),
+                            ("photo", "Photos"),
+                            ("download", "Downloads"),
+                            ("event", "Live events"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['name'],
-                'constraints': [models.UniqueConstraint(fields=('scope', 'slug'), name='uniq_tag_slug_per_scope')],
+                "ordering": ["name"],
+                "constraints": [models.UniqueConstraint(fields=("scope", "slug"), name="uniq_tag_slug_per_scope")],
             },
         ),
     ]
