@@ -43,6 +43,11 @@ async function capturePage(context, route, targets) {
     if (waitUntil === "domcontentloaded") await page.waitForTimeout(2500); // let the join/landing UI paint
     const httpStatus = resp ? resp.status() : 0;
     const finalUrl = page.url();
+    // The flow map is a visual map of the app, not a QA view — hide Next.js's
+    // dev-only overlay (the "N errors" indicator / error modal, rendered in
+    // <nextjs-portal>) so dev-server chrome (e.g. the HMR-websocket warning on
+    // tenant subdomains) never appears in the screenshots.
+    await page.addStyleTag({ content: "nextjs-portal{display:none !important}" }).catch(() => {});
     const png = await page.screenshot({ fullPage: false });
     const links = await page.evaluate(() =>
       Array.from(document.querySelectorAll("a[href]")).map((a) => a.href),
