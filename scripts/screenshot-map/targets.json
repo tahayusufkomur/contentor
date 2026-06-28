@@ -1,0 +1,9 @@
+{
+  "tenantSlug": "yoga",
+  "tenantHost": "yoga.localhost",
+  "mainHost": "localhost",
+  "dynamic": {
+    "/admin/tenants/[slug]": "/admin/tenants/yoga",
+    "/dashboard/domain/[slug]": "/dashboard/domain/yoga"
+  }
+}
