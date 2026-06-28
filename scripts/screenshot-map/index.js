@@ -11,6 +11,7 @@ const { getContext } = require("./auth");
 const { capturePage } = require("./capture");
 const { render, summarize } = require("./render");
 const { buildGraph } = require("./graph");
+const { makeImages } = require("./thumbnail");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const OUT_DIR = path.join(REPO_ROOT, "docs", "screenshot-map");
@@ -30,6 +31,8 @@ function preflight() {
 async function main() {
   preflight();
   const browser = await chromium.launch();
+  // Neutral page (no tenant CSP) used to downscale screenshots into small textures.
+  const resizePage = await browser.newPage();
   const results = [];
   const routesByFrontend = {};
 
@@ -46,6 +49,14 @@ async function main() {
         process.stdout.write(`· ${fe.name} ${route.url} … `);
         const res = await capturePage(contexts[route.role], route, targets);
         console.log(res.status);
+        if (res.png) {
+          // Replace the full-res PNG buffer with a small node texture + a medium
+          // lightbox image so the board stays smooth (small per-frame textures).
+          const imgs = await makeImages(resizePage, res.png);
+          res.thumb = imgs.thumb;
+          res.full = imgs.full;
+          res.png = null;
+        }
         results.push(res);
       }
       for (const role of roles) await contexts[role].close();

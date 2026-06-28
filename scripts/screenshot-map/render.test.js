@@ -11,11 +11,12 @@ test("summarize counts statuses", () => {
 });
 
 test("render builds a self-contained cytoscape board", () => {
-  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+  const thumb = "data:image/jpeg;base64,/9j/THUMB";
+  const full = "data:image/jpeg;base64,/9j/FULL";
   const graph = {
     nodes: [
-      { id: "customer|/a", label: "/a", role: "coach", status: "ok", cluster: "customer · Coach", png },
-      { id: "customer|/b", label: "</script><img>", role: "coach", status: "skipped", cluster: "customer · Coach", png: null },
+      { id: "customer|/a", label: "/a", role: "coach", status: "ok", cluster: "customer · Coach", thumb, full },
+      { id: "customer|/b", label: "</script><img>", role: "coach", status: "skipped", cluster: "customer · Coach", thumb: null, full: null },
     ],
     edges: [{ source: "customer|/a", target: "customer|/b" }],
     suppressedCount: 2,
@@ -30,7 +31,8 @@ test("render builds a self-contained cytoscape board", () => {
   assert.match(html, /CYTO_STUB/); // library inlined (stub)
   assert.match(html, /id="cy"/); // canvas container
   assert.match(html, /cytoscape\(/); // boots cytoscape
-  assert.match(html, /data:image\/png;base64,/); // thumbnail inlined
+  assert.match(html, /\/9j\/THUMB/); // downscaled thumbnail inlined as the node texture
+  assert.match(html, /\/9j\/FULL/); // medium lightbox image inlined
   assert.match(html, /abc1234/);
   assert.match(html, /2 global-nav links hidden/);
   // hostile label is escaped inside the JSON, not emitted raw

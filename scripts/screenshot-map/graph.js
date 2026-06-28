@@ -55,7 +55,8 @@ function buildGraph(results, routesByFrontend) {
     role: r.role,
     status: r.status,
     cluster: clusterLabel(r),
-    png: r.png || null,
+    thumb: r.thumb || null,
+    full: r.full || null,
   }));
 
   // Resolve links to edges (deduped, no self-loops). Keep frontend on each edge
