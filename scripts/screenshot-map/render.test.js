@@ -39,4 +39,7 @@ test("render builds a self-contained cytoscape board", () => {
   // no external resource refs
   assert.ok(!/<script\s+src=/.test(html));
   assert.ok(!/<img\s+src="\/[^"]/.test(html));
+  // imgless (skipped/error) nodes must OMIT the img key — an empty img ("") matches the
+  // node[img] style and applies background-image:"" which crashes Cytoscape at runtime.
+  assert.ok(!html.includes('"img":""'), "imgless nodes must omit the img key, not set img:''");
 });

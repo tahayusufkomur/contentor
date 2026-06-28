@@ -33,9 +33,13 @@ function buildElements(graph) {
     elements.push({ data: { id: c, label: c, isCluster: 1 } });
   }
   for (const n of graph.nodes) {
-    elements.push({
-      data: { id: n.id, parent: n.cluster, label: n.label, role: n.role, status: n.status, img: dataUri(n.png) || "" },
-    });
+    const data = { id: n.id, parent: n.cluster, label: n.label, role: n.role, status: n.status };
+    // Only set `img` when there's a real thumbnail. An empty img ("") still matches the
+    // node[img] style selector, applies background-image:"" and crashes Cytoscape's image
+    // loader; omitting the key routes imgless nodes to the node[!img] plain-box style.
+    const img = dataUri(n.png);
+    if (img) data.img = img;
+    elements.push({ data });
   }
   graph.edges.forEach((e, i) => elements.push({ data: { id: `e${i}`, source: e.source, target: e.target } }));
   return elements;
@@ -70,7 +74,7 @@ const cy = cytoscape({
     { selector: 'edge', style: { 'width': 1, 'line-color': '#3b4252', 'target-arrow-color': '#3b4252', 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8, 'curve-style': 'bezier', 'opacity': 0.7 } },
     { selector: '.faded', style: { 'opacity': 0.12 } },
   ],
-  layout: { name: 'cose', animate: false, nodeRepulsion: 8000, idealEdgeLength: 90, nestingFactor: 1.2, padding: 30, randomize: true },
+  layout: { name: 'cose', animate: false, nodeRepulsion: 400, idealEdgeLength: 40, componentSpacing: 40, gravity: 4, numIter: 2000, nodeOverlap: 6, padding: 20 },
 });
 cy.on('tap', 'node', (e) => {
   const n = e.target;
