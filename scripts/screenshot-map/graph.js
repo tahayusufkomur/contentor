@@ -44,4 +44,52 @@ function resolveLinkToRoute(href, routes) {
   return null;
 }
 
-module.exports = { nodeId, clusterLabel, normalizePath, routeMatches, resolveLinkToRoute };
+function buildGraph(results, routesByFrontend) {
+  const nodes = results.map((r) => ({
+    id: nodeId(r.frontend, r.url),
+    label: r.url,
+    role: r.role,
+    status: r.status,
+    cluster: clusterLabel(r),
+    png: r.png || null,
+  }));
+
+  // Resolve links to edges (deduped, no self-loops). Keep frontend on each edge
+  // for per-frontend suppression, then drop it from the returned shape.
+  const seen = new Set();
+  const raw = [];
+  for (const r of results) {
+    const src = nodeId(r.frontend, r.url);
+    const routes = routesByFrontend[r.frontend] || [];
+    for (const href of r.links || []) {
+      const tgt = resolveLinkToRoute(href, routes);
+      if (!tgt || tgt === src) continue;
+      const key = `${src}->${tgt}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      raw.push({ source: src, target: tgt, frontend: r.frontend });
+    }
+  }
+
+  // Global-nav suppression, per frontend.
+  let suppressedCount = 0;
+  const edges = [];
+  for (const fe of [...new Set(results.map((r) => r.frontend))]) {
+    const feEdges = raw.filter((e) => e.frontend === fe);
+    const P = new Set(results.filter((r) => r.frontend === fe).map((r) => nodeId(r.frontend, r.url))).size;
+    const sourcesByTarget = {};
+    for (const e of feEdges) (sourcesByTarget[e.target] ||= new Set()).add(e.source);
+    for (const e of feEdges) {
+      const distinct = sourcesByTarget[e.target].size;
+      if (P > 0 && distinct / P >= 0.7) {
+        suppressedCount++;
+      } else {
+        edges.push({ source: e.source, target: e.target });
+      }
+    }
+  }
+
+  return { nodes, edges, suppressedCount };
+}
+
+module.exports = { nodeId, clusterLabel, normalizePath, routeMatches, resolveLinkToRoute, buildGraph };
