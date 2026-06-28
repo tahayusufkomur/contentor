@@ -12,5 +12,9 @@ body { display: flex; height: 100vh; }
 .empty code { color: #c7ccd6; }
 #cy { flex: 1; height: 100%; }
 #lb { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; cursor: zoom-out; }
-#lb img { max-width: 92vw; max-height: 82vh; border: 1px solid #2b3040; border-radius: 8px; }
+#lb img { max-width: 86vw; max-height: 82vh; border: 1px solid #2b3040; border-radius: 8px; }
 #lb .cap { color: #c7ccd6; font-size: 13px; }
+.lbnav { position: fixed; top: 50%; transform: translateY(-50%); z-index: 11; width: 48px; height: 48px; border-radius: 999px; border: 1px solid #2b3040; background: rgba(20,22,28,.85); color: #e7e9ee; font-size: 26px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.lbnav:hover { background: #1b1f2a; border-color: #3b4252; }
+#lbprev { left: 3vw; }
+#lbnext { right: 3vw; }

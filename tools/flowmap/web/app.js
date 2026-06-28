@@ -5,6 +5,8 @@ const flowsEl = document.getElementById("flows");
 const cyEl = document.getElementById("cy");
 const lb = document.getElementById("lb");
 let cy = null;
+let flowKeys = []; // ordered screen keys of the current flow (for lightbox navigation)
+let lbIndex = -1;
 
 async function loadFlows() {
   const flows = await (await fetch("/api/flows")).json();
@@ -36,9 +38,11 @@ async function showFlow(id) {
   const byKey = Object.fromEntries(flow.screens.map((s) => [s.key, s]));
   const elements = [];
   const seen = new Set();
+  const order = [];
   const addNode = (k) => {
     if (seen.has(k)) return;
     seen.add(k);
+    order.push(k);
     const s = byKey[k] || { key: k, url: k, role: "" };
     const data = { id: k, label: s.url || k, role: s.role || "" };
     if (s.thumb) data.img = s.thumb;
@@ -49,6 +53,7 @@ async function showFlow(id) {
     addNode(st.to);
     elements.push({ data: { id: "e" + i, source: st.from, target: st.to, label: st.label || "" } });
   });
+  flowKeys = order; // step order, used to navigate the lightbox with ‹ ›/arrows
 
   if (cy) cy.destroy();
   cy = cytoscape({
@@ -63,35 +68,52 @@ async function showFlow(id) {
     layout: { name: "dagre", rankDir: "LR", nodeSep: 44, rankSep: 130, padding: 40 },
   });
 
-  // Cytoscape has no reliable built-in double-tap, so detect it: two taps on the
-  // same node within 350ms opens the full screenshot. Single tap stays free.
-  let last = { id: null, t: 0 };
-  cy.on("tap", "node", (e) => {
-    const id = e.target.id();
-    const now = Date.now();
-    if (last.id === id && now - last.t < 350) {
-      last = { id: null, t: 0 };
-      openLightbox(id);
-    } else {
-      last = { id, t: now };
-    }
-  });
+  // One click opens the screenshot.
+  cy.on("tap", "node", (e) => openLightbox(e.target.id()));
 }
 
-async function openLightbox(key) {
+function isOpen() {
+  return lb.style.display !== "none" && lb.style.display !== "";
+}
+
+async function showScreen(key) {
   const s = await (await fetch("/api/screens/" + encodeURIComponent(key))).json();
   if (!s || !s.full) return;
   document.getElementById("lbimg").src = s.full;
-  document.getElementById("lbcap").textContent = (s.url || key) + "  ·  " + (s.role || "");
+  const pos = flowKeys.length > 1 ? `   (${lbIndex + 1}/${flowKeys.length})` : "";
+  document.getElementById("lbcap").textContent = (s.url || key) + "  ·  " + (s.role || "") + pos;
+  // Only offer navigation when the flow has more than one screen.
+  const show = flowKeys.length > 1 ? "flex" : "none";
+  document.getElementById("lbprev").style.display = show;
+  document.getElementById("lbnext").style.display = show;
   lb.style.display = "flex";
+}
+
+function openLightbox(key) {
+  const i = flowKeys.indexOf(key);
+  lbIndex = i >= 0 ? i : 0;
+  showScreen(flowKeys[lbIndex] ?? key);
+}
+
+function step(delta) {
+  if (!isOpen() || flowKeys.length < 2) return;
+  lbIndex = (lbIndex + delta + flowKeys.length) % flowKeys.length;
+  showScreen(flowKeys[lbIndex]);
 }
 
 function closeLightbox() {
   lb.style.display = "none";
   document.getElementById("lbimg").src = "";
 }
+
+// Clicking the backdrop/image closes; the nav buttons navigate (and must not close).
 lb.addEventListener("click", closeLightbox);
+document.getElementById("lbprev").addEventListener("click", (e) => { e.stopPropagation(); step(-1); });
+document.getElementById("lbnext").addEventListener("click", (e) => { e.stopPropagation(); step(1); });
 document.addEventListener("keydown", (e) => {
+  if (!isOpen()) return;
   if (e.key === "Escape") closeLightbox();
+  else if (e.key === "ArrowLeft") step(-1);
+  else if (e.key === "ArrowRight") step(1);
 });
 loadFlows();
