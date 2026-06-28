@@ -7,6 +7,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "cytoscape": "^3.34.0",
     "playwright": "^1.48.0"
   }
 }
