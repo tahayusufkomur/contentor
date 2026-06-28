@@ -100,20 +100,18 @@ async function showScreen(key) {
   // Back button is available whenever we've stepped into the flow.
   document.getElementById("lbprev").style.display = lbHistory.length ? "flex" : "none";
 
-  // Forward: the outgoing edges of this screen. One edge → the › button follows it;
-  // several edges (a branch) → a labelled, numbered option per branch so you choose.
+  // Forward: one numbered option per outgoing edge — always shown, even for a single
+  // next step, so you can drive a whole path by tapping 1,1,1,… (and branches just
+  // offer 1,2,3…). Press the number or click the option.
   const outs = flowOut[key] || [];
-  document.getElementById("lbnext").style.display = outs.length === 1 ? "flex" : "none";
   optsEl.innerHTML = "";
-  if (outs.length > 1) {
-    outs.forEach((o, i) => {
-      const b = document.createElement("button");
-      b.className = "lbopt";
-      b.textContent = `${i + 1}. ${o.label || labelFor(o.to)} →`;
-      b.addEventListener("click", (e) => { e.stopPropagation(); goForward(o.to); });
-      optsEl.append(b);
-    });
-  }
+  outs.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.className = "lbopt";
+    b.textContent = `${i + 1}. ${o.label || labelFor(o.to)} →`;
+    b.addEventListener("click", (e) => { e.stopPropagation(); goForward(o.to); });
+    optsEl.append(b);
+  });
   lb.style.display = "flex";
 }
 
@@ -145,12 +143,11 @@ function closeLightbox() {
 lb.addEventListener("click", closeLightbox);
 document.getElementById("lbbar").addEventListener("click", (e) => e.stopPropagation());
 document.getElementById("lbprev").addEventListener("click", (e) => { e.stopPropagation(); goBack(); });
-document.getElementById("lbnext").addEventListener("click", (e) => { e.stopPropagation(); goForwardNth(0); });
 document.addEventListener("keydown", (e) => {
   if (!isOpen()) return;
   if (e.key === "Escape") closeLightbox();
   else if (e.key === "ArrowLeft" || e.key === "Backspace") { e.preventDefault(); goBack(); }
-  else if (e.key === "ArrowRight") goForwardNth(0); // follow the first (or only) branch
+  else if (e.key === "ArrowRight") goForwardNth(0); // follow the first (or only) next step
   else if (/^[1-9]$/.test(e.key)) goForwardNth(Number(e.key) - 1);
 });
 loadFlows();
