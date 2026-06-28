@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -132,4 +132,14 @@ prod-build: ## Build the prod images locally (catches prod build breaks; no netw
 
 prod-config: ## Validate the prod compose + .env.prod interpolation
 	$(PROD_COMPOSE) config >/dev/null && echo "prod compose OK"
+
+# ============================================================================
+# Flowmap — local flow-visualization tool (tools/flowmap)
+# ============================================================================
+
+flowmap: ## Serve the flow visualizer at http://localhost:7878
+	cd tools/flowmap && npm install --silent && node --experimental-sqlite server.js
+
+flowmap-register: ## Crawl, identify flows via Claude, and fill the flowmap DB (use ARGS=--reset to wipe first)
+	cd tools/flowmap && npm install --silent && npx playwright install chromium && node --experimental-sqlite register.js $(ARGS)
 
