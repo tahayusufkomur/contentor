@@ -95,6 +95,31 @@ Each personalized render counts against the MailCraft plan quota.
 - `docs/superpowers/plans/` and `docs/superpowers/specs/` — recent feature work (Mar 19-25: zoom OAuth, course form consolidation, inline edit panel, email campaigns, email panel improvements).
 - Older platform-level planning lives in `../docs/plans/` and `../docs/specs/` (foundation doc + initial design) — historical reference, not actively maintained.
 
+## Flowmap — user-flow map (`tools/flowmap/`)
+
+A local SQLite + web-server dev tool that maps the app's user journeys. It crawls both
+frontends, screenshots every route, and uses the `claude` CLI to identify distinct user
+flows; each flow is stored in SQLite and rendered as a left→right DAG of real screenshots
+at `http://localhost:7878`. Screen keys are `"<frontend>|<url>"` (frontend = `main` or
+`customer`, e.g. `customer|/admin/courses`). `flowmap.db` is gitignored — rebuild it, don't
+commit it. Self-contained Node (`node:sqlite` + `node:http`, run with `--experimental-sqlite`).
+
+Three ways Claude operates it:
+
+- **Consult (text, no server) — use this to understand a user journey while coding.**
+  `make flowmap-show` prints every flow with its ordered steps; `make flowmap-show ARGS=screens`
+  lists the valid screen keys; `make flowmap-show ARGS=<id>` dumps one flow. Reads the DB
+  directly — no browser, no running server.
+- **Author live (server running):** while `make flowmap` serves, add/curate flows over the
+  HTTP API — `POST /api/flows` `{name, description?, steps:[{from,to,label?}]}`, `GET /api/flows`,
+  `GET /api/flows/:id`, `DELETE /api/flows/:id`, `GET /api/screens` (valid keys), `POST /api/reset`.
+  Steps must reference existing screen keys (unknown keys are accepted but flagged as warnings).
+- **Rebuild:** `make flowmap-register` re-crawls (needs the dev stack up + seeded) and re-identifies
+  flows via `claude -p`; `ARGS=--reset` wipes first.
+
+Design + plan: `docs/superpowers/specs/2026-06-28-flowmap-service-design.md` and
+`docs/superpowers/plans/2026-06-28-flowmap-service.md`.
+
 ## Rules
 
 - Never create new `.md` files unless explicitly asked.

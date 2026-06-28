@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -142,4 +142,7 @@ flowmap: ## Serve the flow visualizer at http://localhost:7878
 
 flowmap-register: ## Crawl, identify flows via Claude, and fill the flowmap DB (use ARGS=--reset to wipe first)
 	cd tools/flowmap && npm install --silent && npx playwright install chromium && node --experimental-sqlite register.js $(ARGS)
+
+flowmap-show: ## Print registered flows as text (ARGS=screens lists screen keys; ARGS=<id> dumps one flow)
+	cd tools/flowmap && node --experimental-sqlite query.js $(ARGS)
 
