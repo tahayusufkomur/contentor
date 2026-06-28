@@ -39,6 +39,11 @@ async function loadFlows() {
       btn.classList.add("active");
       showFlow(f.id);
     };
+    // Right-click → copy a text reference of the flow to paste to Claude.
+    btn.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      showFlowMenu(e.clientX, e.clientY, f.id);
+    });
     return btn;
   };
 
@@ -172,4 +177,72 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "ArrowRight") goForwardNth(0); // follow the first (or only) next step
   else if (/^[1-9]$/.test(e.key)) goForwardNth(Number(e.key) - 1);
 });
+
+// --- Right-click flow menu → copy a text reference (same shape as the consult CLI,
+// so a pasted flow reads to Claude exactly like `make flowmap-show ARGS=<id>`). ---
+const menuEl = document.getElementById("flowmenu");
+const toastEl = document.getElementById("toast");
+
+function hideFlowMenu() {
+  menuEl.style.display = "none";
+}
+
+function showFlowMenu(x, y, id) {
+  menuEl.innerHTML = "";
+  const item = document.createElement("button");
+  item.className = "menuitem";
+  item.textContent = "Copy flow as text";
+  item.addEventListener("click", () => {
+    hideFlowMenu();
+    copyFlowText(id);
+  });
+  menuEl.append(item);
+  menuEl.style.display = "block";
+  menuEl.style.left = "0px";
+  menuEl.style.top = "0px";
+  // Clamp to viewport once we know the menu's size.
+  const r = menuEl.getBoundingClientRect();
+  menuEl.style.left = Math.min(x, window.innerWidth - r.width - 8) + "px";
+  menuEl.style.top = Math.min(y, window.innerHeight - r.height - 8) + "px";
+}
+
+document.addEventListener("click", hideFlowMenu);
+document.addEventListener("scroll", hideFlowMenu, true);
+window.addEventListener("blur", hideFlowMenu);
+
+function flowToText(flow) {
+  const lines = [];
+  lines.push(`flowmap #${flow.id}  ${flow.name}${flow.description ? ` — ${flow.description}` : ""}`);
+  for (const st of flow.steps) {
+    const arrow = st.label ? `--[${st.label}]-->` : "-->";
+    lines.push(`    ${st.from}  ${arrow}  ${st.to}`);
+  }
+  return lines.join("\n");
+}
+
+let toastTimer = null;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.style.display = "none"; }, 1800);
+}
+
+async function copyFlowText(id) {
+  try {
+    const flow = await (await fetch("/api/flows/" + id)).json();
+    const text = flowToText(flow);
+    await navigator.clipboard.writeText(text);
+    toast("Flow copied to clipboard");
+  } catch (err) {
+    // clipboard API needs a secure context / focus; fall back to a manual prompt.
+    try {
+      const flow = await (await fetch("/api/flows/" + id)).json();
+      window.prompt("Copy this flow:", flowToText(flow));
+    } catch {
+      toast("Couldn't copy flow");
+    }
+  }
+}
+
 loadFlows();

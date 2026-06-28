@@ -24,3 +24,7 @@ body { display: flex; height: 100vh; }
 #lbopts:empty { display: none; }
 .lbopt { background: rgba(20,22,28,.92); border: 1px solid #2b3040; color: #e7e9ee; padding: 7px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
 .lbopt:hover { background: #1b1f2a; border-color: #7aa2f7; }
+#flowmenu { position: fixed; z-index: 20; display: none; background: #161922; border: 1px solid #2b3040; border-radius: 8px; padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.menuitem { display: block; width: 100%; text-align: left; background: none; border: none; color: #e7e9ee; padding: 7px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.menuitem:hover { background: #1b1f2a; }
+#toast { position: fixed; z-index: 30; display: none; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1b1f2a; border: 1px solid #2b3040; color: #e7e9ee; padding: 8px 16px; border-radius: 999px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
