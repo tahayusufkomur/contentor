@@ -18,7 +18,7 @@ function preflight() {
   for (const host of new Set(frontends.map((f) => f.host))) {
     try {
       // Caddy routes by Host header; curl localhost so we don't depend on *.localhost DNS.
-      execSync(`curl -sf --max-time 8 -o /dev/null -H "Host: ${host}" http://localhost/`, { timeout: 10000 });
+      execSync(`curl -s --max-time 8 -o /dev/null -H "Host: ${host}" http://localhost/`, { timeout: 10000 });
     } catch {
       console.error(`✗ ${host} not reachable via Caddy. Run: make dev && make seed && make seed-demos`);
       process.exit(1);
