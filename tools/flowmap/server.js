@@ -67,7 +67,7 @@ function createServer(db) {
       if (VENDOR[pathname]) return send(res, 200, fs.readFileSync(VENDOR[pathname]), "text/javascript");
       const rel = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
       const fp = path.join(WEB, rel);
-      if (fp.startsWith(WEB) && fs.existsSync(fp) && fs.statSync(fp).isFile()) {
+      if ((fp === WEB || fp.startsWith(WEB + path.sep)) && fs.existsSync(fp) && fs.statSync(fp).isFile()) {
         return send(res, 200, fs.readFileSync(fp), TYPES[path.extname(fp)] || "application/octet-stream");
       }
       return send(res, 404, { error: "not found" });
