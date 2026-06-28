@@ -10,7 +10,7 @@ function resolveUrl(route, targets) {
 
 function classify({ httpStatus, finalUrl, role }) {
   if (httpStatus >= 400) return { status: "error", note: `HTTP ${httpStatus}` };
-  if (role !== "anon" && /\/login(\/|$|\?)/.test(finalUrl)) {
+  if (role !== "anon" && /\/login(\/|$|\?|#)/i.test(finalUrl)) {
     return { status: "error", note: "redirected to login (auth failed)" };
   }
   return { status: "ok", note: "" };
