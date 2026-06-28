@@ -54,3 +54,5 @@ backend/celerybeat-schedule
 
 # Generated screenshot map (regenerate with `make screenshot-map`)
 docs/screenshot-map/
+# npm regenerates this on every `make screenshot-map`; keep the working tree clean
+scripts/screenshot-map/package-lock.json
