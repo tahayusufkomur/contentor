@@ -10,6 +10,7 @@ const { discover } = require("./discover");
 const { getContext } = require("./auth");
 const { capturePage } = require("./capture");
 const { render, summarize } = require("./render");
+const { buildGraph } = require("./graph");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const OUT_DIR = path.join(REPO_ROOT, "docs", "screenshot-map");
@@ -30,10 +31,12 @@ async function main() {
   preflight();
   const browser = await chromium.launch();
   const results = [];
+  const routesByFrontend = {};
 
   try {
     for (const fe of frontends) {
       const routes = discover(fe, REPO_ROOT);
+      routesByFrontend[fe.name] = routes;
       const roles = [...new Set(routes.map((r) => r.role))];
       const contexts = {};
       for (const role of roles) {
@@ -53,7 +56,8 @@ async function main() {
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const commit = execSync("git rev-parse --short HEAD", { cwd: REPO_ROOT }).toString().trim();
-  const html = render(results, {
+  const graph = buildGraph(results, routesByFrontend);
+  const html = render(graph, {
     generatedAt: new Date().toISOString(),
     commit,
     summary: summarize(results),
