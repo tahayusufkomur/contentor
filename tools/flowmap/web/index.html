@@ -1,3 +1,19 @@
 <!-- tools/flowmap/web/index.html -->
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Flowmap</title></head>
-<body><p>flowmap</p></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flowmap</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <aside id="sidebar"><h1>Flows</h1><div id="flows"></div></aside>
+  <main id="cy"></main>
+  <div id="lb"><img id="lbimg" alt="" /><div class="cap" id="lbcap"></div></div>
+  <script src="/vendor/cytoscape.min.js"></script>
+  <script src="/vendor/dagre.min.js"></script>
+  <script src="/vendor/cytoscape-dagre.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
