@@ -3,8 +3,28 @@
   "tenantSlug": "demo-yoga",
   "tenantHost": "demo-yoga.localhost",
   "mainHost": "localhost",
+  "_dynamic_comment": "Concrete instances per dynamic route, keyed by frontend then route url (the same url can differ per frontend). Values are real seeded entities in demo-yoga / public; reseed via make seed-demos-force + scratch seed if ids drift.",
   "dynamic": {
-    "/admin/tenants/[slug]": "/admin/tenants/demo-yoga",
-    "/dashboard/domain/[slug]": "/dashboard/domain/demo-yoga"
+    "main": {
+      "/admin/email/campaigns/[id]": "/admin/email/campaigns/1",
+      "/admin/m/[model]": "/admin/m/platform-plans",
+      "/admin/tenants/[slug]": "/admin/tenants/demo-yoga",
+      "/dashboard/domain/[slug]": "/dashboard/domain/demo-yoga"
+    },
+    "customer": {
+      "/calendar/[type]/[id]": "/calendar/live_class/106",
+      "/courses/[slug]": "/courses/vinyasa-flow-volume-17",
+      "/plans/[id]": "/plans/1",
+      "/learn/[slug]": "/learn/yoga-for-beginners",
+      "/admin/billing/bundles/[id]": "/admin/billing/bundles/1",
+      "/admin/billing/plans/[id]": "/admin/billing/plans/1",
+      "/admin/courses/[slug]": "/admin/courses/yoga-for-beginners",
+      "/admin/email/campaigns/[id]": "/admin/email/campaigns/1",
+      "/admin/m/[model]": "/admin/m/users",
+      "/admin/notifications/[id]": "/admin/notifications/1",
+      "/admin/students/[id]": "/admin/students/8",
+      "/live/[id]": "/live/157",
+      "/live-stream/[id]": "/live-stream/27"
+    }
   }
 }

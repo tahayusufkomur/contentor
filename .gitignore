@@ -58,3 +58,6 @@ tools/flowmap/package-lock.json
 tools/flowmap/flowmap.db
 tools/flowmap/flowmap.db-wal
 tools/flowmap/flowmap.db-shm
+
+# flowmap walk-harness screenshots (verification scratch)
+tools/flowmap/walk-shots/

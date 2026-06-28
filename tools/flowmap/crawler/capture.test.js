@@ -23,3 +23,17 @@ test("resolveUrl skips unmapped dynamic routes and resolves mapped ones", () => 
   assert.equal(r.status, "ok");
   assert.equal(r.resolvedUrl, "/admin/tenants/yoga");
 });
+
+test("resolveUrl prefers a per-frontend mapping over the flat one", () => {
+  const targets = {
+    dynamic: {
+      "/admin/m/[model]": "/admin/m/flat",
+      main: { "/admin/m/[model]": "/admin/m/platform-plans" },
+      customer: { "/admin/m/[model]": "/admin/m/users" },
+    },
+  };
+  assert.equal(resolveUrl({ url: "/admin/m/[model]", dynamic: true, frontend: "main" }, targets).resolvedUrl, "/admin/m/platform-plans");
+  assert.equal(resolveUrl({ url: "/admin/m/[model]", dynamic: true, frontend: "customer" }, targets).resolvedUrl, "/admin/m/users");
+  // a frontend with no per-frontend entry falls back to the flat map
+  assert.equal(resolveUrl({ url: "/admin/m/[model]", dynamic: true, frontend: "other" }, targets).resolvedUrl, "/admin/m/flat");
+});

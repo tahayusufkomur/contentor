@@ -58,6 +58,19 @@ async function main() {
     await browser.close();
   }
 
+  // Report capture coverage — the goal is 0 skipped / 0 errored (every route a real screenshot).
+  const bad = results.filter((r) => r.status !== "ok");
+  console.log(`\nCapture: ${results.length - bad.length}/${results.length} ok` + (bad.length ? `, ${bad.length} not-ok:` : " — 100% coverage"));
+  for (const r of bad) console.log(`  ⚠ ${r.frontend}|${r.url} [${r.status}] ${r.note}`);
+
+  // --screens-only refreshes every screen's screenshot but keeps the existing (verified) flows;
+  // without it we (re-)identify flows via the claude CLI.
+  if (process.argv.includes("--screens-only")) {
+    console.log(`\n✓ Refreshed ${results.length} screens (flows untouched) in ${DB_PATH}`);
+    db.close();
+    return;
+  }
+
   const graph = buildGraph(results, routesByFrontend);
   const titleByKey = Object.fromEntries(results.map((r) => [`${r.frontend}|${r.url}`, r.title || ""]));
   const screens = graph.nodes.map((n) => ({ key: n.id, url: n.label, role: n.role, title: titleByKey[n.id] || "" }));

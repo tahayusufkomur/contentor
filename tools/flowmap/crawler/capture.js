@@ -1,11 +1,24 @@
 // scripts/screenshot-map/capture.js
 function resolveUrl(route, targets) {
   if (!route.dynamic) return { resolvedUrl: route.url, status: "ok" };
-  const mapped = targets.dynamic && targets.dynamic[route.url];
+  // Dynamic routes resolve to a concrete instance from targets.dynamic. The same URL
+  // (e.g. /admin/m/[model]) can mean different things per frontend, so a per-frontend
+  // nested map (targets.dynamic[frontend][url]) wins over the flat map (targets.dynamic[url]).
+  const d = targets.dynamic || {};
+  const perFrontend = route.frontend && d[route.frontend] && d[route.frontend][route.url];
+  const mapped = perFrontend || d[route.url];
   if (!mapped) {
     return { resolvedUrl: route.url, status: "skipped", note: "no target in targets.json" };
   }
   return { resolvedUrl: mapped, status: "ok" };
+}
+
+// Routes whose page never reaches networkidle (e.g. a live video SDK holding the
+// connection open) hang on the default wait. They're listed here so capture falls back
+// to "domcontentloaded" and snapshots the join/landing screen the user actually sees.
+const SLOW_LOAD = [/\/live\//, /\/live-stream\//];
+function waitStrategy(resolvedUrl) {
+  return SLOW_LOAD.some((re) => re.test(resolvedUrl)) ? "domcontentloaded" : "networkidle";
 }
 
 function classify({ httpStatus, finalUrl, role }) {
@@ -25,7 +38,9 @@ async function capturePage(context, route, targets) {
   const page = await context.newPage();
   const url = `http://${route.host}${resolved.resolvedUrl}`;
   try {
-    const resp = await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+    const waitUntil = waitStrategy(resolved.resolvedUrl);
+    const resp = await page.goto(url, { waitUntil, timeout: 30000 });
+    if (waitUntil === "domcontentloaded") await page.waitForTimeout(2500); // let the join/landing UI paint
     const httpStatus = resp ? resp.status() : 0;
     const finalUrl = page.url();
     const png = await page.screenshot({ fullPage: false });
