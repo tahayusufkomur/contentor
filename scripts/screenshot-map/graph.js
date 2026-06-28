@@ -1,6 +1,10 @@
 // scripts/screenshot-map/graph.js
 const ROLE_TITLES = { coach: "Coach", student: "Student", superadmin: "Superadmin", anon: "Public" };
 
+// A link target reachable from >= this fraction of a frontend's pages is treated as
+// global navigation (navbar/sidebar/footer) and its incoming edges are dropped from the board.
+const GLOBAL_NAV_THRESHOLD = 0.7;
+
 function nodeId(frontend, url) {
   return `${frontend}|${url}`;
 }
@@ -81,7 +85,7 @@ function buildGraph(results, routesByFrontend) {
     for (const e of feEdges) (sourcesByTarget[e.target] ||= new Set()).add(e.source);
     for (const e of feEdges) {
       const distinct = sourcesByTarget[e.target].size;
-      if (P > 0 && distinct / P >= 0.7) {
+      if (P > 0 && distinct / P >= GLOBAL_NAV_THRESHOLD) {
         suppressedCount++;
       } else {
         edges.push({ source: e.source, target: e.target });
