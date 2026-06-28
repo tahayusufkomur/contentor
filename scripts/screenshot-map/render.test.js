@@ -4,34 +4,39 @@ const assert = require("node:assert/strict");
 const { render, summarize } = require("./render");
 
 test("summarize counts statuses", () => {
-  const s = summarize([{ status: "ok" }, { status: "ok" }, { status: "error" }, { status: "skipped" }]);
-  assert.deepEqual(s, { ok: 2, error: 1, skipped: 1 });
+  assert.deepEqual(
+    summarize([{ status: "ok" }, { status: "error" }, { status: "ok" }, { status: "skipped" }]),
+    { ok: 2, error: 1, skipped: 1 },
+  );
 });
 
-test("render produces self-contained html with both frontends and inlined thumbnails", () => {
+test("render builds a self-contained cytoscape board", () => {
   const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
-  const results = [
-    { frontend: "main", area: "admin", role: "superadmin", url: "/admin/tenants", status: "ok", note: "", png },
-    { frontend: "customer", area: "admin", role: "coach", url: "/admin/courses", status: "ok", note: "", png: null },
-    { frontend: "customer", area: "admin", role: "coach", url: "/admin/courses/[id]", status: "skipped", note: "no target", png: null },
-  ];
-  const html = render(results, { generatedAt: "2026-06-27T00:00:00Z", commit: "abc1234", summary: summarize(results) });
+  const graph = {
+    nodes: [
+      { id: "customer|/a", label: "/a", role: "coach", status: "ok", cluster: "customer · Coach", png },
+      { id: "customer|/b", label: "</script><img>", role: "coach", status: "skipped", cluster: "customer · Coach", png: null },
+    ],
+    edges: [{ source: "customer|/a", target: "customer|/b" }],
+    suppressedCount: 2,
+  };
+  const html = render(
+    graph,
+    { generatedAt: "2026-06-28", commit: "abc1234", summary: { ok: 1, error: 0, skipped: 1 } },
+    { cytoscapeSrc: "/*CYTO_STUB*/" },
+  );
 
   assert.match(html, /<!doctype html>/i);
-  assert.match(html, /Contentor screenshot map/);
+  assert.match(html, /CYTO_STUB/); // library inlined (stub)
+  assert.match(html, /id="cy"/); // canvas container
+  assert.match(html, /cytoscape\(/); // boots cytoscape
   assert.match(html, /data:image\/png;base64,/); // thumbnail inlined
-  assert.match(html, />main</);
-  assert.match(html, />customer</);
-  assert.match(html, /skipped/);
   assert.match(html, /abc1234/);
-  assert.ok(!/<img src="\/[^"]/.test(html)); // no external image refs
-});
-
-test("render escapes hostile user-derived strings", () => {
-  const results = [
-    { frontend: "main", area: "admin", role: "superadmin", url: "/x?<script>alert(1)</script>", status: "ok", note: "", png: null },
-  ];
-  const html = render(results, { generatedAt: "t", commit: "c", summary: summarize(results) });
-  assert.ok(!html.includes("<script>alert(1)</script>"));
-  assert.ok(html.includes("&lt;script&gt;"));
+  assert.match(html, /2 global-nav links hidden/);
+  // hostile label is escaped inside the JSON, not emitted raw
+  assert.ok(!html.includes("</script><img>"), "raw hostile label must not appear");
+  assert.match(html, /\\u003c\/script>\\u003cimg>/);
+  // no external resource refs
+  assert.ok(!/<script\s+src=/.test(html));
+  assert.ok(!/<img\s+src="\/[^"]/.test(html));
 });

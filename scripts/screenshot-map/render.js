@@ -1,30 +1,15 @@
 // scripts/screenshot-map/render.js
-const CSS = `
-  :root { color-scheme: light dark; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font: 14px/1.45 system-ui, sans-serif; background: #0f1115; color: #e7e9ee; }
-  header { padding: 20px 24px; border-bottom: 1px solid #262a33; position: sticky; top: 0; background: #0f1115; }
-  header h1 { margin: 0 0 4px; font-size: 18px; }
-  header p { margin: 0; color: #9aa1ad; }
-  section { padding: 16px 24px 8px; }
-  section > h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .08em; color: #9aa1ad; margin: 24px 0 12px; }
-  .lanes { display: flex; gap: 16px; overflow-x: auto; align-items: flex-start; padding-bottom: 12px; }
-  .lane { min-width: 260px; background: #161922; border: 1px solid #262a33; border-radius: 12px; padding: 12px; }
-  .lane > h3 { margin: 0 0 10px; font-size: 13px; color: #c7ccd6; }
-  .card { background: #1b1f2a; border: 1px solid #2b3040; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
-  .card img { display: block; width: 100%; height: 150px; object-fit: cover; object-position: top; background: #0c0e12; }
-  .card .noimg { height: 150px; display: flex; align-items: center; justify-content: center; color: #6b7280; background: #0c0e12; }
-  .card .meta { padding: 8px 10px; }
-  .card .title { font-size: 12px; word-break: break-all; color: #e7e9ee; }
-  .card .row { display: flex; gap: 6px; margin-top: 6px; }
-  .badge { font-size: 10px; padding: 1px 6px; border-radius: 999px; background: #2b3040; color: #c7ccd6; }
-  .pill { font-size: 10px; padding: 1px 6px; border-radius: 999px; }
-  .pill.ok { background: #16331f; color: #4ade80; }
-  .pill.error { background: #3a1620; color: #f87171; }
-  .pill.skipped { background: #33301a; color: #fbbf24; }
-  .note { font-size: 11px; color: #9aa1ad; margin-top: 4px; }
-  .card.status-error { border-color: #5b2330; }
-  .card.status-skipped { border-color: #5b531f; }
+const { cytoscapeSource } = require("./vendor");
+
+const BOARD_CSS = `
+  html, body { margin: 0; height: 100%; background: #0f1115; color: #e7e9ee; font: 14px system-ui, sans-serif; }
+  header { position: fixed; top: 0; left: 0; right: 0; z-index: 5; padding: 10px 16px; background: rgba(15,17,21,.92); border-bottom: 1px solid #262a33; }
+  header h1 { margin: 0; font-size: 15px; display: inline; }
+  header span { color: #9aa1ad; margin-left: 10px; font-size: 12px; }
+  #cy { position: absolute; inset: 0; }
+  #lb { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; cursor: zoom-out; }
+  #lb img { max-width: 92vw; max-height: 82vh; border: 1px solid #2b3040; border-radius: 8px; }
+  #lb .cap { color: #c7ccd6; font-size: 13px; }
 `;
 
 function escapeHtml(str) {
@@ -42,43 +27,67 @@ function summarize(results) {
   return s;
 }
 
-function card(r) {
-  const img = dataUri(r.png);
-  const thumb = img
-    ? `<img src="${escapeHtml(img)}" loading="lazy" alt="">`
-    : `<div class="noimg">${escapeHtml(r.status)}</div>`;
-  return `<div class="card status-${escapeHtml(r.status)}">
-    ${thumb}
-    <div class="meta">
-      <div class="title">${escapeHtml(r.url)}</div>
-      <div class="row"><span class="badge">${escapeHtml(r.role)}</span><span class="pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></div>
-      ${r.note ? `<div class="note">${escapeHtml(r.note)}</div>` : ""}
-    </div>
-  </div>`;
+function buildElements(graph) {
+  const elements = [];
+  for (const c of [...new Set(graph.nodes.map((n) => n.cluster))]) {
+    elements.push({ data: { id: c, label: c, isCluster: 1 } });
+  }
+  for (const n of graph.nodes) {
+    elements.push({
+      data: { id: n.id, parent: n.cluster, label: n.label, role: n.role, status: n.status, img: dataUri(n.png) || "" },
+    });
+  }
+  graph.edges.forEach((e, i) => elements.push({ data: { id: `e${i}`, source: e.source, target: e.target } }));
+  return elements;
 }
 
-function render(results, meta) {
-  const frontends = [...new Set(results.map((r) => r.frontend))];
-  let body = "";
-  for (const fe of frontends) {
-    const feResults = results.filter((r) => r.frontend === fe);
-    const areas = [...new Set(feResults.map((r) => r.area))];
-    body += `<section><h2>${escapeHtml(fe)}</h2><div class="lanes">`;
-    for (const area of areas) {
-      const lane = feResults
-        .filter((r) => r.area === area)
-        .sort((a, b) => a.url.localeCompare(b.url));
-      body += `<div class="lane"><h3>${escapeHtml(area || "root")}</h3>${lane.map(card).join("")}</div>`;
-    }
-    body += `</div></section>`;
-  }
+function render(graph, meta, opts = {}) {
+  const cyto = opts.cytoscapeSrc != null ? opts.cytoscapeSrc : cytoscapeSource();
+  const elementsJson = JSON.stringify(buildElements(graph)).replace(/</g, "\\u003c");
   const s = meta.summary;
+
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Contentor screenshot map</title><style>${CSS}</style></head><body>
+<title>Contentor screenshot map</title><style>${BOARD_CSS}</style></head><body>
 <header><h1>Contentor screenshot map</h1>
-<p>${escapeHtml(meta.generatedAt)} · ${escapeHtml(meta.commit)} · ${s.ok} ok / ${s.error} error / ${s.skipped} skipped</p></header>
-${body}</body></html>`;
+<span>${escapeHtml(meta.generatedAt)} · ${escapeHtml(meta.commit)} · ${s.ok} ok / ${s.error} error / ${s.skipped} skipped · ${graph.suppressedCount} global-nav links hidden · click a node to trace links, double-click to enlarge</span>
+</header>
+<div id="cy"></div>
+<div id="lb"><img id="lbimg" alt=""><div class="cap" id="lbcap"></div></div>
+<script>${cyto}</script>
+<script>
+const elements = ${elementsJson};
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements,
+  style: [
+    { selector: 'node[?isCluster]', style: { 'background-opacity': 0.05, 'background-color': '#7aa2f7', 'border-width': 1, 'border-color': '#2b3040', 'shape': 'round-rectangle', 'padding': 18, 'label': 'data(label)', 'color': '#9aa1ad', 'font-size': 12, 'text-valign': 'top', 'text-halign': 'center' } },
+    { selector: 'node[img]', style: { 'width': 120, 'height': 75, 'shape': 'round-rectangle', 'background-fit': 'cover', 'background-image': 'data(img)', 'background-color': '#1b1f2a', 'border-width': 3, 'border-color': '#3b4252', 'label': 'data(label)', 'font-size': 7, 'color': '#c7ccd6', 'text-valign': 'bottom', 'text-margin-y': 3, 'text-max-width': 120, 'text-wrap': 'ellipsis' } },
+    { selector: 'node[status = "ok"]', style: { 'border-color': '#4ade80' } },
+    { selector: 'node[status = "error"]', style: { 'border-color': '#f87171' } },
+    { selector: 'node[status = "skipped"]', style: { 'border-color': '#fbbf24' } },
+    { selector: 'edge', style: { 'width': 1, 'line-color': '#3b4252', 'target-arrow-color': '#3b4252', 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8, 'curve-style': 'bezier', 'opacity': 0.7 } },
+    { selector: '.faded', style: { 'opacity': 0.12 } },
+  ],
+  layout: { name: 'cose', animate: false, nodeRepulsion: 8000, idealEdgeLength: 90, nestingFactor: 1.2, padding: 30, randomize: true },
+});
+cy.on('tap', 'node', (e) => {
+  const n = e.target;
+  if (n.data('isCluster')) return;
+  cy.elements().addClass('faded');
+  n.closedNeighborhood().removeClass('faded');
+});
+cy.on('tap', (e) => { if (e.target === cy) cy.elements().removeClass('faded'); });
+cy.on('dbltap', 'node', (e) => {
+  const img = e.target.data('img');
+  if (!img) return;
+  document.getElementById('lbimg').src = img;
+  document.getElementById('lbcap').textContent = e.target.data('label') + '  ·  ' + e.target.data('role');
+  document.getElementById('lb').style.display = 'flex';
+});
+document.getElementById('lb').addEventListener('click', () => { document.getElementById('lb').style.display = 'none'; });
+</script>
+</body></html>`;
 }
 
 module.exports = { render, summarize, escapeHtml };
