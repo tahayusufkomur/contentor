@@ -2,7 +2,7 @@
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
-const REPO_ROOT = path.resolve(__dirname, "..", "..");
+const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 
 function sessionCookie(jwt, host) {
   return {

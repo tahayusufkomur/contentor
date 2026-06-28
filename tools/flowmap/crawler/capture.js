@@ -19,7 +19,7 @@ function classify({ httpStatus, finalUrl, role }) {
 async function capturePage(context, route, targets) {
   const resolved = resolveUrl(route, targets);
   if (resolved.status === "skipped") {
-    return { ...route, resolvedUrl: resolved.resolvedUrl, status: "skipped", note: resolved.note, png: null, links: [] };
+    return { ...route, resolvedUrl: resolved.resolvedUrl, status: "skipped", note: resolved.note, png: null, links: [], title: null };
   }
 
   const page = await context.newPage();
@@ -32,10 +32,11 @@ async function capturePage(context, route, targets) {
     const links = await page.evaluate(() =>
       Array.from(document.querySelectorAll("a[href]")).map((a) => a.href),
     );
+    const title = await page.evaluate(() => document.title || "");
     const c = classify({ httpStatus, finalUrl, role: route.role });
-    return { ...route, resolvedUrl: resolved.resolvedUrl, status: c.status, note: c.note || "", png, links };
+    return { ...route, resolvedUrl: resolved.resolvedUrl, status: c.status, note: c.note || "", png, links, title };
   } catch (e) {
-    return { ...route, resolvedUrl: resolved.resolvedUrl, status: "error", note: String(e.message || e), png: null, links: [] };
+    return { ...route, resolvedUrl: resolved.resolvedUrl, status: "error", note: String(e.message || e), png: null, links: [], title: null };
   } finally {
     await page.close();
   }

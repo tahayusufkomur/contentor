@@ -52,7 +52,9 @@ Thumbs.db
 .superpowers/
 backend/celerybeat-schedule
 
-# Generated screenshot map (regenerate with `make screenshot-map`)
-docs/screenshot-map/
-# npm regenerates this on every `make screenshot-map`; keep the working tree clean
-scripts/screenshot-map/package-lock.json
+# flowmap tool
+tools/flowmap/node_modules/
+tools/flowmap/package-lock.json
+tools/flowmap/flowmap.db
+tools/flowmap/flowmap.db-wal
+tools/flowmap/flowmap.db-shm

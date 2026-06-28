@@ -1,0 +1,15 @@
+{
+  "name": "flowmap",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --experimental-sqlite --test",
+    "start": "node --experimental-sqlite server.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0",
+    "cytoscape": "^3.30.0",
+    "cytoscape-dagre": "^2.5.0",
+    "dagre": "^0.8.5"
+  }
+}
