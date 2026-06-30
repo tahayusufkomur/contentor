@@ -22,6 +22,13 @@ class Conversation(models.Model):
     class Meta:
         app_label = "mailbox"
         ordering = ["-last_message_at", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["counterparty_email"],
+                condition=models.Q(is_archived=False),
+                name="uniq_open_conversation_per_counterparty",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"Conversation<{self.id}:{self.counterparty_email}>"

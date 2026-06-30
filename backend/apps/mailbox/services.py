@@ -1,6 +1,6 @@
 import uuid
 
-from django.db import connection
+from django.db import IntegrityError, connection, transaction
 from django.utils import timezone
 from django.utils.html import escape
 
@@ -21,12 +21,17 @@ def get_or_create_conversation(*, counterparty_email: str, subject: str = "") ->
     if conv:
         return conv
     student = User.objects.filter(email__iexact=email).first()
-    return Conversation.objects.create(
-        counterparty_email=email,
-        counterparty_name=(student.name if student else ""),
-        subject=subject,
-        student=student,
-    )
+    try:
+        with transaction.atomic():
+            return Conversation.objects.create(
+                counterparty_email=email,
+                counterparty_name=(student.name if student else ""),
+                subject=subject,
+                student=student,
+            )
+    except IntegrityError:
+        # A concurrent caller created the open conversation first.
+        return Conversation.objects.get(counterparty_email=email, is_archived=False)
 
 
 def send_message(*, conversation: Conversation, text: str, html: str = "", subject: str = "") -> Message:
