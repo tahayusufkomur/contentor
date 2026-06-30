@@ -1,7 +1,6 @@
 import pytest
 from django.test import override_settings
 
-from apps.core.models import Tenant
 from apps.domains.models import CustomDomain
 from apps.mailbox.identity import sending_identity
 

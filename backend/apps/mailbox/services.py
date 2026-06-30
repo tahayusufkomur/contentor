@@ -2,6 +2,7 @@ import uuid
 
 from django.db import connection
 from django.utils import timezone
+from django.utils.html import escape
 
 from apps.accounts.models import User
 from apps.core.email import send_email
@@ -30,14 +31,14 @@ def get_or_create_conversation(*, counterparty_email: str, subject: str = "") ->
 
 def send_message(*, conversation: Conversation, text: str, html: str = "", subject: str = "") -> Message:
     from_email, _can_receive = sending_identity(connection.tenant)
-    sender_domain = from_email.split("@", 1)[-1] or "contentor.app"
+    sender_domain = from_email.rsplit("@", 1)[-1]
 
     last = conversation.messages.order_by("-created_at").first()
     message_id = new_message_id(sender_domain)
     in_reply_to = last.message_id if last and last.message_id else ""
     references = ""
     if in_reply_to:
-        prior = (last.references + " ").strip() if last and last.references else ""
+        prior = last.references.strip() if last and last.references else ""
         references = (prior + " " + in_reply_to).strip()
 
     headers = {"Message-ID": message_id}
@@ -46,7 +47,7 @@ def send_message(*, conversation: Conversation, text: str, html: str = "", subje
         headers["References"] = references
 
     subject = subject or conversation.subject or "(no subject)"
-    body_html = html or f"<p>{text}</p>"
+    body_html = html or f"<p>{escape(text)}</p>"
 
     ok = send_email(
         conversation.counterparty_email,

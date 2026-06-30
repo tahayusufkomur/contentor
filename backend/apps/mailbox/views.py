@@ -41,8 +41,8 @@ def compose(request):
     serializer = ComposeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
-    conv = services.get_or_create_conversation(counterparty_email=data["to"], subject=data.get("subject", ""))
-    msg = services.send_message(conversation=conv, text=data["text"], subject=data.get("subject", ""))
+    conv = services.get_or_create_conversation(counterparty_email=data["to"], subject=data["subject"])
+    msg = services.send_message(conversation=conv, text=data["text"], subject=data["subject"])
     return Response(
         {"conversation_id": conv.id, "message_id": msg.id},
         status=status.HTTP_201_CREATED,
