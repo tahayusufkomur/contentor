@@ -32,6 +32,7 @@ from apps.courses.models import Course, Enrollment, Lesson, Module, Progress, Vi
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream
 from apps.media.models import Photo
+from apps.mailbox.models import Conversation, Message
 from apps.notifications.models import Announcement, AnnouncementRecipient, LiveReminderLog, PushSubscription
 
 SHARED_SCHEMA = "shared_test"
@@ -128,4 +129,6 @@ def tenant_ctx(restore_public):
         Announcement.objects.all().delete()
         PushSubscription.objects.all().delete()
         LiveReminderLog.objects.all().delete()
+        Message.objects.all().delete()
+        Conversation.objects.all().delete()
         User.objects.all().delete()

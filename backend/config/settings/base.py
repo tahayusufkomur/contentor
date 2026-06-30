@@ -47,6 +47,7 @@ TENANT_APPS = [
     "apps.billing",
     "apps.email_campaigns",
     "apps.notifications",
+    "apps.mailbox",
     "apps.usage",
 ]
 
