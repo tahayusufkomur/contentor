@@ -1,0 +1,15 @@
+{
+  "name": "mailbox-inbound-worker",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "postal-mime": "^2.2.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.80.0"
+  },
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "secret": "wrangler secret put MAILBOX_INBOUND_SECRET"
+  }
+}

@@ -1,0 +1,8 @@
+name = "mailbox-inbound"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Set via `wrangler secret put MAILBOX_INBOUND_SECRET` (do NOT commit secrets).
+# WEBHOOK_URL is the public inbound endpoint.
+[vars]
+WEBHOOK_URL = "https://contentor.app/api/v1/mailbox/inbound/"
