@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from django.conf import settings
+
 from apps.core.models import Domain
 
 from .cloudflare import get_cloudflare
@@ -35,8 +37,6 @@ def _step_dns_records(cd) -> None:
     if cd.dns_records_done:
         return
     cf = get_cloudflare()
-    from django.conf import settings
-
     tunnel = settings.CLOUDFLARE_TUNNEL_HOSTNAME or "tunnel.contentor.app"
     cf.upsert_dns_record(zone_id=cd.cloudflare_zone_id, type="CNAME", name=cd.domain, content=tunnel, proxied=True)
     cf.upsert_dns_record(
@@ -58,7 +58,12 @@ def _step_email_auth(cd) -> None:
         cf.upsert_dns_record(
             zone_id=cd.cloudflare_zone_id, type=rec["type"], name=rec["name"], content=rec["value"], proxied=False
         )
-    if cd.forward_to_email:
+    if cd.mailbox_enabled and settings.CLOUDFLARE_EMAIL_WORKER_NAME:
+        cf.enable_email_routing(
+            zone_id=cd.cloudflare_zone_id,
+            worker_name=settings.CLOUDFLARE_EMAIL_WORKER_NAME,
+        )
+    elif cd.forward_to_email:
         cf.enable_email_routing(zone_id=cd.cloudflare_zone_id, forward_to=cd.forward_to_email)
 
 

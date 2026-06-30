@@ -58,3 +58,21 @@ def test_enable_email_routing_uses_correct_endpoints_and_verbs(settings):
     calls = [(c.args[0], c.args[1]) for c in req.call_args_list]
     assert ("POST", "https://api.cloudflare.com/client/v4/zones/z1/email/routing/dns") in calls
     assert ("PUT", "https://api.cloudflare.com/client/v4/zones/z1/email/routing/rules/catch_all") in calls
+
+
+def test_enable_email_routing_binds_worker_when_named():
+    from apps.domains.cloudflare.fake import FakeCloudflare
+
+    cf = FakeCloudflare()
+    z = cf.create_zone("coach.com")["zone_id"]
+    cf.enable_email_routing(zone_id=z, worker_name="mailbox-inbound")
+    assert cf.zones[z]["email_worker"] == "mailbox-inbound"
+
+
+def test_enable_email_routing_forward_still_works():
+    from apps.domains.cloudflare.fake import FakeCloudflare
+
+    cf = FakeCloudflare()
+    z = cf.create_zone("coach.com")["zone_id"]
+    cf.enable_email_routing(zone_id=z, forward_to="coach@gmail.com")
+    assert cf.zones[z]["email_forward"] == "coach@gmail.com"

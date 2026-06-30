@@ -39,18 +39,17 @@ class CloudflareClient(Cloudflare):
         )
         return result["id"]
 
-    def enable_email_routing(self, *, zone_id: str, forward_to: str) -> None:
-        # Enable Email Routing and add+lock the zone's MX/SPF records.
+    def enable_email_routing(self, *, zone_id: str, forward_to: str = "", worker_name: str = "") -> None:
+        # Enable Email Routing (installs Cloudflare's inbound MX records).
         self._request("POST", f"/zones/{zone_id}/email/routing/dns", {})
-        # Catch-all rule -> forward everything to the coach's address (PUT = upsert).
+        if worker_name:
+            action = {"type": "worker", "value": [worker_name]}
+        else:
+            action = {"type": "forward", "value": [forward_to]}
         self._request(
             "PUT",
             f"/zones/{zone_id}/email/routing/rules/catch_all",
-            {
-                "enabled": True,
-                "actions": [{"type": "forward", "value": [forward_to]}],
-                "matchers": [{"type": "all"}],
-            },
+            {"enabled": True, "actions": [action], "matchers": [{"type": "all"}]},
         )
 
     def get_ssl_status(self, *, zone_id: str) -> str:

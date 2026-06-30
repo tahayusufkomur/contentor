@@ -1,6 +1,10 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
+from django.test import override_settings
 
 from apps.core.models import Domain
+from apps.domains import provisioning
 from apps.domains.models import CustomDomain
 from apps.domains.provisioning import provision
 
@@ -80,3 +84,48 @@ def test_failure_records_failed_step(restore_public, settings, monkeypatch):
     cd.refresh_from_db()
     assert cd.provisioning_status == "failed"
     assert cd.failed_step == "registering"
+
+
+@override_settings(CLOUDFLARE_EMAIL_WORKER_NAME="mailbox-inbound")
+def test_step_email_auth_routes_mailbox_domain_to_worker(restore_public):
+    cd = CustomDomain.objects.create(
+        tenant=restore_public,
+        domain="mbxroute.com",
+        cost_minor=1,
+        price_minor=1,
+        currency="usd",
+        cloudflare_zone_id="zone-x",
+        provisioning_status="dns_records",
+        mailbox_enabled=True,
+    )
+    fake_cf = MagicMock()
+    fake_resend = MagicMock()
+    fake_resend.create_domain.return_value = {"resend_domain_id": "rd_1", "records": []}
+    with patch.object(provisioning, "get_cloudflare", return_value=fake_cf), patch.object(
+        provisioning, "get_resend_domains", return_value=fake_resend
+    ):
+        provisioning._step_email_auth(cd)
+    fake_cf.enable_email_routing.assert_called_once_with(zone_id="zone-x", worker_name="mailbox-inbound")
+
+
+@override_settings(CLOUDFLARE_EMAIL_WORKER_NAME="")
+def test_step_email_auth_falls_back_to_forward_without_worker(restore_public):
+    cd = CustomDomain.objects.create(
+        tenant=restore_public,
+        domain="mbxfwd.com",
+        cost_minor=1,
+        price_minor=1,
+        currency="usd",
+        cloudflare_zone_id="zone-y",
+        provisioning_status="dns_records",
+        forward_to_email="coach@gmail.com",
+        mailbox_enabled=False,
+    )
+    fake_cf = MagicMock()
+    fake_resend = MagicMock()
+    fake_resend.create_domain.return_value = {"resend_domain_id": "rd_2", "records": []}
+    with patch.object(provisioning, "get_cloudflare", return_value=fake_cf), patch.object(
+        provisioning, "get_resend_domains", return_value=fake_resend
+    ):
+        provisioning._step_email_auth(cd)
+    fake_cf.enable_email_routing.assert_called_once_with(zone_id="zone-y", forward_to="coach@gmail.com")

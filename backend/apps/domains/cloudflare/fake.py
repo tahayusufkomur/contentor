@@ -21,8 +21,12 @@ class FakeCloudflare(Cloudflare):
         )
         return rid
 
-    def enable_email_routing(self, *, zone_id: str, forward_to: str) -> None:
-        self.zones.setdefault(zone_id, {})["email_forward"] = forward_to
+    def enable_email_routing(self, *, zone_id: str, forward_to: str = "", worker_name: str = "") -> None:
+        zone = self.zones.setdefault(zone_id, {})
+        if worker_name:
+            zone["email_worker"] = worker_name
+        elif forward_to:
+            zone["email_forward"] = forward_to
 
     def get_ssl_status(self, *, zone_id: str) -> str:
         return "active"
