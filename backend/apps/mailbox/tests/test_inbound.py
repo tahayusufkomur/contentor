@@ -1,4 +1,5 @@
 import pytest
+from django.db import IntegrityError, transaction
 
 from apps.accounts.models import User
 from apps.mailbox.inbound import receive_inbound
@@ -51,3 +52,38 @@ def test_receive_threads_into_existing_conversation(tenant_ctx):
     conv = Conversation.objects.get(counterparty_email="p@x.com")
     assert conv.messages.count() == 2
     assert conv.unread_count == 2
+
+
+def test_db_constraint_rejects_duplicate_message_id(tenant_ctx):
+    """DB-level uniqueness: two rows with the same non-empty message_id must raise IntegrityError."""
+    conv = receive_inbound(
+        from_email="a@x.com", to_email="info@coach.com", subject="Test",
+        text="first", message_id="<constrained@x.com>",
+    ).conversation
+    with pytest.raises(IntegrityError), transaction.atomic():
+        Message.objects.create(
+                conversation=conv,
+                direction="inbound",
+                from_email="a@x.com",
+                to_email="info@coach.com",
+                text="duplicate",
+                message_id="<constrained@x.com>",
+            )
+
+
+def test_db_constraint_allows_multiple_empty_message_id(tenant_ctx):
+    """Empty message_id is NOT constrained — multiple rows with '' are allowed."""
+    conv = receive_inbound(
+        from_email="b@x.com", to_email="info@coach.com", subject="No-ID",
+        text="first", message_id="",
+    ).conversation
+    # Direct create of a second empty-message_id row must succeed.
+    Message.objects.create(
+        conversation=conv,
+        direction="inbound",
+        from_email="b@x.com",
+        to_email="info@coach.com",
+        text="second",
+        message_id="",
+    )
+    assert Message.objects.filter(conversation=conv, message_id="").count() == 2

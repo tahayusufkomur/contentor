@@ -4,7 +4,6 @@ import pytest
 from django.test import override_settings
 from rest_framework.test import APIClient
 
-from apps.accounts.models import User
 from apps.domains.models import CustomDomain
 from apps.mailbox import signing
 from apps.mailbox.models import Conversation, Message

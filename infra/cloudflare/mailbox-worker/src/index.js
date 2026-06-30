@@ -37,9 +37,12 @@ export default {
       headers: { "Content-Type": "application/json", "X-Mailbox-Signature": signature },
       body: payload,
     });
-    // On webhook failure, reject so Cloudflare retries / the sender is notified.
-    if (!resp.ok && resp.status >= 500) {
-      message.setReject("Temporary failure delivering to mailbox");
+    // On webhook failure, log and (for 5xx) reject so Cloudflare retries / the sender is notified.
+    if (!resp.ok) {
+      console.error(`mailbox inbound webhook returned ${resp.status}`);
+      if (resp.status >= 500) {
+        message.setReject("Temporary failure delivering to mailbox");
+      }
     }
   },
 };

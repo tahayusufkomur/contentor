@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
@@ -23,22 +23,26 @@ def receive_inbound(
     conversation = get_or_create_conversation(
         counterparty_email=from_email, subject=subject
     )
-    with transaction.atomic():
-        msg = Message.objects.create(
-            conversation=conversation,
-            direction="inbound",
-            from_email=from_email.strip().lower(),
-            to_email=to_email.strip().lower(),
-            text=text,
-            html=html,
-            message_id=message_id,
-            in_reply_to=in_reply_to,
-            references=references,
-            is_read=False,
-        )
-        Conversation.objects.filter(pk=conversation.pk).update(
-            unread_count=F("unread_count") + 1,
-            last_message_at=timezone.now(),
-        )
+    try:
+        with transaction.atomic():
+            msg = Message.objects.create(
+                conversation=conversation,
+                direction="inbound",
+                from_email=from_email.strip().lower(),
+                to_email=to_email.strip().lower(),
+                text=text,
+                html=html,
+                message_id=message_id,
+                in_reply_to=in_reply_to,
+                references=references,
+                is_read=False,
+            )
+            Conversation.objects.filter(pk=conversation.pk).update(
+                unread_count=F("unread_count") + 1,
+                last_message_at=timezone.now(),
+            )
+    except IntegrityError:
+        # Concurrent redelivery slipped past the .exists() check — treat as duplicate.
+        return None
     conversation.refresh_from_db()
     return msg

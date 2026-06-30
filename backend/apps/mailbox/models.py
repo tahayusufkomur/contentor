@@ -55,6 +55,13 @@ class Message(models.Model):
     class Meta:
         app_label = "mailbox"
         ordering = ["created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["message_id"],
+                condition=~models.Q(message_id=""),
+                name="uniq_message_id_when_present",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"Message<{self.id}:{self.direction}>"

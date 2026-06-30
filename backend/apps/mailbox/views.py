@@ -85,6 +85,12 @@ def inbound(request):
 
     to_email = (payload.get("to") or "").strip().lower()
     domain = to_email.rsplit("@", 1)[-1] if "@" in to_email else ""
+    # This webhook is always hit at the apex host (→ public schema), so
+    # CustomDomain is queryable here.  tenant_context(cd.tenant) then switches
+    # into the resolved per-tenant schema before storing the message.
+    # Correctness depends on the Cloudflare Worker posting to the apex URL, NOT
+    # a tenant subdomain — if it posted to a tenant host, the public-schema
+    # CustomDomain table would be unreachable and every lookup would return None.
     cd = CustomDomain.objects.filter(
         domain=domain, mailbox_enabled=True, provisioning_status="live"
     ).first()
