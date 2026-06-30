@@ -321,3 +321,7 @@ CLOUDFLARE_TUNNEL_HOSTNAME = os.environ.get("CLOUDFLARE_TUNNEL_HOSTNAME", "")
 
 # Resend sender-auth reuses the existing RESEND_API_KEY defined above (used by
 # apps.platform_email / apps.email_campaigns) — no separate key needed.
+
+# --- Coach mailbox inbound webhook ---
+MAILBOX_INBOUND_SECRET = os.environ.get("MAILBOX_INBOUND_SECRET", "")
+CLOUDFLARE_EMAIL_WORKER_NAME = os.environ.get("CLOUDFLARE_EMAIL_WORKER_NAME", "")
