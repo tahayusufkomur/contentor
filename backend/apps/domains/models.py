@@ -23,6 +23,8 @@ class CustomDomain(models.Model):
     cloudflare_zone_id = models.CharField(max_length=64, blank=True, default="")
     resend_domain_id = models.CharField(max_length=64, blank=True, default="")
     forward_to_email = models.EmailField(blank=True, default="")
+    mailbox_local_part = models.CharField(max_length=64, default="info")
+    mailbox_enabled = models.BooleanField(default=False)
     contact = models.JSONField(default=dict, blank=True)
     cost_minor = models.IntegerField()
     price_minor = models.IntegerField()

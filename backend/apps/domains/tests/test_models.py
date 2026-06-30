@@ -35,3 +35,19 @@ def test_subscription_one_to_one(restore_public):
     sub = DomainSubscription.objects.create(tenant=restore_public, custom_domain=cd)
     assert cd.subscription == sub
     assert sub.status == "incomplete"
+
+
+def test_customdomain_mailbox_field_defaults(db):
+    from apps.core.models import Tenant
+    from apps.domains.models import CustomDomain
+
+    tenant = Tenant.objects.create(
+        schema_name="mbx_defaults", name="MBX", slug="mbx-defaults",
+        owner_email="o@mbx.com", subdomain="mbx-defaults",
+    )
+    cd = CustomDomain.objects.create(
+        tenant=tenant, domain="mbxdefaults.com",
+        cost_minor=1000, price_minor=1200, currency="usd",
+    )
+    assert cd.mailbox_local_part == "info"
+    assert cd.mailbox_enabled is False
