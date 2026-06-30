@@ -1,10 +1,17 @@
+import json
+
+from django.views.decorators.csrf import csrf_exempt
+from django_tenants.utils import tenant_context
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
+from apps.domains.models import CustomDomain
 
 from . import services
+from .inbound import receive_inbound
 from .models import Conversation
 from .serializers import (
     ComposeSerializer,
@@ -12,6 +19,7 @@ from .serializers import (
     ConversationSerializer,
     ReplySerializer,
 )
+from .signing import verify_inbound_signature
 
 
 @api_view(["GET"])
@@ -60,3 +68,39 @@ def reply(request, pk):
     serializer.is_valid(raise_exception=True)
     msg = services.send_message(conversation=conv, text=serializer.validated_data["text"])
     return Response({"message_id": msg.id}, status=status.HTTP_201_CREATED)
+
+
+@csrf_exempt
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def inbound(request):
+    if not verify_inbound_signature(request.body, request.META.get("HTTP_X_MAILBOX_SIGNATURE", "")):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        payload = json.loads(request.body or b"{}")
+    except json.JSONDecodeError:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    to_email = (payload.get("to") or "").strip().lower()
+    domain = to_email.rsplit("@", 1)[-1] if "@" in to_email else ""
+    cd = CustomDomain.objects.filter(
+        domain=domain, mailbox_enabled=True, provisioning_status="live"
+    ).first()
+    if not cd:
+        # Unknown / disabled / not-live recipient — drop without leaking.
+        return Response(status=status.HTTP_200_OK)
+
+    with tenant_context(cd.tenant):
+        receive_inbound(
+            from_email=(payload.get("from") or "").strip(),
+            to_email=to_email,
+            subject=payload.get("subject") or "",
+            text=payload.get("text") or "",
+            html=payload.get("html") or "",
+            message_id=payload.get("message_id") or "",
+            in_reply_to=payload.get("in_reply_to") or "",
+            references=payload.get("references") or "",
+        )
+    return Response(status=status.HTTP_200_OK)

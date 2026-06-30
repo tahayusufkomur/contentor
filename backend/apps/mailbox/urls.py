@@ -7,4 +7,5 @@ urlpatterns = [
     path("conversations/<int:pk>/", views.conversation_detail, name="mailbox-conversation-detail"),
     path("conversations/<int:pk>/reply/", views.reply, name="mailbox-reply"),
     path("compose/", views.compose, name="mailbox-compose"),
+    path("inbound/", views.inbound, name="mailbox-inbound"),
 ]
