@@ -8,6 +8,7 @@ import {
   Download,
   Film,
   Image as ImageIcon,
+  Inbox,
   LayoutDashboard,
   Mail,
   Palette,
@@ -58,6 +59,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
       items: [
         { label: t("nav.items.students"), href: "/admin/students", icon: Users },
         { label: t("nav.items.notifications"), href: "/admin/notifications", icon: Bell },
+        { label: t("nav.items.inbox"), href: "/admin/inbox", icon: Inbox },
       ],
     },
     {
