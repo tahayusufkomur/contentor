@@ -178,6 +178,13 @@ def mailbox_settings(request):
         cd.mailbox_local_part = local_part
         cd.mailbox_enabled = enabled
         cd.save(update_fields=["mailbox_local_part", "mailbox_enabled", "updated_at"])
+        # Binding the catch-all to the inbound Worker intentionally REPLACES any
+        # existing forward-to-Gmail rule on the zone (see provisioning._step_email_auth):
+        # the in-app mailbox is now the destination for this domain's mail.
+        # NOTE: inbound only works when CLOUDFLARE_EMAIL_WORKER_NAME is set (see
+        # .env.prod.example) and the domain has a cloudflare_zone_id. If either is
+        # missing, mailbox_enabled is still persisted but no routing is bound — the
+        # coach will not receive mail until routing is configured.
         if enabled and django_settings.CLOUDFLARE_EMAIL_WORKER_NAME and cd.cloudflare_zone_id:
             get_cloudflare().enable_email_routing(
                 zone_id=cd.cloudflare_zone_id,
