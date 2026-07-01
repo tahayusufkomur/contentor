@@ -22,6 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import type { TenantConfig } from "@/types/tenant";
+import { MailboxSettingsSection } from "@/components/admin/mailbox/mailbox-settings";
 
 const COMMON_TIMEZONES = [
   "UTC",
@@ -134,6 +135,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <MailboxSettingsSection />
     </div>
   );
 }
