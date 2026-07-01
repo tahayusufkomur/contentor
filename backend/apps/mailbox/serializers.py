@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.tenant_config.defaults import sanitize_rich_text
+
 from .models import Conversation, Message
 
 
@@ -20,6 +22,8 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    html = serializers.SerializerMethodField()
+
     class Meta:
         model = Message
         fields = [
@@ -32,6 +36,9 @@ class MessageSerializer(serializers.ModelSerializer):
             "is_read",
             "created_at",
         ]
+
+    def get_html(self, obj) -> str:
+        return sanitize_rich_text(obj.html)
 
 
 class ConversationDetailSerializer(ConversationSerializer):

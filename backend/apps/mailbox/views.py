@@ -29,13 +29,29 @@ def conversation_list(request):
     return Response(ConversationSerializer(qs, many=True).data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsCoachOrOwner])
 def conversation_detail(request, pk):
     try:
         conv = Conversation.objects.get(pk=pk)
     except Conversation.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        conv.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    if request.method == "PATCH":
+        changed = []
+        for field in ("is_archived", "is_spam"):
+            if field in request.data:
+                setattr(conv, field, bool(request.data[field]))
+                changed.append(field)
+        if changed:
+            conv.save(update_fields=changed)
+        return Response(ConversationSerializer(conv).data)
+
+    # GET: mark inbound read + zero unread (existing behavior)
     conv.messages.filter(direction="inbound", is_read=False).update(is_read=True)
     if conv.unread_count:
         conv.unread_count = 0
