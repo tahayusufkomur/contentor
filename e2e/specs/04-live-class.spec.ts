@@ -10,7 +10,7 @@
 // What is tested (fake-on path):
 //   1. Coach POSTs /api/v1/live/ → 201  (create)
 //   2. Coach POSTs /api/v1/live/<pk>/start/ → 200  (transitions to "live")
-//   3. Student GETs /api/v1/live/<pk>/token/ → 200
+//   3. Student POSTs /api/v1/live/<pk>/token/ → 200
 //      · body.api_key === "fake-local"          (sentinel from stream_service)
 //      · body.token   matches /^fake-token-u\d+/ (from fake_stream_service)
 //   4. Student navigates to /live/<pk>  → page renders without 500
@@ -46,11 +46,13 @@ test(
 
     // ── Step 4: student requests a stream token ───────────────────────────
     const student = await studentContext(browser);
-    const token = await student.request.post(
+    const tokenRes = await student.request.post(
       `${TENANT}/api/v1/live/${cls.id}/token/`,
     );
 
-    const body = await token.json();
+    // Assert token endpoint success BEFORE parsing json or running skip probe
+    expect(tokenRes.ok(), `Token request failed: ${await tokenRes.text()}`).toBeTruthy();
+    const body = await tokenRes.json();
 
     // Probe: if LIVE_FAKE_ENABLED is off the real GetStream api_key is returned.
     if (body.api_key !== "fake-local") {
@@ -62,8 +64,6 @@ test(
       await student.close();
       return;
     }
-
-    expect(token.ok(), `Token failed: ${JSON.stringify(body)}`).toBeTruthy();
     expect(body.api_key, `Expected fake-local, got: ${JSON.stringify(body)}`).toBe("fake-local");
     expect(
       body.token,
