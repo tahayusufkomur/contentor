@@ -186,6 +186,10 @@ AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "contentor-dev-private")
 AWS_ENDPOINT = os.environ.get("AWS_ENDPOINT", "")
+# Browser-facing endpoint for presigned URLs. Inside compose Django reaches
+# MinIO at http://minio:9000 but the browser must use http://localhost:9000;
+# presigned signatures include the host, so signing must use this endpoint.
+AWS_ENDPOINT_EXTERNAL = os.environ.get("AWS_ENDPOINT_EXTERNAL", "")
 AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
 
 # --- GetStream Video ---
