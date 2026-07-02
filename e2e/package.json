@@ -1,0 +1,9 @@
+{
+  "name": "contentor-e2e",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.5.4"
+  }
+}

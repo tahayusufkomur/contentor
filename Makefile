@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -24,6 +24,9 @@ help: ## Show this help
 	@echo ""
 	@echo "\033[1;33m--- Deploy ---\033[0m"
 	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "\033[1;33m--- E2E ---\033[0m"
+	@grep -E '^(e2e|e2e-stripe):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
 # ============================================================================
@@ -146,3 +149,12 @@ flowmap-register: ## Crawl, identify flows via Claude, and fill the flowmap DB (
 flowmap-show: ## Print registered flows as text (ARGS=screens lists screen keys; ARGS=<id> dumps one flow)
 	cd tools/flowmap && node --experimental-sqlite query.js $(ARGS)
 
+# ============================================================================
+# E2E — Playwright end-to-end tests (e2e/)
+# ============================================================================
+
+e2e: ## Run the local Playwright e2e suite (Stripe specs auto-skip)
+	cd e2e && npm install --silent && npx playwright install chromium && npx playwright test
+
+e2e-stripe: ## e2e incl. real Stripe test-mode specs (needs sk_test keys in .env + `make stripe-listen` running)
+	cd e2e && npm install --silent && npx playwright install chromium && STRIPE_E2E=1 npx playwright test
