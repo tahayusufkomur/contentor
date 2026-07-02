@@ -1,6 +1,7 @@
 import os
 
 from .base import *  # noqa: F401, F403
+from .base import _env_bool  # noqa: E402
 
 DEBUG = True
 
@@ -17,4 +18,4 @@ DEMO_READONLY_ENABLED = False
 if "LIVE_FAKE_ENABLED" not in os.environ:
     LIVE_FAKE_ENABLED = not GETSTREAM_API_KEY  # noqa: F405
 
-EMAIL_SINK_ENABLED = os.environ.get("EMAIL_SINK_ENABLED", "true").lower() in ("1", "true", "yes")
+EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", True)

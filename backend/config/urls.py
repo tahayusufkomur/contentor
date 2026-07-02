@@ -66,8 +66,11 @@ urlpatterns = [
     path("api/v1/email/", include("apps.email_campaigns.urls")),
     path("api/v1/notifications/", include("apps.notifications.urls")),
     path("api/v1/mailbox/", include("apps.mailbox.urls")),
-    path("api/v1/dev/", include("apps.core.dev.urls")),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Dev-only surface — never mounted when the sink is off (prod refuses the flag).
+if settings.EMAIL_SINK_ENABLED:
+    urlpatterns += [path("api/v1/dev/", include("apps.core.dev.urls"))]
