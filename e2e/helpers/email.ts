@@ -3,6 +3,7 @@ export async function latestEmail(to: string): Promise<{ subject: string; html: 
   const deadline = Date.now() + 15_000;
   while (Date.now() < deadline) {
     const res = await fetch(url);
+    if (res.status >= 500) throw new Error(`email sink endpoint error ${res.status} — is EMAIL_SINK_ENABLED on?`);
     if (res.ok) return (await res.json()) as { subject: string; html: string };
     await new Promise((r) => setTimeout(r, 500));
   }
