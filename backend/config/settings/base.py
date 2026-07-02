@@ -221,6 +221,11 @@ BILLING_BYPASS_ENABLED = _env_bool("BILLING_BYPASS_ENABLED", True)
 # Fake GetStream service for offline/dev use. Production refuses this (prod.py).
 LIVE_FAKE_ENABLED = _env_bool("LIVE_FAKE_ENABLED", False)
 
+# Dev-only email sink: stores outbound mail in DB instead of calling Resend.
+# Lets local e2e tests read magic links / verification codes without a real inbox.
+# Production refuses this (prod.py).
+EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
+
 # Demo tenants (is_demo=True) reject mutating requests and show a read-only banner.
 # Disable locally (dev.py sets this False) to make demo tenants fully interactive
 # for testing. MUST stay True in production so marketing demos can't be edited.

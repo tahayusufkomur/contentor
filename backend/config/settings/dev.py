@@ -16,3 +16,5 @@ DEMO_READONLY_ENABLED = False
 # No GetStream keys → run live classes against the offline fake.
 if "LIVE_FAKE_ENABLED" not in os.environ:
     LIVE_FAKE_ENABLED = not GETSTREAM_API_KEY  # noqa: F405
+
+EMAIL_SINK_ENABLED = os.environ.get("EMAIL_SINK_ENABLED", "true").lower() in ("1", "true", "yes")

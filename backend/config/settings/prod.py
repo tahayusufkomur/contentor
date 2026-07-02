@@ -69,3 +69,7 @@ DOMAINS_BYPASS_ENABLED = False
 LIVE_FAKE_ENABLED = _env_bool("LIVE_FAKE_ENABLED", False)
 if LIVE_FAKE_ENABLED:
     raise ImproperlyConfigured("LIVE_FAKE_ENABLED must be false in production")
+
+EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
+if EMAIL_SINK_ENABLED:  # noqa: F405
+    raise ImproperlyConfigured("EMAIL_SINK_ENABLED must be false in production")

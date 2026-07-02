@@ -312,3 +312,16 @@ class WebhookEvent(models.Model):
 
     def __str__(self):
         return f"{self.provider}:{self.provider_event_id} ({self.event_type})"
+
+
+class DevOutboundEmail(models.Model):
+    """Dev-only sink for outbound mail (EMAIL_SINK_ENABLED). Lets local e2e
+    read magic links / verification codes without a real inbox."""
+
+    to = models.EmailField(db_index=True)
+    subject = models.CharField(max_length=500)
+    html = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]

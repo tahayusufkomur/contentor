@@ -14,6 +14,13 @@ def send_email(
     headers: dict | None = None,
     from_email: str = "",
 ) -> bool:
+    if getattr(settings, "EMAIL_SINK_ENABLED", False):
+        from apps.core.models import DevOutboundEmail
+
+        DevOutboundEmail.objects.create(to=to, subject=subject, html=html)
+        logger.info("[email-sink] captured to=%s subject=%s", to, subject)
+        return True
+
     if not settings.RESEND_API_KEY:
         logger.warning("RESEND_API_KEY not set, logging email instead")
         logger.info("Email to=%s subject=%s", to, subject)
