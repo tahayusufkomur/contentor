@@ -20,13 +20,24 @@
 //     TenantConfig ships no pages.courses.blocks → no course cards render there.
 //     We assert the student can reach /courses/<slug> (the SSR detail page) which
 //     always renders the course title in an <h1> for any published course.
+//   • The admin/courses list page is a "use client" MediaBrowser component that
+//     fetches data via clientFetch (relative fetch, same-origin credentials). In
+//     headless Playwright the Next.js JS chunks (main-app.js, app-pages-internals.js)
+//     return 404 from the dev server because the container holds a stale production
+//     build alongside the running dev server — React never hydrates, so clientFetch
+//     is never called and course rows never appear. The assertion below will surface
+//     this bug if it is still present: do NOT paper over a failure here.
+//   • The learn page (/learn/[slug]) is also "use client"; the same hydration
+//     constraint applies. The lesson <h1> and sidebar only render after
+//     clientFetch completes. A failure on those assertions surfaces the same
+//     underlying dev-env bug.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, studentContext, TENANT } from "../helpers/auth";
 
 const TITLE = `E2E Course ${Date.now()}`;
 
-test("coach creates a free published course; student opens its detail page", async ({
+test("coach creates a free published course; admin list shows it; student opens its detail page", async ({
   browser,
 }) => {
   // ── Coach: create the course via API (is_published:true) ──────────────────
@@ -58,6 +69,15 @@ test("coach creates a free published course; student opens its detail page", asy
   expect(verifyBody.title).toBe(TITLE);
   expect(verifyBody.is_published).toBe(true);
 
+  // ── Coach: assert the admin courses list UI shows the new course ──────────
+  // Navigate to the coach admin list page and wait for the course title to
+  // appear. If this times out, the Next.js JS hydration bundles are not loading
+  // (ERR_ABORTED on main-app.js / app-pages-internals.js) — a real dev-env bug
+  // that must be surfaced, NOT papered over.
+  const cpage = await coach.newPage();
+  await cpage.goto(`${TENANT}/admin/courses`);
+  await expect(cpage.getByText(TITLE)).toBeVisible({ timeout: 15_000 });
+
   await coach.close();
 
   // ── Student: open the course detail page directly ─────────────────────────
@@ -72,7 +92,7 @@ test("coach creates a free published course; student opens its detail page", asy
   await student.close();
 });
 
-test("student can open the seeded course learn page", async ({ browser }) => {
+test("student can open the seeded course learn page with real lesson content", async ({ browser }) => {
   const student = await studentContext(browser);
   const page = await student.newPage();
 
@@ -84,8 +104,20 @@ test("student can open the seeded course learn page", async ({ browser }) => {
   // Assert we stayed on the learn page (not redirected)
   await expect(page).toHaveURL(/\/learn\/yoga-for-beginners/, { timeout: 10_000 });
 
-  // The student layout wraps the page content in <main>; assert it rendered.
-  await expect(page.getByRole("main")).toBeVisible({ timeout: 15_000 });
+  // Assert the lesson title renders in an <h1>. The learn page auto-selects the
+  // first lesson ("Welcome to Yoga") from the first module ("Getting Started").
+  // This heading is rendered by the "use client" LearnPage component after
+  // clientFetch resolves — it proves real course content loaded, not just the shell.
+  // NOTE: if this times out, the JS hydration bundles are failing to load (same
+  // dev-env bug as noted above). Surface the failure; do NOT paper over it.
+  await expect(page.getByRole("heading", { name: "Welcome to Yoga", level: 1 })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  // The lesson sidebar renders the course title and module structure. "Getting
+  // Started" is the first module title in yoga-for-beginners — its presence
+  // proves the sidebar (which also depends on clientFetch) rendered.
+  await expect(page.getByText("Getting Started")).toBeVisible({ timeout: 15_000 });
 
   await student.close();
 });
