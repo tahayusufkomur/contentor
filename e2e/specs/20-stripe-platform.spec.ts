@@ -21,7 +21,8 @@
  *
  * The checkout body is `{ plan_id: <int> }` — reconciled against
  * `backend/apps/billing/views/platform.py::start_checkout`.
- * Plan id=2 is "starter" (non-free, has USD stripe_price_id after seed_plans).
+ * The starter plan (non-free) id is resolved dynamically at runtime via
+ * `GET /api/v1/billing/platform/plans/` to avoid hardcoded PKs.
  */
 
 import { execFileSync } from "node:child_process";
@@ -31,9 +32,6 @@ import { manage, REPO_ROOT } from "../helpers/compose";
 import { payStripeCheckout } from "../helpers/stripe";
 
 test.skip(!process.env.STRIPE_E2E, "stripe-mode only (STRIPE_E2E=1 npx playwright test specs/20)");
-
-// Starter plan primary key — provisioned by `seed_plans`.
-const STARTER_PLAN_ID = 2;
 
 /**
  * Cancel and delete the PlatformSubscription for demo-yoga via Django shell.
@@ -90,8 +88,9 @@ except Exception as e:
       ],
       { cwd: REPO_ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
     );
-  } catch {
+  } catch (e) {
     // Non-fatal: cleanup failure should not fail the test.
+    console.warn("[stripe-cleanup] cleanup failed (non-fatal):", e);
   }
 }
 
@@ -108,6 +107,18 @@ test("coach subscribes to a paid platform plan via real test Checkout", async ({
     // Pre-existing active subscription — clean it up so checkout runs fresh.
     cleanupSubscription();
   }
+
+  // ── 0b. Resolve the starter plan id dynamically ───────────────────────────
+  // GET /api/v1/billing/platform/plans/ returns { plans: [{ id, name, is_free, ... }] }.
+  // The starter plan is the first non-free active plan ordered by price_monthly.
+  const plansRes = await coach.request.get(`${TENANT}/api/v1/billing/platform/plans/`);
+  expect(plansRes.ok(), `list_plans failed: ${await plansRes.text()}`).toBeTruthy();
+  const plansBody = await plansRes.json();
+  const starterPlan = (plansBody.plans as Array<{ id: number; name: string; is_free: boolean }>).find(
+    (p) => !p.is_free
+  );
+  expect(starterPlan, "No non-free plan found in /api/v1/billing/platform/plans/ — run seed_plans first").toBeDefined();
+  const STARTER_PLAN_ID = starterPlan!.id;
 
   // ── 1. Start a Stripe Checkout session ────────────────────────────────────
   const start = await coach.request.post(`${TENANT}/api/v1/billing/platform/checkout/`, {
@@ -135,10 +146,9 @@ test("coach subscribes to a paid platform plan via real test Checkout", async ({
     const sub = await coach.request.get(`${TENANT}/api/v1/billing/platform/subscription/`);
     expect(sub.ok(), await sub.text()).toBeTruthy();
     const body = await sub.json();
-    // Accept both top-level `status` (returned when a subscription exists) and
-    // nested `subscription.status` for any future shape changes.
-    const status: string = body.status ?? body.subscription?.status ?? "";
-    expect(status).toMatch(/active|trialing/);
+    // `get_subscription` always returns top-level `status` (verified against
+    // apps/billing/views/platform.py). No fallback needed.
+    expect(body.status, `subscription body: ${JSON.stringify(body)}`).toMatch(/active|trialing/);
   }).toPass({ timeout: 30_000, intervals: [2_000] });
 
   // ── 5. Cleanup — cancel the subscription so demo-yoga can be re-seeded ───
