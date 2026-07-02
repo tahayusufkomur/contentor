@@ -16,7 +16,7 @@ from . import fake_stream_service
 
 
 def _fake():
-    return bool(getattr(settings, "LIVE_FAKE_ENABLED", False))
+    return bool(settings.LIVE_FAKE_ENABLED)
 
 
 def api_key():
