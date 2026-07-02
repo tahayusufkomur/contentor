@@ -1,3 +1,5 @@
+import os
+
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
@@ -10,3 +12,7 @@ DOMAINS_BYPASS_ENABLED = True
 # Make demo tenants fully interactive locally: no read-only block, no demo banner,
 # so you can actually create/edit content while testing.
 DEMO_READONLY_ENABLED = False
+
+# No GetStream keys → run live classes against the offline fake.
+if "LIVE_FAKE_ENABLED" not in os.environ:
+    LIVE_FAKE_ENABLED = not GETSTREAM_API_KEY  # noqa: F405

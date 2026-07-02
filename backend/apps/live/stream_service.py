@@ -12,6 +12,17 @@ from getstream.models import (
 
 logger = logging.getLogger(__name__)
 
+from . import fake_stream_service
+
+
+def _fake():
+    return bool(getattr(settings, "LIVE_FAKE_ENABLED", False))
+
+
+def api_key():
+    """Publishable key for browser SDKs; sentinel when running the fake."""
+    return "fake-local" if _fake() else settings.GETSTREAM_API_KEY
+
 
 def _user_id(pk):
     """GetStream requires user IDs >= 2 chars. Prefix with 'u' to be safe."""
@@ -26,6 +37,8 @@ def get_client():
 
 
 def upsert_user(user):
+    if _fake():
+        return fake_stream_service.upsert_user(user)
     client = get_client()
     client.upsert_users(
         UserRequest(
@@ -39,6 +52,8 @@ def upsert_user(user):
 
 
 def create_call(live_class, instructor):
+    if _fake():
+        return fake_stream_service.create_call(live_class, instructor)
     client = get_client()
     call = client.video.call("default", live_class.room_name)
 
@@ -65,6 +80,8 @@ def create_call(live_class, instructor):
 
 
 def stop_call(room_name):
+    if _fake():
+        return fake_stream_service.stop_call(room_name)
     client = get_client()
     call = client.video.call("default", room_name)
     try:
@@ -79,6 +96,8 @@ def stop_call(room_name):
 
 def create_livestream(live_stream, instructor):
     """Create a GetStream livestream call (broadcast mode)."""
+    if _fake():
+        return fake_stream_service.create_livestream(live_stream, instructor)
     client = get_client()
     call = client.video.call("livestream", live_stream.room_name)
 
@@ -108,6 +127,8 @@ def create_livestream(live_stream, instructor):
 
 
 def stop_livestream(room_name):
+    if _fake():
+        return fake_stream_service.stop_livestream(room_name)
     client = get_client()
     call = client.video.call("livestream", room_name)
     try:
@@ -125,5 +146,7 @@ def stop_livestream(room_name):
 
 
 def generate_user_token(user_id):
+    if _fake():
+        return fake_stream_service.generate_user_token(user_id)
     client = get_client()
     return client.create_token(user_id=_user_id(user_id))

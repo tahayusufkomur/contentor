@@ -65,3 +65,7 @@ if BILLING_BYPASS_ENABLED:
 _ = os
 
 DOMAINS_BYPASS_ENABLED = False
+
+LIVE_FAKE_ENABLED = _env_bool("LIVE_FAKE_ENABLED", False)
+if LIVE_FAKE_ENABLED:  # noqa: F405
+    raise ImproperlyConfigured("LIVE_FAKE_ENABLED must be false in production")

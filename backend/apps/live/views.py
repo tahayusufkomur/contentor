@@ -173,7 +173,7 @@ def live_class_token(request, pk):
     return Response(
         {
             "token": token,
-            "api_key": settings.GETSTREAM_API_KEY,
+            "api_key": stream_service.api_key(),
             "call_id": live_class.room_name,
             "role": "host" if is_host else "viewer",
         }
@@ -302,7 +302,7 @@ def live_stream_token(request, pk):
     return Response(
         {
             "token": token,
-            "api_key": settings.GETSTREAM_API_KEY,
+            "api_key": stream_service.api_key(),
             "call_id": live_stream.room_name,
             "role": "host" if is_host else "viewer",
         }

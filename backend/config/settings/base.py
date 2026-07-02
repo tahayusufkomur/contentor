@@ -218,6 +218,9 @@ def _env_bool(name: str, default: bool) -> bool:
 # `config.settings.prod`.
 BILLING_BYPASS_ENABLED = _env_bool("BILLING_BYPASS_ENABLED", True)
 
+# Fake GetStream service for offline/dev use. Production refuses this (prod.py).
+LIVE_FAKE_ENABLED = _env_bool("LIVE_FAKE_ENABLED", False)
+
 # Demo tenants (is_demo=True) reject mutating requests and show a read-only banner.
 # Disable locally (dev.py sets this False) to make demo tenants fully interactive
 # for testing. MUST stay True in production so marketing demos can't be edited.
