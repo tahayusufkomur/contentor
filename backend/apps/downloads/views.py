@@ -21,6 +21,9 @@ from .serializers import DownloadFileCreateSerializer, DownloadFileSerializer
 def download_list_create(request):
     if request.method == "GET":
         qs = DownloadFile.objects.all()
+        # Hide orphan rows (file_url="") from non-coach/owner users
+        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+            qs = qs.exclude(file_url="")
         search = request.query_params.get("search", "").strip()
         if search:
             qs = qs.filter(title__icontains=search)
@@ -69,6 +72,9 @@ def download_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def download_url(request, pk):
     download_file = get_object_or_404(DownloadFile, pk=pk)
+
+    if not download_file.file_url:
+        return Response({"detail": "File not yet available."}, status=status.HTTP_404_NOT_FOUND)
 
     access_service = ContentAccessService()
     if not access_service.check_access(request.user, download_file):

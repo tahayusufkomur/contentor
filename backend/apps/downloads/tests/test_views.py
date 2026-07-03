@@ -270,3 +270,62 @@ class TestDownloadUrl:
         client = APIClient(HTTP_HOST=SHARED_DOMAIN)
         response = client.get(f"/api/v1/downloads/{free_download.pk}/url/")
         assert response.status_code in (401, 403), response.content
+
+    @patch("apps.downloads.views.ContentAccessService")
+    def test_empty_file_url_returns_404_and_does_not_increment_count(self, mock_access_cls, owner, tenant_ctx):
+        """download_url for a file_url='' download returns 404; download_count stays 0."""
+        orphan = DownloadFile.objects.create(
+            title="Orphan Pending",
+            file_url="",
+            pricing_type="free",
+            price=Decimal("0.00"),
+        )
+        mock_service = mock_access_cls.return_value
+        mock_service.check_access.return_value = True
+
+        client = make_client(owner)
+        response = client.get(f"/api/v1/downloads/{orphan.pk}/url/")
+        assert response.status_code == 404, response.content
+        orphan.refresh_from_db()
+        assert orphan.download_count == 0
+
+
+# ---------------------------------------------------------------------------
+# Tests: orphan (file_url="") visibility
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db(transaction=True)
+class TestOrphanVisibility:
+    @pytest.fixture()
+    def orphan_download(self, tenant_ctx):
+        return DownloadFile.objects.create(
+            title="Orphan Pending Upload",
+            file_url="",
+            pricing_type="free",
+            price=Decimal("0.00"),
+        )
+
+    def test_student_list_excludes_empty_file_url(self, orphan_download, student):
+        """Students must NOT see downloads with file_url=''."""
+        client = make_client(student)
+        response = client.get("/api/v1/downloads/")
+        assert response.status_code == 200, response.content
+        titles = [r["title"] for r in response.json()["results"]]
+        assert "Orphan Pending Upload" not in titles
+
+    def test_unauthenticated_list_excludes_empty_file_url(self, orphan_download):
+        """Unauthenticated users must NOT see downloads with file_url=''."""
+        client = APIClient(HTTP_HOST=SHARED_DOMAIN)
+        response = client.get("/api/v1/downloads/")
+        assert response.status_code == 200, response.content
+        titles = [r["title"] for r in response.json()["results"]]
+        assert "Orphan Pending Upload" not in titles
+
+    def test_owner_list_includes_empty_file_url(self, orphan_download, owner):
+        """Owners MUST see downloads with file_url='' (pending upload rows)."""
+        client = make_client(owner)
+        response = client.get("/api/v1/downloads/")
+        assert response.status_code == 200, response.content
+        titles = [r["title"] for r in response.json()["results"]]
+        assert "Orphan Pending Upload" in titles
