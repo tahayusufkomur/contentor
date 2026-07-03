@@ -5,6 +5,8 @@ Success+cookie, wrong code, lockout-then-right-code, reuse-after-success,
 unknown email.  Follows the request/host pattern of test_views.py.
 """
 
+from unittest.mock import patch
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -19,9 +21,10 @@ def make_client():
     return APIClient(HTTP_HOST=SHARED_DOMAIN)
 
 
+@patch("apps.accounts.views.MagicLinkThrottle.allow_request", return_value=True)
 @pytest.mark.django_db(transaction=True)
 class TestVerifyCode:
-    def test_success_creates_user_and_sets_cookie(self, tenant_ctx):
+    def test_success_creates_user_and_sets_cookie(self, _mock_throttle, tenant_ctx):
         """Valid code returns 200 with user payload and sets the session cookie."""
         tenant = tenant_ctx
         code = login_code.issue(tenant.schema_name, "newstudent@example.com")
@@ -36,7 +39,7 @@ class TestVerifyCode:
         # User was created in the tenant schema
         assert User.objects.filter(email="newstudent@example.com", role="student").exists()
 
-    def test_wrong_code_returns_400(self, tenant_ctx):
+    def test_wrong_code_returns_400(self, _mock_throttle, tenant_ctx):
         """An incorrect code returns 400 with the generic error detail."""
         tenant = tenant_ctx
         login_code.issue(tenant.schema_name, "user@example.com")
@@ -46,7 +49,7 @@ class TestVerifyCode:
         detail = res.json().get("detail")
         assert detail, "detail must be non-empty"
 
-    def test_right_code_after_five_wrong_returns_400(self, tenant_ctx):
+    def test_right_code_after_five_wrong_returns_400(self, _mock_throttle, tenant_ctx):
         """After 5 failed attempts, the correct code is also rejected (lockout)."""
         tenant = tenant_ctx
         code = login_code.issue(tenant.schema_name, "locked@example.com")
@@ -59,7 +62,7 @@ class TestVerifyCode:
         detail = res.json().get("detail")
         assert detail, "detail must be non-empty"
 
-    def test_reuse_after_success_returns_400(self, tenant_ctx):
+    def test_reuse_after_success_returns_400(self, _mock_throttle, tenant_ctx):
         """A code that was already consumed cannot be reused."""
         tenant = tenant_ctx
         code = login_code.issue(tenant.schema_name, "reuse@example.com")
@@ -72,7 +75,7 @@ class TestVerifyCode:
         detail = res2.json().get("detail")
         assert detail, "detail must be non-empty"
 
-    def test_unknown_email_returns_400(self, tenant_ctx):
+    def test_unknown_email_returns_400(self, _mock_throttle, tenant_ctx):
         """An email that was never issued a code returns 400 (same generic message)."""
         client = make_client()
         res = client.post(URL, {"email": "ghost@example.com", "code": "123456"}, format="json")
@@ -80,7 +83,31 @@ class TestVerifyCode:
         detail = res.json().get("detail")
         assert detail, "detail must be non-empty"
 
-    def test_failure_responses_use_same_detail_message(self, tenant_ctx):
+    def test_iexact_lookup_no_duplicate_user(self, _mock_throttle, tenant_ctx):
+        """Logging in with lowercased email does not create a duplicate when the
+        existing account was stored with mixed-case (old link-flow behaviour)."""
+        # Bypass any normalization by creating the user directly with mixed case.
+        mixed = "MiXeD@Example.com"
+        User.objects.create(
+            email=mixed,
+            name="mixed",
+            role="student",
+            region=getattr(tenant_ctx, "region", "global"),
+        )
+        pre_count = User.objects.filter(email__iexact=mixed).count()
+        assert pre_count == 1, "setup sanity: exactly one user"
+
+        tenant = tenant_ctx
+        code = login_code.issue(tenant.schema_name, "mixed@example.com")
+        client = make_client()
+        res = client.post(URL, {"email": "mixed@example.com", "code": code}, format="json")
+        assert res.status_code == 200, res.content
+
+        post_count = User.objects.filter(email__iexact=mixed).count()
+        assert post_count == 1, "no duplicate created for the mixed-case user"
+        assert res.json()["user"]["email"] == mixed  # original mixed-case email returned
+
+    def test_failure_responses_use_same_detail_message(self, _mock_throttle, tenant_ctx):
         """All failure scenarios should return the same generic detail message (no oracle variance)."""
         tenant = tenant_ctx
         login_code.issue(tenant.schema_name, "vary@example.com")
@@ -108,3 +135,13 @@ class TestVerifyCode:
             f"Expected identical detail messages, got: wrong={detail_wrong!r}, "
             f"lockout={detail_lockout!r}, unknown={detail_unknown!r}"
         )
+
+
+def test_verify_code_has_throttle_class():
+    """magic_link_verify_code must declare MagicLinkThrottle (cheap introspection)."""
+    from apps.accounts.views import MagicLinkThrottle, magic_link_verify_code
+
+    throttle_classes = getattr(magic_link_verify_code.cls, "throttle_classes", [])
+    assert MagicLinkThrottle in throttle_classes, (
+        f"MagicLinkThrottle not found in throttle_classes: {throttle_classes}"
+    )

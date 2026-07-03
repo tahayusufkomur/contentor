@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class MagicLinkThrottle(AnonRateThrottle):
+    scope = "magic_link"
     rate = "5/min"
 
 
@@ -99,10 +100,12 @@ def _login_user_response(request, tenant, email, via="magic_link"):
     email = email.lower()
     region = getattr(tenant, "region", None) or getattr(request, "region", "global")
     # Email is unique per-region; include region in the lookup key.
+    # Use iexact so prod users created by the old link flow (mixed-case) are found.
     user, created = User.objects.get_or_create(
-        email=email,
+        email__iexact=email,
         region=region,
         defaults={
+            "email": email,  # already lowered above — store canonical form for new users
             "name": email.split("@")[0],
             "role": "student",
             "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
@@ -139,6 +142,7 @@ def magic_link_verify(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([MagicLinkThrottle])
 def magic_link_verify_code(request):
     from apps.core.i18n_helpers import msg
 

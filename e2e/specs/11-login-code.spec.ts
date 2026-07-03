@@ -12,7 +12,7 @@ import { manage } from "../helpers/compose";
 import { latestEmail } from "../helpers/email";
 
 const stamp = Date.now();
-const SLUG = `e2e-code-${stamp}`;
+const SLUG = `e2e-code`;
 const HOST = `${SLUG}.localhost`;
 const BASE_URL = `http://${HOST}`;
 // no pre-registration needed — magic-link/code login auto-registers students on first login
@@ -53,6 +53,18 @@ if not Tenant.objects.filter(slug=slug).exists():
 
 test.beforeAll(() => {
   ensureNonDemoTenant();
+  // Clear any throttle cache entries from previous runs so back-to-back
+  // executions don't accumulate toward the 5/min limit.
+  manage([
+    "shell",
+    "-c",
+    `
+import django_redis
+r = django_redis.get_redis_connection('default')
+for key in r.keys('*throttle_magic_link*'):
+    r.delete(key)
+`.trim(),
+  ]);
 });
 
 test("student logs in with the emailed 6-digit code", async ({ page }) => {
