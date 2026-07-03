@@ -119,7 +119,14 @@ export function PhotoPicker({
     }
   }
 
-  const displayUrl = previewUrl || value;
+  // A raw s3 key (e.g. "demo/photos/x.jpg") must never become an <img src> —
+  // the browser resolves it relative to the page and 404s. Only render values
+  // that are absolute, root-relative, or object URLs.
+  const candidateUrl = previewUrl || value;
+  const displayUrl =
+    candidateUrl && /^(https?:\/\/|\/|data:|blob:)/.test(candidateUrl)
+      ? candidateUrl
+      : null;
 
   return (
     <div className="space-y-2">

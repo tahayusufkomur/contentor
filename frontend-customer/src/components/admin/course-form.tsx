@@ -261,9 +261,21 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
                 value={course.thumbnail_url}
                 previewUrl={course.thumbnail_signed_url || course.thumbnail_url}
                 onSelect={(photo: Photo) =>
-                  setCourse({ ...course, thumbnail_url: photo.s3_key, thumbnail_id: photo.id })
+                  setCourse({
+                    ...course,
+                    thumbnail_url: photo.s3_key,
+                    thumbnail_id: photo.id,
+                    thumbnail_signed_url: photo.signed_url ?? undefined,
+                  })
                 }
-                onClear={() => setCourse({ ...course, thumbnail_url: "", thumbnail_id: null })}
+                onClear={() =>
+                  setCourse({
+                    ...course,
+                    thumbnail_url: "",
+                    thumbnail_id: null,
+                    thumbnail_signed_url: undefined,
+                  })
+                }
                 label="Choose thumbnail"
               />
             </div>
