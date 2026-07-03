@@ -96,6 +96,19 @@ class TestTenantRateLimitMiddleware(TestCase):
         mock_redis.assert_not_called()
 
     @patch("apps.core.middleware.rate_limit.get_redis_connection")
+    @patch("apps.core.middleware.rate_limit.connection")
+    def test_skips_tenant_config_endpoint(self, mock_connection, mock_redis):
+        """The tenant-config endpoint is never rate limited (it resolves the site)."""
+        mock_connection.tenant = self._make_tenant("my_tenant")
+        request = self._make_request(path="/api/v1/admin/config/")
+
+        response = self.middleware(request)
+
+        self.get_response.assert_called_once_with(request)
+        self.assertEqual(response.status_code, 200)
+        mock_redis.assert_not_called()
+
+    @patch("apps.core.middleware.rate_limit.get_redis_connection")
     @patch("apps.core.middleware.rate_limit.jwt")
     @patch("apps.core.middleware.rate_limit.connection")
     def test_allows_under_limit(self, mock_connection, mock_jwt, mock_redis):

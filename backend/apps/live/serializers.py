@@ -24,6 +24,22 @@ def _tag_ids_field():
     return tag_ids_field("event")
 
 
+class _ScheduledOnCreateMixin:
+    """Mark an event as 'scheduled' on creation when it has a scheduled time.
+
+    Events default to 'draft' and the student-facing lists hide drafts
+    (status__in=["scheduled","live","ended"]). Nothing else in the lifecycle
+    promotes draft→scheduled (start→live, stop→ended), so a class/stream a coach
+    schedules would stay an invisible draft forever. Setting it here at creation is
+    the missing transition; without a scheduled_at it correctly stays a draft.
+    """
+
+    def create(self, validated_data):
+        if validated_data.get("scheduled_at"):
+            validated_data["status"] = "scheduled"
+        return super().create(validated_data)
+
+
 def _get_thumbnail_signed_url(obj):
     if obj.thumbnail_id and obj.thumbnail and obj.thumbnail.s3_key:
         return generate_presigned_download_url(obj.thumbnail.s3_key)
@@ -128,7 +144,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
         return asdict(service.get_access_info(request.user, obj))
 
 
-class LiveClassCreateSerializer(serializers.ModelSerializer):
+class LiveClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
     tag_ids = _tag_ids_field()
 
@@ -246,7 +262,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
         return asdict(service.get_access_info(request.user, obj))
 
 
-class LiveStreamCreateSerializer(serializers.ModelSerializer):
+class LiveStreamCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
     tag_ids = _tag_ids_field()
 
@@ -292,7 +308,7 @@ class ZoomClassSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
 
-class ZoomClassCreateSerializer(serializers.ModelSerializer):
+class ZoomClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
     tag_ids = _tag_ids_field()
 
@@ -338,7 +354,7 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
 
-class OnsiteEventCreateSerializer(serializers.ModelSerializer):
+class OnsiteEventCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
     tag_ids = _tag_ids_field()
 

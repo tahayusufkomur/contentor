@@ -14,6 +14,32 @@ export interface SeedFromTemplateResponse {
   template_status: string;
 }
 
+/**
+ * Logged-in coach creating an additional platform — skips the email
+ * verification round-trip. The session cookie proves email ownership, so the
+ * backend mints the signup token directly and we resume at `/signup/verify`.
+ */
+export async function createPlatformAuthenticated(
+  brandName: string,
+): Promise<{ token: string }> {
+  const res = await fetch("/api/v1/onboarding/signup/authenticated/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ brand_name: brandName }),
+  });
+  if (!res.ok) {
+    let body: unknown = { detail: "Request failed" };
+    try {
+      body = await res.json();
+    } catch {
+      // swallow parse failure
+    }
+    throw new ApiError(res.status, body as Record<string, unknown>);
+  }
+  return res.json();
+}
+
 export async function seedFromTemplate(
   token: string,
   niche: string,

@@ -198,6 +198,27 @@ class TestLiveClassListCreate:
         response = client.post("/api/v1/live/", data=payload, format="json")
         assert response.status_code == 403, response.content
 
+    def test_create_with_scheduled_at_is_scheduled(self, owner, tenant_ctx):
+        """A class created with a scheduled time becomes 'scheduled' (visible to
+        students), not stuck as a hidden 'draft'."""
+        client = make_client(owner)
+        payload = {
+            "title": "Scheduled via API",
+            "pricing_type": "free",
+            "scheduled_at": "2099-01-01T10:00:00Z",
+        }
+        response = client.post("/api/v1/live/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        assert response.json()["status"] == "scheduled"
+
+    def test_create_without_scheduled_at_stays_draft(self, owner, tenant_ctx):
+        """A class created without a scheduled time stays a draft."""
+        client = make_client(owner)
+        payload = {"title": "No schedule", "pricing_type": "free"}
+        response = client.post("/api/v1/live/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        assert response.json()["status"] == "draft"
+
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveClassDetail:

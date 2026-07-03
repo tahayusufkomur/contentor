@@ -20,6 +20,10 @@ _MESSAGES: dict[str, dict[str, str]] = {
         "en": "Brand name already taken",
         "tr": "Marka adı zaten alınmış",
     },
+    "brand_required": {
+        "en": "Brand name is required",
+        "tr": "Marka adı gerekli",
+    },
     "verification_sent": {
         "en": "Verification email sent. Check your inbox.",
         "tr": "Doğrulama e-postası gönderildi. Gelen kutunuzu kontrol edin.",

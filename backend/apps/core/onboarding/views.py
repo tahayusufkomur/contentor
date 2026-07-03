@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from ..models import Domain, Tenant
@@ -92,6 +92,44 @@ def creator_signup(request):
         print(f"{'=' * 60}\n")
 
     return Response({"detail": msg(request, "verification_sent")})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def creator_signup_authenticated(request):
+    """Authenticated coaches create additional platforms WITHOUT an email round-trip.
+
+    A logged-in coach's session JWT already proves they own the email, so the
+    magic-link verification step in :func:`creator_signup` is redundant here.
+    We mint the same signup token directly (no email sent) and hand it back so
+    the frontend can resume at ``/signup/verify`` exactly like the email flow.
+    """
+    from apps.core.i18n_helpers import msg
+
+    user = request.user
+    # Only coaches/owners provision platforms; students must not.
+    if user.role not in ("coach", "owner"):
+        return Response({"detail": msg(request, "permission_denied")}, status=403)
+
+    brand_name = (request.data.get("brand_name") or "").strip()[:100]
+    if not brand_name:
+        return Response({"detail": msg(request, "brand_required")}, status=400)
+
+    slug = slugify(brand_name)[:63]
+    region = getattr(request, "region", "global")
+    if not slug or Tenant.objects.filter(slug=slug, region=region).exists():
+        return Response({"detail": msg(request, "brand_taken")}, status=400)
+
+    from apps.accounts.tokens import create_signup_token
+
+    token = create_signup_token(user.email, user.name, brand_name, region=region)
+    logger.info(
+        "authenticated creator new-platform email=%s brand=%s region=%s",
+        user.email,
+        brand_name,
+        region,
+    )
+    return Response({"token": token})
 
 
 @api_view(["POST"])

@@ -30,9 +30,18 @@ class TenantRateLimitMiddleware:
         except Exception:
             return False
 
+    # The tenant-config endpoint resolves whether a site exists and is fetched on
+    # every server-rendered page load (without the visitor's auth cookie). Rate
+    # limiting it makes a perfectly valid tenant render "Site not found" under load
+    # — a far worse failure than throttling a data endpoint — so it is never limited.
+    EXEMPT_PATHS = ("/api/v1/admin/config/",)
+
     def __call__(self, request):
         tenant = getattr(connection, "tenant", None)
         if not tenant or tenant.schema_name == "public":
+            return self.get_response(request)
+
+        if request.path in self.EXEMPT_PATHS:
             return self.get_response(request)
 
         # Skip rate limiting for admin users (owner/coach)

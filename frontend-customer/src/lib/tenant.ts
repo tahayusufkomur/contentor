@@ -33,13 +33,15 @@ export async function fetchTenantConfig(slug: string): Promise<TenantConfig | nu
 
   // Distinguish "tenant genuinely does not exist" (Django 404 → null, the caller may
   // 404 the page) from a transient failure (network error / 5xx). A transient blip must
-  // NOT be reported as "no tenant" — that wrongly 404s a valid tenant on cold loads — so
-  // retry briefly before giving up.
+  // NOT be reported as "no tenant" — that wrongly shows "Site not found" on a valid
+  // tenant on cold loads — so retry briefly before giving up. The config endpoint is
+  // exempt from tenant rate limiting server-side, so this retry never amplifies a 429.
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const res = await fetch(`${DJANGO_API_URL}/api/v1/admin/config/`, {
         headers: { 'X-Tenant-Domain': domain },
         cache: 'no-store',
+        signal: AbortSignal.timeout(8000),
       })
       if (res.status === 404) return null // definitive: no such tenant
       if (res.ok) {
@@ -49,7 +51,7 @@ export async function fetchTenantConfig(slug: string): Promise<TenantConfig | nu
       }
       // 5xx and other non-ok statuses are transient — fall through to retry
     } catch {
-      // network error — fall through to retry
+      // network error / timeout — fall through to retry
     }
     if (attempt === 0) await new Promise((r) => setTimeout(r, 150))
   }

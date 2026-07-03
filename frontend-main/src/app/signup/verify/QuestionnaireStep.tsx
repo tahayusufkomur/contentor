@@ -78,6 +78,15 @@ export function QuestionnaireStep({
     });
   }, []);
 
+  const allGoalsSelected = goals.size === GOAL_OPTIONS.length;
+  const toggleAllGoals = useCallback(() => {
+    setGoals((prev) =>
+      prev.size === GOAL_OPTIONS.length
+        ? new Set()
+        : new Set(GOAL_OPTIONS.map((o) => o.key)),
+    );
+  }, []);
+
   const selectNiche = useCallback((key: string) => {
     setNiche(key);
     // Auto-advance after a beat so the selection state is visible.
@@ -199,7 +208,16 @@ export function QuestionnaireStep({
                 subhead={t("goalsSubhead")}
                 active={slide === 1}
               />
-              <div className="mt-5 flex flex-1 flex-col gap-2">
+              <div className="mt-4 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={toggleAllGoals}
+                  className="text-[12.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {allGoalsSelected ? t("deselectAll") : t("selectAll")}
+                </button>
+              </div>
+              <div className="mt-2 flex flex-1 flex-col gap-2">
                 {GOAL_OPTIONS.map((opt, idx) => (
                   <GoalRow
                     key={opt.key}
