@@ -17,6 +17,4 @@ def latest_email(request):
     row = DevOutboundEmail.objects.filter(to__iexact=to).first() if to else None
     if not row:
         raise Http404
-    return Response(
-        {"to": row.to, "subject": row.subject, "html": row.html, "created_at": row.created_at}
-    )
+    return Response({"to": row.to, "subject": row.subject, "html": row.html, "created_at": row.created_at})

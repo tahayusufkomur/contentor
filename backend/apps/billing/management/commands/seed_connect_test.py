@@ -4,6 +4,7 @@ checkout works locally without hosted Express onboarding.
 Uses a Custom account with Stripe's documented test data (tos_acceptance,
 test routing/account numbers) so charges_enabled flips on programmatically.
 """
+
 import time
 
 import stripe
@@ -38,16 +39,28 @@ class Command(BaseCommand):
             business_type="individual",
             business_profile={"mcc": "8299", "url": "https://accessible.stripe.com"},
             individual={
-                "first_name": "E2E", "last_name": "Coach",
-                "email": tenant.owner_email, "phone": "0000000000",
+                "first_name": "E2E",
+                "last_name": "Coach",
+                "email": tenant.owner_email,
+                "phone": "0000000000",
                 "dob": {"day": 1, "month": 1, "year": 1990},
-                "address": {"line1": "address_full_match", "city": "Columbus",
-                            "state": "OH", "postal_code": "43214", "country": "US"},
+                "address": {
+                    "line1": "address_full_match",
+                    "city": "Columbus",
+                    "state": "OH",
+                    "postal_code": "43214",
+                    "country": "US",
+                },
                 "ssn_last_4": "0000",
             },
             tos_acceptance={"date": int(time.time()), "ip": "127.0.0.1"},
-            external_account={"object": "bank_account", "country": "US", "currency": "usd",
-                              "routing_number": "110000000", "account_number": "000123456789"},
+            external_account={
+                "object": "bank_account",
+                "country": "US",
+                "currency": "usd",
+                "routing_number": "110000000",
+                "account_number": "000123456789",
+            },
         )
         for _ in range(30):
             acct = stripe.Account.retrieve(acct.id)
@@ -57,7 +70,5 @@ class Command(BaseCommand):
         if not acct.charges_enabled:
             raise CommandError(f"{acct.id} never reached charges_enabled; check test data")
 
-        Tenant.objects.filter(pk=tenant.pk).update(
-            stripe_account_id=acct.id, stripe_charges_enabled=True
-        )
+        Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id=acct.id, stripe_charges_enabled=True)
         self.stdout.write(self.style.SUCCESS(f"{tenant.slug} ← {acct.id} (charges_enabled)"))
