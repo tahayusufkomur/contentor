@@ -1,6 +1,7 @@
 import logging
 from dataclasses import asdict
 
+from django.conf import settings  # noqa: F401  (in-flight tests patch apps.live.views.settings)
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
