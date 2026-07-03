@@ -83,7 +83,7 @@ class TestVerifyCode:
     def test_failure_responses_use_same_detail_message(self, tenant_ctx):
         """All failure scenarios should return the same generic detail message (no oracle variance)."""
         tenant = tenant_ctx
-        code = login_code.issue(tenant.schema_name, "vary@example.com")
+        login_code.issue(tenant.schema_name, "vary@example.com")
         client = make_client()
 
         # Wrong code
@@ -102,5 +102,9 @@ class TestVerifyCode:
         detail_unknown = res_unknown.json().get("detail")
 
         # All three should be identical (no oracle variance)
-        assert detail_wrong == detail_lockout == detail_unknown, \
-            f"Expected identical detail messages, got: wrong={detail_wrong!r}, lockout={detail_lockout!r}, unknown={detail_unknown!r}"
+        assert (
+            detail_wrong == detail_lockout == detail_unknown
+        ), (
+            f"Expected identical detail messages, got: wrong={detail_wrong!r}, "
+            f"lockout={detail_lockout!r}, unknown={detail_unknown!r}"
+        )

@@ -47,7 +47,7 @@ class LoginCodeTests(SimpleTestCase):
 
         Uses cache.ttl() (django-redis) — tests run against real Redis.
         """
-        code = login_code.issue("t1", "a@example.com")
+        login_code.issue("t1", "a@example.com")
         key = login_code._key("t1", "a@example.com")
         ttl_after_issue = cache.ttl(key)
         assert ttl_after_issue is not None and ttl_after_issue > 0
