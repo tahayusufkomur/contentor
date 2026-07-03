@@ -43,7 +43,8 @@ class TestVerifyCode:
         client = make_client()
         res = client.post(URL, {"email": "user@example.com", "code": "000000"}, format="json")
         assert res.status_code == 400, res.content
-        assert "detail" in res.json()
+        detail = res.json().get("detail")
+        assert detail, "detail must be non-empty"
 
     def test_right_code_after_five_wrong_returns_400(self, tenant_ctx):
         """After 5 failed attempts, the correct code is also rejected (lockout)."""
@@ -55,7 +56,8 @@ class TestVerifyCode:
         # Now the right code must fail too
         res = client.post(URL, {"email": "locked@example.com", "code": code}, format="json")
         assert res.status_code == 400, res.content
-        assert "detail" in res.json()
+        detail = res.json().get("detail")
+        assert detail, "detail must be non-empty"
 
     def test_reuse_after_success_returns_400(self, tenant_ctx):
         """A code that was already consumed cannot be reused."""
@@ -67,11 +69,38 @@ class TestVerifyCode:
         # Second attempt with the same code
         res2 = client.post(URL, {"email": "reuse@example.com", "code": code}, format="json")
         assert res2.status_code == 400, res2.content
-        assert "detail" in res2.json()
+        detail = res2.json().get("detail")
+        assert detail, "detail must be non-empty"
 
     def test_unknown_email_returns_400(self, tenant_ctx):
         """An email that was never issued a code returns 400 (same generic message)."""
         client = make_client()
         res = client.post(URL, {"email": "ghost@example.com", "code": "123456"}, format="json")
         assert res.status_code == 400, res.content
-        assert "detail" in res.json()
+        detail = res.json().get("detail")
+        assert detail, "detail must be non-empty"
+
+    def test_failure_responses_use_same_detail_message(self, tenant_ctx):
+        """All failure scenarios should return the same generic detail message (no oracle variance)."""
+        tenant = tenant_ctx
+        code = login_code.issue(tenant.schema_name, "vary@example.com")
+        client = make_client()
+
+        # Wrong code
+        res_wrong = client.post(URL, {"email": "vary@example.com", "code": "000000"}, format="json")
+        detail_wrong = res_wrong.json().get("detail")
+
+        # Lockout (5 wrong attempts + right code on same email/code)
+        code_lockout = login_code.issue(tenant.schema_name, "lockout@example.com")
+        for _ in range(5):
+            client.post(URL, {"email": "lockout@example.com", "code": "000000"}, format="json")
+        res_lockout = client.post(URL, {"email": "lockout@example.com", "code": code_lockout}, format="json")
+        detail_lockout = res_lockout.json().get("detail")
+
+        # Unknown email
+        res_unknown = client.post(URL, {"email": "never-seen@example.com", "code": "999999"}, format="json")
+        detail_unknown = res_unknown.json().get("detail")
+
+        # All three should be identical (no oracle variance)
+        assert detail_wrong == detail_lockout == detail_unknown, \
+            f"Expected identical detail messages, got: wrong={detail_wrong!r}, lockout={detail_lockout!r}, unknown={detail_unknown!r}"

@@ -84,15 +84,19 @@ def magic_link_request(request):
     return Response({"detail": msg(request, "magic_link_sent")})
 
 
-def _login_user_response(request, tenant, email):
+def _login_user_response(request, tenant, email, via="magic_link"):
     """Get-or-create a student user for *email* on *tenant*, issue a JWT, return
     a 200 Response with the session cookie and locale cookie set.
 
     Shared by magic_link_verify and magic_link_verify_code so the user+session
     issuance logic is not duplicated.
+
+    Args:
+        via: Origin of the login ("magic_link" or "code") for logging.
     """
     from apps.core.constants import REGION_DEFAULT_LOCALE
 
+    email = email.lower()
     region = getattr(tenant, "region", None) or getattr(request, "region", "global")
     # Email is unique per-region; include region in the lookup key.
     user, created = User.objects.get_or_create(
@@ -105,6 +109,7 @@ def _login_user_response(request, tenant, email):
             "accessible_regions": [],
         },
     )
+    logger.info("login via %s email=%s tenant=%s new_student=%s", via, user.email, tenant.slug, created)
     jwt_token = create_jwt(user, tenant)
     response = Response({"user": UserSerializer(user).data})
     _set_session_cookie(response, jwt_token)
@@ -128,12 +133,7 @@ def magic_link_verify(request):
     tenant = connection.tenant
     if payload["tenant_id"] != tenant.schema_name:
         return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
-    logger.info(
-        "login via magic link email=%s tenant=%s",
-        payload["email"],
-        tenant.slug,
-    )
-    return _login_user_response(request, tenant, payload["email"])
+    return _login_user_response(request, tenant, payload["email"], via="magic_link")
 
 
 @api_view(["POST"])
@@ -150,8 +150,7 @@ def magic_link_verify_code(request):
 
     if not login_code.check(tenant.schema_name, email, serializer.validated_data["code"]):
         return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
-    logger.info("login via code email=%s tenant=%s", email, tenant.slug)
-    return _login_user_response(request, tenant, email)
+    return _login_user_response(request, tenant, email, via="code")
 
 
 def _tenant_default_locale(tenant) -> str:
