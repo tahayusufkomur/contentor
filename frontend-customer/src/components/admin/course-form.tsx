@@ -28,6 +28,14 @@ import { formatDuration } from "@/lib/format"
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course"
 import type { Photo } from "@/types/photo"
 
+interface NewLessonState {
+  title: string
+  content_html: string
+  is_free_preview: boolean
+  video: number | null
+  videoPreviewUrl: string | null
+}
+
 interface CourseFormProps {
   course?: CourseDetail | null
   onCourseLoaded?: () => void
@@ -52,7 +60,19 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
     pricing_type: "free" as "free" | "paid",
     price: "0.00",
     is_published: false,
+    thumbnail_url: "",
+    thumbnail_id: null as string | null,
+    thumbnail_signed_url: null as string | null,
   })
+
+  // Create-mode local curriculum (owned children stay local until the one
+  // atomic submit — see the design principle in the 2026-07-03 spec)
+  interface LocalModule {
+    tempId: number
+    title: string
+    lessons: NewLessonState[]
+  }
+  const [localModules, setLocalModules] = useState<LocalModule[]>([])
 
   // Curriculum state
   const [newModuleTitle, setNewModuleTitle] = useState("")
@@ -87,7 +107,26 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
       try {
         const created = await clientFetch<Course>("/api/v1/courses/", {
           method: "POST",
-          body: JSON.stringify({ ...createForm, filter_option_ids: filterOptionIds, tag_ids: tagIds }),
+          body: JSON.stringify({
+            title: createForm.title,
+            description: createForm.description,
+            pricing_type: createForm.pricing_type,
+            price: createForm.price,
+            is_published: createForm.is_published,
+            thumbnail_url: createForm.thumbnail_url,
+            thumbnail: createForm.thumbnail_id || null,
+            filter_option_ids: filterOptionIds,
+            tag_ids: tagIds,
+            modules: localModules.map((m) => ({
+              title: m.title,
+              lessons: m.lessons.map((l) => ({
+                title: l.title,
+                content_html: l.content_html,
+                is_free_preview: l.is_free_preview,
+                ...(l.video ? { video: l.video } : {}),
+              })),
+            })),
+          }),
         })
         toast.success("Course created")
         router.push(`/admin/courses/${created.slug}`)
@@ -215,6 +254,41 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
     }
   }
 
+  // --- Create-mode local curriculum (no API calls until submit) ---
+  function addLocalModule() {
+    if (!newModuleTitle.trim()) return
+    setLocalModules([
+      ...localModules,
+      { tempId: Date.now(), title: newModuleTitle.trim(), lessons: [] },
+    ])
+    setNewModuleTitle("")
+  }
+
+  function removeLocalModule(tempId: number) {
+    setLocalModules(localModules.filter((m) => m.tempId !== tempId))
+  }
+
+  function addLocalLesson(tempId: number) {
+    if (!newLesson.title.trim()) return
+    setLocalModules(
+      localModules.map((m) =>
+        m.tempId === tempId ? { ...m, lessons: [...m.lessons, { ...newLesson }] } : m
+      )
+    )
+    setAddingLessonForModule(null)
+    setNewLesson({ title: "", content_html: "", is_free_preview: false, video: null, videoPreviewUrl: null })
+  }
+
+  function removeLocalLesson(tempId: number, lessonIndex: number) {
+    setLocalModules(
+      localModules.map((m) =>
+        m.tempId === tempId
+          ? { ...m, lessons: m.lessons.filter((_, i) => i !== lessonIndex) }
+          : m
+      )
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* ───── Course Details & Settings ───── */}
@@ -254,13 +328,24 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
               className="min-h-[120px]"
             />
           </div>
-          {!isCreate && course && (
-            <div className="space-y-2">
-              <Label>Thumbnail</Label>
-              <PhotoPicker
-                value={course.thumbnail_url}
-                previewUrl={course.thumbnail_signed_url || course.thumbnail_url}
-                onSelect={(photo: Photo) =>
+          <div className="space-y-2">
+            <Label>Thumbnail</Label>
+            <PhotoPicker
+              value={isCreate ? createForm.thumbnail_url : (course?.thumbnail_url ?? null)}
+              previewUrl={
+                isCreate
+                  ? createForm.thumbnail_signed_url
+                  : (course?.thumbnail_signed_url || course?.thumbnail_url || null)
+              }
+              onSelect={(photo: Photo) => {
+                if (isCreate) {
+                  setCreateForm({
+                    ...createForm,
+                    thumbnail_url: photo.s3_key,
+                    thumbnail_id: photo.id,
+                    thumbnail_signed_url: photo.signed_url,
+                  })
+                } else if (course) {
                   setCourse({
                     ...course,
                     thumbnail_url: photo.s3_key,
@@ -268,7 +353,16 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
                     thumbnail_signed_url: photo.signed_url ?? undefined,
                   })
                 }
-                onClear={() =>
+              }}
+              onClear={() => {
+                if (isCreate) {
+                  setCreateForm({
+                    ...createForm,
+                    thumbnail_url: "",
+                    thumbnail_id: null,
+                    thumbnail_signed_url: null,
+                  })
+                } else if (course) {
                   setCourse({
                     ...course,
                     thumbnail_url: "",
@@ -276,10 +370,10 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
                     thumbnail_signed_url: undefined,
                   })
                 }
-                label="Choose thumbnail"
-              />
-            </div>
-          )}
+              }}
+              label="Choose thumbnail"
+            />
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="pricing_type">Pricing Type</Label>
@@ -339,11 +433,140 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
             <Label>Tags</Label>
             <TagInput value={tagIds} onChange={setTagIds} scope="course" />
           </div>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : isCreate ? "Create Course" : "Save Changes"}
-          </Button>
+          {!isCreate && (
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
         </CardContent>
       </Card>
+
+      {/* ───── Curriculum (create mode: composed locally, submitted with the course) ───── */}
+      {isCreate && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Curriculum</CardTitle>
+              <CardDescription>
+                Add modules and lessons now — everything is created together in one step.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {localModules.map((mod, moduleIndex) => (
+            <Card key={mod.tempId}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">
+                    Module {moduleIndex + 1}: {mod.title}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {mod.lessons.length} lesson{mod.lessons.length !== 1 ? "s" : ""}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => removeLocalModule(mod.tempId)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {mod.lessons.length > 0 && (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Video</TableHead>
+                        <TableHead>Preview</TableHead>
+                        <TableHead className="w-24">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {mod.lessons.map((lesson, lessonIndex) => (
+                        <TableRow key={lessonIndex}>
+                          <TableCell className="font-medium">{lesson.title}</TableCell>
+                          <TableCell>
+                            <Badge variant={lesson.video ? "success" : "secondary"}>
+                              {lesson.video ? "Selected" : "No video"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {lesson.is_free_preview && <Badge variant="outline">Free</Badge>}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => removeLocalLesson(mod.tempId, lessonIndex)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+
+                {addingLessonForModule === mod.tempId ? (
+                  <LessonCreatePanel
+                    newLesson={newLesson}
+                    setNewLesson={setNewLesson}
+                    onSave={() => addLocalLesson(mod.tempId)}
+                    onCancel={() => {
+                      setAddingLessonForModule(null)
+                      setNewLesson({
+                        title: "",
+                        content_html: "",
+                        is_free_preview: false,
+                        video: null,
+                        videoPreviewUrl: null,
+                      })
+                    }}
+                    saving={false}
+                  />
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => setAddingLessonForModule(mod.tempId)}
+                  >
+                    <Plus className="h-4 w-4" /> Add Lesson
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+
+          <Card className="border-dashed">
+            <CardContent className="p-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="New module title"
+                  value={newModuleTitle}
+                  onChange={(e) => setNewModuleTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") addLocalModule()
+                  }}
+                />
+                <Button className="gap-2 shrink-0" onClick={addLocalModule}>
+                  <Plus className="h-4 w-4" /> Add Module
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button onClick={handleSave} disabled={saving || !createForm.title.trim()}>
+            {saving ? "Creating..." : "Create Course"}
+          </Button>
+        </>
+      )}
 
       {/* ───── Curriculum ───── */}
       {!isCreate && course && (
@@ -576,14 +799,6 @@ function LessonEditPanel({ lesson, onSave, onCancel, saving }: LessonEditPanelPr
 }
 
 // ── Lesson Create Panel (inline) ───────────────────────────────
-
-interface NewLessonState {
-  title: string
-  content_html: string
-  is_free_preview: boolean
-  video: number | null
-  videoPreviewUrl: string | null
-}
 
 interface LessonCreatePanelProps {
   newLesson: NewLessonState
