@@ -9,6 +9,7 @@ Attempt counting uses a separate atomic Redis counter key so parallel wrong
 guesses cannot race past the 5-attempt lockout.  The code key is immutable
 after issue; only the counter changes on failure.
 """
+
 import hashlib
 import logging
 import secrets
