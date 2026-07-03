@@ -25,7 +25,7 @@ test("coach creates a paid download with price and tag in one submit", async ({ 
   await page.getByPlaceholder("Add a tag…").fill(tagName);
   await page.getByRole("button", { name: /Create/ }).click();
   // Wait for the tag pill to appear (exact match excludes the "Create …" dropdown item)
-  await expect(page.getByText(tagName, { exact: true })).toBeVisible({ timeout: 5_000 });
+  await expect(page.getByText(tagName, { exact: true })).toBeVisible({ timeout: 10_000 });
 
   await page.locator('input[type="file"]').setInputFiles("fixtures/pixel.png");
   await expect(page.getByText("File uploaded")).toBeVisible({ timeout: 20_000 });

@@ -134,7 +134,7 @@ class TestDownloadListCreate:
         assert response.status_code == 201, response.content
         data = response.json()
         assert data["title"] == "Pending Upload"
-        assert data.get("file_url", "") == ""
+        assert data["file_url"] == ""
 
     def test_post_owner_creates_download_with_tags(self, owner, tenant_ctx):
         """POST with tag_ids persists M2M tags on the created download."""

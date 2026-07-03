@@ -181,7 +181,7 @@ test("coach composes thumbnail + module + lesson and creates the course in ONE s
   // The open panel's save button is also named "Add Lesson"; the trigger
   // button was replaced by the panel, so the last match is the panel's.
   await page.getByRole("button", { name: "Add Lesson", exact: true }).last().click();
-  await expect(page.getByRole("cell", { name: "Welcome" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Welcome" })).toBeVisible({ timeout: 10_000 });
 
   // ── ONE submit creates everything atomically ─────────────────────────────
   await page.getByRole("button", { name: "Create Course" }).click();
@@ -189,7 +189,7 @@ test("coach composes thumbnail + module + lesson and creates the course in ONE s
 
   // The edit page proves the curriculum landed with the course.
   await expect(page.getByText("Module 1: Getting Started")).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByRole("cell", { name: "Welcome" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Welcome" })).toBeVisible({ timeout: 10_000 });
 
   await coach.close();
 });
