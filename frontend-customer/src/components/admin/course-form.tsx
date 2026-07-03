@@ -265,6 +265,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
   }
 
   function removeLocalModule(tempId: number) {
+    if (addingLessonForModule === tempId) setAddingLessonForModule(null)
     setLocalModules(localModules.filter((m) => m.tempId !== tempId))
   }
 
