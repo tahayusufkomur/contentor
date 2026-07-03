@@ -220,6 +220,7 @@ class Command(BaseCommand):
         return photo_map
 
     def _seed_config(self, config_data, photo_map):
+        from apps.tenant_config.defaults import default_pages
         from apps.tenant_config.models import TenantConfig
 
         # Inject photo IDs into landing_sections
@@ -235,6 +236,10 @@ class Command(BaseCommand):
             photo = photo_map.get(about["image_url"])
             if photo:
                 about["image_photo_id"] = str(photo.pk)
+
+        # Demo tenants get the same starter page blocks as real provisioned
+        # tenants — otherwise /courses and the other public pages render empty.
+        config_data.setdefault("pages", default_pages(config_data["brand_name"]))
 
         TenantConfig.objects.create(**config_data)
         self.stdout.write(f"  Config: {config_data['brand_name']}")
