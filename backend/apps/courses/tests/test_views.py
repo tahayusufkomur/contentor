@@ -585,3 +585,120 @@ class TestSubscriptionCourseAccess:
         client = make_client(student)
         resp = client.get(f"/api/v1/courses/{published_course.slug}/progress/")
         assert resp.status_code == 403, resp.content
+
+
+# ---------------------------------------------------------------------------
+# Tests: nested course create  POST /api/v1/courses/ with modules
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db(transaction=True)
+class TestCourseNestedCreate:
+    def test_nested_create_builds_full_curriculum(self, owner):
+        """One POST creates course + modules + lessons with 1-based positional order."""
+        client = make_client(owner)
+        payload = {
+            "title": "Nested Course",
+            "pricing_type": "free",
+            "modules": [
+                {
+                    "title": "Module A",
+                    "lessons": [
+                        {"title": "Lesson 1", "is_free_preview": True},
+                        {"title": "Lesson 2", "content_html": "<p>hi</p>"},
+                    ],
+                },
+                {"title": "Module B", "lessons": []},
+            ],
+        }
+        resp = client.post("/api/v1/courses/", payload, format="json")
+        assert resp.status_code == 201, resp.content
+        body = resp.json()
+        assert [m["title"] for m in body["modules"]] == ["Module A", "Module B"]
+        assert [m["order"] for m in body["modules"]] == [1, 2]
+        lessons = body["modules"][0]["lessons"]
+        assert [lesson["title"] for lesson in lessons] == ["Lesson 1", "Lesson 2"]
+        assert [lesson["order"] for lesson in lessons] == [1, 2]
+        assert lessons[0]["is_free_preview"] is True
+        course = Course.objects.get(slug=body["slug"])
+        assert course.modules.count() == 2
+        assert course.modules.get(order=1).lessons.count() == 2
+
+    def test_nested_create_without_modules_unchanged(self, owner):
+        """Flat create (no modules key) behaves exactly as before."""
+        client = make_client(owner)
+        resp = client.post("/api/v1/courses/", {"title": "Flat Course", "pricing_type": "free"}, format="json")
+        assert resp.status_code == 201, resp.content
+        assert resp.json()["modules"] == []
+
+    def test_nested_create_empty_modules_list(self, owner):
+        """Explicit empty modules list is valid and creates no modules."""
+        client = make_client(owner)
+        resp = client.post(
+            "/api/v1/courses/",
+            {"title": "Empty Modules", "pricing_type": "free", "modules": []},
+            format="json",
+        )
+        assert resp.status_code == 201, resp.content
+        assert Course.objects.get(slug=resp.json()["slug"]).modules.count() == 0
+
+    def test_invalid_lesson_rejected_and_no_course_created(self, owner):
+        """A missing lesson title fails validation; no course row is written."""
+        client = make_client(owner)
+        payload = {
+            "title": "Broken Course",
+            "pricing_type": "free",
+            "modules": [{"title": "M", "lessons": [{"content_html": "no title"}]}],
+        }
+        resp = client.post("/api/v1/courses/", payload, format="json")
+        assert resp.status_code == 400, resp.content
+        assert "title" in str(resp.json())
+        assert not Course.objects.filter(title="Broken Course").exists()
+
+    def test_invalid_video_rejected_and_no_course_created(self, owner):
+        """A bogus video PK fails validation; no course row is written."""
+        client = make_client(owner)
+        payload = {
+            "title": "Bad Video Course",
+            "pricing_type": "free",
+            "modules": [{"title": "M", "lessons": [{"title": "L", "video": 999999}]}],
+        }
+        resp = client.post("/api/v1/courses/", payload, format="json")
+        assert resp.status_code == 400, resp.content
+        assert not Course.objects.filter(title="Bad Video Course").exists()
+
+    def test_create_is_atomic_on_midway_failure(self, owner, monkeypatch):
+        """If a lesson insert blows up mid-create, course and modules roll back."""
+        from django.db import IntegrityError
+
+        from apps.courses import serializers as course_serializers
+
+        def boom(*args, **kwargs):
+            raise IntegrityError("simulated failure")
+
+        monkeypatch.setattr(course_serializers.Lesson.objects, "create", boom)
+        client = make_client(owner)
+        payload = {
+            "title": "Atomic Course",
+            "pricing_type": "free",
+            "modules": [{"title": "M", "lessons": [{"title": "L"}]}],
+        }
+        with pytest.raises(IntegrityError):
+            client.post("/api/v1/courses/", payload, format="json")
+        assert not Course.objects.filter(title="Atomic Course").exists()
+        assert not Module.objects.filter(title="M").exists()
+
+    def test_modules_rejected_on_update(self, published_course, owner):
+        """PUT with modules → 400; curriculum edits use the per-item endpoints."""
+        client = make_client(owner)
+        resp = client.put(
+            f"/api/v1/courses/{published_course.slug}/",
+            {
+                "title": published_course.title,
+                "pricing_type": "free",
+                "modules": [{"title": "Sneaky", "lessons": []}],
+            },
+            format="json",
+        )
+        assert resp.status_code == 400, resp.content
+        assert not Module.objects.filter(title="Sneaky").exists()

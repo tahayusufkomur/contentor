@@ -1,5 +1,6 @@
 from dataclasses import asdict
 
+from django.db import transaction
 from django.db.models import Prefetch
 from rest_framework import serializers
 
@@ -247,6 +248,28 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         return sign_if_s3_key(obj.thumbnail_url)
 
 
+class _NestedLessonSerializer(serializers.ModelSerializer):
+    """Lesson payload inside a nested course create. Order is positional."""
+
+    class Meta:
+        model = Lesson
+        fields = [
+            "title",
+            "video",
+            "video_url",
+            "duration_seconds",
+            "content_html",
+            "is_free_preview",
+        ]
+
+
+class _NestedModuleSerializer(serializers.Serializer):
+    """Module payload inside a nested course create. Order is positional."""
+
+    title = serializers.CharField(max_length=200)
+    lessons = _NestedLessonSerializer(many=True, required=False)
+
+
 class CourseCreateUpdateSerializer(serializers.ModelSerializer):
     filter_option_ids = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -255,6 +278,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         required=False,
     )
     tag_ids = tag_ids_field("course")
+    modules = _NestedModuleSerializer(many=True, required=False, write_only=True)
 
     class Meta:
         model = Course
@@ -269,7 +293,25 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "order",
             "filter_option_ids",
             "tag_ids",
+            "modules",
         ]
+
+    def validate_modules(self, value):
+        if self.instance is not None:
+            raise serializers.ValidationError(
+                "Curriculum can only be set at creation. Use the module/lesson endpoints to edit."
+            )
+        return value
+
+    def create(self, validated_data):
+        modules_data = validated_data.pop("modules", [])
+        with transaction.atomic():
+            course = super().create(validated_data)
+            for module_index, module_data in enumerate(modules_data, start=1):
+                module = Module.objects.create(course=course, title=module_data["title"], order=module_index)
+                for lesson_index, lesson_data in enumerate(module_data.get("lessons", []), start=1):
+                    Lesson.objects.create(module=module, order=lesson_index, **lesson_data)
+        return course
 
 
 class ModuleCreateSerializer(serializers.ModelSerializer):
