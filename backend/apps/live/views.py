@@ -1,7 +1,6 @@
 import logging
 from dataclasses import asdict
 
-from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone

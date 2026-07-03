@@ -4,6 +4,7 @@ Create/join/stop live classes works end-to-end without network; the browser
 video canvas itself cannot connect (no real Stream backend) — UI is testable
 up to the join screen.
 """
+
 import logging
 
 logger = logging.getLogger(__name__)

@@ -4,23 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0012_tenant_publish_gate'),
+        ("core", "0012_tenant_publish_gate"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DevOutboundEmail',
+            name="DevOutboundEmail",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('to', models.EmailField(db_index=True, max_length=254)),
-                ('subject', models.CharField(max_length=500)),
-                ('html', models.TextField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("to", models.EmailField(db_index=True, max_length=254)),
+                ("subject", models.CharField(max_length=500)),
+                ("html", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]
