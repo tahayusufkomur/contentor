@@ -30,7 +30,7 @@ class FakeStreamTests(SimpleTestCase):
         stream_service.stop_livestream("room-1")
 
 
-@override_settings(LIVE_FAKE_ENABLED=False, GETSTREAM_API_KEY="k_real")
+@override_settings(LIVE_FAKE_ENABLED=False, GETSTREAM_API_KEY="k_real")  # pragma: allowlist secret
 class RealStreamKeyTests(SimpleTestCase):
     def test_api_key_reports_real_key(self):
         assert stream_service.api_key() == "k_real"

@@ -77,8 +77,9 @@ def send_magic_link(
     minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
     subject = copy["subject"].format(brand=brand_name)
     intro = copy["intro"].format(minutes=minutes)
+    font_stack = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif"
     html = f"""
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+    <div style="font-family: {font_stack}; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
         <h2 style="color: #1a1a2e; margin-bottom: 8px; letter-spacing: -0.02em;">{brand_name}</h2>
         <p style="color: #444; font-size: 16px;">{intro}</p>
         <a href="{link}"

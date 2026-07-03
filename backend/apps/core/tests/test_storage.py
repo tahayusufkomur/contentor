@@ -4,8 +4,8 @@ from apps.core import storage
 
 
 @override_settings(
-    AWS_ACCESS_KEY_ID="minioadmin",
-    AWS_SECRET_ACCESS_KEY="minioadmin",
+    AWS_ACCESS_KEY_ID="minioadmin",  # pragma: allowlist secret
+    AWS_SECRET_ACCESS_KEY="minioadmin",  # noqa: S106  # pragma: allowlist secret
     AWS_BUCKET_NAME="contentor-dev-private",
     AWS_ENDPOINT="http://minio:9000",
     AWS_ENDPOINT_EXTERNAL="http://localhost:9000",

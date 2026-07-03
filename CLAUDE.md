@@ -33,6 +33,8 @@ make format            # ruff (backend) + prettier (both frontends)
 
 make shell             # Django shell
 make health-check      # curl /api/health/
+make e2e               # Playwright suite vs the running dev stack (Stripe specs skip)
+make e2e-stripe        # + real Stripe test-mode specs (needs make stripe-listen running)
 ```
 
 ## Architecture
@@ -79,6 +81,10 @@ Two independent Next.js 14 apps, App Router, Tailwind + Radix UI:
 `caddy` (:80), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000, runs migrations in entrypoint), `nextjs-main` (:3000), `nextjs-customer` (:3000), `celery-worker`, `celery-beat`. Optional `--profile monitoring`: prometheus, grafana, loki, cadvisor.
 
 Only the gunicorn entrypoint runs migrations + collectstatic — celery skips to avoid races.
+
+### Local fakes + e2e
+
+Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). `LIVE_FAKE_ENABLED=true` (set in dev `.env`) stubs GetStream so live-class specs run offline — unset to use real GetStream keys. `EMAIL_SINK_ENABLED=true` captures outbound email; read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses both flags). Dev `.env` runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set it `true` for fully-offline payments (bypass provider). E2e suite lives in `e2e/` — `make e2e` runs 17 specs against the live dev stack (Stripe specs auto-skip); `make e2e-stripe` adds the 2 Stripe specs (needs `sk_test_*` keys and `make stripe-listen` in another shell — `stripe-listen` injects `--api-key` from `.env` and forwards connect events automatically).
 
 ## MailCraft Integration
 

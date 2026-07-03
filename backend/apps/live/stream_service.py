@@ -10,9 +10,9 @@ from getstream.models import (
     UserRequest,
 )
 
-logger = logging.getLogger(__name__)
-
 from . import fake_stream_service
+
+logger = logging.getLogger(__name__)
 
 
 def _fake():
