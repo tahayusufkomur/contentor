@@ -121,3 +121,75 @@ test("student can open the seeded course learn page with real lesson content", a
 
   await student.close();
 });
+
+test("nested course create API builds the full curriculum in one atomic POST", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser);
+  const title = `E2E Nested ${Date.now()}`;
+
+  const res = await coach.request.post(`${TENANT}/api/v1/courses/`, {
+    data: {
+      title,
+      pricing_type: "free",
+      price: 0,
+      modules: [
+        {
+          title: "Module A",
+          lessons: [{ title: "Lesson 1", is_free_preview: true }, { title: "Lesson 2" }],
+        },
+        { title: "Module B", lessons: [] },
+      ],
+    },
+    headers: { "Content-Type": "application/json" },
+  });
+  expect(res.status(), `Nested create failed: ${await res.text()}`).toBe(201);
+  const body = await res.json();
+  expect(body.modules.map((m: { title: string }) => m.title)).toEqual(["Module A", "Module B"]);
+  expect(body.modules[0].lessons.map((l: { order: number }) => l.order)).toEqual([1, 2]);
+
+  await coach.close();
+});
+
+test("coach composes thumbnail + module + lesson and creates the course in ONE submit", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await page.goto(`${TENANT}/admin/courses/new`);
+
+  const title = `E2E OneStep ${Date.now()}`;
+  await page.getByLabel("Title").fill(title);
+  await page.getByLabel("Description").fill("Created in a single step");
+
+  // ── Thumbnail: upload in-place through the PhotoPicker modal ─────────────
+  await page.getByRole("button", { name: "Choose thumbnail" }).click();
+  await page.locator('input[type="file"]').setInputFiles("fixtures/pixel.png");
+  // The preview must be a real URL (signed), never a raw s3 key resolved
+  // relative to the page (the old 404 bug).
+  const preview = page.locator('img[alt="Selected"]');
+  await expect(preview).toBeVisible({ timeout: 20_000 });
+  expect(await preview.getAttribute("src")).toMatch(/^https?:\/\//);
+
+  // ── Curriculum: one module, one lesson, all local until submit ───────────
+  await page.getByPlaceholder("New module title").fill("Getting Started");
+  await page.getByRole("button", { name: "Add Module" }).click();
+  await expect(page.getByText("Module 1: Getting Started")).toBeVisible();
+
+  await page.getByRole("button", { name: "Add Lesson" }).click();
+  await page.getByPlaceholder("Lesson title").fill("Welcome");
+  // The open panel's save button is also named "Add Lesson"; the trigger
+  // button was replaced by the panel, so the last match is the panel's.
+  await page.getByRole("button", { name: "Add Lesson", exact: true }).last().click();
+  await expect(page.getByRole("cell", { name: "Welcome" })).toBeVisible();
+
+  // ── ONE submit creates everything atomically ─────────────────────────────
+  await page.getByRole("button", { name: "Create Course" }).click();
+  await page.waitForURL(/\/admin\/courses\/(?!new$)[^/]+$/, { timeout: 20_000 });
+
+  // The edit page proves the curriculum landed with the course.
+  await expect(page.getByText("Module 1: Getting Started")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("cell", { name: "Welcome" })).toBeVisible();
+
+  await coach.close();
+});
