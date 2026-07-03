@@ -20,6 +20,11 @@
     "magicLinkSentBody": "{email} adresine bir giriş bağlantısı gönderdik",
     "magicLinkError": "Bağlantı gönderilemedi. Lütfen tekrar deneyin.",
     "networkError": "Ağ hatası. Lütfen tekrar deneyin.",
+    "codeHint": "Veya e-postadaki 6 haneli kodu girin:",
+    "codePlaceholder": "123456",
+    "codeSubmit": "Kodla giriş yap",
+    "codeSubmitting": "Kontrol ediliyor…",
+    "codeError": "Kod çalışmadı. Kontrol edin veya yeni bağlantı isteyin.",
     "googleErrors": {
       "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
       "googleDenied": "Google girişi iptal edildi.",

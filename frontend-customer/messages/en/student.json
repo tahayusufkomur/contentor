@@ -20,6 +20,11 @@
     "magicLinkSentBody": "We sent a login link to {email}",
     "magicLinkError": "Could not send the link. Please try again.",
     "networkError": "Network error. Please try again.",
+    "codeHint": "Or enter the 6-digit code from the email:",
+    "codePlaceholder": "123456",
+    "codeSubmit": "Sign in with code",
+    "codeSubmitting": "Checking…",
+    "codeError": "That code didn't work. Check it or request a new link.",
     "googleErrors": {
       "generic": "Something went wrong. Please try again.",
       "googleDenied": "Google sign-in was cancelled.",

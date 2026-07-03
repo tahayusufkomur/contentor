@@ -13,6 +13,9 @@ export function MagicLinkForm() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [code, setCode] = useState('')
+  const [codeLoading, setCodeLoading] = useState(false)
+  const [codeError, setCodeError] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,6 +45,29 @@ export function MagicLinkForm() {
     }
   }
 
+  async function handleCodeSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setCodeLoading(true)
+    setCodeError('')
+    try {
+      const res = await fetch('/api/v1/auth/magic-link/verify-code/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+        credentials: 'same-origin',
+      })
+      if (!res.ok) {
+        setCodeError(t('codeError'))
+        return
+      }
+      window.location.href = '/'
+    } catch {
+      setCodeError(t('networkError'))
+    } finally {
+      setCodeLoading(false)
+    }
+  }
+
   if (sent) {
     return (
       <div className="text-center">
@@ -52,6 +78,24 @@ export function MagicLinkForm() {
             strong: (chunks) => <strong>{chunks}</strong>,
           })}
         </p>
+        <form onSubmit={handleCodeSubmit} className="mt-6 space-y-3 text-left">
+          <Label htmlFor="login-code">{t('codeHint')}</Label>
+          <Input
+            id="login-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]*"
+            maxLength={6}
+            placeholder={t('codePlaceholder')}
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+            className="text-center text-xl tracking-[0.5em]"
+          />
+          {codeError && <p className="text-sm text-destructive">{codeError}</p>}
+          <Button type="submit" className="w-full" disabled={codeLoading || code.length !== 6}>
+            {codeLoading ? t('codeSubmitting') : t('codeSubmit')}
+          </Button>
+        </form>
       </div>
     )
   }
