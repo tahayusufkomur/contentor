@@ -28,6 +28,7 @@ import {
 } from "@/components/admin/media-browser"
 import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
 import { TagFilterBar } from "@/components/admin/tag-filter-bar"
+import { TagInput } from "@/components/admin/tag-input"
 import type { DownloadFile } from "@/types/download"
 
 export const dynamic = "force-dynamic"
@@ -61,7 +62,9 @@ export default function AdminDownloadsPage() {
   const [form, setForm] = useState({
     title: "",
     pricing_type: "free" as "free" | "paid",
+    price: "",
   })
+  const [createTagIds, setCreateTagIds] = useState<number[]>([])
 
   const [tagFilter, setTagFilter] = useState<number[]>([])
 
@@ -96,6 +99,10 @@ export default function AdminDownloadsPage() {
         body: JSON.stringify({
           title: form.title,
           pricing_type: form.pricing_type,
+          ...(form.pricing_type === "paid" && form.price
+            ? { price: parseFloat(form.price) }
+            : {}),
+          tag_ids: createTagIds,
         }),
       })
 
@@ -138,7 +145,8 @@ export default function AdminDownloadsPage() {
       })
 
       toast.success("File uploaded")
-      setForm({ title: "", pricing_type: "free" })
+      setForm({ title: "", pricing_type: "free", price: "" })
+      setCreateTagIds([])
       setShowForm(false)
       browserRef.current?.refresh()
     } catch (err) {
@@ -270,6 +278,24 @@ export default function AdminDownloadsPage() {
                   <option value="paid">Paid</option>
                 </select>
               </div>
+            </div>
+            {form.pricing_type === "paid" && (
+              <div className="space-y-2">
+                <Label htmlFor="dl_price">Price</Label>
+                <Input
+                  id="dl_price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <TagInput value={createTagIds} onChange={setCreateTagIds} scope="download" />
             </div>
             <div className="space-y-2">
               <Label>File</Label>
