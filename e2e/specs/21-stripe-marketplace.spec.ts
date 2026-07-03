@@ -188,7 +188,7 @@ test("student buys a fresh paid course through Connect test checkout", async ({ 
       checkoutUrl,
       `checkout_url missing — bypass still on? BILLING_BYPASS_ENABLED must be false. body=${JSON.stringify(initBody)}`
     ).toBeTruthy();
-    expect(checkoutUrl, "checkout_url must point to Stripe").toMatch(/checkout\.stripe\.com/);
+    expect(checkoutUrl, "checkout_url must point to Stripe").toMatch(/checkout\.stripe\.com|accessible\.stripe\.com/);
 
     // ── 3. Navigate to Stripe-hosted Checkout and pay ─────────────────────────
     const page = await student.newPage();

@@ -116,12 +116,15 @@ health-check: ## Check if the API is healthy
 # Stripe
 # ============================================================================
 
-stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/
+stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/ (incl. Connect account events via --forward-connect-to)
 	@command -v stripe >/dev/null 2>&1 || { \
 		echo "Stripe CLI not installed. Install with: brew install stripe/stripe-cli/stripe"; \
 		exit 1; \
 	}
-	stripe listen --forward-to http://localhost/api/webhooks/stripe/
+	stripe listen \
+		--api-key "$$(grep -E '^STRIPE_SECRET_KEY=' .env | cut -d= -f2)" \
+		--forward-to http://localhost/api/webhooks/stripe/ \
+		--forward-connect-to http://localhost/api/webhooks/stripe/
 
 # ============================================================================
 # Deploy (prod runs remotely on the home server via deploy.sh)

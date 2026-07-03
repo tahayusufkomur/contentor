@@ -84,20 +84,27 @@ export async function payStripeCheckout(page: Page) {
     // a full mousedown/mouseup/click sequence on the button (not just the radio) triggers
     // the accordion expansion in Stripe's React app.
     console.log("[stripe helper] Expanding Card accordion via JS mouse events...");
-    await page.evaluate(() => {
+    const accordionFound = await page.evaluate((): boolean => {
       const btn = document.querySelector('[data-testid="card-accordion-item-button"]') as HTMLElement | null;
-      if (!btn) return;
+      if (!btn) return false;
       // Get the accordion cover (the clickable header area) to find coordinates.
       const cover = btn.closest('.AccordionItemCover') as HTMLElement | null;
       const target = cover || btn;
       const rect = target.getBoundingClientRect();
-      // Click in the center of the cover; if 0×0, use btn's top + 25px offset.
-      const x = rect.width > 0 ? rect.left + rect.width / 2 : 800;
+      // Click in the center of the cover; if 0×0 (element not laid out), fall back to
+      // window.innerWidth/2 so the synthetic event still lands in the visible viewport area.
+      const x = rect.width > 0 ? rect.left + rect.width / 2 : window.innerWidth / 2;
       const y = rect.height > 0 ? rect.top + rect.height / 2 : (rect.top || btn.offsetTop) + 25;
       for (const type of ["mousedown", "mouseup", "click"] as const) {
         btn.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
       }
+      return true;
     });
+    if (!accordionFound) {
+      throw new Error(
+        "Stripe Connect checkout: card-accordion-item-button testid not found — Stripe may have changed their checkout DOM"
+      );
+    }
     // Wait for Stripe to render the card form in the page DOM.
     await page.waitForTimeout(2_000);
 
