@@ -10,8 +10,8 @@ ignore = ["S101"]
 [tool.ruff.lint.per-file-ignores]
 # Demo seeding uses random for decorative variety, not cryptography.
 "**/management/commands/seed_demo_tenant.py" = ["S311"]
-# Tests use hard-coded passwords for fixtures - not a security issue.
-"**/tests/**" = ["S106"]
+# Courses tests use hard-coded passwords for fixtures - not a security issue.
+"**/apps/courses/tests/test_views.py" = ["S106"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]
