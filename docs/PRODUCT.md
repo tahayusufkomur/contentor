@@ -8,7 +8,7 @@
 
 Launch-ready = every box checked:
 
-- [ ] Local main pushed to origin (~92 commits sitting only on one machine — bus-factor risk)
+- [ ] Local main pushed to origin (~93 commits sitting only on one machine — bus-factor risk)
 - [ ] Prod deployed to current main (prod ≈ 2026-06-23 state; marketplace, site builder, mailbox, filters/tags, PWA dashboards all missing there)
 - [ ] Post-deploy prod smoke: signup → provision → build site → create course (the e2e suite's journey, replayed once against prod by hand)
 - [ ] Coach subscribes on LIVE Stripe (one real Starter checkout with a real card, then refund) — platform billing verified in prod
@@ -79,4 +79,4 @@ Launch-ready = every box checked:
 
 ## 5. Audit stamp
 
-Last full audit: **2026-07-03** (smoke-run same day: git, ledger, prod health re-checked; unpushed count corrected 91→92) — checked: git (unpushed count, branch list), prod `/api/health/` (ok), iyzico provider stub, quotas.py 402 status, dunning absence, adminkit plan CRUD, e2e/backend suite states, session ledger, memory (deploy dates, mailbox/domain/announcement pending items, secret rotations). Open `verify` items: monitoring profile on home server. (Tenant-migration entrypoint fix confirmed committed: `973d0cf`, `entrypoint.sh` runs `migrate_schemas --tenant`.)
+Last full audit: **2026-07-03** (last /po check same day: git, ledger, prod health re-verified; unpushed count now 93 — advisor commits included) — checked: git (unpushed count, branch list), prod `/api/health/` (ok), iyzico provider stub, quotas.py 402 status, dunning absence, adminkit plan CRUD, e2e/backend suite states, session ledger, memory (deploy dates, mailbox/domain/announcement pending items, secret rotations). Open `verify` items: monitoring profile on home server. (Tenant-migration entrypoint fix confirmed committed: `973d0cf`, `entrypoint.sh` runs `migrate_schemas --tenant`.)
