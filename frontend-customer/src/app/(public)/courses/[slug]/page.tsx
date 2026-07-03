@@ -94,7 +94,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <CardContent className="p-6 space-y-4">
               <div className="text-center">
                 <p className="font-display text-3xl font-bold">
-                  {course.pricing_type === 'free' ? 'Free' : `$${course.price}`}
+                  {course.pricing_type === 'free'
+                    ? 'Free'
+                    : course.pricing_type === 'subscription'
+                      ? 'Included in subscription'
+                      : `$${course.price}`}
                 </p>
               </div>
               <EnrollButton course={course} />

@@ -135,7 +135,7 @@ def enroll(request, slug):
             status=status.HTTP_409_CONFLICT,
         )
 
-    if course.pricing_type == "paid":
+    if course.pricing_type in ("paid", "subscription"):
         access_service = ContentAccessService()
         info = access_service.get_access_info(request.user, course)
         if not info.has_access:

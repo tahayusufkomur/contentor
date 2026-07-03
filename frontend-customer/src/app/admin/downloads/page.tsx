@@ -50,6 +50,7 @@ const SORT_OPTIONS = [
 const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> = {
   free: "success",
   paid: "default",
+  subscription: "warning",
 }
 
 export default function AdminDownloadsPage() {
@@ -61,7 +62,7 @@ export default function AdminDownloadsPage() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     title: "",
-    pricing_type: "free" as "free" | "paid",
+    pricing_type: "free" as "free" | "paid" | "subscription",
     price: "",
   })
   const [createTagIds, setCreateTagIds] = useState<number[]>([])
@@ -166,6 +167,7 @@ export default function AdminDownloadsPage() {
       options: [
         { label: "Free", value: "free" },
         { label: "Paid", value: "paid" },
+        { label: "Included in subscription", value: "subscription" },
       ],
     },
     {
@@ -270,12 +272,14 @@ export default function AdminDownloadsPage() {
                       ...form,
                       pricing_type: e.target.value as
                         | "free"
-                        | "paid",
+                        | "paid"
+                        | "subscription",
                     })
                   }
                 >
                   <option value="free">Free</option>
                   <option value="paid">Paid</option>
+                  <option value="subscription">Included in subscription</option>
                 </select>
               </div>
             </div>

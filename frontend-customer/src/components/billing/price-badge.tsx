@@ -18,6 +18,10 @@ export function PriceBadge({ accessInfo, price, pricingType }: PriceBadgeProps) 
     return <Badge variant="success">Free</Badge>
   }
 
+  if (effectivePricingType === 'subscription') {
+    return <Badge variant="secondary">Included in subscription</Badge>
+  }
+
   const effectivePrice = accessInfo?.price ?? price
   if (effectivePricingType === 'paid' && effectivePrice) {
     return (

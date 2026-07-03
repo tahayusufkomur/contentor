@@ -61,7 +61,7 @@ export interface Course {
   thumbnail_id?: string | null
   thumbnail_signed_url?: string
   price: string
-  pricing_type: 'free' | 'paid'
+  pricing_type: 'free' | 'paid' | 'subscription'
   is_published: boolean
   order: number
   lesson_count?: number

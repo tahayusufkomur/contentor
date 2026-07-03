@@ -21,7 +21,7 @@ class Course(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     pricing_type = models.CharField(
         max_length=20,
-        choices=[("free", "Free"), ("paid", "Paid")],
+        choices=[("free", "Free"), ("paid", "Paid"), ("subscription", "Included in subscription")],
         default="free",
     )
     is_published = models.BooleanField(default=False)

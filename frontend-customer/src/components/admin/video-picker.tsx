@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ModalPortal } from "@/components/ui/modal-portal"
 import { clientFetch } from "@/lib/api-client"
 import { Search, Upload, Video, X } from "lucide-react"
 import { formatDuration } from "@/lib/format"
@@ -157,7 +158,7 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setOpen(!open)}
+            onClick={() => setOpen(true)}
           >
             Choose video
           </Button>
@@ -184,84 +185,107 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
       )}
 
       {open && (
-        <div className="rounded-lg border bg-card p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search videos..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-8 pl-8 text-sm"
-              />
-            </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="video/mp4,video/quicktime,video/webm"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) handleUpload(file)
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
+        <ModalPortal>
+          <div
+            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4"
+            onClick={() => setOpen(false)}
+          >
+            <div
+              className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Upload className="h-3.5 w-3.5" />
-              Upload
-            </Button>
-          </div>
-
-          {uploading && (
-            <div className="space-y-1">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {uploadProgress}% uploaded
-              </p>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex justify-center py-6">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          ) : videos.length === 0 ? (
-            <p className="py-4 text-center text-xs text-muted-foreground">
-              {search ? "No videos match your search." : "No videos yet."}
-            </p>
-          ) : (
-            <div className="max-h-60 space-y-1 overflow-y-auto">
-              {videos.map((video) => (
+              <div className="flex items-center justify-between border-b px-5 py-3.5">
+                <h2 className="text-sm font-semibold">Choose a video</h2>
                 <button
-                  key={video.id}
                   type="button"
-                  onClick={() => {
-                    onChange(video.id, video.video_signed_url)
-                    setOpen(false)
-                  }}
-                  className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 >
-                  <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate">{video.title}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDuration(video.duration_seconds)}
-                  </span>
+                  <X className="h-4 w-4" />
                 </button>
-              ))}
+              </div>
+
+              <div className="flex items-center gap-2 border-b p-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search videos..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="h-9 pl-8 text-sm"
+                  />
+                </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) handleUpload(file)
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload
+                </Button>
+              </div>
+
+              {uploading && (
+                <div className="space-y-1 border-b px-4 py-3">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {uploadProgress}% uploaded
+                  </p>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto p-3">
+                {loading ? (
+                  <div className="flex justify-center py-10">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  </div>
+                ) : videos.length === 0 ? (
+                  <p className="py-10 text-center text-sm text-muted-foreground">
+                    {search ? "No videos match your search." : "No videos yet."}
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {videos.map((video) => (
+                      <button
+                        key={video.id}
+                        type="button"
+                        onClick={() => {
+                          onChange(video.id, video.video_signed_url)
+                          setOpen(false)
+                        }}
+                        className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+                      >
+                        <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="flex-1 truncate">{video.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDuration(video.duration_seconds)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        </ModalPortal>
       )}
     </div>
   )

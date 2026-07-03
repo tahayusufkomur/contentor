@@ -7,7 +7,7 @@ export interface DownloadFile {
   file_url: string
   file_size: number
   download_count: number
-  pricing_type: 'free' | 'paid'
+  pricing_type: 'free' | 'paid' | 'subscription'
   price: string
   tags?: Tag[]
   tag_ids?: number[]

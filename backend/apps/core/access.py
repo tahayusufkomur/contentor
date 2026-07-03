@@ -70,8 +70,11 @@ class ContentAccessService:
                 access_reason="bundle",
             )
 
-        # 5. Active subscription
-        if self._has_subscription_access(user, content):
+        # 5. Active subscription (plan-linked content, or subscription-priced
+        # content which any active subscription unlocks)
+        if self._has_subscription_access(user, content) or (
+            pricing_type == "subscription" and self._has_any_active_subscription(user)
+        ):
             return AccessInfo(
                 has_access=True,
                 pricing_type=pricing_type,
@@ -86,6 +89,8 @@ class ContentAccessService:
             unlock_methods.append("purchase")
             if self._is_in_any_plan(content):
                 unlock_methods.append("subscribe")
+        elif pricing_type == "subscription":
+            unlock_methods.append("subscribe")
 
         return AccessInfo(
             has_access=False,
@@ -126,9 +131,12 @@ class ContentAccessService:
                 if pricing_type == "free":
                     result[item.pk] = AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free")
                 else:
-                    unlock_methods = ["purchase"]
-                    if item.pk in plan_linked_ids:
-                        unlock_methods.append("subscribe")
+                    if pricing_type == "subscription":
+                        unlock_methods = ["subscribe"]
+                    else:
+                        unlock_methods = ["purchase"]
+                        if item.pk in plan_linked_ids:
+                            unlock_methods.append("subscribe")
                     result[item.pk] = AccessInfo(
                         has_access=False,
                         pricing_type=pricing_type,
@@ -148,6 +156,11 @@ class ContentAccessService:
         bundle_ids = self._batch_bundle_purchases(user, target_ct)
         subscription_ids = self._batch_subscription_access(user, target_ct)
         plan_linked_ids = self._batch_plan_linked_by_ct(target_ct)
+        has_any_subscription = (
+            self._has_any_active_subscription(user)
+            if any(getattr(i, "pricing_type", "free") == "subscription" for i in items)
+            else False
+        )
 
         for item in items:
             pricing_type = getattr(item, "pricing_type", "free")
@@ -172,7 +185,7 @@ class ContentAccessService:
                     currency=currency,
                     access_reason="bundle",
                 )
-            elif item.pk in subscription_ids:
+            elif item.pk in subscription_ids or (pricing_type == "subscription" and has_any_subscription):
                 result[item.pk] = AccessInfo(
                     has_access=True,
                     pricing_type=pricing_type,
@@ -181,9 +194,14 @@ class ContentAccessService:
                     access_reason="subscription",
                 )
             else:
-                unlock_methods = ["purchase"] if pricing_type == "paid" else []
-                if pricing_type == "paid" and item.pk in plan_linked_ids:
-                    unlock_methods.append("subscribe")
+                if pricing_type == "paid":
+                    unlock_methods = ["purchase"]
+                    if item.pk in plan_linked_ids:
+                        unlock_methods.append("subscribe")
+                elif pricing_type == "subscription":
+                    unlock_methods = ["subscribe"]
+                else:
+                    unlock_methods = []
                 result[item.pk] = AccessInfo(
                     has_access=False,
                     pricing_type=pricing_type,
@@ -225,6 +243,10 @@ class ContentAccessService:
             "plan_id", flat=True
         )
         plans = SubscriptionPlan.objects.filter(pk__in=plan_ids, is_active=True)
+        if pricing_type == "subscription" and not plans.exists():
+            # Subscription-priced content without explicit plan links is
+            # unlocked by ANY active subscription — offer every active plan.
+            plans = SubscriptionPlan.objects.filter(is_active=True)
         if plans.exists():
             options["plans"] = [
                 {
@@ -318,6 +340,16 @@ class ContentAccessService:
                 payment__student=user,
                 payment__status__in=("completed", "partially_refunded"),
                 is_refunded=False,
+            ).exists()
+        except ImportError:
+            return False
+
+    def _has_any_active_subscription(self, user) -> bool:
+        try:
+            from apps.billing.models import Subscription
+
+            return Subscription.objects.filter(
+                student=user, status="active", current_period_end__gt=timezone.now()
             ).exists()
         except ImportError:
             return False

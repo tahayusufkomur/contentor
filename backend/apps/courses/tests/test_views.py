@@ -588,6 +588,83 @@ class TestSubscriptionCourseAccess:
 
 
 # ---------------------------------------------------------------------------
+# Tests: pricing_type="subscription" (included in subscription)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def subscription_course(tenant_ctx, owner):
+    """A published course priced 'included in subscription' — no plan links."""
+    return Course.objects.create(
+        title="Members Course",
+        slug="members-course",
+        instructor=owner,
+        pricing_type="subscription",
+        is_published=True,
+    )
+
+
+def _activate_subscription(student):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.billing.models import Subscription, SubscriptionPlan
+
+    plan = SubscriptionPlan.objects.create(name="Membership", price=Decimal("29.00"), currency="USD")
+    return Subscription.objects.create(
+        student=student,
+        plan=plan,
+        billing_amount=plan.price,
+        billing_currency="USD",
+        status="active",
+        provider="bypass",
+        current_period_start=timezone.now(),
+        current_period_end=timezone.now() + timedelta(days=30),
+    )
+
+
+@pytest.mark.django_db(transaction=True)
+class TestSubscriptionPricingType:
+    def test_non_subscriber_cannot_enroll_and_sees_subscribe_unlock(self, subscription_course, student):
+        """Without any active subscription: enroll 400, unlock_methods=[subscribe] only."""
+        client = make_client(student)
+        resp = client.post(f"/api/v1/courses/{subscription_course.slug}/enroll/")
+        assert resp.status_code == 400, resp.content
+        info = resp.json()["access_info"]
+        assert info["has_access"] is False
+        assert info["unlock_methods"] == ["subscribe"]
+
+    def test_any_active_subscription_grants_access(self, subscription_course, student):
+        """Any active subscription unlocks subscription-priced content (no plan link needed)."""
+        _activate_subscription(student)
+        client = make_client(student)
+        resp = client.post(f"/api/v1/courses/{subscription_course.slug}/enroll/")
+        assert resp.status_code == 201, resp.content
+        detail = client.get(f"/api/v1/courses/{subscription_course.slug}/")
+        assert detail.json()["access_info"]["access_reason"] == "subscription"
+
+    def test_unlock_options_offer_all_active_plans_when_unlinked(self, subscription_course, student):
+        """Subscription content with no plan links offers every active plan."""
+        from apps.billing.models import SubscriptionPlan
+
+        SubscriptionPlan.objects.create(name="Monthly", price=Decimal("19.00"), currency="USD")
+        client = make_client(student)
+        resp = client.get(f"/api/v1/courses/{subscription_course.slug}/")
+        assert resp.status_code == 200, resp.content
+        options = resp.json()["unlock_options"]
+        assert "purchase" not in options
+        assert [p["name"] for p in options["plans"]] == ["Monthly"]
+
+    def test_subscription_course_not_in_store(self, subscription_course, owner):
+        """Subscription-only content is not sold one-off in the store."""
+        client = make_client(owner)
+        resp = client.get("/api/v1/billing/store/")
+        assert resp.status_code == 200, resp.content
+        assert "Members Course" not in [i["title"] for i in resp.json()]
+
+
+# ---------------------------------------------------------------------------
 # Tests: nested course create  POST /api/v1/courses/ with modules
 # ---------------------------------------------------------------------------
 

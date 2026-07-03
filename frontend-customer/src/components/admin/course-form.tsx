@@ -24,6 +24,8 @@ import { PhotoPicker } from "@/components/admin/photo-picker"
 import { VideoPicker } from "@/components/admin/video-picker"
 import { FilterPicker } from "@/components/admin/filter-picker"
 import { TagInput } from "@/components/admin/tag-input"
+import { RichEditorProvider, useRichEditor } from "@/components/owner/rich-editor"
+import { RichHtml } from "@/components/blocks/rich-html"
 import { formatDuration } from "@/lib/format"
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course"
 import type { Photo } from "@/types/photo"
@@ -34,6 +36,14 @@ interface NewLessonState {
   is_free_preview: boolean
   video: number | null
   videoPreviewUrl: string | null
+}
+
+const EMPTY_LESSON: NewLessonState = {
+  title: "",
+  content_html: "",
+  is_free_preview: false,
+  video: null,
+  videoPreviewUrl: null,
 }
 
 interface CourseFormProps {
@@ -57,7 +67,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
   const [createForm, setCreateForm] = useState({
     title: "",
     description: "",
-    pricing_type: "free" as "free" | "paid",
+    pricing_type: "free" as "free" | "paid" | "subscription",
     price: "0.00",
     is_published: false,
     thumbnail_url: "",
@@ -79,13 +89,9 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
   const [editingLessonId, setEditingLessonId] = useState<number | null>(null)
   const [lessonSaving, setLessonSaving] = useState(false)
   const [addingLessonForModule, setAddingLessonForModule] = useState<number | null>(null)
-  const [newLesson, setNewLesson] = useState({
-    title: "",
-    content_html: "",
-    is_free_preview: false,
-    video: null as number | null,
-    videoPreviewUrl: null as string | null,
-  })
+  // Create-mode: which local lesson is being edited ({module tempId, lesson index})
+  const [editingLocal, setEditingLocal] = useState<{ tempId: number; index: number } | null>(null)
+  const [newLesson, setNewLesson] = useState<NewLessonState>(EMPTY_LESSON)
 
   const slug = course?.slug
 
@@ -266,6 +272,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
 
   function removeLocalModule(tempId: number) {
     if (addingLessonForModule === tempId) setAddingLessonForModule(null)
+    if (editingLocal?.tempId === tempId) setEditingLocal(null)
     setLocalModules(localModules.filter((m) => m.tempId !== tempId))
   }
 
@@ -277,10 +284,11 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
       )
     )
     setAddingLessonForModule(null)
-    setNewLesson({ title: "", content_html: "", is_free_preview: false, video: null, videoPreviewUrl: null })
+    setNewLesson(EMPTY_LESSON)
   }
 
   function removeLocalLesson(tempId: number, lessonIndex: number) {
+    if (editingLocal?.tempId === tempId) setEditingLocal(null)
     setLocalModules(
       localModules.map((m) =>
         m.tempId === tempId
@@ -290,7 +298,30 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
     )
   }
 
+  function startLocalLessonEdit(tempId: number, index: number, lesson: NewLessonState) {
+    setAddingLessonForModule(null)
+    setNewLesson({ ...lesson })
+    setEditingLocal({ tempId, index })
+  }
+
+  function saveLocalLessonEdit() {
+    if (!editingLocal || !newLesson.title.trim()) return
+    setLocalModules(
+      localModules.map((m) =>
+        m.tempId === editingLocal.tempId
+          ? {
+              ...m,
+              lessons: m.lessons.map((l, i) => (i === editingLocal.index ? { ...newLesson } : l)),
+            }
+          : m
+      )
+    )
+    setEditingLocal(null)
+    setNewLesson(EMPTY_LESSON)
+  }
+
   return (
+    <RichEditorProvider>
     <div className="space-y-6">
       {/* ───── Course Details & Settings ───── */}
       <Card>
@@ -383,7 +414,7 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={isCreate ? createForm.pricing_type : (course?.pricing_type ?? "free")}
                 onChange={(e) => {
-                  const v = e.target.value as "free" | "paid"
+                  const v = e.target.value as "free" | "paid" | "subscription"
                   isCreate
                     ? setCreateForm({ ...createForm, pricing_type: v })
                     : setCourse(course ? { ...course, pricing_type: v } : course)
@@ -391,26 +422,26 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
               >
                 <option value="free">Free</option>
                 <option value="paid">Paid</option>
+                <option value="subscription">Included in subscription</option>
               </select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={isCreate ? createForm.price : (course?.price ?? "0.00")}
-                onChange={(e) =>
-                  isCreate
-                    ? setCreateForm({ ...createForm, price: e.target.value })
-                    : setCourse(course ? { ...course, price: e.target.value } : course)
-                }
-                disabled={
-                  (isCreate ? createForm.pricing_type : course?.pricing_type) === "free"
-                }
-              />
-            </div>
+            {(isCreate ? createForm.pricing_type : course?.pricing_type) === "paid" && (
+              <div className="space-y-2">
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={isCreate ? createForm.price : (course?.price ?? "0.00")}
+                  onChange={(e) =>
+                    isCreate
+                      ? setCreateForm({ ...createForm, price: e.target.value })
+                      : setCourse(course ? { ...course, price: e.target.value } : course)
+                  }
+                />
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <Switch
@@ -489,27 +520,70 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
                     </TableHeader>
                     <TableBody>
                       {mod.lessons.map((lesson, lessonIndex) => (
-                        <TableRow key={lessonIndex}>
-                          <TableCell className="font-medium">{lesson.title}</TableCell>
-                          <TableCell>
-                            <Badge variant={lesson.video ? "success" : "secondary"}>
-                              {lesson.video ? "Selected" : "No video"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {lesson.is_free_preview && <Badge variant="outline">Free</Badge>}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => removeLocalLesson(mod.tempId, lessonIndex)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                        <Fragment key={lessonIndex}>
+                          <TableRow>
+                            <TableCell className="font-medium">{lesson.title}</TableCell>
+                            <TableCell>
+                              <Badge variant={lesson.video ? "success" : "secondary"}>
+                                {lesson.video ? "Selected" : "No video"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {lesson.is_free_preview && <Badge variant="outline">Free</Badge>}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() =>
+                                    editingLocal?.tempId === mod.tempId &&
+                                    editingLocal?.index === lessonIndex
+                                      ? setEditingLocal(null)
+                                      : startLocalLessonEdit(mod.tempId, lessonIndex, lesson)
+                                  }
+                                >
+                                  {editingLocal?.tempId === mod.tempId &&
+                                  editingLocal?.index === lessonIndex ? (
+                                    <ChevronUp className="h-4 w-4" />
+                                  ) : (
+                                    <Pencil className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => removeLocalLesson(mod.tempId, lessonIndex)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {editingLocal?.tempId === mod.tempId &&
+                            editingLocal?.index === lessonIndex && (
+                              <TableRow>
+                                <TableCell colSpan={4} className="p-0">
+                                  <div className="p-2">
+                                    <LessonCreatePanel
+                                      newLesson={newLesson}
+                                      setNewLesson={setNewLesson}
+                                      onSave={saveLocalLessonEdit}
+                                      onCancel={() => {
+                                        setEditingLocal(null)
+                                        setNewLesson(EMPTY_LESSON)
+                                      }}
+                                      saving={false}
+                                      heading="Edit Lesson"
+                                      saveLabel="Save"
+                                    />
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                        </Fragment>
                       ))}
                     </TableBody>
                   </Table>
@@ -536,7 +610,11 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
                   <Button
                     variant="outline"
                     className="gap-2"
-                    onClick={() => setAddingLessonForModule(mod.tempId)}
+                    onClick={() => {
+                      setEditingLocal(null)
+                      setNewLesson(EMPTY_LESSON)
+                      setAddingLessonForModule(mod.tempId)
+                    }}
                   >
                     <Plus className="h-4 w-4" /> Add Lesson
                   </Button>
@@ -724,6 +802,34 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
         </>
       )}
     </div>
+    </RichEditorProvider>
+  )
+}
+
+// ── Lesson content (rich text via the shared modal) ────────────
+
+function LessonContentField({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (html: string) => void
+}) {
+  const editor = useRichEditor()
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        editor?.openRichEditor({ value, title: "Lesson content", onSave: onChange })
+      }
+      className="block w-full rounded-md border bg-background px-3 py-2 text-left text-sm transition-colors hover:border-primary/60"
+    >
+      {value ? (
+        <RichHtml html={value} className="pointer-events-none max-h-40 overflow-hidden" />
+      ) : (
+        <span className="text-muted-foreground">Click to write lesson content…</span>
+      )}
+    </button>
   )
 }
 
@@ -766,11 +872,10 @@ function LessonEditPanel({ lesson, onSave, onCancel, saving }: LessonEditPanelPr
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Content (HTML)</Label>
-        <Textarea
+        <Label className="text-sm font-medium">Content</Label>
+        <LessonContentField
           value={values.content_html}
-          onChange={(e) => setValues({ ...values, content_html: e.target.value })}
-          className="min-h-[100px] font-mono text-xs"
+          onChange={(html) => setValues({ ...values, content_html: html })}
         />
       </div>
       <div className="space-y-1.5">
@@ -807,6 +912,8 @@ interface LessonCreatePanelProps {
   onSave: () => void
   onCancel: () => void
   saving: boolean
+  heading?: string
+  saveLabel?: string
 }
 
 function LessonCreatePanel({
@@ -815,10 +922,12 @@ function LessonCreatePanel({
   onSave,
   onCancel,
   saving,
+  heading = "New Lesson",
+  saveLabel = "Add Lesson",
 }: LessonCreatePanelProps) {
   return (
     <div className="rounded-lg border bg-muted/30 px-4 py-4 space-y-4">
-      <p className="text-sm font-medium">New Lesson</p>
+      <p className="text-sm font-medium">{heading}</p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">Title</Label>
@@ -841,12 +950,10 @@ function LessonCreatePanel({
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Content (HTML)</Label>
-        <Textarea
+        <Label className="text-sm font-medium">Content</Label>
+        <LessonContentField
           value={newLesson.content_html}
-          onChange={(e) => setNewLesson({ ...newLesson, content_html: e.target.value })}
-          className="min-h-[100px] font-mono text-xs"
-          placeholder="Optional lesson content..."
+          onChange={(html) => setNewLesson({ ...newLesson, content_html: html })}
         />
       </div>
       <div className="space-y-1.5">
@@ -864,7 +971,7 @@ function LessonCreatePanel({
           Cancel
         </Button>
         <Button size="sm" onClick={onSave} disabled={saving || !newLesson.title.trim()}>
-          {saving ? "Adding..." : "Add Lesson"}
+          {saving ? "Saving..." : saveLabel}
         </Button>
       </div>
     </div>
