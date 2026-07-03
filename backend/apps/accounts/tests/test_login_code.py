@@ -42,9 +42,27 @@ class LoginCodeTests(SimpleTestCase):
         code = login_code.issue("t1", "a@example.com")
         assert login_code.check("OTHER", "a@example.com", code) is False
 
+    def test_wrong_attempt_does_not_extend_code_ttl(self):
+        """A failed check() must NOT reset the code key's TTL.
+
+        Uses cache.ttl() (django-redis) — tests run against real Redis.
+        """
+        code = login_code.issue("t1", "a@example.com")
+        key = login_code._key("t1", "a@example.com")
+        ttl_after_issue = cache.ttl(key)
+        assert ttl_after_issue is not None and ttl_after_issue > 0
+
+        # Wrong attempt — should leave the code key untouched.
+        assert login_code.check("t1", "a@example.com", "000000") is False
+
+        ttl_after_wrong = cache.ttl(key)
+        # TTL must not have been extended; it can only be equal or lower.
+        assert ttl_after_wrong is not None
+        assert ttl_after_wrong <= ttl_after_issue
+
 
 @pytest.mark.django_db
-@override_settings(EMAIL_SINK_ENABLED=True)
+@override_settings(EMAIL_SINK_ENABLED=True, RESEND_API_KEY="")
 def test_magic_link_email_contains_code(shared_tenant):
     """Magic-link email for a non-demo tenant must include the 6-digit code."""
     res = APIClient().post(
