@@ -133,6 +133,10 @@ class Command(BaseCommand):
             self._seed_live_streams(live_streams_data, owner, all_photos)
             self._seed_zoom_classes(zoom_classes_data, owner, all_photos)
             self._seed_onsite_events(onsite_events_data, owner, all_photos)
+            # Events are created with the model default status="draft", which the
+            # student-facing lists hide. Publish them so the demo's live/calendar
+            # pages show real upcoming/past events instead of an empty state.
+            self._publish_seeded_events()
 
             # Students with purchases, subscriptions, and progress
             if students_data:
@@ -144,6 +148,15 @@ class Command(BaseCommand):
                     bundles,
                     owner,
                 )
+
+            # Give the shared "explore as student" demo user a real account so the
+            # student portal (dashboard, subscriptions, my courses) isn't empty when
+            # a visitor — or the flowmap crawler — browses the demo as a student.
+            self._seed_demo_student_billing(courses, sub_plans)
+
+            # One sent email campaign so the coach email pages (list + detail) show
+            # real data instead of an empty "No campaigns yet" / failed-to-load state.
+            self._seed_demo_email_campaign(owner)
 
         self.stdout.write(self.style.SUCCESS(f"\nDemo tenant ready at: {demo_domain}"))
 
@@ -832,3 +845,163 @@ class Command(BaseCommand):
             f"{total_payments} payments, {total_subscriptions} subscriptions, "
             f"{total_progress} progress records"
         )
+
+    def _seed_demo_student_billing(self, courses, sub_plans):
+        """Populate the shared demo student (DEMO_STUDENT_EMAIL) with an active
+        subscription, a one-time course purchase, and some progress.
+
+        The demo "View as student" entry point and the flowmap crawler both log in
+        as this one synthetic user. Without billing, the student portal renders
+        empty states (no subscription, no purchased courses), which makes the demo
+        and the captured flows look broken. This is read-only demo data; the demo
+        read-only middleware prevents visitors from mutating it.
+        """
+        from datetime import timedelta
+        from decimal import Decimal
+
+        from django.contrib.contenttypes.models import ContentType
+        from django.utils import timezone
+
+        from apps.billing.models import Payment, PaymentItem, Subscription
+        from apps.courses.models import Course, Enrollment, Lesson, Progress
+
+        student = User.objects.filter(email=DEMO_STUDENT_EMAIL).first()
+        if student is None:
+            return
+
+        course_ct = ContentType.objects.get_for_model(Course)
+        now = timezone.now()
+
+        # --- Active subscription to the first plan ---
+        if sub_plans:
+            plan = sub_plans[0]
+            subscription = Subscription.objects.create(
+                student=student,
+                plan=plan,
+                billing_amount=plan.price,
+                billing_currency=plan.currency,
+                status="active",
+                current_period_start=now - timedelta(days=8),
+                current_period_end=now + timedelta(days=22),
+            )
+            Payment.objects.create(
+                student=student,
+                payment_type="subscription",
+                status="completed",
+                amount=plan.price,
+                platform_fee=round(plan.price * Decimal("0.06"), 2),
+                submerchant_payout=round(plan.price * Decimal("0.94"), 2),
+                currency=plan.currency,
+                provider="bypass",
+                provider_payment_id=f"demo-{student.pk}-sub-{plan.pk}",
+                subscription=subscription,
+            )
+            for access in plan.access_items.all():
+                if access.content_type == course_ct:
+                    Enrollment.objects.get_or_create(user=student, course_id=access.object_id)
+
+        # --- One-time purchase of the first paid course ---
+        paid_course = next((c for c in courses if c.pricing_type == "paid" and c.price), None)
+        if paid_course is not None:
+            payment = Payment.objects.create(
+                student=student,
+                payment_type="one_time",
+                status="completed",
+                amount=paid_course.price,
+                platform_fee=round(paid_course.price * Decimal("0.06"), 2),
+                submerchant_payout=round(paid_course.price * Decimal("0.94"), 2),
+                currency="TRY",
+                provider="bypass",
+                provider_payment_id=f"demo-{student.pk}-course-{paid_course.pk}",
+            )
+            PaymentItem.objects.create(
+                payment=payment,
+                content_type=course_ct,
+                object_id=paid_course.pk,
+                item_price=paid_course.price,
+                submerchant_payout=round(paid_course.price * Decimal("0.94"), 2),
+            )
+            Enrollment.objects.get_or_create(user=student, course=paid_course, defaults={"payment_id": payment.pk})
+
+        # --- A bit of progress on the first enrolled course so "Continue learning" shows ---
+        first_enrollment = Enrollment.objects.filter(user=student).order_by("id").first()
+        if first_enrollment is not None:
+            lessons = list(
+                Lesson.objects.filter(module__course=first_enrollment.course).order_by("module__order", "order")
+            )
+            for idx, lesson in enumerate(lessons[:3]):
+                Progress.objects.get_or_create(
+                    user=student,
+                    lesson=lesson,
+                    defaults={"watched_seconds": 300, "completed": idx < 2},
+                )
+
+        self.stdout.write(f"  Demo student billing: {DEMO_STUDENT_EMAIL} (subscription + purchase + progress)")
+
+    def _publish_seeded_events(self):
+        """Promote seeded events out of the default 'draft' status.
+
+        Events are created via the model directly (bypassing the create serializer
+        that would set 'scheduled'), so they keep status='draft' and the student
+        lists — which filter status__in=[scheduled,live,ended] — hide them all.
+        Mark future events 'scheduled' and past events 'ended' so the demo's live
+        and calendar pages render real data.
+        """
+        from django.utils import timezone
+
+        from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
+
+        now = timezone.now()
+        total = 0
+        for model in (LiveClass, LiveStream, ZoomClass, OnsiteEvent):
+            total += model.objects.filter(scheduled_at__gte=now).update(status="scheduled")
+            total += model.objects.filter(scheduled_at__lt=now).update(status="ended")
+        self.stdout.write(f"  Published events: {total} (scheduled/ended by date)")
+
+    def _seed_demo_email_campaign(self, owner):
+        """Seed one already-sent email campaign with recipients so the coach email
+        pages show real history instead of an empty / failed-to-load state."""
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.email_campaigns.models import CampaignRecipient, CampaignStatus, EmailCampaign, RecipientStatus
+
+        students = list(User.objects.filter(role="student").order_by("id")[:8])
+        sent_at = timezone.now() - timedelta(days=3)
+        rendered_html = (
+            '<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;'
+            'padding:32px;color:#1a1a1a">'
+            '<h1 style="font-size:24px">New classes just dropped 🧘</h1>'
+            "<p>Hi there,</p>"
+            "<p>We've just added a fresh round of weekly Vinyasa Flow sessions to the "
+            "calendar — open to all levels. Reserve your spot and keep your practice going.</p>"
+            '<p style="margin:28px 0"><a href="#" style="background:#16a34a;color:#fff;'
+            'padding:12px 24px;border-radius:8px;text-decoration:none">View the schedule</a></p>'
+            "<p>See you on the mat,<br/>The Yoga Studio team</p>"
+            "</div>"
+        )
+        campaign = EmailCampaign.objects.create(
+            subject="New classes just dropped 🧘",
+            template_id="demo-welcome",
+            template_name="Welcome / Announcement",
+            sender=owner,
+            recipient_filter={"all": True},
+            recipient_count=len(students),
+            success_count=len(students),
+            failure_count=0,
+            status=CampaignStatus.SENT,
+            rendered_html=rendered_html,
+            recipient_summary="All students",
+            sent_at=sent_at,
+        )
+        for student in students:
+            CampaignRecipient.objects.create(
+                campaign=campaign,
+                user_id=student.pk,
+                user_name=student.name,
+                user_email=student.email,
+                status=RecipientStatus.SENT,
+                sent_at=sent_at,
+            )
+        self.stdout.write(f"  Email campaign: 1 sent to {len(students)} recipients")
