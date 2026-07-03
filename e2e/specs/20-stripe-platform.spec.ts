@@ -98,8 +98,10 @@ test("coach subscribes to a paid platform plan via real test Checkout", async ({
   const coach = await coachContext(browser);
 
   // ── 0. Ensure demo-yoga has no active subscription (idempotency) ───────────
-  // seed_plans recreates demo-yoga fresh on each global setup. Guard defensively
-  // for re-runs without a fresh seed (e.g. running this spec twice in a row).
+  // Idempotency is NOT guaranteed by reseeding (seed_all_demos skips existing
+  // tenants without --force). Instead it is enforced at runtime: we check the
+  // subscription status here and call cleanupSubscription() when needed; the
+  // same cleanup also runs unconditionally at the end of the test (step 5).
   const subCheck = await coach.request.get(`${TENANT}/api/v1/billing/platform/subscription/`);
   expect(subCheck.ok(), await subCheck.text()).toBeTruthy();
   const subBody = await subCheck.json();

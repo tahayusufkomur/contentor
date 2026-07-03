@@ -66,10 +66,14 @@ def initiate(request):
     )
     upload_id = response["UploadId"]
 
-    # Presign all part URLs in one go
+    # Presign all part URLs using the external client so the browser can reach
+    # them directly (internal http://minio:9000 is not accessible from the host).
+    # The external client falls back to internal when AWS_ENDPOINT_EXTERNAL is
+    # unset, so prod behaviour is unaffected.
+    presign_client = get_s3_client(external=True)
     part_urls = []
     for part_number in range(1, total_parts + 1):
-        url = client.generate_presigned_url(
+        url = presign_client.generate_presigned_url(
             "upload_part",
             Params={
                 "Bucket": settings.AWS_BUCKET_NAME,

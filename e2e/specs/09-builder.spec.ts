@@ -11,6 +11,10 @@
 // Autosave signal: the PATCH to /api/admin/config returns 200 JSON after the
 // 800ms debounce fires. We intercept the response in the coach's page context
 // rather than using a blind wait.
+//
+// Restore: after the public-page assertion the spec restores the original brand
+// name via PATCH /api/admin/config so subsequent runs start from clean state.
+// The restore runs in a try/finally so it executes even if the public assert fails.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
@@ -61,6 +65,9 @@ test("coach edits brand name via builder; public homepage reflects it", async ({
     timeout: 5_000,
   });
 
+  // Capture the current brand name so we can restore it after the test.
+  const originalBrand = await brandInput.inputValue();
+
   // Clear and type the new unique brand name — triggers the debounced autosave.
   await brandInput.fill(BRAND);
 
@@ -73,11 +80,28 @@ test("coach edits brand name via builder; public homepage reflects it", async ({
 
   await coach.close();
 
-  // ── 3. Verify the public homepage (unauthenticated request) reflects the change
-  await page.goto(`${TENANT}/`);
-  // The brand name appears in the sticky header nav link.
-  await expect(
-    page.getByRole("banner").getByText(BRAND),
-    "Updated brand name must appear in the public header after autosave",
-  ).toBeVisible({ timeout: 10_000 });
+  try {
+    // ── 3. Verify the public homepage (unauthenticated request) reflects the change
+    await page.goto(`${TENANT}/`);
+    // The brand name appears in the sticky header nav link.
+    await expect(
+      page.getByRole("banner").getByText(BRAND),
+      "Updated brand name must appear in the public header after autosave",
+    ).toBeVisible({ timeout: 10_000 });
+  } finally {
+    // ── 4. Restore the original brand name so subsequent runs start clean ─────
+    // Use a fresh coach context to issue the PATCH (the previous one was closed).
+    const restoreCtx = await coachContext(browser);
+    const restoreResp = await restoreCtx.request.patch(
+      `${TENANT}/api/v1/admin/config/`,
+      {
+        data: { brand_name: originalBrand },
+      },
+    );
+    expect(
+      restoreResp.ok(),
+      `brand restore PATCH failed: ${restoreResp.status()} — ${await restoreResp.text()}`,
+    ).toBeTruthy();
+    await restoreCtx.close();
+  }
 });
