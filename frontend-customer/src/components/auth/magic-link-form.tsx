@@ -60,7 +60,9 @@ export function MagicLinkForm() {
         setCodeError(t('codeError'))
         return
       }
+      setCode('')
       window.location.href = '/'
+      return
     } catch {
       setCodeError(t('networkError'))
     } finally {
@@ -84,7 +86,6 @@ export function MagicLinkForm() {
             id="login-code"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="[0-9]*"
             maxLength={6}
             placeholder={t('codePlaceholder')}
             value={code}

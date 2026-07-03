@@ -15,13 +15,14 @@ const stamp = Date.now();
 const SLUG = `e2e-code-${stamp}`;
 const HOST = `${SLUG}.localhost`;
 const BASE_URL = `http://${HOST}`;
+// no pre-registration needed — magic-link/code login auto-registers students on first login
 const STUDENT_EMAIL = `e2e-code-student-${stamp}@example.com`;
 
 // ---------------------------------------------------------------------------
 // Tenant bootstrap (non-demo, schema present)
 // ---------------------------------------------------------------------------
 
-async function ensureNonDemoTenant(): Promise<void> {
+function ensureNonDemoTenant(): void {
   // Create tenant + domain + schema in one shell call.
   // PlatformPlan is optional; the magic-link flow doesn't gate on it.
   manage([
@@ -50,8 +51,8 @@ if not Tenant.objects.filter(slug=slug).exists():
 // Test
 // ---------------------------------------------------------------------------
 
-test.beforeAll(async () => {
-  await ensureNonDemoTenant();
+test.beforeAll(() => {
+  ensureNonDemoTenant();
 });
 
 test("student logs in with the emailed 6-digit code", async ({ page }) => {
@@ -92,7 +93,7 @@ test("student logs in with the emailed 6-digit code", async ({ page }) => {
   await page.waitForURL(`${BASE_URL}/`, { timeout: 20_000 });
 
   // Session-backed signal: the PublicHeader renders "Sign Out" only when the
-  // server-side layout.tsx resolves the JWT cookie via requireAuth().
+  // server-side layout.tsx resolves the JWT cookie via getAuthUser().
   // This proves the cookie was set and the server accepted it.
   await expect(
     page.getByRole("button", { name: /sign out/i }),
