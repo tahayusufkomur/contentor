@@ -56,6 +56,7 @@ _MAGIC_LINK_COPY: dict[str, dict[str, str]] = {
         "button": "Sign in",
         "ignore": "If you didn't request this, you can safely ignore this email.",
         "copy_hint": "Or copy this link:",
+        "code_hint": "Using the installed app? Enter this code on the sign-in screen instead:",
     },
     "tr": {
         "subject": "{brand} için giriş bağlantınız",
@@ -63,6 +64,7 @@ _MAGIC_LINK_COPY: dict[str, dict[str, str]] = {
         "button": "Giriş yap",
         "ignore": "Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.",
         "copy_hint": "Veya bu bağlantıyı kopyalayın:",
+        "code_hint": "Yüklü uygulamayı mı kullanıyorsunuz? Giriş ekranına bunun yerine bu kodu girin:",
     },
 }
 
@@ -72,12 +74,20 @@ def send_magic_link(
     link: str,
     brand_name: str = "Contentor",
     locale: str = "en",
+    code: str | None = None,
 ) -> bool:
     copy = _MAGIC_LINK_COPY.get(locale, _MAGIC_LINK_COPY["en"])
     minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
     subject = copy["subject"].format(brand=brand_name)
     intro = copy["intro"].format(minutes=minutes)
     font_stack = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif"
+    code_block = ""
+    if code:
+        spaced = f"{code[:3]} {code[3:]}"
+        code_block = f"""
+        <p style="color: #444; font-size: 14px; margin-top: 24px;">{copy["code_hint"]}</p>
+        <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #1a1a2e;">{spaced}</p>
+        """
     html = f"""
     <div style="font-family: {font_stack}; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
         <h2 style="color: #1a1a2e; margin-bottom: 8px; letter-spacing: -0.02em;">{brand_name}</h2>
@@ -87,6 +97,7 @@ def send_magic_link(
                   border-radius: 999px; text-decoration: none; font-weight: 600; margin: 24px 0;">
             {copy["button"]}
         </a>
+        {code_block}
         <p style="color: #888; font-size: 13px;">{copy["ignore"]}</p>
         <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
             {copy["copy_hint"]}<br/>

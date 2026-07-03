@@ -58,11 +58,14 @@ def magic_link_request(request):
     except Exception:
         pass
 
+    from apps.accounts import login_code
     from apps.core.email import send_magic_link
+
+    code = login_code.issue(tenant.schema_name, email)
 
     # Locale: prefer request region's default, falling back to en.
     locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
-    sent = send_magic_link(email, link, brand_name, locale=locale)
+    sent = send_magic_link(email, link, brand_name, locale=locale, code=code)
     if not sent:
         # Always print to console so the link is visible in `make logs`
         print(f"\n{'=' * 60}")
