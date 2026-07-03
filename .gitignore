@@ -45,8 +45,9 @@ frontend-main/node_modules/
 .DS_Store
 Thumbs.db
 
-# Claude worktrees (each is its own checkout; never tracked from main)
-.claude/
+# Claude worktrees + local settings (never tracked) — but project skills ARE tracked
+.claude/*
+!.claude/skills/
 
 # Superpowers
 .superpowers/
