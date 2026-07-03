@@ -3,7 +3,7 @@ from django.db import models
 
 class DownloadFile(models.Model):
     title = models.CharField(max_length=200)
-    file_url = models.CharField(max_length=500)
+    file_url = models.CharField(max_length=500, blank=True, default="")
     file_size = models.BigIntegerField(default=0)
     download_count = models.IntegerField(default=0)
     pricing_type = models.CharField(

@@ -17,6 +17,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.downloads.models import DownloadFile
+from apps.tags.models import Tag
 
 SHARED_DOMAIN = "shared-test.localhost"
 
@@ -120,6 +121,37 @@ class TestDownloadListCreate:
         assert response.status_code == 201, response.content
         data = response.json()
         assert data["title"] == "New Download"
+
+    def test_post_owner_creates_download_without_file_url(self, owner, tenant_ctx):
+        """POST without file_url (create-first, upload-after flow) returns 201."""
+        client = make_client(owner)
+        payload = {
+            "title": "Pending Upload",
+            "pricing_type": "free",
+            "price": "0.00",
+        }
+        response = client.post("/api/v1/downloads/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        data = response.json()
+        assert data["title"] == "Pending Upload"
+        assert data.get("file_url", "") == ""
+
+    def test_post_owner_creates_download_with_tags(self, owner, tenant_ctx):
+        """POST with tag_ids persists M2M tags on the created download."""
+        tag = Tag.objects.create(scope="download", name="E2E Tag")
+        client = make_client(owner)
+        payload = {
+            "title": "Tagged Download",
+            "pricing_type": "free",
+            "price": "0.00",
+            "tag_ids": [tag.id],
+        }
+        response = client.post("/api/v1/downloads/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        data = response.json()
+        assert data["title"] == "Tagged Download"
+        tag_names = [t["name"] for t in data.get("tags", [])]
+        assert "E2E Tag" in tag_names, f"Expected tag in response, got: {tag_names}"
 
     def test_post_student_forbidden(self, student):
         """POST by student returns 403."""
