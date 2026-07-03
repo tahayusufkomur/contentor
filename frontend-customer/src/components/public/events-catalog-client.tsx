@@ -17,6 +17,7 @@ const TYPE_LABELS: Record<string, string> = {
   live_class: 'Live Class',
   live_stream: 'Live Stream',
   onsite_event: 'Event',
+  zoom_class: 'Live Class',
 }
 
 const fmtWhen = (d: Date) =>

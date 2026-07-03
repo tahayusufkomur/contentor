@@ -31,4 +31,11 @@ export const EVENT_TYPE_CONFIG: Record<
     textClass: "text-emerald-500",
     bgClass: "bg-emerald-500/10",
   },
+  zoom_class: {
+    label: "Live Class",
+    dotClass: "bg-primary",
+    borderClass: "border-l-primary",
+    textClass: "text-primary",
+    bgClass: "bg-primary/10",
+  },
 };

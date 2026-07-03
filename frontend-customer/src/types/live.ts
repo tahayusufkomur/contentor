@@ -91,7 +91,7 @@ export interface OnsiteEvent {
   tag_ids?: number[]
 }
 
-export type CalendarEventType = 'live_class' | 'live_stream' | 'onsite_event'
+export type CalendarEventType = 'live_class' | 'live_stream' | 'onsite_event' | 'zoom_class'
 
 export interface CalendarEvent {
   id: number

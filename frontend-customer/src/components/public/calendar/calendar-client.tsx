@@ -114,7 +114,10 @@ export function CalendarClient({
     fetchEvents(view, today);
   };
 
-  const filteredEvents = events.filter((e) => activeTypes.has(e.type));
+  // zoom_class events are grouped under the live_class chip (student-facing they're both "Live Class")
+  const filteredEvents = events.filter(
+    (e) => activeTypes.has(e.type) || (e.type === "zoom_class" && activeTypes.has("live_class"))
+  );
 
   const title =
     view === "month"

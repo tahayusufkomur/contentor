@@ -461,7 +461,7 @@ def calendar_events(request):
         )
         for obj in qs:
             thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
-            events.append(_to_calendar_event(obj, "live_class", thumb))
+            events.append(_to_calendar_event(obj, "zoom_class", thumb))
 
     if want_live_stream:
         qs = _apply_date_range(
