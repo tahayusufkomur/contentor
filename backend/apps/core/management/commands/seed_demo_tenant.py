@@ -37,7 +37,7 @@ class Command(BaseCommand):
         try:
             data = importlib.import_module(f"apps.core.management.commands.demo_data.{niche}")
         except ModuleNotFoundError:
-            raise CommandError(f"No demo data module found for niche: {niche}")
+            raise CommandError(f"No demo data module found for niche: {niche}") from None
 
         tenant_data = data.TENANT
         config_data = data.CONFIG
@@ -65,7 +65,7 @@ class Command(BaseCommand):
         try:
             pro_plan = PlatformPlan.objects.get(name="pro")
         except PlatformPlan.DoesNotExist:
-            raise CommandError("PlatformPlan 'pro' not found. Run seed_plans first.")
+            raise CommandError("PlatformPlan 'pro' not found. Run seed_plans first.") from None
 
         tenant = Tenant.objects.create(
             name=tenant_data["name"],
@@ -183,7 +183,7 @@ class Command(BaseCommand):
             course["is_published"] = i % 10 != 0
 
             # Deep-copy lessons to avoid mutation
-            course["lessons"] = [dict(l) for l in template["lessons"]]
+            course["lessons"] = [dict(lesson) for lesson in template["lessons"]]
 
             expanded.append(course)
 
