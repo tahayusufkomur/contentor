@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("magic-link/", views.magic_link_request, name="magic-link-request"),
     path("magic-link/verify/", views.magic_link_verify, name="magic-link-verify"),
+    path("magic-link/verify-code/", views.magic_link_verify_code, name="magic-link-verify-code"),
     path("google/", views.google_login, name="google-login"),
     path("google/callback/", views.google_callback, name="google-callback"),
     path("logout/", views.logout, name="logout"),

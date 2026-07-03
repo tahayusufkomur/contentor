@@ -17,7 +17,13 @@ from rest_framework.throttling import AnonRateThrottle
 from apps.core.pagination import StandardPagination
 
 from .models import User
-from .serializers import MagicLinkRequestSerializer, MagicLinkVerifySerializer, StudentListSerializer, UserSerializer
+from .serializers import (
+    MagicLinkRequestSerializer,
+    MagicLinkVerifyCodeSerializer,
+    MagicLinkVerifySerializer,
+    StudentListSerializer,
+    UserSerializer,
+)
 from .tokens import create_jwt, create_magic_link_token, verify_magic_link_token
 
 logger = logging.getLogger(__name__)
@@ -78,13 +84,41 @@ def magic_link_request(request):
     return Response({"detail": msg(request, "magic_link_sent")})
 
 
+def _login_user_response(request, tenant, email):
+    """Get-or-create a student user for *email* on *tenant*, issue a JWT, return
+    a 200 Response with the session cookie and locale cookie set.
+
+    Shared by magic_link_verify and magic_link_verify_code so the user+session
+    issuance logic is not duplicated.
+    """
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+
+    region = getattr(tenant, "region", None) or getattr(request, "region", "global")
+    # Email is unique per-region; include region in the lookup key.
+    user, created = User.objects.get_or_create(
+        email=email,
+        region=region,
+        defaults={
+            "name": email.split("@")[0],
+            "role": "student",
+            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            "accessible_regions": [],
+        },
+    )
+    jwt_token = create_jwt(user, tenant)
+    response = Response({"user": UserSerializer(user).data})
+    _set_session_cookie(response, jwt_token)
+    # Readable locale cookie — edge middleware in Next.js reads this without decoding the JWT.
+    _set_locale_cookie(response, user, tenant)
+    return response
+
+
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
 def magic_link_verify(request):
     serializer = MagicLinkVerifySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.i18n_helpers import msg
 
     try:
@@ -94,30 +128,30 @@ def magic_link_verify(request):
     tenant = connection.tenant
     if payload["tenant_id"] != tenant.schema_name:
         return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
-    region = getattr(tenant, "region", None) or getattr(request, "region", "global")
-    # Email is unique per-region; include region in the lookup key.
-    user, created = User.objects.get_or_create(
-        email=payload["email"],
-        region=region,
-        defaults={
-            "name": payload["email"].split("@")[0],
-            "role": "student",
-            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
-            "accessible_regions": [],
-        },
-    )
-    jwt_token = create_jwt(user, tenant)
     logger.info(
-        "login via magic link email=%s tenant=%s new_student=%s",
-        user.email,
+        "login via magic link email=%s tenant=%s",
+        payload["email"],
         tenant.slug,
-        created,
     )
-    response = Response({"user": UserSerializer(user).data})
-    _set_session_cookie(response, jwt_token)
-    # Readable locale cookie — edge middleware in Next.js reads this without decoding the JWT.
-    _set_locale_cookie(response, user, tenant)
-    return response
+    return _login_user_response(request, tenant, payload["email"])
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def magic_link_verify_code(request):
+    from apps.core.i18n_helpers import msg
+
+    serializer = MagicLinkVerifyCodeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    tenant = connection.tenant
+    email = serializer.validated_data["email"]
+    from apps.accounts import login_code
+
+    if not login_code.check(tenant.schema_name, email, serializer.validated_data["code"]):
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
+    logger.info("login via code email=%s tenant=%s", email, tenant.slug)
+    return _login_user_response(request, tenant, email)
 
 
 def _tenant_default_locale(tenant) -> str:

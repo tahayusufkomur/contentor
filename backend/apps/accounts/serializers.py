@@ -39,3 +39,8 @@ class MagicLinkRequestSerializer(serializers.Serializer):
 
 class MagicLinkVerifySerializer(serializers.Serializer):
     token = serializers.CharField()
+
+
+class MagicLinkVerifyCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(min_length=6, max_length=6)
