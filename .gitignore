@@ -61,3 +61,4 @@ tools/flowmap/flowmap.db-shm
 
 # flowmap walk-harness screenshots (verification scratch)
 tools/flowmap/walk-shots/
+test-results/
