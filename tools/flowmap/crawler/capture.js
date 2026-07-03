@@ -21,8 +21,20 @@ function waitStrategy(resolvedUrl) {
   return SLOW_LOAD.some((re) => re.test(resolvedUrl)) ? "domcontentloaded" : "networkidle";
 }
 
-function classify({ httpStatus, finalUrl, role }) {
+// The customer app renders a "Site not found" fallback (HTTP 200) when the tenant
+// config can't be resolved server-side — which happens on transient config-fetch
+// failures under load, not just for genuinely-unknown tenants. Detect it by its
+// unique copy so it's never mistaken for a real page.
+const SITE_NOT_FOUND_MARKER = "no Contentor site at this address";
+async function isSiteNotFound(page) {
+  return page
+    .evaluate((marker) => document.body?.innerText?.includes(marker) ?? false, SITE_NOT_FOUND_MARKER)
+    .catch(() => false);
+}
+
+function classify({ httpStatus, finalUrl, role, notFound }) {
   if (httpStatus >= 400) return { status: "error", note: `HTTP ${httpStatus}` };
+  if (notFound) return { status: "error", note: "tenant not resolved (Site not found)" };
   if (role !== "anon" && /\/login(\/|$|\?|#)/i.test(finalUrl)) {
     return { status: "error", note: "redirected to login (auth failed)" };
   }
@@ -38,9 +50,33 @@ async function capturePage(context, route, targets) {
   const page = await context.newPage();
   const url = `http://${route.host}${resolved.resolvedUrl}`;
   try {
+    // Some pages render purely from client state (e.g. /checkout reads the cart
+    // from localStorage). Seed that state before navigating so they capture a
+    // populated screen instead of an empty state. addInitScript runs before the
+    // page's own scripts on the upcoming navigation, scoped to this page only.
+    const seed = (targets.localStorage || {})[`${route.frontend}|${route.url}`];
+    if (seed) {
+      await page.addInitScript((data) => {
+        for (const [k, v] of Object.entries(data)) {
+          localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v));
+        }
+      }, seed);
+    }
     const waitUntil = waitStrategy(resolved.resolvedUrl);
-    const resp = await page.goto(url, { waitUntil, timeout: 30000 });
-    if (waitUntil === "domcontentloaded") await page.waitForTimeout(2500); // let the join/landing UI paint
+    // A "Site not found" render is usually a transient tenant-config-fetch miss, so
+    // reload a couple times before accepting it — that keeps a flaky moment under
+    // load from poisoning the stored screenshot. If it survives every attempt, the
+    // tenant genuinely doesn't resolve and classify() flags it as an error.
+    let resp = null;
+    let notFound = false;
+    const maxAttempts = 3;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      resp = await page.goto(url, { waitUntil, timeout: 30000 });
+      if (waitUntil === "domcontentloaded") await page.waitForTimeout(2500); // let the join/landing UI paint
+      notFound = await isSiteNotFound(page);
+      if (!notFound || attempt === maxAttempts) break;
+      await page.waitForTimeout(1500);
+    }
     const httpStatus = resp ? resp.status() : 0;
     const finalUrl = page.url();
     // The flow map is a visual map of the app, not a QA view — hide Next.js's
@@ -53,7 +89,7 @@ async function capturePage(context, route, targets) {
       Array.from(document.querySelectorAll("a[href]")).map((a) => a.href),
     );
     const title = await page.evaluate(() => document.title || "");
-    const c = classify({ httpStatus, finalUrl, role: route.role });
+    const c = classify({ httpStatus, finalUrl, role: route.role, notFound });
     return { ...route, resolvedUrl: resolved.resolvedUrl, status: c.status, note: c.note || "", png, links, title };
   } catch (e) {
     return { ...route, resolvedUrl: resolved.resolvedUrl, status: "error", note: String(e.message || e), png: null, links: [], title: null };
@@ -62,4 +98,4 @@ async function capturePage(context, route, targets) {
   }
 }
 
-module.exports = { resolveUrl, classify, capturePage };
+module.exports = { resolveUrl, classify, capturePage, isSiteNotFound };

@@ -10,7 +10,7 @@ const { chromium } = require("playwright");
 
 const targets = require("./crawler/targets.json");
 const { getContext } = require("./crawler/auth");
-const { resolveUrl, classify } = require("./crawler/capture");
+const { resolveUrl, classify, isSiteNotFound } = require("./crawler/capture");
 const { open } = require("./db");
 
 const DB_PATH = path.join(__dirname, "flowmap.db");
@@ -71,9 +71,17 @@ async function main() {
       const page = await contexts[role].newPage();
       try {
         const waitUntil = SLOW.some((re) => re.test(resolved.resolvedUrl)) ? "domcontentloaded" : "networkidle";
-        const resp = await page.goto(`http://${route.host}${resolved.resolvedUrl}`, { waitUntil, timeout: 30000 });
-        if (waitUntil === "domcontentloaded") await page.waitForTimeout(2500);
-        const c = classify({ httpStatus: resp ? resp.status() : 0, finalUrl: page.url(), role });
+        // Mirror capture.js: retry a transient "Site not found" before trusting it.
+        let resp = null;
+        let notFound = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          resp = await page.goto(`http://${route.host}${resolved.resolvedUrl}`, { waitUntil, timeout: 30000 });
+          if (waitUntil === "domcontentloaded") await page.waitForTimeout(2500);
+          notFound = await isSiteNotFound(page);
+          if (!notFound || attempt === 3) break;
+          await page.waitForTimeout(1500);
+        }
+        const c = classify({ httpStatus: resp ? resp.status() : 0, finalUrl: page.url(), role, notFound });
         rec.status = c.status; rec.note = c.note || ""; rec.httpStatus = resp ? resp.status() : 0; rec.finalUrl = page.url();
         await page.screenshot({ path: path.join(outDir, safe(key) + ".png") });
       } catch (e) {

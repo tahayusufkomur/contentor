@@ -26,5 +26,13 @@
       "/live/[id]": "/live/157",
       "/live-stream/[id]": "/live-stream/27"
     }
+  },
+  "_localStorage_comment": "Per-screen localStorage to seed before navigating, keyed by '<frontend>|<url>'. Object values are JSON-stringified. Used so client-state-only pages (e.g. /checkout reads the cart from localStorage) capture a populated screen instead of an empty state.",
+  "localStorage": {
+    "customer|/checkout": {
+      "contentor_cart": [
+        { "content_type": "course", "object_id": 2, "title": "Vinyasa Flow", "price": "39", "currency": "TRY", "type": "course" }
+      ]
+    }
   }
 }
