@@ -27,6 +27,7 @@ Launch-ready = every box checked:
 | Live classes (GetStream), zoom classes, onsite events, calendar | live-in-prod | zoom_class fix verified in prod 2026-07-03 |
 | Announcements (push/feed/email/templates/recurring) | live-in-prod | deployed 2026-06-23; coach-UI browser smoke still pending |
 | Student PWA (installable, offline, web push) | live-in-prod | usage dashboards deployed 2026-07-03 |
+| PWA login via emailed 6-digit code ("magic PIN") | live-in-prod | shipped 2026-07-03 (installed apps can't use link cookies); owner phone-test pending |
 | Platform billing — subscribe/checkout (Stripe) | built-unverified | e2e-verified in TEST mode locally; never exercised on live keys in prod |
 | Platform billing — quota enforcement (402s) | missing | quotas.py log-only; "Phase 3" handler not written |
 | Platform billing — dunning/lifecycle UI, receipts, metrics | missing | Phase 2/4 of billing plan |
