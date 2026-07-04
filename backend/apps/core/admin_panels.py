@@ -119,6 +119,74 @@ class TenantAdmin(ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).exclude(schema_name="public")
 
+    def perform_update(self, request, serializer):
+        # The `plan` field is only a denormalized mirror. Access/status is driven
+        # by PlatformSubscription (coach tile, quotas, mailbox eligibility), so a
+        # plan change here must also grant/cancel the subscription — the same
+        # end-state a Stripe checkout or the bypass provider produces. Otherwise
+        # the superadmin sees "Starter" while the tenant still reads "free".
+        old_plan_id = serializer.instance.plan_id
+        tenant = serializer.save()
+        if tenant.plan_id != old_plan_id:
+            self._sync_platform_subscription(tenant)
+        return tenant
+
+    @staticmethod
+    def _sync_platform_subscription(tenant):
+        from django.utils import timezone
+        from django_tenants.utils import schema_context
+        from rest_framework.serializers import ValidationError
+
+        # PlatformSubscription and its user FK live in the public schema, and
+        # accounts_user PKs differ per schema — so resolve the owner and write
+        # the subscription with public explicitly active, regardless of which
+        # tenant schema this request happened to resolve to.
+        with schema_context("public"):
+            sub = PlatformSubscription.objects.filter(tenant=tenant).first()
+            # Never desync a live Stripe subscription from this manual editor.
+            if (
+                sub is not None
+                and sub.provider == PlatformSubscription.PROVIDER_STRIPE
+                and sub.status in (PlatformSubscription.STATUS_ACTIVE, PlatformSubscription.STATUS_PAST_DUE)
+            ):
+                raise ValidationError(
+                    {"plan": "This tenant has an active Stripe subscription — change the plan in Stripe, "
+                             "not here, or billing will desync."}
+                )
+
+            plan = tenant.plan
+            # Free / no plan → ensure nothing reads as an active paid subscription.
+            if plan is None or plan.is_free:
+                if sub is not None and sub.status != PlatformSubscription.STATUS_CANCELED:
+                    sub.status = PlatformSubscription.STATUS_CANCELED
+                    sub.canceled_at = timezone.now()
+                    sub.save(update_fields=["status", "canceled_at", "updated_at"])
+                return
+
+            # Paid → grant/refresh a manually-provisioned active subscription.
+            # The subscription's user FK is PROTECT + non-null, so a real owner
+            # account must exist.
+            owner = User.objects.filter(email__iexact=tenant.owner_email).first()
+            if owner is None:
+                raise ValidationError(
+                    {"plan": f"No owner account found for {tenant.owner_email}; cannot grant a subscription."}
+                )
+            PlatformSubscription.objects.update_or_create(
+                tenant=tenant,
+                defaults={
+                    "user": owner,
+                    "plan": plan,
+                    "status": PlatformSubscription.STATUS_ACTIVE,
+                    "provider": PlatformSubscription.PROVIDER_MANUAL,
+                    "current_period_start": timezone.now(),
+                    "current_period_end": None,
+                    "cancel_at_period_end": False,
+                    "canceled_at": None,
+                    "provider_subscription_id": "",
+                    "provider_customer_id": "",
+                },
+            )
+
     @admin_action(label="Deactivate", style="danger", confirm="Deactivate selected tenants? Their sites stop serving.")
     def deactivate(self, request, queryset):
         updated = queryset.update(is_active=False)
