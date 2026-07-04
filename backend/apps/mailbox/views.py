@@ -85,7 +85,16 @@ def compose(request):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
     conv = services.get_or_create_conversation(counterparty_email=data["to"], subject=data["subject"])
-    msg = services.send_message(conversation=conv, text=data["text"], subject=data["subject"])
+    try:
+        msg = services.send_message(
+            conversation=conv,
+            text=data["text"],
+            html=data.get("html", ""),
+            subject=data["subject"],
+            attachment_ids=data.get("attachment_ids") or [],
+        )
+    except ValueError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(
         {"conversation_id": conv.id, "message_id": msg.id},
         status=status.HTTP_201_CREATED,
@@ -101,7 +110,16 @@ def reply(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = ReplySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    msg = services.send_message(conversation=conv, text=serializer.validated_data["text"])
+    data = serializer.validated_data
+    try:
+        msg = services.send_message(
+            conversation=conv,
+            text=data["text"],
+            html=data.get("html", ""),
+            attachment_ids=data.get("attachment_ids") or [],
+        )
+    except ValueError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return Response({"message_id": msg.id}, status=status.HTTP_201_CREATED)
 
 

@@ -13,12 +13,15 @@ def send_email(
     from_name: str = "",
     headers: dict | None = None,
     from_email: str = "",
+    attachments: list[dict] | None = None,
 ) -> bool:
     if getattr(settings, "EMAIL_SINK_ENABLED", False):
         from apps.core.models import DevOutboundEmail
 
         DevOutboundEmail.objects.create(to=to, subject=subject, html=html)
         logger.info("[email-sink] captured to=%s subject=%s", to, subject)
+        if attachments:
+            logger.info("[email-sink] %d attachment(s) omitted from sink", len(attachments))
         return True
 
     if not settings.RESEND_API_KEY:
@@ -40,6 +43,8 @@ def send_email(
     }
     if headers:
         payload["headers"] = headers
+    if attachments:
+        payload["attachments"] = attachments
 
     try:
         resend.Emails.send(payload)

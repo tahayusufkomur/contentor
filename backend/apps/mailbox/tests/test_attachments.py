@@ -76,3 +76,49 @@ def test_upload_attachment_rejects_bad_type(client, tenant_ctx):
     f = SimpleUploadedFile("run.exe", b"MZ", content_type="application/x-msdownload")
     resp = client.post("/api/v1/mailbox/attachments/", {"file": f}, format="multipart")
     assert resp.status_code == 400
+
+
+def test_send_message_sanitizes_html_and_links_attachments(tenant_ctx, settings):
+    from apps.mailbox import services
+
+    settings.EMAIL_SINK_ENABLED = True
+    conv = Conversation.objects.create(counterparty_email="p@x.com", subject="Hi")
+    att = MessageAttachment.objects.create(
+        filename="a.txt", content_type="text/plain", size=2, storage_key="k/a.txt"
+    )
+    with patch("apps.mailbox.services.read_attachment", return_value=b"hi"):
+        msg = services.send_message(
+            conversation=conv,
+            text="hello",
+            html='<p onclick="x()">hello <script>bad()</script><strong>world</strong></p>',
+            attachment_ids=[att.id],
+        )
+    att.refresh_from_db()
+    assert att.message_id == msg.id
+    assert "<script>" not in msg.html
+    assert "onclick" not in msg.html
+    assert "<strong>world</strong>" in msg.html
+
+
+def test_send_message_rejects_unknown_attachment(tenant_ctx, settings):
+    from apps.mailbox import services
+
+    settings.EMAIL_SINK_ENABLED = True
+    conv = Conversation.objects.create(counterparty_email="p@x.com")
+    with pytest.raises(ValueError):
+        services.send_message(conversation=conv, text="x", attachment_ids=[999])
+
+
+def test_compose_api_accepts_html_and_attachments(client, tenant_ctx, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    att = MessageAttachment.objects.create(
+        filename="a.txt", content_type="text/plain", size=2, storage_key="k"
+    )
+    with patch("apps.mailbox.services.read_attachment", return_value=b"hi"):
+        resp = client.post(
+            "/api/v1/mailbox/compose/",
+            {"to": "s@x.com", "subject": "Yo", "text": "hi",
+             "html": "<p><em>hi</em></p>", "attachment_ids": [att.id]},
+            format="json",
+        )
+    assert resp.status_code == 201, resp.content
