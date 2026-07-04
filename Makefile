@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -74,10 +74,13 @@ makemigrations: ## Generate new migration files
 seed: ## Seed plans, public tenant, and superusers
 	docker compose exec django python manage.py seed_plans
 
-seed-demos: ## Seed read-only marketing demo tenants for all niches
+seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinIO (host-run, needs .env.prod)
+	python3 scripts/mirror_demo_assets.py
+
+seed-demos: seed-demo-assets ## Seed read-only marketing demo tenants for all niches
 	docker compose exec django python manage.py seed_all_demos
 
-seed-demos-force: ## Recreate all demo tenants from scratch
+seed-demos-force: seed-demo-assets ## Recreate all demo tenants from scratch
 	docker compose exec django python manage.py seed_all_demos --force
 
 # ============================================================================
