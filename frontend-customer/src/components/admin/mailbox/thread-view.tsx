@@ -39,10 +39,24 @@ function HeaderAction({
   );
 }
 
-function MessageCard({ msg, expandedDefault }: { msg: MailboxMessage; expandedDefault: boolean }) {
+function MessageCard({
+  msg,
+  index,
+  expandedDefault,
+}: {
+  msg: MailboxMessage;
+  index: number;
+  expandedDefault: boolean;
+}) {
   const [expanded, setExpanded] = useState(expandedDefault);
   const isOutbound = msg.direction === "outbound";
   const sender = isOutbound ? "You" : msg.from_email;
+  // Zebra background alternates by position so the thread is easy to scan;
+  // a coloured left border still marks who sent each message. accent/15 is used
+  // (not muted) because in these themes muted sits ~0.03 lightness from the
+  // background and reads as no stripe at all.
+  const zebra = index % 2 === 1 ? "bg-accent/15" : "bg-background";
+  const accent = isOutbound ? "border-l-primary" : "border-l-muted-foreground/40";
   const when = new Date(msg.created_at).toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -56,9 +70,7 @@ function MessageCard({ msg, expandedDefault }: { msg: MailboxMessage; expandedDe
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className={`w-full rounded-lg border border-l-4 px-4 py-2 text-left transition-colors hover:bg-accent/40 ${
-          isOutbound ? "border-l-primary/60 bg-primary/5" : "border-l-muted-foreground/30 bg-muted/30"
-        }`}
+        className={`w-full rounded-lg border border-l-4 px-4 py-2 text-left transition-colors hover:bg-accent/40 ${accent} ${zebra}`}
       >
         <div className="flex items-baseline gap-2 text-xs">
           <span className="font-medium text-foreground">{sender}</span>
@@ -70,13 +82,7 @@ function MessageCard({ msg, expandedDefault }: { msg: MailboxMessage; expandedDe
   }
 
   return (
-    <div
-      className={`rounded-lg border border-l-4 px-4 py-3 ${
-        isOutbound
-          ? "border-l-primary/60 bg-primary/5"
-          : "border-l-muted-foreground/30 bg-muted/40"
-      }`}
-    >
+    <div className={`rounded-lg border border-l-4 px-4 py-3 ${accent} ${zebra}`}>
       <div className="mb-2 flex items-baseline justify-between gap-2 text-xs">
         <span className="font-medium">
           {sender}
@@ -169,6 +175,7 @@ export default function ThreadView({
           <MessageCard
             key={msg.id}
             msg={msg}
+            index={i}
             expandedDefault={i === thread.messages.length - 1}
           />
         ))}
