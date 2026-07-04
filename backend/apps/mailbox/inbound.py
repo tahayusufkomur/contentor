@@ -1,9 +1,15 @@
+import base64
+import logging
+
 from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
-from .models import Conversation, Message
+from .attachments import store_attachment, validate_attachment
+from .models import Conversation, Message, MessageAttachment
 from .services import get_or_create_conversation
+
+logger = logging.getLogger(__name__)
 
 
 def receive_inbound(
@@ -16,6 +22,7 @@ def receive_inbound(
     message_id: str = "",
     in_reply_to: str = "",
     references: str = "",
+    attachments: list[dict] | None = None,
 ) -> Message | None:
     if message_id and Message.objects.filter(message_id=message_id).exists():
         return None
@@ -41,6 +48,31 @@ def receive_inbound(
                 unread_count=F("unread_count") + 1,
                 last_message_at=timezone.now(),
             )
+            for att in attachments or []:
+                filename = (att.get("filename") or "attachment")[:255]
+                content_type = (att.get("content_type") or "")[:100]
+                size = int(att.get("size") or 0)
+                content_b64 = att.get("content_b64") or ""
+                omitted = bool(att.get("omitted"))
+                storage_key = ""
+                if not omitted and content_b64 and validate_attachment(filename, content_type, size) is None:
+                    try:
+                        storage_key = store_attachment(
+                            base64.b64decode(content_b64), filename, content_type
+                        )
+                    except Exception:
+                        logger.exception("mailbox inbound attachment store failed: %s", filename)
+                        omitted = True
+                else:
+                    omitted = True
+                MessageAttachment.objects.create(
+                    message=msg,
+                    filename=filename,
+                    content_type=content_type,
+                    size=size,
+                    storage_key=storage_key,
+                    omitted=omitted,
+                )
     except IntegrityError:
         # Concurrent redelivery slipped past the .exists() check — treat as duplicate.
         return None

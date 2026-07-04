@@ -192,6 +192,9 @@ AWS_ENDPOINT = os.environ.get("AWS_ENDPOINT", "")
 AWS_ENDPOINT_EXTERNAL = os.environ.get("AWS_ENDPOINT_EXTERNAL", "")
 AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
 
+# Inbound mailbox webhook carries base64 attachments (≤ ~25 MB email + overhead).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
+
 # --- GetStream Video ---
 GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
 GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")

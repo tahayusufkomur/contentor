@@ -155,3 +155,41 @@ def test_thread_messages_include_attachments(client, tenant_ctx):
     atts = resp.json()["messages"][0]["attachments"]
     assert atts[0]["filename"] == "a.pdf"
     assert atts[0]["download_url"] == "https://s3/a"
+
+
+def test_receive_inbound_stores_attachments(tenant_ctx):
+    import base64
+
+    from apps.mailbox.inbound import receive_inbound
+
+    payload_atts = [
+        {"filename": "a.png", "content_type": "image/png", "size": 4,
+         "content_b64": base64.b64encode(b"data").decode()},
+        {"filename": "huge.mov", "content_type": "video/quicktime",
+         "size": 99 * 1024 * 1024, "omitted": True},
+    ]
+    with patch("apps.mailbox.inbound.store_attachment", return_value="k/a.png"):
+        msg = receive_inbound(
+            from_email="s@x.com", to_email="info@c.com", subject="Hi",
+            text="hello", attachments=payload_atts,
+        )
+    atts = list(msg.attachments.order_by("id"))
+    assert len(atts) == 2
+    assert atts[0].storage_key == "k/a.png" and atts[0].omitted is False
+    assert atts[1].omitted is True and atts[1].storage_key == ""
+
+
+def test_receive_inbound_storage_failure_becomes_omitted(tenant_ctx):
+    import base64
+
+    from apps.mailbox.inbound import receive_inbound
+
+    payload_atts = [{"filename": "a.png", "content_type": "image/png", "size": 4,
+                     "content_b64": base64.b64encode(b"data").decode()}]
+    with patch("apps.mailbox.inbound.store_attachment", side_effect=RuntimeError("s3 down")):
+        msg = receive_inbound(
+            from_email="s2@x.com", to_email="info@c.com", subject="Hi",
+            text="hello", attachments=payload_atts,
+        )
+    att = msg.attachments.get()
+    assert att.omitted is True

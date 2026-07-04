@@ -181,6 +181,7 @@ def inbound(request):
             message_id=payload.get("message_id") or "",
             in_reply_to=payload.get("in_reply_to") or "",
             references=payload.get("references") or "",
+            attachments=payload.get("attachments") or [],
         )
     return Response(status=status.HTTP_200_OK)
 
