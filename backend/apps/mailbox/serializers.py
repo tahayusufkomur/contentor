@@ -1,8 +1,22 @@
 from rest_framework import serializers
 
+from apps.core.storage import generate_presigned_download_url
 from apps.tenant_config.defaults import sanitize_rich_text
 
-from .models import Conversation, Message
+from .models import Conversation, Message, MessageAttachment
+
+
+class MessageAttachmentSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MessageAttachment
+        fields = ["id", "filename", "content_type", "size", "omitted", "download_url"]
+
+    def get_download_url(self, obj) -> str:
+        if obj.omitted or not obj.storage_key:
+            return ""
+        return generate_presigned_download_url(obj.storage_key)
 
 
 class ConversationSerializer(serializers.ModelSerializer):
