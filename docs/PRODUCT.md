@@ -8,8 +8,8 @@
 
 Launch-ready = every box checked:
 
-- [x] Local main pushed to origin (2026-07-03, `1eb12a6`)
-- [x] Prod deployed to current main (2026-07-03; all 8 containers healthy — note: entrypoint demo-seed exceeded the healthcheck window, celery needed a manual `up -d` after)
+- [x] Local main pushed to origin (2026-07-03, `d50fdc4`)
+- [ ] Prod deployed to current main (RE-OPENED 2026-07-03 late: prod runs `e24fff4` magic-PIN deploy; one-step creation + subscription pricing `e24fff4..d50fdc4` pushed but NOT deployed. Bundle the `start_period` healthcheck fix with this deploy — celery needed manual start on both prior deploys)
 - [ ] Post-deploy prod smoke: signup → provision → build site → create course by hand (pages/API/media/calendar smoked ✓; the interactive signup+builder walkthrough needs a real inbox — user)
 - [ ] Coach subscribes on LIVE Stripe (one real Starter checkout with a real card, then refund) — platform billing verified in prod
 - [ ] Student buys from a coach on LIVE Stripe Connect (real test purchase, then refund) — marketplace verified in prod
@@ -23,14 +23,15 @@ Launch-ready = every box checked:
 | Feature | Status | Evidence / note |
 |---|---|---|
 | Signup → tenant provisioning (magic link, questionnaire, templates, authenticated flow) | live-in-prod | deployed 2026-07-03 |
-| Courses / downloads / media | live-in-prod | path-style presigns smoked in prod 2026-07-03 |
+| Courses / downloads / media | live-in-prod | path-style presigns smoked in prod 2026-07-03; one-step create flow (course+curriculum, priced download) pushed `2cc2865`, built-not-deployed |
+| Subscription pricing type ("included in subscription", courses+downloads) | built-not-deployed | pushed `d50fdc4`; any active sub unlocks, never sold one-off; +rich-text lessons, local lesson edit, video-picker modal; 4 tests, 2 tenant migrations |
 | Live classes (GetStream), zoom classes, onsite events, calendar | live-in-prod | zoom_class fix verified in prod 2026-07-03 |
 | Announcements (push/feed/email/templates/recurring) | live-in-prod | deployed 2026-06-23; coach-UI browser smoke still pending |
 | Student PWA (installable, offline, web push) | live-in-prod | usage dashboards deployed 2026-07-03 |
 | PWA login via emailed 6-digit code ("magic PIN") | live-in-prod | shipped 2026-07-03 (installed apps can't use link cookies); owner phone-test pending |
 | Platform billing — subscribe/checkout (Stripe) | built-unverified | e2e-verified in TEST mode locally; never exercised on live keys in prod |
 | Platform billing — quota enforcement (402s) | missing | quotas.py log-only; "Phase 3" handler not written |
-| Platform billing — dunning/lifecycle UI, receipts, metrics | missing | Phase 2/4 of billing plan |
+| Platform billing — dunning/lifecycle UI, receipts, metrics | partial | webhook already maps `invoice.payment_failed`→past_due (webhooks.py); coach tile renders past_due badge; provider `create_customer_portal_session` implemented but NO endpoint/UI (platform.py: "Phase 2"); receipts/metrics missing |
 | Admin-managed plan pricing (superadmin) | live-in-prod | adminkit platform-plans CRUD + provision_stripe_price swap — roadmap §15 is stale here |
 | Marketplace — Stripe Connect direct charges (coach = MoR) | built-unverified | e2e-verified TEST mode; prod live-mode unverified; "don't blind-deploy" note stands |
 | Marketplace — iyzico (TR) | missing | declared provider choice only; NOT needed for coach #1 (global-first) |
@@ -51,7 +52,7 @@ Launch-ready = every box checked:
 1. **Verify the money path on live Stripe** — one real platform subscription + one real Connect purchase (then refund both). Converts the two `built-unverified` rows to `live-in-prod`; THE gate to inviting a real coach. Needs the owner's card. *(effort: half a day incl. webhook config)*
 2. **Rotate exposed prod secrets** — `.env.prod` values were exposed in a past session; new keys from each provider dashboard (owner), then redeploy env. *(effort: 1-2 hours)*
 3. **Interactive prod walkthrough** — signup with a real inbox → provision → build a page → create a course, as a coach would. Completes the smoke checklist box. *(effort: 1 hour)*
-4. **MVP failed-payment handling** — past-due grace surfaced to the coach + a Stripe customer-portal link; NOT the full dunning suite. *(effort: 1-2 days)*
+4. **MVP failed-payment handling** — smaller than thought: webhook past_due mapping + past_due badge + provider portal method already exist; remaining work = one portal endpoint + a "payment failed, update your card" banner/CTA. *(effort: 0.5-1 day)*
 
 ### Next
 
@@ -59,8 +60,9 @@ Launch-ready = every box checked:
 - Non-technical onboarding dry run + fixes (the `/courses`-empty-catalog class of bug is what a real coach hits) — recruit one non-technical tester.
 - Announcements coach-UI browser smoke (10 minutes, has been pending since June).
 - Coach payout history in-app (beyond the Connect dashboard link).
-- Mailbox inbound in prod (Email Worker + secret) — depends on custom-domain phases for real value; send-only is fine for launch.
+- Platform mailbox address for PAID coaches (decision 2026-07-03) — coach picks `<x>@contentor.app`; all mail to it lands in the in-app inbox; address doubles as the site's public contact email. Pieces: public-schema address registry (unique local part, reserved list, plan-gated via adminkit flag); inbound webhook resolves registry addresses alongside custom domains; sending_identity paid tier (send-from or Reply-To the chosen address); contact-form block routes into the mailbox instead of the coach's personal email; CF apex catch-all worker (custom addresses take precedence — verify); upsell banner copy splits (free→upgrade plan; paid-no-domain→brand it). Open: address lifecycle on downgrade/cancel (must be revocable; local-part squatting guardrails). Prod still needs MAILBOX_INBOUND_SECRET + worker deploy. *(effort: 2-3 days)*
 - Monitoring check: confirm prometheus/grafana actually run on the home server; add a basic uptime alert.
+- Deploy healthcheck permanent fix — django HAS `start_period: 60s` in `docker-compose.prod.yml` (verified at HEAD and at deployed `e24fff4`), but entrypoint demo-seed exceeds 60s so celery (`depends_on: service_healthy`) never starts → manual start on BOTH 2026-07-03 deploys. Lengthen `start_period` (e.g. 180s) or skip reseed when unchanged. *(effort: 30 min, verify on next deploy)*
 
 ### Later
 
@@ -76,7 +78,12 @@ Launch-ready = every box checked:
 - 2026-07-02: payments philosophy for dev/e2e = real Stripe TEST mode (user choice); bypass remains available via env flip.
 - 2026-07-03: PO advisor scoped to Contentor only; lens = everything ship-first; stage = pre-launch, north star = first paying coach; weekly scheduled review deferred.
 - 2026-07-03 (audit): admin-managed pricing recognized as already built (roadmap §15 stale); iyzico confirmed not launch-blocking.
+- 2026-07-03: mailbox positioning — receiving email is a PLAN feature; custom domain is branding on top. Paid coach picks a platform address `<x>@contentor.app` (coach-chosen local part, platform-wide unique, reserved list); ALL mail to it lands in the in-app inbox; the same address is the tenant site's public contact email, and the site contact form routes into the inbox instead of the coach's personal signup email. Free coaches stay send-only.
 
 ## 5. Audit stamp
+
+Update: **2026-07-03 (post-push correction)** — the "pricing_type WIP uncommitted / do NOT deploy" warning below is CLEARED: that work was committed and pushed as `d50fdc4` (subscription pricing + rich course-form editing; migrations 0014/0006 now tracked; full suites green: backend 634, e2e 21p+3s). Working tree is clean except this doc. Deploy is unblocked; prod remains at `e24fff4`.
+
+Last check: **2026-07-03 (latest, /po next)** — verified: main == origin/main at `2cc2865`; prod `/api/health/` ok (db+redis ok); prod still at `e24fff4` per ledger (one-step creation NOT deployed → box stays open). WORKING-TREE WARNING STILL STANDS: other agent's pricing_type WIP uncommitted (access.py, courses/downloads models+views+tests, 2 UNTRACKED migrations 0014/0006) — do NOT `deploy.sh contentor` until landed or stashed. Corrections this run: (1) healthcheck claim fixed — django HAS `start_period: 60s`, demo-seed just exceeds it; (2) dunning row missing→partial — `invoice.payment_failed`→past_due webhook mapping, past_due coach badge, and provider portal method all exist; only endpoint+CTA UI missing (Now #4 effort cut to 0.5-1 day). Money-path rows unchanged (built-unverified). Earlier audit stamps below.
 
 Last full audit: **2026-07-03** (post-deploy update: main PUSHED `1eb12a6`; prod DEPLOYED + smoked — pages 200, calendar zoom_class fix live, path-style media 200, tenant mailbox tables present, all containers healthy after manual celery start; deploy gotcha: entrypoint demo-seed exceeds healthcheck window) — earlier checks: git (unpushed count, branch list), prod `/api/health/` (ok), iyzico provider stub, quotas.py 402 status, dunning absence, adminkit plan CRUD, e2e/backend suite states, session ledger, memory (deploy dates, mailbox/domain/announcement pending items, secret rotations). Open `verify` items: monitoring profile on home server. (Tenant-migration entrypoint fix confirmed committed: `973d0cf`, `entrypoint.sh` runs `migrate_schemas --tenant`.)
