@@ -25,6 +25,7 @@ Launch-ready = every box checked:
 | Signup → tenant provisioning (magic link, questionnaire, templates, authenticated flow) | live-in-prod | deployed 2026-07-03 |
 | Courses / downloads / media | live-in-prod | path-style presigns smoked in prod 2026-07-03; one-step create flow (course+curriculum, priced download) pushed `2cc2865`, built-not-deployed |
 | Subscription pricing type ("included in subscription", courses+downloads) | built-not-deployed | pushed `d50fdc4`; any active sub unlocks, never sold one-off; +rich-text lessons, local lesson edit, video-picker modal; 4 tests, 2 tenant migrations |
+| Billing plan source-of-truth cleanup | built-not-deployed | pushed `01ed71c`/`e2c4ac2`: PlatformSubscription is now the single source of a tenant's plan; superadmin plan change grants the subscription, not just the mirror — deploy alongside the mailbox batch |
 | Live classes (GetStream), zoom classes, onsite events, calendar | live-in-prod | zoom_class fix verified in prod 2026-07-03 |
 | Announcements (push/feed/email/templates/recurring) | live-in-prod | deployed 2026-06-23; coach-UI browser smoke still pending |
 | Student PWA (installable, offline, web push) | live-in-prod | usage dashboards deployed 2026-07-03 |
@@ -38,7 +39,8 @@ Launch-ready = every box checked:
 | Coach earnings / payouts view | partial | earnings endpoint + Connect dashboard link; no in-app payout history |
 | Website builder (6 pages, blocks, autosave) | live-in-prod | deployed 2026-07-03; coach walkthrough pending |
 | Filters / tags | live-in-prod | deployed 2026-07-03 |
-| Coach mailbox (inbox, compose, inbound via CF Email Worker) | partial (send-only live 2026-07-03) | prod needs MAILBOX_INBOUND_SECRET + Email Worker deploy; inbound requires custom domain |
+| Coach mailbox (inbox, compose, inbound via CF Email Worker) | built-not-deployed | Gmail-style inbox (folders/search/thread) + TipTap rich text + attachments both directions merged+pushed (`a24f1ff`, 2026-07-04); prod still needs deploy + MAILBOX_INBOUND_SECRET + Email Worker redeploy; inbound requires custom domain |
+| Platform inbox address (`<x>@contentor.app` for paid coaches) | built-not-deployed | merged+pushed (`333ce24`, 2026-07-03); CF Email Routing + catch-all→worker wired live per memory, but the Django-side registry/gating is pushed-not-deployed |
 | Custom-domain onboarder (Route53 + annual sub) | partial | Phase 1 backend only, behind bypass fakes; phases 2-4 + prod creds outstanding |
 | Impersonation (superadmin→coach, coach→student) | live-in-prod | coach→student e2e-covered |
 | Superadmin panel (revenue, webhook log, adminkit) | live-in-prod | |
@@ -82,7 +84,9 @@ Launch-ready = every box checked:
 
 ## 5. Audit stamp
 
-Update: **2026-07-03 (post-push correction)** — the "pricing_type WIP uncommitted / do NOT deploy" warning below is CLEARED: that work was committed and pushed as `d50fdc4` (subscription pricing + rich course-form editing; migrations 0014/0006 now tracked; full suites green: backend 634, e2e 21p+3s). Working tree is clean except this doc. Deploy is unblocked; prod remains at `e24fff4`.
+Last check: **2026-07-04 (/po next)** — verified: HEAD = `a24f1ff`, **main == origin/main (clean tree, 0 ahead/0 behind)** — everything is now pushed. **20 commits landed since the last stamp** (`2cc2865..a24f1ff`), all merged to main: subscription pricing (`d50fdc4`), platform inbox address for paid coaches (`333ce24`), two billing source-of-truth fixes (`e2c4ac2`/`01ed71c` — PlatformSubscription is now the single plan authority), and the full Gmail-style inbox upgrade (`a24f1ff` — folders/search/thread, TipTap rich text, attachments both ways). Corrections this run: coach-mailbox row partial→built-not-deployed (inbox upgrade is merged+pushed, not just unmerged as memory said); added platform-inbox-address and billing-source-of-truth rows. `.env.prod` `BILLING_BYPASS_ENABLED=false` confirmed. **Prod deploy is now BEHIND by ~20 commits** and no version endpoint exists to auto-confirm (trusting ledger: prod ≈ `e24fff4`). Money-path gate UNCHANGED (both Stripe rows still `built-unverified` — never run on live keys). The deploy-vs-money ordering is now the live question (see Now #1/#2). NOTE: repo lives at `~/ws/projects-active/home-server/contentor` (the `projects-stopped-progress/Contentor` copy is a dead 2025 fork — ignore it).
+
+Earlier — Update: **2026-07-03 (post-push correction)** — the "pricing_type WIP uncommitted / do NOT deploy" warning below is CLEARED: that work was committed and pushed as `d50fdc4` (subscription pricing + rich course-form editing; migrations 0014/0006 now tracked; full suites green: backend 634, e2e 21p+3s). Working tree is clean except this doc. Deploy is unblocked; prod remains at `e24fff4`.
 
 Last check: **2026-07-03 (latest, /po next)** — verified: main == origin/main at `2cc2865`; prod `/api/health/` ok (db+redis ok); prod still at `e24fff4` per ledger (one-step creation NOT deployed → box stays open). WORKING-TREE WARNING STILL STANDS: other agent's pricing_type WIP uncommitted (access.py, courses/downloads models+views+tests, 2 UNTRACKED migrations 0014/0006) — do NOT `deploy.sh contentor` until landed or stashed. Corrections this run: (1) healthcheck claim fixed — django HAS `start_period: 60s`, demo-seed just exceeds it; (2) dunning row missing→partial — `invoice.payment_failed`→past_due webhook mapping, past_due coach badge, and provider portal method all exist; only endpoint+CTA UI missing (Now #4 effort cut to 0.5-1 day). Money-path rows unchanged (built-unverified). Earlier audit stamps below.
 
