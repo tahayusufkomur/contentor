@@ -122,3 +122,36 @@ def test_compose_api_accepts_html_and_attachments(client, tenant_ctx, settings):
             format="json",
         )
     assert resp.status_code == 201, resp.content
+
+
+def test_list_includes_preview_and_attachment_flag(client, tenant_ctx):
+    conv = Conversation.objects.create(counterparty_email="p@x.com", subject="Hi")
+    msg = Message.objects.create(
+        conversation=conv, direction="inbound",
+        from_email="p@x.com", to_email="c@x.com",
+        text="first line of the body\nsecond line",
+    )
+    MessageAttachment.objects.create(
+        message=msg, filename="a.png", content_type="image/png", size=1, storage_key="k"
+    )
+    resp = client.get("/api/v1/mailbox/conversations/")
+    row = resp.json()[0]
+    assert row["last_message_preview"].startswith("first line")
+    assert row["last_message_has_attachments"] is True
+
+
+def test_thread_messages_include_attachments(client, tenant_ctx):
+    conv = Conversation.objects.create(counterparty_email="p@x.com")
+    msg = Message.objects.create(
+        conversation=conv, direction="inbound",
+        from_email="p@x.com", to_email="c@x.com", text="hi",
+    )
+    MessageAttachment.objects.create(
+        message=msg, filename="a.pdf", content_type="application/pdf",
+        size=9, storage_key="k/a.pdf",
+    )
+    with patch("apps.mailbox.serializers.generate_presigned_download_url", return_value="https://s3/a"):
+        resp = client.get(f"/api/v1/mailbox/conversations/{conv.id}/")
+    atts = resp.json()["messages"][0]["attachments"]
+    assert atts[0]["filename"] == "a.pdf"
+    assert atts[0]["download_url"] == "https://s3/a"

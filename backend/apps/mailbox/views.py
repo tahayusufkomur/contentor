@@ -44,7 +44,7 @@ _LOCAL_PART_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def conversation_list(request):
-    qs = Conversation.objects.all()
+    qs = Conversation.objects.prefetch_related("messages__attachments")
     return Response(ConversationSerializer(qs, many=True).data)
 
 
