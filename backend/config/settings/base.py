@@ -337,3 +337,6 @@ CLOUDFLARE_TUNNEL_HOSTNAME = os.environ.get("CLOUDFLARE_TUNNEL_HOSTNAME", "")
 # --- Coach mailbox inbound webhook ---
 MAILBOX_INBOUND_SECRET = os.environ.get("MAILBOX_INBOUND_SECRET", "")
 CLOUDFLARE_EMAIL_WORKER_NAME = os.environ.get("CLOUDFLARE_EMAIL_WORKER_NAME", "")
+# Domain for paid coaches' chosen `<x>@<domain>` mailbox addresses (e.g.
+# "contentor.app"). Empty disables the platform-address tier entirely.
+PLATFORM_MAIL_DOMAIN = os.environ.get("PLATFORM_MAIL_DOMAIN", "")

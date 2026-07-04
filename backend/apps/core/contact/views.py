@@ -73,6 +73,27 @@ def contact_submit(request):
     if getattr(tenant, "is_demo", False):
         return Response({"detail": "sent"})
 
+    # Contact messages land in the coach's in-app inbox (decision 2026-07-03:
+    # the mailbox is the site's contact channel). The personal-email path below
+    # remains only as a fallback so leads never drop if storage fails.
+    try:
+        from apps.mailbox.identity import sending_identity
+        from apps.mailbox.inbound import receive_inbound
+
+        inbox_address, _ = sending_identity(tenant)
+        text = data["message"]
+        if data.get("phone"):
+            text += f"\n\nPhone: {data['phone']}"
+        receive_inbound(
+            from_email=data["email"],
+            to_email=inbox_address,
+            subject=data.get("subject") or f"New message from {data['name']}",
+            text=text,
+        )
+        return Response({"detail": "sent"})
+    except Exception:
+        logger.exception("Contact form mailbox storage failed for tenant %s", tenant.slug)
+
     recipient = _coach_recipient()
     if recipient:
         name = escape(data["name"])

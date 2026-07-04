@@ -2,7 +2,7 @@ import json
 import re
 
 from django.conf import settings as django_settings
-from django.db import connection
+from django.db import IntegrityError, connection
 from django.views.decorators.csrf import csrf_exempt
 from django_tenants.utils import tenant_context
 from rest_framework import status
@@ -12,10 +12,14 @@ from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
 from apps.domains.cloudflare import get_cloudflare
-from apps.domains.models import CustomDomain
+from apps.domains.models import (
+    RESERVED_MAILBOX_LOCAL_PARTS,
+    CustomDomain,
+    PlatformMailboxAddress,
+)
 
 from . import services
-from .identity import sending_identity
+from .identity import resolve_platform_recipient, sending_identity
 from .inbound import receive_inbound
 from .models import Conversation
 from .serializers import (
@@ -117,11 +121,14 @@ def inbound(request):
     cd = CustomDomain.objects.filter(
         domain=domain, mailbox_enabled=True, provisioning_status="live"
     ).first()
-    if not cd:
+    # Second tier when no live custom domain matches: a paid coach's chosen
+    # `<x>@PLATFORM_MAIL_DOMAIN` address.
+    recipient_tenant = cd.tenant if cd else resolve_platform_recipient(to_email)
+    if recipient_tenant is None:
         # Unknown / disabled / not-live recipient — drop without leaking.
         return Response(status=status.HTTP_200_OK)
 
-    with tenant_context(cd.tenant):
+    with tenant_context(recipient_tenant):
         receive_inbound(
             from_email=(payload.get("from") or "").strip(),
             to_email=to_email,
@@ -146,6 +153,7 @@ def _live_domain(tenant):
 def _settings_payload(tenant):
     from_email, can_receive = sending_identity(tenant)
     cd = _live_domain(tenant)
+    pa = PlatformMailboxAddress.objects.filter(tenant=tenant).first()
     return {
         "has_custom_domain": cd is not None,
         "domain": cd.domain if cd else "",
@@ -153,7 +161,42 @@ def _settings_payload(tenant):
         "enabled": cd.mailbox_enabled if cd else False,
         "can_receive": can_receive,
         "from_email": from_email,
+        "platform_domain": django_settings.PLATFORM_MAIL_DOMAIN,
+        "platform_local_part": pa.local_part if pa else "",
+        "platform_eligible": bool(django_settings.PLATFORM_MAIL_DOMAIN)
+        and tenant.has_paid_platform_plan,
     }
+
+
+def _claim_platform_address(tenant, raw_local_part):
+    """Claim or change the tenant's `<x>@PLATFORM_MAIL_DOMAIN` address.
+
+    Returns an error Response, or None on success. Changing releases the old
+    local part (it becomes claimable by others — acceptable pre-launch).
+    """
+    if not django_settings.PLATFORM_MAIL_DOMAIN:
+        return Response({"detail": "feature_unavailable"}, status=status.HTTP_400_BAD_REQUEST)
+    if not tenant.has_paid_platform_plan:
+        return Response({"detail": "upgrade_required"}, status=status.HTTP_400_BAD_REQUEST)
+    local_part = (raw_local_part or "").strip().lower()
+    if not _LOCAL_PART_RE.match(local_part):
+        return Response({"detail": "invalid_local_part"}, status=status.HTTP_400_BAD_REQUEST)
+    if local_part in RESERVED_MAILBOX_LOCAL_PARTS:
+        return Response({"detail": "reserved_local_part"}, status=status.HTTP_400_BAD_REQUEST)
+    if (
+        PlatformMailboxAddress.objects.filter(local_part=local_part)
+        .exclude(tenant=tenant)
+        .exists()
+    ):
+        return Response({"detail": "taken"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        PlatformMailboxAddress.objects.update_or_create(
+            tenant=tenant, defaults={"local_part": local_part}
+        )
+    except IntegrityError:
+        # Concurrent claim won the unique race.
+        return Response({"detail": "taken"}, status=status.HTTP_400_BAD_REQUEST)
+    return None
 
 
 @api_view(["GET", "PUT"])
@@ -161,6 +204,12 @@ def _settings_payload(tenant):
 def mailbox_settings(request):
     tenant = connection.tenant
     if request.method == "GET":
+        return Response(_settings_payload(tenant))
+
+    if "platform_local_part" in request.data:
+        error = _claim_platform_address(tenant, request.data.get("platform_local_part"))
+        if error is not None:
+            return error
         return Response(_settings_payload(tenant))
 
     local_part = (request.data.get("local_part") or "").strip()

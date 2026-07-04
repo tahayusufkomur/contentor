@@ -13,6 +13,8 @@ ignore = ["S101"]
 # Courses and downloads tests use hard-coded passwords for fixtures - not a security issue.
 "**/apps/courses/tests/test_views.py" = ["S106"]
 "**/apps/downloads/tests/test_views.py" = ["S106"]
+# Mailbox tests use hard-coded signing secrets for fixtures - not a security issue.
+"**/apps/mailbox/tests/*.py" = ["S105", "S106"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

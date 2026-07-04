@@ -117,6 +117,17 @@ class Tenant(TenantMixin):
             return False
         return sub.status in ("active", "past_due")
 
+    @property
+    def has_paid_platform_plan(self) -> bool:
+        """Active/past-due subscription on a non-Free plan.
+
+        Gates paid-tier perks (e.g. the platform mailbox address). past_due
+        counts as paid so a failed card doesn't instantly cut off inbound mail.
+        """
+        if not self.is_subscription_active:
+            return False
+        return not self.platform_subscription.plan.is_free
+
 
 class Domain(DomainMixin):
     ssl_status = models.CharField(
@@ -231,9 +242,11 @@ class PlatformSubscription(models.Model):
 
     PROVIDER_STRIPE = "stripe"
     PROVIDER_BYPASS = "bypass"
+    PROVIDER_MANUAL = "manual"  # superadmin-granted comp; no Stripe billing behind it
     PROVIDER_CHOICES = [
         (PROVIDER_STRIPE, "Stripe"),
         (PROVIDER_BYPASS, "Bypass"),
+        (PROVIDER_MANUAL, "Manual"),
     ]
 
     tenant = models.OneToOneField(

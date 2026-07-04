@@ -46,6 +46,41 @@ class CustomDomain(models.Model):
         return self.domain
 
 
+# Local parts nobody can claim on the platform mail domain: RFC-required
+# role addresses, platform-operated addresses, and abuse-prone names.
+RESERVED_MAILBOX_LOCAL_PARTS = frozenset({
+    "abuse", "admin", "administrator", "billing", "contact", "contentor",
+    "hello", "help", "hostmaster", "info", "legal", "mail", "mailer-daemon",
+    "marketing", "news", "newsletter", "noc", "noreply", "no-reply",
+    "notifications", "postmaster", "privacy", "root", "sales", "security",
+    "support", "team", "webmaster", "www",
+})
+
+
+class PlatformMailboxAddress(models.Model):
+    """A paid coach's chosen address on the platform mail domain.
+
+    Public-schema registry: `local_part` is a platform-wide namespace on
+    `<local_part>@PLATFORM_MAIL_DOMAIN`. The row is kept when the coach's
+    subscription lapses — the address stops resolving (identity/webhook check
+    the plan) but stays reserved so it can't be sniped by another tenant;
+    freeing it is a superadmin action.
+    """
+
+    tenant = models.OneToOneField(
+        "core.Tenant", on_delete=models.CASCADE, related_name="platform_mailbox_address"
+    )
+    local_part = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "domains"
+
+    def __str__(self) -> str:
+        return f"{self.local_part} ({self.tenant.slug})"
+
+
 class DomainSubscription(models.Model):
     tenant = models.ForeignKey("core.Tenant", on_delete=models.CASCADE, related_name="domain_subscriptions")
     custom_domain = models.OneToOneField(CustomDomain, on_delete=models.CASCADE, related_name="subscription")

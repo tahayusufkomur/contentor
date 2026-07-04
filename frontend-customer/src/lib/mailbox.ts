@@ -36,6 +36,10 @@ export interface MailboxSettings {
   enabled: boolean;
   can_receive: boolean;
   from_email: string;
+  // Platform mailbox tier (paid coaches pick `<x>@platform_domain`).
+  platform_domain: string;
+  platform_local_part: string;
+  platform_eligible: boolean;
 }
 
 export function listConversations() {
@@ -79,5 +83,12 @@ export function saveSettings(body: { local_part: string; enabled: boolean }) {
   return clientFetch<MailboxSettings>(`${BASE}/settings/`, {
     method: "PUT",
     body: JSON.stringify(body),
+  });
+}
+
+export function savePlatformAddress(localPart: string) {
+  return clientFetch<MailboxSettings>(`${BASE}/settings/`, {
+    method: "PUT",
+    body: JSON.stringify({ platform_local_part: localPart }),
   });
 }
