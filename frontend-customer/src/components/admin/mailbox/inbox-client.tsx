@@ -282,7 +282,7 @@ export default function InboxClient() {
     if (!thread || !replyText.trim()) return;
     setReplySending(true);
     try {
-      await reply(thread.id, replyText.trim());
+      await reply(thread.id, { text: replyText.trim() });
       setReplyText("");
       const detail = await getConversation(thread.id);
       setThread(detail);
