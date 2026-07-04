@@ -84,6 +84,10 @@ export default function InboxClient() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const replyEditorRef = useRef<MessageEditorHandle>(null);
+  // Mirror live state the polling interval reads, so the interval callback
+  // stays stable (created once) yet always sees the current thread + send state.
+  const liveRef = useRef({ threadId: null as number | null, replySending: false });
+  liveRef.current = { threadId: thread?.id ?? null, replySending };
 
   const loadList = async () => {
     try {
@@ -102,6 +106,32 @@ export default function InboxClient() {
       })
       .catch(() => toast.error("Could not load inbox."))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Live updates: silently poll the list, and the open thread, every 15s.
+  // Skips while a reply is sending, and ignores transient errors (no toast).
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      const { threadId, replySending: sending } = liveRef.current;
+      if (sending) return;
+      try {
+        const list = await listConversations();
+        if (!cancelled) setConversations(list);
+        if (threadId !== null && !liveRef.current.replySending) {
+          const detail = await getConversation(threadId);
+          // Only apply if the user hasn't switched threads meanwhile.
+          if (!cancelled && liveRef.current.threadId === threadId) setThread(detail);
+        }
+      } catch {
+        // transient — try again next tick
+      }
+    };
+    const timer = setInterval(tick, 15_000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   const visible = useMemo(() => {

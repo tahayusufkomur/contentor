@@ -79,7 +79,7 @@ export default function ConversationList({
 
   return (
     <ul className="flex-1 divide-y divide-border overflow-y-auto">
-      {items.map((c) => {
+      {items.map((c, i) => {
         const unread = c.unread_count > 0;
         return (
           <li key={c.id}>
@@ -88,7 +88,9 @@ export default function ConversationList({
               tabIndex={0}
               onClick={() => onOpen(c.id)}
               onKeyDown={(e) => e.key === "Enter" && onOpen(c.id)}
-              className="group flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/40"
+              className={`group flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/40 ${
+                i % 2 === 1 ? "bg-muted/30" : ""
+              }`}
             >
               {unread && <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />}
               <div className="min-w-0 flex-1">
