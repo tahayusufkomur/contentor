@@ -41,7 +41,8 @@ function HeaderAction({
 
 function MessageCard({ msg, expandedDefault }: { msg: MailboxMessage; expandedDefault: boolean }) {
   const [expanded, setExpanded] = useState(expandedDefault);
-  const sender = msg.direction === "outbound" ? "You" : msg.from_email;
+  const isOutbound = msg.direction === "outbound";
+  const sender = isOutbound ? "You" : msg.from_email;
   const when = new Date(msg.created_at).toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -55,7 +56,9 @@ function MessageCard({ msg, expandedDefault }: { msg: MailboxMessage; expandedDe
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="w-full rounded-lg border bg-muted/30 px-4 py-2 text-left transition-colors hover:bg-accent/40"
+        className={`w-full rounded-lg border border-l-4 px-4 py-2 text-left transition-colors hover:bg-accent/40 ${
+          isOutbound ? "border-l-primary/60 bg-primary/5" : "border-l-muted-foreground/30 bg-muted/30"
+        }`}
       >
         <div className="flex items-baseline gap-2 text-xs">
           <span className="font-medium text-foreground">{sender}</span>
@@ -67,11 +70,17 @@ function MessageCard({ msg, expandedDefault }: { msg: MailboxMessage; expandedDe
   }
 
   return (
-    <div className="rounded-lg border px-4 py-3">
+    <div
+      className={`rounded-lg border border-l-4 px-4 py-3 ${
+        isOutbound
+          ? "border-l-primary/60 bg-primary/5"
+          : "border-l-muted-foreground/30 bg-muted/40"
+      }`}
+    >
       <div className="mb-2 flex items-baseline justify-between gap-2 text-xs">
         <span className="font-medium">
           {sender}
-          {msg.direction === "inbound" && (
+          {!isOutbound && (
             <span className="ml-1 font-normal text-muted-foreground">&lt;{msg.from_email}&gt;</span>
           )}
         </span>
