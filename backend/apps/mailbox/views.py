@@ -6,7 +6,13 @@ from django.db import IntegrityError, connection
 from django.views.decorators.csrf import csrf_exempt
 from django_tenants.utils import tenant_context
 from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    parser_classes,
+    permission_classes,
+)
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -18,14 +24,16 @@ from apps.domains.models import (
     PlatformMailboxAddress,
 )
 
+from . import attachments as attachments_mod
 from . import services
 from .identity import resolve_platform_recipient, sending_identity
 from .inbound import receive_inbound
-from .models import Conversation
+from .models import Conversation, MessageAttachment
 from .serializers import (
     ComposeSerializer,
     ConversationDetailSerializer,
     ConversationSerializer,
+    MessageAttachmentSerializer,
     ReplySerializer,
 )
 from .signing import verify_inbound_signature
@@ -36,7 +44,7 @@ _LOCAL_PART_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def conversation_list(request):
-    qs = Conversation.objects.all()
+    qs = Conversation.objects.prefetch_related("messages__attachments")
     return Response(ConversationSerializer(qs, many=True).data)
 
 
@@ -77,7 +85,16 @@ def compose(request):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
     conv = services.get_or_create_conversation(counterparty_email=data["to"], subject=data["subject"])
-    msg = services.send_message(conversation=conv, text=data["text"], subject=data["subject"])
+    try:
+        msg = services.send_message(
+            conversation=conv,
+            text=data["text"],
+            html=data.get("html", ""),
+            subject=data["subject"],
+            attachment_ids=data.get("attachment_ids") or [],
+        )
+    except ValueError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(
         {"conversation_id": conv.id, "message_id": msg.id},
         status=status.HTTP_201_CREATED,
@@ -93,8 +110,34 @@ def reply(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
     serializer = ReplySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    msg = services.send_message(conversation=conv, text=serializer.validated_data["text"])
+    data = serializer.validated_data
+    try:
+        msg = services.send_message(
+            conversation=conv,
+            text=data["text"],
+            html=data.get("html", ""),
+            attachment_ids=data.get("attachment_ids") or [],
+        )
+    except ValueError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return Response({"message_id": msg.id}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@parser_classes([MultiPartParser])
+def upload_attachment(request):
+    f = request.FILES.get("file")
+    if f is None:
+        return Response({"detail": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+    err = attachments_mod.validate_attachment(f.name, f.content_type or "", f.size)
+    if err:
+        return Response({"detail": err}, status=status.HTTP_400_BAD_REQUEST)
+    key = attachments_mod.store_attachment(f.read(), f.name, f.content_type or "")
+    att = MessageAttachment.objects.create(
+        filename=f.name, content_type=f.content_type or "", size=f.size, storage_key=key
+    )
+    return Response(MessageAttachmentSerializer(att).data, status=status.HTTP_201_CREATED)
 
 
 @csrf_exempt
@@ -138,6 +181,7 @@ def inbound(request):
             message_id=payload.get("message_id") or "",
             in_reply_to=payload.get("in_reply_to") or "",
             references=payload.get("references") or "",
+            attachments=payload.get("attachments") or [],
         )
     return Response(status=status.HTTP_200_OK)
 

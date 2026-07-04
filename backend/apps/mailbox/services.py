@@ -1,3 +1,4 @@
+import base64
 import uuid
 
 from django.db import IntegrityError, connection, transaction
@@ -6,9 +7,11 @@ from django.utils.html import escape
 
 from apps.accounts.models import User
 from apps.core.email import send_email
+from apps.tenant_config.defaults import sanitize_rich_text
 
+from .attachments import MAX_FILES_PER_MESSAGE, read_attachment
 from .identity import sending_identity
-from .models import Conversation, Message
+from .models import Conversation, Message, MessageAttachment
 
 
 def new_message_id(domain_hint: str = "contentor.app") -> str:
@@ -34,7 +37,10 @@ def get_or_create_conversation(*, counterparty_email: str, subject: str = "") ->
         return Conversation.objects.get(counterparty_email=email, is_archived=False)
 
 
-def send_message(*, conversation: Conversation, text: str, html: str = "", subject: str = "") -> Message:
+def send_message(
+    *, conversation: Conversation, text: str, html: str = "", subject: str = "",
+    attachment_ids: list[int] | None = None,
+) -> Message:
     from_email, _can_receive = sending_identity(connection.tenant)
     sender_domain = from_email.rsplit("@", 1)[-1]
 
@@ -52,7 +58,19 @@ def send_message(*, conversation: Conversation, text: str, html: str = "", subje
         headers["References"] = references
 
     subject = subject or conversation.subject or "(no subject)"
-    body_html = html or f"<p>{escape(text)}</p>"
+    clean_html = sanitize_rich_text(html) if html else ""
+    body_html = clean_html or f"<p>{escape(text)}</p>"
+
+    ids = list(attachment_ids or [])
+    if len(ids) > MAX_FILES_PER_MESSAGE:
+        raise ValueError(f"At most {MAX_FILES_PER_MESSAGE} attachments per message.")
+    atts = list(MessageAttachment.objects.filter(id__in=ids, message__isnull=True))
+    if len(atts) != len(ids):
+        raise ValueError("Unknown or already-sent attachment.")
+    resend_attachments = [
+        {"filename": a.filename, "content": base64.b64encode(read_attachment(a.storage_key)).decode()}
+        for a in atts
+    ]
 
     ok = send_email(
         conversation.counterparty_email,
@@ -60,6 +78,7 @@ def send_message(*, conversation: Conversation, text: str, html: str = "", subje
         body_html,
         from_email=from_email,
         headers=headers,
+        attachments=resend_attachments or None,
     )
     if not ok:
         raise RuntimeError("mailbox send failed")
@@ -76,6 +95,8 @@ def send_message(*, conversation: Conversation, text: str, html: str = "", subje
         references=references,
         is_read=True,
     )
+    if atts:
+        MessageAttachment.objects.filter(id__in=[a.id for a in atts]).update(message=msg)
     conversation.last_message_at = timezone.now()
     if not conversation.subject:
         conversation.subject = subject

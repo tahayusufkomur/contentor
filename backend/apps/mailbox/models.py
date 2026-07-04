@@ -65,3 +65,27 @@ class Message(models.Model):
 
     def __str__(self) -> str:
         return f"Message<{self.id}:{self.direction}>"
+
+
+class MessageAttachment(models.Model):
+    # message stays NULL between composer upload and send; the send links it.
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="attachments",
+    )
+    filename = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=100)
+    size = models.BigIntegerField(default=0)
+    storage_key = models.CharField(max_length=500, blank=True, default="")
+    omitted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "mailbox"
+        ordering = ["id"]
+
+    def __str__(self) -> str:
+        return f"MessageAttachment<{self.id}:{self.filename}>"
