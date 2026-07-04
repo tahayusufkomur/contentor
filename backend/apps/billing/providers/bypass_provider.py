@@ -84,10 +84,7 @@ class BypassProvider(PaymentProvider):
             },
         )
         del sub  # explicitly unused; reserved for future logging
-
-        if tenant.plan_id != plan.pk:
-            tenant.plan = plan
-            tenant.save(update_fields=["plan"])
+        # Tenant.plan is mirrored by the PlatformSubscription post_save signal.
 
         return CheckoutSession(
             url=success_url,

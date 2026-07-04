@@ -120,15 +120,19 @@ class TenantAdmin(ModelAdmin):
         return super().get_queryset(request).exclude(schema_name="public")
 
     def perform_update(self, request, serializer):
-        # The `plan` field is only a denormalized mirror. Access/status is driven
-        # by PlatformSubscription (coach tile, quotas, mailbox eligibility), so a
-        # plan change here must also grant/cancel the subscription — the same
-        # end-state a Stripe checkout or the bypass provider produces. Otherwise
-        # the superadmin sees "Starter" while the tenant still reads "free".
-        old_plan_id = serializer.instance.plan_id
-        tenant = serializer.save()
-        if tenant.plan_id != old_plan_id:
-            self._sync_platform_subscription(tenant)
+        # The `plan` field is only a denormalized mirror; the source of truth is
+        # PlatformSubscription (a signal mirrors it back onto Tenant.plan). So a
+        # plan change here grants/cancels the subscription — the same end-state a
+        # Stripe checkout or the bypass provider produces. Wrapped in a
+        # transaction so a rejected grant (e.g. live Stripe sub) rolls the plan
+        # write back instead of leaving a half-state (requests are not atomic).
+        from django.db import transaction
+
+        with transaction.atomic():
+            old_plan_id = serializer.instance.plan_id
+            tenant = serializer.save()
+            if tenant.plan_id != old_plan_id:
+                self._sync_platform_subscription(tenant)
         return tenant
 
     @staticmethod

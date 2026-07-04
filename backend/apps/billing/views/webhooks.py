@@ -171,10 +171,8 @@ def _upsert_subscription_from_event(*, tenant, user, plan, session_obj, subscrip
         },
     )
 
-    # Mirror plan on Tenant so the rest of the platform's plan-based code paths
-    # (quota gates, fee percentage) see the upgrade.
-    if tenant.plan_id != plan.pk:
-        Tenant.objects.filter(pk=tenant.pk).update(plan=plan)
+    # Tenant.plan is mirrored automatically by the PlatformSubscription
+    # post_save signal (apps.core.signals) — no manual mirror write needed.
 
     # Cache the Stripe customer on the user if not present.
     if provider_cust_id and not user.payment_customer_id:
@@ -563,7 +561,7 @@ def _handle_subscription_event(event):
                 "cancel_at_period_end": cancel_at_period_end,
             },
         )
-        Tenant.objects.filter(pk=tenant.pk).update(plan=plan)
+        # Tenant.plan mirrored by the PlatformSubscription post_save signal.
         return
 
     sub.status = mapped_status

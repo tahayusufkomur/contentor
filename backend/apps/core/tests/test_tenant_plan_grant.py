@@ -113,6 +113,9 @@ def test_changing_plan_on_active_stripe_sub_is_blocked(superuser, owner, paid_pl
     sub = PlatformSubscription.objects.get(tenant=tenant)
     assert sub.plan_id == paid_plan.pk  # unchanged
     assert sub.provider == "stripe"
+    # The rejected grant must roll back the mirror too (requests aren't atomic).
+    tenant.refresh_from_db()
+    assert tenant.plan_id == paid_plan.pk
 
 
 def test_granting_without_owner_account_errors(superuser, paid_plan):

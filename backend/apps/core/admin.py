@@ -26,6 +26,11 @@ class RegionScopedAdminMixin:
 class TenantAdmin(RegionScopedAdminMixin, TenantAdminMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "region", "billing_currency", "provisioning_status", "is_active", "created_at")
     list_filter = ("region", "provisioning_status", "is_active")
+    # `plan` is a mirror of the PlatformSubscription (maintained by a signal).
+    # Editing it here would set the mirror without granting a subscription and
+    # leave the tenant in a contradictory half-state — grant plans by managing
+    # the subscription (superadmin panel / Stripe), not by editing this field.
+    readonly_fields = ("plan",)
 
 
 @admin.register(Domain)
