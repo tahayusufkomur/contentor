@@ -110,7 +110,10 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 60s
+      # 180s: the entrypoint's demo reseed can exceed 60s, which left django
+      # "starting" past the window — celery (service_healthy) then never
+      # started and needed a manual kick on both 2026-07-03 deploys.
+      start_period: 180s
 
   celery-worker:
     build:
