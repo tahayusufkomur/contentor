@@ -63,6 +63,6 @@ class TenantRateLimitMiddleware:
             request_count = results[2]
             if request_count > rate:
                 return JsonResponse({"detail": "Rate limit exceeded"}, status=429, headers={"Retry-After": "60"})
-        except Exception:
+        except Exception:  # noqa: S110
             pass
         return self.get_response(request)

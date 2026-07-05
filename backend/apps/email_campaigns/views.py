@@ -187,12 +187,12 @@ def send_campaign(request):
     month_start = timezone.now().date().replace(day=1)
     usage, _ = TenantUsage.objects.get_or_create(tenant=tenant, month=month_start)
 
-    if tenant.plan and tenant.plan.max_campaign_emails:
-        if usage.emails_sent + recipient_count > tenant.plan.max_campaign_emails:
-            return Response(
-                {"detail": "Email quota exceeded for this month."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+    quota = tenant.plan and tenant.plan.max_campaign_emails
+    if quota and usage.emails_sent + recipient_count > quota:
+        return Response(
+            {"detail": "Email quota exceeded for this month."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     existing = EmailCampaign.objects.filter(
         sender=request.user,

@@ -560,7 +560,7 @@ SUBSCRIPTION_PLANS = [
 BUNDLES = [
     {
         "name": "Complete Pilates Collection",
-        "description": "All three courses at a discounted price. Build a strong foundation and sculpt your entire body.",
+        "description": "All three courses at a discounted price. Build a strong foundation and sculpt your entire body.",  # noqa: E501
         "price": "79.00",
         "currency": "TRY",
         # Indices into COURSES

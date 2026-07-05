@@ -63,7 +63,7 @@ class AdminKitViewSet(viewsets.ModelViewSet):
                 try:
                     if admin.model._meta.get_field(name).many_to_many:
                         needs_distinct = True
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
         if needs_distinct:
             queryset = queryset.distinct()

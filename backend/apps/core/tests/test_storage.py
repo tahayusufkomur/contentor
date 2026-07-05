@@ -51,7 +51,6 @@ class MultipartPresignExternalEndpointTests(SimpleTestCase):
         """Part presigned URLs must start with AWS_ENDPOINT_EXTERNAL when set."""
         from apps.core.uploads.multipart import initiate
 
-        internal_url = self._make_presign_url("http://minio:9000")
         external_url = self._make_presign_url("http://localhost:9000")
 
         internal_client = MagicMock()
@@ -135,6 +134,6 @@ class MultipartPresignExternalEndpointTests(SimpleTestCase):
         assert response.status_code == 200, response.data
         part_urls = response.data["part_urls"]
         assert len(part_urls) == 1, part_urls
-        assert part_urls[0].startswith("http://minio:9000/"), (
-            f"Part URL must fall back to internal endpoint; got: {part_urls[0]}"
-        )
+        assert part_urls[0].startswith(
+            "http://minio:9000/"
+        ), f"Part URL must fall back to internal endpoint; got: {part_urls[0]}"

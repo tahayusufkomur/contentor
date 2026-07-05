@@ -10,11 +10,10 @@ ignore = ["S101"]
 [tool.ruff.lint.per-file-ignores]
 # Demo seeding uses random for decorative variety, not cryptography.
 "**/management/commands/seed_demo_tenant.py" = ["S311"]
-# Courses and downloads tests use hard-coded passwords for fixtures - not a security issue.
-"**/apps/courses/tests/test_views.py" = ["S106"]
-"**/apps/downloads/tests/test_views.py" = ["S106"]
-# Mailbox tests use hard-coded signing secrets for fixtures - not a security issue.
-"**/apps/mailbox/tests/*.py" = ["S105", "S106"]
+# All test files use hard-coded passwords/tokens for fixtures - not a security issue.
+"**/tests/*.py" = ["S105", "S106"]
+# Migrations are auto-generated; long help_text strings are acceptable.
+"**/migrations/*.py" = ["E501", "N806"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

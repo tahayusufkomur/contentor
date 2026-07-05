@@ -62,7 +62,7 @@ def magic_link_request(request):
         config = TenantConfig.objects.first()
         if config:
             brand_name = config.brand_name
-    except Exception:
+    except Exception:  # noqa: S110
         pass
 
     from apps.accounts import login_code
@@ -164,7 +164,7 @@ def _tenant_default_locale(tenant) -> str:
         cfg = TenantConfig.objects.first()
         if cfg:
             return cfg.default_locale
-    except Exception:
+    except Exception:  # noqa: S110
         pass
     return "en"
 
@@ -400,7 +400,7 @@ def student_delete(request, pk):
 
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"  # noqa: S105
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 
@@ -477,7 +477,7 @@ def google_callback(request):
         try:
             state_data = _verify_oauth_state(state)
             origin = state_data.get("origin", "")
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
     if error:

@@ -51,7 +51,7 @@ def _get_fee_pct() -> Decimal:
         tenant = connection.tenant
         if tenant and tenant.plan and tenant.plan.transaction_fee_pct is not None:
             return Decimal(str(tenant.plan.transaction_fee_pct))
-    except Exception:
+    except Exception:  # noqa: S110
         pass
     return Decimal("10")
 
@@ -83,7 +83,10 @@ def payment_initialize(request):
         except Exception:
             return Response(
                 {
-                    "detail": f"Item not found: content_type={item_data['content_type']}, object_id={item_data['object_id']}."
+                    "detail": (
+                        f"Item not found: content_type={item_data['content_type']},"
+                        f" object_id={item_data['object_id']}."
+                    )
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )

@@ -13,7 +13,6 @@ class TenantRouter(TenantSyncRouter):
         from django.db import connections
 
         connection = connections[db]
-        if connection.schema_name == get_public_schema_name():
-            if not self.app_in_list(app_label, settings.SHARED_APPS):
-                return False
+        if connection.schema_name == get_public_schema_name() and not self.app_in_list(app_label, settings.SHARED_APPS):
+            return False
         return super().allow_migrate(db, app_label, model_name=model_name, **hints)

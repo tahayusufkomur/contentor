@@ -15,9 +15,11 @@ is therefore a deliberate, manual action, never a side effect of editing.
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from decimal import Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 from django.conf import settings
 

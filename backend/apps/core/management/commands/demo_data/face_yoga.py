@@ -525,7 +525,7 @@ SUBSCRIPTION_PLANS = [
 BUNDLES = [
     {
         "name": "Complete Face Yoga Collection",
-        "description": "All three courses at a discounted price. Master the basics, fight aging, and sculpt your dream face.",
+        "description": "All three courses at a discounted price. Master the basics, fight aging, and sculpt your dream face.",  # noqa: E501
         "price": "79.00",
         "currency": "TRY",
         # Indices into COURSES

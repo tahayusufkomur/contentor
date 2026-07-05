@@ -12,7 +12,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 def test_usage_event_dedupes_per_day(tenant_ctx):
     user = User.objects.create_user(email="s@u.com", name="S", password="x", role="student")
-    kwargs = dict(user=user, mode="pwa", platform="ios", day=date(2026, 6, 20))
+    kwargs = {"user": user, "mode": "pwa", "platform": "ios", "day": date(2026, 6, 20)}
     UsageEvent.objects.create(**kwargs)
     with pytest.raises(IntegrityError), transaction.atomic():
         UsageEvent.objects.create(**kwargs)

@@ -118,13 +118,13 @@ class TestLiveClassListCreate:
     def test_unauthenticated_sees_scheduled_live_and_ended(self, draft_live_class, scheduled_live_class, owner):
         """Unauthenticated users see scheduled, live, and ended classes but not drafts."""
         # Also create a live and ended class
-        live_cls = LiveClass.objects.create(
+        LiveClass.objects.create(
             title="Live Now",
             instructor=owner,
             status="live",
             pricing_type="free",
         )
-        ended_cls = LiveClass.objects.create(
+        LiveClass.objects.create(
             title="Ended Class",
             instructor=owner,
             status="ended",
@@ -142,7 +142,7 @@ class TestLiveClassListCreate:
 
     def test_student_sees_scheduled_live_ended(self, draft_live_class, scheduled_live_class, owner, student):
         """Students see scheduled, live, and ended classes (for recordings)."""
-        ended_cls = LiveClass.objects.create(
+        LiveClass.objects.create(
             title="Ended Class",
             instructor=owner,
             status="ended",
@@ -376,7 +376,7 @@ class TestLiveClassToken:
 class TestLiveStreamListCreate:
     def test_unauthenticated_sees_scheduled_and_live_only(self, draft_live_stream, scheduled_live_stream, owner):
         """Unauthenticated users see only scheduled and live streams."""
-        live_stream = LiveStream.objects.create(
+        LiveStream.objects.create(
             title="Live Now Stream",
             instructor=owner,
             status="live",

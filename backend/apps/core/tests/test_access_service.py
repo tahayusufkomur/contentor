@@ -309,7 +309,7 @@ class TestBulkCheckAccess:
         courses = [free_course, paid_course, subscription_course]
         result = service.bulk_check_access(coach, courses)
         assert len(result) == 3
-        for pk, info in result.items():
+        for _pk, info in result.items():
             assert info.has_access is True
             assert info.access_reason == "owner"
 
