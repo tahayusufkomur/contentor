@@ -12,13 +12,18 @@ function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
 }
 
 export function pushSupported(): boolean {
-  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  return (
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  );
 }
 
 export function isStandalone(): boolean {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+    (window.navigator as unknown as { standalone?: boolean }).standalone ===
+      true
   );
 }
 
@@ -27,7 +32,9 @@ export async function subscribeToPush(): Promise<boolean> {
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return false;
 
-  const { public_key } = await clientFetch<{ public_key: string }>("/api/v1/notifications/vapid-key/");
+  const { public_key } = await clientFetch<{ public_key: string }>(
+    "/api/v1/notifications/vapid-key/",
+  );
   if (!public_key) return false;
 
   const reg = await navigator.serviceWorker.ready;

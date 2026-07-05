@@ -1,40 +1,64 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { Search, ShoppingCart, Package, BookOpen, Download, Radio, Tv, Tag, Lock, Loader2, CheckCircle } from 'lucide-react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { EmptyState } from '@/components/shared/empty-state'
-import { PriceBadge } from '@/components/billing/price-badge'
-import { clientFetch } from '@/lib/api-client'
-import { ApiError } from '@/types/api'
-import { addToCart } from '@/lib/cart'
-import type { StoreItem, SubscriptionPlan } from '@/types/billing'
-import { billingIntervalSuffix } from '@/lib/billing-interval'
+import { useState, useEffect, useCallback } from "react";
+import {
+  Search,
+  ShoppingCart,
+  Package,
+  BookOpen,
+  Download,
+  Radio,
+  Tv,
+  Tag,
+  Lock,
+  Loader2,
+  CheckCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PriceBadge } from "@/components/billing/price-badge";
+import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
+import { addToCart } from "@/lib/cart";
+import type { StoreItem, SubscriptionPlan } from "@/types/billing";
+import { billingIntervalSuffix } from "@/lib/billing-interval";
 
-type FilterType = 'all' | 'course' | 'download' | 'live_class' | 'live_stream' | 'bundle'
+type FilterType =
+  | "all"
+  | "course"
+  | "download"
+  | "live_class"
+  | "live_stream"
+  | "bundle";
 
 const TYPE_LABELS: Record<string, string> = {
-  course: 'Course',
-  download: 'Download',
-  live_class: 'Live Class',
-  live_stream: 'Live Stream',
-  bundle: 'Bundle',
-}
+  course: "Course",
+  download: "Download",
+  live_class: "Live Class",
+  live_stream: "Live Stream",
+  bundle: "Bundle",
+};
 
 const FILTER_BUTTONS: { value: FilterType; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'course', label: 'Courses' },
-  { value: 'download', label: 'Downloads' },
-  { value: 'live_class', label: 'Live Classes' },
-  { value: 'live_stream', label: 'Live Streams' },
-  { value: 'bundle', label: 'Bundles' },
-]
+  { value: "all", label: "All" },
+  { value: "course", label: "Courses" },
+  { value: "download", label: "Downloads" },
+  { value: "live_class", label: "Live Classes" },
+  { value: "live_stream", label: "Live Streams" },
+  { value: "bundle", label: "Bundles" },
+];
 
 function StoreCardSkeleton() {
   return (
@@ -49,92 +73,97 @@ function StoreCardSkeleton() {
         <Skeleton className="h-9 w-full" />
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function getContentType(type: string): string {
   const map: Record<string, string> = {
-    course: 'course',
-    download: 'download',
-    live_class: 'live_class',
-    live_stream: 'live_stream',
-    bundle: 'bundle',
-  }
-  return map[type] ?? type
+    course: "course",
+    download: "download",
+    live_class: "live_class",
+    live_stream: "live_stream",
+    bundle: "bundle",
+  };
+  return map[type] ?? type;
 }
 
 export default function StorePage() {
-  const router = useRouter()
-  const [items, setItems] = useState<StoreItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<FilterType>('all')
-  const [search, setSearch] = useState('')
-  const [searchInput, setSearchInput] = useState('')
-  const [addingIds, setAddingIds] = useState<Set<number>>(new Set())
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([])
-  const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(null)
+  const router = useRouter();
+  const [items, setItems] = useState<StoreItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(
+    null,
+  );
 
   const fetchItems = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const params = new URLSearchParams()
-      if (filter !== 'all') params.set('type', filter)
-      if (search) params.set('search', search)
-      const query = params.toString()
-      const url = `/api/v1/billing/store/${query ? `?${query}` : ''}`
-      const data = await clientFetch<StoreItem[]>(url)
-      setItems(data)
+      const params = new URLSearchParams();
+      if (filter !== "all") params.set("type", filter);
+      if (search) params.set("search", search);
+      const query = params.toString();
+      const url = `/api/v1/billing/store/${query ? `?${query}` : ""}`;
+      const data = await clientFetch<StoreItem[]>(url);
+      setItems(data);
     } catch {
-      toast.error('Failed to load store items')
-      setItems([])
+      toast.error("Failed to load store items");
+      setItems([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [filter, search])
+  }, [filter, search]);
 
   useEffect(() => {
-    fetchItems()
-  }, [fetchItems])
+    fetchItems();
+  }, [fetchItems]);
 
   useEffect(() => {
-    clientFetch<SubscriptionPlan[]>('/api/v1/billing/plans/')
+    clientFetch<SubscriptionPlan[]>("/api/v1/billing/plans/")
       .then(setPlans)
-      .catch(() => {})
-  }, [])
+      .catch(() => {});
+  }, []);
 
   const handleSubscribe = async (planId: number) => {
-    setSubscribingPlanId(planId)
+    setSubscribingPlanId(planId);
     try {
-      await clientFetch('/api/v1/billing/subscribe/', {
-        method: 'POST',
+      await clientFetch("/api/v1/billing/subscribe/", {
+        method: "POST",
         body: JSON.stringify({ plan_id: planId }),
-      })
-      toast.success('Subscribed! You now have access to plan content.')
-      router.refresh()
-      fetchItems()
+      });
+      toast.success("Subscribed! You now have access to plan content.");
+      router.refresh();
+      fetchItems();
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        router.push('/login?toast=You+need+to+log+in+to+subscribe&toast_type=info')
-        return
+        router.push(
+          "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+        );
+        return;
       }
       if (err instanceof ApiError && err.status === 400) {
-        toast.info("You're already subscribed to this plan")
-        return
+        toast.info("You're already subscribed to this plan");
+        return;
       }
-      const message = err instanceof Error ? err.message : 'Subscription failed.'
-      toast.error(message)
+      const message =
+        err instanceof Error ? err.message : "Subscription failed.";
+      toast.error(message);
     } finally {
-      setSubscribingPlanId(null)
+      setSubscribingPlanId(null);
     }
-  }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSearch(searchInput)
-  }
+    e.preventDefault();
+    setSearch(searchInput);
+  };
 
   const handleAddToCart = (item: StoreItem) => {
-    setAddingIds((prev) => new Set(prev).add(item.id))
+    setAddingIds((prev) => new Set(prev).add(item.id));
     addToCart({
       content_type: getContentType(item.type),
       object_id: item.id,
@@ -142,19 +171,21 @@ export default function StorePage() {
       price: item.price,
       currency: item.currency,
       type: item.type,
-    })
-    toast.success(`"${item.title}" added to cart`)
+    });
+    toast.success(`"${item.title}" added to cart`);
     setAddingIds((prev) => {
-      const next = new Set(prev)
-      next.delete(item.id)
-      return next
-    })
-  }
+      const next = new Set(prev);
+      next.delete(item.id);
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Store</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Store
+        </h1>
         <p className="mt-1 text-muted-foreground">
           Browse courses, downloads, live classes, and bundles.
         </p>
@@ -178,7 +209,7 @@ export default function StorePage() {
         {FILTER_BUTTONS.map(({ value, label }) => (
           <Button
             key={value}
-            variant={filter === value ? 'default' : 'outline'}
+            variant={filter === value ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter(value)}
           >
@@ -202,7 +233,10 @@ export default function StorePage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-2xl font-bold tabular-nums">
-                    {plan.price} {plan.currency}<span className="text-sm font-normal text-muted-foreground">{billingIntervalSuffix(plan.billing_interval_months)}</span>
+                    {plan.price} {plan.currency}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {billingIntervalSuffix(plan.billing_interval_months)}
+                    </span>
                   </p>
                   <Button
                     className="w-full gap-2"
@@ -249,18 +283,18 @@ export default function StorePage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface StoreItemCardProps {
-  item: StoreItem
-  adding: boolean
-  onAddToCart: (item: StoreItem) => void
+  item: StoreItem;
+  adding: boolean;
+  onAddToCart: (item: StoreItem) => void;
 }
 
 function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
-  const isOwned = item.access_info?.has_access
-  const isBundle = item.type === 'bundle'
+  const isOwned = item.access_info?.has_access;
+  const isBundle = item.type === "bundle";
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5 flex flex-col">
@@ -295,7 +329,9 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold leading-snug line-clamp-2">{item.title}</h3>
+        <h3 className="font-semibold leading-snug line-clamp-2">
+          {item.title}
+        </h3>
 
         {/* Bundle extras */}
         {isBundle && (
@@ -303,7 +339,9 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
             <Package className="h-3.5 w-3.5" />
             <span>{item.item_count} items</span>
             {item.original_price && (
-              <span className="line-through ml-1">{item.original_price} {item.currency}</span>
+              <span className="line-through ml-1">
+                {item.original_price} {item.currency}
+              </span>
             )}
           </div>
         )}
@@ -327,5 +365,5 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

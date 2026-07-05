@@ -1,82 +1,82 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Input } from "@/components/ui/input"
-import { clientFetch } from "@/lib/api-client"
-import { Plus, X } from "lucide-react"
-import type { Tag, TagScope } from "@/types/course"
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { clientFetch } from "@/lib/api-client";
+import { Plus, X } from "lucide-react";
+import type { Tag, TagScope } from "@/types/course";
 
 interface TagInputProps {
   /** Selected tag ids for this entity. */
-  value: number[]
-  onChange: (ids: number[]) => void
+  value: number[];
+  onChange: (ids: number[]) => void;
   /** The content-type pool these tags belong to. */
-  scope: TagScope
+  scope: TagScope;
 }
 
 /** Free-text tag combobox: type to filter the pool's existing tags, Enter (or
  *  the "Create …" row) makes a new one on the fly, selected tags show as
  *  removable pills. Admin-only — used to organise/filter content. */
 export function TagInput({ value, onChange, scope }: TagInputProps) {
-  const [tags, setTags] = useState<Tag[]>([])
-  const [query, setQuery] = useState("")
-  const [open, setOpen] = useState(false)
-  const [busy, setBusy] = useState(false)
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const fetchTags = useCallback(async () => {
     try {
-      const data = await clientFetch<Tag[]>(`/api/v1/tags/?scope=${scope}`)
-      setTags(data)
+      const data = await clientFetch<Tag[]>(`/api/v1/tags/?scope=${scope}`);
+      setTags(data);
     } catch {
       // ignore — the coach can still create the first tag
     }
-  }, [scope])
+  }, [scope]);
 
   useEffect(() => {
-    fetchTags()
-  }, [fetchTags])
+    fetchTags();
+  }, [fetchTags]);
 
-  const byId = useMemo(() => new Map(tags.map((t) => [t.id, t])), [tags])
-  const selected = value.map((id) => byId.get(id)).filter(Boolean) as Tag[]
+  const byId = useMemo(() => new Map(tags.map((t) => [t.id, t])), [tags]);
+  const selected = value.map((id) => byId.get(id)).filter(Boolean) as Tag[];
 
-  const q = query.trim().toLowerCase()
+  const q = query.trim().toLowerCase();
   const suggestions = tags.filter(
     (t) => !value.includes(t.id) && (!q || t.name.toLowerCase().includes(q)),
-  )
-  const exactMatch = tags.find((t) => t.name.toLowerCase() === q)
-  const canCreate = q.length > 0 && !exactMatch
+  );
+  const exactMatch = tags.find((t) => t.name.toLowerCase() === q);
+  const canCreate = q.length > 0 && !exactMatch;
 
   function select(id: number) {
-    if (!value.includes(id)) onChange([...value, id])
-    setQuery("")
-    setOpen(false)
+    if (!value.includes(id)) onChange([...value, id]);
+    setQuery("");
+    setOpen(false);
   }
 
   function remove(id: number) {
-    onChange(value.filter((v) => v !== id))
+    onChange(value.filter((v) => v !== id));
   }
 
   async function createTag(name: string) {
-    const trimmed = name.trim()
-    if (!trimmed || busy) return
-    setBusy(true)
+    const trimmed = name.trim();
+    if (!trimmed || busy) return;
+    setBusy(true);
     try {
       const tag = await clientFetch<Tag>("/api/v1/tags/", {
         method: "POST",
         body: JSON.stringify({ scope, name: trimmed }),
-      })
-      setTags((ts) => (ts.some((t) => t.id === tag.id) ? ts : [...ts, tag]))
-      select(tag.id)
+      });
+      setTags((ts) => (ts.some((t) => t.id === tag.id) ? ts : [...ts, tag]));
+      select(tag.id);
     } catch {
       // ignore
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
   function onEnter() {
-    if (exactMatch) select(exactMatch.id)
-    else if (q) createTag(query)
+    if (exactMatch) select(exactMatch.id);
+    else if (q) createTag(query);
   }
 
   return (
@@ -106,8 +106,8 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
         <Input
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value)
-            setOpen(true)
+            setQuery(e.target.value);
+            setOpen(true);
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
@@ -115,11 +115,11 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
           className="h-8 text-sm"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.preventDefault()
-              onEnter()
+              e.preventDefault();
+              onEnter();
             }
             if (e.key === "Backspace" && !query && selected.length) {
-              remove(selected[selected.length - 1].id)
+              remove(selected[selected.length - 1].id);
             }
           }}
         />
@@ -145,12 +145,13 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
                 disabled={busy}
                 className="flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
               >
-                <Plus className="h-3.5 w-3.5" /> Create &ldquo;{query.trim()}&rdquo;
+                <Plus className="h-3.5 w-3.5" /> Create &ldquo;{query.trim()}
+                &rdquo;
               </button>
             )}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

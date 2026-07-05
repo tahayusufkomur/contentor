@@ -8,5 +8,7 @@ export function TenantThemeStyle({ config }: { config: TenantConfig }) {
     config.custom_css || "",
   );
 
-  return <style dangerouslySetInnerHTML={{ __html: css }} suppressHydrationWarning />;
+  return (
+    <style dangerouslySetInnerHTML={{ __html: css }} suppressHydrationWarning />
+  );
 }

@@ -18,7 +18,12 @@ interface SpeakerViewProps {
 
 const FILMSTRIP_PAGE_SIZE = 6;
 
-export default function SpeakerView({ isHost, isFullscreen = false, fitScreen = true, hideFilmstrip = false }: SpeakerViewProps) {
+export default function SpeakerView({
+  isHost,
+  isFullscreen = false,
+  fitScreen = true,
+  hideFilmstrip = false,
+}: SpeakerViewProps) {
   const call = useCall();
   const { useParticipants, useDominantSpeaker, useLocalParticipant } =
     useCallStateHooks();
@@ -76,7 +81,9 @@ export default function SpeakerView({ isHost, isFullscreen = false, fitScreen = 
   }
 
   return (
-    <div className={`flex h-full ${isFullscreen ? "gap-0" : "gap-1.5 sm:gap-2"} flex-col sm:flex-row`}>
+    <div
+      className={`flex h-full ${isFullscreen ? "gap-0" : "gap-1.5 sm:gap-2"} flex-col sm:flex-row`}
+    >
       {/* Main speaker */}
       <div className="flex-1 min-w-0 min-h-0">
         <VideoTile
@@ -84,8 +91,13 @@ export default function SpeakerView({ isHost, isFullscreen = false, fitScreen = 
           className={`w-full h-full ${isFullscreen ? "!rounded-none !border-0" : ""}`}
           trackType={isShowingScreenShare ? "screenShareTrack" : undefined}
           fitScreen={fitScreen}
-          isLocal={!isShowingScreenShare && speaker.sessionId === localParticipant?.sessionId}
-          isSpeaker={!pinnedId && dominantSpeaker?.sessionId === speaker.sessionId}
+          isLocal={
+            !isShowingScreenShare &&
+            speaker.sessionId === localParticipant?.sessionId
+          }
+          isSpeaker={
+            !pinnedId && dominantSpeaker?.sessionId === speaker.sessionId
+          }
           showPinButton={isHost}
           onPin={handlePin}
         />

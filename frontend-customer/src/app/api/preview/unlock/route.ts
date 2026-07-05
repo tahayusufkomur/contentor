@@ -12,7 +12,10 @@ export async function POST(req: NextRequest) {
 
   const res = await fetch(`${DJANGO_API_URL}/api/v1/preview/unlock/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Tenant-Domain": tenantDomain },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Tenant-Domain": tenantDomain,
+    },
     body: JSON.stringify({ password: body?.password ?? "" }),
   });
 

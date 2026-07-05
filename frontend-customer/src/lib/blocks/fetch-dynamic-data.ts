@@ -29,7 +29,9 @@ export async function fetchDynamicData(blocks: Block[]): Promise<DynamicData> {
             const now = new Date();
             const to = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
             const fmt = (d: Date) => d.toISOString().split("T")[0];
-            out.events = await serverFetch(`/api/v1/calendar/?from=${fmt(now)}&to=${fmt(to)}`);
+            out.events = await serverFetch(
+              `/api/v1/calendar/?from=${fmt(now)}&to=${fmt(to)}`,
+            );
             break;
           }
           case "storeProducts":

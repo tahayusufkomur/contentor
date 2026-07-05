@@ -56,7 +56,9 @@ function MessageCard({
   // (not muted) because in these themes muted sits ~0.03 lightness from the
   // background and reads as no stripe at all.
   const zebra = index % 2 === 1 ? "bg-accent/15" : "bg-background";
-  const accent = isOutbound ? "border-l-primary" : "border-l-muted-foreground/40";
+  const accent = isOutbound
+    ? "border-l-primary"
+    : "border-l-muted-foreground/40";
   const when = new Date(msg.created_at).toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -74,7 +76,9 @@ function MessageCard({
       >
         <div className="flex items-baseline gap-2 text-xs">
           <span className="font-medium text-foreground">{sender}</span>
-          <span className="min-w-0 flex-1 truncate text-muted-foreground">{snippet}</span>
+          <span className="min-w-0 flex-1 truncate text-muted-foreground">
+            {snippet}
+          </span>
           <span className="shrink-0 text-muted-foreground">{when}</span>
         </div>
       </button>
@@ -82,12 +86,16 @@ function MessageCard({
   }
 
   return (
-    <div className={`rounded-lg border border-l-4 px-4 py-3 ${accent} ${zebra}`}>
+    <div
+      className={`rounded-lg border border-l-4 px-4 py-3 ${accent} ${zebra}`}
+    >
       <div className="mb-2 flex items-baseline justify-between gap-2 text-xs">
         <span className="font-medium">
           {sender}
           {!isOutbound && (
-            <span className="ml-1 font-normal text-muted-foreground">&lt;{msg.from_email}&gt;</span>
+            <span className="ml-1 font-normal text-muted-foreground">
+              &lt;{msg.from_email}&gt;
+            </span>
           )}
         </span>
         <span className="text-muted-foreground">{when}</span>
@@ -140,7 +148,9 @@ export default function ThreadView({
           <ArrowLeft className="h-4 w-4" />
         </HeaderAction>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-semibold">{thread.subject || "(no subject)"}</h2>
+          <h2 className="truncate text-sm font-semibold">
+            {thread.subject || "(no subject)"}
+          </h2>
           <p className="truncate text-xs text-muted-foreground">
             {thread.counterparty_name
               ? `${thread.counterparty_name} · ${thread.counterparty_email}`
@@ -159,7 +169,9 @@ export default function ThreadView({
         ) : (
           <HeaderAction
             label="Move to inbox"
-            onClick={() => (folder === "archived" ? onArchive(false) : onSpam(false))}
+            onClick={() =>
+              folder === "archived" ? onArchive(false) : onSpam(false)
+            }
           >
             <ArchiveRestore className="h-4 w-4" />
           </HeaderAction>

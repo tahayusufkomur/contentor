@@ -128,19 +128,30 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={user.avatar_url} />
                   <AvatarFallback className="text-[10px]">
-                    {(user.name || user.email).split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                    {(user.name || user.email)
+                      .split(" ")
+                      .map((w) => w[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{user.name || user.email}</p>
-                  <p className="text-[11px] text-muted-foreground">{user.role === "owner" ? "Owner" : "Coach"}</p>
+                  <p className="text-sm font-medium truncate">
+                    {user.name || user.email}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {user.role === "owner" ? "Owner" : "Coach"}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={async () => {
                   setSigningOut(true);
                   await fetch("/api/auth/logout", { method: "POST" });
-                  router.push("/login?toast=You've+been+logged+out&toast_type=info");
+                  router.push(
+                    "/login?toast=You've+been+logged+out&toast_type=info",
+                  );
                   router.refresh();
                 }}
                 disabled={signingOut}

@@ -1,68 +1,77 @@
-'use client'
+"use client";
 
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { CreditCard, Package, Plus, Settings } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { EmptyState } from '@/components/shared/empty-state'
-import { clientFetch } from '@/lib/api-client'
-import { ChangePlanCard } from './subscription/ChangePlanCard'
-import { SubscriptionTile } from './subscription/SubscriptionTile'
-import { billingIntervalSuffix } from '@/lib/billing-interval'
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { CreditCard, Package, Plus, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/shared/empty-state";
+import { clientFetch } from "@/lib/api-client";
+import { ChangePlanCard } from "./subscription/ChangePlanCard";
+import { SubscriptionTile } from "./subscription/SubscriptionTile";
+import { billingIntervalSuffix } from "@/lib/billing-interval";
 
 interface Product {
-  id: number
-  title: string
-  type: string
-  price: string
-  currency: string
-  sales?: number
+  id: number;
+  title: string;
+  type: string;
+  price: string;
+  currency: string;
+  sales?: number;
 }
 
 interface BundleListItem {
-  id: number
-  name: string
-  price: string
-  item_count: number
-  is_active: boolean
+  id: number;
+  name: string;
+  price: string;
+  item_count: number;
+  is_active: boolean;
 }
 
 interface Plan {
-  id: number
-  name: string
-  price: string
-  currency: string
-  billing_interval_months?: number
-  is_active: boolean
+  id: number;
+  name: string;
+  price: string;
+  currency: string;
+  billing_interval_months?: number;
+  is_active: boolean;
 }
 
 function ProductTypeBadge({ type }: { type: string }) {
-  const variantMap: Record<string, 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'brand'> = {
-    course: 'brand',
-    download: 'secondary',
-    live_class: 'warning',
-    live_stream: 'success',
-    bundle: 'default',
-  }
+  const variantMap: Record<
+    string,
+    "default" | "secondary" | "outline" | "success" | "warning" | "brand"
+  > = {
+    course: "brand",
+    download: "secondary",
+    live_class: "warning",
+    live_stream: "success",
+    bundle: "default",
+  };
   const labelMap: Record<string, string> = {
-    course: 'Course',
-    download: 'Download',
-    live_class: 'Live Class',
-    live_stream: 'Live Stream',
-    bundle: 'Bundle',
-  }
+    course: "Course",
+    download: "Download",
+    live_class: "Live Class",
+    live_stream: "Live Stream",
+    bundle: "Bundle",
+  };
   return (
-    <Badge variant={variantMap[type] ?? 'outline'}>
+    <Badge variant={variantMap[type] ?? "outline"}>
       {labelMap[type] ?? type}
     </Badge>
-  )
+  );
 }
 
-function TableSkeletonRows({ cols, rows = 5 }: { cols: number; rows?: number }) {
+function TableSkeletonRows({
+  cols,
+  rows = 5,
+}: {
+  cols: number;
+  rows?: number;
+}) {
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
@@ -75,19 +84,19 @@ function TableSkeletonRows({ cols, rows = 5 }: { cols: number; rows?: number }) 
         </tr>
       ))}
     </>
-  )
+  );
 }
 
 function ProductsTab() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    clientFetch<Product[]>('/api/v1/billing/products/')
+    clientFetch<Product[]>("/api/v1/billing/products/")
       .then(setProducts)
       .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="rounded-md border">
@@ -105,7 +114,10 @@ function ProductsTab() {
             <TableSkeletonRows cols={4} />
           ) : products.length === 0 ? (
             <tr>
-              <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+              <td
+                colSpan={4}
+                className="px-4 py-8 text-center text-muted-foreground"
+              >
                 No products found.
               </td>
             </tr>
@@ -119,26 +131,28 @@ function ProductsTab() {
                 <td className="px-4 py-3">
                   {p.price} {p.currency}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground">{p.sales ?? 0}</td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {p.sales ?? 0}
+                </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 function BundlesTab() {
-  const [bundles, setBundles] = useState<BundleListItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const [bundles, setBundles] = useState<BundleListItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    clientFetch<BundleListItem[]>('/api/v1/billing/bundles/')
+    clientFetch<BundleListItem[]>("/api/v1/billing/bundles/")
       .then(setBundles)
       .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -171,7 +185,10 @@ function BundlesTab() {
                     icon={Package}
                     title="No bundles yet"
                     description="Create a bundle to group products at a discounted price."
-                    action={{ label: 'Create Bundle', href: '/admin/billing/bundles/new' }}
+                    action={{
+                      label: "Create Bundle",
+                      href: "/admin/billing/bundles/new",
+                    }}
                   />
                 </td>
               </tr>
@@ -180,10 +197,12 @@ function BundlesTab() {
                 <tr key={b.id} className="border-b last:border-0">
                   <td className="px-4 py-3 font-medium">{b.name}</td>
                   <td className="px-4 py-3">${b.price}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{b.item_count}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {b.item_count}
+                  </td>
                   <td className="px-4 py-3">
-                    <Badge variant={b.is_active ? 'success' : 'secondary'}>
-                      {b.is_active ? 'Active' : 'Inactive'}
+                    <Badge variant={b.is_active ? "success" : "secondary"}>
+                      {b.is_active ? "Active" : "Inactive"}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
@@ -198,19 +217,19 @@ function BundlesTab() {
         </table>
       </div>
     </div>
-  )
+  );
 }
 
 function PlansTab() {
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [loading, setLoading] = useState(true)
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    clientFetch<Plan[]>('/api/v1/billing/plans/')
+    clientFetch<Plan[]>("/api/v1/billing/plans/")
       .then(setPlans)
       .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="rounded-md border">
@@ -245,13 +264,15 @@ function PlansTab() {
                   {billingIntervalSuffix(p.billing_interval_months)}
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant={p.is_active ? 'success' : 'secondary'}>
-                    {p.is_active ? 'Active' : 'Inactive'}
+                  <Badge variant={p.is_active ? "success" : "secondary"}>
+                    {p.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </td>
                 <td className="px-4 py-3">
                   <Button asChild variant="ghost" size="sm">
-                    <Link href={`/admin/billing/plans/${p.id}`}>Manage Access</Link>
+                    <Link href={`/admin/billing/plans/${p.id}`}>
+                      Manage Access
+                    </Link>
                   </Button>
                 </td>
               </tr>
@@ -260,18 +281,19 @@ function PlansTab() {
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 export default function BillingPage() {
-  const searchParams = useSearchParams()
-  const checkoutFlag = searchParams.get('checkout')
-  const isCheckoutSuccess = checkoutFlag === 'success'
-  const isCheckoutCanceled = checkoutFlag === 'cancel'
+  const searchParams = useSearchParams();
+  const checkoutFlag = searchParams.get("checkout");
+  const isCheckoutSuccess = checkoutFlag === "success";
+  const isCheckoutCanceled = checkoutFlag === "cancel";
   const defaultTab = useMemo(
-    () => (isCheckoutSuccess || isCheckoutCanceled ? 'subscription' : 'products'),
+    () =>
+      isCheckoutSuccess || isCheckoutCanceled ? "subscription" : "products",
     [isCheckoutSuccess, isCheckoutCanceled],
-  )
+  );
 
   return (
     <div className="space-y-6">
@@ -322,5 +344,5 @@ export default function BillingPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

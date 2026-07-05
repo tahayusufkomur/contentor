@@ -22,7 +22,8 @@ type Tab = "mine" | "gallery";
 function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
   if (Array.isArray(data)) return data;
   if ("results" in data && Array.isArray(data.results)) return data.results;
-  if ("data" in data && Array.isArray((data as { data: T[] }).data)) return (data as { data: T[] }).data;
+  if ("data" in data && Array.isArray((data as { data: T[] }).data))
+    return (data as { data: T[] }).data;
   return [];
 }
 
@@ -31,7 +32,9 @@ export default function TemplatesPage() {
   const [tab, setTab] = useState<Tab>("mine");
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [gallery, setGallery] = useState<EmailTemplate[]>([]);
-  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>({});
+  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
 
@@ -83,38 +86,41 @@ export default function TemplatesPage() {
       .catch(() => {});
   }, [tab, galleryLoaded, fetchPreviews]);
 
-  const handlePreview = useCallback(async (template: EmailTemplate) => {
-    setPreviewOpen(true);
-    setPreviewTitle(template.name);
-    setPreviewHtml("");
-    setPreviewLoading(true);
-
-    // Try cached preview first
-    if (previewHtmlMap[template.id]) {
-      setPreviewHtml(previewHtmlMap[template.id]);
-      setPreviewLoading(false);
-      return;
-    }
-
-    try {
-      const detail = await getTemplate(template.id);
-      const html =
-        (detail as Record<string, unknown>).html as string ||
-        (detail as Record<string, unknown>).rendered_html as string ||
-        "";
-      if (html) {
-        setPreviewHtml(html);
-      } else {
-        // Try batch preview for this one
-        const result = await previewTemplates([template.id]);
-        setPreviewHtml(result.previews[template.id] || "");
-      }
-    } catch {
+  const handlePreview = useCallback(
+    async (template: EmailTemplate) => {
+      setPreviewOpen(true);
+      setPreviewTitle(template.name);
       setPreviewHtml("");
-    } finally {
-      setPreviewLoading(false);
-    }
-  }, [previewHtmlMap]);
+      setPreviewLoading(true);
+
+      // Try cached preview first
+      if (previewHtmlMap[template.id]) {
+        setPreviewHtml(previewHtmlMap[template.id]);
+        setPreviewLoading(false);
+        return;
+      }
+
+      try {
+        const detail = await getTemplate(template.id);
+        const html =
+          ((detail as Record<string, unknown>).html as string) ||
+          ((detail as Record<string, unknown>).rendered_html as string) ||
+          "";
+        if (html) {
+          setPreviewHtml(html);
+        } else {
+          // Try batch preview for this one
+          const result = await previewTemplates([template.id]);
+          setPreviewHtml(result.previews[template.id] || "");
+        }
+      } catch {
+        setPreviewHtml("");
+      } finally {
+        setPreviewLoading(false);
+      }
+    },
+    [previewHtmlMap],
+  );
 
   const handleDelete = useCallback(async (template: EmailTemplate) => {
     if (!window.confirm(`Delete "${template.name}"?`)) return;
@@ -140,7 +146,9 @@ export default function TemplatesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Email Templates</h1>
-          <p className="text-sm text-muted-foreground">Manage your email templates.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage your email templates.
+          </p>
         </div>
         <Link
           href="/admin/email/compose"
@@ -155,7 +163,9 @@ export default function TemplatesPage() {
         <button
           onClick={() => setTab("mine")}
           className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-            tab === "mine" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            tab === "mine"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
           }`}
         >
           My Templates
@@ -163,7 +173,9 @@ export default function TemplatesPage() {
         <button
           onClick={() => setTab("gallery")}
           className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-            tab === "gallery" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            tab === "gallery"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
           }`}
         >
           Gallery
@@ -198,7 +210,9 @@ export default function TemplatesPage() {
             </div>
             {previewLoading ? (
               <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-sm text-muted-foreground">Loading preview...</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading preview...
+                </p>
               </div>
             ) : previewHtml ? (
               <iframe
@@ -209,7 +223,9 @@ export default function TemplatesPage() {
               />
             ) : (
               <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-sm text-muted-foreground">Preview not available.</p>
+                <p className="text-sm text-muted-foreground">
+                  Preview not available.
+                </p>
               </div>
             )}
           </div>

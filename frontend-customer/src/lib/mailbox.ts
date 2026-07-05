@@ -68,18 +68,26 @@ export interface OutgoingMessage {
   attachment_ids?: number[];
 }
 
-export function compose(body: OutgoingMessage & { to: string; subject: string }) {
-  return clientFetch<{ conversation_id: number; message_id: number }>(`${BASE}/compose/`, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+export function compose(
+  body: OutgoingMessage & { to: string; subject: string },
+) {
+  return clientFetch<{ conversation_id: number; message_id: number }>(
+    `${BASE}/compose/`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
 }
 
 export function reply(id: number, body: OutgoingMessage) {
-  return clientFetch<{ message_id: number }>(`${BASE}/conversations/${id}/reply/`, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  return clientFetch<{ message_id: number }>(
+    `${BASE}/conversations/${id}/reply/`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
 }
 
 export function uploadAttachment(file: File) {
@@ -91,7 +99,10 @@ export function uploadAttachment(file: File) {
   });
 }
 
-export function updateConversation(id: number, patch: { is_archived?: boolean; is_spam?: boolean }) {
+export function updateConversation(
+  id: number,
+  patch: { is_archived?: boolean; is_spam?: boolean },
+) {
   return clientFetch<ConversationListItem>(`${BASE}/conversations/${id}/`, {
     method: "PATCH",
     body: JSON.stringify(patch),
@@ -99,7 +110,9 @@ export function updateConversation(id: number, patch: { is_archived?: boolean; i
 }
 
 export function deleteConversation(id: number) {
-  return clientFetch<void>(`${BASE}/conversations/${id}/`, { method: "DELETE" });
+  return clientFetch<void>(`${BASE}/conversations/${id}/`, {
+    method: "DELETE",
+  });
 }
 
 export function getSettings() {

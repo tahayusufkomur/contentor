@@ -6,10 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import { useTenant } from "@/hooks/use-tenant";
-import {
-  formatMonthYear,
-  getDateRangeParams,
-} from "@/lib/calendar-utils";
+import { formatMonthYear, getDateRangeParams } from "@/lib/calendar-utils";
 import { ViewToggle } from "./view-toggle";
 import { EventTypeFilter } from "./event-type-filter";
 import { CalendarMonthView } from "./calendar-month-view";
@@ -39,11 +36,12 @@ export function CalendarClient({
     return ["month", "agenda"].includes(v) ? v : "month";
   });
   const [currentDate, setCurrentDate] = useState(
-    () => new Date(initialDate || new Date().toISOString().split("T")[0])
+    () => new Date(initialDate || new Date().toISOString().split("T")[0]),
   );
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
   const [activeTypes, setActiveTypes] = useState<Set<CalendarEventType>>(
-    () => new Set<CalendarEventType>(["live_class", "live_stream", "onsite_event"])
+    () =>
+      new Set<CalendarEventType>(["live_class", "live_stream", "onsite_event"]),
   );
   const [loading, setLoading] = useState(false);
 
@@ -59,7 +57,7 @@ export function CalendarClient({
     try {
       const { from, to } = getDateRangeParams(v, date);
       const data = await clientFetch<CalendarEvent[]>(
-        `/api/v1/calendar/?from=${from}&to=${to}`
+        `/api/v1/calendar/?from=${from}&to=${to}`,
       );
       setEvents(data);
     } catch {
@@ -74,7 +72,7 @@ export function CalendarClient({
       const dateStr = date.toISOString().split("T")[0];
       router.replace(`/calendar?view=${v}&date=${dateStr}`, { scroll: false });
     },
-    [router]
+    [router],
   );
 
   const handleViewChange = (v: View) => {
@@ -116,13 +114,13 @@ export function CalendarClient({
 
   // zoom_class events are grouped under the live_class chip (student-facing they're both "Live Class")
   const filteredEvents = events.filter(
-    (e) => activeTypes.has(e.type) || (e.type === "zoom_class" && activeTypes.has("live_class"))
+    (e) =>
+      activeTypes.has(e.type) ||
+      (e.type === "zoom_class" && activeTypes.has("live_class")),
   );
 
   const title =
-    view === "month"
-      ? formatMonthYear(currentDate)
-      : "Upcoming Events";
+    view === "month" ? formatMonthYear(currentDate) : "Upcoming Events";
 
   return (
     <div className="space-y-4">
@@ -138,7 +136,12 @@ export function CalendarClient({
           <Button variant="outline" size="icon" onClick={() => navigate(1)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={goToday} className="text-xs">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={goToday}
+            className="text-xs"
+          >
             Today
           </Button>
         </div>
@@ -151,9 +154,15 @@ export function CalendarClient({
       {/* Calendar view */}
       <div className={loading ? "opacity-60 transition-opacity" : ""}>
         {view === "month" && (
-          <CalendarMonthView events={filteredEvents} currentDate={currentDate} timezone={tz} />
+          <CalendarMonthView
+            events={filteredEvents}
+            currentDate={currentDate}
+            timezone={tz}
+          />
         )}
-        {view === "agenda" && <CalendarAgendaView events={filteredEvents} timezone={tz} />}
+        {view === "agenda" && (
+          <CalendarAgendaView events={filteredEvents} timezone={tz} />
+        )}
       </div>
     </div>
   );

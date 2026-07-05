@@ -14,9 +14,7 @@ const nextConfig = {
   output: "standalone",
   allowedDevOrigins: [`*.${BASE_DOMAIN}`],
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**.amazonaws.com" },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "**.amazonaws.com" }],
   },
   webpack: (config) => {
     // @mediapipe/tasks-vision has a malformed exports field (conditional keys
@@ -43,7 +41,8 @@ const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   cacheOnNavigation: true,
-  disable: process.env.NODE_ENV === "development" && process.env.SERWIST_DEV !== "1",
+  disable:
+    process.env.NODE_ENV === "development" && process.env.SERWIST_DEV !== "1",
   additionalPrecacheEntries: [{ url: "/offline.html", revision }],
 });
 

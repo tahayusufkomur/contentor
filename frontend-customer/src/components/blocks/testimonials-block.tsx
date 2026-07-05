@@ -118,7 +118,10 @@ export function TestimonialsBlock({ data, editable }: BlockComponentProps) {
         <div className="mx-auto max-w-3xl space-y-6 px-4">
           {heading}
           {items.map((item, i) => (
-            <div key={i} className="flex gap-4 rounded-xl border bg-background p-6">
+            <div
+              key={i}
+              className="flex gap-4 rounded-xl border bg-background p-6"
+            >
               <div className="shrink-0">
                 <Avatar item={item} size="h-11 w-11" />
               </div>
@@ -155,7 +158,10 @@ export function TestimonialsBlock({ data, editable }: BlockComponentProps) {
         {heading}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item, i) => (
-            <div key={i} className="space-y-4 rounded-xl border bg-background p-6">
+            <div
+              key={i}
+              className="space-y-4 rounded-xl border bg-background p-6"
+            >
               {item.rating && <Stars rating={item.rating} />}
               <p className="leading-relaxed text-muted-foreground">
                 &ldquo;{item.text}&rdquo;

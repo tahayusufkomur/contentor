@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { clientFetch } from '@/lib/api-client'
-import { ApiError } from '@/types/api'
-import { Loader2, Zap } from 'lucide-react'
-import { toast } from 'sonner'
-import { billingIntervalSuffix } from '@/lib/billing-interval'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
+import { Loader2, Zap } from "lucide-react";
+import { toast } from "sonner";
+import { billingIntervalSuffix } from "@/lib/billing-interval";
 
 interface SubscribeButtonProps {
-  planId: number
-  planName: string
-  price: string
-  currency: string
-  intervalMonths?: number
-  className?: string
-  variant?: 'default' | 'outline'
-  size?: 'default' | 'sm' | 'lg'
+  planId: number;
+  planName: string;
+  price: string;
+  currency: string;
+  intervalMonths?: number;
+  className?: string;
+  variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg";
 }
 
 export function SubscribeButton({
@@ -27,40 +27,46 @@ export function SubscribeButton({
   currency,
   intervalMonths,
   className,
-  variant = 'default',
-  size = 'default',
+  variant = "default",
+  size = "default",
 }: SubscribeButtonProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function handleSubscribe() {
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await clientFetch<{ checkout_url?: string }>('/api/v1/billing/subscribe/', {
-        method: 'POST',
-        body: JSON.stringify({ plan_id: planId }),
-      })
+      const res = await clientFetch<{ checkout_url?: string }>(
+        "/api/v1/billing/subscribe/",
+        {
+          method: "POST",
+          body: JSON.stringify({ plan_id: planId }),
+        },
+      );
       // Real Stripe checkout (mode=subscription): redirect to the hosted page.
       if (res?.checkout_url) {
-        window.location.href = res.checkout_url
-        return
+        window.location.href = res.checkout_url;
+        return;
       }
       // Bypass: subscription is active immediately.
-      toast.success(`Subscribed to ${planName}!`)
-      router.refresh()
+      toast.success(`Subscribed to ${planName}!`);
+      router.refresh();
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        router.push('/login?toast=You+need+to+log+in+to+subscribe&toast_type=info')
-        return
+        router.push(
+          "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+        );
+        return;
       }
       if (err instanceof ApiError && err.status === 400) {
-        toast.info("You're already subscribed to this plan")
-        return
+        toast.info("You're already subscribed to this plan");
+        return;
       }
-      const message = err instanceof Error ? err.message : 'Subscription failed.'
-      toast.error(message)
+      const message =
+        err instanceof Error ? err.message : "Subscription failed.";
+      toast.error(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -77,7 +83,8 @@ export function SubscribeButton({
       ) : (
         <Zap className="mr-2 h-4 w-4" />
       )}
-      Subscribe — {price} {currency}{billingIntervalSuffix(intervalMonths)}
+      Subscribe — {price} {currency}
+      {billingIntervalSuffix(intervalMonths)}
     </Button>
-  )
+  );
 }

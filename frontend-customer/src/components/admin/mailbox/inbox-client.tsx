@@ -37,7 +37,11 @@ interface DeleteConfirmProps {
   loading: boolean;
 }
 
-function DeleteConfirmDialog({ onCancel, onConfirm, loading }: DeleteConfirmProps) {
+function DeleteConfirmDialog({
+  onCancel,
+  onConfirm,
+  loading,
+}: DeleteConfirmProps) {
   return (
     <ModalPortal>
       <div
@@ -58,7 +62,12 @@ function DeleteConfirmDialog({ onCancel, onConfirm, loading }: DeleteConfirmProp
             <Button variant="ghost" size="sm" onClick={onCancel}>
               Cancel
             </Button>
-            <Button variant="destructive" size="sm" loading={loading} onClick={onConfirm}>
+            <Button
+              variant="destructive"
+              size="sm"
+              loading={loading}
+              onClick={onConfirm}
+            >
               Delete
             </Button>
           </div>
@@ -71,7 +80,9 @@ function DeleteConfirmDialog({ onCancel, onConfirm, loading }: DeleteConfirmProp
 // ── Main inbox component ───────────────────────────────────────────────────
 
 export default function InboxClient() {
-  const [conversations, setConversations] = useState<ConversationListItem[]>([]);
+  const [conversations, setConversations] = useState<ConversationListItem[]>(
+    [],
+  );
   const [settings, setSettings] = useState<MailboxSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [folder, setFolder] = useState<Folder>("inbox");
@@ -86,7 +97,10 @@ export default function InboxClient() {
   const replyEditorRef = useRef<MessageEditorHandle>(null);
   // Mirror live state the polling interval reads, so the interval callback
   // stays stable (created once) yet always sees the current thread + send state.
-  const liveRef = useRef({ threadId: null as number | null, replySending: false });
+  const liveRef = useRef({
+    threadId: null as number | null,
+    replySending: false,
+  });
   liveRef.current = { threadId: thread?.id ?? null, replySending };
 
   const loadList = async () => {
@@ -121,7 +135,8 @@ export default function InboxClient() {
         if (threadId !== null && !liveRef.current.replySending) {
           const detail = await getConversation(threadId);
           // Only apply if the user hasn't switched threads meanwhile.
-          if (!cancelled && liveRef.current.threadId === threadId) setThread(detail);
+          if (!cancelled && liveRef.current.threadId === threadId)
+            setThread(detail);
         }
       } catch {
         // transient — try again next tick
@@ -145,7 +160,12 @@ export default function InboxClient() {
     const q = query.trim().toLowerCase();
     if (!q) return byFolder;
     return byFolder.filter((c) =>
-      [c.counterparty_name, c.counterparty_email, c.subject, c.last_message_preview]
+      [
+        c.counterparty_name,
+        c.counterparty_email,
+        c.subject,
+        c.last_message_preview,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(q),
@@ -242,7 +262,9 @@ export default function InboxClient() {
           <Button size="sm" variant="outline" asChild>
             <Link
               href={
-                settings.platform_eligible ? "/admin/settings" : "/admin/billing"
+                settings.platform_eligible
+                  ? "/admin/settings"
+                  : "/admin/billing"
               }
             >
               {settings.platform_eligible ? "Choose my address" : "See plans"}

@@ -1,44 +1,56 @@
-'use client'
+"use client";
 
-import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { clientFetch } from '@/lib/api-client'
-import { ContentPicker, type SelectedItem } from '@/components/billing/content-picker'
-import type { Bundle } from '@/types/billing'
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { clientFetch } from "@/lib/api-client";
+import {
+  ContentPicker,
+  type SelectedItem,
+} from "@/components/billing/content-picker";
+import type { Bundle } from "@/types/billing";
 
 export default function NewBundlePage() {
-  const router = useRouter()
-  const [saving, setSaving] = useState(false)
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    name: '',
-    description: '',
-    price: '',
-  })
-  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
+    name: "",
+    description: "",
+    price: "",
+  });
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   const originalPrice = useMemo(() => {
-    const total = selectedItems.reduce((sum, item) => sum + parseFloat(item.price || '0'), 0)
-    return total.toFixed(2)
-  }, [selectedItems])
+    const total = selectedItems.reduce(
+      (sum, item) => sum + parseFloat(item.price || "0"),
+      0,
+    );
+    return total.toFixed(2);
+  }, [selectedItems]);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
     if (selectedItems.length === 0) {
-      toast.error('Please select at least one item for the bundle.')
-      return
+      toast.error("Please select at least one item for the bundle.");
+      return;
     }
-    setSaving(true)
+    setSaving(true);
     try {
-      await clientFetch<Bundle>('/api/v1/billing/bundles/', {
-        method: 'POST',
+      await clientFetch<Bundle>("/api/v1/billing/bundles/", {
+        method: "POST",
         body: JSON.stringify({
           name: form.name,
           description: form.description,
@@ -48,14 +60,14 @@ export default function NewBundlePage() {
             object_id: i.object_id,
           })),
         }),
-      })
-      toast.success('Bundle created successfully.')
-      router.push('/admin/billing')
+      });
+      toast.success("Bundle created successfully.");
+      router.push("/admin/billing");
     } catch (err) {
-      console.error(err)
-      toast.error('Failed to create bundle. Please try again.')
+      console.error(err);
+      toast.error("Failed to create bundle. Please try again.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -79,7 +91,9 @@ export default function NewBundlePage() {
         <Card>
           <CardHeader>
             <CardTitle>Bundle Details</CardTitle>
-            <CardDescription>Basic information about your bundle.</CardDescription>
+            <CardDescription>
+              Basic information about your bundle.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -99,7 +113,9 @@ export default function NewBundlePage() {
                 className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 placeholder="Describe what's included in this bundle..."
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
               />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -129,10 +145,15 @@ export default function NewBundlePage() {
         <Card>
           <CardHeader>
             <CardTitle>Bundle Items</CardTitle>
-            <CardDescription>Select the content to include in this bundle.</CardDescription>
+            <CardDescription>
+              Select the content to include in this bundle.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ContentPicker selected={selectedItems} onChange={setSelectedItems} />
+            <ContentPicker
+              selected={selectedItems}
+              onChange={setSelectedItems}
+            />
           </CardContent>
         </Card>
 
@@ -140,7 +161,7 @@ export default function NewBundlePage() {
 
         <div className="flex gap-3">
           <Button type="submit" disabled={saving}>
-            {saving ? 'Creating...' : 'Create Bundle'}
+            {saving ? "Creating..." : "Create Bundle"}
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href="/admin/billing">Cancel</Link>
@@ -148,5 +169,5 @@ export default function NewBundlePage() {
         </div>
       </form>
     </div>
-  )
+  );
 }

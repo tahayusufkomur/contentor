@@ -1,43 +1,65 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import Link from 'next/link'
-import { serverFetch } from '@/lib/api-server'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { SubscribeButton } from '@/components/billing/subscribe-button'
-import { Button } from '@/components/ui/button'
-import { BookOpen, CreditCard, Radio, Tv, Download, ArrowLeft, Package, CheckCircle2 } from 'lucide-react'
-import type { SubscriptionPlanDetail, PlanAccessItem } from '@/types/billing'
-import { billingIntervalSuffix } from '@/lib/billing-interval'
+import Link from "next/link";
+import { serverFetch } from "@/lib/api-server";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { SubscribeButton } from "@/components/billing/subscribe-button";
+import { Button } from "@/components/ui/button";
+import {
+  BookOpen,
+  CreditCard,
+  Radio,
+  Tv,
+  Download,
+  ArrowLeft,
+  Package,
+  CheckCircle2,
+} from "lucide-react";
+import type { SubscriptionPlanDetail, PlanAccessItem } from "@/types/billing";
+import { billingIntervalSuffix } from "@/lib/billing-interval";
 
-const TYPE_CONFIG: Record<string, { label: string; icon: typeof BookOpen; href?: (item: PlanAccessItem) => string }> = {
+const TYPE_CONFIG: Record<
+  string,
+  {
+    label: string;
+    icon: typeof BookOpen;
+    href?: (item: PlanAccessItem) => string;
+  }
+> = {
   course: {
-    label: 'Course',
+    label: "Course",
     icon: BookOpen,
     href: (item) => `/courses/${item.slug}`,
   },
   liveclass: {
-    label: 'Live Class',
+    label: "Live Class",
     icon: Radio,
   },
   livestream: {
-    label: 'Live Stream',
+    label: "Live Stream",
     icon: Tv,
   },
   download: {
-    label: 'Download',
+    label: "Download",
     icon: Download,
   },
-}
+};
 
-export default async function PlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  let plan: SubscriptionPlanDetail | null = null
+export default async function PlanDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  let plan: SubscriptionPlanDetail | null = null;
   try {
-    plan = await serverFetch<SubscriptionPlanDetail>(`/api/v1/billing/plans/${id}/`)
+    plan = await serverFetch<SubscriptionPlanDetail>(
+      `/api/v1/billing/plans/${id}/`,
+    );
   } catch {
-    plan = null
+    plan = null;
   }
 
   if (!plan) {
@@ -49,7 +71,7 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
           This plan does not exist or is no longer available.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -92,14 +114,16 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
                   const config = TYPE_CONFIG[item.type] ?? {
                     label: item.type,
                     icon: Package,
-                  }
-                  const Icon = config.icon
-                  const linkHref = config.href?.(item)
+                  };
+                  const Icon = config.icon;
+                  const linkHref = config.href?.(item);
 
                   const content = (
                     <Card
                       className={`overflow-hidden transition-all ${
-                        linkHref ? 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer' : ''
+                        linkHref
+                          ? "hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+                          : ""
                       }`}
                     >
                       <CardContent className="flex items-center gap-4 p-4">
@@ -124,16 +148,16 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
                         </div>
                       </CardContent>
                     </Card>
-                  )
+                  );
 
                   if (linkHref) {
                     return (
                       <Link key={`${item.type}-${item.id}`} href={linkHref}>
                         {content}
                       </Link>
-                    )
+                    );
                   }
-                  return <div key={`${item.type}-${item.id}`}>{content}</div>
+                  return <div key={`${item.type}-${item.id}`}>{content}</div>;
                 })}
               </div>
             )}
@@ -146,7 +170,11 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
             <CardContent className="space-y-4 p-6">
               <div className="text-center">
                 <p className="font-display text-3xl font-bold tabular-nums">
-                  {plan.price} <span className="text-lg font-normal text-muted-foreground">{plan.currency}{billingIntervalSuffix(plan.billing_interval_months)}</span>
+                  {plan.price}{" "}
+                  <span className="text-lg font-normal text-muted-foreground">
+                    {plan.currency}
+                    {billingIntervalSuffix(plan.billing_interval_months)}
+                  </span>
                 </p>
               </div>
               {plan.is_subscribed ? (
@@ -169,7 +197,8 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4" />
                   <span>
-                    {plan.items.length} item{plan.items.length !== 1 ? 's' : ''} included
+                    {plan.items.length} item{plan.items.length !== 1 ? "s" : ""}{" "}
+                    included
                   </span>
                 </div>
               </div>
@@ -178,5 +207,5 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
         </div>
       </div>
     </div>
-  )
+  );
 }

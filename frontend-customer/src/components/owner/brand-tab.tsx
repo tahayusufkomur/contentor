@@ -38,7 +38,10 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
 
       <div className="space-y-1.5">
         <Label>Logo</Label>
-        <LogoUploader logoUrl={config.logo_url} onChange={(patch) => onChange(patch)} />
+        <LogoUploader
+          logoUrl={config.logo_url}
+          onChange={(patch) => onChange(patch)}
+        />
       </div>
 
       <div className="space-y-2">

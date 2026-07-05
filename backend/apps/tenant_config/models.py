@@ -66,9 +66,7 @@ class SeededObject(models.Model):
     updated_at columns across five apps.
     """
 
-    content_type = models.ForeignKey(
-        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
-    )
+    content_type = models.ForeignKey("contenttypes.ContentType", on_delete=models.CASCADE, related_name="+")
     object_id = models.CharField(max_length=64)  # str(pk); works for int and UUID pks
     fingerprint = models.CharField(max_length=64)
     niche = models.CharField(max_length=64, blank=True, default="")

@@ -320,7 +320,11 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         type: "text",
         helpText: "Optional second button (outlined).",
       },
-      { key: "secondaryButtonHref", label: "Secondary button link", type: "link" },
+      {
+        key: "secondaryButtonHref",
+        label: "Secondary button link",
+        type: "link",
+      },
     ],
   },
   stats: {
@@ -422,7 +426,8 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
         key: "dismissible",
         label: "Allow visitors to dismiss",
         type: "toggle",
-        helpText: "Adds an X so visitors can close it; their choice is remembered.",
+        helpText:
+          "Adds an X so visitors can close it; their choice is remembered.",
       },
     ],
   },
@@ -540,7 +545,12 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
     group: "dynamic",
     component: UpcomingEventsBlock,
     dynamicDataKey: "events",
-    defaultData: { layout: "grid", heading: "Upcoming events", limit: 6, filterGroups: [] },
+    defaultData: {
+      layout: "grid",
+      heading: "Upcoming events",
+      limit: 6,
+      filterGroups: [],
+    },
     fields: [
       layoutField([
         ["grid", "Grid"],

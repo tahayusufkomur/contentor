@@ -1,32 +1,35 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useState } from "react"
-import Link from "next/link"
-import { BookOpen, ExternalLink, Pencil, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { clientFetch, batchedAsync } from "@/lib/api-client"
-import { toast } from "sonner"
+import { useCallback, useRef, useState } from "react";
+import Link from "next/link";
+import { BookOpen, ExternalLink, Pencil, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { clientFetch, batchedAsync } from "@/lib/api-client";
+import { toast } from "sonner";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
   type FetchPageParams,
   type FetchPageResult,
   type BulkSelection,
-} from "@/components/admin/media-browser"
-import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
-import { TagFilterBar } from "@/components/admin/tag-filter-bar"
-import type { Course } from "@/types/course"
+} from "@/components/admin/media-browser";
+import {
+  InlineEditPanel,
+  type FieldConfig,
+} from "@/components/admin/inline-edit-panel";
+import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import type { Course } from "@/types/course";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 const SORT_OPTIONS = [
   { label: "Newest", value: "-created_at" },
   { label: "Oldest", value: "created_at" },
   { label: "Name A-Z", value: "title" },
   { label: "Name Z-A", value: "-title" },
-]
+];
 
 const courseFields: FieldConfig<Course>[] = [
   { key: "title", label: "Title", type: "text", required: true },
@@ -39,52 +42,63 @@ const courseFields: FieldConfig<Course>[] = [
       { label: "Paid", value: "paid" },
     ],
   },
-  { key: "price", label: "Price", type: "number", placeholder: "0.00", showWhen: (v) => v.pricing_type === "paid" },
+  {
+    key: "price",
+    label: "Price",
+    type: "number",
+    placeholder: "0.00",
+    showWhen: (v) => v.pricing_type === "paid",
+  },
   { key: "is_published", label: "Published", type: "toggle" },
-  { key: "thumbnail_id", label: "Thumbnail", type: "image", previewUrlKey: "thumbnail_signed_url" },
-]
+  {
+    key: "thumbnail_id",
+    label: "Thumbnail",
+    type: "image",
+    previewUrlKey: "thumbnail_signed_url",
+  },
+];
 
 export default function AdminCoursesPage() {
-  const browserRef = useRef<MediaBrowserHandle>(null)
-  const [editingSlug, setEditingSlug] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [tagFilter, setTagFilter] = useState<number[]>([])
+  const browserRef = useRef<MediaBrowserHandle>(null);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Course>> => {
-      const sp = new URLSearchParams()
-      sp.set("limit", String(params.limit))
-      sp.set("offset", String(params.offset))
-      sp.set("ordering", params.ordering)
-      if (params.search) sp.set("search", params.search)
-      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
+      const sp = new URLSearchParams();
+      sp.set("limit", String(params.limit));
+      sp.set("offset", String(params.offset));
+      sp.set("ordering", params.ordering);
+      if (params.search) sp.set("search", params.search);
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","));
       const data = await clientFetch<
-        | { results: Course[]; next: string | null; count: number }
-        | Course[]
-      >(`/api/v1/courses/?${sp.toString()}`)
+        { results: Course[]; next: string | null; count: number } | Course[]
+      >(`/api/v1/courses/?${sp.toString()}`);
 
       if (Array.isArray(data)) {
-        return { results: data, next: null, count: data.length }
+        return { results: data, next: null, count: data.length };
       }
-      return { results: data.results, next: data.next, count: data.count }
+      return { results: data.results, next: data.next, count: data.count };
     },
-    [tagFilter]
-  )
+    [tagFilter],
+  );
 
   async function handleBulkDelete(selection: BulkSelection) {
     await batchedAsync(
-      selection.ids.map((slug) => () =>
-        clientFetch(`/api/v1/courses/${slug}/`, { method: "DELETE" }).catch(
-          () => {}
-        )
-      )
-    )
-    toast.success("Courses deleted")
-    browserRef.current?.refresh()
+      selection.ids.map(
+        (slug) => () =>
+          clientFetch(`/api/v1/courses/${slug}/`, { method: "DELETE" }).catch(
+            () => {},
+          ),
+      ),
+    );
+    toast.success("Courses deleted");
+    browserRef.current?.refresh();
   }
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true)
+    setSaving(true);
     try {
       await clientFetch(`/api/v1/courses/${editingSlug}/`, {
         method: "PUT",
@@ -97,14 +111,14 @@ export default function AdminCoursesPage() {
             : {}),
           ...(values.thumbnail_id ? { thumbnail: values.thumbnail_id } : {}),
         }),
-      })
-      toast.success("Course updated")
-      setEditingSlug(null)
-      browserRef.current?.refresh()
+      });
+      toast.success("Course updated");
+      setEditingSlug(null);
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to update course")
+      toast.error("Failed to update course");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -130,7 +144,13 @@ export default function AdminCoursesPage() {
         persistKey="courses"
         fetchPage={fetchPage}
         filterKey={tagFilter.join(",")}
-        filterSlot={<TagFilterBar scope="course" value={tagFilter} onChange={setTagFilter} />}
+        filterSlot={
+          <TagFilterBar
+            scope="course"
+            value={tagFilter}
+            onChange={setTagFilter}
+          />
+        }
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={BookOpen}
@@ -165,9 +185,7 @@ export default function AdminCoursesPage() {
             <div className="p-3 space-y-2">
               <p className="font-medium truncate">{course.title}</p>
               <div className="flex items-center gap-2">
-                <Badge
-                  variant={course.is_published ? "success" : "secondary"}
-                >
+                <Badge variant={course.is_published ? "success" : "secondary"}>
                   {course.is_published ? "Published" : "Draft"}
                 </Badge>
                 <Badge
@@ -192,17 +210,13 @@ export default function AdminCoursesPage() {
           <>
             <TableCell className="font-medium">{course.title}</TableCell>
             <TableCell>
-              <Badge
-                variant={course.is_published ? "success" : "secondary"}
-              >
+              <Badge variant={course.is_published ? "success" : "secondary"}>
                 {course.is_published ? "Published" : "Draft"}
               </Badge>
             </TableCell>
             <TableCell>
               <Badge
-                variant={
-                  course.pricing_type === "free" ? "outline" : "default"
-                }
+                variant={course.pricing_type === "free" ? "outline" : "default"}
               >
                 {course.pricing_type === "free"
                   ? "Free"
@@ -214,7 +228,11 @@ export default function AdminCoursesPage() {
             <TableCell>{course.lesson_count ?? 0}</TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" onClick={() => setEditingSlug(course.slug)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingSlug(course.slug)}
+                >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button asChild variant="ghost" size="icon">
@@ -243,5 +261,5 @@ export default function AdminCoursesPage() {
         }
       />
     </div>
-  )
+  );
 }

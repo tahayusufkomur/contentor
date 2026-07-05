@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
-import { CourseForm } from '@/components/admin/course-form'
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { CourseForm } from "@/components/admin/course-form";
 
 export default function NewCoursePage() {
   return (
@@ -24,5 +24,5 @@ export default function NewCoursePage() {
 
       <CourseForm />
     </div>
-  )
+  );
 }

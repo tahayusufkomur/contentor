@@ -150,8 +150,10 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
         {allowDarkMode && <ThemeToggle collapsed={collapsed} />}
         {React.Children.map(children, (child) =>
           React.isValidElement(child)
-            ? React.cloneElement(child as React.ReactElement<any>, { collapsed })
-            : child
+            ? React.cloneElement(child as React.ReactElement<any>, {
+                collapsed,
+              })
+            : child,
         )}
       </div>
     </aside>

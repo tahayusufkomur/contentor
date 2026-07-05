@@ -78,8 +78,12 @@ export async function setupEmail(): Promise<EmailSetupResponse> {
   });
 }
 
-export async function listTemplates(): Promise<EmailTemplate[] | { results: EmailTemplate[] }> {
-  return clientFetch<EmailTemplate[] | { results: EmailTemplate[] }>("/api/v1/email/templates/");
+export async function listTemplates(): Promise<
+  EmailTemplate[] | { results: EmailTemplate[] }
+> {
+  return clientFetch<EmailTemplate[] | { results: EmailTemplate[] }>(
+    "/api/v1/email/templates/",
+  );
 }
 
 export async function getTemplate(id: string): Promise<EmailTemplate> {
@@ -96,7 +100,9 @@ export async function listGallery(
   category?: string,
 ): Promise<GalleryTemplate[] | { results: GalleryTemplate[] }> {
   const suffix = category ? `?category=${encodeURIComponent(category)}` : "";
-  return clientFetch<GalleryTemplate[] | { results: GalleryTemplate[] }>(`/api/v1/email/gallery/${suffix}`);
+  return clientFetch<GalleryTemplate[] | { results: GalleryTemplate[] }>(
+    `/api/v1/email/gallery/${suffix}`,
+  );
 }
 
 export async function sendCampaign(data: {
@@ -124,23 +130,31 @@ export async function getCampaign(id: number): Promise<EmailCampaign> {
   return clientFetch<EmailCampaign>(`/api/v1/email/campaigns/${id}/`);
 }
 
-export async function copyTemplate(sourceTemplateId: string): Promise<{ id: string; name: string }> {
-  return clientFetch<{ id: string; name: string }>("/api/v1/email/templates/copy/", {
-    method: "POST",
-    body: JSON.stringify({ source_template_id: sourceTemplateId }),
-  });
+export async function copyTemplate(
+  sourceTemplateId: string,
+): Promise<{ id: string; name: string }> {
+  return clientFetch<{ id: string; name: string }>(
+    "/api/v1/email/templates/copy/",
+    {
+      method: "POST",
+      body: JSON.stringify({ source_template_id: sourceTemplateId }),
+    },
+  );
 }
 
 export async function previewTemplates(
   templateIds: string[],
-): Promise<{ previews: Record<string, string>; errors: Record<string, string> }> {
-  return clientFetch<{ previews: Record<string, string>; errors: Record<string, string> }>(
-    "/api/v1/email/templates/preview/",
-    {
-      method: "POST",
-      body: JSON.stringify({ template_ids: templateIds }),
-    },
-  );
+): Promise<{
+  previews: Record<string, string>;
+  errors: Record<string, string>;
+}> {
+  return clientFetch<{
+    previews: Record<string, string>;
+    errors: Record<string, string>;
+  }>("/api/v1/email/templates/preview/", {
+    method: "POST",
+    body: JSON.stringify({ template_ids: templateIds }),
+  });
 }
 
 export async function listCampaignRecipients(

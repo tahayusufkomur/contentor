@@ -19,7 +19,9 @@ export default async function PublicLayout({
   let hasSubscription = false;
   if (user) {
     try {
-      const plans = await serverFetch<SubscriptionPlan[]>("/api/v1/billing/plans/");
+      const plans = await serverFetch<SubscriptionPlan[]>(
+        "/api/v1/billing/plans/",
+      );
       hasSubscription = plans.some((p) => p.is_subscribed);
     } catch {}
   }

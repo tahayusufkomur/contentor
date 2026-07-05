@@ -10,5 +10,12 @@ export default async function CoursesPage() {
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.courses?.blocks ?? [];
   const dynamicData = await fetchDynamicData(blocks);
-  return <PageView pageKey="courses" blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.courses} />;
+  return (
+    <PageView
+      pageKey="courses"
+      blocks={blocks}
+      dynamicData={dynamicData}
+      pageTitle={PAGE_LABELS.courses}
+    />
+  );
 }

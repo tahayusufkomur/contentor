@@ -1,35 +1,39 @@
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import { serverFetch } from '@/lib/api-server'
-import { EnrollButton } from '@/components/public/enroll-button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { formatDuration } from '@/lib/format'
-import { BookOpen, Clock, Lock, Play, User } from 'lucide-react'
-import type { CourseDetail, Module } from '@/types/course'
+import { serverFetch } from "@/lib/api-server";
+import { EnrollButton } from "@/components/public/enroll-button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { formatDuration } from "@/lib/format";
+import { BookOpen, Clock, Lock, Play, User } from "lucide-react";
+import type { CourseDetail, Module } from "@/types/course";
 
 function getTotalDuration(modules: Module[]): number {
   return modules.reduce(
     (acc, m) => acc + m.lessons.reduce((a, l) => a + l.duration_seconds, 0),
     0,
-  )
+  );
 }
 
 function formatTotalDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  if (hours > 0) return `${hours}h ${minutes}m`
-  return `${minutes}m`
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
 }
 
-export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  let course: CourseDetail | null = null
+export default async function CourseDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  let course: CourseDetail | null = null;
   try {
-    course = await serverFetch<CourseDetail>(`/api/v1/courses/${slug}/`)
+    course = await serverFetch<CourseDetail>(`/api/v1/courses/${slug}/`);
   } catch {
-    course = null
+    course = null;
   }
 
   if (!course) {
@@ -41,11 +45,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           The course you are looking for does not exist or has been removed.
         </p>
       </div>
-    )
+    );
   }
 
-  const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0)
-  const totalDuration = getTotalDuration(course.modules)
+  const totalLessons = course.modules.reduce(
+    (acc, m) => acc + m.lessons.length,
+    0,
+  );
+  const totalDuration = getTotalDuration(course.modules);
 
   return (
     <div className="space-y-8">
@@ -94,10 +101,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <CardContent className="p-6 space-y-4">
               <div className="text-center">
                 <p className="font-display text-3xl font-bold">
-                  {course.pricing_type === 'free'
-                    ? 'Free'
-                    : course.pricing_type === 'subscription'
-                      ? 'Included in subscription'
+                  {course.pricing_type === "free"
+                    ? "Free"
+                    : course.pricing_type === "subscription"
+                      ? "Included in subscription"
                       : `$${course.price}`}
                 </p>
               </div>
@@ -106,7 +113,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  <span>{totalLessons} lesson{totalLessons !== 1 ? 's' : ''}</span>
+                  <span>
+                    {totalLessons} lesson{totalLessons !== 1 ? "s" : ""}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
@@ -114,7 +123,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                 </div>
                 <div className="flex items-center gap-2">
                   <Play className="h-4 w-4" />
-                  <span>{course.modules.length} module{course.modules.length !== 1 ? 's' : ''}</span>
+                  <span>
+                    {course.modules.length} module
+                    {course.modules.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -124,7 +136,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
       {/* Curriculum */}
       <div>
-        <h2 className="mb-4 font-display text-2xl font-bold tracking-tight">Curriculum</h2>
+        <h2 className="mb-4 font-display text-2xl font-bold tracking-tight">
+          Curriculum
+        </h2>
         <div className="space-y-3">
           {course.modules.map((mod: Module) => (
             <Card key={mod.id} className="overflow-hidden">
@@ -133,7 +147,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   Module {mod.order}: {mod.title}
                 </h3>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {mod.lessons.length} lesson{mod.lessons.length !== 1 ? 's' : ''}
+                  {mod.lessons.length} lesson
+                  {mod.lessons.length !== 1 ? "s" : ""}
                 </p>
               </div>
               <div className="divide-y">
@@ -166,5 +181,5 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -186,8 +186,7 @@ export default function StreamHostView({
           label={isRecording ? "Stop Rec" : "Record"}
           active={isRecording}
           onClick={() =>
-            call &&
-            (isRecording ? call.stopRecording() : call.startRecording())
+            call && (isRecording ? call.stopRecording() : call.startRecording())
           }
         />
         <HostButton

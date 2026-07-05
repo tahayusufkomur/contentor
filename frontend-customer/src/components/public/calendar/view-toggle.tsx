@@ -25,7 +25,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
             "rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
             view === v.value
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {v.label}

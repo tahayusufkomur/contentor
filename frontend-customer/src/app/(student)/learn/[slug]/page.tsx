@@ -1,25 +1,25 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { clientFetch } from '@/lib/api-client'
-import { VideoPlayer } from '@/components/student/video-player'
-import { LessonSidebar } from '@/components/student/lesson-sidebar'
-import { Skeleton } from '@/components/ui/skeleton'
-import type { CourseDetail, Lesson, Progress } from '@/types/course'
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { clientFetch } from "@/lib/api-client";
+import { VideoPlayer } from "@/components/student/video-player";
+import { LessonSidebar } from "@/components/student/lesson-sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { CourseDetail, Lesson, Progress } from "@/types/course";
 
 export default function LearnPage() {
-  const params = useParams<{ slug: string }>()
-  const router = useRouter()
-  const [course, setCourse] = useState<CourseDetail | null>(null)
-  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null)
-  const [progressMap, setProgressMap] = useState<Record<number, Progress>>({})
-  const [autoPlay, setAutoPlay] = useState(true)
+  const params = useParams<{ slug: string }>();
+  const router = useRouter();
+  const [course, setCourse] = useState<CourseDetail | null>(null);
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [progressMap, setProgressMap] = useState<Record<number, Progress>>({});
+  const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
-    loadCourse()
-    loadProgress()
-  }, [params.slug])
+    loadCourse();
+    loadProgress();
+  }, [params.slug]);
 
   function loadCourse() {
     clientFetch<CourseDetail>(`/api/v1/courses/${params.slug}/`)
@@ -27,59 +27,68 @@ export default function LearnPage() {
         // Paid course the student hasn't unlocked — send them to the course
         // page where the purchase/subscribe options live.
         if (data.access_info && !data.access_info.has_access) {
-          router.replace(`/courses/${params.slug}`)
-          return
+          router.replace(`/courses/${params.slug}`);
+          return;
         }
-        setCourse(data)
-        if (!currentLesson && data.modules.length > 0 && data.modules[0].lessons.length > 0) {
-          setCurrentLesson(data.modules[0].lessons[0])
+        setCourse(data);
+        if (
+          !currentLesson &&
+          data.modules.length > 0 &&
+          data.modules[0].lessons.length > 0
+        ) {
+          setCurrentLesson(data.modules[0].lessons[0]);
         }
       })
-      .catch(console.error)
+      .catch(console.error);
   }
 
   function loadProgress() {
     clientFetch<Progress[]>(`/api/v1/courses/${params.slug}/progress/`)
       .then((items) => {
-        const map: Record<number, Progress> = {}
+        const map: Record<number, Progress> = {};
         items.forEach((p) => {
-          map[p.lesson] = p
-        })
-        setProgressMap(map)
+          map[p.lesson] = p;
+        });
+        setProgressMap(map);
       })
-      .catch(console.error)
+      .catch(console.error);
   }
 
   // Flatten all lessons in order
   const allLessons = useMemo(() => {
-    if (!course) return []
-    return course.modules.flatMap((m) => m.lessons)
-  }, [course])
+    if (!course) return [];
+    return course.modules.flatMap((m) => m.lessons);
+  }, [course]);
 
   function handleLessonSelect(lesson: Lesson) {
-    setCurrentLesson(lesson)
+    setCurrentLesson(lesson);
   }
 
   function handleProgressUpdate() {
-    loadProgress()
+    loadProgress();
   }
 
   const handleLessonComplete = useCallback(() => {
-    if (!autoPlay || !currentLesson) return
-    const idx = allLessons.findIndex((l) => l.id === currentLesson.id)
+    if (!autoPlay || !currentLesson) return;
+    const idx = allLessons.findIndex((l) => l.id === currentLesson.id);
     if (idx >= 0 && idx < allLessons.length - 1) {
-      setTimeout(() => setCurrentLesson(allLessons[idx + 1]), 1500)
+      setTimeout(() => setCurrentLesson(allLessons[idx + 1]), 1500);
     }
-  }, [autoPlay, currentLesson, allLessons])
+  }, [autoPlay, currentLesson, allLessons]);
 
   // Calculate overall progress
   const overallProgress = useMemo(() => {
-    if (!course) return 0
-    const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0)
-    if (totalLessons === 0) return 0
-    const completedCount = Object.values(progressMap).filter((p) => p.completed).length
-    return Math.round((completedCount / totalLessons) * 100)
-  }, [course, progressMap])
+    if (!course) return 0;
+    const totalLessons = course.modules.reduce(
+      (acc, m) => acc + m.lessons.length,
+      0,
+    );
+    if (totalLessons === 0) return 0;
+    const completedCount = Object.values(progressMap).filter(
+      (p) => p.completed,
+    ).length;
+    return Math.round((completedCount / totalLessons) * 100);
+  }, [course, progressMap]);
 
   if (!course || !currentLesson) {
     return (
@@ -97,7 +106,7 @@ export default function LearnPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -132,7 +141,9 @@ export default function LearnPage() {
 
           {/* Lesson content */}
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">{currentLesson.title}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {currentLesson.title}
+            </h1>
             {currentLesson.content_html && (
               <div
                 className="prose mt-4 max-w-none dark:prose-invert"
@@ -157,5 +168,5 @@ export default function LearnPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

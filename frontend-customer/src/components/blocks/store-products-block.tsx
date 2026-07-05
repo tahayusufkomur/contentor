@@ -58,7 +58,11 @@ export function StoreProductsBlock({
           {header}
           <div className="space-y-3">
             {items.map((item) => (
-              <Link key={`${item.type}-${item.id}`} href="/store" className="block">
+              <Link
+                key={`${item.type}-${item.id}`}
+                href="/store"
+                className="block"
+              >
                 <Card className="overflow-hidden transition-all hover:shadow-md">
                   <CardContent className="flex items-center gap-4 p-3">
                     {item.thumbnail_url ? (
@@ -131,7 +135,10 @@ export function StoreProductsBlock({
                   <h3 className="font-semibold leading-snug line-clamp-2">
                     {item.title}
                   </h3>
-                  <PriceBadge accessInfo={item.access_info} price={item.price} />
+                  <PriceBadge
+                    accessInfo={item.access_info}
+                    price={item.price}
+                  />
                 </CardContent>
               </Card>
             </Link>

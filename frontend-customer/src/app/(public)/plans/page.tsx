@@ -10,5 +10,12 @@ export default async function PlansPage() {
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.pricing?.blocks ?? [];
   const dynamicData = await fetchDynamicData(blocks);
-  return <PageView pageKey="pricing" blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.pricing} />;
+  return (
+    <PageView
+      pageKey="pricing"
+      blocks={blocks}
+      dynamicData={dynamicData}
+      pageTitle={PAGE_LABELS.pricing}
+    />
+  );
 }

@@ -36,33 +36,47 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
     setProgress(0);
     setError(null);
     try {
-      const { upload_url, s3_key } = await clientFetch<PresignResponse>("/api/v1/upload/presign/", {
-        method: "POST",
-        body: JSON.stringify({ filename: file.name, content_type: file.type, category: "photo" }),
-      });
+      const { upload_url, s3_key } = await clientFetch<PresignResponse>(
+        "/api/v1/upload/presign/",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            filename: file.name,
+            content_type: file.type,
+            category: "photo",
+          }),
+        },
+      );
 
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", upload_url);
         xhr.setRequestHeader("Content-Type", file.type);
         xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+          if (e.lengthComputable)
+            setProgress(Math.round((e.loaded / e.total) * 100));
         };
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
+        xhr.onload = () =>
+          xhr.status >= 200 && xhr.status < 300
+            ? resolve()
+            : reject(new Error(`Upload failed: ${xhr.status}`));
         xhr.onerror = () => reject(new Error("Upload failed"));
         xhr.send(file);
       });
 
-      const result = await clientFetch<CompleteResponse>("/api/v1/upload/complete/", {
-        method: "POST",
-        body: JSON.stringify({
-          s3_key,
-          category: "photo",
-          content_type: file.type,
-          file_size: file.size,
-          title: file.name.replace(/\.[^.]+$/, ""),
-        }),
-      });
+      const result = await clientFetch<CompleteResponse>(
+        "/api/v1/upload/complete/",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            s3_key,
+            category: "photo",
+            content_type: file.type,
+            file_size: file.size,
+            title: file.name.replace(/\.[^.]+$/, ""),
+          }),
+        },
+      );
 
       onChange({ logo_url: result.signed_url, logo_id: result.photo_id });
     } catch (err) {
@@ -79,7 +93,11 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
         {logoUrl ? (
           <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" />
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="h-full w-full object-contain"
+            />
           </div>
         ) : (
           <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-md border bg-muted">
@@ -105,7 +123,11 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
           >
-            {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Upload className="h-3.5 w-3.5" />
+            )}
             {logoUrl ? "Replace logo" : "Upload logo"}
           </Button>
           {logoUrl && (
@@ -125,7 +147,10 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
       {uploading && (
         <div className="space-y-1">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
           <p className="text-xs text-muted-foreground">{progress}% uploaded</p>
         </div>

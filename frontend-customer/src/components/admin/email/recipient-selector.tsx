@@ -48,7 +48,9 @@ export function RecipientSelector({
         setCourses([]);
       });
 
-    clientFetch<{ results: Student[] } | Student[]>("/api/v1/auth/students/?limit=100")
+    clientFetch<{ results: Student[] } | Student[]>(
+      "/api/v1/auth/students/?limit=100",
+    )
       .then((data) => {
         if (Array.isArray(data)) {
           setStudents(data);
@@ -104,8 +106,10 @@ export function RecipientSelector({
               checked={filterType === type}
               onChange={() => {
                 if (type === "all") onChange({ type: "all" });
-                if (type === "course") onChange({ type: "course", course_ids: [] });
-                if (type === "individual") onChange({ type: "individual", user_ids: [] });
+                if (type === "course")
+                  onChange({ type: "course", course_ids: [] });
+                if (type === "individual")
+                  onChange({ type: "individual", user_ids: [] });
               }}
               className="accent-primary"
             />
@@ -122,7 +126,9 @@ export function RecipientSelector({
 
       {filterType === "course" && (
         <div className="space-y-2">
-          <label className="text-xs text-muted-foreground">Select courses</label>
+          <label className="text-xs text-muted-foreground">
+            Select courses
+          </label>
           <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border p-2">
             {courses.map((course) => {
               const selected =
@@ -149,7 +155,9 @@ export function RecipientSelector({
               );
             })}
             {courses.length === 0 && (
-              <p className="p-2 text-xs text-muted-foreground">No courses found.</p>
+              <p className="p-2 text-xs text-muted-foreground">
+                No courses found.
+              </p>
             )}
           </div>
         </div>
@@ -167,7 +175,8 @@ export function RecipientSelector({
           <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border p-2">
             {filteredStudents.map((student) => {
               const selected =
-                value.type === "individual" && value.user_ids.includes(student.id);
+                value.type === "individual" &&
+                value.user_ids.includes(student.id);
               return (
                 <label
                   key={student.id}
@@ -185,15 +194,21 @@ export function RecipientSelector({
                     }}
                     className="accent-primary"
                   />
-                  <span className="text-sm">{student.name || student.email}</span>
+                  <span className="text-sm">
+                    {student.name || student.email}
+                  </span>
                   {student.name && (
-                    <span className="text-xs text-muted-foreground">{student.email}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {student.email}
+                    </span>
                   )}
                 </label>
               );
             })}
             {filteredStudents.length === 0 && (
-              <p className="p-2 text-xs text-muted-foreground">No students found.</p>
+              <p className="p-2 text-xs text-muted-foreground">
+                No students found.
+              </p>
             )}
           </div>
         </div>

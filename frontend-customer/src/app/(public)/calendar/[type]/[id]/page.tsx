@@ -15,7 +15,7 @@ export default async function EventDetailPage({ params }: Props) {
 
   const [event, user] = await Promise.all([
     serverFetch<CalendarEventDetail>(`/api/v1/calendar/${type}/${id}/`).catch(
-      () => null
+      () => null,
     ),
     getAuthUser(),
   ]);

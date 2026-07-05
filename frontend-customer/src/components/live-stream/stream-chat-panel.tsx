@@ -39,9 +39,9 @@ export default function StreamChatPanel({
 }: StreamChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>(
-    [],
-  );
+  const [floatingReactions, setFloatingReactions] = useState<
+    FloatingReaction[]
+  >([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const reactionIdRef = useRef(0);
 

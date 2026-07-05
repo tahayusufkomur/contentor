@@ -5,7 +5,12 @@ import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
-const SIZES: Record<string, number> = { "32": 32, "180": 180, "192": 192, "512": 512 };
+const SIZES: Record<string, number> = {
+  "32": 32,
+  "180": 180,
+  "192": 192,
+  "512": 512,
+};
 
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
@@ -43,33 +48,39 @@ export async function GET(request: Request): Promise<Response> {
 
   // eslint-disable-next-line @next/next/no-img-element
   const logo = logoUrl ? (
-    <img src={logoUrl} width={inner} height={inner} alt="" style={{ objectFit: "contain" }} />
+    <img
+      src={logoUrl}
+      width={inner}
+      height={inner}
+      alt=""
+      style={{ objectFit: "contain" }}
+    />
   ) : (
     fallback
   );
 
   const render = (child: React.ReactElement) =>
     new ImageResponse(
-      (
-        <div
-          style={{
-            display: "flex",
-            width: size,
-            height: size,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: theme.primaryHex,
-          }}
-        >
-          {child}
-        </div>
-      ),
+      <div
+        style={{
+          display: "flex",
+          width: size,
+          height: size,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: theme.primaryHex,
+        }}
+      >
+        {child}
+      </div>,
       {
         width: size,
         height: size,
         headers: {
           // Versioned URL (?v=<logo_id>) is immutable; unversioned must revalidate.
-          "Cache-Control": version ? "public, max-age=31536000, immutable" : "public, max-age=0, must-revalidate",
+          "Cache-Control": version
+            ? "public, max-age=31536000, immutable"
+            : "public, max-age=0, must-revalidate",
         },
       },
     );

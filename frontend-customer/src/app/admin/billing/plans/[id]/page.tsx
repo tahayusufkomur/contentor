@@ -1,29 +1,38 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, Settings } from 'lucide-react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import { clientFetch } from '@/lib/api-client'
-import { ContentPicker, type SelectedItem } from '@/components/billing/content-picker'
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Settings } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { clientFetch } from "@/lib/api-client";
+import {
+  ContentPicker,
+  type SelectedItem,
+} from "@/components/billing/content-picker";
 
 interface PlanAccess {
   items: Array<{
-    content_type: string
-    object_id: number
-    title?: string
-    price?: string
-  }>
+    content_type: string;
+    object_id: number;
+    title?: string;
+    price?: string;
+  }>;
 }
 
 interface Plan {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }
 
 function LoadingSkeleton() {
@@ -33,17 +42,17 @@ function LoadingSkeleton() {
         <Skeleton key={i} className="h-10 w-full" />
       ))}
     </div>
-  )
+  );
 }
 
 export default function PlanAccessPage() {
-  const params = useParams()
-  const id = params.id as string
+  const params = useParams();
+  const id = params.id as string;
 
-  const [plan, setPlan] = useState<Plan | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -51,44 +60,44 @@ export default function PlanAccessPage() {
         const [planData, accessData] = await Promise.all([
           clientFetch<Plan>(`/api/v1/billing/plans/${id}/`),
           clientFetch<PlanAccess>(`/api/v1/billing/plans/${id}/access/`),
-        ])
-        setPlan(planData)
+        ]);
+        setPlan(planData);
         setSelectedItems(
           (accessData.items ?? []).map((item) => ({
             content_type: item.content_type,
             object_id: item.object_id,
             title: item.title ?? `Item ${item.object_id}`,
-            price: item.price ?? '0',
-          }))
-        )
+            price: item.price ?? "0",
+          })),
+        );
       } catch (err) {
-        console.error(err)
-        toast.error('Failed to load plan access data.')
+        console.error(err);
+        toast.error("Failed to load plan access data.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    load()
-  }, [id])
+    load();
+  }, [id]);
 
   async function handleSave() {
-    setSaving(true)
+    setSaving(true);
     try {
       await clientFetch(`/api/v1/billing/plans/${id}/access/`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify({
           items: selectedItems.map((i) => ({
             content_type: i.content_type,
             object_id: i.object_id,
           })),
         }),
-      })
-      toast.success('Plan access updated successfully.')
+      });
+      toast.success("Plan access updated successfully.");
     } catch (err) {
-      console.error(err)
-      toast.error('Failed to update plan access. Please try again.')
+      console.error(err);
+      toast.error("Failed to update plan access. Please try again.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
@@ -102,7 +111,9 @@ export default function PlanAccessPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {loading ? 'Manage Plan Access' : `Manage Access: ${plan?.name ?? ''}`}
+            {loading
+              ? "Manage Plan Access"
+              : `Manage Access: ${plan?.name ?? ""}`}
           </h1>
           <p className="text-sm text-muted-foreground">
             Choose which content subscribers of this plan can access.
@@ -117,14 +128,18 @@ export default function PlanAccessPage() {
             Content Access
           </CardTitle>
           <CardDescription>
-            Select the courses, downloads, live classes, and live streams included in this subscription plan.
+            Select the courses, downloads, live classes, and live streams
+            included in this subscription plan.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <LoadingSkeleton />
           ) : (
-            <ContentPicker selected={selectedItems} onChange={setSelectedItems} />
+            <ContentPicker
+              selected={selectedItems}
+              onChange={setSelectedItems}
+            />
           )}
         </CardContent>
       </Card>
@@ -133,12 +148,12 @@ export default function PlanAccessPage() {
 
       <div className="flex gap-3">
         <Button onClick={handleSave} disabled={saving || loading}>
-          {saving ? 'Saving...' : 'Save Access'}
+          {saving ? "Saving..." : "Save Access"}
         </Button>
         <Button variant="outline" asChild>
           <Link href="/admin/billing">Cancel</Link>
         </Button>
       </div>
     </div>
-  )
+  );
 }

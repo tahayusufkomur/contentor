@@ -233,7 +233,9 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
       return <RepeaterField field={field} value={value} onChange={onChange} />;
 
     case "filterGroups":
-      return <FilterGroupsField field={field} value={value} onChange={onChange} />;
+      return (
+        <FilterGroupsField field={field} value={value} onChange={onChange} />
+      );
 
     default:
       return null;
@@ -387,7 +389,11 @@ function FilterGroupsField({ field, value, onChange }: FieldRendererProps) {
   }, [load]);
 
   function toggle(id: number) {
-    onChange(selected.includes(id) ? selected.filter((v) => v !== id) : [...selected, id]);
+    onChange(
+      selected.includes(id)
+        ? selected.filter((v) => v !== id)
+        : [...selected, id],
+    );
   }
 
   return (

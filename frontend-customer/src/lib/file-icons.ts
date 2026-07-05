@@ -9,7 +9,7 @@ import {
   Presentation,
   File,
   type LucideIcon,
-} from "lucide-react"
+} from "lucide-react";
 
 const EXT_MAP: Record<string, { icon: LucideIcon; color: string }> = {
   // Documents
@@ -60,18 +60,18 @@ const EXT_MAP: Record<string, { icon: LucideIcon; color: string }> = {
   ts: { icon: FileCode, color: "text-blue-600" },
   json: { icon: FileCode, color: "text-gray-500" },
   xml: { icon: FileCode, color: "text-orange-400" },
-}
+};
 
-const DEFAULT_ICON = { icon: File, color: "text-muted-foreground" }
+const DEFAULT_ICON = { icon: File, color: "text-muted-foreground" };
 
 export function getFileIcon(filename: string): {
-  icon: LucideIcon
-  color: string
+  icon: LucideIcon;
+  color: string;
 } {
-  const ext = filename.split(".").pop()?.toLowerCase() ?? ""
-  return EXT_MAP[ext] ?? DEFAULT_ICON
+  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+  return EXT_MAP[ext] ?? DEFAULT_ICON;
 }
 
 export function getExtension(filename: string): string {
-  return filename.split(".").pop()?.toUpperCase() ?? ""
+  return filename.split(".").pop()?.toUpperCase() ?? "";
 }

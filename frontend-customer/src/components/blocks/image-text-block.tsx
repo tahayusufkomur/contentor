@@ -12,7 +12,12 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
   if (!editable && !data.heading && !data.body && !img) return null;
 
   const text = (
-    <div className={cn("flex-1", layout === "stacked" && "mx-auto max-w-3xl text-center")}>
+    <div
+      className={cn(
+        "flex-1",
+        layout === "stacked" && "mx-auto max-w-3xl text-center",
+      )}
+    >
       {(data.heading || editable) && (
         <InlineText
           as={level}

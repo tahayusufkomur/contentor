@@ -34,9 +34,9 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
   const strength = (data.overlayStrength as string) || "medium";
   const scrimClass =
     shade === "dark"
-      ? DARK_SCRIM[strength] ?? DARK_SCRIM.medium
+      ? (DARK_SCRIM[strength] ?? DARK_SCRIM.medium)
       : shade === "light"
-        ? LIGHT_SCRIM[strength] ?? LIGHT_SCRIM.medium
+        ? (LIGHT_SCRIM[strength] ?? LIGHT_SCRIM.medium)
         : null;
   // Auto-flip the hero text for legibility over the scrim. Kept non-important so
   // an explicit "Text color" override (Style panel) still wins over it.

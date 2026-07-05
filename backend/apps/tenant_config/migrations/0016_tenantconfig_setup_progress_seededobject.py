@@ -5,30 +5,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
-        ('tenant_config', '0015_tenantconfig_setup_guide_dismissed'),
+        ("contenttypes", "0002_remove_content_type_name"),
+        ("tenant_config", "0015_tenantconfig_setup_guide_dismissed"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenantconfig',
-            name='setup_progress',
+            model_name="tenantconfig",
+            name="setup_progress",
             field=models.JSONField(blank=True, default=dict),
         ),
         migrations.CreateModel(
-            name='SeededObject',
+            name="SeededObject",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('object_id', models.CharField(max_length=64)),
-                ('fingerprint', models.CharField(max_length=64)),
-                ('niche', models.CharField(blank=True, default='', max_length=64)),
-                ('seeded_at', models.DateTimeField(auto_now_add=True)),
-                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='contenttypes.contenttype')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("object_id", models.CharField(max_length=64)),
+                ("fingerprint", models.CharField(max_length=64)),
+                ("niche", models.CharField(blank=True, default="", max_length=64)),
+                ("seeded_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="+", to="contenttypes.contenttype"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('content_type', 'object_id')},
+                "unique_together": {("content_type", "object_id")},
             },
         ),
     ]

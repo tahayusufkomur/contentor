@@ -7,7 +7,13 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/types/auth";
 
-export function UserMenu({ user, collapsed }: { user: User; collapsed?: boolean }) {
+export function UserMenu({
+  user,
+  collapsed,
+}: {
+  user: User;
+  collapsed?: boolean;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -63,7 +69,7 @@ export function UserMenu({ user, collapsed }: { user: User; collapsed?: boolean 
         <ChevronUp
           className={cn(
             "h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform",
-            !open && "rotate-180"
+            !open && "rotate-180",
           )}
         />
       </button>

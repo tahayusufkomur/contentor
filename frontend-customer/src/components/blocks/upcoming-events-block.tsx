@@ -21,7 +21,9 @@ export function UpcomingEventsBlock({
       />
     ) : null;
   const layout = data.layout || "grid";
-  const filterGroupIds = Array.isArray(data.filterGroups) ? (data.filterGroups as number[]) : [];
+  const filterGroupIds = Array.isArray(data.filterGroups)
+    ? (data.filterGroups as number[])
+    : [];
 
   const wide = layout === "list" ? "max-w-3xl" : "max-w-7xl";
 
@@ -33,7 +35,11 @@ export function UpcomingEventsBlock({
             {data.heading}
           </h2>
         )}
-        <EventsCatalogClient events={events} layout={layout} filterGroupIds={filterGroupIds} />
+        <EventsCatalogClient
+          events={events}
+          layout={layout}
+          filterGroupIds={filterGroupIds}
+        />
       </div>
     </section>
   );

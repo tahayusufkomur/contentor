@@ -19,7 +19,10 @@ export async function reportUsageOncePerSession(): Promise<void> {
   try {
     await clientFetch<void>("/api/v1/me/usage/", {
       method: "POST",
-      body: JSON.stringify({ mode: isStandalone() ? "pwa" : "browser", platform: detectPlatform() }),
+      body: JSON.stringify({
+        mode: isStandalone() ? "pwa" : "browser",
+        platform: detectPlatform(),
+      }),
     });
   } catch {
     // Telemetry must never affect the page.

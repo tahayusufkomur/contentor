@@ -10,7 +10,10 @@ interface CalendarAgendaViewProps {
   timezone: string;
 }
 
-export function CalendarAgendaView({ events, timezone }: CalendarAgendaViewProps) {
+export function CalendarAgendaView({
+  events,
+  timezone,
+}: CalendarAgendaViewProps) {
   const grouped = groupEventsByDate(events, timezone);
   const sortedKeys = Array.from(grouped.keys()).sort();
 
@@ -30,7 +33,11 @@ export function CalendarAgendaView({ events, timezone }: CalendarAgendaViewProps
         const dayEvents = grouped.get(dateKey)!;
         const header = formatDateHeader(dateKey);
         const date = new Date(dateKey + "T00:00:00");
-        const weekday = date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+        const weekday = date.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "short",
+          day: "numeric",
+        });
 
         return (
           <section key={dateKey}>
@@ -44,7 +51,11 @@ export function CalendarAgendaView({ events, timezone }: CalendarAgendaViewProps
             </div>
             <div className="space-y-3">
               {dayEvents.map((event) => (
-                <EventCard key={`${event.type}-${event.id}`} event={event} timezone={timezone} />
+                <EventCard
+                  key={`${event.type}-${event.id}`}
+                  event={event}
+                  timezone={timezone}
+                />
               ))}
             </div>
           </section>

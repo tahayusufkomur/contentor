@@ -1,39 +1,41 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { clientFetch } from "@/lib/api-client"
-import { cn } from "@/lib/utils"
-import { Tag as TagIcon } from "lucide-react"
-import type { Tag, TagScope } from "@/types/course"
+import { useCallback, useEffect, useState } from "react";
+import { clientFetch } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
+import { Tag as TagIcon } from "lucide-react";
+import type { Tag, TagScope } from "@/types/course";
 
 interface TagFilterBarProps {
-  scope: TagScope
-  value: number[]
-  onChange: (ids: number[]) => void
+  scope: TagScope;
+  value: number[];
+  onChange: (ids: number[]) => void;
 }
 
 /** A row of tag pills above an admin list. Toggling a tag narrows the list
  *  (the consuming page sends the selected ids as ?tags=). Renders nothing
  *  until the scope has at least one tag. */
 export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
-  const [tags, setTags] = useState<Tag[]>([])
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const fetchTags = useCallback(async () => {
     try {
-      setTags(await clientFetch<Tag[]>(`/api/v1/tags/?scope=${scope}`))
+      setTags(await clientFetch<Tag[]>(`/api/v1/tags/?scope=${scope}`));
     } catch {
       // ignore — no tags yet
     }
-  }, [scope])
+  }, [scope]);
 
   useEffect(() => {
-    fetchTags()
-  }, [fetchTags])
+    fetchTags();
+  }, [fetchTags]);
 
-  if (tags.length === 0) return null
+  if (tags.length === 0) return null;
 
   function toggle(id: number) {
-    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id])
+    onChange(
+      value.includes(id) ? value.filter((v) => v !== id) : [...value, id],
+    );
   }
 
   return (
@@ -42,7 +44,7 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
         <TagIcon className="h-3.5 w-3.5" /> Tags:
       </span>
       {tags.map((t) => {
-        const active = value.includes(t.id)
+        const active = value.includes(t.id);
         return (
           <button
             key={t.id}
@@ -57,7 +59,7 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
           >
             {t.name}
           </button>
-        )
+        );
       })}
       {value.length > 0 && (
         <button
@@ -69,5 +71,5 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
         </button>
       )}
     </div>
-  )
+  );
 }

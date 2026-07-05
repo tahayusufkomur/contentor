@@ -22,7 +22,8 @@ export function ContactBlock({ data }: BlockComponentProps) {
     const payload = {
       name: (form.elements.namedItem("name") as HTMLInputElement).value,
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
-      message: (form.elements.namedItem("message") as HTMLTextAreaElement).value,
+      message: (form.elements.namedItem("message") as HTMLTextAreaElement)
+        .value,
       website, // honeypot — should stay empty
     };
     setSubmitting(true);

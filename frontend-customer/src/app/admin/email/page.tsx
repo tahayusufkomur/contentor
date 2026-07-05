@@ -4,11 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import {
-  listCampaigns,
-  setupEmail,
-  type EmailCampaign,
-} from "@/lib/email-api";
+import { listCampaigns, setupEmail, type EmailCampaign } from "@/lib/email-api";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +76,9 @@ export default function EmailDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Email Campaigns</h1>
-          <p className="text-sm text-muted-foreground">Send beautiful emails to your students.</p>
+          <p className="text-sm text-muted-foreground">
+            Send beautiful emails to your students.
+          </p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -114,26 +112,32 @@ export default function EmailDashboardPage() {
         >
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>
-              {s === "All" ? "All statuses" : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === "All"
+                ? "All statuses"
+                : s.charAt(0).toUpperCase() + s.slice(1)}
             </option>
           ))}
         </select>
         <div className="flex gap-1">
-          {([["7d", "Last 7 days"], ["30d", "Last 30 days"], ["all", "All time"]] as const).map(
-            ([value, label]) => (
-              <button
-                key={value}
-                onClick={() => setDateRange(value)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  dateRange === value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {label}
-              </button>
-            ),
-          )}
+          {(
+            [
+              ["7d", "Last 7 days"],
+              ["30d", "Last 30 days"],
+              ["all", "All time"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setDateRange(value)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                dateRange === value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -176,7 +180,9 @@ export default function EmailDashboardPage() {
                 >
                   <td className="py-3">{c.subject}</td>
                   <td className="py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || ""}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || ""}`}
+                    >
                       {c.status}
                     </span>
                   </td>

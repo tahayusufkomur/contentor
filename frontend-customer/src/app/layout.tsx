@@ -26,7 +26,10 @@ import { getThemePalette } from "@/lib/themes";
 // owner can log in to preview.
 const GATE_BYPASS_PREFIXES = ["/login", "/callback", "/impersonate"];
 
-async function isSiteGated(config: Awaited<ReturnType<typeof fetchTenantConfig>>, slug: string): Promise<boolean> {
+async function isSiteGated(
+  config: Awaited<ReturnType<typeof fetchTenantConfig>>,
+  slug: string,
+): Promise<boolean> {
   if (!config) return false;
   const published = (config.is_published ?? true) || config.is_demo === true;
   if (published) return false;
@@ -36,7 +39,10 @@ async function isSiteGated(config: Awaited<ReturnType<typeof fetchTenantConfig>>
   if (GATE_BYPASS_PREFIXES.some((p) => pathname.startsWith(p))) return false;
 
   const cookieStore = await cookies();
-  if (cookieStore.get("contentor_preview")?.value === (config.tenant_slug || slug)) return false;
+  if (
+    cookieStore.get("contentor_preview")?.value === (config.tenant_slug || slug)
+  )
+    return false;
 
   const user = await getAuthUser();
   const isOwner = user?.role === "owner" || user?.role === "coach";
@@ -85,7 +91,9 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       // Tenant-branded favicon via the dynamic icon route — without an explicit
       // icon link the browser falls back to /favicon.ico, which 404s.
-      icon: [{ url: `/pwa-icon?size=32&v=${v}`, sizes: "32x32", type: "image/png" }],
+      icon: [
+        { url: `/pwa-icon?size=32&v=${v}`, sizes: "32x32", type: "image/png" },
+      ],
       apple: [{ url: `/pwa-icon?size=180&v=${v}`, sizes: "180x180" }],
     },
   };
@@ -113,7 +121,8 @@ export default async function RootLayout({
           <main className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
             <h1 className="text-2xl font-semibold">Site not found</h1>
             <p className="text-muted-foreground max-w-md text-sm">
-              There’s no Contentor site at this address. Check the link or contact the site owner.
+              There’s no Contentor site at this address. Check the link or
+              contact the site owner.
             </p>
           </main>
         </body>
@@ -126,7 +135,11 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={instrumentSans.variable} suppressHydrationWarning>
+    <html
+      lang={locale}
+      className={instrumentSans.variable}
+      suppressHydrationWarning
+    >
       <head>
         {config && <TenantThemeStyle config={config} />}
         {config?.font_family && (
@@ -154,7 +167,10 @@ export default async function RootLayout({
               <TenantThemeEnforcer />
               <Toaster position="top-center" richColors />
               {gated ? (
-                <PreviewGate brandName={config?.brand_name} hasPassword={config?.has_preview_password} />
+                <PreviewGate
+                  brandName={config?.brand_name}
+                  hasPassword={config?.has_preview_password}
+                />
               ) : (
                 <>
                   <RedirectToast />

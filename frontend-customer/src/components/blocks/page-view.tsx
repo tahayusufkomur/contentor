@@ -25,7 +25,13 @@ export async function PageView({
   const isAdmin = user?.role === "owner" || user?.role === "coach";
 
   if (isAdmin) {
-    return <EditModeCanvas pageKey={pageKey} blocks={blocks} dynamicData={dynamicData} />;
+    return (
+      <EditModeCanvas
+        pageKey={pageKey}
+        blocks={blocks}
+        dynamicData={dynamicData}
+      />
+    );
   }
   return (
     <PageRenderer

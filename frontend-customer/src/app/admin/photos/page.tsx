@@ -1,33 +1,30 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useState } from "react"
-import {
-  Image as ImageIcon,
-  Pencil,
-  Plus,
-  Trash2,
-  Upload,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { clientFetch, batchedAsync } from "@/lib/api-client"
-import { toast } from "sonner"
-import { formatFileSize, formatDate } from "@/lib/format"
+import { useCallback, useRef, useState } from "react";
+import { Image as ImageIcon, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { clientFetch, batchedAsync } from "@/lib/api-client";
+import { toast } from "sonner";
+import { formatFileSize, formatDate } from "@/lib/format";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
   type FetchPageParams,
   type FetchPageResult,
-} from "@/components/admin/media-browser"
-import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
-import { TagFilterBar } from "@/components/admin/tag-filter-bar"
-import type { Photo } from "@/types/photo"
+} from "@/components/admin/media-browser";
+import {
+  InlineEditPanel,
+  type FieldConfig,
+} from "@/components/admin/inline-edit-panel";
+import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import type { Photo } from "@/types/photo";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 interface PresignResponse {
-  upload_url: string
-  s3_key: string
+  upload_url: string;
+  s3_key: string;
 }
 
 const SORT_OPTIONS = [
@@ -37,38 +34,38 @@ const SORT_OPTIONS = [
   { label: "Name Z-A", value: "-title" },
   { label: "Largest", value: "-file_size" },
   { label: "Smallest", value: "file_size" },
-]
+];
 
 export default function PhotosPage() {
-  const browserRef = useRef<MediaBrowserHandle>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [tagFilter, setTagFilter] = useState<number[]>([])
+  const browserRef = useRef<MediaBrowserHandle>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Photo>> => {
-      const sp = new URLSearchParams()
-      sp.set("limit", String(params.limit))
-      sp.set("offset", String(params.offset))
-      sp.set("ordering", params.ordering)
-      if (params.search) sp.set("search", params.search)
-      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
+      const sp = new URLSearchParams();
+      sp.set("limit", String(params.limit));
+      sp.set("offset", String(params.offset));
+      sp.set("ordering", params.ordering);
+      if (params.search) sp.set("search", params.search);
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","));
       const data = await clientFetch<{
-        results: Photo[]
-        next: string | null
-        count: number
-      }>(`/api/v1/photos/?${sp.toString()}`)
-      return { results: data.results, next: data.next, count: data.count }
+        results: Photo[];
+        next: string | null;
+        count: number;
+      }>(`/api/v1/photos/?${sp.toString()}`);
+      return { results: data.results, next: data.next, count: data.count };
     },
-    [tagFilter]
-  )
+    [tagFilter],
+  );
 
   async function handleUpload(file: File) {
-    setUploading(true)
-    setUploadProgress(0)
+    setUploading(true);
+    setUploadProgress(0);
     try {
       const { upload_url, s3_key } = await clientFetch<PresignResponse>(
         "/api/v1/upload/presign/",
@@ -79,23 +76,23 @@ export default function PhotosPage() {
             content_type: file.type,
             category: "photo",
           }),
-        }
-      )
+        },
+      );
       await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open("PUT", upload_url)
-        xhr.setRequestHeader("Content-Type", file.type)
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", upload_url);
+        xhr.setRequestHeader("Content-Type", file.type);
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable)
-            setUploadProgress(Math.round((event.loaded / event.total) * 100))
-        }
+            setUploadProgress(Math.round((event.loaded / event.total) * 100));
+        };
         xhr.onload = () =>
           xhr.status >= 200 && xhr.status < 300
             ? resolve()
-            : reject(new Error(`Upload failed: ${xhr.status}`))
-        xhr.onerror = () => reject(new Error("Upload failed"))
-        xhr.send(file)
-      })
+            : reject(new Error(`Upload failed: ${xhr.status}`));
+        xhr.onerror = () => reject(new Error("Upload failed"));
+        xhr.send(file);
+      });
       await clientFetch("/api/v1/upload/complete/", {
         method: "POST",
         body: JSON.stringify({
@@ -105,15 +102,15 @@ export default function PhotosPage() {
           file_size: file.size,
           title: file.name.replace(/\.[^.]+$/, ""),
         }),
-      })
-      toast.success("Photo uploaded")
-      browserRef.current?.refresh()
+      });
+      toast.success("Photo uploaded");
+      browserRef.current?.refresh();
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to upload photo")
+      console.error(err);
+      toast.error("Failed to upload photo");
     } finally {
-      setUploading(false)
-      if (fileRef.current) fileRef.current.value = ""
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
@@ -121,10 +118,10 @@ export default function PhotosPage() {
     { key: "title", label: "Title", type: "text", required: true },
     { key: "alt_text", label: "Alt Text", type: "text" },
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "photo" },
-  ]
+  ];
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true)
+    setSaving(true);
     try {
       await clientFetch(`/api/v1/photos/${editingId}/`, {
         method: "PUT",
@@ -133,24 +130,24 @@ export default function PhotosPage() {
           alt_text: values.alt_text,
           tag_ids: values.tag_ids ?? [],
         }),
-      })
-      toast.success("Photo updated")
-      setEditingId(null)
-      browserRef.current?.refresh()
+      });
+      toast.success("Photo updated");
+      setEditingId(null);
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to update photo")
+      toast.error("Failed to update photo");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function handleDelete(id: string) {
     try {
-      await clientFetch(`/api/v1/photos/${id}/`, { method: "DELETE" })
-      toast.success("Photo deleted")
-      browserRef.current?.refresh()
+      await clientFetch(`/api/v1/photos/${id}/`, { method: "DELETE" });
+      toast.success("Photo deleted");
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to delete photo")
+      toast.error("Failed to delete photo");
     }
   }
 
@@ -170,8 +167,8 @@ export default function PhotosPage() {
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleUpload(file)
+              const file = e.target.files?.[0];
+              if (file) handleUpload(file);
             }}
           />
           <Button
@@ -203,39 +200,46 @@ export default function PhotosPage() {
         persistKey="photos"
         fetchPage={fetchPage}
         filterKey={tagFilter.join(",")}
-        filterSlot={<TagFilterBar scope="photo" value={tagFilter} onChange={setTagFilter} />}
+        filterSlot={
+          <TagFilterBar
+            scope="photo"
+            value={tagFilter}
+            onChange={setTagFilter}
+          />
+        }
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={ImageIcon}
         emptyMessage="No photos yet. Upload one to get started."
         getItemId={(p) => p.id}
         onDelete={async (selection) => {
-          let ids = selection.ids
+          let ids = selection.ids;
           if (selection.mode === "all") {
-            ids = []
-            let offset = 0
+            ids = [];
+            let offset = 0;
             while (true) {
-              const sp = new URLSearchParams()
-              sp.set("limit", "100")
-              sp.set("offset", String(offset))
-              sp.set("ordering", selection.ordering)
-              if (selection.search) sp.set("search", selection.search)
+              const sp = new URLSearchParams();
+              sp.set("limit", "100");
+              sp.set("offset", String(offset));
+              sp.set("ordering", selection.ordering);
+              if (selection.search) sp.set("search", selection.search);
               const data = await clientFetch<{
-                results: Photo[]
-                next: string | null
-              }>(`/api/v1/photos/?${sp}`)
-              ids.push(...data.results.map((p) => p.id))
-              if (!data.next) break
-              offset += 100
+                results: Photo[];
+                next: string | null;
+              }>(`/api/v1/photos/?${sp}`);
+              ids.push(...data.results.map((p) => p.id));
+              if (!data.next) break;
+              offset += 100;
             }
           }
           await batchedAsync(
-            ids.map((id) => () =>
-              clientFetch(`/api/v1/photos/${id}/`, { method: "DELETE" })
-            )
-          )
-          toast.success("Photos deleted")
-          browserRef.current?.refresh()
+            ids.map(
+              (id) => () =>
+                clientFetch(`/api/v1/photos/${id}/`, { method: "DELETE" }),
+            ),
+          );
+          toast.success("Photos deleted");
+          browserRef.current?.refresh();
         }}
         listColumns={[
           { label: "Photo", key: "photo" },
@@ -315,7 +319,10 @@ export default function PhotosPage() {
             <TableRow>
               <TableCell colSpan={6} className="p-0">
                 <InlineEditPanel
-                  item={{ ...photo, tag_ids: (photo.tags ?? []).map((t) => t.id) }}
+                  item={{
+                    ...photo,
+                    tag_ids: (photo.tags ?? []).map((t) => t.id),
+                  }}
                   fields={photoFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}
@@ -327,5 +334,5 @@ export default function PhotosPage() {
         }
       />
     </div>
-  )
+  );
 }

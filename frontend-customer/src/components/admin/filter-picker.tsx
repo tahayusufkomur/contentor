@@ -1,67 +1,69 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
-import { clientFetch } from "@/lib/api-client"
-import { Plus, Trash2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { FilterGroup, FilterOption } from "@/types/course"
+import { useCallback, useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { clientFetch } from "@/lib/api-client";
+import { Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { FilterGroup, FilterOption } from "@/types/course";
 
 interface FilterPickerProps {
   /** Selected FilterOption ids for this entity. */
-  value: number[]
-  onChange: (ids: number[]) => void
+  value: number[];
+  onChange: (ids: number[]) => void;
   /** The element type these filters belong to (sets a new filter's scope). */
-  scope: "course" | "event"
+  scope: "course" | "event";
 }
 
 /** Inline filter manager shown on a course/event form. The coach can create a
  *  filter (scoped to this element type), add options to it, select which apply
  *  to this entity, and delete a filter — all without leaving the form. */
 export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
-  const [groups, setGroups] = useState<FilterGroup[]>([])
-  const [addingGroup, setAddingGroup] = useState(false)
-  const [newGroupName, setNewGroupName] = useState("")
-  const [creatingFor, setCreatingFor] = useState<number | null>(null)
-  const [newOptionName, setNewOptionName] = useState("")
-  const [busy, setBusy] = useState(false)
+  const [groups, setGroups] = useState<FilterGroup[]>([]);
+  const [addingGroup, setAddingGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [creatingFor, setCreatingFor] = useState<number | null>(null);
+  const [newOptionName, setNewOptionName] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const fetchGroups = useCallback(async () => {
     try {
       const data = await clientFetch<FilterGroup[]>(
         `/api/v1/filters/groups/?applies_to=${scope}`,
-      )
-      setGroups(data)
+      );
+      setGroups(data);
     } catch {
       // ignore — coach can still create the first filter
     }
-  }, [scope])
+  }, [scope]);
 
   useEffect(() => {
-    fetchGroups()
-  }, [fetchGroups])
+    fetchGroups();
+  }, [fetchGroups]);
 
   function toggle(id: number) {
-    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id])
+    onChange(
+      value.includes(id) ? value.filter((v) => v !== id) : [...value, id],
+    );
   }
 
   async function createGroup() {
-    const name = newGroupName.trim()
-    if (!name || busy) return
-    setBusy(true)
+    const name = newGroupName.trim();
+    if (!name || busy) return;
+    setBusy(true);
     try {
       const g = await clientFetch<FilterGroup>("/api/v1/filters/groups/", {
         method: "POST",
         body: JSON.stringify({ name, applies_to: scope }),
-      })
-      setGroups((gs) => [...gs, { ...g, options: g.options ?? [] }])
-      setNewGroupName("")
-      setAddingGroup(false)
-      setCreatingFor(g.id)
+      });
+      setGroups((gs) => [...gs, { ...g, options: g.options ?? [] }]);
+      setNewGroupName("");
+      setAddingGroup(false);
+      setCreatingFor(g.id);
     } catch {
       // ignore
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
@@ -71,51 +73,58 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
         `Delete the "${group.name}" filter and all its options? It will be removed from every ${scope}.`,
       )
     )
-      return
+      return;
     try {
-      await clientFetch(`/api/v1/filters/groups/${group.id}/`, { method: "DELETE" })
-      const removedIds = new Set(group.options.map((o) => o.id))
-      setGroups((gs) => gs.filter((g) => g.id !== group.id))
-      onChange(value.filter((id) => !removedIds.has(id)))
+      await clientFetch(`/api/v1/filters/groups/${group.id}/`, {
+        method: "DELETE",
+      });
+      const removedIds = new Set(group.options.map((o) => o.id));
+      setGroups((gs) => gs.filter((g) => g.id !== group.id));
+      onChange(value.filter((id) => !removedIds.has(id)));
     } catch {
       // ignore
     }
   }
 
   async function createOption(groupId: number) {
-    const name = newOptionName.trim()
-    if (!name || busy) return
-    setBusy(true)
+    const name = newOptionName.trim();
+    if (!name || busy) return;
+    setBusy(true);
     try {
       const opt = await clientFetch<FilterOption>("/api/v1/filters/options/", {
         method: "POST",
         body: JSON.stringify({ group: groupId, name }),
-      })
+      });
       setGroups((gs) =>
-        gs.map((g) => (g.id === groupId ? { ...g, options: [...g.options, opt] } : g)),
-      )
-      onChange([...value, opt.id])
-      setNewOptionName("")
-      setCreatingFor(null)
+        gs.map((g) =>
+          g.id === groupId ? { ...g, options: [...g.options, opt] } : g,
+        ),
+      );
+      onChange([...value, opt.id]);
+      setNewOptionName("");
+      setCreatingFor(null);
     } catch {
       // ignore
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
   return (
     <div className="space-y-2">
       {groups.map((g) => (
-        <div key={g.id} className="space-y-1.5 rounded-md border bg-background p-2.5">
+        <div
+          key={g.id}
+          className="space-y-1.5 rounded-md border bg-background p-2.5"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold">{g.name}</span>
             <div className="flex items-center gap-2 text-muted-foreground">
               <button
                 type="button"
                 onClick={() => {
-                  setCreatingFor(creatingFor === g.id ? null : g.id)
-                  setNewOptionName("")
+                  setCreatingFor(creatingFor === g.id ? null : g.id);
+                  setNewOptionName("");
                 }}
                 className="flex items-center gap-1 text-xs transition-colors hover:text-foreground"
               >
@@ -138,7 +147,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
               </span>
             )}
             {g.options.map((o) => {
-              const active = value.includes(o.id)
+              const active = value.includes(o.id);
               return (
                 <button
                   key={o.id}
@@ -153,7 +162,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
                 >
                   {o.name}
                 </button>
-              )
+              );
             })}
           </div>
           {creatingFor === g.id && (
@@ -165,8 +174,8 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
                 className="h-8 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault()
-                    createOption(g.id)
+                    e.preventDefault();
+                    createOption(g.id);
                   }
                 }}
               />
@@ -193,12 +202,12 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                e.preventDefault()
-                createGroup()
+                e.preventDefault();
+                createGroup();
               }
               if (e.key === "Escape") {
-                setAddingGroup(false)
-                setNewGroupName("")
+                setAddingGroup(false);
+                setNewGroupName("");
               }
             }}
           />
@@ -221,5 +230,5 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
         </button>
       )}
     </div>
-  )
+  );
 }

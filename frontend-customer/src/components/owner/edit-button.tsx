@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { Pencil } from 'lucide-react'
+import { Pencil } from "lucide-react";
 
 interface EditButtonProps {
-  onClick: () => void
-  onboardingStep?: number | null
+  onClick: () => void;
+  onboardingStep?: number | null;
 }
 
 export function EditButton({ onClick, onboardingStep }: EditButtonProps) {
@@ -22,5 +22,5 @@ export function EditButton({ onClick, onboardingStep }: EditButtonProps) {
         </span>
       )}
     </button>
-  )
+  );
 }

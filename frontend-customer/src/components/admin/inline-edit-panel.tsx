@@ -1,50 +1,60 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { PhotoPicker } from "@/components/admin/photo-picker"
-import { VideoPicker } from "@/components/admin/video-picker"
-import { FilterPicker } from "@/components/admin/filter-picker"
-import { TagInput } from "@/components/admin/tag-input"
-import { Loader2 } from "lucide-react"
-import type { Photo } from "@/types/photo"
-import type { TagScope } from "@/types/course"
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { PhotoPicker } from "@/components/admin/photo-picker";
+import { VideoPicker } from "@/components/admin/video-picker";
+import { FilterPicker } from "@/components/admin/filter-picker";
+import { TagInput } from "@/components/admin/tag-input";
+import { Loader2 } from "lucide-react";
+import type { Photo } from "@/types/photo";
+import type { TagScope } from "@/types/course";
 
 // --- Types ---
 
 export interface FieldConfig<T> {
-  key: keyof T & string
-  label: string
-  type: "text" | "number" | "select" | "toggle" | "datetime" | "textarea" | "image" | "video" | "filterOptions" | "tags"
-  options?: { label: string; value: string }[]
-  showWhen?: (values: Record<string, unknown>) => boolean
-  placeholder?: string
-  required?: boolean
+  key: keyof T & string;
+  label: string;
+  type:
+    | "text"
+    | "number"
+    | "select"
+    | "toggle"
+    | "datetime"
+    | "textarea"
+    | "image"
+    | "video"
+    | "filterOptions"
+    | "tags";
+  options?: { label: string; value: string }[];
+  showWhen?: (values: Record<string, unknown>) => boolean;
+  placeholder?: string;
+  required?: boolean;
   /** For image fields: the key on the item that holds the preview URL */
-  previewUrlKey?: keyof T & string
+  previewUrlKey?: keyof T & string;
   /** For filterOptions fields: which filters to offer. */
-  filterScope?: "course" | "event"
+  filterScope?: "course" | "event";
   /** For tags fields: which content-type tag pool to draw from. */
-  tagScope?: TagScope
+  tagScope?: TagScope;
 }
 
 export interface InlineEditPanelProps<T> {
-  item: T
-  fields: FieldConfig<T>[]
-  onSave: (values: Record<string, unknown>) => Promise<void>
-  onCancel: () => void
-  saving?: boolean
+  item: T;
+  fields: FieldConfig<T>[];
+  onSave: (values: Record<string, unknown>) => Promise<void>;
+  onCancel: () => void;
+  saving?: boolean;
 }
 
 // --- Component ---
@@ -58,7 +68,7 @@ export function InlineEditPanel<T extends Record<string, any>>({
   saving = false,
 }: InlineEditPanelProps<T>) {
   const [values, setValues] = useState<Record<string, unknown>>(() => {
-    const init: Record<string, unknown> = {}
+    const init: Record<string, unknown> = {};
     for (const f of fields) {
       init[f.key] =
         item[f.key] ??
@@ -66,39 +76,39 @@ export function InlineEditPanel<T extends Record<string, any>>({
           ? false
           : f.type === "filterOptions" || f.type === "tags"
             ? []
-            : "")
+            : "");
     }
-    return init
-  })
+    return init;
+  });
 
   const [imagePreviewUrls, setImagePreviewUrls] = useState<
     Record<string, string | null>
   >(() => {
-    const init: Record<string, string | null> = {}
+    const init: Record<string, string | null> = {};
     for (const f of fields) {
       if (f.type === "image" && f.previewUrlKey) {
-        init[f.key] = (item[f.previewUrlKey] as string) ?? null
+        init[f.key] = (item[f.previewUrlKey] as string) ?? null;
       }
     }
-    return init
-  })
+    return init;
+  });
 
   const setValue = useCallback((key: string, val: unknown) => {
-    setValues((prev) => ({ ...prev, [key]: val }))
-  }, [])
+    setValues((prev) => ({ ...prev, [key]: val }));
+  }, []);
 
   // Escape to cancel
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onCancel()
+      if (e.key === "Escape") onCancel();
     }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [onCancel])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
 
   const handleSubmit = async () => {
-    await onSave(values)
-  }
+    await onSave(values);
+  };
 
   const hasEmptyRequired = fields.some(
     (f) =>
@@ -106,12 +116,10 @@ export function InlineEditPanel<T extends Record<string, any>>({
       (!f.showWhen || f.showWhen(values)) &&
       (values[f.key] === "" ||
         values[f.key] === null ||
-        values[f.key] === undefined)
-  )
+        values[f.key] === undefined),
+  );
 
-  const visibleFields = fields.filter(
-    (f) => !f.showWhen || f.showWhen(values)
-  )
+  const visibleFields = fields.filter((f) => !f.showWhen || f.showWhen(values));
 
   return (
     <div className="border-t bg-muted/30 px-4 py-4">
@@ -205,18 +213,18 @@ export function InlineEditPanel<T extends Record<string, any>>({
                 value={(values[field.key] as string) ?? null}
                 previewUrl={imagePreviewUrls[field.key] ?? null}
                 onSelect={(photo: Photo) => {
-                  setValue(field.key, photo.id)
+                  setValue(field.key, photo.id);
                   setImagePreviewUrls((prev) => ({
                     ...prev,
                     [field.key]: photo.signed_url,
-                  }))
+                  }));
                 }}
                 onClear={() => {
-                  setValue(field.key, null)
+                  setValue(field.key, null);
                   setImagePreviewUrls((prev) => ({
                     ...prev,
                     [field.key]: null,
-                  }))
+                  }));
                 }}
               />
             )}
@@ -226,11 +234,11 @@ export function InlineEditPanel<T extends Record<string, any>>({
                 value={(values[field.key] as number) ?? null}
                 previewUrl={imagePreviewUrls[field.key] ?? null}
                 onChange={(videoId, signedUrl) => {
-                  setValue(field.key, videoId)
+                  setValue(field.key, videoId);
                   setImagePreviewUrls((prev) => ({
                     ...prev,
                     [field.key]: signedUrl,
-                  }))
+                  }));
                 }}
               />
             )}
@@ -268,5 +276,5 @@ export function InlineEditPanel<T extends Record<string, any>>({
         </Button>
       </div>
     </div>
-  )
+  );
 }

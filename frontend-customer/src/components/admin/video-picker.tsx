@@ -1,90 +1,99 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ModalPortal } from "@/components/ui/modal-portal"
-import { clientFetch } from "@/lib/api-client"
-import { Search, Upload, Video, X } from "lucide-react"
-import { formatDuration } from "@/lib/format"
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ModalPortal } from "@/components/ui/modal-portal";
+import { clientFetch } from "@/lib/api-client";
+import { Search, Upload, Video, X } from "lucide-react";
+import { formatDuration } from "@/lib/format";
 
 interface VideoItem {
-  id: number
-  title: string
-  duration_seconds: number
-  video_signed_url: string | null
+  id: number;
+  title: string;
+  duration_seconds: number;
+  video_signed_url: string | null;
 }
 
 interface PresignResponse {
-  upload_url: string
-  s3_key: string
+  upload_url: string;
+  s3_key: string;
 }
 
 interface VideoPickerProps {
-  value: number | null
-  previewUrl: string | null
-  onChange: (videoId: number | null, signedUrl: string | null) => void
-  allowUrl?: boolean
+  value: number | null;
+  previewUrl: string | null;
+  onChange: (videoId: number | null, signedUrl: string | null) => void;
+  allowUrl?: boolean;
 }
 
 function extractDuration(file: File): Promise<number> {
   return new Promise((resolve) => {
-    const video = document.createElement("video")
-    video.preload = "metadata"
+    const video = document.createElement("video");
+    video.preload = "metadata";
     video.onloadedmetadata = () => {
-      URL.revokeObjectURL(video.src)
-      resolve(Math.round(video.duration))
-    }
+      URL.revokeObjectURL(video.src);
+      resolve(Math.round(video.duration));
+    };
     video.onerror = () => {
-      URL.revokeObjectURL(video.src)
-      resolve(0)
-    }
-    video.src = URL.createObjectURL(file)
-  })
+      URL.revokeObjectURL(video.src);
+      resolve(0);
+    };
+    video.src = URL.createObjectURL(file);
+  });
 }
 
-export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: VideoPickerProps) {
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState("")
-  const [videos, setVideos] = useState<VideoItem[]>([])
-  const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const fileRef = useRef<HTMLInputElement>(null)
+export function VideoPicker({
+  value,
+  previewUrl,
+  onChange,
+  allowUrl = false,
+}: VideoPickerProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchVideos = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "20", offset: "0" })
-      if (search) params.set("search", search)
-      const res = await clientFetch<{ results: VideoItem[]; next: string | null }>(
-        `/api/v1/courses/videos/?${params}`
-      )
-      setVideos(res.results)
+      const params = new URLSearchParams({ limit: "20", offset: "0" });
+      if (search) params.set("search", search);
+      const res = await clientFetch<{
+        results: VideoItem[];
+        next: string | null;
+      }>(`/api/v1/courses/videos/?${params}`);
+      setVideos(res.results);
     } catch {
-      setVideos([])
+      setVideos([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [search])
+  }, [search]);
 
   useEffect(() => {
-    if (!open) return
-    const timer = setTimeout(fetchVideos, 300)
-    return () => clearTimeout(timer)
-  }, [open, fetchVideos])
+    if (!open) return;
+    const timer = setTimeout(fetchVideos, 300);
+    return () => clearTimeout(timer);
+  }, [open, fetchVideos]);
 
   async function handleUpload(file: File) {
-    setUploading(true)
-    setUploadProgress(0)
+    setUploading(true);
+    setUploadProgress(0);
     try {
-      const duration_seconds = await extractDuration(file)
-      const title = file.name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ")
+      const duration_seconds = await extractDuration(file);
+      const title = file.name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");
 
-      const videoData = await clientFetch<VideoItem>("/api/v1/courses/videos/", {
-        method: "POST",
-        body: JSON.stringify({ title, description: "" }),
-      })
+      const videoData = await clientFetch<VideoItem>(
+        "/api/v1/courses/videos/",
+        {
+          method: "POST",
+          body: JSON.stringify({ title, description: "" }),
+        },
+      );
 
       const { upload_url, s3_key } = await clientFetch<PresignResponse>(
         "/api/v1/upload/presign/",
@@ -95,25 +104,25 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
             content_type: file.type,
             category: "library",
           }),
-        }
-      )
+        },
+      );
 
       await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open("PUT", upload_url)
-        xhr.setRequestHeader("Content-Type", file.type)
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", upload_url);
+        xhr.setRequestHeader("Content-Type", file.type);
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
-            setUploadProgress(Math.round((event.loaded / event.total) * 100))
+            setUploadProgress(Math.round((event.loaded / event.total) * 100));
           }
-        }
+        };
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve()
-          else reject(new Error(`Upload failed: ${xhr.status}`))
-        }
-        xhr.onerror = () => reject(new Error("Upload failed"))
-        xhr.send(file)
-      })
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload failed: ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error("Upload failed"));
+        xhr.send(file);
+      });
 
       await clientFetch("/api/v1/upload/complete/", {
         method: "POST",
@@ -124,18 +133,18 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
           duration_seconds,
           file_size: file.size,
         }),
-      })
+      });
 
       const updated = await clientFetch<VideoItem>(
-        `/api/v1/courses/videos/${videoData.id}/`
-      )
-      onChange(updated.id, updated.video_signed_url)
-      setOpen(false)
+        `/api/v1/courses/videos/${videoData.id}/`,
+      );
+      onChange(updated.id, updated.video_signed_url);
+      setOpen(false);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     } finally {
-      setUploading(false)
-      if (fileRef.current) fileRef.current.value = ""
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
@@ -221,8 +230,8 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
                   accept="video/mp4,video/quicktime,video/webm"
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleUpload(file)
+                    const file = e.target.files?.[0];
+                    if (file) handleUpload(file);
                   }}
                 />
                 <Button
@@ -268,8 +277,8 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
                         key={video.id}
                         type="button"
                         onClick={() => {
-                          onChange(video.id, video.video_signed_url)
-                          setOpen(false)
+                          onChange(video.id, video.video_signed_url);
+                          setOpen(false);
                         }}
                         className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
                       >
@@ -288,5 +297,5 @@ export function VideoPicker({ value, previewUrl, onChange, allowUrl = false }: V
         </ModalPortal>
       )}
     </div>
-  )
+  );
 }

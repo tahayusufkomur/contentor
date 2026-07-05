@@ -10,10 +10,18 @@ function humanSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function AttachmentList({ attachments }: { attachments: MessageAttachment[] }) {
+export default function AttachmentList({
+  attachments,
+}: {
+  attachments: MessageAttachment[];
+}) {
   if (attachments.length === 0) return null;
-  const images = attachments.filter((a) => !a.omitted && a.content_type.startsWith("image/"));
-  const files = attachments.filter((a) => a.omitted || !a.content_type.startsWith("image/"));
+  const images = attachments.filter(
+    (a) => !a.omitted && a.content_type.startsWith("image/"),
+  );
+  const files = attachments.filter(
+    (a) => a.omitted || !a.content_type.startsWith("image/"),
+  );
 
   return (
     <div className="mt-2 space-y-2">
@@ -28,7 +36,11 @@ export default function AttachmentList({ attachments }: { attachments: MessageAt
               className="block overflow-hidden rounded-lg border"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- presigned URL host varies */}
-              <img src={a.download_url} alt={a.filename} className="h-28 w-auto object-cover" />
+              <img
+                src={a.download_url}
+                alt={a.filename}
+                className="h-28 w-auto object-cover"
+              />
             </a>
           ))}
         </div>
@@ -52,7 +64,9 @@ export default function AttachmentList({ attachments }: { attachments: MessageAt
             className="inline-flex items-center gap-2 rounded-md border bg-muted/40 px-2.5 py-1.5 text-xs hover:bg-accent"
           >
             <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="max-w-[220px] truncate font-medium">{a.filename}</span>
+            <span className="max-w-[220px] truncate font-medium">
+              {a.filename}
+            </span>
             <span className="text-muted-foreground">{humanSize(a.size)}</span>
           </a>
         ),

@@ -25,9 +25,14 @@ export function TemplateCard({
   onDelete,
   onPreview,
 }: TemplateCardProps) {
-  const isGallery = (template as Record<string, unknown>).template_type === "provided";
-  const category = (template as Record<string, unknown>).category as string | undefined;
-  const thumbnailUrl = (template as Record<string, unknown>).thumbnail_url as string | undefined;
+  const isGallery =
+    (template as Record<string, unknown>).template_type === "provided";
+  const category = (template as Record<string, unknown>).category as
+    | string
+    | undefined;
+  const thumbnailUrl = (template as Record<string, unknown>).thumbnail_url as
+    | string
+    | undefined;
 
   return (
     <div
@@ -37,7 +42,10 @@ export function TemplateCard({
       onClick={mode === "picker" ? onSelect : undefined}
     >
       {/* Preview area — 2:3 email ratio, iframe scaled to fit */}
-      <div className="relative overflow-hidden bg-muted/20" style={{ paddingBottom: previewAspectRatio }}>
+      <div
+        className="relative overflow-hidden bg-muted/20"
+        style={{ paddingBottom: previewAspectRatio }}
+      >
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -86,7 +94,10 @@ export function TemplateCard({
           <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
             {onEdit && (
               <button
-                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
                 className="rounded-md bg-white px-3 py-1.5 text-xs font-medium text-gray-900 hover:bg-gray-100"
               >
                 Edit
@@ -94,7 +105,10 @@ export function TemplateCard({
             )}
             {onPreview && (
               <button
-                onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPreview();
+                }}
                 className="rounded-md bg-white px-3 py-1.5 text-xs font-medium text-gray-900 hover:bg-gray-100"
               >
                 Preview
@@ -102,7 +116,10 @@ export function TemplateCard({
             )}
             {onDelete && !isGallery && (
               <button
-                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
                 className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
               >
                 Delete

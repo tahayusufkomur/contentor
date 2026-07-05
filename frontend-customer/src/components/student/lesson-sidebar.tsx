@@ -1,20 +1,27 @@
-'use client'
+"use client";
 
-import { cn } from '@/lib/utils'
-import { formatDuration } from '@/lib/format'
-import { CheckCircle2, Circle, Clock, ListRestart } from 'lucide-react'
-import type { CourseDetail, Lesson, Progress } from '@/types/course'
+import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/format";
+import { CheckCircle2, Circle, Clock, ListRestart } from "lucide-react";
+import type { CourseDetail, Lesson, Progress } from "@/types/course";
 
 interface LessonSidebarProps {
-  course: CourseDetail
-  currentLessonId: number
-  progressMap: Record<number, Progress>
-  onLessonSelect: (lesson: Lesson) => void
-  autoPlay?: boolean
-  onAutoPlayChange?: (autoPlay: boolean) => void
+  course: CourseDetail;
+  currentLessonId: number;
+  progressMap: Record<number, Progress>;
+  onLessonSelect: (lesson: Lesson) => void;
+  autoPlay?: boolean;
+  onAutoPlayChange?: (autoPlay: boolean) => void;
 }
 
-export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSelect, autoPlay, onAutoPlayChange }: LessonSidebarProps) {
+export function LessonSidebar({
+  course,
+  currentLessonId,
+  progressMap,
+  onLessonSelect,
+  autoPlay,
+  onAutoPlayChange,
+}: LessonSidebarProps) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="border-b px-4 py-3">
@@ -32,7 +39,7 @@ export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSe
                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                 autoPlay
                   ? "bg-primary/10 text-primary"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground",
               )}
               title={autoPlay ? "Auto-play is on" : "Auto-play is off"}
             >
@@ -52,15 +59,16 @@ export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSe
             </div>
             <div className="divide-y">
               {mod.lessons.map((lesson) => {
-                const isActive = lesson.id === currentLessonId
-                const isCompleted = progressMap[lesson.id]?.completed
+                const isActive = lesson.id === currentLessonId;
+                const isCompleted = progressMap[lesson.id]?.completed;
 
                 return (
                   <div
                     key={lesson.id}
                     className={cn(
-                      'flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50 cursor-pointer',
-                      isActive && 'bg-primary/10 border-l-2 border-primary font-medium',
+                      "flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50 cursor-pointer",
+                      isActive &&
+                        "bg-primary/10 border-l-2 border-primary font-medium",
                     )}
                     onClick={() => onLessonSelect(lesson)}
                   >
@@ -77,12 +85,12 @@ export function LessonSidebar({ course, currentLessonId, progressMap, onLessonSe
                       {formatDuration(lesson.duration_seconds)}
                     </span>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }

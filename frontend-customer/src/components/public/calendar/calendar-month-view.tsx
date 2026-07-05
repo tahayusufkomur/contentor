@@ -28,9 +28,16 @@ function getEventHref(event: CalendarEvent): string {
   return `/calendar/${event.type}/${event.id}`;
 }
 
-export function CalendarMonthView({ events, currentDate, timezone }: CalendarMonthViewProps) {
+export function CalendarMonthView({
+  events,
+  currentDate,
+  timezone,
+}: CalendarMonthViewProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
-  const gridDates = getMonthGridDates(currentDate.getFullYear(), currentDate.getMonth());
+  const gridDates = getMonthGridDates(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+  );
   const eventsByDate = groupEventsByDate(events, timezone);
   const currentMonth = currentDate.getMonth();
   const rowCount = gridDates.length / 7;
@@ -43,7 +50,11 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
     const selTime = selectedDate.getTime();
     return events
       .filter((e) => new Date(e.scheduled_at).getTime() > selTime)
-      .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.scheduled_at).getTime() -
+          new Date(b.scheduled_at).getTime(),
+      )
       .slice(0, 3);
   }, [events, selectedDate, selectedEvents.length]);
 
@@ -93,7 +104,7 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
                   inMonth && !hasEvents && !today && !selected && "opacity-45",
                   today && !selected && "bg-primary/5",
                   selected && "bg-primary/[0.07]",
-                  !selected && !today && hasEvents && "hover:bg-primary/[0.04]"
+                  !selected && !today && hasEvents && "hover:bg-primary/[0.04]",
                 )}
               >
                 {/* Selection ring */}
@@ -111,7 +122,11 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
                     <span
                       className={cn(
                         "text-xs",
-                        selected ? "text-primary font-bold" : hasEvents ? "text-foreground font-bold" : "text-muted-foreground font-medium"
+                        selected
+                          ? "text-primary font-bold"
+                          : hasEvents
+                            ? "text-foreground font-bold"
+                            : "text-muted-foreground font-medium",
                       )}
                     >
                       {date.getDate()}
@@ -129,7 +144,7 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
                         className={cn(
                           "rounded px-1.5 py-[3px] text-[11px] leading-tight truncate border-l-[3px]",
                           config.borderClass,
-                          config.bgClass
+                          config.bgClass,
                         )}
                       >
                         <span className="font-semibold text-muted-foreground">
@@ -153,7 +168,10 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
                     return (
                       <span
                         key={`dot-${event.type}-${event.id}-${ei}`}
-                        className={cn("w-1.5 h-1.5 rounded-full", config.dotClass)}
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full",
+                          config.dotClass,
+                        )}
                       />
                     );
                   })}
@@ -180,7 +198,11 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
           {selectedEvents.length > 0 ? (
             <div className="space-y-3">
               {selectedEvents.map((event, i) => (
-                <DetailEventCard key={`${event.type}-${event.id}-${i}`} event={event} timezone={timezone} />
+                <DetailEventCard
+                  key={`${event.type}-${event.id}-${i}`}
+                  event={event}
+                  timezone={timezone}
+                />
               ))}
             </div>
           ) : (
@@ -190,7 +212,9 @@ export function CalendarMonthView({ events, currentDate, timezone }: CalendarMon
                 <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
                   <CalendarDays className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">No events scheduled</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  No events scheduled
+                </p>
               </div>
 
               {/* Coming up next */}
@@ -259,7 +283,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
               className={cn(
                 "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md",
                 config.textClass,
-                config.bgClass
+                config.bgClass,
               )}
             >
               {config.label}
@@ -267,7 +291,9 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
             <span
               className={cn(
                 "text-xs font-bold",
-                event.pricing_type === "free" ? "text-emerald-600" : "text-muted-foreground"
+                event.pricing_type === "free"
+                  ? "text-emerald-600"
+                  : "text-muted-foreground",
               )}
             >
               {event.pricing_type === "free" ? "Free" : event.price}

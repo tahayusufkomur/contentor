@@ -26,8 +26,18 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     background_color: "#ffffff",
     theme_color: theme.primaryHex,
     icons: [
-      { src: `/pwa-icon?size=192&v=${v}`, sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: `/pwa-icon?size=512&v=${v}`, sizes: "512x512", type: "image/png", purpose: "any" },
+      {
+        src: `/pwa-icon?size=192&v=${v}`,
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: `/pwa-icon?size=512&v=${v}`,
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
       {
         src: `/pwa-icon?size=512&purpose=maskable&v=${v}`,
         sizes: "512x512",

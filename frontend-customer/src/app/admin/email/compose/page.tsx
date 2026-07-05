@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { EmailBuilderIframe, type EmailBuilderIframeHandle } from "@/components/admin/email/email-builder-iframe";
+import {
+  EmailBuilderIframe,
+  type EmailBuilderIframeHandle,
+} from "@/components/admin/email/email-builder-iframe";
 import { RecipientSelector } from "@/components/admin/email/recipient-selector";
 import { TemplateGrid } from "@/components/admin/email/template-grid";
 import {
@@ -23,7 +26,8 @@ export const dynamic = "force-dynamic";
 function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
   if (Array.isArray(data)) return data;
   if ("results" in data && Array.isArray(data.results)) return data.results;
-  if ("data" in data && Array.isArray((data as { data: T[] }).data)) return (data as { data: T[] }).data;
+  if ("data" in data && Array.isArray((data as { data: T[] }).data))
+    return (data as { data: T[] }).data;
   return [];
 }
 
@@ -32,26 +36,37 @@ export default function ComposePage() {
   const searchParams = useSearchParams();
   const builderRef = useRef<EmailBuilderIframeHandle>(null);
   const initialTemplateId = searchParams.get("template") || "";
-  const initialStep = (searchParams.get("step") as Step) || (initialTemplateId ? "design" : "choose");
+  const initialStep =
+    (searchParams.get("step") as Step) ||
+    (initialTemplateId ? "design" : "choose");
   const initialSubject = searchParams.get("subject") || "";
   const initialTemplateName = searchParams.get("templateName") || "";
 
   // Step 1 state
   const [step, setStepRaw] = useState<Step>(initialStep);
   const [allTemplates, setAllTemplates] = useState<EmailTemplate[]>([]);
-  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>({});
+  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
+    {},
+  );
   const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [copyingTemplateId, setCopyingTemplateId] = useState<string | null>(null);
+  const [copyingTemplateId, setCopyingTemplateId] = useState<string | null>(
+    null,
+  );
 
   // Step 2 state
   const [savedTemplateId, setSavedTemplateIdRaw] = useState(initialTemplateId);
-  const [savedTemplateName, setSavedTemplateNameRaw] = useState(initialTemplateName);
-  const [templateJson, setTemplateJson] = useState<Record<string, unknown> | undefined>(undefined);
+  const [savedTemplateName, setSavedTemplateNameRaw] =
+    useState(initialTemplateName);
+  const [templateJson, setTemplateJson] = useState<
+    Record<string, unknown> | undefined
+  >(undefined);
   const [hasSaved, setHasSaved] = useState(!!initialTemplateId);
 
   // Step 3 state
   const [subject, setSubjectRaw] = useState(initialSubject);
-  const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>({ type: "all" });
+  const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>({
+    type: "all",
+  });
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,29 +79,43 @@ export default function ComposePage() {
       else params.delete(k);
     }
     const qs = params.toString();
-    const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    const next = qs
+      ? `${window.location.pathname}?${qs}`
+      : window.location.pathname;
     window.history.replaceState({}, "", next);
   }, []);
 
-  const setStep = useCallback((s: Step) => {
-    setStepRaw(s);
-    syncUrl({ step: s });
-  }, [syncUrl]);
+  const setStep = useCallback(
+    (s: Step) => {
+      setStepRaw(s);
+      syncUrl({ step: s });
+    },
+    [syncUrl],
+  );
 
-  const setSavedTemplateId = useCallback((id: string) => {
-    setSavedTemplateIdRaw(id);
-    syncUrl({ template: id });
-  }, [syncUrl]);
+  const setSavedTemplateId = useCallback(
+    (id: string) => {
+      setSavedTemplateIdRaw(id);
+      syncUrl({ template: id });
+    },
+    [syncUrl],
+  );
 
-  const setSavedTemplateName = useCallback((name: string) => {
-    setSavedTemplateNameRaw(name);
-    syncUrl({ templateName: name });
-  }, [syncUrl]);
+  const setSavedTemplateName = useCallback(
+    (name: string) => {
+      setSavedTemplateNameRaw(name);
+      syncUrl({ templateName: name });
+    },
+    [syncUrl],
+  );
 
-  const setSubject = useCallback((s: string) => {
-    setSubjectRaw(s);
-    syncUrl({ subject: s });
-  }, [syncUrl]);
+  const setSubject = useCallback(
+    (s: string) => {
+      setSubjectRaw(s);
+      syncUrl({ subject: s });
+    },
+    [syncUrl],
+  );
 
   // Load templates for Step 1
   useEffect(() => {
@@ -94,11 +123,17 @@ export default function ComposePage() {
     setLoadingTemplates(true);
 
     Promise.all([
-      listTemplates().then(asArray).catch(() => [] as EmailTemplate[]),
-      listGallery().then(asArray).catch(() => [] as EmailTemplate[]),
+      listTemplates()
+        .then(asArray)
+        .catch(() => [] as EmailTemplate[]),
+      listGallery()
+        .then(asArray)
+        .catch(() => [] as EmailTemplate[]),
     ]).then(([mine, gallery]) => {
       const seen = new Set(mine.map((t) => t.id));
-      const uniqueGallery = (gallery as EmailTemplate[]).filter((t) => !seen.has(t.id));
+      const uniqueGallery = (gallery as EmailTemplate[]).filter(
+        (t) => !seen.has(t.id),
+      );
       const all = [...mine, ...uniqueGallery];
       setAllTemplates(all);
       setLoadingTemplates(false);
@@ -162,11 +197,14 @@ export default function ComposePage() {
   }, []);
 
   // Step 2: MAILCRAFT_TEMPLATE_SAVED event
-  const handleTemplateSaved = useCallback((payload: { templateId: string; templateName: string }) => {
-    setSavedTemplateId(payload.templateId);
-    if (payload.templateName) setSavedTemplateName(payload.templateName);
-    setHasSaved(true);
-  }, []);
+  const handleTemplateSaved = useCallback(
+    (payload: { templateId: string; templateName: string }) => {
+      setSavedTemplateId(payload.templateId);
+      if (payload.templateName) setSavedTemplateName(payload.templateName);
+      setHasSaved(true);
+    },
+    [],
+  );
 
   const canGoToSend = useMemo(
     () => Boolean(savedTemplateId),
@@ -175,7 +213,13 @@ export default function ComposePage() {
 
   // Step 2: Back to Step 1
   const handleBackToChoose = useCallback(() => {
-    if (hasSaved && !window.confirm("Go back to template selection? Your current edits are saved.")) return;
+    if (
+      hasSaved &&
+      !window.confirm(
+        "Go back to template selection? Your current edits are saved.",
+      )
+    )
+      return;
     setStep("choose");
   }, [hasSaved]);
 
@@ -189,11 +233,17 @@ export default function ComposePage() {
       setError("Please enter a subject line.");
       return;
     }
-    if (recipientFilter.type === "course" && recipientFilter.course_ids.length === 0) {
+    if (
+      recipientFilter.type === "course" &&
+      recipientFilter.course_ids.length === 0
+    ) {
       setError("Please select at least one course.");
       return;
     }
-    if (recipientFilter.type === "individual" && recipientFilter.user_ids.length === 0) {
+    if (
+      recipientFilter.type === "individual" &&
+      recipientFilter.user_ids.length === 0
+    ) {
       setError("Please select at least one student.");
       return;
     }
@@ -210,7 +260,8 @@ export default function ComposePage() {
       });
       router.push("/admin/email");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to send campaign.";
+      const message =
+        err instanceof Error ? err.message : "Failed to send campaign.";
       setError(message);
     } finally {
       setSending(false);
@@ -239,7 +290,13 @@ export default function ComposePage() {
         {stepLabels.map((s, i) => (
           <span key={s.key}>
             {i > 0 && <span className="mr-4 text-muted-foreground">/</span>}
-            <span className={step === s.key ? "font-bold text-primary" : "text-muted-foreground"}>
+            <span
+              className={
+                step === s.key
+                  ? "font-bold text-primary"
+                  : "text-muted-foreground"
+              }
+            >
               {s.label}
             </span>
           </span>
@@ -250,7 +307,9 @@ export default function ComposePage() {
       {step === "choose" && (
         <div className="space-y-4">
           {loadingTemplates ? (
-            <p className="text-sm text-muted-foreground">Loading templates...</p>
+            <p className="text-sm text-muted-foreground">
+              Loading templates...
+            </p>
           ) : (
             <TemplateGrid
               templates={allTemplates}
@@ -262,9 +321,7 @@ export default function ComposePage() {
               onStartFromScratch={handleStartFromScratch}
             />
           )}
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
       )}
 

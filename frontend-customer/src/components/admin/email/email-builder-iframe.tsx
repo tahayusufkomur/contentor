@@ -1,6 +1,14 @@
 "use client";
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { createEmailSession } from "@/lib/email-api";
 
@@ -60,15 +68,21 @@ function detectTheme(): "light" | "dark" {
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
-export const EmailBuilderIframe = forwardRef<EmailBuilderIframeHandle, EmailBuilderIframeProps>(function EmailBuilderIframe({
-  templateJson,
-  templateId,
-  chromeColor,
-  canvasColor,
-  onSave,
-  onTemplateSaved,
-  onReady,
-}, ref) {
+export const EmailBuilderIframe = forwardRef<
+  EmailBuilderIframeHandle,
+  EmailBuilderIframeProps
+>(function EmailBuilderIframe(
+  {
+    templateJson,
+    templateId,
+    chromeColor,
+    canvasColor,
+    onSave,
+    onTemplateSaved,
+    onReady,
+  },
+  ref,
+) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,8 +90,12 @@ export const EmailBuilderIframe = forwardRef<EmailBuilderIframeHandle, EmailBuil
   const [builderReady, setBuilderReady] = useState(false);
   const [themeMode, setThemeMode] = useState<"light" | "dark">(detectTheme);
 
-  const [resolvedChromeColor, setResolvedChromeColor] = useState(chromeColor || "");
-  const [resolvedCanvasColor, setResolvedCanvasColor] = useState(canvasColor || "");
+  const [resolvedChromeColor, setResolvedChromeColor] = useState(
+    chromeColor || "",
+  );
+  const [resolvedCanvasColor, setResolvedCanvasColor] = useState(
+    canvasColor || "",
+  );
 
   // Observe dark mode class changes on <html>
   useEffect(() => {
@@ -104,7 +122,9 @@ export const EmailBuilderIframe = forwardRef<EmailBuilderIframeHandle, EmailBuil
   }, []);
 
   // Resolve for pending requestSave calls
-  const saveResolverRef = useRef<((payload: TemplateSavedPayload | null) => void) | null>(null);
+  const saveResolverRef = useRef<
+    ((payload: TemplateSavedPayload | null) => void) | null
+  >(null);
 
   const requestSave = useCallback((): Promise<TemplateSavedPayload | null> => {
     const iframe = iframeRef.current;
@@ -183,9 +203,13 @@ export const EmailBuilderIframe = forwardRef<EmailBuilderIframeHandle, EmailBuil
 
       if (type === "MAILCRAFT_TEMPLATE_SAVED") {
         const tid = data.payload?.template_id || data.payload?.templateId || "";
-        const tname = data.payload?.template_name || data.payload?.templateName || "";
+        const tname =
+          data.payload?.template_name || data.payload?.templateName || "";
         if (tid) {
-          const payload = { templateId: String(tid), templateName: String(tname) };
+          const payload = {
+            templateId: String(tid),
+            templateName: String(tname),
+          };
           onTemplateSaved?.(payload);
           // Resolve pending requestSave promise
           if (saveResolverRef.current) {
@@ -246,7 +270,13 @@ export const EmailBuilderIframe = forwardRef<EmailBuilderIframeHandle, EmailBuil
       },
       emailcraftOrigin,
     );
-  }, [builderReady, emailcraftOrigin, themeMode, resolvedChromeColor, resolvedCanvasColor]);
+  }, [
+    builderReady,
+    emailcraftOrigin,
+    themeMode,
+    resolvedChromeColor,
+    resolvedCanvasColor,
+  ]);
 
   const iframeSrc = useMemo(() => {
     if (!sessionToken) return "";

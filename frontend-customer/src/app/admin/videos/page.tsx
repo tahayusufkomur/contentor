@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react";
 import {
   AlertCircle,
   Clock,
@@ -13,39 +13,42 @@ import {
   Upload,
   Video,
   X,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { clientFetch, batchedAsync } from "@/lib/api-client"
-import { toast } from "sonner"
-import { formatFileSize, formatDate, formatDuration } from "@/lib/format"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { clientFetch, batchedAsync } from "@/lib/api-client";
+import { toast } from "sonner";
+import { formatFileSize, formatDate, formatDuration } from "@/lib/format";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
   type FetchPageParams,
   type FetchPageResult,
-} from "@/components/admin/media-browser"
-import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
-import { TagFilterBar } from "@/components/admin/tag-filter-bar"
-import { useChunkedUpload } from "@/hooks/use-chunked-upload"
-import { cn } from "@/lib/utils"
+} from "@/components/admin/media-browser";
+import {
+  InlineEditPanel,
+  type FieldConfig,
+} from "@/components/admin/inline-edit-panel";
+import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { useChunkedUpload } from "@/hooks/use-chunked-upload";
+import { cn } from "@/lib/utils";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 interface VideoItem {
-  id: number
-  title: string
-  description: string
-  s3_key: string
-  duration_seconds: number
-  file_size: number
-  video_signed_url: string | null
-  tags?: import("@/types/course").Tag[]
-  tag_ids?: number[]
-  created_at: string
+  id: number;
+  title: string;
+  description: string;
+  s3_key: string;
+  duration_seconds: number;
+  file_size: number;
+  video_signed_url: string | null;
+  tags?: import("@/types/course").Tag[];
+  tag_ids?: number[];
+  created_at: string;
 }
 
 const SORT_OPTIONS = [
@@ -57,112 +60,112 @@ const SORT_OPTIONS = [
   { label: "Smallest", value: "file_size" },
   { label: "Longest", value: "-duration_seconds" },
   { label: "Shortest", value: "duration_seconds" },
-]
+];
 
-const ACCEPT = "video/mp4,video/quicktime,video/webm"
+const ACCEPT = "video/mp4,video/quicktime,video/webm";
 
 function stripExtension(name: string) {
-  return name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ")
+  return name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");
 }
 
 function extractDuration(file: File): Promise<number> {
   return new Promise((resolve) => {
-    const video = document.createElement("video")
-    video.preload = "metadata"
+    const video = document.createElement("video");
+    video.preload = "metadata";
     video.onloadedmetadata = () => {
-      URL.revokeObjectURL(video.src)
-      resolve(Math.round(video.duration))
-    }
+      URL.revokeObjectURL(video.src);
+      resolve(Math.round(video.duration));
+    };
     video.onerror = () => {
-      URL.revokeObjectURL(video.src)
-      resolve(0)
-    }
-    video.src = URL.createObjectURL(file)
-  })
+      URL.revokeObjectURL(video.src);
+      resolve(0);
+    };
+    video.src = URL.createObjectURL(file);
+  });
 }
 
 export default function VideosPage() {
-  const browserRef = useRef<MediaBrowserHandle>(null)
-  const [showUpload, setShowUpload] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [duration, setDuration] = useState(0)
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [dragOver, setDragOver] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [saving, setSaving] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const browserRef = useRef<MediaBrowserHandle>(null);
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [duration, setDuration] = useState(0);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const upload = useChunkedUpload()
+  const upload = useChunkedUpload();
 
-  const [tagFilter, setTagFilter] = useState<number[]>([])
+  const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<VideoItem>> => {
-      const sp = new URLSearchParams()
-      sp.set("limit", String(params.limit))
-      sp.set("offset", String(params.offset))
-      sp.set("ordering", params.ordering)
-      if (params.search) sp.set("search", params.search)
-      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
+      const sp = new URLSearchParams();
+      sp.set("limit", String(params.limit));
+      sp.set("offset", String(params.offset));
+      sp.set("ordering", params.ordering);
+      if (params.search) sp.set("search", params.search);
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","));
       const data = await clientFetch<{
-        results: VideoItem[]
-        next: string | null
-        count: number
-      }>(`/api/v1/courses/videos/?${sp.toString()}`)
-      return { results: data.results, next: data.next, count: data.count }
+        results: VideoItem[];
+        next: string | null;
+        count: number;
+      }>(`/api/v1/courses/videos/?${sp.toString()}`);
+      return { results: data.results, next: data.next, count: data.count };
     },
-    [tagFilter]
-  )
+    [tagFilter],
+  );
 
   // ---- file selection ----
 
   async function handleFileSelected(file: File) {
-    setSelectedFile(file)
-    setTitle(stripExtension(file.name))
-    setDescription("")
+    setSelectedFile(file);
+    setTitle(stripExtension(file.name));
+    setDescription("");
 
     // Generate video preview
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
 
-    const dur = await extractDuration(file)
-    setDuration(dur)
+    const dur = await extractDuration(file);
+    setDuration(dur);
 
-    if (!showUpload) setShowUpload(true)
+    if (!showUpload) setShowUpload(true);
   }
 
   function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setDragOver(false)
-    const file = e.dataTransfer.files[0]
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("video/")) {
-      handleFileSelected(file)
+      handleFileSelected(file);
     }
   }
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) handleFileSelected(file)
-    e.target.value = ""
+    const file = e.target.files?.[0];
+    if (file) handleFileSelected(file);
+    e.target.value = "";
   }
 
   function clearUpload() {
-    if (upload.state.uploading) upload.abort()
-    setSelectedFile(null)
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setPreviewUrl(null)
-    setDuration(0)
-    setTitle("")
-    setDescription("")
-    setShowUpload(false)
+    if (upload.state.uploading) upload.abort();
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setDuration(0);
+    setTitle("");
+    setDescription("");
+    setShowUpload(false);
   }
 
   // ---- upload + create ----
 
   async function handleStartUpload() {
-    if (!selectedFile || !title.trim()) return
+    if (!selectedFile || !title.trim()) return;
 
     // Create video record first
     try {
@@ -171,8 +174,8 @@ export default function VideosPage() {
         {
           method: "POST",
           body: JSON.stringify({ title: title.trim(), description }),
-        }
-      )
+        },
+      );
 
       upload.start({
         category: "library",
@@ -180,13 +183,13 @@ export default function VideosPage() {
         file: selectedFile,
         durationSeconds: duration,
         onComplete: () => {
-          toast.success("Video uploaded")
-          clearUpload()
-          browserRef.current?.refresh()
+          toast.success("Video uploaded");
+          clearUpload();
+          browserRef.current?.refresh();
         },
-      })
+      });
     } catch {
-      toast.error("Failed to create video")
+      toast.error("Failed to create video");
     }
   }
 
@@ -196,10 +199,10 @@ export default function VideosPage() {
     { key: "title", label: "Title", type: "text", required: true },
     { key: "description", label: "Description", type: "textarea" },
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "video" },
-  ]
+  ];
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true)
+    setSaving(true);
     try {
       await clientFetch(`/api/v1/courses/videos/${editingId}/`, {
         method: "PUT",
@@ -208,24 +211,24 @@ export default function VideosPage() {
           description: values.description,
           tag_ids: values.tag_ids ?? [],
         }),
-      })
-      toast.success("Video updated")
-      setEditingId(null)
-      browserRef.current?.refresh()
+      });
+      toast.success("Video updated");
+      setEditingId(null);
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to update video")
+      toast.error("Failed to update video");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
     try {
-      await clientFetch(`/api/v1/courses/videos/${id}/`, { method: "DELETE" })
-      toast.success("Video deleted")
-      browserRef.current?.refresh()
+      await clientFetch(`/api/v1/courses/videos/${id}/`, { method: "DELETE" });
+      toast.success("Video deleted");
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to delete video")
+      toast.error("Failed to delete video");
     }
   }
 
@@ -241,10 +244,7 @@ export default function VideosPage() {
           </p>
         </div>
         {!showUpload && (
-          <Button
-            onClick={() => setShowUpload(true)}
-            className="gap-2"
-          >
+          <Button onClick={() => setShowUpload(true)} className="gap-2">
             <Plus className="h-4 w-4" /> Upload Video
           </Button>
         )}
@@ -280,8 +280,8 @@ export default function VideosPage() {
               /* ---- Drop zone ---- */
               <div
                 onDragOver={(e) => {
-                  e.preventDefault()
-                  setDragOver(true)
+                  e.preventDefault();
+                  setDragOver(true);
                 }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
@@ -290,7 +290,7 @@ export default function VideosPage() {
                   "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 transition-colors",
                   dragOver
                     ? "border-primary bg-primary/5"
-                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
+                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50",
                 )}
               >
                 <div className="rounded-full bg-primary/10 p-4">
@@ -417,10 +417,7 @@ export default function VideosPage() {
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
                     {upload.state.uploading ? (
-                      <Button
-                        variant="outline"
-                        onClick={() => upload.abort()}
-                      >
+                      <Button variant="outline" onClick={() => upload.abort()}>
                         Cancel Upload
                       </Button>
                     ) : (
@@ -446,47 +443,54 @@ export default function VideosPage() {
         </div>
       )}
 
-
-
       {/* ──────── Media browser ──────── */}
       <MediaBrowser<VideoItem>
         ref={browserRef}
         persistKey="videos"
         fetchPage={fetchPage}
         filterKey={tagFilter.join(",")}
-        filterSlot={<TagFilterBar scope="video" value={tagFilter} onChange={setTagFilter} />}
+        filterSlot={
+          <TagFilterBar
+            scope="video"
+            value={tagFilter}
+            onChange={setTagFilter}
+          />
+        }
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={Video}
         emptyMessage="No videos yet. Upload one to get started."
         getItemId={(v) => v.id}
         onDelete={async (selection) => {
-          let ids = selection.ids
+          let ids = selection.ids;
           if (selection.mode === "all") {
-            ids = []
-            let offset = 0
+            ids = [];
+            let offset = 0;
             while (true) {
-              const sp = new URLSearchParams()
-              sp.set("limit", "100")
-              sp.set("offset", String(offset))
-              sp.set("ordering", selection.ordering)
-              if (selection.search) sp.set("search", selection.search)
+              const sp = new URLSearchParams();
+              sp.set("limit", "100");
+              sp.set("offset", String(offset));
+              sp.set("ordering", selection.ordering);
+              if (selection.search) sp.set("search", selection.search);
               const data = await clientFetch<{
-                results: { id: number }[]
-                next: string | null
-              }>(`/api/v1/courses/videos/?${sp}`)
-              ids.push(...data.results.map((v) => v.id))
-              if (!data.next) break
-              offset += 100
+                results: { id: number }[];
+                next: string | null;
+              }>(`/api/v1/courses/videos/?${sp}`);
+              ids.push(...data.results.map((v) => v.id));
+              if (!data.next) break;
+              offset += 100;
             }
           }
           await batchedAsync(
-            ids.map((id) => () =>
-              clientFetch(`/api/v1/courses/videos/${id}/`, { method: "DELETE" })
-            )
-          )
-          toast.success("Videos deleted")
-          browserRef.current?.refresh()
+            ids.map(
+              (id) => () =>
+                clientFetch(`/api/v1/courses/videos/${id}/`, {
+                  method: "DELETE",
+                }),
+            ),
+          );
+          toast.success("Videos deleted");
+          browserRef.current?.refresh();
         }}
         listColumns={[
           { label: "Title", key: "title" },
@@ -559,9 +563,7 @@ export default function VideosPage() {
             </TableCell>
             <TableCell>{formatDate(video.created_at)}</TableCell>
             <TableCell>
-              <Badge
-                variant={video.video_signed_url ? "success" : "secondary"}
-              >
+              <Badge variant={video.video_signed_url ? "success" : "secondary"}>
                 {video.video_signed_url ? "Uploaded" : "No video"}
               </Badge>
             </TableCell>
@@ -590,7 +592,10 @@ export default function VideosPage() {
             <TableRow>
               <TableCell colSpan={7} className="p-0">
                 <InlineEditPanel
-                  item={{ ...video, tag_ids: (video.tags ?? []).map((t) => t.id) }}
+                  item={{
+                    ...video,
+                    tag_ids: (video.tags ?? []).map((t) => t.id),
+                  }}
                   fields={videoFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}
@@ -602,5 +607,5 @@ export default function VideosPage() {
         }
       />
     </div>
-  )
+  );
 }

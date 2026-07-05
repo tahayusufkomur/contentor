@@ -10,5 +10,12 @@ export default async function FaqPage() {
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.faq?.blocks ?? [];
   const dynamicData = await fetchDynamicData(blocks);
-  return <PageView pageKey="faq" blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.faq} />;
+  return (
+    <PageView
+      pageKey="faq"
+      blocks={blocks}
+      dynamicData={dynamicData}
+      pageTitle={PAGE_LABELS.faq}
+    />
+  );
 }

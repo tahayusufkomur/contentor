@@ -246,8 +246,16 @@ export default function LiveClassesPage() {
                       </div>
                     )}
                     {(lc.recording_signed_url || lc.recording_url) && (
-                      <Button asChild variant="outline" size="sm" className="gap-1.5">
-                        <Link href={lc.recording_signed_url || lc.recording_url} target="_blank">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                      >
+                        <Link
+                          href={lc.recording_signed_url || lc.recording_url}
+                          target="_blank"
+                        >
                           <Play className="h-3.5 w-3.5" />
                           Watch Recording
                         </Link>

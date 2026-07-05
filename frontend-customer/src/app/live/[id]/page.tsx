@@ -10,7 +10,8 @@ export default async function LiveRoomPage({
   params: { id: string };
 }) {
   const user = await getAuthUser();
-  if (!user) redirect("/login?toast=You+need+to+log+in+to+join&toast_type=info");
+  if (!user)
+    redirect("/login?toast=You+need+to+log+in+to+join&toast_type=info");
 
   return (
     <LiveRoomClient

@@ -25,7 +25,9 @@ export function InstallGuide() {
   const t = useTranslations("pwa");
   const [tab, setTab] = useState<Tab>("ios");
   const [installed, setInstalled] = useState(false);
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
 
   useEffect(() => {
     if (isStandalone()) {
@@ -52,8 +54,12 @@ export function InstallGuide() {
     return (
       <div className="mx-auto max-w-md py-12 text-center">
         <InstalledCheck className="mx-auto h-20 w-20" />
-        <h1 className="mt-4 text-xl font-semibold">{t("guide.installedTitle")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("guide.installedBody")}</p>
+        <h1 className="mt-4 text-xl font-semibold">
+          {t("guide.installedTitle")}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("guide.installedBody")}
+        </p>
       </div>
     );
   }
@@ -61,21 +67,63 @@ export function InstallGuide() {
   const steps =
     tab === "ios"
       ? [
-          { art: <IosShareStep className="h-32 w-auto" />, text: t("guide.iosStep1") },
-          { art: <IosAddStep label={t("guide.iosAddLabel")} className="h-32 w-auto" />, text: t("guide.iosStep2") },
-          { art: <IosConfirmStep label={t("guide.iosAddButton")} className="h-32 w-auto" />, text: t("guide.iosStep3") },
+          {
+            art: <IosShareStep className="h-32 w-auto" />,
+            text: t("guide.iosStep1"),
+          },
+          {
+            art: (
+              <IosAddStep
+                label={t("guide.iosAddLabel")}
+                className="h-32 w-auto"
+              />
+            ),
+            text: t("guide.iosStep2"),
+          },
+          {
+            art: (
+              <IosConfirmStep
+                label={t("guide.iosAddButton")}
+                className="h-32 w-auto"
+              />
+            ),
+            text: t("guide.iosStep3"),
+          },
         ]
       : [
-          { art: <AndroidMenuStep className="h-32 w-auto" />, text: t("guide.androidStep1") },
-          { art: <AndroidInstallStep label={t("guide.androidInstallLabel")} className="h-32 w-auto" />, text: t("guide.androidStep2") },
-          { art: <AndroidConfirmStep label={t("guide.androidInstallButton")} className="h-32 w-auto" />, text: t("guide.androidStep3") },
+          {
+            art: <AndroidMenuStep className="h-32 w-auto" />,
+            text: t("guide.androidStep1"),
+          },
+          {
+            art: (
+              <AndroidInstallStep
+                label={t("guide.androidInstallLabel")}
+                className="h-32 w-auto"
+              />
+            ),
+            text: t("guide.androidStep2"),
+          },
+          {
+            art: (
+              <AndroidConfirmStep
+                label={t("guide.androidInstallButton")}
+                className="h-32 w-auto"
+              />
+            ),
+            text: t("guide.androidStep3"),
+          },
         ];
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight">{t("guide.title")}</h1>
-        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{t("guide.subtitle")}</p>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("guide.title")}
+        </h1>
+        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+          {t("guide.subtitle")}
+        </p>
       </div>
 
       {deferred && (
@@ -86,7 +134,9 @@ export function InstallGuide() {
           >
             {t("guide.installNow")}
           </button>
-          <p className="mt-2 text-xs text-muted-foreground">{t("guide.orManual")}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {t("guide.orManual")}
+          </p>
         </div>
       )}
 
@@ -107,7 +157,10 @@ export function InstallGuide() {
 
       <ol className="space-y-4">
         {steps.map((step, i) => (
-          <li key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
+          <li
+            key={i}
+            className="flex items-center gap-4 rounded-xl border border-border bg-card p-4"
+          >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
               {i + 1}
             </span>
@@ -123,7 +176,9 @@ export function InstallGuide() {
         </p>
       )}
 
-      <p className="text-center text-xs text-muted-foreground">{t("guide.desktopNote")}</p>
+      <p className="text-center text-xs text-muted-foreground">
+        {t("guide.desktopNote")}
+      </p>
     </div>
   );
 }

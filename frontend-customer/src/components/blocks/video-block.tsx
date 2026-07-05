@@ -24,7 +24,11 @@ export function VideoBlock({ data, editable }: BlockComponentProps) {
   const embed = toEmbedUrl(url);
   const layout = data.layout || "standard";
   const width =
-    layout === "full" ? "max-w-none" : layout === "wide" ? "max-w-6xl" : "max-w-4xl";
+    layout === "full"
+      ? "max-w-none"
+      : layout === "wide"
+        ? "max-w-6xl"
+        : "max-w-4xl";
   const frame = layout === "full" ? "" : "rounded-2xl border";
 
   return (

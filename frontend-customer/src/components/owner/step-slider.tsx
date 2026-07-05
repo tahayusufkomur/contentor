@@ -14,7 +14,12 @@ interface StepSliderProps {
  *  spacing, columns, heading size. A native range (themed via accent-primary,
  *  so it stays on-brand across every theme) snaps to discrete stops; the labels
  *  beneath are clickable too. Distinct/categorical choices use buttons instead. */
-export function StepSlider({ options, value, onChange, label }: StepSliderProps) {
+export function StepSlider({
+  options,
+  value,
+  onChange,
+  label,
+}: StepSliderProps) {
   if (options.length === 0) return null;
   const found = options.findIndex((o) => o.value === value);
   const idx = found < 0 ? 0 : found;

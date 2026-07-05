@@ -22,7 +22,14 @@ if (!fs.existsSync(pkgPath)) {
 const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
 
 if (pkg.exports && !pkg.exports["."]) {
-  const conditionalKeys = ["import", "require", "default", "types", "node", "browser"];
+  const conditionalKeys = [
+    "import",
+    "require",
+    "default",
+    "types",
+    "node",
+    "browser",
+  ];
   const rootExport = {};
   const subpathExports = {};
 

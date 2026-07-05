@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { BrandTab } from "./brand-tab";
 import { NavbarTab } from "./navbar-tab";
 import { BlocksTab } from "./blocks-tab";
@@ -32,6 +33,8 @@ import {
   PAGE_ROUTES,
   pageKeyForPath,
 } from "@/lib/blocks/pages";
+import { SetupAssistantPanel } from "@/components/setup/setup-assistant-panel";
+import { useSetupStatus } from "@/lib/setup-assistant";
 import type { Block, PageTemplate, TenantConfig } from "@/types/tenant";
 
 type Mode = "site" | "pages";
@@ -247,17 +250,8 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                     </div>
                   </div>
 
-                  {/* First-run: clear path from the builder to the setup guide */}
-                  {!initialConfig.onboarding_completed && (
-                    <a
-                      href="/admin"
-                      className="flex items-center justify-between border-b bg-primary/5 px-5 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
-                      style={{ minWidth: SIDEBAR_WIDTH }}
-                    >
-                      Continue setup
-                      <ArrowRight className="h-4 w-4" />
-                    </a>
-                  )}
+                  {/* Always-on setup progress: same panel as /admin */}
+                  <SetupSidebarRow minWidth={SIDEBAR_WIDTH} />
 
                   {/* Mode tabs — Site settings vs Page content */}
                   <div
@@ -435,5 +429,32 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
         </RichEditorProvider>
       </EditorStoreProvider>
     </EditModeProvider>
+  );
+}
+
+// The edit sidebar renders on the tenant public site, but the root layout's
+// NextIntlClientProvider is fed every namespace (see src/i18n/request.ts), so
+// the "admin" namespace used by /admin's setup UI is available here too —
+// reuse `setup.progressLabel` instead of hardcoding a duplicate string.
+function SetupSidebarRow({ minWidth }: { minWidth: number }) {
+  const t = useTranslations("admin");
+  const [open, setOpen] = useState(false);
+  const status = useSetupStatus();
+  if (!status || status.dismissed) return null;
+  const { done, total } = status.progress;
+  if (total > 0 && done === total) return null;
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center justify-between border-b bg-primary/5 px-5 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+        style={{ minWidth }}
+      >
+        <span>{t("setup.progressLabel", { done, total })}</span>
+        <ArrowRight className="h-4 w-4" />
+      </button>
+      <SetupAssistantPanel open={open} onClose={() => setOpen(false)} />
+    </>
   );
 }

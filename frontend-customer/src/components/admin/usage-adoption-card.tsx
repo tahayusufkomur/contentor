@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Globe, Smartphone } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { clientFetch } from "@/lib/api-client"
+import { useEffect, useState } from "react";
+import { Globe, Smartphone } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { clientFetch } from "@/lib/api-client";
 
 interface DailyPoint {
-  day: string
-  pwa: number
-  browser: number
+  day: string;
+  pwa: number;
+  browser: number;
 }
 
 interface UsageSummary {
-  pwa_sessions: number
-  browser_sessions: number
-  pwa_pct: number
-  installed_students: number
-  daily: DailyPoint[]
+  pwa_sessions: number;
+  browser_sessions: number;
+  pwa_pct: number;
+  installed_students: number;
+  daily: DailyPoint[];
 }
 
 export function UsageAdoptionCard() {
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<UsageSummary | null>(null)
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<UsageSummary | null>(null);
 
   useEffect(() => {
     clientFetch<UsageSummary>("/api/v1/admin/usage/summary/?days=30")
       .then(setData)
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   if (loading) {
     return (
@@ -43,13 +43,14 @@ export function UsageAdoptionCard() {
           <Skeleton className="h-16 w-full" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (!data) return null
+  if (!data) return null;
 
-  const webPct = data.pwa_sessions + data.browser_sessions ? 100 - data.pwa_pct : 0
-  const maxDay = data.daily.reduce((m, d) => Math.max(m, d.pwa + d.browser), 0)
+  const webPct =
+    data.pwa_sessions + data.browser_sessions ? 100 - data.pwa_pct : 0;
+  const maxDay = data.daily.reduce((m, d) => Math.max(m, d.pwa + d.browser), 0);
 
   return (
     <Card>
@@ -61,7 +62,9 @@ export function UsageAdoptionCard() {
       <CardContent className="space-y-4">
         <div>
           <p className="text-2xl font-bold">{data.installed_students}</p>
-          <p className="text-xs text-muted-foreground">students installed the app</p>
+          <p className="text-xs text-muted-foreground">
+            students installed the app
+          </p>
         </div>
 
         {/* PWA vs Web split */}
@@ -83,7 +86,7 @@ export function UsageAdoptionCard() {
         {maxDay > 0 ? (
           <div className="flex h-16 items-end gap-px">
             {data.daily.map((d) => {
-              const dayTotal = d.pwa + d.browser
+              const dayTotal = d.pwa + d.browser;
               return (
                 <div
                   key={d.day}
@@ -93,10 +96,12 @@ export function UsageAdoptionCard() {
                 >
                   <div
                     className="bg-primary"
-                    style={{ height: dayTotal ? `${(d.pwa / dayTotal) * 100}%` : "0%" }}
+                    style={{
+                      height: dayTotal ? `${(d.pwa / dayTotal) * 100}%` : "0%",
+                    }}
                   />
                 </div>
-              )
+              );
             })}
           </div>
         ) : (
@@ -104,5 +109,5 @@ export function UsageAdoptionCard() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

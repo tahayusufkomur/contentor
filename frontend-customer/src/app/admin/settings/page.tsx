@@ -103,8 +103,8 @@ export default function SettingsPage() {
               Timezone
             </CardTitle>
             <CardDescription>
-              All event times in the calendar will be displayed in this
-              timezone for your students.
+              All event times in the calendar will be displayed in this timezone
+              for your students.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -112,9 +112,7 @@ export default function SettingsPage() {
               <Label htmlFor="timezone">Timezone</Label>
               <Select
                 value={config.timezone || "UTC"}
-                onValueChange={(timezone) =>
-                  setConfig({ ...config, timezone })
-                }
+                onValueChange={(timezone) => setConfig({ ...config, timezone })}
               >
                 <SelectTrigger id="timezone">
                   <SelectValue />

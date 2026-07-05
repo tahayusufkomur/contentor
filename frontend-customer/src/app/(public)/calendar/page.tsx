@@ -20,7 +20,7 @@ export default async function CalendarPage({ searchParams }: Props) {
   let events: CalendarEvent[] = [];
   try {
     events = await serverFetch<CalendarEvent[]>(
-      `/api/v1/calendar/?from=${from}&to=${to}`
+      `/api/v1/calendar/?from=${from}&to=${to}`,
     );
   } catch {
     events = [];

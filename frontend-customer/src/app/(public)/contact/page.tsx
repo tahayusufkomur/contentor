@@ -10,5 +10,12 @@ export default async function ContactPage() {
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.contact?.blocks ?? [];
   const dynamicData = await fetchDynamicData(blocks);
-  return <PageView pageKey="contact" blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.contact} />;
+  return (
+    <PageView
+      pageKey="contact"
+      blocks={blocks}
+      dynamicData={dynamicData}
+      pageTitle={PAGE_LABELS.contact}
+    />
+  );
 }

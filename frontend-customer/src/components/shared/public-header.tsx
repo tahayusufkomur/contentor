@@ -10,7 +10,13 @@ import { BookOpen, LogOut, Menu, User as UserIcon, X, Zap } from "lucide-react";
 import type { User } from "@/types/auth";
 import AnnouncementBell from "@/components/shared/announcement-bell";
 
-export function PublicHeader({ user, hasSubscription }: { user?: User | null; hasSubscription?: boolean }) {
+export function PublicHeader({
+  user,
+  hasSubscription,
+}: {
+  user?: User | null;
+  hasSubscription?: boolean;
+}) {
   const config = useTenant();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,7 +25,11 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
   const navbar = config?.navbar_config;
   const allNavLinks = navbar?.links?.length
     ? navbar.links
-    : [{ label: "Courses", href: "/courses" }, { label: "Calendar", href: "/calendar" }, { label: "Store", href: "/store" }];
+    : [
+        { label: "Courses", href: "/courses" },
+        { label: "Calendar", href: "/calendar" },
+        { label: "Store", href: "/store" },
+      ];
   const SIGNED_IN_HIDDEN = new Set(["/about", "/faq"]);
   const navLinks = user
     ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
@@ -91,7 +101,12 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
                 <span className="text-sm text-muted-foreground">
                   {user.name || user.email}
                 </span>
-                <Button asChild size="sm" variant={hasSubscription ? "outline" : "default"} className="gap-1.5">
+                <Button
+                  asChild
+                  size="sm"
+                  variant={hasSubscription ? "outline" : "default"}
+                  className="gap-1.5"
+                >
                   <Link href="/plans">
                     <Zap className="h-4 w-4" />
                     {hasSubscription ? "Plans" : "Subscribe"}
@@ -171,7 +186,12 @@ export function PublicHeader({ user, hasSubscription }: { user?: User | null; ha
                     ? "Admin"
                     : "Dashboard"}
                 </Link>
-                <Button asChild size="sm" variant={hasSubscription ? "outline" : "default"} className="w-full gap-1.5">
+                <Button
+                  asChild
+                  size="sm"
+                  variant={hasSubscription ? "outline" : "default"}
+                  className="w-full gap-1.5"
+                >
                   <Link href="/plans" onClick={() => setMobileOpen(false)}>
                     <Zap className="h-4 w-4" />
                     {hasSubscription ? "Plans" : "Subscribe"}

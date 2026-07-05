@@ -1,45 +1,38 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
-import {
-  Plus,
-  Play,
-  Square,
-  Radio,
-  Clock,
-  CheckCircle2,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { TableCell } from "@/components/ui/table"
-import { clientFetch, batchedAsync } from "@/lib/api-client"
+import { useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Play, Square, Radio, Clock, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { TableCell } from "@/components/ui/table";
+import { clientFetch, batchedAsync } from "@/lib/api-client";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
   type FetchPageParams,
   type FetchPageResult,
-} from "@/components/admin/media-browser"
+} from "@/components/admin/media-browser";
 
 interface LiveStream {
-  id: number
-  title: string
-  description: string
-  status: string
-  pricing_type: string
-  price: string
-  room_name: string
-  scheduled_at: string | null
-  started_at: string | null
-  ended_at: string | null
-  created_at: string
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  pricing_type: string;
+  price: string;
+  room_name: string;
+  scheduled_at: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
 }
 
 interface PaginatedResponse<T> {
-  results: T[]
-  next: string | null
-  count: number
+  results: T[];
+  next: string | null;
+  count: number;
 }
 
 const statusConfig: Record<
@@ -67,55 +60,55 @@ const statusConfig: Record<
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     icon: <CheckCircle2 className="h-3 w-3" />,
   },
-}
+};
 
 const SORT_OPTIONS = [
   { label: "Newest", value: "-created_at" },
   { label: "Oldest", value: "created_at" },
   { label: "Name A-Z", value: "title" },
   { label: "Name Z-A", value: "-title" },
-]
+];
 
 export default function LiveStreamsPage() {
-  const router = useRouter()
-  const browserRef = useRef<MediaBrowserHandle>(null)
-  const [showCreate, setShowCreate] = useState(false)
-  const [creating, setCreating] = useState(false)
+  const router = useRouter();
+  const browserRef = useRef<MediaBrowserHandle>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [pricingType, setPricingType] = useState("free")
-  const [price, setPrice] = useState("")
-  const [autoRecording, setAutoRecording] = useState(false)
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [pricingType, setPricingType] = useState("free");
+  const [price, setPrice] = useState("");
+  const [autoRecording, setAutoRecording] = useState(false);
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<LiveStream>> => {
-      const sp = new URLSearchParams()
-      sp.set("limit", String(params.limit))
-      sp.set("offset", String(params.offset))
-      sp.set("ordering", params.ordering)
-      if (params.search) sp.set("search", params.search)
-      const data = await clientFetch<PaginatedResponse<LiveStream> | LiveStream[]>(
-        `/api/v1/live-streams/?${sp.toString()}`
-      )
+      const sp = new URLSearchParams();
+      sp.set("limit", String(params.limit));
+      sp.set("offset", String(params.offset));
+      sp.set("ordering", params.ordering);
+      if (params.search) sp.set("search", params.search);
+      const data = await clientFetch<
+        PaginatedResponse<LiveStream> | LiveStream[]
+      >(`/api/v1/live-streams/?${sp.toString()}`);
       if (Array.isArray(data)) {
-        return { results: data, next: null, count: data.length }
+        return { results: data, next: null, count: data.length };
       }
-      return { results: data.results, next: data.next, count: data.count }
+      return { results: data.results, next: data.next, count: data.count };
     },
-    []
-  )
+    [],
+  );
 
   function resetForm() {
-    setTitle("")
-    setDescription("")
-    setPricingType("free")
-    setPrice("")
-    setAutoRecording(false)
+    setTitle("");
+    setDescription("");
+    setPricingType("free");
+    setPrice("");
+    setAutoRecording(false);
   }
 
   async function handleCreate() {
-    setCreating(true)
+    setCreating(true);
     try {
       await clientFetch<LiveStream>("/api/v1/live-streams/", {
         method: "POST",
@@ -128,14 +121,14 @@ export default function LiveStreamsPage() {
             ? { price: parseFloat(price) }
             : {}),
         }),
-      })
-      resetForm()
-      setShowCreate(false)
-      browserRef.current?.refresh()
+      });
+      resetForm();
+      setShowCreate(false);
+      browserRef.current?.refresh();
     } catch {
       // ignore
     } finally {
-      setCreating(false)
+      setCreating(false);
     }
   }
 
@@ -143,8 +136,8 @@ export default function LiveStreamsPage() {
     try {
       await clientFetch(`/api/v1/live-streams/${id}/start/`, {
         method: "POST",
-      })
-      router.push(`/live-stream/${id}`)
+      });
+      router.push(`/live-stream/${id}`);
     } catch {
       // ignore
     }
@@ -154,15 +147,15 @@ export default function LiveStreamsPage() {
     try {
       await clientFetch(`/api/v1/live-streams/${id}/stop/`, {
         method: "POST",
-      })
-      browserRef.current?.refresh()
+      });
+      browserRef.current?.refresh();
     } catch {
       // ignore
     }
   }
 
   const selectClasses =
-    "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+    "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm";
 
   return (
     <div className="space-y-6">
@@ -241,17 +234,14 @@ export default function LiveStreamsPage() {
           </label>
 
           <div className="flex gap-2">
-            <Button
-              onClick={handleCreate}
-              disabled={!title.trim() || creating}
-            >
+            <Button onClick={handleCreate} disabled={!title.trim() || creating}>
               {creating ? "Creating..." : "Create"}
             </Button>
             <Button
               variant="ghost"
               onClick={() => {
-                setShowCreate(false)
-                resetForm()
+                setShowCreate(false);
+                resetForm();
               }}
             >
               Cancel
@@ -272,13 +262,14 @@ export default function LiveStreamsPage() {
         getItemId={(ls) => ls.id}
         onDelete={async (selection) => {
           await batchedAsync(
-            selection.ids.map((id) => () =>
-              clientFetch(`/api/v1/live-streams/${id}/`, {
-                method: "DELETE",
-              }).catch(() => {})
-            )
-          )
-          browserRef.current?.refresh()
+            selection.ids.map(
+              (id) => () =>
+                clientFetch(`/api/v1/live-streams/${id}/`, {
+                  method: "DELETE",
+                }).catch(() => {}),
+            ),
+          );
+          browserRef.current?.refresh();
         }}
         listColumns={[
           { label: "Status", key: "status" },
@@ -287,7 +278,7 @@ export default function LiveStreamsPage() {
           { label: "Actions", key: "actions" },
         ]}
         renderListRow={(ls) => {
-          const cfg = statusConfig[ls.status] || statusConfig.draft
+          const cfg = statusConfig[ls.status] || statusConfig.draft;
           return (
             <>
               <TableCell>
@@ -351,9 +342,9 @@ export default function LiveStreamsPage() {
                 </div>
               </TableCell>
             </>
-          )
+          );
         }}
       />
     </div>
-  )
+  );
 }

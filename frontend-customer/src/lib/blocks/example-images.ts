@@ -28,7 +28,10 @@ function sample(photos: ExamplePhoto[], n: number): ExamplePhoto[] {
 /** Mutates + returns a freshly-created block, filling its empty image slots with
  *  random photos from `photos`. No-op when the library is empty or the block has
  *  no photo slots. */
-export function applyExampleImages(block: Block, photos: ExamplePhoto[]): Block {
+export function applyExampleImages(
+  block: Block,
+  photos: ExamplePhoto[],
+): Block {
   const usable = photos.filter((p) => p.signed_url);
   if (!usable.length) return block;
   const rand = () => usable[Math.floor(Math.random() * usable.length)];

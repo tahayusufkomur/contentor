@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { EmptyState } from '@/components/shared/empty-state'
-import { clientFetch } from '@/lib/api-client'
-import { BookOpen, GraduationCap, Play } from 'lucide-react'
-import type { Course } from '@/types/course'
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { clientFetch } from "@/lib/api-client";
+import { BookOpen, GraduationCap, Play } from "lucide-react";
+import type { Course } from "@/types/course";
 
 export default function DashboardPage() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    clientFetch<Course[]>('/api/v1/courses/enrolled/')
+    clientFetch<Course[]>("/api/v1/courses/enrolled/")
       .then(setCourses)
       .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   if (loading) {
     return (
@@ -39,7 +39,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -62,17 +62,20 @@ export default function DashboardPage() {
           icon={BookOpen}
           title="No courses yet"
           description="You have not enrolled in any courses yet. Browse our catalog to find something interesting."
-          action={{ label: 'Browse Courses', href: '/courses' }}
+          action={{ label: "Browse Courses", href: "/courses" }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => {
             // If the API returns progress info, we can use it. Otherwise default to 0.
-            const progressPercent = (course as any).progress_percent ?? 0
-            const viaSubscription = Boolean((course as any).via_subscription)
+            const progressPercent = (course as any).progress_percent ?? 0;
+            const viaSubscription = Boolean((course as any).via_subscription);
 
             return (
-              <Card key={course.id} className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+              <Card
+                key={course.id}
+                className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5"
+              >
                 {course.thumbnail_url ? (
                   <div className="relative overflow-hidden">
                     <img
@@ -90,10 +93,16 @@ export default function DashboardPage() {
                 )}
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold leading-snug">{course.title}</h3>
-                    {viaSubscription && <Badge variant="secondary">In your plan</Badge>}
+                    <h3 className="font-semibold leading-snug">
+                      {course.title}
+                    </h3>
+                    {viaSubscription && (
+                      <Badge variant="secondary">In your plan</Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground">{course.instructor_name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {course.instructor_name}
+                  </p>
 
                   {/* Progress bar */}
                   <div className="space-y-1">
@@ -117,10 +126,10 @@ export default function DashboardPage() {
                   </Button>
                 </CardContent>
               </Card>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0014_tenantconfig_page_templates'),
+        ("tenant_config", "0014_tenantconfig_page_templates"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenantconfig',
-            name='setup_guide_dismissed',
+            model_name="tenantconfig",
+            name="setup_guide_dismissed",
             field=models.BooleanField(default=False),
         ),
     ]

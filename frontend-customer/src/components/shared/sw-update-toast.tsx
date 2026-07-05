@@ -15,7 +15,10 @@ export function SwUpdateToast() {
 
     const notify = () => {
       toast(t("updateAvailable"), {
-        action: { label: t("refresh"), onClick: () => window.location.reload() },
+        action: {
+          label: t("refresh"),
+          onClick: () => window.location.reload(),
+        },
         duration: Infinity,
       });
     };
@@ -24,7 +27,10 @@ export function SwUpdateToast() {
       const installing = reg?.installing;
       if (!installing) return;
       installing.addEventListener("statechange", () => {
-        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+        if (
+          installing.state === "installed" &&
+          navigator.serviceWorker.controller
+        ) {
           notify();
         }
       });

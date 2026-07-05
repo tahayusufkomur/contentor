@@ -40,7 +40,12 @@ export function LogosBlock({ data, editable }: BlockComponentProps) {
                 className="flex items-center justify-center bg-background p-8"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image!.url!} alt={item.alt || ""} loading="lazy" className={LOGO_IMG} />
+                <img
+                  src={item.image!.url!}
+                  alt={item.alt || ""}
+                  loading="lazy"
+                  className={LOGO_IMG}
+                />
               </div>
             ))}
           </div>
@@ -48,7 +53,13 @@ export function LogosBlock({ data, editable }: BlockComponentProps) {
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
             {items.map((item, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={item.image!.url!} alt={item.alt || ""} loading="lazy" className={LOGO_IMG} />
+              <img
+                key={i}
+                src={item.image!.url!}
+                alt={item.alt || ""}
+                loading="lazy"
+                className={LOGO_IMG}
+              />
             ))}
           </div>
         )}

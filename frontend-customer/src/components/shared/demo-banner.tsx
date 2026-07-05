@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { GraduationCap, LayoutDashboard, Sparkles } from 'lucide-react'
+import { GraduationCap, LayoutDashboard, Sparkles } from "lucide-react";
 
-import { useTenant } from '@/hooks/use-tenant'
-import { BASE_DOMAIN } from '@/lib/constants'
+import { useTenant } from "@/hooks/use-tenant";
+import { BASE_DOMAIN } from "@/lib/constants";
 
 /**
  * Persistent banner shown on every page of a demo tenant. Lets the visitor
@@ -11,19 +11,21 @@ import { BASE_DOMAIN } from '@/lib/constants'
  * marketing signup flow (carrying the niche so the template auto-applies).
  */
 export function DemoBanner() {
-  const config = useTenant()
+  const config = useTenant();
   // Hidden when this isn't a demo, or when demo read-only is disabled (local dev) —
   // there's nothing read-only to advertise and the tenant is fully editable.
-  if (!config?.is_demo || config.demo_readonly === false) return null
+  if (!config?.is_demo || config.demo_readonly === false) return null;
 
-  const niche = config.demo_niche || ''
-  const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
-  const otherRole = isAdmin ? 'student' : 'coach'
-  const otherLabel = isAdmin ? 'student' : 'coach'
+  const niche = config.demo_niche || "";
+  const isAdmin =
+    typeof window !== "undefined" &&
+    window.location.pathname.startsWith("/admin");
+  const otherRole = isAdmin ? "student" : "coach";
+  const otherLabel = isAdmin ? "student" : "coach";
 
   // Marketing site sits on the apex domain. BASE_DOMAIN excludes the demo subdomain.
-  const apex = BASE_DOMAIN.replace(/^demo-[^.]+\./, '')
-  const signupHref = `//${apex}/signup${niche ? `?template=${encodeURIComponent(niche)}` : ''}`
+  const apex = BASE_DOMAIN.replace(/^demo-[^.]+\./, "");
+  const signupHref = `//${apex}/signup${niche ? `?template=${encodeURIComponent(niche)}` : ""}`;
 
   return (
     <div className="border-b border-amber-500/30 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 text-amber-950 dark:from-amber-950/40 dark:via-orange-950/40 dark:to-amber-950/40 dark:text-amber-100">
@@ -58,5 +60,5 @@ export function DemoBanner() {
         </div>
       </div>
     </div>
-  )
+  );
 }

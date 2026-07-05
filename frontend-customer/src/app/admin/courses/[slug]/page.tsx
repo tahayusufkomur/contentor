@@ -1,29 +1,29 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
-import { clientFetch } from '@/lib/api-client'
-import { ArrowLeft } from 'lucide-react'
-import { CourseForm } from '@/components/admin/course-form'
-import type { CourseDetail } from '@/types/course'
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { clientFetch } from "@/lib/api-client";
+import { ArrowLeft } from "lucide-react";
+import { CourseForm } from "@/components/admin/course-form";
+import type { CourseDetail } from "@/types/course";
 
 export default function AdminCourseDetailPage() {
-  const params = useParams<{ slug: string }>()
-  const [course, setCourse] = useState<CourseDetail | null>(null)
+  const params = useParams<{ slug: string }>();
+  const [course, setCourse] = useState<CourseDetail | null>(null);
 
   useEffect(() => {
-    loadCourse()
-  }, [params.slug])
+    loadCourse();
+  }, [params.slug]);
 
   function loadCourse() {
     clientFetch<CourseDetail>(`/api/v1/courses/${params.slug}/`)
       .then(setCourse)
-      .catch(console.error)
+      .catch(console.error);
   }
 
   if (!course) {
@@ -38,7 +38,7 @@ export default function AdminCourseDetailPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -53,12 +53,12 @@ export default function AdminCourseDetailPage() {
           <h1 className="text-2xl font-bold tracking-tight">Edit Course</h1>
           <p className="text-sm text-muted-foreground">{course.title}</p>
         </div>
-        <Badge variant={course.is_published ? 'success' : 'secondary'}>
-          {course.is_published ? 'Published' : 'Draft'}
+        <Badge variant={course.is_published ? "success" : "secondary"}>
+          {course.is_published ? "Published" : "Draft"}
         </Badge>
       </div>
 
       <CourseForm course={course} onCourseLoaded={loadCourse} />
     </div>
-  )
+  );
 }

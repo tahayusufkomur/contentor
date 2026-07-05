@@ -99,7 +99,13 @@ function setLink(editor: Editor) {
 
 const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
   function MessageEditor(
-    { placeholder = "Write your message…", autoFocus, sending, onSend, compact },
+    {
+      placeholder = "Write your message…",
+      autoFocus,
+      sending,
+      onSend,
+      compact,
+    },
     ref,
   ) {
     const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
@@ -108,7 +114,11 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
 
     const editor = useEditor({
       extensions: [
-        StarterKit.configure({ heading: false, codeBlock: false, horizontalRule: false }),
+        StarterKit.configure({
+          heading: false,
+          codeBlock: false,
+          horizontalRule: false,
+        }),
         Underline,
         Link.configure({ openOnClick: false, autolink: true }),
         Placeholder.configure({ placeholder }),
@@ -129,7 +139,8 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
         editor?.commands.clearContent(true);
         setAttachments([]);
       },
-      isEmpty: () => !editor || (editor.getText().trim() === "" && attachments.length === 0),
+      isEmpty: () =>
+        !editor || (editor.getText().trim() === "" && attachments.length === 0),
     }));
 
     const pickFiles = async (files: FileList | null) => {
@@ -266,7 +277,9 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
               >
                 <Paperclip className="h-3 w-3 text-muted-foreground" />
                 <span className="max-w-[160px] truncate">{a.filename}</span>
-                <span className="text-muted-foreground">{humanSize(a.size)}</span>
+                <span className="text-muted-foreground">
+                  {humanSize(a.size)}
+                </span>
                 <button
                   type="button"
                   aria-label={`Remove ${a.filename}`}
@@ -287,7 +300,12 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
           <span className="mr-auto text-[11px] text-muted-foreground">
             Ctrl+Enter to send
           </span>
-          <Button size="sm" loading={sending} disabled={uploading} onClick={send}>
+          <Button
+            size="sm"
+            loading={sending}
+            disabled={uploading}
+            onClick={send}
+          >
             <Send className="h-4 w-4" />
             Send
           </Button>

@@ -56,7 +56,10 @@ export default function CampaignDetailPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Link href="/admin/email" className="text-sm text-muted-foreground hover:underline">
+        <Link
+          href="/admin/email"
+          className="text-sm text-muted-foreground hover:underline"
+        >
           ← Back to Campaigns
         </Link>
         <p className="text-sm text-muted-foreground">Loading campaign...</p>
@@ -67,17 +70,25 @@ export default function CampaignDetailPage() {
   if (error || !campaign) {
     return (
       <div className="space-y-6">
-        <Link href="/admin/email" className="text-sm text-muted-foreground hover:underline">
+        <Link
+          href="/admin/email"
+          className="text-sm text-muted-foreground hover:underline"
+        >
           ← Back to Campaigns
         </Link>
-        <p className="text-sm text-destructive">{error || "Campaign not found."}</p>
+        <p className="text-sm text-destructive">
+          {error || "Campaign not found."}
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <Link href="/admin/email" className="text-sm text-muted-foreground hover:underline">
+      <Link
+        href="/admin/email"
+        className="text-sm text-muted-foreground hover:underline"
+      >
         ← Back to Campaigns
       </Link>
 
@@ -87,7 +98,9 @@ export default function CampaignDetailPage() {
         <div className="space-y-4">
           <div>
             <h1 className="text-2xl font-bold">{campaign.subject}</h1>
-            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[campaign.status] || ""}`}>
+            <span
+              className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[campaign.status] || ""}`}
+            >
               {campaign.status}
             </span>
           </div>
@@ -99,7 +112,9 @@ export default function CampaignDetailPage() {
             </div>
             <div className="flex justify-between border-b py-2">
               <span className="text-muted-foreground">Sender</span>
-              <span>{campaign.sender_name || campaign.sender_email || "—"}</span>
+              <span>
+                {campaign.sender_name || campaign.sender_email || "—"}
+              </span>
             </div>
             <div className="flex justify-between border-b py-2">
               <span className="text-muted-foreground">Recipients</span>
@@ -109,12 +124,16 @@ export default function CampaignDetailPage() {
             </div>
             <div className="flex justify-between border-b py-2">
               <span className="text-muted-foreground">Delivered</span>
-              <span className="text-green-700">{campaign.success_count} sent</span>
+              <span className="text-green-700">
+                {campaign.success_count} sent
+              </span>
             </div>
             {campaign.failure_count > 0 && (
               <div className="flex justify-between border-b py-2">
                 <span className="text-muted-foreground">Failed</span>
-                <span className="text-red-700">{campaign.failure_count} failed</span>
+                <span className="text-red-700">
+                  {campaign.failure_count} failed
+                </span>
               </div>
             )}
             <div className="flex justify-between border-b py-2">
@@ -132,7 +151,9 @@ export default function CampaignDetailPage() {
 
         {/* Right: Email preview */}
         <div>
-          <h2 className="mb-2 text-sm font-medium text-muted-foreground">Email Preview</h2>
+          <h2 className="mb-2 text-sm font-medium text-muted-foreground">
+            Email Preview
+          </h2>
           {campaign.rendered_html ? (
             <iframe
               srcDoc={campaign.rendered_html}
@@ -155,7 +176,8 @@ export default function CampaignDetailPage() {
         <h2 className="mb-4 text-lg font-semibold">Recipients</h2>
         {recipients.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Recipient tracking not available for campaigns sent before this update.
+            Recipient tracking not available for campaigns sent before this
+            update.
           </p>
         ) : (
           <table className="w-full text-sm">
@@ -174,16 +196,16 @@ export default function CampaignDetailPage() {
                   <td className="py-2">{r.user_name || "—"}</td>
                   <td className="py-2">{r.user_email}</td>
                   <td className="py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${RECIPIENT_STATUS_COLORS[r.status] || ""}`}>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${RECIPIENT_STATUS_COLORS[r.status] || ""}`}
+                    >
                       {r.status}
                     </span>
                   </td>
                   <td className="py-2">
                     {r.sent_at ? new Date(r.sent_at).toLocaleString() : "—"}
                   </td>
-                  <td className="py-2 text-red-600">
-                    {r.error_message || ""}
-                  </td>
+                  <td className="py-2 text-red-600">{r.error_message || ""}</td>
                 </tr>
               ))}
             </tbody>

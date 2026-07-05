@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useCallback, useRef } from "react"
-import Link from "next/link"
-import { Users, Mail, Receipt, Smartphone, Globe } from "lucide-react"
-import { TableCell } from "@/components/ui/table"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { clientFetch, batchedAsync } from "@/lib/api-client"
-import { toast } from "sonner"
+import { useCallback, useRef } from "react";
+import Link from "next/link";
+import { Users, Mail, Receipt, Smartphone, Globe } from "lucide-react";
+import { TableCell } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { clientFetch, batchedAsync } from "@/lib/api-client";
+import { toast } from "sonner";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
   type FetchPageParams,
   type FetchPageResult,
-} from "@/components/admin/media-browser"
+} from "@/components/admin/media-browser";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 interface Student {
-  id: number
-  email: string
-  name: string
-  avatar_url: string
-  date_joined: string
-  last_login: string | null
-  enrolled_count: number
-  last_display_mode?: string
-  last_platform?: string
+  id: number;
+  email: string;
+  name: string;
+  avatar_url: string;
+  date_joined: string;
+  last_login: string | null;
+  enrolled_count: number;
+  last_display_mode?: string;
+  last_platform?: string;
 }
 
 function getInitials(name: string) {
@@ -34,7 +34,7 @@ function getInitials(name: string) {
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 }
 
 function formatDate(dateStr: string) {
@@ -42,7 +42,7 @@ function formatDate(dateStr: string) {
     year: "numeric",
     month: "short",
     day: "numeric",
-  })
+  });
 }
 
 const SORT_OPTIONS = [
@@ -50,30 +50,29 @@ const SORT_OPTIONS = [
   { label: "Oldest", value: "date_joined" },
   { label: "Name A-Z", value: "name" },
   { label: "Name Z-A", value: "-name" },
-]
+];
 
 export default function StudentsPage() {
-  const browserRef = useRef<MediaBrowserHandle>(null)
+  const browserRef = useRef<MediaBrowserHandle>(null);
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Student>> => {
-      const sp = new URLSearchParams()
-      sp.set("limit", String(params.limit))
-      sp.set("offset", String(params.offset))
-      sp.set("ordering", params.ordering)
-      if (params.search) sp.set("search", params.search)
+      const sp = new URLSearchParams();
+      sp.set("limit", String(params.limit));
+      sp.set("offset", String(params.offset));
+      sp.set("ordering", params.ordering);
+      if (params.search) sp.set("search", params.search);
       const data = await clientFetch<
-        | { results: Student[]; next: string | null; count: number }
-        | Student[]
-      >(`/api/v1/auth/students/?${sp.toString()}`)
+        { results: Student[]; next: string | null; count: number } | Student[]
+      >(`/api/v1/auth/students/?${sp.toString()}`);
 
       if (Array.isArray(data)) {
-        return { results: data, next: null, count: data.length }
+        return { results: data, next: null, count: data.length };
       }
-      return { results: data.results, next: data.next, count: data.count }
+      return { results: data.results, next: data.next, count: data.count };
     },
-    []
-  )
+    [],
+  );
 
   return (
     <div className="space-y-6">
@@ -98,12 +97,15 @@ export default function StudentsPage() {
         getItemId={(s) => s.id}
         onDelete={async (selection) => {
           await batchedAsync(
-            selection.ids.map((id) => () =>
-              clientFetch(`/api/v1/auth/students/${id}/`, { method: "DELETE" })
-            )
-          )
-          toast.success("Students deleted")
-          browserRef.current?.refresh()
+            selection.ids.map(
+              (id) => () =>
+                clientFetch(`/api/v1/auth/students/${id}/`, {
+                  method: "DELETE",
+                }),
+            ),
+          );
+          toast.success("Students deleted");
+          browserRef.current?.refresh();
         }}
         listColumns={[
           { label: "Student", key: "student" },
@@ -138,7 +140,9 @@ export default function StudentsPage() {
                         <Globe className="h-3 w-3" />
                       )}
                       {student.last_display_mode === "pwa" ? "PWA" : "Web"}
-                      {student.last_platform ? ` · ${student.last_platform}` : ""}
+                      {student.last_platform
+                        ? ` · ${student.last_platform}`
+                        : ""}
                     </span>
                   )}
                 </div>
@@ -154,9 +158,7 @@ export default function StudentsPage() {
               {formatDate(student.date_joined)}
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {student.last_login
-                ? formatDate(student.last_login)
-                : "Never"}
+              {student.last_login ? formatDate(student.last_login) : "Never"}
             </TableCell>
             <TableCell>
               <Link
@@ -172,5 +174,5 @@ export default function StudentsPage() {
         )}
       />
     </div>
-  )
+  );
 }

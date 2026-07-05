@@ -5,17 +5,39 @@ import { useCallback, useMemo, useState } from "react";
 import type { EmailTemplate } from "@/lib/email-api";
 import { TemplateCard } from "./template-card";
 
-const CATEGORIES = ["All", "Welcome", "Newsletter", "Promotional", "Transactional", "Event"];
+const CATEGORIES = [
+  "All",
+  "Welcome",
+  "Newsletter",
+  "Promotional",
+  "Transactional",
+  "Event",
+];
 const SOURCES = ["All", "Saved", "Gallery"] as const;
 type Source = (typeof SOURCES)[number];
 
 const SIZES = ["small", "medium", "large"] as const;
 type GridSize = (typeof SIZES)[number];
 
-const SIZE_CONFIG: Record<GridSize, { cols: string; aspectRatio: string; scratchHeight: string }> = {
-  small:  { cols: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5", aspectRatio: "75%",  scratchHeight: "h-[180px]" },
-  medium: { cols: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",               aspectRatio: "100%", scratchHeight: "h-[260px]" },
-  large:  { cols: "grid-cols-1 sm:grid-cols-1 lg:grid-cols-2",               aspectRatio: "130%", scratchHeight: "h-[360px]" },
+const SIZE_CONFIG: Record<
+  GridSize,
+  { cols: string; aspectRatio: string; scratchHeight: string }
+> = {
+  small: {
+    cols: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+    aspectRatio: "75%",
+    scratchHeight: "h-[180px]",
+  },
+  medium: {
+    cols: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+    aspectRatio: "100%",
+    scratchHeight: "h-[260px]",
+  },
+  large: {
+    cols: "grid-cols-1 sm:grid-cols-1 lg:grid-cols-2",
+    aspectRatio: "130%",
+    scratchHeight: "h-[360px]",
+  },
 };
 
 interface TemplateGridProps {
@@ -62,31 +84,67 @@ export function TemplateGrid({
     return SIZES.includes(v as GridSize) ? (v as GridSize) : "medium";
   });
 
-  const syncParam = useCallback((key: string, value: string, defaultValue: string) => {
-    const params = new URLSearchParams(window.location.search);
-    if (value && value !== defaultValue) params.set(key, value);
-    else params.delete(key);
-    const qs = params.toString();
-    const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
-    window.history.replaceState({}, "", next);
-  }, []);
+  const syncParam = useCallback(
+    (key: string, value: string, defaultValue: string) => {
+      const params = new URLSearchParams(window.location.search);
+      if (value && value !== defaultValue) params.set(key, value);
+      else params.delete(key);
+      const qs = params.toString();
+      const next = qs
+        ? `${window.location.pathname}?${qs}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", next);
+    },
+    [],
+  );
 
-  const updateSearch = useCallback((v: string) => { setSearch(v); syncParam("q", v, ""); }, [syncParam]);
-  const updateCategory = useCallback((v: string) => { setCategory(v); syncParam("category", v, "All"); }, [syncParam]);
-  const updateSource = useCallback((v: Source) => { setSource(v); syncParam("source", v, "All"); }, [syncParam]);
-  const updateGridSize = useCallback((v: GridSize) => { setGridSize(v); syncParam("size", v, "medium"); }, [syncParam]);
+  const updateSearch = useCallback(
+    (v: string) => {
+      setSearch(v);
+      syncParam("q", v, "");
+    },
+    [syncParam],
+  );
+  const updateCategory = useCallback(
+    (v: string) => {
+      setCategory(v);
+      syncParam("category", v, "All");
+    },
+    [syncParam],
+  );
+  const updateSource = useCallback(
+    (v: Source) => {
+      setSource(v);
+      syncParam("source", v, "All");
+    },
+    [syncParam],
+  );
+  const updateGridSize = useCallback(
+    (v: GridSize) => {
+      setGridSize(v);
+      syncParam("size", v, "medium");
+    },
+    [syncParam],
+  );
 
   const hasSavedTemplates = useMemo(
-    () => templates.some((t) => (t as Record<string, unknown>).template_type === "user"),
+    () =>
+      templates.some(
+        (t) => (t as Record<string, unknown>).template_type === "user",
+      ),
     [templates],
   );
 
   const filtered = useMemo(() => {
     let result = templates;
     if (source === "Saved") {
-      result = result.filter((t) => (t as Record<string, unknown>).template_type === "user");
+      result = result.filter(
+        (t) => (t as Record<string, unknown>).template_type === "user",
+      );
     } else if (source === "Gallery") {
-      result = result.filter((t) => (t as Record<string, unknown>).template_type !== "user");
+      result = result.filter(
+        (t) => (t as Record<string, unknown>).template_type !== "user",
+      );
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -94,7 +152,10 @@ export function TemplateGrid({
     }
     if (category !== "All") {
       result = result.filter(
-        (t) => ((t as Record<string, unknown>).category as string || "").toLowerCase() === category.toLowerCase(),
+        (t) =>
+          (
+            ((t as Record<string, unknown>).category as string) || ""
+          ).toLowerCase() === category.toLowerCase(),
       );
     }
     return result;
@@ -171,8 +232,18 @@ export function TemplateGrid({
           >
             <div className="text-center">
               <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="h-6 w-6 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
               </div>
               <p className="text-sm font-medium">Start from Scratch</p>

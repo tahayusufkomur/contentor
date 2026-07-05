@@ -207,9 +207,7 @@ export default function ParticipantsPanel({
                 </div>
                 <span className="text-white text-sm truncate">
                   {p.name || p.userId}
-                  {isLocal && (
-                    <span className="text-zinc-400 ml-1">(You)</span>
-                  )}
+                  {isLocal && <span className="text-zinc-400 ml-1">(You)</span>}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
@@ -269,7 +267,10 @@ export default function ParticipantsPanel({
 
                 {/* 3-dot menu for kick/block */}
                 {isHost && !isLocal && (
-                  <div className="relative" ref={menuOpen === p.sessionId ? menuRef : undefined}>
+                  <div
+                    className="relative"
+                    ref={menuOpen === p.sessionId ? menuRef : undefined}
+                  >
                     <button
                       onClick={() =>
                         setMenuOpen((prev) =>

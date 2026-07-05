@@ -77,7 +77,12 @@ export default function ComposeCard({
         />
       </div>
       <div className="p-3">
-        <MessageEditor ref={editorRef} autoFocus sending={sending} onSend={send} />
+        <MessageEditor
+          ref={editorRef}
+          autoFocus
+          sending={sending}
+          onSend={send}
+        />
       </div>
     </div>
   );

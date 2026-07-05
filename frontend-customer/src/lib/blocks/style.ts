@@ -73,7 +73,9 @@ const HEADING_ONLY_TEXT_COLOR_TYPES = new Set([
 
 /** Tailwind classes for a block's optional style override, applied by the
  *  renderer as a wrapper. Returns "" when there's no (effective) override. */
-export function blockStyleClasses(block: Pick<Block, "style" | "type">): string {
+export function blockStyleClasses(
+  block: Pick<Block, "style" | "type">,
+): string {
   const s = block.style;
   if (!s) return "";
   const textColor =

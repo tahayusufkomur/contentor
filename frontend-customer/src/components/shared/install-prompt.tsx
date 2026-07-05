@@ -17,7 +17,9 @@ const DISMISS_KEY = "pwa-install-dismissed";
 export function InstallPrompt() {
   const t = useTranslations("pwa");
   const pathname = usePathname();
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
   const [showIosHint, setShowIosHint] = useState(false);
   const [hidden, setHidden] = useState(true);
 
@@ -26,7 +28,8 @@ export function InstallPrompt() {
 
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      (window.navigator as unknown as { standalone?: boolean }).standalone ===
+        true;
     if (standalone) return;
 
     setHidden(false);
@@ -74,7 +77,10 @@ export function InstallPrompt() {
     >
       <span className="flex-1">
         {deferred ? t("installPrompt") : t("iosHint")}{" "}
-        <Link href="/install" className="font-medium text-primary underline underline-offset-2">
+        <Link
+          href="/install"
+          className="font-medium text-primary underline underline-offset-2"
+        >
           {t("howToInstall")}
         </Link>
       </span>

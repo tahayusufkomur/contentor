@@ -68,7 +68,9 @@ function ControlButton({
       } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-      <span className="text-[9px] sm:text-[10px] font-medium hidden sm:block">{label}</span>
+      <span className="text-[9px] sm:text-[10px] font-medium hidden sm:block">
+        {label}
+      </span>
     </button>
   );
 }

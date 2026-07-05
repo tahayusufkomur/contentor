@@ -55,7 +55,10 @@ function EventStatusBadge({ status }: { status: string }) {
   }
 }
 
-export function EventDetailClient({ event, isLoggedIn }: EventDetailClientProps) {
+export function EventDetailClient({
+  event,
+  isLoggedIn,
+}: EventDetailClientProps) {
   const tenantConfig = useTenant();
   const tz = tenantConfig?.timezone || "UTC";
   const config = EVENT_TYPE_CONFIG[event.type];
@@ -82,7 +85,7 @@ export function EventDetailClient({ event, isLoggedIn }: EventDetailClientProps)
             <div
               className={cn(
                 "relative flex h-64 items-center justify-center overflow-hidden rounded-xl md:h-80",
-                "bg-gradient-to-br from-primary/20 to-accent/10"
+                "bg-gradient-to-br from-primary/20 to-accent/10",
               )}
             >
               <Video className="h-20 w-20 text-primary/30" />
@@ -96,7 +99,7 @@ export function EventDetailClient({ event, isLoggedIn }: EventDetailClientProps)
                 className={cn(
                   "text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded",
                   config.textClass,
-                  config.bgClass
+                  config.bgClass,
                 )}
               >
                 {config.label}
@@ -232,7 +235,8 @@ function EventAction({
           You have access to this event.
         </p>
         <p className="text-sm font-medium text-foreground">
-          The event hasn&apos;t started yet. Come back when it&apos;s live to join!
+          The event hasn&apos;t started yet. Come back when it&apos;s live to
+          join!
         </p>
       </div>
     );
@@ -252,7 +256,12 @@ function EventAction({
         </Button>
       )}
       {unlockMethods.includes("subscribe") && (
-        <Button size="lg" className="w-full gap-2" variant={unlockMethods.includes("purchase") ? "outline" : "default"} asChild>
+        <Button
+          size="lg"
+          className="w-full gap-2"
+          variant={unlockMethods.includes("purchase") ? "outline" : "default"}
+          asChild
+        >
           <Link href="/plans">
             <Zap className="h-4 w-4" />
             Subscribe for Access

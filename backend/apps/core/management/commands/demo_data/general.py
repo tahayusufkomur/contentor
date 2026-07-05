@@ -220,8 +220,7 @@ COURSES = [
     {
         "title": "30-Day Momentum Challenge",
         "description": (
-            "One month, one focus: momentum. Daily prompts, weekly "
-            "milestones, and a finish line worth celebrating."
+            "One month, one focus: momentum. Daily prompts, weekly " "milestones, and a finish line worth celebrating."
         ),
         "pricing_type": "paid",
         "price": 49,
@@ -241,7 +240,7 @@ COURSES = [
                     "and bank your first three wins before the week is "
                     "out.</p>"
                     "<h4>Key takeaways</h4><ul>"
-                    "<li>Define what \"done\" looks like on day 30</li>"
+                    '<li>Define what "done" looks like on day 30</li>'
                     "<li>Schedule week one, session by session</li>"
                     "<li>Start your momentum tracker</li></ul>"
                 ),

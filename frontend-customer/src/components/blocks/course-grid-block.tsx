@@ -30,7 +30,11 @@ export function CourseGridBlock({ data, dynamicData }: BlockComponentProps) {
           showFilters={data.showFilters !== false}
           showPrice={data.showPrice !== false}
           showMeta={data.showMeta !== false}
-          filterGroupIds={Array.isArray(data.filterGroups) ? (data.filterGroups as number[]) : []}
+          filterGroupIds={
+            Array.isArray(data.filterGroups)
+              ? (data.filterGroups as number[])
+              : []
+          }
         />
       </div>
     </section>

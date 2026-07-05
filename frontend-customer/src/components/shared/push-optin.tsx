@@ -48,10 +48,16 @@ export function PushOptIn() {
       aria-label={t("enablePush")}
     >
       <span className="flex-1">{t("enablePush")}</span>
-      <button onClick={enable} className="rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-foreground">
+      <button
+        onClick={enable}
+        className="rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-foreground"
+      >
         {t("enable")}
       </button>
-      <button onClick={dismiss} className="rounded-md px-2 py-1 text-muted-foreground hover:text-foreground">
+      <button
+        onClick={dismiss}
+        className="rounded-md px-2 py-1 text-muted-foreground hover:text-foreground"
+      >
         {t("notNow")}
       </button>
     </div>

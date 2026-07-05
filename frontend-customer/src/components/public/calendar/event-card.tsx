@@ -17,7 +17,11 @@ function getEventHref(event: CalendarEvent): string {
   return `/calendar/${event.type}/${event.id}`;
 }
 
-export function EventCard({ event, compact = false, timezone = "UTC" }: EventCardProps) {
+export function EventCard({
+  event,
+  compact = false,
+  timezone = "UTC",
+}: EventCardProps) {
   const config = EVENT_TYPE_CONFIG[event.type];
   const isLive = event.status === "live" || event.status === "ongoing";
   const isPast = event.status === "ended";
@@ -33,10 +37,15 @@ export function EventCard({ event, compact = false, timezone = "UTC" }: EventCar
         className={cn(
           "block rounded-lg border-l-4 bg-card p-2 transition-transform hover:scale-[1.02] cursor-pointer",
           config.borderClass,
-          isPast && "opacity-50"
+          isPast && "opacity-50",
         )}
       >
-        <span className={cn("block text-[10px] font-bold uppercase tracking-wider", config.textClass)}>
+        <span
+          className={cn(
+            "block text-[10px] font-bold uppercase tracking-wider",
+            config.textClass,
+          )}
+        >
           {timeStr}
         </span>
         <p className="text-xs font-semibold text-foreground leading-tight mt-0.5 truncate">
@@ -51,7 +60,7 @@ export function EventCard({ event, compact = false, timezone = "UTC" }: EventCar
       href={href}
       className={cn(
         "flex items-stretch rounded-2xl bg-card overflow-hidden transition-all hover:shadow-md group",
-        isPast && "opacity-50"
+        isPast && "opacity-50",
       )}
     >
       <div className={cn("w-1.5 shrink-0", config.dotClass)} />
@@ -61,7 +70,7 @@ export function EventCard({ event, compact = false, timezone = "UTC" }: EventCar
             className={cn(
               "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded",
               config.textClass,
-              config.bgClass
+              config.bgClass,
             )}
           >
             {config.label}
@@ -69,7 +78,9 @@ export function EventCard({ event, compact = false, timezone = "UTC" }: EventCar
           {isLive && (
             <div className="flex items-center gap-1.5">
               <Radio className="h-3 w-3 text-destructive animate-pulse" />
-              <span className="text-[10px] font-bold text-destructive uppercase">Live</span>
+              <span className="text-[10px] font-bold text-destructive uppercase">
+                Live
+              </span>
             </div>
           )}
         </div>
@@ -79,7 +90,8 @@ export function EventCard({ event, compact = false, timezone = "UTC" }: EventCar
         <div className="flex justify-between items-end">
           <div className="space-y-0.5">
             <p className="text-sm text-muted-foreground">
-              {timeStr}{endStr ? ` — ${endStr}` : ""}
+              {timeStr}
+              {endStr ? ` — ${endStr}` : ""}
             </p>
             {event.location && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">

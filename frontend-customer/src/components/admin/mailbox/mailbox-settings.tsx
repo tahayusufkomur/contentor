@@ -56,7 +56,7 @@ export function MailboxSettingsSection() {
     setPlatformPart(value);
     if (value && !LOCAL_PART_RE.test(value)) {
       setPlatformError(
-        "Only letters, numbers, dots, hyphens, and underscores are allowed."
+        "Only letters, numbers, dots, hyphens, and underscores are allowed.",
       );
     } else {
       setPlatformError(null);
@@ -74,7 +74,9 @@ export function MailboxSettingsSection() {
     } catch (err) {
       const detail =
         err instanceof ApiError ? String(err.data.detail ?? "") : "";
-      setPlatformError(CLAIM_ERRORS[detail] ?? "Could not save. Please try again.");
+      setPlatformError(
+        CLAIM_ERRORS[detail] ?? "Could not save. Please try again.",
+      );
     } finally {
       setPlatformSaving(false);
     }
@@ -86,7 +88,7 @@ export function MailboxSettingsSection() {
       setValidationError("Email prefix cannot be empty.");
     } else if (!LOCAL_PART_RE.test(value)) {
       setValidationError(
-        "Only letters, numbers, dots, hyphens, and underscores are allowed."
+        "Only letters, numbers, dots, hyphens, and underscores are allowed.",
       );
     } else {
       setValidationError(null);
@@ -99,10 +101,7 @@ export function MailboxSettingsSection() {
     enabled === settings.enabled;
 
   const canSave =
-    !saving &&
-    !validationError &&
-    localPart.length > 0 &&
-    !isUnchanged;
+    !saving && !validationError && localPart.length > 0 && !isUnchanged;
 
   async function handleSave() {
     if (!canSave) return;

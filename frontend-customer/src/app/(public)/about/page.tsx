@@ -10,5 +10,12 @@ export default async function AboutPage() {
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.about?.blocks ?? [];
   const dynamicData = await fetchDynamicData(blocks);
-  return <PageView pageKey="about" blocks={blocks} dynamicData={dynamicData} pageTitle={PAGE_LABELS.about} />;
+  return (
+    <PageView
+      pageKey="about"
+      blocks={blocks}
+      dynamicData={dynamicData}
+      pageTitle={PAGE_LABELS.about}
+    />
+  );
 }

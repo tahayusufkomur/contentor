@@ -1,5 +1,9 @@
 import { defaultCache } from "@serwist/next/worker";
-import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from "serwist";
+import type {
+  PrecacheEntry,
+  RuntimeCaching,
+  SerwistGlobalConfig,
+} from "serwist";
 import { NetworkOnly, Serwist } from "serwist";
 
 declare global {
@@ -17,12 +21,19 @@ const NEVER_CACHE: RegExp[] = [
   /^\/checkout(\/|$)/,
   /^\/api\/v1\/(auth|billing)(\/|$)/,
 ];
-const NEVER_CACHE_HOSTS: readonly string[] = ["stripe.com", "stream-io-api.com", "getstream.io"];
+const NEVER_CACHE_HOSTS: readonly string[] = [
+  "stripe.com",
+  "stream-io-api.com",
+  "getstream.io",
+];
 
 const guardedCache: RuntimeCaching[] = [
   {
     matcher({ url, sameOrigin }) {
-      if (!sameOrigin) return NEVER_CACHE_HOSTS.some((h) => url.hostname === h || url.hostname.endsWith("." + h));
+      if (!sameOrigin)
+        return NEVER_CACHE_HOSTS.some(
+          (h) => url.hostname === h || url.hostname.endsWith("." + h),
+        );
       return NEVER_CACHE.some((re) => re.test(url.pathname));
     },
     handler: new NetworkOnly(),
@@ -75,11 +86,15 @@ self.addEventListener("notificationclick", (event) => {
   const url = event.notification.data?.url ?? "/";
   event.waitUntil(
     (async () => {
-      const clientList = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const clientList = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
       for (const client of clientList) {
         if ("focus" in client) {
           await client.focus();
-          if ("navigate" in client) await (client as WindowClient).navigate(url);
+          if ("navigate" in client)
+            await (client as WindowClient).navigate(url);
           return;
         }
       }

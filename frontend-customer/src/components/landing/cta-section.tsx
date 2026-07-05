@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
-import type { LandingCta } from '@/types/tenant'
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import type { LandingCta } from "@/types/tenant";
 
 export function CtaSection({ data }: { data: LandingCta }) {
-  if (!data.enabled) return null
+  if (!data.enabled) return null;
   return (
     <section className="py-20">
       <div className="mx-auto max-w-2xl px-4 text-center">
@@ -21,5 +21,5 @@ export function CtaSection({ data }: { data: LandingCta }) {
         )}
       </div>
     </section>
-  )
+  );
 }

@@ -8,9 +8,16 @@ export function getMonthGridDates(year: number, month: number): Date[] {
   const gridStart = new Date(year, month, 1 - offset);
 
   const dates: Date[] = [];
-  const totalCells = offset + new Date(year, month + 1, 0).getDate() > 35 ? 42 : 35;
+  const totalCells =
+    offset + new Date(year, month + 1, 0).getDate() > 35 ? 42 : 35;
   for (let i = 0; i < totalCells; i++) {
-    dates.push(new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i));
+    dates.push(
+      new Date(
+        gridStart.getFullYear(),
+        gridStart.getMonth(),
+        gridStart.getDate() + i,
+      ),
+    );
   }
   return dates;
 }
@@ -20,15 +27,19 @@ export function getWeekDates(date: Date): Date[] {
   const day = d.getDay();
   const offset = day === 0 ? 6 : day - 1; // Monday start
   const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - offset);
-  return Array.from({ length: 7 }, (_, i) =>
-    new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i)
+  return Array.from(
+    { length: 7 },
+    (_, i) =>
+      new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i),
   );
 }
 
 export function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() &&
+  return (
+    a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+    a.getDate() === b.getDate()
+  );
 }
 
 export function isToday(date: Date): boolean {
@@ -56,7 +67,7 @@ function eventDateKey(dateStr: string, tz: string): string {
 
 export function groupEventsByDate(
   events: CalendarEvent[],
-  tz: string = "UTC"
+  tz: string = "UTC",
 ): Map<string, CalendarEvent[]> {
   const map = new Map<string, CalendarEvent[]>();
   for (const event of events) {
@@ -70,7 +81,7 @@ export function groupEventsByDate(
 
 export function getDateRangeParams(
   view: string,
-  date: Date
+  date: Date,
 ): { from: string; to: string } {
   if (view === "agenda") {
     const from = new Date();

@@ -9,7 +9,11 @@ interface PageRendererProps {
   pageTitle?: string;
 }
 
-export function PageRenderer({ blocks, dynamicData, pageTitle }: PageRendererProps) {
+export function PageRenderer({
+  blocks,
+  dynamicData,
+  pageTitle,
+}: PageRendererProps) {
   const visible = blocks.filter((b) => b.enabled !== false);
   const firstIsHero = visible[0]?.type === "hero";
 
@@ -22,7 +26,13 @@ export function PageRenderer({ blocks, dynamicData, pageTitle }: PageRendererPro
           This page has no content yet.
         </div>
       ) : (
-        blocks.map((block) => <BlockRenderer key={block.id} block={block} dynamicData={dynamicData} />)
+        blocks.map((block) => (
+          <BlockRenderer
+            key={block.id}
+            block={block}
+            dynamicData={dynamicData}
+          />
+        ))
       )}
     </div>
   );
