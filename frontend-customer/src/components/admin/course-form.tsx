@@ -1,14 +1,20 @@
-"use client"
+"use client";
 
-import { useState, useCallback, Fragment } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useCallback, Fragment } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -16,26 +22,30 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { clientFetch } from "@/lib/api-client"
-import { toast } from "sonner"
-import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react"
-import { PhotoPicker } from "@/components/admin/photo-picker"
-import { VideoPicker } from "@/components/admin/video-picker"
-import { FilterPicker } from "@/components/admin/filter-picker"
-import { TagInput } from "@/components/admin/tag-input"
-import { RichEditorProvider, useRichEditor } from "@/components/owner/rich-editor"
-import { RichHtml } from "@/components/blocks/rich-html"
-import { formatDuration } from "@/lib/format"
-import type { Course, CourseDetail, Module, Lesson } from "@/types/course"
-import type { Photo } from "@/types/photo"
+} from "@/components/ui/table";
+import { clientFetch } from "@/lib/api-client";
+import { toast } from "sonner";
+import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
+import { PhotoPicker } from "@/components/admin/photo-picker";
+import { VideoPicker } from "@/components/admin/video-picker";
+import { FilterPicker } from "@/components/admin/filter-picker";
+import { TagInput } from "@/components/admin/tag-input";
+import {
+  RichEditorProvider,
+  useRichEditor,
+} from "@/components/owner/rich-editor";
+import { RichHtml } from "@/components/blocks/rich-html";
+import { formatDuration } from "@/lib/format";
+import { MonetizeNudge } from "@/components/admin/monetize-nudge";
+import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
+import type { Photo } from "@/types/photo";
 
 interface NewLessonState {
-  title: string
-  content_html: string
-  is_free_preview: boolean
-  video: number | null
-  videoPreviewUrl: string | null
+  title: string;
+  content_html: string;
+  is_free_preview: boolean;
+  video: number | null;
+  videoPreviewUrl: string | null;
 }
 
 const EMPTY_LESSON: NewLessonState = {
@@ -44,24 +54,29 @@ const EMPTY_LESSON: NewLessonState = {
   is_free_preview: false,
   video: null,
   videoPreviewUrl: null,
-}
+};
 
 interface CourseFormProps {
-  course?: CourseDetail | null
-  onCourseLoaded?: () => void
+  course?: CourseDetail | null;
+  onCourseLoaded?: () => void;
 }
 
-export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseFormProps) {
-  const router = useRouter()
-  const isCreate = !initialCourse
-  const [course, setCourse] = useState<CourseDetail | null>(initialCourse ?? null)
-  const [saving, setSaving] = useState(false)
+export function CourseForm({
+  course: initialCourse,
+  onCourseLoaded,
+}: CourseFormProps) {
+  const router = useRouter();
+  const isCreate = !initialCourse;
+  const [course, setCourse] = useState<CourseDetail | null>(
+    initialCourse ?? null,
+  );
+  const [saving, setSaving] = useState(false);
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>(
     initialCourse?.filter_options?.map((o) => o.id) ?? [],
-  )
+  );
   const [tagIds, setTagIds] = useState<number[]>(
     initialCourse?.tags?.map((t) => t.id) ?? [],
-  )
+  );
 
   // Create-mode form state
   const [createForm, setCreateForm] = useState({
@@ -73,43 +88,48 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
     thumbnail_url: "",
     thumbnail_id: null as string | null,
     thumbnail_signed_url: null as string | null,
-  })
+  });
 
   // Create-mode local curriculum (owned children stay local until the one
   // atomic submit — see the design principle in the 2026-07-03 spec)
   interface LocalModule {
-    tempId: number
-    title: string
-    lessons: NewLessonState[]
+    tempId: number;
+    title: string;
+    lessons: NewLessonState[];
   }
-  const [localModules, setLocalModules] = useState<LocalModule[]>([])
+  const [localModules, setLocalModules] = useState<LocalModule[]>([]);
 
   // Curriculum state
-  const [newModuleTitle, setNewModuleTitle] = useState("")
-  const [editingLessonId, setEditingLessonId] = useState<number | null>(null)
-  const [lessonSaving, setLessonSaving] = useState(false)
-  const [addingLessonForModule, setAddingLessonForModule] = useState<number | null>(null)
+  const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [editingLessonId, setEditingLessonId] = useState<number | null>(null);
+  const [lessonSaving, setLessonSaving] = useState(false);
+  const [addingLessonForModule, setAddingLessonForModule] = useState<
+    number | null
+  >(null);
   // Create-mode: which local lesson is being edited ({module tempId, lesson index})
-  const [editingLocal, setEditingLocal] = useState<{ tempId: number; index: number } | null>(null)
-  const [newLesson, setNewLesson] = useState<NewLessonState>(EMPTY_LESSON)
+  const [editingLocal, setEditingLocal] = useState<{
+    tempId: number;
+    index: number;
+  } | null>(null);
+  const [newLesson, setNewLesson] = useState<NewLessonState>(EMPTY_LESSON);
 
-  const slug = course?.slug
+  const slug = course?.slug;
 
   const loadCourse = useCallback(async () => {
-    if (!slug) return
+    if (!slug) return;
     try {
-      const data = await clientFetch<CourseDetail>(`/api/v1/courses/${slug}/`)
-      setCourse(data)
-      onCourseLoaded?.()
+      const data = await clientFetch<CourseDetail>(`/api/v1/courses/${slug}/`);
+      setCourse(data);
+      onCourseLoaded?.();
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }, [slug, onCourseLoaded])
+  }, [slug, onCourseLoaded]);
 
   // --- Save all course fields ---
   async function handleSave() {
     if (isCreate) {
-      setSaving(true)
+      setSaving(true);
       try {
         const created = await clientFetch<Course>("/api/v1/courses/", {
           method: "POST",
@@ -133,19 +153,19 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
               })),
             })),
           }),
-        })
-        toast.success("Course created")
-        router.push(`/admin/courses/${created.slug}`)
+        });
+        toast.success("Course created");
+        router.push(`/admin/courses/${created.slug}`);
       } catch (err) {
-        console.error(err)
-        toast.error("Failed to create course")
+        console.error(err);
+        toast.error("Failed to create course");
       } finally {
-        setSaving(false)
+        setSaving(false);
       }
-      return
+      return;
     }
-    if (!course) return
-    setSaving(true)
+    if (!course) return;
+    setSaving(true);
     try {
       await clientFetch(`/api/v1/courses/${slug}/`, {
         method: "PUT",
@@ -160,50 +180,55 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
           filter_option_ids: filterOptionIds,
           tag_ids: tagIds,
         }),
-      })
-      toast.success("Course saved")
-      await loadCourse()
+      });
+      toast.success("Course saved");
+      await loadCourse();
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to save course")
+      console.error(err);
+      toast.error("Failed to save course");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   // --- Module CRUD ---
   async function handleAddModule() {
-    if (!newModuleTitle.trim() || !slug) return
+    if (!newModuleTitle.trim() || !slug) return;
     try {
       await clientFetch(`/api/v1/courses/${slug}/modules/`, {
         method: "POST",
         body: JSON.stringify({ title: newModuleTitle }),
-      })
-      setNewModuleTitle("")
-      toast.success("Module added")
-      await loadCourse()
+      });
+      setNewModuleTitle("");
+      toast.success("Module added");
+      await loadCourse();
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to add module")
+      console.error(err);
+      toast.error("Failed to add module");
     }
   }
 
   async function handleDeleteModule(moduleId: number) {
-    if (!slug) return
+    if (!slug) return;
     try {
-      await clientFetch(`/api/v1/courses/${slug}/modules/${moduleId}/`, { method: "DELETE" })
-      toast.success("Module deleted")
-      await loadCourse()
+      await clientFetch(`/api/v1/courses/${slug}/modules/${moduleId}/`, {
+        method: "DELETE",
+      });
+      toast.success("Module deleted");
+      await loadCourse();
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to delete module")
+      console.error(err);
+      toast.error("Failed to delete module");
     }
   }
 
   // --- Lesson CRUD ---
-  async function handleSaveLesson(lesson: Lesson, values: Record<string, unknown>) {
-    if (!slug) return
-    setLessonSaving(true)
+  async function handleSaveLesson(
+    lesson: Lesson,
+    values: Record<string, unknown>,
+  ) {
+    if (!slug) return;
+    setLessonSaving(true);
     try {
       await clientFetch(`/api/v1/courses/${slug}/lessons/${lesson.id}/`, {
         method: "PUT",
@@ -213,597 +238,707 @@ export function CourseForm({ course: initialCourse, onCourseLoaded }: CourseForm
           is_free_preview: values.is_free_preview,
           ...(values.video ? { video: values.video } : { video: null }),
         }),
-      })
-      setEditingLessonId(null)
-      toast.success("Lesson saved")
-      await loadCourse()
+      });
+      setEditingLessonId(null);
+      toast.success("Lesson saved");
+      await loadCourse();
     } catch {
-      toast.error("Failed to save lesson")
+      toast.error("Failed to save lesson");
     } finally {
-      setLessonSaving(false)
+      setLessonSaving(false);
     }
   }
 
   async function handleCreateLesson(moduleId: number) {
-    if (!slug || !newLesson.title.trim()) return
-    setLessonSaving(true)
+    if (!slug || !newLesson.title.trim()) return;
+    setLessonSaving(true);
     try {
-      await clientFetch(`/api/v1/courses/${slug}/modules/${moduleId}/lessons/`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: newLesson.title,
-          content_html: newLesson.content_html,
-          is_free_preview: newLesson.is_free_preview,
-          ...(newLesson.video ? { video: newLesson.video } : {}),
-        }),
-      })
-      setAddingLessonForModule(null)
-      setNewLesson({ title: "", content_html: "", is_free_preview: false, video: null, videoPreviewUrl: null })
-      toast.success("Lesson added")
-      await loadCourse()
+      await clientFetch(
+        `/api/v1/courses/${slug}/modules/${moduleId}/lessons/`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            title: newLesson.title,
+            content_html: newLesson.content_html,
+            is_free_preview: newLesson.is_free_preview,
+            ...(newLesson.video ? { video: newLesson.video } : {}),
+          }),
+        },
+      );
+      setAddingLessonForModule(null);
+      setNewLesson({
+        title: "",
+        content_html: "",
+        is_free_preview: false,
+        video: null,
+        videoPreviewUrl: null,
+      });
+      toast.success("Lesson added");
+      await loadCourse();
     } catch {
-      toast.error("Failed to add lesson")
+      toast.error("Failed to add lesson");
     } finally {
-      setLessonSaving(false)
+      setLessonSaving(false);
     }
   }
 
   async function handleDeleteLesson(lessonId: number) {
-    if (!slug) return
+    if (!slug) return;
     try {
-      await clientFetch(`/api/v1/courses/${slug}/lessons/${lessonId}/`, { method: "DELETE" })
-      toast.success("Lesson deleted")
-      await loadCourse()
+      await clientFetch(`/api/v1/courses/${slug}/lessons/${lessonId}/`, {
+        method: "DELETE",
+      });
+      toast.success("Lesson deleted");
+      await loadCourse();
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to delete lesson")
+      console.error(err);
+      toast.error("Failed to delete lesson");
     }
   }
 
   // --- Create-mode local curriculum (no API calls until submit) ---
   function addLocalModule() {
-    if (!newModuleTitle.trim()) return
+    if (!newModuleTitle.trim()) return;
     setLocalModules([
       ...localModules,
       { tempId: Date.now(), title: newModuleTitle.trim(), lessons: [] },
-    ])
-    setNewModuleTitle("")
+    ]);
+    setNewModuleTitle("");
   }
 
   function removeLocalModule(tempId: number) {
-    if (addingLessonForModule === tempId) setAddingLessonForModule(null)
-    if (editingLocal?.tempId === tempId) setEditingLocal(null)
-    setLocalModules(localModules.filter((m) => m.tempId !== tempId))
+    if (addingLessonForModule === tempId) setAddingLessonForModule(null);
+    if (editingLocal?.tempId === tempId) setEditingLocal(null);
+    setLocalModules(localModules.filter((m) => m.tempId !== tempId));
   }
 
   function addLocalLesson(tempId: number) {
-    if (!newLesson.title.trim()) return
+    if (!newLesson.title.trim()) return;
     setLocalModules(
       localModules.map((m) =>
-        m.tempId === tempId ? { ...m, lessons: [...m.lessons, { ...newLesson }] } : m
-      )
-    )
-    setAddingLessonForModule(null)
-    setNewLesson(EMPTY_LESSON)
+        m.tempId === tempId
+          ? { ...m, lessons: [...m.lessons, { ...newLesson }] }
+          : m,
+      ),
+    );
+    setAddingLessonForModule(null);
+    setNewLesson(EMPTY_LESSON);
   }
 
   function removeLocalLesson(tempId: number, lessonIndex: number) {
-    if (editingLocal?.tempId === tempId) setEditingLocal(null)
+    if (editingLocal?.tempId === tempId) setEditingLocal(null);
     setLocalModules(
       localModules.map((m) =>
         m.tempId === tempId
           ? { ...m, lessons: m.lessons.filter((_, i) => i !== lessonIndex) }
-          : m
-      )
-    )
+          : m,
+      ),
+    );
   }
 
-  function startLocalLessonEdit(tempId: number, index: number, lesson: NewLessonState) {
-    setAddingLessonForModule(null)
-    setNewLesson({ ...lesson })
-    setEditingLocal({ tempId, index })
+  function startLocalLessonEdit(
+    tempId: number,
+    index: number,
+    lesson: NewLessonState,
+  ) {
+    setAddingLessonForModule(null);
+    setNewLesson({ ...lesson });
+    setEditingLocal({ tempId, index });
   }
 
   function saveLocalLessonEdit() {
-    if (!editingLocal || !newLesson.title.trim()) return
+    if (!editingLocal || !newLesson.title.trim()) return;
     setLocalModules(
       localModules.map((m) =>
         m.tempId === editingLocal.tempId
           ? {
               ...m,
-              lessons: m.lessons.map((l, i) => (i === editingLocal.index ? { ...newLesson } : l)),
+              lessons: m.lessons.map((l, i) =>
+                i === editingLocal.index ? { ...newLesson } : l,
+              ),
             }
-          : m
-      )
-    )
-    setEditingLocal(null)
-    setNewLesson(EMPTY_LESSON)
+          : m,
+      ),
+    );
+    setEditingLocal(null);
+    setNewLesson(EMPTY_LESSON);
   }
 
   return (
     <RichEditorProvider>
-    <div className="space-y-6">
-      {/* ───── Course Details & Settings ───── */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{isCreate ? "New Course" : "Course Settings"}</CardTitle>
-          <CardDescription>
-            {isCreate ? "Fill in the details to create a new course." : "Update course details, pricing, and publishing."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              placeholder="e.g. Introduction to Photography"
-              value={isCreate ? createForm.title : (course?.title ?? "")}
-              onChange={(e) =>
-                isCreate
-                  ? setCreateForm({ ...createForm, title: e.target.value })
-                  : setCourse(course ? { ...course, title: e.target.value } : course)
-              }
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Describe what students will learn..."
-              value={isCreate ? createForm.description : (course?.description ?? "")}
-              onChange={(e) =>
-                isCreate
-                  ? setCreateForm({ ...createForm, description: e.target.value })
-                  : setCourse(course ? { ...course, description: e.target.value } : course)
-              }
-              className="min-h-[120px]"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Thumbnail</Label>
-            <PhotoPicker
-              value={isCreate ? createForm.thumbnail_url : (course?.thumbnail_url ?? null)}
-              previewUrl={
-                isCreate
-                  ? createForm.thumbnail_signed_url
-                  : (course?.thumbnail_signed_url || course?.thumbnail_url || null)
-              }
-              onSelect={(photo: Photo) => {
-                if (isCreate) {
-                  setCreateForm({
-                    ...createForm,
-                    thumbnail_url: photo.s3_key,
-                    thumbnail_id: photo.id,
-                    thumbnail_signed_url: photo.signed_url,
-                  })
-                } else if (course) {
-                  setCourse({
-                    ...course,
-                    thumbnail_url: photo.s3_key,
-                    thumbnail_id: photo.id,
-                    thumbnail_signed_url: photo.signed_url ?? undefined,
-                  })
-                }
-              }}
-              onClear={() => {
-                if (isCreate) {
-                  setCreateForm({
-                    ...createForm,
-                    thumbnail_url: "",
-                    thumbnail_id: null,
-                    thumbnail_signed_url: null,
-                  })
-                } else if (course) {
-                  setCourse({
-                    ...course,
-                    thumbnail_url: "",
-                    thumbnail_id: null,
-                    thumbnail_signed_url: undefined,
-                  })
-                }
-              }}
-              label="Choose thumbnail"
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="space-y-6">
+        {/* ───── Course Details & Settings ───── */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{isCreate ? "New Course" : "Course Settings"}</CardTitle>
+            <CardDescription>
+              {isCreate
+                ? "Fill in the details to create a new course."
+                : "Update course details, pricing, and publishing."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="pricing_type">Pricing Type</Label>
-              <select
-                id="pricing_type"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={isCreate ? createForm.pricing_type : (course?.pricing_type ?? "free")}
-                onChange={(e) => {
-                  const v = e.target.value as "free" | "paid" | "subscription"
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                placeholder="e.g. Introduction to Photography"
+                value={isCreate ? createForm.title : (course?.title ?? "")}
+                onChange={(e) =>
                   isCreate
-                    ? setCreateForm({ ...createForm, pricing_type: v })
-                    : setCourse(course ? { ...course, pricing_type: v } : course)
-                }}
-              >
-                <option value="free">Free</option>
-                <option value="paid">Paid</option>
-                <option value="subscription">Included in subscription</option>
-              </select>
+                    ? setCreateForm({ ...createForm, title: e.target.value })
+                    : setCourse(
+                        course ? { ...course, title: e.target.value } : course,
+                      )
+                }
+                required
+              />
             </div>
-            {(isCreate ? createForm.pricing_type : course?.pricing_type) === "paid" && (
-              <div className="space-y-2">
-                <Label htmlFor="price">Price</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={isCreate ? createForm.price : (course?.price ?? "0.00")}
-                  onChange={(e) =>
-                    isCreate
-                      ? setCreateForm({ ...createForm, price: e.target.value })
-                      : setCourse(course ? { ...course, price: e.target.value } : course)
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe what students will learn..."
+                value={
+                  isCreate
+                    ? createForm.description
+                    : (course?.description ?? "")
+                }
+                onChange={(e) =>
+                  isCreate
+                    ? setCreateForm({
+                        ...createForm,
+                        description: e.target.value,
+                      })
+                    : setCourse(
+                        course
+                          ? { ...course, description: e.target.value }
+                          : course,
+                      )
+                }
+                className="min-h-[120px]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Thumbnail</Label>
+              <PhotoPicker
+                value={
+                  isCreate
+                    ? createForm.thumbnail_url
+                    : (course?.thumbnail_url ?? null)
+                }
+                previewUrl={
+                  isCreate
+                    ? createForm.thumbnail_signed_url
+                    : course?.thumbnail_signed_url ||
+                      course?.thumbnail_url ||
+                      null
+                }
+                onSelect={(photo: Photo) => {
+                  if (isCreate) {
+                    setCreateForm({
+                      ...createForm,
+                      thumbnail_url: photo.s3_key,
+                      thumbnail_id: photo.id,
+                      thumbnail_signed_url: photo.signed_url,
+                    });
+                  } else if (course) {
+                    setCourse({
+                      ...course,
+                      thumbnail_url: photo.s3_key,
+                      thumbnail_id: photo.id,
+                      thumbnail_signed_url: photo.signed_url ?? undefined,
+                    });
                   }
-                />
+                }}
+                onClear={() => {
+                  if (isCreate) {
+                    setCreateForm({
+                      ...createForm,
+                      thumbnail_url: "",
+                      thumbnail_id: null,
+                      thumbnail_signed_url: null,
+                    });
+                  } else if (course) {
+                    setCourse({
+                      ...course,
+                      thumbnail_url: "",
+                      thumbnail_id: null,
+                      thumbnail_signed_url: undefined,
+                    });
+                  }
+                }}
+                label="Choose thumbnail"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="pricing_type">Pricing Type</Label>
+                <select
+                  id="pricing_type"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={
+                    isCreate
+                      ? createForm.pricing_type
+                      : (course?.pricing_type ?? "free")
+                  }
+                  onChange={(e) => {
+                    const v = e.target.value as
+                      | "free"
+                      | "paid"
+                      | "subscription";
+                    isCreate
+                      ? setCreateForm({ ...createForm, pricing_type: v })
+                      : setCourse(
+                          course ? { ...course, pricing_type: v } : course,
+                        );
+                  }}
+                >
+                  <option value="free">Free</option>
+                  <option value="paid">Paid</option>
+                  <option value="subscription">Included in subscription</option>
+                </select>
               </div>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <Switch
-              id="published"
-              checked={isCreate ? createForm.is_published : (course?.is_published ?? false)}
-              onCheckedChange={(checked) =>
-                isCreate
-                  ? setCreateForm({ ...createForm, is_published: checked })
-                  : setCourse(course ? { ...course, is_published: checked } : course)
-              }
-            />
-            <Label htmlFor="published">
-              {isCreate ? "Publish immediately" : "Published"}
-            </Label>
-          </div>
-          <div className="space-y-1.5">
-            <Label>Filters</Label>
-            <FilterPicker value={filterOptionIds} onChange={setFilterOptionIds} scope="course" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Tags</Label>
-            <TagInput value={tagIds} onChange={setTagIds} scope="course" />
-          </div>
-          {!isCreate && (
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ───── Curriculum (create mode: composed locally, submitted with the course) ───── */}
-      {isCreate && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>Curriculum</CardTitle>
-              <CardDescription>
-                Add modules and lessons now — everything is created together in one step.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          {localModules.map((mod, moduleIndex) => (
-            <Card key={mod.tempId}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">
-                    Module {moduleIndex + 1}: {mod.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {mod.lessons.length} lesson{mod.lessons.length !== 1 ? "s" : ""}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => removeLocalModule(mod.tempId)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    </Button>
-                  </div>
+              {(isCreate ? createForm.pricing_type : course?.pricing_type) ===
+                "paid" && (
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={
+                      isCreate ? createForm.price : (course?.price ?? "0.00")
+                    }
+                    onChange={(e) =>
+                      isCreate
+                        ? setCreateForm({
+                            ...createForm,
+                            price: e.target.value,
+                          })
+                        : setCourse(
+                            course
+                              ? { ...course, price: e.target.value }
+                              : course,
+                          )
+                    }
+                  />
+                  <MonetizeNudge
+                    price={isCreate ? createForm.price : (course?.price ?? 0)}
+                  />
                 </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
+                id="published"
+                checked={
+                  isCreate
+                    ? createForm.is_published
+                    : (course?.is_published ?? false)
+                }
+                onCheckedChange={(checked) =>
+                  isCreate
+                    ? setCreateForm({ ...createForm, is_published: checked })
+                    : setCourse(
+                        course ? { ...course, is_published: checked } : course,
+                      )
+                }
+              />
+              <Label htmlFor="published">
+                {isCreate ? "Publish immediately" : "Published"}
+              </Label>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Filters</Label>
+              <FilterPicker
+                value={filterOptionIds}
+                onChange={setFilterOptionIds}
+                scope="course"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Tags</Label>
+              <TagInput value={tagIds} onChange={setTagIds} scope="course" />
+            </div>
+            {!isCreate && (
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ───── Curriculum (create mode: composed locally, submitted with the course) ───── */}
+        {isCreate && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Curriculum</CardTitle>
+                <CardDescription>
+                  Add modules and lessons now — everything is created together
+                  in one step.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {mod.lessons.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Video</TableHead>
-                        <TableHead>Preview</TableHead>
-                        <TableHead className="w-24">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mod.lessons.map((lesson, lessonIndex) => (
-                        <Fragment key={lessonIndex}>
-                          <TableRow>
-                            <TableCell className="font-medium">{lesson.title}</TableCell>
-                            <TableCell>
-                              <Badge variant={lesson.video ? "success" : "secondary"}>
-                                {lesson.video ? "Selected" : "No video"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {lesson.is_free_preview && <Badge variant="outline">Free</Badge>}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() =>
-                                    editingLocal?.tempId === mod.tempId &&
-                                    editingLocal?.index === lessonIndex
-                                      ? setEditingLocal(null)
-                                      : startLocalLessonEdit(mod.tempId, lessonIndex, lesson)
+            </Card>
+
+            {localModules.map((mod, moduleIndex) => (
+              <Card key={mod.tempId}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">
+                      Module {moduleIndex + 1}: {mod.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">
+                        {mod.lessons.length} lesson
+                        {mod.lessons.length !== 1 ? "s" : ""}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => removeLocalModule(mod.tempId)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {mod.lessons.length > 0 && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Video</TableHead>
+                          <TableHead>Preview</TableHead>
+                          <TableHead className="w-24">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {mod.lessons.map((lesson, lessonIndex) => (
+                          <Fragment key={lessonIndex}>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                {lesson.title}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    lesson.video ? "success" : "secondary"
                                   }
                                 >
-                                  {editingLocal?.tempId === mod.tempId &&
-                                  editingLocal?.index === lessonIndex ? (
-                                    <ChevronUp className="h-4 w-4" />
-                                  ) : (
-                                    <Pencil className="h-4 w-4" />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => removeLocalLesson(mod.tempId, lessonIndex)}
+                                  {lesson.video ? "Selected" : "No video"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {lesson.is_free_preview && (
+                                  <Badge variant="outline">Free</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() =>
+                                      editingLocal?.tempId === mod.tempId &&
+                                      editingLocal?.index === lessonIndex
+                                        ? setEditingLocal(null)
+                                        : startLocalLessonEdit(
+                                            mod.tempId,
+                                            lessonIndex,
+                                            lesson,
+                                          )
+                                    }
+                                  >
+                                    {editingLocal?.tempId === mod.tempId &&
+                                    editingLocal?.index === lessonIndex ? (
+                                      <ChevronUp className="h-4 w-4" />
+                                    ) : (
+                                      <Pencil className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() =>
+                                      removeLocalLesson(mod.tempId, lessonIndex)
+                                    }
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            {editingLocal?.tempId === mod.tempId &&
+                              editingLocal?.index === lessonIndex && (
+                                <TableRow>
+                                  <TableCell colSpan={4} className="p-0">
+                                    <div className="p-2">
+                                      <LessonCreatePanel
+                                        newLesson={newLesson}
+                                        setNewLesson={setNewLesson}
+                                        onSave={saveLocalLessonEdit}
+                                        onCancel={() => {
+                                          setEditingLocal(null);
+                                          setNewLesson(EMPTY_LESSON);
+                                        }}
+                                        saving={false}
+                                        heading="Edit Lesson"
+                                        saveLabel="Save"
+                                      />
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                          </Fragment>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+
+                  {addingLessonForModule === mod.tempId ? (
+                    <LessonCreatePanel
+                      newLesson={newLesson}
+                      setNewLesson={setNewLesson}
+                      onSave={() => addLocalLesson(mod.tempId)}
+                      onCancel={() => {
+                        setAddingLessonForModule(null);
+                        setNewLesson({
+                          title: "",
+                          content_html: "",
+                          is_free_preview: false,
+                          video: null,
+                          videoPreviewUrl: null,
+                        });
+                      }}
+                      saving={false}
+                    />
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => {
+                        setEditingLocal(null);
+                        setNewLesson(EMPTY_LESSON);
+                        setAddingLessonForModule(mod.tempId);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" /> Add Lesson
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+
+            <Card className="border-dashed">
+              <CardContent className="p-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="New module title"
+                    value={newModuleTitle}
+                    onChange={(e) => setNewModuleTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") addLocalModule();
+                    }}
+                  />
+                  <Button className="gap-2 shrink-0" onClick={addLocalModule}>
+                    <Plus className="h-4 w-4" /> Add Module
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={handleSave}
+              disabled={saving || !createForm.title.trim()}
+            >
+              {saving ? "Creating..." : "Create Course"}
+            </Button>
+          </>
+        )}
+
+        {/* ───── Curriculum ───── */}
+        {!isCreate && course && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Curriculum</CardTitle>
+                <CardDescription>
+                  Organize your course into modules and lessons.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            {course.modules.map((mod: Module) => (
+              <Card key={mod.id}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">
+                      Module {mod.order}: {mod.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">
+                        {mod.lessons.length} lesson
+                        {mod.lessons.length !== 1 ? "s" : ""}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleDeleteModule(mod.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {mod.lessons.length > 0 && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Duration</TableHead>
+                          <TableHead>Video</TableHead>
+                          <TableHead>Preview</TableHead>
+                          <TableHead className="w-24">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {mod.lessons.map((lesson) => (
+                          <Fragment key={lesson.id}>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                {lesson.title}
+                              </TableCell>
+                              <TableCell>
+                                {formatDuration(lesson.duration_seconds)}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={
+                                    lesson.video_url ? "success" : "secondary"
+                                  }
                                 >
-                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          {editingLocal?.tempId === mod.tempId &&
-                            editingLocal?.index === lessonIndex && (
+                                  {lesson.video_url ? "Uploaded" : "No video"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {lesson.is_free_preview && (
+                                  <Badge variant="outline">Free</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() =>
+                                      setEditingLessonId(
+                                        editingLessonId === lesson.id
+                                          ? null
+                                          : lesson.id,
+                                      )
+                                    }
+                                  >
+                                    {editingLessonId === lesson.id ? (
+                                      <ChevronUp className="h-4 w-4" />
+                                    ) : (
+                                      <Pencil className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() =>
+                                      handleDeleteLesson(lesson.id)
+                                    }
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            {editingLessonId === lesson.id && (
                               <TableRow>
-                                <TableCell colSpan={4} className="p-0">
-                                  <div className="p-2">
-                                    <LessonCreatePanel
-                                      newLesson={newLesson}
-                                      setNewLesson={setNewLesson}
-                                      onSave={saveLocalLessonEdit}
-                                      onCancel={() => {
-                                        setEditingLocal(null)
-                                        setNewLesson(EMPTY_LESSON)
-                                      }}
-                                      saving={false}
-                                      heading="Edit Lesson"
-                                      saveLabel="Save"
-                                    />
-                                  </div>
+                                <TableCell colSpan={5} className="p-0">
+                                  <LessonEditPanel
+                                    lesson={lesson}
+                                    onSave={(values) =>
+                                      handleSaveLesson(lesson, values)
+                                    }
+                                    onCancel={() => setEditingLessonId(null)}
+                                    saving={lessonSaving}
+                                  />
                                 </TableCell>
                               </TableRow>
                             )}
-                        </Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                          </Fragment>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
 
-                {addingLessonForModule === mod.tempId ? (
-                  <LessonCreatePanel
-                    newLesson={newLesson}
-                    setNewLesson={setNewLesson}
-                    onSave={() => addLocalLesson(mod.tempId)}
-                    onCancel={() => {
-                      setAddingLessonForModule(null)
-                      setNewLesson({
-                        title: "",
-                        content_html: "",
-                        is_free_preview: false,
-                        video: null,
-                        videoPreviewUrl: null,
-                      })
-                    }}
-                    saving={false}
-                  />
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => {
-                      setEditingLocal(null)
-                      setNewLesson(EMPTY_LESSON)
-                      setAddingLessonForModule(mod.tempId)
-                    }}
-                  >
-                    <Plus className="h-4 w-4" /> Add Lesson
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-
-          <Card className="border-dashed">
-            <CardContent className="p-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="New module title"
-                  value={newModuleTitle}
-                  onChange={(e) => setNewModuleTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") addLocalModule()
-                  }}
-                />
-                <Button className="gap-2 shrink-0" onClick={addLocalModule}>
-                  <Plus className="h-4 w-4" /> Add Module
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button onClick={handleSave} disabled={saving || !createForm.title.trim()}>
-            {saving ? "Creating..." : "Create Course"}
-          </Button>
-        </>
-      )}
-
-      {/* ───── Curriculum ───── */}
-      {!isCreate && course && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>Curriculum</CardTitle>
-              <CardDescription>Organize your course into modules and lessons.</CardDescription>
-            </CardHeader>
-          </Card>
-
-          {course.modules.map((mod: Module) => (
-            <Card key={mod.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">
-                    Module {mod.order}: {mod.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {mod.lessons.length} lesson{mod.lessons.length !== 1 ? "s" : ""}
-                    </Badge>
+                  {addingLessonForModule === mod.id ? (
+                    <LessonCreatePanel
+                      newLesson={newLesson}
+                      setNewLesson={setNewLesson}
+                      onSave={() => handleCreateLesson(mod.id)}
+                      onCancel={() => {
+                        setAddingLessonForModule(null);
+                        setNewLesson({
+                          title: "",
+                          content_html: "",
+                          is_free_preview: false,
+                          video: null,
+                          videoPreviewUrl: null,
+                        });
+                      }}
+                      saving={lessonSaving}
+                    />
+                  ) : (
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleDeleteModule(mod.id)}
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => setAddingLessonForModule(mod.id)}
                     >
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Plus className="h-4 w-4" /> Add Lesson
                     </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {mod.lessons.length > 0 && (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Duration</TableHead>
-                        <TableHead>Video</TableHead>
-                        <TableHead>Preview</TableHead>
-                        <TableHead className="w-24">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mod.lessons.map((lesson) => (
-                        <Fragment key={lesson.id}>
-                          <TableRow>
-                            <TableCell className="font-medium">{lesson.title}</TableCell>
-                            <TableCell>{formatDuration(lesson.duration_seconds)}</TableCell>
-                            <TableCell>
-                              <Badge variant={lesson.video_url ? "success" : "secondary"}>
-                                {lesson.video_url ? "Uploaded" : "No video"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {lesson.is_free_preview && <Badge variant="outline">Free</Badge>}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() =>
-                                    setEditingLessonId(
-                                      editingLessonId === lesson.id ? null : lesson.id
-                                    )
-                                  }
-                                >
-                                  {editingLessonId === lesson.id ? (
-                                    <ChevronUp className="h-4 w-4" />
-                                  ) : (
-                                    <Pencil className="h-4 w-4" />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => handleDeleteLesson(lesson.id)}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          {editingLessonId === lesson.id && (
-                            <TableRow>
-                              <TableCell colSpan={5} className="p-0">
-                                <LessonEditPanel
-                                  lesson={lesson}
-                                  onSave={(values) => handleSaveLesson(lesson, values)}
-                                  onCancel={() => setEditingLessonId(null)}
-                                  saving={lessonSaving}
-                                />
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+                  )}
+                </CardContent>
+              </Card>
+            ))}
 
-                {addingLessonForModule === mod.id ? (
-                  <LessonCreatePanel
-                    newLesson={newLesson}
-                    setNewLesson={setNewLesson}
-                    onSave={() => handleCreateLesson(mod.id)}
-                    onCancel={() => {
-                      setAddingLessonForModule(null)
-                      setNewLesson({
-                        title: "",
-                        content_html: "",
-                        is_free_preview: false,
-                        video: null,
-                        videoPreviewUrl: null,
-                      })
+            <Card className="border-dashed">
+              <CardContent className="p-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="New module title"
+                    value={newModuleTitle}
+                    onChange={(e) => setNewModuleTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleAddModule();
                     }}
-                    saving={lessonSaving}
                   />
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => setAddingLessonForModule(mod.id)}
-                  >
-                    <Plus className="h-4 w-4" /> Add Lesson
+                  <Button className="gap-2 shrink-0" onClick={handleAddModule}>
+                    <Plus className="h-4 w-4" /> Add Module
                   </Button>
-                )}
+                </div>
               </CardContent>
             </Card>
-          ))}
-
-          <Card className="border-dashed">
-            <CardContent className="p-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="New module title"
-                  value={newModuleTitle}
-                  onChange={(e) => setNewModuleTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAddModule()
-                  }}
-                />
-                <Button className="gap-2 shrink-0" onClick={handleAddModule}>
-                  <Plus className="h-4 w-4" /> Add Module
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </div>
     </RichEditorProvider>
-  )
+  );
 }
 
 // ── Lesson content (rich text via the shared modal) ────────────
@@ -812,44 +947,58 @@ function LessonContentField({
   value,
   onChange,
 }: {
-  value: string
-  onChange: (html: string) => void
+  value: string;
+  onChange: (html: string) => void;
 }) {
-  const editor = useRichEditor()
+  const editor = useRichEditor();
   return (
     <button
       type="button"
       onClick={() =>
-        editor?.openRichEditor({ value, title: "Lesson content", onSave: onChange })
+        editor?.openRichEditor({
+          value,
+          title: "Lesson content",
+          onSave: onChange,
+        })
       }
       className="block w-full rounded-md border bg-background px-3 py-2 text-left text-sm transition-colors hover:border-primary/60"
     >
       {value ? (
-        <RichHtml html={value} className="pointer-events-none max-h-40 overflow-hidden" />
+        <RichHtml
+          html={value}
+          className="pointer-events-none max-h-40 overflow-hidden"
+        />
       ) : (
-        <span className="text-muted-foreground">Click to write lesson content…</span>
+        <span className="text-muted-foreground">
+          Click to write lesson content…
+        </span>
       )}
     </button>
-  )
+  );
 }
 
 // ── Lesson Edit Panel (inline) ─────────────────────────────────
 
 interface LessonEditPanelProps {
-  lesson: Lesson
-  onSave: (values: Record<string, unknown>) => Promise<void>
-  onCancel: () => void
-  saving: boolean
+  lesson: Lesson;
+  onSave: (values: Record<string, unknown>) => Promise<void>;
+  onCancel: () => void;
+  saving: boolean;
 }
 
-function LessonEditPanel({ lesson, onSave, onCancel, saving }: LessonEditPanelProps) {
+function LessonEditPanel({
+  lesson,
+  onSave,
+  onCancel,
+  saving,
+}: LessonEditPanelProps) {
   const [values, setValues] = useState({
     title: lesson.title,
     content_html: lesson.content_html,
     is_free_preview: lesson.is_free_preview,
     video: lesson.video_id,
     videoPreviewUrl: lesson.video_signed_url,
-  })
+  });
 
   return (
     <div className="border-t bg-muted/30 px-4 py-4 space-y-4">
@@ -865,7 +1014,9 @@ function LessonEditPanel({ lesson, onSave, onCancel, saving }: LessonEditPanelPr
           <div className="flex items-center gap-2">
             <Switch
               checked={values.is_free_preview}
-              onCheckedChange={(v) => setValues({ ...values, is_free_preview: v })}
+              onCheckedChange={(v) =>
+                setValues({ ...values, is_free_preview: v })
+              }
             />
             <Label className="text-sm">Free Preview</Label>
           </div>
@@ -901,19 +1052,19 @@ function LessonEditPanel({ lesson, onSave, onCancel, saving }: LessonEditPanelPr
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 // ── Lesson Create Panel (inline) ───────────────────────────────
 
 interface LessonCreatePanelProps {
-  newLesson: NewLessonState
-  setNewLesson: (val: NewLessonState) => void
-  onSave: () => void
-  onCancel: () => void
-  saving: boolean
-  heading?: string
-  saveLabel?: string
+  newLesson: NewLessonState;
+  setNewLesson: (val: NewLessonState) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  saving: boolean;
+  heading?: string;
+  saveLabel?: string;
 }
 
 function LessonCreatePanel({
@@ -933,7 +1084,9 @@ function LessonCreatePanel({
           <Label className="text-sm font-medium">Title</Label>
           <Input
             value={newLesson.title}
-            onChange={(e) => setNewLesson({ ...newLesson, title: e.target.value })}
+            onChange={(e) =>
+              setNewLesson({ ...newLesson, title: e.target.value })
+            }
             placeholder="Lesson title"
           />
         </div>
@@ -953,7 +1106,9 @@ function LessonCreatePanel({
         <Label className="text-sm font-medium">Content</Label>
         <LessonContentField
           value={newLesson.content_html}
-          onChange={(html) => setNewLesson({ ...newLesson, content_html: html })}
+          onChange={(html) =>
+            setNewLesson({ ...newLesson, content_html: html })
+          }
         />
       </div>
       <div className="space-y-1.5">
@@ -962,7 +1117,11 @@ function LessonCreatePanel({
           value={newLesson.video}
           previewUrl={newLesson.videoPreviewUrl}
           onChange={(videoId, signedUrl) =>
-            setNewLesson({ ...newLesson, video: videoId, videoPreviewUrl: signedUrl })
+            setNewLesson({
+              ...newLesson,
+              video: videoId,
+              videoPreviewUrl: signedUrl,
+            })
           }
         />
       </div>
@@ -970,10 +1129,14 @@ function LessonCreatePanel({
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
           Cancel
         </Button>
-        <Button size="sm" onClick={onSave} disabled={saving || !newLesson.title.trim()}>
+        <Button
+          size="sm"
+          onClick={onSave}
+          disabled={saving || !newLesson.title.trim()}
+        >
           {saving ? "Saving..." : saveLabel}
         </Button>
       </div>
     </div>
-  )
+  );
 }

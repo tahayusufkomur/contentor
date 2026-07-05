@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react";
 import {
   Download,
   ExternalLink,
@@ -9,33 +9,43 @@ import {
   Trash2,
   Upload,
   X,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { clientFetch, batchedAsync } from "@/lib/api-client"
-import { toast } from "sonner"
-import { formatFileSize, formatDate } from "@/lib/format"
-import { getFileIcon, getExtension } from "@/lib/file-icons"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { clientFetch, batchedAsync } from "@/lib/api-client";
+import { toast } from "sonner";
+import { formatFileSize, formatDate } from "@/lib/format";
+import { getFileIcon, getExtension } from "@/lib/file-icons";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
   type FetchPageParams,
   type FetchPageResult,
-} from "@/components/admin/media-browser"
-import { InlineEditPanel, type FieldConfig } from "@/components/admin/inline-edit-panel"
-import { TagFilterBar } from "@/components/admin/tag-filter-bar"
-import { TagInput } from "@/components/admin/tag-input"
-import type { DownloadFile } from "@/types/download"
+} from "@/components/admin/media-browser";
+import {
+  InlineEditPanel,
+  type FieldConfig,
+} from "@/components/admin/inline-edit-panel";
+import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { TagInput } from "@/components/admin/tag-input";
+import { MonetizeNudge } from "@/components/admin/monetize-nudge";
+import type { DownloadFile } from "@/types/download";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 interface PresignResponse {
-  upload_url: string
-  s3_key: string
+  upload_url: string;
+  s3_key: string;
 }
 
 const SORT_OPTIONS = [
@@ -45,54 +55,55 @@ const SORT_OPTIONS = [
   { label: "Name Z-A", value: "-title" },
   { label: "Largest", value: "-file_size" },
   { label: "Smallest", value: "file_size" },
-]
+];
 
-const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> = {
-  free: "success",
-  paid: "default",
-  subscription: "warning",
-}
+const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> =
+  {
+    free: "success",
+    paid: "default",
+    subscription: "warning",
+  };
 
 export default function AdminDownloadsPage() {
-  const browserRef = useRef<MediaBrowserHandle>(null)
-  const [showForm, setShowForm] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [saving, setSaving] = useState(false)
+  const browserRef = useRef<MediaBrowserHandle>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     title: "",
     pricing_type: "free" as "free" | "paid" | "subscription",
     price: "",
-  })
-  const [createTagIds, setCreateTagIds] = useState<number[]>([])
+  });
+  const [createTagIds, setCreateTagIds] = useState<number[]>([]);
 
-  const [tagFilter, setTagFilter] = useState<number[]>([])
+  const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<DownloadFile>> => {
-      const sp = new URLSearchParams()
-      sp.set("limit", String(params.limit))
-      sp.set("offset", String(params.offset))
-      sp.set("ordering", params.ordering)
-      if (params.search) sp.set("search", params.search)
-      if (tagFilter.length) sp.set("tags", tagFilter.join(","))
+      const sp = new URLSearchParams();
+      sp.set("limit", String(params.limit));
+      sp.set("offset", String(params.offset));
+      sp.set("ordering", params.ordering);
+      if (params.search) sp.set("search", params.search);
+      if (tagFilter.length) sp.set("tags", tagFilter.join(","));
       const data = await clientFetch<{
-        results: DownloadFile[]
-        next: string | null
-        count: number
-      }>(`/api/v1/downloads/?${sp.toString()}`)
-      return { results: data.results, next: data.next, count: data.count }
+        results: DownloadFile[];
+        next: string | null;
+        count: number;
+      }>(`/api/v1/downloads/?${sp.toString()}`);
+      return { results: data.results, next: data.next, count: data.count };
     },
-    [tagFilter]
-  )
+    [tagFilter],
+  );
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !form.title.trim()) return
+    const file = e.target.files?.[0];
+    if (!file || !form.title.trim()) return;
 
-    setUploading(true)
-    setProgress(0)
+    setUploading(true);
+    setProgress(0);
 
     try {
       const created = await clientFetch<DownloadFile>("/api/v1/downloads/", {
@@ -105,7 +116,7 @@ export default function AdminDownloadsPage() {
             : {}),
           tag_ids: createTagIds,
         }),
-      })
+      });
 
       const { upload_url, s3_key } = await clientFetch<PresignResponse>(
         "/api/v1/upload/presign/",
@@ -117,24 +128,24 @@ export default function AdminDownloadsPage() {
             category: "download",
             download_id: created.id,
           }),
-        }
-      )
+        },
+      );
 
       await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open("PUT", upload_url)
-        xhr.setRequestHeader("Content-Type", file.type)
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", upload_url);
+        xhr.setRequestHeader("Content-Type", file.type);
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable)
-            setProgress(Math.round((event.loaded / event.total) * 100))
-        }
+            setProgress(Math.round((event.loaded / event.total) * 100));
+        };
         xhr.onload = () =>
           xhr.status >= 200 && xhr.status < 300
             ? resolve()
-            : reject(new Error(`Upload failed with status ${xhr.status}`))
-        xhr.onerror = () => reject(new Error("Upload failed"))
-        xhr.send(file)
-      })
+            : reject(new Error(`Upload failed with status ${xhr.status}`));
+        xhr.onerror = () => reject(new Error("Upload failed"));
+        xhr.send(file);
+      });
 
       await clientFetch("/api/v1/upload/complete/", {
         method: "POST",
@@ -143,18 +154,18 @@ export default function AdminDownloadsPage() {
           category: "download",
           download_id: created.id,
         }),
-      })
+      });
 
-      toast.success("File uploaded")
-      setForm({ title: "", pricing_type: "free", price: "" })
-      setCreateTagIds([])
-      setShowForm(false)
-      browserRef.current?.refresh()
+      toast.success("File uploaded");
+      setForm({ title: "", pricing_type: "free", price: "" });
+      setCreateTagIds([]);
+      setShowForm(false);
+      browserRef.current?.refresh();
     } catch (err) {
-      console.error(err)
-      toast.error("Failed to upload file")
+      console.error(err);
+      toast.error("Failed to upload file");
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
   }
 
@@ -178,10 +189,10 @@ export default function AdminDownloadsPage() {
       showWhen: (v) => v.pricing_type === "paid",
     },
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "download" },
-  ]
+  ];
 
   async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true)
+    setSaving(true);
     try {
       await clientFetch(`/api/v1/downloads/${editingId}/`, {
         method: "PATCH",
@@ -193,24 +204,24 @@ export default function AdminDownloadsPage() {
             ? { price: parseFloat(values.price as string) }
             : {}),
         }),
-      })
-      toast.success("Download updated")
-      setEditingId(null)
-      browserRef.current?.refresh()
+      });
+      toast.success("Download updated");
+      setEditingId(null);
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to update download")
+      toast.error("Failed to update download");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function handleDelete(id: number) {
     try {
-      await clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" })
-      toast.success("File deleted")
-      browserRef.current?.refresh()
+      await clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" });
+      toast.success("File deleted");
+      browserRef.current?.refresh();
     } catch {
-      toast.error("Failed to delete file")
+      toast.error("Failed to delete file");
     }
   }
 
@@ -295,11 +306,16 @@ export default function AdminDownloadsPage() {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                 />
+                <MonetizeNudge price={form.price} />
               </div>
             )}
             <div className="space-y-2">
               <Label>Tags</Label>
-              <TagInput value={createTagIds} onChange={setCreateTagIds} scope="download" />
+              <TagInput
+                value={createTagIds}
+                onChange={setCreateTagIds}
+                scope="download"
+              />
             </div>
             <div className="space-y-2">
               <Label>File</Label>
@@ -338,39 +354,46 @@ export default function AdminDownloadsPage() {
         persistKey="downloads"
         fetchPage={fetchPage}
         filterKey={tagFilter.join(",")}
-        filterSlot={<TagFilterBar scope="download" value={tagFilter} onChange={setTagFilter} />}
+        filterSlot={
+          <TagFilterBar
+            scope="download"
+            value={tagFilter}
+            onChange={setTagFilter}
+          />
+        }
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={Download}
         emptyMessage="No files uploaded. Upload your first file to get started."
         getItemId={(dl) => dl.id}
         onDelete={async (selection) => {
-          let ids = selection.ids
+          let ids = selection.ids;
           if (selection.mode === "all") {
-            ids = []
-            let offset = 0
+            ids = [];
+            let offset = 0;
             while (true) {
-              const sp = new URLSearchParams()
-              sp.set("limit", "100")
-              sp.set("offset", String(offset))
-              sp.set("ordering", selection.ordering)
-              if (selection.search) sp.set("search", selection.search)
+              const sp = new URLSearchParams();
+              sp.set("limit", "100");
+              sp.set("offset", String(offset));
+              sp.set("ordering", selection.ordering);
+              if (selection.search) sp.set("search", selection.search);
               const data = await clientFetch<{
-                results: { id: number }[]
-                next: string | null
-              }>(`/api/v1/downloads/?${sp}`)
-              ids.push(...data.results.map((d) => d.id))
-              if (!data.next) break
-              offset += 100
+                results: { id: number }[];
+                next: string | null;
+              }>(`/api/v1/downloads/?${sp}`);
+              ids.push(...data.results.map((d) => d.id));
+              if (!data.next) break;
+              offset += 100;
             }
           }
           await batchedAsync(
-            ids.map((id) => () =>
-              clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" })
-            )
-          )
-          toast.success("Files deleted")
-          browserRef.current?.refresh()
+            ids.map(
+              (id) => () =>
+                clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" }),
+            ),
+          );
+          toast.success("Files deleted");
+          browserRef.current?.refresh();
         }}
         listColumns={[
           { label: "Title", key: "title" },
@@ -381,39 +404,41 @@ export default function AdminDownloadsPage() {
           { label: "Actions", key: "actions" },
         ]}
         renderGalleryItem={(dl, _selected) => {
-          const { icon: FileIcon, color } = getFileIcon(dl.file_url || dl.title)
-          const ext = getExtension(dl.file_url || dl.title)
+          const { icon: FileIcon, color } = getFileIcon(
+            dl.file_url || dl.title,
+          );
+          const ext = getExtension(dl.file_url || dl.title);
           return (
-          <div className="group overflow-hidden rounded-lg border bg-card">
-            <div className="flex aspect-video flex-col items-center justify-center bg-muted gap-1">
-              <FileIcon className={`h-10 w-10 ${color}`} />
-              {ext && (
-                <span className="text-xs font-medium text-muted-foreground">
-                  {ext}
-                </span>
-              )}
-            </div>
-            <div className="p-3 space-y-2">
-              <p className="font-medium truncate">{dl.title}</p>
-              <div className="flex items-center gap-2">
-                <Badge variant={ACCESS_BADGE_VARIANT[dl.pricing_type]}>
-                  {dl.pricing_type === "free"
-                    ? "Free"
-                    : dl.pricing_type === "paid"
-                      ? "Paid"
-                      : "Subscription"}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {dl.download_count} downloads
-                </span>
+            <div className="group overflow-hidden rounded-lg border bg-card">
+              <div className="flex aspect-video flex-col items-center justify-center bg-muted gap-1">
+                <FileIcon className={`h-10 w-10 ${color}`} />
+                {ext && (
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {ext}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span>{formatFileSize(dl.file_size)}</span>
-                <span>{formatDate(dl.created_at)}</span>
+              <div className="p-3 space-y-2">
+                <p className="font-medium truncate">{dl.title}</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant={ACCESS_BADGE_VARIANT[dl.pricing_type]}>
+                    {dl.pricing_type === "free"
+                      ? "Free"
+                      : dl.pricing_type === "paid"
+                        ? "Paid"
+                        : "Subscription"}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {dl.download_count} downloads
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span>{formatFileSize(dl.file_size)}</span>
+                  <span>{formatDate(dl.created_at)}</span>
+                </div>
               </div>
             </div>
-          </div>
-          )
+          );
         }}
         renderListRow={(dl) => (
           <>
@@ -478,5 +503,5 @@ export default function AdminDownloadsPage() {
         }
       />
     </div>
-  )
+  );
 }
