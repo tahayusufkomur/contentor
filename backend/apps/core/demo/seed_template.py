@@ -31,9 +31,9 @@ logger = logging.getLogger(__name__)
 
 # Modest targets vs. the demo command — coaches don't need 50 courses to feel
 # the platform is alive, and over-seeding makes cleanup painful.
-TARGET_COURSES = 12
-TARGET_VIDEOS = 40
-TARGET_PHOTOS = 60
+TARGET_COURSES = 6
+TARGET_VIDEOS = 16
+TARGET_PHOTOS = 24
 
 # Live events span: coaches don't need 2 years of seeded events. A handful in
 # the recent past + near future is enough to make the calendar feel populated.
