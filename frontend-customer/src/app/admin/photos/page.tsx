@@ -18,6 +18,7 @@ import {
   type FieldConfig,
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { DemoBadge } from "@/components/setup/demo-badge";
 import type { Photo } from "@/types/photo";
 
 export const dynamic = "force-dynamic";
@@ -266,6 +267,7 @@ export default function PhotosPage() {
             <div className="p-3 space-y-2">
               <p className="font-medium truncate">
                 {photo.title || "Untitled"}
+                <DemoBadge type="photos" id={photo.id} />
               </p>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{formatFileSize(photo.file_size)}</span>
@@ -291,6 +293,7 @@ export default function PhotosPage() {
             </TableCell>
             <TableCell className="font-medium">
               {photo.title || "Untitled"}
+              <DemoBadge type="photos" id={photo.id} />
             </TableCell>
             <TableCell>{formatFileSize(photo.file_size)}</TableCell>
             <TableCell>{formatDate(photo.created_at)}</TableCell>

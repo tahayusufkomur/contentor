@@ -20,6 +20,7 @@ import {
   type FieldConfig,
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { DemoBadge } from "@/components/setup/demo-badge";
 import type { Course } from "@/types/course";
 
 export const dynamic = "force-dynamic";
@@ -183,7 +184,10 @@ export default function AdminCoursesPage() {
               </div>
             )}
             <div className="p-3 space-y-2">
-              <p className="font-medium truncate">{course.title}</p>
+              <p className="font-medium truncate">
+                {course.title}
+                <DemoBadge type="courses" id={course.id} />
+              </p>
               <div className="flex items-center gap-2">
                 <Badge variant={course.is_published ? "success" : "secondary"}>
                   {course.is_published ? "Published" : "Draft"}
@@ -208,7 +212,10 @@ export default function AdminCoursesPage() {
         )}
         renderListRow={(course) => (
           <>
-            <TableCell className="font-medium">{course.title}</TableCell>
+            <TableCell className="font-medium">
+              {course.title}
+              <DemoBadge type="courses" id={course.id} />
+            </TableCell>
             <TableCell>
               <Badge variant={course.is_published ? "success" : "secondary"}>
                 {course.is_published ? "Published" : "Draft"}

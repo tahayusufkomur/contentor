@@ -34,6 +34,7 @@ import {
 import { FilterPicker } from "@/components/admin/filter-picker";
 import { TagInput } from "@/components/admin/tag-input";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { DemoBadge } from "@/components/setup/demo-badge";
 import type { FilterOption, Tag } from "@/types/course";
 
 // ─── Shared types & config ─────────────────────────────────────────
@@ -489,7 +490,10 @@ function LiveClassesTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">{lc.title}</p>
+                <p className="font-medium truncate">
+                  {lc.title}
+                  <DemoBadge type="live_classes" id={lc.id} />
+                </p>
                 {lc.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {lc.description}
@@ -871,7 +875,10 @@ function LiveStreamsTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">{ls.title}</p>
+                <p className="font-medium truncate">
+                  {ls.title}
+                  <DemoBadge type="live_streams" id={ls.id} />
+                </p>
                 {ls.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {ls.description}
@@ -1232,7 +1239,10 @@ function ZoomClassesTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">{zc.title}</p>
+                <p className="font-medium truncate">
+                  {zc.title}
+                  <DemoBadge type="zoom_classes" id={zc.id} />
+                </p>
                 {zc.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {zc.description}
@@ -1608,7 +1618,10 @@ function OnsiteEventsTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">{ev.title}</p>
+                <p className="font-medium truncate">
+                  {ev.title}
+                  <DemoBadge type="onsite_events" id={ev.id} />
+                </p>
                 {ev.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {ev.description}

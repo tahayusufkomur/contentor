@@ -33,6 +33,7 @@ import {
   type FieldConfig,
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { DemoBadge } from "@/components/setup/demo-badge";
 import { useChunkedUpload } from "@/hooks/use-chunked-upload";
 import { cn } from "@/lib/utils";
 
@@ -520,7 +521,10 @@ export default function VideosPage() {
             )}
             <div className="p-3 space-y-2">
               <div className="min-w-0">
-                <p className="font-medium truncate">{video.title}</p>
+                <p className="font-medium truncate">
+                  {video.title}
+                  <DemoBadge type="videos" id={video.id} />
+                </p>
                 {video.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {video.description}
@@ -544,7 +548,10 @@ export default function VideosPage() {
           <>
             <TableCell className="font-medium">
               <div className="min-w-0">
-                <p className="truncate">{video.title}</p>
+                <p className="truncate">
+                  {video.title}
+                  <DemoBadge type="videos" id={video.id} />
+                </p>
                 {video.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {video.description}

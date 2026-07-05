@@ -39,6 +39,7 @@ import {
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { TagInput } from "@/components/admin/tag-input";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
+import { DemoBadge } from "@/components/setup/demo-badge";
 import type { DownloadFile } from "@/types/download";
 
 export const dynamic = "force-dynamic";
@@ -419,7 +420,10 @@ export default function AdminDownloadsPage() {
                 )}
               </div>
               <div className="p-3 space-y-2">
-                <p className="font-medium truncate">{dl.title}</p>
+                <p className="font-medium truncate">
+                  {dl.title}
+                  <DemoBadge type="downloads" id={dl.id} />
+                </p>
                 <div className="flex items-center gap-2">
                   <Badge variant={ACCESS_BADGE_VARIANT[dl.pricing_type]}>
                     {dl.pricing_type === "free"
@@ -442,7 +446,10 @@ export default function AdminDownloadsPage() {
         }}
         renderListRow={(dl) => (
           <>
-            <TableCell className="font-medium">{dl.title}</TableCell>
+            <TableCell className="font-medium">
+              {dl.title}
+              <DemoBadge type="downloads" id={dl.id} />
+            </TableCell>
             <TableCell>{formatFileSize(dl.file_size)}</TableCell>
             <TableCell>{dl.download_count}</TableCell>
             <TableCell>
