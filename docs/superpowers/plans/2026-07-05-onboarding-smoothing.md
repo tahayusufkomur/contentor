@@ -1,5 +1,10 @@
 # Onboarding Smoothing Implementation Plan
 
+> **SUPERSEDED — do not execute from this file.** Use
+> `2026-07-05-onboarding-smoothing-handoff.md` (self-contained, corrects two
+> errors in this draft: Course uses `instructor`+required `slug`, downloads
+> model is `DownloadFile`). Kept for design history only.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Smooth the new-coach funnel: authenticated one-click handoff after signup, a state-driven Setup Guide in /admin, no blank-slate tenants, and can't-sell-yet nudges on price fields.

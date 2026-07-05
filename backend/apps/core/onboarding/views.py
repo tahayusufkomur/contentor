@@ -305,6 +305,29 @@ def skip_template(request):
     )
 
 
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def onboarding_handoff(request):
+    """Step 4: exchange the signup token for a one-click login URL.
+
+    The signup token is the email-ownership proof; the returned URL carries a
+    standard magic-link token consumed by the tenant's existing /callback flow.
+    """
+    payload, tenant, err = _resolve_tenant_from_signup_token(request)
+    if err is not None:
+        return err
+    if tenant.provisioning_status != "ready":
+        return Response({"detail": "not_ready"}, status=409)
+
+    from apps.accounts.tokens import create_magic_link_token
+
+    magic = create_magic_link_token(tenant.owner_email, tenant.schema_name, tenant.slug)
+    base_domain = settings.CONTENTOR_DOMAIN
+    fqdn = f"{tenant.slug}.tr.{base_domain}" if tenant.region == "tr" else f"{tenant.slug}.{base_domain}"
+    return Response({"login_url": f"{settings.SITE_SCHEME}://{fqdn}/callback?token={magic}&next=/"})
+
+
 @api_view(["GET"])
 @authentication_classes([])
 @permission_classes([AllowAny])
