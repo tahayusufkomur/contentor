@@ -19,11 +19,11 @@
       "period": "forever",
       "description": "Get started with the basics. Perfect for testing the waters.",
       "features": {
-        "students": "Up to 50 students",
+        "students": "Up to 10 students",
         "storage": "1 GB storage",
         "courseBuilder": "Basic course builder",
         "support": "Community support",
-        "fee": "10% transaction fee",
+        "fee": "0% transaction fee",
         "live": "Live classes",
         "branding": "Custom branding",
         "domain": "Custom domain"
@@ -36,16 +36,24 @@
       "period": "/month",
       "description": "For growing creators ready to scale their business.",
       "features": {
-        "students": "Up to 500 students",
-        "storage": "10 GB storage",
+        "students": "Up to 100 students",
+        "storage": "100 GB storage",
         "courseBuilder": "Advanced course builder",
         "live": "Live classes",
         "branding": "Custom branding",
         "campaigns": "Email campaigns (1,000/mo)",
-        "fee": "5% transaction fee",
+        "fee": "8% transaction fee",
         "domain": "Custom domain"
       },
-      "included": ["students", "storage", "courseBuilder", "live", "branding", "campaigns", "fee"]
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "campaigns",
+        "fee"
+      ]
     },
     "pro": {
       "name": "Pro",
@@ -53,16 +61,25 @@
       "period": "/month",
       "description": "For established businesses that need everything.",
       "features": {
-        "students": "Unlimited students",
-        "storage": "100 GB storage",
+        "students": "Up to 500 students",
+        "storage": "500 GB storage",
         "courseBuilder": "Advanced course builder",
         "live": "Live classes & streaming",
         "domain": "Custom domain",
-        "campaigns": "Email campaigns (10,000/mo)",
-        "fee": "2% transaction fee",
+        "campaigns": "Email campaigns (5,000/mo)",
+        "fee": "6% transaction fee",
         "support": "Priority support"
       },
-      "included": ["students", "storage", "courseBuilder", "live", "domain", "campaigns", "fee", "support"]
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "domain",
+        "campaigns",
+        "fee",
+        "support"
+      ]
     }
   },
   "faq": {
@@ -74,11 +91,11 @@
       },
       "trial": {
         "q": "Is there a free trial?",
-        "a": "Every plan comes with a 14-day free trial. No credit card required to get started."
+        "a": "Better — there's a free forever plan. Build your entire platform on it with no credit card and no time limit, and upgrade only when you're ready to sell."
       },
       "payments": {
         "q": "What payment methods do you accept?",
-        "a": "We accept all major credit cards, debit cards, and PayPal. Enterprise customers can also pay by invoice."
+        "a": "All major credit and debit cards, processed by Stripe. Payments from your students go directly to your own Stripe account — we never hold your money."
       },
       "limits": {
         "q": "What happens if I exceed my plan limits?",
@@ -88,7 +105,7 @@
   },
   "cta2": {
     "title": "Ready to get started?",
-    "subtitle": "Join creators who are already monetizing their content with Contentor.",
+    "subtitle": "Launch free today and grow with us as a founding creator.",
     "button": "Get Started",
     "trustNote": "Free plan available. No credit card required."
   },
