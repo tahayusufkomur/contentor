@@ -51,17 +51,27 @@ export function SetupAssistantPanel({
     const Icon = entry.icon;
     const title = t(`setup.items.${item.key}.title`);
     const description = t(`setup.items.${item.key}.description`);
+    // A row is itself a <button>/<Link> (interactive content), so this toggle
+    // can't also be a real <button> — that would be invalid DOM nesting
+    // (button-in-button or button-in-anchor), which React flags as a
+    // hydration error. A span with button semantics gives the same
+    // click/keyboard affordance without the illegal nesting.
+    const toggleDone = (e: React.SyntheticEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Manual toggle; unticking only clears a manual tick — auto wins.
+      void patchSetup({ item: item.key, done: !item.done });
+    };
     const checkCircle = (
-      <button
-        type="button"
+      <span
+        role="button"
+        tabIndex={0}
         aria-label={item.done ? t("setup.markUndone") : t("setup.markDone")}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          // Manual toggle; unticking only clears a manual tick — auto wins.
-          void patchSetup({ item: item.key, done: !item.done });
+        onClick={toggleDone}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") toggleDone(e);
         }}
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors ${
+        className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors ${
           item.done
             ? "border-primary bg-primary text-primary-foreground"
             : "border-muted-foreground/30 bg-background text-muted-foreground hover:border-primary"
@@ -72,7 +82,7 @@ export function SetupAssistantPanel({
         ) : (
           <Icon className="h-3.5 w-3.5" />
         )}
-      </button>
+      </span>
     );
     const body = (
       <>
