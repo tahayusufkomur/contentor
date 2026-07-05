@@ -49,6 +49,18 @@ def test_register_seeded_idempotent(course):
     assert row.fingerprint == fingerprint_for(course)
 
 
+def test_register_seeded_fingerprint_survives_db_roundtrip(course):
+    """Regression: Course.price defaults to Python int 0 in-memory but
+    round-trips through Postgres as Decimal('0.00'). fingerprint_for must
+    agree on both representations, otherwise the erase endpoint (which
+    always re-fetches fresh from the DB) sees a spurious mismatch and keeps
+    untouched demo content instead of deleting it."""
+    register_seeded([course], niche="general")
+    refetched = Course.objects.get(pk=course.pk)
+    stored = SeededObject.objects.get(object_id=str(course.pk))
+    assert fingerprint_for(refetched) == stored.fingerprint
+
+
 def test_seed_template_registers_all_objects(tenant_ctx, owner):
     """Real seed run: everything created gets a registry row. Cleans up via
     the registry itself so the shared test schema stays usable."""

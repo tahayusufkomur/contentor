@@ -47,13 +47,21 @@ def fingerprint_for(obj) -> str:
 
 
 def register_seeded(objs, niche: str = "") -> None:
-    rows = [
-        SeededObject(
-            content_type=ContentType.objects.get_for_model(obj, for_concrete_model=True),
-            object_id=str(obj.pk),
-            fingerprint=fingerprint_for(obj),
-            niche=niche,
+    rows = []
+    for obj in objs:
+        # Fingerprint the DB-canonical representation, not the in-memory one:
+        # freshly-created objects can carry field values in Python-native
+        # types (e.g. Course.price defaults to int 0) that differ from what
+        # the DB round-trips them as (Decimal('0.00')) — same value, string
+        # differently, different hash. The erase endpoint always fingerprints
+        # a freshly-fetched row, so registration must match that baseline.
+        obj.refresh_from_db()
+        rows.append(
+            SeededObject(
+                content_type=ContentType.objects.get_for_model(obj, for_concrete_model=True),
+                object_id=str(obj.pk),
+                fingerprint=fingerprint_for(obj),
+                niche=niche,
+            )
         )
-        for obj in objs
-    ]
     SeededObject.objects.bulk_create(rows, ignore_conflicts=True)
