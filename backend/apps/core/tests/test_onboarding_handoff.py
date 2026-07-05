@@ -20,23 +20,29 @@ def _token(email="coach@x.com", brand="Glow Studio"):
 
 @pytest.fixture()
 def tenant(restore_public):
-    # Row-only tenant: the handoff endpoint never enters the tenant schema,
-    # so skip schema creation (same pattern as conftest.restore_public).
+    # Row-only tenant: the handoff endpoint never enters the tenant schema, so
+    # skip schema creation. Public-schema rows are NOT flushed between
+    # transaction=True tests — get_or_create + explicit cleanup keeps reruns green.
     connection.set_schema_to_public()
     original = Tenant.auto_create_schema
     Tenant.auto_create_schema = False
     try:
-        t = Tenant.objects.create(
+        t, _ = Tenant.objects.get_or_create(
             schema_name="glow_studio",
-            name="Glow Studio",
-            slug="glow-studio",
-            subdomain="glow-studio",
-            owner_email="coach@x.com",
-            provisioning_status="ready",
+            defaults={
+                "name": "Glow Studio",
+                "slug": "glow-studio",
+                "subdomain": "glow-studio",
+                "owner_email": "coach@x.com",
+            },
         )
+        t.provisioning_status = "ready"
+        t.save(update_fields=["provisioning_status"])
     finally:
         Tenant.auto_create_schema = original
-    return t
+    yield t
+    connection.set_schema_to_public()
+    Tenant.objects.filter(schema_name="glow_studio").delete()
 
 
 def test_handoff_returns_login_url(tenant, settings):
