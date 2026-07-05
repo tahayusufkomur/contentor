@@ -45,6 +45,7 @@ class TenantConfig(models.Model):
         help_text="Default UI language for this tenant. Coach-configurable.",
     )
     onboarding_completed = models.BooleanField(default=False)
+    setup_guide_dismissed = models.BooleanField(default=False)
     emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from apps.accounts.models import User
 from apps.billing.models import Payment
+from apps.core.monetization import can_monetize
 from apps.core.permissions import IsCoachOrOwner
 from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
@@ -79,5 +80,27 @@ def admin_stats(_request):
             "courses": courses_count,
             "revenue": float(revenue),
             "storage_used": _format_storage_size(storage_bytes),
+        }
+    )
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsCoachOrOwner])
+def setup_status(request):
+    """Aggregated go-live state for the /admin Setup Guide."""
+    config = TenantConfig.objects.first()
+    if config is None:
+        return Response(status=404)
+    if request.method == "PATCH" and "dismissed" in request.data:
+        config.setup_guide_dismissed = bool(request.data["dismissed"])
+        config.save(update_fields=["setup_guide_dismissed"])
+    tenant = connection.tenant
+    return Response(
+        {
+            "site_customized": config.onboarding_completed,
+            "has_content": Course.objects.exists() or DownloadFile.objects.exists(),
+            "payments_ready": can_monetize(tenant),
+            "published": bool(getattr(tenant, "is_published", False)),
+            "dismissed": config.setup_guide_dismissed,
         }
     )
