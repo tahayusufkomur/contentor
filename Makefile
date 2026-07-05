@@ -34,6 +34,8 @@ help: ## Show this help
 # ============================================================================
 
 dev: ## Start all services with hot-reload
+	docker compose up -d --wait minio
+	python3 scripts/mirror_demo_assets.py
 	docker compose up --build
 
 down: ## Stop all services and remove volumes
@@ -53,6 +55,8 @@ reset: ## Nuclear reset — wipe all volumes (DB, Redis) and rebuild
 dev-reset: ## Reset caches, volumes, and .next builds — then start fresh
 	docker compose down -v
 	rm -rf frontend-customer/.next frontend-main/.next
+	docker compose up -d --wait minio
+	python3 scripts/mirror_demo_assets.py
 	docker compose up --build
 
 logs: ## Tail logs from all services

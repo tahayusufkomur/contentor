@@ -69,8 +69,15 @@ A **host-run** script (invoked by a make target) that:
 2. **`Makefile`**
    - `seed-demo-assets` target → runs the host script (NOT via
      `docker compose exec`, since it needs host creds + host→MinIO reach).
-   - Called from `seed-demos` and `dev-reset` so a fresh dev volume is populated.
-     `dev-reset` runs it after MinIO is healthy.
+   - Called from `dev`, `dev-reset`, `seed-demos`, and `seed-demos-force`.
+     `dev` and `dev-reset` bring MinIO up first (`up -d --wait minio`), mirror,
+     then run the blocking `up --build` — so assets exist before the app (and
+     its entrypoint demo reseed) starts, and any tenant created while the stack
+     runs finds them. Mirror failure (e.g. no `.env.prod`) warns but does not
+     block the stack from starting.
+   - The script creates the dest bucket if missing (idempotent, mirrors
+     `minio-init`'s `mc mb -p || true`), so it doesn't race `minio-init` on a
+     fresh volume.
 
 ### Data flow
 

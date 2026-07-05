@@ -72,7 +72,13 @@ def main() -> int:
     args = parser.parse_args()
     prefixes = tuple(args.prefix) if args.prefix else DEFAULT_PREFIXES
 
-    src_env = load_env(REPO_ROOT / ".env.prod")
+    src_path = REPO_ROOT / ".env.prod"
+    if not src_path.exists():
+        # Expected on machines without prod creds — skip quietly (exit 0) so
+        # `make dev` isn't blocked. Any REAL failure below exits non-zero.
+        print("NOTE: .env.prod not found — skipping demo-asset mirror; seeded media will 404 until 'make seed-demo-assets' runs on a machine with prod creds.")
+        return 0
+    src_env = load_env(src_path)
     dst_env = load_env(REPO_ROOT / ".env")
     require(src_env, ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_ENDPOINT", "AWS_BUCKET_NAME"], ".env.prod")
     require(
@@ -95,8 +101,16 @@ def main() -> int:
 
     try:
         dst.head_bucket(Bucket=dst_bucket)
+    except ClientError:
+        # Bucket missing (fresh volume, minio-init not run yet) — create it.
+        # Safe: the endpoint guard above guarantees dest is local MinIO only.
+        try:
+            dst.create_bucket(Bucket=dst_bucket)
+            print(f"created dest bucket {dst_bucket!r}")
+        except Exception as e:
+            sys.exit(f"Dev MinIO bucket {dst_bucket!r} unreachable at {dst_endpoint} — is the dev stack up? (make dev): {e}")
     except Exception:
-        sys.exit(f"Dev MinIO bucket {dst_bucket!r} unreachable at {dst_endpoint} — is the dev stack up? (make dev)")
+        sys.exit(f"Dev MinIO unreachable at {dst_endpoint} — is the dev stack up? (make dev)")
 
     copied = skipped = failed = bytes_copied = 0
     for prefix in prefixes:
