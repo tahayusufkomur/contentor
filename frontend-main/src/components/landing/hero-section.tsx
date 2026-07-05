@@ -65,7 +65,7 @@ export function HeroSection() {
             </Link>
           </Button>
           <Button asChild variant="outline" size="xl">
-            <Link href="#features">
+            <Link href="/demo">
               <Play />
               {t("ctaSecondary")}
             </Link>
