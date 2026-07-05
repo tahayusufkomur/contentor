@@ -118,10 +118,9 @@ def seed_template_into_tenant(
         owner = _resolve_owner(tenant)
         with transaction.atomic():
             courses = _seed_courses(expanded_courses, owner, photo_map)
-            _seed_extra_videos(courses_data, TARGET_VIDEOS)
-            _seed_extra_photos(courses_data, config_data, TARGET_PHOTOS)
-            if downloads_data:
-                _seed_downloads(downloads_data)
+            extra_videos = _seed_extra_videos(courses_data, TARGET_VIDEOS)
+            extra_photos = _seed_extra_photos(courses_data, config_data, TARGET_PHOTOS)
+            downloads = _seed_downloads(downloads_data) if downloads_data else []
 
             charge_currency = _tenant_charge_currency(tenant)
             sub_plans = _seed_subscription_plans(plans_data, courses, charge_currency)
@@ -130,10 +129,29 @@ def seed_template_into_tenant(
             from apps.media.models import Photo
 
             all_photos = list(Photo.objects.all())
-            _seed_live_classes(live_classes_data, owner, all_photos)
-            _seed_live_streams(live_streams_data, owner, all_photos)
-            _seed_zoom_classes(zoom_classes_data, owner, all_photos)
-            _seed_onsite_events(onsite_events_data, owner, all_photos)
+            live_classes = _seed_live_classes(live_classes_data, owner, all_photos)
+            live_streams = _seed_live_streams(live_streams_data, owner, all_photos)
+            zoom_classes = _seed_zoom_classes(zoom_classes_data, owner, all_photos)
+            onsite_events = _seed_onsite_events(onsite_events_data, owner, all_photos)
+
+            # Register everything for the "Demo" badges + one-click erase.
+            # Courses are fingerprinted last so modules/lessons are included.
+            from apps.tenant_config.seeding import register_seeded
+
+            seeded = [
+                *photo_map.values(),
+                *extra_photos,
+                *extra_videos,
+                *courses,
+                *downloads,
+                *sub_plans,
+                *bundles,
+                *live_classes,
+                *live_streams,
+                *zoom_classes,
+                *onsite_events,
+            ]
+            register_seeded(seeded, niche=niche)
 
         log(
             f"Seeded niche '{niche}': {len(courses)} courses, "
@@ -316,22 +334,26 @@ def _seed_extra_videos(base_courses, target):
     existing = Video.objects.count()
     needed = max(0, target - existing)
     if needed == 0:
-        return
+        return []
     video_keys = []
     for course in base_courses:
         for lesson in course.get("lessons", []):
             if lesson.get("video_url"):
                 video_keys.append((lesson["video_url"], lesson["title"], lesson.get("duration_seconds", 300)))
     if not video_keys:
-        return
+        return []
+    created = []
     for i in range(needed):
         s3_key, title, duration = video_keys[i % len(video_keys)]
-        Video.objects.create(
-            title=f"{title} ({i + 1})",
-            s3_key=s3_key,
-            duration_seconds=duration + (secrets.randbelow(91) - 30),
-            file_size=10_000_000 + secrets.randbelow(190_000_001),
+        created.append(
+            Video.objects.create(
+                title=f"{title} ({i + 1})",
+                s3_key=s3_key,
+                duration_seconds=duration + (secrets.randbelow(91) - 30),
+                file_size=10_000_000 + secrets.randbelow(190_000_001),
+            )
         )
+    return created
 
 
 def _seed_extra_photos(base_courses, config_data, target):
@@ -340,7 +362,7 @@ def _seed_extra_photos(base_courses, config_data, target):
     existing = Photo.objects.count()
     needed = max(0, target - existing)
     if needed == 0:
-        return
+        return []
     photo_keys = []
     for course in base_courses:
         if course.get("thumbnail_url"):
@@ -352,16 +374,20 @@ def _seed_extra_photos(base_courses, config_data, target):
                 if section.get(key) and section[key] not in photo_keys:
                     photo_keys.append(section[key])
     if not photo_keys:
-        return
+        return []
     categories = ["Thumbnail", "Banner", "Background", "Hero", "Gallery"]
+    created = []
     for i in range(needed):
         s3_key = photo_keys[i % len(photo_keys)]
         category = categories[i % len(categories)]
-        Photo.objects.create(
-            s3_key=s3_key,
-            title=f"{category} {i + 1}",
-            file_size=50_000 + secrets.randbelow(4_950_001),
+        created.append(
+            Photo.objects.create(
+                s3_key=s3_key,
+                title=f"{category} {i + 1}",
+                file_size=50_000 + secrets.randbelow(4_950_001),
+            )
         )
+    return created
 
 
 def _coerce_pricing(data: dict) -> dict:
@@ -378,8 +404,8 @@ def _coerce_pricing(data: dict) -> dict:
 def _seed_downloads(downloads_data):
     from apps.downloads.models import DownloadFile
 
-    for dl in downloads_data:
-        DownloadFile.objects.create(**_coerce_pricing(dl))
+    created = [DownloadFile.objects.create(**_coerce_pricing(dl)) for dl in downloads_data]
+    return created
 
 
 def _tenant_charge_currency(tenant) -> str:
@@ -460,115 +486,131 @@ def _seed_live_classes(live_classes_data, instructor, photos):
     from apps.live.models import LiveClass
 
     if not live_classes_data:
-        return
+        return []
     _, start, end, interval = _live_window_cursor(2)
     cursor = start
     count = 0
+    created = []
     while cursor < end:
         template = _coerce_pricing(live_classes_data[count % len(live_classes_data)])
         scheduled_at = cursor.replace(hour=10 + secrets.randbelow(11), minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
-        LiveClass.objects.create(
-            title=template["title"],
-            description=template.get("description", ""),
-            instructor=instructor,
-            pricing_type=template.get("pricing_type", "free"),
-            price=template.get("price", 0),
-            duration_minutes=template.get("duration_minutes", 60),
-            thumbnail=photo,
-            thumbnail_url=photo.s3_key if photo else "",
-            scheduled_at=scheduled_at,
-            status="draft",
+        created.append(
+            LiveClass.objects.create(
+                title=template["title"],
+                description=template.get("description", ""),
+                instructor=instructor,
+                pricing_type=template.get("pricing_type", "free"),
+                price=template.get("price", 0),
+                duration_minutes=template.get("duration_minutes", 60),
+                thumbnail=photo,
+                thumbnail_url=photo.s3_key if photo else "",
+                scheduled_at=scheduled_at,
+                status="draft",
+            )
         )
         count += 1
         cursor += interval
+    return created
 
 
 def _seed_live_streams(live_streams_data, instructor, photos):
     from apps.live.models import LiveStream
 
     if not live_streams_data:
-        return
+        return []
     _, start, end, interval = _live_window_cursor(4)
     cursor = start
     count = 0
+    created = []
     while cursor < end:
         template = _coerce_pricing(live_streams_data[count % len(live_streams_data)])
         scheduled_at = cursor.replace(hour=20, minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
-        LiveStream.objects.create(
-            title=template["title"],
-            description=template.get("description", ""),
-            instructor=instructor,
-            pricing_type=template.get("pricing_type", "free"),
-            price=template.get("price", 0),
-            duration_minutes=template.get("duration_minutes", 90),
-            thumbnail=photo,
-            thumbnail_url=photo.s3_key if photo else "",
-            scheduled_at=scheduled_at,
-            status="draft",
+        created.append(
+            LiveStream.objects.create(
+                title=template["title"],
+                description=template.get("description", ""),
+                instructor=instructor,
+                pricing_type=template.get("pricing_type", "free"),
+                price=template.get("price", 0),
+                duration_minutes=template.get("duration_minutes", 90),
+                thumbnail=photo,
+                thumbnail_url=photo.s3_key if photo else "",
+                scheduled_at=scheduled_at,
+                status="draft",
+            )
         )
         count += 1
         cursor += interval
+    return created
 
 
 def _seed_zoom_classes(zoom_data, instructor, photos):
     from apps.live.models import ZoomClass
 
     if not zoom_data:
-        return
+        return []
     _, start, end, interval = _live_window_cursor(2)
     cursor = start
     count = 0
+    created = []
     while cursor < end:
         template = _coerce_pricing(zoom_data[count % len(zoom_data)])
         scheduled_at = cursor.replace(hour=14 + secrets.randbelow(6), minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
-        ZoomClass.objects.create(
-            title=template["title"],
-            description=template.get("description", ""),
-            instructor=instructor,
-            zoom_link=template.get("zoom_link", ""),
-            zoom_meeting_id=template.get("zoom_meeting_id", ""),
-            pricing_type=template.get("pricing_type", "free"),
-            price=template.get("price", 0),
-            duration_minutes=template.get("duration_minutes", 60),
-            thumbnail=photo,
-            thumbnail_url=photo.s3_key if photo else "",
-            scheduled_at=scheduled_at,
-            status="draft",
+        created.append(
+            ZoomClass.objects.create(
+                title=template["title"],
+                description=template.get("description", ""),
+                instructor=instructor,
+                zoom_link=template.get("zoom_link", ""),
+                zoom_meeting_id=template.get("zoom_meeting_id", ""),
+                pricing_type=template.get("pricing_type", "free"),
+                price=template.get("price", 0),
+                duration_minutes=template.get("duration_minutes", 60),
+                thumbnail=photo,
+                thumbnail_url=photo.s3_key if photo else "",
+                scheduled_at=scheduled_at,
+                status="draft",
+            )
         )
         count += 1
         cursor += interval
+    return created
 
 
 def _seed_onsite_events(onsite_data, instructor, photos):
     from apps.live.models import OnsiteEvent
 
     if not onsite_data:
-        return
+        return []
     _, start, end, interval = _live_window_cursor(4)
     cursor = start
     count = 0
+    created = []
     while cursor < end:
         template = _coerce_pricing(onsite_data[count % len(onsite_data)])
         days_to_sat = (5 - cursor.weekday()) % 7
         scheduled_at = (cursor + timedelta(days=days_to_sat)).replace(hour=10, minute=0, second=0, microsecond=0)
         photo = secrets.choice(photos) if photos else None
-        OnsiteEvent.objects.create(
-            title=template["title"],
-            description=template.get("description", ""),
-            instructor=instructor,
-            location=template.get("location", ""),
-            address=template.get("address", ""),
-            max_capacity=template.get("max_capacity"),
-            pricing_type=template.get("pricing_type", "free"),
-            price=template.get("price", 0),
-            duration_minutes=template.get("duration_minutes", 240),
-            thumbnail=photo,
-            thumbnail_url=photo.s3_key if photo else "",
-            scheduled_at=scheduled_at,
-            status="draft",
+        created.append(
+            OnsiteEvent.objects.create(
+                title=template["title"],
+                description=template.get("description", ""),
+                instructor=instructor,
+                location=template.get("location", ""),
+                address=template.get("address", ""),
+                max_capacity=template.get("max_capacity"),
+                pricing_type=template.get("pricing_type", "free"),
+                price=template.get("price", 0),
+                duration_minutes=template.get("duration_minutes", 240),
+                thumbnail=photo,
+                thumbnail_url=photo.s3_key if photo else "",
+                scheduled_at=scheduled_at,
+                status="draft",
+            )
         )
         count += 1
         cursor += interval
+    return created

@@ -11,8 +11,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 @pytest.fixture()
 def owner(tenant_ctx):
     return User.objects.create_user(
-        email="own@x.com", name="Own", password="x",  # noqa: S106
-        role="owner", is_staff=True,
+        email="own@x.com",
+        name="Own",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
     )
 
 
@@ -44,3 +47,45 @@ def test_register_seeded_idempotent(course):
     assert row.object_id == str(course.pk)
     assert row.niche == "general"
     assert row.fingerprint == fingerprint_for(course)
+
+
+def test_seed_template_registers_all_objects(tenant_ctx, owner):
+    """Real seed run: everything created gets a registry row. Cleans up via
+    the registry itself so the shared test schema stays usable."""
+    from django.db import connection
+    from django.forms.models import model_to_dict
+
+    from apps.core.demo.seed_template import seed_template_into_tenant
+    from apps.courses.models import Course as CourseModel
+    from apps.downloads.models import DownloadFile
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    tenant = connection.tenant
+    tenant.owner_email = owner.email
+    # transaction=True tests don't roll back: snapshot the shared schema's
+    # TenantConfig so the seeder's CONFIG merge can be undone afterwards.
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg_snapshot = model_to_dict(cfg)
+    seed_template_into_tenant(tenant, "general")
+    try:
+        registered = SeededObject.objects.count()
+        assert registered > 0
+        # Spot-check coverage: every seeded course/download/photo is registered.
+        from django.contrib.contenttypes.models import ContentType
+
+        for model in (CourseModel, DownloadFile, Photo):
+            ct = ContentType.objects.get_for_model(model)
+            assert SeededObject.objects.filter(content_type=ct).count() == model.objects.count(), model
+    finally:
+        # Tear down by walking the registry (order: content, then media).
+        for row in SeededObject.objects.select_related("content_type"):
+            model = row.content_type.model_class()
+            model.objects.filter(pk=row.object_id).delete()
+            row.delete()
+        # Restore the shared TenantConfig the seeder merged into.
+        cfg.refresh_from_db()
+        for field, value in cfg_snapshot.items():
+            if field not in ("id", "logo"):
+                setattr(cfg, field, value)
+        cfg.save()
