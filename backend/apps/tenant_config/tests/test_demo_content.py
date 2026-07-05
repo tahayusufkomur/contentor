@@ -16,8 +16,11 @@ HOST = "shared-test.localhost"
 @pytest.fixture()
 def coach(tenant_ctx):
     return User.objects.create_user(
-        email="coach-demo@x.com", name="Coach", password="x",  # noqa: S106
-        role="owner", is_staff=True,
+        email="coach-demo@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
     )
 
 
@@ -32,9 +35,7 @@ def client(coach):
 def seeded(coach):
     TenantConfig.objects.get_or_create(brand_name="T")
     photo = Photo.objects.create(s3_key="demo/photos/yoga_1.jpg", title="p")
-    untouched = Course.objects.create(
-        title="Demo Course", slug="demo-c-erasetest", instructor=coach, thumbnail=photo
-    )
+    untouched = Course.objects.create(title="Demo Course", slug="demo-c-erasetest", instructor=coach, thumbnail=photo)
     edited = Course.objects.create(title="Edited Course", slug="demo-e-erasetest", instructor=coach)
     m = Module.objects.create(course=edited, title="M", order=1)
     Lesson.objects.create(module=m, title="L", order=1)

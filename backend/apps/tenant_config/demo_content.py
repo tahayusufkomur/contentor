@@ -46,10 +46,7 @@ _ID_KEYS = {
 _LIVE_ID_KEYS = ("live_classes", "live_streams", "zoom_classes", "onsite_events")
 
 # Count keys collapse the four live types into one number for dialog copy.
-_COUNT_KEYS = {
-    label: ("live_events" if key in _LIVE_ID_KEYS else key)
-    for label, key in _ID_KEYS.items()
-}
+_COUNT_KEYS = {label: ("live_events" if key in _LIVE_ID_KEYS else key) for label, key in _ID_KEYS.items()}
 
 
 def _rows_by_label():
@@ -69,9 +66,7 @@ def _photo_referenced(photo, config) -> bool:
         if config.logo_id == photo.pk:
             return True
         pk_str = str(photo.pk)
-        if pk_str in json.dumps(config.pages or {}) or pk_str in json.dumps(
-            config.landing_sections or {}
-        ):
+        if pk_str in json.dumps(config.pages or {}) or pk_str in json.dumps(config.landing_sections or {}):
             return True
     return any(
         model.objects.filter(thumbnail=photo).exists()
@@ -102,9 +97,7 @@ def demo_content(request):
         "videos": len(ids["videos"]),
         "photos": len(ids["photos"]),
     }
-    return Response(
-        {"present": any(ids.values()), "counts": counts, "ids": ids}
-    )
+    return Response({"present": any(ids.values()), "counts": counts, "ids": ids})
 
 
 @api_view(["POST"])
