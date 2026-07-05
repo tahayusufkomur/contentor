@@ -12,7 +12,10 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 def test_get_or_create_links_student_by_email(tenant_ctx):
     student = User.objects.create_user(
-        email="stu@x.com", name="Stu", password="secret123", role="student"  # noqa: S106
+        email="stu@x.com",
+        name="Stu",
+        password="secret123",
+        role="student",  # noqa: S106
     )
     conv = services.get_or_create_conversation(counterparty_email="STU@x.com", subject="Hi")
     assert conv.student_id == student.id
@@ -44,8 +47,12 @@ def test_send_message_sends_and_stores_outbound(tenant_ctx):
 def test_reply_sets_in_reply_to_previous_message(tenant_ctx):
     conv = services.get_or_create_conversation(counterparty_email="p@x.com")
     Message.objects.create(
-        conversation=conv, direction="inbound", from_email="p@x.com",
-        to_email="no_reply@contentor.app", text="first", message_id="<abc@x.com>",
+        conversation=conv,
+        direction="inbound",
+        from_email="p@x.com",
+        to_email="no_reply@contentor.app",
+        text="first",
+        message_id="<abc@x.com>",
     )
     with patch.object(services, "send_email", return_value=True):
         reply = services.send_message(conversation=conv, text="reply body")

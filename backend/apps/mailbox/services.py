@@ -38,7 +38,11 @@ def get_or_create_conversation(*, counterparty_email: str, subject: str = "") ->
 
 
 def send_message(
-    *, conversation: Conversation, text: str, html: str = "", subject: str = "",
+    *,
+    conversation: Conversation,
+    text: str,
+    html: str = "",
+    subject: str = "",
     attachment_ids: list[int] | None = None,
 ) -> Message:
     from_email, _can_receive = sending_identity(connection.tenant)
@@ -68,8 +72,7 @@ def send_message(
     if len(atts) != len(ids):
         raise ValueError("Unknown or already-sent attachment.")
     resend_attachments = [
-        {"filename": a.filename, "content": base64.b64encode(read_attachment(a.storage_key)).decode()}
-        for a in atts
+        {"filename": a.filename, "content": base64.b64encode(read_attachment(a.storage_key)).decode()} for a in atts
     ]
 
     ok = send_email(

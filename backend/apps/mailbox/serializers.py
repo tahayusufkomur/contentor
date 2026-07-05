@@ -91,14 +91,10 @@ class ComposeSerializer(serializers.Serializer):
     subject = serializers.CharField(max_length=255, allow_blank=True, default="")
     text = serializers.CharField()
     html = serializers.CharField(required=False, allow_blank=True, default="")
-    attachment_ids = serializers.ListField(
-        child=serializers.IntegerField(), required=False, default=list
-    )
+    attachment_ids = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)
 
 
 class ReplySerializer(serializers.Serializer):
     text = serializers.CharField()
     html = serializers.CharField(required=False, allow_blank=True, default="")
-    attachment_ids = serializers.ListField(
-        child=serializers.IntegerField(), required=False, default=list
-    )
+    attachment_ids = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)

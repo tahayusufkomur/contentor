@@ -69,18 +69,23 @@ def _make_paid(tenant, *, free=False):
             transaction_fee_pct=5,
         )
         owner = User.objects.filter(email="owner-pa@x.com").first() or User.objects.create_user(
-            email="owner-pa@x.com", name="Owner", password="secret123", role="owner"  # noqa: S106
+            email="owner-pa@x.com",
+            name="Owner",
+            password="secret123",
+            role="owner",  # noqa: S106
         )
-        PlatformSubscription.objects.create(
-            tenant=tenant, user=owner, plan=plan, status="active", provider="bypass"
-        )
+        PlatformSubscription.objects.create(tenant=tenant, user=owner, plan=plan, status="active", provider="bypass")
     tenant.refresh_from_db()
     return tenant
 
 
 def _client(tenant_ctx):
     coach = User.objects.create_user(
-        email="coach@x.com", name="Coach", password="secret123", role="owner", is_staff=True  # noqa: S106
+        email="coach@x.com",
+        name="Coach",
+        password="secret123",
+        role="owner",
+        is_staff=True,  # noqa: S106
     )
     c = APIClient(HTTP_HOST=HOST)
     c.force_authenticate(user=coach)
@@ -92,9 +97,7 @@ def _post_inbound(body: dict, *, sign=True):
     headers = {"HTTP_HOST": HOST}
     if sign:
         headers["HTTP_X_MAILBOX_SIGNATURE"] = signing.sign_payload(raw, SECRET)
-    return APIClient().post(
-        "/api/v1/mailbox/inbound/", data=raw, content_type="application/json", **headers
-    )
+    return APIClient().post("/api/v1/mailbox/inbound/", data=raw, content_type="application/json", **headers)
 
 
 # ── sending_identity / platform_address ──────────────────────────────────────
@@ -139,8 +142,13 @@ def test_custom_domain_takes_precedence_over_platform(tenant_ctx):
     _make_paid(tenant_ctx)
     PlatformMailboxAddress.objects.create(tenant=tenant_ctx, local_part="jane")
     CustomDomain.objects.create(
-        tenant=tenant_ctx, domain="coach.com", cost_minor=1, price_minor=1,
-        currency="usd", provisioning_status="live", mailbox_enabled=True,
+        tenant=tenant_ctx,
+        domain="coach.com",
+        cost_minor=1,
+        price_minor=1,
+        currency="usd",
+        provisioning_status="live",
+        mailbox_enabled=True,
         mailbox_local_part="hi",
     )
     from_email, _ = sending_identity(tenant_ctx)
@@ -181,8 +189,9 @@ def test_resolve_recipient_free_plan_none(tenant_ctx):
 def test_inbound_stores_for_platform_address(tenant_ctx):
     _make_paid(tenant_ctx)
     PlatformMailboxAddress.objects.create(tenant=tenant_ctx, local_part="jane")
-    resp = _post_inbound({"from": "s@x.com", "to": "jane@contentor.app",
-                          "subject": "Hi", "text": "hello", "message_id": "<m@x.com>"})
+    resp = _post_inbound(
+        {"from": "s@x.com", "to": "jane@contentor.app", "subject": "Hi", "text": "hello", "message_id": "<m@x.com>"}
+    )
     assert resp.status_code == 200
     conv = Conversation.objects.get(counterparty_email="s@x.com")
     assert conv.messages.filter(direction="inbound").count() == 1
@@ -191,8 +200,9 @@ def test_inbound_stores_for_platform_address(tenant_ctx):
 @override_settings(MAILBOX_INBOUND_SECRET=SECRET, PLATFORM_MAIL_DOMAIN=DOMAIN)
 def test_inbound_unclaimed_platform_address_drops(tenant_ctx):
     _make_paid(tenant_ctx)
-    resp = _post_inbound({"from": "s@x.com", "to": "ghost@contentor.app",
-                          "subject": "Hi", "text": "hello", "message_id": "<m2@x.com>"})
+    resp = _post_inbound(
+        {"from": "s@x.com", "to": "ghost@contentor.app", "subject": "Hi", "text": "hello", "message_id": "<m2@x.com>"}
+    )
     assert resp.status_code == 200
     assert Message.objects.count() == 0
 
@@ -213,9 +223,7 @@ def test_settings_exposes_platform_fields(tenant_ctx):
 @override_settings(PLATFORM_MAIL_DOMAIN=DOMAIN)
 def test_claim_platform_address(tenant_ctx):
     _make_paid(tenant_ctx)
-    resp = _client(tenant_ctx).put(
-        "/api/v1/mailbox/settings/", {"platform_local_part": "Jane"}, format="json"
-    )
+    resp = _client(tenant_ctx).put("/api/v1/mailbox/settings/", {"platform_local_part": "Jane"}, format="json")
     assert resp.status_code == 200
     assert resp.json()["platform_local_part"] == "jane"
     assert PlatformMailboxAddress.objects.filter(local_part="jane", tenant=tenant_ctx).exists()
@@ -224,9 +232,7 @@ def test_claim_platform_address(tenant_ctx):
 @override_settings(PLATFORM_MAIL_DOMAIN=DOMAIN)
 def test_claim_reserved_rejected(tenant_ctx):
     _make_paid(tenant_ctx)
-    resp = _client(tenant_ctx).put(
-        "/api/v1/mailbox/settings/", {"platform_local_part": "support"}, format="json"
-    )
+    resp = _client(tenant_ctx).put("/api/v1/mailbox/settings/", {"platform_local_part": "support"}, format="json")
     assert resp.status_code == 400
     assert resp.json()["detail"] == "reserved_local_part"
 
@@ -240,13 +246,14 @@ def test_claim_taken_rejected(tenant_ctx):
 
     with schema_context("public"):
         other = Tenant.objects.create(
-            schema_name="other_pa", name="Other", slug="other-pa",
-            owner_email="o@x.com", subdomain="other-pa",
+            schema_name="other_pa",
+            name="Other",
+            slug="other-pa",
+            owner_email="o@x.com",
+            subdomain="other-pa",
         )
         PlatformMailboxAddress.objects.create(tenant=other, local_part="jane")
-    resp = _client(tenant_ctx).put(
-        "/api/v1/mailbox/settings/", {"platform_local_part": "jane"}, format="json"
-    )
+    resp = _client(tenant_ctx).put("/api/v1/mailbox/settings/", {"platform_local_part": "jane"}, format="json")
     assert resp.status_code == 400
     assert resp.json()["detail"] == "taken"
 
@@ -254,8 +261,6 @@ def test_claim_taken_rejected(tenant_ctx):
 @override_settings(PLATFORM_MAIL_DOMAIN=DOMAIN)
 def test_claim_requires_paid_plan(tenant_ctx):
     # No subscription at all → free tier → upgrade required.
-    resp = _client(tenant_ctx).put(
-        "/api/v1/mailbox/settings/", {"platform_local_part": "jane"}, format="json"
-    )
+    resp = _client(tenant_ctx).put("/api/v1/mailbox/settings/", {"platform_local_part": "jane"}, format="json")
     assert resp.status_code == 400
     assert resp.json()["detail"] == "upgrade_required"

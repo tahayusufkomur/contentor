@@ -16,7 +16,10 @@ HOST = "shared-test.localhost"
 @pytest.fixture()
 def coach(tenant_ctx):
     return User.objects.create_user(
-        email="coach@x.com", name="Coach", password="secret123", role="owner"  # noqa: S106
+        email="coach@x.com",
+        name="Coach",
+        password="secret123",
+        role="owner",  # noqa: S106
     )
 
 

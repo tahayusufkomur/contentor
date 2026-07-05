@@ -101,8 +101,9 @@ def test_step_email_auth_routes_mailbox_domain_to_worker(restore_public):
     fake_cf = MagicMock()
     fake_resend = MagicMock()
     fake_resend.create_domain.return_value = {"resend_domain_id": "rd_1", "records": []}
-    with patch.object(provisioning, "get_cloudflare", return_value=fake_cf), patch.object(
-        provisioning, "get_resend_domains", return_value=fake_resend
+    with (
+        patch.object(provisioning, "get_cloudflare", return_value=fake_cf),
+        patch.object(provisioning, "get_resend_domains", return_value=fake_resend),
     ):
         provisioning._step_email_auth(cd)
     fake_cf.enable_email_routing.assert_called_once_with(zone_id="zone-x", worker_name="mailbox-inbound")
@@ -124,8 +125,9 @@ def test_step_email_auth_falls_back_to_forward_without_worker(restore_public):
     fake_cf = MagicMock()
     fake_resend = MagicMock()
     fake_resend.create_domain.return_value = {"resend_domain_id": "rd_2", "records": []}
-    with patch.object(provisioning, "get_cloudflare", return_value=fake_cf), patch.object(
-        provisioning, "get_resend_domains", return_value=fake_resend
+    with (
+        patch.object(provisioning, "get_cloudflare", return_value=fake_cf),
+        patch.object(provisioning, "get_resend_domains", return_value=fake_resend),
     ):
         provisioning._step_email_auth(cd)
     fake_cf.enable_email_routing.assert_called_once_with(zone_id="zone-y", forward_to="coach@gmail.com")

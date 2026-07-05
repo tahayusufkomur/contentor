@@ -5,26 +5,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mailbox', '0003_message_unique_message_id'),
+        ("mailbox", "0003_message_unique_message_id"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MessageAttachment',
+            name="MessageAttachment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('filename', models.CharField(max_length=255)),
-                ('content_type', models.CharField(max_length=100)),
-                ('size', models.BigIntegerField(default=0)),
-                ('storage_key', models.CharField(blank=True, default='', max_length=500)),
-                ('omitted', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('message', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='mailbox.message')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("filename", models.CharField(max_length=255)),
+                ("content_type", models.CharField(max_length=100)),
+                ("size", models.BigIntegerField(default=0)),
+                ("storage_key", models.CharField(blank=True, default="", max_length=500)),
+                ("omitted", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "message",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attachments",
+                        to="mailbox.message",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['id'],
+                "ordering": ["id"],
             },
         ),
     ]

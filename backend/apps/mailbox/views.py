@@ -161,9 +161,7 @@ def inbound(request):
     # Correctness depends on the Cloudflare Worker posting to the apex URL, NOT
     # a tenant subdomain — if it posted to a tenant host, the public-schema
     # CustomDomain table would be unreachable and every lookup would return None.
-    cd = CustomDomain.objects.filter(
-        domain=domain, mailbox_enabled=True, provisioning_status="live"
-    ).first()
+    cd = CustomDomain.objects.filter(domain=domain, mailbox_enabled=True, provisioning_status="live").first()
     # Second tier when no live custom domain matches: a paid coach's chosen
     # `<x>@PLATFORM_MAIL_DOMAIN` address.
     recipient_tenant = cd.tenant if cd else resolve_platform_recipient(to_email)
@@ -187,11 +185,7 @@ def inbound(request):
 
 
 def _live_domain(tenant):
-    return (
-        CustomDomain.objects.filter(tenant=tenant, provisioning_status="live")
-        .order_by("-is_primary", "id")
-        .first()
-    )
+    return CustomDomain.objects.filter(tenant=tenant, provisioning_status="live").order_by("-is_primary", "id").first()
 
 
 def _settings_payload(tenant):
@@ -207,8 +201,7 @@ def _settings_payload(tenant):
         "from_email": from_email,
         "platform_domain": django_settings.PLATFORM_MAIL_DOMAIN,
         "platform_local_part": pa.local_part if pa else "",
-        "platform_eligible": bool(django_settings.PLATFORM_MAIL_DOMAIN)
-        and tenant.has_paid_platform_plan,
+        "platform_eligible": bool(django_settings.PLATFORM_MAIL_DOMAIN) and tenant.has_paid_platform_plan,
     }
 
 
@@ -227,16 +220,10 @@ def _claim_platform_address(tenant, raw_local_part):
         return Response({"detail": "invalid_local_part"}, status=status.HTTP_400_BAD_REQUEST)
     if local_part in RESERVED_MAILBOX_LOCAL_PARTS:
         return Response({"detail": "reserved_local_part"}, status=status.HTTP_400_BAD_REQUEST)
-    if (
-        PlatformMailboxAddress.objects.filter(local_part=local_part)
-        .exclude(tenant=tenant)
-        .exists()
-    ):
+    if PlatformMailboxAddress.objects.filter(local_part=local_part).exclude(tenant=tenant).exists():
         return Response({"detail": "taken"}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        PlatformMailboxAddress.objects.update_or_create(
-            tenant=tenant, defaults={"local_part": local_part}
-        )
+        PlatformMailboxAddress.objects.update_or_create(tenant=tenant, defaults={"local_part": local_part})
     except IntegrityError:
         # Concurrent claim won the unique race.
         return Response({"detail": "taken"}, status=status.HTTP_400_BAD_REQUEST)
@@ -259,14 +246,10 @@ def mailbox_settings(request):
     local_part = (request.data.get("local_part") or "").strip()
     enabled = bool(request.data.get("enabled"))
     if not _LOCAL_PART_RE.match(local_part):
-        return Response(
-            {"detail": "invalid_local_part"}, status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"detail": "invalid_local_part"}, status=status.HTTP_400_BAD_REQUEST)
     cd = _live_domain(tenant)
     if enabled and cd is None:
-        return Response(
-            {"detail": "custom_domain_required"}, status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"detail": "custom_domain_required"}, status=status.HTTP_400_BAD_REQUEST)
     if cd is not None:
         cd.mailbox_local_part = local_part
         cd.mailbox_enabled = enabled

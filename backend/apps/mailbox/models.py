@@ -37,9 +37,7 @@ class Conversation(models.Model):
 class Message(models.Model):
     DIRECTION_CHOICES = [("inbound", "Inbound"), ("outbound", "Outbound")]
 
-    conversation = models.ForeignKey(
-        Conversation, on_delete=models.CASCADE, related_name="messages"
-    )
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES)
     from_email = models.EmailField()
     to_email = models.EmailField()

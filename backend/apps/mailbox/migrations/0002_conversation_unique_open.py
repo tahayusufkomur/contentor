@@ -5,15 +5,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mailbox', '0001_initial'),
+        ("mailbox", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='conversation',
-            constraint=models.UniqueConstraint(condition=models.Q(('is_archived', False)), fields=('counterparty_email',), name='uniq_open_conversation_per_counterparty'),
+            model_name="conversation",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("is_archived", False)),
+                fields=("counterparty_email",),
+                name="uniq_open_conversation_per_counterparty",
+            ),
         ),
     ]

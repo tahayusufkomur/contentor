@@ -13,9 +13,7 @@ def sending_identity(tenant) -> tuple[str, bool]:
     schema, so this is safe to call from inside a tenant request.
     """
     cd = (
-        CustomDomain.objects.filter(
-            tenant=tenant, provisioning_status="live", mailbox_enabled=True
-        )
+        CustomDomain.objects.filter(tenant=tenant, provisioning_status="live", mailbox_enabled=True)
         .order_by("-is_primary", "id")
         .first()
     )
@@ -54,11 +52,7 @@ def resolve_platform_recipient(to_email: str):
     if not domain or not to_email.endswith("@" + domain):
         return None
     local = to_email.rsplit("@", 1)[0].split("+", 1)[0]
-    row = (
-        PlatformMailboxAddress.objects.select_related("tenant")
-        .filter(local_part=local)
-        .first()
-    )
+    row = PlatformMailboxAddress.objects.select_related("tenant").filter(local_part=local).first()
     if not row or not row.tenant.has_paid_platform_plan:
         return None
     return row.tenant

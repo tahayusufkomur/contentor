@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('domains', '0002_customdomain_dns_records_done'),
+        ("domains", "0002_customdomain_dns_records_done"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customdomain',
-            name='mailbox_enabled',
+            model_name="customdomain",
+            name="mailbox_enabled",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='customdomain',
-            name='mailbox_local_part',
-            field=models.CharField(default='info', max_length=64),
+            model_name="customdomain",
+            name="mailbox_local_part",
+            field=models.CharField(default="info", max_length=64),
         ),
     ]

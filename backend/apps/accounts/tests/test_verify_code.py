@@ -129,9 +129,7 @@ class TestVerifyCode:
         detail_unknown = res_unknown.json().get("detail")
 
         # All three should be identical (no oracle variance)
-        assert (
-            detail_wrong == detail_lockout == detail_unknown
-        ), (
+        assert detail_wrong == detail_lockout == detail_unknown, (
             f"Expected identical detail messages, got: wrong={detail_wrong!r}, "
             f"lockout={detail_lockout!r}, unknown={detail_unknown!r}"
         )
@@ -142,6 +140,4 @@ def test_verify_code_has_throttle_class():
     from apps.accounts.views import MagicLinkThrottle, magic_link_verify_code
 
     throttle_classes = getattr(magic_link_verify_code.cls, "throttle_classes", [])
-    assert MagicLinkThrottle in throttle_classes, (
-        f"MagicLinkThrottle not found in throttle_classes: {throttle_classes}"
-    )
+    assert MagicLinkThrottle in throttle_classes, f"MagicLinkThrottle not found in throttle_classes: {throttle_classes}"

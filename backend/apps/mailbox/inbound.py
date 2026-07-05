@@ -27,9 +27,7 @@ def receive_inbound(
     if message_id and Message.objects.filter(message_id=message_id).exists():
         return None
 
-    conversation = get_or_create_conversation(
-        counterparty_email=from_email, subject=subject
-    )
+    conversation = get_or_create_conversation(counterparty_email=from_email, subject=subject)
     try:
         with transaction.atomic():
             msg = Message.objects.create(
@@ -57,9 +55,7 @@ def receive_inbound(
                 storage_key = ""
                 if not omitted and content_b64 and validate_attachment(filename, content_type, size) is None:
                     try:
-                        storage_key = store_attachment(
-                            base64.b64decode(content_b64), filename, content_type
-                        )
+                        storage_key = store_attachment(base64.b64decode(content_b64), filename, content_type)
                     except Exception:
                         logger.exception("mailbox inbound attachment store failed: %s", filename)
                         omitted = True

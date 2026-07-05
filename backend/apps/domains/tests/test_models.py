@@ -42,12 +42,18 @@ def test_customdomain_mailbox_field_defaults(db):
     from apps.domains.models import CustomDomain
 
     tenant = Tenant.objects.create(
-        schema_name="mbx_defaults", name="MBX", slug="mbx-defaults",
-        owner_email="o@mbx.com", subdomain="mbx-defaults",
+        schema_name="mbx_defaults",
+        name="MBX",
+        slug="mbx-defaults",
+        owner_email="o@mbx.com",
+        subdomain="mbx-defaults",
     )
     cd = CustomDomain.objects.create(
-        tenant=tenant, domain="mbxdefaults.com",
-        cost_minor=1000, price_minor=1200, currency="usd",
+        tenant=tenant,
+        domain="mbxdefaults.com",
+        cost_minor=1000,
+        price_minor=1200,
+        currency="usd",
     )
     assert cd.mailbox_local_part == "info"
     assert cd.mailbox_enabled is False

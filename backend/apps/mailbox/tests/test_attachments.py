@@ -14,8 +14,11 @@ HOST = "shared-test.localhost"
 @pytest.fixture()
 def coach(tenant_ctx):
     return User.objects.create_user(
-        email="coach@x.com", name="Coach", password="x",  # noqa: S106
-        role="owner", is_staff=True,
+        email="coach@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
     )
 
 
@@ -31,12 +34,18 @@ def client(coach):
 def test_attachment_links_to_message(tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com")
     msg = Message.objects.create(
-        conversation=conv, direction="outbound",
-        from_email="c@x.com", to_email="p@x.com", text="hi",
+        conversation=conv,
+        direction="outbound",
+        from_email="c@x.com",
+        to_email="p@x.com",
+        text="hi",
     )
     att = MessageAttachment.objects.create(
-        message=msg, filename="a.png", content_type="image/png",
-        size=123, storage_key="tenants/t/mailbox/x/a.png",
+        message=msg,
+        filename="a.png",
+        content_type="image/png",
+        size=123,
+        storage_key="tenants/t/mailbox/x/a.png",
     )
     assert list(msg.attachments.all()) == [att]
     assert att.omitted is False
@@ -44,7 +53,10 @@ def test_attachment_links_to_message(tenant_ctx):
 
 def test_attachment_allows_null_message(tenant_ctx):
     att = MessageAttachment.objects.create(
-        filename="b.pdf", content_type="application/pdf", size=1, storage_key="k",
+        filename="b.pdf",
+        content_type="application/pdf",
+        size=1,
+        storage_key="k",
     )
     assert att.message is None
 
@@ -60,8 +72,10 @@ def test_upload_attachment_endpoint(client, tenant_ctx):
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     f = SimpleUploadedFile("pic.png", b"\x89PNG fake", content_type="image/png")
-    with patch("apps.mailbox.views.attachments_mod.store_attachment", return_value="k/pic.png") as store, \
-         patch("apps.mailbox.serializers.generate_presigned_download_url", return_value="https://s3/x"):
+    with (
+        patch("apps.mailbox.views.attachments_mod.store_attachment", return_value="k/pic.png") as store,
+        patch("apps.mailbox.serializers.generate_presigned_download_url", return_value="https://s3/x"),
+    ):
         resp = client.post("/api/v1/mailbox/attachments/", {"file": f}, format="multipart")
     assert resp.status_code == 201, resp.content
     body = resp.json()
@@ -83,9 +97,7 @@ def test_send_message_sanitizes_html_and_links_attachments(tenant_ctx, settings)
 
     settings.EMAIL_SINK_ENABLED = True
     conv = Conversation.objects.create(counterparty_email="p@x.com", subject="Hi")
-    att = MessageAttachment.objects.create(
-        filename="a.txt", content_type="text/plain", size=2, storage_key="k/a.txt"
-    )
+    att = MessageAttachment.objects.create(filename="a.txt", content_type="text/plain", size=2, storage_key="k/a.txt")
     with patch("apps.mailbox.services.read_attachment", return_value=b"hi"):
         msg = services.send_message(
             conversation=conv,
@@ -111,14 +123,11 @@ def test_send_message_rejects_unknown_attachment(tenant_ctx, settings):
 
 def test_compose_api_accepts_html_and_attachments(client, tenant_ctx, settings):
     settings.EMAIL_SINK_ENABLED = True
-    att = MessageAttachment.objects.create(
-        filename="a.txt", content_type="text/plain", size=2, storage_key="k"
-    )
+    att = MessageAttachment.objects.create(filename="a.txt", content_type="text/plain", size=2, storage_key="k")
     with patch("apps.mailbox.services.read_attachment", return_value=b"hi"):
         resp = client.post(
             "/api/v1/mailbox/compose/",
-            {"to": "s@x.com", "subject": "Yo", "text": "hi",
-             "html": "<p><em>hi</em></p>", "attachment_ids": [att.id]},
+            {"to": "s@x.com", "subject": "Yo", "text": "hi", "html": "<p><em>hi</em></p>", "attachment_ids": [att.id]},
             format="json",
         )
     assert resp.status_code == 201, resp.content
@@ -127,13 +136,13 @@ def test_compose_api_accepts_html_and_attachments(client, tenant_ctx, settings):
 def test_list_includes_preview_and_attachment_flag(client, tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com", subject="Hi")
     msg = Message.objects.create(
-        conversation=conv, direction="inbound",
-        from_email="p@x.com", to_email="c@x.com",
+        conversation=conv,
+        direction="inbound",
+        from_email="p@x.com",
+        to_email="c@x.com",
         text="first line of the body\nsecond line",
     )
-    MessageAttachment.objects.create(
-        message=msg, filename="a.png", content_type="image/png", size=1, storage_key="k"
-    )
+    MessageAttachment.objects.create(message=msg, filename="a.png", content_type="image/png", size=1, storage_key="k")
     resp = client.get("/api/v1/mailbox/conversations/")
     row = resp.json()[0]
     assert row["last_message_preview"].startswith("first line")
@@ -143,12 +152,18 @@ def test_list_includes_preview_and_attachment_flag(client, tenant_ctx):
 def test_thread_messages_include_attachments(client, tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com")
     msg = Message.objects.create(
-        conversation=conv, direction="inbound",
-        from_email="p@x.com", to_email="c@x.com", text="hi",
+        conversation=conv,
+        direction="inbound",
+        from_email="p@x.com",
+        to_email="c@x.com",
+        text="hi",
     )
     MessageAttachment.objects.create(
-        message=msg, filename="a.pdf", content_type="application/pdf",
-        size=9, storage_key="k/a.pdf",
+        message=msg,
+        filename="a.pdf",
+        content_type="application/pdf",
+        size=9,
+        storage_key="k/a.pdf",
     )
     with patch("apps.mailbox.serializers.generate_presigned_download_url", return_value="https://s3/a"):
         resp = client.get(f"/api/v1/mailbox/conversations/{conv.id}/")
@@ -163,15 +178,21 @@ def test_receive_inbound_stores_attachments(tenant_ctx):
     from apps.mailbox.inbound import receive_inbound
 
     payload_atts = [
-        {"filename": "a.png", "content_type": "image/png", "size": 4,
-         "content_b64": base64.b64encode(b"data").decode()},
-        {"filename": "huge.mov", "content_type": "video/quicktime",
-         "size": 99 * 1024 * 1024, "omitted": True},
+        {
+            "filename": "a.png",
+            "content_type": "image/png",
+            "size": 4,
+            "content_b64": base64.b64encode(b"data").decode(),
+        },
+        {"filename": "huge.mov", "content_type": "video/quicktime", "size": 99 * 1024 * 1024, "omitted": True},
     ]
     with patch("apps.mailbox.inbound.store_attachment", return_value="k/a.png"):
         msg = receive_inbound(
-            from_email="s@x.com", to_email="info@c.com", subject="Hi",
-            text="hello", attachments=payload_atts,
+            from_email="s@x.com",
+            to_email="info@c.com",
+            subject="Hi",
+            text="hello",
+            attachments=payload_atts,
         )
     atts = list(msg.attachments.order_by("id"))
     assert len(atts) == 2
@@ -184,12 +205,16 @@ def test_receive_inbound_storage_failure_becomes_omitted(tenant_ctx):
 
     from apps.mailbox.inbound import receive_inbound
 
-    payload_atts = [{"filename": "a.png", "content_type": "image/png", "size": 4,
-                     "content_b64": base64.b64encode(b"data").decode()}]
+    payload_atts = [
+        {"filename": "a.png", "content_type": "image/png", "size": 4, "content_b64": base64.b64encode(b"data").decode()}
+    ]
     with patch("apps.mailbox.inbound.store_attachment", side_effect=RuntimeError("s3 down")):
         msg = receive_inbound(
-            from_email="s2@x.com", to_email="info@c.com", subject="Hi",
-            text="hello", attachments=payload_atts,
+            from_email="s2@x.com",
+            to_email="info@c.com",
+            subject="Hi",
+            text="hello",
+            attachments=payload_atts,
         )
     att = msg.attachments.get()
     assert att.omitted is True

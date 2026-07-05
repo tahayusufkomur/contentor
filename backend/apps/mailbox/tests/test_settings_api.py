@@ -39,42 +39,43 @@ def test_settings_get_without_domain(client, tenant_ctx):
 
 
 def test_settings_put_requires_domain_to_enable(client, tenant_ctx):
-    resp = client.put(
-        "/api/v1/mailbox/settings/", {"local_part": "info", "enabled": True}, format="json"
-    )
+    resp = client.put("/api/v1/mailbox/settings/", {"local_part": "info", "enabled": True}, format="json")
     assert resp.status_code == 400
 
 
 def test_settings_put_rejects_bad_local_part(client, tenant_ctx):
     CustomDomain.objects.create(
-        tenant=tenant_ctx, domain="coach.com", cost_minor=1, price_minor=1,
-        currency="usd", provisioning_status="live",
+        tenant=tenant_ctx,
+        domain="coach.com",
+        cost_minor=1,
+        price_minor=1,
+        currency="usd",
+        provisioning_status="live",
     )
-    resp = client.put(
-        "/api/v1/mailbox/settings/", {"local_part": "bad address!", "enabled": True}, format="json"
-    )
+    resp = client.put("/api/v1/mailbox/settings/", {"local_part": "bad address!", "enabled": True}, format="json")
     assert resp.status_code == 400
 
 
 @override_settings(CLOUDFLARE_EMAIL_WORKER_NAME="mailbox-inbound")
 def test_settings_put_enables_and_rebinds_worker(client, tenant_ctx):
     CustomDomain.objects.create(
-        tenant=tenant_ctx, domain="coach.com", cost_minor=1, price_minor=1,
-        currency="usd", provisioning_status="live", cloudflare_zone_id="zone-1",
+        tenant=tenant_ctx,
+        domain="coach.com",
+        cost_minor=1,
+        price_minor=1,
+        currency="usd",
+        provisioning_status="live",
+        cloudflare_zone_id="zone-1",
     )
     with patch("apps.mailbox.views.get_cloudflare") as mock_cf:
-        resp = client.put(
-            "/api/v1/mailbox/settings/", {"local_part": "support", "enabled": True}, format="json"
-        )
+        resp = client.put("/api/v1/mailbox/settings/", {"local_part": "support", "enabled": True}, format="json")
     assert resp.status_code == 200
     data = resp.json()
     assert data["local_part"] == "support"
     assert data["enabled"] is True
     assert data["from_email"] == "support@coach.com"
     assert data["can_receive"] is True
-    mock_cf.return_value.enable_email_routing.assert_called_once_with(
-        zone_id="zone-1", worker_name="mailbox-inbound"
-    )
+    mock_cf.return_value.enable_email_routing.assert_called_once_with(zone_id="zone-1", worker_name="mailbox-inbound")
     cd = CustomDomain.objects.get(domain="coach.com")
     assert cd.mailbox_local_part == "support"
     assert cd.mailbox_enabled is True

@@ -21,8 +21,11 @@ def client(tenant_ctx):
 def test_message_html_is_sanitized(client, tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com")
     Message.objects.create(
-        conversation=conv, direction="inbound", from_email="p@x.com",
-        to_email="info@coach.com", html='<p>hi</p><script>alert(1)</script>',
+        conversation=conv,
+        direction="inbound",
+        from_email="p@x.com",
+        to_email="info@coach.com",
+        html="<p>hi</p><script>alert(1)</script>",
     )
     resp = client.get(f"/api/v1/mailbox/conversations/{conv.id}/")
     assert resp.status_code == 200
@@ -33,9 +36,7 @@ def test_message_html_is_sanitized(client, tenant_ctx):
 
 def test_archive_conversation(client, tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com")
-    resp = client.patch(
-        f"/api/v1/mailbox/conversations/{conv.id}/", {"is_archived": True}, format="json"
-    )
+    resp = client.patch(f"/api/v1/mailbox/conversations/{conv.id}/", {"is_archived": True}, format="json")
     assert resp.status_code == 200
     conv.refresh_from_db()
     assert conv.is_archived is True
@@ -43,9 +44,7 @@ def test_archive_conversation(client, tenant_ctx):
 
 def test_mark_spam(client, tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com")
-    resp = client.patch(
-        f"/api/v1/mailbox/conversations/{conv.id}/", {"is_spam": True}, format="json"
-    )
+    resp = client.patch(f"/api/v1/mailbox/conversations/{conv.id}/", {"is_spam": True}, format="json")
     assert resp.status_code == 200
     conv.refresh_from_db()
     assert conv.is_spam is True
@@ -53,9 +52,7 @@ def test_mark_spam(client, tenant_ctx):
 
 def test_delete_conversation(client, tenant_ctx):
     conv = Conversation.objects.create(counterparty_email="p@x.com")
-    Message.objects.create(
-        conversation=conv, direction="inbound", from_email="p@x.com", to_email="info@coach.com"
-    )
+    Message.objects.create(conversation=conv, direction="inbound", from_email="p@x.com", to_email="info@coach.com")
     resp = client.delete(f"/api/v1/mailbox/conversations/{conv.id}/")
     assert resp.status_code == 204
     assert Conversation.objects.filter(id=conv.id).count() == 0

@@ -4,14 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mailbox', '0002_conversation_unique_open'),
+        ("mailbox", "0002_conversation_unique_open"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='message',
-            constraint=models.UniqueConstraint(condition=models.Q(('message_id', ''), _negated=True), fields=('message_id',), name='uniq_message_id_when_present'),
+            model_name="message",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("message_id", ""), _negated=True),
+                fields=("message_id",),
+                name="uniq_message_id_when_present",
+            ),
         ),
     ]

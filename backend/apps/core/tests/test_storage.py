@@ -90,9 +90,7 @@ class MultipartPresignExternalEndpointTests(SimpleTestCase):
         part_urls = response.data["part_urls"]
         assert len(part_urls) == 2, part_urls
         for url in part_urls:
-            assert url.startswith("http://localhost:9000/"), (
-                f"Part URL must use external endpoint; got: {url}"
-            )
+            assert url.startswith("http://localhost:9000/"), f"Part URL must use external endpoint; got: {url}"
         # Confirm the internal client was NOT used for presigning.
         internal_client.generate_presigned_url.assert_not_called()
         # Confirm the external client WAS used for presigning.

@@ -29,9 +29,7 @@ def paid_plan(restore_public):
 
 @pytest.fixture()
 def free_plan(restore_public):
-    plan, _ = PlatformPlan.objects.get_or_create(
-        name="Free", defaults={"price_monthly": 0, "transaction_fee_pct": 0}
-    )
+    plan, _ = PlatformPlan.objects.get_or_create(name="Free", defaults={"price_monthly": 0, "transaction_fee_pct": 0})
     return plan
 
 
@@ -41,16 +39,22 @@ def _tenant():
 
 def test_creating_active_subscription_mirrors_plan(owner, paid_plan):
     PlatformSubscription.objects.create(
-        tenant=_tenant(), user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="manual",
+        tenant=_tenant(),
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="manual",
     )
     assert _tenant().plan_id == paid_plan.pk
 
 
 def test_changing_subscription_plan_updates_mirror(owner, paid_plan, free_plan):
     sub = PlatformSubscription.objects.create(
-        tenant=_tenant(), user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="manual",
+        tenant=_tenant(),
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="manual",
     )
     assert _tenant().plan_id == paid_plan.pk
     other = PlatformPlan.objects.create(name="mirror-pro", price_monthly=49, transaction_fee_pct=4)
@@ -61,8 +65,11 @@ def test_changing_subscription_plan_updates_mirror(owner, paid_plan, free_plan):
 
 def test_canceling_subscription_reverts_mirror_to_free(owner, paid_plan, free_plan):
     sub = PlatformSubscription.objects.create(
-        tenant=_tenant(), user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="manual",
+        tenant=_tenant(),
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="manual",
     )
     assert _tenant().plan_id == paid_plan.pk
     sub.status = PlatformSubscription.STATUS_CANCELED
@@ -72,8 +79,11 @@ def test_canceling_subscription_reverts_mirror_to_free(owner, paid_plan, free_pl
 
 def test_deleting_subscription_reverts_mirror_to_free(owner, paid_plan, free_plan):
     sub = PlatformSubscription.objects.create(
-        tenant=_tenant(), user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="manual",
+        tenant=_tenant(),
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="manual",
     )
     assert _tenant().plan_id == paid_plan.pk
     # Deleting cascades (SET_NULL) to the tenant-only billing_payment table —

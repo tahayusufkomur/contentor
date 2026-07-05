@@ -48,13 +48,39 @@ class CustomDomain(models.Model):
 
 # Local parts nobody can claim on the platform mail domain: RFC-required
 # role addresses, platform-operated addresses, and abuse-prone names.
-RESERVED_MAILBOX_LOCAL_PARTS = frozenset({
-    "abuse", "admin", "administrator", "billing", "contact", "contentor",
-    "hello", "help", "hostmaster", "info", "legal", "mail", "mailer-daemon",
-    "marketing", "news", "newsletter", "noc", "noreply", "no-reply",
-    "notifications", "postmaster", "privacy", "root", "sales", "security",
-    "support", "team", "webmaster", "www",
-})
+RESERVED_MAILBOX_LOCAL_PARTS = frozenset(
+    {
+        "abuse",
+        "admin",
+        "administrator",
+        "billing",
+        "contact",
+        "contentor",
+        "hello",
+        "help",
+        "hostmaster",
+        "info",
+        "legal",
+        "mail",
+        "mailer-daemon",
+        "marketing",
+        "news",
+        "newsletter",
+        "noc",
+        "noreply",
+        "no-reply",
+        "notifications",
+        "postmaster",
+        "privacy",
+        "root",
+        "sales",
+        "security",
+        "support",
+        "team",
+        "webmaster",
+        "www",
+    }
+)
 
 
 class PlatformMailboxAddress(models.Model):
@@ -67,9 +93,7 @@ class PlatformMailboxAddress(models.Model):
     freeing it is a superadmin action.
     """
 
-    tenant = models.OneToOneField(
-        "core.Tenant", on_delete=models.CASCADE, related_name="platform_mailbox_address"
-    )
+    tenant = models.OneToOneField("core.Tenant", on_delete=models.CASCADE, related_name="platform_mailbox_address")
     local_part = models.CharField(max_length=64, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

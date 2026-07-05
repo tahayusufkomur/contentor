@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,42 +14,59 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Conversation',
+            name="Conversation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('subject', models.CharField(blank=True, default='', max_length=255)),
-                ('counterparty_email', models.EmailField(max_length=254)),
-                ('counterparty_name', models.CharField(blank=True, default='', max_length=255)),
-                ('last_message_at', models.DateTimeField(blank=True, null=True)),
-                ('unread_count', models.IntegerField(default=0)),
-                ('is_archived', models.BooleanField(default=False)),
-                ('is_spam', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('student', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='mailbox_conversations', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("subject", models.CharField(blank=True, default="", max_length=255)),
+                ("counterparty_email", models.EmailField(max_length=254)),
+                ("counterparty_name", models.CharField(blank=True, default="", max_length=255)),
+                ("last_message_at", models.DateTimeField(blank=True, null=True)),
+                ("unread_count", models.IntegerField(default=0)),
+                ("is_archived", models.BooleanField(default=False)),
+                ("is_spam", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "student",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="mailbox_conversations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-last_message_at', '-created_at'],
+                "ordering": ["-last_message_at", "-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='Message',
+            name="Message",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('direction', models.CharField(choices=[('inbound', 'Inbound'), ('outbound', 'Outbound')], max_length=10)),
-                ('from_email', models.EmailField(max_length=254)),
-                ('to_email', models.EmailField(max_length=254)),
-                ('text', models.TextField(blank=True, default='')),
-                ('html', models.TextField(blank=True, default='')),
-                ('message_id', models.CharField(blank=True, db_index=True, default='', max_length=255)),
-                ('in_reply_to', models.CharField(blank=True, default='', max_length=255)),
-                ('references', models.TextField(blank=True, default='')),
-                ('provider_id', models.CharField(blank=True, default='', max_length=255)),
-                ('is_read', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('conversation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='mailbox.conversation')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "direction",
+                    models.CharField(choices=[("inbound", "Inbound"), ("outbound", "Outbound")], max_length=10),
+                ),
+                ("from_email", models.EmailField(max_length=254)),
+                ("to_email", models.EmailField(max_length=254)),
+                ("text", models.TextField(blank=True, default="")),
+                ("html", models.TextField(blank=True, default="")),
+                ("message_id", models.CharField(blank=True, db_index=True, default="", max_length=255)),
+                ("in_reply_to", models.CharField(blank=True, default="", max_length=255)),
+                ("references", models.TextField(blank=True, default="")),
+                ("provider_id", models.CharField(blank=True, default="", max_length=255)),
+                ("is_read", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "conversation",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="messages", to="mailbox.conversation"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
     ]

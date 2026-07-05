@@ -21,8 +21,11 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture()
 def superuser(restore_public):
     return User.objects.create(
-        email="root@contentor.app", region="global", role="owner",
-        is_staff=True, is_superuser=True,
+        email="root@contentor.app",
+        region="global",
+        role="owner",
+        is_staff=True,
+        is_superuser=True,
     )
 
 
@@ -40,9 +43,7 @@ def paid_plan(restore_public):
 @pytest.fixture()
 def free_plan(restore_public):
     # A seeded "Free" plan may already exist (unique name) — reuse it.
-    plan, _ = PlatformPlan.objects.get_or_create(
-        name="Free", defaults={"price_monthly": 0, "transaction_fee_pct": 0}
-    )
+    plan, _ = PlatformPlan.objects.get_or_create(name="Free", defaults={"price_monthly": 0, "transaction_fee_pct": 0})
     return plan
 
 
@@ -72,8 +73,11 @@ def test_granting_paid_plan_creates_active_subscription(superuser, owner, paid_p
 def test_granting_free_plan_cancels_existing_subscription(superuser, owner, paid_plan, free_plan):
     tenant = Tenant.objects.get(schema_name="shared_test")
     PlatformSubscription.objects.create(
-        tenant=tenant, user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="manual",
+        tenant=tenant,
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="manual",
     )
     resp = _client(superuser).patch(_url(tenant.pk), {"plan": free_plan.pk}, format="json")
     assert resp.status_code == 200, resp.content
@@ -88,8 +92,11 @@ def test_editing_name_only_leaves_stripe_subscription_untouched(superuser, owner
     tenant = Tenant.objects.get(schema_name="shared_test")
     Tenant.objects.filter(pk=tenant.pk).update(plan=paid_plan)
     PlatformSubscription.objects.create(
-        tenant=tenant, user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="stripe",
+        tenant=tenant,
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="stripe",
         provider_subscription_id="sub_real_1",
     )
     resp = _client(superuser).patch(_url(tenant.pk), {"name": "Renamed"}, format="json")
@@ -104,8 +111,11 @@ def test_changing_plan_on_active_stripe_sub_is_blocked(superuser, owner, paid_pl
     tenant = Tenant.objects.get(schema_name="shared_test")
     Tenant.objects.filter(pk=tenant.pk).update(plan=paid_plan)
     PlatformSubscription.objects.create(
-        tenant=tenant, user=owner, plan=paid_plan,
-        status=PlatformSubscription.STATUS_ACTIVE, provider="stripe",
+        tenant=tenant,
+        user=owner,
+        plan=paid_plan,
+        status=PlatformSubscription.STATUS_ACTIVE,
+        provider="stripe",
         provider_subscription_id="sub_real_2",
     )
     resp = _client(superuser).patch(_url(tenant.pk), {"plan": free_plan.pk}, format="json")

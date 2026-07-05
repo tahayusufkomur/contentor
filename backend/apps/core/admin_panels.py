@@ -154,8 +154,10 @@ class TenantAdmin(ModelAdmin):
                 and sub.status in (PlatformSubscription.STATUS_ACTIVE, PlatformSubscription.STATUS_PAST_DUE)
             ):
                 raise ValidationError(
-                    {"plan": "This tenant has an active Stripe subscription — change the plan in Stripe, "
-                             "not here, or billing will desync."}
+                    {
+                        "plan": "This tenant has an active Stripe subscription — change the plan in Stripe, "
+                        "not here, or billing will desync."
+                    }
                 )
 
             plan = tenant.plan

@@ -5,21 +5,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0013_devoutboundemail'),
-        ('domains', '0003_customdomain_mailbox_fields'),
+        ("core", "0013_devoutboundemail"),
+        ("domains", "0003_customdomain_mailbox_fields"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PlatformMailboxAddress',
+            name="PlatformMailboxAddress",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('local_part', models.CharField(max_length=64, unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('tenant', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='platform_mailbox_address', to='core.tenant')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("local_part", models.CharField(max_length=64, unique=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "tenant",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="platform_mailbox_address",
+                        to="core.tenant",
+                    ),
+                ),
             ],
         ),
     ]
