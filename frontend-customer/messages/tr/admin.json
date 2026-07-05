@@ -72,12 +72,12 @@
     "niceToHave": "Ekstra özellikler",
     "markDone": "Tamamlandı olarak işaretle",
     "markUndone": "Tamamlanmamış olarak işaretle",
-    "celebrateTitle": "Yayında varsın! 🎉",
-    "celebrateBody": "Her şey hazır. Stüdyonunu öğrencilerinle paylaş!",
+    "celebrateTitle": "Yayındasın! 🎉",
+    "celebrateBody": "Her şey hazır. Stüdyonu öğrencilerinle paylaş!",
     "copyLink": "Stüdyo bağlantısını kopyala",
     "copied": "Bağlantı kopyalandı!",
     "groups": {
-      "site": "Senin siteni",
+      "site": "Senin siten",
       "content": "Senin içeriğin",
       "business": "Ödeme al",
       "live": "Yayına çık",
@@ -98,7 +98,7 @@
       },
       "page_pricing": {
         "title": "Fiyatlandırma sayfası",
-        "description": "Öğrencilerinizin göreceği planları incele."
+        "description": "Öğrencilerinin göreceği planları incele."
       },
       "page_faq": {
         "title": "SSS sayfası",
@@ -125,7 +125,7 @@
         "description": "Öğrencilerin senden satın alabilmesi için ödeme sistemini bağla."
       },
       "publish": {
-        "title": "Stüdyonunu yayınla",
+        "title": "Stüdyonu yayınla",
         "description": "Dünyaya açılmaya hazır olduğunda ana anahtarı çevir."
       },
       "first_download": {
@@ -134,14 +134,14 @@
       },
       "first_live": {
         "title": "Canlı oturum planla",
-        "description": "İlk dersinizi takvime ekle."
+        "description": "İlk dersini takvime ekle."
       },
       "first_announcement": {
         "title": "Duyuru gönder",
         "description": "Öğrencilerine selam ver."
       },
       "share_site": {
-        "title": "Stüdyonunu paylaş",
+        "title": "Stüdyonu paylaş",
         "description": "Bağlantını kopyala ve öğrencilerine gönder."
       },
       "studio_email": {
