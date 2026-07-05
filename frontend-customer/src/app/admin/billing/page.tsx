@@ -14,6 +14,14 @@ import { ChangePlanCard } from "./subscription/ChangePlanCard";
 import { SubscriptionTile } from "./subscription/SubscriptionTile";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 
+const BILLING_TABS = [
+  "subscription",
+  "products",
+  "bundles",
+  "plans",
+  "payments",
+];
+
 interface Product {
   id: number;
   title: string;
@@ -287,13 +295,16 @@ function PlansTab() {
 export default function BillingPage() {
   const searchParams = useSearchParams();
   const checkoutFlag = searchParams.get("checkout");
+  const tabParam = searchParams.get("tab");
   const isCheckoutSuccess = checkoutFlag === "success";
   const isCheckoutCanceled = checkoutFlag === "cancel";
-  const defaultTab = useMemo(
-    () =>
-      isCheckoutSuccess || isCheckoutCanceled ? "subscription" : "products",
-    [isCheckoutSuccess, isCheckoutCanceled],
-  );
+  // Default to the coach's own Subscription (their plan) — that's what they
+  // most often come here for; a checkout return or explicit ?tab= wins.
+  const defaultTab = useMemo(() => {
+    if (isCheckoutSuccess || isCheckoutCanceled) return "subscription";
+    if (tabParam && BILLING_TABS.includes(tabParam)) return tabParam;
+    return "subscription";
+  }, [isCheckoutSuccess, isCheckoutCanceled, tabParam]);
 
   return (
     <div className="space-y-6">

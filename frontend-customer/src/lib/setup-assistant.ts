@@ -17,6 +17,9 @@ export interface SetupStatus {
   progress: { done: number; total: number };
   demo_present: boolean;
   dismissed: boolean;
+  has_paid_content: boolean;
+  /** Unmet requirements that block going live (empty = ready to publish). */
+  publish_blockers: string[];
 }
 
 export interface DemoContent {

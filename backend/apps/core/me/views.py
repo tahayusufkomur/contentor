@@ -76,7 +76,25 @@ def update_my_tenant(request, slug):
 
     updated = []
     if "is_published" in request.data:
-        tenant.is_published = bool(request.data["is_published"])
+        want_published = bool(request.data["is_published"])
+        # Hard publish gate: a coach can only go live once the mandatory setup
+        # requirements are met (decision 2026-07-05). Computed in the tenant's
+        # own schema, where the config + content live.
+        if want_published:
+            from django_tenants.utils import tenant_context
+
+            from apps.tenant_config.models import TenantConfig
+            from apps.tenant_config.setup_items import publish_blockers
+
+            with tenant_context(tenant):
+                config = TenantConfig.objects.first()
+                blockers = publish_blockers(config, tenant) if config else []
+            if blockers:
+                return Response(
+                    {"detail": "publish_requirements_unmet", "blockers": blockers},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        tenant.is_published = want_published
         updated.append("is_published")
     if "preview_password" in request.data:
         password = request.data["preview_password"]

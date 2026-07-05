@@ -48,7 +48,6 @@ export function SetupAssistantPanel({
   const renderRow = (item: SetupItem) => {
     const entry = SETUP_CATALOG[item.key];
     if (!entry) return null;
-    const Icon = entry.icon;
     const title = t(`setup.items.${item.key}.title`);
     const description = t(`setup.items.${item.key}.description`);
     // A row is itself a <button>/<Link> (interactive content), so this toggle
@@ -64,24 +63,21 @@ export function SetupAssistantPanel({
     };
     const checkCircle = (
       <span
-        role="button"
+        role="checkbox"
+        aria-checked={item.done}
         tabIndex={0}
         aria-label={item.done ? t("setup.markUndone") : t("setup.markDone")}
         onClick={toggleDone}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") toggleDone(e);
         }}
-        className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors ${
+        className={`flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-[6px] border-2 transition-colors ${
           item.done
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/30 bg-background text-muted-foreground hover:border-primary"
+            : "border-muted-foreground/40 bg-background hover:border-primary"
         }`}
       >
-        {item.done ? (
-          <Check className="h-4 w-4" />
-        ) : (
-          <Icon className="h-3.5 w-3.5" />
-        )}
+        {item.done && <Check className="h-3.5 w-3.5" />}
       </span>
     );
     const body = (

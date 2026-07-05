@@ -1,13 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Copy, ExternalLink, Globe, KeyRound, Rocket } from "lucide-react";
+import Link from "next/link";
+import {
+  Circle,
+  Copy,
+  ExternalLink,
+  Globe,
+  KeyRound,
+  Rocket,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
+import { useSetupStatus } from "@/lib/setup-assistant";
+import { ApiError } from "@/types/api";
+
+// Copy + deep link for each mandatory publish requirement (decision
+// 2026-07-05). Keys mirror the backend `publish_blockers` output.
+const PUBLISH_BLOCKER_META: Record<string, { label: string; href: string }> = {
+  look: { label: "Add your logo", href: "/admin/design" },
+  demo_cleanup: {
+    label: "Remove the demo content",
+    href: "/admin/courses",
+  },
+  first_course: {
+    label: "Create your first course or download",
+    href: "/admin/courses/new",
+  },
+  payouts: {
+    label: "Connect payments to sell paid content",
+    href: "/admin/payouts",
+  },
+};
 
 interface MeTenant {
   slug: string;
@@ -37,6 +65,9 @@ export function PublishCard() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [pw, setPw] = useState("");
+  const status = useSetupStatus();
+  const blockers = status?.publish_blockers ?? [];
+  const canPublish = blockers.length === 0;
 
   useEffect(() => {
     clientFetch<MeTenant[]>("/api/v1/me/tenants/")
@@ -55,8 +86,17 @@ export function PublishCard() {
       );
       setTenant((prev) => (prev ? { ...prev, ...updated } : prev));
       return true;
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (err) {
+      // The backend enforces the same publish gate; surface it if the button
+      // was somehow triggered while requirements are unmet.
+      if (
+        err instanceof ApiError &&
+        err.data?.detail === "publish_requirements_unmet"
+      ) {
+        toast.error("Finish the required setup steps before publishing.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
       return false;
     } finally {
       setBusy(false);
@@ -64,6 +104,7 @@ export function PublishCard() {
   }
 
   async function publish() {
+    if (!canPublish) return;
     if (await patch({ is_published: true }))
       toast.success("Your app is live 🎉");
   }
@@ -187,7 +228,40 @@ export function PublishCard() {
               Your app is hidden behind a preview gate. Publish it to let
               students find and install it.
             </p>
-            <Button onClick={publish} disabled={busy} className="gap-2">
+            {!canPublish && (
+              <div className="rounded-md border border-amber-300 bg-amber-50/60 p-3">
+                <p className="mb-2 text-sm font-medium text-amber-900">
+                  Finish these first to publish:
+                </p>
+                <ul className="space-y-1.5">
+                  {blockers.map((key) => {
+                    const meta = PUBLISH_BLOCKER_META[key];
+                    if (!meta) return null;
+                    return (
+                      <li key={key}>
+                        <Link
+                          href={meta.href}
+                          className="flex items-center gap-2 text-sm text-amber-900 underline-offset-2 hover:underline"
+                        >
+                          <Circle className="h-3.5 w-3.5 shrink-0" />
+                          {meta.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+            <Button
+              onClick={publish}
+              disabled={busy || !canPublish}
+              className="gap-2"
+              title={
+                canPublish
+                  ? undefined
+                  : "Finish the required setup steps to publish"
+              }
+            >
               <Rocket className="h-4 w-4" /> Publish app — go live
             </Button>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

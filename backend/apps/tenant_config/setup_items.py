@@ -50,6 +50,56 @@ def _has_own(model, rows) -> bool:
     return False
 
 
+def _has_paid_content(seeded) -> bool:
+    """The coach sells at least one paid (price > 0) course or download of
+    their own. Demo-seeded rows are excluded so an unremoved demo (which may
+    contain paid items) never spuriously demands payout onboarding."""
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+
+    course_demo = [row.object_id for row in seeded.get("courses.course", [])]
+    dl_demo = [row.object_id for row in seeded.get("downloads.downloadfile", [])]
+    return (
+        Course.objects.filter(price__gt=0).exclude(pk__in=course_demo).exists()
+        or DownloadFile.objects.filter(price__gt=0).exclude(pk__in=dl_demo).exists()
+    )
+
+
+def publish_blockers(config, tenant) -> list[str]:
+    """Requirements a coach must satisfy before going live (decision 2026-07-05).
+
+    Returns the unmet requirement keys (empty list = ready to publish). Unlike
+    the checklist, this reads REAL state only — manual "mark done" overrides
+    never satisfy a hard publish requirement.
+
+      - ``look``         — a logo/brand is set
+      - ``demo_cleanup`` — demo content removed (only if the tenant was seeded)
+      - ``first_course`` — at least one own course or download exists
+      - ``payouts``      — Connect onboarding done, only if paid content exists
+    """
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+
+    progress = config.setup_progress or {}
+    seeded = _seeded_by_label()
+    seeded_rows_exist = any(seeded.values())
+    was_seeded = seeded_rows_exist or getattr(tenant, "template_seed_status", "") == "ready"
+
+    blockers = []
+    if not (bool(progress.get("look_edited")) or bool(config.logo_id or config.logo_url)):
+        blockers.append("look")
+    if was_seeded and seeded_rows_exist:
+        blockers.append("demo_cleanup")
+    has_own_product = _has_own(Course, seeded.get("courses.course", [])) or _has_own(
+        DownloadFile, seeded.get("downloads.downloadfile", [])
+    )
+    if not has_own_product:
+        blockers.append("first_course")
+    if _has_paid_content(seeded) and not can_monetize(tenant):
+        blockers.append("payouts")
+    return blockers
+
+
 def compute_setup_state(config, tenant) -> dict:
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
@@ -127,4 +177,6 @@ def compute_setup_state(config, tenant) -> dict:
         },
         "demo_present": seeded_rows_exist,
         "dismissed": config.setup_guide_dismissed,
+        "has_paid_content": _has_paid_content(seeded),
+        "publish_blockers": publish_blockers(config, tenant),
     }

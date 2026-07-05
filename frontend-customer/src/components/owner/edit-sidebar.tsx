@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { BrandTab } from "./brand-tab";
 import { NavbarTab } from "./navbar-tab";
 import { BlocksTab } from "./blocks-tab";
-import { EditorStoreProvider } from "./canvas/editor-store";
+import { EditorStoreProvider, useEditorStore } from "./canvas/editor-store";
 import { CanvasDndProvider } from "./canvas/canvas-dnd-provider";
 import { UndoRedoControls } from "./canvas/editor-controls";
 import { RichEditorProvider } from "./rich-editor";
@@ -210,6 +210,14 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       >
         <RichEditorProvider>
           <CanvasDndProvider activePageKey={activePageKey}>
+            {/* Selecting a block on the canvas jumps the sidebar to Pages mode
+                and opens it, so the clicked block's editor is right there. */}
+            <SelectionSync
+              onBlockSelected={() => {
+                setMode("pages");
+                setOpen(true);
+              }}
+            />
             <div className="relative flex min-h-screen">
               {/* Sidebar — only mounted while editing */}
               {editMode && (
@@ -430,6 +438,21 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       </EditorStoreProvider>
     </EditModeProvider>
   );
+}
+
+// Bridges canvas selection (owned by the editor store) up to the sidebar's
+// mode/open state (owned by EditSidebar, above the store). Renders nothing;
+// fires `onBlockSelected` whenever a block becomes selected so a click on the
+// live canvas surfaces that block's editor even if the coach was on the Site
+// tab or had the panel collapsed.
+function SelectionSync({ onBlockSelected }: { onBlockSelected: () => void }) {
+  const { selectedBlockId } = useEditorStore();
+  const cb = useRef(onBlockSelected);
+  cb.current = onBlockSelected;
+  useEffect(() => {
+    if (selectedBlockId) cb.current();
+  }, [selectedBlockId]);
+  return null;
 }
 
 // The edit sidebar renders on the tenant public site, but the root layout's

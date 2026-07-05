@@ -37,6 +37,8 @@ def config(tenant_ctx):
     cfg.setup_progress = {}
     cfg.setup_guide_dismissed = False
     cfg.enabled_modules = ["courses", "downloads"]
+    cfg.logo = None
+    cfg.logo_url = ""
     cfg.save()
     yield cfg
     SeededObject.objects.all().delete()
@@ -196,6 +198,60 @@ def test_real_logo_url_change_still_marks_look_edited(client, config):
     )
     config.refresh_from_db()
     assert config.setup_progress.get("look_edited") is True
+
+
+def _blockers(config, tenant):
+    from apps.tenant_config.setup_items import publish_blockers
+
+    return set(publish_blockers(config, tenant))
+
+
+def test_publish_blockers_fresh_site(config):
+    """A brand-new site (no logo, no own course) can't publish."""
+    from django.db import connection
+
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        assert _blockers(config, connection.tenant) == {"look", "first_course"}
+
+
+def test_publish_blockers_cleared_when_ready(coach, config):
+    from django.db import connection
+
+    config.logo_url = "https://s3.example.com/logo.png"
+    config.save(update_fields=["logo_url"])
+    Course.objects.create(title="Real", slug="real-course-pub", instructor=coach)
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=True):
+        assert _blockers(config, connection.tenant) == set()
+
+
+def test_publish_blockers_payouts_only_when_paid_content(coach, config):
+    """Payout onboarding is required only if the coach sells paid content —
+    a free-only site never demands it (would lock out free-plan coaches)."""
+    from django.db import connection
+
+    config.logo_url = "https://s3.example.com/logo.png"
+    config.save(update_fields=["logo_url"])
+    Course.objects.create(title="Free", slug="free-pub", instructor=coach, price=0)
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        assert _blockers(config, connection.tenant) == set()
+
+    Course.objects.create(title="Paid", slug="paid-pub", instructor=coach, price=10)
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        assert _blockers(config, connection.tenant) == {"payouts"}
+
+
+def test_publish_blockers_demo_must_be_removed(client, coach, config):
+    """Unremoved demo blocks publish, and setup-status exposes the gate."""
+    from django.db import connection
+
+    demo = Course.objects.create(title="D", slug="d-pub", instructor=coach)
+    register_seeded([demo], niche="general")
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        assert _blockers(config, connection.tenant) >= {"look", "demo_cleanup", "first_course"}
+        body = client.get("/api/v1/admin/setup-status/").json()
+    assert set(body["publish_blockers"]) >= {"look", "demo_cleanup", "first_course"}
+    assert body["has_paid_content"] is False
+    demo.delete()
 
 
 def test_resigned_photo_url_does_not_count_as_page_edit(client, config):

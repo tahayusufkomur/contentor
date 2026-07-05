@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
@@ -36,6 +36,18 @@ export function BlocksTab({
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+
+  // Bring the selected block's row into view — e.g. when it was selected by
+  // clicking the block on the live canvas rather than here in the list.
+  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const selectedBlockId = store.selectedBlockId;
+  useEffect(() => {
+    if (!selectedBlockId) return;
+    rowRefs.current[selectedBlockId]?.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }, [selectedBlockId]);
 
   const remove = (id: string) => {
     store.removeBlock(pageKey, id);
@@ -80,6 +92,9 @@ export function BlocksTab({
         return (
           <div
             key={block.id}
+            ref={(el) => {
+              rowRefs.current[block.id] = el;
+            }}
             className={cn(
               "overflow-hidden rounded-lg border",
               open && "border-primary ring-1 ring-primary",
