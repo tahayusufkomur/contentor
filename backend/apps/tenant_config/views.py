@@ -10,7 +10,6 @@ from rest_framework.response import Response
 
 from apps.accounts.models import User
 from apps.billing.models import Payment
-from apps.core.monetization import can_monetize
 from apps.core.permissions import IsCoachOrOwner
 from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
@@ -38,7 +37,34 @@ class TenantConfigView(RetrieveUpdateAPIView):
         return config
 
     def perform_update(self, serializer):
-        serializer.save()
+        # Snapshot pre-save values for Setup Assistant auto-detection. The
+        # instance may come from cache; JSON-normalize for a fair comparison.
+        import json as _json
+
+        instance = serializer.instance
+        old_pages = _json.loads(_json.dumps(instance.pages or {}, sort_keys=True))
+        old_look = (instance.theme, instance.font_family, instance.logo_url, instance.logo_id)
+
+        config = serializer.save()
+
+        progress = dict(config.setup_progress or {})
+        edited = set(progress.get("pages_edited", []))
+        new_pages = _json.loads(_json.dumps(config.pages or {}, sort_keys=True))
+        for key, value in new_pages.items():
+            if old_pages.get(key) != value:
+                edited.add(key)
+        new_look = (config.theme, config.font_family, config.logo_url, config.logo_id)
+        changed = False
+        if sorted(edited) != progress.get("pages_edited", []):
+            progress["pages_edited"] = sorted(edited)
+            changed = True
+        if new_look != old_look and not progress.get("look_edited"):
+            progress["look_edited"] = True
+            changed = True
+        if changed:
+            config.setup_progress = progress
+            config.save(update_fields=["setup_progress"])
+
         cache_key = f"tenant:{connection.tenant.schema_name}:config"
         cache.delete(cache_key)
 
@@ -87,20 +113,27 @@ def admin_stats(_request):
 @api_view(["GET", "PATCH"])
 @permission_classes([IsCoachOrOwner])
 def setup_status(request):
-    """Aggregated go-live state for the /admin Setup Guide."""
+    """Setup Assistant state: per-item checklist + dismiss + manual overrides."""
+    from .setup_items import ALL_ITEM_KEYS, compute_setup_state
+
     config = TenantConfig.objects.first()
     if config is None:
         return Response(status=404)
-    if request.method == "PATCH" and "dismissed" in request.data:
-        config.setup_guide_dismissed = bool(request.data["dismissed"])
-        config.save(update_fields=["setup_guide_dismissed"])
-    tenant = connection.tenant
-    return Response(
-        {
-            "site_customized": config.onboarding_completed,
-            "has_content": Course.objects.exists() or DownloadFile.objects.exists(),
-            "payments_ready": can_monetize(tenant),
-            "published": bool(getattr(tenant, "is_published", False)),
-            "dismissed": config.setup_guide_dismissed,
-        }
-    )
+    if request.method == "PATCH":
+        if "dismissed" in request.data:
+            config.setup_guide_dismissed = bool(request.data["dismissed"])
+            config.save(update_fields=["setup_guide_dismissed"])
+        if "item" in request.data:
+            key = str(request.data["item"])
+            if key not in ALL_ITEM_KEYS:
+                return Response({"detail": "unknown_item"}, status=400)
+            progress = dict(config.setup_progress or {})
+            manual = dict(progress.get("manual", {}))
+            if bool(request.data.get("done")):
+                manual[key] = True
+            else:
+                manual.pop(key, None)
+            progress["manual"] = manual
+            config.setup_progress = progress
+            config.save(update_fields=["setup_progress"])
+    return Response(compute_setup_state(config, connection.tenant))
