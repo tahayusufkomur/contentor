@@ -21,6 +21,7 @@ import {
   LayoutList,
   Pencil,
   Eye,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TenantContext } from "@/hooks/use-tenant";
@@ -245,6 +246,18 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                       </button>
                     </div>
                   </div>
+
+                  {/* First-run: clear path from the builder to the setup guide */}
+                  {!initialConfig.onboarding_completed && (
+                    <a
+                      href="/admin"
+                      className="flex items-center justify-between border-b bg-primary/5 px-5 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+                      style={{ minWidth: SIDEBAR_WIDTH }}
+                    >
+                      Continue setup
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  )}
 
                   {/* Mode tabs — Site settings vs Page content */}
                   <div
