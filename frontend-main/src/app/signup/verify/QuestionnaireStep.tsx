@@ -13,12 +13,13 @@ import {
   Loader2,
   Music4,
   ScanFace,
+  Sparkles,
   Wind,
   type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { seedFromTemplate, skipTemplate } from "@/lib/api/onboarding";
+import { seedFromTemplate } from "@/lib/api/onboarding";
 import { ApiError } from "@/types/api";
 
 interface NicheOption {
@@ -40,6 +41,7 @@ const NICHE_OPTIONS: NicheOption[] = [
   { key: "belly_dance", Icon: Music4 },
   { key: "face_yoga", Icon: ScanFace },
   { key: "makeup", Icon: Brush },
+  { key: "general", Icon: Sparkles },
 ];
 
 const GOAL_OPTIONS: GoalOption[] = [
@@ -66,7 +68,7 @@ export function QuestionnaireStep({
   const [slide, setSlide] = useState(0);
   const [niche, setNiche] = useState<string | null>(null);
   const [goals, setGoals] = useState<Set<string>>(new Set());
-  const [busy, setBusy] = useState<"continue" | "skip" | null>(null);
+  const [busy, setBusy] = useState<"continue" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const toggleGoal = useCallback((key: string) => {
@@ -99,23 +101,6 @@ export function QuestionnaireStep({
     setError(null);
     try {
       await seedFromTemplate(token, niche, Array.from(goals));
-      onSubmitted();
-    } catch (err) {
-      setBusy(null);
-      setError(
-        err instanceof ApiError
-          ? ((err.data?.detail as string | undefined) ?? t("errors.generic"))
-          : t("errors.generic"),
-      );
-    }
-  };
-
-  const handleSkip = async () => {
-    if (busy) return;
-    setBusy("skip");
-    setError(null);
-    try {
-      await skipTemplate(token);
       onSubmitted();
     } catch (err) {
       setBusy(null);
@@ -161,15 +146,6 @@ export function QuestionnaireStep({
               />
             ))}
           </div>
-
-          <button
-            type="button"
-            onClick={handleSkip}
-            disabled={busy !== null}
-            className="text-[12.5px] font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-60"
-          >
-            {busy === "skip" ? t("skipping") : t("skipShort")}
-          </button>
         </header>
 
         {/* Slide track — fills available vertical space */}
