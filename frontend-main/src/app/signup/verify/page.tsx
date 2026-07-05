@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 import { QuestionnaireStep } from "./QuestionnaireStep";
+import { requestHandoff } from "@/lib/api/onboarding";
 
 type VerifyState =
   | "verifying"
@@ -45,6 +46,7 @@ export default function SignupVerifyPage() {
   const [error, setError] = useState("");
   const [slug, setSlug] = useState("");
   const [domain, setDomain] = useState("");
+  const [loginUrl, setLoginUrl] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const verifiedRef = useRef(false);
 
@@ -138,6 +140,17 @@ export default function SignupVerifyPage() {
       });
   }, [token, t, startPolling]);
 
+  // One-click login: when the studio is ready, swap the CTA for an
+  // authenticated URL. Falls back to the plain domain link on any failure
+  // (e.g. the signup token expired) — the lock screen's owner-login path
+  // remains the safety net.
+  useEffect(() => {
+    if (state !== "ready" || !token || loginUrl) return;
+    requestHandoff(token)
+      .then((d) => setLoginUrl(d.login_url))
+      .catch(() => {});
+  }, [state, token, loginUrl]);
+
   if (state === "verifying") {
     return (
       <AuthShell
@@ -198,7 +211,9 @@ export default function SignupVerifyPage() {
           <CheckCircle2 className="h-6 w-6" />
         </StateIcon>
         <Button asChild variant="brand" size="lg" className="mt-7 w-full">
-          <a href={`http://${domain}`}>{t("verify.openCta", { domain })}</a>
+          <a href={loginUrl ?? `http://${domain}`}>
+            {t("verify.openCta", { domain })}
+          </a>
         </Button>
       </AuthShell>
     );

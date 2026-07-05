@@ -83,3 +83,16 @@ export async function skipTemplate(
   }
   return res.json();
 }
+
+export async function requestHandoff(
+  token: string,
+): Promise<{ login_url: string }> {
+  const res = await fetch("/api/v1/onboarding/handoff/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+    credentials: "same-origin",
+  });
+  if (!res.ok) throw new Error("handoff_failed");
+  return res.json();
+}
