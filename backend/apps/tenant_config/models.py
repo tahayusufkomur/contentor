@@ -46,6 +46,9 @@ class TenantConfig(models.Model):
     )
     onboarding_completed = models.BooleanField(default=False)
     setup_guide_dismissed = models.BooleanField(default=False)
+    # Setup Assistant state: {"pages_edited": [...], "look_edited": bool,
+    # "manual": {item_key: True}}. Auto-detection is append-only.
+    setup_progress = models.JSONField(default=dict, blank=True)
     emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:
@@ -53,3 +56,27 @@ class TenantConfig(models.Model):
 
     def __str__(self):
         return self.brand_name
+
+
+class SeededObject(models.Model):
+    """Registry of objects created by the template seeder for this tenant.
+
+    Powers the "Demo" badges and the "Remove demo content" action. The
+    fingerprint answers "has the coach touched this?" without adding
+    updated_at columns across five apps.
+    """
+
+    content_type = models.ForeignKey(
+        "contenttypes.ContentType", on_delete=models.CASCADE, related_name="+"
+    )
+    object_id = models.CharField(max_length=64)  # str(pk); works for int and UUID pks
+    fingerprint = models.CharField(max_length=64)
+    niche = models.CharField(max_length=64, blank=True, default="")
+    seeded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        unique_together = [("content_type", "object_id")]
+
+    def __str__(self):
+        return f"{self.content_type.model}:{self.object_id}"
