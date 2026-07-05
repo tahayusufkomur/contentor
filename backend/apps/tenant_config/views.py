@@ -1,3 +1,4 @@
+import json as _json
 from decimal import Decimal
 
 from django.core.cache import cache
@@ -17,6 +18,29 @@ from apps.media.models import Photo
 
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
+
+
+def _strip_volatile_urls(node):
+    """Recursively null out presigned-URL fields before a content diff.
+
+    Builder image/video fields are ``{"url", "photo_id"}`` / ``{"url",
+    "video_id"}`` dicts (see ``tenant_config.serializers._sign_tree``): every
+    GET re-derives a fresh, uniquely-signed ``url`` from the durable asset id,
+    so the same underlying asset never serializes to the same ``url`` string
+    twice. Any dict carrying a ``photo_id`` or ``video_id`` key has its
+    ``url`` blanked out here so a pure re-sign round-trip (autosave with no
+    real edits) can't register as a content change. Only used for the
+    before/after comparison in ``perform_update`` — never mutates what's
+    actually persisted.
+    """
+    if isinstance(node, dict):
+        out = {k: _strip_volatile_urls(v) for k, v in node.items()}
+        if "photo_id" in out or "video_id" in out:
+            out["url"] = None
+        return out
+    if isinstance(node, list):
+        return [_strip_volatile_urls(item) for item in node]
+    return node
 
 
 class TenantConfigView(RetrieveUpdateAPIView):
@@ -39,10 +63,9 @@ class TenantConfigView(RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         # Snapshot pre-save values for Setup Assistant auto-detection. The
         # instance may come from cache; JSON-normalize for a fair comparison.
-        import json as _json
-
         instance = serializer.instance
         old_pages = _json.loads(_json.dumps(instance.pages or {}, sort_keys=True))
+        old_pages = _strip_volatile_urls(old_pages)
         old_look = (instance.theme, instance.font_family, instance.logo_url, instance.logo_id)
 
         config = serializer.save()
@@ -50,6 +73,7 @@ class TenantConfigView(RetrieveUpdateAPIView):
         progress = dict(config.setup_progress or {})
         edited = set(progress.get("pages_edited", []))
         new_pages = _json.loads(_json.dumps(config.pages or {}, sort_keys=True))
+        new_pages = _strip_volatile_urls(new_pages)
         for key, value in new_pages.items():
             if old_pages.get(key) != value:
                 edited.add(key)

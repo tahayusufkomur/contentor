@@ -131,3 +131,50 @@ def test_config_save_tracks_page_and_look_edits(client, config):
     config.refresh_from_db()
     assert config.setup_progress.get("pages_edited") == ["home"]  # about unchanged
     assert config.setup_progress.get("look_edited") is True
+
+
+def test_resigned_photo_url_does_not_count_as_page_edit(client, config):
+    """Reproduces the false-positive bug: opening the builder (no real edits)
+    triggers a debounced autosave that round-trips a photo block's ``url``
+    field. The serializer re-derives a fresh presigned URL for every GET
+    (see ``TenantConfigSerializer._sign_tree``), so the *same* ``photo_id``
+    serializes to a *different* ``url`` string on every read. If that
+    autosave PATCHes the re-signed url back verbatim, the naive before/after
+    JSON diff must not treat it as the coach having edited the page.
+    """
+    from django.core.cache import cache
+    from django.db import connection
+
+    hero_block = {
+        "id": "blk_hero",
+        "type": "hero",
+        "enabled": True,
+        "heading": "Welcome",
+        "subheading": "",
+        "ctaText": "",
+        "ctaHref": "",
+        "bgImage": {
+            "url": "https://s3.example.com/bucket/photo.jpg?X-Amz-Date=A",
+            "photo_id": "6c9b6e0e-1c2b-4a3d-9f2e-8b7a6c5d4e3f",
+        },
+    }
+    config.pages = {"home": {"blocks": [hero_block]}, "about": {"blocks": []}}
+    config.save(update_fields=["pages"])
+    cache.delete(f"tenant:{connection.tenant.schema_name}:config")
+
+    # Same photo_id, same everything else — only the presigned url string
+    # differs, simulating a re-signed URL round-tripped by an autosave.
+    resigned_block = {
+        **hero_block,
+        "bgImage": {
+            "url": "https://s3.example.com/bucket/photo.jpg?X-Amz-Date=B",
+            "photo_id": "6c9b6e0e-1c2b-4a3d-9f2e-8b7a6c5d4e3f",
+        },
+    }
+    client.patch(
+        "/api/v1/admin/config/",
+        {"pages": {"home": {"blocks": [resigned_block]}, "about": {"blocks": []}}},
+        format="json",
+    )
+    config.refresh_from_db()
+    assert config.setup_progress.get("pages_edited", []) == []  # no real content changed
