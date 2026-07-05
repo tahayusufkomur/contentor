@@ -490,10 +490,10 @@ function LiveClassesTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">
+                <div className="font-medium truncate">
                   {lc.title}
                   <DemoBadge type="live_classes" id={lc.id} />
-                </p>
+                </div>
                 {lc.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {lc.description}
@@ -875,10 +875,10 @@ function LiveStreamsTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">
+                <div className="font-medium truncate">
                   {ls.title}
                   <DemoBadge type="live_streams" id={ls.id} />
-                </p>
+                </div>
                 {ls.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {ls.description}
@@ -1239,10 +1239,10 @@ function ZoomClassesTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">
+                <div className="font-medium truncate">
                   {zc.title}
                   <DemoBadge type="zoom_classes" id={zc.id} />
-                </p>
+                </div>
                 {zc.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {zc.description}
@@ -1618,10 +1618,10 @@ function OnsiteEventsTab() {
             </TableCell>
             <TableCell>
               <div className="min-w-0">
-                <p className="font-medium truncate">
+                <div className="font-medium truncate">
                   {ev.title}
                   <DemoBadge type="onsite_events" id={ev.id} />
-                </p>
+                </div>
                 {ev.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {ev.description}

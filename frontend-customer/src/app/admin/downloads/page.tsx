@@ -283,9 +283,7 @@ export default function AdminDownloadsPage() {
                     setForm({
                       ...form,
                       pricing_type: e.target.value as
-                        | "free"
-                        | "paid"
-                        | "subscription",
+                        "free" | "paid" | "subscription",
                     })
                   }
                 >
@@ -420,10 +418,10 @@ export default function AdminDownloadsPage() {
                 )}
               </div>
               <div className="p-3 space-y-2">
-                <p className="font-medium truncate">
+                <div className="font-medium truncate">
                   {dl.title}
                   <DemoBadge type="downloads" id={dl.id} />
-                </p>
+                </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={ACCESS_BADGE_VARIANT[dl.pricing_type]}>
                     {dl.pricing_type === "free"

@@ -265,10 +265,10 @@ export default function PhotosPage() {
               </div>
             )}
             <div className="p-3 space-y-2">
-              <p className="font-medium truncate">
+              <div className="font-medium truncate">
                 {photo.title || "Untitled"}
                 <DemoBadge type="photos" id={photo.id} />
-              </p>
+              </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{formatFileSize(photo.file_size)}</span>
                 <span>{formatDate(photo.created_at)}</span>

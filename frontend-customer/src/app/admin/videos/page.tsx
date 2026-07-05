@@ -521,10 +521,10 @@ export default function VideosPage() {
             )}
             <div className="p-3 space-y-2">
               <div className="min-w-0">
-                <p className="font-medium truncate">
+                <div className="font-medium truncate">
                   {video.title}
                   <DemoBadge type="videos" id={video.id} />
-                </p>
+                </div>
                 {video.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {video.description}
@@ -548,10 +548,10 @@ export default function VideosPage() {
           <>
             <TableCell className="font-medium">
               <div className="min-w-0">
-                <p className="truncate">
+                <div className="truncate">
                   {video.title}
                   <DemoBadge type="videos" id={video.id} />
-                </p>
+                </div>
                 {video.description && (
                   <p className="text-xs text-muted-foreground truncate">
                     {video.description}

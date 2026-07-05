@@ -184,10 +184,10 @@ export default function AdminCoursesPage() {
               </div>
             )}
             <div className="p-3 space-y-2">
-              <p className="font-medium truncate">
+              <div className="font-medium truncate">
                 {course.title}
                 <DemoBadge type="courses" id={course.id} />
-              </p>
+              </div>
               <div className="flex items-center gap-2">
                 <Badge variant={course.is_published ? "success" : "secondary"}>
                   {course.is_published ? "Published" : "Draft"}
