@@ -62,6 +62,111 @@
     "deleteError": "Silinemedi. Lütfen tekrar deneyin.",
     "fillFields": "Lütfen tüm alanları doldurun."
   },
+  "setup": {
+    "title": "Stüdyonu yayına hazırla",
+    "progressLabel": "{done} / {total} hazır",
+    "bubbleLabel": "Kurulum rehberi",
+    "openFull": "Kurulum rehberini aç",
+    "dismiss": "Rehberi gizle",
+    "show": "Kurulum rehberini göster",
+    "niceToHave": "Ekstra özellikler",
+    "markDone": "Tamamlandı olarak işaretle",
+    "markUndone": "Tamamlanmamış olarak işaretle",
+    "celebrateTitle": "Yayında varsın! 🎉",
+    "celebrateBody": "Her şey hazır. Stüdyonunu öğrencilerinle paylaş!",
+    "copyLink": "Stüdyo bağlantısını kopyala",
+    "copied": "Bağlantı kopyalandı!",
+    "groups": {
+      "site": "Senin siteni",
+      "content": "Senin içeriğin",
+      "business": "Ödeme al",
+      "live": "Yayına çık",
+      "extras": "Ekstra özellikler"
+    },
+    "items": {
+      "page_home": {
+        "title": "Anasayfa",
+        "description": "Ziyaretçilerin göreceği ilk şeyi senin hale getir."
+      },
+      "page_about": {
+        "title": "Hakkında sayfası",
+        "description": "Kendi hikâyeni kendi sözlerinle anlat."
+      },
+      "page_courses": {
+        "title": "Programlar sayfası",
+        "description": "Programlarının nasıl sunulduğunu kontrol et."
+      },
+      "page_pricing": {
+        "title": "Fiyatlandırma sayfası",
+        "description": "Öğrencilerinizin göreceği planları incele."
+      },
+      "page_faq": {
+        "title": "SSS sayfası",
+        "description": "Öğrencilerinin en çok sorduğu soruları yanıtla."
+      },
+      "page_contact": {
+        "title": "İletişim sayfası",
+        "description": "Öğrencilerin seni bulabilmesini sağla."
+      },
+      "look": {
+        "title": "Görünüşünü seç",
+        "description": "Renklerini, yazı tipini ve logonu belirle."
+      },
+      "first_course": {
+        "title": "İlk kursunu oluştur",
+        "description": "Örnek kursları senin kurslarınla değiştir."
+      },
+      "demo_cleanup": {
+        "title": "Örnek içeriği kaldır",
+        "description": "Örnek kurslar, fotoğraflar ve videoları temizle."
+      },
+      "payouts": {
+        "title": "Ödeme ayarlarını yap",
+        "description": "Öğrencilerin senden satın alabilmesi için ödeme sistemini bağla."
+      },
+      "publish": {
+        "title": "Stüdyonunu yayınla",
+        "description": "Dünyaya açılmaya hazır olduğunda ana anahtarı çevir."
+      },
+      "first_download": {
+        "title": "İndirme ekle",
+        "description": "Bir çalışma sayfası, plan veya rehber paylaş."
+      },
+      "first_live": {
+        "title": "Canlı oturum planla",
+        "description": "İlk dersinizi takvime ekle."
+      },
+      "first_announcement": {
+        "title": "Duyuru gönder",
+        "description": "Öğrencilerine selam ver."
+      },
+      "share_site": {
+        "title": "Stüdyonunu paylaş",
+        "description": "Bağlantını kopyala ve öğrencilerine gönder."
+      },
+      "studio_email": {
+        "title": "Stüdyo e-posta adresini seç",
+        "description": "Öğrenci e-postaları için kendi adresini al."
+      }
+    },
+    "demoBadge": "Örnek",
+    "erase": {
+      "title": "Örnek içerik kaldırılsın mı?",
+      "body": "Bu, stüdyonla birlikte gelen örnek içeriği kaldırır:",
+      "countCourses": "{count} kurs",
+      "countDownloads": "{count} indirme",
+      "countLive": "{count} canlı oturum",
+      "countPlans": "{count} plan",
+      "countBundles": "{count} paket",
+      "countVideos": "{count} video",
+      "countPhotos": "{count} fotoğraf",
+      "keepNote": "Düzenlediğin hiçbir şey silinmez.",
+      "confirm": "Örnek içeriği kaldır",
+      "cancel": "İptal",
+      "success": "Örnek içerik kaldırıldı",
+      "error": "Bir şeyler yanlış gitti — hiçbir şey kaldırılmadı. Lütfen tekrar deneyin."
+    }
+  },
   "settings": {
     "title": "Ayarlar",
     "languageAndRegion": "Dil ve bölge",

@@ -62,6 +62,111 @@
     "deleteError": "Could not delete. Please try again.",
     "fillFields": "Please fill in all fields."
   },
+  "setup": {
+    "title": "Get your studio live",
+    "progressLabel": "{done} of {total} done",
+    "bubbleLabel": "Setup guide",
+    "openFull": "Open the setup guide",
+    "dismiss": "Hide the guide",
+    "show": "Show setup guide",
+    "niceToHave": "Nice to have",
+    "markDone": "Mark as done",
+    "markUndone": "Mark as not done",
+    "celebrateTitle": "You're live! 🎉",
+    "celebrateBody": "Everything is set up. Share your site with your students!",
+    "copyLink": "Copy your site link",
+    "copied": "Link copied!",
+    "groups": {
+      "site": "Your site",
+      "content": "Your content",
+      "business": "Getting paid",
+      "live": "Go live",
+      "extras": "Nice to have"
+    },
+    "items": {
+      "page_home": {
+        "title": "Home page",
+        "description": "Make the first thing visitors see yours."
+      },
+      "page_about": {
+        "title": "About page",
+        "description": "Tell your story in your own words."
+      },
+      "page_courses": {
+        "title": "Programs page",
+        "description": "Check how your programs are presented."
+      },
+      "page_pricing": {
+        "title": "Pricing page",
+        "description": "Review the plans your students will see."
+      },
+      "page_faq": {
+        "title": "FAQ page",
+        "description": "Answer the questions students ask most."
+      },
+      "page_contact": {
+        "title": "Contact page",
+        "description": "Make sure students can reach you."
+      },
+      "look": {
+        "title": "Pick your look",
+        "description": "Choose your colors, font and logo."
+      },
+      "first_course": {
+        "title": "Create your first course",
+        "description": "Replace the examples with something of your own."
+      },
+      "demo_cleanup": {
+        "title": "Remove the demo content",
+        "description": "Clear the example courses, photos and videos."
+      },
+      "payouts": {
+        "title": "Set up how you get paid",
+        "description": "Connect payouts so students can buy from you."
+      },
+      "publish": {
+        "title": "Publish your site",
+        "description": "Flip the switch when you are ready for the world."
+      },
+      "first_download": {
+        "title": "Add a download",
+        "description": "Share a worksheet, plan or guide."
+      },
+      "first_live": {
+        "title": "Schedule a live session",
+        "description": "Put your first class on the calendar."
+      },
+      "first_announcement": {
+        "title": "Send an announcement",
+        "description": "Say hello to your students."
+      },
+      "share_site": {
+        "title": "Share your site",
+        "description": "Copy your link and send it to your students."
+      },
+      "studio_email": {
+        "title": "Pick your studio email address",
+        "description": "Get your own address for student mail."
+      }
+    },
+    "demoBadge": "Demo",
+    "erase": {
+      "title": "Remove demo content?",
+      "body": "This removes the example content that came with your site:",
+      "countCourses": "{count} courses",
+      "countDownloads": "{count} downloads",
+      "countLive": "{count} live sessions",
+      "countPlans": "{count} plans",
+      "countBundles": "{count} bundles",
+      "countVideos": "{count} videos",
+      "countPhotos": "{count} photos",
+      "keepNote": "Anything you've edited will be kept.",
+      "confirm": "Remove demo content",
+      "cancel": "Cancel",
+      "success": "Demo content removed",
+      "error": "Something went wrong — nothing was removed. Please try again."
+    }
+  },
   "settings": {
     "title": "Settings",
     "languageAndRegion": "Language & region",
