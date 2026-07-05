@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { clientFetch } from '@/lib/api-client'
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { clientFetch } from "@/lib/api-client";
 import {
   BookOpen,
   Download,
@@ -14,70 +14,74 @@ import {
   Upload,
   Users,
   DollarSign,
-} from 'lucide-react'
-import { UsageAdoptionCard } from '@/components/admin/usage-adoption-card'
-import { PublishCard } from '@/components/admin/publish-card'
+} from "lucide-react";
+import { UsageAdoptionCard } from "@/components/admin/usage-adoption-card";
+import { PublishCard } from "@/components/admin/publish-card";
+import { SetupGuideCard } from "@/components/admin/setup-guide-card";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 interface DashboardStats {
-  students: number
-  courses: number
-  revenue: number
-  storage_used: string
+  students: number;
+  courses: number;
+  revenue: number;
+  storage_used: string;
 }
 
 export default function AdminDashboard() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     students: 0,
     courses: 0,
     revenue: 0,
-    storage_used: '0 MB',
-  })
+    storage_used: "0 MB",
+  });
 
   useEffect(() => {
     // Attempt to fetch stats; if endpoint doesn't exist yet, use defaults
-    clientFetch<DashboardStats>('/api/v1/admin/stats/')
+    clientFetch<DashboardStats>("/api/v1/admin/stats/")
       .then(setStats)
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   const statCards = [
     {
-      title: 'Students',
+      title: "Students",
       value: stats.students.toLocaleString(),
       icon: Users,
-      description: 'Total enrolled',
+      description: "Total enrolled",
     },
     {
-      title: 'Courses',
+      title: "Courses",
       value: stats.courses.toLocaleString(),
       icon: BookOpen,
-      description: 'Published & draft',
+      description: "Published & draft",
     },
     {
-      title: 'Revenue',
+      title: "Revenue",
       value: `$${stats.revenue.toLocaleString()}`,
       icon: DollarSign,
-      description: 'All time',
+      description: "All time",
     },
     {
-      title: 'Storage',
+      title: "Storage",
       value: stats.storage_used,
       icon: HardDrive,
-      description: 'Used',
+      description: "Used",
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back. Here is an overview of your platform.</p>
+        <p className="text-muted-foreground">
+          Welcome back. Here is an overview of your platform.
+        </p>
       </div>
 
+      <SetupGuideCard />
       <PublishCard />
 
       {/* Stat cards */}
@@ -105,7 +109,9 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -135,5 +141,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
