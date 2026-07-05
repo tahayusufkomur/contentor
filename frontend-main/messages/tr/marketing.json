@@ -1,15 +1,15 @@
 {
   "hero": {
     "badge": "Ücretsiz plan mevcut — kredi kartı gerekmez",
-    "title1": "Uzmanlığınızı",
-    "title2": "büyüyen bir online işletmeye dönüştürün",
-    "subtitle": "Markalı kurs platformunuzu dakikalar içinde başlatın. Kurslar satın, 10.000 öğrenciye kadar canlı dersler verin ve düzenli gelir elde edin — hiç teknik bilgi gerekmeden.",
-    "ctaPrimary": "Bugün ücretsiz başla",
-    "ctaSecondary": "2 dakikalık demoyu izle",
-    "trustNote": "Sonsuza dek ücretsiz plan. Kredi kartı yok. 5 dakikadan kısa sürede kurulum."
+    "title1": "Kendi kurs platformunuz.",
+    "title2": "Sizin markanız. Sizin kazancınız.",
+    "subtitle": "Kurslar, canlı dersler ve ödemeler — hepsi kendi adınız altında; öğrencileriniz bizi asla görmez. Dakikalar içinde yayına girin; ödemeler doğrudan kendi Stripe hesabınıza gider.",
+    "ctaPrimary": "Platformunu ücretsiz oluştur",
+    "ctaSecondary": "Canlı demoları keşfet",
+    "trustNote": "Sonsuza dek ücretsiz plan. Kredi kartı yok. Öğrenciler, içerik ve gelir tamamen sizin."
   },
   "socialProof": {
-    "tagline": "Yoga eğitmenleri, fitness koçları, müzik öğretmenleri, dans akademileri ve 500'den fazla içerik üreticisi tarafından tercih ediliyor",
+    "tagline": "Yoga eğitmenleri, fitness koçları, müzik öğretmenleri, dans akademileri ve online ders veren tüm koçlar için tasarlandı",
     "categories": {
       "fitness": "Fitness",
       "music": "Müzik",
@@ -20,16 +20,16 @@
   },
   "stats": {
     "earned": {
-      "value": "$1M+",
-      "label": "Contentor üreticileri tarafından kazanıldı"
+      "value": "$19",
+      "label": "Eski platformlarda $149+ tutan her şey, ayda bu fiyata"
     },
     "students": {
-      "value": "10.000+",
-      "label": "Tek bir canlı derste öğrenci"
+      "value": "%100",
+      "label": "Sizin markanız — öğrenciler Contentor'u asla görmez"
     },
     "launch": {
       "value": "5 dk",
-      "label": "Ortalama başlatma süresi"
+      "label": "Kayıttan yayındaki platforma"
     }
   },
   "features": {
@@ -50,16 +50,16 @@
           "video": "İlerleme takipli video dersler",
           "modular": "Modüler kurs yapısı",
           "enrollment": "Öğrenci kayıt yönetimi",
-          "drip": "Zamanlı yayın ve ek satış"
+          "drip": "Tek seferlik fiyat veya abonelik"
         }
       },
       "live": {
-        "title": "10.000 öğrenciye kadar canlı dersler",
-        "description": "Her ölçekte kitlenizle gerçek zamanlı oturumlar yapın. Öğretin, etkileşin ve kaydedin — hepsi tek yerden.",
+        "title": "Canlı dersler, sohbet ve kayıtlar",
+        "description": "Öğrencilerinizle gerçek zamanlı oturumlar yapın. Öğretin, etkileşin ve kaydedin — hepsi tek yerden.",
         "points": {
           "webrtc": "WebRTC video konferans",
           "chat": "Oturum sırasında canlı sohbet",
-          "recording": "Buluta otomatik kayıt",
+          "recording": "Oturum kayıtları",
           "scheduling": "Zamanlama ve hatırlatmalar"
         }
       },
@@ -75,35 +75,36 @@
       },
       "autopilot": {
         "title": "Otomatik pilot gelir",
-        "description": "Tekrarlayan görevleri otomatikleştirin ve düzenli kazanın. E-posta dizilerinden abonelik faturalamasına kadar sistem sizin için çalışsın.",
+        "description": "Tekrarlayan görevleri otomatikleştirin ve düzenli kazanın. E-posta kampanyalarından abonelik faturalamasına kadar sistem sizin için çalışsın.",
         "points": {
-          "email": "Otomatik e-posta dizileri",
+          "email": "Öğrencilerinize e-posta kampanyaları",
           "subscriptions": "Yinelenen abonelik faturalandırması",
-          "stripe": "Stripe ile ödeme işleme",
-          "automation": "Öğrenci ilerleme otomasyonu"
+          "stripe": "Ödemeler doğrudan Stripe hesabınıza",
+          "automation": "Öğrenci ilerleme takibi"
         }
       }
     }
   },
-  "testimonials": {
-    "title": "İçerik üreticileri Contentor'u seviyor",
-    "items": {
-      "sarah": {
-        "quote": "Contentor, yoga kurs platformumu başlatmamı inanılmaz kolaylaştırdı. Bir hafta içinde kazanmaya başladım.",
-        "name": "Sarah Chen",
-        "role": "Yoga Eğitmeni"
+  "foundingCreators": {
+    "eyebrow": "Kurucu üreticiler",
+    "title": "İlk 20 koçumuzdan biri olun",
+    "subtitle": "Contentor'u küçük bir kurucu üretici grubuyla başlatıyoruz — kurulumunuzu bizzat kurucuyla birlikte, birebir yaparsınız.",
+    "perks": {
+      "concierge": {
+        "title": "Platformunuzu birlikte kuruyoruz",
+        "description": "Birebir görüşmede sitenizi, kurslarınızı ve ödemelerinizi birlikte ayarlıyoruz — siz içeriği getirin, gerisi bizde."
       },
-      "marcus": {
-        "quote": "Canlı ders özelliği işleri değiştirdi. Aynı anda 500'den fazla öğrenciye hiçbir teknik sorun yaşamadan ders veriyorum.",
-        "name": "Marcus Johnson",
-        "role": "Fitness Koçu"
+      "discount": {
+        "title": "12 ay boyunca %50 indirim",
+        "description": "Starter veya Pro planında kurucu fiyatını ilk yılınız boyunca sabitleyin."
       },
-      "priya": {
-        "quote": "Pazaryeri yerine kendi markalı platformuma sahip olmak, işim için her şeyi değiştirdi.",
-        "name": "Priya Sharma",
-        "role": "Dans Akademisi"
+      "featured": {
+        "title": "Bu sayfada yer alın",
+        "description": "Okulunuz kurucu üretici olarak burada sergilenir — her ziyaretçiye ücretsiz tanıtım."
       }
-    }
+    },
+    "cta": "Kurucu üretici yerini ayırt",
+    "note": "20 koçla sınırlı. Dolunca kapanır."
   },
   "howItWorks": {
     "title": "Dakikalar içinde yayında",
@@ -128,7 +129,7 @@
     "items": {
       "freePlan": {
         "q": "Gerçekten ücretsiz bir plan var mı?",
-        "a": "Evet! Ücretsiz planımız sonsuza dek ücretsiz — kredi kartı gerekmez. 50 öğrenciye ve 3 kursa kadar destek alabilirsiniz. Büyüdükçe istediğiniz zaman yükseltebilirsiniz."
+        "a": "Evet! Ücretsiz planımız sonsuza dek ücretsiz — kredi kartı gerekmez. 10 öğrenciye kadar ve 1 GB depolama içerir: platformunuzu kurup küçük bir grupla denemek için yeterli. Satış ve canlı dersler ücretli planlarla açılır — büyüdükçe istediğiniz zaman yükseltin."
       },
       "technical": {
         "q": "Teknik bilgiye ihtiyacım var mı?",
@@ -136,19 +137,19 @@
       },
       "customDomain": {
         "q": "Kendi alan adımı kullanabilir miyim?",
-        "a": "Kesinlikle. Başlangıç planı ve üzerinde kendi özel alan adınızı bağlayabilirsiniz. Öğrencileriniz Contentor markasını asla görmez."
+        "a": "Evet — Pro planda kendi özel alan adınızı bağlayabilirsiniz. Üstelik tüm ücretli planlarda platformunuz tamamen kendi markanızla çalışır: öğrencileriniz Contentor'u asla görmez."
       },
       "payments": {
         "q": "Ödemeler nasıl çalışır?",
-        "a": "Doğrudan Stripe ile entegre çalışıyoruz. Ödemeler doğrudan hesabınıza geçer — paranızı asla tutmayız. Tek seferlik kurslar veya yinelenen abonelikler satabilirsiniz."
+        "a": "Doğrudan Stripe ile entegre çalışıyoruz. Ödemeler doğrudan kendi Stripe hesabınıza geçer — paranızı asla tutmayız. Tek seferlik kurslar veya yinelenen abonelikler satabilirsiniz."
       },
       "liveClasses": {
-        "q": "Canlı ders limitleri nasıl?",
-        "a": "Pro planımız tek bir canlı oturumda 10.000'e kadar eş zamanlı öğrenciyi destekler. WebRTC tabanlı video, dahili sohbet ve otomatik kayıt ile gelir."
+        "q": "Canlı dersler nasıl çalışır?",
+        "a": "Canlı dersler tüm ücretli planlara dahildir — WebRTC video, dahili sohbet, zamanlama ve hatırlatmalar. Starter ayda 100 yayın saati, Pro 500 yayın saati içerir."
       },
       "migration": {
         "q": "Başka bir platformdan taşınabilir miyim?",
-        "a": "Evet. Öğrenci listenizi CSV ile içe aktarabilir, kurslarınızı kolayca yeniden oluşturabilirsiniz. Destek ekibimiz Pro plan kullanıcılarına taşınma sürecinde yardımcı olur."
+        "a": "Evet. Çoğu koç kurslarını oluşturucumuzla bir günde yeniden kurup öğrencilerini e-postayla davet ediyor. Kurucu üretici olarak taşınmanızda size bizzat ve ücretsiz yardım ediyoruz."
       },
       "contract": {
         "q": "Uzun vadeli bir sözleşme var mı?",
@@ -158,7 +159,7 @@
   },
   "finalCta": {
     "title": "Kitleniz sizi bekliyor",
-    "subtitle": "Contentor'da kazanan 500+ üreticiye katılın. Ücretsiz başla — hazır olunca yükselt.",
+    "subtitle": "Platformunuzu bugün ücretsiz başlatın — ve 20 kurucu üretici yerinden birini kapın.",
     "ctaPrimary": "Bugün ücretsiz başla",
     "ctaSecondary": "Fiyatlara bak",
     "trustNote": "Sonsuza dek ücretsiz plan. Kredi kartı gerekmez."
