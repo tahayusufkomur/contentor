@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface CounterProps {
-  /** Final string, e.g. "$1M+", "10,000+", "5 min". */
+  /** Final string, e.g. "$19", "100%", "5 min". */
   value: string
   /** Animation duration in ms. */
   duration?: number
