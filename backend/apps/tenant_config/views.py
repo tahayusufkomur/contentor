@@ -20,6 +20,24 @@ from .models import TenantConfig
 from .serializers import TenantConfigSerializer
 
 
+def _logo_signal(config):
+    """A stable value to diff for "did the coach's logo change" purposes.
+
+    ``TenantConfigSerializer.to_representation`` overwrites ``logo_url`` with
+    a freshly presigned URL derived from ``logo_id`` whenever a ``logo`` FK is
+    set — so once that FK is populated, ``logo_url`` churns on every read and
+    a round-tripped autosave would false-positive a diff (same bug class as
+    the ``pages_edited`` fix above). Prefer the stable ``logo_id`` in that
+    case. But ``logo_id`` is a read-only field on the serializer today — the
+    only currently-live write path for a coach's logo is the raw ``logo_url``
+    CharField (set directly by the logo uploader) — so when no FK governs it,
+    fall back to comparing ``logo_url`` itself, which is otherwise never
+    silently rewritten (``sign_if_s3_key`` leaves already-``http`` URLs
+    untouched).
+    """
+    return config.logo_id or config.logo_url
+
+
 def _strip_volatile_urls(node):
     """Recursively null out presigned-URL fields before a content diff.
 
@@ -66,7 +84,7 @@ class TenantConfigView(RetrieveUpdateAPIView):
         instance = serializer.instance
         old_pages = _json.loads(_json.dumps(instance.pages or {}, sort_keys=True))
         old_pages = _strip_volatile_urls(old_pages)
-        old_look = (instance.theme, instance.font_family, instance.logo_url, instance.logo_id)
+        old_look = (instance.theme, instance.font_family, _logo_signal(instance))
 
         config = serializer.save()
 
@@ -77,7 +95,7 @@ class TenantConfigView(RetrieveUpdateAPIView):
         for key, value in new_pages.items():
             if old_pages.get(key) != value:
                 edited.add(key)
-        new_look = (config.theme, config.font_family, config.logo_url, config.logo_id)
+        new_look = (config.theme, config.font_family, _logo_signal(config))
         changed = False
         if sorted(edited) != progress.get("pages_edited", []):
             progress["pages_edited"] = sorted(edited)

@@ -133,6 +133,71 @@ def test_config_save_tracks_page_and_look_edits(client, config):
     assert config.setup_progress.get("look_edited") is True
 
 
+def test_resigned_logo_url_does_not_count_as_look_edit(client, config):
+    """Sibling bug to the pages-edited false positive. ``logo_id`` (the FK to
+    ``media.Photo``) is a stable identifier, but it's a read-only field on
+    ``TenantConfigSerializer`` today — set only out-of-band (e.g. Django
+    admin), never through this coach-facing endpoint. Whenever it IS set,
+    ``TenantConfigSerializer.to_representation`` overwrites ``logo_url`` with
+    a freshly presigned URL derived from it on every read — so a debounced
+    autosave that round-trips that re-signed url for the *same* ``logo_id``
+    must not register as a real edit. Because of the
+    ``not progress.get("look_edited")`` latch, a single false positive would
+    mark "Pick your look" done forever.
+    """
+    from django.core.cache import cache
+    from django.db import connection
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="logos/coach-logo.png")
+    config.logo = photo
+    config.logo_url = "https://s3.example.com/bucket/coach-logo.png?X-Amz-Date=A"
+    config.save(update_fields=["logo", "logo_url"])
+    cache.delete(f"tenant:{connection.tenant.schema_name}:config")
+
+    # logo_id is read-only on the serializer (ignored here) — only the
+    # presigned logo_url string differs, simulating a re-signed URL
+    # round-tripped by an autosave while the underlying photo (logo FK) is
+    # unchanged.
+    client.patch(
+        "/api/v1/admin/config/",
+        {
+            "logo_id": str(photo.pk),
+            "logo_url": "https://s3.example.com/bucket/coach-logo.png?X-Amz-Date=B",
+        },
+        format="json",
+    )
+    config.refresh_from_db()
+    assert config.logo_id == photo.pk  # confirms the FK really is unchanged
+    assert config.setup_progress.get("look_edited") is not True
+
+
+def test_real_logo_url_change_still_marks_look_edited(client, config):
+    """``logo_id`` being read-only means the *only* currently-live write path
+    for a coach picking a logo is the raw ``logo_url`` CharField (set
+    directly by the logo uploader — see ``LogoUploader.tsx``). With no
+    ``logo`` FK set, ``logo_url`` is never silently rewritten
+    (``sign_if_s3_key`` leaves already-``http`` URLs untouched), so a genuine
+    change there must still flip ``look_edited`` — the fix must not suppress
+    real edits, only the FK-backed re-signed-url false positive.
+    """
+    from django.core.cache import cache
+    from django.db import connection
+
+    config.logo_url = "https://s3.example.com/bucket/old-logo.png?X-Amz-Date=A"
+    config.save(update_fields=["logo_url"])
+    cache.delete(f"tenant:{connection.tenant.schema_name}:config")
+
+    client.patch(
+        "/api/v1/admin/config/",
+        {"logo_url": "https://s3.example.com/bucket/new-logo.png?X-Amz-Date=A"},
+        format="json",
+    )
+    config.refresh_from_db()
+    assert config.setup_progress.get("look_edited") is True
+
+
 def test_resigned_photo_url_does_not_count_as_page_edit(client, config):
     """Reproduces the false-positive bug: opening the builder (no real edits)
     triggers a debounced autosave that round-trips a photo block's ``url``
