@@ -3,10 +3,18 @@ export interface NavLink {
   href: string;
 }
 
+export type NavbarLayout = "classic" | "centered" | "split" | "minimal" | "pill";
+
 export interface NavbarConfig {
   links: NavLink[];
   cta: { text: string; href: string } | null;
   show_login: boolean;
+  /** Desktop arrangement preset. Missing/unknown renders as "classic". */
+  layout?: NavbarLayout;
+  /** Transparent over the home-page hero, solid on scroll. Ignored for "pill". */
+  transparent_over_hero?: boolean;
+  /** Show the "Install app" link (default true). */
+  show_install?: boolean;
 }
 
 export interface LandingHero {
