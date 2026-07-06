@@ -33,6 +33,7 @@ const PAGE_TARGETS: LinkTarget[] = [
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
   { label: "Calendar", href: "/calendar" },
+  { label: "Events", href: "/events" },
   { label: "Store", href: "/store" },
 ];
 
