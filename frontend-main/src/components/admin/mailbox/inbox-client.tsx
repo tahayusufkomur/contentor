@@ -154,6 +154,8 @@ export default function InboxClient() {
       [
         c.counterparty_name,
         c.counterparty_email,
+        c.student_name,
+        c.student_email,
         c.subject,
         c.last_message_preview,
       ]

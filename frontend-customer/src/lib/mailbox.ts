@@ -16,7 +16,8 @@ export interface ConversationListItem {
   subject: string;
   counterparty_email: string;
   counterparty_name: string;
-  student: number | null;
+  student_email: string;
+  student_name: string;
   last_message_at: string | null;
   unread_count: number;
   is_archived: boolean;

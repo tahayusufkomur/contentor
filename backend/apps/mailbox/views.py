@@ -42,7 +42,7 @@ _LOCAL_PART_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
 
 
 def _conversation_list(request):
-    qs = Conversation.objects.prefetch_related("messages__attachments")
+    qs = Conversation.objects.select_related("student").prefetch_related("messages__attachments")
     return Response(ConversationSerializer(qs, many=True).data)
 
 

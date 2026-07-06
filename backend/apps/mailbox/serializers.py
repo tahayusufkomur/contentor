@@ -23,6 +23,8 @@ class MessageAttachmentSerializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     last_message_preview = serializers.SerializerMethodField()
     last_message_has_attachments = serializers.SerializerMethodField()
+    student_email = serializers.SerializerMethodField()
+    student_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
@@ -31,7 +33,8 @@ class ConversationSerializer(serializers.ModelSerializer):
             "subject",
             "counterparty_email",
             "counterparty_name",
-            "student",
+            "student_email",
+            "student_name",
             "last_message_at",
             "unread_count",
             "is_archived",
@@ -55,6 +58,12 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_last_message_has_attachments(self, obj) -> bool:
         m = self._last_message(obj)
         return bool(m and len(m.attachments.all()) > 0)
+
+    def get_student_email(self, obj) -> str:
+        return obj.student.email if obj.student_id else ""
+
+    def get_student_name(self, obj) -> str:
+        return obj.student.name if obj.student_id else ""
 
 
 class MessageSerializer(serializers.ModelSerializer):
