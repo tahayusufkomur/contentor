@@ -30,6 +30,9 @@ SHARED_APPS = [
     # Platform-level email campaigns (public schema; superadmin → coaches).
     "apps.platform_email",
     "apps.domains",
+    # Coach mailbox models also live in the public schema — those public rows
+    # are the superadmin platform inbox. Still tenant-listed below for coaches.
+    "apps.mailbox",
 ]
 
 TENANT_APPS = [
@@ -176,6 +179,8 @@ GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "")
 # --- Resend ---
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
+# Fixed From address for the superadmin platform inbox (public-schema mailbox).
+PLATFORM_SUPPORT_FROM = os.environ.get("PLATFORM_SUPPORT_FROM", "support@contentor.app")
 
 # --- EmailCraft ---
 EMAILCRAFT_TOKEN = os.environ.get("EMAILCRAFT_TOKEN", "")

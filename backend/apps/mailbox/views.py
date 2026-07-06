@@ -4,7 +4,7 @@ import re
 from django.conf import settings as django_settings
 from django.db import IntegrityError, connection
 from django.views.decorators.csrf import csrf_exempt
-from django_tenants.utils import tenant_context
+from django_tenants.utils import get_public_schema_name, schema_context, tenant_context
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -16,7 +16,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core.permissions import IsCoachOrOwner
+from apps.core.permissions import IsCoachOrOwner, IsSuperUser
 from apps.domains.cloudflare import get_cloudflare
 from apps.domains.models import (
     RESERVED_MAILBOX_LOCAL_PARTS,
@@ -41,16 +41,24 @@ from .signing import verify_inbound_signature
 _LOCAL_PART_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
 
 
-@api_view(["GET"])
-@permission_classes([IsCoachOrOwner])
-def conversation_list(request):
+def _conversation_list(request):
     qs = Conversation.objects.prefetch_related("messages__attachments")
     return Response(ConversationSerializer(qs, many=True).data)
 
 
-@api_view(["GET", "PATCH", "DELETE"])
+@api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
-def conversation_detail(request, pk):
+def conversation_list(request):
+    return _conversation_list(request)
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_conversation_list(request):
+    return _conversation_list(request)
+
+
+def _conversation_detail(request, pk):
     try:
         conv = Conversation.objects.get(pk=pk)
     except Conversation.DoesNotExist:
@@ -78,9 +86,19 @@ def conversation_detail(request, pk):
     return Response(ConversationDetailSerializer(conv).data)
 
 
-@api_view(["POST"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsCoachOrOwner])
-def compose(request):
+def conversation_detail(request, pk):
+    return _conversation_detail(request, pk)
+
+
+@api_view(["GET", "PATCH", "DELETE"])
+@permission_classes([IsSuperUser])
+def platform_conversation_detail(request, pk):
+    return _conversation_detail(request, pk)
+
+
+def _compose(request):
     serializer = ComposeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
@@ -103,7 +121,17 @@ def compose(request):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
-def reply(request, pk):
+def compose(request):
+    return _compose(request)
+
+
+@api_view(["POST"])
+@permission_classes([IsSuperUser])
+def platform_compose(request):
+    return _compose(request)
+
+
+def _reply(request, pk):
     try:
         conv = Conversation.objects.get(pk=pk)
     except Conversation.DoesNotExist:
@@ -125,8 +153,17 @@ def reply(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
-@parser_classes([MultiPartParser])
-def upload_attachment(request):
+def reply(request, pk):
+    return _reply(request, pk)
+
+
+@api_view(["POST"])
+@permission_classes([IsSuperUser])
+def platform_reply(request, pk):
+    return _reply(request, pk)
+
+
+def _upload_attachment(request):
     f = request.FILES.get("file")
     if f is None:
         return Response({"detail": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
@@ -138,6 +175,20 @@ def upload_attachment(request):
         filename=f.name, content_type=f.content_type or "", size=f.size, storage_key=key
     )
     return Response(MessageAttachmentSerializer(att).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@parser_classes([MultiPartParser])
+def upload_attachment(request):
+    return _upload_attachment(request)
+
+
+@api_view(["POST"])
+@permission_classes([IsSuperUser])
+@parser_classes([MultiPartParser])
+def platform_upload_attachment(request):
+    return _upload_attachment(request)
 
 
 @csrf_exempt
@@ -165,22 +216,36 @@ def inbound(request):
     # Second tier when no live custom domain matches: a paid coach's chosen
     # `<x>@PLATFORM_MAIL_DOMAIN` address.
     recipient_tenant = cd.tenant if cd else resolve_platform_recipient(to_email)
-    if recipient_tenant is None:
-        # Unknown / disabled / not-live recipient — drop without leaking.
+    inbound_kwargs = {
+        "from_email": (payload.get("from") or "").strip(),
+        "to_email": to_email,
+        "subject": payload.get("subject") or "",
+        "text": payload.get("text") or "",
+        "html": payload.get("html") or "",
+        "message_id": payload.get("message_id") or "",
+        "in_reply_to": payload.get("in_reply_to") or "",
+        "references": payload.get("references") or "",
+        "attachments": payload.get("attachments") or [],
+    }
+
+    if recipient_tenant is not None:
+        with tenant_context(recipient_tenant):
+            receive_inbound(**inbound_kwargs)
         return Response(status=status.HTTP_200_OK)
 
-    with tenant_context(recipient_tenant):
-        receive_inbound(
-            from_email=(payload.get("from") or "").strip(),
-            to_email=to_email,
-            subject=payload.get("subject") or "",
-            text=payload.get("text") or "",
-            html=payload.get("html") or "",
-            message_id=payload.get("message_id") or "",
-            in_reply_to=payload.get("in_reply_to") or "",
-            references=payload.get("references") or "",
-            attachments=payload.get("attachments") or [],
-        )
+    # No tenant claimed it. If it's addressed to our platform mail domain, it's
+    # support/unclaimed mail — store in the public-schema platform inbox.
+    # Force public explicitly rather than assuming the ambient schema already
+    # is public: the CF Worker always posts to the true apex in prod, but
+    # nothing here guarantees that, and mailbox's tables now exist in both
+    # public and tenant schemas, so an unqualified write under a tenant's
+    # search_path would silently land in that tenant's own mailbox instead.
+    if django_settings.PLATFORM_MAIL_DOMAIN and domain == django_settings.PLATFORM_MAIL_DOMAIN:
+        with schema_context(get_public_schema_name()):
+            receive_inbound(**inbound_kwargs)
+        return Response(status=status.HTTP_200_OK)
+
+    # Foreign domain — drop without leaking.
     return Response(status=status.HTTP_200_OK)
 
 

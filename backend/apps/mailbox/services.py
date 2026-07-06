@@ -1,9 +1,11 @@
 import base64
 import uuid
 
+from django.conf import settings
 from django.db import IntegrityError, connection, transaction
 from django.utils import timezone
 from django.utils.html import escape
+from django_tenants.utils import get_public_schema_name
 
 from apps.accounts.models import User
 from apps.core.email import send_email
@@ -45,7 +47,11 @@ def send_message(
     subject: str = "",
     attachment_ids: list[int] | None = None,
 ) -> Message:
-    from_email, _can_receive = sending_identity(connection.tenant)
+    if connection.schema_name == get_public_schema_name():
+        # Superadmin platform inbox — fixed support address, always sendable.
+        from_email = settings.PLATFORM_SUPPORT_FROM
+    else:
+        from_email, _can_receive = sending_identity(connection.tenant)
     sender_domain = from_email.rsplit("@", 1)[-1]
 
     last = conversation.messages.order_by("-created_at").first()

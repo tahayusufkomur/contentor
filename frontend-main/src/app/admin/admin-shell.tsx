@@ -7,6 +7,7 @@ import {
   Activity,
   ExternalLink,
   Mail,
+  Inbox,
 } from "lucide-react";
 
 import { AppSidebar, type NavItem } from "@/components/shared/app-sidebar";
@@ -31,6 +32,12 @@ const OVERVIEW: NavItem[] = [
   },
 ];
 const COMMUNICATION: NavItem[] = [
+  {
+    label: "Inbox",
+    href: "/admin/inbox",
+    icon: Inbox,
+    group: "Communication",
+  },
   { label: "Email", href: "/admin/email", icon: Mail, group: "Communication" },
 ];
 const SYSTEM: NavItem[] = [

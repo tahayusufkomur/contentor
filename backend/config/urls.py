@@ -66,6 +66,7 @@ urlpatterns = [
     path("api/v1/email/", include("apps.email_campaigns.urls")),
     path("api/v1/notifications/", include("apps.notifications.urls")),
     path("api/v1/mailbox/", include("apps.mailbox.urls")),
+    path("api/v1/platform/mailbox/", include("apps.mailbox.urls_platform")),
 ]
 
 if settings.DEBUG:
