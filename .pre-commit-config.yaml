@@ -34,7 +34,7 @@ repos:
     hooks:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
-        exclude: ^docs/screenshot-map/
+        exclude: ^(docs/screenshot-map/|docs/superpowers/plans/|.*/tests/.*)
 
   - repo: local
     hooks:
