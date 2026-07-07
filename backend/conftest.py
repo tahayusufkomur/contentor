@@ -27,6 +27,14 @@ from apps.billing.models import (
     SubscriptionPlan,
     SubscriptionPlanAccess,
 )
+from apps.community.models import (
+    Comment as CommunityComment,
+    CommunityMember,
+    CommunitySettings,
+    Post as CommunityPost,
+    Reaction as CommunityReaction,
+    Report as CommunityReport,
+)
 from apps.core.models import Domain, Tenant
 from apps.courses.models import Course, Enrollment, Lesson, Module, Progress, Video
 from apps.downloads.models import DownloadFile
@@ -108,6 +116,12 @@ def tenant_ctx(restore_public):
     with tenant_context(tenant):
         yield tenant
         # Clean up in dependency order
+        CommunityReaction.objects.all().delete()
+        CommunityReport.objects.all().delete()
+        CommunityComment.objects.all().delete()
+        CommunityPost.objects.all().delete()
+        CommunityMember.objects.all().delete()
+        CommunitySettings.objects.all().delete()
         Progress.objects.all().delete()
         Enrollment.objects.all().delete()
         Lesson.objects.all().delete()
