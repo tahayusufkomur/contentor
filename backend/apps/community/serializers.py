@@ -131,3 +131,14 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_target_type(self, report):
         return "post" if report.post_id else "comment"
+
+
+class ModerationMemberSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    display_name = serializers.CharField(read_only=True)
+    email = serializers.EmailField(source="user.email", read_only=True)
+    joined_at = serializers.DateTimeField(read_only=True)
+    is_banned = serializers.BooleanField(read_only=True)
+    muted_until = serializers.DateTimeField(read_only=True)
+    requires_approval = serializers.BooleanField(read_only=True)
+    post_count = serializers.IntegerField(read_only=True)

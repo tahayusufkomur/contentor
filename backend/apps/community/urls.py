@@ -33,4 +33,13 @@ urlpatterns = [
         name="community-mod-remove-comment",
     ),
     path("moderation/posts/<int:pk>/approve/", moderation_views.approve_post, name="community-mod-approve"),
+    path("moderation/members/", moderation_views.members_list, name="community-mod-members"),
+    path("moderation/members/<int:pk>/ban/", moderation_views.ban_member, name="community-mod-ban"),
+    path("moderation/members/<int:pk>/unban/", moderation_views.unban_member, name="community-mod-unban"),
+    path("moderation/members/<int:pk>/mute/", moderation_views.mute_member, name="community-mod-mute"),
+    path(
+        "moderation/members/<int:pk>/require-approval/",
+        moderation_views.set_requires_approval,
+        name="community-mod-require-approval",
+    ),
 ]
