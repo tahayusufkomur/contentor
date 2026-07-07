@@ -164,3 +164,12 @@ def test_image_mark_with_malformed_photo_id_is_clamped_not_500(coach_client):
     assert resp.status_code == 200
     assert resp.data["logo_recipe"]["mark"]["photo_id"] == ""
     assert resp.data["logo_recipe"]["mark"]["url"] == ""
+
+
+def test_image_mark_read_tolerates_preexisting_malformed_photo_id(coach_client):
+    config = TenantConfig.objects.first()
+    config.logo_recipe = dict(VALID_RECIPE, mark={"type": "image", "photo_id": "not-a-uuid", "url": ""})
+    config.save()
+    resp = coach_client.get("/api/v1/admin/config/")
+    assert resp.status_code == 200
+    assert resp.data["logo_recipe"]["mark"]["url"] == ""
