@@ -5,8 +5,11 @@
 // reports the coach's post → coach resolves it with Remove → post disappears
 // from the student feed → coach bans the student → student is blocked.
 //
-// Cleanup-first: the spec disables the module and wipes community rows via the
-// coach API before starting, so reruns are deterministic.
+// Idempotency: there is no disable/wipe step before this spec runs — it never
+// deletes community rows or turns the module off. Reruns stay safe because
+// POST_BODY/COACH_POST are suffixed with Date.now() (so each run's content is
+// unique), the enable-switch check only clicks when currently off, and the
+// spec unbans the student it banned as its final step.
 //
 // Deviations from the original plan draft, made during code review against
 // the actual components (this spec has not been executed — see task 8
@@ -71,10 +74,9 @@ test("community: enable → post → pin → report → remove → ban", async (
   await coachPage.getByRole("button", { name: /feed/i }).click();
   await expect(coachPage.getByText(POST_BODY)).toBeVisible({ timeout: 10_000 });
   await coachPage
-    .locator("div")
+    .locator('[data-testid="post-card"]')
     .filter({ hasText: POST_BODY })
     .getByLabel("Post actions")
-    .first()
     .click();
   await coachPage.getByRole("menuitem", { name: /^pin$/i }).click();
   await expect(coachPage.getByText(/pinned to the top/i)).toBeVisible();
@@ -89,10 +91,9 @@ test("community: enable → post → pin → report → remove → ban", async (
     timeout: 10_000,
   });
   await studentPage
-    .locator("div")
+    .locator('[data-testid="post-card"]')
     .filter({ hasText: COACH_POST })
     .getByLabel("Post actions")
-    .first()
     .click();
   await studentPage.getByRole("menuitem", { name: /report/i }).click();
   await studentPage.getByRole("button", { name: /^spam$/i }).click();

@@ -81,7 +81,7 @@ export function PostCard({
   };
 
   return (
-    <Card>
+    <Card data-testid="post-card">
       <CardContent className="space-y-3 p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-9 w-9">
