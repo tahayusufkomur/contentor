@@ -60,7 +60,7 @@ function Mark({ recipe, size }: { recipe: LogoRecipe; size: number }) {
         />
       );
     }
-  } else if (mark.type === "image") {
+  } else if (mark.type === "image" && mark.url) {
     content = (
       <image
         href={mark.url}
