@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import MAX_POST_IMAGES, CommunitySettings, Post
+from .models import MAX_POST_IMAGES, Comment, CommunitySettings, Post
 
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
@@ -92,3 +92,17 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_my_reaction(self, post):
         return self.context.get("my_reactions", {}).get(post.id)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    my_reaction = serializers.SerializerMethodField()
+    body = serializers.CharField(max_length=5000, trim_whitespace=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "author", "body", "reaction_count", "my_reaction", "status", "created_at"]
+        read_only_fields = ["reaction_count", "status"]
+
+    def get_my_reaction(self, comment):
+        return self.context.get("my_comment_reactions", {}).get(comment.id)

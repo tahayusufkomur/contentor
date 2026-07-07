@@ -5,23 +5,25 @@ from django.http import Http404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.storage import build_s3_path, generate_presigned_upload_url
 
+from . import services
 from .access import get_member_or_deny
-from .models import CommunitySettings, Post, PostStatus, Reaction
+from .models import Comment, CommunitySettings, Post, PostStatus, Reaction
 from .permissions import is_moderator
 from .serializers import (
+    CommentSerializer,
     CommunityPresignSerializer,
     CommunitySettingsPublicSerializer,
     CommunitySettingsSerializer,
     MemberSerializer,
     PostSerializer,
 )
-from .throttling import CommunityPostThrottle
+from .throttling import CommunityCommentThrottle, CommunityPostThrottle
 
 
 @api_view(["GET", "PATCH"])
@@ -148,3 +150,65 @@ def post_detail(request, pk):
     serializer.is_valid(raise_exception=True)
     serializer.save(edited_at=timezone.now())
     return Response(PostSerializer(post, context=_post_context(member, [post])).data)
+
+
+def _viewable_post_or_404(member, pk):
+    try:
+        return Post.objects.get(
+            Q(status=PostStatus.VISIBLE) | Q(status=PostStatus.PENDING, author=member), pk=pk
+        )
+    except Post.DoesNotExist:
+        raise Http404
+
+
+def _comment_context(member, comments):
+    ids = [c.id for c in comments]
+    return {
+        "my_comment_reactions": {
+            r.comment_id: r.emoji
+            for r in Reaction.objects.filter(member=member, comment_id__in=ids)
+        }
+    }
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def post_comments(request, pk):
+    if request.method == "POST":
+        member = get_member_or_deny(request, write=True)
+        post = _viewable_post_or_404(member, pk)
+        throttle = CommunityCommentThrottle()
+        if not throttle.allow_request(request, None):
+            return Response(status=status.HTTP_429_TOO_MANY_REQUESTS)
+        serializer = CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.save(post=post, author=member)
+        services.adjust_comment_count(post, +1)
+        return Response(
+            CommentSerializer(comment, context=_comment_context(member, [comment])).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    member = get_member_or_deny(request)
+    post = _viewable_post_or_404(member, pk)
+    qs = post.comments.filter(status=PostStatus.VISIBLE).select_related("author", "author__user")
+    paginator = PageNumberPagination()
+    page = paginator.paginate_queryset(qs, request)
+    data = CommentSerializer(page, many=True, context=_comment_context(member, page)).data
+    return paginator.get_paginated_response(data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def comment_detail(request, pk):
+    member = get_member_or_deny(request, write=True)
+    try:
+        comment = Comment.objects.get(pk=pk, author=member)
+    except Comment.DoesNotExist:
+        raise Http404
+    was_visible = comment.status == PostStatus.VISIBLE
+    post = comment.post
+    comment.delete()
+    if was_visible:
+        services.adjust_comment_count(post, -1)
+    return Response(status=status.HTTP_204_NO_CONTENT)

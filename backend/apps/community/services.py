@@ -1,4 +1,6 @@
-from .models import CommunityMember
+from django.db.models import F
+
+from .models import CommunityMember, Post
 
 
 def get_or_create_member(user):
@@ -10,3 +12,9 @@ def get_or_create_member(user):
         },
     )
     return member
+
+
+def adjust_comment_count(post, delta):
+    Post.objects.filter(pk=post.pk, comment_count__gte=max(0, -delta)).update(
+        comment_count=F("comment_count") + delta
+    )
