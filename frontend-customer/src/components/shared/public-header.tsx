@@ -13,9 +13,11 @@ import AnnouncementBell from "@/components/shared/announcement-bell";
 export function PublicHeader({
   user,
   hasSubscription,
+  communityEnabled,
 }: {
   user?: User | null;
   hasSubscription?: boolean;
+  communityEnabled?: boolean;
 }) {
   const config = useTenant();
   const router = useRouter();
@@ -34,6 +36,10 @@ export function PublicHeader({
   const navLinks = user
     ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
     : allNavLinks;
+  const fullNavLinks =
+    user && communityEnabled
+      ? [...navLinks, { label: "Community", href: "/community" }]
+      : navLinks;
   const showLogin = navbar?.show_login !== false;
   const cta = navbar?.cta;
   const allowDarkMode = config?.dark_mode_enabled !== false;
@@ -68,7 +74,7 @@ export function PublicHeader({
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 md:flex">
-          {navLinks.map((link) => (
+          {fullNavLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -158,7 +164,7 @@ export function PublicHeader({
       {mobileOpen && (
         <div className="border-t bg-background px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
-            {navLinks.map((link) => (
+            {fullNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

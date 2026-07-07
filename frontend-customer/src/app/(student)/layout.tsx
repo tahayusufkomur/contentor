@@ -21,9 +21,21 @@ export default async function StudentLayout({
     hasSubscription = plans.some((p) => p.is_subscribed);
   } catch {}
 
+  let communityEnabled = false;
+  try {
+    const community = await serverFetch<{ is_enabled: boolean }>(
+      "/api/v1/community/settings/",
+    );
+    communityEnabled = community.is_enabled;
+  } catch {}
+
   return (
     <>
-      <PublicHeader user={user} hasSubscription={hasSubscription} />
+      <PublicHeader
+        user={user}
+        hasSubscription={hasSubscription}
+        communityEnabled={communityEnabled}
+      />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
       <ImpersonationBanner />
     </>
