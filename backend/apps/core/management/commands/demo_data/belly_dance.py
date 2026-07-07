@@ -31,13 +31,15 @@ CONFIG = {
     ],
     "navbar_config": {
         "links": [
-            {"label": "Programs", "href": "/courses"},
-            {"label": "Calendar", "href": "/calendar"},
+            {"label": "Courses", "href": "/courses"},
+            {"label": "Live Classes", "href": "/events"},
+            {"label": "Store", "href": "/store"},
             {"label": "About", "href": "/about"},
             {"label": "FAQ", "href": "/faq"},
         ],
         "cta": {"text": "Start Dancing", "href": "/courses"},
         "show_login": True,
+        "layout": "centered",
     },
     "landing_sections": {
         "hero": {

@@ -65,9 +65,14 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
                     "pages",
                 ],
                 navbar_config={
-                    "links": [{"label": "Courses", "href": "/courses"}],
+                    "links": [
+                        {"label": "Courses", "href": "/courses"},
+                        {"label": "Events", "href": "/events"},
+                        {"label": "About", "href": "/about"},
+                    ],
                     "cta": {"text": "Get Started", "href": "/courses"},
                     "show_login": True,
+                    "layout": "classic",
                 },
                 landing_sections={
                     "hero": {

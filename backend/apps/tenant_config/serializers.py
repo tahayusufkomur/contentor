@@ -20,12 +20,54 @@ from .models import TenantConfig, TenantTheme
 # defence-in-depth against javascript: navigation injected via the builder.
 _UNSAFE_URL_PREFIXES = ("javascript:", "vbscript:")
 
+# Navbar layout presets the public header can render.
+_NAVBAR_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
+
+
+def _clean_nav_href(href):
+    href = str(href or "")
+    if href.strip().lower().startswith(_UNSAFE_URL_PREFIXES):
+        return ""
+    return href[:300]
+
 
 class TenantConfigSerializer(serializers.ModelSerializer):
     def validate_theme(self, value):
         if value not in TenantTheme.values:
             raise serializers.ValidationError("Theme must be one of the curated theme IDs.")
         return value
+
+    def validate_navbar_config(self, value):
+        """Shape the navbar payload: layout enum, capped link/cta strings,
+        unsafe URL schemes stripped, booleans coerced. Same defence-in-depth
+        the serializer applies to ``pages``.
+        """
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("navbar_config must be an object.")
+        cleaned = dict(value)
+        layout = cleaned.get("layout") or "classic"
+        if layout not in _NAVBAR_LAYOUTS:
+            raise serializers.ValidationError(
+                "layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)) + "."
+            )
+        cleaned["layout"] = layout
+        links = []
+        for raw in (cleaned.get("links") or [])[:20]:
+            if not isinstance(raw, dict):
+                continue
+            links.append(
+                {"label": str(raw.get("label") or "")[:80], "href": _clean_nav_href(raw.get("href"))}
+            )
+        cleaned["links"] = links
+        cta = cleaned.get("cta")
+        if isinstance(cta, dict):
+            cleaned["cta"] = {"text": str(cta.get("text") or "")[:80], "href": _clean_nav_href(cta.get("href"))}
+        else:
+            cleaned["cta"] = None
+        cleaned["show_login"] = bool(cleaned.get("show_login", True))
+        cleaned["show_install"] = bool(cleaned.get("show_install", True))
+        cleaned["transparent_over_hero"] = bool(cleaned.get("transparent_over_hero", False))
+        return cleaned
 
     def validate_pages(self, value):
         """Defensively shape the builder payload: only known pages/blocks,

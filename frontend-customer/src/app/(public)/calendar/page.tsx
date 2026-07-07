@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { serverFetch } from "@/lib/api-server";
 import { getDateRangeParams } from "@/lib/calendar-utils";
 import { CalendarClient } from "@/components/public/calendar/calendar-client";
@@ -28,13 +29,21 @@ export default async function CalendarPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Calendar
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Browse upcoming live classes, streams, and events.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            Calendar
+          </h1>
+          <p className="mt-1 text-muted-foreground">
+            Browse upcoming live classes, streams, and events.
+          </p>
+        </div>
+        <Link
+          href="/events"
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          List view →
+        </Link>
       </div>
 
       {/* Break out of max-w-7xl container to use more screen width */}
