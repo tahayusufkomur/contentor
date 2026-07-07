@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { JoinCard } from "@/components/community/join-card";
 import { getCommunityMe, getCommunitySettings } from "@/lib/community";
 import type { CommunityMe } from "@/types/community";
 import { ApiError } from "@/types/api";
@@ -13,6 +14,7 @@ type Gate = "loading" | "disabled" | "banned" | "ok";
 export default function CommunityPage() {
   const [gate, setGate] = useState<Gate>("loading");
   const [me, setMe] = useState<CommunityMe | null>(null);
+  const [joined, setJoined] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -59,13 +61,26 @@ export default function CommunityPage() {
     );
   }
 
+  const needsJoin =
+    !joined && (!localStorage.getItem("community_joined") || !me?.avatar);
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">Community</h1>
-      {/* Tasks 3-7 mount JoinCard + Feed here */}
-      <p className="text-sm text-muted-foreground">
-        Welcome, {me?.display_name}.
-      </p>
+      {/* Tasks 4-7 mount Feed here */}
+      {needsJoin && me ? (
+        <JoinCard
+          me={me}
+          onDone={(updated) => {
+            setMe(updated);
+            setJoined(true);
+          }}
+        />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Feed lands in Task 4.
+        </p>
+      )}
     </div>
   );
 }
