@@ -74,8 +74,18 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            "id", "author", "body", "image_keys", "images", "status", "is_pinned",
-            "comment_count", "reaction_count", "my_reaction", "created_at", "edited_at",
+            "id",
+            "author",
+            "body",
+            "image_keys",
+            "images",
+            "status",
+            "is_pinned",
+            "comment_count",
+            "reaction_count",
+            "my_reaction",
+            "created_at",
+            "edited_at",
         ]
         read_only_fields = ["status", "is_pinned", "comment_count", "reaction_count"]
 
@@ -122,8 +132,15 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = [
-            "id", "reason", "detail", "status", "created_at",
-            "reporter", "target_type", "post", "comment",
+            "id",
+            "reason",
+            "detail",
+            "status",
+            "created_at",
+            "reporter",
+            "target_type",
+            "post",
+            "comment",
         ]
 
     def get_reporter(self, report):

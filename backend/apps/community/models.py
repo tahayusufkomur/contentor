@@ -24,9 +24,7 @@ class CommunitySettings(models.Model):
 
 
 class CommunityMember(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="community_member"
-    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="community_member")
     display_name = models.CharField(max_length=150)
     avatar_url = models.URLField(blank=True, default="")  # stable external URL (from user)
     avatar_key = models.CharField(max_length=500, blank=True, default="")  # uploaded, signed at read
@@ -79,9 +77,7 @@ class Comment(models.Model):
 class Reaction(models.Model):
     member = models.ForeignKey(CommunityMember, on_delete=models.CASCADE, related_name="reactions")
     post = models.ForeignKey(Post, null=True, blank=True, on_delete=models.CASCADE, related_name="reactions")
-    comment = models.ForeignKey(
-        Comment, null=True, blank=True, on_delete=models.CASCADE, related_name="reactions"
-    )
+    comment = models.ForeignKey(Comment, null=True, blank=True, on_delete=models.CASCADE, related_name="reactions")
     emoji = models.CharField(max_length=8)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -96,8 +92,7 @@ class Reaction(models.Model):
                 name="uniq_reaction_member_comment",
             ),
             models.CheckConstraint(
-                condition=Q(post__isnull=False, comment__isnull=True)
-                | Q(post__isnull=True, comment__isnull=False),
+                condition=Q(post__isnull=False, comment__isnull=True) | Q(post__isnull=True, comment__isnull=False),
                 name="reaction_exactly_one_target",
             ),
         ]
@@ -115,9 +110,7 @@ class Report(models.Model):
 
     reporter = models.ForeignKey(CommunityMember, on_delete=models.CASCADE, related_name="reports")
     post = models.ForeignKey(Post, null=True, blank=True, on_delete=models.CASCADE, related_name="reports")
-    comment = models.ForeignKey(
-        Comment, null=True, blank=True, on_delete=models.CASCADE, related_name="reports"
-    )
+    comment = models.ForeignKey(Comment, null=True, blank=True, on_delete=models.CASCADE, related_name="reports")
     reason = models.CharField(max_length=20, choices=REASON_CHOICES)
     detail = models.TextField(blank=True, default="")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="open")
@@ -140,8 +133,7 @@ class Report(models.Model):
                 name="uniq_report_reporter_comment",
             ),
             models.CheckConstraint(
-                condition=Q(post__isnull=False, comment__isnull=True)
-                | Q(post__isnull=True, comment__isnull=False),
+                condition=Q(post__isnull=False, comment__isnull=True) | Q(post__isnull=True, comment__isnull=False),
                 name="report_exactly_one_target",
             ),
         ]

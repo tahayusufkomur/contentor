@@ -41,9 +41,7 @@ def post(enabled):
 
 def test_report_creates_open_report(post):
     client, _ = make_client("r1@x.com")
-    resp = client.post(
-        f"/api/v1/community/posts/{post.id}/report/", {"reason": "spam"}, format="json"
-    )
+    resp = client.post(f"/api/v1/community/posts/{post.id}/report/", {"reason": "spam"}, format="json")
     assert resp.status_code == 204
     report = Report.objects.get(post=post)
     assert report.status == "open"
@@ -53,18 +51,14 @@ def test_report_creates_open_report(post):
 def test_duplicate_report_idempotent(post):
     client, _ = make_client("r1@x.com")
     for _ in range(2):
-        resp = client.post(
-            f"/api/v1/community/posts/{post.id}/report/", {"reason": "spam"}, format="json"
-        )
+        resp = client.post(f"/api/v1/community/posts/{post.id}/report/", {"reason": "spam"}, format="json")
         assert resp.status_code == 204
     assert Report.objects.filter(post=post).count() == 1
 
 
 def test_invalid_reason_400(post):
     client, _ = make_client("r1@x.com")
-    resp = client.post(
-        f"/api/v1/community/posts/{post.id}/report/", {"reason": "ugly"}, format="json"
-    )
+    resp = client.post(f"/api/v1/community/posts/{post.id}/report/", {"reason": "ugly"}, format="json")
     assert resp.status_code == 400
 
 

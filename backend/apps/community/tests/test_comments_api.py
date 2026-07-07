@@ -59,9 +59,7 @@ def test_comment_on_hidden_post_404(post):
 
 def test_delete_own_comment_decrements(post):
     client, _ = make_client()
-    cid = client.post(
-        f"/api/v1/community/posts/{post.id}/comments/", {"body": "bye"}, format="json"
-    ).json()["id"]
+    cid = client.post(f"/api/v1/community/posts/{post.id}/comments/", {"body": "bye"}, format="json").json()["id"]
     resp = client.delete(f"/api/v1/community/comments/{cid}/")
     assert resp.status_code == 204
     post.refresh_from_db()
@@ -72,8 +70,6 @@ def test_delete_own_comment_decrements(post):
 def test_cannot_delete_others_comment(post):
     client, _ = make_client()
     other_client, _ = make_client(email="o@x.com")
-    cid = client.post(
-        f"/api/v1/community/posts/{post.id}/comments/", {"body": "mine"}, format="json"
-    ).json()["id"]
+    cid = client.post(f"/api/v1/community/posts/{post.id}/comments/", {"body": "mine"}, format="json").json()["id"]
     resp = other_client.delete(f"/api/v1/community/comments/{cid}/")
     assert resp.status_code == 404

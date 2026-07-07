@@ -84,12 +84,7 @@ class FeedPagination(CursorPagination):
 
 def _post_context(member, posts):
     ids = [p.id for p in posts]
-    return {
-        "my_reactions": {
-            r.post_id: r.emoji
-            for r in Reaction.objects.filter(member=member, post_id__in=ids)
-        }
-    }
+    return {"my_reactions": {r.post_id: r.emoji for r in Reaction.objects.filter(member=member, post_id__in=ids)}}
 
 
 @api_view(["GET", "POST"])
@@ -112,13 +107,10 @@ def posts(request):
         )
 
     member = get_member_or_deny(request)
-    qs = (
-        Post.objects.filter(
-            Q(status=PostStatus.VISIBLE) | Q(status=PostStatus.PENDING, author=member),
-            is_pinned=False,
-        )
-        .select_related("author", "author__user")
-    )
+    qs = Post.objects.filter(
+        Q(status=PostStatus.VISIBLE) | Q(status=PostStatus.PENDING, author=member),
+        is_pinned=False,
+    ).select_related("author", "author__user")
     paginator = FeedPagination()
     page = paginator.paginate_queryset(qs, request)
     data = PostSerializer(page, many=True, context=_post_context(member, page)).data
@@ -129,9 +121,7 @@ def posts(request):
             .select_related("author", "author__user")
             .order_by("-created_at")
         )
-        response.data["pinned"] = PostSerializer(
-            pinned, many=True, context=_post_context(member, pinned)
-        ).data
+        response.data["pinned"] = PostSerializer(pinned, many=True, context=_post_context(member, pinned)).data
         response.data["welcome_message"] = CommunitySettings.load().welcome_message
     return response
 
@@ -143,7 +133,7 @@ def post_detail(request, pk):
     try:
         post = Post.objects.get(pk=pk, author=member)
     except Post.DoesNotExist:
-        raise Http404
+        raise Http404 from None
     if request.method == "DELETE":
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -155,19 +145,16 @@ def post_detail(request, pk):
 
 def _viewable_post_or_404(member, pk):
     try:
-        return Post.objects.get(
-            Q(status=PostStatus.VISIBLE) | Q(status=PostStatus.PENDING, author=member), pk=pk
-        )
+        return Post.objects.get(Q(status=PostStatus.VISIBLE) | Q(status=PostStatus.PENDING, author=member), pk=pk)
     except Post.DoesNotExist:
-        raise Http404
+        raise Http404 from None
 
 
 def _comment_context(member, comments):
     ids = [c.id for c in comments]
     return {
         "my_comment_reactions": {
-            r.comment_id: r.emoji
-            for r in Reaction.objects.filter(member=member, comment_id__in=ids)
+            r.comment_id: r.emoji for r in Reaction.objects.filter(member=member, comment_id__in=ids)
         }
     }
 
@@ -206,7 +193,7 @@ def comment_detail(request, pk):
     try:
         comment = Comment.objects.get(pk=pk, author=member)
     except Comment.DoesNotExist:
-        raise Http404
+        raise Http404 from None
     was_visible = comment.status == PostStatus.VISIBLE
     post = comment.post
     comment.delete()
@@ -222,9 +209,7 @@ def _handle_reaction(request, member, *, post=None, comment=None):
         emoji = request.data.get("emoji")
         if emoji not in REACTION_EMOJIS:
             return Response({"emoji": ["Invalid emoji."]}, status=status.HTTP_400_BAD_REQUEST)
-        _, created = Reaction.objects.update_or_create(
-            member=member, **kwargs, defaults={"emoji": emoji}
-        )
+        _, created = Reaction.objects.update_or_create(member=member, **kwargs, defaults={"emoji": emoji})
         if created:
             services.adjust_reaction_count(target, +1)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -249,7 +234,7 @@ def comment_reaction(request, pk):
     try:
         comment = Comment.objects.get(pk=pk, status=PostStatus.VISIBLE)
     except Comment.DoesNotExist:
-        raise Http404
+        raise Http404 from None
     return _handle_reaction(request, member, comment=comment)
 
 
@@ -281,5 +266,5 @@ def comment_report(request, pk):
     try:
         comment = Comment.objects.get(pk=pk, status=PostStatus.VISIBLE)
     except Comment.DoesNotExist:
-        raise Http404
+        raise Http404 from None
     return _report(request, member, comment=comment)

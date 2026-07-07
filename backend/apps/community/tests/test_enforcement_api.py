@@ -47,17 +47,13 @@ def test_mute_blocks_writes_only(coach_client, enabled):
     student, user = make_client("s2@x.com")
     student.get("/api/v1/community/me/")
     member = CommunityMember.objects.get(user=user)
-    resp = coach_client.post(
-        f"/api/v1/community/moderation/members/{member.id}/mute/", {"days": 7}, format="json"
-    )
+    resp = coach_client.post(f"/api/v1/community/moderation/members/{member.id}/mute/", {"days": 7}, format="json")
     assert resp.status_code == 204
     member.refresh_from_db()
     assert member.muted_until > timezone.now()
     assert student.get("/api/v1/community/posts/").status_code == 200
     assert student.post("/api/v1/community/posts/", {"body": "x"}, format="json").status_code == 403
-    resp = coach_client.post(
-        f"/api/v1/community/moderation/members/{member.id}/mute/", {"days": 0}, format="json"
-    )
+    resp = coach_client.post(f"/api/v1/community/moderation/members/{member.id}/mute/", {"days": 0}, format="json")
     assert resp.status_code == 204
     assert student.post("/api/v1/community/posts/", {"body": "x"}, format="json").status_code == 201
 

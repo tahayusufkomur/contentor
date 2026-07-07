@@ -16,9 +16,7 @@ def get_or_create_member(user):
 
 
 def adjust_comment_count(post, delta):
-    Post.objects.filter(pk=post.pk, comment_count__gte=max(0, -delta)).update(
-        comment_count=F("comment_count") + delta
-    )
+    Post.objects.filter(pk=post.pk, comment_count__gte=max(0, -delta)).update(comment_count=F("comment_count") + delta)
 
 
 def adjust_reaction_count(target, delta):

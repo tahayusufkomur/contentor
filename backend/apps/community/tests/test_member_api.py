@@ -17,9 +17,7 @@ def enabled(tenant_ctx):
 
 
 def make_client(email="s@x.com", role="student", **user_kwargs):
-    user = User.objects.create_user(
-        email=email, name="Student", password="pw123456", role=role, **user_kwargs
-    )
+    user = User.objects.create_user(email=email, name="Student", password="pw123456", role=role, **user_kwargs)
     c = APIClient(HTTP_HOST=HOST)
     c.force_authenticate(user=user)
     return c, user

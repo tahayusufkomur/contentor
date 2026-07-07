@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,119 +14,277 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='CommunitySettings',
+            name="CommunitySettings",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_enabled', models.BooleanField(default=False)),
-                ('welcome_message', models.TextField(blank=True, default='')),
-                ('notify_on_coach_post', models.BooleanField(default=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("is_enabled", models.BooleanField(default=False)),
+                ("welcome_message", models.TextField(blank=True, default="")),
+                ("notify_on_coach_post", models.BooleanField(default=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='CommunityMember',
+            name="CommunityMember",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('display_name', models.CharField(max_length=150)),
-                ('avatar_url', models.URLField(blank=True, default='')),
-                ('avatar_key', models.CharField(blank=True, default='', max_length=500)),
-                ('joined_at', models.DateTimeField(auto_now_add=True)),
-                ('last_seen_at', models.DateTimeField(blank=True, null=True)),
-                ('is_banned', models.BooleanField(default=False)),
-                ('muted_until', models.DateTimeField(blank=True, null=True)),
-                ('requires_approval', models.BooleanField(default=False)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='community_member', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("display_name", models.CharField(max_length=150)),
+                ("avatar_url", models.URLField(blank=True, default="")),
+                ("avatar_key", models.CharField(blank=True, default="", max_length=500)),
+                ("joined_at", models.DateTimeField(auto_now_add=True)),
+                ("last_seen_at", models.DateTimeField(blank=True, null=True)),
+                ("is_banned", models.BooleanField(default=False)),
+                ("muted_until", models.DateTimeField(blank=True, null=True)),
+                ("requires_approval", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="community_member",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Post',
+            name="Post",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('body', models.TextField(max_length=10000)),
-                ('image_keys', models.JSONField(blank=True, default=list)),
-                ('status', models.CharField(choices=[('visible', 'Visible'), ('pending', 'Pending approval'), ('hidden', 'Auto-hidden by reports'), ('removed', 'Removed by moderator')], default='visible', max_length=10)),
-                ('is_pinned', models.BooleanField(default=False)),
-                ('comment_count', models.PositiveIntegerField(default=0)),
-                ('reaction_count', models.PositiveIntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('edited_at', models.DateTimeField(blank=True, null=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='posts', to='community.communitymember')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("body", models.TextField(max_length=10000)),
+                ("image_keys", models.JSONField(blank=True, default=list)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("visible", "Visible"),
+                            ("pending", "Pending approval"),
+                            ("hidden", "Auto-hidden by reports"),
+                            ("removed", "Removed by moderator"),
+                        ],
+                        default="visible",
+                        max_length=10,
+                    ),
+                ),
+                ("is_pinned", models.BooleanField(default=False)),
+                ("comment_count", models.PositiveIntegerField(default=0)),
+                ("reaction_count", models.PositiveIntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("edited_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="posts",
+                        to="community.communitymember",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at', '-id'],
+                "ordering": ["-created_at", "-id"],
             },
         ),
         migrations.CreateModel(
-            name='Comment',
+            name="Comment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('body', models.TextField(max_length=5000)),
-                ('status', models.CharField(choices=[('visible', 'Visible'), ('pending', 'Pending approval'), ('hidden', 'Auto-hidden by reports'), ('removed', 'Removed by moderator')], default='visible', max_length=10)),
-                ('reaction_count', models.PositiveIntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='community.communitymember')),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='community.post')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("body", models.TextField(max_length=5000)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("visible", "Visible"),
+                            ("pending", "Pending approval"),
+                            ("hidden", "Auto-hidden by reports"),
+                            ("removed", "Removed by moderator"),
+                        ],
+                        default="visible",
+                        max_length=10,
+                    ),
+                ),
+                ("reaction_count", models.PositiveIntegerField(default=0)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to="community.communitymember",
+                    ),
+                ),
+                (
+                    "post",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="comments", to="community.post"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at', 'id'],
+                "ordering": ["created_at", "id"],
             },
         ),
         migrations.CreateModel(
-            name='Reaction',
+            name="Reaction",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('emoji', models.CharField(max_length=8)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('comment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reactions', to='community.comment')),
-                ('member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reactions', to='community.communitymember')),
-                ('post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reactions', to='community.post')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("emoji", models.CharField(max_length=8)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "comment",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reactions",
+                        to="community.comment",
+                    ),
+                ),
+                (
+                    "member",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reactions",
+                        to="community.communitymember",
+                    ),
+                ),
+                (
+                    "post",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reactions",
+                        to="community.post",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Report',
+            name="Report",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reason', models.CharField(choices=[('spam', 'Spam'), ('inappropriate', 'Inappropriate'), ('harassment', 'Harassment'), ('other', 'Other')], max_length=20)),
-                ('detail', models.TextField(blank=True, default='')),
-                ('status', models.CharField(choices=[('open', 'Open'), ('resolved', 'Resolved')], default='open', max_length=10)),
-                ('action_taken', models.CharField(blank=True, choices=[('removed', 'Removed'), ('kept', 'Kept')], default='', max_length=10)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('resolved_at', models.DateTimeField(blank=True, null=True)),
-                ('comment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='community.comment')),
-                ('post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='community.post')),
-                ('reporter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reports', to='community.communitymember')),
-                ('resolved_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "reason",
+                    models.CharField(
+                        choices=[
+                            ("spam", "Spam"),
+                            ("inappropriate", "Inappropriate"),
+                            ("harassment", "Harassment"),
+                            ("other", "Other"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                ("detail", models.TextField(blank=True, default="")),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("open", "Open"), ("resolved", "Resolved")], default="open", max_length=10
+                    ),
+                ),
+                (
+                    "action_taken",
+                    models.CharField(
+                        blank=True, choices=[("removed", "Removed"), ("kept", "Kept")], default="", max_length=10
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("resolved_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "comment",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reports",
+                        to="community.comment",
+                    ),
+                ),
+                (
+                    "post",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reports",
+                        to="community.post",
+                    ),
+                ),
+                (
+                    "reporter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="reports",
+                        to="community.communitymember",
+                    ),
+                ),
+                (
+                    "resolved_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['created_at', 'id'],
+                "ordering": ["created_at", "id"],
             },
         ),
         migrations.AddIndex(
-            model_name='post',
-            index=models.Index(fields=['status', 'is_pinned', '-created_at'], name='community_p_status_1b3bae_idx'),
+            model_name="post",
+            index=models.Index(fields=["status", "is_pinned", "-created_at"], name="community_p_status_1b3bae_idx"),
         ),
         migrations.AddConstraint(
-            model_name='reaction',
-            constraint=models.UniqueConstraint(condition=models.Q(('post__isnull', False)), fields=('member', 'post'), name='uniq_reaction_member_post'),
+            model_name="reaction",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("post__isnull", False)), fields=("member", "post"), name="uniq_reaction_member_post"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='reaction',
-            constraint=models.UniqueConstraint(condition=models.Q(('comment__isnull', False)), fields=('member', 'comment'), name='uniq_reaction_member_comment'),
+            model_name="reaction",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("comment__isnull", False)),
+                fields=("member", "comment"),
+                name="uniq_reaction_member_comment",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='reaction',
-            constraint=models.CheckConstraint(condition=models.Q(models.Q(('comment__isnull', True), ('post__isnull', False)), models.Q(('comment__isnull', False), ('post__isnull', True)), _connector='OR'), name='reaction_exactly_one_target'),
+            model_name="reaction",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    models.Q(("comment__isnull", True), ("post__isnull", False)),
+                    models.Q(("comment__isnull", False), ("post__isnull", True)),
+                    _connector="OR",
+                ),
+                name="reaction_exactly_one_target",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='report',
-            constraint=models.UniqueConstraint(condition=models.Q(('post__isnull', False)), fields=('reporter', 'post'), name='uniq_report_reporter_post'),
+            model_name="report",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("post__isnull", False)),
+                fields=("reporter", "post"),
+                name="uniq_report_reporter_post",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='report',
-            constraint=models.UniqueConstraint(condition=models.Q(('comment__isnull', False)), fields=('reporter', 'comment'), name='uniq_report_reporter_comment'),
+            model_name="report",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("comment__isnull", False)),
+                fields=("reporter", "comment"),
+                name="uniq_report_reporter_comment",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='report',
-            constraint=models.CheckConstraint(condition=models.Q(models.Q(('comment__isnull', True), ('post__isnull', False)), models.Q(('comment__isnull', False), ('post__isnull', True)), _connector='OR'), name='report_exactly_one_target'),
+            model_name="report",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    models.Q(("comment__isnull", True), ("post__isnull", False)),
+                    models.Q(("comment__isnull", False), ("post__isnull", True)),
+                    _connector="OR",
+                ),
+                name="report_exactly_one_target",
+            ),
         ),
     ]

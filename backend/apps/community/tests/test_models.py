@@ -4,9 +4,9 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.community.models import (
+    Comment,
     CommunityMember,
     CommunitySettings,
-    Comment,
     Post,
     PostStatus,
     Reaction,

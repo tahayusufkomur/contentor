@@ -15,15 +15,14 @@ def _get_or_404(model, **kwargs):
     try:
         return model.objects.get(**kwargs)
     except model.DoesNotExist:
-        raise Http404
+        raise Http404 from None
 
 
 @api_view(["GET"])
 @permission_classes([IsCommunityModerator])
 def queue(request):
-    reports = (
-        Report.objects.filter(status="open")
-        .select_related("reporter", "post__author__user", "comment__author__user", "comment__post")
+    reports = Report.objects.filter(status="open").select_related(
+        "reporter", "post__author__user", "comment__author__user", "comment__post"
     )
     pending = Post.objects.filter(status=PostStatus.PENDING).select_related("author__user").order_by("created_at")
     return Response(
@@ -41,9 +40,7 @@ def resolve_report_view(request, pk):
     action = request.data.get("action")
     if action not in ("remove", "keep"):
         return Response({"action": ["Must be 'remove' or 'keep'."]}, status=status.HTTP_400_BAD_REQUEST)
-    services.resolve_target(
-        post=report.post, comment=report.comment, moderator=request.user, action=action
-    )
+    services.resolve_target(post=report.post, comment=report.comment, moderator=request.user, action=action)
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -93,11 +90,7 @@ def approve_post(request, pk):
 @api_view(["GET"])
 @permission_classes([IsCommunityModerator])
 def members_list(request):
-    qs = (
-        CommunityMember.objects.select_related("user")
-        .annotate(post_count=Count("posts"))
-        .order_by("-joined_at")
-    )
+    qs = CommunityMember.objects.select_related("user").annotate(post_count=Count("posts")).order_by("-joined_at")
     q = request.query_params.get("q", "").strip()
     if q:
         qs = qs.filter(Q(display_name__icontains=q) | Q(user__email__icontains=q))

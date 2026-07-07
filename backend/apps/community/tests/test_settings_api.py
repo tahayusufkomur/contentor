@@ -9,9 +9,7 @@ HOST = "shared-test.localhost"
 
 
 def make_client(role="student", is_staff=False, email="u@x.com"):
-    user = User.objects.create_user(
-        email=email, name="U", password="pw123456", role=role, is_staff=is_staff
-    )
+    user = User.objects.create_user(email=email, name="U", password="pw123456", role=role, is_staff=is_staff)
     c = APIClient(HTTP_HOST=HOST)
     c.force_authenticate(user=user)
     return c, user
