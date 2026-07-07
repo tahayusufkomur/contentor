@@ -64,18 +64,34 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     document.head.appendChild(link);
   }, [open]);
 
+  // Re-seed the recipe from the latest config every time the studio opens, so
+  // a stale in-memory recipe (from a prior session, or a config change since
+  // mount) doesn't linger — this component stays mounted across opens.
+  useEffect(() => {
+    if (open) {
+      setRecipe(
+        isCompleteRecipe(config.logo_recipe)
+          ? (config.logo_recipe as LogoRecipe)
+          : defaultRecipe(config.brand_name, theme.primaryHex),
+      );
+    }
+  }, [open]);
+
   const patch = (part: Partial<LogoRecipe>) => setRecipe((r) => ({ ...r, ...part }));
 
   async function handleMarkUpload(file: File) {
     setError(null);
+    const objectUrl = URL.createObjectURL(file);
     try {
-      const dataUrl = await imageToDataUrl(URL.createObjectURL(file));
+      const dataUrl = await imageToDataUrl(objectUrl);
       // Persist the original file so the mark survives re-edit sessions; the
       // in-memory data URL is what the preview/export uses this session.
       const uploaded = await uploadPng(file, file.name, file.type);
       patch({ mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      URL.revokeObjectURL(objectUrl);
     }
   }
 
@@ -105,13 +121,17 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     }
   }
 
+  const handleClose = () => {
+    if (!saving) onOpenChange(false);
+  };
+
   return (
     <>
       {open && (
         <ModalPortal>
           <div
             className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
           >
             <div
               className="flex h-[92vh] max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
@@ -127,7 +147,7 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                   </Button>
                   <button
                     type="button"
-                    onClick={() => onOpenChange(false)}
+                    onClick={handleClose}
                     className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
