@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { Feed } from "@/components/community/feed";
 import { JoinCard } from "@/components/community/join-card";
 import { getCommunityMe, getCommunitySettings } from "@/lib/community";
 import type { CommunityMe } from "@/types/community";
@@ -67,7 +68,6 @@ export default function CommunityPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">Community</h1>
-      {/* Tasks 4-7 mount Feed here */}
       {needsJoin && me ? (
         <JoinCard
           me={me}
@@ -77,9 +77,7 @@ export default function CommunityPage() {
           }}
         />
       ) : (
-        <p className="text-sm text-muted-foreground">
-          Feed lands in Task 4.
-        </p>
+        me && <Feed me={me} moderator={null} />
       )}
     </div>
   );

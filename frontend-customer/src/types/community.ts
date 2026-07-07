@@ -58,6 +58,7 @@ export interface CommunityCommentsPage {
 }
 
 export interface CommunityMe {
+  id: number;
   display_name: string;
   avatar_key: string;
   avatar: string;

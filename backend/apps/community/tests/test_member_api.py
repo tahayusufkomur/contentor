@@ -80,3 +80,12 @@ def test_presign_returns_upload_url(enabled):
     assert body["method"] == "PUT"
     assert "community" in body["s3_key"]
     assert body["upload_url"]
+
+
+def test_me_includes_id(enabled):
+    client, user = make_client(email="idcheck@x.com")
+    resp = client.get("/api/v1/community/me/")
+    assert resp.status_code == 200
+    from apps.community.models import CommunityMember
+
+    assert resp.json()["id"] == CommunityMember.objects.get(user=user).id

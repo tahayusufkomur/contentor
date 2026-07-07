@@ -18,6 +18,7 @@ class CommunitySettingsPublicSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     display_name = serializers.CharField(max_length=150, required=False)
     avatar_key = serializers.CharField(max_length=500, required=False, allow_blank=True)
     avatar = serializers.SerializerMethodField(read_only=True)

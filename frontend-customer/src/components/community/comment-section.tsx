@@ -1,0 +1,1 @@
+export function CommentSection(_: { post: import("@/types/community").CommunityPost; me: import("@/types/community").CommunityMe; moderator: import("./post-card").ModeratorHooks | null }) { return null; }
