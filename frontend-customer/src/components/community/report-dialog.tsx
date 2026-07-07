@@ -56,7 +56,10 @@ export function ReportDialog({
               <button
                 key={r.value}
                 type="button"
-                onClick={() => setReason(r.value)}
+                onClick={() => {
+                  setReason(r.value);
+                  setDetail("");
+                }}
                 className={cn(
                   "rounded-lg border px-3 py-2 text-left text-sm",
                   reason === r.value
