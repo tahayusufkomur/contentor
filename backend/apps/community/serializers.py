@@ -111,3 +111,23 @@ class CommentSerializer(serializers.ModelSerializer):
 class ReportCreateSerializer(serializers.Serializer):
     reason = serializers.ChoiceField(choices=[c[0] for c in Report.REASON_CHOICES])
     detail = serializers.CharField(max_length=2000, required=False, allow_blank=True, default="")
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    reporter = serializers.SerializerMethodField()
+    target_type = serializers.SerializerMethodField()
+    post = PostSerializer(read_only=True)
+    comment = CommentSerializer(read_only=True)
+
+    class Meta:
+        model = Report
+        fields = [
+            "id", "reason", "detail", "status", "created_at",
+            "reporter", "target_type", "post", "comment",
+        ]
+
+    def get_reporter(self, report):
+        return {"display_name": report.reporter.display_name}
+
+    def get_target_type(self, report):
+        return "post" if report.post_id else "comment"

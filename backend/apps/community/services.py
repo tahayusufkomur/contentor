@@ -1,4 +1,5 @@
 from django.db.models import F
+from django.utils import timezone
 
 from .models import AUTO_HIDE_THRESHOLD, CommunityMember, Post, PostStatus, Report
 
@@ -38,3 +39,23 @@ def report_target(member, *, post=None, comment=None, reason, detail=""):
             target.status = PostStatus.HIDDEN
             target.save(update_fields=["status"])
     return report
+
+
+def resolve_target(*, post=None, comment=None, moderator, action):
+    """action: 'remove' | 'keep'. Updates target status and resolves ALL open reports."""
+    target = post or comment
+    kwargs = {"post": post} if post else {"comment": comment}
+    if action == "remove":
+        if comment is not None and target.status in (PostStatus.VISIBLE, PostStatus.HIDDEN):
+            adjust_comment_count(comment.post, -1)
+        target.status = PostStatus.REMOVED
+        target.save(update_fields=["status"])
+    elif target.status == PostStatus.HIDDEN:
+        target.status = PostStatus.VISIBLE
+        target.save(update_fields=["status"])
+    Report.objects.filter(status="open", **kwargs).update(
+        status="resolved",
+        action_taken="removed" if action == "remove" else "kept",
+        resolved_by=moderator,
+        resolved_at=timezone.now(),
+    )
