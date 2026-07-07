@@ -163,6 +163,7 @@ export async function svgToPngBlob(
 export async function uploadPng(
   blob: Blob,
   filename: string,
+  contentType = "image/png",
 ): Promise<CompleteResponse> {
   const { upload_url, s3_key } = await clientFetch<PresignResponse>(
     "/api/v1/upload/presign/",
@@ -170,7 +171,7 @@ export async function uploadPng(
       method: "POST",
       body: JSON.stringify({
         filename,
-        content_type: "image/png",
+        content_type: contentType,
         category: "photo",
       }),
     },
@@ -178,7 +179,7 @@ export async function uploadPng(
 
   const put = await fetch(upload_url, {
     method: "PUT",
-    headers: { "Content-Type": "image/png" },
+    headers: { "Content-Type": contentType },
     body: blob,
   });
   if (!put.ok) throw new Error(`Upload failed: ${put.status}`);
@@ -188,7 +189,7 @@ export async function uploadPng(
     body: JSON.stringify({
       s3_key,
       category: "photo",
-      content_type: "image/png",
+      content_type: contentType,
       file_size: blob.size,
       title: filename.replace(/\.[^.]+$/, ""),
     }),
