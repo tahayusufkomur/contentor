@@ -49,6 +49,10 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
   const logoSvgRef = useRef<SVGSVGElement>(null);
   const markSvgRef = useRef<SVGSVGElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [adjusting, setAdjusting] = useState(false);
+  const dragRef = useRef<{ part: "mark" | "name"; startX: number; startY: number; base: [number, number] } | null>(null);
+  const [suggestions, setSuggestions] = useState<LogoRecipe[] | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
 
   // Load all studio fonts once so previews render true.
   useEffect(() => {
@@ -78,6 +82,54 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
   }, [open]);
 
   const patch = (part: Partial<LogoRecipe>) => setRecipe((r) => ({ ...r, ...part }));
+
+  function beginDrag(e: React.PointerEvent<SVGSVGElement>) {
+    if (!adjusting) return;
+    const part = (e.target as Element).closest("[data-part]")?.getAttribute("data-part") as "mark" | "name" | null;
+    if (!part) return;
+    const base = part === "mark" ? recipe.overrides.mark_offset : recipe.overrides.name_offset;
+    dragRef.current = { part, startX: e.clientX, startY: e.clientY, base: [...base] as [number, number] };
+    (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+  }
+
+  function moveDrag(e: React.PointerEvent<SVGSVGElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const svg = e.currentTarget;
+    // convert screen px to viewBox units
+    const scale = LOGO_VIEWBOX.w / svg.getBoundingClientRect().width;
+    const clampOff = (v: number) => Math.max(-120, Math.min(120, v));
+    const snap = (v: number) => (Math.abs(v) < 6 ? 0 : v);
+    const dx = snap(clampOff(drag.base[0] + (e.clientX - drag.startX) * scale));
+    const dy = snap(clampOff(drag.base[1] + (e.clientY - drag.startY) * scale));
+    setRecipe((r) => ({
+      ...r,
+      overrides: {
+        ...r.overrides,
+        [drag.part === "mark" ? "mark_offset" : "name_offset"]: [dx, dy],
+      },
+    }));
+  }
+
+  function endDrag() {
+    dragRef.current = null;
+  }
+
+  async function fetchSuggestions() {
+    setSuggesting(true);
+    setError(null);
+    try {
+      const data = await clientFetch<{ suggestions: LogoRecipe[] }>(
+        "/api/v1/admin/config/logo-suggestions/",
+        { method: "POST", body: JSON.stringify({}) },
+      );
+      setSuggestions(data.suggestions);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not fetch ideas");
+    } finally {
+      setSuggesting(false);
+    }
+  }
 
   async function handleMarkUpload(file: File) {
     setError(null);
@@ -160,8 +212,17 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                 <div className="flex min-w-0 flex-1 flex-col items-center gap-6 overflow-y-auto bg-muted/40 p-8">
                   {/* Site header context, light + dark */}
                   <div className="w-full max-w-xl space-y-3">
-                    <div className="rounded-lg border bg-white px-4 py-3 shadow-sm">
-                      <LogoRenderer recipe={recipe} width={240} svgRef={logoSvgRef} />
+                    <div
+                      className={`rounded-lg border bg-white px-4 py-3 shadow-sm ${adjusting ? "cursor-move [&_[data-part]]:outline-dashed [&_[data-part]]:outline-1 [&_[data-part]]:outline-primary/40" : ""}`}
+                    >
+                      <LogoRenderer
+                        recipe={recipe}
+                        width={480}
+                        svgRef={logoSvgRef}
+                        onPointerDown={beginDrag}
+                        onPointerMove={moveDrag}
+                        onPointerUp={endDrag}
+                      />
                     </div>
                     <div className="rounded-lg border bg-zinc-900 px-4 py-3 shadow-sm">
                       <LogoRenderer recipe={recipe} width={240} />
@@ -187,6 +248,30 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
 
                 {/* ── Controls rail ──────────────────────────────────────────── */}
                 <div className="w-80 shrink-0 space-y-6 overflow-y-auto border-l p-5">
+                  <section className="space-y-2">
+                    <Button
+                      type="button" variant="outline" size="sm" className="w-full gap-2"
+                      onClick={fetchSuggestions} disabled={suggesting}
+                    >
+                      {suggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                      Suggest ideas
+                    </Button>
+                    {suggestions && (
+                      <div className="grid grid-cols-2 gap-2" data-testid="logo-suggestions">
+                        {suggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setRecipe({ ...s, name: recipe.name })}
+                            className="rounded-md border bg-white p-2 hover:border-primary"
+                          >
+                            <LogoRenderer recipe={{ ...s, name: recipe.name }} width={120} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
                   <section className="space-y-1.5">
                     <p className="text-sm font-medium">Name</p>
                     <input
@@ -334,6 +419,48 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                         />
                       ))}
                     </div>
+                  </section>
+
+                  <section className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">Placement</p>
+                      <button
+                        type="button"
+                        onClick={() => setAdjusting((v) => !v)}
+                        className={`rounded-md border px-2.5 py-1 text-xs ${adjusting ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}
+                      >
+                        {adjusting ? "Done adjusting" : "Adjust placement"}
+                      </button>
+                    </div>
+                    {adjusting && (
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <p>Drag the badge or the name in the top preview. It snaps back near center.</p>
+                        <label className="block">
+                          Badge size
+                          <input
+                            type="range" min={0.5} max={2} step={0.05}
+                            value={recipe.overrides.mark_scale}
+                            onChange={(e) => setRecipe((r) => ({ ...r, overrides: { ...r.overrides, mark_scale: Number(e.target.value) } }))}
+                            className="w-full"
+                          />
+                        </label>
+                        <label className="block">
+                          Name size
+                          <input
+                            type="range" min={0.5} max={2} step={0.05}
+                            value={recipe.overrides.name_scale}
+                            onChange={(e) => setRecipe((r) => ({ ...r, overrides: { ...r.overrides, name_scale: Number(e.target.value) } }))}
+                            className="w-full"
+                          />
+                        </label>
+                        <Button
+                          type="button" variant="ghost" size="sm"
+                          onClick={() => setRecipe((r) => ({ ...r, overrides: { mark_offset: [0, 0], mark_scale: 1, name_offset: [0, 0], name_scale: 1 } }))}
+                        >
+                          Reset placement
+                        </Button>
+                      </div>
+                    )}
                   </section>
                 </div>
               </div>

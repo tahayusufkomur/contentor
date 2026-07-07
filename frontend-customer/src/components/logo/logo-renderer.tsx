@@ -103,6 +103,9 @@ interface LogoRendererProps {
   width?: number;
   className?: string;
   svgRef?: Ref<SVGSVGElement>;
+  onPointerDown?: React.PointerEventHandler<SVGSVGElement>;
+  onPointerMove?: React.PointerEventHandler<SVGSVGElement>;
+  onPointerUp?: React.PointerEventHandler<SVGSVGElement>;
 }
 
 export function LogoRenderer({
@@ -110,6 +113,9 @@ export function LogoRenderer({
   width = 320,
   className,
   svgRef,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
 }: LogoRendererProps) {
   const { layout, name, colors, font, overrides } = recipe;
   const markSize = 160;
@@ -131,6 +137,9 @@ export function LogoRenderer({
       height={(width * LOGO_VIEWBOX.h) / LOGO_VIEWBOX.w}
       className={className}
       xmlns="http://www.w3.org/2000/svg"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
     >
       {showMark && (
         <g
