@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import CommunitySettings
+from .models import MAX_POST_IMAGES, CommunitySettings, Post
 
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
@@ -60,3 +60,35 @@ class AuthorSerializer(serializers.Serializer):
 class CommunityPresignSerializer(serializers.Serializer):
     filename = serializers.CharField(max_length=255)
     content_type = serializers.ChoiceField(choices=ALLOWED_IMAGE_TYPES)
+
+
+class PostSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    images = serializers.SerializerMethodField()
+    my_reaction = serializers.SerializerMethodField()
+    body = serializers.CharField(max_length=10000, trim_whitespace=True)
+    image_keys = serializers.ListField(
+        child=serializers.CharField(max_length=500), max_length=MAX_POST_IMAGES, required=False
+    )
+
+    class Meta:
+        model = Post
+        fields = [
+            "id", "author", "body", "image_keys", "images", "status", "is_pinned",
+            "comment_count", "reaction_count", "my_reaction", "created_at", "edited_at",
+        ]
+        read_only_fields = ["status", "is_pinned", "comment_count", "reaction_count"]
+
+    def validate_image_keys(self, keys):
+        for key in keys:
+            if "/community/" not in key:
+                raise serializers.ValidationError("Invalid image key.")
+        return keys
+
+    def get_images(self, post):
+        from apps.core.storage import sign_if_s3_key
+
+        return [sign_if_s3_key(key) for key in post.image_keys]
+
+    def get_my_reaction(self, post):
+        return self.context.get("my_reactions", {}).get(post.id)
