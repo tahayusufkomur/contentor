@@ -13,7 +13,7 @@ from apps.core.storage import build_s3_path, generate_presigned_upload_url
 
 from . import services
 from .access import get_member_or_deny
-from .models import Comment, CommunitySettings, Post, PostStatus, Reaction
+from .models import REACTION_EMOJIS, Comment, CommunitySettings, Post, PostStatus, Reaction
 from .permissions import is_moderator
 from .serializers import (
     CommentSerializer,
@@ -212,3 +212,41 @@ def comment_detail(request, pk):
     if was_visible:
         services.adjust_comment_count(post, -1)
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _handle_reaction(request, member, *, post=None, comment=None):
+    target = post or comment
+    kwargs = {"post": post} if post else {"comment": comment}
+    if request.method == "PUT":
+        emoji = request.data.get("emoji")
+        if emoji not in REACTION_EMOJIS:
+            return Response({"emoji": ["Invalid emoji."]}, status=status.HTTP_400_BAD_REQUEST)
+        _, created = Reaction.objects.update_or_create(
+            member=member, **kwargs, defaults={"emoji": emoji}
+        )
+        if created:
+            services.adjust_reaction_count(target, +1)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    deleted, _ = Reaction.objects.filter(member=member, **kwargs).delete()
+    if deleted:
+        services.adjust_reaction_count(target, -1)
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def post_reaction(request, pk):
+    member = get_member_or_deny(request, write=True)
+    post = _viewable_post_or_404(member, pk)
+    return _handle_reaction(request, member, post=post)
+
+
+@api_view(["PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def comment_reaction(request, pk):
+    member = get_member_or_deny(request, write=True)
+    try:
+        comment = Comment.objects.get(pk=pk, status=PostStatus.VISIBLE)
+    except Comment.DoesNotExist:
+        raise Http404
+    return _handle_reaction(request, member, comment=comment)

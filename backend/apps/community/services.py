@@ -18,3 +18,9 @@ def adjust_comment_count(post, delta):
     Post.objects.filter(pk=post.pk, comment_count__gte=max(0, -delta)).update(
         comment_count=F("comment_count") + delta
     )
+
+
+def adjust_reaction_count(target, delta):
+    type(target).objects.filter(pk=target.pk, reaction_count__gte=max(0, -delta)).update(
+        reaction_count=F("reaction_count") + delta
+    )

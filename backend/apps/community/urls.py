@@ -10,4 +10,6 @@ urlpatterns = [
     path("posts/<int:pk>/", views.post_detail, name="community-post-detail"),
     path("posts/<int:pk>/comments/", views.post_comments, name="community-post-comments"),
     path("comments/<int:pk>/", views.comment_detail, name="community-comment-detail"),
+    path("posts/<int:pk>/reaction/", views.post_reaction, name="community-post-reaction"),
+    path("comments/<int:pk>/reaction/", views.comment_reaction, name="community-comment-reaction"),
 ]
