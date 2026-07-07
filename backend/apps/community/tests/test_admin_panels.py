@@ -5,7 +5,6 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 def test_community_models_registered_on_studio_site():
     import apps.community.admin_panels  # noqa: F401 — ensure module import registers
-
     from apps.adminkit.sites import studio_site
 
     keys = set(studio_site._registry.keys())
@@ -14,7 +13,6 @@ def test_community_models_registered_on_studio_site():
 
 def test_registered_admins_are_owner_scoped():
     import apps.community.admin_panels  # noqa: F401
-
     from apps.adminkit.sites import studio_site
     from apps.core.permissions import IsCoachOrOwner
 
