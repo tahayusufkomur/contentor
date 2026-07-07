@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { ModalPortal } from "@/components/ui/modal-portal";
 
 export function ImageGrid({ images }: { images: string[] }) {
   const [open, setOpen] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (open === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(null);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   if (!images.length) return null;
 
   return (
@@ -39,6 +49,8 @@ export function ImageGrid({ images }: { images: string[] }) {
             onClick={() => setOpen(null)}
           >
             <button
+              type="button"
+              onClick={() => setOpen(null)}
               className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white"
               aria-label="Close"
             >
