@@ -94,17 +94,13 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         cleaned = dict(value)
         layout = cleaned.get("layout") or "classic"
         if layout not in _NAVBAR_LAYOUTS:
-            raise serializers.ValidationError(
-                "layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)) + "."
-            )
+            raise serializers.ValidationError("layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)) + ".")
         cleaned["layout"] = layout
         links = []
         for raw in (cleaned.get("links") or [])[:20]:
             if not isinstance(raw, dict):
                 continue
-            links.append(
-                {"label": str(raw.get("label") or "")[:80], "href": _clean_nav_href(raw.get("href"))}
-            )
+            links.append({"label": str(raw.get("label") or "")[:80], "href": _clean_nav_href(raw.get("href"))})
         cleaned["links"] = links
         cta = cleaned.get("cta")
         if isinstance(cta, dict):
@@ -193,7 +189,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
 
         def _offset(key):
             pair = raw_over.get(key) or [0, 0]
-            if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            if not isinstance(pair, list | tuple) or len(pair) != 2:
                 pair = [0, 0]
             return [_clamp(pair[0], -120, 120), _clamp(pair[1], -120, 120)]
 
