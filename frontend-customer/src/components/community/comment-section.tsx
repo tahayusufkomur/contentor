@@ -16,6 +16,7 @@ import type {
 import { Linkify } from "./linkify";
 import { type ModeratorHooks, timeAgo } from "./post-card";
 import { ReactionBar } from "./reaction-bar";
+import { ReportDialog } from "./report-dialog";
 
 export function CommentSection({
   post,
@@ -31,6 +32,7 @@ export function CommentSection({
   const [hasMore, setHasMore] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reportingId, setReportingId] = useState<number | null>(null);
 
   const load = async (p: number) => {
     const data = await getComments(post.id, p);
@@ -111,6 +113,15 @@ export function CommentSection({
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
+              {comment.author.id !== me.id && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-destructive"
+                  onClick={() => setReportingId(comment.id)}
+                >
+                  Report
+                </button>
+              )}
               {moderator && comment.author.id !== me.id && (
                 <button
                   type="button"
@@ -146,6 +157,13 @@ export function CommentSection({
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reply"}
         </Button>
       </div>
+
+      <ReportDialog
+        open={reportingId !== null}
+        onClose={() => setReportingId(null)}
+        kind="comments"
+        id={reportingId ?? 0}
+      />
     </div>
   );
 }
