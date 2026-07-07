@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getModerationQueue } from "@/lib/community-admin";
 import { CommunitySettingsTab } from "@/components/admin/community/community-settings";
+import { MembersTable } from "@/components/admin/community/members-table";
 import { ModFeed } from "@/components/admin/community/mod-feed";
 import { ReportsQueue } from "@/components/admin/community/reports-queue";
 
@@ -42,8 +43,7 @@ export default function AdminCommunityPage() {
           <ReportsQueue onResolved={() => setRefreshKey((k) => k + 1)} />
         </TabsContent>
         <TabsContent value="members" className="pt-4">
-          {/* Task 6 mounts <MembersTable /> */}
-          <p className="text-sm text-muted-foreground">Members tab lands in Task 6.</p>
+          <MembersTable />
         </TabsContent>
         <TabsContent value="settings" className="pt-4">
           <CommunitySettingsTab />
