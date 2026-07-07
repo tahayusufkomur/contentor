@@ -150,6 +150,11 @@ export interface TenantConfig {
   brand_name: string;
   logo_url: string;
   logo_id?: string | null;
+  /** Square mark exported by the Logo Studio (drives favicon/PWA icons). */
+  icon_url?: string;
+  icon_id?: string | null;
+  /** Logo Studio composer state; empty object = no saved design. */
+  logo_recipe?: Partial<import("./logo").LogoRecipe> | Record<string, never>;
   theme: string;
   dark_mode_enabled: boolean;
   font_family: string;
