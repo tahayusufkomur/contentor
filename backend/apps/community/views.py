@@ -22,6 +22,7 @@ from .serializers import (
     CommunitySettingsSerializer,
     MemberSerializer,
     PostSerializer,
+    ReportCreateSerializer,
 )
 from .throttling import CommunityCommentThrottle, CommunityPostThrottle
 
@@ -250,3 +251,35 @@ def comment_reaction(request, pk):
     except Comment.DoesNotExist:
         raise Http404
     return _handle_reaction(request, member, comment=comment)
+
+
+def _report(request, member, *, post=None, comment=None):
+    serializer = ReportCreateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    services.report_target(
+        member,
+        post=post,
+        comment=comment,
+        reason=serializer.validated_data["reason"],
+        detail=serializer.validated_data["detail"],
+    )
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def post_report(request, pk):
+    member = get_member_or_deny(request, write=True)
+    post = _viewable_post_or_404(member, pk)
+    return _report(request, member, post=post)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def comment_report(request, pk):
+    member = get_member_or_deny(request, write=True)
+    try:
+        comment = Comment.objects.get(pk=pk, status=PostStatus.VISIBLE)
+    except Comment.DoesNotExist:
+        raise Http404
+    return _report(request, member, comment=comment)

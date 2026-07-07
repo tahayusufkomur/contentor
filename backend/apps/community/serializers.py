@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import MAX_POST_IMAGES, Comment, CommunitySettings, Post
+from .models import MAX_POST_IMAGES, Comment, CommunitySettings, Post, Report
 
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
@@ -106,3 +106,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_my_reaction(self, comment):
         return self.context.get("my_comment_reactions", {}).get(comment.id)
+
+
+class ReportCreateSerializer(serializers.Serializer):
+    reason = serializers.ChoiceField(choices=[c[0] for c in Report.REASON_CHOICES])
+    detail = serializers.CharField(max_length=2000, required=False, allow_blank=True, default="")

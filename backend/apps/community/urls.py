@@ -12,4 +12,6 @@ urlpatterns = [
     path("comments/<int:pk>/", views.comment_detail, name="community-comment-detail"),
     path("posts/<int:pk>/reaction/", views.post_reaction, name="community-post-reaction"),
     path("comments/<int:pk>/reaction/", views.comment_reaction, name="community-comment-reaction"),
+    path("posts/<int:pk>/report/", views.post_report, name="community-post-report"),
+    path("comments/<int:pk>/report/", views.comment_report, name="community-comment-report"),
 ]
