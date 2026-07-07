@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Feed } from "@/components/community/feed";
 import type { ModeratorHooks } from "@/components/community/post-card";
 import { getCommunityMe } from "@/lib/community";
@@ -17,15 +19,34 @@ import type { CommunityMe } from "@/types/community";
 
 export function ModFeed() {
   const [me, setMe] = useState<CommunityMe | null>(null);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">(
+    "loading",
+  );
   const [feedKey, setFeedKey] = useState(0);
 
   useEffect(() => {
     getCommunityMe()
-      .then(setMe)
-      .catch(() => toast.error("Enable the community in Settings first."));
+      .then((result) => {
+        setMe(result);
+        setStatus("ready");
+      })
+      .catch(() => {
+        toast.error("Enable the community in Settings first.");
+        setStatus("error");
+      });
   }, []);
 
-  if (!me) return <Skeleton className="h-64 w-full" />;
+  if (status === "loading") return <Skeleton className="h-64 w-full" />;
+
+  if (status === "error" || !me) {
+    return (
+      <EmptyState
+        icon={Users}
+        title="Community isn't turned on"
+        description="Turn on the community in the Settings tab above to start posting and moderating."
+      />
+    );
+  }
 
   const refresh = () => setFeedKey((k) => k + 1);
 
