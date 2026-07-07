@@ -10,7 +10,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const config = slug !== "__platform__" ? await fetchTenantConfig(slug) : null;
   const theme = getThemePalette(config?.theme);
   const name = config?.brand_name ?? "Contentor";
-  const v = config?.logo_id ?? "default";
+  const v = config?.icon_id ?? config?.logo_id ?? "default";
 
   return {
     id: "/",
