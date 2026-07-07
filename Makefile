@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend lint logs health-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-fresh lint logs health-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -91,11 +91,14 @@ seed-demos-force: seed-demo-assets ## Recreate all demo tenants from scratch
 # Quality
 # ============================================================================
 
-test: ## Run all backend tests
-	docker compose exec django pytest -v
+test: ## Run all backend tests (parallel, reuses test DB)
+	docker compose exec django pytest -n auto
 
 test-backend: ## Run backend tests (alias for test)
-	docker compose exec django pytest -v
+	docker compose exec django pytest -n auto
+
+test-fresh: ## Rebuild the test DB, then run tests (use after new migrations)
+	docker compose exec django pytest -n auto --create-db
 
 lint: ## Run all linters via pre-commit
 	pre-commit run --all-files

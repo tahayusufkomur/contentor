@@ -7,7 +7,16 @@ export default async function globalSetup() {
   if (!health || !health.ok) {
     throw new Error("Stack is not running — start it with `make dev` first.");
   }
-  // 2. Idempotent seed: plans/public tenant + demo tenants (incl. demo-yoga).
+  // 2. Skip the two manage.py boots (~6s) when demo-yoga is already seeded.
+  //    X-Tenant-Domain (not Host — undici drops custom Host headers) routes
+  //    the probe to the demo tenant. Set E2E_SEED=1 to force re-seeding.
+  if (!process.env.E2E_SEED) {
+    const demo = await fetch("http://localhost/api/v1/admin/config/", {
+      headers: { "X-Tenant-Domain": "demo-yoga.localhost" },
+    }).catch(() => null);
+    if (demo && demo.ok) return;
+  }
+  // 3. Idempotent seed: plans/public tenant + demo tenants (incl. demo-yoga).
   try {
     manage(["seed_plans"]);
   } catch (err) {

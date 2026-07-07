@@ -19,6 +19,7 @@
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
+import { manage } from "../helpers/compose";
 import { latestEmail } from "../helpers/email";
 
 // A real seeded student in demo-yoga (from seed_all_demos).
@@ -33,24 +34,20 @@ test("coach inbox page renders with compose button", async ({ browser }) => {
 
   await page.goto(`${TENANT}/admin/inbox`);
 
-  // Page header — "Inbox" heading
+  // Gmail-style inbox (2026-07 redesign): folder rail + search + compose.
+  // "Archived" identifies the folder rail unambiguously (the admin sidebar
+  // also has an "Inbox" item).
   await expect(
-    page.getByRole("heading", { name: /inbox/i }),
-    "Inbox heading must be visible",
+    page.getByRole("button", { name: /compose/i }),
+    '"Compose" button must be visible',
   ).toBeVisible();
-
-  // Compose button is always rendered regardless of domain/mailbox state
   await expect(
-    page.getByRole("button", { name: /new message/i }),
-    '"New message" button must be visible in inbox header',
+    page.getByRole("button", { name: /archived/i }),
+    "folder rail must be visible",
   ).toBeVisible();
-
-  // Either the empty state ("No conversations yet.") or the conversation list
-  // pane (div.w-72) is rendered — either satisfies the smoke test.
-  const leftPane = page.locator(".w-72").first();
   await expect(
-    leftPane,
-    "conversation list left-pane must be present",
+    page.getByPlaceholder("Search mail"),
+    "mail search input must be visible",
   ).toBeVisible();
 
   await coach.close();
@@ -84,6 +81,20 @@ test("coach composes message → conversation appears in inbox → email sink ca
 }) => {
   const coach = await coachContext(browser);
   const api = coach.request;
+
+  // Wipe leftover conversations first: compose threads by counterparty, so a
+  // conversation left by a previous run would swallow this message under the
+  // OLD subject and the subject assertion below would fail.
+  manage([
+    "shell",
+    "-c",
+    "from django_tenants.utils import tenant_context\n" +
+      "from apps.core.models import Tenant\n" +
+      "from apps.mailbox.models import Conversation, Message\n" +
+      "with tenant_context(Tenant.objects.get(slug='demo-yoga')):\n" +
+      "    Message.objects.all().delete()\n" +
+      "    Conversation.objects.all().delete()",
+  ]);
 
   // POST to the mailbox compose API directly (same as the UI dialog does).
   const composeRes = await api.post(`${TENANT}/api/v1/mailbox/compose/`, {

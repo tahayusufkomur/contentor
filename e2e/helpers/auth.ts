@@ -17,10 +17,24 @@ function cookie(jwt: string, domain: string) {
   };
 }
 
+// issue_login_token boots manage.py inside the container (~2s per call) and
+// the JWTs live for days — mint once per (role, tenant) and reuse all run.
+const tokenCache = new Map<string, string>();
+
+function issueToken(role: string, tenant?: string): string {
+  const key = `${role}:${tenant ?? ""}`;
+  let jwt = tokenCache.get(key);
+  if (!jwt) {
+    const args = ["issue_login_token", "--role", role];
+    if (tenant) args.push("--tenant", tenant);
+    jwt = manage(args);
+    tokenCache.set(key, jwt);
+  }
+  return jwt;
+}
+
 async function roleContext(browser: Browser, role: string, host: string, tenant?: string) {
-  const args = ["issue_login_token", "--role", role];
-  if (tenant) args.push("--tenant", tenant);
-  const jwt = manage(args);
+  const jwt = issueToken(role, tenant);
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await ctx.addCookies([cookie(jwt, host)]);
   return ctx;

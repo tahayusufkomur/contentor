@@ -33,9 +33,13 @@ warn_redundant_casts = true
 django_settings_module = "config.settings.dev"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.dev"
+DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["tests.py", "test_*.py"]
-addopts = "-v --tb=short"
+# --ds beats the container's DJANGO_SETTINGS_MODULE env var (which points at
+# dev settings and would silently override the ini value above).
+# --reuse-db keeps the test database (and the shared_test tenant schema)
+# between runs. After adding new migrations, rebuild with `make test-fresh`.
+addopts = "-v --tb=short --reuse-db --ds=config.settings.test"
 
 [tool.bandit]
 exclude_dirs = ["tests", "venv"]

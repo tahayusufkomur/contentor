@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { latestEmail, firstLink } from "../helpers/email";
+import { manage } from "../helpers/compose";
 import en from "../../frontend-main/messages/en/auth.json";
 
 const stamp = Date.now();
@@ -9,6 +10,16 @@ const BRAND = `E2E Studio ${stamp}`;
 test("coach signs up, verifies via sink email link, tenant gets provisioned", async ({
   page,
 }) => {
+  // ── Step 0: Sweep e2e-studio-* tenants left by previous runs ─────────────
+  // Self-healing: leftover schemas (esp. from failed runs) make the celery
+  // periodic tasks error forever and would accumulate without this.
+  manage([
+    "shell",
+    "-c",
+    "from apps.core.models import Tenant\n" +
+      "[t.delete(force_drop=True) for t in Tenant.objects.filter(slug__startswith='e2e-studio-')]",
+  ]);
+
   // ── Step 1: Fill signup form ─────────────────────────────────────────────
   await page.goto("http://localhost/signup");
 
@@ -45,13 +56,20 @@ test("coach signs up, verifies via sink email link, tenant gets provisioned", as
 
   // The page briefly shows "verifying", then transitions to "questionnaire".
   // The "verifying" state is too transient to reliably catch; wait for the
-  // questionnaire Skip button which appears after verification succeeds.
+  // niche cards which appear after verification succeeds.
 
-  // ── Step 5: Skip questionnaire → start provisioning ──────────────────────
-  // The questionnaire header has a "Skip" button. Click it to provision blank.
+  // ── Step 5: Questionnaire — pick a niche, then craft the platform ────────
+  // The niche-onboarding redesign removed the header "Skip"; the flow is now
+  // slide 1 (pick niche → Next) then slide 2 (goals optional → Continue).
   await page
-    .getByRole("button", { name: en.signup.questionnaire.skipShort })
+    .getByRole("button", { name: en.signup.questionnaire.niches.general.label })
     .click({ timeout: 20_000 });
+  await page
+    .getByRole("button", { name: en.signup.questionnaire.next })
+    .click();
+  await page
+    .getByRole("button", { name: en.signup.questionnaire.continue })
+    .click();
 
   // ── Step 6: Provisioning screen appears ──────────────────────────────────
   await expect(

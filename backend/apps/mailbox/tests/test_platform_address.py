@@ -50,6 +50,11 @@ def _clean_shared():
             CustomDomain.objects.all().delete()
             Tenant.objects.filter(slug="other-pa").delete()
             User.objects.filter(email="owner-pa@x.com").delete()
+            # Deleting the subscription above mirrors Tenant.plan onto the Free
+            # plan (subscription_mirror_plan_on_delete). Null the FK first —
+            # PlatformPlan.plan is PROTECT, so a lingering Tenant.plan would
+            # block the delete for the `free=True` tests (which seed a "Free" plan).
+            Tenant.objects.all().update(plan=None)
             PlatformPlan.objects.all().delete()
 
     _scrub()
