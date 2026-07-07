@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clearReaction, setReaction, type TargetKind } from "@/lib/community";
 import { REACTION_EMOJIS } from "@/types/community";
 import { cn } from "@/lib/utils";
+
+const LONG_PRESS_MS = 450;
 
 export function ReactionBar({
   kind,
@@ -19,6 +21,56 @@ export function ReactionBar({
   const [current, setCurrent] = useState<string | null>(mine);
   const [total, setTotal] = useState(count);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressFiredRef = useRef(false);
+
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  // Clear any pending long-press timer on unmount to avoid a leaked timeout
+  // calling setState after the component is gone.
+  useEffect(() => clearLongPressTimer, []);
+
+  // Close the picker when the user taps/clicks outside it — mouseleave
+  // doesn't fire on touch devices, so a long-press-opened picker would
+  // otherwise stay open indefinitely.
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutside);
+    document.addEventListener("touchstart", handleOutside);
+    return () => {
+      document.removeEventListener("click", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, [pickerOpen]);
+
+  const handleTouchStart = () => {
+    longPressFiredRef.current = false;
+    clearLongPressTimer();
+    longPressTimerRef.current = setTimeout(() => {
+      longPressFiredRef.current = true;
+      setPickerOpen(true);
+    }, LONG_PRESS_MS);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    clearLongPressTimer();
+    if (longPressFiredRef.current) {
+      // The long press already opened the picker — suppress the
+      // synthesized click so it doesn't also fire the default toggle.
+      e.preventDefault();
+    }
+  };
 
   const react = async (emoji: string) => {
     setPickerOpen(false);
@@ -45,7 +97,7 @@ export function ReactionBar({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         type="button"
         className={cn(
@@ -57,6 +109,9 @@ export function ReactionBar({
         onClick={() => void react(current ?? "❤️")}
         onMouseEnter={() => setPickerOpen(true)}
         onMouseLeave={() => setPickerOpen(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={clearLongPressTimer}
         aria-label="React"
       >
         <span>{current ?? "❤️"}</span>

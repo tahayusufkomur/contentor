@@ -62,8 +62,7 @@ export default function CommunityPage() {
     );
   }
 
-  const needsJoin =
-    !joined && (!localStorage.getItem("community_joined") || !me?.avatar);
+  const needsJoin = !joined && !localStorage.getItem("community_joined");
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
