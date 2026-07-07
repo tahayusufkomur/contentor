@@ -16,6 +16,13 @@ class TenantConfig(models.Model):
     brand_name = models.CharField(max_length=100)
     logo_url = models.CharField(max_length=2000, blank=True, default="")
     logo = models.ForeignKey("media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    # Square mark exported by the Logo Studio — drives favicon / PWA icons.
+    # Mirrors the logo/logo_url pair: FK preferred, raw URL as fallback.
+    icon = models.ForeignKey("media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    icon_url = models.CharField(max_length=2000, blank=True, default="")
+    # Logo Studio composer state (versioned; see TenantConfigSerializer
+    # .validate_logo_recipe for the shape). Empty dict = no studio design.
+    logo_recipe = models.JSONField(default=dict, blank=True)
     theme = models.CharField(max_length=30, choices=TenantTheme.choices, default=TenantTheme.OCEAN)
     dark_mode_enabled = models.BooleanField(default=True)
     font_family = models.CharField(max_length=100, default="Inter")
