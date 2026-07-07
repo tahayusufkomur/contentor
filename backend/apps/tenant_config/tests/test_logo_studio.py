@@ -136,3 +136,31 @@ def test_empty_recipe_clears(coach_client):
     resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": {}}, format="json")
     assert resp.status_code == 200
     assert TenantConfig.objects.first().logo_recipe == {}
+
+
+def test_image_mark_url_is_signed_from_photo_id_on_read(coach_client):
+    mark_photo = Photo.objects.create(s3_key="photos/mark.png", title="mark")
+    recipe = dict(VALID_RECIPE, mark={"type": "image", "photo_id": str(mark_photo.id)})
+    resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": recipe}, format="json")
+    assert resp.status_code == 200, resp.content
+    resp = coach_client.get("/api/v1/admin/config/")
+    assert resp.status_code == 200
+    mark = resp.data["logo_recipe"]["mark"]
+    assert mark["url"]
+    assert "photos/mark.png" in mark["url"]
+
+
+def test_image_mark_with_malformed_photo_id_is_clamped_not_500(coach_client):
+    # photo_id isn't UUID-shaped. Photo.id is a UUIDField, so an unvalidated
+    # value reaching Photo.objects.filter(pk=...) on read would raise
+    # Django's ValidationError (uncaught by DRF -> 500) instead of a clean
+    # response. The validator must clamp this at write time, and to_representation
+    # must tolerate it defensively at read time regardless.
+    bad = dict(VALID_RECIPE, mark={"type": "image", "photo_id": "not-a-uuid"})
+    resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": bad}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.data["logo_recipe"]["mark"]["photo_id"] == ""
+    resp = coach_client.get("/api/v1/admin/config/")
+    assert resp.status_code == 200
+    assert resp.data["logo_recipe"]["mark"]["photo_id"] == ""
+    assert resp.data["logo_recipe"]["mark"]["url"] == ""

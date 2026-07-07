@@ -1,5 +1,5 @@
 import re
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from django.conf import settings
 from django.db import connection
@@ -50,6 +50,23 @@ def _clean_nav_href(href):
     if href.strip().lower().startswith(_UNSAFE_URL_PREFIXES):
         return ""
     return href[:300]
+
+
+def _clean_photo_id(value):
+    """Validate a mark's photo_id is UUID-shaped; clamp to "" otherwise.
+
+    ``Photo.id`` is a UUIDField — an invalid shape reaching
+    ``Photo.objects.filter(pk=...)`` raises Django's ``ValidationError`` during
+    query construction, which DRF's exception handler does not turn into a
+    400. Unlike the other free-text fields in this file, malformed input here
+    must be validated and clamped, not merely length-capped, so both the
+    write path (``validate_logo_recipe``) and the read path
+    (``to_representation``'s re-signing lookup) stay safe from that crash.
+    """
+    try:
+        return str(UUID(str(value or "")))
+    except (TypeError, ValueError):
+        return ""
 
 
 class TenantConfigSerializer(serializers.ModelSerializer):
@@ -165,7 +182,10 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         if mark_type == "icon":
             mark["icon"] = str(raw_mark.get("icon") or "")[:60]
         elif mark_type == "image":
-            mark["photo_id"] = str(raw_mark.get("photo_id") or "")[:64]
+            # Malformed/non-UUID input clamps to "" rather than 400ing (see
+            # _clean_photo_id) — Photo.id is a UUIDField and an invalid shape
+            # would otherwise crash the read-time re-signing lookup below.
+            mark["photo_id"] = _clean_photo_id(raw_mark.get("photo_id"))
             # Never persist data: URLs or presigned URLs — re-derived on read.
             mark["url"] = ""
         raw_colors = value.get("colors") if isinstance(value.get("colors"), dict) else {}
@@ -240,7 +260,14 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         if isinstance(recipe, dict):
             mark = recipe.get("mark")
             if isinstance(mark, dict) and mark.get("type") == "image" and mark.get("photo_id"):
-                photo = Photo.objects.filter(pk=mark["photo_id"]).first()
+                # Defense in depth: re-validate the UUID shape before the FK
+                # lookup so data written before this validator existed (or
+                # via any path that bypasses the serializer) can't crash this
+                # read with Django's UUID ValidationError. A malformed value
+                # just yields no re-signed url, same as "no photo found".
+                photo = None
+                if _clean_photo_id(mark["photo_id"]):
+                    photo = Photo.objects.filter(pk=mark["photo_id"]).first()
                 if photo and photo.s3_key:
                     mark["url"] = generate_presigned_download_url(photo.s3_key)
         # Sign image URLs inside landing_sections (legacy) and pages (builder).
