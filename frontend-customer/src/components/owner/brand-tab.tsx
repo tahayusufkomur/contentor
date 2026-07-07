@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { Wand2 } from "lucide-react";
 import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { LogoUploader } from "@/components/owner/logo-uploader";
+import { LogoStudio } from "@/components/logo/logo-studio";
 import type { TenantConfig } from "@/types/tenant";
 
 const FONTS = [
@@ -24,6 +28,8 @@ interface BrandTabProps {
 }
 
 export function BrandTab({ config, onChange }: BrandTabProps) {
+  const [studioOpen, setStudioOpen] = useState(false);
+
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
@@ -38,9 +44,18 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
 
       <div className="space-y-1.5">
         <Label>Logo</Label>
-        <LogoUploader
-          logoUrl={config.logo_url}
-          onChange={(patch) => onChange(patch)}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="sm" className="gap-1.5" onClick={() => setStudioOpen(true)}>
+            <Wand2 className="h-3.5 w-3.5" />
+            {config.logo_recipe && Object.keys(config.logo_recipe).length ? "Edit logo" : "Create a logo"}
+          </Button>
+        </div>
+        <LogoUploader logoUrl={config.logo_url} onChange={(patch) => onChange(patch)} />
+        <LogoStudio
+          open={studioOpen}
+          onOpenChange={setStudioOpen}
+          config={config}
+          onSaved={(patch) => onChange(patch)}
         />
       </div>
 
