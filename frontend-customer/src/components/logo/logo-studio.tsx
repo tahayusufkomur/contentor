@@ -17,6 +17,7 @@ import {
   initialsFor,
 } from "@/lib/logo/catalog";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
+import { composeWall, moreLikeThis, type Brief } from "@/lib/logo/composer";
 import {
   imageToDataUrl,
   svgToPngBlob,
@@ -36,6 +37,10 @@ import type {
 import type { TenantConfig } from "@/types/tenant";
 import { AbstractMark } from "./abstract-mark";
 import { logoViewBox, LogoRenderer, MarkRenderer } from "./logo-renderer";
+import { StudioBrief } from "./studio-brief";
+import { StudioWall } from "./studio-wall";
+
+type StudioStep = "brief" | "ideas" | "editor";
 
 const LAYOUTS: { id: RecipeLayout; label: string }[] = [
   { id: "horizontal", label: "Mark + name" },
@@ -91,8 +96,20 @@ export function LogoStudio({
     startY: number;
     base: [number, number];
   } | null>(null);
-  const [suggestions, setSuggestions] = useState<LogoRecipe[] | null>(null);
-  const [suggesting, setSuggesting] = useState(false);
+  // ── AI-first flow state ────────────────────────────────────────────────
+  const [step, setStep] = useState<StudioStep>("editor");
+  const [brief, setBrief] = useState<Brief>({
+    brandName: config.brand_name || "",
+    niche: "",
+    styleChips: [],
+    vibe: "",
+  });
+  const [wall, setWall] = useState<LogoRecipe[] | null>(null);
+  const [wallDark, setWallDark] = useState(false);
+  const [showingVariants, setShowingVariants] = useState(false);
+  // Bumped on every wall regeneration; an AI top-up landing after a bump is
+  // stale and must be dropped.
+  const wallGenRef = useRef(0);
 
   // Load all studio fonts once so previews render true (each family's real
   // shipped weights).
@@ -113,8 +130,13 @@ export function LogoStudio({
   // Re-seed the recipe from the latest config every time the studio opens, so
   // a stale in-memory recipe (from a prior session, or a config change since
   // mount) doesn't linger — this component stays mounted across opens.
+  // A coach with a saved design lands in the Editor; a fresh coach starts at
+  // the Brief (the AI-first anchor flow).
   useEffect(() => {
-    if (open) setRecipe(seedRecipe(config, theme.primaryHex));
+    if (!open) return;
+    setRecipe(seedRecipe(config, theme.primaryHex));
+    setBrief((b) => ({ ...b, brandName: config.brand_name || b.brandName }));
+    setStep(isRecipe(config.logo_recipe) ? "editor" : "brief");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -161,22 +183,55 @@ export function LogoStudio({
     dragRef.current = null;
   }
 
-  async function fetchSuggestions() {
-    setSuggesting(true);
-    setError(null);
-    try {
-      const data = await clientFetch<{ suggestions: AnyLogoRecipe[] }>(
-        "/api/v1/admin/config/logo-suggestions/",
-        { method: "POST", body: JSON.stringify({}) },
-      );
-      // The endpoint still returns v1 recipes (Phase 4 upgrades it); migrate
-      // each on receipt so cards render through the v2 renderer.
-      setSuggestions(data.suggestions.map((s) => migrateRecipe(s)));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not fetch ideas");
-    } finally {
-      setSuggesting(false);
-    }
+  /** Fire-and-forget AI top-up: when the backend has an API key, its picks
+   * replace the first slots of the deterministic wall. Fallback-source
+   * responses are ignored (the composer wall is already better and free);
+   * errors are silent; stale responses (coach shuffled meanwhile) dropped. */
+  function aiTopUp(generation: number) {
+    void clientFetch<{ suggestions: AnyLogoRecipe[]; source: string }>(
+      "/api/v1/admin/config/logo-suggestions/",
+      { method: "POST", body: JSON.stringify({}) },
+    )
+      .then((data) => {
+        if (wallGenRef.current !== generation || data.source !== "ai") return;
+        const aiRecipes = data.suggestions.map((s) => ({
+          ...migrateRecipe(s),
+          name: brief.brandName || "My Brand",
+        }));
+        setWall((current) =>
+          current
+            ? [...aiRecipes, ...current.slice(aiRecipes.length)]
+            : current,
+        );
+      })
+      .catch(() => {
+        /* AI is optional — the wall is already on screen */
+      });
+  }
+
+  function regenerateWall() {
+    const seed = 1 + Math.floor(Math.random() * 1_000_000);
+    const generation = ++wallGenRef.current;
+    setWall(composeWall(brief, seed, 24, theme.primaryHex));
+    setShowingVariants(false);
+    aiTopUp(generation);
+  }
+
+  function startIdeas() {
+    regenerateWall();
+    setStep("ideas");
+  }
+
+  function handleMoreLikeThis(base: LogoRecipe) {
+    const seed = 1 + Math.floor(Math.random() * 1_000_000);
+    wallGenRef.current++;
+    setWall(moreLikeThis(base, brief, seed));
+    setShowingVariants(true);
+  }
+
+  function handleCustomize(chosen: LogoRecipe) {
+    setRecipe(chosen);
+    setStep("editor");
   }
 
   async function handleMarkUpload(file: File) {
@@ -317,29 +372,57 @@ export function LogoStudio({
               aria-modal="true"
               aria-labelledby="logo-studio-title"
               tabIndex={-1}
-              className="flex h-[92vh] max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-2xl outline-none"
+              className="flex h-full w-full flex-col overflow-hidden rounded-xl border bg-background shadow-2xl outline-none"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b px-6 py-4">
-                <h2 id="logo-studio-title" className="text-lg font-semibold">
-                  Logo Studio
-                </h2>
+                <div className="flex items-center gap-6">
+                  <h2 id="logo-studio-title" className="text-lg font-semibold">
+                    Logo Studio
+                  </h2>
+                  <nav
+                    className="flex items-center gap-1"
+                    aria-label="Studio steps"
+                  >
+                    {(
+                      [
+                        { id: "brief", label: "1 · Brief" },
+                        { id: "ideas", label: "2 · Ideas" },
+                        { id: "editor", label: "3 · Editor" },
+                      ] as { id: StudioStep; label: string }[]
+                    ).map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        aria-pressed={step === s.id}
+                        disabled={s.id === "ideas" && !wall}
+                        onClick={() => setStep(s.id)}
+                        className={`rounded-md px-2.5 py-1.5 text-sm ${step === s.id ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:text-foreground disabled:opacity-40"}`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </nav>
+                </div>
                 <div className="flex items-center gap-2">
                   {error && <p className="text-xs text-destructive">{error}</p>}
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="gap-2"
-                  >
-                    {saving ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Check className="h-4 w-4" />
-                    )}
-                    Use this logo
-                  </Button>
+                  {step === "editor" && (
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="gap-2"
+                    >
+                      {saving ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4" />
+                      )}
+                      Use this logo
+                    </Button>
+                  )}
                   <button
                     type="button"
+                    aria-label="Close Logo Studio"
                     onClick={handleClose}
                     className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
@@ -348,7 +431,34 @@ export function LogoStudio({
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-1">
+              {step === "brief" && (
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                  <StudioBrief
+                    brief={brief}
+                    onChange={setBrief}
+                    onSubmit={startIdeas}
+                  />
+                </div>
+              )}
+
+              {step === "ideas" && wall && (
+                <div className="min-h-0 flex-1">
+                  <StudioWall
+                    wall={wall}
+                    dark={wallDark}
+                    onToggleDark={() => setWallDark((v) => !v)}
+                    onShuffle={regenerateWall}
+                    onCustomize={handleCustomize}
+                    onMoreLikeThis={handleMoreLikeThis}
+                    showingVariants={showingVariants}
+                    onShowAll={regenerateWall}
+                  />
+                </div>
+              )}
+
+              <div
+                className={`min-h-0 flex-1 ${step === "editor" ? "flex" : "hidden"}`}
+              >
                 {/* ── Preview column ─────────────────────────────────────────── */}
                 <div className="flex min-w-0 flex-1 flex-col items-center gap-6 overflow-y-auto bg-muted/40 p-8">
                   {/* Site header context, light + dark */}
@@ -397,44 +507,17 @@ export function LogoStudio({
 
                 {/* ── Controls rail ──────────────────────────────────────────── */}
                 <div className="w-80 shrink-0 space-y-6 overflow-y-auto border-l p-5">
-                  <section className="space-y-2">
+                  <section>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       className="w-full gap-2"
-                      onClick={fetchSuggestions}
-                      disabled={suggesting}
+                      onClick={() => setStep("brief")}
                     >
-                      {suggesting ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Wand2 className="h-3.5 w-3.5" />
-                      )}
-                      Suggest ideas
+                      <Wand2 className="h-3.5 w-3.5" />
+                      Get new ideas
                     </Button>
-                    {suggestions && (
-                      <div
-                        className="grid grid-cols-2 gap-2"
-                        data-testid="logo-suggestions"
-                      >
-                        {suggestions.map((s, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() =>
-                              setRecipe({ ...s, name: recipe.name })
-                            }
-                            className="rounded-md border bg-white p-2 hover:border-primary"
-                          >
-                            <LogoRenderer
-                              recipe={{ ...s, name: recipe.name }}
-                              width={120}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </section>
 
                   <section className="space-y-1.5">
