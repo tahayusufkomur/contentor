@@ -257,6 +257,7 @@ export function StudioCanvas({
       </div>
       <div
         ref={containerRef}
+        data-testid="studio-canvas"
         tabIndex={0}
         role="application"
         aria-label="Logo canvas"

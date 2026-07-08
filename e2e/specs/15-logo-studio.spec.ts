@@ -79,18 +79,31 @@ test("coach creates a logo through brief, wall, and editor", async ({
     .getByPlaceholder("e.g. Yoga for busy mothers")
     .fill("Move every day");
 
+  // Scope element clicks to the canvas — the hidden dark-variant renderer
+  // (brand kit source) also carries [data-part] groups.
+  const canvas = dialog.getByTestId("studio-canvas");
+
   // Click the mark on the canvas -> selection box + mark controls appear.
-  await dialog.locator('[data-part="mark"]').click();
+  await canvas.locator('[data-part="mark"]').click();
   await expect(dialog.getByTestId("selection-box")).toBeVisible();
   await dialog.getByRole("button", { name: "flower-2", exact: true }).click();
 
   // Click the name on the canvas -> typography controls; nudge right 3px.
-  await dialog.locator('[data-part="name"]').click();
+  await canvas.locator('[data-part="name"]').click();
   await expect(dialog.getByTestId("selection-box")).toBeVisible();
   await expect(dialog.getByText("Letter spacing")).toBeVisible();
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
+
+  // Brand kit: the download event fires with a zip (PNGs always; SVG too
+  // when the font CDN is reachable — either way it's a valid kit).
+  const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
+  await dialog
+    .getByRole("button", { name: "Download brand kit (.zip)" })
+    .click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("brand-kit.zip");
 
   // Save → wait for the config PATCH and assert the payload persisted.
   // Loose "admin/config" matcher — 09-builder.spec.ts matches the same PATCH
