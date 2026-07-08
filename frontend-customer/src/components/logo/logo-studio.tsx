@@ -13,6 +13,7 @@ import {
   TEXT_COLORS,
   applyPalette,
   defaultRecipe,
+  fontEntry,
   initialsFor,
 } from "@/lib/logo/catalog";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
@@ -22,8 +23,10 @@ import { getThemePalette } from "@/lib/themes";
 import type {
   AnyLogoRecipe,
   BadgeShape,
+  FontWeight,
   LogoRecipe,
   RecipeLayout,
+  TextCase,
 } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
 import { AbstractMark } from "./abstract-mark";
@@ -397,15 +400,21 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                   {recipe.layout !== "name_only" && (
                     <section className="space-y-1.5">
                       <p className="text-sm font-medium">Mark</p>
-                      <div className="flex gap-1.5">
-                        <button
-                          type="button"
-                          aria-pressed={recipe.mark.type === "initials"}
-                          onClick={() => patch({ mark: { type: "initials", style: "plain" } })}
-                          className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.mark.type === "initials" ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
-                        >
-                          {initialsFor(recipe.name)} Initials
-                        </button>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(["plain", "monogram", "split", "overlap"] as const).map((style) => {
+                          const active = recipe.mark.type === "initials" && recipe.mark.style === style;
+                          return (
+                            <button
+                              key={style}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => patch({ mark: { type: "initials", style } })}
+                              className={`rounded-md border px-2.5 py-1.5 text-xs capitalize ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                            >
+                              {initialsFor(recipe.name)} {style}
+                            </button>
+                          );
+                        })}
                         <input
                           ref={fileRef}
                           type="file"
@@ -470,6 +479,26 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                           </div>
                         ))}
                       </div>
+                      {recipe.mark.type === "icon" && (
+                        <div className="flex gap-1.5">
+                          {(["outline", "solid"] as const).map((style) => {
+                            const active = recipe.mark.type === "icon" && recipe.mark.style === style;
+                            return (
+                              <button
+                                key={style}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() =>
+                                  recipe.mark.type === "icon" && patch({ mark: { ...recipe.mark, style } })
+                                }
+                                className={`rounded-md border px-2.5 py-1 text-xs capitalize ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                              >
+                                {style}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </section>
                   )}
 
@@ -494,28 +523,105 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
 
                   <section className="space-y-1.5">
                     <p className="text-sm font-medium">Font</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {LOGO_FONTS.map((f) => (
-                        <button
-                          key={f.family}
-                          type="button"
-                          aria-pressed={recipe.typography.name.font === f.family}
-                          onClick={() =>
+                    {(["Modern", "Elegant", "Bold", "Playful", "Minimal"] as const).map((vibe) => (
+                      <div key={vibe}>
+                        <p className="mb-1 text-xs text-muted-foreground">{vibe}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {LOGO_FONTS.filter((f) => f.vibe === vibe).map((f) => (
+                            <button
+                              key={f.family}
+                              type="button"
+                              aria-pressed={recipe.typography.name.font === f.family}
+                              onClick={() =>
+                                patch({
+                                  typography: {
+                                    ...recipe.typography,
+                                    name: {
+                                      ...recipe.typography.name,
+                                      font: f.family,
+                                      // clamp the weight if the new family doesn't ship it
+                                      weight: f.weights.includes(recipe.typography.name.weight)
+                                        ? recipe.typography.name.weight
+                                        : 700,
+                                    },
+                                    tagline: {
+                                      ...recipe.typography.tagline,
+                                      font: f.family,
+                                      weight: f.weights.includes(recipe.typography.tagline.weight)
+                                        ? recipe.typography.tagline.weight
+                                        : 500,
+                                    },
+                                  },
+                                })
+                              }
+                              style={{ fontFamily: `'${f.family}', sans-serif` }}
+                              className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.typography.name.font === f.family ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                            >
+                              {f.family}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <label className="flex-1 text-xs text-muted-foreground">
+                        Weight
+                        <select
+                          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                          value={recipe.typography.name.weight}
+                          onChange={(e) =>
                             patch({
                               typography: {
                                 ...recipe.typography,
-                                name: { ...recipe.typography.name, font: f.family },
-                                tagline: { ...recipe.typography.tagline, font: f.family },
+                                name: { ...recipe.typography.name, weight: Number(e.target.value) as FontWeight },
                               },
                             })
                           }
-                          style={{ fontFamily: `'${f.family}', sans-serif` }}
-                          className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.typography.name.font === f.family ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                         >
-                          {f.family}
-                        </button>
-                      ))}
+                          {fontEntry(recipe.typography.name.font).weights.map((w) => (
+                            <option key={w} value={w}>
+                              {{ 400: "Regular", 500: "Medium", 600: "Semibold", 700: "Bold", 800: "Extra bold" }[w]}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="flex-1 text-xs text-muted-foreground">
+                        Case
+                        <select
+                          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                          value={recipe.typography.name.case}
+                          onChange={(e) =>
+                            patch({
+                              typography: {
+                                ...recipe.typography,
+                                name: { ...recipe.typography.name, case: e.target.value as TextCase },
+                              },
+                            })
+                          }
+                        >
+                          <option value="none">As typed</option>
+                          <option value="title">Title Case</option>
+                          <option value="upper">UPPERCASE</option>
+                        </select>
+                      </label>
                     </div>
+                    <label className="block text-xs text-muted-foreground">
+                      Letter spacing
+                      <input
+                        type="range" min={-0.05} max={0.3} step={0.01}
+                        value={recipe.typography.name.tracking}
+                        onChange={(e) =>
+                          patch({
+                            typography: {
+                              ...recipe.typography,
+                              name: { ...recipe.typography.name, tracking: Number(e.target.value) },
+                            },
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </label>
                   </section>
 
                   <section className="space-y-1.5">
