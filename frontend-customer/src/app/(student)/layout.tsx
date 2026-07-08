@@ -22,11 +22,14 @@ export default async function StudentLayout({
   } catch {}
 
   let communityEnabled = false;
+  let communityUnread = false;
   try {
-    const community = await serverFetch<{ is_enabled: boolean }>(
-      "/api/v1/community/settings/",
-    );
+    const community = await serverFetch<{
+      is_enabled: boolean;
+      has_new_posts?: boolean;
+    }>("/api/v1/community/settings/");
     communityEnabled = community.is_enabled;
+    communityUnread = Boolean(community.has_new_posts);
   } catch {}
 
   return (
@@ -35,6 +38,7 @@ export default async function StudentLayout({
         user={user}
         hasSubscription={hasSubscription}
         communityEnabled={communityEnabled}
+        communityUnread={communityUnread}
       />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
       <ImpersonationBanner />

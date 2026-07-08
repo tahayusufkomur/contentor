@@ -45,7 +45,7 @@ function DesktopLinks({
   showInstall,
   className = "",
 }: {
-  links: NavLinkType[];
+  links: (NavLinkType & { dot?: boolean })[];
   showInstall: boolean;
   className?: string;
 }) {
@@ -55,9 +55,12 @@ function DesktopLinks({
         <Link
           key={link.href}
           href={link.href}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           {link.label}
+          {link.dot && (
+            <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-primary" />
+          )}
         </Link>
       ))}
       {showInstall && (
@@ -153,10 +156,12 @@ export function PublicHeader({
   user,
   hasSubscription,
   communityEnabled,
+  communityUnread,
 }: {
   user?: User | null;
   hasSubscription?: boolean;
   communityEnabled?: boolean;
+  communityUnread?: boolean;
 }) {
   const config = useTenant();
   const router = useRouter();
@@ -177,9 +182,9 @@ export function PublicHeader({
     ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
     : allNavLinks;
   // Signed-in members of a community-enabled tenant get a Community nav entry.
-  const fullNavLinks =
+  const fullNavLinks: (NavLinkType & { dot?: boolean })[] =
     user && communityEnabled
-      ? [...navLinks, { label: "Community", href: "/community" }]
+      ? [...navLinks, { label: "Community", href: "/community", dot: communityUnread }]
       : navLinks;
   const showLogin = navbar?.show_login !== false;
   const cta = navbar?.cta ?? null;
@@ -241,10 +246,11 @@ export function PublicHeader({
           <Link
             key={link.href}
             href={link.href}
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             onClick={() => setMobileOpen(false)}
           >
             {link.label}
+            {link.dot && <span className="h-2 w-2 rounded-full bg-primary" />}
           </Link>
         ))}
         {showInstall && (

@@ -71,4 +71,6 @@ export interface CommunitySettings {
   welcome_message: string;
   /** Moderators only. */
   notify_on_coach_post?: boolean;
+  /** True when the current member has unseen posts since their last visit. */
+  has_new_posts?: boolean;
 }
