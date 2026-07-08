@@ -24,34 +24,66 @@ CASES = {"none", "upper", "title"}
 WEIGHTS = {400, 500, 600, 700, 800}
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
-# Curated palette ids; KEEP IN SYNC with PALETTES in
-# frontend-customer/src/lib/logo/catalog.ts ("theme" is the tenant-derived one).
-PALETTE_IDS = {
-    "theme",
-    "ink",
-    "slate",
-    "forest",
-    "terracotta",
-    "rose",
-    "violet",
-    "amber",
-    "ocean-fade",
-    "sunset-fade",
-    "mint-fade",
-    "berry-fade",
-    "midnight-fade",
-    "gold-fade",
-    "sage",
-    "clay",
-    "sky",
-    "plum",
-    "sand",
-    "coral",
-    "pine",
-    "mono",
-    "cocoa",
-    "lavender",
+
+
+def _solid(color):
+    return {"type": "solid", "color": color}
+
+
+def _linear(start, end, angle=135):
+    return {"type": "linear", "from": start, "to": end, "angle": angle}
+
+
+# Full curated palette table (colors included — the AI path resolves
+# palette_id server-side). KEEP IN SYNC with PALETTES() in
+# frontend-customer/src/lib/logo/catalog.ts ("theme" is tenant-derived,
+# resolved by palette_colors below).
+PALETTES = {
+    "ink": {"badge": _solid("#111827"), "mark": "#ffffff", "text": "#111827", "tagline": "#6b7280"},
+    "slate": {"badge": _solid("#334155"), "mark": "#ffffff", "text": "#334155", "tagline": "#64748b"},
+    "forest": {"badge": _solid("#15803d"), "mark": "#ffffff", "text": "#14532d", "tagline": "#4d7c0f"},
+    "terracotta": {"badge": _solid("#c2410c"), "mark": "#fff7ed", "text": "#7c2d12", "tagline": "#9a3412"},
+    "rose": {"badge": _solid("#e11d48"), "mark": "#fff1f2", "text": "#881337", "tagline": "#9f1239"},
+    "violet": {"badge": _solid("#7c3aed"), "mark": "#f5f3ff", "text": "#4c1d95", "tagline": "#6d28d9"},
+    "amber": {"badge": _solid("#f59e0b"), "mark": "#1f2937", "text": "#78350f", "tagline": "#92400e"},
+    "ocean-fade": {"badge": _linear("#0ea5e9", "#1d4ed8"), "mark": "#ffffff", "text": "#0c4a6e", "tagline": "#0369a1"},
+    "sunset-fade": {"badge": _linear("#f97316", "#e11d48"), "mark": "#ffffff", "text": "#7c2d12", "tagline": "#c2410c"},
+    "mint-fade": {"badge": _linear("#34d399", "#0d9488"), "mark": "#022c22", "text": "#134e4a", "tagline": "#0f766e"},
+    "berry-fade": {"badge": _linear("#a855f7", "#db2777"), "mark": "#ffffff", "text": "#581c87", "tagline": "#86198f"},
+    "midnight-fade": {
+        "badge": _linear("#1e293b", "#0f172a"),
+        "mark": "#93c5fd",
+        "text": "#0f172a",
+        "tagline": "#475569",
+    },
+    "gold-fade": {"badge": _linear("#fbbf24", "#d97706"), "mark": "#451a03", "text": "#78350f", "tagline": "#a16207"},
+    "sage": {"badge": _solid("#84a98c"), "mark": "#f0fdf4", "text": "#354f52", "tagline": "#52796f"},
+    "clay": {"badge": _solid("#b08968"), "mark": "#fefae0", "text": "#5f4b32", "tagline": "#7f5539"},
+    "sky": {"badge": _solid("#38bdf8"), "mark": "#082f49", "text": "#0c4a6e", "tagline": "#0284c7"},
+    "plum": {"badge": _solid("#6b21a8"), "mark": "#faf5ff", "text": "#3b0764", "tagline": "#7e22ce"},
+    "sand": {"badge": _solid("#e7e5e4"), "mark": "#44403c", "text": "#292524", "tagline": "#78716c"},
+    "coral": {"badge": _solid("#fb7185"), "mark": "#4c0519", "text": "#881337", "tagline": "#be123c"},
+    "pine": {"badge": _solid("#065f46"), "mark": "#d1fae5", "text": "#064e3b", "tagline": "#047857"},
+    "mono": {"badge": _solid("#404040"), "mark": "#fafafa", "text": "#171717", "tagline": "#737373"},
+    "cocoa": {"badge": _solid("#4a2c2a"), "mark": "#fde68a", "text": "#3f1d1b", "tagline": "#78350f"},
+    "lavender": {"badge": _solid("#c4b5fd"), "mark": "#312e81", "text": "#3730a3", "tagline": "#6366f1"},
 }
+PALETTE_IDS = {"theme", *PALETTES}
+
+
+def palette_colors(palette_id, primary_hex):
+    """Resolve a palette id to a full v2 ``colors`` dict. Unknown ids fall
+    back to "ink"; "theme" derives from the tenant's primary color."""
+    if palette_id == "theme":
+        return {
+            "palette_id": "theme",
+            "badge": _solid(_hex(primary_hex, "#1a56db")),
+            "mark": "#ffffff",
+            "text": "#111827",
+            "tagline": "#6b7280",
+        }
+    resolved = palette_id if palette_id in PALETTES else "ink"
+    return {"palette_id": resolved, **PALETTES[resolved]}
 
 
 def _hex(value, default):

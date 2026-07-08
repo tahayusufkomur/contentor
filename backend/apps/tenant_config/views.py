@@ -200,13 +200,17 @@ _THEME_PRIMARY_HEX = {
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def logo_suggestions(request):
-    """4 Logo Studio recipe suggestions. AI when ANTHROPIC_API_KEY is set,
+    """Logo Studio recipe suggestions (schema v2). AI when ANTHROPIC_API_KEY
+    is set — brief-aware (style chips + vibe + niche from the request body) —
     deterministic niche fallback otherwise (or on any AI failure)."""
     config = TenantConfig.objects.first()
     brand_name = config.brand_name if config else "My Brand"
     theme = config.theme if config else "ocean"
     primary_hex = _THEME_PRIMARY_HEX.get(theme, "#1a56db")
-    niche = getattr(connection.tenant, "template_niche", "") or ""
+    data = request.data if isinstance(request.data, dict) else {}
+    niche = str(data.get("niche") or "")[:120] or getattr(connection.tenant, "template_niche", "") or ""
+    style_chips = [str(c)[:20] for c in (data.get("style_chips") or []) if isinstance(c, str)][:3]
+    vibe = str(data.get("vibe") or "")[:200]
 
     if settings.ANTHROPIC_API_KEY:
         # Only real AI calls consume the hourly budget — the deterministic
@@ -217,7 +221,7 @@ def logo_suggestions(request):
             return Response({"detail": "Suggestion limit reached. Try again in an hour."}, status=429)
         cache.set(rate_key, count + 1, timeout=3600)
         try:
-            suggestions = logo_ai.ai_suggestions(brand_name, niche, primary_hex)
+            suggestions = logo_ai.ai_suggestions(brand_name, niche, primary_hex, style_chips=style_chips, vibe=vibe)
             return Response({"suggestions": suggestions, "source": "ai"})
         except Exception:
             logger.exception("logo suggestions: AI call failed, using fallback")

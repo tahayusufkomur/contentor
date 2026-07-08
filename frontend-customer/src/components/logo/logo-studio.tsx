@@ -104,11 +104,21 @@ export function LogoStudio({
   /** Fire-and-forget AI top-up: when the backend has an API key, its picks
    * replace the first slots of the deterministic wall. Fallback-source
    * responses are ignored (the composer wall is already better and free);
-   * errors are silent; stale responses (coach shuffled meanwhile) dropped. */
+   * errors are silent; stale responses (coach shuffled meanwhile) dropped.
+   * The endpoint is brief-aware (Phase 4): chips + vibe + niche shape the
+   * AI's taste; responses are full v2 recipes (migrateRecipe passes them
+   * through untouched). */
   function aiTopUp(generation: number) {
     void clientFetch<{ suggestions: AnyLogoRecipe[]; source: string }>(
       "/api/v1/admin/config/logo-suggestions/",
-      { method: "POST", body: JSON.stringify({}) },
+      {
+        method: "POST",
+        body: JSON.stringify({
+          style_chips: brief.styleChips,
+          vibe: brief.vibe,
+          niche: brief.niche,
+        }),
+      },
     )
       .then((data) => {
         if (wallGenRef.current !== generation || data.source !== "ai") return;

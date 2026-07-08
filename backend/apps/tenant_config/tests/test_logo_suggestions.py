@@ -50,14 +50,15 @@ def _clear_rate_limit(tenant_ctx):
     cache.delete(f"logo-suggest:{tenant_ctx.schema_name}")
 
 
-def _assert_valid_recipes(payload):
-    assert len(payload["suggestions"]) == 4
+def _assert_valid_recipes(payload, count=4):
+    assert len(payload["suggestions"]) >= count
     for recipe in payload["suggestions"]:
-        assert recipe["version"] == 1
-        assert recipe["layout"] in {"badge_name", "icon_name", "name_only"}
-        assert recipe["badge"] in {"circle", "rounded", "squircle", "none"}
-        assert recipe["mark"]["type"] in {"icon", "initials"}
-        assert recipe["colors"]["badge_bg"].startswith("#")
+        assert recipe["version"] == 2
+        assert recipe["layout"] in {"horizontal", "horizontal_reversed", "stacked", "name_only", "emblem"}
+        assert recipe["badge"]["shape"] in {"none", "circle", "rounded", "squircle", "hexagon", "shield", "diamond"}
+        assert recipe["mark"]["type"] in {"icon", "initials", "abstract"}
+        assert recipe["colors"]["badge"]["type"] in {"solid", "linear", "radial"}
+        assert recipe["typography"]["name"]["weight"] in {400, 500, 600, 700, 800}
 
 
 @override_settings(ANTHROPIC_API_KEY="")
@@ -71,25 +72,33 @@ def test_fallback_suggestions_without_api_key(coach_client):
 @override_settings(ANTHROPIC_API_KEY="sk-test")
 def test_ai_suggestions_are_validated_against_catalog(coach_client):
     fake_item = mock.Mock(
-        layout="badge_name",
+        layout="horizontal",
+        mark_type="icon",
         icon="not-a-real-icon",
-        badge="circle",
+        initials_style="plain",
+        abstract_family="orbits",
+        badge_shape="circle",
+        badge_outline=False,
+        palette_id="not-a-palette",
         font="Comic Sans",
-        badge_bg="#7c3aed",
-        mark_fg="#ffffff",
-        text="#111827",
+        weight=700,
+        case="none",
+        tracking=0.0,
+        tagline="",
     )
-    fake_parsed = mock.Mock(suggestions=[fake_item] * 4)
+    fake_parsed = mock.Mock(suggestions=[fake_item] * 8)
     fake_response = mock.Mock(parsed_output=fake_parsed)
     with mock.patch("apps.tenant_config.logo_ai._anthropic_client") as client_factory:
         client_factory.return_value.messages.parse.return_value = fake_response
         resp = coach_client.post(URL, {}, format="json")
     assert resp.status_code == 200
     assert resp.data["source"] == "ai"
+    _assert_valid_recipes(resp.data, count=8)
     for recipe in resp.data["suggestions"]:
-        # unknown icon replaced by a catalog icon; unknown font replaced by Inter
+        # unknown icon -> catalog icon; unknown font -> Inter; unknown palette -> ink
         assert recipe["mark"]["icon"] != "not-a-real-icon"
-        assert recipe["font"] == "Inter"
+        assert recipe["typography"]["name"]["font"] == "Inter"
+        assert recipe["colors"]["palette_id"] == "ink"
 
 
 @override_settings(ANTHROPIC_API_KEY="sk-test")
@@ -109,13 +118,19 @@ def test_rate_limited_after_ten_ai_calls(coach_client):
     # first 10 succeed and the 11th is throttled.
     cache.clear()
     fake_item = mock.Mock(
-        layout="badge_name",
+        layout="horizontal",
+        mark_type="icon",
         icon="flower-2",
-        badge="circle",
+        initials_style="plain",
+        abstract_family="orbits",
+        badge_shape="circle",
+        badge_outline=False,
+        palette_id="ink",
         font="Inter",
-        badge_bg="#7c3aed",
-        mark_fg="#ffffff",
-        text="#111827",
+        weight=700,
+        case="none",
+        tracking=0.0,
+        tagline="",
     )
     fake_response = mock.Mock(parsed_output=mock.Mock(suggestions=[fake_item] * 4))
     with mock.patch("apps.tenant_config.logo_ai._anthropic_client") as client_factory:

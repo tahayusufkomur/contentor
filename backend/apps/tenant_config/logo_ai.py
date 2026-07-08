@@ -1,21 +1,24 @@
-"""Logo Studio recipe suggestions.
+"""Logo Studio recipe suggestions (schema v2).
 
-AI path: Claude structured output constrained to the catalog. Fallback path:
-deterministic niche-keyword picks. Both return recipes in the exact shape
-``TenantConfigSerializer.validate_logo_recipe`` accepts.
+AI path: Claude structured output constrained to the catalogs, brief-aware
+(style chips + free-text vibe), returning 8 full v2 recipes. Fallback path:
+deterministic niche-keyword picks (v1 combos upgraded to v2). Both return
+recipes in the exact shape ``logo_recipe.validate_recipe`` accepts — every
+AI item is validated through it before leaving this module.
 
 KEEP IN SYNC: the icon/font catalogs mirror
-``frontend-customer/src/lib/logo/catalog.ts``. catalog.ts now carries 20 fonts
-(``FontEntry[]``); this module still emits *v1* recipes restricted to the 8
-original families — all of which exist in the v2 catalog. Full v2 emission
-lands in Phase 4. v1 suggestions are upgraded to v2 client-side on receipt
-(logo-studio.tsx) and by the serializer on write.
+``frontend-customer/src/lib/logo/catalog.ts`` (20 fonts, 64 icons); palette
+ids resolve through ``logo_recipe.PALETTES`` (same sync note there). The
+frontend's deterministic composer (``lib/logo/composer.ts``) mirrors
+NICHE_ICONS below.
 """
 
 from typing import Literal
 
 from django.conf import settings
 from pydantic import BaseModel
+
+from .logo_recipe import PALETTE_IDS, palette_colors, upgrade_recipe, validate_recipe
 
 # 64 curated lucide icon names (kebab-case), 8 niche groups of 8.
 ICON_NAMES = [
@@ -93,12 +96,32 @@ ICON_NAMES = [
     "waves",
 ]
 
-# All 8 must exist in the v2 font catalog (catalog.ts LOGO_FONTS) so a
-# suggestion recipe renders in a real family. "Merriweather" (v1) was dropped
-# from v2 → replaced with "EB Garamond".
-FONTS = ["Inter", "Geist", "Poppins", "Nunito", "DM Sans", "Playfair Display", "EB Garamond", "Lora"]
+# The full v2 font catalog (catalog.ts LOGO_FONTS families, in order).
+FONTS = [
+    "Inter",
+    "Geist",
+    "DM Sans",
+    "Plus Jakarta Sans",
+    "Playfair Display",
+    "Lora",
+    "EB Garamond",
+    "Cormorant Garamond",
+    "Poppins",
+    "Montserrat",
+    "Archivo",
+    "Space Grotesk",
+    "Nunito",
+    "Quicksand",
+    "Baloo 2",
+    "Fredoka",
+    "Work Sans",
+    "Manrope",
+    "Sora",
+    "Outfit",
+]
 
-# niche keyword -> icons that read well for it (fallback path)
+# niche keyword -> icons that read well for it (fallback path).
+# KEEP IN SYNC: frontend-customer/src/lib/logo/composer.ts NICHE_ICONS.
 NICHE_ICONS = {
     "yoga": ["flower-2", "leaf", "sun", "sparkles"],
     "fitness": ["dumbbell", "flame", "trophy", "activity"],
@@ -111,31 +134,69 @@ NICHE_ICONS = {
 }
 DEFAULT_ICONS = ["sparkles", "star", "zap", "heart"]
 
-_LAYOUTS = ("badge_name", "icon_name", "name_only")
-_BADGES = ("circle", "rounded", "squircle", "none")
+ABSTRACT_FAMILIES = ("orbits", "bloom", "waves", "prism", "knot", "grid")
 
 
-class _Suggestion(BaseModel):
-    layout: Literal["badge_name", "icon_name", "name_only"]
-    icon: str
-    badge: Literal["circle", "rounded", "squircle", "none"]
+class _SuggestionV2(BaseModel):
+    layout: Literal["horizontal", "horizontal_reversed", "stacked", "name_only", "emblem"]
+    mark_type: Literal["icon", "initials", "abstract"]
+    icon: str = ""
+    initials_style: Literal["plain", "monogram", "split", "overlap"] = "plain"
+    abstract_family: Literal["orbits", "bloom", "waves", "prism", "knot", "grid"] = "orbits"
+    badge_shape: Literal["none", "circle", "rounded", "squircle", "hexagon", "shield", "diamond"]
+    badge_outline: bool = False
+    palette_id: str
     font: str
-    badge_bg: str
-    mark_fg: str
-    text: str
+    weight: Literal[400, 500, 600, 700, 800] = 700
+    case: Literal["none", "upper", "title"] = "none"
+    tracking: float = 0.0
+    tagline: str = ""
 
 
-class _SuggestionList(BaseModel):
-    suggestions: list[_Suggestion]
+class _SuggestionListV2(BaseModel):
+    suggestions: list[_SuggestionV2]
 
 
 def _anthropic_client():
     from anthropic import Anthropic
 
-    return Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=20.0, max_retries=1)
+    return Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=30.0, max_retries=1)
 
 
-def _recipe(brand_name, layout, icon, badge, font, badge_bg, mark_fg, text):
+def _recipe_from_item(item, brand_name, niche, primary_hex, seed):
+    """Assemble a v2 recipe from a structured-output item, clamping every
+    field to the catalogs, then run it through validate_recipe (final word)."""
+    icons = NICHE_ICONS.get((niche or "").lower(), DEFAULT_ICONS)
+    icon = item.icon if item.icon in ICON_NAMES else icons[0]
+    font = item.font if item.font in FONTS else "Inter"
+    if item.mark_type == "icon":
+        mark = {"type": "icon", "icon": icon, "style": "outline"}
+    elif item.mark_type == "abstract":
+        mark = {"type": "abstract", "family": item.abstract_family, "seed": seed}
+    else:
+        mark = {"type": "initials", "style": item.initials_style}
+    recipe = {
+        "version": 2,
+        "layout": item.layout,
+        "name": brand_name,
+        "tagline": str(item.tagline or "")[:120],
+        "mark": mark,
+        "badge": {"shape": item.badge_shape, "outline": bool(item.badge_outline)},
+        "typography": {
+            "name": {"font": font, "weight": item.weight, "tracking": item.tracking, "case": item.case},
+            "tagline": {"font": font, "weight": 500, "tracking": 0.08, "case": "upper"},
+        },
+        "colors": palette_colors(item.palette_id, primary_hex),
+        "elements": {
+            "mark": {"offset": [0, 0], "scale": 1},
+            "name": {"offset": [0, 0], "scale": 1},
+            "tagline": {"offset": [0, 0], "scale": 1},
+        },
+    }
+    return validate_recipe(recipe)
+
+
+def _recipe_v1(brand_name, layout, icon, badge, font, badge_bg, mark_fg, text):
     return {
         "version": 1,
         "layout": layout,
@@ -149,6 +210,7 @@ def _recipe(brand_name, layout, icon, badge, font, badge_bg, mark_fg, text):
 
 
 def fallback_suggestions(brand_name, niche, primary_hex):
+    """4 deterministic niche-keyword recipes, upgraded to schema v2."""
     icons = DEFAULT_ICONS
     for keyword, candidates in NICHE_ICONS.items():
         if keyword in (niche or "").lower():
@@ -161,48 +223,49 @@ def fallback_suggestions(brand_name, niche, primary_hex):
         ("name_only", "none", "Lora", primary_hex, primary_hex, "#334155"),
     ]
     return [
-        _recipe(brand_name, layout, icons[i % len(icons)], badge, font, bg, fg, text)
+        upgrade_recipe(_recipe_v1(brand_name, layout, icons[i % len(icons)], badge, font, bg, fg, text))
         for i, (layout, badge, font, bg, fg, text) in enumerate(combos)
     ]
 
 
-def _validated(item, brand_name, niche, primary_hex):
-    import re
-
-    hex_re = re.compile(r"^#[0-9a-fA-F]{6}$")
-    icons = NICHE_ICONS.get((niche or "").lower(), DEFAULT_ICONS)
-    icon = item.icon if item.icon in ICON_NAMES else icons[0]
-    font = item.font if item.font in FONTS else "Inter"
-    layout = item.layout if item.layout in _LAYOUTS else "badge_name"
-    badge = item.badge if item.badge in _BADGES else "circle"
-    badge_bg = item.badge_bg if hex_re.match(item.badge_bg or "") else primary_hex
-    mark_fg = item.mark_fg if hex_re.match(item.mark_fg or "") else "#ffffff"
-    text = item.text if hex_re.match(item.text or "") else "#111827"
-    return _recipe(brand_name, layout, icon, badge, font, badge_bg, mark_fg, text)
-
-
-def ai_suggestions(brand_name, niche, primary_hex):
-    """4 recipes from Claude, validated against the catalog. Raises on API
-    failure — the view catches and falls back."""
+def ai_suggestions(brand_name, niche, primary_hex, style_chips=(), vibe="", count=8):
+    """``count`` v2 recipes from Claude, validated against the catalogs.
+    Raises on API failure — the view catches and falls back."""
     client = _anthropic_client()
+    chips = ", ".join(style_chips) if style_chips else "no preference"
     prompt = (
-        f"Suggest 4 distinct logo recipes for a coaching brand.\n"
-        f'Brand name: "{brand_name}"\nNiche: "{niche or "general coaching"}"\n'
-        f"Brand primary color: {primary_hex}\n\n"
-        f"Rules: icon must be one of: {', '.join(ICON_NAMES)}.\n"
-        f"font must be one of: {', '.join(FONTS)}.\n"
-        f"Colors are 6-digit hex. Make the 4 suggestions visually distinct "
-        f"(vary layout, badge, font, palette); at least one should use the brand primary color. "
-        f"badge_bg/mark_fg must contrast strongly; text must be readable on white."
+        f"Design {count} distinct, professional logo recipes for a coaching brand.\n"
+        f'Brand name: "{brand_name}"\n'
+        f'Niche: "{niche or "general coaching"}"\n'
+        f"Style preferences: {chips}\n"
+        f'Their vibe, in their own words: "{vibe or "-"}"\n'
+        f'Brand primary color: {primary_hex} (palette_id "theme" uses it)\n\n'
+        f"Catalogs — every field must come from these:\n"
+        f"icons: {', '.join(ICON_NAMES)}\n"
+        f"fonts: {', '.join(FONTS)}\n"
+        f"palette_ids: {', '.join(sorted(PALETTE_IDS))}\n"
+        f"abstract families (geometric symbol generators): {', '.join(ABSTRACT_FAMILIES)}\n\n"
+        f"Rules: make the {count} suggestions genuinely diverse — vary layout, "
+        f"mark_type (mix icons, initials monograms, abstract symbols), palette, "
+        f"font and badge; tracking between 0 and 0.3 (wide tracking suits "
+        f"uppercase); a short tagline only when the niche suggests an obvious "
+        f"one, otherwise empty; at least one suggestion should use the theme "
+        f"palette. Favor combinations that read as designed by a professional: "
+        f"serif fonts with muted palettes for elegant briefs, heavy weights "
+        f"with strong gradients for bold ones."
     )
     response = client.messages.parse(
         model="claude-opus-4-8",
-        max_tokens=2000,
+        max_tokens=4000,
         messages=[{"role": "user", "content": prompt}],
-        output_format=_SuggestionList,
+        output_format=_SuggestionListV2,
     )
-    items = list(response.parsed_output.suggestions)[:4]
-    recipes = [_validated(item, brand_name, niche, primary_hex) for item in items]
+    items = list(response.parsed_output.suggestions)[:count]
+    recipes = [
+        _recipe_from_item(item, brand_name, niche, primary_hex, seed=(i * 7919 + 13) % 100_000)
+        for i, item in enumerate(items)
+    ]
+    fallback = fallback_suggestions(brand_name, niche, primary_hex)
     while len(recipes) < 4:
-        recipes.append(fallback_suggestions(brand_name, niche, primary_hex)[len(recipes)])
+        recipes.append(fallback[len(recipes) % 4])
     return recipes
