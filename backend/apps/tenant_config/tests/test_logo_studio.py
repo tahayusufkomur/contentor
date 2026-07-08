@@ -182,3 +182,25 @@ def test_image_mark_read_tolerates_preexisting_malformed_photo_id(coach_client):
     resp = coach_client.get("/api/v1/admin/config/")
     assert resp.status_code == 200
     assert resp.data["logo_recipe"]["mark"]["url"] == ""
+
+
+def test_fallback_suggestions_are_not_rate_limited(coach_client, settings):
+    settings.ANTHROPIC_API_KEY = ""
+    for _ in range(12):  # > the 10/hr AI budget
+        resp = coach_client.post("/api/v1/admin/config/logo-suggestions/")
+        assert resp.status_code == 200
+        assert resp.json()["source"] == "fallback"
+
+
+def test_fallback_fonts_exist_in_v2_catalog():
+    from apps.tenant_config.logo_ai import FONTS
+
+    # Task 3's catalog keeps all 8 v1 families, so fallback recipes stay valid.
+    v2_fonts = {
+        "Inter", "Geist", "DM Sans", "Plus Jakarta Sans", "Playfair Display", "Lora",
+        "EB Garamond", "Cormorant Garamond", "Poppins", "Montserrat", "Archivo",
+        "Space Grotesk", "Nunito", "Quicksand", "Baloo 2", "Fredoka",
+        "Work Sans", "Manrope", "Sora", "Outfit",
+    }
+    for font in FONTS:
+        assert font in v2_fonts

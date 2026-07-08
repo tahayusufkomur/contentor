@@ -5,7 +5,11 @@ deterministic niche-keyword picks. Both return recipes in the exact shape
 ``TenantConfigSerializer.validate_logo_recipe`` accepts.
 
 KEEP IN SYNC: the icon/font catalogs mirror
-``frontend-customer/src/lib/logo/catalog.ts``.
+``frontend-customer/src/lib/logo/catalog.ts``. catalog.ts now carries 20 fonts
+(``FontEntry[]``); this module still emits *v1* recipes restricted to the 8
+original families — all of which exist in the v2 catalog. Full v2 emission
+lands in Phase 4. v1 suggestions are upgraded to v2 client-side on receipt
+(logo-studio.tsx) and by the serializer on write.
 """
 
 from typing import Literal
@@ -89,7 +93,10 @@ ICON_NAMES = [
     "waves",
 ]
 
-FONTS = ["Inter", "Geist", "Poppins", "Nunito", "DM Sans", "Playfair Display", "Merriweather", "Lora"]
+# All 8 must exist in the v2 font catalog (catalog.ts LOGO_FONTS) so a
+# suggestion recipe renders in a real family. "Merriweather" (v1) was dropped
+# from v2 → replaced with "EB Garamond".
+FONTS = ["Inter", "Geist", "Poppins", "Nunito", "DM Sans", "Playfair Display", "EB Garamond", "Lora"]
 
 # niche keyword -> icons that read well for it (fallback path)
 NICHE_ICONS = {

@@ -101,9 +101,20 @@ def test_api_error_falls_back(coach_client):
     assert resp.data["source"] == "fallback"
 
 
-@override_settings(ANTHROPIC_API_KEY="")
-def test_rate_limited_after_ten_calls(coach_client):
+@override_settings(ANTHROPIC_API_KEY="sk-test")
+def test_rate_limited_after_ten_ai_calls(coach_client):
+    # Only the AI path consumes the hourly budget; the free deterministic
+    # fallback is unlimited (see test_fallback_suggestions_are_not_rate_limited
+    # in test_logo_studio.py). Drive the AI path with a mocked client so the
+    # first 10 succeed and the 11th is throttled.
     cache.clear()
-    for _ in range(10):
-        assert coach_client.post(URL, {}, format="json").status_code == 200
-    assert coach_client.post(URL, {}, format="json").status_code == 429
+    fake_item = mock.Mock(
+        layout="badge_name", icon="flower-2", badge="circle", font="Inter",
+        badge_bg="#7c3aed", mark_fg="#ffffff", text="#111827",
+    )
+    fake_response = mock.Mock(parsed_output=mock.Mock(suggestions=[fake_item] * 4))
+    with mock.patch("apps.tenant_config.logo_ai._anthropic_client") as client_factory:
+        client_factory.return_value.messages.parse.return_value = fake_response
+        for _ in range(10):
+            assert coach_client.post(URL, {}, format="json").status_code == 200
+        assert coach_client.post(URL, {}, format="json").status_code == 429

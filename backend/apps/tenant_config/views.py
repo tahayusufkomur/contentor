@@ -202,12 +202,6 @@ _THEME_PRIMARY_HEX = {
 def logo_suggestions(request):
     """4 Logo Studio recipe suggestions. AI when ANTHROPIC_API_KEY is set,
     deterministic niche fallback otherwise (or on any AI failure)."""
-    rate_key = f"logo-suggest:{connection.tenant.schema_name}"
-    count = cache.get(rate_key, 0)
-    if count >= 10:
-        return Response({"detail": "Suggestion limit reached. Try again in an hour."}, status=429)
-    cache.set(rate_key, count + 1, timeout=3600)
-
     config = TenantConfig.objects.first()
     brand_name = config.brand_name if config else "My Brand"
     theme = config.theme if config else "ocean"
@@ -215,6 +209,13 @@ def logo_suggestions(request):
     niche = getattr(connection.tenant, "template_niche", "") or ""
 
     if settings.ANTHROPIC_API_KEY:
+        # Only real AI calls consume the hourly budget — the deterministic
+        # fallback below is free and unlimited (logged v1 minor, fixed).
+        rate_key = f"logo-suggest:{connection.tenant.schema_name}"
+        count = cache.get(rate_key, 0)
+        if count >= 10:
+            return Response({"detail": "Suggestion limit reached. Try again in an hour."}, status=429)
+        cache.set(rate_key, count + 1, timeout=3600)
         try:
             suggestions = logo_ai.ai_suggestions(brand_name, niche, primary_hex)
             return Response({"suggestions": suggestions, "source": "ai"})
