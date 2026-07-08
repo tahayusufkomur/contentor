@@ -3,6 +3,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.media.models import Photo
+from apps.tenant_config.logo_recipe import upgrade_recipe
 from apps.tenant_config.models import TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -95,7 +96,9 @@ def test_patch_writes_logo_and_icon_fks_and_recipe(coach_client):
     config = TenantConfig.objects.first()
     assert config.logo_id == logo_photo.id
     assert config.icon_id == icon_photo.id
-    assert config.logo_recipe["layout"] == "badge_name"
+    # v1 payload is upgraded to v2 on write.
+    assert config.logo_recipe["version"] == 2
+    assert config.logo_recipe["layout"] == "horizontal"
 
 
 def test_icon_url_is_signed_from_fk_on_read(coach_client):
@@ -111,12 +114,17 @@ def test_icon_url_is_signed_from_fk_on_read(coach_client):
 
 
 def test_recipe_validation_rejects_bad_layout(coach_client):
-    bad = dict(VALID_RECIPE, layout="freeform-chaos")
+    # A bad *v2* layout is rejected. (A bad v1 layout would instead be
+    # coerced to "horizontal" by upgrade_recipe — v1 upgrade is lenient by
+    # design; hard-400 enforcement lives in the v2 validator.)
+    bad = dict(upgrade_recipe(VALID_RECIPE), layout="freeform-chaos")
     resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": bad}, format="json")
     assert resp.status_code == 400
 
 
 def test_recipe_validation_clamps_and_strips(coach_client):
+    # v1 payload with noisy values; upgraded to v2 then clamped by the
+    # validator. Assert against the v2 shape (colors.badge fill, elements.*).
     noisy = dict(
         VALID_RECIPE,
         name="x" * 500,
@@ -126,10 +134,11 @@ def test_recipe_validation_clamps_and_strips(coach_client):
     resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": noisy}, format="json")
     assert resp.status_code == 200, resp.content
     saved = TenantConfig.objects.first().logo_recipe
+    assert saved["version"] == 2
     assert len(saved["name"]) <= 80
-    assert saved["colors"]["badge_bg"] == "#111827"  # invalid hex -> safe default
-    assert saved["overrides"]["mark_offset"] == [120, -120]  # clamped
-    assert saved["overrides"]["mark_scale"] == 2.0  # clamped
+    assert saved["colors"]["badge"] == {"type": "solid", "color": "#111827"}  # invalid hex -> safe default
+    assert saved["elements"]["mark"]["offset"] == [120, -120]  # clamped
+    assert saved["elements"]["mark"]["scale"] == 3.0  # clamped (v2 range 0.4..3.0)
 
 
 def test_empty_recipe_clears(coach_client):
