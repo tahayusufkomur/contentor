@@ -37,7 +37,9 @@ def fanout_community_post(post_id: int, schema_name: str) -> None:
             return
         if not CommunitySettings.load().notify_on_coach_post:
             return
-        subs = PushSubscription.objects.exclude(user=post.author.user)
+        subs = PushSubscription.objects.filter(
+            user__community_member__isnull=False
+        ).exclude(user=post.author.user)
         send_to_subscriptions(
             subs, community_post_payload(post.author.display_name, post.body)
         )
