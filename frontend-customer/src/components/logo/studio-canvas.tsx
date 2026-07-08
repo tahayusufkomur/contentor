@@ -110,10 +110,34 @@ export function StudioCanvas({
     });
   }
 
+  /** Bounding-box hit test fallback: SVG pointer events only fire on painted
+   * pixels, so clicks inside a hollow outline badge or between icon strokes
+   * land on the background. Treat anywhere inside an element's box as a hit. */
+  function partAtPoint(clientX: number, clientY: number): ElementKey | null {
+    const svg = logoSvgRef.current;
+    if (!svg) return null;
+    for (const part of ["mark", "name", "tagline"] as ElementKey[]) {
+      const group = svg.querySelector(`[data-part="${part}"]`);
+      if (!group) continue;
+      const r = (group as SVGGElement).getBoundingClientRect();
+      if (
+        clientX >= r.left &&
+        clientX <= r.right &&
+        clientY >= r.top &&
+        clientY <= r.bottom
+      ) {
+        return part;
+      }
+    }
+    return null;
+  }
+
   function beginMove(e: React.PointerEvent<SVGSVGElement>) {
-    const part = (e.target as Element)
-      .closest("[data-part]")
-      ?.getAttribute("data-part") as ElementKey | null;
+    const part =
+      ((e.target as Element)
+        .closest("[data-part]")
+        ?.getAttribute("data-part") as ElementKey | null) ??
+      partAtPoint(e.clientX, e.clientY);
     if (!part) {
       onSelect(null);
       return;

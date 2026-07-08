@@ -70,22 +70,33 @@ export async function imageToDataUrl(url: string): Promise<string> {
  * fallback instead of the chosen brand font. Select the block by content
  * (its unicode-range starts at U+0000-00FF) rather than by position.
  */
-async function fontFaceCss(
-  fontFamily: string,
-  weight: number,
-): Promise<string> {
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@${weight}&display=swap`;
-  const css = await (await fetch(cssUrl)).text();
+// Cache the resolved data-URI css per (family, weight): a brand-kit export
+// rasterizes 8 PNGs and would otherwise re-fetch the same css + binary each
+// time. Failures aren't cached.
+const fontCssCache = new Map<string, Promise<string>>();
 
-  const blocks = css.match(/@font-face\s*{[^}]+}/g) || [];
-  const latinBlock =
-    blocks.find((block) => /unicode-range:\s*U\+0000-00FF/i.test(block)) ??
-    blocks[0];
-  const match = latinBlock?.match(/src:\s*url\((https:[^)]+)\)/);
-  if (!match) return "";
+function fontFaceCss(fontFamily: string, weight: number): Promise<string> {
+  const key = `${fontFamily}:${weight}`;
+  let cached = fontCssCache.get(key);
+  if (!cached) {
+    cached = (async () => {
+      const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@${weight}&display=swap`;
+      const css = await (await fetch(cssUrl)).text();
 
-  const fontData = await imageToDataUrl(match[1]);
-  return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});}`;
+      const blocks = css.match(/@font-face\s*{[^}]+}/g) || [];
+      const latinBlock =
+        blocks.find((block) => /unicode-range:\s*U\+0000-00FF/i.test(block)) ??
+        blocks[0];
+      const match = latinBlock?.match(/src:\s*url\((https:[^)]+)\)/);
+      if (!match) return "";
+
+      const fontData = await imageToDataUrl(match[1]);
+      return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});}`;
+    })();
+    cached.catch(() => fontCssCache.delete(key));
+    fontCssCache.set(key, cached);
+  }
+  return cached;
 }
 
 export interface FontSpec {

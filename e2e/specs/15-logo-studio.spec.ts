@@ -12,6 +12,9 @@ import { coachContext, TENANT } from "../helpers/auth";
 test("coach creates a logo through brief, wall, and editor", async ({
   browser,
 }) => {
+  // The brand-kit build fetches webfonts for 8 raster exports + TTFs for the
+  // vector SVGs — give cold-network runs room beyond the default budget.
+  test.setTimeout(120_000);
   const coach = await coachContext(browser);
   const page = await coach.newPage();
 
