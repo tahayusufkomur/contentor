@@ -21,7 +21,11 @@ export function migrateRecipe(recipe: AnyLogoRecipe): LogoRecipe {
     recipe.mark.type === "icon"
       ? { type: "icon", icon: recipe.mark.icon, style: "outline" }
       : recipe.mark.type === "image"
-        ? { type: "image", photo_id: recipe.mark.photo_id, url: recipe.mark.url }
+        ? {
+            type: "image",
+            photo_id: recipe.mark.photo_id,
+            url: recipe.mark.url,
+          }
         : { type: "initials", style: "plain" };
   const name: TextStyle = {
     font: recipe.font,
@@ -38,7 +42,12 @@ export function migrateRecipe(recipe: AnyLogoRecipe): LogoRecipe {
     badge: { shape: recipe.badge, outline: false },
     typography: {
       name,
-      tagline: { font: recipe.font, weight: 500, tracking: 0.08, case: "upper" },
+      tagline: {
+        font: recipe.font,
+        weight: 500,
+        tracking: 0.08,
+        case: "upper",
+      },
     },
     colors: {
       palette_id: null,

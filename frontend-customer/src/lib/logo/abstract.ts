@@ -14,11 +14,49 @@ export const ABSTRACT_FAMILIES: AbstractFamily[] = [
 ];
 
 export type AbstractShape =
-  | { kind: "circle"; cx: number; cy: number; r: number; opacity: number; stroke?: boolean; strokeWidth?: number }
-  | { kind: "ellipse"; cx: number; cy: number; rx: number; ry: number; rotate: number; opacity: number }
-  | { kind: "rect"; x: number; y: number; w: number; h: number; rx: number; opacity: number }
-  | { kind: "path"; d: string; opacity: number; stroke?: boolean; strokeWidth?: number }
-  | { kind: "line"; x1: number; y1: number; x2: number; y2: number; strokeWidth: number; opacity: number };
+  | {
+      kind: "circle";
+      cx: number;
+      cy: number;
+      r: number;
+      opacity: number;
+      stroke?: boolean;
+      strokeWidth?: number;
+    }
+  | {
+      kind: "ellipse";
+      cx: number;
+      cy: number;
+      rx: number;
+      ry: number;
+      rotate: number;
+      opacity: number;
+    }
+  | {
+      kind: "rect";
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      rx: number;
+      opacity: number;
+    }
+  | {
+      kind: "path";
+      d: string;
+      opacity: number;
+      stroke?: boolean;
+      strokeWidth?: number;
+    }
+  | {
+      kind: "line";
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      strokeWidth: number;
+      opacity: number;
+    };
 
 // mulberry32 — tiny deterministic PRNG.
 function rng(seed: number): () => number {
@@ -33,12 +71,20 @@ function rng(seed: number): () => number {
 
 const TAU = Math.PI * 2;
 const rnd = (r: () => number, lo: number, hi: number) => lo + r() * (hi - lo);
-const pick = <T,>(r: () => number, xs: T[]) => xs[Math.floor(r() * xs.length)]!;
+const pick = <T>(r: () => number, xs: T[]) => xs[Math.floor(r() * xs.length)]!;
 
 function orbits(r: () => number): AbstractShape[] {
   const shapes: AbstractShape[] = [
     { kind: "circle", cx: 0.5, cy: 0.5, r: rnd(r, 0.1, 0.16), opacity: 1 },
-    { kind: "circle", cx: 0.5, cy: 0.5, r: rnd(r, 0.3, 0.38), opacity: 0.9, stroke: true, strokeWidth: 0.035 },
+    {
+      kind: "circle",
+      cx: 0.5,
+      cy: 0.5,
+      r: rnd(r, 0.3, 0.38),
+      opacity: 0.9,
+      stroke: true,
+      strokeWidth: 0.035,
+    },
   ];
   const satellites = 2 + Math.floor(r() * 3);
   const ringR = (shapes[1] as { r: number }).r;
@@ -71,7 +117,13 @@ function bloom(r: () => number): AbstractShape[] {
       opacity: 0.82,
     });
   }
-  shapes.push({ kind: "circle", cx: 0.5, cy: 0.5, r: rnd(r, 0.07, 0.1), opacity: 1 });
+  shapes.push({
+    kind: "circle",
+    cx: 0.5,
+    cy: 0.5,
+    r: rnd(r, 0.07, 0.1),
+    opacity: 1,
+  });
   return shapes;
 }
 
@@ -86,7 +138,13 @@ function waves(r: () => number): AbstractShape[] {
       `M0.08 ${y.toFixed(3)}` +
       ` Q${(0.29 + phase).toFixed(3)} ${(y - amp).toFixed(3)} 0.5 ${y.toFixed(3)}` +
       ` T0.92 ${y.toFixed(3)}`;
-    shapes.push({ kind: "path", d, opacity: 1 - i * 0.22, stroke: true, strokeWidth: 0.055 });
+    shapes.push({
+      kind: "path",
+      d,
+      opacity: 1 - i * 0.22,
+      stroke: true,
+      strokeWidth: 0.055,
+    });
   }
   return shapes;
 }
@@ -103,7 +161,11 @@ function prism(r: () => number): AbstractShape[] {
       const a = rot + (TAU / 3) * k;
       return `${(cx + Math.cos(a) * size).toFixed(3)} ${(cy + Math.sin(a) * size).toFixed(3)}`;
     });
-    shapes.push({ kind: "path", d: `M${pts[0]} L${pts[1]} L${pts[2]} Z`, opacity: i === 0 ? 0.95 : 0.45 });
+    shapes.push({
+      kind: "path",
+      d: `M${pts[0]} L${pts[1]} L${pts[2]} Z`,
+      opacity: i === 0 ? 0.95 : 0.45,
+    });
   }
   return shapes;
 }
@@ -140,23 +202,41 @@ function grid(r: () => number): AbstractShape[] {
     const x = origin + (i % 3) * (cell + gap);
     const y = origin + Math.floor(i / 3) * (cell + gap);
     if (i === accent) {
-      shapes.push({ kind: "circle", cx: x + cell / 2, cy: y + cell / 2, r: cell / 2, opacity: 1 });
+      shapes.push({
+        kind: "circle",
+        cx: x + cell / 2,
+        cy: y + cell / 2,
+        r: cell / 2,
+        opacity: 1,
+      });
     } else {
-      shapes.push({ kind: "rect", x, y, w: cell, h: cell, rx: cell * 0.28, opacity: 0.8 });
+      shapes.push({
+        kind: "rect",
+        x,
+        y,
+        w: cell,
+        h: cell,
+        rx: cell * 0.28,
+        opacity: 0.8,
+      });
     }
   }
   return shapes;
 }
 
-const GENERATORS: Record<AbstractFamily, (r: () => number) => AbstractShape[]> = {
-  orbits,
-  bloom,
-  waves,
-  prism,
-  knot,
-  grid,
-};
+const GENERATORS: Record<AbstractFamily, (r: () => number) => AbstractShape[]> =
+  {
+    orbits,
+    bloom,
+    waves,
+    prism,
+    knot,
+    grid,
+  };
 
-export function abstractSpec(family: AbstractFamily, seed: number): AbstractShape[] {
+export function abstractSpec(
+  family: AbstractFamily,
+  seed: number,
+): AbstractShape[] {
   return GENERATORS[family](rng(seed));
 }

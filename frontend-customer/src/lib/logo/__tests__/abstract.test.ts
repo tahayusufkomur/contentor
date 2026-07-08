@@ -3,7 +3,14 @@ import { ABSTRACT_FAMILIES, abstractSpec } from "@/lib/logo/abstract";
 
 describe("abstractSpec", () => {
   it("covers all six families", () => {
-    expect(ABSTRACT_FAMILIES).toEqual(["orbits", "bloom", "waves", "prism", "knot", "grid"]);
+    expect(ABSTRACT_FAMILIES).toEqual([
+      "orbits",
+      "bloom",
+      "waves",
+      "prism",
+      "knot",
+      "grid",
+    ]);
   });
 
   it("is deterministic per (family, seed)", () => {
@@ -27,7 +34,8 @@ describe("abstractSpec", () => {
         for (const shape of abstractSpec(family, seed)) {
           for (const [key, v] of Object.entries(shape)) {
             if (key === "rotate") continue;
-            if (typeof v === "number") expect(Math.abs(v)).toBeLessThanOrEqual(1.5);
+            if (typeof v === "number")
+              expect(Math.abs(v)).toBeLessThanOrEqual(1.5);
           }
         }
       }

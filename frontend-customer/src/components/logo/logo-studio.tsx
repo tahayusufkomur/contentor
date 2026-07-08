@@ -17,7 +17,12 @@ import {
   initialsFor,
 } from "@/lib/logo/catalog";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
-import { imageToDataUrl, svgToPngBlob, uploadPng, type FontSpec } from "@/lib/logo/export";
+import {
+  imageToDataUrl,
+  svgToPngBlob,
+  uploadPng,
+  type FontSpec,
+} from "@/lib/logo/export";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
 import { getThemePalette } from "@/lib/themes";
 import type {
@@ -62,9 +67,16 @@ function seedRecipe(config: TenantConfig, primaryHex: string): LogoRecipe {
     : defaultRecipe(config.brand_name, primaryHex);
 }
 
-export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioProps) {
+export function LogoStudio({
+  open,
+  onOpenChange,
+  config,
+  onSaved,
+}: LogoStudioProps) {
   const theme = getThemePalette(config.theme);
-  const [recipe, setRecipe] = useState<LogoRecipe>(() => seedRecipe(config, theme.primaryHex));
+  const [recipe, setRecipe] = useState<LogoRecipe>(() =>
+    seedRecipe(config, theme.primaryHex),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logoSvgRef = useRef<SVGSVGElement>(null);
@@ -92,7 +104,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     link.id = id;
     link.rel = "stylesheet";
     link.href = `https://fonts.googleapis.com/css2?${LOGO_FONTS.map(
-      (f) => `family=${encodeURIComponent(f.family)}:wght@${f.weights.join(";")}`,
+      (f) =>
+        `family=${encodeURIComponent(f.family)}:wght@${f.weights.join(";")}`,
     ).join("&")}&display=swap`;
     document.head.appendChild(link);
   }, [open]);
@@ -105,7 +118,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const patch = (part: Partial<LogoRecipe>) => setRecipe((r) => ({ ...r, ...part }));
+  const patch = (part: Partial<LogoRecipe>) =>
+    setRecipe((r) => ({ ...r, ...part }));
 
   function beginDrag(e: React.PointerEvent<SVGSVGElement>) {
     if (!adjusting) return;
@@ -114,7 +128,12 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
       ?.getAttribute("data-part") as "mark" | "name" | "tagline" | null;
     if (!part) return;
     const base = recipe.elements[part].offset;
-    dragRef.current = { part, startX: e.clientX, startY: e.clientY, base: [...base] as [number, number] };
+    dragRef.current = {
+      part,
+      startX: e.clientX,
+      startY: e.clientY,
+      base: [...base] as [number, number],
+    };
     (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
   }
 
@@ -123,7 +142,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     if (!drag) return;
     const svg = e.currentTarget;
     // convert screen px to viewBox units
-    const scale = logoViewBox(recipe.layout).w / svg.getBoundingClientRect().width;
+    const scale =
+      logoViewBox(recipe.layout).w / svg.getBoundingClientRect().width;
     const clampOff = (v: number) => Math.max(-120, Math.min(120, v));
     const snap = (v: number) => (Math.abs(v) < 6 ? 0 : v);
     const dx = snap(clampOff(drag.base[0] + (e.clientX - drag.startX) * scale));
@@ -167,7 +187,9 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
       // Persist the original file so the mark survives re-edit sessions; the
       // in-memory data URL is what the preview/export uses this session.
       const uploaded = await uploadPng(file, file.name, file.type);
-      patch({ mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl } });
+      patch({
+        mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -182,13 +204,31 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     try {
       const vb = logoViewBox(recipe.layout);
       const fonts: FontSpec[] = [
-        { family: recipe.typography.name.font, weight: recipe.typography.name.weight },
+        {
+          family: recipe.typography.name.font,
+          weight: recipe.typography.name.weight,
+        },
         ...(recipe.tagline.trim()
-          ? [{ family: recipe.typography.tagline.font, weight: recipe.typography.tagline.weight }]
+          ? [
+              {
+                family: recipe.typography.tagline.font,
+                weight: recipe.typography.tagline.weight,
+              },
+            ]
           : []),
       ];
-      const logoBlob = await svgToPngBlob(logoSvgRef.current, vb.w * 2, vb.h * 2, fonts);
-      const markBlob = await svgToPngBlob(markSvgRef.current, 1024, 1024, fonts);
+      const logoBlob = await svgToPngBlob(
+        logoSvgRef.current,
+        vb.w * 2,
+        vb.h * 2,
+        fonts,
+      );
+      const markBlob = await svgToPngBlob(
+        markSvgRef.current,
+        1024,
+        1024,
+        fonts,
+      );
       const logo = await uploadPng(logoBlob, "logo.png");
       const mark = await uploadPng(markBlob, "logo-icon.png");
       const body = {
@@ -215,7 +255,11 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
       onSaved(body);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save the logo — you can upload a file instead.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not save the logo — you can upload a file instead.",
+      );
     } finally {
       setSaving(false);
     }
@@ -277,11 +321,21 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b px-6 py-4">
-                <h2 id="logo-studio-title" className="text-lg font-semibold">Logo Studio</h2>
+                <h2 id="logo-studio-title" className="text-lg font-semibold">
+                  Logo Studio
+                </h2>
                 <div className="flex items-center gap-2">
                   {error && <p className="text-xs text-destructive">{error}</p>}
-                  <Button onClick={handleSave} disabled={saving} className="gap-2">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
                     Use this logo
                   </Button>
                   <button
@@ -322,13 +376,21 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                         <MarkRenderer recipe={recipe} size={16} />
                         {recipe.name}
                       </div>
-                      <span className="text-xs text-muted-foreground">Browser tab</span>
+                      <span className="text-xs text-muted-foreground">
+                        Browser tab
+                      </span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
                       <div className="overflow-hidden rounded-2xl shadow-md">
-                        <MarkRenderer recipe={recipe} size={64} svgRef={markSvgRef} />
+                        <MarkRenderer
+                          recipe={recipe}
+                          size={64}
+                          svgRef={markSvgRef}
+                        />
                       </div>
-                      <span className="text-xs text-muted-foreground">App icon</span>
+                      <span className="text-xs text-muted-foreground">
+                        App icon
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -337,22 +399,38 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                 <div className="w-80 shrink-0 space-y-6 overflow-y-auto border-l p-5">
                   <section className="space-y-2">
                     <Button
-                      type="button" variant="outline" size="sm" className="w-full gap-2"
-                      onClick={fetchSuggestions} disabled={suggesting}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={fetchSuggestions}
+                      disabled={suggesting}
                     >
-                      {suggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                      {suggesting ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-3.5 w-3.5" />
+                      )}
                       Suggest ideas
                     </Button>
                     {suggestions && (
-                      <div className="grid grid-cols-2 gap-2" data-testid="logo-suggestions">
+                      <div
+                        className="grid grid-cols-2 gap-2"
+                        data-testid="logo-suggestions"
+                      >
                         {suggestions.map((s, i) => (
                           <button
                             key={i}
                             type="button"
-                            onClick={() => setRecipe({ ...s, name: recipe.name })}
+                            onClick={() =>
+                              setRecipe({ ...s, name: recipe.name })
+                            }
                             className="rounded-md border bg-white p-2 hover:border-primary"
                           >
-                            <LogoRenderer recipe={{ ...s, name: recipe.name }} width={120} />
+                            <LogoRenderer
+                              recipe={{ ...s, name: recipe.name }}
+                              width={120}
+                            />
                           </button>
                         ))}
                       </div>
@@ -401,14 +479,20 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                     <section className="space-y-1.5">
                       <p className="text-sm font-medium">Mark</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {(["plain", "monogram", "split", "overlap"] as const).map((style) => {
-                          const active = recipe.mark.type === "initials" && recipe.mark.style === style;
+                        {(
+                          ["plain", "monogram", "split", "overlap"] as const
+                        ).map((style) => {
+                          const active =
+                            recipe.mark.type === "initials" &&
+                            recipe.mark.style === style;
                           return (
                             <button
                               key={style}
                               type="button"
                               aria-pressed={active}
-                              onClick={() => patch({ mark: { type: "initials", style } })}
+                              onClick={() =>
+                                patch({ mark: { type: "initials", style } })
+                              }
                               className={`rounded-md border px-2.5 py-1.5 text-xs capitalize ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                             >
                               {initialsFor(recipe.name)} {style}
@@ -420,18 +504,34 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                           type="file"
                           accept="image/png,image/jpeg,image/webp,image/svg+xml"
                           className="hidden"
-                          onChange={(e) => e.target.files?.[0] && handleMarkUpload(e.target.files[0])}
+                          onChange={(e) =>
+                            e.target.files?.[0] &&
+                            handleMarkUpload(e.target.files[0])
+                          }
                         />
-                        <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => fileRef.current?.click()}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={() => fileRef.current?.click()}
+                        >
                           <Upload className="h-3.5 w-3.5" /> Your own
                         </Button>
                       </div>
                       <div>
-                        <p className="mb-1 text-xs text-muted-foreground">Abstract</p>
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          Abstract
+                        </p>
                         <div className="grid grid-cols-6 gap-1">
                           {ABSTRACT_FAMILIES.map((family) => {
-                            const active = recipe.mark.type === "abstract" && recipe.mark.family === family;
-                            const seed = recipe.mark.type === "abstract" ? recipe.mark.seed : 1;
+                            const active =
+                              recipe.mark.type === "abstract" &&
+                              recipe.mark.family === family;
+                            const seed =
+                              recipe.mark.type === "abstract"
+                                ? recipe.mark.seed
+                                : 1;
                             return (
                               <button
                                 key={family}
@@ -439,36 +539,61 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                                 aria-label={`Abstract ${family}`}
                                 aria-pressed={active}
                                 onClick={() =>
-                                  patch({ mark: { type: "abstract", family, seed: active ? seed + 1 : seed } })
+                                  patch({
+                                    mark: {
+                                      type: "abstract",
+                                      family,
+                                      seed: active ? seed + 1 : seed,
+                                    },
+                                  })
                                 }
                                 className={`flex h-9 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-primary" : "hover:border-foreground"}`}
                               >
                                 <svg viewBox="0 0 24 24" width={20} height={20}>
-                                  <AbstractMark family={family} seed={seed} color="currentColor" size={24} />
+                                  <AbstractMark
+                                    family={family}
+                                    seed={seed}
+                                    color="currentColor"
+                                    size={24}
+                                  />
                                 </svg>
                               </button>
                             );
                           })}
                         </div>
                         {recipe.mark.type === "abstract" && (
-                          <p className="mt-1 text-xs text-muted-foreground">Click again to shuffle the shape.</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Click again to shuffle the shape.
+                          </p>
                         )}
                       </div>
                       <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
                         {ICON_GROUPS.map((group) => (
                           <div key={group.label}>
-                            <p className="mb-1 text-xs text-muted-foreground">{group.label}</p>
+                            <p className="mb-1 text-xs text-muted-foreground">
+                              {group.label}
+                            </p>
                             <div className="grid grid-cols-8 gap-1">
                               {group.icons.map((iconName) => {
                                 const Icon = LOGO_ICONS[iconName];
-                                const active = recipe.mark.type === "icon" && recipe.mark.icon === iconName;
+                                const active =
+                                  recipe.mark.type === "icon" &&
+                                  recipe.mark.icon === iconName;
                                 return (
                                   <button
                                     key={iconName}
                                     type="button"
                                     aria-label={iconName}
                                     aria-pressed={active}
-                                    onClick={() => patch({ mark: { type: "icon", icon: iconName, style: "outline" } })}
+                                    onClick={() =>
+                                      patch({
+                                        mark: {
+                                          type: "icon",
+                                          icon: iconName,
+                                          style: "outline",
+                                        },
+                                      })
+                                    }
                                     className={`flex h-8 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                                   >
                                     <Icon className="h-4 w-4" />
@@ -482,14 +607,17 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                       {recipe.mark.type === "icon" && (
                         <div className="flex gap-1.5">
                           {(["outline", "solid"] as const).map((style) => {
-                            const active = recipe.mark.type === "icon" && recipe.mark.style === style;
+                            const active =
+                              recipe.mark.type === "icon" &&
+                              recipe.mark.style === style;
                             return (
                               <button
                                 key={style}
                                 type="button"
                                 aria-pressed={active}
                                 onClick={() =>
-                                  recipe.mark.type === "icon" && patch({ mark: { ...recipe.mark, style } })
+                                  recipe.mark.type === "icon" &&
+                                  patch({ mark: { ...recipe.mark, style } })
                                 }
                                 className={`rounded-md border px-2.5 py-1 text-xs capitalize ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                               >
@@ -511,7 +639,9 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                             key={b.id}
                             type="button"
                             aria-pressed={recipe.badge.shape === b.id}
-                            onClick={() => patch({ badge: { ...recipe.badge, shape: b.id } })}
+                            onClick={() =>
+                              patch({ badge: { ...recipe.badge, shape: b.id } })
+                            }
                             className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.badge.shape === b.id ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                           >
                             {b.label}
@@ -523,43 +653,63 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
 
                   <section className="space-y-1.5">
                     <p className="text-sm font-medium">Font</p>
-                    {(["Modern", "Elegant", "Bold", "Playful", "Minimal"] as const).map((vibe) => (
+                    {(
+                      [
+                        "Modern",
+                        "Elegant",
+                        "Bold",
+                        "Playful",
+                        "Minimal",
+                      ] as const
+                    ).map((vibe) => (
                       <div key={vibe}>
-                        <p className="mb-1 text-xs text-muted-foreground">{vibe}</p>
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          {vibe}
+                        </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {LOGO_FONTS.filter((f) => f.vibe === vibe).map((f) => (
-                            <button
-                              key={f.family}
-                              type="button"
-                              aria-pressed={recipe.typography.name.font === f.family}
-                              onClick={() =>
-                                patch({
-                                  typography: {
-                                    ...recipe.typography,
-                                    name: {
-                                      ...recipe.typography.name,
-                                      font: f.family,
-                                      // clamp the weight if the new family doesn't ship it
-                                      weight: f.weights.includes(recipe.typography.name.weight)
-                                        ? recipe.typography.name.weight
-                                        : 700,
+                          {LOGO_FONTS.filter((f) => f.vibe === vibe).map(
+                            (f) => (
+                              <button
+                                key={f.family}
+                                type="button"
+                                aria-pressed={
+                                  recipe.typography.name.font === f.family
+                                }
+                                onClick={() =>
+                                  patch({
+                                    typography: {
+                                      ...recipe.typography,
+                                      name: {
+                                        ...recipe.typography.name,
+                                        font: f.family,
+                                        // clamp the weight if the new family doesn't ship it
+                                        weight: f.weights.includes(
+                                          recipe.typography.name.weight,
+                                        )
+                                          ? recipe.typography.name.weight
+                                          : 700,
+                                      },
+                                      tagline: {
+                                        ...recipe.typography.tagline,
+                                        font: f.family,
+                                        weight: f.weights.includes(
+                                          recipe.typography.tagline.weight,
+                                        )
+                                          ? recipe.typography.tagline.weight
+                                          : 500,
+                                      },
                                     },
-                                    tagline: {
-                                      ...recipe.typography.tagline,
-                                      font: f.family,
-                                      weight: f.weights.includes(recipe.typography.tagline.weight)
-                                        ? recipe.typography.tagline.weight
-                                        : 500,
-                                    },
-                                  },
-                                })
-                              }
-                              style={{ fontFamily: `'${f.family}', sans-serif` }}
-                              className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.typography.name.font === f.family ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
-                            >
-                              {f.family}
-                            </button>
-                          ))}
+                                  })
+                                }
+                                style={{
+                                  fontFamily: `'${f.family}', sans-serif`,
+                                }}
+                                className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.typography.name.font === f.family ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                              >
+                                {f.family}
+                              </button>
+                            ),
+                          )}
                         </div>
                       </div>
                     ))}
@@ -574,16 +724,29 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                             patch({
                               typography: {
                                 ...recipe.typography,
-                                name: { ...recipe.typography.name, weight: Number(e.target.value) as FontWeight },
+                                name: {
+                                  ...recipe.typography.name,
+                                  weight: Number(e.target.value) as FontWeight,
+                                },
                               },
                             })
                           }
                         >
-                          {fontEntry(recipe.typography.name.font).weights.map((w) => (
-                            <option key={w} value={w}>
-                              {{ 400: "Regular", 500: "Medium", 600: "Semibold", 700: "Bold", 800: "Extra bold" }[w]}
-                            </option>
-                          ))}
+                          {fontEntry(recipe.typography.name.font).weights.map(
+                            (w) => (
+                              <option key={w} value={w}>
+                                {
+                                  {
+                                    400: "Regular",
+                                    500: "Medium",
+                                    600: "Semibold",
+                                    700: "Bold",
+                                    800: "Extra bold",
+                                  }[w]
+                                }
+                              </option>
+                            ),
+                          )}
                         </select>
                       </label>
                       <label className="flex-1 text-xs text-muted-foreground">
@@ -595,7 +758,10 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                             patch({
                               typography: {
                                 ...recipe.typography,
-                                name: { ...recipe.typography.name, case: e.target.value as TextCase },
+                                name: {
+                                  ...recipe.typography.name,
+                                  case: e.target.value as TextCase,
+                                },
                               },
                             })
                           }
@@ -609,13 +775,19 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                     <label className="block text-xs text-muted-foreground">
                       Letter spacing
                       <input
-                        type="range" min={-0.05} max={0.3} step={0.01}
+                        type="range"
+                        min={-0.05}
+                        max={0.3}
+                        step={0.01}
                         value={recipe.typography.name.tracking}
                         onChange={(e) =>
                           patch({
                             typography: {
                               ...recipe.typography,
-                              name: { ...recipe.typography.name, tracking: Number(e.target.value) },
+                              name: {
+                                ...recipe.typography.name,
+                                tracking: Number(e.target.value),
+                              },
                             },
                           })
                         }
@@ -636,7 +808,9 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                             title={pair.label}
                             aria-label={pair.label}
                             aria-pressed={active}
-                            onClick={() => setRecipe((r) => applyPalette(r, pair))}
+                            onClick={() =>
+                              setRecipe((r) => applyPalette(r, pair))
+                            }
                             className={`h-7 w-7 rounded-full border-2 ${active ? "border-primary" : "border-transparent"}`}
                             style={{ background: badgeSwatch(pair.badge) }}
                           />
@@ -645,16 +819,26 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                       <input
                         type="color"
                         aria-label="Custom badge color"
-                        value={recipe.colors.badge.type === "solid" ? recipe.colors.badge.color : "#111827"}
+                        value={
+                          recipe.colors.badge.type === "solid"
+                            ? recipe.colors.badge.color
+                            : "#111827"
+                        }
                         onChange={(e) =>
                           patch({
-                            colors: { ...recipe.colors, palette_id: null, badge: { type: "solid", color: e.target.value } },
+                            colors: {
+                              ...recipe.colors,
+                              palette_id: null,
+                              badge: { type: "solid", color: e.target.value },
+                            },
                           })
                         }
                         className="h-7 w-7 cursor-pointer rounded-full border p-0"
                       />
                     </div>
-                    <p className="pt-1 text-xs text-muted-foreground">Name color</p>
+                    <p className="pt-1 text-xs text-muted-foreground">
+                      Name color
+                    </p>
                     <div className="flex gap-1.5">
                       {TEXT_COLORS(theme.primaryHex).map((hex) => (
                         <button
@@ -662,7 +846,15 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                           type="button"
                           aria-label={`Name color ${hex}`}
                           aria-pressed={recipe.colors.text === hex}
-                          onClick={() => patch({ colors: { ...recipe.colors, palette_id: null, text: hex } })}
+                          onClick={() =>
+                            patch({
+                              colors: {
+                                ...recipe.colors,
+                                palette_id: null,
+                                text: hex,
+                              },
+                            })
+                          }
                           className={`h-7 w-7 rounded-full border-2 ${recipe.colors.text === hex ? "border-primary" : "border-border"}`}
                           style={{ background: hex }}
                         />
@@ -684,14 +876,29 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                     </div>
                     {adjusting && (
                       <div className="space-y-2 text-xs text-muted-foreground">
-                        <p>Drag the mark, name, or tagline in the top preview. It snaps back near center.</p>
+                        <p>
+                          Drag the mark, name, or tagline in the top preview. It
+                          snaps back near center.
+                        </p>
                         <label className="block">
                           Mark size
                           <input
-                            type="range" min={0.5} max={2} step={0.05}
+                            type="range"
+                            min={0.5}
+                            max={2}
+                            step={0.05}
                             value={recipe.elements.mark.scale}
                             onChange={(e) =>
-                              setRecipe((r) => ({ ...r, elements: { ...r.elements, mark: { ...r.elements.mark, scale: Number(e.target.value) } } }))
+                              setRecipe((r) => ({
+                                ...r,
+                                elements: {
+                                  ...r.elements,
+                                  mark: {
+                                    ...r.elements.mark,
+                                    scale: Number(e.target.value),
+                                  },
+                                },
+                              }))
                             }
                             className="w-full"
                           />
@@ -699,16 +906,30 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                         <label className="block">
                           Name size
                           <input
-                            type="range" min={0.5} max={2} step={0.05}
+                            type="range"
+                            min={0.5}
+                            max={2}
+                            step={0.05}
                             value={recipe.elements.name.scale}
                             onChange={(e) =>
-                              setRecipe((r) => ({ ...r, elements: { ...r.elements, name: { ...r.elements.name, scale: Number(e.target.value) } } }))
+                              setRecipe((r) => ({
+                                ...r,
+                                elements: {
+                                  ...r.elements,
+                                  name: {
+                                    ...r.elements.name,
+                                    scale: Number(e.target.value),
+                                  },
+                                },
+                              }))
                             }
                             className="w-full"
                           />
                         </label>
                         <Button
-                          type="button" variant="ghost" size="sm"
+                          type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() =>
                             setRecipe((r) => ({
                               ...r,

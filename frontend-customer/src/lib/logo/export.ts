@@ -70,7 +70,10 @@ export async function imageToDataUrl(url: string): Promise<string> {
  * fallback instead of the chosen brand font. Select the block by content
  * (its unicode-range starts at U+0000-00FF) rather than by position.
  */
-async function fontFaceCss(fontFamily: string, weight: number): Promise<string> {
+async function fontFaceCss(
+  fontFamily: string,
+  weight: number,
+): Promise<string> {
   const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@${weight}&display=swap`;
   const css = await (await fetch(cssUrl)).text();
 
@@ -99,7 +102,8 @@ export async function svgToPngBlob(
   // De-dup the (family, weight) pairs the recipe actually renders.
   const unique = fonts.filter(
     (f, i) =>
-      fonts.findIndex((g) => g.family === f.family && g.weight === f.weight) === i,
+      fonts.findIndex((g) => g.family === f.family && g.weight === f.weight) ===
+      i,
   );
 
   // Best-effort warm of the page's own font cache. This does NOT affect the

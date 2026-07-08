@@ -20,11 +20,13 @@ test("coach creates a logo in the Logo Studio", async ({ browser }) => {
   // element with role=heading, so scope to that.
   await expect(page.getByRole("heading", { name: "Logo Studio" })).toBeVisible();
 
-  // Compose: layout + a specific icon
-  await page.getByRole("button", { name: "Icon + name" }).click();
+  // Compose: v2 layout + a specific icon + a tagline
+  await page.getByRole("button", { name: "Mark + name" }).click();
   await page.getByRole("button", { name: "flower-2", exact: true }).click();
+  await page.getByPlaceholder("e.g. Yoga for busy mothers").fill("Move every day");
 
-  // Suggestions work offline via the deterministic fallback
+  // Suggestions still work offline via the deterministic fallback (v1
+  // recipes, migrated to v2 client-side on receipt)
   await page.getByRole("button", { name: "Suggest ideas" }).click();
   await expect(page.getByTestId("logo-suggestions")).toBeVisible({ timeout: 15_000 });
 
@@ -43,8 +45,12 @@ test("coach creates a logo in the Logo Studio", async ({ browser }) => {
   const body = patch.request().postDataJSON();
   expect(body.logo_id).toBeTruthy();
   expect(body.icon_id).toBeTruthy();
-  expect(body.logo_recipe.layout).toBe("icon_name");
-  expect(body.logo_recipe.mark).toEqual({ type: "icon", icon: "flower-2" });
+  expect(body.logo_recipe.version).toBe(2);
+  expect(body.logo_recipe.layout).toBe("horizontal");
+  expect(body.logo_recipe.tagline).toBe("Move every day");
+  expect(body.logo_recipe.mark).toEqual({ type: "icon", icon: "flower-2", style: "outline" });
+  expect(body.logo_recipe.badge.shape).toBeTruthy();
+  expect(body.logo_recipe.typography.name.weight).toBeGreaterThanOrEqual(400);
 
   // Dialog closes on success
   await expect(page.getByRole("heading", { name: "Logo Studio" })).toBeHidden({ timeout: 15_000 });

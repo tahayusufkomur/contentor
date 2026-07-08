@@ -109,8 +109,13 @@ def test_rate_limited_after_ten_ai_calls(coach_client):
     # first 10 succeed and the 11th is throttled.
     cache.clear()
     fake_item = mock.Mock(
-        layout="badge_name", icon="flower-2", badge="circle", font="Inter",
-        badge_bg="#7c3aed", mark_fg="#ffffff", text="#111827",
+        layout="badge_name",
+        icon="flower-2",
+        badge="circle",
+        font="Inter",
+        badge_bg="#7c3aed",
+        mark_fg="#ffffff",
+        text="#111827",
     )
     fake_response = mock.Mock(parsed_output=mock.Mock(suggestions=[fake_item] * 4))
     with mock.patch("apps.tenant_config.logo_ai._anthropic_client") as client_factory:

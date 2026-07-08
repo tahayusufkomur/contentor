@@ -27,9 +27,30 @@ _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 # Curated palette ids; KEEP IN SYNC with PALETTES in
 # frontend-customer/src/lib/logo/catalog.ts ("theme" is the tenant-derived one).
 PALETTE_IDS = {
-    "theme", "ink", "slate", "forest", "terracotta", "rose", "violet", "amber",
-    "ocean-fade", "sunset-fade", "mint-fade", "berry-fade", "midnight-fade", "gold-fade",
-    "sage", "clay", "sky", "plum", "sand", "coral", "pine", "mono", "cocoa", "lavender",
+    "theme",
+    "ink",
+    "slate",
+    "forest",
+    "terracotta",
+    "rose",
+    "violet",
+    "amber",
+    "ocean-fade",
+    "sunset-fade",
+    "mint-fade",
+    "berry-fade",
+    "midnight-fade",
+    "gold-fade",
+    "sage",
+    "clay",
+    "sky",
+    "plum",
+    "sand",
+    "coral",
+    "pine",
+    "mono",
+    "cocoa",
+    "lavender",
 }
 
 
@@ -87,7 +108,8 @@ def upgrade_recipe(value):
 
 def _enum(value, allowed, field):
     if value not in allowed:
-        raise serializers.ValidationError(f"{field} must be one of: " + ", ".join(sorted(str(a) for a in allowed)) + ".")
+        choices = ", ".join(sorted(str(a) for a in allowed))
+        raise serializers.ValidationError(f"{field} must be one of: {choices}.")
     return value
 
 
@@ -96,7 +118,11 @@ def _fill(value, default_color):
     fill_type = _enum(value.get("type"), FILL_TYPES, "fill.type")
     if fill_type == "solid":
         return {"type": "solid", "color": _hex(value.get("color"), default_color)}
-    fill = {"type": fill_type, "from": _hex(value.get("from"), default_color), "to": _hex(value.get("to"), default_color)}
+    fill = {
+        "type": fill_type,
+        "from": _hex(value.get("from"), default_color),
+        "to": _hex(value.get("to"), default_color),
+    }
     if fill_type == "linear":
         fill["angle"] = _num(value.get("angle"), 0, 360, 135)
     return fill

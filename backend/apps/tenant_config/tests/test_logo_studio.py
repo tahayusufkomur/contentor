@@ -197,10 +197,26 @@ def test_fallback_fonts_exist_in_v2_catalog():
 
     # Task 3's catalog keeps all 8 v1 families, so fallback recipes stay valid.
     v2_fonts = {
-        "Inter", "Geist", "DM Sans", "Plus Jakarta Sans", "Playfair Display", "Lora",
-        "EB Garamond", "Cormorant Garamond", "Poppins", "Montserrat", "Archivo",
-        "Space Grotesk", "Nunito", "Quicksand", "Baloo 2", "Fredoka",
-        "Work Sans", "Manrope", "Sora", "Outfit",
+        "Inter",
+        "Geist",
+        "DM Sans",
+        "Plus Jakarta Sans",
+        "Playfair Display",
+        "Lora",
+        "EB Garamond",
+        "Cormorant Garamond",
+        "Poppins",
+        "Montserrat",
+        "Archivo",
+        "Space Grotesk",
+        "Nunito",
+        "Quicksand",
+        "Baloo 2",
+        "Fredoka",
+        "Work Sans",
+        "Manrope",
+        "Sora",
+        "Outfit",
     }
     for font in FONTS:
         assert font in v2_fonts

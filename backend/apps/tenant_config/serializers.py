@@ -145,9 +145,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("logo_recipe must be an object.")
         if not value:
             return {}
-        return logo_recipe_lib.validate_recipe(
-            logo_recipe_lib.upgrade_recipe(value), clean_photo_id=_clean_photo_id
-        )
+        return logo_recipe_lib.validate_recipe(logo_recipe_lib.upgrade_recipe(value), clean_photo_id=_clean_photo_id)
 
     class Meta:
         model = TenantConfig

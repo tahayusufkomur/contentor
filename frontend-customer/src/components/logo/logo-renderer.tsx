@@ -31,7 +31,10 @@ function fitFontSize(
   max = 80,
 ): number {
   const perChar = 0.58 + style.tracking;
-  return Math.max(22, Math.min(max, budget / (perChar * Math.max(text.length, 3))));
+  return Math.max(
+    22,
+    Math.min(max, budget / (perChar * Math.max(text.length, 3))),
+  );
 }
 
 /** Paints a Fill: solid -> color string; gradients -> url(#id) + <defs>. */
@@ -49,7 +52,13 @@ function useFillPaint(
     return {
       paint: `url(#${id})`,
       defs: (
-        <linearGradient id={id} x1={0.5 - x} y1={0.5 - y} x2={0.5 + x} y2={0.5 + y}>
+        <linearGradient
+          id={id}
+          x1={0.5 - x}
+          y1={0.5 - y}
+          x2={0.5 + x}
+          y2={0.5 + y}
+        >
           <stop offset="0%" stopColor={fill.from} />
           <stop offset="100%" stopColor={fill.to} />
         </linearGradient>
@@ -91,7 +100,9 @@ export function Badge({
     return <circle cx={size / 2} cy={size / 2} r={s / 2} {...stroke} />;
   if (shape === "rounded" || shape === "squircle") {
     const rx = (shape === "squircle" ? SQUIRCLE_RX : ROUNDED_RX) * s;
-    return <rect x={inset} y={inset} width={s} height={s} rx={rx} {...stroke} />;
+    return (
+      <rect x={inset} y={inset} width={s} height={s} rx={rx} {...stroke} />
+    );
   }
   // hexagon / shield / diamond as normalized paths scaled to `size`.
   const paths: Record<string, string> = {
@@ -130,12 +141,26 @@ export function MarkContent({
           ? { fill: color, strokeWidth: 1 }
           : { fill: "none", strokeWidth: 1.75 };
       return (
-        <Icon x={0} y={0} width={size} height={size} color={color} {...solidProps} />
+        <Icon
+          x={0}
+          y={0}
+          width={size}
+          height={size}
+          color={color}
+          {...solidProps}
+        />
       );
     }
   }
   if (mark.type === "abstract") {
-    return <AbstractMark family={mark.family} seed={mark.seed} color={color} size={size} />;
+    return (
+      <AbstractMark
+        family={mark.family}
+        seed={mark.seed}
+        color={color}
+        size={size}
+      />
+    );
   }
   if (mark.type === "image" && mark.url) {
     return (
@@ -181,11 +206,30 @@ function InitialsMark({
   if (style === "split" && initials.length > 1) {
     return (
       <g fontFamily={family} fontWeight={700} fill={color}>
-        <text x={size * 0.3} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize={base}>
+        <text
+          x={size * 0.3}
+          y={size / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={base}
+        >
           {initials[0]}
         </text>
-        <line x1={size / 2} y1={size * 0.2} x2={size / 2} y2={size * 0.8} stroke={color} strokeWidth={size * 0.02} />
-        <text x={size * 0.7} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize={base}>
+        <line
+          x1={size / 2}
+          y1={size * 0.2}
+          x2={size / 2}
+          y2={size * 0.8}
+          stroke={color}
+          strokeWidth={size * 0.02}
+        />
+        <text
+          x={size * 0.7}
+          y={size / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={base}
+        >
           {initials[1]}
         </text>
       </g>
@@ -194,10 +238,25 @@ function InitialsMark({
   if (style === "overlap" && initials.length > 1) {
     return (
       <g fontFamily={family} fontWeight={700}>
-        <text x={size * 0.4} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize={base * 1.15} fill={color} opacity={0.55}>
+        <text
+          x={size * 0.4}
+          y={size / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={base * 1.15}
+          fill={color}
+          opacity={0.55}
+        >
           {initials[0]}
         </text>
-        <text x={size * 0.6} y={size / 2} textAnchor="middle" dominantBaseline="central" fontSize={base * 1.15} fill={color}>
+        <text
+          x={size * 0.6}
+          y={size / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={base * 1.15}
+          fill={color}
+        >
           {initials[1]}
         </text>
       </g>
@@ -206,7 +265,14 @@ function InitialsMark({
   if (style === "monogram") {
     return (
       <g>
-        <circle cx={size / 2} cy={size / 2} r={size * 0.46} fill="none" stroke={color} strokeWidth={size * 0.03} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={size * 0.46}
+          fill="none"
+          stroke={color}
+          strokeWidth={size * 0.03}
+        />
         <text
           x={size / 2}
           y={size / 2}
@@ -224,7 +290,16 @@ function InitialsMark({
     );
   }
   return (
-    <text x={size / 2} y={size / 2} textAnchor="middle" dominantBaseline="central" fontFamily={family} fontWeight={700} fontSize={base} fill={color}>
+    <text
+      x={size / 2}
+      y={size / 2}
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontFamily={family}
+      fontWeight={700}
+      fontSize={base}
+      fill={color}
+    >
       {initials}
     </text>
   );
@@ -251,14 +326,20 @@ function ComposedMark({
     recipe.colors.badge.type === "solid"
       ? recipe.colors.badge.color
       : recipe.colors.badge.from;
-  const fg = hasBadge && !recipe.badge.outline ? recipe.colors.mark : badgeSolid;
+  const fg =
+    hasBadge && !recipe.badge.outline ? recipe.colors.mark : badgeSolid;
   const inner = size * (emblem ? 0.3 : hasBadge ? 0.55 : 0.8);
   const padX = (size - inner) / 2;
   const padY = emblem ? size * 0.18 : padX;
   return (
     <g>
       {defs && <defs>{defs}</defs>}
-      <Badge shape={recipe.badge.shape} size={size} paint={paint} outline={recipe.badge.outline} />
+      <Badge
+        shape={recipe.badge.shape}
+        size={size}
+        paint={paint}
+        outline={recipe.badge.outline}
+      />
       <g transform={`translate(${padX}, ${padY})`}>
         <MarkContent recipe={recipe} size={inner} color={fg} />
       </g>
@@ -302,8 +383,19 @@ function TextEl({
 
 interface Slots {
   mark: { x: number; y: number; size: number } | null;
-  name: { x: number; y: number; anchor: "start" | "middle"; budget: number; max: number };
-  tagline: { x: number; y: number; anchor: "start" | "middle"; budget: number } | null;
+  name: {
+    x: number;
+    y: number;
+    anchor: "start" | "middle";
+    budget: number;
+    max: number;
+  };
+  tagline: {
+    x: number;
+    y: number;
+    anchor: "start" | "middle";
+    budget: number;
+  } | null;
   emblem: boolean;
 }
 
@@ -318,32 +410,64 @@ function computeSlots(recipe: LogoRecipe): Slots {
     const budget = vb.w - markSize - 24 * 3;
     return {
       mark: { x: markX, y: (vb.h - markSize) / 2, size: markSize },
-      name: { x: textX, y: hasTagline ? vb.h / 2 - 22 : vb.h / 2, anchor: "start", budget, max: 80 },
-      tagline: hasTagline ? { x: textX, y: vb.h / 2 + 42, anchor: "start", budget } : null,
+      name: {
+        x: textX,
+        y: hasTagline ? vb.h / 2 - 22 : vb.h / 2,
+        anchor: "start",
+        budget,
+        max: 80,
+      },
+      tagline: hasTagline
+        ? { x: textX, y: vb.h / 2 + 42, anchor: "start", budget }
+        : null,
       emblem: false,
     };
   }
   if (layout === "stacked") {
     return {
       mark: { x: (vb.w - 150) / 2, y: 24, size: 150 },
-      name: { x: vb.w / 2, y: hasTagline ? 240 : 262, anchor: "middle", budget: vb.w - 48, max: 64 },
-      tagline: hasTagline ? { x: vb.w / 2, y: 300, anchor: "middle", budget: vb.w - 64 } : null,
+      name: {
+        x: vb.w / 2,
+        y: hasTagline ? 240 : 262,
+        anchor: "middle",
+        budget: vb.w - 48,
+        max: 64,
+      },
+      tagline: hasTagline
+        ? { x: vb.w / 2, y: 300, anchor: "middle", budget: vb.w - 64 }
+        : null,
       emblem: false,
     };
   }
   if (layout === "emblem") {
     return {
       mark: { x: (vb.w - 280) / 2, y: 20, size: 280 },
-      name: { x: vb.w / 2, y: 20 + 280 * 0.68, anchor: "middle", budget: 280 * 0.72, max: 44 },
-      tagline: hasTagline ? { x: vb.w / 2, y: 20 + 280 + 46, anchor: "middle", budget: vb.w - 64 } : null,
+      name: {
+        x: vb.w / 2,
+        y: 20 + 280 * 0.68,
+        anchor: "middle",
+        budget: 280 * 0.72,
+        max: 44,
+      },
+      tagline: hasTagline
+        ? { x: vb.w / 2, y: 20 + 280 + 46, anchor: "middle", budget: vb.w - 64 }
+        : null,
       emblem: true,
     };
   }
   // name_only
   return {
     mark: null,
-    name: { x: vb.w / 2, y: hasTagline ? vb.h / 2 - 18 : vb.h / 2, anchor: "middle", budget: vb.w - 64, max: 88 },
-    tagline: hasTagline ? { x: vb.w / 2, y: vb.h / 2 + 46, anchor: "middle", budget: vb.w - 96 } : null,
+    name: {
+      x: vb.w / 2,
+      y: hasTagline ? vb.h / 2 - 18 : vb.h / 2,
+      anchor: "middle",
+      budget: vb.w - 64,
+      max: 88,
+    },
+    tagline: hasTagline
+      ? { x: vb.w / 2, y: vb.h / 2 + 46, anchor: "middle", budget: vb.w - 96 }
+      : null,
     emblem: false,
   };
 }
@@ -371,10 +495,18 @@ export function LogoRenderer({
   const slots = computeSlots(recipe);
   const { elements, colors, typography } = recipe;
   const name = applyCase(recipe.name, typography.name);
-  const nameSize = fitFontSize(name, typography.name, slots.name.budget, slots.name.max);
+  const nameSize = fitFontSize(
+    name,
+    typography.name,
+    slots.name.budget,
+    slots.name.max,
+  );
   const tagline = applyCase(recipe.tagline, typography.tagline);
   const taglineSize = slots.tagline
-    ? Math.min(nameSize * 0.42, fitFontSize(tagline, typography.tagline, slots.tagline.budget, 30))
+    ? Math.min(
+        nameSize * 0.42,
+        fitFontSize(tagline, typography.tagline, slots.tagline.budget, 30),
+      )
     : 0;
 
   // In the emblem layout the badge is the big container; name sits inside it
@@ -401,10 +533,18 @@ export function LogoRenderer({
       {slots.mark && (
         <g
           data-part="mark"
-          transform={place("mark", slots.mark.x + slots.mark.size / 2, slots.mark.y + slots.mark.size / 2)}
+          transform={place(
+            "mark",
+            slots.mark.x + slots.mark.size / 2,
+            slots.mark.y + slots.mark.size / 2,
+          )}
         >
           <g transform={`translate(${slots.mark.x}, ${slots.mark.y})`}>
-            <ComposedMark recipe={recipe} size={slots.mark.size} emblem={slots.emblem} />
+            <ComposedMark
+              recipe={recipe}
+              size={slots.mark.size}
+              emblem={slots.emblem}
+            />
           </g>
         </g>
       )}
@@ -420,7 +560,10 @@ export function LogoRenderer({
         />
       </g>
       {slots.tagline && (
-        <g data-part="tagline" transform={place("tagline", slots.tagline.x, slots.tagline.y)}>
+        <g
+          data-part="tagline"
+          transform={place("tagline", slots.tagline.x, slots.tagline.y)}
+        >
           <TextEl
             value={recipe.tagline}
             style={typography.tagline}
@@ -448,7 +591,8 @@ export function MarkRenderer({
   // Square export/preview: badge fills the box; never renders name or
   // tagline (spec: "Square mark" rule). Only name_only needs the initials
   // fallback — every other layout (emblem included) carries a real mark.
-  const needsFallback = recipe.layout === "name_only" && recipe.mark.type !== "image";
+  const needsFallback =
+    recipe.layout === "name_only" && recipe.mark.type !== "image";
   const markRecipe: LogoRecipe = needsFallback
     ? {
         ...recipe,
