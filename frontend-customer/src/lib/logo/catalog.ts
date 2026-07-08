@@ -1,6 +1,7 @@
-// Logo Studio catalog: curated lucide icons (8 niche groups), brand fonts and
-// color pairs. KEEP IN SYNC: backend/apps/tenant_config/logo_ai.py mirrors
-// the icon names and fonts for AI-suggestion validation.
+// Logo Studio catalog: curated lucide icons (8 niche groups), brand fonts
+// and palettes — the single source of truth for the client-side composer.
+// KEEP IN SYNC: backend/apps/tenant_config/logo_recipe.py PALETTE_IDS lists
+// exactly the PALETTES ids below.
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,

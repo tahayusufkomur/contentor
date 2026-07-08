@@ -187,10 +187,6 @@ RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
 # Fixed From address for the superadmin platform inbox (public-schema mailbox).
 PLATFORM_SUPPORT_FROM = os.environ.get("PLATFORM_SUPPORT_FROM", "support@contentor.app")
 
-# --- Anthropic (Logo Studio AI suggestions) ---
-# Optional: the feature degrades to a deterministic fallback when unset.
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-
 # --- EmailCraft ---
 EMAILCRAFT_TOKEN = os.environ.get("EMAILCRAFT_TOKEN", "")
 EMAILCRAFT_BASE_URL = os.environ.get("EMAILCRAFT_BASE_URL", "https://mailcraft.contentor.app")

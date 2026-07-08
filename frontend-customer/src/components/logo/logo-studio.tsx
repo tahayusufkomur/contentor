@@ -54,20 +54,16 @@ export function LogoStudio({
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<Element | null>(null);
 
-  // ── AI-first flow state ────────────────────────────────────────────────
+  // ── Brief → Ideas flow state ───────────────────────────────────────────
   const [step, setStep] = useState<StudioStep>("editor");
   const [brief, setBrief] = useState<Brief>({
     brandName: config.brand_name || "",
     niche: "",
     styleChips: [],
-    vibe: "",
   });
   const [wall, setWall] = useState<LogoRecipe[] | null>(null);
   const [wallDark, setWallDark] = useState(false);
   const [showingVariants, setShowingVariants] = useState(false);
-  // Bumped on every wall regeneration; an AI top-up landing after a bump is
-  // stale and must be dropped.
-  const wallGenRef = useRef(0);
 
   // Load all studio fonts once so previews render true (each family's real
   // shipped weights).
@@ -101,48 +97,12 @@ export function LogoStudio({
   const patch = (part: Partial<LogoRecipe>) =>
     setRecipe((r) => ({ ...r, ...part }));
 
-  /** Fire-and-forget AI top-up: when the backend has an API key, its picks
-   * replace the first slots of the deterministic wall. Fallback-source
-   * responses are ignored (the composer wall is already better and free);
-   * errors are silent; stale responses (coach shuffled meanwhile) dropped.
-   * The endpoint is brief-aware (Phase 4): chips + vibe + niche shape the
-   * AI's taste; responses are full v2 recipes (migrateRecipe passes them
-   * through untouched). */
-  function aiTopUp(generation: number) {
-    void clientFetch<{ suggestions: AnyLogoRecipe[]; source: string }>(
-      "/api/v1/admin/config/logo-suggestions/",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          style_chips: brief.styleChips,
-          vibe: brief.vibe,
-          niche: brief.niche,
-        }),
-      },
-    )
-      .then((data) => {
-        if (wallGenRef.current !== generation || data.source !== "ai") return;
-        const aiRecipes = data.suggestions.map((s) => ({
-          ...migrateRecipe(s),
-          name: brief.brandName || "My Brand",
-        }));
-        setWall((current) =>
-          current
-            ? [...aiRecipes, ...current.slice(aiRecipes.length)]
-            : current,
-        );
-      })
-      .catch(() => {
-        /* AI is optional — the wall is already on screen */
-      });
-  }
-
+  // The wall is 100% deterministic and client-side (zero AI cost by
+  // design) — composeWall is the only idea source.
   function regenerateWall() {
     const seed = 1 + Math.floor(Math.random() * 1_000_000);
-    const generation = ++wallGenRef.current;
     setWall(composeWall(brief, seed, 24, theme.primaryHex));
     setShowingVariants(false);
-    aiTopUp(generation);
   }
 
   function startIdeas() {
@@ -152,7 +112,6 @@ export function LogoStudio({
 
   function handleMoreLikeThis(base: LogoRecipe) {
     const seed = 1 + Math.floor(Math.random() * 1_000_000);
-    wallGenRef.current++;
     setWall(moreLikeThis(base, brief, seed));
     setShowingVariants(true);
   }

@@ -1,8 +1,9 @@
-// Deterministic wall composer — the engine of the AI-first flow. Pure:
+// Deterministic wall composer — the sole idea engine of the studio. Pure:
 // (brief, seed) -> 24 diverse v2 recipes, instantly, offline, zero cost.
 // Style chips bias the axis pools; niche keywords pick icons + abstract
 // families; a diversity constraint keeps the wall from repeating itself.
-// AI (when configured) only *re-ranks/tops up* this wall — never gates it.
+// There is deliberately NO AI path anywhere in the studio (zero AI cost,
+// user decision) — do not reintroduce one.
 //
 // Every recipe emitted here must pass the backend's validate_recipe:
 // enums come exclusively from the Phase-1 catalogs.
@@ -47,11 +48,10 @@ export interface Brief {
   brandName: string;
   niche: string;
   styleChips: StyleChip[];
-  vibe: string; // free text; consumed only by the AI path (Phase 4)
 }
 
-// niche keyword -> icons that read well for it.
-// KEEP IN SYNC: mirrors NICHE_ICONS in backend/apps/tenant_config/logo_ai.py.
+// niche keyword -> icons that read well for it (single source of truth —
+// the backend has no niche mapping anymore).
 const NICHE_ICONS: Record<string, string[]> = {
   yoga: ["flower-2", "leaf", "sun", "sparkles"],
   fitness: ["dumbbell", "flame", "trophy", "activity"],

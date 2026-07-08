@@ -13,7 +13,6 @@ const BRIEF: Brief = {
   brandName: "Zeynep Yoga",
   niche: "yoga for busy mothers",
   styleChips: [],
-  vibe: "",
 };
 
 const PALETTE_IDS = new Set(PALETTES("#1a56db").map((p) => p.id));
