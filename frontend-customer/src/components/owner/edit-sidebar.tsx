@@ -95,6 +95,20 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       try {
         const { id, ...payload } = nextConfig;
         void id;
+        // The backend discards mark.url for image marks on write and
+        // re-derives it from photo_id on read (validate_logo_recipe) —
+        // re-sending the session's base64 data URL just bloats every autosave
+        // PATCH by the whole image. Same wire rule LogoStudio.handleSave
+        // applies. v1 and v2 recipes both keep mark.url at the same path.
+        const recipe = payload.logo_recipe as
+          | { mark?: { type?: string; url?: string } }
+          | undefined;
+        if (recipe && recipe.mark?.type === "image") {
+          payload.logo_recipe = {
+            ...recipe,
+            mark: { ...recipe.mark, url: "" },
+          } as typeof payload.logo_recipe;
+        }
         const res = await fetch("/api/admin/config", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
