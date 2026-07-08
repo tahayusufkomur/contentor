@@ -71,13 +71,26 @@ test("coach creates a logo through brief, wall, and editor", async ({
     dialog.getByRole("button", { name: "Use this logo" }),
   ).toBeVisible();
 
-  // Fine-tune: force a known layout + icon + tagline so the PATCH assertions
-  // are deterministic regardless of which card was picked.
+  // Fine-tune: force a known layout + tagline from the global panel, then
+  // exercise the canvas: select the mark (icon picker is contextual now),
+  // pick a known icon, then select the name and nudge it with arrow keys.
   await dialog.getByRole("button", { name: "Mark + name" }).click();
-  await dialog.getByRole("button", { name: "flower-2", exact: true }).click();
   await dialog
     .getByPlaceholder("e.g. Yoga for busy mothers")
     .fill("Move every day");
+
+  // Click the mark on the canvas -> selection box + mark controls appear.
+  await dialog.locator('[data-part="mark"]').click();
+  await expect(dialog.getByTestId("selection-box")).toBeVisible();
+  await dialog.getByRole("button", { name: "flower-2", exact: true }).click();
+
+  // Click the name on the canvas -> typography controls; nudge right 3px.
+  await dialog.locator('[data-part="name"]').click();
+  await expect(dialog.getByTestId("selection-box")).toBeVisible();
+  await expect(dialog.getByText("Letter spacing")).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
 
   // Save → wait for the config PATCH and assert the payload persisted.
   // Loose "admin/config" matcher — 09-builder.spec.ts matches the same PATCH
@@ -104,6 +117,8 @@ test("coach creates a logo through brief, wall, and editor", async ({
   });
   expect(body.logo_recipe.badge.shape).toBeTruthy();
   expect(body.logo_recipe.typography.name.weight).toBeGreaterThanOrEqual(400);
+  // The three ArrowRight nudges on the selected name element persisted.
+  expect(body.logo_recipe.elements.name.offset[0]).toBe(3);
 
   // Dialog closes on success
   await expect(page.getByRole("heading", { name: "Logo Studio" })).toBeHidden({
