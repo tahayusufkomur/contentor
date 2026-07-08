@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { buildBrandKit, darkVariant } from "@/lib/logo/brand-kit";
 import type { LogoRecipe } from "@/types/logo";
-import { MarkRenderer } from "./logo-renderer";
+import { logoViewBox, LogoRenderer, MarkRenderer } from "./logo-renderer";
 import { StudioCanvas, type ElementKey } from "./studio-canvas";
 import { StudioPanel } from "./studio-panel";
 
@@ -31,10 +34,46 @@ export function StudioEditor({
 }: StudioEditorProps) {
   const [selected, setSelected] = useState<ElementKey | null>(null);
   const [dark, setDark] = useState(false);
+  const [kitBuilding, setKitBuilding] = useState(false);
+  const [kitNote, setKitNote] = useState<string | null>(null);
+  const darkSvgRef = useRef<SVGSVGElement>(null);
+  const darkRecipe = darkVariant(recipe);
 
   // Deselect the tagline if it stops existing (cleared text) — its canvas
   // group unmounts, so a stale selection would point at nothing.
   if (selected === "tagline" && !recipe.tagline.trim()) setSelected(null);
+
+  async function downloadBrandKit() {
+    if (!logoSvgRef.current || !darkSvgRef.current || !markSvgRef.current)
+      return;
+    setKitBuilding(true);
+    setKitNote(null);
+    try {
+      const { blob, svgIncluded } = await buildBrandKit({
+        lightSvg: logoSvgRef.current,
+        darkSvg: darkSvgRef.current,
+        markSvg: markSvgRef.current,
+        recipe,
+        darkRecipe,
+        viewBox: logoViewBox(recipe.layout),
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "brand-kit.zip";
+      a.click();
+      URL.revokeObjectURL(url);
+      if (!svgIncluded) {
+        setKitNote(
+          "Fonts couldn't be fetched, so the kit contains PNGs only (no SVG).",
+        );
+      }
+    } catch {
+      setKitNote("Could not build the brand kit — please try again.");
+    } finally {
+      setKitBuilding(false);
+    }
+  }
 
   return (
     <div className="flex min-h-0 flex-1">
@@ -63,6 +102,38 @@ export function StudioEditor({
             </div>
             <span className="text-xs text-muted-foreground">App icon</span>
           </div>
+        </div>
+
+        {/* Brand kit: transparent PNGs (light + dark), favicon sizes, and a
+            true vector SVG (text converted to paths). */}
+        <div className="flex flex-col items-center gap-1.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={kitBuilding}
+            onClick={downloadBrandKit}
+          >
+            {kitBuilding ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            Download brand kit (.zip)
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            PNGs for light &amp; dark, favicon sizes, and a vector SVG.
+          </p>
+          {kitNote && <p className="text-xs text-destructive">{kitNote}</p>}
+        </div>
+
+        {/* Hidden dark-variant renderer feeding the brand kit export. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed -left-[10000px] top-0"
+        >
+          <LogoRenderer recipe={darkRecipe} width={320} svgRef={darkSvgRef} />
         </div>
       </div>
 
