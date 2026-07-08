@@ -1,10 +1,12 @@
-from uuid import uuid4
+import re
+from uuid import UUID, uuid4
 
 from django.conf import settings
 from django.db import connection
 from rest_framework import serializers
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
+from apps.media.models import Photo
 
 from .defaults import (
     KNOWN_BLOCK_TYPES,
@@ -23,6 +25,25 @@ _UNSAFE_URL_PREFIXES = ("javascript:", "vbscript:")
 # Navbar layout presets the public header can render.
 _NAVBAR_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
 
+# Logo Studio recipe enums + shaping helpers (see
+# TenantConfigSerializer.validate_logo_recipe for the full shape contract).
+_RECIPE_LAYOUTS = {"badge_name", "icon_name", "name_only"}
+_RECIPE_BADGES = {"circle", "rounded", "squircle", "none"}
+_RECIPE_MARK_TYPES = {"icon", "initials", "image"}
+_HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _clean_hex(value, default="#111827"):
+    value = str(value or "")
+    return value if _HEX_RE.match(value) else default
+
+
+def _clamp(value, lo, hi, default=0.0):
+    try:
+        return max(lo, min(hi, float(value)))
+    except (TypeError, ValueError):
+        return default
+
 
 def _clean_nav_href(href):
     href = str(href or "")
@@ -31,7 +52,33 @@ def _clean_nav_href(href):
     return href[:300]
 
 
+def _clean_photo_id(value):
+    """Validate a mark's photo_id is UUID-shaped; clamp to "" otherwise.
+
+    ``Photo.id`` is a UUIDField — an invalid shape reaching
+    ``Photo.objects.filter(pk=...)`` raises Django's ``ValidationError`` during
+    query construction, which DRF's exception handler does not turn into a
+    400. Unlike the other free-text fields in this file, malformed input here
+    must be validated and clamped, not merely length-capped, so both the
+    write path (``validate_logo_recipe``) and the read path
+    (``to_representation``'s re-signing lookup) stay safe from that crash.
+    """
+    try:
+        return str(UUID(str(value or "")))
+    except (TypeError, ValueError):
+        return ""
+
+
 class TenantConfigSerializer(serializers.ModelSerializer):
+    # Writable FK ids for the Logo Studio. DRF's auto-field for "logo_id" was
+    # read-only (attname passthrough); these make the FKs the real write path.
+    logo_id = serializers.PrimaryKeyRelatedField(
+        source="logo", queryset=Photo.objects.all(), allow_null=True, required=False
+    )
+    icon_id = serializers.PrimaryKeyRelatedField(
+        source="icon", queryset=Photo.objects.all(), allow_null=True, required=False
+    )
+
     def validate_theme(self, value):
         if value not in TenantTheme.values:
             raise serializers.ValidationError("Theme must be one of the curated theme IDs.")
@@ -47,17 +94,13 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         cleaned = dict(value)
         layout = cleaned.get("layout") or "classic"
         if layout not in _NAVBAR_LAYOUTS:
-            raise serializers.ValidationError(
-                "layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)) + "."
-            )
+            raise serializers.ValidationError("layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)) + ".")
         cleaned["layout"] = layout
         links = []
         for raw in (cleaned.get("links") or [])[:20]:
             if not isinstance(raw, dict):
                 continue
-            links.append(
-                {"label": str(raw.get("label") or "")[:80], "href": _clean_nav_href(raw.get("href"))}
-            )
+            links.append({"label": str(raw.get("label") or "")[:80], "href": _clean_nav_href(raw.get("href"))})
         cleaned["links"] = links
         cta = cleaned.get("cta")
         if isinstance(cta, dict):
@@ -110,6 +153,66 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             )
         return cleaned
 
+    def validate_logo_recipe(self, value):
+        """Defensively shape the Logo Studio recipe. Empty dict clears the
+        saved design. Unknown enum values are a hard 400 (the composer never
+        produces them); free-text and numbers are clamped, not rejected.
+        """
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("logo_recipe must be an object.")
+        if not value:
+            return {}
+        layout = value.get("layout")
+        if layout not in _RECIPE_LAYOUTS:
+            raise serializers.ValidationError("layout must be one of: " + ", ".join(sorted(_RECIPE_LAYOUTS)) + ".")
+        badge = value.get("badge")
+        if badge not in _RECIPE_BADGES:
+            raise serializers.ValidationError("badge must be one of: " + ", ".join(sorted(_RECIPE_BADGES)) + ".")
+        raw_mark = value.get("mark") if isinstance(value.get("mark"), dict) else {}
+        mark_type = raw_mark.get("type")
+        if mark_type not in _RECIPE_MARK_TYPES:
+            raise serializers.ValidationError(
+                "mark.type must be one of: " + ", ".join(sorted(_RECIPE_MARK_TYPES)) + "."
+            )
+        mark = {"type": mark_type}
+        if mark_type == "icon":
+            mark["icon"] = str(raw_mark.get("icon") or "")[:60]
+        elif mark_type == "image":
+            # Malformed/non-UUID input clamps to "" rather than 400ing (see
+            # _clean_photo_id) — Photo.id is a UUIDField and an invalid shape
+            # would otherwise crash the read-time re-signing lookup below.
+            mark["photo_id"] = _clean_photo_id(raw_mark.get("photo_id"))
+            # Never persist data: URLs or presigned URLs — re-derived on read.
+            mark["url"] = ""
+        raw_colors = value.get("colors") if isinstance(value.get("colors"), dict) else {}
+        raw_over = value.get("overrides") if isinstance(value.get("overrides"), dict) else {}
+
+        def _offset(key):
+            pair = raw_over.get(key) or [0, 0]
+            if not isinstance(pair, list | tuple) or len(pair) != 2:
+                pair = [0, 0]
+            return [_clamp(pair[0], -120, 120), _clamp(pair[1], -120, 120)]
+
+        return {
+            "version": 1,
+            "layout": layout,
+            "name": str(value.get("name") or "")[:80],
+            "mark": mark,
+            "badge": badge,
+            "font": str(value.get("font") or "Inter")[:100],
+            "colors": {
+                "badge_bg": _clean_hex(raw_colors.get("badge_bg")),
+                "mark_fg": _clean_hex(raw_colors.get("mark_fg"), default="#ffffff"),
+                "text": _clean_hex(raw_colors.get("text")),
+            },
+            "overrides": {
+                "mark_offset": _offset("mark_offset"),
+                "mark_scale": _clamp(raw_over.get("mark_scale"), 0.5, 2.0, default=1.0),
+                "name_offset": _offset("name_offset"),
+                "name_scale": _clamp(raw_over.get("name_scale"), 0.5, 2.0, default=1.0),
+            },
+        }
+
     class Meta:
         model = TenantConfig
         fields = [
@@ -117,6 +220,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "brand_name",
             "logo_url",
             "logo_id",
+            "icon_url",
+            "icon_id",
+            "logo_recipe",
             "theme",
             "dark_mode_enabled",
             "font_family",
@@ -139,6 +245,27 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             data["logo_url"] = generate_presigned_download_url(instance.logo.s3_key)
         else:
             data["logo_url"] = sign_if_s3_key(data.get("logo_url"))
+        # Prefer icon FK over icon_url string (same contract as logo above).
+        if instance.icon_id and instance.icon and instance.icon.s3_key:
+            data["icon_url"] = generate_presigned_download_url(instance.icon.s3_key)
+        else:
+            data["icon_url"] = sign_if_s3_key(data.get("icon_url"))
+        # Re-sign the recipe's image mark from its durable photo_id so the
+        # studio can re-edit an uploaded mark after the original URL expired.
+        recipe = data.get("logo_recipe")
+        if isinstance(recipe, dict):
+            mark = recipe.get("mark")
+            if isinstance(mark, dict) and mark.get("type") == "image" and mark.get("photo_id"):
+                # Defense in depth: re-validate the UUID shape before the FK
+                # lookup so data written before this validator existed (or
+                # via any path that bypasses the serializer) can't crash this
+                # read with Django's UUID ValidationError. A malformed value
+                # just yields no re-signed url, same as "no photo found".
+                photo = None
+                if _clean_photo_id(mark["photo_id"]):
+                    photo = Photo.objects.filter(pk=mark["photo_id"]).first()
+                if photo and photo.s3_key:
+                    mark["url"] = generate_presigned_download_url(photo.s3_key)
         # Sign image URLs inside landing_sections (legacy) and pages (builder).
         sections = data.get("landing_sections")
         if isinstance(sections, dict):

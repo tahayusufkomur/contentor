@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Image, MoonStar, Palette, Save, Type } from "lucide-react";
+import { Image, MoonStar, Palette, Save, Type, Wand2 } from "lucide-react";
 import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { LogoStudio } from "@/components/logo/logo-studio";
 import { clientFetch } from "@/lib/api-client";
 import { getThemePalette } from "@/lib/themes";
 import type { TenantConfig } from "@/types/tenant";
@@ -24,11 +25,21 @@ export default function DesignSettingsPage() {
   const router = useRouter();
   const [config, setConfig] = useState<TenantConfig | null>(null);
   const [saving, setSaving] = useState(false);
+  const [studioOpen, setStudioOpen] = useState(false);
 
   useEffect(() => {
     clientFetch<TenantConfig>("/api/v1/admin/config/")
       .then(setConfig)
       .catch(console.error);
+  }, []);
+
+  // Deep link from the setup assistant: /admin/design?studio=1
+  // (window.location in an effect, NOT useSearchParams — avoids the Next 14
+  // client-side Suspense bailout at build time.)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("studio") === "1") {
+      setStudioOpen(true);
+    }
   }, []);
 
   async function handleSave() {
@@ -109,6 +120,13 @@ export default function DesignSettingsPage() {
                   setConfig({ ...config, brand_name: e.target.value })
                 }
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Logo</Label>
+              <Button type="button" variant="outline" className="gap-2" onClick={() => setStudioOpen(true)}>
+                <Wand2 className="h-4 w-4" />
+                {config.logo_recipe && Object.keys(config.logo_recipe).length ? "Edit logo in Logo Studio" : "Create a logo in Logo Studio"}
+              </Button>
             </div>
             <div className="space-y-2">
               <Label htmlFor="logo_url">Logo URL</Label>
@@ -288,6 +306,13 @@ export default function DesignSettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <LogoStudio
+        open={studioOpen}
+        onOpenChange={setStudioOpen}
+        config={config}
+        onSaved={(patch) => setConfig({ ...config, ...patch })}
+      />
     </div>
   );
 }

@@ -22,11 +22,19 @@ export async function GET(request: Request): Promise<Response> {
   const config = slug !== "__platform__" ? await fetchTenantConfig(slug) : null;
   const theme = getThemePalette(config?.theme);
   const brand = config?.brand_name || "Contentor";
-  const logoUrl = config?.logo_url || null;
+  // Prefer the Logo Studio's square mark; fall back to the wide logo, then
+  // to the brand-initial tile.
+  const logoUrl = config?.icon_url || config?.logo_url || null;
 
-  // Maskable icons must keep content inside an ~80% safe zone; plain icons get
-  // a smaller margin so the logo doesn't touch the edges.
-  const pad = Math.round(size * (maskable ? 0.12 : 0.06));
+  // The square mark already contains its own badge background from the Logo
+  // Studio composer, so render it edge-to-edge (maskable keeps a small
+  // safe-zone margin). The wide-logo fallback keeps the padding tuned for
+  // sitting inset on the theme-color tile.
+  const pad = config?.icon_url
+    ? maskable
+      ? Math.round(size * 0.06)
+      : 0
+    : Math.round(size * (maskable ? 0.12 : 0.06));
   const inner = size - pad * 2;
 
   const fallback = (
@@ -77,7 +85,7 @@ export async function GET(request: Request): Promise<Response> {
         width: size,
         height: size,
         headers: {
-          // Versioned URL (?v=<logo_id>) is immutable; unversioned must revalidate.
+          // Versioned URL (?v=<icon_id or logo_id>) is immutable; unversioned must revalidate.
           "Cache-Control": version
             ? "public, max-age=31536000, immutable"
             : "public, max-age=0, must-revalidate",

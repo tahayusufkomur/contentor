@@ -1,6 +1,8 @@
 import json as _json
+import logging
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.db.models import Sum
@@ -16,8 +18,11 @@ from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
 from apps.media.models import Photo
 
+from . import logo_ai
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def _logo_signal(config):
@@ -179,3 +184,41 @@ def setup_status(request):
             config.setup_progress = progress
             config.save(update_fields=["setup_progress"])
     return Response(compute_setup_state(config, connection.tenant))
+
+
+# Theme id -> primaryHex. KEEP IN SYNC with frontend-customer/src/lib/themes.ts.
+_THEME_PRIMARY_HEX = {
+    "ocean": "#1a56db",
+    "ember": "#c2410c",
+    "forest": "#15803d",
+    "sunset": "#e11d48",
+    "violet": "#7c3aed",
+    "slate": "#334155",
+}
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def logo_suggestions(request):
+    """4 Logo Studio recipe suggestions. AI when ANTHROPIC_API_KEY is set,
+    deterministic niche fallback otherwise (or on any AI failure)."""
+    rate_key = f"logo-suggest:{connection.tenant.schema_name}"
+    count = cache.get(rate_key, 0)
+    if count >= 10:
+        return Response({"detail": "Suggestion limit reached. Try again in an hour."}, status=429)
+    cache.set(rate_key, count + 1, timeout=3600)
+
+    config = TenantConfig.objects.first()
+    brand_name = config.brand_name if config else "My Brand"
+    theme = config.theme if config else "ocean"
+    primary_hex = _THEME_PRIMARY_HEX.get(theme, "#1a56db")
+    niche = getattr(connection.tenant, "template_niche", "") or ""
+
+    if settings.ANTHROPIC_API_KEY:
+        try:
+            suggestions = logo_ai.ai_suggestions(brand_name, niche, primary_hex)
+            return Response({"suggestions": suggestions, "source": "ai"})
+        except Exception:
+            logger.exception("logo suggestions: AI call failed, using fallback")
+    suggestions = logo_ai.fallback_suggestions(brand_name, niche, primary_hex)
+    return Response({"suggestions": suggestions, "source": "fallback"})

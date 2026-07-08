@@ -40,7 +40,7 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   page_pricing: { icon: Tag, href: "/plans" },
   page_faq: { icon: FileQuestion, href: "/faq" },
   page_contact: { icon: Phone, href: "/contact" },
-  look: { icon: Paintbrush, href: "/admin/design" },
+  look: { icon: Paintbrush, href: "/admin/design?studio=1" },
   first_course: { icon: BookOpen, href: "/admin/courses/new" },
   demo_cleanup: { icon: Trash2, href: null, action: "erase" },
   payouts: { icon: Wallet, href: "/admin/payouts" },

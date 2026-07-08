@@ -78,7 +78,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
   const name = config?.brand_name || "Welcome";
-  const v = config?.logo_id ?? "default";
+  const v = config?.icon_id ?? config?.logo_id ?? "default";
 
   return {
     title: name,
