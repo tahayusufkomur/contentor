@@ -1,5 +1,6 @@
 import uuid
 
+from django.db import connection
 from django.db.models import Q
 from django.http import Http404
 from django.utils import timezone
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 
 from apps.core.storage import build_s3_path, generate_presigned_upload_url
 
-from . import services
+from . import services, tasks
 from .access import get_member_or_deny
 from .models import REACTION_EMOJIS, Comment, CommunitySettings, Post, PostStatus, Reaction
 from .permissions import is_moderator
@@ -101,6 +102,8 @@ def posts(request):
             author=member,
             status=PostStatus.PENDING if member.requires_approval else PostStatus.VISIBLE,
         )
+        if post.status == PostStatus.VISIBLE:
+            tasks.fanout_community_post.delay(post.id, connection.schema_name)
         return Response(
             PostSerializer(post, context=_post_context(member, [post])).data,
             status=status.HTTP_201_CREATED,
@@ -172,6 +175,7 @@ def post_comments(request, pk):
         serializer.is_valid(raise_exception=True)
         comment = serializer.save(post=post, author=member)
         services.adjust_comment_count(post, +1)
+        tasks.notify_post_comment.delay(comment.id, connection.schema_name)
         return Response(
             CommentSerializer(comment, context=_comment_context(member, [comment])).data,
             status=status.HTTP_201_CREATED,

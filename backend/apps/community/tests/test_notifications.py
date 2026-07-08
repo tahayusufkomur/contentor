@@ -109,3 +109,61 @@ def test_own_comment_is_silent(enabled, sent, tenant_ctx):
 def test_deleted_post_is_noop(enabled, sent, tenant_ctx):
     tasks.fanout_community_post(999999, tenant_ctx.schema_name)
     assert sent == []
+
+
+def test_post_create_enqueues_fanout(enabled, monkeypatch, tenant_ctx):
+    from rest_framework.test import APIClient
+
+    calls = []
+    monkeypatch.setattr(
+        "apps.community.tasks.fanout_community_post.delay",
+        lambda *args: calls.append(args),
+    )
+    user = User.objects.create_user(
+        email="q@x.com", name="Q", password="pw123456", role="owner", is_staff=True
+    )
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=user)
+    resp = client.post("/api/v1/community/posts/", {"body": "ping"}, format="json")
+    assert resp.status_code == 201
+    assert len(calls) == 1
+    assert calls[0][0] == resp.json()["id"]
+    assert calls[0][1] == "shared_test"
+
+
+def test_pending_post_does_not_enqueue(enabled, monkeypatch, tenant_ctx):
+    from rest_framework.test import APIClient
+
+    calls = []
+    monkeypatch.setattr(
+        "apps.community.tasks.fanout_community_post.delay",
+        lambda *args: calls.append(args),
+    )
+    user = User.objects.create_user(email="p@x.com", name="P", password="pw123456")
+    CommunityMember.objects.create(user=user, display_name="P", requires_approval=True)
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=user)
+    resp = client.post("/api/v1/community/posts/", {"body": "wait"}, format="json")
+    assert resp.status_code == 201
+    assert calls == []
+
+
+def test_comment_create_enqueues_notify(enabled, monkeypatch, tenant_ctx):
+    from rest_framework.test import APIClient
+
+    calls = []
+    monkeypatch.setattr(
+        "apps.community.tasks.notify_post_comment.delay",
+        lambda *args: calls.append(args),
+    )
+    author = _member("pa@x.com", "PA")
+    post = Post.objects.create(author=author, body="post")
+    user = User.objects.create_user(email="cm@x.com", name="CM", password="pw123456")
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=user)
+    resp = client.post(
+        f"/api/v1/community/posts/{post.id}/comments/", {"body": "hey"}, format="json"
+    )
+    assert resp.status_code == 201
+    assert len(calls) == 1
+    assert calls[0][0] == resp.json()["id"]
