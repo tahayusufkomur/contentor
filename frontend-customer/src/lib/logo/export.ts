@@ -51,8 +51,9 @@ export async function imageToDataUrl(url: string): Promise<string> {
 }
 
 /**
- * Google Fonts CSS for the family (700 weight only — the only weight this
- * app renders text at), with the font file inlined as a data URI.
+ * Google Fonts CSS for one (family, weight) pair — the recipe embeds a
+ * @font-face per pair it actually uses (name + optional tagline) — with the
+ * font file inlined as a data URI.
  *
  * fonts.googleapis.com/css2 serves `Access-Control-Allow-Origin: *`, and so
  * does the fonts.gstatic.com file it points to — both are fetchable
@@ -69,8 +70,8 @@ export async function imageToDataUrl(url: string): Promise<string> {
  * fallback instead of the chosen brand font. Select the block by content
  * (its unicode-range starts at U+0000-00FF) rather than by position.
  */
-async function fontFaceCss(fontFamily: string): Promise<string> {
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@700&display=swap`;
+async function fontFaceCss(fontFamily: string, weight: number): Promise<string> {
+  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@${weight}&display=swap`;
   const css = await (await fetch(cssUrl)).text();
 
   const blocks = css.match(/@font-face\s*{[^}]+}/g) || [];
@@ -81,24 +82,37 @@ async function fontFaceCss(fontFamily: string): Promise<string> {
   if (!match) return "";
 
   const fontData = await imageToDataUrl(match[1]);
-  return `@font-face{font-family:'${fontFamily}';font-weight:700;src:url(${fontData});}`;
+  return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});}`;
+}
+
+export interface FontSpec {
+  family: string;
+  weight: number;
 }
 
 export async function svgToPngBlob(
   svg: SVGSVGElement,
   width: number,
   height: number,
-  fontFamily: string,
+  fonts: FontSpec[],
 ): Promise<Blob> {
+  // De-dup the (family, weight) pairs the recipe actually renders.
+  const unique = fonts.filter(
+    (f, i) =>
+      fonts.findIndex((g) => g.family === f.family && g.weight === f.weight) === i,
+  );
+
   // Best-effort warm of the page's own font cache. This does NOT affect the
   // exported PNG (the SVG-as-image context below never sees it) — it only
   // helps the live on-page preview already showing `svg` settle on the
   // right font. Non-fatal: export still proceeds via the inlined
   // @font-face below even if Google Fonts is unreachable here.
-  try {
-    await document.fonts.load(`700 64px '${fontFamily}'`);
-  } catch {
-    /* non-fatal */
+  for (const f of unique) {
+    try {
+      await document.fonts.load(`${f.weight} 64px '${f.family}'`);
+    } catch {
+      /* non-fatal */
+    }
   }
 
   const clone = svg.cloneNode(true) as SVGSVGElement;
@@ -119,11 +133,14 @@ export async function svgToPngBlob(
     }
   }
 
-  // Inline the webfont so <text> renders with the chosen family. Fails
-  // open: a missing/unreachable font degrades to the <text> element's own
-  // `sans-serif` fallback rather than failing the export.
+  // Inline every (family, weight) webfont the recipe uses so <text> renders
+  // with the chosen families. Fails open: a missing/unreachable font
+  // degrades to the <text> element's own `sans-serif` fallback rather than
+  // failing the export.
   try {
-    const css = await fontFaceCss(fontFamily);
+    const css = (
+      await Promise.all(unique.map((f) => fontFaceCss(f.family, f.weight)))
+    ).join("");
     if (css) {
       const style = document.createElementNS(
         "http://www.w3.org/2000/svg",

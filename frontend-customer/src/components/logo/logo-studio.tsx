@@ -1,28 +1,46 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Upload, Wand2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { clientFetch } from "@/lib/api-client";
 import {
-  COLOR_PAIRS, ICON_GROUPS, LOGO_FONTS, LOGO_ICONS, TEXT_COLORS, defaultRecipe, initialsFor,
+  ICON_GROUPS,
+  LOGO_FONTS,
+  LOGO_ICONS,
+  PALETTES,
+  TEXT_COLORS,
+  applyPalette,
+  defaultRecipe,
+  initialsFor,
 } from "@/lib/logo/catalog";
-import { imageToDataUrl, svgToPngBlob, uploadPng } from "@/lib/logo/export";
+import { imageToDataUrl, svgToPngBlob, uploadPng, type FontSpec } from "@/lib/logo/export";
+import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
 import { getThemePalette } from "@/lib/themes";
-import type { LogoRecipe, RecipeBadge, RecipeLayout } from "@/types/logo";
+import type {
+  AnyLogoRecipe,
+  BadgeShape,
+  LogoRecipe,
+  RecipeLayout,
+} from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
-import { LOGO_VIEWBOX, LogoRenderer, MarkRenderer } from "./logo-renderer";
+import { logoViewBox, LogoRenderer, MarkRenderer } from "./logo-renderer";
 
 const LAYOUTS: { id: RecipeLayout; label: string }[] = [
-  { id: "badge_name", label: "Badge + name" },
-  { id: "icon_name", label: "Icon + name" },
+  { id: "horizontal", label: "Mark + name" },
+  { id: "horizontal_reversed", label: "Name + mark" },
+  { id: "stacked", label: "Stacked" },
+  { id: "emblem", label: "Emblem" },
   { id: "name_only", label: "Name only" },
 ];
-const BADGES: { id: RecipeBadge; label: string }[] = [
+const BADGES: { id: BadgeShape; label: string }[] = [
   { id: "circle", label: "Circle" },
   { id: "rounded", label: "Rounded" },
   { id: "squircle", label: "Squircle" },
+  { id: "hexagon", label: "Hexagon" },
+  { id: "shield", label: "Shield" },
+  { id: "diamond", label: "Diamond" },
   { id: "none", label: "None" },
 ];
 
@@ -33,17 +51,15 @@ interface LogoStudioProps {
   onSaved: (patch: Partial<TenantConfig>) => void;
 }
 
-function isCompleteRecipe(value: unknown): value is LogoRecipe {
-  return !!value && typeof value === "object" && (value as LogoRecipe).version === 1;
+function seedRecipe(config: TenantConfig, primaryHex: string): LogoRecipe {
+  return isRecipe(config.logo_recipe)
+    ? migrateRecipe(config.logo_recipe as AnyLogoRecipe)
+    : defaultRecipe(config.brand_name, primaryHex);
 }
 
 export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioProps) {
   const theme = getThemePalette(config.theme);
-  const [recipe, setRecipe] = useState<LogoRecipe>(() =>
-    isCompleteRecipe(config.logo_recipe)
-      ? (config.logo_recipe as LogoRecipe)
-      : defaultRecipe(config.brand_name, theme.primaryHex),
-  );
+  const [recipe, setRecipe] = useState<LogoRecipe>(() => seedRecipe(config, theme.primaryHex));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logoSvgRef = useRef<SVGSVGElement>(null);
@@ -52,11 +68,17 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<Element | null>(null);
   const [adjusting, setAdjusting] = useState(false);
-  const dragRef = useRef<{ part: "mark" | "name"; startX: number; startY: number; base: [number, number] } | null>(null);
+  const dragRef = useRef<{
+    part: "mark" | "name" | "tagline";
+    startX: number;
+    startY: number;
+    base: [number, number];
+  } | null>(null);
   const [suggestions, setSuggestions] = useState<LogoRecipe[] | null>(null);
   const [suggesting, setSuggesting] = useState(false);
 
-  // Load all studio fonts once so previews render true.
+  // Load all studio fonts once so previews render true (each family's real
+  // shipped weights).
   useEffect(() => {
     if (!open) return;
     const id = "logo-studio-fonts";
@@ -65,7 +87,7 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     link.id = id;
     link.rel = "stylesheet";
     link.href = `https://fonts.googleapis.com/css2?${LOGO_FONTS.map(
-      (f) => `family=${encodeURIComponent(f)}:wght@700`,
+      (f) => `family=${encodeURIComponent(f.family)}:wght@${f.weights.join(";")}`,
     ).join("&")}&display=swap`;
     document.head.appendChild(link);
   }, [open]);
@@ -74,22 +96,19 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
   // a stale in-memory recipe (from a prior session, or a config change since
   // mount) doesn't linger — this component stays mounted across opens.
   useEffect(() => {
-    if (open) {
-      setRecipe(
-        isCompleteRecipe(config.logo_recipe)
-          ? (config.logo_recipe as LogoRecipe)
-          : defaultRecipe(config.brand_name, theme.primaryHex),
-      );
-    }
+    if (open) setRecipe(seedRecipe(config, theme.primaryHex));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const patch = (part: Partial<LogoRecipe>) => setRecipe((r) => ({ ...r, ...part }));
 
   function beginDrag(e: React.PointerEvent<SVGSVGElement>) {
     if (!adjusting) return;
-    const part = (e.target as Element).closest("[data-part]")?.getAttribute("data-part") as "mark" | "name" | null;
+    const part = (e.target as Element)
+      .closest("[data-part]")
+      ?.getAttribute("data-part") as "mark" | "name" | "tagline" | null;
     if (!part) return;
-    const base = part === "mark" ? recipe.overrides.mark_offset : recipe.overrides.name_offset;
+    const base = recipe.elements[part].offset;
     dragRef.current = { part, startX: e.clientX, startY: e.clientY, base: [...base] as [number, number] };
     (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
   }
@@ -99,16 +118,16 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     if (!drag) return;
     const svg = e.currentTarget;
     // convert screen px to viewBox units
-    const scale = LOGO_VIEWBOX.w / svg.getBoundingClientRect().width;
+    const scale = logoViewBox(recipe.layout).w / svg.getBoundingClientRect().width;
     const clampOff = (v: number) => Math.max(-120, Math.min(120, v));
     const snap = (v: number) => (Math.abs(v) < 6 ? 0 : v);
     const dx = snap(clampOff(drag.base[0] + (e.clientX - drag.startX) * scale));
     const dy = snap(clampOff(drag.base[1] + (e.clientY - drag.startY) * scale));
     setRecipe((r) => ({
       ...r,
-      overrides: {
-        ...r.overrides,
-        [drag.part === "mark" ? "mark_offset" : "name_offset"]: [dx, dy],
+      elements: {
+        ...r.elements,
+        [drag.part]: { ...r.elements[drag.part], offset: [dx, dy] },
       },
     }));
   }
@@ -121,11 +140,13 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     setSuggesting(true);
     setError(null);
     try {
-      const data = await clientFetch<{ suggestions: LogoRecipe[] }>(
+      const data = await clientFetch<{ suggestions: AnyLogoRecipe[] }>(
         "/api/v1/admin/config/logo-suggestions/",
         { method: "POST", body: JSON.stringify({}) },
       );
-      setSuggestions(data.suggestions);
+      // The endpoint still returns v1 recipes (Phase 4 upgrades it); migrate
+      // each on receipt so cards render through the v2 renderer.
+      setSuggestions(data.suggestions.map((s) => migrateRecipe(s)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not fetch ideas");
     } finally {
@@ -154,8 +175,15 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     setSaving(true);
     setError(null);
     try {
-      const logoBlob = await svgToPngBlob(logoSvgRef.current, LOGO_VIEWBOX.w * 2, LOGO_VIEWBOX.h * 2, recipe.font);
-      const markBlob = await svgToPngBlob(markSvgRef.current, 1024, 1024, recipe.font);
+      const vb = logoViewBox(recipe.layout);
+      const fonts: FontSpec[] = [
+        { family: recipe.typography.name.font, weight: recipe.typography.name.weight },
+        ...(recipe.tagline.trim()
+          ? [{ family: recipe.typography.tagline.font, weight: recipe.typography.tagline.weight }]
+          : []),
+      ];
+      const logoBlob = await svgToPngBlob(logoSvgRef.current, vb.w * 2, vb.h * 2, fonts);
+      const markBlob = await svgToPngBlob(markSvgRef.current, 1024, 1024, fonts);
       const logo = await uploadPng(logoBlob, "logo.png");
       const mark = await uploadPng(markBlob, "logo-icon.png");
       const body = {
@@ -172,7 +200,9 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
       // uploadPng. Strip it for the wire only: `body` (used by onSaved, and
       // therefore this session's re-editing/preview) keeps the real data URL.
       const wireLogoRecipe =
-        recipe.mark.type === "image" ? { ...recipe, mark: { ...recipe.mark, url: "" } } : recipe;
+        recipe.mark.type === "image"
+          ? { ...recipe, mark: { ...recipe.mark, url: "" } }
+          : recipe;
       await clientFetch("/api/v1/admin/config/", {
         method: "PATCH",
         body: JSON.stringify({ ...body, logo_recipe: wireLogoRecipe }),
@@ -201,6 +231,7 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, saving]);
 
   // Move focus into the dialog on open, and restore it to whatever element
@@ -217,6 +248,11 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
       }
     };
   }, [open]);
+
+  const badgeSwatch = (fill: LogoRecipe["colors"]["badge"]) =>
+    fill.type === "solid"
+      ? fill.color
+      : `linear-gradient(135deg, ${fill.from}, ${fill.to})`;
 
   return (
     <>
@@ -329,12 +365,24 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                   </section>
 
                   <section className="space-y-1.5">
+                    <p className="text-sm font-medium">Tagline (optional)</p>
+                    <input
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                      value={recipe.tagline}
+                      maxLength={120}
+                      placeholder="e.g. Yoga for busy mothers"
+                      onChange={(e) => patch({ tagline: e.target.value })}
+                    />
+                  </section>
+
+                  <section className="space-y-1.5">
                     <p className="text-sm font-medium">Layout</p>
                     <div className="flex flex-wrap gap-1.5">
                       {LAYOUTS.map((l) => (
                         <button
                           key={l.id}
                           type="button"
+                          aria-pressed={recipe.layout === l.id}
                           onClick={() => patch({ layout: l.id })}
                           className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.layout === l.id ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                         >
@@ -350,7 +398,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                       <div className="flex gap-1.5">
                         <button
                           type="button"
-                          onClick={() => patch({ mark: { type: "initials" } })}
+                          aria-pressed={recipe.mark.type === "initials"}
+                          onClick={() => patch({ mark: { type: "initials", style: "plain" } })}
                           className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.mark.type === "initials" ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                         >
                           {initialsFor(recipe.name)} Initials
@@ -379,7 +428,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                                     key={iconName}
                                     type="button"
                                     aria-label={iconName}
-                                    onClick={() => patch({ mark: { type: "icon", icon: iconName } })}
+                                    aria-pressed={active}
+                                    onClick={() => patch({ mark: { type: "icon", icon: iconName, style: "outline" } })}
                                     className={`flex h-8 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                                   >
                                     <Icon className="h-4 w-4" />
@@ -401,8 +451,9 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                           <button
                             key={b.id}
                             type="button"
-                            onClick={() => patch({ badge: b.id })}
-                            className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.badge === b.id ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                            aria-pressed={recipe.badge.shape === b.id}
+                            onClick={() => patch({ badge: { ...recipe.badge, shape: b.id } })}
+                            className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.badge.shape === b.id ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                           >
                             {b.label}
                           </button>
@@ -416,13 +467,22 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                     <div className="flex flex-wrap gap-1.5">
                       {LOGO_FONTS.map((f) => (
                         <button
-                          key={f}
+                          key={f.family}
                           type="button"
-                          onClick={() => patch({ font: f })}
-                          style={{ fontFamily: `'${f}', sans-serif` }}
-                          className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.font === f ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                          aria-pressed={recipe.typography.name.font === f.family}
+                          onClick={() =>
+                            patch({
+                              typography: {
+                                ...recipe.typography,
+                                name: { ...recipe.typography.name, font: f.family },
+                                tagline: { ...recipe.typography.tagline, font: f.family },
+                              },
+                            })
+                          }
+                          style={{ fontFamily: `'${f.family}', sans-serif` }}
+                          className={`rounded-md border px-2.5 py-1.5 text-xs ${recipe.typography.name.font === f.family ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
                         >
-                          {f}
+                          {f.family}
                         </button>
                       ))}
                     </div>
@@ -431,24 +491,30 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                   <section className="space-y-1.5">
                     <p className="text-sm font-medium">Colors</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {COLOR_PAIRS(theme.primaryHex).map((pair) => {
-                        const active = recipe.colors.badge_bg === pair.badge_bg && recipe.colors.mark_fg === pair.mark_fg;
+                      {PALETTES(theme.primaryHex).map((pair) => {
+                        const active = recipe.colors.palette_id === pair.id;
                         return (
                           <button
-                            key={pair.label}
+                            key={pair.id}
                             type="button"
                             title={pair.label}
-                            onClick={() => patch({ colors: { ...recipe.colors, badge_bg: pair.badge_bg, mark_fg: pair.mark_fg } })}
+                            aria-label={pair.label}
+                            aria-pressed={active}
+                            onClick={() => setRecipe((r) => applyPalette(r, pair))}
                             className={`h-7 w-7 rounded-full border-2 ${active ? "border-primary" : "border-transparent"}`}
-                            style={{ background: pair.badge_bg }}
+                            style={{ background: badgeSwatch(pair.badge) }}
                           />
                         );
                       })}
                       <input
                         type="color"
                         aria-label="Custom badge color"
-                        value={recipe.colors.badge_bg}
-                        onChange={(e) => patch({ colors: { ...recipe.colors, badge_bg: e.target.value } })}
+                        value={recipe.colors.badge.type === "solid" ? recipe.colors.badge.color : "#111827"}
+                        onChange={(e) =>
+                          patch({
+                            colors: { ...recipe.colors, palette_id: null, badge: { type: "solid", color: e.target.value } },
+                          })
+                        }
                         className="h-7 w-7 cursor-pointer rounded-full border p-0"
                       />
                     </div>
@@ -459,7 +525,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                           key={hex}
                           type="button"
                           aria-label={`Name color ${hex}`}
-                          onClick={() => patch({ colors: { ...recipe.colors, text: hex } })}
+                          aria-pressed={recipe.colors.text === hex}
+                          onClick={() => patch({ colors: { ...recipe.colors, palette_id: null, text: hex } })}
                           className={`h-7 w-7 rounded-full border-2 ${recipe.colors.text === hex ? "border-primary" : "border-border"}`}
                           style={{ background: hex }}
                         />
@@ -472,6 +539,7 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                       <p className="text-sm font-medium">Placement</p>
                       <button
                         type="button"
+                        aria-pressed={adjusting}
                         onClick={() => setAdjusting((v) => !v)}
                         className={`rounded-md border px-2.5 py-1 text-xs ${adjusting ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}
                       >
@@ -480,13 +548,15 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                     </div>
                     {adjusting && (
                       <div className="space-y-2 text-xs text-muted-foreground">
-                        <p>Drag the badge or the name in the top preview. It snaps back near center.</p>
+                        <p>Drag the mark, name, or tagline in the top preview. It snaps back near center.</p>
                         <label className="block">
-                          Badge size
+                          Mark size
                           <input
                             type="range" min={0.5} max={2} step={0.05}
-                            value={recipe.overrides.mark_scale}
-                            onChange={(e) => setRecipe((r) => ({ ...r, overrides: { ...r.overrides, mark_scale: Number(e.target.value) } }))}
+                            value={recipe.elements.mark.scale}
+                            onChange={(e) =>
+                              setRecipe((r) => ({ ...r, elements: { ...r.elements, mark: { ...r.elements.mark, scale: Number(e.target.value) } } }))
+                            }
                             className="w-full"
                           />
                         </label>
@@ -494,14 +564,25 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                           Name size
                           <input
                             type="range" min={0.5} max={2} step={0.05}
-                            value={recipe.overrides.name_scale}
-                            onChange={(e) => setRecipe((r) => ({ ...r, overrides: { ...r.overrides, name_scale: Number(e.target.value) } }))}
+                            value={recipe.elements.name.scale}
+                            onChange={(e) =>
+                              setRecipe((r) => ({ ...r, elements: { ...r.elements, name: { ...r.elements.name, scale: Number(e.target.value) } } }))
+                            }
                             className="w-full"
                           />
                         </label>
                         <Button
                           type="button" variant="ghost" size="sm"
-                          onClick={() => setRecipe((r) => ({ ...r, overrides: { mark_offset: [0, 0], mark_scale: 1, name_offset: [0, 0], name_scale: 1 } }))}
+                          onClick={() =>
+                            setRecipe((r) => ({
+                              ...r,
+                              elements: {
+                                mark: { offset: [0, 0], scale: 1 },
+                                name: { offset: [0, 0], scale: 1 },
+                                tagline: { offset: [0, 0], scale: 1 },
+                              },
+                            }))
+                          }
                         >
                           Reset placement
                         </Button>
