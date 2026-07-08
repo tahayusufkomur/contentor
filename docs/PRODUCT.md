@@ -8,8 +8,8 @@
 
 Launch-ready = every box checked:
 
-- [ ] Local main pushed to origin (RE-OPENED 2026-07-08: local main is **105 commits ahead** of origin `f66b7f1` — community phases 1-3, logo studio v1+v2, navbar redesign, fast-tests, copy-truth fixes all local-only)
-- [ ] Prod deployed to current main (RE-OPENED 2026-07-03 late: prod runs `e24fff4` magic-PIN deploy; ~22 commits pushed-not-deployed as of 2026-07-04 incl. one-step creation, subscription pricing, billing source-of-truth, full Gmail inbox. The `start_period`→180s healthcheck fix is now IN main `3dab95d` — celery should no longer need manual start this deploy)
+- [x] Local main pushed to origin (2026-07-08, `b95a0b4` — 106 commits incl. community 1-3, logo studio v1+v2, navbar, copy-truth)
+- [x] Prod deployed to current main (2026-07-08, `b95a0b4` via deploy.sh — all containers healthy, celery came up WITHOUT manual start (180s healthcheck fix held), edge 200; landing verified free of fake testimonials/$1M)
 - [ ] Post-deploy prod smoke: signup → provision → build site → create course by hand (pages/API/media/calendar smoked ✓; the interactive signup+builder walkthrough needs a real inbox — user)
 - [ ] Coach subscribes on LIVE Stripe (one real Starter checkout with a real card, then refund) — platform billing verified in prod
 - [ ] Student buys from a coach on LIVE Stripe Connect (real test purchase, then refund) — marketplace verified in prod
@@ -23,9 +23,9 @@ Launch-ready = every box checked:
 | Feature | Status | Evidence / note |
 |---|---|---|
 | Signup → tenant provisioning (magic link, questionnaire, templates, authenticated flow) | live-in-prod | deployed 2026-07-03 |
-| Courses / downloads / media | live-in-prod | path-style presigns smoked in prod 2026-07-03; one-step create flow (course+curriculum, priced download) pushed `2cc2865`, built-not-deployed |
-| Subscription pricing type ("included in subscription", courses+downloads) | built-not-deployed | pushed `d50fdc4`; any active sub unlocks, never sold one-off; +rich-text lessons, local lesson edit, video-picker modal; 4 tests, 2 tenant migrations |
-| Billing plan source-of-truth cleanup | built-not-deployed | pushed `01ed71c`/`e2c4ac2`: PlatformSubscription is now the single source of a tenant's plan; superadmin plan change grants the subscription, not just the mirror — deploy alongside the mailbox batch |
+| Courses / downloads / media | live-in-prod | path-style presigns smoked in prod 2026-07-03; one-step create flow (course+curriculum, priced download) deployed 2026-07-08 |
+| Subscription pricing type ("included in subscription", courses+downloads) | live-in-prod | pushed `d50fdc4`; any active sub unlocks, never sold one-off; +rich-text lessons, local lesson edit, video-picker modal; 4 tests, 2 tenant migrations |
+| Billing plan source-of-truth cleanup | live-in-prod | pushed `01ed71c`/`e2c4ac2`: PlatformSubscription is now the single source of a tenant's plan; superadmin plan change grants the subscription, not just the mirror; deployed 2026-07-08 |
 | Live classes (GetStream), zoom classes, onsite events, calendar | live-in-prod | zoom_class fix verified in prod 2026-07-03 |
 | Announcements (push/feed/email/templates/recurring) | live-in-prod | deployed 2026-06-23; coach-UI browser smoke still pending |
 | Student PWA (installable, offline, web push) | live-in-prod | usage dashboards deployed 2026-07-03 |
@@ -39,25 +39,25 @@ Launch-ready = every box checked:
 | Coach earnings / payouts view | partial | earnings endpoint + Connect dashboard link; no in-app payout history |
 | Website builder (6 pages, blocks, autosave) | live-in-prod | deployed 2026-07-03; coach walkthrough pending |
 | Filters / tags | live-in-prod | deployed 2026-07-03 |
-| Coach mailbox (inbox, compose, inbound via CF Email Worker) | built-not-deployed | Gmail-style inbox (folders/search/thread) + TipTap rich text + attachments both directions merged+pushed (`a24f1ff`, 2026-07-04); prod still needs deploy + MAILBOX_INBOUND_SECRET + Email Worker redeploy; inbound requires custom domain |
-| Platform inbox address (`<x>@contentor.app` for paid coaches) | built-not-deployed | merged+pushed (`333ce24`, 2026-07-03); CF Email Routing + catch-all→worker wired live per memory, but the Django-side registry/gating is pushed-not-deployed |
+| Coach mailbox (inbox, compose, inbound via CF Email Worker) | partial | Gmail-style inbox (folders/search/thread) + TipTap rich text + attachments both directions merged+pushed (`a24f1ff`, 2026-07-04); code deployed 2026-07-08; inbound still needs MAILBOX_INBOUND_SECRET in prod env + Email Worker redeploy; inbound requires custom domain |
+| Platform inbox address (`<x>@contentor.app` for paid coaches) | live-in-prod | merged+pushed (`333ce24`, 2026-07-03); CF Email Routing + catch-all→worker wired live per memory; Django-side registry/gating deployed 2026-07-08 |
 | Custom-domain onboarder (Route53 + annual sub) | partial | Phase 1 backend only, behind bypass fakes; phases 2-4 + prod creds outstanding |
 | Impersonation (superadmin→coach, coach→student) | live-in-prod | coach→student e2e-covered |
 | Superadmin panel (revenue, webhook log, adminkit) | live-in-prod | |
 | Local dev/e2e infra (MinIO, fakes, sink, Playwright suite) | done (dev-only) | make e2e 17p+3s; stripe specs 2p; backend 603/603 |
-| Setup assistant v2 (seed registry + fingerprints, demo badges, one-click erase, per-item setup-status checklist) | built-not-deployed | merged to LOCAL main 2026-07-05 (`f66b7f1..238e086`, 16 commits, branch `feat/setup-assistant` deleted post-merge); 150/150 relevant backend suites + tsc clean; browser-walked (Playwright); supersedes old 4-step SetupGuideCard |
-| Logo Studio v2 (brief → wall of 24 → canvas editor → brand-kit zip w/ vector SVG; favicon/PWA icons) | built-not-deployed | ALL 4 phases merged to LOCAL main 2026-07-08 (tip `95c93e9`); **NO AI path by decision (zero AI cost)** — deterministic client composer only; 62 pytest + 25 vitest + e2e green; human browser smoke pending |
-| Community (feed/posts/reactions/moderation, phases 1-3) | built-not-deployed | merged to LOCAL main 2026-07-08 (`f96db50` per memory); e2e capstone spec written but never run (port 80); phase 4 (notifications) planned, not built |
-| Landing copy truth-fixes (removes fake testimonials/$1M) | built-not-deployed | merged local 2026-07-06 (9 commits); **fake testimonials still LIVE on prod** until deploy |
+| Setup assistant v2 (seed registry + fingerprints, demo badges, one-click erase, per-item setup-status checklist) | live-in-prod | deployed 2026-07-08; merged 2026-07-05 (`f66b7f1..238e086`, 16 commits, branch `feat/setup-assistant` deleted post-merge); 150/150 relevant backend suites + tsc clean; browser-walked (Playwright); supersedes old 4-step SetupGuideCard |
+| Logo Studio v2 (brief → wall of 24 → canvas editor → brand-kit zip w/ vector SVG; favicon/PWA icons) | live-in-prod | deployed 2026-07-08; **NO AI path by decision (zero AI cost)** — deterministic client composer only; 62 pytest + 25 vitest + e2e green; human browser smoke pending |
+| Community (feed/posts/reactions/moderation, phases 1-3) | live-in-prod | deployed 2026-07-08; e2e capstone spec written but never run (port 80); phase 4 (notifications) planned, not built |
+| Landing copy truth-fixes (removes fake testimonials/$1M) | live-in-prod | deployed 2026-07-08; prod landing grep-verified clean of $1M/testimonial markers |
 | Monitoring (prometheus/grafana compose profile) | verify | is the profile actually running on the home server? |
 
 ## 3. Backlog
 
 ### Now (ranked — the money path is the launch gate)
 
-1. **Push + deploy** — local main is 105 ahead of origin; prod is a ~July-3 build still showing FAKE testimonials the copy-truth fixes removed a month of features ago. Rotate secrets in the same motion (new `.env.prod`, then `./deploy.sh contentor`); the `start_period`→180s healthcheck fix is already in main. Post-deploy: smoke signup/pages/media + the new studio/community/setup-assistant surfaces. *(effort: half a day incl. smoke)*
-2. **Verify the money path on live Stripe** — one real platform subscription + one real Connect purchase (then refund both). Converts the two `built-unverified` rows to `live-in-prod`; THE gate to inviting a real coach. Needs the owner's card, and needs #1 first (the billing source-of-truth + subscription-pricing commits are part of the undeployed pile). *(effort: half a day incl. webhook config)*
-3. **Interactive prod walkthrough** — signup with a real inbox → provision → build a page → logo studio → create a course, as a coach would. Completes the smoke checklist box and doubles as the pending human smoke of the new features. *(effort: 1-2 hours)*
+1. **Verify the money path on live Stripe** — one real platform subscription + one real Connect purchase (then refund both). Converts the two `built-unverified` rows to `live-in-prod`; THE gate to inviting a real coach. Needs the owner's card. Deploy prerequisite CLEARED 2026-07-08. *(effort: half a day incl. webhook config)*
+2. **Rotate exposed prod secrets** — `.env.prod` values were exposed in a past session; new keys from each provider dashboard (owner), then `./deploy.sh contentor` to re-env. *(effort: 1-2 hours)*
+3. **Interactive prod walkthrough** — signup with a real inbox → provision → build a page → logo studio → create a course, as a coach would. Completes the smoke checklist box and doubles as the pending human smoke of the new features (studio/community/setup-assistant). *(effort: 1-2 hours)*
 4. **MVP failed-payment handling** — smaller than thought: webhook past_due mapping + past_due badge + provider portal method already exist; remaining work = one portal endpoint + a "payment failed, update your card" banner/CTA. *(effort: 0.5-1 day)*
 
 ### Next
@@ -89,7 +89,9 @@ Launch-ready = every box checked:
 
 ## 5. Audit stamp
 
-Last check: **2026-07-08 (/po next — "what is left")** — verified: HEAD `95c93e9`; **local main 105 ahead / 0 behind origin** (`f66b7f1`, was 16 ahead at the 07-05 stamp — community 1-3, logo studio v1+v2 all-4-phases, navbar redesign, fast-tests, copy-truth merged locally since); prod `/api/health/` ok (db+redis ok) but prod is still the ~July-3 build → **fake testimonials remain LIVE** while their fix sits local. Corrections: launch-checklist "pushed to origin" box RE-OPENED; inventory gained Logo Studio v2 / Community 1-3 / copy-truth rows (all built-not-deployed); "push + deploy (+rotate secrets)" promoted to explicit Now #1 ahead of the live-money check (which depends on deploying the undeployed billing commits). Decision logged: no AI in Logo Studio (zero AI cost). Money-path rows unchanged (`built-unverified`) — still the launch gate.
+Last check: **2026-07-08 (commit+push+deploy)** — pushed `b95a0b4` (main == origin); deployed via `deploy.sh contentor`: all containers healthy, **celery self-started (healthcheck fix verified in a real deploy — the manual-start gotcha is closed)**, edge 200. Post-deploy smoke: `/api/health/` ok, landing 200 + grep-clean of fake copy, tr. locale 200, tenant catch-all 200. Inventory rows flipped to live-in-prod (subscription pricing, billing source-of-truth, mailbox→partial (needs MAILBOX_INBOUND_SECRET + worker redeploy for inbound), platform inbox, setup assistant v2, logo studio v2, community 1-3, copy-truth). Now #1 (push+deploy) DONE → **Now #1 is the live-Stripe money check**, #2 secrets rotation (owner), #3 interactive prod walkthrough. Money-path rows still `built-unverified` — unchanged as the launch gate.
+
+Earlier — Last check: **2026-07-08 (/po next — "what is left")** — verified: HEAD `95c93e9`; **local main 105 ahead / 0 behind origin** (`f66b7f1`, was 16 ahead at the 07-05 stamp — community 1-3, logo studio v1+v2 all-4-phases, navbar redesign, fast-tests, copy-truth merged locally since); prod `/api/health/` ok (db+redis ok) but prod is still the ~July-3 build → **fake testimonials remain LIVE** while their fix sits local. Corrections: launch-checklist "pushed to origin" box RE-OPENED; inventory gained Logo Studio v2 / Community 1-3 / copy-truth rows (all built-not-deployed); "push + deploy (+rotate secrets)" promoted to explicit Now #1 ahead of the live-money check (which depends on deploying the undeployed billing commits). Decision logged: no AI in Logo Studio (zero AI cost). Money-path rows unchanged (`built-unverified`) — still the launch gate.
 
 Earlier — Last check: **2026-07-05 (/po next, later same day)** — verified: HEAD moved `3dab95d` → `238e086` since the morning stamp (setup-assistant v2 merged to local main, 16 commits, working tree clean). **Local main now 16 ahead / 0 behind origin/main** (`f66b7f1`) — the "0 ahead" from the morning stamp no longer holds; CLAUDE.md's deploy path rsyncs the local tree directly, so this doesn't block deploying, but it does mean the push-to-origin checklist box (checked 2026-07-03) is stale again and origin is not a reliable snapshot of main. Prod `/api/health/` could NOT be checked this run — no outbound network from this sandbox; treat prod status as unconfirmed, not re-verified. Feature inventory: added setup-assistant v2 row (built-not-deployed). No re-ranking: this merge doesn't touch the money-path gate, so Now list (verify live Stripe → rotate secrets → prod walkthrough → MVP failed-payment) stands unchanged. Prod deploy debt keeps growing (was ~22 commits behind on 2026-07-04, +16 more today) — worth folding "push + deploy" into an explicit Now item rather than leaving it implicit in checklist box 2.
 
