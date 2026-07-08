@@ -15,6 +15,7 @@ import {
   defaultRecipe,
   initialsFor,
 } from "@/lib/logo/catalog";
+import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
 import { imageToDataUrl, svgToPngBlob, uploadPng, type FontSpec } from "@/lib/logo/export";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
 import { getThemePalette } from "@/lib/themes";
@@ -25,6 +26,7 @@ import type {
   RecipeLayout,
 } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
+import { AbstractMark } from "./abstract-mark";
 import { logoViewBox, LogoRenderer, MarkRenderer } from "./logo-renderer";
 
 const LAYOUTS: { id: RecipeLayout; label: string }[] = [
@@ -414,6 +416,34 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
                         <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => fileRef.current?.click()}>
                           <Upload className="h-3.5 w-3.5" /> Your own
                         </Button>
+                      </div>
+                      <div>
+                        <p className="mb-1 text-xs text-muted-foreground">Abstract</p>
+                        <div className="grid grid-cols-6 gap-1">
+                          {ABSTRACT_FAMILIES.map((family) => {
+                            const active = recipe.mark.type === "abstract" && recipe.mark.family === family;
+                            const seed = recipe.mark.type === "abstract" ? recipe.mark.seed : 1;
+                            return (
+                              <button
+                                key={family}
+                                type="button"
+                                aria-label={`Abstract ${family}`}
+                                aria-pressed={active}
+                                onClick={() =>
+                                  patch({ mark: { type: "abstract", family, seed: active ? seed + 1 : seed } })
+                                }
+                                className={`flex h-9 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-primary" : "hover:border-foreground"}`}
+                              >
+                                <svg viewBox="0 0 24 24" width={20} height={20}>
+                                  <AbstractMark family={family} seed={seed} color="currentColor" size={24} />
+                                </svg>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {recipe.mark.type === "abstract" && (
+                          <p className="mt-1 text-xs text-muted-foreground">Click again to shuffle the shape.</p>
+                        )}
                       </div>
                       <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
                         {ICON_GROUPS.map((group) => (

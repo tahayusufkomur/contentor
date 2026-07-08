@@ -6,6 +6,7 @@
 import { useId, type Ref } from "react";
 import { LOGO_ICONS, initialsFor } from "@/lib/logo/catalog";
 import type { Fill, LogoRecipe, RecipeLayout, TextStyle } from "@/types/logo";
+import { AbstractMark } from "./abstract-mark";
 
 export const MARK_VIEWBOX = 256;
 
@@ -132,6 +133,9 @@ export function MarkContent({
         <Icon x={0} y={0} width={size} height={size} color={color} {...solidProps} />
       );
     }
+  }
+  if (mark.type === "abstract") {
+    return <AbstractMark family={mark.family} seed={mark.seed} color={color} size={size} />;
   }
   if (mark.type === "image" && mark.url) {
     return (
