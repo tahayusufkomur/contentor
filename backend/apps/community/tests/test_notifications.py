@@ -43,13 +43,27 @@ def test_coach_post_fans_out_to_everyone_but_author(enabled, sent, tenant_ctx):
     coach = _member("coach@x.com", "Coach", role="owner", is_staff=True)
     _member("s1@x.com", "S1")
     _member("s2@x.com", "S2")
+
+    # Create a user with a push subscription but NO CommunityMember row
+    non_member_user = User.objects.create_user(
+        email="non-member@x.com", name="NonMember", password="pw123456"
+    )
+    PushSubscription.objects.create(
+        user=non_member_user,
+        endpoint="https://push.example/non-member@x.com",
+        p256dh="k",
+        auth="a",
+    )
+
     post = Post.objects.create(author=coach, body="New class Friday!")
 
     tasks.fanout_community_post(post.id, tenant_ctx.schema_name)
 
     assert len(sent) == 1
     endpoints, payload = sent[0]
+    # Verify that only members' endpoints are included, not the non-member
     assert endpoints == ["https://push.example/s1@x.com", "https://push.example/s2@x.com"]
+    assert "https://push.example/non-member@x.com" not in endpoints
     assert payload["url"] == "/community"
     assert "Coach" in payload["title"]
 
