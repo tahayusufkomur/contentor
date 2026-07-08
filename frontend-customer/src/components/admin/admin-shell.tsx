@@ -11,6 +11,7 @@ import {
   Inbox,
   LayoutDashboard,
   Mail,
+  MessagesSquare,
   Palette,
   FileText,
   Settings,
@@ -76,6 +77,11 @@ export function AdminShell({ children, user }: AdminShellProps) {
       id: "community",
       label: t("nav.sections.community"),
       items: [
+        {
+          label: t("nav.items.communityFeed"),
+          href: "/admin/community",
+          icon: MessagesSquare,
+        },
         {
           label: t("nav.items.students"),
           href: "/admin/students",

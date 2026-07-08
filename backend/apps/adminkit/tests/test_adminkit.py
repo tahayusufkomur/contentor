@@ -62,13 +62,32 @@ def plans(tenant_ctx):
 
 def test_studio_site_meta_lists_models_per_role(owner, coach, student):
     body = make_client(owner).get("/api/v1/studio-admin/meta/").json()
-    assert {m["key"] for m in body["models"]} == {"courses", "subscription-plans", "bundles", "payments", "users"}
+    assert {m["key"] for m in body["models"]} == {
+        "courses",
+        "subscription-plans",
+        "bundles",
+        "payments",
+        "users",
+        "community-posts",
+        "community-comments",
+        "community-reports",
+        "community-members",
+    }
 
-    # Billing admins require the owner role; a coach sees only courses + users
-    # (users carries the "log in as student" action, open to coaches). Filters
-    # are managed inline on the course/event forms, not in the schema admin.
+    # Billing admins require the owner role; a coach sees courses + users
+    # (users carries the "log in as student" action, open to coaches) plus the
+    # community moderation panels, which are IsCoachOrOwner like day-to-day
+    # moderation at /admin/community. Filters are managed inline on the
+    # course/event forms, not in the schema admin.
     body = make_client(coach).get("/api/v1/studio-admin/meta/").json()
-    assert {m["key"] for m in body["models"]} == {"courses", "users"}
+    assert {m["key"] for m in body["models"]} == {
+        "courses",
+        "users",
+        "community-posts",
+        "community-comments",
+        "community-reports",
+        "community-members",
+    }
 
     assert make_client(student).get("/api/v1/studio-admin/meta/").status_code == 403
 

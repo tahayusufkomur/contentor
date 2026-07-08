@@ -10,6 +10,7 @@
       "business": "Business"
     },
     "items": {
+      "communityFeed": "Community",
       "dashboard": "Dashboard",
       "courses": "Courses",
       "photos": "Photos",
