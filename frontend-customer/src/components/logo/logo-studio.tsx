@@ -49,6 +49,8 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
   const logoSvgRef = useRef<SVGSVGElement>(null);
   const markSvgRef = useRef<SVGSVGElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<Element | null>(null);
   const [adjusting, setAdjusting] = useState(false);
   const dragRef = useRef<{ part: "mark" | "name"; startX: number; startY: number; base: [number, number] } | null>(null);
   const [suggestions, setSuggestions] = useState<LogoRecipe[] | null>(null);
@@ -163,7 +165,18 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
         icon_url: mark.signed_url,
         logo_recipe: recipe,
       };
-      await clientFetch("/api/v1/admin/config/", { method: "PATCH", body: JSON.stringify(body) });
+      // The backend re-derives mark.url from photo_id on read and discards
+      // whatever we send for image marks (validate_logo_recipe always resets
+      // it to "") — sending the full base64 data URL here just doubles the
+      // upload's payload for nothing, since the image already went up via
+      // uploadPng. Strip it for the wire only: `body` (used by onSaved, and
+      // therefore this session's re-editing/preview) keeps the real data URL.
+      const wireLogoRecipe =
+        recipe.mark.type === "image" ? { ...recipe, mark: { ...recipe.mark, url: "" } } : recipe;
+      await clientFetch("/api/v1/admin/config/", {
+        method: "PATCH",
+        body: JSON.stringify({ ...body, logo_recipe: wireLogoRecipe }),
+      });
       onSaved(body);
       onOpenChange(false);
     } catch (err) {
@@ -177,6 +190,34 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
     if (!saving) onOpenChange(false);
   };
 
+  // Escape closes the dialog, respecting the same close-guard as the X
+  // button and backdrop click (handleClose no-ops while a save is in
+  // flight). `saving` is a dependency so the listener's closure never goes
+  // stale mid-save.
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") handleClose();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, saving]);
+
+  // Move focus into the dialog on open, and restore it to whatever element
+  // triggered the studio when it closes. ModalPortal is a bare portal (no
+  // Radix Dialog underneath), so this focus-in/focus-out is what stands in
+  // for the focus trap + focus restoration Radix would otherwise give us.
+  useEffect(() => {
+    if (!open) return;
+    previousFocusRef.current = document.activeElement;
+    panelRef.current?.focus();
+    return () => {
+      if (previousFocusRef.current instanceof HTMLElement) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [open]);
+
   return (
     <>
       {open && (
@@ -186,11 +227,16 @@ export function LogoStudio({ open, onOpenChange, config, onSaved }: LogoStudioPr
             onClick={handleClose}
           >
             <div
-              className="flex h-[92vh] max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
+              ref={panelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="logo-studio-title"
+              tabIndex={-1}
+              className="flex h-[92vh] max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-2xl outline-none"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b px-6 py-4">
-                <h2 className="text-lg font-semibold">Logo Studio</h2>
+                <h2 id="logo-studio-title" className="text-lg font-semibold">Logo Studio</h2>
                 <div className="flex items-center gap-2">
                   {error && <p className="text-xs text-destructive">{error}</p>}
                   <Button onClick={handleSave} disabled={saving} className="gap-2">
