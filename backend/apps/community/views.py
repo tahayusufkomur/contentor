@@ -28,13 +28,28 @@ from .serializers import (
 from .throttling import CommunityCommentThrottle, CommunityPostThrottle
 
 
+def _has_new_posts(user, settings_obj):
+    """Unread indicator for the nav link. Never creates a member row."""
+    if not settings_obj.is_enabled:
+        return False
+    from .models import CommunityMember
+
+    member = CommunityMember.objects.filter(user=user).only("last_seen_at", "joined_at").first()
+    if member is None:
+        return False
+    since = member.last_seen_at or member.joined_at
+    return Post.objects.filter(status=PostStatus.VISIBLE, created_at__gt=since).exists()
+
+
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def settings_view(request):
     obj = CommunitySettings.load()
     if request.method == "GET":
         cls = CommunitySettingsSerializer if is_moderator(request.user) else CommunitySettingsPublicSerializer
-        return Response(cls(obj).data)
+        data = dict(cls(obj).data)
+        data["has_new_posts"] = _has_new_posts(request.user, obj)
+        return Response(data)
     if not is_moderator(request.user):
         return Response(status=status.HTTP_403_FORBIDDEN)
     serializer = CommunitySettingsSerializer(obj, data=request.data, partial=True)

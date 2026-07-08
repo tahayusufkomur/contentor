@@ -19,7 +19,7 @@ def test_settings_get_default_disabled(tenant_ctx):
     client, _ = make_client()
     resp = client.get("/api/v1/community/settings/")
     assert resp.status_code == 200
-    assert resp.json() == {"is_enabled": False, "welcome_message": ""}
+    assert resp.json() == {"is_enabled": False, "welcome_message": "", "has_new_posts": False}
 
 
 def test_settings_patch_requires_moderator(tenant_ctx):
