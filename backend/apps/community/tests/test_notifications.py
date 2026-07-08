@@ -1,8 +1,8 @@
 import pytest
 
 from apps.accounts.models import User
-from apps.community.models import Comment, CommunityMember, CommunitySettings, Post
 from apps.community import tasks
+from apps.community.models import Comment, CommunityMember, CommunitySettings, Post
 from apps.notifications.models import PushSubscription
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -17,12 +17,8 @@ def enabled(tenant_ctx):
 
 
 def _member(email, name, role="student", is_staff=False):
-    user = User.objects.create_user(
-        email=email, name=name, password="pw123456", role=role, is_staff=is_staff
-    )
-    PushSubscription.objects.create(
-        user=user, endpoint=f"https://push.example/{email}", p256dh="k", auth="a"
-    )
+    user = User.objects.create_user(email=email, name=name, password="pw123456", role=role, is_staff=is_staff)
+    PushSubscription.objects.create(user=user, endpoint=f"https://push.example/{email}", p256dh="k", auth="a")
     return CommunityMember.objects.create(user=user, display_name=name)
 
 
@@ -45,9 +41,7 @@ def test_coach_post_fans_out_to_everyone_but_author(enabled, sent, tenant_ctx):
     _member("s2@x.com", "S2")
 
     # Create a user with a push subscription but NO CommunityMember row
-    non_member_user = User.objects.create_user(
-        email="non-member@x.com", name="NonMember", password="pw123456"
-    )
+    non_member_user = User.objects.create_user(email="non-member@x.com", name="NonMember", password="pw123456")
     PushSubscription.objects.create(
         user=non_member_user,
         endpoint="https://push.example/non-member@x.com",
@@ -119,9 +113,7 @@ def test_post_create_enqueues_fanout(enabled, monkeypatch, tenant_ctx):
         "apps.community.tasks.fanout_community_post.delay",
         lambda *args: calls.append(args),
     )
-    user = User.objects.create_user(
-        email="q@x.com", name="Q", password="pw123456", role="owner", is_staff=True
-    )
+    user = User.objects.create_user(email="q@x.com", name="Q", password="pw123456", role="owner", is_staff=True)
     client = APIClient(HTTP_HOST="shared-test.localhost")
     client.force_authenticate(user=user)
     resp = client.post("/api/v1/community/posts/", {"body": "ping"}, format="json")
@@ -161,9 +153,7 @@ def test_comment_create_enqueues_notify(enabled, monkeypatch, tenant_ctx):
     user = User.objects.create_user(email="cm@x.com", name="CM", password="pw123456")
     client = APIClient(HTTP_HOST="shared-test.localhost")
     client.force_authenticate(user=user)
-    resp = client.post(
-        f"/api/v1/community/posts/{post.id}/comments/", {"body": "hey"}, format="json"
-    )
+    resp = client.post(f"/api/v1/community/posts/{post.id}/comments/", {"body": "hey"}, format="json")
     assert resp.status_code == 201
     assert len(calls) == 1
     assert calls[0][0] == resp.json()["id"]

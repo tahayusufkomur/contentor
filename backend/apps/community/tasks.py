@@ -37,12 +37,8 @@ def fanout_community_post(post_id: int, schema_name: str) -> None:
             return
         if not CommunitySettings.load().notify_on_coach_post:
             return
-        subs = PushSubscription.objects.filter(
-            user__community_member__isnull=False
-        ).exclude(user=post.author.user)
-        send_to_subscriptions(
-            subs, community_post_payload(post.author.display_name, post.body)
-        )
+        subs = PushSubscription.objects.filter(user__community_member__isnull=False).exclude(user=post.author.user)
+        send_to_subscriptions(subs, community_post_payload(post.author.display_name, post.body))
 
 
 @shared_task
@@ -54,14 +50,8 @@ def notify_post_comment(comment_id: int, schema_name: str) -> None:
     with tenant_context(tenant):
         from .models import Comment
 
-        comment = (
-            Comment.objects.select_related("author", "post__author__user")
-            .filter(pk=comment_id)
-            .first()
-        )
+        comment = Comment.objects.select_related("author", "post__author__user").filter(pk=comment_id).first()
         if not comment or comment.author_id == comment.post.author_id:
             return
         subs = PushSubscription.objects.filter(user=comment.post.author.user)
-        send_to_subscriptions(
-            subs, community_comment_payload(comment.author.display_name, comment.body)
-        )
+        send_to_subscriptions(subs, community_comment_payload(comment.author.display_name, comment.body))
