@@ -58,8 +58,9 @@ export type AbstractShape =
       opacity: number;
     };
 
-// mulberry32 — tiny deterministic PRNG.
-function rng(seed: number): () => number {
+// mulberry32 — tiny deterministic PRNG. Exported for the composer, which
+// needs the same seeded determinism guarantees.
+export function mulberry32(seed: number): () => number {
   let t = (seed || 1) >>> 0;
   return () => {
     t += 0x6d2b79f5;
@@ -238,5 +239,5 @@ export function abstractSpec(
   family: AbstractFamily,
   seed: number,
 ): AbstractShape[] {
-  return GENERATORS[family](rng(seed));
+  return GENERATORS[family](mulberry32(seed));
 }
