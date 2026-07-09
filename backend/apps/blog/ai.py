@@ -328,8 +328,16 @@ def _provider_configured():
 
 
 def plan_limit(tenant):
-    plan = getattr(tenant, "plan", None)
-    return getattr(plan, "max_ai_blog_posts", 0) or 0
+    """The tenant's current AI-blog quota. Reads platform_subscription.plan —
+    the SAME source has_paid_platform_plan uses — not the Tenant.plan FK,
+    which is set at signup and never kept in sync with the live subscription."""
+    from apps.core.models import PlatformSubscription
+
+    try:
+        plan = tenant.platform_subscription.plan
+    except PlatformSubscription.DoesNotExist:
+        return 0
+    return plan.max_ai_blog_posts or 0
 
 
 def availability(tenant, month=None):

@@ -76,7 +76,8 @@ def _tenant(plan_limit, paid=True):
     plan = PlatformPlan.objects.create(
         name=f"p{plan_limit}-{paid}", price_monthly=1, transaction_fee_pct=1, max_ai_blog_posts=plan_limit
     )
-    return SimpleNamespace(schema_name=SCHEMA, plan=plan, has_paid_platform_plan=paid)
+    subscription = SimpleNamespace(plan=plan)
+    return SimpleNamespace(schema_name=SCHEMA, platform_subscription=subscription, has_paid_platform_plan=paid)
 
 
 def test_availability_upgrade_required_for_free(settings):
