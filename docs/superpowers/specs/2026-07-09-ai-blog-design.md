@@ -37,7 +37,7 @@ Token efficiency is a first-class requirement (see §5): one Claude call per pos
 - `title`, `slug` (unique, auto from title, editable under "Advanced"), `status` (`draft`/`published`)
 - `body_html` (TextField, sanitized HTML — same convention as `Announcement.body`)
 - `excerpt` (listing teaser), `meta_description` (SEO), `tags` (JSON list of strings)
-- `cover_image` (nullable; reuses existing media upload/presign flow — UI optional in v1)
+- ~~cover_image~~ — deferred to v2 (presigned-URL expiry makes public covers non-trivial; v1 posts are text-first)
 - `source` (`manual` / `ai` / `autopilot`), `ai_model` (nullable, for audit)
 - `created_by` (FK user, nullable — autopilot posts have none), `published_at`, `created_at`, `updated_at`
 
@@ -72,7 +72,7 @@ The engine is shared by coach generation, Autopilot, and platform-blog generatio
    - `BLOG_AI_MODEL` default `claude-sonnet-5` (public SEO content — quality matters)
    - `BLOG_AI_TOPIC_MODEL` default `claude-haiku-4-5-20251001`
    - `BLOG_AI_MONTHLY_BUDGET_USD` global kill-switch (default 30), `BLOG_AI_ENABLED` feature flag
-   - `BLOG_AI_PROVIDER` — `"api"` (default) or `"claude_cli"` (see below)
+   - `BLOG_AI_PROVIDER` — `"anthropic"` (default) or `"cli"` (see below; values match the existing `HELP_BOT_PROVIDER` convention)
    - Reuses `ANTHROPIC_API_KEY`, the `_MODEL_PRICES`/cost-estimate helpers (extract the shared bits from `logo_ai.py` into a small common module rather than duplicating).
 
 ### Provider abstraction — Anthropic API (prod) vs Claude CLI (local dev)
@@ -83,7 +83,7 @@ The engine never calls Anthropic directly; it calls a provider interface with on
 - **`ClaudeCliProvider`** (local dev/testing, runs on the owner's Claude subscription — zero API spend):
   - Subprocess: `claude -p <user_prompt> --system-prompt <system> --model <model> --output-format json --max-turns 1` with tools disallowed; parse the JSON envelope's `result` field.
   - Structured output: since the CLI has no `messages.parse`, the system prompt instructs JSON-only output matching the same schema; the result is validated with the **same Pydantic models** (one retry on validation failure). Both providers therefore return identical objects — the rest of the engine is provider-agnostic.
-  - **Auth inside Docker:** macOS keychain creds don't reach containers, so use a long-lived subscription token: run `claude setup-token` once on the host → put the resulting token in local `.env` as `CLAUDE_CODE_OAUTH_TOKEN`. The dev backend image (dev target only, never prod) adds Node 20 + `@anthropic-ai/claude-code`.
+  - **Auth inside Docker:** macOS keychain creds don't reach containers, so use a long-lived subscription token: run `claude setup-token` once on the host → put the resulting token in local `.env` as `CLAUDE_CODE_OAUTH_TOKEN`. The dev backend image already installs the CLI behind the `INSTALL_CLAUDE_CLI=1` build arg (shipped with the Ask Contentor help bot, which pioneered this provider pattern) — the blog reuses that install and the help bot's conventions (strip `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` from the subprocess env so the CLI can't silently bill the API key; `--disallowedTools "*" --max-turns 1`).
   - Usage rows are still written (usd from the CLI envelope's `total_cost_usd` if present, else 0) so quota/kill-switch logic is exercised realistically in dev.
   - Subprocess timeout 120s; provider raises typed errors mapped to the same `reason` codes.
   - Local `.env` example: `BLOG_AI_PROVIDER=claude_cli`, `CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat…`. Prod `.env.prod`: `BLOG_AI_PROVIDER=api`, `ANTHROPIC_API_KEY=…`.
