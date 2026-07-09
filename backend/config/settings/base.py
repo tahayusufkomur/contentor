@@ -142,6 +142,9 @@ REST_FRAMEWORK = {
         "community_posts": "10/hour",
         "community_comments": "60/hour",
         "help_bot": "10/min",
+        # Anonymous marketing-site chat: per-IP burst + daily ceiling.
+        "help_bot_public_burst": "5/min",
+        "help_bot_public_day": "40/day",
     },
 }
 
@@ -230,6 +233,10 @@ HELP_BOT_CLI_BIN = os.environ.get("HELP_BOT_CLI_BIN", "claude")
 HELP_BOT_TENANT_MONTHLY_USD = float(os.environ.get("HELP_BOT_TENANT_MONTHLY_USD", "1"))
 HELP_BOT_GLOBAL_MONTHLY_USD = float(os.environ.get("HELP_BOT_GLOBAL_MONTHLY_USD", "50"))
 HELP_BOT_TENANT_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_TENANT_MONTHLY_QUESTIONS", "200"))
+# Anonymous marketing-site chat (apps.core.help): its own monthly bucket,
+# also counted into the global kill-switch above.
+HELP_BOT_PUBLIC_MONTHLY_USD = float(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_USD", "10"))
+HELP_BOT_PUBLIC_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_QUESTIONS", "500"))
 
 # --- Web Push (VAPID) ---
 # Generate a keypair once with: vapid --gen ; vapid --applicationServerKey

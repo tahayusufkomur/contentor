@@ -10,6 +10,7 @@
 > - Question-count cap added next to the USD caps (`HELP_BOT_TENANT_MONTHLY_QUESTIONS`, default 200) since subscription-mode answers record $0.
 > - The bubble now persists as a "?" help button after the checklist is completed or dismissed, so the chat stays one click away.
 > - Q&A DB log deferred (L3); only usage counters are stored.
+> - **Marketing-site variant added (same day):** anonymous pre-sales chat on frontend-main. Public endpoints `POST/GET /api/v1/help/{chat,status}/` (`apps/core/help/`, `authentication_classes([])` + AllowAny), **visitor persona** sharing the same KB but linking only to /signup, /pricing, /demo, /login (never /admin). Abuse controls: per-IP throttles (5/min + 40/day), dedicated `__marketing__` spend bucket with its own caps (`HELP_BOT_PUBLIC_MONTHLY_USD` $10, `HELP_BOT_PUBLIC_MONTHLY_QUESTIONS` 500) that also counts into the shared global kill-switch. Widget: `frontend-main/src/components/shared/help-bubble.tsx` mounted in the root layout, hidden on /admin, /dashboard, /callback; EN+TR strings under `marketing.helpBot`.
 
 ---
 

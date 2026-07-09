@@ -55,9 +55,11 @@ def _sse_events(response):
 
 
 def test_chat_streams_deltas_and_records_usage(coach_client, enabled, monkeypatch):
-    def fake_stream(history):
-        # The tenant snapshot must have been injected server-side.
+    def fake_stream(history, audience="coach"):
+        # The tenant snapshot must have been injected server-side, and the
+        # coach endpoint must never use the visitor persona.
         assert history[0]["content"].startswith("<tenant_context>")
+        assert audience == "coach"
         yield ("delta", "Open ")
         yield ("delta", "Payouts.")
         yield ("done", {"cost_usd": Decimal("0.0100"), "provider": "anthropic"})
@@ -82,7 +84,7 @@ def test_chat_streams_deltas_and_records_usage(coach_client, enabled, monkeypatc
 
 
 def test_chat_provider_failure_emits_error_and_skips_quota(coach_client, enabled, monkeypatch):
-    def fake_stream(history):
+    def fake_stream(history, audience="coach"):
         yield ("delta", "partial")
         raise help_bot.HelpBotError("boom")
 

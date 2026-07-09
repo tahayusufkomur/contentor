@@ -163,5 +163,18 @@
     "ctaPrimary": "Start Free Today",
     "ctaSecondary": "See pricing",
     "trustNote": "Free forever plan. No credit card required."
+  },
+  "helpBot": {
+    "title": "Ask Contentor",
+    "bubbleLabel": "Open help chat",
+    "close": "Close",
+    "intro": "Questions about Contentor? Ask away — pricing, payouts, features, anything.",
+    "placeholder": "Ask a question…",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "error": "Something went wrong — please try again.",
+    "suggestPrice": "How much does Contentor cost?",
+    "suggestPayouts": "How do payouts work?",
+    "suggestDomain": "Can I use my own domain?"
   }
 }

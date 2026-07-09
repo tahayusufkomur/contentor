@@ -37,6 +37,7 @@ urlpatterns = [
     path("api/v1/demo/", include("apps.core.demo.urls")),
     path("api/v1/onboarding/", include("apps.core.onboarding.urls")),
     path("api/v1/contact/", include("apps.core.contact.urls")),
+    path("api/v1/help/", include("apps.core.help.urls")),
     path("api/v1/preview/", include("apps.core.preview.urls")),
     path("api/v1/admin/", include("apps.tenant_config.urls")),
     path("api/v1/admin/", include("apps.notifications.admin_urls")),

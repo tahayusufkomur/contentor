@@ -337,36 +337,10 @@ def help_bot_chat(request):
     except ValueError as exc:
         return Response({"error": str(exc)}, status=400)
 
-    schema_name = tenant.schema_name
-
-    def sse():
-        def event(payload):
-            return f"data: {_json.dumps(payload)}\n\n"
-
-        cost = Decimal("0")
-        completed = False
-        try:
-            for kind, value in help_bot.stream_answer(history):
-                if kind == "delta":
-                    yield event({"type": "delta", "text": value})
-                elif kind == "done":
-                    cost = value["cost_usd"]
-                    completed = True
-            yield event({"type": "done"})
-        except Exception:
-            logger.exception("help bot: answer failed (provider=%s)", settings.HELP_BOT_PROVIDER)
-            yield event({"type": "error", "message": "answer_failed"})
-        finally:
-            # A failed stream has no usage data to price (same caveat as
-            # logo_ai) and shouldn't consume the coach's quota — the
-            # per-minute throttle is the runaway-loop protection.
-            if completed:
-                try:
-                    help_bot.record_question(schema_name, cost, month=month)
-                except Exception:
-                    logger.exception("help bot: usage recording failed")
-
-    response = StreamingHttpResponse(sse(), content_type="text/event-stream")
+    response = StreamingHttpResponse(
+        help_bot.sse_events(history, "coach", tenant.schema_name, month),
+        content_type="text/event-stream",
+    )
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"
     return response

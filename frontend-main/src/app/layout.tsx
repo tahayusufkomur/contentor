@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { headers } from "next/headers";
 
+import { HelpBubble } from "@/components/shared/help-bubble";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { resolveHost } from "@/i18n/config";
 import "@/styles/globals.css";
@@ -43,9 +44,17 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="canonical" href={`${scheme}://${apex}`} />
-        <link rel="alternate" hrefLang={locale === "en" ? "tr" : "en"} href={`${scheme}://${otherApex}`} />
+        <link
+          rel="alternate"
+          hrefLang={locale === "en" ? "tr" : "en"}
+          href={`${scheme}://${otherApex}`}
+        />
         <link rel="alternate" hrefLang={locale} href={`${scheme}://${apex}`} />
-        <link rel="alternate" hrefLang="x-default" href={`${scheme}://${region === "tr" ? otherApex : apex}`} />
+        <link
+          rel="alternate"
+          hrefLang="x-default"
+          href={`${scheme}://${region === "tr" ? otherApex : apex}`}
+        />
       </head>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
@@ -58,6 +67,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <HelpBubble />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

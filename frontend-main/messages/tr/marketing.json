@@ -163,5 +163,18 @@
     "ctaPrimary": "Bugün ücretsiz başla",
     "ctaSecondary": "Fiyatlara bak",
     "trustNote": "Sonsuza dek ücretsiz plan. Kredi kartı gerekmez."
+  },
+  "helpBot": {
+    "title": "Contentor'a Sor",
+    "bubbleLabel": "Yardım sohbetini aç",
+    "close": "Kapat",
+    "intro": "Contentor hakkında sorularınız mı var? Sorun — fiyatlar, ödemeler, özellikler, ne isterseniz.",
+    "placeholder": "Bir soru sorun…",
+    "send": "Gönder",
+    "thinking": "Düşünüyor…",
+    "error": "Bir şeyler ters gitti — lütfen tekrar deneyin.",
+    "suggestPrice": "Contentor'un fiyatı ne kadar?",
+    "suggestPayouts": "Ödemeler nasıl çalışır?",
+    "suggestDomain": "Kendi alan adımı kullanabilir miyim?"
   }
 }
