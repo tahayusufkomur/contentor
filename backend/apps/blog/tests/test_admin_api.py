@@ -1,0 +1,151 @@
+"""Coach admin API: gating reasons, generation flow (AI mocked), publish
+transitions, autopilot next_run computation. Auth as a coach/owner user —
+mirrors the fixture pattern in apps/tenant_config/tests/test_logo_ai_views.py."""
+
+from decimal import Decimal
+from unittest import mock
+
+import pytest
+from django_tenants.utils import schema_context
+from rest_framework.test import APIClient
+
+from apps.accounts.models import User
+from apps.blog import ai
+from apps.blog.models import BlogAutopilot, BlogPost, BlogTopicIdea
+from apps.core.models import PlatformPlan, PlatformSubscription
+
+pytestmark = pytest.mark.django_db(transaction=True)
+
+HOST = "shared-test.localhost"
+SHARED_SCHEMA = "shared_test"
+
+
+@pytest.fixture()
+def coach(tenant_ctx):
+    return User.objects.create_user(
+        email="coach@blogadmintest.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+
+
+@pytest.fixture()
+def coach_client(coach):
+    client = APIClient(HTTP_HOST=HOST)
+    client.force_authenticate(user=coach)
+    return client
+
+
+@pytest.fixture()
+def free_tenant(tenant_ctx):
+    return tenant_ctx
+
+
+@pytest.fixture()
+def paid_tenant(tenant_ctx):
+    # PlatformPlan/Subscription/User are public-schema; create them under the
+    # public schema explicitly so the subscription's user FK resolves (this
+    # fixture runs inside tenant_ctx, which would otherwise write the user to
+    # the tenant schema and break the cross-schema FK).
+    with schema_context("public"):
+        plan = PlatformPlan.objects.create(
+            name="Blog Admin Test Paid", price_monthly=19, transaction_fee_pct=5, max_ai_blog_posts=5
+        )
+        owner = User.objects.create_user(
+            email="blogadmin-owner@x.com",
+            name="Owner",
+            password="x",  # noqa: S106
+            role="owner",
+        )
+        PlatformSubscription.objects.create(
+            tenant=tenant_ctx, user=owner, plan=plan, status=PlatformSubscription.STATUS_ACTIVE, provider="manual"
+        )
+    tenant_ctx.refresh_from_db()
+    return tenant_ctx
+
+
+@pytest.fixture(autouse=True)
+def _clean_shared():
+    def _scrub():
+        with schema_context(SHARED_SCHEMA):
+            PlatformSubscription.objects.all().delete()
+            PlatformPlan.objects.filter(name="Blog Admin Test Paid").delete()
+            User.objects.filter(email="blogadmin-owner@x.com").delete()
+
+    _scrub()
+    yield
+    _scrub()
+
+
+def _draft_result():
+    return ai.DraftResult(
+        {"title": "T", "body_html": "<p>b</p>", "excerpt": "e", "meta_description": "m", "tags": ["t"], "ai_model": "x"},
+        Decimal("0.03"),
+    )
+
+
+def test_generate_upgrade_required_for_free_tenant(coach_client, free_tenant):
+    res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    assert res.status_code == 200
+    assert res.data["post"] is None and res.data["source"] == "upgrade_required"
+
+
+def test_generate_creates_draft_and_consumes_credit(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result()):
+        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    assert res.status_code == 200
+    post = BlogPost.objects.get(pk=res.data["post"]["id"])
+    assert post.status == "draft" and post.source == "ai" and post.slug
+    assert ai.tenant_usage(paid_tenant.schema_name).generations_used == 1
+
+
+def test_generate_failure_records_cost_not_credit(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with mock.patch.object(ai, "generate_post", side_effect=ai.BlogAiError("bad", cost_usd=Decimal("0.02"))):
+        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "x"}, format="json")
+    assert res.data["source"] == "error"
+    usage = ai.tenant_usage(paid_tenant.schema_name)
+    assert usage.usd_spent == Decimal("0.02") and usage.generations_used == 0
+
+
+def test_generate_marks_topic_used(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    topic = BlogTopicIdea.objects.create(title="Sleep myths", angle="")
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result()):
+        coach_client.post("/api/v1/admin/blog/generate/", {"topic_id": topic.id}, format="json")
+    topic.refresh_from_db()
+    assert topic.status == "used"
+
+
+def test_publish_transition_sets_published_at(coach_client, paid_tenant):
+    post = BlogPost.objects.create(title="x", slug="x")
+    res = coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "published"}, format="json")
+    assert res.status_code == 200
+    post.refresh_from_db()
+    assert post.published_at is not None
+    coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "draft"}, format="json")
+    post.refresh_from_db()
+    assert post.published_at is None
+
+
+def test_autopilot_patch_computes_next_run(coach_client, paid_tenant):
+    res = coach_client.patch(
+        "/api/v1/admin/blog/autopilot/",
+        {"is_enabled": True, "frequency": "weekly", "weekday": 0, "generate_time": "09:00"},
+        format="json",
+    )
+    assert res.status_code == 200
+    assert BlogAutopilot.load().next_run_at is not None
+
+
+def test_topics_refill_uses_topic_batch(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with mock.patch.object(
+        ai, "generate_topics", return_value=([{"title": f"t{i}", "angle": ""} for i in range(12)], Decimal("0.004"))
+    ):
+        res = coach_client.post("/api/v1/admin/blog/topics/", format="json")
+    assert res.status_code == 200
+    assert BlogTopicIdea.objects.filter(status="available").count() == 12
