@@ -368,3 +368,31 @@ class LogoAiUsage(models.Model):
 
     def __str__(self):
         return f"{self.tenant_schema} {self.month}: {self.packs_used} packs / ${self.usd_spent}"
+
+
+class HelpBotUsage(models.Model):
+    """Durable per-tenant-per-month accounting for the Ask Contentor help
+    chat (apps.tenant_config.help_bot) — same design as LogoAiUsage: DB-backed
+    (not cache) so a Redis restart can't reset billing-relevant state.
+
+    ``usd_spent`` accrues on every answer attempt (success or failure) so a
+    systematic-failure loop still trips the global kill-switch; ``questions``
+    backs the per-tenant monthly question cap. The dev "cli" provider records
+    $0 (subscription usage) but still counts questions.
+    """
+
+    tenant_schema = models.CharField(max_length=63)
+    month = models.CharField(max_length=7)  # "YYYY-MM"
+    questions = models.PositiveIntegerField(default=0)
+    usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(fields=["tenant_schema", "month"], name="uniq_help_bot_usage_tenant_month"),
+        ]
+
+    def __str__(self):
+        return f"{self.tenant_schema} {self.month}: {self.questions} questions / ${self.usd_spent}"

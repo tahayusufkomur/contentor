@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, ChevronDown, ChevronRight, Copy, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { EraseDemoDialog } from "@/components/setup/erase-demo-dialog";
+import { HelpChat } from "@/components/setup/help-chat";
 import { SETUP_CATALOG, SETUP_GROUP_ORDER } from "@/components/setup/catalog";
+import { useHelpBotStatus } from "@/lib/help-bot";
 import {
   patchSetup,
   useDemoContent,
@@ -15,21 +17,39 @@ import {
   type SetupItem,
 } from "@/lib/setup-assistant";
 
+export type AssistantTab = "checklist" | "help";
+
 export function SetupAssistantPanel({
   open,
   onClose,
+  initialTab = "checklist",
 }: {
   open: boolean;
   onClose: () => void;
+  initialTab?: AssistantTab;
 }) {
   const t = useTranslations("admin");
   const status = useSetupStatus();
   const demo = useDemoContent();
+  const helpStatus = useHelpBotStatus();
+  const [tab, setTab] = useState<AssistantTab>(initialTab);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [eraseOpen, setEraseOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // The panel stays mounted while closed — re-apply the requested tab on
+  // every open (bubble may ask for "help" after setup completion).
+  useEffect(() => {
+    if (open) setTab(initialTab);
+  }, [open, initialTab]);
+
   if (!open || !status) return null;
+
+  // Feature off (no provider configured) → no Help tab at all; caps show a
+  // friendly message inside the tab instead.
+  const helpAvailable =
+    !helpStatus || helpStatus.enabled || helpStatus.reason !== "disabled";
+  const showHelp = helpAvailable && tab === "help";
 
   const { items, progress } = status;
   const allDone = progress.done === progress.total;
@@ -148,10 +168,14 @@ export function SetupAssistantPanel({
           className="absolute inset-0 bg-black/40"
         />
         <aside className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col bg-background shadow-xl">
-          <div className="border-b p-4">
+          <div className={showHelp ? "border-b p-4 pb-0" : "border-b p-4"}>
             <div className="mb-2 flex items-start justify-between gap-3">
               <h2 className="text-lg font-semibold">
-                {allDone ? t("setup.celebrateTitle") : t("setup.title")}
+                {showHelp
+                  ? t("setup.help.title")
+                  : allDone
+                    ? t("setup.celebrateTitle")
+                    : t("setup.title")}
               </h2>
               <button
                 type="button"
@@ -162,7 +186,27 @@ export function SetupAssistantPanel({
                 <X className="h-4 w-4" />
               </button>
             </div>
-            {allDone ? (
+            {helpAvailable && (
+              <div className="mb-2 flex gap-1" role="tablist">
+                {(["checklist", "help"] as const).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === key}
+                    onClick={() => setTab(key)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      tab === key
+                        ? "bg-accent text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t(`setup.tabs.${key}`)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {showHelp ? null : allDone ? (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
                   {t("setup.celebrateBody")}
@@ -196,44 +240,50 @@ export function SetupAssistantPanel({
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3">
-            {groups.map(({ group, rows }) => (
-              <div key={group} className="mb-2">
+          {showHelp ? (
+            <HelpChat onNavigate={onClose} />
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto p-3">
+                {groups.map(({ group, rows }) => (
+                  <div key={group} className="mb-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCollapsed((c) => ({ ...c, [group]: !c[group] }))
+                      }
+                      className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
+                      {t(`setup.groups.${group}`)}
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${collapsed[group] ? "-rotate-90" : ""}`}
+                      />
+                    </button>
+                    {!collapsed[group] && (
+                      <ul className="space-y-0.5">
+                        {rows.map((item) => (
+                          <li key={item.key}>{renderRow(item)}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t p-3 text-center">
                 <button
                   type="button"
-                  onClick={() =>
-                    setCollapsed((c) => ({ ...c, [group]: !c[group] }))
-                  }
-                  className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                  onClick={() => {
+                    void patchSetup({ dismissed: true });
+                    onClose();
+                  }}
+                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
                 >
-                  {t(`setup.groups.${group}`)}
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 transition-transform ${collapsed[group] ? "-rotate-90" : ""}`}
-                  />
+                  {t("setup.dismiss")}
                 </button>
-                {!collapsed[group] && (
-                  <ul className="space-y-0.5">
-                    {rows.map((item) => (
-                      <li key={item.key}>{renderRow(item)}</li>
-                    ))}
-                  </ul>
-                )}
               </div>
-            ))}
-          </div>
-
-          <div className="border-t p-3 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                void patchSetup({ dismissed: true });
-                onClose();
-              }}
-              className="text-xs text-muted-foreground underline-offset-4 hover:underline"
-            >
-              {t("setup.dismiss")}
-            </button>
-          </div>
+            </>
+          )}
 
           <EraseDemoDialog
             open={eraseOpen}

@@ -81,6 +81,8 @@ services:
   django:
     build:
       context: ./backend
+      args:
+        INSTALL_CLAUDE_CLI: "1"
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30
     volumes:
       - ./backend:/app/backend

@@ -7,10 +7,12 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.db.models import Sum
-from rest_framework.decorators import api_view, permission_classes
+from django.http import StreamingHttpResponse
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from apps.accounts.models import User
 from apps.billing.models import Payment
@@ -19,7 +21,7 @@ from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
 from apps.media.models import Photo
 
-from . import logo_ai
+from . import help_bot, logo_ai
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
 
@@ -298,3 +300,73 @@ def logo_brand_pack(request):
     logo_ai.record_successful_pack(tenant.schema_name, month=month)
     cache.set(cache_key, result.pack, timeout=60 * 60 * 24 * 30)  # 30 days
     return Response({"pack": result.pack, "source": "ai", "remaining": remaining - 1})
+
+
+class HelpBotRateThrottle(UserRateThrottle):
+    scope = "help_bot"
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def help_bot_status(request):
+    """Whether the Help tab should show at all, and why not if not."""
+    enabled, reason = help_bot.availability(connection.tenant.schema_name)
+    return Response({"enabled": enabled, "reason": reason})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@throttle_classes([HelpBotRateThrottle])
+def help_bot_chat(request):
+    """Ask Contentor: streams the answer as SSE (`data: {...}\\n\\n` lines with
+    type delta|done|error). Body: {"messages": [{role, content}, ...]} — the
+    client-held transcript ending in the coach's new question. The tenant
+    snapshot is injected server-side; the client never builds it."""
+    tenant = connection.tenant
+    month = help_bot.current_month()
+
+    enabled, reason = help_bot.availability(tenant.schema_name, month=month)
+    if not enabled:
+        return Response({"enabled": False, "reason": reason}, status=200)
+
+    data = request.data if isinstance(request.data, dict) else {}
+    try:
+        config = TenantConfig.objects.first()
+        context_block = help_bot.build_tenant_context(config, tenant)
+        history = help_bot.prepare_history(data.get("messages"), context_block)
+    except ValueError as exc:
+        return Response({"error": str(exc)}, status=400)
+
+    schema_name = tenant.schema_name
+
+    def sse():
+        def event(payload):
+            return f"data: {_json.dumps(payload)}\n\n"
+
+        cost = Decimal("0")
+        completed = False
+        try:
+            for kind, value in help_bot.stream_answer(history):
+                if kind == "delta":
+                    yield event({"type": "delta", "text": value})
+                elif kind == "done":
+                    cost = value["cost_usd"]
+                    completed = True
+            yield event({"type": "done"})
+        except Exception:
+            logger.exception("help bot: answer failed (provider=%s)", settings.HELP_BOT_PROVIDER)
+            yield event({"type": "error", "message": "answer_failed"})
+        finally:
+            # A failed stream has no usage data to price (same caveat as
+            # logo_ai) and shouldn't consume the coach's quota — the
+            # per-minute throttle is the runaway-loop protection.
+            if completed:
+                try:
+                    help_bot.record_question(schema_name, cost, month=month)
+                except Exception:
+                    logger.exception("help bot: usage recording failed")
+
+    response = StreamingHttpResponse(sse(), content_type="text/event-stream")
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
+    return response

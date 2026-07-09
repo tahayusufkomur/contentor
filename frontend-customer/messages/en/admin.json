@@ -166,6 +166,25 @@
       "cancel": "Cancel",
       "success": "Demo content removed",
       "error": "Something went wrong — nothing was removed. Please try again."
+    },
+    "tabs": {
+      "checklist": "Setup",
+      "help": "Help"
+    },
+    "help": {
+      "title": "Ask Contentor",
+      "bubbleLabel": "Open help chat",
+      "intro": "Ask me anything about your Contentor site — I know your setup.",
+      "placeholder": "Ask a question…",
+      "send": "Send",
+      "thinking": "Thinking…",
+      "error": "Something went wrong — please try again.",
+      "unavailable": "The help chat isn't available right now. You can reach us at support@contentor.app.",
+      "quota": "You've used this month's help-chat allowance. We're at support@contentor.app in the meantime.",
+      "suggestPayouts": "How do I get paid?",
+      "suggestPublish": "How do students find my site?",
+      "suggestStudents": "How do students sign in?",
+      "suggestPlans": "What do the plans include?"
     }
   },
   "settings": {

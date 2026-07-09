@@ -166,6 +166,25 @@
       "cancel": "İptal",
       "success": "Örnek içerik kaldırıldı",
       "error": "Bir şeyler yanlış gitti — hiçbir şey kaldırılmadı. Lütfen tekrar deneyin."
+    },
+    "tabs": {
+      "checklist": "Kurulum",
+      "help": "Yardım"
+    },
+    "help": {
+      "title": "Contentor'a Sor",
+      "bubbleLabel": "Yardım sohbetini aç",
+      "intro": "Contentor siteniz hakkında dilediğinizi sorun — kurulumunuzu tanıyorum.",
+      "placeholder": "Bir soru sorun…",
+      "send": "Gönder",
+      "thinking": "Düşünüyor…",
+      "error": "Bir şeyler ters gitti — lütfen tekrar deneyin.",
+      "unavailable": "Yardım sohbeti şu anda kullanılamıyor. Bize support@contentor.app adresinden ulaşabilirsiniz.",
+      "quota": "Bu ayki yardım sohbeti hakkınızı kullandınız. Bu arada support@contentor.app adresindeyiz.",
+      "suggestPayouts": "Ödemelerimi nasıl alırım?",
+      "suggestPublish": "Öğrenciler sitemi nasıl bulur?",
+      "suggestStudents": "Öğrenciler nasıl giriş yapar?",
+      "suggestPlans": "Planlara neler dahil?"
     }
   },
   "settings": {
