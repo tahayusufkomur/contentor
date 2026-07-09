@@ -48,6 +48,27 @@ describe("darkVariant", () => {
       color: "#e5e7eb",
     });
   });
+
+  it("leaves mark2/mark_accent untouched when absent (non-custom marks)", () => {
+    const base = defaultRecipe("Z", "#1a56db");
+    const dark = darkVariant(base);
+    expect(dark.colors.mark2).toBeUndefined();
+    expect(dark.colors.mark_accent).toBeUndefined();
+  });
+
+  it("lightens dark mark2/mark_accent when present (AI Brand Pack custom marks)", () => {
+    const base = {
+      ...defaultRecipe("Z", "#1a56db"),
+      colors: {
+        ...defaultRecipe("Z", "#1a56db").colors,
+        mark2: "#111827", // dark -> lightened
+        mark_accent: "#fbbf24", // already bright -> kept
+      },
+    };
+    const dark = darkVariant(base);
+    expect(dark.colors.mark2).toBe("#e5e7eb");
+    expect(dark.colors.mark_accent).toBe("#fbbf24");
+  });
 });
 
 describe("fontsourceUrl", () => {

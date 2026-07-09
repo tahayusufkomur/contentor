@@ -117,3 +117,124 @@ def test_validate_recipe_abstract_seed_clamped_to_int():
     assert shaped["mark"] == {"type": "abstract", "family": "bloom", "seed": 7}
     shaped = validate_recipe({**V2, "mark": {"type": "abstract", "family": "bloom", "seed": "x"}})
     assert shaped["mark"]["seed"] == 1
+
+
+# ── AI Brand Pack: "custom" mark type (bespoke SVG path marks) ─────────────
+
+
+def test_validate_recipe_custom_mark_valid_paths():
+    shaped = validate_recipe(
+        {
+            **V2,
+            "mark": {
+                "type": "custom",
+                "rationale": "A rising line evokes progress.",
+                "paths": [
+                    {"d": "M10 10 L90 90 Z", "fill": "mark2", "opacity": 0.8},
+                    {"d": "M0 0 H100 V100 Z"},
+                ],
+            },
+        }
+    )
+    assert shaped["mark"] == {
+        "type": "custom",
+        "rationale": "A rising line evokes progress.",
+        "paths": [
+            {"d": "M10 10 L90 90 Z", "fill": "mark2", "opacity": 0.8},
+            {"d": "M0 0 H100 V100 Z", "fill": "mark"},
+        ],
+    }
+
+
+def test_validate_recipe_custom_mark_drops_injection_paths():
+    shaped = validate_recipe(
+        {
+            **V2,
+            "mark": {
+                "type": "custom",
+                "paths": [
+                    {"d": "M0 0 L10 10 Z"},
+                    {"d": "M0 0 url(javascript:alert(1))"},
+                    {"d": "<script>alert(1)</script>"},
+                ],
+            },
+        }
+    )
+    assert shaped["mark"]["paths"] == [{"d": "M0 0 L10 10 Z", "fill": "mark"}]
+
+
+def test_validate_recipe_custom_mark_degrades_when_all_paths_invalid():
+    shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": [{"d": "javascript:alert(1)"}]}})
+    assert shaped["mark"] == {"type": "initials", "style": "plain"}
+
+
+def test_validate_recipe_custom_mark_degrades_when_paths_empty():
+    shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": []}})
+    assert shaped["mark"] == {"type": "initials", "style": "plain"}
+
+
+def test_validate_recipe_custom_mark_caps_path_count():
+    paths = [{"d": f"M{i} {i} L{i + 1} {i + 1} Z"} for i in range(12)]
+    shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": paths}})
+    assert len(shaped["mark"]["paths"]) == 8
+
+
+def test_validate_recipe_custom_mark_drops_overlong_path():
+    long_d = "M" + "1 " * 1200  # > 2000 chars
+    shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": [{"d": long_d}, {"d": "M0 0 Z"}]}})
+    assert shaped["mark"]["paths"] == [{"d": "M0 0 Z", "fill": "mark"}]
+
+
+def test_validate_recipe_custom_mark_opacity_clamped():
+    shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": [{"d": "M0 0 Z", "opacity": 5}]}})
+    assert shaped["mark"]["paths"][0]["opacity"] == 1.0
+
+
+def test_validate_recipe_custom_mark_fill_rule_clamped():
+    shaped = validate_recipe(
+        {
+            **V2,
+            "mark": {
+                "type": "custom",
+                "paths": [
+                    {"d": "M0 0 Z", "fill_rule": "evenodd"},
+                    {"d": "M1 1 Z", "fill_rule": "spiral"},
+                    {"d": "M2 2 Z"},
+                ],
+            },
+        }
+    )
+    assert shaped["mark"]["paths"][0] == {"d": "M0 0 Z", "fill": "mark", "fill_rule": "evenodd"}
+    # unknown fill_rule -> omitted (renderer defaults to nonzero), not rejected
+    assert "fill_rule" not in shaped["mark"]["paths"][1]
+    assert "fill_rule" not in shaped["mark"]["paths"][2]
+
+
+def test_validate_recipe_custom_mark_unknown_fill_role_clamped():
+    shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": [{"d": "M0 0 Z", "fill": "rainbow"}]}})
+    assert shaped["mark"]["paths"][0]["fill"] == "mark"
+
+
+def test_validate_recipe_custom_mark_rationale_clamped():
+    shaped = validate_recipe(
+        {
+            **V2,
+            "mark": {
+                "type": "custom",
+                "rationale": "x" * 300,
+                "paths": [{"d": "M0 0 Z"}],
+            },
+        }
+    )
+    assert len(shaped["mark"]["rationale"]) == 200
+
+
+def test_validate_recipe_colors_mark2_and_accent_optional():
+    shaped = validate_recipe(V2)
+    assert "mark2" not in shaped["colors"]
+    assert "mark_accent" not in shaped["colors"]
+
+    shaped2 = validate_recipe({**V2, "colors": {**V2["colors"], "mark2": "#ff00ff", "mark_accent": "purple"}})
+    assert shaped2["colors"]["mark2"] == "#ff00ff"
+    # invalid hex -> defaults to the shaped mark color, not left as "purple"
+    assert shaped2["colors"]["mark_accent"] == shaped2["colors"]["mark"]

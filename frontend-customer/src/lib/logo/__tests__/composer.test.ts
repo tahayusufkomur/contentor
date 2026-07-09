@@ -3,9 +3,11 @@ import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
 import { LOGO_FONTS, LOGO_ICONS, PALETTES } from "@/lib/logo/catalog";
 import {
   STYLE_CHIPS,
+  composeFromPack,
   composeWall,
   moreLikeThis,
   type Brief,
+  type BrandPack,
 } from "@/lib/logo/composer";
 import type { LogoRecipe } from "@/types/logo";
 
@@ -152,5 +154,116 @@ describe("moreLikeThis", () => {
         ),
       ).size,
     ).toBeGreaterThan(1);
+  });
+});
+
+describe("composeFromPack", () => {
+  const PACK: BrandPack = {
+    marks: [
+      {
+        rationale: "A rising line evokes progress.",
+        paths: [{ d: "M10 10 L90 90 Z", fill: "mark2" }],
+      },
+      {
+        rationale: "A closed loop for community.",
+        paths: [{ d: "M0 0 H100 V100 Z", fill_rule: "evenodd" }],
+      },
+    ],
+    palettes: [
+      {
+        name: "Sunrise",
+        primary: "#e11d48",
+        secondary: "#f97316",
+        accent: "#fbbf24",
+        ink: "#111827",
+      },
+      {
+        name: "Ocean",
+        primary: "#0ea5e9",
+        secondary: "#1d4ed8",
+        accent: "#38bdf8",
+        ink: "#0c4a6e",
+      },
+    ],
+    tagline: "Breathe. Move. Grow.",
+    font_vibe: "Elegant",
+  };
+
+  it("produces marks × palettes recipes, all carrying a custom mark", () => {
+    const recipes = composeFromPack(PACK, BRIEF, 11);
+    expect(recipes).toHaveLength(4); // 2 marks * 2 palettes
+    for (const r of recipes) {
+      expect(r.version).toBe(2);
+      expect(r.mark.type).toBe("custom");
+      expect(r.tagline).toBe(PACK.tagline);
+      expect(LAYOUTS.has(r.layout)).toBe(true);
+    }
+  });
+
+  it("is deterministic for a given seed", () => {
+    expect(composeFromPack(PACK, BRIEF, 11)).toEqual(
+      composeFromPack(PACK, BRIEF, 11),
+    );
+  });
+
+  it("varies layout/badge/font across the batch", () => {
+    const recipes = composeFromPack(PACK, BRIEF, 3);
+    const keys = new Set(
+      recipes.map(
+        (r) => `${r.layout}|${r.badge.shape}|${r.typography.name.font}`,
+      ),
+    );
+    expect(keys.size).toBeGreaterThan(1);
+  });
+
+  it("colors each recipe from its own pack palette, not the catalog palettes", () => {
+    const recipes = composeFromPack(PACK, BRIEF, 5);
+    for (const r of recipes) {
+      const palette = PACK.palettes.find(
+        (p) =>
+          r.colors.badge.type === "solid" && r.colors.badge.color === p.primary,
+      );
+      expect(palette).toBeTruthy();
+      expect(r.colors.mark2).toBe(palette!.secondary);
+      expect(r.colors.mark_accent).toBe(palette!.accent);
+      expect(r.colors.mark).toBe(palette!.ink);
+    }
+  });
+
+  it("restricts fonts to the pack's font_vibe", () => {
+    const recipes = composeFromPack(PACK, BRIEF, 9);
+    const elegant = new Set(
+      LOGO_FONTS.filter((f) => f.vibe === "Elegant").map((f) => f.family),
+    );
+    for (const r of recipes)
+      expect(elegant.has(r.typography.name.font)).toBe(true);
+  });
+
+  it("carries the mark's rationale and role-token paths through untouched", () => {
+    const recipes = composeFromPack(PACK, BRIEF, 1);
+    const first = recipes.find(
+      (r) =>
+        r.mark.type === "custom" &&
+        r.mark.rationale === PACK.marks[0]!.rationale,
+    );
+    expect(first).toBeTruthy();
+    if (first!.mark.type === "custom") {
+      expect(first!.mark.paths).toEqual([
+        {
+          d: "M10 10 L90 90 Z",
+          fill: "mark2",
+          fill_rule: undefined,
+          opacity: undefined,
+        },
+      ]);
+    }
+    const second = recipes.find(
+      (r) =>
+        r.mark.type === "custom" &&
+        r.mark.rationale === PACK.marks[1]!.rationale,
+    );
+    if (second!.mark.type === "custom") {
+      expect(second!.mark.paths[0]!.fill_rule).toBe("evenodd");
+    }
   });
 });

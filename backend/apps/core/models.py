@@ -338,3 +338,33 @@ class DevOutboundEmail(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class LogoAiUsage(models.Model):
+    """Durable per-tenant-per-month accounting for the Logo Studio AI Brand
+    Pack feature (apps.tenant_config.logo_ai). Serves two purposes: (1) the
+    per-tenant monthly quota (5 packs max — ``packs_used``), and (2) summed
+    across all tenants for a month, the global monthly USD budget
+    kill-switch (``usd_spent``). Public schema and DB-backed rather than
+    cache-backed so a Redis restart can't reset billing-relevant state.
+
+    ``usd_spent`` accrues on every Anthropic call attempt (success or
+    failure) so a systematic-failure loop still trips the kill-switch;
+    ``packs_used`` increments only after a successful, validated pack.
+    """
+
+    tenant_schema = models.CharField(max_length=63)
+    month = models.CharField(max_length=7)  # "YYYY-MM"
+    packs_used = models.PositiveIntegerField(default=0)
+    usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(fields=["tenant_schema", "month"], name="uniq_logo_ai_usage_tenant_month"),
+        ]
+
+    def __str__(self):
+        return f"{self.tenant_schema} {self.month}: {self.packs_used} packs / ${self.usd_spent}"

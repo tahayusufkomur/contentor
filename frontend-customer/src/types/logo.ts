@@ -54,11 +54,24 @@ export type Fill =
   | { type: "linear"; from: string; to: string; angle: number }
   | { type: "radial"; from: string; to: string };
 
+/** A single filled path in a "custom" mark's unit (0..100) viewBox. `fill`
+ * is a role token — not raw hex — so one mark recolors across palettes and
+ * the dark-variant export via LogoRecipe.colors.mark/mark2/mark_accent. */
+export interface CustomMarkPath {
+  d: string;
+  fill?: "mark" | "mark2" | "accent";
+  fill_rule?: "nonzero" | "evenodd";
+  opacity?: number;
+}
+
 export type LogoMark =
   | { type: "icon"; icon: string; style: "outline" | "solid" }
   | { type: "initials"; style: "plain" | "monogram" | "split" | "overlap" }
   | { type: "abstract"; family: AbstractFamily; seed: number }
-  | { type: "image"; photo_id: string; url: string };
+  | { type: "image"; photo_id: string; url: string }
+  // AI Brand Pack: bespoke vector mark drawn for this brand. `rationale` is
+  // the one-sentence "why it works" caption shown on AI wall tiles.
+  | { type: "custom"; rationale: string; paths: CustomMarkPath[] };
 
 export interface TextStyle {
   font: string;
@@ -86,6 +99,10 @@ export interface LogoRecipe {
     mark: string;
     text: string;
     tagline: string;
+    // Optional secondary fill roles for "custom" marks (AI Brand Pack) —
+    // omitted entirely on recipes with no custom mark.
+    mark2?: string;
+    mark_accent?: string;
   };
   elements: {
     mark: ElementPlacement;

@@ -185,7 +185,7 @@ def test_image_mark_read_tolerates_preexisting_malformed_photo_id(coach_client):
 
 
 def test_logo_suggestions_endpoint_is_gone(coach_client):
-    # The AI suggestions endpoint was removed deliberately (zero AI cost —
-    # the client-side deterministic composer is the only idea source).
+    # This specific v1 AI-suggestions URL was replaced by the AI Brand Pack
+    # endpoints (see test_logo_ai_views.py) — the old path itself stays gone.
     resp = coach_client.post("/api/v1/admin/config/logo-suggestions/")
     assert resp.status_code == 404

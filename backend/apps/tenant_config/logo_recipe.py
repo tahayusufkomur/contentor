@@ -15,7 +15,7 @@ from rest_framework import serializers
 
 LAYOUTS = {"horizontal", "horizontal_reversed", "stacked", "name_only", "emblem"}
 BADGE_SHAPES = {"none", "circle", "rounded", "squircle", "hexagon", "shield", "diamond"}
-MARK_TYPES = {"icon", "initials", "abstract", "image"}
+MARK_TYPES = {"icon", "initials", "abstract", "image", "custom"}
 ICON_STYLES = {"outline", "solid"}
 INITIALS_STYLES = {"plain", "monogram", "split", "overlap"}
 ABSTRACT_FAMILIES = {"orbits", "bloom", "waves", "prism", "knot", "grid"}
@@ -23,7 +23,18 @@ FILL_TYPES = {"solid", "linear", "radial"}
 CASES = {"none", "upper", "title"}
 WEIGHTS = {400, 500, 600, 700, 800}
 
+# AI Brand Pack "custom" mark: bespoke SVG path geometry. Role tokens let one
+# mark recolor across palettes / dark mode without carrying raw hex inline.
+MARK_FILL_ROLES = {"mark", "mark2", "accent"}
+MARK_CUSTOM_MAX_PATHS = 8
+MARK_CUSTOM_MAX_D_LEN = 2000
+
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+# Whitelist for custom-mark path `d` strings: SVG path-data commands, digits,
+# and separators only. Cannot express url(), markup, or external references —
+# this is the injection trust boundary for AI-drawn marks (recipes render
+# inline for every tenant visitor and export to files).
+_PATH_D_RE = re.compile(r"^[MmLlHhVvCcSsQqTtAaZz0-9 ,.\-eE]+$")
 
 # Curated palette ids; KEEP IN SYNC with PALETTES() in
 # frontend-customer/src/lib/logo/catalog.ts ("theme" is the tenant-derived
@@ -152,6 +163,37 @@ def _placement(value):
     }
 
 
+def _custom_mark(raw_mark):
+    """AI Brand Pack mark: bespoke SVG paths. Drop any path whose `d` fails
+    the injection whitelist or is too long; degrade to plain initials if
+    nothing survives (clamp philosophy — a pack must always render)."""
+    raw_paths = raw_mark.get("paths") if isinstance(raw_mark.get("paths"), list) else []
+    paths = []
+    for raw_path in raw_paths:
+        if len(paths) >= MARK_CUSTOM_MAX_PATHS:
+            break
+        if not isinstance(raw_path, dict):
+            continue
+        d = str(raw_path.get("d") or "")
+        if not d or len(d) > MARK_CUSTOM_MAX_D_LEN or not _PATH_D_RE.match(d):
+            continue
+        fill = raw_path.get("fill")
+        entry = {"d": d, "fill": fill if fill in MARK_FILL_ROLES else "mark"}
+        fill_rule = raw_path.get("fill_rule")
+        if fill_rule in ("nonzero", "evenodd"):
+            entry["fill_rule"] = fill_rule
+        if raw_path.get("opacity") is not None:
+            entry["opacity"] = _num(raw_path.get("opacity"), 0, 1, 1.0)
+        paths.append(entry)
+    if not paths:
+        return {"type": "initials", "style": "plain"}
+    return {
+        "type": "custom",
+        "rationale": str(raw_mark.get("rationale") or "")[:200],
+        "paths": paths,
+    }
+
+
 def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
     """Defensively shape a v2 recipe dict. Raises ValidationError on bad
     enums; clamps free text/numbers. ``clean_photo_id`` is injected by the
@@ -172,6 +214,8 @@ def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
             "family": _enum(raw_mark.get("family"), ABSTRACT_FAMILIES, "mark.family"),
             "seed": int(_num(raw_mark.get("seed"), 0, 10_000_000, 1)),
         }
+    elif mark_type == "custom":
+        mark = _custom_mark(raw_mark)
     else:  # image — never persist urls; re-derived on read from photo_id.
         mark = {"type": "image", "photo_id": clean_photo_id(raw_mark.get("photo_id")), "url": ""}
 
@@ -180,6 +224,22 @@ def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
     raw_colors = value.get("colors") if isinstance(value.get("colors"), dict) else {}
     raw_elements = value.get("elements") if isinstance(value.get("elements"), dict) else {}
     palette_id = raw_colors.get("palette_id")
+    mark_hex = _hex(raw_colors.get("mark"), "#ffffff")
+
+    colors = {
+        "palette_id": palette_id if palette_id in PALETTE_IDS else None,
+        "badge": _fill(raw_colors.get("badge"), "#111827"),
+        "mark": mark_hex,
+        "text": _hex(raw_colors.get("text"), "#111827"),
+        "tagline": _hex(raw_colors.get("tagline"), "#6b7280"),
+    }
+    # mark2/mark_accent are optional secondary fill roles for "custom" marks
+    # (AI Brand Pack). Omitted entirely unless the input carried one, so
+    # every pre-existing recipe shape is unaffected.
+    if raw_colors.get("mark2") is not None:
+        colors["mark2"] = _hex(raw_colors.get("mark2"), mark_hex)
+    if raw_colors.get("mark_accent") is not None:
+        colors["mark_accent"] = _hex(raw_colors.get("mark_accent"), mark_hex)
 
     return {
         "version": 2,
@@ -195,13 +255,7 @@ def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
             "name": _text_style(raw_typo.get("name"), 700),
             "tagline": _text_style(raw_typo.get("tagline"), 500),
         },
-        "colors": {
-            "palette_id": palette_id if palette_id in PALETTE_IDS else None,
-            "badge": _fill(raw_colors.get("badge"), "#111827"),
-            "mark": _hex(raw_colors.get("mark"), "#ffffff"),
-            "text": _hex(raw_colors.get("text"), "#111827"),
-            "tagline": _hex(raw_colors.get("tagline"), "#6b7280"),
-        },
+        "colors": colors,
         "elements": {
             "mark": _placement(raw_elements.get("mark")),
             "name": _placement(raw_elements.get("name")),

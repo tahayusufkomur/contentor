@@ -1,6 +1,9 @@
+import hashlib
 import json as _json
+import logging
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.db.models import Sum
@@ -16,8 +19,11 @@ from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
 from apps.media.models import Photo
 
+from . import logo_ai
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def _logo_signal(config):
@@ -181,6 +187,114 @@ def setup_status(request):
     return Response(compute_setup_state(config, connection.tenant))
 
 
-# Logo Studio suggestions are generated entirely client-side by the
-# deterministic composer (frontend-customer/src/lib/logo/composer.ts) —
-# there is deliberately NO AI endpoint (zero AI cost, user decision).
+# Logo Studio ideas are generated entirely client-side by the deterministic
+# composer (frontend-customer/src/lib/logo/composer.ts) for every coach.
+# Paid-tier coaches additionally get an AI "Brand Pack" — bespoke vector
+# marks + brand palettes from one gated Claude call per brief — via the two
+# endpoints below. See apps/tenant_config/logo_ai.py and
+# docs/superpowers/specs/2026-07-08-logo-ai-brand-pack-design.md.
+
+# Theme id -> primaryHex. KEEP IN SYNC with frontend-customer/src/lib/themes.ts.
+_THEME_PRIMARY_HEX = {
+    "ocean": "#1a56db",
+    "ember": "#c2410c",
+    "forest": "#15803d",
+    "sunset": "#e11d48",
+    "violet": "#7c3aed",
+    "slate": "#334155",
+}
+
+
+def _brand_pack_cache_key(model, brand_name, niche, style_chips, vibe, primary_hex):
+    raw = "|".join(
+        [
+            str(logo_ai.PROMPT_VERSION),
+            model,
+            brand_name,
+            niche,
+            ",".join(sorted(style_chips)),
+            vibe,
+            primary_hex,
+        ]
+    )
+    digest = hashlib.sha256(raw.encode()).hexdigest()
+    return f"logo-ai:pack:{digest}"
+
+
+def _brand_pack_status(tenant):
+    month = logo_ai._current_month()
+    eligible = tenant.has_paid_platform_plan
+    budget_ok = logo_ai.global_spend(month=month) < Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD))
+    enabled = bool(settings.ANTHROPIC_API_KEY) and budget_ok
+    usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
+    remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
+    if not eligible:
+        reason = "upgrade_required"
+    elif not enabled:
+        reason = "disabled"
+    elif remaining <= 0:
+        reason = "quota_exhausted"
+    else:
+        reason = None
+    return {"enabled": enabled, "eligible": eligible, "remaining": remaining, "reason": reason}
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def logo_brand_pack_status(request):
+    return Response(_brand_pack_status(connection.tenant))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def logo_brand_pack(request):
+    """One gated Claude call -> a Brand Pack (bespoke marks + palettes) for
+    the studio to multiply client-side. Always a non-empty JSON body."""
+    tenant = connection.tenant
+    month = logo_ai._current_month()
+
+    if not settings.ANTHROPIC_API_KEY:
+        return Response({"pack": None, "source": "disabled", "remaining": 0})
+    if not tenant.has_paid_platform_plan:
+        return Response({"pack": None, "source": "upgrade_required", "remaining": 0})
+
+    config = TenantConfig.objects.first()
+    brand_name = (config.brand_name if config else "") or "My Brand"
+    theme = config.theme if config else "ocean"
+    primary_hex = _THEME_PRIMARY_HEX.get(theme, "#1a56db")
+
+    data = request.data if isinstance(request.data, dict) else {}
+    niche = str(data.get("niche") or "")[:120]
+    style_chips = [str(c)[:20] for c in (data.get("style_chips") or []) if isinstance(c, str)][:3]
+    vibe = str(data.get("vibe") or "")[:200]
+
+    usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
+    remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
+
+    cache_key = _brand_pack_cache_key(settings.LOGO_AI_MODEL, brand_name, niche, style_chips, vibe, primary_hex)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return Response({"pack": cached, "source": "cache", "remaining": remaining})
+
+    if remaining <= 0:
+        return Response({"pack": None, "source": "quota_exhausted", "remaining": 0})
+
+    if logo_ai.global_spend(month=month) >= Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD)):
+        logger.warning("logo brand pack: monthly budget kill-switch tripped (%s)", month)
+        return Response({"pack": None, "source": "disabled", "remaining": remaining})
+
+    try:
+        result = logo_ai.generate_brand_pack(brand_name, niche, primary_hex, style_chips=style_chips, vibe=vibe)
+    except logo_ai.BrandPackError as exc:
+        logo_ai.record_attempt_cost(tenant.schema_name, exc.cost_usd, month=month)
+        logger.exception("logo brand pack: validation left nothing usable")
+        return Response({"pack": None, "source": "error", "remaining": remaining})
+    except Exception:
+        logo_ai.record_attempt_cost(tenant.schema_name, Decimal("0"), month=month)
+        logger.exception("logo brand pack: AI call failed")
+        return Response({"pack": None, "source": "error", "remaining": remaining})
+
+    logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
+    logo_ai.record_successful_pack(tenant.schema_name, month=month)
+    cache.set(cache_key, result.pack, timeout=60 * 60 * 24 * 30)  # 30 days
+    return Response({"pack": result.pack, "source": "ai", "remaining": remaining - 1})

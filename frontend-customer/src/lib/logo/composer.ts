@@ -2,13 +2,18 @@
 // (brief, seed) -> 24 diverse v2 recipes, instantly, offline, zero cost.
 // Style chips bias the axis pools; niche keywords pick icons + abstract
 // families; a diversity constraint keeps the wall from repeating itself.
-// There is deliberately NO AI path anywhere in the studio (zero AI cost,
-// user decision) — do not reintroduce one.
+//
+// AI Brand Pack (see backend/apps/tenant_config/logo_ai.py) supplies bespoke
+// vector marks + brand palettes from ONE paid-tier-gated API call per brief;
+// composeFromPack below multiplies that single pack into a batch of wall
+// recipes using this same deterministic machinery, at zero extra cost.
 //
 // Every recipe emitted here must pass the backend's validate_recipe:
-// enums come exclusively from the Phase-1 catalogs.
+// enums come exclusively from the Phase-1 catalogs (AI Brand Pack marks are
+// validated separately, server-side, before ever reaching this module).
 import { ABSTRACT_FAMILIES, mulberry32 } from "@/lib/logo/abstract";
 import {
+  LOGO_FONT_FAMILIES,
   LOGO_FONTS,
   PALETTES,
   applyPalette,
@@ -20,6 +25,7 @@ import {
 import type {
   AbstractFamily,
   BadgeShape,
+  CustomMarkPath,
   FontWeight,
   LogoMark,
   LogoRecipe,
@@ -48,6 +54,9 @@ export interface Brief {
   brandName: string;
   niche: string;
   styleChips: StyleChip[];
+  /** Free-text vibe, consumed only by the AI Brand Pack endpoint — the
+   * deterministic composer above never reads it. */
+  vibe?: string;
 }
 
 // niche keyword -> icons that read well for it (single source of truth —
@@ -452,4 +461,112 @@ export function moreLikeThis(
     }
   }
   return variants;
+}
+
+// ── AI Brand Pack multiplication ───────────────────────────────────────────
+// One `/api/v1/admin/config/logo-brand-pack/` call returns a small Brand
+// Pack (bespoke vector marks + brand palettes); composeFromPack fans it out
+// into a batch of wall recipes using the same deterministic machinery as
+// composeWall, at zero extra API cost. Shapes mirror the backend's
+// structured-output schema — see backend/apps/tenant_config/logo_ai.py.
+
+export interface BrandPackPath {
+  d: string;
+  fill?: "mark" | "mark2" | "accent";
+  fill_rule?: "nonzero" | "evenodd";
+  opacity?: number;
+}
+export interface BrandPackMark {
+  rationale: string;
+  paths: BrandPackPath[];
+}
+export interface BrandPackPalette {
+  name: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  ink: string;
+}
+export interface BrandPack {
+  marks: BrandPackMark[];
+  palettes: BrandPackPalette[];
+  tagline: string;
+  font_vibe: FontVibe;
+}
+
+const PACK_LAYOUTS: RecipeLayout[] = [
+  "horizontal",
+  "stacked",
+  "emblem",
+  "horizontal_reversed",
+  "name_only",
+];
+const PACK_BADGES: BadgeChoice[] = [
+  b("circle"),
+  b("rounded"),
+  b("squircle"),
+  b("none"),
+  b("hexagon"),
+  b("circle", true),
+];
+
+export function composeFromPack(
+  pack: BrandPack,
+  brief: Brief,
+  seed: number,
+): LogoRecipe[] {
+  const r = mulberry32(seed);
+  const fontPool = LOGO_FONTS.filter((f) => f.vibe === pack.font_vibe).map(
+    (f) => f.family,
+  );
+  const fonts = fontPool.length ? fontPool : LOGO_FONT_FAMILIES;
+
+  const recipes: LogoRecipe[] = [];
+  for (const mark of pack.marks) {
+    const paths: CustomMarkPath[] = mark.paths.map((p) => ({
+      d: p.d,
+      fill: p.fill ?? "mark",
+      fill_rule: p.fill_rule,
+      opacity: p.opacity,
+    }));
+    for (const palette of pack.palettes) {
+      const layout = pickFrom(r, PACK_LAYOUTS);
+      const badge = pickFrom(r, PACK_BADGES);
+      const font = pickFrom(r, fonts);
+      const entry = fontEntry(font);
+      const weight: FontWeight = entry.weights.includes(700)
+        ? 700
+        : entry.weights[entry.weights.length - 1]!;
+      const base = defaultRecipe(
+        brief.brandName || "My Brand",
+        palette.primary,
+      );
+      recipes.push({
+        ...base,
+        layout,
+        tagline: pack.tagline,
+        mark: { type: "custom", rationale: mark.rationale, paths },
+        badge: { shape: badge.shape, outline: badge.outline },
+        typography: {
+          name: { font: entry.family, weight, tracking: 0, case: "none" },
+          tagline: {
+            font: entry.family,
+            weight: 500,
+            tracking: 0.08,
+            case: "upper",
+          },
+        },
+        colors: {
+          palette_id: null,
+          badge: { type: "solid", color: palette.primary },
+          mark: palette.ink,
+          mark2: palette.secondary,
+          mark_accent: palette.accent,
+          text: palette.ink,
+          tagline: palette.secondary,
+        },
+      });
+    }
+  }
+  return recipes;
 }

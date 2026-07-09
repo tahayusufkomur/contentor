@@ -149,15 +149,25 @@ def restore_public(shared_tenant, django_db_blocker):
 
 
 def _purge_rate_limit_keys():
-    """Delete middleware rate-limit AND DRF throttle counters.
+    """Delete middleware rate-limit, DRF throttle, and Logo Studio AI Brand
+    Pack result-cache counters.
 
     DRF's AnonRateThrottle (e.g. the contact form's 5/min) keys on client IP,
     which is always 127.0.0.1 for APIClient — without purging, >5 requests
     within 60s across tests (or across back-to-back runs) return 429.
+
+    ``*logo-ai*`` covers the Brand Pack 30-day result cache
+    (``logo-ai:pack:*``) — without purging, a cache entry written by one
+    test run persists in Redis and a later run with the same brief/theme
+    inputs sees a stale "cache" hit instead of exercising the real AI path.
+    Written via ``django.core.cache.cache`` (not a raw redis client like the
+    rate limiter above), so Django's default key function wraps it in a
+    ``:<version>:`` prefix — a leading wildcard is required, same as
+    ``*throttle*``.
     """
     try:
         redis = get_redis_connection("default")
-        for pattern in ("ratelimit:*", "*throttle*"):
+        for pattern in ("ratelimit:*", "*throttle*", "*logo-ai*"):
             for key in redis.keys(pattern):
                 redis.delete(key)
     except Exception:  # noqa: S110

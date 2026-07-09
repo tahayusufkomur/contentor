@@ -279,7 +279,15 @@ function MarkControls({
   return (
     <>
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Mark</p>
+        <p className="text-sm font-medium">
+          {recipe.mark.type === "custom" ? "AI-drawn mark" : "Mark"}
+        </p>
+        {recipe.mark.type === "custom" && (
+          <p className="text-xs text-muted-foreground">
+            Pick a different mark below to swap it out, or use the color
+            controls to recolor it.
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {(["plain", "monogram", "split", "overlap"] as const).map((style) => {
             const active =
@@ -460,6 +468,42 @@ function MarkControls({
           </label>
         </div>
       </section>
+
+      {recipe.mark.type === "custom" && (
+        <section className="space-y-1.5">
+          <p className="text-sm font-medium">AI-drawn mark colors</p>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <input
+                type="color"
+                aria-label="Secondary color"
+                value={recipe.colors.mark2 ?? recipe.colors.mark}
+                onChange={(e) =>
+                  onPatch({
+                    colors: { ...recipe.colors, mark2: e.target.value },
+                  })
+                }
+                className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
+              />
+              Secondary
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <input
+                type="color"
+                aria-label="Accent color"
+                value={recipe.colors.mark_accent ?? recipe.colors.mark}
+                onChange={(e) =>
+                  onPatch({
+                    colors: { ...recipe.colors, mark_accent: e.target.value },
+                  })
+                }
+                className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
+              />
+              Accent
+            </label>
+          </div>
+        </section>
+      )}
     </>
   );
 }

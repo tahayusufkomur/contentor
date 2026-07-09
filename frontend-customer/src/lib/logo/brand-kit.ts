@@ -49,6 +49,14 @@ export function darkVariant(recipe: LogoRecipe): LogoRecipe {
       badge: badgeFill,
       text: lighten(colors.text, "#ffffff"),
       tagline: lighten(colors.tagline, "#cbd5e1"),
+      // Secondary fill roles on "custom" (AI Brand Pack) marks — only
+      // present when the mark uses them, so most recipes are unaffected.
+      ...(colors.mark2 !== undefined && {
+        mark2: lighten(colors.mark2, "#e5e7eb"),
+      }),
+      ...(colors.mark_accent !== undefined && {
+        mark_accent: lighten(colors.mark_accent, "#e5e7eb"),
+      }),
     },
   };
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import { memo } from "react";
-import { Moon, Shuffle, Sun } from "lucide-react";
+import { Moon, Shuffle, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
 import type { LogoRecipe } from "@/types/logo";
 import { LogoRenderer } from "./logo-renderer";
 
@@ -16,6 +17,13 @@ interface StudioWallProps {
   /** true while showing a more-like-this batch instead of the full wall */
   showingVariants: boolean;
   onShowAll: () => void;
+  /** AI Brand Pack (paid-tier feature) — all optional so the wall still
+   * renders standalone wherever this isn't wired up. */
+  brandName?: string;
+  aiWall?: LogoRecipe[] | null;
+  aiLoading?: boolean;
+  aiNotice?: string | null;
+  brandPackStatus?: BrandPackStatus | null;
 }
 
 /** One wall card. Memoized — the wall renders ~24 SVG logos and hover /
@@ -66,6 +74,62 @@ const WallCard = memo(function WallCard({
   );
 });
 
+/** An AI Brand Pack wall card — same shell as WallCard, plus the mark's
+ * one-sentence designer rationale as a muted caption. */
+const AiWallCard = memo(function AiWallCard({
+  recipe,
+  dark,
+  onCustomize,
+  onMoreLikeThis,
+}: {
+  recipe: LogoRecipe;
+  dark: boolean;
+  onCustomize: (recipe: LogoRecipe) => void;
+  onMoreLikeThis: (recipe: LogoRecipe) => void;
+}) {
+  const rationale = recipe.mark.type === "custom" ? recipe.mark.rationale : "";
+  return (
+    <div
+      data-testid="ai-wall-card"
+      className={`group flex flex-col overflow-hidden rounded-lg border shadow-sm ring-1 ring-primary/30 transition-shadow hover:shadow-md ${dark ? "border-zinc-700 bg-zinc-900" : "bg-white"}`}
+    >
+      <button
+        type="button"
+        aria-label={`Customize this AI-designed ${recipe.layout} logo`}
+        onClick={() => onCustomize(recipe)}
+        className="flex flex-1 items-center justify-center p-4"
+      >
+        <LogoRenderer recipe={recipe} width={200} />
+      </button>
+      {rationale && (
+        <p
+          className={`px-3 text-xs italic ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+        >
+          {rationale}
+        </p>
+      )}
+      <div
+        className={`flex items-center justify-between gap-2 border-t px-3 py-2 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 ${dark ? "border-zinc-700" : ""}`}
+      >
+        <button
+          type="button"
+          onClick={() => onCustomize(recipe)}
+          className="text-xs font-medium text-primary hover:underline"
+        >
+          Customize
+        </button>
+        <button
+          type="button"
+          onClick={() => onMoreLikeThis(recipe)}
+          className={`text-xs hover:underline ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+        >
+          More like this
+        </button>
+      </div>
+    </div>
+  );
+});
+
 export function StudioWall({
   wall,
   dark,
@@ -75,7 +139,14 @@ export function StudioWall({
   onMoreLikeThis,
   showingVariants,
   onShowAll,
+  brandName,
+  aiWall,
+  aiLoading,
+  aiNotice,
+  brandPackStatus,
 }: StudioWallProps) {
+  const showUpsell = brandPackStatus?.reason === "upgrade_required";
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b px-6 py-3">
@@ -122,17 +193,69 @@ export function StudioWall({
       </div>
       <div
         data-testid="logo-wall"
-        className={`grid flex-1 grid-cols-2 content-start gap-4 overflow-y-auto p-6 md:grid-cols-3 xl:grid-cols-4 ${dark ? "bg-zinc-950" : "bg-muted/40"}`}
+        className={`flex-1 space-y-6 overflow-y-auto p-6 ${dark ? "bg-zinc-950" : "bg-muted/40"}`}
       >
-        {wall.map((recipe, i) => (
-          <WallCard
-            key={i}
-            recipe={recipe}
-            dark={dark}
-            onCustomize={onCustomize}
-            onMoreLikeThis={onMoreLikeThis}
-          />
-        ))}
+        {!showingVariants && showUpsell && (
+          <div
+            className={`flex items-center justify-between gap-3 rounded-lg border border-dashed p-4 ${dark ? "border-zinc-700" : ""}`}
+          >
+            <p className="flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary" />
+              AI logo designer — bespoke marks made for your brand, included
+              with paid plans.
+            </p>
+            <Button asChild size="sm" variant="outline">
+              <a href="/admin/billing/subscription">Upgrade</a>
+            </Button>
+          </div>
+        )}
+
+        {!showingVariants && !showUpsell && aiLoading && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="h-4 w-4 animate-pulse text-primary" />
+            Sketching custom marks for {brandName || "your brand"}…
+          </p>
+        )}
+
+        {!showingVariants && !showUpsell && !aiLoading && aiNotice && (
+          <p
+            className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+          >
+            {aiNotice}
+          </p>
+        )}
+
+        {!showingVariants && aiWall && aiWall.length > 0 && (
+          <div className="space-y-2">
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              Made for {brandName || "your brand"}
+            </p>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+              {aiWall.map((recipe, i) => (
+                <AiWallCard
+                  key={i}
+                  recipe={recipe}
+                  dark={dark}
+                  onCustomize={onCustomize}
+                  onMoreLikeThis={onMoreLikeThis}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+          {wall.map((recipe, i) => (
+            <WallCard
+              key={i}
+              recipe={recipe}
+              dark={dark}
+              onCustomize={onCustomize}
+              onMoreLikeThis={onMoreLikeThis}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

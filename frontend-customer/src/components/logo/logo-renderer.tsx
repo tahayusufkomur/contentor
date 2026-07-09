@@ -5,7 +5,13 @@
 
 import { useId, type Ref } from "react";
 import { LOGO_ICONS, initialsFor } from "@/lib/logo/catalog";
-import type { Fill, LogoRecipe, RecipeLayout, TextStyle } from "@/types/logo";
+import type {
+  CustomMarkPath,
+  Fill,
+  LogoRecipe,
+  RecipeLayout,
+  TextStyle,
+} from "@/types/logo";
 import { AbstractMark } from "./abstract-mark";
 
 export const MARK_VIEWBOX = 256;
@@ -172,6 +178,30 @@ export function MarkContent({
         height={size}
         preserveAspectRatio="xMidYMid meet"
       />
+    );
+  }
+  if (mark.type === "custom" && mark.paths.length) {
+    // AI Brand Pack mark: paths are in a 0..100 unit viewBox; role tokens
+    // resolve against the recipe's own color fields ("mark" = the already
+    // badge/dark-aware `color` prop passed in above; mark2/accent are plain
+    // secondary hexes — see types/logo.ts CustomMarkPath).
+    const roleColor = (role: CustomMarkPath["fill"]) => {
+      if (role === "mark2") return recipe.colors.mark2 ?? color;
+      if (role === "accent") return recipe.colors.mark_accent ?? color;
+      return color;
+    };
+    return (
+      <g transform={`scale(${size / 100})`}>
+        {mark.paths.map((p, i) => (
+          <path
+            key={i}
+            d={p.d}
+            fill={roleColor(p.fill)}
+            fillRule={p.fill_rule ?? "nonzero"}
+            opacity={p.opacity ?? 1}
+          />
+        ))}
+      </g>
     );
   }
   // initials (plain fallback for unknown icons / missing image urls too)
@@ -591,8 +621,11 @@ export function MarkRenderer({
   // Square export/preview: badge fills the box; never renders name or
   // tagline (spec: "Square mark" rule). Only name_only needs the initials
   // fallback — every other layout (emblem included) carries a real mark.
-  const needsFallback =
-    recipe.layout === "name_only" && recipe.mark.type !== "image";
+  // image and non-empty custom marks already carry a real drawable mark.
+  const hasRealMark =
+    recipe.mark.type === "image" ||
+    (recipe.mark.type === "custom" && recipe.mark.paths.length > 0);
+  const needsFallback = recipe.layout === "name_only" && !hasRealMark;
   const markRecipe: LogoRecipe = needsFallback
     ? {
         ...recipe,

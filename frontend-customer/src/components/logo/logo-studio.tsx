@@ -5,8 +5,18 @@ import { Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { clientFetch } from "@/lib/api-client";
+import {
+  fetchBrandPack,
+  fetchBrandPackStatus,
+  type BrandPackStatus,
+} from "@/lib/logo/brand-pack-api";
 import { LOGO_FONTS, defaultRecipe } from "@/lib/logo/catalog";
-import { composeWall, moreLikeThis, type Brief } from "@/lib/logo/composer";
+import {
+  composeFromPack,
+  composeWall,
+  moreLikeThis,
+  type Brief,
+} from "@/lib/logo/composer";
 import {
   imageToDataUrl,
   svgToPngBlob,
@@ -65,6 +75,21 @@ export function LogoStudio({
   const [wallDark, setWallDark] = useState(false);
   const [showingVariants, setShowingVariants] = useState(false);
 
+  // ── AI Brand Pack (paid-tier feature) ──────────────────────────────────
+  const aiRequestIdRef = useRef(0);
+  const [brandPackStatus, setBrandPackStatus] =
+    useState<BrandPackStatus | null>(null);
+  const [aiWall, setAiWall] = useState<LogoRecipe[] | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    fetchBrandPackStatus()
+      .then(setBrandPackStatus)
+      .catch(() => setBrandPackStatus(null));
+  }, [open]);
+
   // Load all studio fonts once so previews render true (each family's real
   // shipped weights).
   useEffect(() => {
@@ -97,17 +122,62 @@ export function LogoStudio({
   const patch = (part: Partial<LogoRecipe>) =>
     setRecipe((r) => ({ ...r, ...part }));
 
-  // The wall is 100% deterministic and client-side (zero AI cost by
-  // design) — composeWall is the only idea source.
+  // The deterministic wall is instant, offline, and free — it's the
+  // studio's baseline for every coach. Paid-tier coaches additionally get
+  // one gated AI Brand Pack call per brief (fetchAiIdeas below); its marks
+  // are multiplied into extra tiles via the same composer machinery
+  // (composeFromPack), at zero further cost.
   function regenerateWall() {
     const seed = 1 + Math.floor(Math.random() * 1_000_000);
     setWall(composeWall(brief, seed, 24, theme.primaryHex));
     setShowingVariants(false);
   }
 
+  async function fetchAiIdeas() {
+    if (
+      !brandPackStatus ||
+      !brandPackStatus.eligible ||
+      !brandPackStatus.enabled ||
+      brandPackStatus.remaining <= 0
+    ) {
+      return;
+    }
+    const requestId = ++aiRequestIdRef.current;
+    setAiLoading(true);
+    setAiNotice(null);
+    try {
+      const resp = await fetchBrandPack(brief);
+      if (requestId !== aiRequestIdRef.current) return; // stale — brief changed since
+      setBrandPackStatus((s) => (s ? { ...s, remaining: resp.remaining } : s));
+      if (resp.source === "ai" || resp.source === "cache") {
+        const seed = 1 + Math.floor(Math.random() * 1_000_000);
+        setAiWall(resp.pack ? composeFromPack(resp.pack, brief, seed) : null);
+      } else if (resp.source === "quota_exhausted") {
+        setAiNotice(
+          "You've used this month's AI generations — tweak any idea below or try again next month.",
+        );
+      } else if (resp.source === "error") {
+        setAiNotice(
+          "Couldn't reach the design studio just now — your ideas below are ready to use.",
+        );
+      }
+    } catch {
+      if (requestId === aiRequestIdRef.current) {
+        setAiNotice(
+          "Couldn't reach the design studio just now — your ideas below are ready to use.",
+        );
+      }
+    } finally {
+      if (requestId === aiRequestIdRef.current) setAiLoading(false);
+    }
+  }
+
   function startIdeas() {
     regenerateWall();
+    setAiWall(null);
+    setAiNotice(null);
     setStep("ideas");
+    void fetchAiIdeas();
   }
 
   function handleMoreLikeThis(base: LogoRecipe) {
@@ -335,6 +405,11 @@ export function LogoStudio({
                     onMoreLikeThis={handleMoreLikeThis}
                     showingVariants={showingVariants}
                     onShowAll={regenerateWall}
+                    brandName={brief.brandName || config.brand_name}
+                    aiWall={aiWall}
+                    aiLoading={aiLoading}
+                    aiNotice={aiNotice}
+                    brandPackStatus={brandPackStatus}
                   />
                 </div>
               )}

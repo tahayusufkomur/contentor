@@ -209,6 +209,14 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
 GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")
 
+# --- Logo Studio AI Brand Pack (paid-tier feature; unset key = fully off) ---
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+LOGO_AI_MODEL = os.environ.get("LOGO_AI_MODEL", "claude-sonnet-5")
+# Global monthly USD kill-switch, summed across all tenants (LogoAiUsage).
+LOGO_AI_MONTHLY_BUDGET_USD = float(os.environ.get("LOGO_AI_MONTHLY_BUDGET_USD", "15"))
+# Hard per-tenant cap on successful packs per calendar month.
+LOGO_AI_MONTHLY_PACK_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_PACK_LIMIT", "5"))
+
 # --- Web Push (VAPID) ---
 # Generate a keypair once with: vapid --gen ; vapid --applicationServerKey
 # Store VAPID_PRIVATE_KEY as a double-quoted multi-line PEM in .env (python-dotenv
