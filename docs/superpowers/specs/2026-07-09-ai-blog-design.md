@@ -21,6 +21,7 @@ Token efficiency is a first-class requirement (see §5): one Claude call per pos
 | Free tier | Blog feature (manual write/publish) available to **all** coaches. AI generation paid-only; Free sees `upgrade_required` upsell. |
 | Autopilot publish behavior | Per-schedule coach choice: **Review first** (default — draft + notification) or **Auto-publish**. |
 | Superadmin scope | Public SEO blog on contentor.app, managed in superadmin panel. No quota; global budget kill-switch applies. |
+| Local dev AI backend | Local/testing uses the **Claude CLI** (owner's Claude subscription, no API spend); prod uses the Anthropic API with a key the owner provides. Selected by `BLOG_AI_PROVIDER`. |
 
 ## 3. Approaches considered
 
@@ -71,7 +72,23 @@ The engine is shared by coach generation, Autopilot, and platform-blog generatio
    - `BLOG_AI_MODEL` default `claude-sonnet-5` (public SEO content — quality matters)
    - `BLOG_AI_TOPIC_MODEL` default `claude-haiku-4-5-20251001`
    - `BLOG_AI_MONTHLY_BUDGET_USD` global kill-switch (default 30), `BLOG_AI_ENABLED` feature flag
+   - `BLOG_AI_PROVIDER` — `"api"` (default) or `"claude_cli"` (see below)
    - Reuses `ANTHROPIC_API_KEY`, the `_MODEL_PRICES`/cost-estimate helpers (extract the shared bits from `logo_ai.py` into a small common module rather than duplicating).
+
+### Provider abstraction — Anthropic API (prod) vs Claude CLI (local dev)
+
+The engine never calls Anthropic directly; it calls a provider interface with one method: `generate(system_prompt, user_prompt, model, max_tokens) → (validated pydantic object, usage/cost info)`. Two implementations, selected by `BLOG_AI_PROVIDER`:
+
+- **`AnthropicApiProvider`** (prod, default) — the `client.messages.parse(...)` path described above, keyed by `ANTHROPIC_API_KEY` (owner provides for prod). Prompt caching applies here.
+- **`ClaudeCliProvider`** (local dev/testing, runs on the owner's Claude subscription — zero API spend):
+  - Subprocess: `claude -p <user_prompt> --system-prompt <system> --model <model> --output-format json --max-turns 1` with tools disallowed; parse the JSON envelope's `result` field.
+  - Structured output: since the CLI has no `messages.parse`, the system prompt instructs JSON-only output matching the same schema; the result is validated with the **same Pydantic models** (one retry on validation failure). Both providers therefore return identical objects — the rest of the engine is provider-agnostic.
+  - **Auth inside Docker:** macOS keychain creds don't reach containers, so use a long-lived subscription token: run `claude setup-token` once on the host → put the resulting token in local `.env` as `CLAUDE_CODE_OAUTH_TOKEN`. The dev backend image (dev target only, never prod) adds Node 20 + `@anthropic-ai/claude-code`.
+  - Usage rows are still written (usd from the CLI envelope's `total_cost_usd` if present, else 0) so quota/kill-switch logic is exercised realistically in dev.
+  - Subprocess timeout 120s; provider raises typed errors mapped to the same `reason` codes.
+  - Local `.env` example: `BLOG_AI_PROVIDER=claude_cli`, `CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat…`. Prod `.env.prod`: `BLOG_AI_PROVIDER=api`, `ANTHROPIC_API_KEY=…`.
+  - The provider layer lives in the shared AI module (beside the extracted price/cost helpers) so `logo_ai.py` can adopt it later — migrating Brand Pack is out of scope here.
+  - Guard: `ai/status/` reports `enabled: false` when the selected provider is missing its credential (no key for `api`, no token/binary for `claude_cli`).
 7. **Cost math.** Per post ≈ 1.5k input (mostly cache-hit) + ~1.8k output on Sonnet ≈ **$0.03**. Topic batch on Haiku < $0.01. Pro worst case (30 posts + refills) ≈ **$1/month** against a $49.90 plan.
 8. **Sync, like Brand Pack.** Guided generation is a blocking DRF call (client timeout raised to ~100s; ~1.8k output tokens ≈ 25–40s). If real-world timeouts bite, fallback plan is a Celery job + status polling — noted, not built.
 
@@ -127,6 +144,7 @@ Copies the recurring-announcements dispatch pattern exactly:
 
 Follow per-app pytest conventions (`apps/blog/tests/`):
 - **Engine:** Anthropic mocked (pattern from `test_logo_ai.py`) — parse/convert/sanitize path, markdown→HTML determinism, cost recording on failure, quota increment only on success.
+- **Providers:** `ClaudeCliProvider` with subprocess mocked — envelope parsing, JSON-validation retry, missing-binary/missing-token → `enabled: false`; provider selection by `BLOG_AI_PROVIDER`; both providers return identical schema objects.
 - **Quota/gating:** Free blocked with `upgrade_required`; Starter exhausts at 5, Pro at 30; month rollover; global budget kill-switch; platform generations bypass quota but record USD.
 - **Views:** public list/detail return published only; draft 404s publicly; coach CRUD permissions; generate endpoint error reasons.
 - **Autopilot:** recurrence claim exactly-once (mirror `test_recurring_dispatch.py`), draft-vs-auto-publish paths, out-of-credit notification, empty-queue refill.
