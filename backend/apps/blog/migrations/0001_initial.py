@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,54 +14,87 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='BlogAutopilot',
+            name="BlogAutopilot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_enabled', models.BooleanField(default=False)),
-                ('frequency', models.CharField(choices=[('weekly', 'Weekly'), ('monthly', 'Monthly')], default='weekly', max_length=10)),
-                ('generate_time', models.TimeField(default='09:00')),
-                ('weekday', models.SmallIntegerField(blank=True, null=True)),
-                ('day_of_month', models.SmallIntegerField(blank=True, null=True)),
-                ('auto_publish', models.BooleanField(default=False)),
-                ('next_run_at', models.DateTimeField(blank=True, null=True)),
-                ('last_skip_notice_month', models.CharField(blank=True, default='', max_length=7)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("is_enabled", models.BooleanField(default=False)),
+                (
+                    "frequency",
+                    models.CharField(
+                        choices=[("weekly", "Weekly"), ("monthly", "Monthly")], default="weekly", max_length=10
+                    ),
+                ),
+                ("generate_time", models.TimeField(default="09:00")),
+                ("weekday", models.SmallIntegerField(blank=True, null=True)),
+                ("day_of_month", models.SmallIntegerField(blank=True, null=True)),
+                ("auto_publish", models.BooleanField(default=False)),
+                ("next_run_at", models.DateTimeField(blank=True, null=True)),
+                ("last_skip_notice_month", models.CharField(blank=True, default="", max_length=7)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='BlogTopicIdea',
+            name="BlogTopicIdea",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200)),
-                ('angle', models.CharField(blank=True, default='', max_length=300)),
-                ('status', models.CharField(choices=[('available', 'Available'), ('used', 'Used'), ('dismissed', 'Dismissed')], default='available', max_length=12)),
-                ('batch_id', models.CharField(blank=True, default='', max_length=36)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("title", models.CharField(max_length=200)),
+                ("angle", models.CharField(blank=True, default="", max_length=300)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("available", "Available"), ("used", "Used"), ("dismissed", "Dismissed")],
+                        default="available",
+                        max_length=12,
+                    ),
+                ),
+                ("batch_id", models.CharField(blank=True, default="", max_length=36)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'ordering': ['created_at'],
+                "ordering": ["created_at"],
             },
         ),
         migrations.CreateModel(
-            name='BlogPost',
+            name="BlogPost",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200)),
-                ('slug', models.SlugField(max_length=70, unique=True)),
-                ('body_html', models.TextField(blank=True, default='')),
-                ('excerpt', models.CharField(blank=True, default='', max_length=300)),
-                ('meta_description', models.CharField(blank=True, default='', max_length=170)),
-                ('tags', models.JSONField(blank=True, default=list)),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('published', 'Published')], default='draft', max_length=12)),
-                ('source', models.CharField(choices=[('manual', 'Manual'), ('ai', 'AI'), ('autopilot', 'Autopilot')], default='manual', max_length=12)),
-                ('ai_model', models.CharField(blank=True, default='', max_length=60)),
-                ('published_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("title", models.CharField(max_length=200)),
+                ("slug", models.SlugField(max_length=70, unique=True)),
+                ("body_html", models.TextField(blank=True, default="")),
+                ("excerpt", models.CharField(blank=True, default="", max_length=300)),
+                ("meta_description", models.CharField(blank=True, default="", max_length=170)),
+                ("tags", models.JSONField(blank=True, default=list)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("draft", "Draft"), ("published", "Published")], default="draft", max_length=12
+                    ),
+                ),
+                (
+                    "source",
+                    models.CharField(
+                        choices=[("manual", "Manual"), ("ai", "AI"), ("autopilot", "Autopilot")],
+                        default="manual",
+                        max_length=12,
+                    ),
+                ),
+                ("ai_model", models.CharField(blank=True, default="", max_length=60)),
+                ("published_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

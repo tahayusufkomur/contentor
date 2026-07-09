@@ -87,9 +87,10 @@ def test_generate_creates_draft_and_notifies(paid_tenant, settings):
     settings.ANTHROPIC_API_KEY = "test-key"
     _due_rule(auto_publish=False)
     BlogTopicIdea.objects.create(title="Sleep myths", angle="")
-    with mock.patch.object(ai, "generate_post", return_value=_draft_result()), mock.patch.object(
-        tasks, "_notify_coach"
-    ) as notify:
+    with (
+        mock.patch.object(ai, "generate_post", return_value=_draft_result()),
+        mock.patch.object(tasks, "_notify_coach") as notify,
+    ):
         tasks._generate_for_current_tenant(paid_tenant)
     post = BlogPost.objects.get()
     assert post.status == "draft" and post.source == "autopilot" and post.created_by is None
@@ -101,8 +102,9 @@ def test_generate_auto_publish(paid_tenant, settings):
     settings.ANTHROPIC_API_KEY = "test-key"
     _due_rule(auto_publish=True)
     BlogTopicIdea.objects.create(title="x", angle="")
-    with mock.patch.object(ai, "generate_post", return_value=_draft_result()), mock.patch.object(
-        tasks, "_notify_coach"
+    with (
+        mock.patch.object(ai, "generate_post", return_value=_draft_result()),
+        mock.patch.object(tasks, "_notify_coach"),
     ):
         tasks._generate_for_current_tenant(paid_tenant)
     post = BlogPost.objects.get()
@@ -112,9 +114,10 @@ def test_generate_auto_publish(paid_tenant, settings):
 def test_out_of_credits_notifies_once_per_month(paid_tenant):
     rule = _due_rule()
     fake_status = {"reason": "quota_exhausted", "remaining": 0, "limit": 5, "enabled": True, "eligible": True}
-    with mock.patch.object(ai, "availability", return_value=fake_status), mock.patch.object(
-        tasks, "_notify_coach"
-    ) as notify:
+    with (
+        mock.patch.object(ai, "availability", return_value=fake_status),
+        mock.patch.object(tasks, "_notify_coach") as notify,
+    ):
         tasks._generate_for_current_tenant(paid_tenant)
         tasks._generate_for_current_tenant(paid_tenant)
     assert notify.call_count == 1
@@ -126,9 +129,13 @@ def test_out_of_credits_notifies_once_per_month(paid_tenant):
 def test_empty_queue_triggers_refill(paid_tenant, settings):
     settings.ANTHROPIC_API_KEY = "test-key"
     _due_rule()
-    with mock.patch.object(ai, "generate_post", return_value=_draft_result()), mock.patch.object(
-        ai, "generate_topics", return_value=([{"title": "fresh", "angle": ""}], Decimal("0.004"))
-    ) as refill, mock.patch.object(tasks, "_notify_coach"):
+    with (
+        mock.patch.object(ai, "generate_post", return_value=_draft_result()),
+        mock.patch.object(
+            ai, "generate_topics", return_value=([{"title": "fresh", "angle": ""}], Decimal("0.004"))
+        ) as refill,
+        mock.patch.object(tasks, "_notify_coach"),
+    ):
         tasks._generate_for_current_tenant(paid_tenant)
     refill.assert_called_once()
     assert BlogPost.objects.get().title == "T"

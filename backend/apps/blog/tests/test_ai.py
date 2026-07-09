@@ -57,9 +57,8 @@ def test_cli_provider_strips_code_fences(settings):
 def test_cli_provider_raises_blog_ai_error_on_failure(settings):
     settings.BLOG_AI_PROVIDER = "cli"
     completed = SimpleNamespace(returncode=1, stdout="", stderr="boom")
-    with mock.patch("subprocess.run", return_value=completed):
-        with pytest.raises(ai.BlogAiError):
-            ai._call_structured("sys", "user", ai._BlogDraft, max_tokens=100)
+    with mock.patch("subprocess.run", return_value=completed), pytest.raises(ai.BlogAiError):
+        ai._call_structured("sys", "user", ai._BlogDraft, max_tokens=100)
 
 
 def test_generate_post_returns_rendered_fields(settings):

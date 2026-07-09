@@ -4,30 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0016_helpbotusage'),
+        ("core", "0016_helpbotusage"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='platformplan',
-            name='max_ai_blog_posts',
+            model_name="platformplan",
+            name="max_ai_blog_posts",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.CreateModel(
-            name='BlogAiUsage',
+            name="BlogAiUsage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('tenant_schema', models.CharField(max_length=63)),
-                ('month', models.CharField(max_length=7)),
-                ('generations_used', models.PositiveIntegerField(default=0)),
-                ('usd_spent', models.DecimalField(decimal_places=4, default=0, max_digits=8)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("tenant_schema", models.CharField(max_length=63)),
+                ("month", models.CharField(max_length=7)),
+                ("generations_used", models.PositiveIntegerField(default=0)),
+                ("usd_spent", models.DecimalField(decimal_places=4, default=0, max_digits=8)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('tenant_schema', 'month'), name='uniq_blog_ai_usage_tenant_month')],
+                "constraints": [
+                    models.UniqueConstraint(fields=("tenant_schema", "month"), name="uniq_blog_ai_usage_tenant_month")
+                ],
             },
         ),
     ]

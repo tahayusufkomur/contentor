@@ -24,7 +24,6 @@ from django_redis import get_redis_connection
 from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
-from apps.blog.models import BlogAutopilot, BlogPost, BlogTopicIdea
 from apps.billing.models import (
     Bundle,
     BundleItem,
@@ -34,6 +33,7 @@ from apps.billing.models import (
     SubscriptionPlan,
     SubscriptionPlanAccess,
 )
+from apps.blog.models import BlogAutopilot, BlogPost, BlogTopicIdea
 from apps.community.models import (
     Comment as CommunityComment,
 )

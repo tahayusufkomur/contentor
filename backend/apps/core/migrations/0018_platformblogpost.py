@@ -6,33 +6,49 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0017_platformplan_max_ai_blog_posts_blogaiusage'),
+        ("core", "0017_platformplan_max_ai_blog_posts_blogaiusage"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PlatformBlogPost',
+            name="PlatformBlogPost",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200)),
-                ('slug', models.SlugField(max_length=70, unique=True)),
-                ('body_html', models.TextField(blank=True, default='')),
-                ('excerpt', models.CharField(blank=True, default='', max_length=300)),
-                ('meta_description', models.CharField(blank=True, default='', max_length=170)),
-                ('tags', models.JSONField(blank=True, default=list)),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('published', 'Published')], default='draft', max_length=12)),
-                ('source', models.CharField(choices=[('manual', 'Manual'), ('ai', 'AI')], default='manual', max_length=12)),
-                ('ai_model', models.CharField(blank=True, default='', max_length=60)),
-                ('published_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("title", models.CharField(max_length=200)),
+                ("slug", models.SlugField(max_length=70, unique=True)),
+                ("body_html", models.TextField(blank=True, default="")),
+                ("excerpt", models.CharField(blank=True, default="", max_length=300)),
+                ("meta_description", models.CharField(blank=True, default="", max_length=170)),
+                ("tags", models.JSONField(blank=True, default=list)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("draft", "Draft"), ("published", "Published")], default="draft", max_length=12
+                    ),
+                ),
+                (
+                    "source",
+                    models.CharField(choices=[("manual", "Manual"), ("ai", "AI")], default="manual", max_length=12),
+                ),
+                ("ai_model", models.CharField(blank=True, default="", max_length=60)),
+                ("published_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
     ]

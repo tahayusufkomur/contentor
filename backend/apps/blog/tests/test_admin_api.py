@@ -81,7 +81,14 @@ def _clean_shared():
 
 def _draft_result():
     return ai.DraftResult(
-        {"title": "T", "body_html": "<p>b</p>", "excerpt": "e", "meta_description": "m", "tags": ["t"], "ai_model": "x"},
+        {
+            "title": "T",
+            "body_html": "<p>b</p>",
+            "excerpt": "e",
+            "meta_description": "m",
+            "tags": ["t"],
+            "ai_model": "x",
+        },
         Decimal("0.03"),
     )
 
