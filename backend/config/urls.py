@@ -44,9 +44,11 @@ urlpatterns = [
     path("api/v1/admin/", include("apps.usage.admin_urls")),
     path("api/v1/blog/", include("apps.blog.urls")),
     path("api/v1/admin/blog/", include("apps.blog.admin_urls")),
-    # Platform email lives under /platform/email/ — declare before the broader
-    # /platform/ include so its routes resolve first.
+    # Platform email/blog live under their own /platform/ sub-prefixes —
+    # declare before the broader /platform/ include so those routes resolve
+    # first.
     path("api/v1/platform/email/", include("apps.platform_email.urls")),
+    path("api/v1/platform/blog/", include("apps.blog.urls_platform")),
     path("api/v1/platform/", include("apps.core.platform.urls")),
     # Schema-driven admin kit: superadmin (public schema) + coach studio
     # (tenant schema) sites. See apps/adminkit/.

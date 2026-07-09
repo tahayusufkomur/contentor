@@ -7,7 +7,7 @@ from apps.accounts.models import User
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import platform_site
 
-from .models import PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
+from .models import PlatformBlogPost, PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
 from .stripe_pricing import apply_amounts
 
 
@@ -316,3 +316,14 @@ class WebhookEventAdmin(ModelAdmin):
         return "processed" if obj.processed_at else "pending"
 
     state.short_description = "State"
+
+
+@platform_site.register(PlatformBlogPost)
+class PlatformBlogPostAdmin(ModelAdmin):
+    icon = "newspaper"
+    description = "Contentor.app marketing blog posts (public SEO). Generate drafts from Admin → Blog."
+    list_display = ("title", "slug", "status", "source", "published_at")
+    search_fields = ("title", "slug")
+    list_filters = ("status", "source")
+    ordering = ("-created_at",)
+    fields = ("title", "slug", "excerpt", "meta_description", "tags", "body_html", "status", "published_at")

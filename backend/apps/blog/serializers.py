@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.core.models import PlatformBlogPost
+
 from .models import BlogAutopilot, BlogPost, BlogTopicIdea
 
 
@@ -65,3 +67,22 @@ class BlogAutopilotSerializer(serializers.ModelSerializer):
         if freq == "monthly" and attrs.get("day_of_month", getattr(self.instance, "day_of_month", None)) is None:
             raise serializers.ValidationError({"day_of_month": "required for monthly"})
         return attrs
+
+
+class PlatformBlogPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformBlogPost
+        fields = (
+            "id",
+            "slug",
+            "title",
+            "excerpt",
+            "meta_description",
+            "tags",
+            "body_html",
+            "status",
+            "source",
+            "published_at",
+        )
+        read_only_fields = ("id", "source", "published_at")
+        extra_kwargs = {"slug": {"required": False}}

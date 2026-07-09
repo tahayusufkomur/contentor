@@ -266,6 +266,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "webhook-events",
         "custom-domains",
         "domain-subscriptions",
+        "platform-blog-posts",
     }
 
 

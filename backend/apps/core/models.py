@@ -427,3 +427,36 @@ class BlogAiUsage(models.Model):
 
     def __str__(self):
         return f"{self.tenant_schema} {self.month}: {self.generations_used} posts / ${self.usd_spent}"
+
+
+class PlatformBlogPost(models.Model):
+    """contentor.app marketing blog (public SEO). Same content shape as
+    apps.blog.BlogPost but lives in the public schema — superadmin-managed,
+    generated via the same AI engine with no per-month quota (only the
+    global BlogAiUsage budget kill-switch applies, tenant_schema="public")."""
+
+    STATUS = [("draft", "Draft"), ("published", "Published")]
+    SOURCE = [("manual", "Manual"), ("ai", "AI")]
+
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=70, unique=True)
+    body_html = models.TextField(blank=True, default="")
+    excerpt = models.CharField(max_length=300, blank=True, default="")
+    meta_description = models.CharField(max_length=170, blank=True, default="")
+    tags = models.JSONField(default=list, blank=True)
+    status = models.CharField(max_length=12, choices=STATUS, default="draft")
+    source = models.CharField(max_length=12, choices=SOURCE, default="manual")
+    ai_model = models.CharField(max_length=60, blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    published_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"PlatformBlogPost<{self.pk}:{self.slug}:{self.status}>"
