@@ -68,6 +68,12 @@ export function PlatformHeader({ user }: { user?: User | null }) {
           >
             {t("pricing")}
           </Link>
+          <Link
+            href="/blog"
+            className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t("blog")}
+          </Link>
           {user && (
             <Link
               href={user.is_superuser ? "/admin" : "/dashboard"}
@@ -133,6 +139,13 @@ export function PlatformHeader({ user }: { user?: User | null }) {
               onClick={() => setMobileOpen(false)}
             >
               {t("pricing")}
+            </Link>
+            <Link
+              href="/blog"
+              className="text-base font-medium text-foreground/80 hover:text-foreground"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t("blog")}
             </Link>
             <div className="h-px bg-border" />
             <ThemeToggle className="justify-start" />
