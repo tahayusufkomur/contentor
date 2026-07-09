@@ -64,7 +64,12 @@ class BlogPostAdminViewSet(viewsets.ModelViewSet):
         return BlogPost.objects.all().order_by("-created_at")
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user, slug=unique_slug(serializer.validated_data.get("title", "")))
+        published_at = timezone.now() if serializer.validated_data.get("status") == "published" else None
+        serializer.save(
+            created_by=self.request.user,
+            slug=unique_slug(serializer.validated_data.get("title", "")),
+            published_at=published_at,
+        )
 
     def perform_update(self, serializer):
         instance = serializer.instance

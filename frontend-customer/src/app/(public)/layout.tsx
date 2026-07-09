@@ -1,6 +1,7 @@
 import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { serverFetch } from "@/lib/api-server";
+import { fetchPublishedPosts } from "@/lib/blog-public";
 import { PublicHeader } from "@/components/shared/public-header";
 import { EditSidebar } from "@/components/owner/edit-sidebar";
 import type { SubscriptionPlan } from "@/types/billing";
@@ -26,9 +27,16 @@ export default async function PublicLayout({
     } catch {}
   }
 
+  const posts = await fetchPublishedPosts();
+  const blogEnabled = posts.length > 0;
+
   const content = (
     <>
-      <PublicHeader user={user} hasSubscription={hasSubscription} />
+      <PublicHeader
+        user={user}
+        hasSubscription={hasSubscription}
+        blogEnabled={blogEnabled}
+      />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
     </>
   );

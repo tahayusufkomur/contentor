@@ -157,11 +157,13 @@ export function PublicHeader({
   hasSubscription,
   communityEnabled,
   communityUnread,
+  blogEnabled,
 }: {
   user?: User | null;
   hasSubscription?: boolean;
   communityEnabled?: boolean;
   communityUnread?: boolean;
+  blogEnabled?: boolean;
 }) {
   const config = useTenant();
   const router = useRouter();
@@ -182,10 +184,14 @@ export function PublicHeader({
     ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
     : allNavLinks;
   // Signed-in members of a community-enabled tenant get a Community nav entry.
-  const fullNavLinks: (NavLinkType & { dot?: boolean })[] =
+  const withCommunity: (NavLinkType & { dot?: boolean })[] =
     user && communityEnabled
       ? [...navLinks, { label: "Community", href: "/community", dot: communityUnread }]
       : navLinks;
+  // Blog only appears once the coach has published at least one post.
+  const fullNavLinks: (NavLinkType & { dot?: boolean })[] = blogEnabled
+    ? [...withCommunity, { label: "Blog", href: "/blog" }]
+    : withCommunity;
   const showLogin = navbar?.show_login !== false;
   const cta = navbar?.cta ?? null;
   const allowDarkMode = config?.dark_mode_enabled !== false;

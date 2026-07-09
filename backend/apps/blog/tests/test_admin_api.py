@@ -128,6 +128,16 @@ def test_manual_create_without_slug_derives_one(coach_client, free_tenant):
     assert res.data["slug"] == "my-first-post"
 
 
+def test_create_published_directly_stamps_published_at(coach_client, free_tenant):
+    """Regression: a create call with status=published (bypassing the usual
+    draft-then-publish flow) must still stamp published_at."""
+    res = coach_client.post(
+        "/api/v1/admin/blog/posts/", {"title": "Live from day one", "status": "published"}, format="json"
+    )
+    assert res.status_code == 201
+    assert res.data["published_at"] is not None
+
+
 def test_publish_transition_sets_published_at(coach_client, paid_tenant):
     post = BlogPost.objects.create(title="x", slug="x")
     res = coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "published"}, format="json")
