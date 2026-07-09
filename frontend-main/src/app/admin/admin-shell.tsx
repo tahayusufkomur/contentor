@@ -9,6 +9,7 @@ import {
   Mail,
   Inbox,
   MessagesSquare,
+  Newspaper,
 } from "lucide-react";
 
 import { AppSidebar, type NavItem } from "@/components/shared/app-sidebar";
@@ -46,6 +47,7 @@ const COMMUNICATION: NavItem[] = [
     icon: MessagesSquare,
     group: "Communication",
   },
+  { label: "Blog", href: "/admin/blog", icon: Newspaper, group: "Communication" },
 ];
 const SYSTEM: NavItem[] = [
   {
