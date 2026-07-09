@@ -120,6 +120,14 @@ def test_generate_marks_topic_used(coach_client, paid_tenant, settings):
     assert topic.status == "used"
 
 
+def test_manual_create_without_slug_derives_one(coach_client, free_tenant):
+    """Regression: the client never sends a slug (it's server-derived via
+    unique_slug in perform_create) — the serializer must not require it."""
+    res = coach_client.post("/api/v1/admin/blog/posts/", {"title": "My First Post"}, format="json")
+    assert res.status_code == 201
+    assert res.data["slug"] == "my-first-post"
+
+
 def test_publish_transition_sets_published_at(coach_client, paid_tenant):
     post = BlogPost.objects.create(title="x", slug="x")
     res = coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "published"}, format="json")

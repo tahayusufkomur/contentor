@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Mail,
   MessagesSquare,
+  Newspaper,
   Palette,
   FileText,
   Settings,
@@ -71,6 +72,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
         },
         { label: t("nav.items.liveEvents"), href: "/admin/live", icon: Video },
         { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
+        { label: t("nav.items.blog"), href: "/admin/blog", icon: Newspaper },
       ],
     },
     {

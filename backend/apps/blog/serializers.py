@@ -34,6 +34,7 @@ class BlogPostAdminSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = ("id", "source", "ai_model", "published_at", "created_at", "updated_at")
+        extra_kwargs = {"slug": {"required": False}}  # perform_create derives it via unique_slug()
 
 
 class BlogTopicIdeaSerializer(serializers.ModelSerializer):
