@@ -24,6 +24,7 @@ from django_redis import get_redis_connection
 from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
+from apps.blog.models import BlogAutopilot, BlogPost, BlogTopicIdea
 from apps.billing.models import (
     Bundle,
     BundleItem,
@@ -184,6 +185,9 @@ def _clear_rate_limits():
 
 # Cleanup targets in dependency order (children before parents).
 TENANT_CLEANUP_MODELS = [
+    BlogTopicIdea,
+    BlogAutopilot,
+    BlogPost,
     CommunityReaction,
     CommunityReport,
     CommunityComment,
