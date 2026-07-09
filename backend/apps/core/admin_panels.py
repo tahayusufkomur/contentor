@@ -29,6 +29,7 @@ class PlatformPlanAdmin(ModelAdmin):
         "max_storage_gb",
         "max_streaming_hours",
         "max_campaign_emails",
+        "max_ai_blog_posts",
         "is_live_enabled",
         "is_active",
         "prices",

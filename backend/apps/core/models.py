@@ -155,6 +155,8 @@ class PlatformPlan(models.Model):
     max_storage_gb = models.IntegerField(default=0)
     max_streaming_hours = models.IntegerField(default=0)
     max_campaign_emails = models.IntegerField(default=0)
+    # AI blog generations included per calendar month (0 = feature not in plan).
+    max_ai_blog_posts = models.PositiveIntegerField(default=0)
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     # Multi-currency prices. Shape:
     #   {"USD": {"amount_cents": 1900, "stripe_price_id": "price_..."},
@@ -396,3 +398,32 @@ class HelpBotUsage(models.Model):
 
     def __str__(self):
         return f"{self.tenant_schema} {self.month}: {self.questions} questions / ${self.usd_spent}"
+
+
+class BlogAiUsage(models.Model):
+    """Durable per-tenant-per-month accounting for AI blog generation
+    (apps.blog.ai) — same design as LogoAiUsage: DB-backed so a Redis restart
+    can't reset billing-relevant state.
+
+    ``usd_spent`` accrues on EVERY attempt (success or failure) so a
+    systematic-failure loop still trips the global kill-switch;
+    ``generations_used`` (the plan quota) increments only on success.
+    Platform-blog generations record under tenant_schema="public" (USD only —
+    no quota applies there).
+    """
+
+    tenant_schema = models.CharField(max_length=63)
+    month = models.CharField(max_length=7)  # "YYYY-MM"
+    generations_used = models.PositiveIntegerField(default=0)
+    usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(fields=["tenant_schema", "month"], name="uniq_blog_ai_usage_tenant_month"),
+        ]
+
+    def __str__(self):
+        return f"{self.tenant_schema} {self.month}: {self.generations_used} posts / ${self.usd_spent}"
