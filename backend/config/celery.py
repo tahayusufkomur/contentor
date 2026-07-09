@@ -22,6 +22,10 @@ app.conf.beat_schedule = {
         "task": "apps.notifications.tasks.dispatch_due_recurrences",
         "schedule": crontab(minute="*"),
     },
+    "dispatch-due-blog-autopilot": {
+        "task": "apps.blog.tasks.dispatch_due_blog_autopilot",
+        "schedule": crontab(minute="*/15"),
+    },
 }
 
 
