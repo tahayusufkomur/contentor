@@ -44,6 +44,13 @@ def _fmt(n):
     return str(r)
 
 
+def _fit_radius(cx, cy, extent, minimum=1.0):
+    """Shrink a radial extent so the shape stays inside the 0-100 canvas —
+    an edge-placed disc/ring/arc must scale down, not get viewBox-clipped
+    (the one geometry failure mode observed in the v2 eval wall)."""
+    return max(min(extent, cx, cy, 100.0 - cx, 100.0 - cy), minimum)
+
+
 def _polar(cx, cy, r, deg):
     """Point at ``deg`` on the circle around (cx, cy) — 0 deg is up,
     positive clockwise (screen coords, y down)."""
@@ -69,14 +76,14 @@ def _rotate(points, cx, cy, deg):
 def _compile_circle(el):
     cx = _clamp(el.get("cx"), _COORD, 50)
     cy = _clamp(el.get("cy"), _COORD, 50)
-    r = _clamp(el.get("r"), _RADIUS, 10)
+    r = _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 10))
     return _disc(cx, cy, r)
 
 
 def _compile_ring(el):
     cx = _clamp(el.get("cx"), _COORD, 50)
     cy = _clamp(el.get("cy"), _COORD, 50)
-    r = _clamp(el.get("r"), _RADIUS, 30)
+    r = _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 30))
     thickness = _clamp(el.get("thickness"), _THICKNESS, 4)
     inner = max(r - thickness, 0.5)
     return _disc(cx, cy, r) + _disc(cx, cy, inner), "evenodd"
@@ -85,9 +92,12 @@ def _compile_ring(el):
 def _compile_dot_ring(el):
     cx = _clamp(el.get("cx"), _COORD, 50)
     cy = _clamp(el.get("cy"), _COORD, 50)
-    radius = _clamp(el.get("radius"), _RADIUS, 25)
-    count = int(_clamp(el.get("count"), (3, 24), 8))
     dot_r = _clamp(el.get("dot_r"), (1.0, 8.0), 3)
+    radius = max(
+        _fit_radius(cx, cy, _clamp(el.get("radius"), _RADIUS, 25) + dot_r) - dot_r,
+        1.0,
+    )
+    count = int(_clamp(el.get("count"), (3, 24), 8))
     start = _clamp(el.get("start_deg"), (-360, 360), 0)
     subpaths = []
     for i in range(count):
@@ -177,8 +187,11 @@ def _compile_polygon(el):
 def _compile_arc(el):
     cx = _clamp(el.get("cx"), _COORD, 50)
     cy = _clamp(el.get("cy"), _COORD, 50)
-    r = _clamp(el.get("r"), _RADIUS, 30)
     thickness = _clamp(el.get("thickness"), _THICKNESS, 4)
+    r = max(
+        _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 30) + thickness / 2.0) - thickness / 2.0,
+        1.0,
+    )
     start = _clamp(el.get("start_deg"), (-360, 360), 0)
     sweep = _clamp(el.get("sweep_deg"), (15.0, 340.0), 90)
     round_caps = bool(el.get("round_caps"))

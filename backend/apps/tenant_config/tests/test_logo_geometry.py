@@ -183,6 +183,27 @@ def test_unknown_element_type_is_skipped():
     assert compile_elements([{"type": "blob", "cx": 50, "cy": 50}]) == []
 
 
+def test_edge_placed_radials_shrink_to_fit_canvas():
+    # A big disc near the top edge must scale down, not get viewBox-clipped
+    # (observed once in the v2 eval wall: a "moon" semicircle cut off at y=0).
+    # circle {cx 50, cy 10, r 40} -> r fits to 10 -> disc starts at (40, 10)
+    [circle] = compile_elements([{"type": "circle", "cx": 50, "cy": 10, "r": 40}])
+    assert circle["d"].startswith("M40 10a10 10")
+    # ring {cx 90} -> outer r fits to 10 -> outer disc starts at (80, 50)
+    [ring] = compile_elements([{"type": "ring", "cx": 90, "cy": 50, "r": 35, "thickness": 4}])
+    assert ring["d"].startswith("M80 50a10 10")
+    # dot_ring {cy 12, radius 30, dot_r 3} -> radius fits to 12-3=9; the
+    # top dot's disc starts at (50-3, 12-9) = (47, 3)
+    [dots] = compile_elements([{"type": "dot_ring", "cx": 50, "cy": 12, "radius": 30, "count": 8, "dot_r": 3}])
+    assert "M47 3a3 3" in dots["d"]
+    # arc {cx 15, r 30, thickness 6} -> r_out fits to 15; 0 deg outer start
+    # is (15, 50-15) = (15, 35)
+    [arc] = compile_elements(
+        [{"type": "arc", "cx": 15, "cy": 50, "r": 30, "thickness": 6, "start_deg": 0, "sweep_deg": 180}]
+    )
+    assert arc["d"].startswith("M15 35")
+
+
 def test_out_of_range_params_are_clamped_not_fatal():
     [path] = compile_elements([{"type": "circle", "cx": 400, "cy": -50, "r": 500}])
     _assert_valid_d(path["d"])
