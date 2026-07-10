@@ -208,7 +208,7 @@ def availability(tenant, config, month=None):
     return True, "ok"
 
 
-def sse_events(history, tenant, month, question="", session_id="", is_preview=False):
+def sse_events(history, tenant, month, question="", session_id="", is_preview=False, conversation=None):
     """Stream one answer; on completion accrue USD always, count the question
     unless preview, and write the audit transcript."""
     from .models import TenantConfig
@@ -237,6 +237,7 @@ def sse_events(history, tenant, month, question="", session_id="", is_preview=Fa
             kb_hash=kb_hash,
             is_preview=is_preview,
         )
+        assistant.append_message(conversation, "assistant", info["answer"], transcript_id=row.id if row else None)
         if row is None:
             return None
         return {"transcript_id": row.id, "rate_token": assistant.rate_token(row.id)}

@@ -12,7 +12,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from apps.core import assistant
+from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.throttling import AiThreadThrottle
 
 from . import student_bot
 from .models import AssistantConfig, AssistantKnowledgeEntry, TenantConfig
@@ -74,6 +76,14 @@ def assistant_chat(request):
     raw = data.get("messages") or []
     question = str(raw[-1].get("content") or "")[:2000] if raw and isinstance(raw[-1], dict) else ""
     session_id = str(data.get("session_id") or "")[:36]
+    convo = assistant.get_or_create_conversation(
+        feature="student_bot",
+        audience="student",
+        tenant_schema=tenant.schema_name,
+        session_id=session_id,
+        user=request.user if getattr(request.user, "is_authenticated", False) else None,
+    )
+    convo = assistant.maybe_auto_release(convo)
     signed_in = "yes" if getattr(request.user, "is_authenticated", False) else "no"
     try:
         history = assistant.prepare_history(
@@ -82,13 +92,41 @@ def assistant_chat(request):
     except ValueError as exc:
         return Response({"error": str(exc)}, status=400)
 
+    if convo is not None:
+        assistant.append_message(convo, "user", question)
+
     response = StreamingHttpResponse(
-        student_bot.sse_events(history, tenant, month, question=question, session_id=session_id),
+        student_bot.sse_events(history, tenant, month, question=question, session_id=session_id, conversation=convo),
         content_type="text/event-stream",
     )
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"
     return response
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([AiThreadThrottle])
+def assistant_thread(request):
+    """Widget polling endpoint. The session UUID is the bearer token (v2 spec
+    D5); mismatched feature/tenant simply doesn't exist here → 404."""
+    session = str(request.query_params.get("session") or "").strip()[:36]
+    try:
+        after = int(request.query_params.get("after") or 0)
+    except ValueError:
+        after = 0
+    convo = (
+        AiConversation.objects.filter(
+            session_id=session, feature="student_bot", tenant_schema=connection.tenant.schema_name
+        ).first()
+        if session
+        else None
+    )
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    return Response(assistant.thread_payload(convo, after_id=after))
 
 
 # ── Coach admin half (/api/v1/admin/assistant/…) ─────────────────────────────

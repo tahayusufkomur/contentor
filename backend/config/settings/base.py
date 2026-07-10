@@ -151,6 +151,7 @@ REST_FRAMEWORK = {
         # share the same rates): per-IP/per-user burst + daily ceiling.
         "student_bot_burst": "5/min",
         "student_bot_day": "30/day",
+        "ai_thread": "30/min",
     },
 }
 
