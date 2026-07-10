@@ -23,7 +23,7 @@ from apps.core import ai as core_ai
 from apps.core import assistant
 from apps.core.models import HelpBotUsage
 
-PROMPT_VERSION = 1
+PROMPT_VERSION = 2
 KB_PATH = Path(__file__).with_name("help_kb.md")
 
 MAX_HISTORY_MESSAGES = 6
@@ -91,11 +91,46 @@ class HelpBotError(Exception):
     """The provider failed before or during an answer."""
 
 
-@lru_cache(maxsize=len(_PERSONAS))
+def _addenda_state(audience):
+    """(fingerprint, entries) for the enabled addenda visible to ``audience``.
+    Fingerprint = max(updated_at)|count — one cheap query; the cached prompt
+    below only rebuilds when it changes, so the served bytes (and Anthropic's
+    prompt cache) stay stable between edits."""
+    from django.db.models import Count, Max
+
+    from apps.core.models import PlatformKbEntry
+
+    qs = PlatformKbEntry.objects.filter(enabled=True, audience__in=(audience, "all"))
+    agg = qs.aggregate(m=Max("updated_at"), c=Count("id"))
+    return f"{agg['m']}|{agg['c']}", qs
+
+
+def platform_notes(audience):
+    """Rendered PLATFORM NOTES block for ``audience`` ("" when none)."""
+    _, qs = _addenda_state(audience)
+    entries = list(qs.order_by("position", "id"))
+    if not entries:
+        return ""
+    lines = ["\n\n# PLATFORM NOTES (authoritative updates — they override the sections above)\n"]
+    lines += [f"## {e.title}\n{e.content}" for e in entries]
+    return "\n".join(lines)
+
+
+@lru_cache(maxsize=8)
+def _system_prompt_cached(audience, fingerprint):
+    return (
+        _PERSONAS[audience]
+        + "\n\n# KNOWLEDGE BASE\n\n"
+        + KB_PATH.read_text(encoding="utf-8")
+        + platform_notes(audience)
+    )
+
+
 def system_prompt(audience="coach") -> str:
-    """Frozen bytes: persona + KB. One cached prompt per audience — each is a
-    stable Anthropic cache prefix. Bump PROMPT_VERSION on any change."""
-    return _PERSONAS[audience] + "\n\n# KNOWLEDGE BASE\n\n" + KB_PATH.read_text(encoding="utf-8")
+    """Persona + repo KB + DB addenda. Byte-stable between addenda edits (the
+    fingerprint keys the cache); bump PROMPT_VERSION on persona/KB changes."""
+    fingerprint, _ = _addenda_state(audience)
+    return _system_prompt_cached(audience, fingerprint)
 
 
 # ── Tenant snapshot (goes in the first user turn, never the system prompt) ──

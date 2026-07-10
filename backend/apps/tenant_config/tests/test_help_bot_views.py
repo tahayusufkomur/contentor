@@ -43,11 +43,11 @@ def enabled(monkeypatch, tmp_path, settings):
     kb = tmp_path / "help_kb.md"
     kb.write_text("## Payouts\nStripe.\n")
     monkeypatch.setattr(help_bot, "KB_PATH", kb)
-    help_bot.system_prompt.cache_clear()
+    help_bot._system_prompt_cached.cache_clear()
     settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = "sk-test"
     yield
-    help_bot.system_prompt.cache_clear()
+    help_bot._system_prompt_cached.cache_clear()
 
 
 def _sse_events(response):

@@ -267,6 +267,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "custom-domains",
         "domain-subscriptions",
         "platform-blog-posts",
+        "platform-kb",
     }
 
 

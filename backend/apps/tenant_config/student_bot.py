@@ -124,6 +124,8 @@ def _pages(config):
 
 def build_system_prompt(tenant, config):
     """(system_prompt, kb_hash). Deterministic bytes — see module docstring."""
+    from apps.tenant_config.help_bot import platform_notes
+
     from .models import AssistantConfig, AssistantKnowledgeEntry
 
     brand = (config.brand_name if config else "") or tenant.schema_name
@@ -145,7 +147,8 @@ def build_system_prompt(tenant, config):
             parts.append(f"Q/Topic: {e.title}\nA: {e.content[: AssistantKnowledgeEntry.MAX_CONTENT_CHARS]}")
     parts.append("</site_knowledge>")
     pack = "\n".join(parts)
-    prompt = _PERSONA_TEMPLATE.format(brand=brand) + "\n" + pack
+    notes = platform_notes("student")
+    prompt = _PERSONA_TEMPLATE.format(brand=brand) + notes + "\n" + pack
     return prompt, hashlib.sha256(pack.encode()).hexdigest()[:12]
 
 
