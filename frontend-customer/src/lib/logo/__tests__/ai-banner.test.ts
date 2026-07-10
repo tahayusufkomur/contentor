@@ -8,7 +8,14 @@ import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
 import type { LogoRecipe } from "@/types/logo";
 
 function baseStatus(overrides: Partial<BrandPackStatus> = {}): BrandPackStatus {
-  return { enabled: true, eligible: true, remaining: 5, reason: null, ...overrides };
+  return {
+    enabled: true,
+    eligible: true,
+    remaining: 5,
+    reason: null,
+    refine_remaining: 20,
+    ...overrides,
+  };
 }
 
 const SOME_RECIPE = {} as LogoRecipe; // opaque to deriveAiBannerState — only array length/truthiness matters

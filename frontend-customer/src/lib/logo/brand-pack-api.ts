@@ -9,6 +9,7 @@ export interface BrandPackStatus {
   eligible: boolean;
   remaining: number;
   reason: "upgrade_required" | "quota_exhausted" | "disabled" | null;
+  refine_remaining: number;
 }
 
 export type BrandPackSource =
