@@ -23,7 +23,7 @@ from apps.core.models import LogoAiUsage
 from .logo_geometry import compile_elements
 from .logo_recipe import _hex, validate_recipe
 
-PROMPT_VERSION = 2
+PROMPT_VERSION = 3
 
 # A minimal, already-valid v2 recipe skeleton used only to run a Brand Pack
 # mark's paths through validate_recipe's injection whitelist + clamps — the
@@ -156,7 +156,9 @@ given theme color by shifting hue, saturation, or depth; don't repeat it \
 identically across all 3), secondary, accent, and ink (dark, readable on \
 white, clearly darker than primary). Think 60-30-10: primary carries, \
 secondary supports, accent punctuates. The 3 palettes should feel like one \
-brand family at three volumes (e.g. calm / classic / vivid).
+brand family at three volumes (e.g. calm / classic / vivid). Marks are \
+drawn in these colors on white cards, so secondary and accent must stay \
+clearly visible on white — no near-white pastels; when in doubt, darken.
 
 ## Tagline & typography
 
