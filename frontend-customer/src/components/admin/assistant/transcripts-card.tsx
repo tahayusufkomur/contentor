@@ -42,6 +42,10 @@ export function TranscriptsCard({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  // Explicit origin, not read inline at each call site — keeps `parseAnswer`
+  // SSR-safe (it never touches `window` itself) and gives every extracted
+  // link a real same-origin check via the `URL` parser. See format-answer.ts.
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     listTranscripts(1)
@@ -98,7 +102,7 @@ export function TranscriptsCard({
           <div className="divide-y divide-border rounded-xl border border-border">
             {rows.map((row) => {
               const isExpanded = expanded.has(row.id);
-              const { text: answer, links } = parseAnswer(row.answer);
+              const { text: answer, links } = parseAnswer(row.answer, origin);
               return (
                 <div key={row.id} className="space-y-2 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

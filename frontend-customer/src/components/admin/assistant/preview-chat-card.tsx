@@ -32,6 +32,11 @@ export function PreviewChatCard() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
+  // Explicit origin, not read inline at each call site — keeps `parseAnswer`
+  // SSR-safe (it never touches `window` itself) and gives every extracted
+  // link a real same-origin check via the `URL` parser. See format-answer.ts.
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
   const send = async (question: string) => {
     const trimmed = question.trim();
     if (!trimmed || busy) return;
@@ -84,7 +89,7 @@ export function PreviewChatCard() {
                 );
               }
               const parsed = message.content
-                ? parseAnswer(message.content)
+                ? parseAnswer(message.content, origin)
                 : null;
               return (
                 <div key={index} className="flex">
