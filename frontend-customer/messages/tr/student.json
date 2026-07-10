@@ -47,6 +47,12 @@
     "error": "Bir şeyler ters gitti — lütfen tekrar dene.",
     "rateUp": "Faydalı",
     "rateDown": "Faydalı değil",
-    "disclosure": "Konuşmalar, yanıtları iyileştirmek için {brand} tarafından incelenebilir."
+    "disclosure": "Konuşmalar, yanıtları iyileştirmek için {brand} tarafından incelenebilir.",
+    "talkToHuman": "Bir yetkiliyle görüş",
+    "humanRequestedLine": "Bir yetkiliyle görüşmek istediniz — {brand} bilgilendirildi.",
+    "agentJoined": "{name} sohbete katıldı",
+    "assistantResumed": "Asistan geri döndü",
+    "humanModeNotice": "{name} ile sohbet ediyorsunuz",
+    "sessionLimit": "Bugünkü sohbet sınırına ulaştınız. Yarın tekrar deneyin veya iletişim sayfasını kullanın."
   }
 }

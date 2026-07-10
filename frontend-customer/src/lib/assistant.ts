@@ -4,10 +4,18 @@ import { clientFetch } from "@/lib/api-client";
 
 export interface AssistantStatus {
   enabled: boolean;
-  reason: "ok" | "disabled" | "upgrade_required" | "budget" | "quota";
+  reason:
+    | "ok"
+    | "disabled"
+    | "upgrade_required"
+    | "budget"
+    | "quota"
+    | "session_limit";
   greeting: string;
   suggested_questions: string[];
   brand: string;
+  human_handoff: boolean;
+  link_whitelist: string[];
 }
 
 export interface ChatMessage {
@@ -18,14 +26,105 @@ export interface ChatMessage {
 export interface AnswerMeta {
   transcriptId?: number;
   rateToken?: string;
+  suggestions?: string[];
+}
+
+export interface ThreadMessage {
+  id: number;
+  role: "user" | "assistant" | "agent" | "system";
+  content: string;
+  created_at: string;
+}
+
+export interface ThreadPayload {
+  session_id: string;
+  status: "ai" | "human";
+  agent_label: string;
+  human_requested: boolean;
+  messages: ThreadMessage[];
 }
 
 let statusCache: AssistantStatus | null = null;
 const listeners = new Set<(s: AssistantStatus | null) => void>();
 let inflight: Promise<void> | null = null;
 
-const sessionId =
-  globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2);
+const SESSION_KEY = "contentor.ai.session.assistant";
+const SESSION_IDLE_MS = 24 * 60 * 60 * 1000;
+
+/** Pure so vitest can cover rotation without a DOM. */
+export function resolveSession(
+  raw: string | null,
+  now: number,
+): { id: string; fresh: boolean } {
+  try {
+    if (raw) {
+      const parsed = JSON.parse(raw) as { id?: string; ts?: number };
+      if (
+        parsed.id &&
+        typeof parsed.ts === "number" &&
+        now - parsed.ts < SESSION_IDLE_MS
+      ) {
+        return { id: parsed.id, fresh: false };
+      }
+    }
+  } catch {
+    // fall through to a fresh session
+  }
+  return {
+    id: globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2),
+    fresh: true,
+  };
+}
+
+let sessionId = "";
+
+export function getSessionId(): string {
+  if (sessionId) return sessionId;
+  const raw =
+    typeof window === "undefined"
+      ? null
+      : window.localStorage.getItem(SESSION_KEY);
+  sessionId = resolveSession(raw, Date.now()).id;
+  touchSession();
+  return sessionId;
+}
+
+export function touchSession(): void {
+  if (typeof window === "undefined" || !sessionId) return;
+  try {
+    window.localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ id: sessionId, ts: Date.now() }),
+    );
+  } catch {
+    // storage unavailable — session stays in-memory
+  }
+}
+
+function isSameOriginPath(href: string, origin: string): boolean {
+  try {
+    return new URL(href, origin).origin === origin;
+  } catch {
+    return false;
+  }
+}
+
+/** Hard client-side link containment (v2 spec §9): same-origin paths render
+ * as internal links; absolute URLs only when exactly whitelisted. */
+export function decideLink(
+  href: string,
+  origin: string,
+  whitelist: string[],
+): "internal" | "external" | null {
+  if (
+    href.startsWith("/") &&
+    !href.startsWith("//") &&
+    !href.startsWith("/\\")
+  ) {
+    return isSameOriginPath(href, origin) ? "internal" : null;
+  }
+  return whitelist.includes(href) ? "external" : null;
+}
 
 function broadcast(next: AssistantStatus | null) {
   statusCache = next;
@@ -79,21 +178,31 @@ export async function rateAssistantAnswer(
 }
 
 /** POST the transcript and stream the answer (SSE contract shared with the
- * help bot). Resolves when complete; throws on gating/stream failure. */
+ * help bot). Resolves `"ai"` when the AI answered, `"human"` when the
+ * session raced into human mode (message already stored server-side — the
+ * poller will deliver it). Throws on gating/stream failure. */
 export async function streamAssistantChat(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
   onDone?: (meta: AnswerMeta) => void,
-): Promise<void> {
+): Promise<"ai" | "human"> {
   const res = await fetch("/api/v1/assistant/chat/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ messages, session_id: sessionId }),
+    body: JSON.stringify({ messages, session_id: getSessionId() }),
   });
   if (!res.ok) throw new Error(`assistant request failed (${res.status})`);
   if (res.headers.get("content-type")?.includes("application/json")) {
-    const data = (await res.json()) as { enabled?: boolean; reason?: string };
+    const data = (await res.json()) as {
+      enabled?: boolean;
+      reason?: string;
+      mode?: string;
+    };
+    if (data.mode === "human") {
+      touchSession();
+      return "human";
+    }
     if (data.enabled === false && statusCache)
       broadcast({
         ...statusCache,
@@ -121,6 +230,7 @@ export async function streamAssistantChat(
         text?: string;
         transcript_id?: number;
         rate_token?: string;
+        suggestions?: string[];
       };
       if (event.type === "delta" && event.text) onDelta(event.text);
       else if (event.type === "done") {
@@ -128,11 +238,56 @@ export async function streamAssistantChat(
         onDone?.({
           transcriptId: event.transcript_id,
           rateToken: event.rate_token,
+          suggestions: event.suggestions,
         });
       } else if (event.type === "error") throw new Error("answer failed");
     }
   }
   if (!done) throw new Error("stream ended early");
+  touchSession();
+  return "ai";
+}
+
+export async function fetchThread(after = 0): Promise<ThreadPayload | null> {
+  try {
+    const res = await fetch(
+      `/api/v1/assistant/thread/?session=${getSessionId()}&after=${after}`,
+      { credentials: "same-origin" },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as ThreadPayload;
+  } catch {
+    return null;
+  }
+}
+
+export async function sendHumanMessage(content: string): Promise<boolean> {
+  try {
+    const res = await fetch("/api/v1/assistant/human-message/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ session_id: getSessionId(), content }),
+    });
+    touchSession();
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function requestHuman(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/v1/assistant/human-request/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ session_id: getSessionId() }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 // ── Coach admin half (/api/v1/admin/assistant/…) ─────────────────────────────

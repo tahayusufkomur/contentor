@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowRight,
+  ExternalLink,
   MessageCircleQuestion,
   Send,
   ThumbsDown,
@@ -14,26 +15,32 @@ import {
 import { useTranslations } from "next-intl";
 
 import {
+  decideLink,
+  fetchThread,
   rateAssistantAnswer,
+  requestHuman,
+  sendHumanMessage,
   streamAssistantChat,
   useAssistantStatus,
   type AnswerMeta,
   type ChatMessage,
 } from "@/lib/assistant";
 
-// Any site path the bot emits renders as a button; the server-side whitelist
-// already constrains targets to the tenant's own pages/items. The extraction
-// regex below is a syntactic first pass only — it requires a single leading
-// slash NOT immediately followed by another slash, which blocks the obvious
-// `//evil.com` protocol-relative bypass. It is NOT the safety boundary: a
-// second bypass survives it (`/\evil.com` — the WHATWG URL Standard treats a
-// backslash right after the leading slash exactly like a second slash for
-// http/https URLs, so real browsers resolve it to host `evil.com`), and a
-// character-class regex can never rule out every such parser quirk. The
-// actual safety boundary is `isSameOriginPath` below: every extracted href
-// is resolved with the real `URL` parser (the same algorithm a browser uses
-// to navigate) and kept only if the resolved origin matches the page's own.
-const LINK_RE = /\[([^\]]+)\]\((\/(?!\/)[^)\s]*)\)/g;
+// Any site path or coach-whitelisted external URL the bot emits renders as a
+// button. The extraction regex below is a syntactic first pass only — it
+// accepts a leading `/` (internal path) or a `https://` URL (candidate
+// external link); it does NOT decide safety. It is NOT the safety boundary:
+// naive regex acceptance of `//evil.com` (protocol-relative) or `/\evil.com`
+// (the WHATWG URL Standard treats a backslash right after the leading slash
+// exactly like a second slash for http/https URLs, so real browsers resolve
+// it to host `evil.com`) would be a bypass, and a character-class regex can
+// never rule out every such parser quirk on its own. The actual safety
+// boundary is `decideLink` (frontend-customer/src/lib/assistant.ts): every
+// extracted href is resolved with the real `URL` parser (the same algorithm
+// a browser uses to navigate) and classified `"internal"` only if the
+// resolved origin matches the page's own, `"external"` only on an EXACT
+// match against the coach's link whitelist, and dropped (`null`) otherwise.
+const LINK_RE = /\[([^\]]+)\]\((\/(?!\/)[^)\s]*|https:\/\/[^)\s]+)\)/g;
 // /learn is the focused course player — never overlay it.
 const HIDDEN_PREFIXES = [
   "/learn",
@@ -43,27 +50,30 @@ const HIDDEN_PREFIXES = [
   "/checkout",
 ];
 
-/** Resolves `href` against `origin` using the real WHATWG `URL` parser and
- * accepts it only if the resolved origin matches exactly — see the LINK_RE
- * comment above for why a regex alone can't provide this guarantee. */
-function isSameOriginPath(href: string, origin: string): boolean {
-  try {
-    return new URL(href, origin).origin === origin;
-  } catch {
-    return false;
-  }
-}
+type Msg = {
+  role: "user" | "assistant" | "agent" | "system";
+  content: string;
+  meta?: AnswerMeta;
+  rated?: "up" | "down";
+};
 
-type Msg = ChatMessage & { meta?: AnswerMeta; rated?: "up" | "down" };
-
-function AnswerBody({ content }: { content: string }) {
+function AnswerBody({
+  content,
+  whitelist,
+}: {
+  content: string;
+  whitelist: string[];
+}) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const links: { label: string; href: string }[] = [];
+  const links: {
+    label: string;
+    href: string;
+    kind: "internal" | "external";
+  }[] = [];
   const text = content
     .replace(LINK_RE, (_, label: string, href: string) => {
-      if (isSameOriginPath(href, origin)) {
-        links.push({ label, href });
-      }
+      const kind = decideLink(href, origin, whitelist);
+      if (kind) links.push({ label, href, kind });
       return "";
     })
     .replace(/\*\*([^*]+)\*\*/g, "$1")
@@ -73,16 +83,29 @@ function AnswerBody({ content }: { content: string }) {
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{text}</p>
       {links.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
-          {links.map(({ label, href }) => (
-            <Link
-              key={href + label}
-              href={href}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              {label}
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          ))}
+          {links.map(({ label, href, kind }) =>
+            kind === "internal" ? (
+              <Link
+                key={href + label}
+                href={href}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                {label}
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            ) : (
+              <a
+                key={href + label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                {label}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ),
+          )}
         </div>
       )}
     </div>
@@ -102,11 +125,57 @@ export function SiteAssistantBubble() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [mode, setMode] = useState<"ai" | "human">("ai");
+  const [agentLabel, setAgentLabel] = useState("");
+  const [humanRequested, setHumanRequested] = useState(false);
+  const [followUps, setFollowUps] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastIdRef = useRef(0);
+  const messagesRef = useRef<Msg[]>([]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
+
+  // Hydrate the persisted thread on open, then poll for human-takeover
+  // replies. Polls faster once a human is (or has been requested to be)
+  // involved. On the very first tick (no local messages yet) the entire
+  // stored thread replays; on subsequent ticks only agent/system rows
+  // append — user/assistant rows are already local echoes.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    const tick = async () => {
+      const thread = await fetchThread(lastIdRef.current);
+      if (cancelled || !thread) return;
+      setMode(thread.status);
+      setAgentLabel(thread.agent_label);
+      setHumanRequested(thread.human_requested);
+      const incoming = thread.messages.filter((m) => m.id > lastIdRef.current);
+      if (!incoming.length) return;
+      lastIdRef.current = incoming[incoming.length - 1].id;
+      const initial = messagesRef.current.length === 0;
+      const fresh = incoming
+        .filter((m) =>
+          initial ? true : m.role === "agent" || m.role === "system",
+        )
+        .map((m) => ({ role: m.role, content: m.content }) as Msg);
+      if (fresh.length) setMessages((cur) => [...cur, ...fresh]);
+    };
+    void tick();
+    const iv = setInterval(
+      tick,
+      mode === "human" || humanRequested ? 3000 : 5000,
+    );
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+    };
+  }, [open, mode, humanRequested]);
 
   if (!status?.enabled || HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) {
     return null;
@@ -117,14 +186,33 @@ export function SiteAssistantBubble() {
     if (!trimmed || busy) return;
     setError(false);
     setInput("");
+
+    if (mode === "human") {
+      setMessages((cur) => [...cur, { role: "user", content: trimmed }]);
+      setFollowUps([]);
+      if (!(await sendHumanMessage(trimmed))) setError(true);
+      return;
+    }
+
+    const priorMessages = messages;
     const history: ChatMessage[] = [
-      ...messages,
+      ...messages
+        .filter(
+          (m): m is Msg & { role: "user" | "assistant" } =>
+            m.role === "user" || m.role === "assistant",
+        )
+        .map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: trimmed },
     ];
-    setMessages([...history, { role: "assistant", content: "" }]);
+    setMessages([
+      ...priorMessages,
+      { role: "user", content: trimmed },
+      { role: "assistant", content: "" },
+    ]);
+    setFollowUps([]);
     setBusy(true);
     try {
-      await streamAssistantChat(
+      const result = await streamAssistantChat(
         history,
         (delta) => {
           setMessages((current) => {
@@ -137,15 +225,24 @@ export function SiteAssistantBubble() {
             return next;
           });
         },
-        (meta) =>
+        (meta) => {
           setMessages((current) => {
             const next = [...current];
             next[next.length - 1] = { ...next[next.length - 1], meta };
             return next;
-          }),
+          });
+          setFollowUps(meta.suggestions ?? []);
+        },
       );
+      if (result === "human") {
+        // The chat call raced into human mode server-side — the reply is
+        // already stored; drop the empty streaming placeholder and let the
+        // poller deliver it.
+        setMessages((current) => current.slice(0, -1));
+        setMode("human");
+      }
     } catch {
-      setMessages(history.slice(0, -1));
+      setMessages(priorMessages);
       setInput(trimmed);
       setError(true);
     } finally {
@@ -153,7 +250,25 @@ export function SiteAssistantBubble() {
     }
   };
 
+  const requestHumanHandoff = async () => {
+    setHumanRequested(true);
+    await requestHuman();
+  };
+
   const suggestions = status.suggested_questions;
+  const whitelist = status.link_whitelist ?? [];
+
+  const systemLine = (content: string): string | null => {
+    if (content.startsWith("agent_joined:")) {
+      return t("agentJoined", {
+        name: content.slice("agent_joined:".length),
+      });
+    }
+    if (content === "assistant_resumed") return t("assistantResumed");
+    if (content === "human_requested")
+      return t("humanRequestedLine", { brand: status.brand });
+    return null;
+  };
 
   return (
     <>
@@ -182,6 +297,11 @@ export function SiteAssistantBubble() {
               <X className="h-4 w-4" />
             </button>
           </div>
+          {mode === "human" && (
+            <div className="border-b bg-accent/50 px-4 py-2 text-xs text-muted-foreground">
+              {t("humanModeNotice", { name: agentLabel })}
+            </div>
+          )}
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
               <div className="space-y-3 pt-1">
@@ -204,19 +324,42 @@ export function SiteAssistantBubble() {
                 )}
               </div>
             )}
-            {messages.map((message, index) =>
-              message.role === "user" ? (
-                <div key={index} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
-                    {message.content}
+            {messages.map((message, index) => {
+              if (message.role === "user") {
+                return (
+                  <div key={index} className="flex justify-end">
+                    <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                      {message.content}
+                    </div>
                   </div>
-                </div>
-              ) : (
+                );
+              }
+              if (message.role === "system") {
+                const line = systemLine(message.content);
+                if (!line) return null;
+                return (
+                  <p
+                    key={index}
+                    className="text-center text-xs text-muted-foreground"
+                  >
+                    {line}
+                  </p>
+                );
+              }
+              return (
                 <div key={index} className="flex">
                   <div className="max-w-[90%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2">
+                    {message.role === "agent" && agentLabel && (
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {agentLabel}
+                      </p>
+                    )}
                     {message.content ? (
                       <>
-                        <AnswerBody content={message.content} />
+                        <AnswerBody
+                          content={message.content}
+                          whitelist={whitelist}
+                        />
                         {message.meta && (
                           <div className="mt-1.5 flex items-center gap-1">
                             {(["up", "down"] as const).map((r) => (
@@ -259,14 +402,45 @@ export function SiteAssistantBubble() {
                     )}
                   </div>
                 </div>
-              ),
+              );
+            })}
+            {followUps.length > 0 && !busy && mode === "ai" && (
+              <div className="flex flex-col items-start gap-2">
+                {followUps.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    data-testid="assistant-suggestion"
+                    onClick={() => void send(suggestion)}
+                    className="rounded-full border px-3 py-1.5 text-left text-xs transition-colors hover:border-primary hover:bg-accent"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             )}
             {error && (
               <p className="text-center text-xs text-destructive">
-                {t("error")}
+                {status.reason === "session_limit"
+                  ? t("sessionLimit")
+                  : t("error")}
               </p>
             )}
           </div>
+          {status.human_handoff &&
+            mode === "ai" &&
+            !humanRequested &&
+            messages.length > 0 && (
+              <div className="px-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => void requestHumanHandoff()}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  {t("talkToHuman")}
+                </button>
+              </div>
+            )}
           <form
             className="flex items-center gap-2 border-t p-3"
             onSubmit={(e) => {

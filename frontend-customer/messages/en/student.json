@@ -47,6 +47,12 @@
     "error": "Something went wrong — please try again.",
     "rateUp": "Helpful",
     "rateDown": "Not helpful",
-    "disclosure": "Conversations may be reviewed by {brand} to improve answers."
+    "disclosure": "Conversations may be reviewed by {brand} to improve answers.",
+    "talkToHuman": "Talk to a human",
+    "humanRequestedLine": "You asked to talk to a human — {brand} has been notified.",
+    "agentJoined": "{name} joined the chat",
+    "assistantResumed": "The assistant is back",
+    "humanModeNotice": "You're chatting with {name}",
+    "sessionLimit": "You've reached today's chat limit. Come back tomorrow or use the contact page."
   }
 }
