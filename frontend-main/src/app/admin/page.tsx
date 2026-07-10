@@ -11,6 +11,8 @@ import {
   Percent,
   Receipt,
   AlertTriangle,
+  Bot,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -232,8 +234,29 @@ export default function AdminDashboardPage() {
         })}
       </div>
 
-      {/* App adoption */}
-      <PlatformUsageCard />
+      {/* App adoption + AI usage */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <PlatformUsageCard />
+        </div>
+        <Link href="/admin/ai" className="block">
+          <Card className="h-full transition-colors hover:border-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg">AI usage</CardTitle>
+              <Bot className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Spend, kill-switch state, and question volume across the help
+                bot, student assistant, blog AI, and Brand Pack.
+              </p>
+              <p className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                View dashboard <ArrowRight className="h-3.5 w-3.5" />
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
 
       {/* Recent Tenants */}
       {data.recent_tenants && data.recent_tenants.length > 0 && (
