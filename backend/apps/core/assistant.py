@@ -66,3 +66,53 @@ def run_chat(*, system, history, model, max_tokens, on_complete):
         except Exception:
             logger.exception("assistant: completion hook failed")
     yield _event({"type": "done", **(extras or {})})
+
+
+RATE_SALT = "ai-rate"
+
+
+def rate_token(transcript_id):
+    """Signed capability to rate one transcript — handed out in the done
+    event, verified by the public rate endpoint."""
+    from django.core import signing
+
+    return signing.dumps(transcript_id, salt=RATE_SALT)
+
+
+def log_transcript(
+    *,
+    feature,
+    audience,
+    tenant_schema,
+    session_id,
+    question,
+    answer,
+    cost_usd,
+    provider,
+    model,
+    prompt_version,
+    kb_hash="",
+    is_preview=False,
+):
+    """Best-effort audit write. Returns the row or None — never raises (the
+    user already has their answer; auditing must not break the stream)."""
+    from apps.core.models import AiTranscript
+
+    try:
+        return AiTranscript.objects.create(
+            feature=feature,
+            audience=audience,
+            tenant_schema=tenant_schema,
+            session_id=(session_id or "")[:36],
+            question=question[:8000],
+            answer=answer,
+            cost_usd=cost_usd,
+            provider=provider,
+            model=model,
+            prompt_version=prompt_version,
+            kb_hash=kb_hash,
+            is_preview=is_preview,
+        )
+    except Exception:
+        logger.exception("assistant: transcript write failed")
+        return None

@@ -77,7 +77,9 @@ def test_chat_streams_deltas_and_records_usage(coach_client, enabled, monkeypatc
     events = _sse_events(response)
     assert events[0] == {"type": "delta", "text": "Open "}
     assert events[1] == {"type": "delta", "text": "Payouts."}
-    assert events[-1] == {"type": "done"}
+    assert events[-1]["type"] == "done"
+    assert isinstance(events[-1]["transcript_id"], int)
+    assert isinstance(events[-1]["rate_token"], str)
 
     row = HelpBotUsage.objects.get(tenant_schema=SHARED_SCHEMA, month=help_bot.current_month())
     assert row.questions == 1

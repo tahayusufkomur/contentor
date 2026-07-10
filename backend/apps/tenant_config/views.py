@@ -331,6 +331,9 @@ def help_bot_chat(request):
         return Response({"enabled": False, "reason": reason}, status=200)
 
     data = request.data if isinstance(request.data, dict) else {}
+    raw = data.get("messages") or []
+    question = str(raw[-1].get("content") or "")[:2000] if isinstance(raw[-1] if raw else None, dict) else ""
+    session_id = str(data.get("session_id") or "")[:36]
     try:
         config = TenantConfig.objects.first()
         context_block = help_bot.build_tenant_context(config, tenant)
@@ -339,7 +342,7 @@ def help_bot_chat(request):
         return Response({"error": str(exc)}, status=400)
 
     response = StreamingHttpResponse(
-        help_bot.sse_events(history, "coach", tenant.schema_name, month),
+        help_bot.sse_events(history, "coach", tenant.schema_name, month, question=question, session_id=session_id),
         content_type="text/event-stream",
     )
     response["Cache-Control"] = "no-cache"

@@ -460,3 +460,38 @@ class PlatformBlogPost(models.Model):
 
     def __str__(self):
         return f"PlatformBlogPost<{self.pk}:{self.slug}:{self.status}>"
+
+
+class AiTranscript(models.Model):
+    """One row per completed assistant exchange (help bot + student site
+    assistant) — the audit trail behind the superadmin AI dashboard and the
+    coach's "improve from real questions" loop. Public schema so superadmin
+    reads cross-tenant without schema iteration. Content is purged after
+    ``AI_TRANSCRIPT_RETENTION_DAYS`` by a beat task; billing state lives in
+    the *Usage models, never here."""
+
+    feature = models.CharField(max_length=20)  # help_bot | student_bot
+    audience = models.CharField(max_length=10)  # coach | visitor | student
+    tenant_schema = models.CharField(max_length=63)  # or "__marketing__"
+    session_id = models.CharField(max_length=36, blank=True, default="")
+    question = models.TextField()
+    answer = models.TextField()
+    cost_usd = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    provider = models.CharField(max_length=12)
+    model = models.CharField(max_length=40)
+    prompt_version = models.PositiveSmallIntegerField(default=1)
+    kb_hash = models.CharField(max_length=12, blank=True, default="")
+    rating = models.CharField(max_length=4, blank=True, default="")  # "" | up | down
+    is_preview = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "core"
+        indexes = [
+            models.Index(fields=["feature", "created_at"]),
+            models.Index(fields=["tenant_schema", "created_at"]),
+            models.Index(fields=["session_id"]),
+        ]
+
+    def __str__(self):
+        return f"{self.feature}/{self.audience} {self.tenant_schema} {self.created_at:%Y-%m-%d}"
