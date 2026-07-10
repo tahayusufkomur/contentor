@@ -22,11 +22,17 @@ import {
 } from "@/lib/assistant";
 
 // Any site path the bot emits renders as a button; the server-side whitelist
-// already constrains targets to the tenant's own pages/items. The href group
-// requires a single leading slash NOT followed by another slash, so a
-// protocol-relative target like `//evil.com` (which browsers resolve as an
-// off-site absolute URL) can never match — only same-site paths like
-// `/faq` or `/courses/x` do.
+// already constrains targets to the tenant's own pages/items. The extraction
+// regex below is a syntactic first pass only — it requires a single leading
+// slash NOT immediately followed by another slash, which blocks the obvious
+// `//evil.com` protocol-relative bypass. It is NOT the safety boundary: a
+// second bypass survives it (`/\evil.com` — the WHATWG URL Standard treats a
+// backslash right after the leading slash exactly like a second slash for
+// http/https URLs, so real browsers resolve it to host `evil.com`), and a
+// character-class regex can never rule out every such parser quirk. The
+// actual safety boundary is `isSameOriginPath` below: every extracted href
+// is resolved with the real `URL` parser (the same algorithm a browser uses
+// to navigate) and kept only if the resolved origin matches the page's own.
 const LINK_RE = /\[([^\]]+)\]\((\/(?!\/)[^)\s]*)\)/g;
 // /learn is the focused course player — never overlay it.
 const HIDDEN_PREFIXES = [
@@ -37,13 +43,27 @@ const HIDDEN_PREFIXES = [
   "/checkout",
 ];
 
+/** Resolves `href` against `origin` using the real WHATWG `URL` parser and
+ * accepts it only if the resolved origin matches exactly — see the LINK_RE
+ * comment above for why a regex alone can't provide this guarantee. */
+function isSameOriginPath(href: string, origin: string): boolean {
+  try {
+    return new URL(href, origin).origin === origin;
+  } catch {
+    return false;
+  }
+}
+
 type Msg = ChatMessage & { meta?: AnswerMeta; rated?: "up" | "down" };
 
 function AnswerBody({ content }: { content: string }) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
   const links: { label: string; href: string }[] = [];
   const text = content
     .replace(LINK_RE, (_, label: string, href: string) => {
-      links.push({ label, href });
+      if (isSameOriginPath(href, origin)) {
+        links.push({ label, href });
+      }
       return "";
     })
     .replace(/\*\*([^*]+)\*\*/g, "$1")
