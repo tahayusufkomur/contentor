@@ -5,51 +5,64 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0021_platformkbentry'),
+        ("core", "0021_platformkbentry"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AiConversation',
+            name="AiConversation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('feature', models.CharField(max_length=20)),
-                ('audience', models.CharField(max_length=10)),
-                ('tenant_schema', models.CharField(max_length=63)),
-                ('session_id', models.CharField(max_length=36)),
-                ('status', models.CharField(choices=[('ai', 'ai'), ('human', 'human')], default='ai', max_length=8)),
-                ('agent_user_id', models.IntegerField(blank=True, null=True)),
-                ('agent_label', models.CharField(blank=True, default='', max_length=60)),
-                ('user_id', models.IntegerField(blank=True, null=True)),
-                ('user_label', models.CharField(blank=True, default='', max_length=60)),
-                ('human_requested', models.BooleanField(default=False)),
-                ('human_requested_at', models.DateTimeField(blank=True, null=True)),
-                ('taken_over_at', models.DateTimeField(blank=True, null=True)),
-                ('last_user_message_at', models.DateTimeField(blank=True, null=True)),
-                ('last_agent_message_at', models.DateTimeField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("feature", models.CharField(max_length=20)),
+                ("audience", models.CharField(max_length=10)),
+                ("tenant_schema", models.CharField(max_length=63)),
+                ("session_id", models.CharField(max_length=36)),
+                ("status", models.CharField(choices=[("ai", "ai"), ("human", "human")], default="ai", max_length=8)),
+                ("agent_user_id", models.IntegerField(blank=True, null=True)),
+                ("agent_label", models.CharField(blank=True, default="", max_length=60)),
+                ("user_id", models.IntegerField(blank=True, null=True)),
+                ("user_label", models.CharField(blank=True, default="", max_length=60)),
+                ("human_requested", models.BooleanField(default=False)),
+                ("human_requested_at", models.DateTimeField(blank=True, null=True)),
+                ("taken_over_at", models.DateTimeField(blank=True, null=True)),
+                ("last_user_message_at", models.DateTimeField(blank=True, null=True)),
+                ("last_agent_message_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'indexes': [models.Index(fields=['feature', 'tenant_schema', 'updated_at'], name='core_aiconv_feature_a8198e_idx'), models.Index(fields=['status'], name='core_aiconv_status_c85882_idx')],
-                'constraints': [models.UniqueConstraint(fields=('session_id', 'feature', 'tenant_schema'), name='uniq_ai_conversation_session')],
+                "indexes": [
+                    models.Index(
+                        fields=["feature", "tenant_schema", "updated_at"], name="core_aiconv_feature_a8198e_idx"
+                    ),
+                    models.Index(fields=["status"], name="core_aiconv_status_c85882_idx"),
+                ],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("session_id", "feature", "tenant_schema"), name="uniq_ai_conversation_session"
+                    )
+                ],
             },
         ),
         migrations.CreateModel(
-            name='AiMessage',
+            name="AiMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('role', models.CharField(max_length=10)),
-                ('content', models.TextField()),
-                ('transcript_id', models.IntegerField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('conversation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='core.aiconversation')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("role", models.CharField(max_length=10)),
+                ("content", models.TextField()),
+                ("transcript_id", models.IntegerField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "conversation",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="messages", to="core.aiconversation"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['id'],
-                'indexes': [models.Index(fields=['conversation', 'id'], name='core_aimess_convers_c5f481_idx')],
+                "ordering": ["id"],
+                "indexes": [models.Index(fields=["conversation", "id"], name="core_aimess_convers_c5f481_idx")],
             },
         ),
     ]

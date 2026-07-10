@@ -141,7 +141,7 @@ def purge_ai_transcripts():
     from django.conf import settings
     from django.utils import timezone
 
-    from apps.core.models import AiTranscript, AiConversation
+    from apps.core.models import AiConversation, AiTranscript
 
     cutoff = timezone.now() - timedelta(days=settings.AI_TRANSCRIPT_RETENTION_DAYS)
     deleted, _ = AiTranscript.objects.filter(created_at__lt=cutoff).delete()

@@ -1,11 +1,8 @@
 """Conversation substrate: models + kernel helpers (kernel half arrives in
 the next task — this file starts with the model contract)."""
 
-from datetime import timedelta
-
 import pytest
 from django.db import IntegrityError
-from django.utils import timezone
 
 from apps.core.models import AiConversation, AiMessage
 
@@ -13,9 +10,7 @@ pytestmark = pytest.mark.django_db
 
 
 def _convo(**kw):
-    defaults = dict(
-        feature="student_bot", audience="student", tenant_schema="t1", session_id="s-1"
-    )
+    defaults = {"feature": "student_bot", "audience": "student", "tenant_schema": "t1", "session_id": "s-1"}
     defaults.update(kw)
     return AiConversation.objects.create(**defaults)
 

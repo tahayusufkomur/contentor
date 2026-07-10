@@ -88,9 +88,7 @@ def test_purge_covers_conversations(db):
     from apps.core.models import AiConversation, AiMessage
     from apps.core.tasks import purge_ai_transcripts
 
-    old = AiConversation.objects.create(
-        feature="student_bot", audience="student", tenant_schema="t", session_id="old"
-    )
+    old = AiConversation.objects.create(feature="student_bot", audience="student", tenant_schema="t", session_id="old")
     AiMessage.objects.create(conversation=old, role="user", content="q")
     AiConversation.objects.filter(pk=old.pk).update(
         updated_at=timezone.now() - timedelta(days=settings.AI_TRANSCRIPT_RETENTION_DAYS + 1)
