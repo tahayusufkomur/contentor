@@ -23,7 +23,7 @@ from apps.core.models import LogoAiUsage
 from .logo_geometry import compile_elements
 from .logo_recipe import _hex, validate_recipe
 
-PROMPT_VERSION = 3
+PROMPT_VERSION = 4
 
 # A minimal, already-valid v2 recipe skeleton used only to run a Brand Pack
 # mark's paths through validate_recipe's injection whitelist + clamps — the
@@ -53,12 +53,7 @@ _DUMMY_RECIPE = {
     },
 }
 
-STATIC_PROMPT = """You are a senior brand-identity designer producing a Brand Pack for a \
-coaching brand: 6 bespoke logo marks and 3 brand color palettes. The coach \
-sells courses and community under this brand — every mark must look like it \
-came from a serious studio engagement, never from a clipart library.
-
-## How marks are built
+_ELEMENT_VOCABULARY_AND_PRINCIPLES = """## How marks are built
 
 You compose each mark from geometric ELEMENTS. A drafting engine converts \
 them into mathematically precise vector shapes — you design (choose forms, \
@@ -105,7 +100,17 @@ imbalance (an offset accent dot, an interrupted ring, a heavier side).
 thick outline, or dense repetition. Never a couple of thin floating slivers.
 7. RESTRAINT — every element must justify its existence; no decoration.
 8. FAVICON TEST — no meaningful feature smaller than ~3 units; the mark \
-must survive a 48px render.
+must survive a 48px render."""
+
+STATIC_PROMPT = (
+    """You are a senior brand-identity designer producing a Brand Pack for a \
+coaching brand: 6 bespoke logo marks and 3 brand color palettes. The coach \
+sells courses and community under this brand — every mark must look like it \
+came from a serious studio engagement, never from a clipart library.
+
+"""
+    + _ELEMENT_VOCABULARY_AND_PRINCIPLES
+    + """
 
 ## The 6 marks — one per family, no repeats
 
@@ -186,6 +191,7 @@ meets each student where they are.", "elements": [{"type": "arc", "cx": 50, \
 inside consistency.", "elements": [{"type": "path", "d": "M50 14 A36 36 0 1 \
 0 50.1 14 Z M36 62 L50 38 L64 62 L57 62 L50 50 L43 62 Z", "fill_rule": \
 "evenodd"}]}"""
+)
 
 
 class _ElementBase(BaseModel):
@@ -292,6 +298,42 @@ class _BrandPack(BaseModel):
     font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
 
 
+REFINE_PROMPT = (
+    """You are a senior brand-identity designer refining ONE existing logo \
+design for a coaching brand, following the coach's instruction. You may \
+reshape the mark, adjust the palette, pick a different font vibe, and \
+change the layout — treat the instruction as license to touch whichever of \
+those the coach's words imply (e.g. "warmer and bolder" usually spans all \
+of them). Redesign a complete, cohesive whole — never a half-applied patch.
+
+"""
+    + _ELEMENT_VOCABULARY_AND_PRINCIPLES
+    + """
+
+## Your task
+
+You'll receive the CURRENT design — either its source elements (redesign \
+from these, keeping what still fits and changing what the instruction asks \
+for) or, if no elements are available, a plain-text summary (design a new \
+custom mark that captures the same brand from scratch, guided by the \
+summary and the instruction). You'll also receive the coach's INSTRUCTION.
+
+Return one refined design: the mark (as elements, same vocabulary as \
+above), a 4-hex-role palette, the single best-fit font_vibe (Modern, \
+Elegant, Bold, Playful, or Minimal), a layout (horizontal, stacked, emblem, \
+horizontal_reversed, or name_only), and a one-sentence rationale — plain \
+words, addressed to the coach, saying what you changed and why."""
+)
+
+
+class _RefinedDesign(BaseModel):
+    mark: _Mark
+    palette: _Palette
+    font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
+    layout: Literal["horizontal", "stacked", "emblem", "horizontal_reversed", "name_only"]
+    rationale: str
+
+
 class BrandPackError(Exception):
     """Raised when a Brand Pack call completed but left nothing usable
     (every mark's paths failed validation, or no palettes). Carries the
@@ -323,8 +365,11 @@ def _validate_pack_mark(item):
     """Compile one Brand Pack mark's geometric elements into exact filled
     paths (logo_geometry), then run them through validate_recipe (the same
     injection whitelist a saved recipe's custom mark passes through).
-    Returns a validated ``{rationale, paths}`` dict, or None if every path
-    was invalid — the whole mark is dropped, not degraded."""
+    Returns a validated ``{rationale, paths, elements}`` dict — ``elements``
+    is the pre-compile source geometry, returned so the client can hand it
+    back on a future AI refinement round without re-deriving it from paths
+    (see logo-refine/) — or None if every path was invalid — the whole mark
+    is dropped, not degraded."""
     elements = [e if isinstance(e, dict) else e.model_dump() for e in item.elements]
     dummy = {
         **_DUMMY_RECIPE,
@@ -337,7 +382,11 @@ def _validate_pack_mark(item):
     shaped = validate_recipe(dummy)
     if shaped["mark"]["type"] != "custom":
         return None
-    return {"rationale": shaped["mark"]["rationale"], "paths": shaped["mark"]["paths"]}
+    return {
+        "rationale": shaped["mark"]["rationale"],
+        "paths": shaped["mark"]["paths"],
+        "elements": elements,
+    }
 
 
 def _validate_pack_palette(item):
