@@ -15,6 +15,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import {
+  applyThreadPoll,
   AssistantUnavailable,
   decideLink,
   fetchThread,
@@ -132,6 +133,14 @@ export function SiteAssistantBubble() {
   const [followUps, setFollowUps] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef(0);
+  // Flips true once a fetchThread() round-trip has actually completed —
+  // deliberately NOT derived from lastIdRef (see applyThreadPoll's doc
+  // comment in lib/assistant.ts for why `lastId === 0` is the wrong signal:
+  // a genuinely-empty first fetch never advances lastId, which would keep
+  // treating every later tick as "initial" too and re-replay the first
+  // exchange on top of its own local echo). Stays false across a failed/
+  // cancelled tick so a retry still gets the full-replay treatment.
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -139,36 +148,37 @@ export function SiteAssistantBubble() {
 
   // Hydrate the persisted thread on open, then poll for human-takeover
   // replies. Polls faster once a human is (or has been requested to be)
-  // involved. `initial` is captured synchronously BEFORE the await — it
-  // means "this is this widget session's first-ever thread fetch"
-  // (lastIdRef is still its 0 initial value), not "messages is currently
-  // empty". Checking local message-list emptiness AFTER the await is racy:
-  // a suggested-question chip click can add local messages while the first
-  // fetchThread() round-trip is still in flight, which would make a
-  // post-await check see a non-empty list and skip replaying the actual
-  // stored history from a returning session — silently dropping it. On the
-  // very first tick the entire stored thread replays; on subsequent ticks
-  // only agent/system rows append — user/assistant rows are already local
-  // echoes.
+  // involved. `initial` is captured synchronously BEFORE the await from
+  // hydratedRef — a suggested-question chip click can add local messages
+  // while the first fetchThread() round-trip is still in flight, and
+  // hydratedRef (unlike lastIdRef or the local message list) is never
+  // touched by send(), so it can't be raced by that concurrent local
+  // echo. On the very first successful tick the entire stored thread
+  // replays; on every tick after that only agent/system rows append —
+  // user/assistant rows are already local echoes.
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     const tick = async () => {
-      const initial = lastIdRef.current === 0;
+      const initial = !hydratedRef.current;
       const thread = await fetchThread(lastIdRef.current);
       if (cancelled || !thread) return;
+      hydratedRef.current = true;
       setMode(thread.status);
       setAgentLabel(thread.agent_label);
       setHumanRequested(thread.human_requested);
-      const incoming = thread.messages.filter((m) => m.id > lastIdRef.current);
-      if (!incoming.length) return;
-      lastIdRef.current = incoming[incoming.length - 1].id;
-      const fresh = incoming
-        .filter((m) =>
-          initial ? true : m.role === "agent" || m.role === "system",
-        )
-        .map((m) => ({ role: m.role, content: m.content }) as Msg);
-      if (fresh.length) setMessages((cur) => [...cur, ...fresh]);
+      const { appended, lastId } = applyThreadPoll(
+        thread,
+        lastIdRef.current,
+        initial,
+      );
+      lastIdRef.current = lastId;
+      if (appended.length) {
+        setMessages((cur) => [
+          ...cur,
+          ...appended.map((m) => ({ role: m.role, content: m.content }) as Msg),
+        ]);
+      }
     };
     void tick();
     const iv = setInterval(

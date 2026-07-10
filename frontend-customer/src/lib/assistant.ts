@@ -44,6 +44,33 @@ export interface ThreadPayload {
   messages: ThreadMessage[];
 }
 
+/** Pure poll-tick reducer for the widget's thread polling effect. Given a
+ * freshly-fetched thread, the previous high-water-mark message id, and
+ * whether this is the widget's first-ever successful fetch (`initial` —
+ * the CALLER must capture this before awaiting the fetch, from a ref that
+ * only flips true once a fetch has actually completed, never from
+ * `lastId === 0`: a genuinely-empty first fetch never advances `lastId`,
+ * so deriving "initial" from `lastId === 0` would keep re-triggering a
+ * full-role replay on every later tick too — duplicating the very first
+ * Q&A exchange once it's actually persisted, since that exchange is
+ * already a local echo from `send()`). Returns which rows to append (all
+ * roles when `initial`, else only `agent`/`system` — `user`/`assistant`
+ * rows are already local echoes) and the new high-water mark. */
+export function applyThreadPoll(
+  thread: ThreadPayload,
+  lastId: number,
+  initial: boolean,
+): { appended: ThreadMessage[]; lastId: number } {
+  const incoming = thread.messages.filter((m) => m.id > lastId);
+  const nextLastId = incoming.length
+    ? incoming[incoming.length - 1].id
+    : lastId;
+  const appended = incoming.filter(
+    (m) => initial || m.role === "agent" || m.role === "system",
+  );
+  return { appended, lastId: nextLastId };
+}
+
 let statusCache: AssistantStatus | null = null;
 const listeners = new Set<(s: AssistantStatus | null) => void>();
 let inflight: Promise<void> | null = null;
@@ -129,6 +156,15 @@ export function decideLink(
 function broadcast(next: AssistantStatus | null) {
   statusCache = next;
   listeners.forEach((l) => l(next));
+}
+
+/** Read-only peek at the shared status cache that `useAssistantStatus()`
+ * reads. Exists mainly so tests can assert whether a given code path did
+ * or didn't call `broadcast()` (e.g. confirming a `session_limit` gate
+ * leaves the shared status alone) without mounting a React hook — this
+ * repo's tests are lib-only, no React/hook test harness. */
+export function getCachedAssistantStatus(): AssistantStatus | null {
+  return statusCache;
 }
 
 export function refreshAssistantStatus(): Promise<void> {
