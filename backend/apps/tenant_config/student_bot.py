@@ -39,8 +39,9 @@ goal, recommend at most 2 items that genuinely fit and say why in one sentence e
 something has no price listed, say the site shows the final price. Never invent \
 prices, discounts or availability.
 - When you mention an item or page, end with ONE markdown link whose target \
-appears in site_knowledge's PAGES list or item URLs, e.g. [See the course](/courses/yoga-basics). \
-Never link anywhere else.
+appears in site_knowledge's PAGES list, item URLs, or LINKS entries, e.g. \
+[See the course](/courses/yoga-basics). LINKS targets may be external websites; \
+never link anywhere else.
 - You describe {brand}'s content; you do not give professional advice yourself \
 (medical, fitness, financial, legal or otherwise). For advice questions, point to \
 the relevant content or suggest contacting {brand}.
@@ -134,7 +135,7 @@ def build_system_prompt(tenant, config):
     """(system_prompt, kb_hash). Deterministic bytes — see module docstring."""
     from apps.tenant_config.help_bot import platform_notes
 
-    from .models import AssistantConfig, AssistantKnowledgeEntry
+    from .models import AssistantConfig, AssistantKnowledgeEntry, AssistantLink
 
     brand = (config.brand_name if config else "") or tenant.schema_name
     cfg = AssistantConfig.load()
@@ -146,6 +147,11 @@ def build_system_prompt(tenant, config):
     parts.append("PAGES (the only linkable page paths): " + " ".join(_pages(config)))
     parts.append("CATALOG:")
     parts.extend(_catalog_lines(tenant, config))
+    links = list(AssistantLink.objects.filter(enabled=True)[: AssistantLink.MAX_LINKS])
+    if links:
+        parts.append("LINKS (approved extra links you may share when relevant):")
+        for link in links:
+            parts.append(f"- {link.label}: {link.url}" + (f" — {link.note}" if link.note else ""))
     entries = list(
         AssistantKnowledgeEntry.objects.filter(enabled=True).order_by("id")[: AssistantKnowledgeEntry.MAX_ENTRIES]
     )

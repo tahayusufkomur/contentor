@@ -18,7 +18,7 @@ from apps.core.permissions import IsCoachOrOwner
 from apps.core.throttling import AiHumanMessageThrottle, AiHumanRequestThrottle, AiThreadThrottle
 
 from . import student_bot
-from .models import AssistantConfig, AssistantKnowledgeEntry, TenantConfig
+from .models import AssistantConfig, AssistantKnowledgeEntry, AssistantLink, TenantConfig
 
 
 class StudentBotBurstThrottle(AnonRateThrottle):
@@ -48,6 +48,11 @@ def _status_payload(tenant):
         "suggested_questions": (cfg.suggested_questions or [])[:3],
         "brand": (config.brand_name if config else "") or tenant.schema_name,
         "human_handoff": cfg.human_handoff_enabled,
+        "link_whitelist": [
+            link.url
+            for link in AssistantLink.objects.filter(enabled=True).order_by("position", "id")[: AssistantLink.MAX_LINKS]
+            if link.url.startswith("https://")
+        ],
     }
 
 
@@ -328,6 +333,86 @@ def assistant_knowledge_detail(request, pk):
         e.enabled = bool(data["enabled"])
     e.save()
     return Response(_entry_payload(e))
+
+
+def _link_payload(link):
+    return {
+        "id": link.id,
+        "label": link.label,
+        "url": link.url,
+        "note": link.note,
+        "enabled": link.enabled,
+        "position": link.position,
+    }
+
+
+def _validate_link(data, partial=False):
+    from urllib.parse import urlparse
+
+    errors = {}
+    if not partial or "label" in data:
+        label = str(data.get("label") or "").strip()
+        if not label or len(label) > 60:
+            errors["label"] = "1-60 characters"
+    if not partial or "url" in data:
+        url = str(data.get("url") or "").strip()
+        if len(url) > 500:
+            errors["url"] = "at most 500 characters"
+        elif url.startswith("/") and not url.startswith("//"):
+            pass  # same-site path
+        else:
+            parsed = urlparse(url)
+            if parsed.scheme != "https" or not parsed.netloc:
+                errors["url"] = "must be a same-site path (/…) or an https:// URL"
+    if "note" in data and len(str(data.get("note") or "")) > 160:
+        errors["note"] = "at most 160 characters"
+    return errors
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def assistant_links(request):
+    if request.method == "GET":
+        return Response([_link_payload(link) for link in AssistantLink.objects.all()])
+    data = request.data if isinstance(request.data, dict) else {}
+    errors = _validate_link(data)
+    if errors:
+        return Response(errors, status=400)
+    if AssistantLink.objects.count() >= AssistantLink.MAX_LINKS:
+        return Response({"error": f"limit of {AssistantLink.MAX_LINKS} links reached"}, status=400)
+    link = AssistantLink.objects.create(
+        label=str(data["label"]).strip(),
+        url=str(data["url"]).strip(),
+        note=str(data.get("note") or "").strip(),
+        enabled=bool(data.get("enabled", True)),
+        position=int(data.get("position") or 0),
+    )
+    return Response(_link_payload(link), status=201)
+
+
+@api_view(["PATCH", "DELETE"])
+@permission_classes([IsCoachOrOwner])
+def assistant_link_detail(request, pk):
+    try:
+        link = AssistantLink.objects.get(pk=pk)
+    except AssistantLink.DoesNotExist:
+        return Response(status=404)
+    if request.method == "DELETE":
+        link.delete()
+        return Response(status=204)
+    data = request.data if isinstance(request.data, dict) else {}
+    errors = _validate_link(data, partial=True)
+    if errors:
+        return Response(errors, status=400)
+    for field in ("label", "url", "note"):
+        if field in data:
+            setattr(link, field, str(data[field]).strip())
+    if "enabled" in data:
+        link.enabled = bool(data["enabled"])
+    if "position" in data:
+        link.position = int(data["position"] or 0)
+    link.save()
+    return Response(_link_payload(link))
 
 
 PAGE_SIZE = 20

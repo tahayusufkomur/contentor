@@ -129,3 +129,27 @@ class AssistantKnowledgeEntry(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class AssistantLink(models.Model):
+    """Coach-approved links the site assistant may offer (v2 spec §9).
+    External https URLs allowed (D4) — the coach already controls every
+    link on their own site; widgets still hard-validate against the
+    status endpoint's whitelist."""
+
+    MAX_LINKS = 20
+
+    label = models.CharField(max_length=60)
+    url = models.CharField(max_length=500)
+    note = models.CharField(max_length=160, blank=True, default="")
+    enabled = models.BooleanField(default=True)
+    position = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return self.label
