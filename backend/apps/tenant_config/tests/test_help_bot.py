@@ -78,7 +78,7 @@ def test_prepare_history_rejects_bad_input(bad):
         help_bot.prepare_history(bad, "<ctx/>")
 
 
-# ── CLI provider ─────────────────────────────────────────────────────────────
+# ── stream_answer (cli provider, via core.ai) ───────────────────────────────
 
 
 def _cli_line(obj):
@@ -101,8 +101,9 @@ class _FakeProc:
         pass
 
 
-def test_stream_cli_parses_deltas_and_result(kb_file, monkeypatch, settings):
-    settings.HELP_BOT_PROVIDER = "cli"
+def test_stream_answer_cli_parses_deltas_and_result(kb_file, monkeypatch, settings):
+    settings.AI_PROVIDER = "cli"
+    settings.AI_CLI_MODEL = "haiku"
     lines = [
         _cli_line({"type": "system", "subtype": "init"}),
         _cli_line(
@@ -129,65 +130,62 @@ def test_stream_cli_parses_deltas_and_result(kb_file, monkeypatch, settings):
     monkeypatch.setattr("subprocess.Popen", fake_popen)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-should-be-stripped")
 
-    events = list(help_bot._stream_cli([{"role": "user", "content": "payouts?"}]))
+    events = list(help_bot.stream_answer([{"role": "user", "content": "payouts?"}]))
 
     assert [e for e in events if e[0] == "delta"] == [("delta", "Connect "), ("delta", "Stripe.")]
     kind, info = events[-1]
     assert kind == "done"
     # Subscription usage never accrues against the USD caps.
-    assert info == {"cost_usd": Decimal("0"), "provider": "cli"}
+    assert info == {"cost_usd": Decimal("0"), "provider": "cli", "model": "haiku"}
     # The CLI must run on the subscription, never the API key.
     assert "ANTHROPIC_API_KEY" not in captured["env"]
     assert "--disallowedTools" in captured["cmd"]
     assert "--max-turns" in captured["cmd"]
+    # The coach persona + KB rides in --system-prompt.
+    assert captured["cmd"][captured["cmd"].index("--system-prompt") + 1] == help_bot.system_prompt("coach")
 
 
-def test_stream_cli_failure_raises(kb_file, monkeypatch):
+def test_stream_answer_cli_failure_raises(kb_file, monkeypatch, settings):
+    settings.AI_PROVIDER = "cli"
     monkeypatch.setattr("subprocess.Popen", lambda cmd, **kw: _FakeProc([], returncode=1))
     with pytest.raises(help_bot.HelpBotError):
-        list(help_bot._stream_cli([{"role": "user", "content": "hi"}]))
-
-
-def test_cli_prompt_serializes_prior_turns():
-    prompt = help_bot._cli_prompt(
-        [
-            {"role": "user", "content": "<tenant_context/>\n\nfirst"},
-            {"role": "assistant", "content": "answer"},
-            {"role": "user", "content": "second"},
-        ]
-    )
-    assert "<conversation_so_far>" in prompt
-    assert "Coach: <tenant_context/>" in prompt
-    assert "You: answer" in prompt
-    assert prompt.endswith("second")
+        list(help_bot.stream_answer([{"role": "user", "content": "hi"}]))
 
 
 # ── availability + accounting ────────────────────────────────────────────────
 
 
 def test_availability_disabled_without_kb(monkeypatch, tmp_path, settings):
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = "sk-x"
     monkeypatch.setattr(help_bot, "KB_PATH", tmp_path / "missing.md")
     assert help_bot.availability(SCHEMA, month=MONTH) == (False, "disabled")
 
 
 def test_availability_disabled_without_api_key(kb_file, settings):
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = ""
     assert help_bot.availability(SCHEMA, month=MONTH) == (False, "disabled")
 
 
 def test_availability_cli_requires_binary(kb_file, monkeypatch, settings):
-    settings.HELP_BOT_PROVIDER = "cli"
+    settings.AI_PROVIDER = "cli"
     monkeypatch.setattr("shutil.which", lambda name: None)
     assert help_bot.availability(SCHEMA, month=MONTH) == (False, "disabled")
     monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/claude")
+    monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "oat-token")
     assert help_bot.availability(SCHEMA, month=MONTH) == (True, "ok")
 
 
+def test_availability_disabled_when_cli_token_missing(kb_file, monkeypatch, settings):
+    settings.AI_PROVIDER = "cli"
+    monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/claude")
+    monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
+    assert help_bot.availability(SCHEMA, month=MONTH) == (False, "disabled")
+
+
 def test_availability_global_budget_kill_switch(kb_file, settings):
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = "sk-x"
     settings.HELP_BOT_GLOBAL_MONTHLY_USD = 1.0
     HelpBotUsage.objects.create(tenant_schema="someone_else", month=MONTH, usd_spent=Decimal("1.5"))
@@ -195,7 +193,7 @@ def test_availability_global_budget_kill_switch(kb_file, settings):
 
 
 def test_availability_tenant_quota(kb_file, settings):
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = "sk-x"
     settings.HELP_BOT_TENANT_MONTHLY_QUESTIONS = 3
     HelpBotUsage.objects.create(tenant_schema=SCHEMA, month=MONTH, questions=3)

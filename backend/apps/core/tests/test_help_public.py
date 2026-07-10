@@ -28,7 +28,7 @@ def enabled(monkeypatch, tmp_path, settings):
     kb.write_text("## Plans\nStarter 8%, Pro 6%.\n")
     monkeypatch.setattr(help_bot, "KB_PATH", kb)
     help_bot.system_prompt.cache_clear()
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = "sk-test"
     yield
     help_bot.system_prompt.cache_clear()

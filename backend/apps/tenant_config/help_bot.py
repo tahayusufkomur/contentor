@@ -7,12 +7,9 @@ every tenant and conversation — per-tenant state must NEVER be interpolated
 into it (that would fragment the cache per tenant). Tenant context travels in
 the first user turn instead.
 
-Two providers behind one streaming interface:
-- "anthropic": the real architecture (SDK + prompt caching). Prod, and any
-  env with ANTHROPIC_API_KEY it should bill.
-- "cli": local testing on the developer's Claude subscription via the
-  ``claude`` CLI in print mode. ANTHROPIC_API_KEY is stripped from the
-  subprocess env so the CLI can't silently fall back to billing the API key.
+Provider plumbing lives in apps.core.ai (AI_PROVIDER: "anthropic" in prod,
+"cli" for local dev on the developer's Claude subscription); this module
+owns only the persona, knowledge base, tenant context and usage accounting.
 """
 
 from datetime import UTC, datetime
@@ -22,9 +19,8 @@ from pathlib import Path
 
 from django.conf import settings
 
+from apps.core import ai as core_ai
 from apps.core.models import HelpBotUsage
-
-from .logo_ai import _estimate_cost
 
 PROMPT_VERSION = 1
 KB_PATH = Path(__file__).with_name("help_kb.md")
@@ -32,7 +28,6 @@ KB_PATH = Path(__file__).with_name("help_kb.md")
 MAX_HISTORY_MESSAGES = 6
 MAX_MESSAGE_CHARS = 2000
 MAX_OUTPUT_TOKENS = 1024
-CLI_TIMEOUT_SECONDS = 120
 
 _PERSONA = """You are "Ask Contentor", the built-in help assistant inside the \
 Contentor coach admin panel. You are talking to a coach (a non-technical \
@@ -172,110 +167,23 @@ def prepare_history(messages, tenant_context):
 
 
 # ── Providers ────────────────────────────────────────────────────────────────
-# Both yield ("delta", text) events, then exactly one ("done", info) where
-# info = {"cost_usd": Decimal, "provider": str}. Failures raise HelpBotError.
+# Yields ("delta", text) events, then exactly one ("done", info) where
+# info = {"cost_usd": Decimal, "provider": str, "model": str}. Failures raise
+# HelpBotError. Provider plumbing lives in apps.core.ai.
 
 
 def stream_answer(history, audience="coach"):
-    if settings.HELP_BOT_PROVIDER == "cli":
-        yield from _stream_cli(history, audience)
-    else:
-        yield from _stream_anthropic(history, audience)
-
-
-def _stream_anthropic(history, audience="coach"):
-    from anthropic import Anthropic
-
-    client = Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=60.0, max_retries=1)
-    with client.messages.stream(
-        model=settings.HELP_BOT_MODEL,
-        max_tokens=MAX_OUTPUT_TOKENS,
-        system=[{"type": "text", "text": system_prompt(audience), "cache_control": {"type": "ephemeral"}}],
-        messages=history,
-    ) as stream:
-        for text in stream.text_stream:
-            yield ("delta", text)
-        final = stream.get_final_message()
-    yield ("done", {"cost_usd": _estimate_cost(final.usage, settings.HELP_BOT_MODEL), "provider": "anthropic"})
-
-
-def _cli_prompt(history):
-    """The CLI takes one prompt string: serialize prior turns, keep the
-    (context-carrying) last user message verbatim."""
-    *prior, last = history
-    parts = []
-    if prior:
-        lines = [f"{'Coach' if m['role'] == 'user' else 'You'}: {m['content']}" for m in prior]
-        parts.append("<conversation_so_far>\n" + "\n".join(lines) + "\n</conversation_so_far>")
-    parts.append(last["content"])
-    return "\n\n".join(parts)
-
-
-def _stream_cli(history, audience="coach"):
-    """Local-dev provider: `claude -p` on the developer's subscription.
-    Flag set verified against claude CLI 2026-07: --system-prompt replaces
-    the Claude Code persona entirely; stream-json + --include-partial-messages
-    emits Messages-API-shaped stream_event lines."""
-    import json
-    import os
-    import subprocess
-    import tempfile
-
-    cmd = [
-        settings.HELP_BOT_CLI_BIN,
-        "-p",
-        _cli_prompt(history),
-        "--model",
-        settings.HELP_BOT_CLI_MODEL,
-        "--system-prompt",
-        system_prompt(audience),
-        "--disallowedTools",
-        "*",
-        "--max-turns",
-        "1",
-        "--output-format",
-        "stream-json",
-        "--include-partial-messages",
-        "--verbose",
-    ]
-    # Subscription auth only: with ANTHROPIC_API_KEY present the CLI would
-    # bill the API key instead of the subscription.
-    env = {k: v for k, v in os.environ.items() if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}
+    """Yield ("delta", text) events, then exactly one ("done", info).
+    Raises HelpBotError on provider failure."""
     try:
-        proc = subprocess.Popen(  # noqa: S603 — fixed argv, no shell
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            env=env,
-            cwd=tempfile.gettempdir(),
+        yield from core_ai.stream_text(
+            system=system_prompt(audience),
+            history=history,
+            model=settings.HELP_BOT_MODEL,
+            max_tokens=MAX_OUTPUT_TOKENS,
         )
-    except OSError as exc:
-        raise HelpBotError(f"claude CLI not runnable: {exc}") from exc
-
-    done = None
-    try:
-        for line in proc.stdout:
-            try:
-                obj = json.loads(line)
-            except ValueError:
-                continue
-            if obj.get("type") == "stream_event":
-                event = obj.get("event") or {}
-                delta = event.get("delta") or {}
-                if event.get("type") == "content_block_delta" and delta.get("type") == "text_delta":
-                    yield ("delta", delta["text"])
-            elif obj.get("type") == "result":
-                # Subscription usage — nothing accrues against the USD caps.
-                done = {"cost_usd": Decimal("0"), "provider": "cli"}
-        proc.wait(timeout=CLI_TIMEOUT_SECONDS)
-    finally:
-        if proc.poll() is None:
-            proc.kill()
-    if done is None or proc.returncode != 0:
-        stderr = (proc.stderr.read() or "")[:500] if proc.stderr else ""
-        raise HelpBotError(f"claude CLI failed (rc={proc.returncode}): {stderr}")
-    yield ("done", done)
+    except core_ai.AiError as exc:
+        raise HelpBotError(str(exc)) from exc
 
 
 def sse_events(history, audience, bucket, month):
@@ -301,7 +209,7 @@ def sse_events(history, audience, bucket, month):
                 completed = True
         yield event({"type": "done"})
     except Exception:
-        logger.exception("help bot: answer failed (provider=%s, audience=%s)", settings.HELP_BOT_PROVIDER, audience)
+        logger.exception("help bot: answer failed (provider=%s, audience=%s)", settings.AI_PROVIDER, audience)
         yield event({"type": "error", "message": "answer_failed"})
     finally:
         # A failed stream has no usage data to price (same caveat as logo_ai)
@@ -347,14 +255,9 @@ def availability(tenant_schema, month=None, usd_cap=None, question_cap=None):
     ``usd_cap``/``question_cap`` default to the per-tenant settings; the
     public marketing endpoint passes its own (its bucket also counts into
     the shared global kill-switch via global_spend)."""
-    import shutil
-
     if not KB_PATH.exists():
         return False, "disabled"
-    if settings.HELP_BOT_PROVIDER == "cli":
-        if shutil.which(settings.HELP_BOT_CLI_BIN) is None:
-            return False, "disabled"
-    elif not settings.ANTHROPIC_API_KEY:
+    if not core_ai.available()[0]:
         return False, "disabled"
     month = month or current_month()
     if global_spend(month=month) >= Decimal(str(settings.HELP_BOT_GLOBAL_MONTHLY_USD)):

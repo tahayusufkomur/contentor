@@ -234,14 +234,8 @@ LOGO_AI_MONTHLY_BUDGET_USD = float(os.environ.get("LOGO_AI_MONTHLY_BUDGET_USD", 
 # Hard per-tenant cap on successful packs per calendar month.
 LOGO_AI_MONTHLY_PACK_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_PACK_LIMIT", "5"))
 
-# --- Ask Contentor help bot (apps.tenant_config.help_bot) ---
-# "anthropic" (prod: API key + prompt caching) or "cli" (local dev: the
-# developer's Claude subscription via the `claude` CLI; needs the binary in
-# the container and CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`).
-HELP_BOT_PROVIDER = os.environ.get("HELP_BOT_PROVIDER", "anthropic")
+# --- Ask Contentor help bot (apps.tenant_config.help_bot; provider from AI_PROVIDER) ---
 HELP_BOT_MODEL = os.environ.get("HELP_BOT_MODEL", "claude-sonnet-5")
-HELP_BOT_CLI_MODEL = os.environ.get("HELP_BOT_CLI_MODEL", "sonnet")
-HELP_BOT_CLI_BIN = os.environ.get("HELP_BOT_CLI_BIN", "claude")
 # Per-tenant + global monthly USD caps and a per-tenant question cap.
 HELP_BOT_TENANT_MONTHLY_USD = float(os.environ.get("HELP_BOT_TENANT_MONTHLY_USD", "1"))
 HELP_BOT_GLOBAL_MONTHLY_USD = float(os.environ.get("HELP_BOT_GLOBAL_MONTHLY_USD", "50"))

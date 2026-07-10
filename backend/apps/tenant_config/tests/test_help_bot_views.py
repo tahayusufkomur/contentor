@@ -43,7 +43,7 @@ def enabled(monkeypatch, tmp_path, settings):
     kb.write_text("## Payouts\nStripe.\n")
     monkeypatch.setattr(help_bot, "KB_PATH", kb)
     help_bot.system_prompt.cache_clear()
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = "sk-test"
     yield
     help_bot.system_prompt.cache_clear()
@@ -104,7 +104,7 @@ def test_chat_provider_failure_emits_error_and_skips_quota(coach_client, enabled
 
 
 def test_chat_disabled_without_configuration(coach_client, settings, monkeypatch, tmp_path):
-    settings.HELP_BOT_PROVIDER = "anthropic"
+    settings.AI_PROVIDER = "anthropic"
     settings.ANTHROPIC_API_KEY = ""
     monkeypatch.setattr(help_bot, "KB_PATH", tmp_path / "missing.md")
     response = coach_client.post(
