@@ -35,5 +35,18 @@
       "userinfoFailed": "Google profiliniz alınamadı. Lütfen tekrar deneyin.",
       "noEmail": "Bu Google hesabıyla ilişkili e-posta yok."
     }
+  },
+  "assistant": {
+    "title": "{brand}'a sor",
+    "bubbleLabel": "Site asistanını aç",
+    "intro": "Merhaba! Bu sitedeki kurslar, dosyalar ve oturumlar hakkında bana sorabilirsin.",
+    "placeholder": "Bir soru sor…",
+    "send": "Gönder",
+    "close": "Kapat",
+    "thinking": "Düşünüyor…",
+    "error": "Bir şeyler ters gitti — lütfen tekrar dene.",
+    "rateUp": "Faydalı",
+    "rateDown": "Faydalı değil",
+    "disclosure": "Konuşmalar, yanıtları iyileştirmek için {brand} tarafından incelenebilir."
   }
 }
