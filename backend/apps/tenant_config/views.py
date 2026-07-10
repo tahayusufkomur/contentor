@@ -17,6 +17,9 @@ from rest_framework.throttling import UserRateThrottle
 from apps.accounts.models import User
 from apps.billing.models import Payment
 from apps.core import ai as core_ai
+from apps.core import assistant
+from apps.core.email import send_email
+from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
 from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
@@ -326,14 +329,28 @@ def help_bot_chat(request):
     tenant = connection.tenant
     month = help_bot.current_month()
 
-    enabled, reason = help_bot.availability(tenant.schema_name, month=month)
-    if not enabled:
-        return Response({"enabled": False, "reason": reason}, status=200)
-
     data = request.data if isinstance(request.data, dict) else {}
     raw = data.get("messages") or []
     question = str(raw[-1].get("content") or "")[:2000] if isinstance(raw[-1] if raw else None, dict) else ""
     session_id = str(data.get("session_id") or "")[:36]
+
+    convo = assistant.get_or_create_conversation(
+        feature="help_bot",
+        audience="coach",
+        tenant_schema=tenant.schema_name,
+        session_id=session_id,
+        user=request.user,
+    )
+    convo = assistant.maybe_auto_release(convo)
+    if convo is not None and convo.status == AiConversation.STATUS_HUMAN:
+        if question:
+            assistant.append_message(convo, "user", question)
+        return Response({"mode": "human"})
+
+    enabled, reason = help_bot.availability(tenant.schema_name, month=month)
+    if not enabled:
+        return Response({"enabled": False, "reason": reason}, status=200)
+
     try:
         config = TenantConfig.objects.first()
         context_block = help_bot.build_tenant_context(config, tenant)
@@ -341,10 +358,99 @@ def help_bot_chat(request):
     except ValueError as exc:
         return Response({"error": str(exc)}, status=400)
 
+    if convo is not None:
+        assistant.append_message(convo, "user", question)
     response = StreamingHttpResponse(
-        help_bot.sse_events(history, "coach", tenant.schema_name, month, question=question, session_id=session_id),
+        help_bot.sse_events(
+            history, "coach", tenant.schema_name, month, question=question, session_id=session_id, conversation=convo
+        ),
         content_type="text/event-stream",
     )
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"
     return response
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def help_bot_thread(request):
+    """Coach console polling endpoint for Ask Contentor's own thread (mirrors
+    assistant_thread; JWT-gated, so no anon throttle needed)."""
+    session = str(request.query_params.get("session") or "").strip()[:36]
+    try:
+        after = int(request.query_params.get("after") or 0)
+    except ValueError:
+        after = 0
+    convo = (
+        AiConversation.objects.filter(
+            session_id=session, feature="help_bot", tenant_schema=connection.tenant.schema_name
+        ).first()
+        if session
+        else None
+    )
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    return Response(assistant.thread_payload(convo, after_id=after))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def help_bot_human_message(request):
+    """Free human-mode sends from the coach console (mirrors
+    assistant_human_message)."""
+    data = request.data if isinstance(request.data, dict) else {}
+    session = str(data.get("session_id") or "").strip()[:36]
+    content = str(data.get("content") or "").strip()[:2000]
+    if not content:
+        return Response({"error": "empty message"}, status=400)
+    convo = (
+        AiConversation.objects.filter(
+            session_id=session, feature="help_bot", tenant_schema=connection.tenant.schema_name
+        ).first()
+        if session
+        else None
+    )
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    if convo.status != AiConversation.STATUS_HUMAN:
+        return Response({"mode": "ai"}, status=409)
+    assistant.append_message(convo, "user", content)
+    return Response({"mode": "human"})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def help_bot_human_request(request):
+    """Coach taps "talk to a human" inside their own Ask Contentor chat:
+    flags the conversation and emails the configured alert address once
+    (mirrors assistant_human_request; this bot has no human_handoff_enabled
+    config flag to gate on)."""
+    from django.utils import timezone
+
+    tenant = connection.tenant
+    data = request.data if isinstance(request.data, dict) else {}
+    session = str(data.get("session_id") or "").strip()[:36]
+    convo = (
+        AiConversation.objects.filter(session_id=session, feature="help_bot", tenant_schema=tenant.schema_name).first()
+        if session
+        else None
+    )
+    if convo is None:
+        return Response(status=404)
+    if not convo.human_requested:
+        convo.human_requested = True
+        convo.human_requested_at = timezone.now()
+        convo.save(update_fields=["human_requested", "human_requested_at", "updated_at"])
+        assistant.append_message(convo, "system", "human_requested")
+        try:
+            label = convo.user_label or "A coach"
+            send_email(
+                to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL,
+                subject=f"{label} asked for a human in Ask Contentor",
+                html=(f"<p>{label} asked for a human in Ask Contentor " f"(tenant: {tenant.schema_name}).</p>"),
+            )
+        except Exception:
+            logger.exception("help bot: human-request email failed")
+    return Response({"ok": True})

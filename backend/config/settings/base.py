@@ -252,6 +252,9 @@ HELP_BOT_TENANT_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_TENANT_MONTHLY_
 # also counted into the global kill-switch above.
 HELP_BOT_PUBLIC_MONTHLY_USD = float(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_USD", "10"))
 HELP_BOT_PUBLIC_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_QUESTIONS", "500"))
+# Human-takeover request notifications (both flavors); falls back to
+# RESEND_FROM_EMAIL when unset.
+HELP_BOT_ALERT_EMAIL = os.environ.get("HELP_BOT_ALERT_EMAIL", "")
 
 # Retention window for AiTranscript rows (audit content, not billing state —
 # purged by a beat task; the *Usage meters are permanent).

@@ -205,10 +205,12 @@ def stream_answer(history, audience="coach"):
         raise HelpBotError(str(exc)) from exc
 
 
-def sse_events(history, audience, bucket, month, question="", session_id=""):
+def sse_events(history, audience, bucket, month, question="", session_id="", conversation=None):
     """Yield SSE-framed events for one answer; on completion record usage and
     write the audit transcript. ``question`` is the RAW last user message
-    (before context injection) so transcripts never store tenant snapshots."""
+    (before context injection) so transcripts never store tenant snapshots.
+    ``conversation`` (an AiConversation, optional) gets the assistant's reply
+    appended to its thread, mirroring the student bot."""
 
     def on_complete(info):
         try:
@@ -229,6 +231,7 @@ def sse_events(history, audience, bucket, month, question="", session_id=""):
             model=info["model"],
             prompt_version=PROMPT_VERSION,
         )
+        assistant.append_message(conversation, "assistant", info["answer"], transcript_id=row.id if row else None)
         if row is None:
             return None
         return {"transcript_id": row.id, "rate_token": assistant.rate_token(row.id)}
