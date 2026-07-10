@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
-import { Send } from "lucide-react";
+import { ArrowRight, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { streamAssistantPreview, type ChatMessage } from "@/lib/assistant";
 
-import { cleanAnswer } from "./format-answer";
+import { parseAnswer } from "./format-answer";
 
 /** "Try it yourself" — a mini chat that hits the preview-chat endpoint
  * directly, bypassing the enable switch and the monthly question quota, so
@@ -72,23 +73,47 @@ export function PreviewChatCard() {
       <CardContent>
         <div className="flex h-80 flex-col overflow-hidden rounded-xl border">
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-3">
-            {messages.map((message, index) =>
-              message.role === "user" ? (
-                <div key={index} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
-                    {message.content}
+            {messages.map((message, index) => {
+              if (message.role === "user") {
+                return (
+                  <div key={index} className="flex justify-end">
+                    <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                      {message.content}
+                    </div>
                   </div>
-                </div>
-              ) : (
+                );
+              }
+              const parsed = message.content
+                ? parseAnswer(message.content)
+                : null;
+              return (
                 <div key={index} className="flex">
-                  <div className="max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-muted px-3 py-2 text-sm">
-                    {message.content
-                      ? cleanAnswer(message.content)
-                      : t("assistant.previewThinking")}
+                  <div className="max-w-[90%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2 text-sm">
+                    {parsed ? (
+                      <>
+                        <p className="whitespace-pre-wrap">{parsed.text}</p>
+                        {parsed.links.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-2">
+                            {parsed.links.map(({ label, href }) => (
+                              <Link
+                                key={href + label}
+                                href={href}
+                                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                              >
+                                {label}
+                                <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      t("assistant.previewThinking")
+                    )}
                   </div>
                 </div>
-              ),
-            )}
+              );
+            })}
             {error && (
               <p className="text-center text-xs text-destructive">
                 {t("assistant.previewError")}

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { ArrowRight, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -18,7 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { listTranscripts, type TranscriptRow } from "@/lib/assistant";
 
-import { cleanAnswer } from "./format-answer";
+import { parseAnswer } from "./format-answer";
 
 // Rough heuristic for whether the 3-line clamp actually truncates the
 // answer — good enough to decide whether to show "Show more", no DOM
@@ -97,7 +98,7 @@ export function TranscriptsCard({
           <div className="divide-y divide-border rounded-xl border border-border">
             {rows.map((row) => {
               const isExpanded = expanded.has(row.id);
-              const answer = cleanAnswer(row.answer);
+              const { text: answer, links } = parseAnswer(row.answer);
               return (
                 <div key={row.id} className="space-y-2 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -139,6 +140,20 @@ export function TranscriptsCard({
                   >
                     {answer}
                   </p>
+                  {links.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {links.map(({ label, href }) => (
+                        <Link
+                          key={href + label}
+                          href={href}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                          {label}
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex items-center gap-3">
                     {answer.length > CLAMP_THRESHOLD && (
                       <button
