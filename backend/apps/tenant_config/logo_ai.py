@@ -10,6 +10,7 @@ deterministic composer's recipes pass through) — nothing reaches the caller
 that hasn't survived that validation.
 """
 
+import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -351,6 +352,48 @@ class BrandPackResult:
         self.cost_usd = cost_usd
 
 
+class RefineError(Exception):
+    """Raised when a refine call completed but left nothing usable (the
+    mark's paths all failed validation). Carries the estimated cost of the
+    (already-billed) call so callers can still record it against the global
+    budget kill-switch."""
+
+    def __init__(self, message, cost_usd=0.0):
+        super().__init__(message)
+        self.cost_usd = cost_usd
+
+
+class RefineResult:
+    def __init__(self, design, cost_usd):
+        self.design = design
+        self.cost_usd = cost_usd
+
+
+_MARK_SUMMARY = {
+    "custom": lambda m: m.get("rationale") or "a custom AI-drawn mark",
+    "icon": lambda m: f"the '{m.get('icon')}' icon",
+    "initials": lambda m: f"the brand's initials, {m.get('style')} style",
+    "abstract": lambda m: f"an abstract '{m.get('family')}' shape",
+    "image": lambda m: "an uploaded image mark",
+}
+
+
+def _describe_recipe(recipe):
+    """Plain-text summary of the current editor draft for the refine
+    prompt's user turn — used when no source `elements` are available
+    (image/icon/initials/abstract marks, or a recipe that predates the
+    elements round-trip). Best-effort: recipe is untrusted request input,
+    every field is read defensively."""
+    mark = recipe.get("mark") if isinstance(recipe.get("mark"), dict) else {}
+    describe = _MARK_SUMMARY.get(mark.get("type"), lambda m: "no mark")
+    colors = recipe.get("colors") if isinstance(recipe.get("colors"), dict) else {}
+    return (
+        f"Layout: {recipe.get('layout')}. Mark: {describe(mark)}. "
+        f"Mark color: {colors.get('mark')}. Text color: {colors.get('text')}. "
+        f'Name: "{recipe.get("name")}". Tagline: "{recipe.get("tagline")}".'
+    )
+
+
 def _luminance(hex_color):
     n = int(hex_color[1:], 16)
 
@@ -442,6 +485,45 @@ def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe="")
     return BrandPackResult(pack, cost)
 
 
+def refine_design(recipe, elements, instruction):
+    """One gated, uncached Claude call -> a refined design (mark, palette,
+    font_vibe, layout — whole-design scope). Raises RefineError (carrying
+    the estimated cost) on provider failure or if the refined mark's paths
+    don't survive validation. `elements` is capped defensively: it's
+    untrusted request input, only ever used as descriptive prompt text
+    (never compiled or persisted directly), but a hostile payload shouldn't
+    be able to inflate the prompt without bound."""
+    if elements:
+        bounded = json.dumps(elements[:12])[:4000]
+        current = f"Current mark elements (redesign these): {bounded}"
+    else:
+        current = f"Current design summary (no source elements available — design a new custom mark): {_describe_recipe(recipe)}"
+    user_content = f'{current}\n\nCoach\'s instruction: "{instruction}"'
+    try:
+        parsed, cost, _ = core_ai.structured(
+            system=REFINE_PROMPT,
+            user=user_content,
+            output_model=_RefinedDesign,
+            model=settings.LOGO_AI_MODEL,
+            max_tokens=3000,
+        )
+    except core_ai.AiError as exc:
+        raise RefineError(str(exc), cost_usd=exc.cost_usd) from exc
+
+    mark = _validate_pack_mark(parsed.mark)
+    if not mark:
+        raise RefineError("refined mark validation left nothing usable", cost_usd=cost)
+
+    design = {
+        "mark": mark,
+        "palette": _validate_pack_palette(parsed.palette),
+        "font_vibe": parsed.font_vibe,
+        "layout": parsed.layout,
+        "rationale": str(parsed.rationale or "")[:300],
+    }
+    return RefineResult(design, cost)
+
+
 # ── Usage accounting (durable — DB, not cache; see LogoAiUsage) ────────────
 
 
@@ -481,3 +563,13 @@ def record_successful_pack(tenant_schema, month=None):
     month = month or _current_month()
     row, _ = LogoAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month)
     LogoAiUsage.objects.filter(pk=row.pk).update(packs_used=F("packs_used") + 1)
+
+
+def record_successful_refinement(tenant_schema, month=None):
+    """Charged only after a successful, validated refinement — failed calls
+    never consume a coach's monthly quota."""
+    from django.db.models import F
+
+    month = month or _current_month()
+    row, _ = LogoAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month)
+    LogoAiUsage.objects.filter(pk=row.pk).update(refinements_used=F("refinements_used") + 1)
