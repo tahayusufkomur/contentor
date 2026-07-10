@@ -37,6 +37,11 @@ import {
   type EditHistory,
 } from "@/lib/logo/history";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
+import {
+  clearStudioSession,
+  loadStudioSession,
+  saveStudioSession,
+} from "@/lib/logo/studio-session";
 import { getThemePalette } from "@/lib/themes";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
@@ -140,6 +145,27 @@ export function LogoStudio({
   // the Brief (the AI-first anchor flow).
   useEffect(() => {
     if (!open) return;
+    const saved = loadStudioSession();
+    if (saved) {
+      setBrief(saved.brief);
+      setPack(saved.pack);
+      setPackSeed(saved.packSeed);
+      setWallSeed(saved.wallSeed);
+      setWall(composeWall(saved.brief, saved.wallSeed, 24, theme.primaryHex));
+      if (saved.pack) {
+        setAiWall(composeFromPack(saved.pack, saved.brief, saved.packSeed ?? 1));
+        setAiWallElements(packElementsByIndex(saved.pack));
+      } else {
+        setAiWall(null);
+        setAiWallElements(null);
+      }
+      const restoredRecipe = saved.recipe ?? seedRecipe(config, theme.primaryHex);
+      setRecipe(restoredRecipe);
+      setEditHistory(reset(restoredRecipe));
+      setActiveElements(saved.elements);
+      setStep(saved.step);
+      return;
+    }
     const seeded = seedRecipe(config, theme.primaryHex);
     setRecipe(seeded);
     setEditHistory(reset(seeded));
@@ -148,6 +174,28 @@ export function LogoStudio({
     setStep(isRecipe(config.logo_recipe) ? "editor" : "brief");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Debounced (~500ms) write of the tracked session fields while the studio
+  // is open — refresh-safe without spamming localStorage on every keystroke.
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveStudioSession({
+        step,
+        brief,
+        wallSeed,
+        pack,
+        packSeed,
+        recipe,
+        elements: activeElements,
+      });
+    }, 500);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [open, step, brief, wallSeed, pack, packSeed, recipe, activeElements]);
 
   function patch(part: Partial<LogoRecipe>, coalesceKey?: string) {
     const next = { ...recipe, ...part };
@@ -245,6 +293,17 @@ export function LogoStudio({
     setStep("ideas");
   }
 
+  function handleStartOver() {
+    clearStudioSession();
+    setBrief({ brandName: config.brand_name || "", niche: "", styleChips: [] });
+    setWall(null);
+    setPack(null);
+    setPackSeed(null);
+    setAiWall(null);
+    setAiWallElements(null);
+    setAiNotice(null);
+  }
+
   function handleMoreLikeThis(base: LogoRecipe) {
     const seed = 1 + Math.floor(Math.random() * 1_000_000);
     setWall(moreLikeThis(base, brief, seed));
@@ -332,6 +391,7 @@ export function LogoStudio({
         body: JSON.stringify({ ...body, logo_recipe: wireLogoRecipe }),
       });
       onSaved(body);
+      clearStudioSession();
       onOpenChange(false);
     } catch (err) {
       setError(
@@ -480,6 +540,7 @@ export function LogoStudio({
                     brief={brief}
                     onChange={setBrief}
                     onSubmit={startIdeas}
+                    onStartOver={handleStartOver}
                   />
                 </div>
               )}
