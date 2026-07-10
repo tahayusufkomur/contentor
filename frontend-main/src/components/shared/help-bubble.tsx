@@ -3,12 +3,26 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, MessageCircleQuestion, Send, X } from "lucide-react";
+import {
+  ArrowRight,
+  MessageCircleQuestion,
+  Send,
+  ThumbsDown,
+  ThumbsUp,
+  X,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
+
+interface AnswerMeta {
+  transcriptId?: number;
+  rateToken?: string;
+}
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  meta?: AnswerMeta;
+  rated?: "up" | "down";
 }
 
 // The visitor persona may only emit these marketing targets.
@@ -16,14 +30,41 @@ const LINK_RE = /\[([^\]]+)\]\((\/(?:signup|pricing|demo|login)[^)\s]*)\)/g;
 // Marketing pages only — never the superadmin SPA, dashboard or auth flows.
 const HIDDEN_PREFIXES = ["/admin", "/dashboard", "/callback"];
 
+const sessionId =
+  globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2);
+
+/** Fire-and-forget thumbs. Returns false on any failure — rating is
+ * best-effort, the UI just resets its highlight. */
+async function rateAnswer(
+  meta: AnswerMeta,
+  rating: "up" | "down",
+): Promise<boolean> {
+  if (!meta.transcriptId || !meta.rateToken) return false;
+  try {
+    const res = await fetch("/api/v1/ai/rate/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transcript_id: meta.transcriptId,
+        rate_token: meta.rateToken,
+        rating,
+      }),
+    });
+    return res.status === 204;
+  } catch {
+    return false;
+  }
+}
+
 async function streamChat(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
+  onDone?: (meta: AnswerMeta) => void,
 ): Promise<void> {
   const res = await fetch("/api/v1/help/chat/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, session_id: sessionId }),
   });
   if (!res.ok) throw new Error(`help chat failed (${res.status})`);
   if (res.headers.get("content-type")?.includes("application/json")) {
@@ -47,10 +88,17 @@ async function streamChat(
       const event = JSON.parse(line.slice(6)) as {
         type: "delta" | "done" | "error";
         text?: string;
+        transcript_id?: number;
+        rate_token?: string;
       };
       if (event.type === "delta" && event.text) onDelta(event.text);
-      else if (event.type === "done") done = true;
-      else if (event.type === "error") throw new Error("answer failed");
+      else if (event.type === "done") {
+        done = true;
+        onDone?.({
+          transcriptId: event.transcript_id,
+          rateToken: event.rate_token,
+        });
+      } else if (event.type === "error") throw new Error("answer failed");
     }
   }
   if (!done) throw new Error("stream ended early");
@@ -126,17 +174,26 @@ export function HelpBubble() {
     setMessages([...history, { role: "assistant", content: "" }]);
     setBusy(true);
     try {
-      await streamChat(history, (delta) => {
-        setMessages((current) => {
-          const next = [...current];
-          const last = next[next.length - 1];
-          next[next.length - 1] = {
-            role: "assistant",
-            content: last.content + delta,
-          };
-          return next;
-        });
-      });
+      await streamChat(
+        history,
+        (delta) => {
+          setMessages((current) => {
+            const next = [...current];
+            const last = next[next.length - 1];
+            next[next.length - 1] = {
+              role: "assistant",
+              content: last.content + delta,
+            };
+            return next;
+          });
+        },
+        (meta) =>
+          setMessages((current) => {
+            const next = [...current];
+            next[next.length - 1] = { ...next[next.length - 1], meta };
+            return next;
+          }),
+      );
     } catch {
       setMessages(history.slice(0, -1));
       setInput(trimmed);
@@ -206,7 +263,38 @@ export function HelpBubble() {
                 <div key={index} className="flex">
                   <div className="max-w-[90%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2">
                     {message.content ? (
-                      <AnswerBody content={message.content} />
+                      <>
+                        <AnswerBody content={message.content} />
+                        {message.meta && (
+                          <div className="mt-1.5 flex items-center gap-1">
+                            {(["up", "down"] as const).map((r) => (
+                              <button
+                                key={r}
+                                type="button"
+                                aria-label={t(
+                                  r === "up" ? "rateUp" : "rateDown",
+                                )}
+                                disabled={Boolean(message.rated)}
+                                onClick={() => {
+                                  void rateAnswer(message.meta!, r);
+                                  setMessages((current) =>
+                                    current.map((m, i) =>
+                                      i === index ? { ...m, rated: r } : m,
+                                    ),
+                                  );
+                                }}
+                                className={`rounded p-1 transition-colors hover:bg-accent ${message.rated === r ? "text-primary" : "text-muted-foreground/60"} disabled:hover:bg-transparent`}
+                              >
+                                {r === "up" ? (
+                                  <ThumbsUp className="h-3.5 w-3.5" />
+                                ) : (
+                                  <ThumbsDown className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <span
                         className="inline-flex gap-1 py-1"

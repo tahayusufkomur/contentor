@@ -225,7 +225,9 @@
       "suggestPayouts": "Ödemelerimi nasıl alırım?",
       "suggestPublish": "Öğrenciler sitemi nasıl bulur?",
       "suggestStudents": "Öğrenciler nasıl giriş yapar?",
-      "suggestPlans": "Planlara neler dahil?"
+      "suggestPlans": "Planlara neler dahil?",
+      "rateUp": "Faydalı",
+      "rateDown": "Faydalı değil"
     }
   },
   "settings": {

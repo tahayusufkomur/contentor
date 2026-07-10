@@ -175,6 +175,8 @@
     "error": "Bir şeyler ters gitti — lütfen tekrar deneyin.",
     "suggestPrice": "Contentor'un fiyatı ne kadar?",
     "suggestPayouts": "Ödemeler nasıl çalışır?",
-    "suggestDomain": "Kendi alan adımı kullanabilir miyim?"
+    "suggestDomain": "Kendi alan adımı kullanabilir miyim?",
+    "rateUp": "Faydalı",
+    "rateDown": "Faydalı değil"
   }
 }
