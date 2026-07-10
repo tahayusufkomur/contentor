@@ -1424,25 +1424,46 @@ git commit -m "feat(logo-studio): add pure undo/redo history reducer"
 Create `frontend-customer/src/lib/logo/__tests__/studio-session.test.ts`:
 
 ```ts
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { defaultRecipe } from "@/lib/logo/catalog";
+import type { Brief } from "@/lib/logo/composer";
 import {
   clearStudioSession,
   loadStudioSession,
   saveStudioSession,
 } from "@/lib/logo/studio-session";
-import { defaultRecipe } from "@/lib/logo/catalog";
-import type { Brief } from "@/lib/logo/composer";
 
 const BRIEF: Brief = { brandName: "Zeynep Yoga", niche: "yoga", styleChips: [] };
 const RECIPE = defaultRecipe("Zeynep Yoga", "#1a56db");
 const KEY = "contentor_logo_studio";
 
+// No jsdom in this project (pure-logic tests only, per vitest.config.ts) —
+// stand in for the browser's localStorage with a minimal in-memory Map.
+class FakeLocalStorage {
+  private store = new Map<string, string>();
+  getItem(key: string): string | null {
+    return this.store.has(key) ? this.store.get(key)! : null;
+  }
+  setItem(key: string, value: string): void {
+    this.store.set(key, value);
+  }
+  removeItem(key: string): void {
+    this.store.delete(key);
+  }
+  clear(): void {
+    this.store.clear();
+  }
+}
+
+const fakeLocalStorage = new FakeLocalStorage();
+vi.stubGlobal("localStorage", fakeLocalStorage);
+// studio-session.ts guards every function with `typeof window === "undefined"`
+// (SSR safety) — stub it so these tests exercise the real logic, not the guard.
+vi.stubGlobal("window", {});
+
 describe("studio-session", () => {
   beforeEach(() => {
-    localStorage.clear();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
+    fakeLocalStorage.clear();
   });
 
   it("returns null when nothing is saved", () => {
@@ -1509,7 +1530,7 @@ describe("studio-session", () => {
   });
 
   it("never throws when localStorage.setItem throws (quota exceeded)", () => {
-    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    const spy = vi.spyOn(fakeLocalStorage, "setItem").mockImplementation(() => {
       throw new Error("QuotaExceededError");
     });
     expect(() =>
