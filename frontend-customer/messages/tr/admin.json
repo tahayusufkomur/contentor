@@ -305,7 +305,12 @@
       "suggestStudents": "Öğrenciler nasıl giriş yapar?",
       "suggestPlans": "Planlara neler dahil?",
       "rateUp": "Faydalı",
-      "rateDown": "Faydalı değil"
+      "rateDown": "Faydalı değil",
+      "talkToHuman": "Bir kişiyle görüş",
+      "humanRequestedLine": "Bir kişiyle görüşmek istediniz — Contentor ekibine haber verildi.",
+      "agentJoined": "{name} sohbete katıldı",
+      "assistantResumed": "Asistan geri döndü",
+      "humanModeNotice": "{name} ile sohbet ediyorsunuz"
     }
   },
   "settings": {

@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 
 import { clientFetch } from "@/lib/api-client";
+import {
+  resolveSession,
+  type AnswerMeta,
+  type ThreadMessage,
+  type ThreadPayload,
+} from "@/lib/assistant";
+
+export type { AnswerMeta, ThreadMessage, ThreadPayload };
 
 export interface HelpBotStatus {
   enabled: boolean;
@@ -10,11 +18,6 @@ export interface HelpBotStatus {
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-}
-
-export interface AnswerMeta {
-  transcriptId?: number;
-  rateToken?: string;
 }
 
 /** Fire-and-forget thumbs. Returns false on any failure — rating is
@@ -79,32 +82,70 @@ export class HelpBotUnavailable extends Error {
   }
 }
 
-const sessionId =
-  globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2);
+// ── Session (Task 17 — mirrors lib/assistant.ts's getSessionId/touchSession,
+// distinct localStorage key so the coach's help-bot session never collides
+// with the student-facing site assistant's) ────────────────────────────────
+
+const SESSION_KEY = "contentor.ai.session.help";
+
+let sessionId = "";
+
+export function getHelpSessionId(): string {
+  if (sessionId) return sessionId;
+  const raw =
+    typeof window === "undefined"
+      ? null
+      : window.localStorage.getItem(SESSION_KEY);
+  sessionId = resolveSession(raw, Date.now()).id;
+  touchHelpSession();
+  return sessionId;
+}
+
+export function touchHelpSession(): void {
+  if (typeof window === "undefined" || !sessionId) return;
+  try {
+    window.localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ id: sessionId, ts: Date.now() }),
+    );
+  } catch {
+    // storage unavailable — session stays in-memory
+  }
+}
 
 /** POST the transcript and stream the answer. Calls onDelta per text chunk;
- * resolves when the answer is complete. SSE bypasses clientFetch on purpose
- * (it JSON-parses whole bodies). Throws HelpBotUnavailable when the server
- * reports the bot off/capped, plain Error on stream failure. onDone (when
- * provided) receives the transcript rating metadata from the `done` event. */
+ * resolves `"ai"` when the AI answered, `"human"` when the conversation was
+ * already in human mode server-side (the coach's message is stored, no
+ * stream to read — the poller delivers the reply). SSE bypasses clientFetch
+ * on purpose (it JSON-parses whole bodies). Throws HelpBotUnavailable when
+ * the server reports the bot off/capped, plain Error on stream failure.
+ * onDone (when provided) receives the transcript rating metadata plus any
+ * follow-up suggestions from the `done` event. */
 export async function streamHelpBotChat(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
-  signal?: AbortSignal,
   onDone?: (meta: AnswerMeta) => void,
-): Promise<void> {
+): Promise<"ai" | "human"> {
   const res = await fetch("/api/v1/admin/help-bot/chat/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ messages, session_id: sessionId }),
-    signal,
+    body: JSON.stringify({ messages, session_id: getHelpSessionId() }),
   });
   if (!res.ok) throw new Error(`help bot request failed (${res.status})`);
 
-  // Caps/config problems come back as a plain JSON body, not a stream.
+  // Caps/config problems, and a conversation already in human mode, come
+  // back as a plain JSON body, not a stream.
   if (res.headers.get("content-type")?.includes("application/json")) {
-    const data = (await res.json()) as { enabled?: boolean; reason?: string };
+    const data = (await res.json()) as {
+      enabled?: boolean;
+      reason?: string;
+      mode?: string;
+    };
+    if (data.mode === "human") {
+      touchHelpSession();
+      return "human";
+    }
     if (data.enabled === false) {
       broadcast({
         enabled: false,
@@ -137,6 +178,7 @@ export async function streamHelpBotChat(
         message?: string;
         transcript_id?: number;
         rate_token?: string;
+        suggestions?: string[];
       };
       if (event.type === "delta" && event.text) onDelta(event.text);
       else if (event.type === "done") {
@@ -144,10 +186,61 @@ export async function streamHelpBotChat(
         onDone?.({
           transcriptId: event.transcript_id,
           rateToken: event.rate_token,
+          suggestions: event.suggestions,
         });
       } else if (event.type === "error")
         throw new Error(event.message ?? "answer failed");
     }
   }
   if (!done) throw new Error("stream ended early");
+  touchHelpSession();
+  return "ai";
+}
+
+/** Widget polling endpoint — coach console's own thread (mirrors
+ * lib/assistant.ts's fetchThread). Via clientFetch since this is an
+ * authenticated coach-admin surface (unlike the student bot's anonymous
+ * plain-fetch equivalent); a 404 (no conversation yet — nothing sent) or any
+ * other failure resolves to null so the poller just skips that tick. */
+export async function fetchHelpThread(
+  after = 0,
+): Promise<ThreadPayload | null> {
+  try {
+    return await clientFetch<ThreadPayload>(
+      `/api/v1/admin/help-bot/thread/?session=${getHelpSessionId()}&after=${after}`,
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function sendHelpHumanMessage(content: string): Promise<boolean> {
+  try {
+    await clientFetch<{ mode: "ai" | "human" }>(
+      "/api/v1/admin/help-bot/human-message/",
+      {
+        method: "POST",
+        body: JSON.stringify({ session_id: getHelpSessionId(), content }),
+      },
+    );
+    touchHelpSession();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function requestHelpHuman(): Promise<boolean> {
+  try {
+    await clientFetch<{ ok: boolean }>(
+      "/api/v1/admin/help-bot/human-request/",
+      {
+        method: "POST",
+        body: JSON.stringify({ session_id: getHelpSessionId() }),
+      },
+    );
+    return true;
+  } catch {
+    return false;
+  }
 }

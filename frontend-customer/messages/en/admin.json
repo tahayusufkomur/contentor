@@ -305,7 +305,12 @@
       "suggestStudents": "How do students sign in?",
       "suggestPlans": "What do the plans include?",
       "rateUp": "Helpful",
-      "rateDown": "Not helpful"
+      "rateDown": "Not helpful",
+      "talkToHuman": "Talk to a human",
+      "humanRequestedLine": "You asked for a human — the Contentor team has been notified.",
+      "agentJoined": "{name} joined the chat",
+      "assistantResumed": "The assistant is back",
+      "humanModeNotice": "You're chatting with {name}"
     }
   },
   "settings": {
