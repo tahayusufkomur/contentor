@@ -88,7 +88,15 @@ class TestLinkCrud:
             format="json",
         )
         assert ok.status_code == 201
-        for bad in ("http://x.com", "javascript:alert(1)", "//evil.com", "ftp://x", "instagram.com"):
+        for bad in (
+            "http://x.com",
+            "javascript:alert(1)",
+            "//evil.com",
+            "ftp://x",
+            "instagram.com",
+            "/\\evil.com",
+            "/\\/evil.com",
+        ):
             res = coach_client.post("/api/v1/admin/assistant/links/", {"label": "x", "url": bad}, format="json")
             assert res.status_code == 400, bad
 

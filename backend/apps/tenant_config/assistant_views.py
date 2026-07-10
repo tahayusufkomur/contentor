@@ -358,7 +358,7 @@ def _validate_link(data, partial=False):
         url = str(data.get("url") or "").strip()
         if len(url) > 500:
             errors["url"] = "at most 500 characters"
-        elif url.startswith("/") and not url.startswith("//"):
+        elif url.startswith("/") and not url.startswith("//") and "\\" not in url:
             pass  # same-site path
         else:
             parsed = urlparse(url)
