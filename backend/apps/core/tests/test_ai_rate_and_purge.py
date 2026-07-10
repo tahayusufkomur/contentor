@@ -2,6 +2,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 import pytest
+from django.conf import settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -81,3 +82,23 @@ def test_purge_deletes_only_expired(settings):
     AiTranscript.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=91))
     purge_ai_transcripts()
     assert set(AiTranscript.objects.values_list("id", flat=True)) == {fresh.id}
+
+
+def test_purge_covers_conversations(db):
+    from apps.core.models import AiConversation, AiMessage
+    from apps.core.tasks import purge_ai_transcripts
+
+    old = AiConversation.objects.create(
+        feature="student_bot", audience="student", tenant_schema="t", session_id="old"
+    )
+    AiMessage.objects.create(conversation=old, role="user", content="q")
+    AiConversation.objects.filter(pk=old.pk).update(
+        updated_at=timezone.now() - timedelta(days=settings.AI_TRANSCRIPT_RETENTION_DAYS + 1)
+    )
+    fresh = AiConversation.objects.create(
+        feature="student_bot", audience="student", tenant_schema="t", session_id="new"
+    )
+    purge_ai_transcripts()
+    assert not AiConversation.objects.filter(pk=old.pk).exists()
+    assert AiMessage.objects.count() == 0
+    assert AiConversation.objects.filter(pk=fresh.pk).exists()

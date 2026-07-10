@@ -545,3 +545,62 @@ class PlatformKbEntry(models.Model):
 
     def __str__(self):
         return f"{self.audience}: {self.title}"
+
+
+class AiConversation(models.Model):
+    """One chat session (any of the three bots). Public schema, loose-coupled
+    like AiTranscript: tenant_schema is a string, agent/user ids are plain
+    ints (public-schema User ids for agents, tenant-schema ids for students).
+    The session_id is the client's bearer token — unguessable UUID."""
+
+    STATUS_AI = "ai"
+    STATUS_HUMAN = "human"
+
+    feature = models.CharField(max_length=20)  # help_bot | student_bot
+    audience = models.CharField(max_length=10)  # coach | visitor | student
+    tenant_schema = models.CharField(max_length=63)  # or "__marketing__"
+    session_id = models.CharField(max_length=36)
+    status = models.CharField(
+        max_length=8, default=STATUS_AI, choices=[(STATUS_AI, STATUS_AI), (STATUS_HUMAN, STATUS_HUMAN)]
+    )
+    agent_user_id = models.IntegerField(null=True, blank=True)
+    agent_label = models.CharField(max_length=60, blank=True, default="")
+    user_id = models.IntegerField(null=True, blank=True)
+    user_label = models.CharField(max_length=60, blank=True, default="")
+    human_requested = models.BooleanField(default=False)
+    human_requested_at = models.DateTimeField(null=True, blank=True)
+    taken_over_at = models.DateTimeField(null=True, blank=True)
+    last_user_message_at = models.DateTimeField(null=True, blank=True)
+    last_agent_message_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session_id", "feature", "tenant_schema"], name="uniq_ai_conversation_session"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["feature", "tenant_schema", "updated_at"]),
+            models.Index(fields=["status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.feature}/{self.tenant_schema}/{self.session_id[:8]}"
+
+
+class AiMessage(models.Model):
+    """The thread behind a conversation. Assistant rows link back to their
+    AiTranscript audit row via transcript_id (plain int — transcripts are
+    purged independently)."""
+
+    conversation = models.ForeignKey(AiConversation, on_delete=models.CASCADE, related_name="messages")
+    role = models.CharField(max_length=10)  # user | assistant | agent | system
+    content = models.TextField()
+    transcript_id = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["id"]
+        indexes = [models.Index(fields=["conversation", "id"])]
