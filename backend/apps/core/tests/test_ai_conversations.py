@@ -71,6 +71,16 @@ class TestKernelHelpers:
             is None
         )
 
+    def test_non_string_session_id_returns_none(self):
+        # Defensive hardening: a non-string truthy session_id (e.g. an int)
+        # must degrade to None, never raise (see review follow-up).
+        assert (
+            assistant.get_or_create_conversation(
+                feature="student_bot", audience="student", tenant_schema="t1", session_id=12345
+            )
+            is None
+        )
+
     def test_append_message_bumps_timestamps(self):
         c = _convo()
         assistant.append_message(c, "user", "hello")

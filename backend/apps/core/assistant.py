@@ -127,10 +127,10 @@ def get_or_create_conversation(*, feature, audience, tenant_schema, session_id, 
     once for authenticated viewers. Best-effort: never raises."""
     from apps.core.models import AiConversation
 
-    sid = (session_id or "").strip()[:36]
-    if not sid:
-        return None
     try:
+        sid = (session_id or "").strip()[:36]
+        if not sid:
+            return None
         convo, _ = AiConversation.objects.get_or_create(
             session_id=sid,
             feature=feature,
