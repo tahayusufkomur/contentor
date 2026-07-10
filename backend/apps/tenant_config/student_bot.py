@@ -108,7 +108,7 @@ def _catalog_lines(tenant, config):
             else ("month" if p.billing_interval_months == 1 else f"{p.billing_interval_months} months")
         )
         lines.append(
-            _line("membership", p.name, f"{p.price} {p.currency}/{interval}", f"/plans/{p.id}", p.description or "")
+            _line("membership", p.name, f"{p.price} {currency}/{interval}", f"/plans/{p.id}", p.description or "")
         )
     return lines
 
