@@ -75,8 +75,10 @@ def test_chat_streams_deltas_and_records_usage(coach_client, enabled, monkeypatc
     assert response.status_code == 200
     assert response["Content-Type"] == "text/event-stream"
     events = _sse_events(response)
-    assert events[0] == {"type": "delta", "text": "Open "}
-    assert events[1] == {"type": "delta", "text": "Payouts."}
+    # run_chat holds back a small tail buffer to detect a possible
+    # |||SUGGESTIONS block, so short streams may collapse into one delta.
+    delta_text = "".join(e["text"] for e in events if e["type"] == "delta")
+    assert delta_text == "Open Payouts."
     assert events[-1]["type"] == "done"
     assert isinstance(events[-1]["transcript_id"], int)
     assert isinstance(events[-1]["rate_token"], str)

@@ -60,7 +60,11 @@ class TestRunChat:
                     system="s", history=[{"role": "user", "content": "q"}], model="m", max_tokens=64, on_complete=hook
                 )
             )
-        assert [e["type"] for e in events] == ["delta", "delta", "done"]
+        # run_chat holds back a small tail buffer to detect a possible
+        # |||SUGGESTIONS block, so short streams may collapse into one delta.
+        assert events[-1]["type"] == "done"
+        assert all(e["type"] == "delta" for e in events[:-1])
+        assert "".join(e["text"] for e in events[:-1]) == "hello"
         assert events[-1]["transcript_id"] == 7 and events[-1]["rate_token"] == "tok"
         assert captured["answer"] == "hello" and captured["cost_usd"] == Decimal("0.01")
 
@@ -98,4 +102,4 @@ class TestRunChat:
                     on_complete=bad_hook,
                 )
             )
-        assert events[-1] == {"type": "done"}
+        assert events[-1] == {"type": "done", "suggestions": []}

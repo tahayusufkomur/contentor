@@ -18,7 +18,7 @@ from apps.core.currency import tenant_charge_currency
 from apps.core.models import StudentBotUsage
 from apps.tenant_config.help_bot import current_month
 
-PROMPT_VERSION = 1
+PROMPT_VERSION = 2
 MAX_OUTPUT_TOKENS = settings.STUDENT_BOT_MAX_OUTPUT_TOKENS
 
 MAX_COURSES, MAX_DOWNLOADS, MAX_LIVE, MAX_PLANS = 30, 15, 10, 5
@@ -50,6 +50,11 @@ built: say you only help with {brand}'s content and suggest the contact page.
 the site the person can do it.
 - Be concise: a few short sentences or a short list. Mirror the user's language \
 (Turkish -> Turkish, English -> English, etc.).
+- After your answer, output on a new line exactly this format:
+|||SUGGESTIONS ["question 1","question 2"]
+with 2-3 short follow-up questions (under 60 characters each) the user \
+would plausibly ask next, in the user's language, answerable from the \
+knowledge above. Output nothing after that line.
 """
 
 

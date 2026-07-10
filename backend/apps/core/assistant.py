@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 MAX_HISTORY_MESSAGES = 6
 MAX_MESSAGE_CHARS = 2000
 
+TAIL_DELIMITER = "|||SUGGESTIONS"
+MAX_SUGGESTIONS = 3
+MAX_SUGGESTION_CHARS = 80
+
 
 def prepare_history(messages, context_block, max_messages=MAX_HISTORY_MESSAGES, max_chars=MAX_MESSAGE_CHARS):
     """Validate + trim the client transcript and inject the context block into
@@ -40,32 +44,61 @@ def _event(payload):
     return f"data: {json.dumps(payload)}\n\n"
 
 
+def _parse_suggestions(tail):
+    try:
+        data = json.loads(tail.strip())
+    except (TypeError, ValueError):
+        return []
+    if not isinstance(data, list):
+        return []
+    out = []
+    for s in data:
+        if isinstance(s, str) and s.strip():
+            out.append(s.strip()[:MAX_SUGGESTION_CHARS])
+        if len(out) >= MAX_SUGGESTIONS:
+            break
+    return out
+
+
 def run_chat(*, system, history, model, max_tokens, on_complete):
-    """Yield SSE frames for one streamed answer. ``on_complete(info)`` runs
-    once after a successful stream with info = {cost_usd, provider, model,
-    answer}; whatever dict it returns is merged into the "done" event. Hook
-    errors are logged, never surfaced — the coach/student already has their
-    answer at that point."""
+    """Yield SSE frames for one streamed answer. The persona appends a
+    |||SUGGESTIONS ["…"] tail; we hold back the last len(delimiter)-1 chars
+    while streaming so a tail split across deltas never leaks, then ship the
+    parsed list in the done event. on_complete(info) gets the CLEAN answer
+    plus info["suggestions"]; its return dict merges into the done event."""
     parts = []
+    emitted = 0
     done_info = None
+    hold = len(TAIL_DELIMITER) - 1
     try:
         for kind, value in core_ai.stream_text(system=system, history=history, model=model, max_tokens=max_tokens):
             if kind == "delta":
                 parts.append(value)
-                yield _event({"type": "delta", "text": value})
+                full = "".join(parts)
+                cut = full.find(TAIL_DELIMITER)
+                safe = max(emitted, (len(full) - hold) if cut == -1 else cut)
+                if safe > emitted:
+                    yield _event({"type": "delta", "text": full[emitted:safe]})
+                    emitted = safe
             elif kind == "done":
                 done_info = value
     except Exception:
         logger.exception("assistant: answer failed")
         yield _event({"type": "error", "message": "answer_failed"})
         return
+    full = "".join(parts)
+    cut = full.find(TAIL_DELIMITER)
+    answer = (full[:cut] if cut != -1 else full).rstrip()
+    suggestions = _parse_suggestions(full[cut + len(TAIL_DELIMITER) :]) if cut != -1 else []
+    if len(answer) > emitted:
+        yield _event({"type": "delta", "text": answer[emitted:]})
     extras = None
     if on_complete is not None and done_info is not None:
         try:
-            extras = on_complete({**done_info, "answer": "".join(parts)})
+            extras = on_complete({**done_info, "answer": answer, "suggestions": suggestions})
         except Exception:
             logger.exception("assistant: completion hook failed")
-    yield _event({"type": "done", **(extras or {})})
+    yield _event({"type": "done", "suggestions": suggestions, **(extras or {})})
 
 
 RATE_SALT = "ai-rate"

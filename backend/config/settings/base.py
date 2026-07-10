@@ -268,7 +268,7 @@ BLOG_AI_MONTHLY_BUDGET_USD = float(os.environ.get("BLOG_AI_MONTHLY_BUDGET_USD", 
 
 # --- Student site assistant (apps.tenant_config.student_bot; provider from AI_PROVIDER) ---
 STUDENT_BOT_MODEL = os.environ.get("STUDENT_BOT_MODEL", "claude-haiku-4-5")
-STUDENT_BOT_MAX_OUTPUT_TOKENS = int(os.environ.get("STUDENT_BOT_MAX_OUTPUT_TOKENS", "600"))
+STUDENT_BOT_MAX_OUTPUT_TOKENS = int(os.environ.get("STUDENT_BOT_MAX_OUTPUT_TOKENS", "700"))
 STUDENT_BOT_TENANT_MONTHLY_USD = float(os.environ.get("STUDENT_BOT_TENANT_MONTHLY_USD", "3"))
 STUDENT_BOT_GLOBAL_MONTHLY_USD = float(os.environ.get("STUDENT_BOT_GLOBAL_MONTHLY_USD", "50"))
 
