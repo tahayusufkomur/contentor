@@ -85,3 +85,46 @@ class SeededObject(models.Model):
 
     def __str__(self):
         return f"{self.content_type.model}:{self.object_id}"
+
+
+class AssistantConfig(models.Model):
+    """Singleton (pk=1) per tenant: the coach's student-facing site assistant.
+    OFF by default — the bot speaks in the coach's brand voice, so enabling it
+    is a conscious coach action (spec D2)."""
+
+    enabled = models.BooleanField(default=False)
+    greeting = models.CharField(max_length=200, blank=True, default="")
+    suggested_questions = models.JSONField(default=list, blank=True)  # ≤3 strings ≤80 chars (validated in the API)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "tenant_config"
+
+    def __str__(self):
+        return f"AssistantConfig(enabled={self.enabled})"
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class AssistantKnowledgeEntry(models.Model):
+    """Coach-authored knowledge for THEIR student assistant — injected into the
+    site_knowledge data block, never interpreted as instructions."""
+
+    MAX_ENTRIES = 50
+    MAX_CONTENT_CHARS = 1500
+
+    title = models.CharField(max_length=120)
+    content = models.TextField()
+    enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return self.title

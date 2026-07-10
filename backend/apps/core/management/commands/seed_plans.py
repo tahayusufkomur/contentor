@@ -91,6 +91,7 @@ class Command(BaseCommand):
                 "max_streaming_hours": 2,
                 "max_campaign_emails": 100,
                 "max_ai_blog_posts": 0,
+                "max_student_bot_questions": 0,
                 "is_live_enabled": False,
                 "prices": {},
             },
@@ -103,6 +104,7 @@ class Command(BaseCommand):
                 "max_streaming_hours": 100,
                 "max_campaign_emails": 1000,
                 "max_ai_blog_posts": 5,
+                "max_student_bot_questions": 300,
                 "is_live_enabled": True,
                 "prices": {
                     "USD": {
@@ -124,6 +126,7 @@ class Command(BaseCommand):
                 "max_streaming_hours": 500,
                 "max_campaign_emails": 5000,
                 "max_ai_blog_posts": 30,
+                "max_student_bot_questions": 1500,
                 "is_live_enabled": True,
                 "prices": {
                     "USD": {

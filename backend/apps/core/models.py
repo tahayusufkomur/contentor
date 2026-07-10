@@ -157,6 +157,9 @@ class PlatformPlan(models.Model):
     max_campaign_emails = models.IntegerField(default=0)
     # AI blog generations included per calendar month (0 = feature not in plan).
     max_ai_blog_posts = models.PositiveIntegerField(default=0)
+    # Student site-assistant questions included per calendar month; 0 = the
+    # assistant is not in the plan (feature is paid-tier only).
+    max_student_bot_questions = models.PositiveIntegerField(default=0)
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     # Multi-currency prices. Shape:
     #   {"USD": {"amount_cents": 1900, "stripe_price_id": "price_..."},
@@ -495,3 +498,27 @@ class AiTranscript(models.Model):
 
     def __str__(self):
         return f"{self.feature}/{self.audience} {self.tenant_schema} {self.created_at:%Y-%m-%d}"
+
+
+class StudentBotUsage(models.Model):
+    """Durable per-tenant-per-month accounting for the student site assistant
+    (apps.tenant_config.student_bot) — same design as HelpBotUsage: DB-backed
+    so a Redis restart can't reset billing-relevant state. ``usd_spent``
+    accrues on every answer attempt; ``questions`` backs the per-plan monthly
+    question quota (PlatformPlan.max_student_bot_questions)."""
+
+    tenant_schema = models.CharField(max_length=63)
+    month = models.CharField(max_length=7)  # "YYYY-MM"
+    questions = models.PositiveIntegerField(default=0)
+    usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(fields=["tenant_schema", "month"], name="uniq_student_bot_usage_tenant_month")
+        ]
+
+    def __str__(self):
+        return f"{self.tenant_schema} {self.month}: {self.questions} questions / ${self.usd_spent}"
