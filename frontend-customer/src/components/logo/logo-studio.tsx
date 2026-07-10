@@ -148,18 +148,20 @@ export function LogoStudio({
     try {
       const resp = await fetchBrandPack(brief);
       if (requestId !== aiRequestIdRef.current) return; // stale — brief changed since
-      setBrandPackStatus((s) => (s ? { ...s, remaining: resp.remaining } : s));
+      setBrandPackStatus((s) =>
+        s
+          ? {
+              ...s,
+              remaining: resp.remaining,
+              reason: resp.remaining <= 0 ? "quota_exhausted" : s.reason,
+            }
+          : s,
+      );
       if (resp.source === "ai" || resp.source === "cache") {
         const seed = 1 + Math.floor(Math.random() * 1_000_000);
         setAiWall(resp.pack ? composeFromPack(resp.pack, brief, seed) : null);
-      } else if (resp.source === "quota_exhausted") {
-        setAiNotice(
-          "You've used this month's AI generations — tweak any idea below or try again next month.",
-        );
       } else if (resp.source === "error") {
-        setAiNotice(
-          "Couldn't reach the design studio just now — your ideas below are ready to use.",
-        );
+        setAiNotice("Couldn't reach the design studio — try again.");
       }
     } catch {
       if (requestId === aiRequestIdRef.current) {
@@ -177,7 +179,6 @@ export function LogoStudio({
     setAiWall(null);
     setAiNotice(null);
     setStep("ideas");
-    void fetchAiIdeas();
   }
 
   function handleMoreLikeThis(base: LogoRecipe) {
@@ -410,6 +411,7 @@ export function LogoStudio({
                     aiLoading={aiLoading}
                     aiNotice={aiNotice}
                     brandPackStatus={brandPackStatus}
+                    onGenerateAi={fetchAiIdeas}
                   />
                 </div>
               )}
