@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { clientFetch } from "@/lib/api-client";
+
 export interface AssistantStatus {
   enabled: boolean;
   reason: "ok" | "disabled" | "upgrade_required" | "budget" | "quota";
@@ -128,6 +130,132 @@ export async function streamAssistantChat(
           rateToken: event.rate_token,
         });
       } else if (event.type === "error") throw new Error("answer failed");
+    }
+  }
+  if (!done) throw new Error("stream ended early");
+}
+
+// ── Coach admin half (/api/v1/admin/assistant/…) ─────────────────────────────
+// Authenticated coach-admin client for /admin/assistant (Task 11). Uses
+// clientFetch (cookie-session auth + JSON handling + the demo-readonly toast),
+// unlike the student-facing functions above which hit public endpoints with
+// plain fetch.
+
+export interface AssistantAdminConfig {
+  enabled: boolean;
+  greeting: string;
+  suggested_questions: string[];
+  usage: { questions_used: number; questions_cap: number; month: string };
+  status: { enabled: boolean; reason: AssistantStatus["reason"] };
+}
+
+export interface KnowledgeEntry {
+  id: number;
+  title: string;
+  content: string;
+  enabled: boolean;
+  updated_at: string;
+}
+
+export interface TranscriptRow {
+  id: number;
+  feature: "student_bot" | "help_bot";
+  audience: string;
+  question: string;
+  answer: string;
+  rating: "" | "up" | "down";
+  is_preview: boolean;
+  created_at: string;
+}
+
+export const getAssistantConfig = () =>
+  clientFetch<AssistantAdminConfig>("/api/v1/admin/assistant/config/");
+
+export const putAssistantConfig = (
+  body: Partial<
+    Pick<AssistantAdminConfig, "enabled" | "greeting" | "suggested_questions">
+  >,
+) =>
+  clientFetch<AssistantAdminConfig>("/api/v1/admin/assistant/config/", {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+
+export const listKnowledge = () =>
+  clientFetch<KnowledgeEntry[]>("/api/v1/admin/assistant/knowledge/");
+
+export const createKnowledge = (body: { title: string; content: string }) =>
+  clientFetch<KnowledgeEntry>("/api/v1/admin/assistant/knowledge/", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+export const updateKnowledge = (
+  id: number,
+  body: Partial<Pick<KnowledgeEntry, "title" | "content" | "enabled">>,
+) =>
+  clientFetch<KnowledgeEntry>(`/api/v1/admin/assistant/knowledge/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+
+// clientFetch already special-cases 204/empty bodies (returns undefined
+// without calling res.json()), so this DELETE is safe as-is.
+export const deleteKnowledge = (id: number) =>
+  clientFetch<void>(`/api/v1/admin/assistant/knowledge/${id}/`, {
+    method: "DELETE",
+  });
+
+export const listTranscripts = (page = 1) =>
+  clientFetch<{ results: TranscriptRow[]; has_more: boolean }>(
+    `/api/v1/admin/assistant/transcripts/?page=${page}`,
+  );
+
+/** Coach-only: try the assistant from /admin/assistant without turning it on
+ * or spending the plan's monthly question quota. Same SSE wire contract as
+ * streamAssistantChat, but no session id — the server pins one server-side
+ * (session_id="preview") since every preview call is a one-off. Bypasses
+ * clientFetch on purpose (SSE isn't a JSON body); mirrors streamHelpBotChat's
+ * cookie-session auth over plain fetch. */
+export async function streamAssistantPreview(
+  messages: ChatMessage[],
+  onDelta: (text: string) => void,
+): Promise<void> {
+  const res = await fetch("/api/v1/admin/assistant/preview-chat/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ messages }),
+  });
+  if (!res.ok) throw new Error(`preview request failed (${res.status})`);
+  if (res.headers.get("content-type")?.includes("application/json")) {
+    // Gated (budget/provider down/etc.) — the server responds 200 + JSON
+    // instead of a stream. Rare here since the page only renders this pane
+    // once the upgrade_required case has already been handled.
+    const data = (await res.json()) as { enabled?: boolean; reason?: string };
+    throw new Error(data.reason ?? "unavailable");
+  }
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("streaming unsupported");
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let done = false;
+  for (;;) {
+    const chunk = await reader.read();
+    if (chunk.done) break;
+    buffer += decoder.decode(chunk.value, { stream: true });
+    const frames = buffer.split("\n\n");
+    buffer = frames.pop() ?? "";
+    for (const frame of frames) {
+      const line = frame.split("\n").find((l) => l.startsWith("data: "));
+      if (!line) continue;
+      const event = JSON.parse(line.slice(6)) as {
+        type: "delta" | "done" | "error";
+        text?: string;
+      };
+      if (event.type === "delta" && event.text) onDelta(event.text);
+      else if (event.type === "done") done = true;
+      else if (event.type === "error") throw new Error("answer failed");
     }
   }
   if (!done) throw new Error("stream ended early");
