@@ -116,3 +116,102 @@ def log_transcript(
     except Exception:
         logger.exception("assistant: transcript write failed")
         return None
+
+
+# ── Conversations (v2 spec §5) ───────────────────────────────────────────────
+
+
+def get_or_create_conversation(*, feature, audience, tenant_schema, session_id, user=None):
+    """Resolve the session's conversation, creating it on first contact.
+    Blank session_id → None (no thread; v1 behavior). Stamps user identity
+    once for authenticated viewers. Best-effort: never raises."""
+    from apps.core.models import AiConversation
+
+    sid = (session_id or "").strip()[:36]
+    if not sid:
+        return None
+    try:
+        convo, _ = AiConversation.objects.get_or_create(
+            session_id=sid,
+            feature=feature,
+            tenant_schema=tenant_schema,
+            defaults={"audience": audience},
+        )
+        if user is not None and getattr(user, "is_authenticated", False) and convo.user_id is None:
+            # D8: first name only (accounts.User has a single `name` field)
+            label = ((getattr(user, "name", "") or "").split(" ")[0]) or user.email.split("@")[0]
+            convo.user_id = user.id
+            convo.user_label = label[:60]
+            convo.save(update_fields=["user_id", "user_label", "updated_at"])
+        return convo
+    except Exception:
+        logger.exception("assistant: conversation resolve failed")
+        return None
+
+
+def append_message(conversation, role, content, transcript_id=None):
+    """Best-effort thread write; bumps the conversation's activity stamps."""
+    from django.utils import timezone
+
+    from apps.core.models import AiMessage
+
+    if conversation is None:
+        return None
+    try:
+        msg = AiMessage.objects.create(
+            conversation=conversation,
+            role=role,
+            content=(content or "")[:8000],
+            transcript_id=transcript_id,
+        )
+        fields = ["updated_at"]
+        if role == "user":
+            conversation.last_user_message_at = msg.created_at
+            fields.append("last_user_message_at")
+        elif role == "agent":
+            conversation.last_agent_message_at = msg.created_at
+            fields.append("last_agent_message_at")
+        conversation.updated_at = timezone.now()
+        conversation.save(update_fields=fields)
+        return msg
+    except Exception:
+        logger.exception("assistant: message write failed")
+        return None
+
+
+def maybe_auto_release(conversation):
+    """Human mode lapses back to AI after ASSISTANT_HUMAN_IDLE_RELEASE_MIN
+    minutes without an agent message (lazy — called from chat/thread views;
+    no celery job)."""
+    from datetime import timedelta
+
+    from django.conf import settings
+    from django.utils import timezone
+
+    from apps.core.models import AiConversation
+
+    if conversation is None or conversation.status != AiConversation.STATUS_HUMAN:
+        return conversation
+    anchor = conversation.last_agent_message_at or conversation.taken_over_at
+    idle = timedelta(minutes=settings.ASSISTANT_HUMAN_IDLE_RELEASE_MIN)
+    if anchor is None or timezone.now() - anchor > idle:
+        conversation.status = AiConversation.STATUS_AI
+        conversation.save(update_fields=["status", "updated_at"])
+        append_message(conversation, "system", "assistant_resumed")
+    return conversation
+
+
+THREAD_PAGE = 200
+
+
+def thread_payload(conversation, after_id=0):
+    msgs = conversation.messages.filter(id__gt=after_id).order_by("id")[:THREAD_PAGE]
+    return {
+        "session_id": conversation.session_id,
+        "status": conversation.status,
+        "agent_label": conversation.agent_label,
+        "human_requested": conversation.human_requested,
+        "messages": [
+            {"id": m.id, "role": m.role, "content": m.content, "created_at": m.created_at.isoformat()} for m in msgs
+        ],
+    }

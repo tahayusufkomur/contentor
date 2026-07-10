@@ -266,6 +266,9 @@ STUDENT_BOT_MAX_OUTPUT_TOKENS = int(os.environ.get("STUDENT_BOT_MAX_OUTPUT_TOKEN
 STUDENT_BOT_TENANT_MONTHLY_USD = float(os.environ.get("STUDENT_BOT_TENANT_MONTHLY_USD", "3"))
 STUDENT_BOT_GLOBAL_MONTHLY_USD = float(os.environ.get("STUDENT_BOT_GLOBAL_MONTHLY_USD", "50"))
 
+# --- AI assistants v2 ---
+ASSISTANT_HUMAN_IDLE_RELEASE_MIN = int(os.environ.get("ASSISTANT_HUMAN_IDLE_RELEASE_MIN", "30"))
+
 # --- Web Push (VAPID) ---
 # Generate a keypair once with: vapid --gen ; vapid --applicationServerKey
 # Store VAPID_PRIVATE_KEY as a double-quoted multi-line PEM in .env (python-dotenv
