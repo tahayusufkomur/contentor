@@ -204,3 +204,115 @@ def test_structured_anthropic_wraps_sdk_errors(settings, monkeypatch):
     with pytest.raises(ai.AiError, match="network down") as excinfo:
         ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100)
     assert excinfo.value.cost_usd == Decimal("0")
+
+
+# ── stream_text() ─────────────────────────────────────────────────────────────
+
+
+class _FakeProc:
+    """Stands in for subprocess.Popen running `claude -p --output-format stream-json`."""
+
+    def __init__(self, lines, returncode=0):
+        import io
+
+        self.stdout = io.StringIO("".join(line + "\n" for line in lines))
+        self.stderr = io.StringIO("")
+        self.returncode = returncode
+
+    def wait(self, timeout=None):
+        return self.returncode
+
+    def poll(self):
+        return self.returncode
+
+    def kill(self):
+        pass
+
+
+def _delta_line(text):
+    event = {"type": "content_block_delta", "delta": {"type": "text_delta", "text": text}}
+    return _json.dumps({"type": "stream_event", "event": event})
+
+
+_HISTORY = [{"role": "user", "content": "hello"}]
+
+
+def test_stream_cli_yields_deltas_then_done(settings, monkeypatch):
+    _cli_settings(settings)
+    lines = [_delta_line("Hel"), _delta_line("lo"), _json.dumps({"type": "result"})]
+    captured = {}
+
+    def fake_popen(cmd, **kw):
+        captured["cmd"] = cmd
+        captured["env"] = kw["env"]
+        return _FakeProc(lines)
+
+    monkeypatch.setattr("subprocess.Popen", fake_popen)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-should-be-stripped")
+    events = list(ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64))
+    assert events[:2] == [("delta", "Hel"), ("delta", "lo")]
+    assert events[-1] == ("done", {"cost_usd": Decimal("0"), "provider": "cli", "model": "haiku"})
+    assert "ANTHROPIC_API_KEY" not in captured["env"]
+    assert captured["cmd"][captured["cmd"].index("--system-prompt") + 1] == "persona"
+
+
+def test_stream_cli_serializes_prior_turns(settings, monkeypatch):
+    _cli_settings(settings)
+    captured = {}
+
+    def fake_popen(cmd, **kw):
+        captured["cmd"] = cmd
+        return _FakeProc([_json.dumps({"type": "result"})])
+
+    monkeypatch.setattr("subprocess.Popen", fake_popen)
+    history = [
+        {"role": "user", "content": "first"},
+        {"role": "assistant", "content": "answer"},
+        {"role": "user", "content": "second"},
+    ]
+    list(ai.stream_text(system="s", history=history, model="m", max_tokens=64))
+    prompt = captured["cmd"][captured["cmd"].index("-p") + 1]
+    assert "<conversation_so_far>" in prompt
+    assert "User: first" in prompt and "You: answer" in prompt
+    assert prompt.endswith("second")
+
+
+def test_stream_cli_failure_raises_ai_error(settings, monkeypatch):
+    _cli_settings(settings)
+    monkeypatch.setattr("subprocess.Popen", lambda cmd, **kw: _FakeProc([], returncode=1))
+    with pytest.raises(ai.AiError, match="rc=1"):
+        list(ai.stream_text(system="s", history=_HISTORY, model="m", max_tokens=64))
+
+
+def test_stream_anthropic_yields_deltas_then_done(settings, monkeypatch):
+    settings.AI_PROVIDER = "anthropic"
+
+    class _Final:
+        usage = _Usage(inp=1_000_000)
+
+    class _Stream:
+        text_stream = iter(["Hel", "lo"])
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def get_final_message(self):
+            return _Final()
+
+    class _Messages:
+        def stream(self, **kwargs):
+            _Stream.kwargs = kwargs
+            return _Stream()
+
+    class _Client:
+        messages = _Messages()
+
+    monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
+    events = list(ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64))
+    assert events[:2] == [("delta", "Hel"), ("delta", "lo")]
+    assert events[-1] == ("done", {"cost_usd": Decimal("2"), "provider": "anthropic", "model": "claude-sonnet-5"})
+    assert _Stream.kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
+    assert _Stream.kwargs["messages"] == _HISTORY

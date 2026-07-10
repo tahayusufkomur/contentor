@@ -175,3 +175,100 @@ def _cli_structured(system, user, output_model):
         except (ValueError, ValidationError) as exc:
             last_error = exc
     raise AiError(f"claude CLI output did not match schema: {last_error}") from last_error
+
+
+# ── streaming chat (help bot) ────────────────────────────────────────────────
+
+
+def stream_text(*, system, history, model, max_tokens):
+    """Yield ("delta", text) events, then exactly one ("done", info) where
+    info = {"cost_usd": Decimal, "provider": str, "model": str}."""
+    if settings.AI_PROVIDER == "cli":
+        yield from _stream_cli(system, history)
+    else:
+        yield from _stream_anthropic(system, history, model, max_tokens)
+
+
+def _stream_anthropic(system, history, model, max_tokens):
+    client = _anthropic_client()
+    with client.messages.stream(
+        model=model,
+        max_tokens=max_tokens,
+        system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+        messages=history,
+    ) as stream:
+        for text in stream.text_stream:
+            yield ("delta", text)
+        final = stream.get_final_message()
+    yield ("done", {"cost_usd": estimate_cost(final.usage, model), "provider": "anthropic", "model": model})
+
+
+def _cli_prompt(history):
+    """The CLI takes one prompt string: serialize prior turns, keep the
+    (context-carrying) last user message verbatim."""
+    *prior, last = history
+    parts = []
+    if prior:
+        lines = [f"{'User' if m['role'] == 'user' else 'You'}: {m['content']}" for m in prior]
+        parts.append("<conversation_so_far>\n" + "\n".join(lines) + "\n</conversation_so_far>")
+    parts.append(last["content"])
+    return "\n\n".join(parts)
+
+
+def _stream_cli(system, history):
+    """Local-dev provider: `claude -p` on the developer's subscription.
+    Flag set verified against claude CLI 2026-07: --system-prompt replaces
+    the Claude Code persona entirely; stream-json + --include-partial-messages
+    emits Messages-API-shaped stream_event lines."""
+    cmd = [
+        settings.AI_CLI_BIN,
+        "-p",
+        _cli_prompt(history),
+        "--model",
+        settings.AI_CLI_MODEL,
+        "--system-prompt",
+        system,
+        "--disallowedTools",
+        "*",
+        "--max-turns",
+        "1",
+        "--output-format",
+        "stream-json",
+        "--include-partial-messages",
+        "--verbose",
+    ]
+    try:
+        proc = subprocess.Popen(  # noqa: S603 — fixed argv, no shell
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=_cli_env(),
+            cwd=tempfile.gettempdir(),
+        )
+    except OSError as exc:
+        raise AiError(f"claude CLI not runnable: {exc}") from exc
+
+    done = None
+    try:
+        for line in proc.stdout:
+            try:
+                obj = json.loads(line)
+            except ValueError:
+                continue
+            if obj.get("type") == "stream_event":
+                event = obj.get("event") or {}
+                delta = event.get("delta") or {}
+                if event.get("type") == "content_block_delta" and delta.get("type") == "text_delta":
+                    yield ("delta", delta["text"])
+            elif obj.get("type") == "result":
+                # Subscription usage — nothing accrues against the USD caps.
+                done = {"cost_usd": Decimal("0"), "provider": "cli", "model": settings.AI_CLI_MODEL}
+        proc.wait(timeout=CLI_TIMEOUT_SECONDS)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+    if done is None or proc.returncode != 0:
+        stderr = (proc.stderr.read() or "")[:500] if proc.stderr else ""
+        raise AiError(f"claude CLI failed (rc={proc.returncode}): {stderr}")
+    yield ("done", done)
