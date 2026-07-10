@@ -94,11 +94,8 @@ def assistant_chat(request):
     if not enabled:
         return Response({"enabled": False, "reason": reason}, status=200)
 
-    signed_in = "yes" if user else "no"
     try:
-        history = assistant.prepare_history(
-            data.get("messages"), f"<student_context>signed in: {signed_in}</student_context>"
-        )
+        history = assistant.prepare_history(data.get("messages"), student_bot.build_viewer_context(user))
     except ValueError as exc:
         return Response({"error": str(exc)}, status=400)
 

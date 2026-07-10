@@ -50,6 +50,9 @@ built: say you only help with {brand}'s content and suggest the contact page.
 the site the person can do it.
 - Be concise: a few short sentences or a short list. Mirror the user's language \
 (Turkish -> Turkish, English -> English, etc.).
+- If <student_context> lists items the person already owns, don't sell \
+those again — help them use what they own and point them to /dashboard or \
+the item's page.
 - After your answer, output on a new line exactly this format:
 |||SUGGESTIONS ["question 1","question 2"]
 with 2-3 short follow-up questions (under 60 characters each) the user \
@@ -155,6 +158,67 @@ def build_system_prompt(tenant, config):
     notes = platform_notes("student")
     prompt = _PERSONA_TEMPLATE.format(brand=brand) + notes + "\n" + pack
     return prompt, hashlib.sha256(pack.encode()).hexdigest()[:12]
+
+
+VIEWER_MAX_COURSES = 10
+VIEWER_MAX_DOWNLOADS = 10
+VIEWER_MAX_LIVE = 5
+
+
+def _owned_ids(user, model):
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import PaymentItem
+
+    return PaymentItem.objects.filter(
+        content_type=ContentType.objects.get_for_model(model),
+        payment__student=user,
+        payment__status__in=("completed", "partially_refunded"),
+        is_refunded=False,
+    ).values_list("object_id", flat=True)
+
+
+def build_viewer_context(user):
+    """First-user-turn context block (v2 spec §8). Titles only — the system
+    prompt stays byte-stable; per-viewer state must never enter it."""
+    if user is None or not getattr(user, "is_authenticated", False):
+        return "<student_context>signed in: no</student_context>"
+    from apps.billing.models import Subscription
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+    from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
+
+    lines = ["<student_context>", "signed in: yes"]
+    courses = list(
+        Course.objects.filter(enrollments__user=user, enrollments__is_active=True)
+        .values_list("title", flat=True)
+        .order_by("title")[:VIEWER_MAX_COURSES]
+    )
+    if courses:
+        lines.append("enrolled courses: " + "; ".join(courses))
+    downloads = list(
+        DownloadFile.objects.filter(pk__in=_owned_ids(user, DownloadFile))
+        .values_list("title", flat=True)
+        .order_by("title")[:VIEWER_MAX_DOWNLOADS]
+    )
+    if downloads:
+        lines.append("owned downloads: " + "; ".join(downloads))
+    plan = (
+        Subscription.objects.filter(student=user, status="active", current_period_end__gt=timezone.now())
+        .values_list("plan__name", flat=True)
+        .first()
+    )
+    if plan:
+        lines.append(f"membership: {plan}")
+    upcoming = []
+    now = timezone.now()
+    for model in (LiveClass, LiveStream, ZoomClass, OnsiteEvent):
+        for e in model.objects.filter(pk__in=_owned_ids(user, model), scheduled_at__gte=now):
+            upcoming.append((e.scheduled_at, e.title))
+    for when, title in sorted(upcoming)[:VIEWER_MAX_LIVE]:
+        lines.append(f"upcoming live session: {title} ({when:%Y-%m-%d %H:%M} UTC)")
+    lines.append("</student_context>")
+    return "\n".join(lines)
 
 
 # ── Availability + usage (mirrors help_bot; StudentBotUsage-backed) ─────────
