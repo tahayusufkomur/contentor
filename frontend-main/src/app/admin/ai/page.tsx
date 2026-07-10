@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bot, GraduationCap, Newspaper, Palette } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Bot, GraduationCap, Newspaper, Palette, X } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
@@ -53,6 +60,530 @@ const FEATURE_ICONS: Record<string, typeof Bot> = {
 
 function currentMonth(): string {
   return new Date().toISOString().slice(0, 7);
+}
+
+// ── Conversations console (superadmin view of every help-bot conversation:
+// coach console + marketing visitor bubble, across all tenants) ────────────
+
+interface ConversationRow {
+  id: number;
+  session_id: string;
+  audience: "coach" | "visitor";
+  tenant_schema: string;
+  status: "ai" | "human";
+  user_label: string;
+  human_requested: boolean;
+  message_count: number;
+  last_message: string;
+  updated_at: string;
+}
+
+interface ThreadMessage {
+  id: number;
+  role: "user" | "assistant" | "agent" | "system";
+  content: string;
+  created_at: string;
+}
+
+interface ThreadPayload {
+  session_id: string;
+  status: "ai" | "human";
+  agent_label: string;
+  human_requested: boolean;
+  messages: ThreadMessage[];
+}
+
+const CONVO_LIST_POLL_MS = 10_000;
+const CONVO_THREAD_POLL_MS = 3_000;
+
+async function fetchConversations(
+  audience: string,
+): Promise<{ results: ConversationRow[]; has_more: boolean }> {
+  const res = await fetch(
+    `/api/v1/platform/ai-conversations/?audience=${audience}`,
+    { credentials: "same-origin" },
+  );
+  if (!res.ok) throw new Error("Failed to load conversations");
+  return res.json();
+}
+
+async function fetchConversationThread(
+  id: number,
+  after = 0,
+): Promise<ThreadPayload> {
+  const res = await fetch(
+    `/api/v1/platform/ai-conversations/${id}/thread/?after=${after}`,
+    { credentials: "same-origin" },
+  );
+  if (!res.ok) throw new Error("Failed to load thread");
+  return res.json();
+}
+
+async function takeoverConversation(id: number): Promise<ThreadPayload> {
+  const res = await fetch(`/api/v1/platform/ai-conversations/${id}/takeover/`, {
+    method: "POST",
+    credentials: "same-origin",
+  });
+  if (!res.ok) throw new Error("Failed to take over conversation");
+  return res.json();
+}
+
+async function releaseConversation(id: number): Promise<ThreadPayload> {
+  const res = await fetch(`/api/v1/platform/ai-conversations/${id}/release/`, {
+    method: "POST",
+    credentials: "same-origin",
+  });
+  if (!res.ok) throw new Error("Failed to release conversation");
+  return res.json();
+}
+
+async function sendConversationMessage(
+  id: number,
+  content: string,
+  after: number,
+): Promise<ThreadPayload> {
+  const res = await fetch(`/api/v1/platform/ai-conversations/${id}/message/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ content, after }),
+  });
+  if (!res.ok) throw new Error("Failed to send message");
+  return res.json();
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d`;
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/** system-role thread tokens (produced by the takeover kernel) rendered as
+ * short plain-English lines; unrecognized tokens render nothing. */
+function conversationSystemLine(content: string): string | null {
+  if (content.startsWith("agent_joined:")) {
+    return `${content.slice("agent_joined:".length)} joined`;
+  }
+  if (content === "assistant_resumed") return "Assistant resumed";
+  if (content === "human_requested") return "Asked for a human";
+  return null;
+}
+
+/** Superadmin's live console over every help-bot conversation platform-wide
+ * (coach console + marketing visitor bubble). Row click opens a right-side
+ * thread drawer with the same takeover/reply/release loop as the coach's
+ * own ConversationsCard (frontend-customer), reimplemented here with plain
+ * `fetch` since frontend-main is a separate app with no shared lib. */
+function ConversationsSection() {
+  const [audienceFilter, setAudienceFilter] = useState("");
+  const [rows, setRows] = useState<ConversationRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState("");
+
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [thread, setThread] = useState<ThreadMessage[]>([]);
+  const [status, setStatus] = useState<"ai" | "human">("ai");
+  const [agentLabel, setAgentLabel] = useState("");
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadError, setThreadError] = useState("");
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+  const [takingOver, setTakingOver] = useState(false);
+  const [releasing, setReleasing] = useState(false);
+
+  // High-water mark for the open thread's polling `after` param.
+  const lastIdRef = useRef(0);
+  // Mirrors `activeId` synchronously (state updates are async) so a
+  // response for a conversation the superadmin has since navigated away
+  // from — open A, click B before A's fetch/action resolves — can detect
+  // the mismatch and skip applying itself to whatever's on screen now.
+  const activeRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setListError("");
+    fetchConversations(audienceFilter)
+      .then((r) => setRows(r.results))
+      .catch((err) => setListError(err.message))
+      .finally(() => setLoading(false));
+  }, [audienceFilter]);
+
+  // Idle list refresh — only while no thread is open, so a superadmin
+  // mid-reply never has the surrounding list rewritten under them.
+  useEffect(() => {
+    if (activeId !== null) return;
+    const iv = setInterval(() => {
+      fetchConversations(audienceFilter)
+        .then((r) => setRows(r.results))
+        .catch(() => {
+          // Background refresh — stay silent, next tick tries again.
+        });
+    }, CONVO_LIST_POLL_MS);
+    return () => clearInterval(iv);
+  }, [audienceFilter, activeId]);
+
+  const patchRow = (id: number, patch: Partial<ConversationRow>) => {
+    setRows((current) =>
+      current.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    );
+  };
+
+  const mergeThread = (incoming: ThreadMessage[]) => {
+    if (!incoming.length) return;
+    setThread((current) => {
+      const seen = new Set(current.map((m) => m.id));
+      const fresh = incoming.filter((m) => !seen.has(m.id));
+      return fresh.length ? [...current, ...fresh] : current;
+    });
+    lastIdRef.current = Math.max(
+      lastIdRef.current,
+      ...incoming.map((m) => m.id),
+    );
+  };
+
+  const openThread = (id: number) => {
+    if (activeId === id) {
+      setActiveId(null);
+      activeRef.current = null;
+      return;
+    }
+    setActiveId(id);
+    activeRef.current = id;
+    setThread([]);
+    setStatus("ai");
+    setAgentLabel("");
+    setThreadError("");
+    lastIdRef.current = 0;
+    setThreadLoading(true);
+    fetchConversationThread(id, 0)
+      .then((payload) => {
+        if (activeRef.current !== id) return;
+        setThread(payload.messages);
+        lastIdRef.current = payload.messages.length
+          ? payload.messages[payload.messages.length - 1].id
+          : 0;
+        setStatus(payload.status);
+        setAgentLabel(payload.agent_label);
+      })
+      .catch((err) => {
+        if (activeRef.current === id) setThreadError(err.message);
+      })
+      .finally(() => {
+        if (activeRef.current === id) setThreadLoading(false);
+      });
+  };
+
+  const closeThread = () => {
+    setActiveId(null);
+    activeRef.current = null;
+  };
+
+  // Poll the open thread every 3s for anything new. `cancelled` is scoped
+  // to this effect instance and flips on cleanup — which fires both when
+  // `activeId` changes (thread switched/closed) and when the component
+  // unmounts, so the interval never outlives the drawer being open.
+  useEffect(() => {
+    if (activeId === null) return;
+    let cancelled = false;
+    const iv = setInterval(() => {
+      fetchConversationThread(activeId, lastIdRef.current)
+        .then((payload) => {
+          if (cancelled) return;
+          mergeThread(payload.messages);
+          setStatus(payload.status);
+          setAgentLabel(payload.agent_label);
+          patchRow(activeId, {
+            status: payload.status,
+            human_requested: payload.human_requested,
+          });
+        })
+        .catch(() => {
+          // Missed tick — the next one in 3s tries again.
+        });
+    }, CONVO_THREAD_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId]);
+
+  const handleTakeover = async () => {
+    if (activeId === null) return;
+    const forId = activeId;
+    setTakingOver(true);
+    try {
+      const payload = await takeoverConversation(forId);
+      patchRow(forId, {
+        status: payload.status,
+        human_requested: payload.human_requested,
+      });
+      if (activeRef.current === forId) {
+        setThread(payload.messages);
+        lastIdRef.current = payload.messages.length
+          ? payload.messages[payload.messages.length - 1].id
+          : 0;
+        setStatus(payload.status);
+        setAgentLabel(payload.agent_label);
+      }
+    } catch (err) {
+      if (activeRef.current === forId) {
+        setThreadError((err as Error).message);
+      }
+    } finally {
+      setTakingOver(false);
+    }
+  };
+
+  const handleRelease = async () => {
+    if (activeId === null) return;
+    const forId = activeId;
+    setReleasing(true);
+    try {
+      const payload = await releaseConversation(forId);
+      patchRow(forId, {
+        status: payload.status,
+        human_requested: payload.human_requested,
+      });
+      if (activeRef.current === forId) {
+        setThread(payload.messages);
+        lastIdRef.current = payload.messages.length
+          ? payload.messages[payload.messages.length - 1].id
+          : 0;
+        setStatus(payload.status);
+        setAgentLabel(payload.agent_label);
+      }
+    } catch (err) {
+      if (activeRef.current === forId) {
+        setThreadError((err as Error).message);
+      }
+    } finally {
+      setReleasing(false);
+    }
+  };
+
+  const handleSend = async () => {
+    const trimmed = reply.trim();
+    if (!trimmed || activeId === null || sending) return;
+    const forId = activeId;
+    setSending(true);
+    try {
+      const payload = await sendConversationMessage(
+        forId,
+        trimmed,
+        lastIdRef.current,
+      );
+      if (activeRef.current === forId) {
+        mergeThread(payload.messages);
+        setStatus(payload.status);
+        setAgentLabel(payload.agent_label);
+      }
+      patchRow(forId, {
+        status: payload.status,
+        human_requested: payload.human_requested,
+      });
+      setReply("");
+    } catch (err) {
+      if (activeRef.current === forId) {
+        setThreadError((err as Error).message);
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-lg">Conversations</CardTitle>
+            <CardDescription>
+              Every help-bot conversation platform-wide — coach console and
+              marketing visitor bubble.
+            </CardDescription>
+          </div>
+          <select
+            value={audienceFilter}
+            onChange={(e) => setAudienceFilter(e.target.value)}
+            className="rounded-md border px-3 py-1.5 text-sm"
+            aria-label="Filter by audience"
+          >
+            <option value="">All</option>
+            <option value="coach">Coaches</option>
+            <option value="visitor">Visitors</option>
+          </select>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {listError && <p className="text-sm text-destructive">{listError}</p>}
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : rows.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No conversations yet.
+            </p>
+          ) : (
+            <div className="divide-y divide-border rounded-xl border border-border">
+              {rows.map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  onClick={() => openThread(row.id)}
+                  className={`flex w-full items-start gap-3 p-3 text-left text-sm transition-colors hover:bg-accent/40 ${activeId === row.id ? "bg-accent/40" : ""}`}
+                >
+                  <span
+                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                      row.status === "human"
+                        ? "bg-primary"
+                        : "bg-muted-foreground/30"
+                    }`}
+                  />
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium text-foreground">
+                        {row.user_label || "Anonymous"}
+                      </span>
+                      <Badge variant="outline">{row.audience}</Badge>
+                      <span className="truncate font-mono text-xs text-muted-foreground">
+                        {row.tenant_schema}
+                      </span>
+                      {row.status === "human" && (
+                        <Badge variant="brand">Live</Badge>
+                      )}
+                      {row.human_requested && (
+                        <Badge variant="warning">Wants human</Badge>
+                      )}
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {row.last_message}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right text-xs text-muted-foreground">
+                    <div>{relativeTime(row.updated_at)}</div>
+                    <div>{row.message_count}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {activeId !== null && (
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l bg-card text-card-foreground shadow-2xl">
+          <div className="flex items-center justify-between border-b p-4">
+            <h2 className="text-lg font-semibold">Conversation</h2>
+            <Button variant="ghost" size="icon" onClick={closeThread}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          {threadError && (
+            <p className="px-4 pt-2 text-sm text-destructive">{threadError}</p>
+          )}
+          <div className="flex-1 space-y-2 overflow-y-auto p-4">
+            {threadLoading ? (
+              <>
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </>
+            ) : (
+              thread.map((message) => {
+                if (message.role === "system") {
+                  const line = conversationSystemLine(message.content);
+                  if (!line) return null;
+                  return (
+                    <p
+                      key={message.id}
+                      className="text-center text-xs text-muted-foreground"
+                    >
+                      {line}
+                    </p>
+                  );
+                }
+                if (message.role === "user") {
+                  return (
+                    <div key={message.id} className="flex justify-end">
+                      <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                        {message.content}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={message.id} className="flex">
+                    <div className="max-w-[90%] space-y-1 rounded-2xl rounded-bl-sm bg-muted px-3 py-2 text-sm">
+                      {message.role === "agent" && agentLabel && (
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          {agentLabel}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <div className="flex items-center gap-2 border-t p-3">
+            {status === "ai" ? (
+              <Button
+                size="sm"
+                onClick={() => void handleTakeover()}
+                loading={takingOver}
+              >
+                Take over
+              </Button>
+            ) : (
+              <>
+                <form
+                  className="flex flex-1 items-center gap-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void handleSend();
+                  }}
+                >
+                  <Input
+                    value={reply}
+                    onChange={(e) => setReply(e.target.value)}
+                    placeholder="Reply…"
+                    maxLength={2000}
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    loading={sending}
+                    disabled={!reply.trim()}
+                  >
+                    Send
+                  </Button>
+                </form>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleRelease()}
+                  loading={releasing}
+                >
+                  Release
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 function StatSkeleton() {
@@ -224,6 +755,8 @@ export default function AdminAiUsagePage() {
               </CardContent>
             </Card>
           </div>
+
+          <ConversationsSection />
 
           {/* Top tenants */}
           <Card>

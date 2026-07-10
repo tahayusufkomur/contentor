@@ -16,22 +16,127 @@ import { useTranslations } from "next-intl";
 interface AnswerMeta {
   transcriptId?: number;
   rateToken?: string;
+  suggestions?: string[];
 }
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+}
+
+type Msg = {
+  role: "user" | "assistant" | "agent" | "system";
+  content: string;
   meta?: AnswerMeta;
   rated?: "up" | "down";
+};
+
+interface ThreadMessage {
+  id: number;
+  role: "user" | "assistant" | "agent" | "system";
+  content: string;
+  created_at: string;
+}
+
+interface ThreadPayload {
+  session_id: string;
+  status: "ai" | "human";
+  agent_label: string;
+  human_requested: boolean;
+  messages: ThreadMessage[];
+}
+
+/** Pure poll-tick reducer for the widget's thread polling effect. Given a
+ * freshly-fetched thread, the previous high-water-mark message id, and
+ * whether this is the widget's first-ever successful fetch (`initial` — the
+ * CALLER must capture this before awaiting the fetch, from a ref that only
+ * flips true once a fetch has actually completed, never from `lastId === 0`:
+ * a genuinely-empty first fetch never advances `lastId`, so deriving
+ * "initial" from `lastId === 0` would keep re-triggering a full-role replay
+ * on every later tick too — duplicating the very first Q&A exchange once
+ * it's actually persisted, since that exchange is already a local echo from
+ * `send()`). Returns which rows to append (all roles when `initial`, else
+ * only `agent`/`system` — `user`/`assistant` rows are already local echoes)
+ * and the new high-water mark. Copied verbatim (structure-for-structure)
+ * from frontend-customer's lib/assistant.ts::applyThreadPoll — frontend-main
+ * is a separate Next.js app and can't import across app boundaries, so this
+ * widget is self-contained; see that file's doc comment for the fix history
+ * behind this exact shape. */
+function applyThreadPoll(
+  thread: ThreadPayload,
+  lastId: number,
+  initial: boolean,
+): { appended: ThreadMessage[]; lastId: number } {
+  const incoming = thread.messages.filter((m) => m.id > lastId);
+  const nextLastId = incoming.length
+    ? incoming[incoming.length - 1].id
+    : lastId;
+  const appended = incoming.filter(
+    (m) => initial || m.role === "agent" || m.role === "system",
+  );
+  return { appended, lastId: nextLastId };
+}
+
+// ── Session (localStorage key "contentor.ai.session.help" — same string as
+// frontend-customer's coach help-chat session key, but a different origin,
+// so there's no collision) ──────────────────────────────────────────────────
+const SESSION_KEY = "contentor.ai.session.help";
+const SESSION_IDLE_MS = 24 * 60 * 60 * 1000;
+
+/** Pure so rotation logic is easy to reason about without a DOM. */
+function resolveSession(
+  raw: string | null,
+  now: number,
+): { id: string; fresh: boolean } {
+  try {
+    if (raw) {
+      const parsed = JSON.parse(raw) as { id?: string; ts?: number };
+      if (
+        parsed.id &&
+        typeof parsed.ts === "number" &&
+        now - parsed.ts < SESSION_IDLE_MS
+      ) {
+        return { id: parsed.id, fresh: false };
+      }
+    }
+  } catch {
+    // fall through to a fresh session
+  }
+  return {
+    id: globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2),
+    fresh: true,
+  };
+}
+
+let sessionId = "";
+
+function getSessionId(): string {
+  if (sessionId) return sessionId;
+  const raw =
+    typeof window === "undefined"
+      ? null
+      : window.localStorage.getItem(SESSION_KEY);
+  sessionId = resolveSession(raw, Date.now()).id;
+  touchSession();
+  return sessionId;
+}
+
+function touchSession(): void {
+  if (typeof window === "undefined" || !sessionId) return;
+  try {
+    window.localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({ id: sessionId, ts: Date.now() }),
+    );
+  } catch {
+    // storage unavailable — session stays in-memory
+  }
 }
 
 // The visitor persona may only emit these marketing targets.
 const LINK_RE = /\[([^\]]+)\]\((\/(?:signup|pricing|demo|login)[^)\s]*)\)/g;
 // Marketing pages only — never the superadmin SPA, dashboard or auth flows.
 const HIDDEN_PREFIXES = ["/admin", "/dashboard", "/callback"];
-
-const sessionId =
-  globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2);
 
 /** Fire-and-forget thumbs. Returns false on any failure — rating is
  * best-effort, the UI just resets its highlight. */
@@ -56,19 +161,30 @@ async function rateAnswer(
   }
 }
 
+/** POSTs the transcript and streams the answer. Resolves `"ai"` when the AI
+ * answered, `"human"` when the conversation was already in human mode
+ * server-side (the visitor's message is stored, no stream to read — the
+ * poller delivers the reply). */
 async function streamChat(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
   onDone?: (meta: AnswerMeta) => void,
-): Promise<void> {
+): Promise<"ai" | "human"> {
   const res = await fetch("/api/v1/help/chat/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, session_id: sessionId }),
+    credentials: "same-origin",
+    body: JSON.stringify({ messages, session_id: getSessionId() }),
   });
   if (!res.ok) throw new Error(`help chat failed (${res.status})`);
   if (res.headers.get("content-type")?.includes("application/json")) {
-    // Caps/config problems come back as plain JSON, not a stream.
+    // Caps/config problems, and a conversation already in human mode, come
+    // back as plain JSON, not a stream.
+    const data = (await res.json()) as { mode?: string };
+    if (data.mode === "human") {
+      touchSession();
+      return "human";
+    }
     throw new Error("unavailable");
   }
   const reader = res.body?.getReader();
@@ -90,6 +206,7 @@ async function streamChat(
         text?: string;
         transcript_id?: number;
         rate_token?: string;
+        suggestions?: string[];
       };
       if (event.type === "delta" && event.text) onDelta(event.text);
       else if (event.type === "done") {
@@ -97,11 +214,59 @@ async function streamChat(
         onDone?.({
           transcriptId: event.transcript_id,
           rateToken: event.rate_token,
+          suggestions: event.suggestions,
         });
       } else if (event.type === "error") throw new Error("answer failed");
     }
   }
   if (!done) throw new Error("stream ended early");
+  touchSession();
+  return "ai";
+}
+
+/** Widget polling endpoint — this session's own thread. A 404 (no
+ * conversation yet — nothing sent) or any other failure resolves to null so
+ * the poller just skips that tick. */
+async function fetchThread(after = 0): Promise<ThreadPayload | null> {
+  try {
+    const res = await fetch(
+      `/api/v1/help/thread/?session=${getSessionId()}&after=${after}`,
+      { credentials: "same-origin" },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as ThreadPayload;
+  } catch {
+    return null;
+  }
+}
+
+async function sendHumanMessage(content: string): Promise<boolean> {
+  try {
+    const res = await fetch("/api/v1/help/human-message/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ session_id: getSessionId(), content }),
+    });
+    touchSession();
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function requestHuman(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/v1/help/human-request/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ session_id: getSessionId() }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 function AnswerBody({ content }: { content: string }) {
@@ -135,17 +300,31 @@ function AnswerBody({ content }: { content: string }) {
 }
 
 /** "Ask Contentor" for anonymous marketing-site visitors: floating bubble +
- * compact chat popover, streaming answers from /api/v1/help/chat/. */
+ * compact chat popover, streaming answers from /api/v1/help/chat/, with
+ * persisted session/thread history and human-takeover support. */
 export function HelpBubble() {
   const t = useTranslations("marketing.helpBot");
   const pathname = usePathname() ?? "";
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [mode, setMode] = useState<"ai" | "human">("ai");
+  const [agentLabel, setAgentLabel] = useState("");
+  const [humanRequested, setHumanRequested] = useState(false);
+  const [followUps, setFollowUps] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastIdRef = useRef(0);
+  // Flips true once a fetchThread() round-trip has actually completed —
+  // deliberately NOT derived from lastIdRef (see applyThreadPoll's doc
+  // comment above for why `lastId === 0` is the wrong signal: a genuinely-
+  // empty first fetch never advances lastId, which would keep treating
+  // every later tick as "initial" too and re-replay the first exchange on
+  // top of its own local echo). Stays false across a failed/cancelled tick
+  // so a retry still gets the full-replay treatment.
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/v1/help/status/")
@@ -158,6 +337,51 @@ export function HelpBubble() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
+  // Hydrate the persisted thread on open, then poll for human-takeover
+  // replies. Polls faster once a human is (or has been requested to be)
+  // involved. `initial` is captured synchronously BEFORE the await from
+  // hydratedRef — a suggested-question chip click can add local messages
+  // while the first fetchThread() round-trip is still in flight, and
+  // hydratedRef (unlike lastIdRef or the local message list) is never
+  // touched by send(), so it can't be raced by that concurrent local echo.
+  // On the very first successful tick the entire stored thread replays; on
+  // every tick after that only agent/system rows append — user/assistant
+  // rows are already local echoes.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    const tick = async () => {
+      const initial = !hydratedRef.current;
+      const thread = await fetchThread(lastIdRef.current);
+      if (cancelled || !thread) return;
+      hydratedRef.current = true;
+      setMode(thread.status);
+      setAgentLabel(thread.agent_label);
+      setHumanRequested(thread.human_requested);
+      const { appended, lastId } = applyThreadPoll(
+        thread,
+        lastIdRef.current,
+        initial,
+      );
+      lastIdRef.current = lastId;
+      if (appended.length) {
+        setMessages((cur) => [
+          ...cur,
+          ...appended.map((m) => ({ role: m.role, content: m.content }) as Msg),
+        ]);
+      }
+    };
+    void tick();
+    const iv = setInterval(
+      tick,
+      mode === "human" || humanRequested ? 3000 : 5000,
+    );
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+    };
+  }, [open, mode, humanRequested]);
+
   if (!enabled || HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) {
     return null;
   }
@@ -167,14 +391,33 @@ export function HelpBubble() {
     if (!trimmed || busy) return;
     setError(false);
     setInput("");
+
+    if (mode === "human") {
+      setMessages((cur) => [...cur, { role: "user", content: trimmed }]);
+      setFollowUps([]);
+      if (!(await sendHumanMessage(trimmed))) setError(true);
+      return;
+    }
+
+    const priorMessages = messages;
     const history: ChatMessage[] = [
-      ...messages,
+      ...messages
+        .filter(
+          (m): m is Msg & { role: "user" | "assistant" } =>
+            m.role === "user" || m.role === "assistant",
+        )
+        .map((m) => ({ role: m.role, content: m.content })),
       { role: "user", content: trimmed },
     ];
-    setMessages([...history, { role: "assistant", content: "" }]);
+    setMessages([
+      ...priorMessages,
+      { role: "user", content: trimmed },
+      { role: "assistant", content: "" },
+    ]);
+    setFollowUps([]);
     setBusy(true);
     try {
-      await streamChat(
+      const result = await streamChat(
         history,
         (delta) => {
           setMessages((current) => {
@@ -187,15 +430,24 @@ export function HelpBubble() {
             return next;
           });
         },
-        (meta) =>
+        (meta) => {
           setMessages((current) => {
             const next = [...current];
             next[next.length - 1] = { ...next[next.length - 1], meta };
             return next;
-          }),
+          });
+          setFollowUps(meta.suggestions ?? []);
+        },
       );
+      if (result === "human") {
+        // The chat call raced into human mode server-side — the reply is
+        // already stored; drop the empty streaming placeholder and let the
+        // poller deliver it.
+        setMessages((current) => current.slice(0, -1));
+        setMode("human");
+      }
     } catch {
-      setMessages(history.slice(0, -1));
+      setMessages(priorMessages);
       setInput(trimmed);
       setError(true);
     } finally {
@@ -203,11 +455,27 @@ export function HelpBubble() {
     }
   };
 
+  const requestHumanHandoff = async () => {
+    setHumanRequested(true);
+    await requestHuman();
+  };
+
   const suggestions = [
     t("suggestPrice"),
     t("suggestPayouts"),
     t("suggestDomain"),
   ];
+
+  const systemLine = (content: string): string | null => {
+    if (content.startsWith("agent_joined:")) {
+      return t("agentJoined", {
+        name: content.slice("agent_joined:".length),
+      });
+    }
+    if (content === "assistant_resumed") return t("assistantResumed");
+    if (content === "human_requested") return t("humanRequestedLine");
+    return null;
+  };
 
   return (
     <>
@@ -234,6 +502,11 @@ export function HelpBubble() {
               <X className="h-4 w-4" />
             </button>
           </div>
+          {mode === "human" && (
+            <div className="border-b bg-accent/50 px-4 py-2 text-xs text-muted-foreground">
+              {t("humanModeNotice", { name: agentLabel })}
+            </div>
+          )}
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
               <div className="space-y-3 pt-1">
@@ -252,16 +525,36 @@ export function HelpBubble() {
                 </div>
               </div>
             )}
-            {messages.map((message, index) =>
-              message.role === "user" ? (
-                <div key={index} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
-                    {message.content}
+            {messages.map((message, index) => {
+              if (message.role === "user") {
+                return (
+                  <div key={index} className="flex justify-end">
+                    <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                      {message.content}
+                    </div>
                   </div>
-                </div>
-              ) : (
+                );
+              }
+              if (message.role === "system") {
+                const line = systemLine(message.content);
+                if (!line) return null;
+                return (
+                  <p
+                    key={index}
+                    className="text-center text-xs text-muted-foreground"
+                  >
+                    {line}
+                  </p>
+                );
+              }
+              return (
                 <div key={index} className="flex">
                   <div className="max-w-[90%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2">
+                    {message.role === "agent" && agentLabel && (
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {agentLabel}
+                      </p>
+                    )}
                     {message.content ? (
                       <>
                         <AnswerBody content={message.content} />
@@ -307,7 +600,21 @@ export function HelpBubble() {
                     )}
                   </div>
                 </div>
-              ),
+              );
+            })}
+            {followUps.length > 0 && !busy && mode === "ai" && (
+              <div className="flex flex-col items-start gap-2">
+                {followUps.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => void send(suggestion)}
+                    className="rounded-full border px-3 py-1.5 text-left text-xs transition-colors hover:border-primary hover:bg-accent"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             )}
             {error && (
               <p className="text-center text-xs text-destructive">
@@ -315,6 +622,17 @@ export function HelpBubble() {
               </p>
             )}
           </div>
+          {mode === "ai" && !humanRequested && messages.length > 0 && (
+            <div className="px-3 pt-2">
+              <button
+                type="button"
+                onClick={() => void requestHumanHandoff()}
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                {t("talkToHuman")}
+              </button>
+            </div>
+          )}
           <form
             className="flex items-center gap-2 border-t p-3"
             onSubmit={(e) => {

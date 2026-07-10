@@ -177,6 +177,11 @@
     "suggestPayouts": "How do payouts work?",
     "suggestDomain": "Can I use my own domain?",
     "rateUp": "Helpful",
-    "rateDown": "Not helpful"
+    "rateDown": "Not helpful",
+    "talkToHuman": "Talk to a human",
+    "humanRequestedLine": "You asked for a human — we've been notified and will jump in here.",
+    "agentJoined": "{name} joined the chat",
+    "assistantResumed": "The assistant is back",
+    "humanModeNotice": "You're chatting with {name}"
   }
 }

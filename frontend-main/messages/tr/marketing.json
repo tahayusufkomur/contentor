@@ -177,6 +177,11 @@
     "suggestPayouts": "Ödemeler nasıl çalışır?",
     "suggestDomain": "Kendi alan adımı kullanabilir miyim?",
     "rateUp": "Faydalı",
-    "rateDown": "Faydalı değil"
+    "rateDown": "Faydalı değil",
+    "talkToHuman": "Bir kişiyle konuş",
+    "humanRequestedLine": "Bir kişiyle görüşmek istediniz — bildirim gönderildi, birazdan burada olacağız.",
+    "agentJoined": "{name} sohbete katıldı",
+    "assistantResumed": "Asistan geri döndü",
+    "humanModeNotice": "{name} ile sohbet ediyorsunuz"
   }
 }
