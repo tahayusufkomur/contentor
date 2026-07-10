@@ -11,8 +11,12 @@ import { StudioPanel } from "./studio-panel";
 
 interface StudioEditorProps {
   recipe: LogoRecipe;
-  onPatch: (part: Partial<LogoRecipe>) => void;
-  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe) => void;
+  onPatch: (part: Partial<LogoRecipe>, coalesceKey?: string) => void;
+  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
   primaryHex: string;
   onGetNewIdeas: () => void;
   onUploadMark: (file: File) => void;
@@ -26,6 +30,10 @@ export function StudioEditor({
   recipe,
   onPatch,
   onUpdate,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
   primaryHex,
   onGetNewIdeas,
   onUploadMark,
@@ -82,7 +90,7 @@ export function StudioEditor({
           recipe={recipe}
           selected={selected}
           onSelect={setSelected}
-          onChange={(next) => onUpdate(() => next)}
+          onChange={(next) => onUpdate(() => next, "canvas-drag")}
           dark={dark}
           onToggleDark={() => setDark((v) => !v)}
           logoSvgRef={logoSvgRef}
@@ -142,6 +150,10 @@ export function StudioEditor({
         selected={selected}
         onPatch={onPatch}
         onUpdate={onUpdate}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={onUndo}
+        onRedo={onRedo}
         primaryHex={primaryHex}
         onGetNewIdeas={onGetNewIdeas}
         onUploadMark={onUploadMark}
