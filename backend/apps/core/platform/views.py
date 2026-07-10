@@ -3,7 +3,9 @@ from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 
+from django.conf import settings
 from django.db.models import Count, Q, Sum
+from django.db.models.functions import TruncDate
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_tenants.utils import tenant_context
@@ -12,7 +14,18 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from ..currency import tenant_charge_currency
-from ..models import PlatformPlan, PlatformSubscription, Tenant, TenantUsage, WebhookEvent
+from ..models import (
+    AiTranscript,
+    BlogAiUsage,
+    HelpBotUsage,
+    LogoAiUsage,
+    PlatformPlan,
+    PlatformSubscription,
+    StudentBotUsage,
+    Tenant,
+    TenantUsage,
+    WebhookEvent,
+)
 from ..permissions import IsSuperUser
 from ..stripe_pricing import apply_amounts as _apply_amounts
 from .serializers import (
@@ -444,5 +457,92 @@ def platform_usage(request):
             "browser_sessions": total_browser,
             "pwa_pct": round(total_pwa / grand_total * 100) if grand_total else 0,
             "by_tenant": by_tenant,
+        }
+    )
+
+
+def _ai_feature_rollups(month):
+    """Per-feature spend/count + kill-switch flag for one "YYYY-MM" month.
+
+    Each feature has its own global-monthly-USD cap (env-configured); the
+    kill-switch trips once cumulative spend for the month reaches that cap,
+    mirroring the runtime check each feature's own view makes before calling
+    the provider.
+    """
+    specs = [
+        ("help_bot", "Help bot", HelpBotUsage, "questions", settings.HELP_BOT_GLOBAL_MONTHLY_USD),
+        ("student_bot", "Student assistant", StudentBotUsage, "questions", settings.STUDENT_BOT_GLOBAL_MONTHLY_USD),
+        ("blog_ai", "Blog AI", BlogAiUsage, "generations_used", settings.BLOG_AI_MONTHLY_BUDGET_USD),
+        ("brand_pack", "Brand Pack", LogoAiUsage, "packs_used", settings.LOGO_AI_MONTHLY_BUDGET_USD),
+    ]
+    features = []
+    for key, label, model, count_field, cap in specs:
+        agg = model.objects.filter(month=month).aggregate(c=Sum(count_field), usd=Sum("usd_spent"))
+        spent = agg["usd"] or Decimal("0")
+        features.append(
+            {
+                "key": key,
+                "label": label,
+                "count": agg["c"] or 0,
+                "usd_spent": str(spent),
+                "usd_cap": float(cap),
+                "kill_switch_tripped": spent >= Decimal(str(cap)),
+            }
+        )
+    return features
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_ai_usage(request):
+    """Cross-feature AI spend/usage rollup for the superadmin dashboard.
+
+    Aggregates the four AI usage meters (help bot, student assistant, blog
+    AI, Brand Pack) for one month, plus top-10 tenants by combined spend, a
+    rating breakdown, and a 7-day daily-question sparkline sourced from
+    ``AiTranscript``. Preview transcripts (``is_preview=True`` — coach
+    testing, not real usage) are excluded from the ratings and daily-question
+    aggregates.
+    """
+    month = request.query_params.get("month") or timezone.now().strftime("%Y-%m")
+    features = _ai_feature_rollups(month)
+
+    per_tenant: dict[str, dict] = {}
+    for model in (HelpBotUsage, StudentBotUsage, BlogAiUsage, LogoAiUsage):
+        for row in model.objects.filter(month=month).values("tenant_schema").annotate(usd=Sum("usd_spent")):
+            bucket = per_tenant.setdefault(row["tenant_schema"], {"usd": Decimal("0"), "count": 0})
+            bucket["usd"] = bucket["usd"] + (row["usd"] or Decimal("0"))
+
+    tx_month = AiTranscript.objects.filter(
+        created_at__year=int(month[:4]),
+        created_at__month=int(month[5:7]),
+        is_preview=False,
+    )
+    for row in tx_month.values("tenant_schema").annotate(c=Count("id")):
+        per_tenant.setdefault(row["tenant_schema"], {"usd": Decimal("0"), "count": 0})["count"] = row["c"]
+
+    top = sorted(per_tenant.items(), key=lambda kv: kv[1]["usd"], reverse=True)[:10]
+
+    ratings = {
+        "up": tx_month.filter(rating="up").count(),
+        "down": tx_month.filter(rating="down").count(),
+        "unrated": tx_month.filter(rating="").count(),
+    }
+    week_ago = timezone.now() - timedelta(days=7)
+    daily = [
+        {"date": str(row["d"]), "count": row["c"]}
+        for row in AiTranscript.objects.filter(created_at__gte=week_ago, is_preview=False)
+        .annotate(d=TruncDate("created_at"))
+        .values("d")
+        .annotate(c=Count("id"))
+        .order_by("d")
+    ]
+    return Response(
+        {
+            "month": month,
+            "features": features,
+            "top_tenants": [{"tenant_schema": k, "usd_spent": str(v["usd"]), "count": v["count"]} for k, v in top],
+            "ratings": ratings,
+            "daily_questions": daily,
         }
     )
