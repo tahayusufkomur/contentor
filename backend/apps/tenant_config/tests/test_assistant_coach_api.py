@@ -135,6 +135,17 @@ def test_knowledge_crud_and_caps(coach_client):
     assert coach_client.delete(f"/api/v1/admin/assistant/knowledge/{pk}/").status_code == 204
 
 
+def test_knowledge_create_coerces_non_string_title_without_crashing(coach_client):
+    # Regression: _validate_entry coerces via str() before length-checking, so a
+    # truthy non-string title (e.g. an int) passes validation. The create() call
+    # must coerce the same way (matching assistant_knowledge_detail's PATCH
+    # handler) or it raises AttributeError('int' object has no attribute
+    # 'strip') -> unhandled 500 instead of a clean response.
+    r = coach_client.post("/api/v1/admin/assistant/knowledge/", {"title": 12345, "content": "ok"}, format="json")
+    assert r.status_code == 201
+    assert r.json()["title"] == "12345"
+
+
 def test_knowledge_exactly_at_cap_succeeds(coach_client):
     for i in range(AssistantKnowledgeEntry.MAX_ENTRIES - 1):
         AssistantKnowledgeEntry.objects.create(title=f"t{i}", content="c")
