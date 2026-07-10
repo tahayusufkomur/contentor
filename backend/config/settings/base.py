@@ -251,15 +251,9 @@ HELP_BOT_TENANT_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_TENANT_MONTHLY_
 HELP_BOT_PUBLIC_MONTHLY_USD = float(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_USD", "10"))
 HELP_BOT_PUBLIC_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_QUESTIONS", "500"))
 
-# --- AI blog generation (apps.blog.ai) ---
-# "anthropic" (prod: API key + prompt caching) or "cli" (local dev on the
-# developer's Claude subscription; reuses the help bot's CLI container
-# install + CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`).
-BLOG_AI_PROVIDER = os.environ.get("BLOG_AI_PROVIDER", "anthropic")
+# --- AI blog generation (apps.blog.ai; provider comes from AI_PROVIDER) ---
 BLOG_AI_MODEL = os.environ.get("BLOG_AI_MODEL", "claude-sonnet-5")
 BLOG_AI_TOPIC_MODEL = os.environ.get("BLOG_AI_TOPIC_MODEL", "claude-haiku-4-5")
-BLOG_AI_CLI_MODEL = os.environ.get("BLOG_AI_CLI_MODEL", "sonnet")
-BLOG_AI_CLI_BIN = os.environ.get("BLOG_AI_CLI_BIN", "claude")
 # Global monthly USD kill-switch across ALL blog AI (attempts included).
 BLOG_AI_MONTHLY_BUDGET_USD = float(os.environ.get("BLOG_AI_MONTHLY_BUDGET_USD", "30"))
 

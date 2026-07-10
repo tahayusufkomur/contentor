@@ -32,13 +32,22 @@ def _cli_envelope(result_text):
     return json.dumps({"type": "result", "result": result_text, "total_cost_usd": 0})
 
 
+def _cli_settings(settings):
+    settings.AI_PROVIDER = "cli"
+    settings.AI_CLI_BIN = "claude"
+    settings.AI_CLI_MODEL = "haiku"
+
+
 def test_cli_provider_parses_envelope_and_validates(settings):
-    settings.BLOG_AI_PROVIDER = "cli"
+    _cli_settings(settings)
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON), stderr="")
     with mock.patch("subprocess.run", return_value=completed) as run:
-        parsed, cost = ai._call_structured("sys", "user", ai._BlogDraft, max_tokens=ai.MAX_OUTPUT_TOKENS)
+        parsed, cost, model = ai._call_structured(
+            "sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=ai.MAX_OUTPUT_TOKENS
+        )
     assert parsed.title == "Morning Habits That Stick"
     assert cost == Decimal("0")
+    assert model == "haiku"
     argv = run.call_args.args[0]
     assert "--disallowedTools" in argv and "--max-turns" in argv
     env = run.call_args.kwargs["env"]
@@ -46,28 +55,29 @@ def test_cli_provider_parses_envelope_and_validates(settings):
 
 
 def test_cli_provider_strips_code_fences(settings):
-    settings.BLOG_AI_PROVIDER = "cli"
+    _cli_settings(settings)
     fenced = "```json\n" + DRAFT_JSON + "\n```"
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(fenced), stderr="")
     with mock.patch("subprocess.run", return_value=completed):
-        parsed, _ = ai._call_structured("sys", "user", ai._BlogDraft, max_tokens=100)
+        parsed, _, _ = ai._call_structured("sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=100)
     assert parsed.slug == "morning-habits"
 
 
 def test_cli_provider_raises_blog_ai_error_on_failure(settings):
-    settings.BLOG_AI_PROVIDER = "cli"
+    _cli_settings(settings)
     completed = SimpleNamespace(returncode=1, stdout="", stderr="boom")
     with mock.patch("subprocess.run", return_value=completed), pytest.raises(ai.BlogAiError):
-        ai._call_structured("sys", "user", ai._BlogDraft, max_tokens=100)
+        ai._call_structured("sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=100)
 
 
 def test_generate_post_returns_rendered_fields(settings):
-    settings.BLOG_AI_PROVIDER = "cli"
+    _cli_settings(settings)
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON), stderr="")
     with mock.patch("subprocess.run", return_value=completed):
         result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits")
     assert result.fields["title"] == "Morning Habits That Stick"
     assert "<strong>small</strong>" in result.fields["body_html"]
+    assert result.fields["ai_model"] == "haiku"
     assert "slug" not in result.fields  # slugs are re-derived server-side
 
 

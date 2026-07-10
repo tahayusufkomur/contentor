@@ -9,10 +9,9 @@
   converts + sanitizes server-side.
 - Topics are batched 12-at-a-time on the cheap model into BlogTopicIdea.
 
-Two providers behind one call shape (BLOG_AI_PROVIDER, matching the help
-bot's convention): "anthropic" (prod; SDK messages.parse + prompt caching)
-and "cli" (local dev on the developer's Claude subscription; ANTHROPIC_API_KEY
-is stripped from the subprocess env so the CLI can't silently bill it).
+Provider plumbing lives in apps.core.ai (AI_PROVIDER: "anthropic" in prod,
+"cli" for local dev on the developer's Claude subscription); this module
+owns only prompts, validation, budgets and quotas.
 """
 
 from datetime import UTC, datetime
@@ -21,13 +20,12 @@ from decimal import Decimal
 from django.conf import settings
 from pydantic import BaseModel, Field
 
+from apps.core import ai as core_ai
 from apps.core.models import BlogAiUsage
-from apps.tenant_config.logo_ai import _estimate_cost  # shared price table
 
 PROMPT_VERSION = 1
 MAX_OUTPUT_TOKENS = 3000
 TOPIC_MAX_OUTPUT_TOKENS = 1200
-CLI_TIMEOUT_SECONDS = 120
 
 # ── Output contracts ─────────────────────────────────────────────────────────
 
@@ -152,90 +150,15 @@ def render_body(sections):
 # ── Providers ────────────────────────────────────────────────────────────────
 
 
-def _call_structured(system_prompt, user_prompt, output_model, max_tokens):
-    """One structured-output model call -> (validated output_model, cost).
-    Provider-agnostic: everything above this line behaves identically for
-    "anthropic" and "cli". Raises BlogAiError on any provider failure."""
-    if settings.BLOG_AI_PROVIDER == "cli":
-        return _cli_structured(system_prompt, user_prompt, output_model, max_tokens)
-    return _anthropic_structured(system_prompt, user_prompt, output_model, max_tokens)
-
-
-def _anthropic_structured(system_prompt, user_prompt, output_model, max_tokens):
-    from anthropic import Anthropic
-
-    model = settings.BLOG_AI_MODEL if output_model is _BlogDraft else settings.BLOG_AI_TOPIC_MODEL
-    client = Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=100.0, max_retries=1)
-    response = client.messages.parse(
-        model=model,
-        max_tokens=max_tokens,
-        system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
-        messages=[{"role": "user", "content": user_prompt}],
-        output_format=output_model,
-    )
-    return response.parsed_output, _estimate_cost(response.usage, model)
-
-
-def _cli_structured(system_prompt, user_prompt, output_model, max_tokens):
-    """Local-dev provider: one blocking `claude -p` run on the developer's
-    subscription. The CLI has no parse-forced structured output, so the
-    schema contract is appended to the system prompt and the result is
-    validated with the SAME pydantic model as the anthropic path."""
-    import json as _json
-    import os
-    import subprocess
-    import tempfile
-
-    from pydantic import ValidationError
-
-    schema_note = (
-        "\n\nRespond with ONLY a JSON object (no prose, no code fences) matching this JSON schema:\n"
-        + _json.dumps(output_model.model_json_schema())
-    )
-    cmd = [
-        settings.BLOG_AI_CLI_BIN,
-        "-p",
-        user_prompt,
-        "--model",
-        settings.BLOG_AI_CLI_MODEL,
-        "--system-prompt",
-        system_prompt + schema_note,
-        "--disallowedTools",
-        "*",
-        "--max-turns",
-        "1",
-        "--output-format",
-        "json",
-    ]
-    # Subscription auth only: with ANTHROPIC_API_KEY present the CLI would
-    # bill the API key instead of the subscription.
-    env = {k: v for k, v in os.environ.items() if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}
+def _call_structured(system_prompt, user_prompt, output_model, model, max_tokens):
+    """One structured-output model call -> (validated output_model, cost,
+    effective_model). Raises BlogAiError on any provider failure."""
     try:
-        proc = subprocess.run(  # noqa: S603 — fixed argv, no shell
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=CLI_TIMEOUT_SECONDS,
-            env=env,
-            cwd=tempfile.gettempdir(),
-            check=False,
+        return core_ai.structured(
+            system=system_prompt, user=user_prompt, output_model=output_model, model=model, max_tokens=max_tokens
         )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise BlogAiError(f"claude CLI not runnable: {exc}") from exc
-    if proc.returncode != 0:
-        raise BlogAiError(f"claude CLI failed (rc={proc.returncode}): {(proc.stderr or '')[:500]}")
-    try:
-        envelope = _json.loads(proc.stdout)
-        text = (envelope.get("result") or "").strip()
-        if text.startswith("```"):
-            text = text.strip("`\n")
-            if text.startswith("json"):
-                text = text[4:].lstrip()
-        parsed = output_model.model_validate_json(text)
-    except (ValueError, ValidationError) as exc:
-        raise BlogAiError(f"claude CLI output did not match schema: {exc}") from exc
-    # Subscription usage — nothing accrues against the USD caps.
-    return parsed, Decimal("0")
+    except core_ai.AiError as exc:
+        raise BlogAiError(str(exc), cost_usd=exc.cost_usd) from exc
 
 
 # ── High-level generation ────────────────────────────────────────────────────
@@ -254,7 +177,9 @@ def generate_post(brief, topic, instructions=""):
     user_prompt = f"{brief}\n\nWrite a blog post about: {topic}"
     if instructions:
         user_prompt += f"\n\nThe coach's extra instructions: {instructions[:500]}"
-    parsed, cost = _call_structured(BLOG_STATIC_PROMPT, user_prompt, _BlogDraft, MAX_OUTPUT_TOKENS)
+    parsed, cost, effective_model = _call_structured(
+        BLOG_STATIC_PROMPT, user_prompt, _BlogDraft, settings.BLOG_AI_MODEL, MAX_OUTPUT_TOKENS
+    )
     body_html = render_body(parsed.sections)
     if not body_html.strip():
         raise BlogAiError("model returned an empty post", cost_usd=cost)
@@ -265,9 +190,7 @@ def generate_post(brief, topic, instructions=""):
             "excerpt": str(parsed.excerpt)[:300],
             "meta_description": str(parsed.meta_description)[:170],
             "tags": [str(t).lower()[:30] for t in parsed.tags[:6]],
-            "ai_model": settings.BLOG_AI_MODEL
-            if settings.BLOG_AI_PROVIDER == "anthropic"
-            else settings.BLOG_AI_CLI_MODEL,
+            "ai_model": effective_model,
         },
         cost,
     )
@@ -277,7 +200,9 @@ def generate_topics(brief, existing_titles=()):
     """One cheap-model call -> 12 topic dicts. Costs budget USD, never quota."""
     titles = "; ".join(list(existing_titles)[:20]) or "-"
     user_prompt = f"{brief}\n\nAlready-covered titles: {titles}"
-    parsed, cost = _call_structured(TOPIC_STATIC_PROMPT, user_prompt, _TopicBatch, TOPIC_MAX_OUTPUT_TOKENS)
+    parsed, cost, _ = _call_structured(
+        TOPIC_STATIC_PROMPT, user_prompt, _TopicBatch, settings.BLOG_AI_TOPIC_MODEL, TOPIC_MAX_OUTPUT_TOKENS
+    )
     topics = [{"title": str(t.title)[:200], "angle": str(t.angle)[:300]} for t in parsed.topics[:12]]
     if not topics:
         raise BlogAiError("model returned no topics", cost_usd=cost)
@@ -320,11 +245,7 @@ def record_success(tenant_schema, month=None):
 
 
 def _provider_configured():
-    if settings.BLOG_AI_PROVIDER == "cli":
-        import shutil
-
-        return shutil.which(settings.BLOG_AI_CLI_BIN) is not None
-    return bool(settings.ANTHROPIC_API_KEY)
+    return core_ai.available()[0]
 
 
 def plan_limit(tenant):
