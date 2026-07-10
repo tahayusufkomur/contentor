@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-fresh lint logs health-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-fresh lint logs health-check ai-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -121,6 +121,9 @@ shell: ## Open Django shell
 
 health-check: ## Check if the API is healthy
 	@curl -sf http://localhost/api/health/ && echo "OK" || echo "FAIL"
+
+ai-check: ## Verify the AI provider (cli subscription / anthropic key) end-to-end
+	docker compose exec django python manage.py ai_check
 
 # ============================================================================
 # Stripe
