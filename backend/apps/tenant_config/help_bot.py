@@ -170,9 +170,10 @@ def stream_answer(history, audience="coach"):
         raise HelpBotError(str(exc)) from exc
 
 
-def sse_events(history, audience, bucket, month):
-    """Yield SSE-framed events for one answer and record usage on completion.
-    Shared by the coach (tenant) and public (marketing) chat views."""
+def sse_events(history, audience, bucket, month, question="", session_id=""):
+    """Yield SSE-framed events for one answer; on completion record usage and
+    write the audit transcript. ``question`` is the RAW last user message
+    (before context injection) so transcripts never store tenant snapshots."""
 
     def on_complete(info):
         try:
@@ -181,7 +182,21 @@ def sse_events(history, audience, bucket, month):
             import logging
 
             logging.getLogger(__name__).exception("help bot: usage recording failed")
-        return None
+        row = assistant.log_transcript(
+            feature="help_bot",
+            audience=audience,
+            tenant_schema=bucket,
+            session_id=session_id,
+            question=question,
+            answer=info["answer"],
+            cost_usd=info["cost_usd"],
+            provider=info["provider"],
+            model=info["model"],
+            prompt_version=PROMPT_VERSION,
+        )
+        if row is None:
+            return None
+        return {"transcript_id": row.id, "rate_token": assistant.rate_token(row.id)}
 
     return assistant.run_chat(
         system=system_prompt(audience),

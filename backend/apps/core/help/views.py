@@ -66,13 +66,16 @@ def help_bot_public_chat(request):
         return Response({"enabled": False, "reason": reason}, status=200)
 
     data = request.data if isinstance(request.data, dict) else {}
+    raw = data.get("messages") or []
+    question = str(raw[-1].get("content") or "")[:2000] if isinstance(raw[-1] if raw else None, dict) else ""
+    session_id = str(data.get("session_id") or "")[:36]
     try:
         history = help_bot.prepare_history(data.get("messages"), VISITOR_CONTEXT)
     except ValueError as exc:
         return Response({"error": str(exc)}, status=400)
 
     response = StreamingHttpResponse(
-        help_bot.sse_events(history, "visitor", MARKETING_BUCKET, month),
+        help_bot.sse_events(history, "visitor", MARKETING_BUCKET, month, question=question, session_id=session_id),
         content_type="text/event-stream",
     )
     response["Cache-Control"] = "no-cache"

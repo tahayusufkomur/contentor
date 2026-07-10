@@ -61,7 +61,9 @@ def test_public_chat_streams_without_auth(anon_client, enabled, monkeypatch):
     assert response["Content-Type"] == "text/event-stream"
     events = _sse_events(response)
     assert events[0]["type"] == "delta"
-    assert events[-1] == {"type": "done"}
+    assert events[-1]["type"] == "done"
+    assert isinstance(events[-1]["transcript_id"], int)
+    assert isinstance(events[-1]["rate_token"], str)
 
     # Visitor persona + visitor context, never tenant data.
     assert seen["system"] == help_bot.system_prompt("visitor")
