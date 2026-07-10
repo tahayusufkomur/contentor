@@ -27,7 +27,11 @@ from decimal import Decimal
 
 from django.conf import settings
 
-CLI_TIMEOUT_SECONDS = 120
+# The logo Brand Pack (the longest structured call) measures ~106s on haiku
+# in the dev container, so 120 was a coin-flip. A single attempt must stay
+# under gunicorn's --timeout (300 dev) so provider failures degrade
+# gracefully instead of killing the worker.
+CLI_TIMEOUT_SECONDS = 240
 
 # $ per 1M tokens: (input, output, cache_read, cache_write). Cache-write here
 # assumes the 5-minute TTL (1.25x input), not the 1-hour tier.
