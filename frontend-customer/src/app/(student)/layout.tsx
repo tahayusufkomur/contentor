@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth";
 import { serverFetch } from "@/lib/api-server";
 import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { PublicHeader } from "@/components/shared/public-header";
+import { SiteAssistantBubble } from "@/components/assistant/site-assistant-bubble";
 import type { SubscriptionPlan } from "@/types/billing";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export default async function StudentLayout({
       />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
       <ImpersonationBanner />
+      {user.role === "student" && <SiteAssistantBubble />}
     </>
   );
 }

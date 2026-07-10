@@ -35,5 +35,18 @@
       "userinfoFailed": "Could not retrieve your Google profile. Please try again.",
       "noEmail": "No email associated with this Google account."
     }
+  },
+  "assistant": {
+    "title": "Ask {brand}",
+    "bubbleLabel": "Open site assistant",
+    "intro": "Hi! Ask me about the courses, downloads and sessions on this site.",
+    "placeholder": "Ask a question…",
+    "send": "Send",
+    "close": "Close",
+    "thinking": "Thinking…",
+    "error": "Something went wrong — please try again.",
+    "rateUp": "Helpful",
+    "rateDown": "Not helpful",
+    "disclosure": "Conversations may be reviewed by {brand} to improve answers."
   }
 }
