@@ -95,6 +95,7 @@ class AssistantConfig(models.Model):
     enabled = models.BooleanField(default=False)
     greeting = models.CharField(max_length=200, blank=True, default="")
     suggested_questions = models.JSONField(default=list, blank=True)  # ≤3 strings ≤80 chars (validated in the API)
+    human_handoff_enabled = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

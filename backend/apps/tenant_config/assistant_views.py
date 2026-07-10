@@ -12,9 +12,10 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from apps.core import assistant
+from apps.core.email import send_email
 from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
-from apps.core.throttling import AiHumanMessageThrottle, AiThreadThrottle
+from apps.core.throttling import AiHumanMessageThrottle, AiHumanRequestThrottle, AiThreadThrottle
 
 from . import student_bot
 from .models import AssistantConfig, AssistantKnowledgeEntry, TenantConfig
@@ -46,6 +47,7 @@ def _status_payload(tenant):
         "greeting": cfg.greeting,
         "suggested_questions": (cfg.suggested_questions or [])[:3],
         "brand": (config.brand_name if config else "") or tenant.schema_name,
+        "human_handoff": cfg.human_handoff_enabled,
     }
 
 
@@ -164,6 +166,58 @@ def assistant_human_message(request):
     return Response({"mode": "human"})
 
 
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([AiHumanRequestThrottle])
+def assistant_human_request(request):
+    """Student taps "Talk to a human": flag the conversation and email the
+    coach once (v2 spec D9). Best-effort mail — the flag is the state."""
+    from django.utils import timezone
+
+    tenant = connection.tenant
+    cfg = AssistantConfig.load()
+    if not cfg.human_handoff_enabled:
+        return Response(status=403)
+    data = request.data if isinstance(request.data, dict) else {}
+    session = str(data.get("session_id") or "").strip()[:36]
+    convo = (
+        AiConversation.objects.filter(
+            session_id=session, feature="student_bot", tenant_schema=tenant.schema_name
+        ).first()
+        if session
+        else None
+    )
+    if convo is None:
+        return Response(status=404)
+    if not convo.human_requested:
+        convo.human_requested = True
+        convo.human_requested_at = timezone.now()
+        convo.save(update_fields=["human_requested", "human_requested_at", "updated_at"])
+        assistant.append_message(convo, "system", "human_requested")
+        try:
+            domain = (
+                tenant.domains.filter(is_primary=True).values_list("domain", flat=True).first()
+                or tenant.domains.values_list("domain", flat=True).first()
+                or ""
+            )
+            label = convo.user_label or "A visitor"
+            send_email(
+                to=tenant.owner_email,
+                subject=f"{label} asked to talk to a human on your site",
+                html=(
+                    f"<p>{label} asked to talk to a human in your site assistant chat.</p>"
+                    f'<p><a href="https://{domain}/admin/assistant">Open your conversations</a> '
+                    f"to reply — the assistant pauses while you chat.</p>"
+                ),
+            )
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception("assistant: human-request email failed")
+    return Response({"ok": True})
+
+
 # ── Coach admin half (/api/v1/admin/assistant/…) ─────────────────────────────
 # (UserRateThrottle is already imported at the top of this module — Task 8.)
 
@@ -181,6 +235,7 @@ def _config_payload(tenant):
         "enabled": cfg.enabled,
         "greeting": cfg.greeting,
         "suggested_questions": cfg.suggested_questions or [],
+        "human_handoff": cfg.human_handoff_enabled,
         "usage": {
             "questions_used": usage.questions,
             "questions_cap": student_bot.plan_question_limit(tenant),
@@ -213,6 +268,8 @@ def assistant_config(request):
             cfg.greeting = greeting
         if "enabled" in data:
             cfg.enabled = bool(data["enabled"])
+        if "human_handoff_enabled" in data:
+            cfg.human_handoff_enabled = bool(data["human_handoff_enabled"])
         cfg.save()
     return Response(_config_payload(tenant))
 

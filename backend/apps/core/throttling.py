@@ -10,3 +10,7 @@ class AiThreadThrottle(AnonRateThrottle):
 
 class AiHumanMessageThrottle(AnonRateThrottle):
     scope = "ai_human_message"
+
+
+class AiHumanRequestThrottle(AnonRateThrottle):
+    scope = "ai_human_request"

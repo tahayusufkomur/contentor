@@ -233,3 +233,29 @@ class TestHumanModeChat:
         row = res.json()["results"][0]
         assert row["session_id"] == "sess-list" and row["status"] == "ai"
         assert row["message_count"] == 2 and row["last_message"] == "hello"
+
+
+class TestHumanRequest:
+    def test_request_flags_and_emails_once(self, tenant_client, paid_tenant):
+        _seed_convo(paid_tenant.schema_name, session_id="sess-r")
+        with patch("apps.tenant_config.assistant_views.send_email") as mailer:
+            r1 = tenant_client.post("/api/v1/assistant/human-request/", {"session_id": "sess-r"}, format="json")
+            r2 = tenant_client.post("/api/v1/assistant/human-request/", {"session_id": "sess-r"}, format="json")
+        assert r1.status_code == 200 and r2.status_code == 200
+        assert mailer.call_count == 1
+        assert mailer.call_args.kwargs["to"] == paid_tenant.owner_email
+        with schema_context("public"):
+            convo = AiConversation.objects.get(session_id="sess-r")
+            assert convo.human_requested is True
+            assert convo.messages.filter(role="system", content="human_requested").exists()
+
+    def test_disabled_flag_hides_and_rejects(self, tenant_client, paid_tenant):
+        cfg = AssistantConfig.load()
+        cfg.human_handoff_enabled = False
+        cfg.save()
+        assert tenant_client.get("/api/v1/assistant/status/").json()["human_handoff"] is False
+        _seed_convo(paid_tenant.schema_name, session_id="sess-r2")
+        assert (
+            tenant_client.post("/api/v1/assistant/human-request/", {"session_id": "sess-r2"}, format="json").status_code
+            == 403
+        )
