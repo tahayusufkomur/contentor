@@ -15,6 +15,7 @@ import {
 import { useTranslations } from "next-intl";
 
 import {
+  AssistantUnavailable,
   decideLink,
   fetchThread,
   rateAssistantAnswer,
@@ -124,18 +125,13 @@ export function SiteAssistantBubble() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"generic" | "session_limit" | null>(null);
   const [mode, setMode] = useState<"ai" | "human">("ai");
   const [agentLabel, setAgentLabel] = useState("");
   const [humanRequested, setHumanRequested] = useState(false);
   const [followUps, setFollowUps] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef(0);
-  const messagesRef = useRef<Msg[]>([]);
-
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -143,13 +139,22 @@ export function SiteAssistantBubble() {
 
   // Hydrate the persisted thread on open, then poll for human-takeover
   // replies. Polls faster once a human is (or has been requested to be)
-  // involved. On the very first tick (no local messages yet) the entire
-  // stored thread replays; on subsequent ticks only agent/system rows
-  // append — user/assistant rows are already local echoes.
+  // involved. `initial` is captured synchronously BEFORE the await — it
+  // means "this is this widget session's first-ever thread fetch"
+  // (lastIdRef is still its 0 initial value), not "messages is currently
+  // empty". Checking local message-list emptiness AFTER the await is racy:
+  // a suggested-question chip click can add local messages while the first
+  // fetchThread() round-trip is still in flight, which would make a
+  // post-await check see a non-empty list and skip replaying the actual
+  // stored history from a returning session — silently dropping it. On the
+  // very first tick the entire stored thread replays; on subsequent ticks
+  // only agent/system rows append — user/assistant rows are already local
+  // echoes.
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     const tick = async () => {
+      const initial = lastIdRef.current === 0;
       const thread = await fetchThread(lastIdRef.current);
       if (cancelled || !thread) return;
       setMode(thread.status);
@@ -158,7 +163,6 @@ export function SiteAssistantBubble() {
       const incoming = thread.messages.filter((m) => m.id > lastIdRef.current);
       if (!incoming.length) return;
       lastIdRef.current = incoming[incoming.length - 1].id;
-      const initial = messagesRef.current.length === 0;
       const fresh = incoming
         .filter((m) =>
           initial ? true : m.role === "agent" || m.role === "system",
@@ -184,13 +188,13 @@ export function SiteAssistantBubble() {
   const send = async (question: string) => {
     const trimmed = question.trim();
     if (!trimmed || busy) return;
-    setError(false);
+    setError(null);
     setInput("");
 
     if (mode === "human") {
       setMessages((cur) => [...cur, { role: "user", content: trimmed }]);
       setFollowUps([]);
-      if (!(await sendHumanMessage(trimmed))) setError(true);
+      if (!(await sendHumanMessage(trimmed))) setError("generic");
       return;
     }
 
@@ -241,10 +245,14 @@ export function SiteAssistantBubble() {
         setMessages((current) => current.slice(0, -1));
         setMode("human");
       }
-    } catch {
+    } catch (err) {
       setMessages(priorMessages);
       setInput(trimmed);
-      setError(true);
+      setError(
+        err instanceof AssistantUnavailable && err.reason === "session_limit"
+          ? "session_limit"
+          : "generic",
+      );
     } finally {
       setBusy(false);
     }
@@ -421,9 +429,7 @@ export function SiteAssistantBubble() {
             )}
             {error && (
               <p className="text-center text-xs text-destructive">
-                {status.reason === "session_limit"
-                  ? t("sessionLimit")
-                  : t("error")}
+                {error === "session_limit" ? t("sessionLimit") : t("error")}
               </p>
             )}
           </div>

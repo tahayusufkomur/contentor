@@ -177,10 +177,24 @@ export async function rateAssistantAnswer(
   }
 }
 
+/** Thrown when a chat send is gated. Carries the server's `reason` so the
+ * caller can distinguish a per-visitor state (e.g. `session_limit`, which
+ * only means "this one session hit today's cap") from a tenant-wide outage
+ * (e.g. `disabled`/`budget`/`quota`, which do collapse the shared status —
+ * see the broadcast guard below). */
+export class AssistantUnavailable extends Error {
+  reason: AssistantStatus["reason"];
+  constructor(reason: AssistantStatus["reason"]) {
+    super("unavailable");
+    this.reason = reason;
+  }
+}
+
 /** POST the transcript and stream the answer (SSE contract shared with the
  * help bot). Resolves `"ai"` when the AI answered, `"human"` when the
  * session raced into human mode (message already stored server-side — the
- * poller will deliver it). Throws on gating/stream failure. */
+ * poller will deliver it). Throws `AssistantUnavailable` on gating,
+ * a plain `Error` on stream failure. */
 export async function streamAssistantChat(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
@@ -203,12 +217,18 @@ export async function streamAssistantChat(
       touchSession();
       return "human";
     }
-    if (data.enabled === false && statusCache)
-      broadcast({
-        ...statusCache,
-        enabled: false,
-        reason: (data.reason as AssistantStatus["reason"]) ?? "disabled",
-      });
+    if (data.enabled === false) {
+      const reason = (data.reason as AssistantStatus["reason"]) ?? "disabled";
+      // session_limit is a per-visitor cap, not a tenant-wide outage — don't
+      // broadcast it into the shared status store (every mounted widget
+      // reads useAssistantStatus(); flipping enabled:false there would
+      // unmount this conversation's own panel before the caller ever gets
+      // to render an inline "you're capped for today" message).
+      if (reason !== "session_limit" && statusCache) {
+        broadcast({ ...statusCache, enabled: false, reason });
+      }
+      throw new AssistantUnavailable(reason);
+    }
     throw new Error("unavailable");
   }
   const reader = res.body?.getReader();
