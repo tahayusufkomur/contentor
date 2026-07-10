@@ -66,3 +66,23 @@ export function parseAnswer(content: string, origin: string): ParsedAnswer {
     .trim();
   return { text, links };
 }
+
+/** Renders a `system`-role thread message (produced by the takeover kernel —
+ * see `apps/core/assistant.py::append_message` call sites) into a short
+ * human sentence, or `null` for a token this UI doesn't render. Shared
+ * between the student-facing widget (`SiteAssistantBubble`) and the coach's
+ * `ConversationsCard` so the same three tokens read consistently on both
+ * surfaces; `t` is whatever `useTranslations(...)` scope the caller already
+ * has open (student.assistant.* or admin.assistant.*), so this stays a pure
+ * function with no namespace of its own. */
+export function systemLine(
+  content: string,
+  t: (key: string, values?: object) => string,
+): string | null {
+  if (content.startsWith("agent_joined:")) {
+    return t("agentJoined", { name: content.slice("agent_joined:".length) });
+  }
+  if (content === "assistant_resumed") return t("assistantResumed");
+  if (content === "human_requested") return t("humanRequestedLine");
+  return null;
+}

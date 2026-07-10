@@ -6,14 +6,15 @@ import { MessageCircleQuestion } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+import { ConversationsCard } from "@/components/admin/assistant/conversations-card";
 import { EnableCard } from "@/components/admin/assistant/enable-card";
 import { GreetingCard } from "@/components/admin/assistant/greeting-card";
 import {
   KnowledgeCard,
   type KnowledgePrefill,
 } from "@/components/admin/assistant/knowledge-card";
+import { LinksCard } from "@/components/admin/assistant/links-card";
 import { PreviewChatCard } from "@/components/admin/assistant/preview-chat-card";
-import { TranscriptsCard } from "@/components/admin/assistant/transcripts-card";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -74,6 +75,21 @@ export default function AssistantPage() {
     }
   };
 
+  const handleToggleHandoff = async (next: boolean) => {
+    if (!config) return;
+    const prev = config;
+    setConfig({ ...config, human_handoff_enabled: next });
+    try {
+      const updated = await putAssistantConfig({
+        human_handoff_enabled: next,
+      });
+      setConfig(updated);
+    } catch {
+      setConfig(prev);
+      toast.error(t("assistant.enableFailed"));
+    }
+  };
+
   const handleSaveGreeting = async (
     greeting: string,
     suggestions: string[],
@@ -125,7 +141,11 @@ export default function AssistantPage() {
         <UpsellCard />
       ) : (
         <div className="max-w-2xl space-y-6">
-          <EnableCard config={config} onToggle={(v) => void handleToggle(v)} />
+          <EnableCard
+            config={config}
+            onToggle={(v) => void handleToggle(v)}
+            onToggleHandoff={(v) => void handleToggleHandoff(v)}
+          />
           <GreetingCard
             initialGreeting={config.greeting}
             initialSuggestions={config.suggested_questions}
@@ -135,8 +155,9 @@ export default function AssistantPage() {
             prefill={prefill}
             onPrefillConsumed={() => setPrefill(null)}
           />
+          <LinksCard />
           <PreviewChatCard />
-          <TranscriptsCard onAddToKnowledge={handleAddToKnowledge} />
+          <ConversationsCard onAddToKnowledge={handleAddToKnowledge} />
         </div>
       )}
     </div>

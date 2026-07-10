@@ -356,8 +356,23 @@ export interface AssistantAdminConfig {
   enabled: boolean;
   greeting: string;
   suggested_questions: string[];
+  human_handoff_enabled: boolean;
   usage: { questions_used: number; questions_cap: number; month: string };
   status: { enabled: boolean; reason: AssistantStatus["reason"] };
+}
+
+// The config GET/PUT response reuses the student status payload's field name
+// ("human_handoff", set by Task 6) rather than "human_handoff_enabled" — only
+// the PUT *request* body uses the `_enabled` suffix (matching the model
+// field). Normalize on the way in so every consumer of AssistantAdminConfig
+// can read the one consistent name.
+type RawAdminConfig = Omit<AssistantAdminConfig, "human_handoff_enabled"> & {
+  human_handoff: boolean;
+};
+
+function normalizeAdminConfig(raw: RawAdminConfig): AssistantAdminConfig {
+  const { human_handoff, ...rest } = raw;
+  return { ...rest, human_handoff_enabled: human_handoff };
 }
 
 export interface KnowledgeEntry {
@@ -379,18 +394,43 @@ export interface TranscriptRow {
   created_at: string;
 }
 
+export interface ConversationRow {
+  id: number;
+  session_id: string;
+  status: "ai" | "human";
+  user_label: string;
+  human_requested: boolean;
+  message_count: number;
+  last_message: string;
+  updated_at: string;
+}
+
+export interface AssistantLinkRow {
+  id: number;
+  label: string;
+  url: string;
+  note: string;
+  enabled: boolean;
+  position: number;
+}
+
 export const getAssistantConfig = () =>
-  clientFetch<AssistantAdminConfig>("/api/v1/admin/assistant/config/");
+  clientFetch<RawAdminConfig>("/api/v1/admin/assistant/config/").then(
+    normalizeAdminConfig,
+  );
 
 export const putAssistantConfig = (
   body: Partial<
-    Pick<AssistantAdminConfig, "enabled" | "greeting" | "suggested_questions">
+    Pick<
+      AssistantAdminConfig,
+      "enabled" | "greeting" | "suggested_questions" | "human_handoff_enabled"
+    >
   >,
 ) =>
-  clientFetch<AssistantAdminConfig>("/api/v1/admin/assistant/config/", {
+  clientFetch<RawAdminConfig>("/api/v1/admin/assistant/config/", {
     method: "PUT",
     body: JSON.stringify(body),
-  });
+  }).then(normalizeAdminConfig);
 
 export const listKnowledge = () =>
   clientFetch<KnowledgeEntry[]>("/api/v1/admin/assistant/knowledge/");
@@ -422,6 +462,66 @@ export const listTranscripts = (page = 1) =>
     `/api/v1/admin/assistant/transcripts/?page=${page}`,
   );
 
+// ── Human takeover console (Task 5/6) ─────────────────────────────────────
+
+export const listConversations = (page = 1) =>
+  clientFetch<{ results: ConversationRow[]; has_more: boolean }>(
+    `/api/v1/admin/assistant/conversations/?page=${page}`,
+  );
+
+export const getConversationThread = (id: number, after = 0) =>
+  clientFetch<ThreadPayload>(
+    `/api/v1/admin/assistant/conversations/${id}/thread/?after=${after}`,
+  );
+
+export const takeoverConversation = (id: number) =>
+  clientFetch<ThreadPayload>(
+    `/api/v1/admin/assistant/conversations/${id}/takeover/`,
+    { method: "POST" },
+  );
+
+export const releaseConversation = (id: number) =>
+  clientFetch<ThreadPayload>(
+    `/api/v1/admin/assistant/conversations/${id}/release/`,
+    { method: "POST" },
+  );
+
+export const sendAgentMessage = (id: number, content: string, after = 0) =>
+  clientFetch<ThreadPayload>(
+    `/api/v1/admin/assistant/conversations/${id}/message/`,
+    {
+      method: "POST",
+      body: JSON.stringify({ content, after }),
+    },
+  );
+
+// ── Link registry (Task 11) ───────────────────────────────────────────────
+
+export const listLinks = () =>
+  clientFetch<AssistantLinkRow[]>("/api/v1/admin/assistant/links/");
+
+export const createLink = (
+  body: Pick<AssistantLinkRow, "label" | "url" | "note">,
+) =>
+  clientFetch<AssistantLinkRow>("/api/v1/admin/assistant/links/", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+export const updateLink = (
+  id: number,
+  body: Partial<Omit<AssistantLinkRow, "id">>,
+) =>
+  clientFetch<AssistantLinkRow>(`/api/v1/admin/assistant/links/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+
+export const deleteLink = (id: number) =>
+  clientFetch<void>(`/api/v1/admin/assistant/links/${id}/`, {
+    method: "DELETE",
+  });
+
 /** Coach-only: try the assistant from /admin/assistant without turning it on
  * or spending the plan's monthly question quota. Same SSE wire contract as
  * streamAssistantChat, but no session id — the server pins one server-side
@@ -431,6 +531,7 @@ export const listTranscripts = (page = 1) =>
 export async function streamAssistantPreview(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
+  onDone?: (meta: AnswerMeta) => void,
 ): Promise<void> {
   const res = await fetch("/api/v1/admin/assistant/preview-chat/", {
     method: "POST",
@@ -463,10 +564,19 @@ export async function streamAssistantPreview(
       const event = JSON.parse(line.slice(6)) as {
         type: "delta" | "done" | "error";
         text?: string;
+        transcript_id?: number;
+        rate_token?: string;
+        suggestions?: string[];
       };
       if (event.type === "delta" && event.text) onDelta(event.text);
-      else if (event.type === "done") done = true;
-      else if (event.type === "error") throw new Error("answer failed");
+      else if (event.type === "done") {
+        done = true;
+        onDone?.({
+          transcriptId: event.transcript_id,
+          rateToken: event.rate_token,
+          suggestions: event.suggestions,
+        });
+      } else if (event.type === "error") throw new Error("answer failed");
     }
   }
   if (!done) throw new Error("stream ended early");

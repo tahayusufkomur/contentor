@@ -19,13 +19,17 @@ import { parseAnswer } from "./format-answer";
 
 /** "Try it yourself" — a mini chat that hits the preview-chat endpoint
  * directly, bypassing the enable switch and the monthly question quota, so
- * the coach can sanity-check answers before turning the assistant on. */
+ * the coach can sanity-check answers before turning the assistant on. Also
+ * doubles as a visual QA harness for the answer tail contract (Task 9):
+ * the follow-up `suggestions` that `onDone` receives render as pills the
+ * coach can click to keep probing. */
 export function PreviewChatCard() {
   const t = useTranslations("admin");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,6 +46,7 @@ export function PreviewChatCard() {
     if (!trimmed || busy) return;
     setError(false);
     setInput("");
+    setSuggestions([]);
     const history: ChatMessage[] = [
       ...messages,
       { role: "user", content: trimmed },
@@ -49,17 +54,21 @@ export function PreviewChatCard() {
     setMessages([...history, { role: "assistant", content: "" }]);
     setBusy(true);
     try {
-      await streamAssistantPreview(history, (delta) => {
-        setMessages((current) => {
-          const next = [...current];
-          const last = next[next.length - 1];
-          next[next.length - 1] = {
-            role: "assistant",
-            content: last.content + delta,
-          };
-          return next;
-        });
-      });
+      await streamAssistantPreview(
+        history,
+        (delta) => {
+          setMessages((current) => {
+            const next = [...current];
+            const last = next[next.length - 1];
+            next[next.length - 1] = {
+              role: "assistant",
+              content: last.content + delta,
+            };
+            return next;
+          });
+        },
+        (meta) => setSuggestions(meta.suggestions ?? []),
+      );
     } catch {
       setMessages(history.slice(0, -1));
       setInput(trimmed);
@@ -119,6 +128,20 @@ export function PreviewChatCard() {
                 </div>
               );
             })}
+            {suggestions.length > 0 && !busy && (
+              <div className="flex flex-wrap gap-2">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => setInput(suggestion)}
+                    className="rounded-full border border-dashed px-3 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
             {error && (
               <p className="text-center text-xs text-destructive">
                 {t("assistant.previewError")}
