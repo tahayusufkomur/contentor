@@ -1,6 +1,6 @@
 """Ask Contentor endpoints: SSE streaming, availability gating, usage
-accounting. The provider is always mocked via ``help_bot.stream_answer`` —
-no real network or subprocess."""
+accounting. The provider is always mocked at the kernel's boundary
+(``assistant.core_ai.stream_text``) — no real network or subprocess."""
 
 import json
 from decimal import Decimal
@@ -9,6 +9,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.core import assistant
 from apps.core.models import HelpBotUsage
 from apps.tenant_config import help_bot
 
@@ -55,16 +56,16 @@ def _sse_events(response):
 
 
 def test_chat_streams_deltas_and_records_usage(coach_client, enabled, monkeypatch):
-    def fake_stream(history, audience="coach"):
+    def fake_stream(**kwargs):
         # The tenant snapshot must have been injected server-side, and the
         # coach endpoint must never use the visitor persona.
-        assert history[0]["content"].startswith("<tenant_context>")
-        assert audience == "coach"
+        assert kwargs["history"][0]["content"].startswith("<tenant_context>")
+        assert kwargs["system"] == help_bot.system_prompt("coach")
         yield ("delta", "Open ")
         yield ("delta", "Payouts.")
-        yield ("done", {"cost_usd": Decimal("0.0100"), "provider": "anthropic"})
+        yield ("done", {"cost_usd": Decimal("0.0100"), "provider": "anthropic", "model": "m"})
 
-    monkeypatch.setattr(help_bot, "stream_answer", fake_stream)
+    monkeypatch.setattr(assistant.core_ai, "stream_text", fake_stream)
 
     response = coach_client.post(
         "/api/v1/admin/help-bot/chat/",
@@ -84,11 +85,11 @@ def test_chat_streams_deltas_and_records_usage(coach_client, enabled, monkeypatc
 
 
 def test_chat_provider_failure_emits_error_and_skips_quota(coach_client, enabled, monkeypatch):
-    def fake_stream(history, audience="coach"):
+    def fake_stream(**kwargs):
         yield ("delta", "partial")
-        raise help_bot.HelpBotError("boom")
+        raise assistant.core_ai.AiError("boom")
 
-    monkeypatch.setattr(help_bot, "stream_answer", fake_stream)
+    monkeypatch.setattr(assistant.core_ai, "stream_text", fake_stream)
 
     response = coach_client.post(
         "/api/v1/admin/help-bot/chat/",
