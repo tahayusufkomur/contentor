@@ -231,6 +231,7 @@ def _brand_pack_status(tenant):
     enabled = core_ai.available()[0] and budget_ok
     usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
     remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
+    refine_remaining = max(0, settings.LOGO_AI_MONTHLY_REFINE_LIMIT - usage.refinements_used)
     if not eligible:
         reason = "upgrade_required"
     elif not enabled:
@@ -239,7 +240,13 @@ def _brand_pack_status(tenant):
         reason = "quota_exhausted"
     else:
         reason = None
-    return {"enabled": enabled, "eligible": eligible, "remaining": remaining, "reason": reason}
+    return {
+        "enabled": enabled,
+        "eligible": eligible,
+        "remaining": remaining,
+        "reason": reason,
+        "refine_remaining": refine_remaining,
+    }
 
 
 @api_view(["GET"])

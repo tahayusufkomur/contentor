@@ -361,6 +361,7 @@ class LogoAiUsage(models.Model):
     tenant_schema = models.CharField(max_length=63)
     month = models.CharField(max_length=7)  # "YYYY-MM"
     packs_used = models.PositiveIntegerField(default=0)
+    refinements_used = models.PositiveIntegerField(default=0)
     usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

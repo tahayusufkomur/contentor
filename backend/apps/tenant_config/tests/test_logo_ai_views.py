@@ -117,7 +117,13 @@ class TestBrandPackStatus:
     def test_full_quota_for_fresh_paid_tenant(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
         resp = coach_client.get("/api/v1/admin/config/logo-brand-pack/status/")
-        assert resp.data == {"enabled": True, "eligible": True, "remaining": 5, "reason": None}
+        assert resp.data == {
+            "enabled": True,
+            "eligible": True,
+            "remaining": 5,
+            "reason": None,
+            "refine_remaining": 20,
+        }
 
     def test_quota_exhausted(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
