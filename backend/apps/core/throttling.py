@@ -15,6 +15,14 @@ class ClientIpAnonThrottle(AnonRateThrottle):
     def get_ident(self, request):
         return client_ip(request) or super().get_ident(request)
 
+    def allow_request(self, request, view):
+        allowed = super().allow_request(request, view)
+        if not allowed:
+            from apps.core.ipblock import record_throttle_denial
+
+            record_throttle_denial(client_ip(request))
+        return allowed
+
 
 class AiThreadThrottle(ClientIpAnonThrottle):
     scope = "ai_thread"

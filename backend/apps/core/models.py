@@ -604,3 +604,17 @@ class AiMessage(models.Model):
     class Meta:
         ordering = ["id"]
         indexes = [models.Index(fields=["conversation", "id"])]
+
+
+class AiIpBlock(models.Model):
+    """Per-IP ban for the public AI endpoints (v2 spec §10.2). Manual rows
+    via the superadmin panel; auto rows from repeated throttle denials."""
+
+    ip = models.GenericIPAddressField(unique=True)
+    reason = models.CharField(max_length=200, blank=True, default="")
+    source = models.CharField(max_length=8, choices=[("manual", "manual"), ("auto", "auto")], default="manual")
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.ip

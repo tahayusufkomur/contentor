@@ -21,7 +21,7 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core import assistant
+from apps.core import assistant, ipblock
 from apps.core.email import send_email
 from apps.core.models import AiConversation
 from apps.core.throttling import (
@@ -57,6 +57,8 @@ def _availability(month=None):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def help_bot_public_status(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     enabled, reason = _availability()
     return Response({"enabled": enabled, "reason": reason})
 
@@ -68,6 +70,8 @@ def help_bot_public_status(request):
 def help_bot_public_chat(request):
     """Same SSE contract as the coach endpoint (delta|done|error events);
     visitor persona, marketing spend bucket, no tenant context."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     month = help_bot.current_month()
 
     data = request.data if isinstance(request.data, dict) else {}
@@ -117,6 +121,8 @@ def help_bot_public_chat(request):
 def help_bot_public_thread(request):
     """Widget polling endpoint for the marketing chat bubble's own thread
     (mirrors assistant_thread / help_bot_thread)."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     session = str(request.query_params.get("session") or "").strip()[:36]
     try:
         after = int(request.query_params.get("after") or 0)
@@ -140,6 +146,8 @@ def help_bot_public_thread(request):
 def help_bot_public_human_message(request):
     """Free human-mode sends from the marketing chat bubble (own throttle
     scope; mirrors assistant_human_message)."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     data = request.data if isinstance(request.data, dict) else {}
     session = str(data.get("session_id") or "").strip()[:36]
     content = str(data.get("content") or "").strip()[:2000]
@@ -167,6 +175,8 @@ def help_bot_public_human_request(request):
     """Visitor taps "talk to a human" in the marketing chat bubble: flags the
     conversation and emails the alert address once. Always on (v2 spec D9) —
     this bucket has no config-flag gate to check."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     from django.utils import timezone
 
     data = request.data if isinstance(request.data, dict) else {}

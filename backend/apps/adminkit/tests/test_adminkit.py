@@ -273,6 +273,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "student-bot-usage",
         "blog-ai-usage",
         "logo-ai-usage",
+        "ai-ip-blocks",
     }
 
 

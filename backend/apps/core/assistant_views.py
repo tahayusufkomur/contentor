@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core import assistant
+from apps.core import assistant, ipblock
 from apps.core.models import AiTranscript
 from apps.core.throttling import ClientIpAnonThrottle
 
@@ -19,6 +19,8 @@ class AiRateThrottle(ClientIpAnonThrottle):
 @permission_classes([AllowAny])
 @throttle_classes([AiRateThrottle])
 def rate_answer(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     data = request.data if isinstance(request.data, dict) else {}
     rating = data.get("rating")
     if rating not in ("up", "down"):

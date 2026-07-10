@@ -275,6 +275,10 @@ STUDENT_BOT_GLOBAL_MONTHLY_USD = float(os.environ.get("STUDENT_BOT_GLOBAL_MONTHL
 # --- AI assistants v2 ---
 ASSISTANT_HUMAN_IDLE_RELEASE_MIN = int(os.environ.get("ASSISTANT_HUMAN_IDLE_RELEASE_MIN", "30"))
 
+# --- AI IP blocklist (apps.core.ipblock) ---
+AI_IP_AUTOBLOCK_THRESHOLD = int(os.environ.get("AI_IP_AUTOBLOCK_THRESHOLD", "5"))
+AI_IP_AUTOBLOCK_DAYS = int(os.environ.get("AI_IP_AUTOBLOCK_DAYS", "7"))
+
 # --- Web Push (VAPID) ---
 # Generate a keypair once with: vapid --gen ; vapid --applicationServerKey
 # Store VAPID_PRIVATE_KEY as a double-quoted multi-line PEM in .env (python-dotenv

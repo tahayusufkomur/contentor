@@ -8,6 +8,7 @@ from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import platform_site
 
 from .models import (
+    AiIpBlock,
     AiTranscript,
     BlogAiUsage,
     HelpBotUsage,
@@ -351,6 +352,18 @@ class PlatformKbEntryAdmin(ModelAdmin):
     list_filters = ("audience", "enabled")
     ordering = ("position", "id")
     fields = ("audience", "title", "content", "enabled", "position")
+
+
+@platform_site.register(AiIpBlock)
+class AiIpBlockAdmin(ModelAdmin):
+    key = "ai-ip-blocks"
+    icon = "ban"
+    description = "IPs banned from the AI endpoints — manual rows here, auto rows from repeated throttle denials."
+    list_display = ("ip", "source", "reason", "expires_at", "created_at")
+    search_fields = ("ip", "reason")
+    list_filters = ("source",)
+    ordering = ("-created_at",)
+    fields = ("ip", "reason", "source", "expires_at")
 
 
 # ---------------------------------------------------------------------------

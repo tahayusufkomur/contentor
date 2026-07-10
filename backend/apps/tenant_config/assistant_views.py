@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
-from apps.core import assistant
+from apps.core import assistant, ipblock
 from apps.core.email import send_email
 from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
@@ -60,6 +60,8 @@ def _status_payload(tenant):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def assistant_status(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     return Response(_status_payload(connection.tenant))
 
 
@@ -73,6 +75,8 @@ def assistant_chat(request):
     """SSE chat for students/visitors. Human-mode conversations short-circuit
     BEFORE gating: a human can keep answering even when the AI is capped
     (v2 spec §6.2 — human messages cost nothing)."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     tenant = connection.tenant
     month = student_bot.current_month()
     data = request.data if isinstance(request.data, dict) else {}
@@ -122,6 +126,8 @@ def assistant_chat(request):
 def assistant_thread(request):
     """Widget polling endpoint. The session UUID is the bearer token (v2 spec
     D5); mismatched feature/tenant simply doesn't exist here → 404."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     session = str(request.query_params.get("session") or "").strip()[:36]
     try:
         after = int(request.query_params.get("after") or 0)
@@ -147,6 +153,8 @@ def assistant_thread(request):
 def assistant_human_message(request):
     """Free human-mode sends from the widget (own throttle scope; the AI chat
     throttles stay reserved for model-bound traffic)."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     data = request.data if isinstance(request.data, dict) else {}
     session = str(data.get("session_id") or "").strip()[:36]
     content = str(data.get("content") or "").strip()[:2000]
@@ -175,6 +183,8 @@ def assistant_human_message(request):
 def assistant_human_request(request):
     """Student taps "Talk to a human": flag the conversation and email the
     coach once (v2 spec D9). Best-effort mail — the flag is the state."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     from django.utils import timezone
 
     tenant = connection.tenant
