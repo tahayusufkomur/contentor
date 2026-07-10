@@ -7,7 +7,12 @@
 // parse the links out instead of discarding them, so a coach reading a
 // transcript sees the same navigable link a student/visitor saw, not inert
 // text like "See the FAQ page".
-const LINK_RE = /\[([^\]]+)\]\((\/[^)\s]*)\)/g;
+//
+// The href group requires a single leading slash NOT followed by another
+// slash, so a protocol-relative target like `//evil.com` (which browsers
+// resolve as an off-site absolute URL) can never match — only same-site
+// paths like `/faq` or `/courses/x` do.
+const LINK_RE = /\[([^\]]+)\]\((\/(?!\/)[^)\s]*)\)/g;
 
 export interface AnswerLink {
   label: string;

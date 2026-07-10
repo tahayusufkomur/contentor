@@ -22,8 +22,12 @@ import {
 } from "@/lib/assistant";
 
 // Any site path the bot emits renders as a button; the server-side whitelist
-// already constrains targets to the tenant's own pages/items.
-const LINK_RE = /\[([^\]]+)\]\((\/[^)\s]*)\)/g;
+// already constrains targets to the tenant's own pages/items. The href group
+// requires a single leading slash NOT followed by another slash, so a
+// protocol-relative target like `//evil.com` (which browsers resolve as an
+// off-site absolute URL) can never match — only same-site paths like
+// `/faq` or `/courses/x` do.
+const LINK_RE = /\[([^\]]+)\]\((\/(?!\/)[^)\s]*)\)/g;
 // /learn is the focused course player — never overlay it.
 const HIDDEN_PREFIXES = [
   "/learn",
