@@ -129,3 +129,20 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Tenant provisioning failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
+
+
+@shared_task
+def purge_ai_transcripts():
+    """Retention: drop assistant transcripts older than
+    AI_TRANSCRIPT_RETENTION_DAYS (audit content, not billing state — the
+    *Usage meters are permanent)."""
+    from datetime import timedelta
+
+    from django.conf import settings
+    from django.utils import timezone
+
+    from apps.core.models import AiTranscript
+
+    cutoff = timezone.now() - timedelta(days=settings.AI_TRANSCRIPT_RETENTION_DAYS)
+    deleted, _ = AiTranscript.objects.filter(created_at__lt=cutoff).delete()
+    logger.info("purge_ai_transcripts: deleted %s rows", deleted)

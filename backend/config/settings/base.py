@@ -146,6 +146,7 @@ REST_FRAMEWORK = {
         # Anonymous marketing-site chat: per-IP burst + daily ceiling.
         "help_bot_public_burst": "5/min",
         "help_bot_public_day": "40/day",
+        "ai_rate": "20/min",
     },
 }
 
@@ -244,6 +245,10 @@ HELP_BOT_TENANT_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_TENANT_MONTHLY_
 # also counted into the global kill-switch above.
 HELP_BOT_PUBLIC_MONTHLY_USD = float(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_USD", "10"))
 HELP_BOT_PUBLIC_MONTHLY_QUESTIONS = int(os.environ.get("HELP_BOT_PUBLIC_MONTHLY_QUESTIONS", "500"))
+
+# Retention window for AiTranscript rows (audit content, not billing state —
+# purged by a beat task; the *Usage meters are permanent).
+AI_TRANSCRIPT_RETENTION_DAYS = int(os.environ.get("AI_TRANSCRIPT_RETENTION_DAYS", "90"))
 
 # --- AI blog generation (apps.blog.ai; provider comes from AI_PROVIDER) ---
 BLOG_AI_MODEL = os.environ.get("BLOG_AI_MODEL", "claude-sonnet-5")
