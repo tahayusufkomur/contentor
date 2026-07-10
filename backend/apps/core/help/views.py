@@ -20,23 +20,27 @@ from rest_framework.decorators import (
 )
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 
 from apps.core import assistant
 from apps.core.email import send_email
 from apps.core.models import AiConversation
-from apps.core.throttling import AiHumanMessageThrottle, AiHumanRequestThrottle, AiThreadThrottle
+from apps.core.throttling import (
+    AiHumanMessageThrottle,
+    AiHumanRequestThrottle,
+    AiThreadThrottle,
+    ClientIpAnonThrottle,
+)
 from apps.tenant_config import help_bot
 
 MARKETING_BUCKET = "__marketing__"
 VISITOR_CONTEXT = "<visitor_context>Visitor browsing the contentor.app marketing site; not signed in.</visitor_context>"
 
 
-class HelpPublicBurstThrottle(AnonRateThrottle):
+class HelpPublicBurstThrottle(ClientIpAnonThrottle):
     scope = "help_bot_public_burst"
 
 
-class HelpPublicDayThrottle(AnonRateThrottle):
+class HelpPublicDayThrottle(ClientIpAnonThrottle):
     scope = "help_bot_public_day"
 
 

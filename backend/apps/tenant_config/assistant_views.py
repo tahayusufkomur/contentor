@@ -9,23 +9,23 @@ from django.http import StreamingHttpResponse
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.throttling import UserRateThrottle
 
 from apps.core import assistant
 from apps.core.email import send_email
 from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
-from apps.core.throttling import AiHumanMessageThrottle, AiHumanRequestThrottle, AiThreadThrottle
+from apps.core.throttling import AiHumanMessageThrottle, AiHumanRequestThrottle, AiThreadThrottle, ClientIpAnonThrottle
 
 from . import student_bot
 from .models import AssistantConfig, AssistantKnowledgeEntry, AssistantLink, TenantConfig
 
 
-class StudentBotBurstThrottle(AnonRateThrottle):
+class StudentBotBurstThrottle(ClientIpAnonThrottle):
     scope = "student_bot_burst"
 
 
-class StudentBotDayThrottle(AnonRateThrottle):
+class StudentBotDayThrottle(ClientIpAnonThrottle):
     scope = "student_bot_day"
 
 
