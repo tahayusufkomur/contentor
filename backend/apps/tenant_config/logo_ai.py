@@ -497,7 +497,8 @@ def refine_design(recipe, elements, instruction):
         bounded = json.dumps(elements[:12])[:4000]
         current = f"Current mark elements (redesign these): {bounded}"
     else:
-        current = f"Current design summary (no source elements available — design a new custom mark): {_describe_recipe(recipe)}"
+        summary = _describe_recipe(recipe)
+        current = f"Current design summary (no source elements available — design a new custom mark): {summary}"
     user_content = f'{current}\n\nCoach\'s instruction: "{instruction}"'
     try:
         parsed, cost, _ = core_ai.structured(

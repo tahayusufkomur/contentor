@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0021_platformkbentry'),
+        ("core", "0021_platformkbentry"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='logoaiusage',
-            name='refinements_used',
+            model_name="logoaiusage",
+            name="refinements_used",
             field=models.PositiveIntegerField(default=0),
         ),
     ]

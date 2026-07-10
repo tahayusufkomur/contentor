@@ -137,9 +137,7 @@ class TestLogoRefine:
         assert resp.data["source"] == "error"
         assert calls == []
 
-    def test_success_records_quota_and_cost_and_returns_design(
-        self, coach_client, paid_tenant, settings, monkeypatch
-    ):
+    def test_success_records_quota_and_cost_and_returns_design(self, coach_client, paid_tenant, settings, monkeypatch):
         settings.ANTHROPIC_API_KEY = "test-key"
         _mock_success(monkeypatch, cost_usd=Decimal("0.02"))
         resp = coach_client.post(
@@ -209,9 +207,7 @@ class TestLogoRefine:
         assert row.refinements_used == 0
         assert row.usd_spent == 0
 
-    def test_global_budget_kill_switch_blocks_new_refinement(
-        self, coach_client, paid_tenant, settings, monkeypatch
-    ):
+    def test_global_budget_kill_switch_blocks_new_refinement(self, coach_client, paid_tenant, settings, monkeypatch):
         settings.ANTHROPIC_API_KEY = "test-key"
         settings.LOGO_AI_MONTHLY_BUDGET_USD = 1.0
         logo_ai.record_attempt_cost(paid_tenant.schema_name, Decimal("1.5"), month=logo_ai._current_month())
