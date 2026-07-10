@@ -12,6 +12,34 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface AnswerMeta {
+  transcriptId?: number;
+  rateToken?: string;
+}
+
+/** Fire-and-forget thumbs. Returns false on any failure — rating is
+ * best-effort, the UI just resets its highlight. */
+export async function rateAnswer(
+  meta: AnswerMeta,
+  rating: "up" | "down",
+): Promise<boolean> {
+  if (!meta.transcriptId || !meta.rateToken) return false;
+  try {
+    const res = await fetch("/api/v1/ai/rate/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transcript_id: meta.transcriptId,
+        rate_token: meta.rateToken,
+        rating,
+      }),
+    });
+    return res.status === 204;
+  } catch {
+    return false;
+  }
+}
+
 // Module-level cache: bubble + panel share one status fetch (same pattern as
 // lib/setup-assistant.ts).
 let statusCache: HelpBotStatus | null = null;
@@ -51,20 +79,25 @@ export class HelpBotUnavailable extends Error {
   }
 }
 
+const sessionId =
+  globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2);
+
 /** POST the transcript and stream the answer. Calls onDelta per text chunk;
  * resolves when the answer is complete. SSE bypasses clientFetch on purpose
  * (it JSON-parses whole bodies). Throws HelpBotUnavailable when the server
- * reports the bot off/capped, plain Error on stream failure. */
+ * reports the bot off/capped, plain Error on stream failure. onDone (when
+ * provided) receives the transcript rating metadata from the `done` event. */
 export async function streamHelpBotChat(
   messages: ChatMessage[],
   onDelta: (text: string) => void,
   signal?: AbortSignal,
+  onDone?: (meta: AnswerMeta) => void,
 ): Promise<void> {
   const res = await fetch("/api/v1/admin/help-bot/chat/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, session_id: sessionId }),
     signal,
   });
   if (!res.ok) throw new Error(`help bot request failed (${res.status})`);
@@ -102,10 +135,17 @@ export async function streamHelpBotChat(
         type: "delta" | "done" | "error";
         text?: string;
         message?: string;
+        transcript_id?: number;
+        rate_token?: string;
       };
       if (event.type === "delta" && event.text) onDelta(event.text);
-      else if (event.type === "done") done = true;
-      else if (event.type === "error")
+      else if (event.type === "done") {
+        done = true;
+        onDone?.({
+          transcriptId: event.transcript_id,
+          rateToken: event.rate_token,
+        });
+      } else if (event.type === "error")
         throw new Error(event.message ?? "answer failed");
     }
   }

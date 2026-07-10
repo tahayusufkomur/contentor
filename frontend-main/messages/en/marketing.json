@@ -175,6 +175,8 @@
     "error": "Something went wrong — please try again.",
     "suggestPrice": "How much does Contentor cost?",
     "suggestPayouts": "How do payouts work?",
-    "suggestDomain": "Can I use my own domain?"
+    "suggestDomain": "Can I use my own domain?",
+    "rateUp": "Helpful",
+    "rateDown": "Not helpful"
   }
 }

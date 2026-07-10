@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Send, Sparkles } from "lucide-react";
+import { ArrowRight, Send, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import {
   HelpBotUnavailable,
+  rateAnswer,
   streamHelpBotChat,
   useHelpBotStatus,
+  type AnswerMeta,
   type ChatMessage,
 } from "@/lib/help-bot";
 import { useSetupStatus } from "@/lib/setup-assistant";
@@ -59,7 +61,9 @@ export function HelpChat({ onNavigate }: { onNavigate: () => void }) {
   const t = useTranslations("admin");
   const botStatus = useHelpBotStatus();
   const setup = useSetupStatus();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<
+    (ChatMessage & { meta?: AnswerMeta; rated?: "up" | "down" })[]
+  >([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,17 +94,27 @@ export function HelpChat({ onNavigate }: { onNavigate: () => void }) {
     setMessages([...history, { role: "assistant", content: "" }]);
     setBusy(true);
     try {
-      await streamHelpBotChat(history, (delta) => {
-        setMessages((current) => {
-          const next = [...current];
-          const last = next[next.length - 1];
-          next[next.length - 1] = {
-            role: "assistant",
-            content: last.content + delta,
-          };
-          return next;
-        });
-      });
+      await streamHelpBotChat(
+        history,
+        (delta) => {
+          setMessages((current) => {
+            const next = [...current];
+            const last = next[next.length - 1];
+            next[next.length - 1] = {
+              role: "assistant",
+              content: last.content + delta,
+            };
+            return next;
+          });
+        },
+        undefined,
+        (meta) =>
+          setMessages((current) => {
+            const next = [...current];
+            next[next.length - 1] = { ...next[next.length - 1], meta };
+            return next;
+          }),
+      );
     } catch (err) {
       // Drop the empty assistant placeholder, keep the question for retry.
       setMessages(history.slice(0, -1));
@@ -166,10 +180,43 @@ export function HelpChat({ onNavigate }: { onNavigate: () => void }) {
             <div key={index} className="flex">
               <div className="max-w-[90%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2">
                 {message.content ? (
-                  <AnswerBody
-                    content={message.content}
-                    onNavigate={onNavigate}
-                  />
+                  <>
+                    <AnswerBody
+                      content={message.content}
+                      onNavigate={onNavigate}
+                    />
+                    {message.meta && (
+                      <div className="mt-1.5 flex items-center gap-1">
+                        {(["up", "down"] as const).map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            aria-label={t(
+                              r === "up"
+                                ? "setup.help.rateUp"
+                                : "setup.help.rateDown",
+                            )}
+                            disabled={Boolean(message.rated)}
+                            onClick={() => {
+                              void rateAnswer(message.meta!, r);
+                              setMessages((current) =>
+                                current.map((m, i) =>
+                                  i === index ? { ...m, rated: r } : m,
+                                ),
+                              );
+                            }}
+                            className={`rounded p-1 transition-colors hover:bg-accent ${message.rated === r ? "text-primary" : "text-muted-foreground/60"} disabled:hover:bg-transparent`}
+                          >
+                            {r === "up" ? (
+                              <ThumbsUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <ThumbsDown className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <span
                     className="inline-flex gap-1 py-1"

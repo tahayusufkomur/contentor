@@ -225,7 +225,9 @@
       "suggestPayouts": "How do I get paid?",
       "suggestPublish": "How do students find my site?",
       "suggestStudents": "How do students sign in?",
-      "suggestPlans": "What do the plans include?"
+      "suggestPlans": "What do the plans include?",
+      "rateUp": "Helpful",
+      "rateDown": "Not helpful"
     }
   },
   "settings": {
