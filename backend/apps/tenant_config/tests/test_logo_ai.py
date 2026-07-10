@@ -16,18 +16,13 @@ from apps.core.models import LogoAiUsage
 from apps.tenant_config import logo_ai
 
 
-class _FakePath:
-    def __init__(self, d, fill="mark", fill_rule=None, opacity=None):
-        self.d = d
-        self.fill = fill
-        self.fill_rule = fill_rule
-        self.opacity = opacity
-
-
 class _FakeMark:
-    def __init__(self, rationale, paths):
+    """Marks carry geometric elements (dicts are accepted alongside pydantic
+    instances by _validate_pack_mark) that logo_geometry compiles to paths."""
+
+    def __init__(self, rationale, elements):
         self.rationale = rationale
-        self.paths = paths
+        self.elements = elements
 
 
 class _FakePalette:
@@ -69,9 +64,18 @@ class _FakeResponse:
 
 def _valid_marks():
     return [
-        _FakeMark("A rising line evokes growth.", [_FakePath("M10 10 L90 90 Z", "mark2")]),
-        _FakeMark("A closed loop for community.", [_FakePath("M0 0 H100 V100 Z")]),
-        _FakeMark("Bad mark, only unsafe paths.", [_FakePath("javascript:alert(1)")]),
+        _FakeMark(
+            "A rising line evokes growth.",
+            [{"type": "path", "d": "M10 10 L90 90 Z", "fill": "mark2"}],
+        ),
+        _FakeMark(
+            "A closed loop for community.",
+            [{"type": "ring", "cx": 50, "cy": 50, "r": 40, "thickness": 6}],
+        ),
+        _FakeMark(
+            "Bad mark, only unsafe paths.",
+            [{"type": "path", "d": "javascript:alert(1)"}],
+        ),
     ]
 
 
@@ -106,6 +110,10 @@ class TestGenerateBrandPack:
         assert len(result.pack["marks"]) == 2
         assert result.pack["marks"][0]["paths"] == [{"d": "M10 10 L90 90 Z", "fill": "mark2"}]
         assert result.pack["marks"][0]["rationale"] == "A rising line evokes growth."
+        # the ring element was compiled to an evenodd two-disc path
+        ring = result.pack["marks"][1]["paths"][0]
+        assert ring["fill_rule"] == "evenodd"
+        assert ring["d"].count("M") == 2
         assert len(result.pack["palettes"]) == 3
         assert result.pack["tagline"] == "Breathe deeply."
         assert result.pack["font_vibe"] == "Elegant"
@@ -129,7 +137,7 @@ class TestGenerateBrandPack:
     def test_raises_when_every_mark_is_invalid(self, monkeypatch):
         _mock_client(
             monkeypatch,
-            marks=[_FakeMark("bad", [_FakePath("javascript:alert(1)")])],
+            marks=[_FakeMark("bad", [{"type": "path", "d": "javascript:alert(1)"}])],
         )
         with pytest.raises(logo_ai.BrandPackError):
             logo_ai.generate_brand_pack("Z", "yoga", "#1a56db")
@@ -137,7 +145,7 @@ class TestGenerateBrandPack:
     def test_error_carries_estimated_cost_even_on_validation_failure(self, monkeypatch):
         _mock_client(
             monkeypatch,
-            marks=[_FakeMark("bad", [_FakePath("javascript:alert(1)")])],
+            marks=[_FakeMark("bad", [{"type": "path", "d": "javascript:alert(1)"}])],
         )
         with pytest.raises(logo_ai.BrandPackError) as exc_info:
             logo_ai.generate_brand_pack("Z", "yoga", "#1a56db")
@@ -162,7 +170,12 @@ class TestGenerateBrandPack:
         settings.AI_CLI_MODEL = "haiku"
         pack_json = json.dumps(
             {
-                "marks": [{"rationale": "A ring.", "paths": [{"d": "M50 8 A42 42 0 1 1 49.9 8 Z", "fill": "mark"}]}],
+                "marks": [
+                    {
+                        "rationale": "A ring.",
+                        "elements": [{"type": "ring", "cx": 50, "cy": 50, "r": 42, "thickness": 8}],
+                    }
+                ],
                 "palettes": [
                     {
                         "name": "Deep",
