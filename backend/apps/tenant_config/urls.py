@@ -15,6 +15,7 @@ from .views import (
     help_bot_status,
     logo_brand_pack,
     logo_brand_pack_status,
+    logo_refine,
     setup_status,
 )
 
@@ -32,6 +33,7 @@ urlpatterns = [
         logo_brand_pack_status,
         name="logo-brand-pack-status",
     ),
+    path("config/logo-refine/", logo_refine, name="logo-refine"),
     path("assistant/config/", assistant_config, name="assistant-config"),
     path("assistant/knowledge/", assistant_knowledge, name="assistant-knowledge"),
     path("assistant/knowledge/<int:pk>/", assistant_knowledge_detail, name="assistant-knowledge-detail"),
