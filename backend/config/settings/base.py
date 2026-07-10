@@ -214,6 +214,18 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
 GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")
 
+# --- AI provider (apps.core.ai) ---
+# "anthropic" (prod: API key + prompt caching) or "cli" (local dev: the
+# developer's Claude subscription via the `claude` CLI; needs the binary in
+# the container — dev compose builds with INSTALL_CLAUDE_CLI=1 — and
+# CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`).
+AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
+AI_CLI_BIN = os.environ.get("AI_CLI_BIN", "claude")
+# Dev default is haiku: local runs test plumbing/UI, not output quality, and
+# it's faster + lighter on the developer's subscription quota. Set
+# AI_CLI_MODEL=sonnet when a dev session needs prod-quality output.
+AI_CLI_MODEL = os.environ.get("AI_CLI_MODEL", "haiku")
+
 # --- Logo Studio AI Brand Pack (paid-tier feature; unset key = fully off) ---
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 LOGO_AI_MODEL = os.environ.get("LOGO_AI_MODEL", "claude-sonnet-5")

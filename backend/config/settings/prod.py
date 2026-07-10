@@ -73,3 +73,10 @@ if LIVE_FAKE_ENABLED:
 EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
 if EMAIL_SINK_ENABLED:  # noqa: F405
     raise ImproperlyConfigured("EMAIL_SINK_ENABLED must be false in production")
+
+# The CLI provider is local-dev only: it runs on the developer's Claude
+# subscription, the prod image has no `claude` binary (INSTALL_CLAUDE_CLI is
+# dev-only), and its $0 cost reporting would blind the USD kill-switches.
+AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
+if AI_PROVIDER == "cli":
+    raise ImproperlyConfigured("AI_PROVIDER=cli must never run in production; use 'anthropic'.")
