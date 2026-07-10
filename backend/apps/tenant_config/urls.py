@@ -2,6 +2,11 @@ from django.urls import path
 
 from .assistant_views import (
     assistant_config,
+    assistant_conversation_message,
+    assistant_conversation_release,
+    assistant_conversation_takeover,
+    assistant_conversation_thread,
+    assistant_conversations,
     assistant_knowledge,
     assistant_knowledge_detail,
     assistant_preview_chat,
@@ -37,4 +42,25 @@ urlpatterns = [
     path("assistant/knowledge/<int:pk>/", assistant_knowledge_detail, name="assistant-knowledge-detail"),
     path("assistant/transcripts/", assistant_transcripts, name="assistant-transcripts"),
     path("assistant/preview-chat/", assistant_preview_chat, name="assistant-preview-chat"),
+    path("assistant/conversations/", assistant_conversations, name="assistant-conversations"),
+    path(
+        "assistant/conversations/<int:pk>/thread/",
+        assistant_conversation_thread,
+        name="assistant-conversation-thread",
+    ),
+    path(
+        "assistant/conversations/<int:pk>/takeover/",
+        assistant_conversation_takeover,
+        name="assistant-conversation-takeover",
+    ),
+    path(
+        "assistant/conversations/<int:pk>/message/",
+        assistant_conversation_message,
+        name="assistant-conversation-message",
+    ),
+    path(
+        "assistant/conversations/<int:pk>/release/",
+        assistant_conversation_release,
+        name="assistant-conversation-release",
+    ),
 ]

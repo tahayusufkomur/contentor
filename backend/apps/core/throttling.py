@@ -6,3 +6,7 @@ from rest_framework.throttling import AnonRateThrottle
 
 class AiThreadThrottle(AnonRateThrottle):
     scope = "ai_thread"
+
+
+class AiHumanMessageThrottle(AnonRateThrottle):
+    scope = "ai_human_message"

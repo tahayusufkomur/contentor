@@ -14,7 +14,7 @@ from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from apps.core import assistant
 from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
-from apps.core.throttling import AiThreadThrottle
+from apps.core.throttling import AiHumanMessageThrottle, AiThreadThrottle
 
 from . import student_bot
 from .models import AssistantConfig, AssistantKnowledgeEntry, TenantConfig
@@ -63,28 +63,36 @@ def assistant_status(request):
     [StudentBotBurstThrottle, StudentBotDayThrottle, StudentBotUserBurstThrottle, StudentBotUserDayThrottle]
 )
 def assistant_chat(request):
-    """SSE chat for students/visitors on the tenant site. Same wire contract
-    as the help bot; the viewer's auth state is the only per-request context."""
+    """SSE chat for students/visitors. Human-mode conversations short-circuit
+    BEFORE gating: a human can keep answering even when the AI is capped
+    (v2 spec §6.2 — human messages cost nothing)."""
     tenant = connection.tenant
     month = student_bot.current_month()
-    cfg = AssistantConfig.load()
-    enabled, reason = student_bot.availability(tenant, cfg, month=month)
-    if not enabled:
-        return Response({"enabled": False, "reason": reason}, status=200)
-
     data = request.data if isinstance(request.data, dict) else {}
     raw = data.get("messages") or []
     question = str(raw[-1].get("content") or "")[:2000] if raw and isinstance(raw[-1], dict) else ""
     session_id = str(data.get("session_id") or "")[:36]
+
+    user = request.user if getattr(request.user, "is_authenticated", False) else None
     convo = assistant.get_or_create_conversation(
         feature="student_bot",
         audience="student",
         tenant_schema=tenant.schema_name,
         session_id=session_id,
-        user=request.user if getattr(request.user, "is_authenticated", False) else None,
+        user=user,
     )
     convo = assistant.maybe_auto_release(convo)
-    signed_in = "yes" if getattr(request.user, "is_authenticated", False) else "no"
+    if convo is not None and convo.status == AiConversation.STATUS_HUMAN:
+        if question:
+            assistant.append_message(convo, "user", question)
+        return Response({"mode": "human"})
+
+    cfg = AssistantConfig.load()
+    enabled, reason = student_bot.availability(tenant, cfg, month=month)
+    if not enabled:
+        return Response({"enabled": False, "reason": reason}, status=200)
+
+    signed_in = "yes" if user else "no"
     try:
         history = assistant.prepare_history(
             data.get("messages"), f"<student_context>signed in: {signed_in}</student_context>"
@@ -94,7 +102,6 @@ def assistant_chat(request):
 
     if convo is not None:
         assistant.append_message(convo, "user", question)
-
     response = StreamingHttpResponse(
         student_bot.sse_events(history, tenant, month, question=question, session_id=session_id, conversation=convo),
         content_type="text/event-stream",
@@ -127,6 +134,34 @@ def assistant_thread(request):
         return Response(status=404)
     convo = assistant.maybe_auto_release(convo)
     return Response(assistant.thread_payload(convo, after_id=after))
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([AiHumanMessageThrottle])
+def assistant_human_message(request):
+    """Free human-mode sends from the widget (own throttle scope; the AI chat
+    throttles stay reserved for model-bound traffic)."""
+    data = request.data if isinstance(request.data, dict) else {}
+    session = str(data.get("session_id") or "").strip()[:36]
+    content = str(data.get("content") or "").strip()[:2000]
+    if not content:
+        return Response({"error": "empty message"}, status=400)
+    convo = (
+        AiConversation.objects.filter(
+            session_id=session, feature="student_bot", tenant_schema=connection.tenant.schema_name
+        ).first()
+        if session
+        else None
+    )
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    if convo.status != AiConversation.STATUS_HUMAN:
+        return Response({"mode": "ai"}, status=409)
+    assistant.append_message(convo, "user", content)
+    return Response({"mode": "human"})
 
 
 # ── Coach admin half (/api/v1/admin/assistant/…) ─────────────────────────────
@@ -306,3 +341,116 @@ def assistant_preview_chat(request):
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"
     return response
+
+
+# ── Human takeover console (/api/v1/admin/assistant/conversations/…) ────────
+
+
+def _own_conversation(pk):
+    return AiConversation.objects.filter(
+        pk=pk, feature="student_bot", tenant_schema=connection.tenant.schema_name
+    ).first()
+
+
+def _conversation_row(c):
+    last = c.messages.exclude(role="system").order_by("-id").first()
+    return {
+        "id": c.id,
+        "session_id": c.session_id,
+        "status": c.status,
+        "user_label": c.user_label,
+        "human_requested": c.human_requested,
+        "message_count": c.message_count,
+        "last_message": (last.content[:140] if last else ""),
+        "updated_at": c.updated_at,
+    }
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def assistant_conversations(request):
+    from django.db.models import Count
+
+    try:
+        page = max(1, int(request.query_params.get("page", 1)))
+    except ValueError:
+        page = 1
+    qs = (
+        AiConversation.objects.filter(feature="student_bot", tenant_schema=connection.tenant.schema_name)
+        .annotate(message_count=Count("messages"))
+        .order_by("-updated_at")
+    )
+    start = (page - 1) * PAGE_SIZE
+    rows = list(qs[start : start + PAGE_SIZE + 1])
+    return Response({"results": [_conversation_row(c) for c in rows[:PAGE_SIZE]], "has_more": len(rows) > PAGE_SIZE})
+
+
+def _int_param(request, name, source=None):
+    try:
+        return int((source or request.query_params).get(name) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def assistant_conversation_thread(request, pk):
+    convo = _own_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    return Response(assistant.thread_payload(convo, after_id=_int_param(request, "after")))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def assistant_conversation_takeover(request, pk):
+    from django.utils import timezone
+
+    convo = _own_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    if convo.status == AiConversation.STATUS_HUMAN:
+        return Response({"error": "already_taken_over"}, status=409)
+    label = (((getattr(request.user, "name", "") or "").split(" ")[0]) or "Coach")[:60]
+    convo.status = AiConversation.STATUS_HUMAN
+    convo.agent_user_id = request.user.id
+    convo.agent_label = label
+    convo.taken_over_at = timezone.now()
+    convo.human_requested = False
+    convo.save(
+        update_fields=["status", "agent_user_id", "agent_label", "taken_over_at", "human_requested", "updated_at"]
+    )
+    assistant.append_message(convo, "system", f"agent_joined:{label}")
+    return Response(assistant.thread_payload(convo))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def assistant_conversation_message(request, pk):
+    convo = _own_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    data = request.data if isinstance(request.data, dict) else {}
+    content = str(data.get("content") or "").strip()[:2000]
+    if not content:
+        return Response({"error": "empty message"}, status=400)
+    convo = assistant.maybe_auto_release(convo)
+    if convo.status != AiConversation.STATUS_HUMAN:
+        return Response({"error": "not_taken_over"}, status=403)
+    assistant.append_message(convo, "agent", content)
+    return Response(assistant.thread_payload(convo, after_id=_int_param(request, "after", data)))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def assistant_conversation_release(request, pk):
+    convo = _own_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    if convo.status == AiConversation.STATUS_HUMAN:
+        convo.status = AiConversation.STATUS_AI
+        convo.save(update_fields=["status", "updated_at"])
+        assistant.append_message(convo, "system", "assistant_resumed")
+    return Response(assistant.thread_payload(convo))
