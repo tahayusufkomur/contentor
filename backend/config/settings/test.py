@@ -9,6 +9,12 @@ Test settings — dev settings plus test-only speedups.
   every worker — so without isolation workers would trip each other's
   rate limits and cache keys. Workers map to Redis DBs 2-15 (0 = dev
   cache, 1 = celery broker).
+- AI_PROVIDER pinned to "anthropic": tests must be hermetic regardless of
+  the developer's local .env choice (dev commonly runs AI_PROVIDER=cli on
+  the subscription). Without this, every AI test that doesn't explicitly
+  override the setting would silently fire real `claude` CLI subprocesses.
+  Tests that specifically exercise the cli path set settings.AI_PROVIDER
+  themselves via the pytest-django `settings` fixture.
 """
 
 import os
@@ -21,6 +27,8 @@ from .dev import *  # noqa: F401, F403
 DEBUG = False
 
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+AI_PROVIDER = "anthropic"
 
 _worker = os.environ.get("PYTEST_XDIST_WORKER")  # e.g. "gw0"
 if _worker:

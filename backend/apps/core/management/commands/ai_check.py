@@ -23,7 +23,7 @@ _FIXES = {
         "CLAUDE_CODE_OAUTH_TOKEN is empty — run `claude setup-token` on the "
         "host, paste the token into .env, then restart django + celery-worker."
     ),
-    "no_api_key": "ANTHROPIC_API_KEY is empty — set it in the environment.",
+    "no_api_key": "ANTHROPIC_API_KEY is empty — set it in the environment.",  # pragma: allowlist secret
 }
 
 

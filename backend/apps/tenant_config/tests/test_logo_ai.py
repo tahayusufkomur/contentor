@@ -162,9 +162,7 @@ class TestGenerateBrandPack:
         settings.AI_CLI_MODEL = "haiku"
         pack_json = json.dumps(
             {
-                "marks": [
-                    {"rationale": "A ring.", "paths": [{"d": "M50 8 A42 42 0 1 1 49.9 8 Z", "fill": "mark"}]}
-                ],
+                "marks": [{"rationale": "A ring.", "paths": [{"d": "M50 8 A42 42 0 1 1 49.9 8 Z", "fill": "mark"}]}],
                 "palettes": [
                     {
                         "name": "Deep",

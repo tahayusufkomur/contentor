@@ -35,6 +35,10 @@ def test_prod_settings_accepts_bypass_disabled(monkeypatch):
     # Ensure dev-only fakes are off so prod guardrails don't fire.
     monkeypatch.setenv("LIVE_FAKE_ENABLED", "false")
     monkeypatch.setenv("EMAIL_SINK_ENABLED", "false")
+    # A fresh settings-module import reads AI_PROVIDER straight from
+    # os.environ (bypassing the Django settings layer entirely), so it can
+    # leak in the developer's local AI_PROVIDER=cli — neutralize it.
+    monkeypatch.setenv("AI_PROVIDER", "anthropic")
     # Should import without raising.
     mod = importlib.import_module("config.settings.prod")
     assert mod.BILLING_BYPASS_ENABLED is False
