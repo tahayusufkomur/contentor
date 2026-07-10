@@ -1,5 +1,12 @@
 from django.urls import path
 
+from .assistant_views import (
+    assistant_config,
+    assistant_knowledge,
+    assistant_knowledge_detail,
+    assistant_preview_chat,
+    assistant_transcripts,
+)
 from .demo_content import demo_content, erase_demo_content
 from .views import (
     TenantConfigView,
@@ -25,4 +32,9 @@ urlpatterns = [
         logo_brand_pack_status,
         name="logo-brand-pack-status",
     ),
+    path("assistant/config/", assistant_config, name="assistant-config"),
+    path("assistant/knowledge/", assistant_knowledge, name="assistant-knowledge"),
+    path("assistant/knowledge/<int:pk>/", assistant_knowledge_detail, name="assistant-knowledge-detail"),
+    path("assistant/transcripts/", assistant_transcripts, name="assistant-transcripts"),
+    path("assistant/preview-chat/", assistant_preview_chat, name="assistant-preview-chat"),
 ]
