@@ -1,13 +1,17 @@
 """AI Brand Pack (Logo Studio): one Claude call -> bespoke vector marks +
 brand palettes. Anthropic is always mocked here — no real network access in
-tests. See docs/superpowers/specs/2026-07-08-logo-ai-brand-pack-design.md.
+tests. See docs/superpowers/specs/2026-07-08-logo-ai-brand-pack-design.md
+and docs/superpowers/specs/2026-07-09-shared-ai-provider-design.md.
 """
 
+import json
+import subprocess
 from decimal import Decimal
 from types import SimpleNamespace
 
 import pytest
 
+from apps.core import ai as core_ai
 from apps.core.models import LogoAiUsage
 from apps.tenant_config import logo_ai
 
@@ -88,7 +92,7 @@ def _mock_client(monkeypatch, marks=None, palettes=None, usage=None):
         usage or _FakeUsage(),
     )
     fake_client = SimpleNamespace(messages=SimpleNamespace(parse=lambda **kw: response))
-    monkeypatch.setattr(logo_ai, "_anthropic_client", lambda: fake_client)
+    monkeypatch.setattr(core_ai, "_anthropic_client", lambda: fake_client)
     return response
 
 
@@ -139,32 +143,67 @@ class TestGenerateBrandPack:
             logo_ai.generate_brand_pack("Z", "yoga", "#1a56db")
         assert exc_info.value.cost_usd > 0
 
-    def test_client_exception_propagates_unwrapped(self, monkeypatch):
+    def test_client_exception_wraps_into_brand_pack_error(self, monkeypatch):
+        # core.ai.structured wraps every anthropic SDK/network failure into
+        # AiError; generate_brand_pack re-raises it as BrandPackError with
+        # cost_usd=0 (no usage data on a failed call).
         def raise_parse(**kw):
             raise RuntimeError("boom")
 
         fake_client = SimpleNamespace(messages=SimpleNamespace(parse=raise_parse))
-        monkeypatch.setattr(logo_ai, "_anthropic_client", lambda: fake_client)
-        with pytest.raises(RuntimeError):
+        monkeypatch.setattr(core_ai, "_anthropic_client", lambda: fake_client)
+        with pytest.raises(logo_ai.BrandPackError) as exc_info:
             logo_ai.generate_brand_pack("Z", "yoga", "#1a56db")
+        assert exc_info.value.cost_usd == Decimal("0")
+
+    def test_generate_brand_pack_via_cli_provider(self, settings, monkeypatch):
+        settings.AI_PROVIDER = "cli"
+        settings.AI_CLI_BIN = "claude"
+        settings.AI_CLI_MODEL = "haiku"
+        pack_json = json.dumps(
+            {
+                "marks": [
+                    {"rationale": "A ring.", "paths": [{"d": "M50 8 A42 42 0 1 1 49.9 8 Z", "fill": "mark"}]}
+                ],
+                "palettes": [
+                    {
+                        "name": "Deep",
+                        "primary": "#1a56db",
+                        "secondary": "#93c5fd",
+                        "accent": "#f59e0b",
+                        "ink": "#111827",
+                    }
+                ],
+                "tagline": "",
+                "font_vibe": "Modern",
+            }
+        )
+        completed = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout=json.dumps({"result": pack_json}), stderr=""
+        )
+        monkeypatch.setattr("subprocess.run", lambda cmd, **kw: completed)
+        result = logo_ai.generate_brand_pack("Acme Coaching", "yoga", "#1a56db")
+        assert result.cost_usd == Decimal("0")
+        assert len(result.pack["marks"]) == 1
+        assert result.pack["palettes"][0]["primary"] == "#1a56db"
 
 
 class TestEstimateCost:
     def test_sonnet_input_pricing(self):
         usage = _FakeUsage(input_tokens=1_000_000, output_tokens=0)
-        assert logo_ai._estimate_cost(usage, "claude-sonnet-5") == pytest.approx(2.00)
+        assert core_ai.estimate_cost(usage, "claude-sonnet-5") == pytest.approx(2.00)
 
     def test_haiku_output_pricing(self):
         usage = _FakeUsage(input_tokens=0, output_tokens=1_000_000)
-        assert logo_ai._estimate_cost(usage, "claude-haiku-4-5") == pytest.approx(5.00)
+        assert core_ai.estimate_cost(usage, "claude-haiku-4-5") == pytest.approx(5.00)
 
     def test_cache_read_is_cheaper_than_input(self):
         usage = _FakeUsage(input_tokens=0, output_tokens=0, cache_read_input_tokens=1_000_000)
-        assert logo_ai._estimate_cost(usage, "claude-sonnet-5") < 2.00
+        assert core_ai.estimate_cost(usage, "claude-sonnet-5") < 2.00
 
     def test_unknown_model_defaults_to_sonnet_pricing(self):
         usage = _FakeUsage(input_tokens=1_000_000, output_tokens=0)
-        assert logo_ai._estimate_cost(usage, "some-future-model") == pytest.approx(2.00)
+        assert core_ai.estimate_cost(usage, "some-future-model") == pytest.approx(2.00)
 
 
 @pytest.mark.django_db

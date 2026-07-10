@@ -17,6 +17,7 @@ from typing import Literal
 from django.conf import settings
 from pydantic import BaseModel
 
+from apps.core import ai as core_ai
 from apps.core.models import LogoAiUsage
 
 from .logo_recipe import _hex, validate_recipe
@@ -153,35 +154,6 @@ class BrandPackResult:
         self.cost_usd = cost_usd
 
 
-# $ per 1M tokens: (input, output, cache_read, cache_write). Cache-write here
-# assumes the 5-minute TTL (1.25x input), not the 1-hour tier.
-_MODEL_PRICES = {
-    "claude-sonnet-5": {"input": 2.00, "output": 10.00, "cache_read": 0.20, "cache_write": 2.50},
-    "claude-haiku-4-5": {"input": 1.00, "output": 5.00, "cache_read": 0.10, "cache_write": 1.25},
-}
-_DEFAULT_PRICES = _MODEL_PRICES["claude-sonnet-5"]
-
-
-def _estimate_cost(usage, model):
-    prices = _MODEL_PRICES.get(model, _DEFAULT_PRICES)
-
-    def per_m(tokens, price):
-        return (Decimal(tokens or 0) / Decimal(1_000_000)) * Decimal(str(price))
-
-    return (
-        per_m(getattr(usage, "input_tokens", 0), prices["input"])
-        + per_m(getattr(usage, "output_tokens", 0), prices["output"])
-        + per_m(getattr(usage, "cache_read_input_tokens", 0), prices["cache_read"])
-        + per_m(getattr(usage, "cache_creation_input_tokens", 0), prices["cache_write"])
-    )
-
-
-def _anthropic_client():
-    from anthropic import Anthropic
-
-    return Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=60.0, max_retries=1)
-
-
 def _luminance(hex_color):
     n = int(hex_color[1:], 16)
 
@@ -226,11 +198,9 @@ def _validate_pack_palette(item):
 
 
 def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe=""):
-    """One Claude call -> a validated Brand Pack. Raises BrandPackError
-    (carrying the estimated cost) if the response parses but nothing usable
-    survives validation; propagates any SDK/network exception unwrapped
-    (caller records $0 for that attempt — no usage data to estimate from)."""
-    client = _anthropic_client()
+    """One structured AI call -> a validated Brand Pack. Raises BrandPackError
+    (carrying the estimated cost) on provider failure or if the response
+    parses but nothing usable survives validation."""
     chips = ", ".join(style_chips) if style_chips else "no strong preference"
     user_content = (
         f'Brand name: "{brand_name}"\n'
@@ -239,15 +209,16 @@ def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe="")
         f'Their vibe, in their own words: "{vibe or "-"}"\n'
         f"Brand's existing theme color: {primary_hex}\n"
     )
-    response = client.messages.parse(
-        model=settings.LOGO_AI_MODEL,
-        max_tokens=6000,
-        system=[{"type": "text", "text": STATIC_PROMPT, "cache_control": {"type": "ephemeral"}}],
-        messages=[{"role": "user", "content": user_content}],
-        output_format=_BrandPack,
-    )
-    cost = _estimate_cost(response.usage, settings.LOGO_AI_MODEL)
-    parsed = response.parsed_output
+    try:
+        parsed, cost, _ = core_ai.structured(
+            system=STATIC_PROMPT,
+            user=user_content,
+            output_model=_BrandPack,
+            model=settings.LOGO_AI_MODEL,
+            max_tokens=6000,
+        )
+    except core_ai.AiError as exc:
+        raise BrandPackError(str(exc), cost_usd=exc.cost_usd) from exc
 
     marks = [m for m in (_validate_pack_mark(item) for item in parsed.marks) if m]
     palettes = [_validate_pack_palette(item) for item in parsed.palettes]

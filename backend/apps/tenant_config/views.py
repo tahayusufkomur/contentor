@@ -16,6 +16,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from apps.accounts.models import User
 from apps.billing.models import Payment
+from apps.core import ai as core_ai
 from apps.core.permissions import IsCoachOrOwner
 from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
@@ -227,7 +228,7 @@ def _brand_pack_status(tenant):
     month = logo_ai._current_month()
     eligible = tenant.has_paid_platform_plan
     budget_ok = logo_ai.global_spend(month=month) < Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD))
-    enabled = bool(settings.ANTHROPIC_API_KEY) and budget_ok
+    enabled = core_ai.available()[0] and budget_ok
     usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
     remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
     if not eligible:
@@ -255,7 +256,7 @@ def logo_brand_pack(request):
     tenant = connection.tenant
     month = logo_ai._current_month()
 
-    if not settings.ANTHROPIC_API_KEY:
+    if not core_ai.available()[0]:
         return Response({"pack": None, "source": "disabled", "remaining": 0})
     if not tenant.has_paid_platform_plan:
         return Response({"pack": None, "source": "upgrade_required", "remaining": 0})
