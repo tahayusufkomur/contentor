@@ -92,6 +92,9 @@ def help_bot_public_chat(request):
             assistant.append_message(convo, "user", question)
         return Response({"mode": "human"})
 
+    if assistant.session_over_daily_cap(session_id):
+        return Response({"enabled": False, "reason": "session_limit"}, status=200)
+
     enabled, reason = _availability(month=month)
     if not enabled:
         return Response({"enabled": False, "reason": reason}, status=200)

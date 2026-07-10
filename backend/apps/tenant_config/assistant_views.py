@@ -98,6 +98,9 @@ def assistant_chat(request):
             assistant.append_message(convo, "user", question)
         return Response({"mode": "human"})
 
+    if assistant.session_over_daily_cap(session_id):
+        return Response({"enabled": False, "reason": "session_limit"}, status=200)
+
     cfg = AssistantConfig.load()
     enabled, reason = student_bot.availability(tenant, cfg, month=month)
     if not enabled:

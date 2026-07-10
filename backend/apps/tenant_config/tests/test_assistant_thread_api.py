@@ -7,6 +7,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from django.core.cache import cache
 from django_tenants.utils import schema_context
 from rest_framework.test import APIClient
 
@@ -26,6 +27,9 @@ def _sse_body(response):
     cached = getattr(response, "_cached_sse_body", None)
     if cached is not None:
         return cached
+    if not hasattr(response, "streaming_content"):
+        # Non-streaming short-circuit (e.g. session_limit) — nothing to drain.
+        return ""
     return b"".join(response.streaming_content).decode()
 
 
@@ -72,6 +76,7 @@ def _enabled_and_clean(paid_tenant):
     cfg = AssistantConfig.load()
     cfg.enabled = True
     cfg.save()
+    cache.clear()
 
     def _scrub():
         # schema_context(tenant schema), not "public": billing_payment (a
@@ -150,3 +155,34 @@ class TestThreadEndpoint:
                 session_id="other-feat",
             )
         assert tenant_client.get("/api/v1/assistant/thread/?session=other-feat").status_code == 404
+
+
+class TestAnswerCache:
+    def test_second_identical_question_serves_from_cache(self, tenant_client, paid_tenant):
+        _sse_body(_chat(tenant_client, session_id="c-1", text="what courses?"))
+        before = student_bot.tenant_usage(paid_tenant.schema_name).questions
+
+        def explode(**kwargs):
+            raise AssertionError("model must not be called on a cache hit")
+
+        with (
+            patch.object(student_bot.core_ai, "available", return_value=(True, "ok")),
+            patch.object(assistant.core_ai, "stream_text", explode),
+        ):
+            res = tenant_client.post(
+                "/api/v1/assistant/chat/",
+                {"messages": [{"role": "user", "content": "what courses?"}], "session_id": "c-2"},
+                format="json",
+            )
+            body = _sse_body(res)
+        assert "hello" in body  # the cached answer
+        from apps.core.models import AiTranscript
+
+        with schema_context("public"):
+            assert AiTranscript.objects.filter(provider="cache").count() == 1
+            assert student_bot.tenant_usage(paid_tenant.schema_name).questions == before
+
+    def test_session_limit_reason(self, tenant_client, paid_tenant, settings):
+        settings.ASSISTANT_SESSION_DAILY_QUESTIONS = 0
+        res = _chat(tenant_client, session_id="cap-1")
+        assert res.status_code == 200 and res.json() == {"enabled": False, "reason": "session_limit"}

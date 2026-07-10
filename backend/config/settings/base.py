@@ -274,6 +274,8 @@ STUDENT_BOT_GLOBAL_MONTHLY_USD = float(os.environ.get("STUDENT_BOT_GLOBAL_MONTHL
 
 # --- AI assistants v2 ---
 ASSISTANT_HUMAN_IDLE_RELEASE_MIN = int(os.environ.get("ASSISTANT_HUMAN_IDLE_RELEASE_MIN", "30"))
+AI_ANSWER_CACHE_TTL = int(os.environ.get("AI_ANSWER_CACHE_TTL", str(60 * 60 * 24)))
+ASSISTANT_SESSION_DAILY_QUESTIONS = int(os.environ.get("ASSISTANT_SESSION_DAILY_QUESTIONS", "40"))
 
 # --- AI IP blocklist (apps.core.ipblock) ---
 AI_IP_AUTOBLOCK_THRESHOLD = int(os.environ.get("AI_IP_AUTOBLOCK_THRESHOLD", "5"))

@@ -220,15 +220,35 @@ def sse_events(history, audience, bucket, month, question="", session_id="", con
     write the audit transcript. ``question`` is the RAW last user message
     (before context injection) so transcripts never store tenant snapshots.
     ``conversation`` (an AiConversation, optional) gets the assistant's reply
-    appended to its thread, mirroring the student bot."""
+    appended to its thread, mirroring the student bot.
+
+    A first-turn question (len(history) == 1) consults the answer cache: a
+    hit replays the stored answer with zero model cost (still audited); a
+    miss populates the cache once the answer succeeds."""
+    from django.core.cache import cache
+
+    fingerprint, _ = _addenda_state(audience)
+    cache_key = (
+        assistant.answer_cache_key("help_bot", audience, PROMPT_VERSION, fingerprint, question)
+        if len(history) == 1
+        else None
+    )
 
     def on_complete(info):
-        try:
-            record_question(bucket, info["cost_usd"], month=month)
-        except Exception:  # pragma: no cover - logged by kernel caller
-            import logging
+        cached_hit = info["provider"] == "cache"
+        if not cached_hit:
+            try:
+                record_question(bucket, info["cost_usd"], month=month)
+            except Exception:  # pragma: no cover - logged by kernel caller
+                import logging
 
-            logging.getLogger(__name__).exception("help bot: usage recording failed")
+                logging.getLogger(__name__).exception("help bot: usage recording failed")
+            if cache_key:
+                cache.set(
+                    cache_key,
+                    {"answer": info["answer"], "suggestions": info.get("suggestions") or [], "model": info["model"]},
+                    timeout=settings.AI_ANSWER_CACHE_TTL,
+                )
         row = assistant.log_transcript(
             feature="help_bot",
             audience=audience,
@@ -246,6 +266,10 @@ def sse_events(history, audience, bucket, month, question="", session_id="", con
             return None
         return {"transcript_id": row.id, "rate_token": assistant.rate_token(row.id)}
 
+    if cache_key:
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return assistant.replay_cached(cached, on_complete)
     return assistant.run_chat(
         system=system_prompt(audience),
         history=history,

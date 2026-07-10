@@ -3,6 +3,7 @@ student site assistant). Owns transcript-shaped plumbing only: history
 validation, SSE framing, answer accumulation and the completion hook. Personas,
 knowledge, gating and usage accounting stay in the feature modules."""
 
+import hashlib
 import json
 import logging
 
@@ -248,3 +249,53 @@ def thread_payload(conversation, after_id=0):
             {"id": m.id, "role": m.role, "content": m.content, "created_at": m.created_at.isoformat()} for m in msgs
         ],
     }
+
+
+# ── Cost guards (v2 spec §10.3-10.4) ────────────────────────────────────────
+
+
+def answer_cache_key(feature, audience, prompt_version, kb_fingerprint, question):
+    norm = " ".join(str(question or "").split()).casefold()
+    digest = hashlib.sha256(f"{feature}|{audience}|{prompt_version}|{kb_fingerprint}|{norm}".encode()).hexdigest()
+    return f"ai-answer:{digest}"
+
+
+def replay_cached(cached, on_complete):
+    """Serve a cached first-turn answer over the same SSE wire — zero model
+    cost, still audited (the hook writes a provider="cache" transcript)."""
+    from decimal import Decimal
+
+    yield _event({"type": "delta", "text": cached["answer"]})
+    extras = None
+    if on_complete is not None:
+        try:
+            extras = on_complete(
+                {
+                    "cost_usd": Decimal("0"),
+                    "provider": "cache",
+                    "model": cached.get("model", ""),
+                    "answer": cached["answer"],
+                    "suggestions": cached.get("suggestions") or [],
+                }
+            )
+        except Exception:
+            logger.exception("assistant: cached completion hook failed")
+    yield _event({"type": "done", "suggestions": cached.get("suggestions") or [], **(extras or {})})
+
+
+def session_over_daily_cap(session_id):
+    from datetime import UTC, datetime
+
+    from django.conf import settings
+    from django.core.cache import cache
+
+    sid = (session_id or "").strip()[:36]
+    if not sid:
+        return False
+    key = f"ai-sess:{sid}:{datetime.now(UTC):%Y%m%d}"
+    cache.add(key, 0, timeout=60 * 60 * 24)
+    try:
+        count = cache.incr(key)
+    except ValueError:
+        count = 1
+    return count > settings.ASSISTANT_SESSION_DAILY_QUESTIONS

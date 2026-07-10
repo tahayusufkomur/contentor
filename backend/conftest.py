@@ -166,10 +166,16 @@ def _purge_rate_limit_keys():
     rate limiter above), so Django's default key function wraps it in a
     ``:<version>:`` prefix — a leading wildcard is required, same as
     ``*throttle*``.
+
+    ``*ai-answer*``/``*ai-sess*`` are the same problem for the assistants'
+    first-turn answer cache and per-session daily cap (apps.core.assistant):
+    without purging, one test's cached/capped answer bleeds into another
+    test (or, under pytest-xdist, another worker) that happens to ask the
+    same first-turn question or reuses a session id.
     """
     try:
         redis = get_redis_connection("default")
-        for pattern in ("ratelimit:*", "*throttle*", "*logo-ai*"):
+        for pattern in ("ratelimit:*", "*throttle*", "*logo-ai*", "*ai-answer*", "*ai-sess*"):
             for key in redis.keys(pattern):
                 redis.delete(key)
     except Exception:  # noqa: S110

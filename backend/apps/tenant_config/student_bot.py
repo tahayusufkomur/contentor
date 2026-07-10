@@ -285,19 +285,38 @@ def availability(tenant, config, month=None):
 
 def sse_events(history, tenant, month, question="", session_id="", is_preview=False, conversation=None):
     """Stream one answer; on completion accrue USD always, count the question
-    unless preview, and write the audit transcript."""
+    unless preview, and write the audit transcript. A first-turn question
+    (len(history) == 1) consults the answer cache: a hit replays the stored
+    answer with zero model cost (still audited); a miss populates the cache
+    once the answer succeeds."""
+    from django.conf import settings as dj_settings
+    from django.core.cache import cache
+
     from .models import TenantConfig
 
     config = TenantConfig.objects.first()
     system, kb_hash = build_system_prompt(tenant, config)
+    cache_key = (
+        assistant.answer_cache_key("student_bot", "student", PROMPT_VERSION, kb_hash, question)
+        if len(history) == 1 and not is_preview
+        else None
+    )
 
     def on_complete(info):
-        try:
-            record_question(tenant.schema_name, info["cost_usd"], month=month, count_question=not is_preview)
-        except Exception:
-            import logging
+        cached_hit = info["provider"] == "cache"
+        if not cached_hit:
+            try:
+                record_question(tenant.schema_name, info["cost_usd"], month=month, count_question=not is_preview)
+            except Exception:
+                import logging
 
-            logging.getLogger(__name__).exception("student bot: usage recording failed")
+                logging.getLogger(__name__).exception("student bot: usage recording failed")
+            if cache_key:
+                cache.set(
+                    cache_key,
+                    {"answer": info["answer"], "suggestions": info.get("suggestions") or [], "model": info["model"]},
+                    timeout=dj_settings.AI_ANSWER_CACHE_TTL,
+                )
         row = assistant.log_transcript(
             feature="student_bot",
             audience="student",
@@ -317,6 +336,10 @@ def sse_events(history, tenant, month, question="", session_id="", is_preview=Fa
             return None
         return {"transcript_id": row.id, "rate_token": assistant.rate_token(row.id)}
 
+    if cache_key:
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return assistant.replay_cached(cached, on_complete)
     return assistant.run_chat(
         system=system,
         history=history,
