@@ -13,8 +13,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+from apps.core import assistant
+
 from ..currency import tenant_charge_currency
 from ..models import (
+    AiConversation,
     AiTranscript,
     BlogAiUsage,
     HelpBotUsage,
@@ -546,3 +549,121 @@ def platform_ai_usage(request):
             "daily_questions": daily,
         }
     )
+
+
+# ── Superadmin AI-conversation console (/api/v1/platform/ai-conversations/…) ─
+# help_bot conversations only (coach + marketing/visitor audience) — student-
+# tenant chats are explicitly out of scope for superadmins (spec D6).
+
+PLATFORM_AGENT_LABEL = "Contentor support"
+_CONVO_PAGE = 20
+
+
+def _help_conversation(pk):
+    return AiConversation.objects.filter(pk=pk, feature="help_bot").first()
+
+
+def _platform_conversation_row(c):
+    last = c.messages.exclude(role="system").order_by("-id").first()
+    return {
+        "id": c.id,
+        "session_id": c.session_id,
+        "audience": c.audience,
+        "tenant_schema": c.tenant_schema,
+        "status": c.status,
+        "user_label": c.user_label,
+        "human_requested": c.human_requested,
+        "message_count": c.message_count,
+        "last_message": (last.content[:140] if last else ""),
+        "updated_at": c.updated_at,
+    }
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_ai_conversations(request):
+    qs = AiConversation.objects.filter(feature="help_bot")
+    audience = request.query_params.get("audience")
+    if audience in ("coach", "visitor"):
+        qs = qs.filter(audience=audience)
+    tenant = request.query_params.get("tenant")
+    if tenant:
+        qs = qs.filter(tenant_schema=tenant)
+    try:
+        page = max(1, int(request.query_params.get("page", 1)))
+    except ValueError:
+        page = 1
+    qs = qs.annotate(message_count=Count("messages")).order_by("-updated_at")
+    start = (page - 1) * _CONVO_PAGE
+    rows = list(qs[start : start + _CONVO_PAGE + 1])
+    return Response(
+        {"results": [_platform_conversation_row(c) for c in rows[:_CONVO_PAGE]], "has_more": len(rows) > _CONVO_PAGE}
+    )
+
+
+def _platform_int_param(request, name, source=None):
+    try:
+        return int((source or request.query_params).get(name) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_ai_conversation_thread(request, pk):
+    convo = _help_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    return Response(assistant.thread_payload(convo, after_id=_platform_int_param(request, "after")))
+
+
+@api_view(["POST"])
+@permission_classes([IsSuperUser])
+def platform_ai_conversation_takeover(request, pk):
+    convo = _help_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    convo = assistant.maybe_auto_release(convo)
+    if convo.status == AiConversation.STATUS_HUMAN:
+        return Response({"error": "already_taken_over"}, status=409)
+    convo.status = AiConversation.STATUS_HUMAN
+    convo.agent_user_id = request.user.id
+    convo.agent_label = PLATFORM_AGENT_LABEL
+    convo.taken_over_at = timezone.now()
+    convo.human_requested = False
+    convo.save(
+        update_fields=["status", "agent_user_id", "agent_label", "taken_over_at", "human_requested", "updated_at"]
+    )
+    assistant.append_message(convo, "system", f"agent_joined:{PLATFORM_AGENT_LABEL}")
+    return Response(assistant.thread_payload(convo))
+
+
+@api_view(["POST"])
+@permission_classes([IsSuperUser])
+def platform_ai_conversation_message(request, pk):
+    convo = _help_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    data = request.data if isinstance(request.data, dict) else {}
+    content = str(data.get("content") or "").strip()[:2000]
+    if not content:
+        return Response({"error": "empty message"}, status=400)
+    convo = assistant.maybe_auto_release(convo)
+    if convo.status != AiConversation.STATUS_HUMAN:
+        return Response({"error": "not_taken_over"}, status=403)
+    assistant.append_message(convo, "agent", content)
+    return Response(assistant.thread_payload(convo, after_id=_platform_int_param(request, "after", data)))
+
+
+@api_view(["POST"])
+@permission_classes([IsSuperUser])
+def platform_ai_conversation_release(request, pk):
+    convo = _help_conversation(pk)
+    if convo is None:
+        return Response(status=404)
+    if convo.status == AiConversation.STATUS_HUMAN:
+        convo.status = AiConversation.STATUS_AI
+        convo.save(update_fields=["status", "updated_at"])
+        assistant.append_message(convo, "system", "assistant_resumed")
+    return Response(assistant.thread_payload(convo))

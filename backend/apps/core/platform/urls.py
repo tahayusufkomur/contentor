@@ -21,4 +21,25 @@ urlpatterns = [
         views.platform_webhook_event_detail,
         name="platform-webhook-event-detail",
     ),
+    path("ai-conversations/", views.platform_ai_conversations, name="platform-ai-conversations"),
+    path(
+        "ai-conversations/<int:pk>/thread/",
+        views.platform_ai_conversation_thread,
+        name="platform-ai-conversation-thread",
+    ),
+    path(
+        "ai-conversations/<int:pk>/takeover/",
+        views.platform_ai_conversation_takeover,
+        name="platform-ai-conversation-takeover",
+    ),
+    path(
+        "ai-conversations/<int:pk>/message/",
+        views.platform_ai_conversation_message,
+        name="platform-ai-conversation-message",
+    ),
+    path(
+        "ai-conversations/<int:pk>/release/",
+        views.platform_ai_conversation_release,
+        name="platform-ai-conversation-release",
+    ),
 ]
