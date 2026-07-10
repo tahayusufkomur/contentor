@@ -7,7 +7,19 @@ from apps.accounts.models import User
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import platform_site
 
-from .models import PlatformBlogPost, PlatformKbEntry, PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
+from .models import (
+    AiTranscript,
+    BlogAiUsage,
+    HelpBotUsage,
+    LogoAiUsage,
+    PlatformBlogPost,
+    PlatformKbEntry,
+    PlatformPlan,
+    PlatformSubscription,
+    StudentBotUsage,
+    Tenant,
+    WebhookEvent,
+)
 from .stripe_pricing import apply_amounts
 
 
@@ -339,3 +351,78 @@ class PlatformKbEntryAdmin(ModelAdmin):
     list_filters = ("audience", "enabled")
     ordering = ("position", "id")
     fields = ("audience", "title", "content", "enabled", "position")
+
+
+# ---------------------------------------------------------------------------
+# Read-only audit surfaces: every AI feature's transcripts + spend meters.
+# The deliberate contrast to PlatformKbEntryAdmin above — no write path is
+# reachable for any of these (fields=() + can_create/can_edit/can_delete all
+# False), enforced by AdminKitViewSet at the HTTP layer regardless of what a
+# client sends.
+# ---------------------------------------------------------------------------
+
+
+class _ReadOnlyAdmin(ModelAdmin):
+    fields = ()
+    can_create = False
+    can_edit = False
+    can_delete = False
+
+
+@platform_site.register(AiTranscript)
+class AiTranscriptAdmin(_ReadOnlyAdmin):
+    key = "ai-transcripts"
+    icon = "messages-square"
+    description = "Every assistant exchange: question, answer, cost, model, rating."
+    list_display = (
+        "created_at",
+        "feature",
+        "audience",
+        "tenant_schema",
+        "question",
+        "rating",
+        "cost_usd",
+        "model",
+        "is_preview",
+    )
+    search_fields = ("tenant_schema", "question", "answer", "session_id")
+    list_filters = ("feature", "audience", "rating", "is_preview")
+    ordering = ("-created_at",)
+    readonly_fields = (
+        "feature",
+        "audience",
+        "tenant_schema",
+        "session_id",
+        "question",
+        "answer",
+        "cost_usd",
+        "provider",
+        "model",
+        "prompt_version",
+        "kb_hash",
+        "rating",
+        "is_preview",
+        "created_at",
+    )
+
+
+def _usage_admin(key_, model, count_field, description_):
+    @platform_site.register(model)
+    class UsageAdmin(_ReadOnlyAdmin):
+        key = key_
+        icon = "gauge"
+        description = description_
+        list_display = ("tenant_schema", "month", count_field, "usd_spent", "updated_at")
+        search_fields = ("tenant_schema", "month")
+        ordering = ("-month", "-usd_spent")
+        readonly_fields = ("tenant_schema", "month", count_field, "usd_spent", "created_at", "updated_at")
+
+    return UsageAdmin
+
+
+_usage_admin("help-bot-usage", HelpBotUsage, "questions", "Ask Contentor spend/questions per tenant per month.")
+_usage_admin(
+    "student-bot-usage", StudentBotUsage, "questions", "Student site-assistant spend/questions per tenant per month."
+)
+_usage_admin("blog-ai-usage", BlogAiUsage, "generations_used", "AI blog generation spend/credits per tenant per month.")
+_usage_admin("logo-ai-usage", LogoAiUsage, "packs_used", "Brand Pack spend/packs per tenant per month.")
