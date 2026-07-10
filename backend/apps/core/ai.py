@@ -18,8 +18,11 @@ travels in the user turn — never interpolate it into ``system`` (it would
 fragment the Anthropic cache per tenant).
 """
 
+import json
 import os
 import shutil
+import subprocess
+import tempfile
 from decimal import Decimal
 
 from django.conf import settings
@@ -86,3 +89,89 @@ def _cli_env():
     # Subscription auth only: with ANTHROPIC_API_KEY present the CLI would
     # bill the API key instead of the subscription.
     return {k: v for k, v in os.environ.items() if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}
+
+
+# ── structured output (blog drafts/topics, brand pack) ──────────────────────
+
+
+def structured(*, system, user, output_model, model, max_tokens):
+    """One structured-output call -> (validated ``output_model`` instance,
+    cost_usd, effective_model). Raises AiError on provider or schema
+    failure."""
+    if settings.AI_PROVIDER == "cli":
+        return _cli_structured(system, user, output_model)
+    return _anthropic_structured(system, user, output_model, model, max_tokens)
+
+
+def _anthropic_structured(system, user, output_model, model, max_tokens):
+    client = _anthropic_client()
+    try:
+        response = client.messages.parse(
+            model=model,
+            max_tokens=max_tokens,
+            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+            messages=[{"role": "user", "content": user}],
+            output_format=output_model,
+        )
+    except Exception as exc:
+        # No usage data on a failed call — nothing billable to estimate.
+        raise AiError(f"anthropic call failed: {exc}") from exc
+    return response.parsed_output, estimate_cost(response.usage, model), model
+
+
+def _cli_structured(system, user, output_model):
+    """Local-dev provider: blocking `claude -p` on the developer's
+    subscription. The CLI has no parse-forced structured output, so the
+    schema contract is appended to the system prompt and the result is
+    validated with the SAME pydantic model as the anthropic path. Because
+    nothing forces valid JSON, occasional invalid output is expected — one
+    retry absorbs it (observed in the field 2026-07-09)."""
+    from pydantic import ValidationError
+
+    schema_note = (
+        "\n\nRespond with ONLY a JSON object (no prose, no code fences) matching this JSON schema:\n"
+        + json.dumps(output_model.model_json_schema())
+    )
+    cmd = [
+        settings.AI_CLI_BIN,
+        "-p",
+        user,
+        "--model",
+        settings.AI_CLI_MODEL,
+        "--system-prompt",
+        system + schema_note,
+        "--disallowedTools",
+        "*",
+        "--max-turns",
+        "1",
+        "--output-format",
+        "json",
+    ]
+    last_error = None
+    for _attempt in range(2):
+        try:
+            proc = subprocess.run(  # noqa: S603 — fixed argv, no shell
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=CLI_TIMEOUT_SECONDS,
+                env=_cli_env(),
+                cwd=tempfile.gettempdir(),
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise AiError(f"claude CLI not runnable: {exc}") from exc
+        if proc.returncode != 0:
+            raise AiError(f"claude CLI failed (rc={proc.returncode}): {(proc.stderr or '')[:500]}")
+        try:
+            envelope = json.loads(proc.stdout)
+            text = (envelope.get("result") or "").strip()
+            if text.startswith("```"):
+                text = text.strip("`\n")
+                if text.startswith("json"):
+                    text = text[4:].lstrip()
+            # Subscription usage — nothing accrues against the USD caps.
+            return output_model.model_validate_json(text), Decimal("0"), settings.AI_CLI_MODEL
+        except (ValueError, ValidationError) as exc:
+            last_error = exc
+    raise AiError(f"claude CLI output did not match schema: {last_error}") from last_error
