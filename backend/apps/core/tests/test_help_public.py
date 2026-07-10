@@ -8,6 +8,7 @@ from decimal import Decimal
 import pytest
 from rest_framework.test import APIClient
 
+from apps.core import assistant
 from apps.core.help.views import MARKETING_BUCKET
 from apps.core.models import HelpBotUsage
 from apps.tenant_config import help_bot
@@ -42,14 +43,14 @@ def _sse_events(response):
 def test_public_chat_streams_without_auth(anon_client, enabled, monkeypatch):
     seen = {}
 
-    def fake_stream(history, audience="coach"):
-        seen["audience"] = audience
-        seen["first"] = history[0]["content"]
+    def fake_stream(**kwargs):
+        seen["system"] = kwargs["system"]
+        seen["first"] = kwargs["history"][0]["content"]
         yield ("delta", "Starter takes 8%. ")
         yield ("delta", "[See pricing](/pricing)")
-        yield ("done", {"cost_usd": Decimal("0.0050"), "provider": "anthropic"})
+        yield ("done", {"cost_usd": Decimal("0.0050"), "provider": "anthropic", "model": "m"})
 
-    monkeypatch.setattr(help_bot, "stream_answer", fake_stream)
+    monkeypatch.setattr(assistant.core_ai, "stream_text", fake_stream)
 
     response = anon_client.post(
         "/api/v1/help/chat/",
@@ -63,7 +64,7 @@ def test_public_chat_streams_without_auth(anon_client, enabled, monkeypatch):
     assert events[-1] == {"type": "done"}
 
     # Visitor persona + visitor context, never tenant data.
-    assert seen["audience"] == "visitor"
+    assert seen["system"] == help_bot.system_prompt("visitor")
     assert seen["first"].startswith("<visitor_context>")
 
     row = HelpBotUsage.objects.get(tenant_schema=MARKETING_BUCKET, month=help_bot.current_month())

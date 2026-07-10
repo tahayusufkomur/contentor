@@ -20,6 +20,7 @@ from pathlib import Path
 from django.conf import settings
 
 from apps.core import ai as core_ai
+from apps.core import assistant
 from apps.core.models import HelpBotUsage
 
 PROMPT_VERSION = 1
@@ -143,27 +144,10 @@ def build_tenant_context(config, tenant) -> str:
 
 
 def prepare_history(messages, tenant_context):
-    """Validate + trim the client transcript and inject the tenant snapshot
-    into the first user turn. Returns Messages-API-shaped history ending in a
-    user turn; raises ValueError on bad input."""
-    if not isinstance(messages, list) or not messages:
-        raise ValueError("messages must be a non-empty list")
-    clean = []
-    for m in messages[-MAX_HISTORY_MESSAGES:]:
-        if not isinstance(m, dict) or m.get("role") not in ("user", "assistant"):
-            raise ValueError("each message needs role user|assistant")
-        content = str(m.get("content") or "").strip()[:MAX_MESSAGE_CHARS]
-        if not content:
-            raise ValueError("empty message")
-        clean.append({"role": m["role"], "content": content})
-    # Trimming may cut mid-pair; drop leading assistant turns so the
-    # window always opens on a user message.
-    while clean and clean[0]["role"] != "user":
-        clean.pop(0)
-    if not clean or clean[-1]["role"] != "user":
-        raise ValueError("history must start and end with a user message")
-    clean[0] = {"role": "user", "content": f"{tenant_context}\n\n{clean[0]['content']}"}
-    return clean
+    """Validate + trim the client transcript (kernel) with this feature's caps."""
+    return assistant.prepare_history(
+        messages, tenant_context, max_messages=MAX_HISTORY_MESSAGES, max_chars=MAX_MESSAGE_CHARS
+    )
 
 
 # ── Providers ────────────────────────────────────────────────────────────────
@@ -187,38 +171,25 @@ def stream_answer(history, audience="coach"):
 
 
 def sse_events(history, audience, bucket, month):
-    """Yield SSE-framed JSON events for one answer and record usage on
-    completion. Shared by the coach (tenant) and public (marketing) chat
-    views; ``bucket`` is the HelpBotUsage tenant_schema label."""
-    import json
-    import logging
+    """Yield SSE-framed events for one answer and record usage on completion.
+    Shared by the coach (tenant) and public (marketing) chat views."""
 
-    logger = logging.getLogger(__name__)
+    def on_complete(info):
+        try:
+            record_question(bucket, info["cost_usd"], month=month)
+        except Exception:  # pragma: no cover - logged by kernel caller
+            import logging
 
-    def event(payload):
-        return f"data: {json.dumps(payload)}\n\n"
+            logging.getLogger(__name__).exception("help bot: usage recording failed")
+        return None
 
-    cost = Decimal("0")
-    completed = False
-    try:
-        for kind, value in stream_answer(history, audience=audience):
-            if kind == "delta":
-                yield event({"type": "delta", "text": value})
-            elif kind == "done":
-                cost = value["cost_usd"]
-                completed = True
-        yield event({"type": "done"})
-    except Exception:
-        logger.exception("help bot: answer failed (provider=%s, audience=%s)", settings.AI_PROVIDER, audience)
-        yield event({"type": "error", "message": "answer_failed"})
-    finally:
-        # A failed stream has no usage data to price (same caveat as logo_ai)
-        # and shouldn't consume quota — the throttles are the loop protection.
-        if completed:
-            try:
-                record_question(bucket, cost, month=month)
-            except Exception:
-                logger.exception("help bot: usage recording failed")
+    return assistant.run_chat(
+        system=system_prompt(audience),
+        history=history,
+        model=settings.HELP_BOT_MODEL,
+        max_tokens=MAX_OUTPUT_TOKENS,
+        on_complete=on_complete,
+    )
 
 
 # ── Availability + usage accounting (DB-backed, mirrors logo_ai) ─────────────
