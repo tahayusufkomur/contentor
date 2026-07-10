@@ -173,7 +173,9 @@ def assistant_knowledge(request):
     if AssistantKnowledgeEntry.objects.count() >= AssistantKnowledgeEntry.MAX_ENTRIES:
         return Response({"error": f"limit of {AssistantKnowledgeEntry.MAX_ENTRIES} entries reached"}, status=400)
     e = AssistantKnowledgeEntry.objects.create(
-        title=data["title"].strip(), content=data["content"].strip(), enabled=bool(data.get("enabled", True))
+        title=str(data["title"]).strip(),
+        content=str(data["content"]).strip(),
+        enabled=bool(data.get("enabled", True)),
     )
     return Response(_entry_payload(e), status=201)
 
