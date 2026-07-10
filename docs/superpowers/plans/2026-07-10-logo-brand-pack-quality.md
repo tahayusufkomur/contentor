@@ -29,13 +29,13 @@ logo-generator-skill's design methodology. No API/client contract changes.
 
 ### Task 3: Eval wall (go/no-go)
 
-- [ ] Generate packs for ~6 varied real briefs via the CLI provider ($0).
-- [ ] Render marks to a static HTML eval wall; review for variety/precision/wow
+- [x] Generate packs for ~6 varied real briefs via the CLI provider ($0).
+- [x] Render marks to a static HTML eval wall; review for variety/precision/wow
   vs v1; iterate prompt if any family collapses or geometry disappoints.
 
 ### Task 4: End-to-end verification
 
-- [ ] `make test` (backend suites touched) + frontend `vitest`/`tsc` still green.
-- [ ] Dev-stack browser pass: paid tenant → explicit Generate button → progress
+- [x] `make test` (backend suites touched) + frontend `vitest`/`tsc` still green.
+- [x] Dev-stack browser pass: paid tenant → explicit Generate button → progress
   checkpoints → 18-tile "Made for {brand}" row renders; free tenant still sees
   the upsell (covers the trigger-UX plan's Task 4 walkthrough too).
