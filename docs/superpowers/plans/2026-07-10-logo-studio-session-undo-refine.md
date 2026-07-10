@@ -1338,7 +1338,13 @@ export function push<T>(
     top !== undefined &&
     top.key === coalesceKey &&
     now - top.at < COALESCE_WINDOW_MS;
-  const entry: HistoryEntry<T> = { value: history.present, key: coalesceKey, at: now };
+  // Coalescing keeps the ORIGINAL pre-burst value as the undo target (only
+  // the timestamp refreshes, extending the window) — otherwise each
+  // coalesced push would overwrite it with the previous keystroke's
+  // intermediate value, and undo would only ever step back one keystroke.
+  const entry: HistoryEntry<T> = coalesce
+    ? { value: top!.value, key: coalesceKey, at: now }
+    : { value: history.present, key: coalesceKey, at: now };
   const past = coalesce
     ? [...history.past.slice(0, -1), entry]
     : [...history.past, entry].slice(-MAX_ENTRIES);
