@@ -39,6 +39,7 @@ urlpatterns = [
     path("api/v1/contact/", include("apps.core.contact.urls")),
     path("api/v1/help/", include("apps.core.help.urls")),
     path("api/v1/ai/", include("apps.core.assistant_urls")),
+    path("api/v1/assistant/", include("apps.tenant_config.urls_assistant")),
     path("api/v1/preview/", include("apps.core.preview.urls")),
     path("api/v1/admin/", include("apps.tenant_config.urls")),
     path("api/v1/admin/", include("apps.notifications.admin_urls")),

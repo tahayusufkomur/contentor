@@ -147,6 +147,10 @@ REST_FRAMEWORK = {
         "help_bot_public_burst": "5/min",
         "help_bot_public_day": "40/day",
         "ai_rate": "20/min",
+        # Public student-assistant chat (anon-per-IP and signed-in-per-user
+        # share the same rates): per-IP/per-user burst + daily ceiling.
+        "student_bot_burst": "5/min",
+        "student_bot_day": "30/day",
     },
 }
 
