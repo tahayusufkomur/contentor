@@ -83,7 +83,10 @@ services:
       context: ./backend
       args:
         INSTALL_CLAUDE_CLI: "1"
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30
+    # --timeout 300: the logo Brand Pack is a blocking HTTP call into the AI
+    # provider (cli: 120s ceiling + one schema-retry); gunicorn's default 30s
+    # kills the worker mid-generation.
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30 --timeout 300
     volumes:
       - ./backend:/app/backend
     env_file: .env

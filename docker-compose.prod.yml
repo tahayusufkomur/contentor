@@ -91,9 +91,12 @@ services:
     # logging is intentionally off (the 15s healthcheck would flood it); request
     # errors still surface via Django's django.request logger, and app-level
     # business events are logged explicitly.
+    # --timeout 240: the logo Brand Pack blocks the worker on one Anthropic
+    # SDK call (client timeout 100s, max_retries=1); the 30s default kills
+    # the worker mid-generation. Cloudflare still caps any request at ~100s.
     command: >
       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --graceful-timeout 30
-      --error-logfile -
+      --timeout 240 --error-logfile -
     env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
