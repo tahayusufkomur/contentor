@@ -12,6 +12,7 @@ import {
 } from "@/lib/logo/brand-pack-api";
 import { LOGO_FONTS, defaultRecipe } from "@/lib/logo/catalog";
 import {
+  applyRefinedDesign,
   composeFromPack,
   composeWall,
   moreLikeThis,
@@ -37,6 +38,7 @@ import {
   type EditHistory,
 } from "@/lib/logo/history";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
+import { fetchLogoRefine } from "@/lib/logo/refine-api";
 import {
   clearStudioSession,
   loadStudioSession,
@@ -114,6 +116,10 @@ export function LogoStudio({
   const [activeElements, setActiveElements] = useState<
     BrandPackElement[] | null
   >(null);
+
+  // ── AI refinement (paid-tier feature) ───────────────────────────────────
+  const [refining, setRefining] = useState(false);
+  const [refineNotice, setRefineNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -315,6 +321,35 @@ export function LogoStudio({
     setEditHistory(reset(chosen));
     setActiveElements(elements ?? null);
     setStep("editor");
+  }
+
+  async function handleRefine(instruction: string) {
+    setRefining(true);
+    setRefineNotice(null);
+    try {
+      const resp = await fetchLogoRefine(recipe, activeElements, instruction);
+      setBrandPackStatus((s) =>
+        s ? { ...s, refine_remaining: resp.refine_remaining } : s,
+      );
+      if (resp.source === "ai" && resp.design) {
+        const design = resp.design;
+        setRecipe((r) => {
+          const next = applyRefinedDesign(r, design);
+          setEditHistory((h) => push(h, next, null));
+          return next;
+        });
+        setActiveElements(design.mark.elements ?? null);
+        setRefineNotice(design.rationale);
+      } else if (resp.source === "quota_exhausted") {
+        setRefineNotice("You've used this month's AI refinements. More next month.");
+      } else {
+        setRefineNotice("Couldn't refine the design — try again.");
+      }
+    } catch {
+      setRefineNotice("Couldn't reach the design studio just now.");
+    } finally {
+      setRefining(false);
+    }
   }
 
   async function handleMarkUpload(file: File) {
@@ -576,6 +611,10 @@ export function LogoStudio({
                   canRedo={canRedo(editHistory)}
                   onUndo={handleUndo}
                   onRedo={handleRedo}
+                  brandPackStatus={brandPackStatus}
+                  refining={refining}
+                  refineNotice={refineNotice}
+                  onRefine={handleRefine}
                   primaryHex={theme.primaryHex}
                   onGetNewIdeas={() => setStep("brief")}
                   onUploadMark={handleMarkUpload}

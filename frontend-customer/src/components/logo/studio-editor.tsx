@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
 import { buildBrandKit, darkVariant } from "@/lib/logo/brand-kit";
 import type { LogoRecipe } from "@/types/logo";
 import { logoViewBox, LogoRenderer, MarkRenderer } from "./logo-renderer";
@@ -17,6 +18,10 @@ interface StudioEditorProps {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  brandPackStatus: BrandPackStatus | null;
+  refining: boolean;
+  refineNotice: string | null;
+  onRefine: (instruction: string) => void;
   primaryHex: string;
   onGetNewIdeas: () => void;
   onUploadMark: (file: File) => void;
@@ -34,6 +39,10 @@ export function StudioEditor({
   canRedo,
   onUndo,
   onRedo,
+  brandPackStatus,
+  refining,
+  refineNotice,
+  onRefine,
   primaryHex,
   onGetNewIdeas,
   onUploadMark,
@@ -154,6 +163,10 @@ export function StudioEditor({
         canRedo={canRedo}
         onUndo={onUndo}
         onRedo={onRedo}
+        brandPackStatus={brandPackStatus}
+        refining={refining}
+        refineNotice={refineNotice}
+        onRefine={onRefine}
         primaryHex={primaryHex}
         onGetNewIdeas={onGetNewIdeas}
         onUploadMark={onUploadMark}

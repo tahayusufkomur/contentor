@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { Redo2, Undo2, Upload, Wand2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Loader2, Redo2, Sparkles, Undo2, Upload, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
+import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
 import {
   ICON_GROUPS,
   LOGO_FONTS,
@@ -62,15 +63,104 @@ interface StudioPanelProps {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  brandPackStatus: BrandPackStatus | null;
+  refining: boolean;
+  refineNotice: string | null;
+  onRefine: (instruction: string) => void;
   primaryHex: string;
   onGetNewIdeas: () => void;
   onUploadMark: (file: File) => void;
 }
 
+/** AI "ask the designer" box — paid tenants only, same gate/reason codes as
+ * the Brand Pack. Scope is the whole design (mark, palette, font, layout),
+ * so it lives at the top of the panel regardless of which element is
+ * selected, unlike the per-element control sections below it. */
+function RefinePromptBox({
+  brandPackStatus,
+  refining,
+  refineNotice,
+  onRefine,
+}: {
+  brandPackStatus: BrandPackStatus | null;
+  refining: boolean;
+  refineNotice: string | null;
+  onRefine: (instruction: string) => void;
+}) {
+  const [instruction, setInstruction] = useState("");
+  if (!brandPackStatus?.eligible) return null;
+  const remaining = brandPackStatus.refine_remaining;
+  const blocked = !brandPackStatus.enabled || remaining <= 0;
+
+  return (
+    <section className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+      <p className="flex items-center gap-1.5 text-sm font-medium">
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        Ask the AI designer
+      </p>
+      {blocked ? (
+        <p className="text-xs text-muted-foreground">
+          {remaining <= 0
+            ? "You've used this month's AI refinements. More next month."
+            : "AI refinement is temporarily unavailable."}
+        </p>
+      ) : (
+        <>
+          <textarea
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            rows={2}
+            maxLength={300}
+            placeholder="e.g. warmer colors, a rounder mark, more premium"
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            disabled={refining}
+          />
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="gap-1.5"
+              disabled={refining || !instruction.trim()}
+              onClick={() => {
+                onRefine(instruction.trim());
+                setInstruction("");
+              }}
+            >
+              {refining ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              Refine
+            </Button>
+            <p className="text-right text-xs text-muted-foreground">
+              {remaining} AI refinement{remaining === 1 ? "" : "s"} left this
+              month.
+            </p>
+          </div>
+        </>
+      )}
+      {refineNotice && (
+        <p className="text-xs italic text-muted-foreground">{refineNotice}</p>
+      )}
+    </section>
+  );
+}
+
 /** Contextual controls rail: shows the selected element's controls, or the
  * global sections (layout / palette / badge) when nothing is selected. */
 export function StudioPanel(props: StudioPanelProps) {
-  const { selected, canUndo, canRedo, onUndo, onRedo } = props;
+  const {
+    selected,
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo,
+    brandPackStatus,
+    refining,
+    refineNotice,
+    onRefine,
+  } = props;
   return (
     <div className="w-80 shrink-0 space-y-6 overflow-y-auto border-l p-5">
       <div className="flex items-center gap-1.5">
@@ -93,6 +183,12 @@ export function StudioPanel(props: StudioPanelProps) {
           <Redo2 className="h-4 w-4" />
         </button>
       </div>
+      <RefinePromptBox
+        brandPackStatus={brandPackStatus}
+        refining={refining}
+        refineNotice={refineNotice}
+        onRefine={onRefine}
+      />
       {selected === null && <GlobalControls {...props} />}
       {(selected === "name" || selected === "tagline") && (
         <TextControls {...props} element={selected} />
