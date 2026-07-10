@@ -98,6 +98,16 @@ def test_config_roundtrip_and_validation(coach_client, paid_tenant):
     assert bad2.status_code == 400
 
 
+def test_config_exactly_three_suggested_questions_succeeds(coach_client, paid_tenant):
+    ok = coach_client.put(
+        "/api/v1/admin/assistant/config/",
+        {"suggested_questions": ["A?", "B?", "C?"]},
+        format="json",
+    )
+    assert ok.status_code == 200
+    assert ok.json()["suggested_questions"] == ["A?", "B?", "C?"]
+
+
 def test_knowledge_crud_and_caps(coach_client):
     r = coach_client.post(
         "/api/v1/admin/assistant/knowledge/", {"title": "Refunds", "content": "14 days."}, format="json"
