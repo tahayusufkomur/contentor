@@ -7,7 +7,7 @@ from apps.accounts.models import User
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import platform_site
 
-from .models import PlatformBlogPost, PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
+from .models import PlatformBlogPost, PlatformKbEntry, PlatformPlan, PlatformSubscription, Tenant, WebhookEvent
 from .stripe_pricing import apply_amounts
 
 
@@ -327,3 +327,15 @@ class PlatformBlogPostAdmin(ModelAdmin):
     list_filters = ("status", "source")
     ordering = ("-created_at",)
     fields = ("title", "slug", "excerpt", "meta_description", "tags", "body_html", "status", "published_at")
+
+
+@platform_site.register(PlatformKbEntry)
+class PlatformKbEntryAdmin(ModelAdmin):
+    key = "platform-kb"
+    icon = "book-open"
+    description = "Prompt addenda for the AI assistants — fix or extend bot answers without a deploy."
+    list_display = ("title", "audience", "enabled", "position", "updated_at")
+    search_fields = ("title", "content")
+    list_filters = ("audience", "enabled")
+    ordering = ("position", "id")
+    fields = ("audience", "title", "content", "enabled", "position")

@@ -12,11 +12,11 @@ The coach runs everything from the admin area on their own site.
 
 ## Plans & pricing (exact, monthly)
 
-| Plan | Price (USD) | Price (TRY) | Students | Storage | Live streaming | Campaign emails/mo | Commission on student sales |
-|---|---|---|---|---|---|---|---|
-| Free | $0 | ₺0 | 10 | 1 GB | Not available | 100 | — (cannot sell paid content) |
-| Starter | $19.90/mo | ₺999.00/mo | 100 | 100 GB | 100 hours/mo | 1,000 | 8% |
-| Pro | $49.90/mo | ₺2,499.00/mo | 500 | 500 GB | 500 hours/mo | 5,000 | 6% |
+| Plan | Price (USD) | Price (TRY) | Students | Storage | Live streaming | Campaign emails/mo | AI blog posts/mo | Commission on student sales |
+|---|---|---|---|---|---|---|---|---|
+| Free | $0 | ₺0 | 10 | 1 GB | Not available | 100 | 0 | — (cannot sell paid content) |
+| Starter | $19.90/mo | ₺999.00/mo | 100 | 100 GB | 100 hours/mo | 1,000 | 5 | 8% |
+| Pro | $49.90/mo | ₺2,499.00/mo | 500 | 500 GB | 500 hours/mo | 5,000 | 30 | 6% |
 
 - Billing is monthly, via Stripe. Currency follows the coach's region (global = USD, Turkey = TRY) and is locked at the first checkout.
 - **Free plan cannot make money**: no paid content, no student payments, no payouts, no live sessions. Selling requires an active Starter or Pro subscription plus completed payout setup (see Payouts & billing).

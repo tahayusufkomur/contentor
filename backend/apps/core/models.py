@@ -522,3 +522,26 @@ class StudentBotUsage(models.Model):
 
     def __str__(self):
         return f"{self.tenant_schema} {self.month}: {self.questions} questions / ${self.usd_spent}"
+
+
+class PlatformKbEntry(models.Model):
+    """Superadmin-editable prompt addenda — fix a wrong bot answer between
+    deploys without touching help_kb.md. Injected as an authoritative
+    "PLATFORM NOTES" section; audience-scoped."""
+
+    AUDIENCES = [("coach", "Coach"), ("visitor", "Visitor"), ("student", "Student"), ("all", "All")]
+
+    audience = models.CharField(max_length=10, choices=AUDIENCES, default="all")
+    title = models.CharField(max_length=120)
+    content = models.TextField(max_length=2000)
+    enabled = models.BooleanField(default=True)
+    position = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return f"{self.audience}: {self.title}"
