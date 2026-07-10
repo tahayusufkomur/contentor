@@ -1,8 +1,9 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { Moon, Shuffle, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { deriveAiBannerState } from "@/lib/logo/ai-banner";
 import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
 import type { LogoRecipe } from "@/types/logo";
 import { LogoRenderer } from "./logo-renderer";
@@ -24,6 +25,10 @@ interface StudioWallProps {
   aiLoading?: boolean;
   aiNotice?: string | null;
   brandPackStatus?: BrandPackStatus | null;
+  /** Click handler for the explicit "Generate AI logos" button (idle
+   * state). Optional so the wall still renders standalone without AI
+   * wired up, matching the rest of this prop group. */
+  onGenerateAi?: () => void;
 }
 
 /** One wall card. Memoized — the wall renders ~24 SVG logos and hover /
@@ -130,6 +135,138 @@ const AiWallCard = memo(function AiWallCard({
   );
 });
 
+/** Seconds since `active` last became true; resets to 0 whenever it goes
+ * false. Owned here (not lifted into logo-studio.tsx) so the once-a-second
+ * tick only re-renders the wall, not the whole studio dialog. */
+function useElapsedSeconds(active: boolean): number {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!active) {
+      setElapsed(0);
+      return;
+    }
+    const start = Date.now();
+    setElapsed(0);
+    const id = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [active]);
+  return elapsed;
+}
+
+/** The single state machine for the AI Brand Pack banner above the wall —
+ * see deriveAiBannerState for the states and docs/superpowers/specs/2026-07-10-logo-studio-ai-trigger-design.md
+ * for the design. */
+function AiGenerateBanner({
+  brandPackStatus,
+  aiLoading,
+  aiWall,
+  aiNotice,
+  brandName,
+  onGenerateAi,
+  dark,
+}: {
+  brandPackStatus?: BrandPackStatus | null;
+  aiLoading?: boolean;
+  aiWall?: LogoRecipe[] | null;
+  aiNotice?: string | null;
+  brandName?: string;
+  onGenerateAi?: () => void;
+  dark: boolean;
+}) {
+  const elapsedSeconds = useElapsedSeconds(!!aiLoading);
+  const state = deriveAiBannerState({
+    brandPackStatus,
+    aiLoading: !!aiLoading,
+    aiWall,
+    aiNotice,
+    elapsedSeconds,
+  });
+
+  if (state.kind === "hidden") return null;
+
+  if (state.kind === "upsell") {
+    return (
+      <div
+        className={`flex items-center justify-between gap-3 rounded-lg border border-dashed p-4 ${dark ? "border-zinc-700" : ""}`}
+      >
+        <p className="flex items-center gap-2 text-sm">
+          <Sparkles className="h-4 w-4 text-primary" />
+          AI logo designer — bespoke marks made for your brand, included
+          with paid plans.
+        </p>
+        <Button asChild size="sm" variant="outline">
+          <a href="/admin/billing/subscription">Upgrade</a>
+        </Button>
+      </div>
+    );
+  }
+
+  if (state.kind === "generating") {
+    return (
+      <div className={`space-y-2 rounded-lg border p-4 ${dark ? "border-zinc-700" : ""}`}>
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <Sparkles className="h-4 w-4 animate-pulse text-primary" />
+          Generating AI logos for {brandName || "your brand"}…
+        </p>
+        <div
+          role="progressbar"
+          aria-valuenow={state.percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          className={`h-1.5 w-full overflow-hidden rounded-full ${dark ? "bg-zinc-800" : "bg-muted"}`}
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+            style={{ width: `${state.percent}%` }}
+          />
+        </div>
+        <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
+          {state.label} Usually takes about 2 minutes.
+        </p>
+      </div>
+    );
+  }
+
+  if (state.kind === "quota_exhausted") {
+    return (
+      <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
+        You&apos;ve used this month&apos;s AI logo generations. More next
+        month.
+      </p>
+    );
+  }
+
+  if (state.kind === "disabled") {
+    return (
+      <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
+        AI logo generation is temporarily unavailable — your ideas below
+        are ready to use.
+      </p>
+    );
+  }
+
+  return (
+    <div
+      className={`flex flex-col gap-3 rounded-lg border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between ${dark ? "border-zinc-700" : ""}`}
+    >
+      <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
+        {state.description}
+      </p>
+      <Button
+        type="button"
+        size="sm"
+        className="shrink-0 gap-1.5"
+        onClick={() => onGenerateAi?.()}
+      >
+        <Sparkles className="h-3.5 w-3.5" />
+        Generate AI logos for {brandName || "your brand"}
+      </Button>
+    </div>
+  );
+}
+
 export function StudioWall({
   wall,
   dark,
@@ -144,9 +281,8 @@ export function StudioWall({
   aiLoading,
   aiNotice,
   brandPackStatus,
+  onGenerateAi,
 }: StudioWallProps) {
-  const showUpsell = brandPackStatus?.reason === "upgrade_required";
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b px-6 py-3">
@@ -195,34 +331,16 @@ export function StudioWall({
         data-testid="logo-wall"
         className={`flex-1 space-y-6 overflow-y-auto p-6 ${dark ? "bg-zinc-950" : "bg-muted/40"}`}
       >
-        {!showingVariants && showUpsell && (
-          <div
-            className={`flex items-center justify-between gap-3 rounded-lg border border-dashed p-4 ${dark ? "border-zinc-700" : ""}`}
-          >
-            <p className="flex items-center gap-2 text-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              AI logo designer — bespoke marks made for your brand, included
-              with paid plans.
-            </p>
-            <Button asChild size="sm" variant="outline">
-              <a href="/admin/billing/subscription">Upgrade</a>
-            </Button>
-          </div>
-        )}
-
-        {!showingVariants && !showUpsell && aiLoading && (
-          <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 animate-pulse text-primary" />
-            Sketching custom marks for {brandName || "your brand"}…
-          </p>
-        )}
-
-        {!showingVariants && !showUpsell && !aiLoading && aiNotice && (
-          <p
-            className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
-          >
-            {aiNotice}
-          </p>
+        {!showingVariants && (
+          <AiGenerateBanner
+            brandPackStatus={brandPackStatus}
+            aiLoading={aiLoading}
+            aiWall={aiWall}
+            aiNotice={aiNotice}
+            brandName={brandName}
+            onGenerateAi={onGenerateAi}
+            dark={dark}
+          />
         )}
 
         {!showingVariants && aiWall && aiWall.length > 0 && (
