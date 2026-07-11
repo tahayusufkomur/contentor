@@ -580,6 +580,7 @@ function MarkControls({
                     onPatch({
                       colors: {
                         ...recipe.colors,
+                        palette_id: null,
                         mark: isGradient
                           ? solidOf(recipe.colors.mark)
                           : {
@@ -608,6 +609,7 @@ function MarkControls({
                       {
                         colors: {
                           ...recipe.colors,
+                          palette_id: null,
                           mark: isGradient
                             ? { ...markFill, from: e.target.value }
                             : e.target.value,
@@ -628,6 +630,7 @@ function MarkControls({
                           {
                             colors: {
                               ...recipe.colors,
+                              palette_id: null,
                               mark: { ...markFill, to: e.target.value },
                             },
                           },
@@ -646,6 +649,7 @@ function MarkControls({
                           {
                             colors: {
                               ...recipe.colors,
+                              palette_id: null,
                               mark: {
                                 ...markFill,
                                 angle: Math.max(
