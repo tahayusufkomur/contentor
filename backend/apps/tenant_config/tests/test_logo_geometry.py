@@ -584,6 +584,6 @@ def test_cut_merging_never_exceeds_length_budget():
         ],
     }
     base = {"type": "circle", "cx": 50, "cy": 50, "r": 30}
-    paths = compile_elements([base, big_curve, big_curve])
+    paths = compile_elements([base, big_curve, big_curve, big_curve])
     assert len(paths) == 1
     assert len(paths[0]["d"]) < 2000
