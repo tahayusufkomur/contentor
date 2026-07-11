@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from apps.core import ai as core_ai
 from apps.core.models import BlogAiUsage
 
-PROMPT_VERSION = 1
+PROMPT_VERSION = 2
 MAX_OUTPUT_TOKENS = 3000
 TOPIC_MAX_OUTPUT_TOKENS = 1200
 
@@ -33,6 +33,7 @@ TOPIC_MAX_OUTPUT_TOKENS = 1200
 class _Section(BaseModel):
     heading: str = ""  # empty = continuation paragraphs, no <h2>
     body_markdown: str
+    photo_id: str = ""  # id of an <available_photos> entry, or "" for none
 
 
 class _BlogDraft(BaseModel):
@@ -41,6 +42,7 @@ class _BlogDraft(BaseModel):
     meta_description: str
     excerpt: str
     tags: list[str] = Field(default_factory=list)
+    cover_photo_id: str = ""  # id of an <available_photos> entry, or "" for none
     sections: list[_Section]
 
 
@@ -85,6 +87,17 @@ Structure rules:
 *italic*, "- " bullet lists, and [text](https://...) links sparingly. \
 No headings inside body_markdown, no images, no HTML, no code blocks.
 
+Image rules:
+- If an <available_photos> block is present in the user message, you may \
+reference AT MOST one cover_photo_id (for the whole post) and AT MOST 2 \
+sections' photo_id (one photo per section, never more than one), using \
+the id EXACTLY as given in <available_photos>.
+- Only pick a photo when it is genuinely relevant to that section's (or \
+the post's) topic. Most posts should use 0-2 photos total, not one per \
+section — leave cover_photo_id/photo_id as "" when nothing fits.
+- NEVER invent an id. If <available_photos> is absent or empty, leave \
+every cover_photo_id/photo_id as "".
+
 Metadata rules:
 - title: compelling, ≤70 characters, contains the topic's main keyword.
 - slug: kebab-case, ≤60 characters, ascii.
@@ -118,6 +131,24 @@ def brand_brief(config, course_titles=(), tenant=None):
         lines.append("Their courses: " + "; ".join(list(course_titles)[:6]))
     lines.append("Audience: this coach's students and prospective students.")
     lines.append("</brand_brief>")
+    return "\n".join(lines)
+
+
+MAX_AVAILABLE_PHOTOS = 30
+
+
+def available_photos_block(photos):
+    """photos: iterable of objects with .id/.title/.alt_text (a Photo
+    queryset slice in production, plain objects in tests). Empty/absent
+    library -> empty string, zero extra prompt tokens (matches today's
+    no-photo behavior)."""
+    rows = list(photos)[:MAX_AVAILABLE_PHOTOS]
+    if not rows:
+        return ""
+    lines = ["<available_photos>"]
+    for p in rows:
+        lines.append(f'{p.id}: "{p.title}" — alt: "{p.alt_text}"')
+    lines.append("</available_photos>")
     return "\n".join(lines)
 
 
@@ -170,19 +201,30 @@ class DraftResult:
         self.cost_usd = cost_usd
 
 
-def generate_post(brief, topic, instructions=""):
+def generate_post(brief, topic, instructions="", photos=()):
     """ONE model call -> BlogPost-ready field dict. Slug and status are
     intentionally absent (callers re-derive the slug via models.unique_slug
     and decide status). Raises BlogAiError on failure."""
+    photo_list = list(photos)
+    valid_ids = {str(p.id) for p in photo_list}
     user_prompt = f"{brief}\n\nWrite a blog post about: {topic}"
     if instructions:
         user_prompt += f"\n\nThe coach's extra instructions: {instructions[:500]}"
+    photos_block = available_photos_block(photo_list)
+    if photos_block:
+        user_prompt += f"\n\n{photos_block}"
     parsed, cost, effective_model = _call_structured(
         BLOG_STATIC_PROMPT, user_prompt, _BlogDraft, settings.BLOG_AI_MODEL, MAX_OUTPUT_TOKENS
     )
     body_html = render_body(parsed.sections)
     if not body_html.strip():
         raise BlogAiError("model returned an empty post", cost_usd=cost)
+    cover_photo_id = parsed.cover_photo_id if parsed.cover_photo_id in valid_ids else ""
+    image_placements = [
+        {"heading": s.heading, "photo_id": s.photo_id}
+        for s in parsed.sections
+        if s.photo_id in valid_ids
+    ][:2]
     return DraftResult(
         {
             "title": str(parsed.title)[:200],
@@ -191,6 +233,8 @@ def generate_post(brief, topic, instructions=""):
             "meta_description": str(parsed.meta_description)[:170],
             "tags": [str(t).lower()[:30] for t in parsed.tags[:6]],
             "ai_model": effective_model,
+            "cover_photo_id": cover_photo_id,
+            "image_placements": image_placements,
         },
         cost,
     )
