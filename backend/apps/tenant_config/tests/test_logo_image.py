@@ -4,7 +4,6 @@ monkeypatched — no network access."""
 
 from decimal import Decimal
 
-import pytest
 import requests
 
 from apps.tenant_config import logo_image
