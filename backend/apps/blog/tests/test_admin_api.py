@@ -206,3 +206,29 @@ def test_topics_refill_uses_topic_batch(coach_client, paid_tenant, settings):
         res = coach_client.post("/api/v1/admin/blog/topics/", format="json")
     assert res.status_code == 200
     assert BlogTopicIdea.objects.filter(status="available").count() == 12
+
+
+def test_admin_serializer_exposes_writable_cover_photo(coach_client, free_tenant):
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="k", title="p")
+    res = coach_client.post(
+        "/api/v1/admin/blog/posts/",
+        {"title": "x", "cover_photo": str(photo.id)},
+        format="json",
+    )
+    assert res.status_code == 201
+    post = BlogPost.objects.get(pk=res.data["id"])
+    assert post.cover_photo_id == photo.id
+
+
+def test_admin_serializer_exposes_cover_photo_signed_url(coach_client, free_tenant, settings):
+    from unittest import mock
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="k", title="p")
+    post = BlogPost.objects.create(title="x", slug="x", cover_photo=photo)
+    with mock.patch("apps.blog.images.generate_presigned_download_url", return_value="https://signed/k"):
+        res = coach_client.get(f"/api/v1/admin/blog/posts/{post.id}/")
+    assert res.data["cover_photo_signed_url"] == "https://signed/k"
