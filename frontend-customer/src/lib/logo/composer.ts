@@ -476,9 +476,17 @@ export interface BrandPackPath {
   fill_rule?: "nonzero" | "evenodd";
   opacity?: number;
 }
+/** A mark's pre-compile source geometry — opaque to the client (never
+ * interpreted, only ever round-tripped to the logo-refine/ endpoint). Shape
+ * mirrors backend/apps/tenant_config/logo_ai.py's `_Element` union. */
+export type BrandPackElement = Record<string, unknown>;
+
 export interface BrandPackMark {
   rationale: string;
   paths: BrandPackPath[];
+  /** Present on packs generated after the elements round-trip shipped;
+   * absent on older cached packs. */
+  elements?: BrandPackElement[];
 }
 export interface BrandPackPalette {
   name: string;
@@ -569,4 +577,74 @@ export function composeFromPack(
     }
   }
   return recipes;
+}
+
+/** Parallel index into the flattened `marks x palettes` order composeFromPack
+ * builds recipes in — the single source of truth for that pairing, reused
+ * by logo-studio.tsx to know which source elements (if any) back a given
+ * AI wall tile, for handing to logo-refine/ later. */
+export function packElementsByIndex(
+  pack: BrandPack,
+): (BrandPackElement[] | undefined)[] {
+  const out: (BrandPackElement[] | undefined)[] = [];
+  for (const mark of pack.marks) {
+    for (let i = 0; i < pack.palettes.length; i++) out.push(mark.elements);
+  }
+  return out;
+}
+
+/** The logo-refine/ endpoint's response payload — a compact design (not a
+ * full LogoRecipe) that applyRefinedDesign folds onto the current draft. */
+export interface RefinedDesign {
+  mark: BrandPackMark;
+  palette: BrandPackPalette;
+  font_vibe: FontVibe;
+  layout: RecipeLayout;
+  rationale: string;
+}
+
+/** Applies an AI refinement to the current editor draft: reshapes the mark,
+ * repalettes, and swaps to a font in the new font_vibe's pool (keeping the
+ * current family if it already fits) — everything else on the recipe
+ * (name, tagline text, badge, element placement) is left untouched. */
+export function applyRefinedDesign(
+  recipe: LogoRecipe,
+  design: RefinedDesign,
+): LogoRecipe {
+  const fontPool = LOGO_FONTS.filter((f) => f.vibe === design.font_vibe).map(
+    (f) => f.family,
+  );
+  const fonts = fontPool.length ? fontPool : LOGO_FONT_FAMILIES;
+  const font = fonts.includes(recipe.typography.name.font)
+    ? recipe.typography.name.font
+    : fonts[0]!;
+  const entry = fontEntry(font);
+  const weight: FontWeight = entry.weights.includes(700)
+    ? 700
+    : entry.weights[entry.weights.length - 1]!;
+  const paths: CustomMarkPath[] = design.mark.paths.map((p) => ({
+    d: p.d,
+    fill: p.fill ?? "mark",
+    fill_rule: p.fill_rule,
+    opacity: p.opacity,
+  }));
+  return {
+    ...recipe,
+    layout: design.layout,
+    mark: { type: "custom", rationale: design.mark.rationale, paths },
+    typography: {
+      name: { ...recipe.typography.name, font, weight },
+      tagline: { ...recipe.typography.tagline, font, weight: 500 },
+    },
+    colors: {
+      ...recipe.colors,
+      palette_id: null,
+      badge: { type: "solid", color: design.palette.primary },
+      mark: design.palette.ink,
+      mark2: design.palette.secondary,
+      mark_accent: design.palette.accent,
+      text: design.palette.ink,
+      tagline: design.palette.secondary,
+    },
+  };
 }

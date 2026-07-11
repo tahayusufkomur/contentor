@@ -12,10 +12,14 @@ import {
 } from "@/lib/logo/brand-pack-api";
 import { LOGO_FONTS, defaultRecipe } from "@/lib/logo/catalog";
 import {
+  applyRefinedDesign,
   composeFromPack,
   composeWall,
   moreLikeThis,
+  packElementsByIndex,
   type Brief,
+  type BrandPack,
+  type BrandPackElement,
 } from "@/lib/logo/composer";
 import {
   imageToDataUrl,
@@ -23,7 +27,23 @@ import {
   uploadPng,
   type FontSpec,
 } from "@/lib/logo/export";
+import {
+  canRedo,
+  canUndo,
+  createHistory,
+  push,
+  redo,
+  reset,
+  undo,
+  type EditHistory,
+} from "@/lib/logo/history";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
+import { fetchLogoRefine } from "@/lib/logo/refine-api";
+import {
+  clearStudioSession,
+  loadStudioSession,
+  saveStudioSession,
+} from "@/lib/logo/studio-session";
 import { getThemePalette } from "@/lib/themes";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
@@ -57,6 +77,9 @@ export function LogoStudio({
   const [recipe, setRecipe] = useState<LogoRecipe>(() =>
     seedRecipe(config, theme.primaryHex),
   );
+  const [editHistory, setEditHistory] = useState<EditHistory<LogoRecipe>>(() =>
+    createHistory(recipe),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logoSvgRef = useRef<SVGSVGElement>(null);
@@ -72,6 +95,7 @@ export function LogoStudio({
     styleChips: [],
   });
   const [wall, setWall] = useState<LogoRecipe[] | null>(null);
+  const [wallSeed, setWallSeed] = useState(1);
   const [wallDark, setWallDark] = useState(false);
   const [showingVariants, setShowingVariants] = useState(false);
 
@@ -80,8 +104,22 @@ export function LogoStudio({
   const [brandPackStatus, setBrandPackStatus] =
     useState<BrandPackStatus | null>(null);
   const [aiWall, setAiWall] = useState<LogoRecipe[] | null>(null);
+  const [aiWallElements, setAiWallElements] = useState<
+    (BrandPackElement[] | undefined)[] | null
+  >(null);
+  const [pack, setPack] = useState<BrandPack | null>(null);
+  const [packSeed, setPackSeed] = useState<number | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiNotice, setAiNotice] = useState<string | null>(null);
+
+  // ── Editor draft's AI-sourced mark elements (session-only) ─────────────
+  const [activeElements, setActiveElements] = useState<
+    BrandPackElement[] | null
+  >(null);
+
+  // ── AI refinement (paid-tier feature) ───────────────────────────────────
+  const [refining, setRefining] = useState(false);
+  const [refineNotice, setRefineNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -113,14 +151,87 @@ export function LogoStudio({
   // the Brief (the AI-first anchor flow).
   useEffect(() => {
     if (!open) return;
-    setRecipe(seedRecipe(config, theme.primaryHex));
+    const saved = loadStudioSession();
+    if (saved) {
+      setBrief(saved.brief);
+      setPack(saved.pack);
+      setPackSeed(saved.packSeed);
+      setWallSeed(saved.wallSeed);
+      setWall(composeWall(saved.brief, saved.wallSeed, 24, theme.primaryHex));
+      if (saved.pack) {
+        setAiWall(composeFromPack(saved.pack, saved.brief, saved.packSeed ?? 1));
+        setAiWallElements(packElementsByIndex(saved.pack));
+      } else {
+        setAiWall(null);
+        setAiWallElements(null);
+      }
+      const restoredRecipe = saved.recipe ?? seedRecipe(config, theme.primaryHex);
+      setRecipe(restoredRecipe);
+      setEditHistory(reset(restoredRecipe));
+      setActiveElements(saved.elements);
+      setStep(saved.step);
+      return;
+    }
+    const seeded = seedRecipe(config, theme.primaryHex);
+    setRecipe(seeded);
+    setEditHistory(reset(seeded));
+    setActiveElements(null);
     setBrief((b) => ({ ...b, brandName: config.brand_name || b.brandName }));
     setStep(isRecipe(config.logo_recipe) ? "editor" : "brief");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const patch = (part: Partial<LogoRecipe>) =>
-    setRecipe((r) => ({ ...r, ...part }));
+  // Debounced (~500ms) write of the tracked session fields while the studio
+  // is open — refresh-safe without spamming localStorage on every keystroke.
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveStudioSession({
+        step,
+        brief,
+        wallSeed,
+        pack,
+        packSeed,
+        recipe,
+        elements: activeElements,
+      });
+    }, 500);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [open, step, brief, wallSeed, pack, packSeed, recipe, activeElements]);
+
+  function patch(part: Partial<LogoRecipe>, coalesceKey?: string) {
+    const next = { ...recipe, ...part };
+    setRecipe(next);
+    setEditHistory((h) => push(h, next, coalesceKey ?? null));
+    if (part.mark) setActiveElements(null);
+  }
+
+  function updateRecipe(updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) {
+    const next = updater(recipe);
+    setRecipe(next);
+    setEditHistory((h) => push(h, next, coalesceKey ?? null));
+    if (next.mark !== recipe.mark) setActiveElements(null);
+  }
+
+  function handleUndo() {
+    setEditHistory((h) => {
+      const next = undo(h);
+      setRecipe(next.present);
+      return next;
+    });
+  }
+
+  function handleRedo() {
+    setEditHistory((h) => {
+      const next = redo(h);
+      setRecipe(next.present);
+      return next;
+    });
+  }
 
   // The deterministic wall is instant, offline, and free — it's the
   // studio's baseline for every coach. Paid-tier coaches additionally get
@@ -129,6 +240,7 @@ export function LogoStudio({
   // (composeFromPack), at zero further cost.
   function regenerateWall() {
     const seed = 1 + Math.floor(Math.random() * 1_000_000);
+    setWallSeed(seed);
     setWall(composeWall(brief, seed, 24, theme.primaryHex));
     setShowingVariants(false);
   }
@@ -159,7 +271,10 @@ export function LogoStudio({
       );
       if (resp.source === "ai" || resp.source === "cache") {
         const seed = 1 + Math.floor(Math.random() * 1_000_000);
+        setPack(resp.pack);
+        setPackSeed(resp.pack ? seed : null);
         setAiWall(resp.pack ? composeFromPack(resp.pack, brief, seed) : null);
+        setAiWallElements(resp.pack ? packElementsByIndex(resp.pack) : null);
       } else if (resp.source === "error") {
         setAiNotice("Couldn't reach the design studio — try again.");
       }
@@ -177,8 +292,22 @@ export function LogoStudio({
   function startIdeas() {
     regenerateWall();
     setAiWall(null);
+    setAiWallElements(null);
+    setPack(null);
+    setPackSeed(null);
     setAiNotice(null);
     setStep("ideas");
+  }
+
+  function handleStartOver() {
+    clearStudioSession();
+    setBrief({ brandName: config.brand_name || "", niche: "", styleChips: [] });
+    setWall(null);
+    setPack(null);
+    setPackSeed(null);
+    setAiWall(null);
+    setAiWallElements(null);
+    setAiNotice(null);
   }
 
   function handleMoreLikeThis(base: LogoRecipe) {
@@ -187,9 +316,40 @@ export function LogoStudio({
     setShowingVariants(true);
   }
 
-  function handleCustomize(chosen: LogoRecipe) {
+  function handleCustomize(chosen: LogoRecipe, elements?: BrandPackElement[]) {
     setRecipe(chosen);
+    setEditHistory(reset(chosen));
+    setActiveElements(elements ?? null);
     setStep("editor");
+  }
+
+  async function handleRefine(instruction: string) {
+    setRefining(true);
+    setRefineNotice(null);
+    try {
+      const resp = await fetchLogoRefine(recipe, activeElements, instruction);
+      setBrandPackStatus((s) =>
+        s ? { ...s, refine_remaining: resp.refine_remaining } : s,
+      );
+      if (resp.source === "ai" && resp.design) {
+        const design = resp.design;
+        setRecipe((r) => {
+          const next = applyRefinedDesign(r, design);
+          setEditHistory((h) => push(h, next, null));
+          return next;
+        });
+        setActiveElements(design.mark.elements ?? null);
+        setRefineNotice(design.rationale);
+      } else if (resp.source === "quota_exhausted") {
+        setRefineNotice("You've used this month's AI refinements. More next month.");
+      } else {
+        setRefineNotice("Couldn't refine the design — try again.");
+      }
+    } catch {
+      setRefineNotice("Couldn't reach the design studio just now.");
+    } finally {
+      setRefining(false);
+    }
   }
 
   async function handleMarkUpload(file: File) {
@@ -266,6 +426,7 @@ export function LogoStudio({
         body: JSON.stringify({ ...body, logo_recipe: wireLogoRecipe }),
       });
       onSaved(body);
+      clearStudioSession();
       onOpenChange(false);
     } catch (err) {
       setError(
@@ -296,6 +457,29 @@ export function LogoStudio({
     return () => document.removeEventListener("keydown", onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, saving]);
+
+  // Undo/redo — active only while the editor step is open (including
+  // inside text inputs, so typed edits are undoable too). Detaches when
+  // the studio closes or leaves the editor step. handleUndo/handleRedo
+  // read editHistory via functional setState, so this listener never goes
+  // stale even though editHistory isn't a dependency.
+  useEffect(() => {
+    if (!open || step !== "editor") return;
+    function onKeyDown(e: KeyboardEvent) {
+      const meta = e.metaKey || e.ctrlKey;
+      if (!meta) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        handleRedo();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, step]);
 
   // Move focus into the dialog on open, and restore it to whatever element
   // triggered the studio when it closes. ModalPortal is a bare portal (no
@@ -391,6 +575,7 @@ export function LogoStudio({
                     brief={brief}
                     onChange={setBrief}
                     onSubmit={startIdeas}
+                    onStartOver={handleStartOver}
                   />
                 </div>
               )}
@@ -408,6 +593,7 @@ export function LogoStudio({
                     onShowAll={regenerateWall}
                     brandName={brief.brandName || config.brand_name}
                     aiWall={aiWall}
+                    aiWallElements={aiWallElements}
                     aiLoading={aiLoading}
                     aiNotice={aiNotice}
                     brandPackStatus={brandPackStatus}
@@ -420,7 +606,15 @@ export function LogoStudio({
                 <StudioEditor
                   recipe={recipe}
                   onPatch={patch}
-                  onUpdate={setRecipe}
+                  onUpdate={updateRecipe}
+                  canUndo={canUndo(editHistory)}
+                  canRedo={canRedo(editHistory)}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  brandPackStatus={brandPackStatus}
+                  refining={refining}
+                  refineNotice={refineNotice}
+                  onRefine={handleRefine}
                   primaryHex={theme.primaryHex}
                   onGetNewIdeas={() => setStep("brief")}
                   onUploadMark={handleMarkUpload}

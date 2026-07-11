@@ -13,6 +13,7 @@ function baseStatus(overrides: Partial<BrandPackStatus> = {}): BrandPackStatus {
     eligible: true,
     remaining: 5,
     reason: null,
+    refine_remaining: 20,
     ...overrides,
   };
 }

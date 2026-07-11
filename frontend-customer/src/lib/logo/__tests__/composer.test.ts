@@ -1,13 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
-import { LOGO_FONTS, LOGO_ICONS, PALETTES } from "@/lib/logo/catalog";
+import {
+  LOGO_FONTS,
+  LOGO_ICONS,
+  PALETTES,
+  defaultRecipe,
+} from "@/lib/logo/catalog";
 import {
   STYLE_CHIPS,
+  applyRefinedDesign,
   composeFromPack,
   composeWall,
   moreLikeThis,
+  packElementsByIndex,
   type Brief,
   type BrandPack,
+  type RefinedDesign,
 } from "@/lib/logo/composer";
 import type { LogoRecipe } from "@/types/logo";
 
@@ -265,5 +273,51 @@ describe("composeFromPack", () => {
     if (second!.mark.type === "custom") {
       expect(second!.mark.paths[0]!.fill_rule).toBe("evenodd");
     }
+  });
+});
+
+describe("packElementsByIndex", () => {
+  it("aligns each recipe's index to its source mark's elements", () => {
+    const pack: BrandPack = {
+      marks: [
+        { rationale: "a", paths: [], elements: [{ type: "circle" }] },
+        { rationale: "b", paths: [] },
+      ],
+      palettes: [
+        { name: "p1", primary: "#111827", secondary: "#111827", accent: "#111827", ink: "#111827" },
+        { name: "p2", primary: "#111827", secondary: "#111827", accent: "#111827", ink: "#111827" },
+      ],
+      tagline: "",
+      font_vibe: "Minimal",
+    };
+    const byIndex = packElementsByIndex(pack);
+    const recipes = composeFromPack(pack, { brandName: "X", niche: "", styleChips: [] }, 1);
+    expect(recipes).toHaveLength(4);
+    expect(byIndex).toEqual([
+      [{ type: "circle" }],
+      [{ type: "circle" }],
+      undefined,
+      undefined,
+    ]);
+  });
+});
+
+describe("applyRefinedDesign", () => {
+  it("reshapes the mark, palette, layout, and font while keeping name/tagline", () => {
+    const recipe = defaultRecipe("Zeynep Yoga", "#1a56db");
+    const design: RefinedDesign = {
+      mark: { rationale: "warmer", paths: [{ d: "M0 0 Z", fill: "mark" }] },
+      palette: { name: "Warm", primary: "#c2410c", secondary: "#e11d48", accent: "#fbbf24", ink: "#111827" },
+      font_vibe: "Bold",
+      layout: "stacked",
+      rationale: "Warmed the palette and gave the mark more weight.",
+    };
+    const next = applyRefinedDesign(recipe, design);
+    expect(next.name).toBe(recipe.name);
+    expect(next.tagline).toBe(recipe.tagline);
+    expect(next.layout).toBe("stacked");
+    expect(next.mark).toEqual({ type: "custom", rationale: "warmer", paths: [{ d: "M0 0 Z", fill: "mark", fill_rule: undefined, opacity: undefined }] });
+    expect(next.colors.mark).toBe("#111827");
+    expect(next.colors.palette_id).toBeNull();
   });
 });

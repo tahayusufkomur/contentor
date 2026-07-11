@@ -8,11 +8,17 @@ interface StudioBriefProps {
   brief: Brief;
   onChange: (brief: Brief) => void;
   onSubmit: () => void;
+  onStartOver: () => void;
 }
 
 /** Step 1 · Brief — the coach describes their brand; everything is optional
  * except the name. Chips cap at 3 so the composer pools stay opinionated. */
-export function StudioBrief({ brief, onChange, onSubmit }: StudioBriefProps) {
+export function StudioBrief({
+  brief,
+  onChange,
+  onSubmit,
+  onStartOver,
+}: StudioBriefProps) {
   const toggleChip = (chip: (typeof STYLE_CHIPS)[number]) => {
     const has = brief.styleChips.includes(chip);
     if (!has && brief.styleChips.length >= 3) return;
@@ -104,6 +110,14 @@ export function StudioBrief({ brief, onChange, onSubmit }: StudioBriefProps) {
         <Sparkles className="h-4 w-4" />
         Show my logo ideas
       </Button>
+
+      <button
+        type="button"
+        onClick={onStartOver}
+        className="self-center text-xs text-muted-foreground hover:underline"
+      >
+        Start over
+      </button>
     </div>
   );
 }

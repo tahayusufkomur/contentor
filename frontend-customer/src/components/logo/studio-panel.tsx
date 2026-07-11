@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { Upload, Wand2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Loader2, Redo2, Sparkles, Undo2, Upload, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
+import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
 import {
   ICON_GROUPS,
   LOGO_FONTS,
@@ -56,19 +57,138 @@ const toggleClass = (active: boolean) =>
 interface StudioPanelProps {
   recipe: LogoRecipe;
   selected: ElementKey | null;
-  onPatch: (part: Partial<LogoRecipe>) => void;
-  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe) => void;
+  onPatch: (part: Partial<LogoRecipe>, coalesceKey?: string) => void;
+  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  brandPackStatus: BrandPackStatus | null;
+  refining: boolean;
+  refineNotice: string | null;
+  onRefine: (instruction: string) => void;
   primaryHex: string;
   onGetNewIdeas: () => void;
   onUploadMark: (file: File) => void;
 }
 
+/** AI "ask the designer" box — paid tenants only, same gate/reason codes as
+ * the Brand Pack. Scope is the whole design (mark, palette, font, layout),
+ * so it lives at the top of the panel regardless of which element is
+ * selected, unlike the per-element control sections below it. */
+function RefinePromptBox({
+  brandPackStatus,
+  refining,
+  refineNotice,
+  onRefine,
+}: {
+  brandPackStatus: BrandPackStatus | null;
+  refining: boolean;
+  refineNotice: string | null;
+  onRefine: (instruction: string) => void;
+}) {
+  const [instruction, setInstruction] = useState("");
+  if (!brandPackStatus?.eligible) return null;
+  const remaining = brandPackStatus.refine_remaining;
+  const blocked = !brandPackStatus.enabled || remaining <= 0;
+
+  return (
+    <section className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+      <p className="flex items-center gap-1.5 text-sm font-medium">
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        Ask the AI designer
+      </p>
+      {blocked ? (
+        <p className="text-xs text-muted-foreground">
+          {remaining <= 0
+            ? "You've used this month's AI refinements. More next month."
+            : "AI refinement is temporarily unavailable."}
+        </p>
+      ) : (
+        <>
+          <textarea
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+            rows={2}
+            maxLength={300}
+            placeholder="e.g. warmer colors, a rounder mark, more premium"
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            disabled={refining}
+          />
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="gap-1.5"
+              disabled={refining || !instruction.trim()}
+              onClick={() => {
+                onRefine(instruction.trim());
+                setInstruction("");
+              }}
+            >
+              {refining ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" />
+              )}
+              Refine
+            </Button>
+            <p className="text-right text-xs text-muted-foreground">
+              {remaining} AI refinement{remaining === 1 ? "" : "s"} left this
+              month.
+            </p>
+          </div>
+        </>
+      )}
+      {refineNotice && (
+        <p className="text-xs italic text-muted-foreground">{refineNotice}</p>
+      )}
+    </section>
+  );
+}
+
 /** Contextual controls rail: shows the selected element's controls, or the
  * global sections (layout / palette / badge) when nothing is selected. */
 export function StudioPanel(props: StudioPanelProps) {
-  const { selected } = props;
+  const {
+    selected,
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo,
+    brandPackStatus,
+    refining,
+    refineNotice,
+    onRefine,
+  } = props;
   return (
     <div className="w-80 shrink-0 space-y-6 overflow-y-auto border-l p-5">
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-label="Undo"
+          disabled={!canUndo}
+          onClick={onUndo}
+          className="rounded-md border p-1.5 text-muted-foreground hover:border-foreground disabled:opacity-40"
+        >
+          <Undo2 className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Redo"
+          disabled={!canRedo}
+          onClick={onRedo}
+          className="rounded-md border p-1.5 text-muted-foreground hover:border-foreground disabled:opacity-40"
+        >
+          <Redo2 className="h-4 w-4" />
+        </button>
+      </div>
+      <RefinePromptBox
+        brandPackStatus={brandPackStatus}
+        refining={refining}
+        refineNotice={refineNotice}
+        onRefine={onRefine}
+      />
       {selected === null && <GlobalControls {...props} />}
       {(selected === "name" || selected === "tagline") && (
         <TextControls {...props} element={selected} />
@@ -89,14 +209,17 @@ function TextControls({
   const style = recipe.typography[element];
   const colorKey = element === "name" ? "text" : "tagline";
 
-  const patchTypography = (part: Partial<TextStyle>) =>
-    onUpdate((r) => ({
-      ...r,
-      typography: {
-        ...r.typography,
-        [element]: { ...r.typography[element], ...part },
-      },
-    }));
+  const patchTypography = (part: Partial<TextStyle>, coalesceKey?: string) =>
+    onUpdate(
+      (r) => ({
+        ...r,
+        typography: {
+          ...r.typography,
+          [element]: { ...r.typography[element], ...part },
+        },
+      }),
+      coalesceKey,
+    );
 
   return (
     <>
@@ -116,6 +239,7 @@ function TextControls({
               element === "name"
                 ? { name: e.target.value }
                 : { tagline: e.target.value },
+              element === "name" ? "name-text" : "tagline-text",
             )
           }
         />
@@ -195,7 +319,10 @@ function TextControls({
             step={0.01}
             value={style.tracking}
             onChange={(e) =>
-              patchTypography({ tracking: Number(e.target.value) })
+              patchTypography(
+                { tracking: Number(e.target.value) },
+                `${element}-tracking`,
+              )
             }
             className="w-full"
           />
@@ -209,16 +336,19 @@ function TextControls({
             step={0.05}
             value={recipe.elements[element].scale}
             onChange={(e) =>
-              onUpdate((r) => ({
-                ...r,
-                elements: {
-                  ...r.elements,
-                  [element]: {
-                    ...r.elements[element],
-                    scale: Number(e.target.value),
+              onUpdate(
+                (r) => ({
+                  ...r,
+                  elements: {
+                    ...r.elements,
+                    [element]: {
+                      ...r.elements[element],
+                      scale: Number(e.target.value),
+                    },
                   },
-                },
-              }))
+                }),
+                `${element}-scale`,
+              )
             }
             className="w-full"
           />
@@ -252,13 +382,16 @@ function TextControls({
             aria-label="Custom color"
             value={recipe.colors[colorKey]}
             onChange={(e) =>
-              onPatch({
-                colors: {
-                  ...recipe.colors,
-                  palette_id: null,
-                  [colorKey]: e.target.value,
+              onPatch(
+                {
+                  colors: {
+                    ...recipe.colors,
+                    palette_id: null,
+                    [colorKey]: e.target.value,
+                  },
                 },
-              })
+                `${colorKey}-color`,
+              )
             }
             className="h-7 w-7 cursor-pointer rounded-full border p-0"
           />
@@ -436,13 +569,16 @@ function MarkControls({
             aria-label="Mark color"
             value={recipe.colors.mark}
             onChange={(e) =>
-              onPatch({
-                colors: {
-                  ...recipe.colors,
-                  palette_id: null,
-                  mark: e.target.value,
+              onPatch(
+                {
+                  colors: {
+                    ...recipe.colors,
+                    palette_id: null,
+                    mark: e.target.value,
+                  },
                 },
-              })
+                "mark-color",
+              )
             }
             className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
           />
@@ -455,13 +591,16 @@ function MarkControls({
               step={0.05}
               value={recipe.elements.mark.scale}
               onChange={(e) =>
-                onUpdate((r) => ({
-                  ...r,
-                  elements: {
-                    ...r.elements,
-                    mark: { ...r.elements.mark, scale: Number(e.target.value) },
-                  },
-                }))
+                onUpdate(
+                  (r) => ({
+                    ...r,
+                    elements: {
+                      ...r.elements,
+                      mark: { ...r.elements.mark, scale: Number(e.target.value) },
+                    },
+                  }),
+                  "mark-scale",
+                )
               }
               className="w-full"
             />
@@ -479,9 +618,10 @@ function MarkControls({
                 aria-label="Secondary color"
                 value={recipe.colors.mark2 ?? recipe.colors.mark}
                 onChange={(e) =>
-                  onPatch({
-                    colors: { ...recipe.colors, mark2: e.target.value },
-                  })
+                  onPatch(
+                    { colors: { ...recipe.colors, mark2: e.target.value } },
+                    "mark2-color",
+                  )
                 }
                 className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
               />
@@ -493,9 +633,10 @@ function MarkControls({
                 aria-label="Accent color"
                 value={recipe.colors.mark_accent ?? recipe.colors.mark}
                 onChange={(e) =>
-                  onPatch({
-                    colors: { ...recipe.colors, mark_accent: e.target.value },
-                  })
+                  onPatch(
+                    { colors: { ...recipe.colors, mark_accent: e.target.value } },
+                    "mark-accent-color",
+                  )
                 }
                 className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
               />
@@ -545,7 +686,7 @@ function GlobalControls({
           className="w-full rounded-md border bg-background px-3 py-2 text-sm"
           value={recipe.name}
           maxLength={80}
-          onChange={(e) => onPatch({ name: e.target.value })}
+          onChange={(e) => onPatch({ name: e.target.value }, "name-text")}
         />
       </section>
 
@@ -556,7 +697,7 @@ function GlobalControls({
           value={recipe.tagline}
           maxLength={120}
           placeholder="e.g. Yoga for busy mothers"
-          onChange={(e) => onPatch({ tagline: e.target.value })}
+          onChange={(e) => onPatch({ tagline: e.target.value }, "tagline-text")}
         />
       </section>
 
@@ -604,13 +745,16 @@ function GlobalControls({
                 : "#111827"
             }
             onChange={(e) =>
-              onPatch({
-                colors: {
-                  ...recipe.colors,
-                  palette_id: null,
-                  badge: { type: "solid", color: e.target.value },
+              onPatch(
+                {
+                  colors: {
+                    ...recipe.colors,
+                    palette_id: null,
+                    badge: { type: "solid", color: e.target.value },
+                  },
                 },
-              })
+                "badge-color",
+              )
             }
             className="h-7 w-7 cursor-pointer rounded-full border p-0"
           />

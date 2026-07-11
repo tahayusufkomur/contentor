@@ -10,6 +10,7 @@ deterministic composer's recipes pass through) — nothing reaches the caller
 that hasn't survived that validation.
 """
 
+import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -23,7 +24,7 @@ from apps.core.models import LogoAiUsage
 from .logo_geometry import compile_elements
 from .logo_recipe import _hex, validate_recipe
 
-PROMPT_VERSION = 3
+PROMPT_VERSION = 4
 
 # A minimal, already-valid v2 recipe skeleton used only to run a Brand Pack
 # mark's paths through validate_recipe's injection whitelist + clamps — the
@@ -53,12 +54,7 @@ _DUMMY_RECIPE = {
     },
 }
 
-STATIC_PROMPT = """You are a senior brand-identity designer producing a Brand Pack for a \
-coaching brand: 6 bespoke logo marks and 3 brand color palettes. The coach \
-sells courses and community under this brand — every mark must look like it \
-came from a serious studio engagement, never from a clipart library.
-
-## How marks are built
+_ELEMENT_VOCABULARY_AND_PRINCIPLES = """## How marks are built
 
 You compose each mark from geometric ELEMENTS. A drafting engine converts \
 them into mathematically precise vector shapes — you design (choose forms, \
@@ -105,7 +101,17 @@ imbalance (an offset accent dot, an interrupted ring, a heavier side).
 thick outline, or dense repetition. Never a couple of thin floating slivers.
 7. RESTRAINT — every element must justify its existence; no decoration.
 8. FAVICON TEST — no meaningful feature smaller than ~3 units; the mark \
-must survive a 48px render.
+must survive a 48px render."""
+
+STATIC_PROMPT = (
+    """You are a senior brand-identity designer producing a Brand Pack for a \
+coaching brand: 6 bespoke logo marks and 3 brand color palettes. The coach \
+sells courses and community under this brand — every mark must look like it \
+came from a serious studio engagement, never from a clipart library.
+
+"""
+    + _ELEMENT_VOCABULARY_AND_PRINCIPLES
+    + """
 
 ## The 6 marks — one per family, no repeats
 
@@ -186,6 +192,7 @@ meets each student where they are.", "elements": [{"type": "arc", "cx": 50, \
 inside consistency.", "elements": [{"type": "path", "d": "M50 14 A36 36 0 1 \
 0 50.1 14 Z M36 62 L50 38 L64 62 L57 62 L50 50 L43 62 Z", "fill_rule": \
 "evenodd"}]}"""
+)
 
 
 class _ElementBase(BaseModel):
@@ -292,6 +299,42 @@ class _BrandPack(BaseModel):
     font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
 
 
+REFINE_PROMPT = (
+    """You are a senior brand-identity designer refining ONE existing logo \
+design for a coaching brand, following the coach's instruction. You may \
+reshape the mark, adjust the palette, pick a different font vibe, and \
+change the layout — treat the instruction as license to touch whichever of \
+those the coach's words imply (e.g. "warmer and bolder" usually spans all \
+of them). Redesign a complete, cohesive whole — never a half-applied patch.
+
+"""
+    + _ELEMENT_VOCABULARY_AND_PRINCIPLES
+    + """
+
+## Your task
+
+You'll receive the CURRENT design — either its source elements (redesign \
+from these, keeping what still fits and changing what the instruction asks \
+for) or, if no elements are available, a plain-text summary (design a new \
+custom mark that captures the same brand from scratch, guided by the \
+summary and the instruction). You'll also receive the coach's INSTRUCTION.
+
+Return one refined design: the mark (as elements, same vocabulary as \
+above), a 4-hex-role palette, the single best-fit font_vibe (Modern, \
+Elegant, Bold, Playful, or Minimal), a layout (horizontal, stacked, emblem, \
+horizontal_reversed, or name_only), and a one-sentence rationale — plain \
+words, addressed to the coach, saying what you changed and why."""
+)
+
+
+class _RefinedDesign(BaseModel):
+    mark: _Mark
+    palette: _Palette
+    font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
+    layout: Literal["horizontal", "stacked", "emblem", "horizontal_reversed", "name_only"]
+    rationale: str
+
+
 class BrandPackError(Exception):
     """Raised when a Brand Pack call completed but left nothing usable
     (every mark's paths failed validation, or no palettes). Carries the
@@ -309,6 +352,48 @@ class BrandPackResult:
         self.cost_usd = cost_usd
 
 
+class RefineError(Exception):
+    """Raised when a refine call completed but left nothing usable (the
+    mark's paths all failed validation). Carries the estimated cost of the
+    (already-billed) call so callers can still record it against the global
+    budget kill-switch."""
+
+    def __init__(self, message, cost_usd=0.0):
+        super().__init__(message)
+        self.cost_usd = cost_usd
+
+
+class RefineResult:
+    def __init__(self, design, cost_usd):
+        self.design = design
+        self.cost_usd = cost_usd
+
+
+_MARK_SUMMARY = {
+    "custom": lambda m: m.get("rationale") or "a custom AI-drawn mark",
+    "icon": lambda m: f"the '{m.get('icon')}' icon",
+    "initials": lambda m: f"the brand's initials, {m.get('style')} style",
+    "abstract": lambda m: f"an abstract '{m.get('family')}' shape",
+    "image": lambda m: "an uploaded image mark",
+}
+
+
+def _describe_recipe(recipe):
+    """Plain-text summary of the current editor draft for the refine
+    prompt's user turn — used when no source `elements` are available
+    (image/icon/initials/abstract marks, or a recipe that predates the
+    elements round-trip). Best-effort: recipe is untrusted request input,
+    every field is read defensively."""
+    mark = recipe.get("mark") if isinstance(recipe.get("mark"), dict) else {}
+    describe = _MARK_SUMMARY.get(mark.get("type"), lambda m: "no mark")
+    colors = recipe.get("colors") if isinstance(recipe.get("colors"), dict) else {}
+    return (
+        f"Layout: {recipe.get('layout')}. Mark: {describe(mark)}. "
+        f"Mark color: {colors.get('mark')}. Text color: {colors.get('text')}. "
+        f'Name: "{recipe.get("name")}". Tagline: "{recipe.get("tagline")}".'
+    )
+
+
 def _luminance(hex_color):
     n = int(hex_color[1:], 16)
 
@@ -323,8 +408,11 @@ def _validate_pack_mark(item):
     """Compile one Brand Pack mark's geometric elements into exact filled
     paths (logo_geometry), then run them through validate_recipe (the same
     injection whitelist a saved recipe's custom mark passes through).
-    Returns a validated ``{rationale, paths}`` dict, or None if every path
-    was invalid — the whole mark is dropped, not degraded."""
+    Returns a validated ``{rationale, paths, elements}`` dict — ``elements``
+    is the pre-compile source geometry, returned so the client can hand it
+    back on a future AI refinement round without re-deriving it from paths
+    (see logo-refine/) — or None if every path was invalid — the whole mark
+    is dropped, not degraded."""
     elements = [e if isinstance(e, dict) else e.model_dump() for e in item.elements]
     dummy = {
         **_DUMMY_RECIPE,
@@ -337,7 +425,11 @@ def _validate_pack_mark(item):
     shaped = validate_recipe(dummy)
     if shaped["mark"]["type"] != "custom":
         return None
-    return {"rationale": shaped["mark"]["rationale"], "paths": shaped["mark"]["paths"]}
+    return {
+        "rationale": shaped["mark"]["rationale"],
+        "paths": shaped["mark"]["paths"],
+        "elements": elements,
+    }
 
 
 def _validate_pack_palette(item):
@@ -393,6 +485,46 @@ def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe="")
     return BrandPackResult(pack, cost)
 
 
+def refine_design(recipe, elements, instruction):
+    """One gated, uncached Claude call -> a refined design (mark, palette,
+    font_vibe, layout — whole-design scope). Raises RefineError (carrying
+    the estimated cost) on provider failure or if the refined mark's paths
+    don't survive validation. `elements` is capped defensively: it's
+    untrusted request input, only ever used as descriptive prompt text
+    (never compiled or persisted directly), but a hostile payload shouldn't
+    be able to inflate the prompt without bound."""
+    if elements:
+        bounded = json.dumps(elements[:12])[:4000]
+        current = f"Current mark elements (redesign these): {bounded}"
+    else:
+        summary = _describe_recipe(recipe)
+        current = f"Current design summary (no source elements available — design a new custom mark): {summary}"
+    user_content = f'{current}\n\nCoach\'s instruction: "{instruction}"'
+    try:
+        parsed, cost, _ = core_ai.structured(
+            system=REFINE_PROMPT,
+            user=user_content,
+            output_model=_RefinedDesign,
+            model=settings.LOGO_AI_MODEL,
+            max_tokens=3000,
+        )
+    except core_ai.AiError as exc:
+        raise RefineError(str(exc), cost_usd=exc.cost_usd) from exc
+
+    mark = _validate_pack_mark(parsed.mark)
+    if not mark:
+        raise RefineError("refined mark validation left nothing usable", cost_usd=cost)
+
+    design = {
+        "mark": mark,
+        "palette": _validate_pack_palette(parsed.palette),
+        "font_vibe": parsed.font_vibe,
+        "layout": parsed.layout,
+        "rationale": str(parsed.rationale or "")[:300],
+    }
+    return RefineResult(design, cost)
+
+
 # ── Usage accounting (durable — DB, not cache; see LogoAiUsage) ────────────
 
 
@@ -432,3 +564,13 @@ def record_successful_pack(tenant_schema, month=None):
     month = month or _current_month()
     row, _ = LogoAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month)
     LogoAiUsage.objects.filter(pk=row.pk).update(packs_used=F("packs_used") + 1)
+
+
+def record_successful_refinement(tenant_schema, month=None):
+    """Charged only after a successful, validated refinement — failed calls
+    never consume a coach's monthly quota."""
+    from django.db.models import F
+
+    month = month or _current_month()
+    row, _ = LogoAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month)
+    LogoAiUsage.objects.filter(pk=row.pk).update(refinements_used=F("refinements_used") + 1)

@@ -234,6 +234,7 @@ def _brand_pack_status(tenant):
     enabled = core_ai.available()[0] and budget_ok
     usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
     remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
+    refine_remaining = max(0, settings.LOGO_AI_MONTHLY_REFINE_LIMIT - usage.refinements_used)
     if not eligible:
         reason = "upgrade_required"
     elif not enabled:
@@ -242,7 +243,13 @@ def _brand_pack_status(tenant):
         reason = "quota_exhausted"
     else:
         reason = None
-    return {"enabled": enabled, "eligible": eligible, "remaining": remaining, "reason": reason}
+    return {
+        "enabled": enabled,
+        "eligible": eligible,
+        "remaining": remaining,
+        "reason": reason,
+        "refine_remaining": refine_remaining,
+    }
 
 
 @api_view(["GET"])
@@ -304,6 +311,54 @@ def logo_brand_pack(request):
     logo_ai.record_successful_pack(tenant.schema_name, month=month)
     cache.set(cache_key, result.pack, timeout=60 * 60 * 24 * 30)  # 30 days
     return Response({"pack": result.pack, "source": "ai", "remaining": remaining - 1})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def logo_refine(request):
+    """One gated Claude call -> a refined design (mark/palette/font/layout)
+    from the coach's free-text instruction on their current editor draft.
+    Always a non-empty JSON body. No result caching (see
+    docs/superpowers/plans/2026-07-10-logo-studio-session-undo-refine.md)."""
+    tenant = connection.tenant
+    month = logo_ai._current_month()
+
+    if not core_ai.available()[0]:
+        return Response({"design": None, "source": "disabled", "refine_remaining": 0})
+    if not tenant.has_paid_platform_plan:
+        return Response({"design": None, "source": "upgrade_required", "refine_remaining": 0})
+
+    data = request.data if isinstance(request.data, dict) else {}
+    recipe = data.get("recipe") if isinstance(data.get("recipe"), dict) else {}
+    elements = data.get("elements") if isinstance(data.get("elements"), list) else None
+    instruction = str(data.get("instruction") or "").strip()[:300]
+
+    usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
+    refine_remaining = max(0, settings.LOGO_AI_MONTHLY_REFINE_LIMIT - usage.refinements_used)
+
+    if not instruction:
+        return Response({"design": None, "source": "error", "refine_remaining": refine_remaining})
+    if refine_remaining <= 0:
+        return Response({"design": None, "source": "quota_exhausted", "refine_remaining": 0})
+
+    if logo_ai.global_spend(month=month) >= Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD)):
+        logger.warning("logo refine: monthly budget kill-switch tripped (%s)", month)
+        return Response({"design": None, "source": "disabled", "refine_remaining": refine_remaining})
+
+    try:
+        result = logo_ai.refine_design(recipe, elements, instruction)
+    except logo_ai.RefineError as exc:
+        logo_ai.record_attempt_cost(tenant.schema_name, exc.cost_usd, month=month)
+        logger.exception("logo refine: validation left nothing usable")
+        return Response({"design": None, "source": "error", "refine_remaining": refine_remaining})
+    except Exception:
+        logo_ai.record_attempt_cost(tenant.schema_name, Decimal("0"), month=month)
+        logger.exception("logo refine: AI call failed")
+        return Response({"design": None, "source": "error", "refine_remaining": refine_remaining})
+
+    logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
+    logo_ai.record_successful_refinement(tenant.schema_name, month=month)
+    return Response({"design": result.design, "source": "ai", "refine_remaining": refine_remaining - 1})
 
 
 class HelpBotRateThrottle(UserRateThrottle):

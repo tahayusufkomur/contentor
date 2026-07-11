@@ -241,6 +241,9 @@ LOGO_AI_MODEL = os.environ.get("LOGO_AI_MODEL", "claude-sonnet-5")
 LOGO_AI_MONTHLY_BUDGET_USD = float(os.environ.get("LOGO_AI_MONTHLY_BUDGET_USD", "15"))
 # Hard per-tenant cap on successful packs per calendar month.
 LOGO_AI_MONTHLY_PACK_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_PACK_LIMIT", "5"))
+# Hard per-tenant cap on successful AI refinements per calendar month —
+# separate from the pack limit above, shares the same budget kill-switch.
+LOGO_AI_MONTHLY_REFINE_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_REFINE_LIMIT", "20"))
 
 # --- Ask Contentor help bot (apps.tenant_config.help_bot; provider from AI_PROVIDER) ---
 HELP_BOT_MODEL = os.environ.get("HELP_BOT_MODEL", "claude-sonnet-5")

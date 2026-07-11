@@ -5,6 +5,7 @@ import { Moon, Shuffle, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deriveAiBannerState } from "@/lib/logo/ai-banner";
 import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
+import type { BrandPackElement } from "@/lib/logo/composer";
 import type { LogoRecipe } from "@/types/logo";
 import { LogoRenderer } from "./logo-renderer";
 
@@ -13,7 +14,7 @@ interface StudioWallProps {
   dark: boolean;
   onToggleDark: () => void;
   onShuffle: () => void;
-  onCustomize: (recipe: LogoRecipe) => void;
+  onCustomize: (recipe: LogoRecipe, elements?: BrandPackElement[]) => void;
   onMoreLikeThis: (recipe: LogoRecipe) => void;
   /** true while showing a more-like-this batch instead of the full wall */
   showingVariants: boolean;
@@ -22,6 +23,7 @@ interface StudioWallProps {
    * renders standalone wherever this isn't wired up. */
   brandName?: string;
   aiWall?: LogoRecipe[] | null;
+  aiWallElements?: (BrandPackElement[] | undefined)[] | null;
   aiLoading?: boolean;
   aiNotice?: string | null;
   brandPackStatus?: BrandPackStatus | null;
@@ -41,7 +43,7 @@ const WallCard = memo(function WallCard({
 }: {
   recipe: LogoRecipe;
   dark: boolean;
-  onCustomize: (recipe: LogoRecipe) => void;
+  onCustomize: (recipe: LogoRecipe, elements?: BrandPackElement[]) => void;
   onMoreLikeThis: (recipe: LogoRecipe) => void;
 }) {
   return (
@@ -83,13 +85,15 @@ const WallCard = memo(function WallCard({
  * one-sentence designer rationale as a muted caption. */
 const AiWallCard = memo(function AiWallCard({
   recipe,
+  elements,
   dark,
   onCustomize,
   onMoreLikeThis,
 }: {
   recipe: LogoRecipe;
+  elements?: BrandPackElement[];
   dark: boolean;
-  onCustomize: (recipe: LogoRecipe) => void;
+  onCustomize: (recipe: LogoRecipe, elements?: BrandPackElement[]) => void;
   onMoreLikeThis: (recipe: LogoRecipe) => void;
 }) {
   const rationale = recipe.mark.type === "custom" ? recipe.mark.rationale : "";
@@ -101,7 +105,7 @@ const AiWallCard = memo(function AiWallCard({
       <button
         type="button"
         aria-label={`Customize this AI-designed ${recipe.layout} logo`}
-        onClick={() => onCustomize(recipe)}
+        onClick={() => onCustomize(recipe, elements)}
         className="flex flex-1 items-center justify-center p-4"
       >
         <LogoRenderer recipe={recipe} width={200} />
@@ -118,7 +122,7 @@ const AiWallCard = memo(function AiWallCard({
       >
         <button
           type="button"
-          onClick={() => onCustomize(recipe)}
+          onClick={() => onCustomize(recipe, elements)}
           className="text-xs font-medium text-primary hover:underline"
         >
           Customize
@@ -287,6 +291,7 @@ export function StudioWall({
   onShowAll,
   brandName,
   aiWall,
+  aiWallElements,
   aiLoading,
   aiNotice,
   brandPackStatus,
@@ -363,6 +368,7 @@ export function StudioWall({
                 <AiWallCard
                   key={i}
                   recipe={recipe}
+                  elements={aiWallElements?.[i]}
                   dark={dark}
                   onCustomize={onCustomize}
                   onMoreLikeThis={onMoreLikeThis}
