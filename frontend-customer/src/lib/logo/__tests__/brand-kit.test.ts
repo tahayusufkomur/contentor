@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { darkVariant, fontsourceUrl, luminance } from "@/lib/logo/brand-kit";
 import { defaultRecipe } from "@/lib/logo/catalog";
+import type { Fill } from "@/types/logo";
 
 describe("luminance", () => {
   it("orders black < mid < white", () => {
@@ -68,6 +69,28 @@ describe("darkVariant", () => {
     const dark = darkVariant(base);
     expect(dark.colors.mark2).toBe("#e5e7eb");
     expect(dark.colors.mark_accent).toBe("#fbbf24");
+  });
+
+  it("lightens both stops of a gradient mark color", () => {
+    const base = defaultRecipe("Z", "#1a56db");
+    const recipe = {
+      ...base,
+      colors: {
+        ...base.colors,
+        mark2: {
+          type: "linear",
+          from: "#111827",
+          to: "#1f2937",
+          angle: 90,
+        } as const,
+      },
+    };
+    const dark = darkVariant(recipe);
+    const mark2 = dark.colors.mark2 as Extract<Fill, { type: "linear" }>;
+    expect(mark2.type).toBe("linear");
+    expect(mark2.from).not.toBe("#111827"); // lightened
+    expect(mark2.to).not.toBe("#1f2937");
+    expect(mark2.angle).toBe(90);
   });
 });
 

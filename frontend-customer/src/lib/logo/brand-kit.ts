@@ -32,17 +32,15 @@ export function luminance(hex: string): number {
 const lighten = (hex: string, fallback: string) =>
   luminance(hex) < 0.4 ? fallback : hex;
 
-// Solid color stand-in for a MarkFill (gradient -> its `from` stop) so it
-// can be luminance-checked/lightened like any hex — full gradient-aware
-// dark-variant lightening is a later-task concern; recipe v3 only widens
-// the type here.
-function markFillSolid(fill: MarkFill): string {
-  return typeof fill === "string"
-    ? fill
-    : fill.type === "solid"
-      ? fill.color
-      : fill.from;
-}
+// Lighten a MarkFill for dark backgrounds: a plain hex lightens directly; a
+// solid Fill lightens its color; a gradient lightens BOTH stops and preserves
+// its shape (type/angle). Behaviour is identical to `lighten` for the string
+// marks every current recipe uses.
+const lightenFill = (v: MarkFill, fallback: string): MarkFill => {
+  if (typeof v === "string") return lighten(v, fallback);
+  if (v.type === "solid") return { ...v, color: lighten(v.color, fallback) };
+  return { ...v, from: lighten(v.from, fallback), to: lighten(v.to, fallback) };
+};
 
 /** A recipe re-colored to stay readable on dark backgrounds. */
 export function darkVariant(recipe: LogoRecipe): LogoRecipe {
@@ -64,10 +62,10 @@ export function darkVariant(recipe: LogoRecipe): LogoRecipe {
       // Secondary fill roles on "custom" (AI Brand Pack) marks — only
       // present when the mark uses them, so most recipes are unaffected.
       ...(colors.mark2 !== undefined && {
-        mark2: lighten(markFillSolid(colors.mark2), "#e5e7eb"),
+        mark2: lightenFill(colors.mark2, "#e5e7eb"),
       }),
       ...(colors.mark_accent !== undefined && {
-        mark_accent: lighten(markFillSolid(colors.mark_accent), "#e5e7eb"),
+        mark_accent: lightenFill(colors.mark_accent, "#e5e7eb"),
       }),
     },
   };
