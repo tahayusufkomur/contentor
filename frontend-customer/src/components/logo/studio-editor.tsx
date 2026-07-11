@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
+import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import { buildBrandKit, darkVariant } from "@/lib/logo/brand-kit";
 import type { LogoRecipe } from "@/types/logo";
 import { logoViewBox, LogoRenderer, MarkRenderer } from "./logo-renderer";
@@ -13,12 +13,15 @@ import { StudioPanel } from "./studio-panel";
 interface StudioEditorProps {
   recipe: LogoRecipe;
   onPatch: (part: Partial<LogoRecipe>, coalesceKey?: string) => void;
-  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) => void;
+  onUpdate: (
+    updater: (r: LogoRecipe) => LogoRecipe,
+    coalesceKey?: string,
+  ) => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
-  brandPackStatus: BrandPackStatus | null;
+  logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
   onRefine: (instruction: string) => void;
@@ -39,7 +42,7 @@ export function StudioEditor({
   canRedo,
   onUndo,
   onRedo,
-  brandPackStatus,
+  logoAiStatus,
   refining,
   refineNotice,
   onRefine,
@@ -163,7 +166,7 @@ export function StudioEditor({
         canRedo={canRedo}
         onUndo={onUndo}
         onRedo={onRedo}
-        brandPackStatus={brandPackStatus}
+        logoAiStatus={logoAiStatus}
         refining={refining}
         refineNotice={refineNotice}
         onRefine={onRefine}

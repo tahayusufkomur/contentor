@@ -90,3 +90,121 @@ test("coach switches navbar layout; public homepage reflects it", async ({
     await coach.close();
   }
 });
+
+// Brand-name visibility + logo size presets. Both are navbar_config fields
+// (show_brand_name, logo_size — see lib/navbar.ts's showBrandName /
+// logoSizeClass) that only matter once a logo is saved, so this test seeds
+// one directly via the config API if the tenant doesn't already have one
+// (spec files aren't guaranteed to run in an order where 15-logo-studio's
+// save has landed first) — same restore-by-PATCH pattern as the layout test
+// above, no UI driven for the seed/restore, only for the toggle + size pick.
+test("saved logo: brand name hidden by default, toggle reveals it, size XL sizes the logo", async ({
+  browser,
+  page,
+}) => {
+  const coach = await coachContext(browser);
+  const edit = await coach.newPage();
+
+  const before = await coach.request.get(`${TENANT}/api/v1/admin/config/`);
+  expect(before.ok(), `config GET failed: ${before.status()}`).toBeTruthy();
+  const beforeJson = await before.json();
+  const original = {
+    logo_url: beforeJson.logo_url,
+    logo_id: beforeJson.logo_id,
+    logo_recipe: beforeJson.logo_recipe,
+    navbar_config: beforeJson.navbar_config,
+  };
+
+  if (!beforeJson.logo_url) {
+    // Only send logo_url — omitting logo_recipe skips validate_logo_recipe
+    // entirely (partial PATCH), so this doesn't need to construct a full
+    // schema-v2 recipe just to make the header render an <img>.
+    const seedResp = await coach.request.patch(`${TENANT}/api/v1/admin/config/`, {
+      data: { logo_url: "https://placehold.co/240x60.png" },
+    });
+    expect(
+      seedResp.ok(),
+      `logo seed PATCH failed: ${seedResp.status()} — ${await seedResp.text()}`,
+    ).toBeTruthy();
+  }
+
+  try {
+    // Brand name absent by default next to a saved logo (showBrandName()
+    // only shows it once the coach explicitly re-enables it).
+    await page.goto(`${TENANT}/`);
+    await expect(page.locator("header img")).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(page.locator("header .font-display")).toHaveCount(0);
+
+    await edit.goto(`${TENANT}/`);
+    const editBtn = edit.getByTitle("Edit your site");
+    await expect(editBtn).toBeVisible({ timeout: 10_000 });
+    await editBtn.click();
+
+    const siteTab = edit.getByRole("button", { name: /^Site$/i }).first();
+    await expect(siteTab).toBeVisible({ timeout: 5_000 });
+    await siteTab.click();
+
+    const brandSection = edit.getByRole("button", { name: /^Brand$/i }).first();
+    await expect(brandSection).toBeVisible({ timeout: 5_000 });
+    await brandSection.click();
+
+    const navbarSection = edit.getByRole("button", { name: /Navbar/ }).first();
+    await expect(navbarSection).toBeVisible({ timeout: 5_000 });
+    const showBrandNameSwitch = edit.getByLabel(
+      "Show brand name next to logo",
+    );
+    if (!(await showBrandNameSwitch.isVisible().catch(() => false))) {
+      await navbarSection.click();
+    }
+    await expect(showBrandNameSwitch).toBeVisible({ timeout: 5_000 });
+
+    // Same DOM-click workaround as the layout picker above — the accordion's
+    // expand animation confuses Playwright's actionability check.
+    const brandNameAutosave = edit.waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/admin/config") &&
+        resp.request().method() === "PATCH" &&
+        resp.ok(),
+      { timeout: 15_000 },
+    );
+    await showBrandNameSwitch.scrollIntoViewIfNeeded();
+    await showBrandNameSwitch.evaluate((el) => (el as HTMLElement).click());
+    await brandNameAutosave;
+
+    await page.goto(`${TENANT}/`);
+    await expect(page.locator("header .font-display")).toHaveCount(1, {
+      timeout: 10_000,
+    });
+
+    // Logo size XL -> h-12 on the header logo (lib/navbar.ts logoSizeClass).
+    const xlBtn = edit.getByRole("button", { name: "xl", exact: true });
+    await expect(xlBtn).toBeVisible({ timeout: 5_000 });
+    const sizeAutosave = edit.waitForResponse(
+      (resp) =>
+        resp.url().includes("/api/admin/config") &&
+        resp.request().method() === "PATCH" &&
+        resp.ok(),
+      { timeout: 15_000 },
+    );
+    await xlBtn.scrollIntoViewIfNeeded();
+    await xlBtn.evaluate((el) => (el as HTMLElement).click());
+    await sizeAutosave;
+    await edit.close();
+
+    await page.goto(`${TENANT}/`);
+    await expect(page.locator("header img.h-12")).toBeVisible({
+      timeout: 10_000,
+    });
+  } finally {
+    const restoreResp = await coach.request.patch(`${TENANT}/api/v1/admin/config/`, {
+      data: original,
+    });
+    expect(
+      restoreResp.ok(),
+      `config restore PATCH failed: ${restoreResp.status()} — ${await restoreResp.text()}`,
+    ).toBeTruthy();
+    await coach.close();
+  }
+});

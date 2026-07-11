@@ -96,8 +96,9 @@ def test_patch_writes_logo_and_icon_fks_and_recipe(coach_client):
     config = TenantConfig.objects.first()
     assert config.logo_id == logo_photo.id
     assert config.icon_id == icon_photo.id
-    # v1 payload is upgraded to v2 on write.
-    assert config.logo_recipe["version"] == 2
+    # v1 payload is upgraded to v2 by upgrade_recipe, then validate_recipe's
+    # output is always v3 (recipe v3: mark colors accept a shaped Fill).
+    assert config.logo_recipe["version"] == 3
     assert config.logo_recipe["layout"] == "horizontal"
 
 
@@ -134,7 +135,7 @@ def test_recipe_validation_clamps_and_strips(coach_client):
     resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": noisy}, format="json")
     assert resp.status_code == 200, resp.content
     saved = TenantConfig.objects.first().logo_recipe
-    assert saved["version"] == 2
+    assert saved["version"] == 3
     assert len(saved["name"]) <= 80
     assert saved["colors"]["badge"] == {"type": "solid", "color": "#111827"}  # invalid hex -> safe default
     assert saved["elements"]["mark"]["offset"] == [120, -120]  # clamped

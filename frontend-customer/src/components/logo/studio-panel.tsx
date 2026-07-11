@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Loader2, Redo2, Sparkles, Undo2, Upload, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
-import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
+import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import {
   ICON_GROUPS,
   LOGO_FONTS,
@@ -24,6 +24,7 @@ import type {
   TextStyle,
 } from "@/types/logo";
 import { AbstractMark } from "./abstract-mark";
+import { asFill, solidOf } from "./logo-renderer";
 import type { ElementKey } from "./studio-canvas";
 
 const LAYOUTS: { id: RecipeLayout; label: string }[] = [
@@ -58,12 +59,15 @@ interface StudioPanelProps {
   recipe: LogoRecipe;
   selected: ElementKey | null;
   onPatch: (part: Partial<LogoRecipe>, coalesceKey?: string) => void;
-  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) => void;
+  onUpdate: (
+    updater: (r: LogoRecipe) => LogoRecipe,
+    coalesceKey?: string,
+  ) => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
-  brandPackStatus: BrandPackStatus | null;
+  logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
   onRefine: (instruction: string) => void;
@@ -77,20 +81,20 @@ interface StudioPanelProps {
  * so it lives at the top of the panel regardless of which element is
  * selected, unlike the per-element control sections below it. */
 function RefinePromptBox({
-  brandPackStatus,
+  logoAiStatus,
   refining,
   refineNotice,
   onRefine,
 }: {
-  brandPackStatus: BrandPackStatus | null;
+  logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
   onRefine: (instruction: string) => void;
 }) {
   const [instruction, setInstruction] = useState("");
-  if (!brandPackStatus?.eligible) return null;
-  const remaining = brandPackStatus.refine_remaining;
-  const blocked = !brandPackStatus.enabled || remaining <= 0;
+  if (!logoAiStatus?.eligible) return null;
+  const remaining = logoAiStatus.refine_remaining;
+  const blocked = !logoAiStatus.enabled || remaining <= 0;
 
   return (
     <section className="space-y-1.5 rounded-md border bg-muted/30 p-3">
@@ -156,7 +160,7 @@ export function StudioPanel(props: StudioPanelProps) {
     canRedo,
     onUndo,
     onRedo,
-    brandPackStatus,
+    logoAiStatus,
     refining,
     refineNotice,
     onRefine,
@@ -184,7 +188,7 @@ export function StudioPanel(props: StudioPanelProps) {
         </button>
       </div>
       <RefinePromptBox
-        brandPackStatus={brandPackStatus}
+        logoAiStatus={logoAiStatus}
         refining={refining}
         refineNotice={refineNotice}
         onRefine={onRefine}
@@ -562,50 +566,136 @@ function MarkControls({
       </section>
 
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Mark color</p>
-        <div className="flex items-center gap-3">
+        {(() => {
+          const markFill = asFill(recipe.colors.mark);
+          const isGradient = markFill.type === "linear";
+          return (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Mark color</p>
+                <button
+                  type="button"
+                  aria-pressed={isGradient}
+                  onClick={() =>
+                    onPatch({
+                      colors: {
+                        ...recipe.colors,
+                        palette_id: null,
+                        mark: isGradient
+                          ? solidOf(recipe.colors.mark)
+                          : {
+                              type: "linear",
+                              from: solidOf(recipe.colors.mark),
+                              to: "#111827",
+                              angle: 90,
+                            },
+                      },
+                    })
+                  }
+                  className="text-xs text-muted-foreground hover:underline"
+                >
+                  {isGradient ? "Solid" : "Gradient"}
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  aria-label="Mark color"
+                  value={
+                    isGradient ? markFill.from : solidOf(recipe.colors.mark)
+                  }
+                  onChange={(e) =>
+                    onPatch(
+                      {
+                        colors: {
+                          ...recipe.colors,
+                          palette_id: null,
+                          mark: isGradient
+                            ? { ...markFill, from: e.target.value }
+                            : e.target.value,
+                        },
+                      },
+                      "mark-color",
+                    )
+                  }
+                />
+                {isGradient && (
+                  <>
+                    <input
+                      type="color"
+                      aria-label="Mark gradient end color"
+                      value={markFill.to}
+                      onChange={(e) =>
+                        onPatch(
+                          {
+                            colors: {
+                              ...recipe.colors,
+                              palette_id: null,
+                              mark: { ...markFill, to: e.target.value },
+                            },
+                          },
+                          "mark-color",
+                        )
+                      }
+                    />
+                    <input
+                      type="number"
+                      aria-label="Gradient angle"
+                      min={0}
+                      max={360}
+                      value={markFill.angle}
+                      onChange={(e) =>
+                        onPatch(
+                          {
+                            colors: {
+                              ...recipe.colors,
+                              palette_id: null,
+                              mark: {
+                                ...markFill,
+                                angle: Math.max(
+                                  0,
+                                  Math.min(360, Number(e.target.value) || 0),
+                                ),
+                              },
+                            },
+                          },
+                          "mark-color",
+                        )
+                      }
+                      className="w-16 rounded-md border bg-background px-2 py-1 text-sm"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+        <label className="block text-xs text-muted-foreground">
+          Size
           <input
-            type="color"
-            aria-label="Mark color"
-            value={recipe.colors.mark}
+            type="range"
+            min={0.5}
+            max={2}
+            step={0.05}
+            value={recipe.elements.mark.scale}
             onChange={(e) =>
-              onPatch(
-                {
-                  colors: {
-                    ...recipe.colors,
-                    palette_id: null,
-                    mark: e.target.value,
+              onUpdate(
+                (r) => ({
+                  ...r,
+                  elements: {
+                    ...r.elements,
+                    mark: {
+                      ...r.elements.mark,
+                      scale: Number(e.target.value),
+                    },
                   },
-                },
-                "mark-color",
+                }),
+                "mark-scale",
               )
             }
-            className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
+            className="w-full"
           />
-          <label className="flex-1 text-xs text-muted-foreground">
-            Size
-            <input
-              type="range"
-              min={0.5}
-              max={2}
-              step={0.05}
-              value={recipe.elements.mark.scale}
-              onChange={(e) =>
-                onUpdate(
-                  (r) => ({
-                    ...r,
-                    elements: {
-                      ...r.elements,
-                      mark: { ...r.elements.mark, scale: Number(e.target.value) },
-                    },
-                  }),
-                  "mark-scale",
-                )
-              }
-              className="w-full"
-            />
-          </label>
-        </div>
+        </label>
       </section>
 
       {recipe.mark.type === "custom" && (
@@ -616,7 +706,7 @@ function MarkControls({
               <input
                 type="color"
                 aria-label="Secondary color"
-                value={recipe.colors.mark2 ?? recipe.colors.mark}
+                value={solidOf(recipe.colors.mark2 ?? recipe.colors.mark)}
                 onChange={(e) =>
                   onPatch(
                     { colors: { ...recipe.colors, mark2: e.target.value } },
@@ -631,10 +721,12 @@ function MarkControls({
               <input
                 type="color"
                 aria-label="Accent color"
-                value={recipe.colors.mark_accent ?? recipe.colors.mark}
+                value={solidOf(recipe.colors.mark_accent ?? recipe.colors.mark)}
                 onChange={(e) =>
                   onPatch(
-                    { colors: { ...recipe.colors, mark_accent: e.target.value } },
+                    {
+                      colors: { ...recipe.colors, mark_accent: e.target.value },
+                    },
                     "mark-accent-color",
                   )
                 }

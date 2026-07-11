@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { clientFetch } from "@/lib/api-client";
-import {
-  fetchBrandPack,
-  fetchBrandPackStatus,
-  type BrandPackStatus,
-} from "@/lib/logo/brand-pack-api";
+import { fetchLogoAiStatus, type LogoAiStatus } from "@/lib/logo/converse-api";
+import { chatReducer, initialChatState } from "@/lib/logo/chat-state";
 import { LOGO_FONTS, defaultRecipe } from "@/lib/logo/catalog";
 import {
   applyRefinedDesign,
   composePackWall,
   composeWall,
   moreLikeThis,
-  packElementsByIndex,
   type Brief,
   type BrandPack,
   type BrandPackElement,
@@ -38,7 +34,7 @@ import {
   type EditHistory,
 } from "@/lib/logo/history";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
-import { fetchLogoRefine } from "@/lib/logo/refine-api";
+import { fetchLogoRefine, fetchRefineFinish } from "@/lib/logo/refine-api";
 import {
   clearStudioSession,
   loadStudioSession,
@@ -48,7 +44,9 @@ import { getThemePalette } from "@/lib/themes";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
 import { logoViewBox } from "./logo-renderer";
+import { renderRecipesToPngs } from "./render-draft";
 import { StudioBrief } from "./studio-brief";
+import { StudioChat } from "./studio-chat";
 import { StudioEditor } from "./studio-editor";
 import { StudioWall } from "./studio-wall";
 
@@ -99,18 +97,15 @@ export function LogoStudio({
   const [wallDark, setWallDark] = useState(false);
   const [showingVariants, setShowingVariants] = useState(false);
 
-  // ── AI Brand Pack (paid-tier feature) ──────────────────────────────────
-  const aiRequestIdRef = useRef(0);
-  const [brandPackStatus, setBrandPackStatus] =
-    useState<BrandPackStatus | null>(null);
-  const [aiWall, setAiWall] = useState<LogoRecipe[] | null>(null);
-  const [aiWallElements, setAiWallElements] = useState<
-    (BrandPackElement[] | undefined)[] | null
-  >(null);
+  // ── Design with AI (paid-tier feature) ─────────────────────────────────
+  const [logoAiStatus, setLogoAiStatus] = useState<LogoAiStatus | null>(null);
+  const [chat, chatDispatch] = useReducer(chatReducer, initialChatState);
+  const [chatOpen, setChatOpen] = useState(false);
+  // Legacy AI Brand Pack (old saved sessions only): kept solely so a restored
+  // session round-trips its pack and re-renders its wall as ordinary cards;
+  // the studio never fetches or sets these anew.
   const [pack, setPack] = useState<BrandPack | null>(null);
   const [packSeed, setPackSeed] = useState<number | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiNotice, setAiNotice] = useState<string | null>(null);
 
   // ── Editor draft's AI-sourced mark elements (session-only) ─────────────
   const [activeElements, setActiveElements] = useState<
@@ -123,9 +118,9 @@ export function LogoStudio({
 
   useEffect(() => {
     if (!open) return;
-    fetchBrandPackStatus()
-      .then(setBrandPackStatus)
-      .catch(() => setBrandPackStatus(null));
+    fetchLogoAiStatus()
+      .then(setLogoAiStatus)
+      .catch(() => setLogoAiStatus(null));
   }, [open]);
 
   // Load all studio fonts once so previews render true (each family's real
@@ -157,18 +152,25 @@ export function LogoStudio({
       setPack(saved.pack);
       setPackSeed(saved.packSeed);
       setWallSeed(saved.wallSeed);
-      setWall(composeWall(saved.brief, saved.wallSeed, 24, theme.primaryHex));
-      if (saved.pack) {
-        setAiWall(composePackWall(saved.pack, saved.brief, saved.packSeed ?? 1));
-        setAiWallElements(packElementsByIndex(saved.pack));
-      } else {
-        setAiWall(null);
-        setAiWallElements(null);
-      }
-      const restoredRecipe = saved.recipe ?? seedRecipe(config, theme.primaryHex);
+      const baseWall = composeWall(
+        saved.brief,
+        saved.wallSeed,
+        24,
+        theme.primaryHex,
+      );
+      // Legacy AI Brand Pack walls (old sessions) still render, folded in
+      // front of the deterministic wall as ordinary cards.
+      const legacyAiWall = saved.pack
+        ? composePackWall(saved.pack, saved.brief, saved.packSeed ?? 1)
+        : [];
+      setWall([...legacyAiWall, ...baseWall]);
+      const restoredRecipe =
+        saved.recipe ?? seedRecipe(config, theme.primaryHex);
       setRecipe(restoredRecipe);
       setEditHistory(reset(restoredRecipe));
       setActiveElements(saved.elements);
+      chatDispatch({ type: "hydrate", snapshot: saved.chat });
+      setChatOpen(false);
       setStep(saved.step);
       return;
     }
@@ -176,6 +178,8 @@ export function LogoStudio({
     setRecipe(seeded);
     setEditHistory(reset(seeded));
     setActiveElements(null);
+    chatDispatch({ type: "hydrate", snapshot: null });
+    setChatOpen(false);
     setBrief((b) => ({ ...b, brandName: config.brand_name || b.brandName }));
     setStep(isRecipe(config.logo_recipe) ? "editor" : "brief");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -196,12 +200,32 @@ export function LogoStudio({
         packSeed,
         recipe,
         elements: activeElements,
+        chat:
+          chatOpen || chat.messages.length
+            ? {
+                stage: chat.stage,
+                messages: chat.messages,
+                pinnedIcon: chat.pinnedIcon,
+                pinnedLockup: chat.pinnedLockup,
+              }
+            : null,
       });
     }, 500);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [open, step, brief, wallSeed, pack, packSeed, recipe, activeElements]);
+  }, [
+    open,
+    step,
+    brief,
+    wallSeed,
+    pack,
+    packSeed,
+    recipe,
+    activeElements,
+    chatOpen,
+    chat,
+  ]);
 
   function patch(part: Partial<LogoRecipe>, coalesceKey?: string) {
     const next = { ...recipe, ...part };
@@ -210,7 +234,10 @@ export function LogoStudio({
     if (part.mark) setActiveElements(null);
   }
 
-  function updateRecipe(updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) {
+  function updateRecipe(
+    updater: (r: LogoRecipe) => LogoRecipe,
+    coalesceKey?: string,
+  ) {
     const next = updater(recipe);
     setRecipe(next);
     setEditHistory((h) => push(h, next, coalesceKey ?? null));
@@ -233,11 +260,9 @@ export function LogoStudio({
     });
   }
 
-  // The deterministic wall is instant, offline, and free — it's the
-  // studio's baseline for every coach. Paid-tier coaches additionally get
-  // one gated AI Brand Pack call per brief (fetchAiIdeas below); its marks
-  // are multiplied into extra tiles via the same composer machinery
-  // (composeFromPack), at zero further cost.
+  // The deterministic wall is instant, offline, and free — it's the studio's
+  // baseline for every coach. Paid-tier coaches additionally get the staged
+  // Design-with-AI chat (StudioChat), which converges on ONE bespoke logo.
   function regenerateWall() {
     const seed = 1 + Math.floor(Math.random() * 1_000_000);
     setWallSeed(seed);
@@ -245,57 +270,12 @@ export function LogoStudio({
     setShowingVariants(false);
   }
 
-  async function fetchAiIdeas() {
-    if (
-      !brandPackStatus ||
-      !brandPackStatus.eligible ||
-      !brandPackStatus.enabled ||
-      brandPackStatus.remaining <= 0
-    ) {
-      return;
-    }
-    const requestId = ++aiRequestIdRef.current;
-    setAiLoading(true);
-    setAiNotice(null);
-    try {
-      const resp = await fetchBrandPack(brief);
-      if (requestId !== aiRequestIdRef.current) return; // stale — brief changed since
-      setBrandPackStatus((s) =>
-        s
-          ? {
-              ...s,
-              remaining: resp.remaining,
-              reason: resp.remaining <= 0 ? "quota_exhausted" : s.reason,
-            }
-          : s,
-      );
-      if (resp.source === "ai" || resp.source === "cache") {
-        const seed = 1 + Math.floor(Math.random() * 1_000_000);
-        setPack(resp.pack);
-        setPackSeed(resp.pack ? seed : null);
-        setAiWall(resp.pack ? composePackWall(resp.pack, brief, seed) : null);
-        setAiWallElements(resp.pack ? packElementsByIndex(resp.pack) : null);
-      } else if (resp.source === "error") {
-        setAiNotice("Couldn't reach the design studio — try again.");
-      }
-    } catch {
-      if (requestId === aiRequestIdRef.current) {
-        setAiNotice(
-          "Couldn't reach the design studio just now — your ideas below are ready to use.",
-        );
-      }
-    } finally {
-      if (requestId === aiRequestIdRef.current) setAiLoading(false);
-    }
-  }
-
   function startIdeas() {
     regenerateWall();
-    setAiWall(null);
-    setAiWallElements(null);
     setPack(null);
     setPackSeed(null);
-    setAiNotice(null);
+    chatDispatch({ type: "hydrate", snapshot: null });
+    setChatOpen(false);
     setStep("ideas");
   }
 
@@ -305,9 +285,8 @@ export function LogoStudio({
     setWall(null);
     setPack(null);
     setPackSeed(null);
-    setAiWall(null);
-    setAiWallElements(null);
-    setAiNotice(null);
+    chatDispatch({ type: "hydrate", snapshot: null });
+    setChatOpen(false);
   }
 
   function handleMoreLikeThis(base: LogoRecipe) {
@@ -326,25 +305,43 @@ export function LogoStudio({
   async function handleRefine(instruction: string) {
     setRefining(true);
     setRefineNotice(null);
+    const baseRecipe = recipe;
     try {
-      const resp = await fetchLogoRefine(recipe, activeElements, instruction);
-      setBrandPackStatus((s) =>
+      const resp = await fetchLogoRefine(
+        baseRecipe,
+        activeElements,
+        instruction,
+      );
+      setLogoAiStatus((s) =>
         s ? { ...s, refine_remaining: resp.refine_remaining } : s,
       );
-      if (resp.source === "ai" && resp.design) {
-        const design = resp.design;
-        setRecipe((r) => {
-          const next = applyRefinedDesign(r, design);
-          setEditHistory((h) => push(h, next, null));
-          return next;
-        });
-        setActiveElements(design.mark.elements ?? null);
-        setRefineNotice(design.rationale);
-      } else if (resp.source === "quota_exhausted") {
-        setRefineNotice("You've used this month's AI refinements. More next month.");
-      } else {
-        setRefineNotice("Couldn't refine the design — try again.");
+      if (resp.source !== "ai" || !resp.design) {
+        setRefineNotice(
+          resp.source === "quota_exhausted"
+            ? "You've used this month's AI refinements. More next month."
+            : "Couldn't refine the design — try again.",
+        );
+        return;
       }
+      let design = resp.design;
+      // Two-pass (Task 12): render the draft and let the AI critique its own
+      // work. Any failure keeps the draft the client already holds — the
+      // coach's editor never lands on a blank refinement.
+      if (resp.phase === "draft" && resp.token) {
+        const draftRecipe = applyRefinedDesign(baseRecipe, design);
+        try {
+          const images = await renderRecipesToPngs([draftRecipe], "name");
+          const final = await fetchRefineFinish(resp.token, images);
+          if (final.source === "ai" && final.design) design = final.design;
+        } catch {
+          // keep the draft `design`
+        }
+      }
+      const applied = applyRefinedDesign(baseRecipe, design);
+      setRecipe(applied);
+      setEditHistory((h) => push(h, applied, null));
+      setActiveElements(design.mark.elements ?? null);
+      setRefineNotice(design.rationale);
     } catch {
       setRefineNotice("Couldn't reach the design studio just now.");
     } finally {
@@ -581,24 +578,41 @@ export function LogoStudio({
               )}
 
               {step === "ideas" && wall && (
-                <div className="min-h-0 flex-1">
-                  <StudioWall
-                    wall={wall}
-                    dark={wallDark}
-                    onToggleDark={() => setWallDark((v) => !v)}
-                    onShuffle={regenerateWall}
-                    onCustomize={handleCustomize}
-                    onMoreLikeThis={handleMoreLikeThis}
-                    showingVariants={showingVariants}
-                    onShowAll={regenerateWall}
-                    brandName={brief.brandName || config.brand_name}
-                    aiWall={aiWall}
-                    aiWallElements={aiWallElements}
-                    aiLoading={aiLoading}
-                    aiNotice={aiNotice}
-                    brandPackStatus={brandPackStatus}
-                    onGenerateAi={fetchAiIdeas}
-                  />
+                <div className="flex min-h-0 flex-1">
+                  <div className="min-w-0 flex-1">
+                    <StudioWall
+                      wall={wall}
+                      dark={wallDark}
+                      onToggleDark={() => setWallDark((v) => !v)}
+                      onShuffle={regenerateWall}
+                      onCustomize={handleCustomize}
+                      onMoreLikeThis={handleMoreLikeThis}
+                      showingVariants={showingVariants}
+                      onShowAll={regenerateWall}
+                      logoAiStatus={logoAiStatus}
+                      onOpenChat={() => setChatOpen(true)}
+                    />
+                  </div>
+                  {chatOpen && (
+                    <StudioChat
+                      open={chatOpen}
+                      state={chat}
+                      dispatch={chatDispatch}
+                      brief={brief}
+                      brandName={brief.brandName || config.brand_name}
+                      status={logoAiStatus}
+                      onUseDesign={(chosen, elements) => {
+                        handleCustomize(chosen, elements);
+                        setChatOpen(false);
+                      }}
+                      onStatusChange={(turns) =>
+                        setLogoAiStatus((s) =>
+                          s ? { ...s, turns_remaining: turns } : s,
+                        )
+                      }
+                      onClose={() => setChatOpen(false)}
+                    />
+                  )}
                 </div>
               )}
 
@@ -611,7 +625,7 @@ export function LogoStudio({
                   canRedo={canRedo(editHistory)}
                   onUndo={handleUndo}
                   onRedo={handleRedo}
-                  brandPackStatus={brandPackStatus}
+                  logoAiStatus={logoAiStatus}
                   refining={refining}
                   refineNotice={refineNotice}
                   onRefine={handleRefine}

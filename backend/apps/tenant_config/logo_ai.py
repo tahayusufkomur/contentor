@@ -1,8 +1,9 @@
-"""Logo Studio AI Brand Pack: one Claude call returns bespoke vector marks +
-brand palettes for a coach's brief, letting the client's deterministic
-composer (composeFromPack in composer.ts) multiply them into a wall of ideas
-at zero extra cost. See
-docs/superpowers/specs/2026-07-08-logo-ai-brand-pack-design.md.
+"""Logo Studio AI shared internals: pydantic mark/design schemas, the
+element vocabulary + font catalog prompts, lockup/mark/palette validators,
+the single-call ``refine_design`` (coach's free-text tweak of one draft), and
+durable per-tenant usage accounting (LogoAiUsage). The staged Design-with-AI
+conversation lives in ``logo_converse`` and reuses these schemas + validators.
+See docs/superpowers/specs/2026-07-11-logo-vision-critique-conversation-design.md.
 
 Every mark this module returns has already been run through
 ``logo_recipe.validate_recipe`` (the same injection trust boundary the
@@ -23,8 +24,6 @@ from apps.core.models import LogoAiUsage
 
 from .logo_geometry import compile_elements
 from .logo_recipe import _hex, validate_recipe
-
-PROMPT_VERSION = 5
 
 # A minimal, already-valid v2 recipe skeleton used only to run a Brand Pack
 # mark's paths through validate_recipe's injection whitelist + clamps — the
@@ -130,8 +129,8 @@ thick outline, or dense repetition. Never a couple of thin floating slivers.
 must survive a 48px render."""
 
 # KEEP IN SYNC: frontend-customer/src/lib/logo/catalog.ts LOGO_FONTS
-# Shared by STATIC_PROMPT and REFINE_PROMPT so the font list exists in
-# exactly one place.
+# Shared by REFINE_PROMPT and logo_converse's stage prompts so the font list
+# exists in exactly one place.
 _FONT_CATALOG = """## Font catalog (family — voice)
 
 Modern: Inter — neutral clarity; Geist — technical precision; DM Sans — \
@@ -148,129 +147,6 @@ Script (for the name only — never uppercase, never taglines): Dancing \
 Script — lively handwriting; Great Vibes — formal calligraphy; Pacifico — \
 retro brush; Caveat — casual marker.
 """
-
-STATIC_PROMPT = (
-    """You are a senior brand-identity designer producing a Brand Pack for a \
-coaching brand: 8 complete logo designs plus 3 brand color palettes. The \
-coach sells courses and community under this brand — every design must look \
-like it came from a serious studio engagement, never from a clipart library.
-
-"""
-    + _ELEMENT_VOCABULARY_AND_PRINCIPLES
-    + """
-
-## The 8 designs — concept first, never a template
-
-For each design, write `concept` FIRST: one sentence naming a real idea \
-drawn from THIS brand's name, niche and vibe (growth, calm, connection, \
-strength, focus, warmth...) and the visual device that will express it. \
-Then draw exactly that.
-
-Diversity is a hard rule: no two designs may share their primary visual \
-device. Devices to draw from (not limited to): solid geometry, \
-negative-space cut, continuous-line curve, mirrored organic composition, \
-dot system, arc system, letterform (the initial abstracted into geometry — \
-path or dot-grid skips — never a font glyph), petal/blob composition, \
-layered low-opacity texture. Vary density, weight and symmetry across the \
-8 (make 2-3 clearly asymmetric). Where they fit the brand, use `curve` \
-line-art in at least one design, a `cut` in at least one, and `mirror` \
-symmetry in at least one. Never a generic swoosh, sparkle, or globe.
-
-## The lockup — you design the whole logo, not just the mark
-
-Per design, choose:
-- layout: horizontal (versatile classic) | horizontal_reversed (mark on \
-the right) | stacked (centered, ceremonial) | emblem (mark inside the \
-badge above the name — requires a badge) | name_only (pure wordmark).
-- badge_shape + badge_outline: a badge is a container; pick "none" when \
-the mark should breathe directly on the page. emblem must have a badge.
-- font: exactly one family from the catalog below, matched to the brand's \
-voice.
-- typography: case (upper = authoritative, title = friendly, none = \
-modern), tracking (0.05-0.2 with upper, else 0), weight.
-- palette_index: which of your 3 palettes this design wears (spread all 3 \
-across the 8 designs).
-- color_roles: for EACH slot pick which PALETTE COLOR paints it. badge, \
-mark, mark2 and mark_accent each take one of: primary, secondary, accent, \
-ink, white. text takes one of: primary, secondary, ink (never accent, \
-never white — text always sits on white, so it must be a role that reads \
-there). tagline takes one of: primary, secondary, accent, ink (never \
-white). Never write a slot's own name as its value (mark2's value is a \
-palette color like "primary", never the word "mark2" — that word is only \
-ever an element's `fill`, a different vocabulary). Contrast is \
-non-negotiable: on a dark badge use white or a light role for the mark; \
-with badge "none" the mark and text must read on white.
-
-"""
-    + _FONT_CATALOG
-    + """
-
-## Style directives
-
-Apply the directives whose style names appear in the brief:
-- Minimal: single fill role, medium weights, maximum negative space, timeless.
-- Bold: heavy solid masses, thick bands (4-6), high contrast, confident.
-- Elegant: thin rings and arcs (2.5-3), wide spacing, refined proportions.
-- Playful: rounded everything, bouncy asymmetric dot clusters, capsules, \
-tilted elements.
-- Organic: soft freehand curves, wave-like arcs, natural rhythms, no rigid \
-grids.
-- Tech: precise grids, node-and-connection feel, dot matrices, structured \
-geometry.
-If the brief lists no styles, default to Minimal plus whatever voice the \
-niche suggests.
-
-## Rationale
-
-One sentence per mark, addressed to a non-technical coach, saying why it \
-fits their brand. Plain words. No design jargon.
-
-## Palettes
-
-3 palettes, 4 hex roles each: primary (dominant brand color — riff on the \
-given theme color by shifting hue, saturation, or depth; don't repeat it \
-identically across all 3), secondary, accent, and ink (dark, readable on \
-white, clearly darker than primary). Think 60-30-10: primary carries, \
-secondary supports, accent punctuates. The 3 palettes should feel like one \
-brand family at three volumes (e.g. calm / classic / vivid). Marks are \
-drawn in these colors on white cards, so secondary and accent must stay \
-clearly visible on white — no near-white pastels; when in doubt, darken.
-"""
-    + """
-
-## Tagline & typography
-
-One short tagline — empty string if nothing natural fits; never force it. \
-font_vibe: the single best fit among Modern, Elegant, Bold, Playful, \
-Minimal, Script — the fallback pool if a design's font is ever unavailable.
-
-## Example design (JSON)
-
-{"concept": "One unbroken line rising through a steady circle — a single \
-practice carried all the way.", "elements": [{"type": "circle", "cx": 50, \
-"cy": 50, "r": 30}, {"type": "curve", "points": [[28, 64], [45, 55], [56, \
-43], [72, 32]], "thickness": 4.5, "round_caps": true, "cut": true}], \
-"rationale": "One continuous path through a steady circle — your coaching \
-carries students all the way through.", "layout": "horizontal", \
-"badge_shape": "none", "badge_outline": false, "font": "Manrope", \
-"typography": {"case": "none", "tracking": 0, "weight": 700}, \
-"palette_index": 0, "color_roles": {"badge": "primary", "mark": "ink", \
-"mark2": "secondary", "mark_accent": "accent", "text": "ink", "tagline": \
-"secondary"}}
-
-{"concept": "A lotus opening — mirrored petals around a quiet center.", \
-"elements": [{"type": "mirror", "axis_x": 50, "of": {"type": "petal", \
-"cx": 38, "cy": 46, "length": 30, "width": 12, "rotate_deg": -35}}, \
-{"type": "petal", "cx": 50, "cy": 40, "length": 34, "width": 13, "fill": \
-"mark2"}, {"type": "circle", "cx": 50, "cy": 62, "r": 4, "fill": \
-"accent"}], "rationale": "A lotus opening around a still center — calm \
-that grows outward.", "layout": "stacked", "badge_shape": "none", \
-"badge_outline": false, "font": "Cormorant Garamond", "typography": \
-{"case": "title", "tracking": 0, "weight": 600}, "palette_index": 1, \
-"color_roles": {"badge": "primary", "mark": "primary", "mark2": \
-"secondary", "mark_accent": "accent", "text": "ink", "tagline": \
-"secondary"}}"""
-)
 
 
 class _ElementBase(BaseModel):
@@ -478,6 +354,11 @@ class _Typography(BaseModel):
     weight: Literal[400, 500, 600, 700, 800] = 700
 
 
+class _MarkGradient(BaseModel):
+    to: Literal["primary", "secondary", "accent", "ink"]
+    angle: float = 90
+
+
 class _ColorRoles(BaseModel):
     badge: _ROLE = "primary"
     mark: _ROLE = "ink"
@@ -498,13 +379,8 @@ class _Design(BaseModel):
     typography: _Typography
     palette_index: int = 0
     color_roles: _ColorRoles
-
-
-class _BrandPack(BaseModel):
-    designs: list[_Design]
-    palettes: list[_Palette]
-    tagline: str
-    font_vibe: _FONT_VIBES
+    mark_scale: float = 1.0
+    mark_gradient: _MarkGradient | None = None
 
 
 REFINE_PROMPT = (
@@ -551,23 +427,8 @@ class _RefinedDesign(BaseModel):
     typography: _Typography
     color_roles: _ColorRoles
     rationale: str
-
-
-class BrandPackError(Exception):
-    """Raised when a Brand Pack call completed but left nothing usable
-    (every mark's paths failed validation, or no palettes). Carries the
-    estimated cost of the (already-billed) call so callers can still record
-    it against the global budget kill-switch."""
-
-    def __init__(self, message, cost_usd=0.0):
-        super().__init__(message)
-        self.cost_usd = cost_usd
-
-
-class BrandPackResult:
-    def __init__(self, pack, cost_usd):
-        self.pack = pack
-        self.cost_usd = cost_usd
+    mark_scale: float = 1.0
+    mark_gradient: _MarkGradient | None = None
 
 
 class RefineError(Exception):
@@ -679,6 +540,15 @@ def _validate_lockup(item):
             "weight": item.typography.weight,
         },
         "color_roles": item.color_roles.model_dump(),
+        "mark_scale": max(0.6, min(1.8, float(item.mark_scale or 1.0))),
+        "mark_gradient": (
+            {
+                "to": item.mark_gradient.to,
+                "angle": max(0.0, min(360.0, float(item.mark_gradient.angle or 0))),
+            }
+            if item.mark_gradient
+            else None
+        ),
     }
 
 
@@ -692,45 +562,6 @@ def _validate_design(item, palette_count):
         "palette_index": int(max(0, min(palette_count - 1, item.palette_index))),
         **_validate_lockup(item),
     }
-
-
-def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe=""):
-    """One structured AI call -> a validated Brand Pack. Raises BrandPackError
-    (carrying the estimated cost) on provider failure or if the response
-    parses but nothing usable survives validation."""
-    chips = ", ".join(style_chips) if style_chips else "no strong preference"
-    user_content = (
-        f'Brand name: "{brand_name}"\n'
-        f'Niche: "{niche or "general coaching"}"\n'
-        f"Style preferences: {chips}\n"
-        f'Their vibe, in their own words: "{vibe or "-"}"\n'
-        f"Brand's existing theme color: {primary_hex}\n"
-    )
-    try:
-        parsed, cost, _ = core_ai.structured(
-            system=STATIC_PROMPT,
-            user=user_content,
-            output_model=_BrandPack,
-            model=settings.LOGO_AI_MODEL,
-            # 8 full designs of element-JSON + lockups; adaptive thinking
-            # bills within max_tokens too — 16000 leaves headroom.
-            max_tokens=16000,
-        )
-    except core_ai.AiError as exc:
-        raise BrandPackError(str(exc), cost_usd=exc.cost_usd) from exc
-
-    palettes = [_validate_pack_palette(item) for item in parsed.palettes]
-    designs = [d for d in (_validate_design(item, len(palettes) or 1) for item in parsed.designs) if d]
-    if not designs or not palettes:
-        raise BrandPackError("brand pack validation left nothing usable", cost_usd=cost)
-
-    pack = {
-        "designs": designs,
-        "palettes": palettes,
-        "tagline": str(parsed.tagline or "")[:120],
-        "font_vibe": parsed.font_vibe,
-    }
-    return BrandPackResult(pack, cost)
 
 
 def refine_design(recipe, elements, instruction):
@@ -808,12 +639,23 @@ def record_attempt_cost(tenant_schema, usd, month=None):
 
 def record_successful_pack(tenant_schema, month=None):
     """Charged only after a successful, validated pack — failed calls and
-    cache hits never consume a coach's monthly quota."""
+    cache hits never consume a coach's monthly quota. The batch Brand Pack
+    endpoint is retired; kept for the historical ``packs_used`` column."""
     from django.db.models import F
 
     month = month or _current_month()
     row, _ = LogoAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month)
     LogoAiUsage.objects.filter(pk=row.pk).update(packs_used=F("packs_used") + 1)
+
+
+def record_successful_turn(tenant_schema, month=None):
+    """Charged only after a successful, validated Pass A — the critique
+    pass and failed calls never consume a coach's monthly turns."""
+    from django.db.models import F
+
+    month = month or _current_month()
+    row, _ = LogoAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month)
+    LogoAiUsage.objects.filter(pk=row.pk).update(turns_used=F("turns_used") + 1)
 
 
 def record_successful_refinement(tenant_schema, month=None):

@@ -1,10 +1,12 @@
 // e2e/specs/15-logo-studio.spec.ts
 //
 // Coach opens the Logo Studio via the setup-assistant deep link and walks the
-// AI-first flow: Brief -> wall of 24 composed ideas (deterministic, offline)
-// -> Shuffle -> Customize one -> fine-tune in the editor -> save. The PATCH
-// must persist a schema-v2 recipe. Offline the AI top-up is a no-op (the
-// suggestions endpoint returns source=fallback, which the wall ignores).
+// deterministic-first flow: Brief -> wall of 24 composed ideas (offline, no
+// network dependency) -> Shuffle -> Customize one -> fine-tune in the editor
+// -> save. The PATCH must persist a schema-v2 recipe. The wall also surfaces
+// the staged "Design with AI" chat (studio-chat.tsx) as a paid-tier upsell —
+// this spec only confirms the panel opens (no real AI turn is driven here;
+// see 90-logo-eval.spec.ts for that, gated behind LOGO_EVAL=1).
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
@@ -63,6 +65,33 @@ test("coach creates a logo through brief, wall, and editor", async ({
     const after = await dialog.getByTestId("wall-card").first().innerHTML();
     expect(after).not.toBe(firstCardBefore);
   }).toPass({ timeout: 5_000 });
+
+  // Design with AI: the staged chat replaces the old AI wall. A free tenant
+  // sees the upsell banner instead of the button — assert whichever the
+  // seeded tenant's plan shows. Never drive a real AI turn here: the panel
+  // auto-fires its first turn on open regardless (the provider may be off in
+  // this env), so just confirm the panel + input + progress strip render and
+  // close it immediately rather than waiting on that turn to resolve.
+  const designWithAiButton = dialog.getByRole("button", {
+    name: "Design with AI",
+  });
+  const aiUpsell = dialog.getByText(/included with paid plans/);
+  await expect(designWithAiButton.or(aiUpsell).first()).toBeVisible({
+    timeout: 15_000,
+  });
+  if (await designWithAiButton.isVisible().catch(() => false)) {
+    await designWithAiButton.click();
+    const chat = dialog.getByTestId("studio-chat");
+    await expect(chat).toBeVisible();
+    await expect(chat.getByRole("textbox")).toBeVisible();
+    await expect(chat.getByRole("button", { name: "Send" })).toBeVisible();
+    // Progress strip: Icon -> Name -> Tagline.
+    await expect(chat.getByText("Icon", { exact: true })).toBeVisible();
+    await expect(chat.getByText("Name", { exact: true })).toBeVisible();
+    await expect(chat.getByText("Tagline", { exact: true })).toBeVisible();
+    await chat.getByLabel("Close chat").click();
+    await expect(chat).toBeHidden();
+  }
 
   // Customize the first card -> Editor step.
   await dialog

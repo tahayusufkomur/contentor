@@ -28,7 +28,9 @@ describe("font catalog", () => {
       "Pacifico",
       "Caveat",
     ]);
-    expect(script.find((f) => f.family === "Great Vibes")?.weights).toEqual([400]);
+    expect(script.find((f) => f.family === "Great Vibes")?.weights).toEqual([
+      400,
+    ]);
     expect(script.find((f) => f.family === "Pacifico")?.weights).toEqual([400]);
   });
 
@@ -58,9 +60,9 @@ describe("palettes", () => {
 });
 
 describe("defaultRecipe", () => {
-  it("returns a v2 recipe seeded from the brand", () => {
+  it("returns a v3 recipe seeded from the brand", () => {
     const r = defaultRecipe("Zeynep Yoga", "#1a56db");
-    expect(r.version).toBe(2);
+    expect(r.version).toBe(3);
     expect(r.layout).toBe("horizontal");
     expect(r.colors.badge).toEqual({ type: "solid", color: "#1a56db" });
     expect(r.typography.name.weight).toBe(700);

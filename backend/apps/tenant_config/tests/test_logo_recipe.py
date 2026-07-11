@@ -4,6 +4,8 @@ KEEP IN SYNC: the V1/V2 parity fixture mirrors
 frontend-customer/src/lib/logo/__tests__/migrate.test.ts exactly.
 """
 
+import copy
+
 import pytest
 from rest_framework import serializers as drf_serializers
 
@@ -46,6 +48,11 @@ V2 = {
 }
 
 
+def _valid():
+    """Fresh deep copy of the canonical valid v2 recipe, safe to mutate."""
+    return copy.deepcopy(V2)
+
+
 def test_upgrade_matches_ts_parity_fixture():
     assert upgrade_recipe(V1) == V2
 
@@ -65,8 +72,9 @@ def test_upgrade_icon_name_and_initials_and_image():
 
 
 def test_validate_recipe_shapes_valid_v2():
+    # Input stays v2 (compat) but validate_recipe's output is always v3.
     shaped = validate_recipe(V2)
-    assert shaped == {**V2, "mark": {"type": "icon", "icon": "flower-2", "style": "outline"}}
+    assert shaped == {**V2, "version": 3, "mark": {"type": "icon", "icon": "flower-2", "style": "outline"}}
 
 
 def test_validate_recipe_rejects_bad_enums():
@@ -238,3 +246,40 @@ def test_validate_recipe_colors_mark2_and_accent_optional():
     assert shaped2["colors"]["mark2"] == "#ff00ff"
     # invalid hex -> defaults to the shaped mark color, not left as "purple"
     assert shaped2["colors"]["mark_accent"] == shaped2["colors"]["mark"]
+
+
+# ── Recipe v3: mark colors accept a shaped Fill (solid/linear/radial) ──────
+
+
+class TestMarkFillV3:
+    def test_output_is_version_3(self):
+        assert validate_recipe(_valid())["version"] == 3
+
+    def test_string_mark_color_passes_through(self):
+        shaped = validate_recipe(_valid())
+        assert shaped["colors"]["mark"] == _valid()["colors"]["mark"]
+
+    def test_linear_fill_mark_color_is_shaped(self):
+        recipe = _valid()
+        recipe["colors"]["mark"] = {"type": "linear", "from": "#112233", "to": "#445566", "angle": 45}
+        shaped = validate_recipe(recipe)
+        assert shaped["colors"]["mark"] == {"type": "linear", "from": "#112233", "to": "#445566", "angle": 45}
+
+    def test_malformed_fill_falls_back_to_default_hex(self):
+        recipe = _valid()
+        recipe["colors"]["mark"] = {"type": "conic", "junk": True}
+        shaped = validate_recipe(recipe)
+        assert shaped["colors"]["mark"] == "#ffffff"
+
+    def test_gradient_angle_clamped(self):
+        recipe = _valid()
+        recipe["colors"]["mark"] = {"type": "linear", "from": "#112233", "to": "#445566", "angle": 9999}
+        assert validate_recipe(recipe)["colors"]["mark"]["angle"] == 360
+
+    def test_non_numeric_angle_does_not_raise(self):
+        recipe = _valid()
+        recipe["colors"]["mark"] = {"type": "linear", "from": "#112233", "to": "#445566", "angle": "purple"}
+        shaped = validate_recipe(recipe)
+        angle = shaped["colors"]["mark"]["angle"]
+        assert isinstance(angle, int | float)
+        assert 0 <= angle <= 360

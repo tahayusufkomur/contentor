@@ -79,6 +79,10 @@ class _Out(BaseModel):
     title: str
 
 
+class _Echo(BaseModel):
+    text: str
+
+
 def _completed(stdout="", rc=0, stderr=""):
     return _subprocess.CompletedProcess(args=[], returncode=rc, stdout=stdout, stderr=stderr)
 
@@ -361,3 +365,55 @@ def test_stream_anthropic_yields_deltas_then_done(settings, monkeypatch):
     assert events[-1] == ("done", {"cost_usd": Decimal("2"), "provider": "anthropic", "model": "claude-sonnet-5"})
     assert _Stream.kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
     assert _Stream.kwargs["messages"] == _HISTORY
+
+
+# ── structured_messages() / supports_vision() ──────────────────────────────────
+
+
+class TestStructuredMessages:
+    def test_cli_provider_reports_no_vision(self, settings):
+        settings.AI_PROVIDER = "cli"
+        assert ai.supports_vision() is False
+
+    def test_anthropic_provider_reports_vision(self, settings):
+        settings.AI_PROVIDER = "anthropic"
+        assert ai.supports_vision() is True
+
+    def test_cli_provider_raises(self, settings):
+        settings.AI_PROVIDER = "cli"
+        with pytest.raises(ai.AiError):
+            ai.structured_messages(
+                system="s",
+                messages=[],
+                output_model=_Echo,
+                model="m",
+                max_tokens=10,
+            )
+
+    def test_anthropic_passes_messages_through(self, settings, monkeypatch):
+        settings.AI_PROVIDER = "anthropic"
+        captured = {}
+
+        class FakeResponse:
+            parsed_output = _Echo(text="ok")
+            usage = None
+
+        class FakeMessages:
+            def parse(self, **kwargs):
+                captured.update(kwargs)
+                return FakeResponse()
+
+        class FakeClient:
+            messages = FakeMessages()
+
+        monkeypatch.setattr(ai, "_anthropic_client", lambda: FakeClient())
+        msgs = [{"role": "user", "content": [{"type": "text", "text": "hi"}]}]
+        parsed, cost, model = ai.structured_messages(
+            system="s",
+            messages=msgs,
+            output_model=_Echo,
+            model="claude-sonnet-5",
+            max_tokens=10,
+        )
+        assert parsed.text == "ok"
+        assert captured["messages"] is msgs

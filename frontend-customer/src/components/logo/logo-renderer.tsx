@@ -9,10 +9,22 @@ import type {
   CustomMarkPath,
   Fill,
   LogoRecipe,
+  MarkFill,
   RecipeLayout,
   TextStyle,
 } from "@/types/logo";
 import { AbstractMark } from "./abstract-mark";
+
+/** Recipe v3 mark colors: plain hex or a Fill. Normalize for painting. */
+export function asFill(v: MarkFill): Fill {
+  return typeof v === "string" ? { type: "solid", color: v } : v;
+}
+/** Solid stand-in (gradient -> its `from` stop) for places that need a
+ * plain color: emblem name text, color-input values, favicon-ish contexts. */
+export function solidOf(v: MarkFill): string {
+  if (typeof v === "string") return v;
+  return v.type === "solid" ? v.color : v.from;
+}
 
 export const MARK_VIEWBOX = 256;
 
@@ -133,10 +145,16 @@ export function MarkContent({
   recipe,
   size,
   color,
+  mark2Paint,
+  accentPaint,
 }: {
   recipe: LogoRecipe;
   size: number;
   color: string;
+  // Paint strings (solid color or url(#id)) for the "custom" mark's secondary
+  // roles; ComposedMark computes them via useFillPaint so gradients render.
+  mark2Paint?: string;
+  accentPaint?: string;
 }) {
   const { mark, typography } = recipe;
   if (mark.type === "icon") {
@@ -183,11 +201,24 @@ export function MarkContent({
   if (mark.type === "custom" && mark.paths.length) {
     // AI Brand Pack mark: paths are in a 0..100 unit viewBox; role tokens
     // resolve against the recipe's own color fields ("mark" = the already
-    // badge/dark-aware `color` prop passed in above; mark2/accent are plain
-    // secondary hexes — see types/logo.ts CustomMarkPath).
+    // badge/dark-aware `color` prop passed in above; mark2/accent use the
+    // paint strings ComposedMark derived via useFillPaint so gradients render
+    // — see types/logo.ts CustomMarkPath).
     const roleColor = (role: CustomMarkPath["fill"]) => {
-      if (role === "mark2") return recipe.colors.mark2 ?? color;
-      if (role === "accent") return recipe.colors.mark_accent ?? color;
+      if (role === "mark2")
+        return (
+          mark2Paint ??
+          (recipe.colors.mark2 !== undefined
+            ? solidOf(recipe.colors.mark2)
+            : color)
+        );
+      if (role === "accent")
+        return (
+          accentPaint ??
+          (recipe.colors.mark_accent !== undefined
+            ? solidOf(recipe.colors.mark_accent)
+            : color)
+        );
       return color;
     };
     return (
@@ -349,6 +380,18 @@ function ComposedMark({
 }) {
   const hasBadge = recipe.badge.shape !== "none";
   const { paint, defs } = useFillPaint(recipe.colors.badge, "badge");
+  // Mark role fills. Unconditional + order-stable (useFillPaint is a hook):
+  // primary, plus the "custom" mark's secondary/accent roles (which fall back
+  // to the primary mark color when the recipe omits them).
+  const markFill = useFillPaint(asFill(recipe.colors.mark), "mark");
+  const mark2Fill = useFillPaint(
+    asFill(recipe.colors.mark2 ?? recipe.colors.mark),
+    "mark2",
+  );
+  const markAccentFill = useFillPaint(
+    asFill(recipe.colors.mark_accent ?? recipe.colors.mark),
+    "markacc",
+  );
   // Solid color stand-in for the badge fill (gradient -> its `from` stop):
   // used when the mark itself must carry the badge color (no badge, or
   // outline-only badge — v1 behavior generalized to gradient fills).
@@ -356,14 +399,24 @@ function ComposedMark({
     recipe.colors.badge.type === "solid"
       ? recipe.colors.badge.color
       : recipe.colors.badge.from;
-  const fg =
-    hasBadge && !recipe.badge.outline ? recipe.colors.mark : badgeSolid;
+  // With a filled badge the mark carries its own (possibly gradient) paint;
+  // otherwise it takes the badge color so it stays visible.
+  const fg = hasBadge && !recipe.badge.outline ? markFill.paint : badgeSolid;
   const inner = size * (emblem ? 0.3 : hasBadge ? 0.55 : 0.8);
   const padX = (size - inner) / 2;
   const padY = emblem ? size * 0.18 : padX;
+  const anyDefs =
+    defs || markFill.defs || mark2Fill.defs || markAccentFill.defs;
   return (
     <g>
-      {defs && <defs>{defs}</defs>}
+      {anyDefs && (
+        <defs>
+          {defs}
+          {markFill.defs}
+          {mark2Fill.defs}
+          {markAccentFill.defs}
+        </defs>
+      )}
       <Badge
         shape={recipe.badge.shape}
         size={size}
@@ -371,7 +424,13 @@ function ComposedMark({
         outline={recipe.badge.outline}
       />
       <g transform={`translate(${padX}, ${padY})`}>
-        <MarkContent recipe={recipe} size={inner} color={fg} />
+        <MarkContent
+          recipe={recipe}
+          size={inner}
+          color={fg}
+          mark2Paint={mark2Fill.paint}
+          accentPaint={markAccentFill.paint}
+        />
       </g>
     </g>
   );
@@ -541,7 +600,7 @@ export function LogoRenderer({
 
   // In the emblem layout the badge is the big container; name sits inside it
   // and must contrast with the badge fill -> use colors.mark for the name.
-  const nameColor = slots.emblem ? colors.mark : colors.text;
+  const nameColor = slots.emblem ? solidOf(colors.mark) : colors.text;
 
   const place = (key: "mark" | "name" | "tagline", cx: number, cy: number) => {
     const p = elements[key];

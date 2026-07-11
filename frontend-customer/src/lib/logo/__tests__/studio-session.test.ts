@@ -7,9 +7,26 @@ import {
   saveStudioSession,
 } from "@/lib/logo/studio-session";
 
-const BRIEF: Brief = { brandName: "Zeynep Yoga", niche: "yoga", styleChips: [] };
+const BRIEF: Brief = {
+  brandName: "Zeynep Yoga",
+  niche: "yoga",
+  styleChips: [],
+};
 const RECIPE = defaultRecipe("Zeynep Yoga", "#1a56db");
 const KEY = "contentor_logo_studio";
+
+function baseSession() {
+  return {
+    step: "editor" as const,
+    brief: BRIEF,
+    wallSeed: 42,
+    pack: null,
+    packSeed: null,
+    recipe: RECIPE,
+    elements: null,
+    chat: null,
+  };
+}
 
 // No jsdom in this project (pure-logic tests only, per vitest.config.ts) —
 // stand in for the browser's localStorage with a minimal in-memory Map.
@@ -53,6 +70,7 @@ describe("studio-session", () => {
       packSeed: null,
       recipe: RECIPE,
       elements: null,
+      chat: null,
     });
     const loaded = loadStudioSession();
     expect(loaded?.step).toBe("editor");
@@ -61,10 +79,43 @@ describe("studio-session", () => {
     expect(loaded?.recipe).toEqual(RECIPE);
   });
 
+  it("round-trips the chat state (schema v2)", () => {
+    saveStudioSession({
+      ...baseSession(),
+      chat: {
+        stage: "name",
+        messages: [{ role: "user", text: "hi" }],
+        pinnedIcon: null,
+        pinnedLockup: null,
+      },
+    });
+    expect(loadStudioSession()?.chat?.stage).toBe("name");
+  });
+
+  it("still loads a v1 payload, with chat null", () => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ ...baseSession(), v: 1, savedAt: Date.now() }),
+    );
+    const loaded = loadStudioSession();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.chat).toBeNull();
+  });
+
   it("discards a session from a different schema version", () => {
     localStorage.setItem(
       KEY,
-      JSON.stringify({ v: 999, savedAt: Date.now(), step: "editor", brief: BRIEF, wallSeed: 1, pack: null, packSeed: null, recipe: RECIPE, elements: null }),
+      JSON.stringify({
+        v: 999,
+        savedAt: Date.now(),
+        step: "editor",
+        brief: BRIEF,
+        wallSeed: 1,
+        pack: null,
+        packSeed: null,
+        recipe: RECIPE,
+        elements: null,
+      }),
     );
     expect(loadStudioSession()).toBeNull();
   });
@@ -73,7 +124,17 @@ describe("studio-session", () => {
     const fifteenDaysAgo = Date.now() - 15 * 24 * 60 * 60 * 1000;
     localStorage.setItem(
       KEY,
-      JSON.stringify({ v: 1, savedAt: fifteenDaysAgo, step: "editor", brief: BRIEF, wallSeed: 1, pack: null, packSeed: null, recipe: RECIPE, elements: null }),
+      JSON.stringify({
+        v: 1,
+        savedAt: fifteenDaysAgo,
+        step: "editor",
+        brief: BRIEF,
+        wallSeed: 1,
+        pack: null,
+        packSeed: null,
+        recipe: RECIPE,
+        elements: null,
+      }),
     );
     expect(loadStudioSession()).toBeNull();
   });
@@ -82,7 +143,17 @@ describe("studio-session", () => {
     const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
     localStorage.setItem(
       KEY,
-      JSON.stringify({ v: 1, savedAt: tenDaysAgo, step: "editor", brief: BRIEF, wallSeed: 1, pack: null, packSeed: null, recipe: RECIPE, elements: null }),
+      JSON.stringify({
+        v: 1,
+        savedAt: tenDaysAgo,
+        step: "editor",
+        brief: BRIEF,
+        wallSeed: 1,
+        pack: null,
+        packSeed: null,
+        recipe: RECIPE,
+        elements: null,
+      }),
     );
     expect(loadStudioSession()).not.toBeNull();
   });
@@ -98,7 +169,16 @@ describe("studio-session", () => {
   });
 
   it("clear removes the saved session", () => {
-    saveStudioSession({ step: "brief", brief: BRIEF, wallSeed: 1, pack: null, packSeed: null, recipe: null, elements: null });
+    saveStudioSession({
+      step: "brief",
+      brief: BRIEF,
+      wallSeed: 1,
+      pack: null,
+      packSeed: null,
+      recipe: null,
+      elements: null,
+      chat: null,
+    });
     clearStudioSession();
     expect(loadStudioSession()).toBeNull();
   });
@@ -108,7 +188,16 @@ describe("studio-session", () => {
       throw new Error("QuotaExceededError");
     });
     expect(() =>
-      saveStudioSession({ step: "brief", brief: BRIEF, wallSeed: 1, pack: null, packSeed: null, recipe: null, elements: null }),
+      saveStudioSession({
+        step: "brief",
+        brief: BRIEF,
+        wallSeed: 1,
+        pack: null,
+        packSeed: null,
+        recipe: null,
+        elements: null,
+        chat: null,
+      }),
     ).not.toThrow();
     spy.mockRestore();
   });

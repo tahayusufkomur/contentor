@@ -1,5 +1,5 @@
-// Logo Studio recipe types. v2 is the live schema; v1 is kept only as the
-// input type for lib/logo/migrate.ts. Validation source of truth:
+// Logo Studio recipe types. v3 is the live schema; v1/v2 are kept only as
+// input types for lib/logo/migrate.ts. Validation source of truth:
 // backend/apps/tenant_config/logo_recipe.py.
 
 export type RecipeLayoutV1 = "badge_name" | "icon_name" | "name_only";
@@ -85,7 +85,7 @@ export interface ElementPlacement {
   scale: number;
 }
 
-export interface LogoRecipe {
+export interface LogoRecipeV2 {
   version: 2;
   layout: RecipeLayout;
   name: string;
@@ -111,4 +111,17 @@ export interface LogoRecipe {
   };
 }
 
-export type AnyLogoRecipe = LogoRecipeV1 | LogoRecipe;
+// A mark color role can be a flat hex string (legacy palettes) or a full
+// Fill (solid/linear/radial) — lets AI Brand Pack marks use gradients.
+export type MarkFill = string | Fill;
+
+export interface LogoRecipe extends Omit<LogoRecipeV2, "version" | "colors"> {
+  version: 3;
+  colors: Omit<LogoRecipeV2["colors"], "mark" | "mark2" | "mark_accent"> & {
+    mark: MarkFill;
+    mark2?: MarkFill;
+    mark_accent?: MarkFill;
+  };
+}
+
+export type AnyLogoRecipe = LogoRecipeV1 | LogoRecipeV2 | LogoRecipe;
