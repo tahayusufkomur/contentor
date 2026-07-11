@@ -190,10 +190,14 @@ voice.
 modern), tracking (0.05-0.2 with upper, else 0), weight.
 - palette_index: which of your 3 palettes this design wears (spread all 3 \
 across the 8 designs).
-- color_roles: which palette role paints each slot. Contrast is \
-non-negotiable: on a dark badge use white or a light role for the mark; \
-with badge "none" the mark and text must read on white; text must always \
-read on white.
+- color_roles: for EACH of the six slots (badge, mark, mark2, mark_accent, \
+text, tagline) pick which PALETTE COLOR paints it — the value must be one \
+of exactly these five words: primary, secondary, accent, ink, white. Never \
+write a slot's own name as its value (mark2's value is a palette color \
+like "primary", never the word "mark2" — that word is only ever an \
+element's `fill`, a different vocabulary). Contrast is non-negotiable: on \
+a dark badge use white or a light role for the mark; with badge "none" \
+the mark and text must read on white; text must always read on white.
 
 """
     + _FONT_CATALOG
