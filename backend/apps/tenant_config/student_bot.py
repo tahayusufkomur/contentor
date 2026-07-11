@@ -283,12 +283,21 @@ def availability(tenant, config, month=None):
     return True, "ok"
 
 
-def sse_events(history, tenant, month, question="", session_id="", is_preview=False, conversation=None):
+def sse_events(history, tenant, month, question="", session_id="", is_preview=False, conversation=None, user=None):
     """Stream one answer; on completion accrue USD always, count the question
     unless preview, and write the audit transcript. A first-turn question
     (len(history) == 1) consults the answer cache: a hit replays the stored
     answer with zero model cost (still audited); a miss populates the cache
-    once the answer succeeds."""
+    once the answer succeeds.
+
+    The cache is consulted/populated ONLY for anonymous first turns.
+    build_viewer_context(user) splices the signed-in student's enrolled
+    courses / owned downloads / membership into the first user turn — kb_hash
+    is tenant-scoped but carries no per-VIEWER information, so caching a
+    signed-in viewer's answer would replay their purchase history to the
+    next asker (see final-review hardening). Anonymous visitors get the
+    constant flag-only context block, so caching them is safe and keeps
+    repeat anonymous questions free, same as the marketing help-bot bucket."""
     from django.conf import settings as dj_settings
     from django.core.cache import cache
 
@@ -296,9 +305,10 @@ def sse_events(history, tenant, month, question="", session_id="", is_preview=Fa
 
     config = TenantConfig.objects.first()
     system, kb_hash = build_system_prompt(tenant, config)
+    viewer_signed_in = user is not None and getattr(user, "is_authenticated", False)
     cache_key = (
         assistant.answer_cache_key("student_bot", "student", PROMPT_VERSION, kb_hash, question)
-        if len(history) == 1 and not is_preview
+        if len(history) == 1 and not is_preview and not viewer_signed_in
         else None
     )
 

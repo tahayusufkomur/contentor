@@ -114,7 +114,9 @@ def assistant_chat(request):
     if convo is not None:
         assistant.append_message(convo, "user", question)
     response = StreamingHttpResponse(
-        student_bot.sse_events(history, tenant, month, question=question, session_id=session_id, conversation=convo),
+        student_bot.sse_events(
+            history, tenant, month, question=question, session_id=session_id, conversation=convo, user=user
+        ),
         content_type="text/event-stream",
     )
     response["Cache-Control"] = "no-cache"

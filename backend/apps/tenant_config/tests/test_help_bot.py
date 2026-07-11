@@ -7,8 +7,10 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from django.core.cache import cache
 
-from apps.core.models import HelpBotUsage
+from apps.core import assistant
+from apps.core.models import AiTranscript, HelpBotUsage
 from apps.tenant_config import help_bot
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -214,3 +216,67 @@ def test_record_question_accrues_cost_and_count():
     row = HelpBotUsage.objects.get(tenant_schema=SCHEMA, month=MONTH)
     assert row.questions == 2
     assert row.usd_spent == Decimal("0.0123")
+
+
+# ── Answer-cache tenant scoping (final-review hardening) ────────────────────
+#
+# The coach flavor's first user turn is injected server-side with a
+# <tenant_context> block (build_tenant_context) carrying THIS tenant's brand,
+# plan, published state, student count and setup progress. The first-turn
+# answer cache must therefore be scoped per tenant bucket — otherwise Coach
+# A's account-derived cached answer is replayed verbatim to Coach B on an
+# identical normalized first question within AI_ANSWER_CACHE_TTL.
+
+
+class TestAnswerCacheTenantScoping:
+    def _fake_stream_factory(self, calls):
+        def fake_stream(**kwargs):
+            calls.append(1)
+            # Simulate the tenant-specific answer a real model would give
+            # after reading the <tenant_context> block spliced into
+            # kwargs["history"][0] — the call count stands in for "which
+            # tenant's account state this answer is derived from".
+            yield ("delta", f"account-state-answer-{len(calls)}")
+            yield ("done", {"cost_usd": Decimal("0.001"), "provider": "anthropic", "model": "m"})
+
+        return fake_stream
+
+    def test_two_tenants_do_not_share_a_cached_answer(self, monkeypatch):
+        cache.clear()
+        calls = []
+        monkeypatch.setattr(assistant.core_ai, "stream_text", self._fake_stream_factory(calls))
+
+        question = "what should I set up next?"
+        history = [{"role": "user", "content": question}]
+
+        list(help_bot.sse_events(list(history), "coach", "tenant-a", MONTH, question=question, session_id="s-a"))
+        frames_b = list(
+            help_bot.sse_events(list(history), "coach", "tenant-b", MONTH, question=question, session_id="s-b")
+        )
+        delta_text_b = "".join(
+            json.loads(f.removeprefix("data: ").strip())["text"]
+            for f in frames_b
+            if json.loads(f.removeprefix("data: ").strip())["type"] == "delta"
+        )
+
+        # The model MUST be called for both tenants — a shared cache key
+        # would only call it once (tenant B would silently replay tenant A's
+        # cached, account-derived answer).
+        assert len(calls) == 2
+        assert "account-state-answer-1" not in delta_text_b
+        assert "account-state-answer-2" in delta_text_b
+
+    def test_marketing_bucket_still_caches_normally(self, monkeypatch):
+        """Not affected by the leak (constant visitor context) — must keep
+        caching so repeat marketing questions stay free."""
+        cache.clear()
+        calls = []
+        monkeypatch.setattr(assistant.core_ai, "stream_text", self._fake_stream_factory(calls))
+
+        question = "how much does it cost?"
+        history = [{"role": "user", "content": question}]
+
+        list(help_bot.sse_events(list(history), "visitor", "__marketing__", MONTH, question=question, session_id="v-1"))
+        list(help_bot.sse_events(list(history), "visitor", "__marketing__", MONTH, question=question, session_id="v-2"))
+        assert len(calls) == 1
+        assert AiTranscript.objects.filter(provider="cache").count() == 1

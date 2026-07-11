@@ -228,8 +228,15 @@ def sse_events(history, audience, bucket, month, question="", session_id="", con
     from django.core.cache import cache
 
     fingerprint, _ = _addenda_state(audience)
+    # scope=bucket: the coach flavor's first turn carries THIS tenant's
+    # <tenant_context> (build_tenant_context — brand, plan, published state,
+    # student count, setup progress). Without scoping, two tenants asking an
+    # identical normalized first question would collide on the same cache
+    # key and one tenant's account-derived answer would leak to the other
+    # (see final-review hardening). The marketing bucket's context is a
+    # constant string, so this is a no-op for it beyond being a stable scope.
     cache_key = (
-        assistant.answer_cache_key("help_bot", audience, PROMPT_VERSION, fingerprint, question)
+        assistant.answer_cache_key("help_bot", audience, PROMPT_VERSION, fingerprint, question, scope=bucket)
         if len(history) == 1
         else None
     )

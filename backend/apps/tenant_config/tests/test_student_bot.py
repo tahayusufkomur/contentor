@@ -9,12 +9,13 @@ from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from django.core.cache import cache
 from django_tenants.utils import schema_context
 
 from apps.accounts.models import User
 from apps.core import assistant
 from apps.core.models import AiTranscript, PlatformPlan, PlatformSubscription, StudentBotUsage
-from apps.courses.models import Course
+from apps.courses.models import Course, Enrollment
 from apps.tenant_config import student_bot
 from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry, TenantConfig
 
@@ -93,7 +94,13 @@ def _clean_shared():
         with schema_context(SHARED_SCHEMA):
             PlatformSubscription.objects.all().delete()
             PlatformPlan.objects.filter(name="Student Bot Test Paid").delete()
-            User.objects.filter(email__in=["studentbot-owner@x.com", "instructor@studentbottest.com"]).delete()
+            User.objects.filter(
+                email__in=[
+                    "studentbot-owner@x.com",
+                    "instructor@studentbottest.com",
+                    "viewer-a@studentbottest.com",
+                ]
+            ).delete()
             StudentBotUsage.objects.all().delete()
             AiTranscript.objects.all().delete()
 
@@ -238,3 +245,104 @@ class TestSse:
         usage = student_bot.tenant_usage(tenant.schema_name)
         assert usage.questions == 0 and usage.usd_spent == Decimal("0.003")
         assert AiTranscript.objects.get().is_preview is True
+
+
+# ── Answer-cache viewer scoping (final-review hardening) ────────────────────
+#
+# build_viewer_context(user) injects the signed-in student's enrolled
+# courses / owned downloads / membership into the first user turn, and the
+# persona is instructed to reference what they already own. The first-turn
+# answer cache is keyed on kb_hash (tenant-scoped) + the raw question — never
+# on the viewer — so a signed-in student's account-derived cached answer
+# would otherwise be replayed verbatim to the next visitor (anonymous or a
+# different student) who asks the identical first question.
+
+
+class TestAnswerCacheViewerScoping:
+    def _stream_factory(self, calls):
+        def fake(**kwargs):
+            calls.append(1)
+            # Stand-in for a real answer that references what THIS viewer
+            # owns (per build_viewer_context) — the call count marks which
+            # viewer's account state it was derived from.
+            yield ("delta", f"viewer-answer-{len(calls)}")
+            yield ("done", {"cost_usd": Decimal("0.001"), "provider": "anthropic", "model": "m"})
+
+        return fake
+
+    def test_signed_in_viewers_purchase_history_does_not_leak_to_the_next_asker(self, tenant, config, instructor):
+        cache.clear()
+        student = User.objects.create_user(
+            email="viewer-a@studentbottest.com",
+            name="Viewer A",
+            password="x",  # noqa: S106
+            role="student",
+        )
+        course = Course.objects.create(
+            title="Advanced Trading", slug="advanced-trading", price=0, is_published=True, instructor=instructor
+        )
+        Enrollment.objects.create(user=student, course=course)
+        _enable()
+
+        question = "what should I do next?"
+        calls = []
+        with patch.object(assistant.core_ai, "stream_text", self._stream_factory(calls)):
+            history_a = assistant.prepare_history(
+                [{"role": "user", "content": question}], student_bot.build_viewer_context(student)
+            )
+            list(
+                student_bot.sse_events(
+                    history_a,
+                    tenant,
+                    student_bot.current_month(),
+                    question=question,
+                    session_id="sess-a",
+                    user=student,
+                )
+            )
+
+            history_anon = assistant.prepare_history(
+                [{"role": "user", "content": question}], student_bot.build_viewer_context(None)
+            )
+            frames_anon = list(
+                student_bot.sse_events(
+                    history_anon,
+                    tenant,
+                    student_bot.current_month(),
+                    question=question,
+                    session_id="sess-b",
+                    user=None,
+                )
+            )
+        delta_text_anon = "".join(
+            json.loads(f.removeprefix("data: ").strip())["text"]
+            for f in frames_anon
+            if json.loads(f.removeprefix("data: ").strip())["type"] == "delta"
+        )
+
+        # The model MUST run again for the anonymous asker — a shared cache
+        # key would only call it once and replay student A's cached,
+        # purchase-history-derived answer.
+        assert len(calls) == 2
+        assert "viewer-answer-1" not in delta_text_anon
+        assert "viewer-answer-2" in delta_text_anon
+
+    def test_anonymous_first_turns_still_cache_normally(self, tenant, config):
+        """Not affected by the leak (no viewer state) — must keep caching so
+        repeat anonymous questions stay free, matching the marketing bucket."""
+        cache.clear()
+        _enable()
+        calls = []
+        question = "what courses do you have?"
+        with patch.object(assistant.core_ai, "stream_text", self._stream_factory(calls)):
+            for session_id in ("anon-1", "anon-2"):
+                history = assistant.prepare_history(
+                    [{"role": "user", "content": question}], student_bot.build_viewer_context(None)
+                )
+                list(
+                    student_bot.sse_events(
+                        history, tenant, student_bot.current_month(), question=question, session_id=session_id
+                    )
+                )
+        assert len(calls) == 1
+        assert AiTranscript.objects.filter(provider="cache").count() == 1
