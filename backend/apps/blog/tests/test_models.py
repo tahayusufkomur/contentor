@@ -28,3 +28,19 @@ def test_autopilot_singleton(tenant_ctx):
 def test_topic_defaults_available(tenant_ctx):
     t = BlogTopicIdea.objects.create(title="5 stretches", angle="quick wins")
     assert t.status == "available"
+
+
+def test_blog_post_image_fields_default_empty(tenant_ctx):
+    post = BlogPost.objects.create(title="x", slug="x")
+    assert post.cover_photo is None
+    assert post.image_placements == []
+
+
+def test_blog_post_cover_photo_set_null_on_photo_delete(tenant_ctx):
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="k", title="p")
+    post = BlogPost.objects.create(title="x", slug="x", cover_photo=photo)
+    photo.delete()
+    post.refresh_from_db()
+    assert post.cover_photo is None

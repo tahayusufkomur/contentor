@@ -29,6 +29,10 @@ class BlogPost(models.Model):
     excerpt = models.CharField(max_length=300, blank=True, default="")
     meta_description = models.CharField(max_length=170, blank=True, default="")
     tags = models.JSONField(default=list, blank=True)
+    cover_photo = models.ForeignKey(
+        "media.Photo", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    image_placements = models.JSONField(default=list, blank=True)
     status = models.CharField(max_length=12, choices=STATUS, default="draft")
     source = models.CharField(max_length=12, choices=SOURCE, default="manual")
     ai_model = models.CharField(max_length=60, blank=True, default="")
