@@ -24,7 +24,7 @@ import type {
   TextStyle,
 } from "@/types/logo";
 import { AbstractMark } from "./abstract-mark";
-import { solidOf } from "./logo-renderer";
+import { asFill, solidOf } from "./logo-renderer";
 import type { ElementKey } from "./studio-canvas";
 
 const LAYOUTS: { id: RecipeLayout; label: string }[] = [
@@ -566,53 +566,132 @@ function MarkControls({
       </section>
 
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Mark color</p>
-        <div className="flex items-center gap-3">
+        {(() => {
+          const markFill = asFill(recipe.colors.mark);
+          const isGradient = markFill.type === "linear";
+          return (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Mark color</p>
+                <button
+                  type="button"
+                  aria-pressed={isGradient}
+                  onClick={() =>
+                    onPatch({
+                      colors: {
+                        ...recipe.colors,
+                        mark: isGradient
+                          ? solidOf(recipe.colors.mark)
+                          : {
+                              type: "linear",
+                              from: solidOf(recipe.colors.mark),
+                              to: "#111827",
+                              angle: 90,
+                            },
+                      },
+                    })
+                  }
+                  className="text-xs text-muted-foreground hover:underline"
+                >
+                  {isGradient ? "Solid" : "Gradient"}
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  aria-label="Mark color"
+                  value={
+                    isGradient ? markFill.from : solidOf(recipe.colors.mark)
+                  }
+                  onChange={(e) =>
+                    onPatch(
+                      {
+                        colors: {
+                          ...recipe.colors,
+                          mark: isGradient
+                            ? { ...markFill, from: e.target.value }
+                            : e.target.value,
+                        },
+                      },
+                      "mark-color",
+                    )
+                  }
+                />
+                {isGradient && (
+                  <>
+                    <input
+                      type="color"
+                      aria-label="Mark gradient end color"
+                      value={markFill.to}
+                      onChange={(e) =>
+                        onPatch(
+                          {
+                            colors: {
+                              ...recipe.colors,
+                              mark: { ...markFill, to: e.target.value },
+                            },
+                          },
+                          "mark-color",
+                        )
+                      }
+                    />
+                    <input
+                      type="number"
+                      aria-label="Gradient angle"
+                      min={0}
+                      max={360}
+                      value={markFill.angle}
+                      onChange={(e) =>
+                        onPatch(
+                          {
+                            colors: {
+                              ...recipe.colors,
+                              mark: {
+                                ...markFill,
+                                angle: Math.max(
+                                  0,
+                                  Math.min(360, Number(e.target.value) || 0),
+                                ),
+                              },
+                            },
+                          },
+                          "mark-color",
+                        )
+                      }
+                      className="w-16 rounded-md border bg-background px-2 py-1 text-sm"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+        <label className="block text-xs text-muted-foreground">
+          Size
           <input
-            type="color"
-            aria-label="Mark color"
-            value={solidOf(recipe.colors.mark)}
+            type="range"
+            min={0.5}
+            max={2}
+            step={0.05}
+            value={recipe.elements.mark.scale}
             onChange={(e) =>
-              onPatch(
-                {
-                  colors: {
-                    ...recipe.colors,
-                    palette_id: null,
-                    mark: e.target.value,
+              onUpdate(
+                (r) => ({
+                  ...r,
+                  elements: {
+                    ...r.elements,
+                    mark: {
+                      ...r.elements.mark,
+                      scale: Number(e.target.value),
+                    },
                   },
-                },
-                "mark-color",
+                }),
+                "mark-scale",
               )
             }
-            className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
+            className="w-full"
           />
-          <label className="flex-1 text-xs text-muted-foreground">
-            Size
-            <input
-              type="range"
-              min={0.5}
-              max={2}
-              step={0.05}
-              value={recipe.elements.mark.scale}
-              onChange={(e) =>
-                onUpdate(
-                  (r) => ({
-                    ...r,
-                    elements: {
-                      ...r.elements,
-                      mark: {
-                        ...r.elements.mark,
-                        scale: Number(e.target.value),
-                      },
-                    },
-                  }),
-                  "mark-scale",
-                )
-              }
-              className="w-full"
-            />
-          </label>
-        </div>
+        </label>
       </section>
 
       {recipe.mark.type === "custom" && (
