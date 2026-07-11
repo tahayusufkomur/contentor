@@ -511,6 +511,18 @@ def _validate_pack_mark(item):
     }
 
 
+def _validate_custom_paths(paths):
+    """Traced (already-path-form) mark geometry -> validated paths through
+    the same validate_recipe injection whitelist as authored marks, or None.
+    Tracing produces CANDIDATE input to the trust boundary, never trusted
+    output."""
+    dummy = {**_DUMMY_RECIPE, "mark": {"type": "custom", "rationale": "traced", "paths": paths}}
+    shaped = validate_recipe(dummy)
+    if shaped["mark"]["type"] != "custom":
+        return None
+    return shaped["mark"]["paths"]
+
+
 def _validate_pack_palette(item):
     primary = _hex(item.primary, "#1a56db")
     ink = _hex(item.ink, "#111827")

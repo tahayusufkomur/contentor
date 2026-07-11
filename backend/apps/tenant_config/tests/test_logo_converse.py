@@ -104,3 +104,81 @@ class TestCritiqueTurn:
         draft = {"stage": "icon", "message": "m", "designs": _ICON_TURN["designs"]}
         result = logo_converse.critique_turn("icon", draft, ["aGVsbG8="])
         assert result.designs
+
+
+# --- image-model icon marks (generate -> vectorize) -----------------------
+
+_TRACED_PATHS = [{"d": "M 10.0 10.0 C 20.0 10.0 30.0 20.0 30.0 30.0 Z", "fill": "mark"}]
+
+
+def _icon_turn_with_prompts():
+    turn = {
+        "message": _ICON_TURN["message"],
+        "designs": [{**_ICON_TURN["designs"][0], "image_prompt": "flat vector leaf mark"}],
+    }
+    return turn
+
+
+def _run_icon_turn(monkeypatch, parsed_dict, enabled=True, images=None, image_cost=None, traced="unset"):
+    from apps.tenant_config import logo_image, logo_trace
+
+    parsed = logo_converse._IconTurn.model_validate(parsed_dict)
+    monkeypatch.setattr(
+        logo_converse.core_ai, "structured", lambda **kwargs: (parsed, Decimal("0.02"), "claude-sonnet-5")
+    )
+    monkeypatch.setattr(logo_image, "enabled", lambda: enabled)
+    calls = {}
+
+    def fake_generate(prompts):
+        calls["prompts"] = prompts
+        return (images if images is not None else [b"png"] * len(prompts)), (image_cost or Decimal("0.067"))
+
+    monkeypatch.setattr(logo_image, "generate_mark_images", fake_generate)
+    monkeypatch.setattr(logo_trace, "trace_mark", lambda png: _TRACED_PATHS if traced == "unset" else traced)
+    result = logo_converse.converse_turn("icon", {}, [], {}, "hi")
+    return result, calls
+
+
+def test_icon_turn_swaps_in_traced_paths_and_adds_image_cost(monkeypatch):
+    result, calls = _run_icon_turn(monkeypatch, _icon_turn_with_prompts())
+    assert calls["prompts"] == ["flat vector leaf mark"]
+    assert result.designs[0]["paths"] == _TRACED_PATHS
+    assert result.cost_usd == Decimal("0.02") + Decimal("0.067")
+    assert "image_prompt" not in result.designs[0]
+
+
+def test_icon_turn_gemini_failure_falls_back_to_authored_paths(monkeypatch):
+    plain = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), enabled=False)[0]
+    result, _ = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), images=[None])
+    assert result.designs[0]["paths"] == plain.designs[0]["paths"]  # authored compile
+    assert result.cost_usd == Decimal("0.02") + Decimal("0.067")  # attempt still billed
+
+
+def test_icon_turn_trace_rejection_falls_back(monkeypatch):
+    plain = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), enabled=False)[0]
+    result, _ = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), traced=None)
+    assert result.designs[0]["paths"] == plain.designs[0]["paths"]
+
+
+def test_icon_turn_invalid_traced_paths_fall_back(monkeypatch):
+    plain = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), enabled=False)[0]
+    hostile = [{"d": 'M0 0 url("x") Z', "fill": "mark"}]  # fails the injection whitelist
+    result, _ = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), traced=hostile)
+    assert result.designs[0]["paths"] == plain.designs[0]["paths"]
+
+
+def test_icon_turn_key_unset_never_generates_and_strips_prompt(monkeypatch):
+    result, calls = _run_icon_turn(monkeypatch, _icon_turn_with_prompts(), enabled=False)
+    assert "prompts" not in calls
+    assert result.cost_usd == Decimal("0.02")
+    assert "image_prompt" not in result.designs[0]
+
+
+def test_name_stage_never_generates_images(monkeypatch):
+    from apps.tenant_config import logo_image
+
+    parsed = logo_converse._LockupTurn.model_validate(_NAME_TURN)
+    monkeypatch.setattr(logo_converse.core_ai, "structured", lambda **kwargs: (parsed, Decimal("0.02"), "m"))
+    monkeypatch.setattr(logo_image, "enabled", lambda: True)
+    monkeypatch.setattr(logo_image, "generate_mark_images", lambda prompts: pytest.fail("image gen on name stage"))
+    logo_converse.converse_turn("name", {}, [], {}, "hi")

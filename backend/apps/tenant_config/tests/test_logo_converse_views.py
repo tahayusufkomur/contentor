@@ -194,6 +194,48 @@ class TestConverse:
         assert row.turns_used == 0
         assert row.usd_spent == Decimal("0.03")
 
+    def test_icon_turn_records_image_cost_in_logo_ai_usage(self, coach_client, paid_tenant, settings, monkeypatch):
+        """End-to-end Pass A: real converse_turn + validators, mocked
+        provider + Gemini. The recorded spend must include image cost (the
+        kill-switch covers Gemini) and the response must carry traced paths."""
+        from apps.tenant_config import logo_image, logo_trace
+
+        settings.AI_PROVIDER = "anthropic"
+        settings.ANTHROPIC_API_KEY = "k"
+        parsed = logo_converse._IconTurn.model_validate(
+            {
+                "message": "Here.",
+                "designs": [
+                    {
+                        "concept": "c",
+                        "rationale": "r",
+                        "image_prompt": "flat vector leaf mark",
+                        "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 30}],
+                        "palette": {
+                            "name": "P",
+                            "primary": "#0f766e",
+                            "secondary": "#14b8a6",
+                            "accent": "#f59e0b",
+                            "ink": "#111827",
+                        },
+                        "color_roles": {"mark": "primary", "mark2": "secondary", "mark_accent": "accent"},
+                    }
+                ],
+            }
+        )
+        monkeypatch.setattr(logo_converse.core_ai, "structured", lambda **kwargs: (parsed, Decimal("0.02"), "m"))
+        monkeypatch.setattr(logo_image, "enabled", lambda: True)
+        monkeypatch.setattr(logo_image, "generate_mark_images", lambda prompts: ([b"png"], Decimal("0.067")))
+        traced = [{"d": "M 10.0 10.0 C 20.0 10.0 30.0 20.0 30.0 30.0 Z", "fill": "mark"}]
+        monkeypatch.setattr(logo_trace, "trace_mark", lambda png: traced)
+
+        resp = coach_client.post(URL, PAYLOAD, format="json")
+        assert resp.status_code == 200, resp.content
+        assert resp.data["designs"][0]["paths"] == traced
+        assert "image_prompt" not in resp.data["designs"][0]
+        usage = LogoAiUsage.objects.get(tenant_schema=SHARED_SCHEMA, month=MONTH)
+        assert usage.usd_spent == Decimal("0.087")
+
 
 class TestConverseFinish:
     def _make_draft(self, coach_client, settings, monkeypatch):

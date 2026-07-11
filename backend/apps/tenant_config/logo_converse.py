@@ -7,12 +7,14 @@ Every mark still flows through logo_ai._validate_pack_mark -> validate_recipe
 (the injection trust boundary) — nothing reaches the caller unvalidated."""
 
 import json
+from decimal import Decimal
 
 from django.conf import settings
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
 
+from . import logo_image, logo_trace
 from .logo_ai import (
     _BADGES_LITERAL,
     _ELEMENT_VOCABULARY_AND_PRINCIPLES,
@@ -25,6 +27,7 @@ from .logo_ai import (
     _MarkGradient,
     _Palette,
     _Typography,
+    _validate_custom_paths,
     _validate_lockup,
     _validate_pack_mark,
     _validate_pack_palette,
@@ -57,7 +60,12 @@ Design 1-3 mark candidates (no lockup, no fonts). Each candidate:
   riff on the theme color; ink must read on white.
 - `color_roles`: which palette color paints mark / mark2 / mark_accent.
 - `rationale`: one plain-words sentence to the coach on why it fits.
-Banned clichés: generic swoosh, sparkle, globe, atom orbits, lightbulb."""
+Banned clichés: generic swoosh, sparkle, globe, atom orbits, lightbulb.
+- `image_prompt`: a prompt for an image model to draw exactly this mark.
+  Describe the visual device concretely and ALWAYS restate the constraints:
+  "flat vector logo mark, <the device>, <N> solid colors (<name them>),
+  plain white background, no text, no letters, no gradients, no shadows,
+  centered, generous margin"."""
 )
 
 NAME_STAGE_PROMPT = (
@@ -148,6 +156,7 @@ class _IconDesign(BaseModel):
     rationale: str
     palette: _Palette
     color_roles: _MarkRoles
+    image_prompt: str = ""
 
 
 class _IconTurn(BaseModel):
@@ -208,6 +217,7 @@ def _validate_icon_design(item):
         "concept": str(item.concept or "")[:200],
         "palette": _validate_pack_palette(item.palette),
         "color_roles": item.color_roles.model_dump(),
+        "image_prompt": str(item.image_prompt or "")[:500],
     }
 
 
@@ -232,6 +242,33 @@ def _validate_turn(stage, parsed, cost):
     if not designs:
         raise ConverseError("turn validation left nothing usable", cost_usd=cost)
     return TurnResult(str(parsed.message or "")[:600], designs, cost)
+
+
+def apply_image_marks(result):
+    """Icon-stage post-step (generate -> vectorize): draw each candidate's
+    image_prompt with the image model, trace it, and swap the traced paths
+    into the design. Per-candidate fail-open — any generation/trace/
+    validation failure leaves that candidate on its authored paths; a turn
+    never comes back blank because of the image path. Always strips
+    image_prompt from the payload. Gemini attempt cost is folded into
+    result.cost_usd so the view's existing record_attempt_cost covers image
+    spend under the same budget kill-switch."""
+    prompts = [design.pop("image_prompt", "") for design in result.designs]
+    if not logo_image.enabled():
+        return result
+    indexed = [(i, prompt) for i, prompt in enumerate(prompts) if prompt]
+    if not indexed:
+        return result
+    images, cost = logo_image.generate_mark_images([prompt for _, prompt in indexed])
+    result.cost_usd = (result.cost_usd or Decimal("0")) + cost
+    for (i, _), png in zip(indexed, images, strict=False):
+        if not png:
+            continue
+        traced = logo_trace.trace_mark(png)
+        validated = _validate_custom_paths(traced) if traced else None
+        if validated:
+            result.designs[i]["paths"] = validated
+    return result
 
 
 def _user_content(brief, transcript, pinned, message):
@@ -270,7 +307,10 @@ def converse_turn(stage, brief, transcript, pinned, message):
         )
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
-    return _validate_turn(stage, parsed, cost)
+    result = _validate_turn(stage, parsed, cost)
+    if stage == "icon":
+        result = apply_image_marks(result)
+    return result
 
 
 class RefineCritiqueResult:
