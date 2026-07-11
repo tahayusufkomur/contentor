@@ -49,3 +49,32 @@ def test_new_vocabulary_parses_and_compiles():
     assert result is not None
     assert len(result["paths"]) == 3  # star cut merged into the circle
     assert result["elements"][3]["cut"] is True
+
+
+def test_repeat_blob_wave_crescent_parse_and_compile_through_pydantic():
+    # The prior test leaves repeat/blob/wave/crescent untouched by real
+    # pydantic validation — hand-built dicts at the geometry layer bypass
+    # the _Element/_RepeatChild discriminated unions entirely. repeat is the
+    # highest-risk gap: it's the only model with a nested union child (`of`),
+    # so a field-name drift between _Repeat/_RepeatChild and the compiler's
+    # _compile_repeat would only surface here, not in a hand-built-dict test.
+    item = logo_ai._Mark(
+        rationale="A sunburst of arcs around an organic core, with a crescent accent.",
+        elements=[
+            {"type": "blob", "cx": 50, "cy": 50, "r": 20, "sides": 8, "seed": 3, "irregularity": 0.2},
+            {
+                "type": "repeat",
+                "cx": 50,
+                "cy": 50,
+                "count": 6,
+                "of": {"type": "arc", "cx": 50, "cy": 15, "r": 8, "thickness": 3, "start_deg": 0, "sweep_deg": 90},
+            },
+            {"type": "wave", "cx": 50, "cy": 80, "width": 40, "amplitude": 5, "cycles": 2, "thickness": 3},
+            {"type": "crescent", "cx": 80, "cy": 50, "r": 10, "cutter_r": 8, "cutter_offset": 6},
+        ],
+    )
+    result = logo_ai._validate_pack_mark(item)
+    assert result is not None
+    assert len(result["paths"]) == 4
+    recompiled = compile_elements(result["elements"])
+    assert [p["d"] for p in recompiled] == [p["d"] for p in result["paths"]]
