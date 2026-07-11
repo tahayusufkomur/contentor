@@ -1,6 +1,8 @@
 # AI Assistants v2 — Conversations, Takeover & Hardening — Design
 
-**Date:** 2026-07-10
+**Date:** 2026-07-10 (amended 2026-07-11 — §17's badge question resolved as **D14**; see
+`2026-07-11-ai-nav-grouping-and-blog-images-design.md` for the panel-nav and blog-image work
+that shipped alongside it)
 **Status:** Draft — pending owner review (see §2 for the veto list)
 **Depends on:** AI assistants v1 (governance spec, `2026-07-10-ai-assistants-governance-design.md`) fully implemented — kernel (`apps/core/assistant.py`), three bots, `AiTranscript`, usage meters, platform KB, superadmin AI dashboard.
 
@@ -96,6 +98,15 @@ spec-level defaults, cheap to reverse before implementation:
   (origin is reachable only through the Cloudflare tunnel, so the header
   is authoritative; dev falls back to `REMOTE_ADDR`). All AI anon
   throttles re-key onto it via a shared throttle base class.
+- **D14 — Nav badge, resolving §17's open question (added 2026-07-11).**
+  Email alone under-notifies — a coach or superadmin not actively watching
+  their inbox misses the moment. Both consoles get a lightweight polling
+  badge in addition to D9's email: a count endpoint
+  (`human_requested=True AND status="ai"` — i.e. requested but not yet
+  taken over; the badge clears once someone takes over, since they're now
+  actively in it) polled by the nav shell every 45s. This is still D1's
+  polling substrate, just a slower cadence for a background badge instead
+  of an open conversation — no websockets, no push. See §5.4 and §6.5.
 
 ## 3. Approaches considered
 
@@ -219,6 +230,15 @@ storage/takeover truth, the wire history contract is unchanged.
 | `GET /api/v1/assistant/thread/?session=<uuid>&after=<id>` | public (tenant host), session-bearer | student widget |
 | `GET /api/v1/admin/help-bot/thread/?session=&after=` | IsCoachOrOwner | coach HelpChat |
 | `GET /api/v1/help/thread/?session=&after=` | public (marketing host), session-bearer | HelpBubble |
+| `GET /api/v1/admin/assistant/conversations/needs-human-count/` | IsCoachOrOwner | coach nav badge (D14) |
+| `GET /api/v1/platform/ai-conversations/needs-human-count/` | IsSuperUser | superadmin nav badge (D14) |
+
+The two count endpoints return `{"count": n}` — `human_requested=True AND
+status="ai"`, scoped `feature="student_bot", tenant_schema=<own>` (coach)
+or all `feature="help_bot"` conversations (superadmin, both audiences).
+Polled every 45s by the nav shell, independent of whether the
+Conversations tab/section is open — a much lighter cadence than the
+5s/3s thread polling since it's a background badge, not a live view.
 
 Each validates the conversation's `feature` + `tenant_schema` match the
 serving context (mismatch or unknown session → 404, and the widget just
@@ -478,6 +498,7 @@ New throttle scopes: `ai_thread: 30/min`, `ai_human_request: 2/hour`,
 | Coach `HelpChat` (frontend-customer setup panel) | persistent session, polling, human-mode handling (superadmin takeover), chips |
 | `HelpBubble` (frontend-main) | same as HelpChat, against `/api/v1/help/*` |
 | Superadmin `/admin/ai` (frontend-main) | Conversations section: table (audience/tenant filters), thread drawer, takeover controls |
+| Coach + superadmin nav shells | D14 badge: poll `needs-human-count` every 45s, red count badge on the AI nav group, links through to the Conversations view pre-filtered to `human_requested` |
 
 Strings in the existing i18n files (EN + TR). The three widget libs share
 the polling/human-mode state machine shape; frontend-main necessarily gets
@@ -529,6 +550,10 @@ TDD throughout; suites extend the v1 files:
   student sees coach reply via poll → release → AI answers again; second
   spec: superadmin takes over a coach help chat.
 - Purge test covers conversations + messages.
+- **Badge (D14)**: `needs-human-count` reflects only `human_requested=True
+  AND status="ai"` (excludes already-taken-over and never-requested
+  conversations), scoped per-tenant (coach) / per-audience (superadmin),
+  clears immediately on takeover.
 
 ## 15. Rollout (each phase independently shippable, in order)
 
@@ -540,9 +565,10 @@ TDD throughout; suites extend the v1 files:
    card ("Add to knowledge" preserved).
 3. **Takeover, student side** — state machine, coach
    takeover/message/release, human-mode chat path, system lines,
-   human-request + email, widget human-mode UX.
+   human-request + email, widget human-mode UX, coach nav badge (D14).
 4. **Superadmin console** — platform conversation endpoints + `/admin/ai`
-   section, HelpChat + HelpBubble human-mode support.
+   section, HelpChat + HelpBubble human-mode support, superadmin nav
+   badge (D14).
 5. **Answer quality** — kernel tail parser + suggestions (all widgets),
    viewer context, link registry + Links card.
 6. **Hardening** — `client_ip` + throttle re-key, `AiIpBlock` +
@@ -577,5 +603,6 @@ review takes longer.
   tenant quota; tune freely, it's a setting.
 - D8 first-name display — comfortable, or keep everyone "Visitor"/
   "Student"?
-- Should the coach get a nav badge (polling count) for `human_requested`
-  conversations, or is the email enough for v2?
+- ~~Should the coach get a nav badge (polling count) for `human_requested`
+  conversations, or is the email enough for v2?~~ **Resolved 2026-07-11 —
+  D14: yes, badge + email.**
