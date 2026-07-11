@@ -105,12 +105,43 @@ def test_structured_cli_parses_and_costs_zero(settings, monkeypatch):
     )
     assert parsed.title == "hi"
     assert cost == Decimal("0")
-    assert model == "haiku"  # cli ignores the anthropic model name
+    assert model == "claude-sonnet-5"  # audit trail keeps the requested model
     assert "ANTHROPIC_API_KEY" not in captured["env"]
     assert "--system-prompt" in captured["cmd"]
     # The pydantic JSON schema rides in the system prompt (schema-in-prompt).
     system_arg = captured["cmd"][captured["cmd"].index("--system-prompt") + 1]
     assert "JSON schema" in system_arg and "title" in system_arg
+
+
+def test_structured_cli_maps_the_requested_model_to_its_cli_alias(settings, monkeypatch):
+    _cli_settings(settings)
+    captured = {}
+
+    def fake_run(cmd, **kw):
+        captured["cmd"] = cmd
+        return _completed(stdout=_json.dumps({"result": '{"title": "hi"}'}))
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    parsed, _cost, model = ai.structured(
+        system="s", user="u", output_model=_Out, model="claude-opus-4-8", max_tokens=100
+    )
+    assert captured["cmd"][captured["cmd"].index("--model") + 1] == "opus"
+    assert model == "claude-opus-4-8"  # returned model is the request, not the CLI alias
+
+
+def test_structured_cli_falls_back_to_ai_cli_model_for_unmapped_family(settings, monkeypatch):
+    _cli_settings(settings)  # AI_CLI_MODEL="haiku"
+    captured = {}
+
+    def fake_run(cmd, **kw):
+        captured["cmd"] = cmd
+        return _completed(stdout=_json.dumps({"result": '{"title": "hi"}'}))
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    # "fable" has no CLI --model alias yet — falls back to AI_CLI_MODEL rather
+    # than passing an unrecognized value straight through to the CLI.
+    ai.structured(system="s", user="u", output_model=_Out, model="claude-fable-5", max_tokens=100)
+    assert captured["cmd"][captured["cmd"].index("--model") + 1] == "haiku"
 
 
 def test_structured_cli_strips_code_fences(settings, monkeypatch):
@@ -251,9 +282,23 @@ def test_stream_cli_yields_deltas_then_done(settings, monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-should-be-stripped")
     events = list(ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64))
     assert events[:2] == [("delta", "Hel"), ("delta", "lo")]
-    assert events[-1] == ("done", {"cost_usd": Decimal("0"), "provider": "cli", "model": "haiku"})
+    assert events[-1] == ("done", {"cost_usd": Decimal("0"), "provider": "cli", "model": "claude-sonnet-5"})
     assert "ANTHROPIC_API_KEY" not in captured["env"]
     assert captured["cmd"][captured["cmd"].index("--system-prompt") + 1] == "persona"
+    assert captured["cmd"][captured["cmd"].index("--model") + 1] == "sonnet"
+
+
+def test_stream_cli_falls_back_to_ai_cli_model_for_unmapped_family(settings, monkeypatch):
+    _cli_settings(settings)  # AI_CLI_MODEL="haiku"
+    captured = {}
+
+    def fake_popen(cmd, **kw):
+        captured["cmd"] = cmd
+        return _FakeProc([_json.dumps({"type": "result"})])
+
+    monkeypatch.setattr("subprocess.Popen", fake_popen)
+    list(ai.stream_text(system="s", history=_HISTORY, model="claude-fable-5", max_tokens=64))
+    assert captured["cmd"][captured["cmd"].index("--model") + 1] == "haiku"
 
 
 def test_stream_cli_serializes_prior_turns(settings, monkeypatch):

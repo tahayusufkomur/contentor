@@ -47,8 +47,9 @@ def test_cli_provider_parses_envelope_and_validates(settings):
         )
     assert parsed.title == "Morning Habits That Stick"
     assert cost == Decimal("0")
-    assert model == "haiku"
+    assert model == "claude-sonnet-5"  # audit trail keeps the requested model
     argv = run.call_args.args[0]
+    assert argv[argv.index("--model") + 1] == "sonnet"  # CLI's short alias for the request
     assert "--disallowedTools" in argv and "--max-turns" in argv
     env = run.call_args.kwargs["env"]
     assert "ANTHROPIC_API_KEY" not in env and "ANTHROPIC_AUTH_TOKEN" not in env
@@ -77,8 +78,78 @@ def test_generate_post_returns_rendered_fields(settings):
         result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits")
     assert result.fields["title"] == "Morning Habits That Stick"
     assert "<strong>small</strong>" in result.fields["body_html"]
-    assert result.fields["ai_model"] == "haiku"
+    assert result.fields["ai_model"] == "claude-sonnet-5"  # settings.BLOG_AI_MODEL default
     assert "slug" not in result.fields  # slugs are re-derived server-side
+
+
+def _photo(id_, title, alt=""):
+    return SimpleNamespace(id=id_, title=title, alt_text=alt)
+
+
+DRAFT_JSON_WITH_PHOTOS = json.dumps(
+    {
+        "title": "Morning Habits That Stick",
+        "slug": "morning-habits",
+        "meta_description": "Five tiny habits.",
+        "excerpt": "Start smaller than you think.",
+        "tags": ["habits"],
+        "cover_photo_id": "p1",
+        "sections": [
+            {"heading": "", "body_markdown": "Start **small**.", "photo_id": ""},
+            {"heading": "Stretch first", "body_markdown": "A quick stretch.", "photo_id": "p2"},
+        ],
+    }
+)
+
+
+def test_available_photos_block_empty_for_no_photos():
+    assert ai.available_photos_block([]) == ""
+
+
+def test_available_photos_block_lists_id_title_alt():
+    block = ai.available_photos_block([_photo("p1", "Morning stretch", "woman stretching at sunrise")])
+    assert "<available_photos>" in block
+    assert "p1" in block and "Morning stretch" in block and "woman stretching at sunrise" in block
+
+
+def test_generate_post_picks_cover_and_inline_photos(settings):
+    _cli_settings(settings)
+    completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON_WITH_PHOTOS), stderr="")
+    photos = [_photo("p1", "Morning stretch"), _photo("p2", "Journal on desk")]
+    with mock.patch("subprocess.run", return_value=completed):
+        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits", photos=photos)
+    assert result.fields["cover_photo_id"] == "p1"
+    assert result.fields["image_placements"] == [{"heading": "Stretch first", "photo_id": "p2"}]
+
+
+def test_generate_post_drops_hallucinated_photo_ids(settings):
+    _cli_settings(settings)
+    completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON_WITH_PHOTOS), stderr="")
+    # Neither p1 nor p2 is in the real candidate list -> both dropped, fails open.
+    with mock.patch("subprocess.run", return_value=completed):
+        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits", photos=[_photo("other", "x")])
+    assert result.fields["cover_photo_id"] == ""
+    assert result.fields["image_placements"] == []
+
+
+def test_generate_post_caps_inline_placements_at_two(settings):
+    _cli_settings(settings)
+    three_sections = json.dumps(
+        {
+            **json.loads(DRAFT_JSON_WITH_PHOTOS),
+            "cover_photo_id": "",
+            "sections": [
+                {"heading": "A", "body_markdown": "a", "photo_id": "p1"},
+                {"heading": "B", "body_markdown": "b", "photo_id": "p2"},
+                {"heading": "C", "body_markdown": "c", "photo_id": "p3"},
+            ],
+        }
+    )
+    completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(three_sections), stderr="")
+    photos = [_photo("p1", "1"), _photo("p2", "2"), _photo("p3", "3")]
+    with mock.patch("subprocess.run", return_value=completed):
+        result = ai.generate_post("<brand_brief>x</brand_brief>", "t", photos=photos)
+    assert len(result.fields["image_placements"]) == 2
 
 
 def _tenant(plan_limit, paid=True):

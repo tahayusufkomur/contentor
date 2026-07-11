@@ -106,6 +106,7 @@ class _FakeProc:
 def test_stream_answer_cli_parses_deltas_and_result(kb_file, monkeypatch, settings):
     settings.AI_PROVIDER = "cli"
     settings.AI_CLI_MODEL = "haiku"
+    settings.HELP_BOT_MODEL = "claude-sonnet-5"  # pin the audit-trail model; don't inherit the dev .env override
     lines = [
         _cli_line({"type": "system", "subtype": "init"}),
         _cli_line(
@@ -137,11 +138,14 @@ def test_stream_answer_cli_parses_deltas_and_result(kb_file, monkeypatch, settin
     assert [e for e in events if e[0] == "delta"] == [("delta", "Connect "), ("delta", "Stripe.")]
     kind, info = events[-1]
     assert kind == "done"
-    # Subscription usage never accrues against the USD caps.
-    assert info == {"cost_usd": Decimal("0"), "provider": "cli", "model": "haiku"}
+    # Subscription usage never accrues against the USD caps. The reported
+    # model is settings.HELP_BOT_MODEL (the audit trail), not the CLI alias
+    # actually passed to --model.
+    assert info == {"cost_usd": Decimal("0"), "provider": "cli", "model": "claude-sonnet-5"}
     # The CLI must run on the subscription, never the API key.
     assert "ANTHROPIC_API_KEY" not in captured["env"]
     assert "--disallowedTools" in captured["cmd"]
+    assert captured["cmd"][captured["cmd"].index("--model") + 1] == "sonnet"
     assert "--max-turns" in captured["cmd"]
     # The coach persona + KB rides in --system-prompt.
     assert captured["cmd"][captured["cmd"].index("--system-prompt") + 1] == help_bot.system_prompt("coach")

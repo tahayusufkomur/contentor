@@ -95,6 +95,23 @@ def _cli_env():
     return {k: v for k, v in os.environ.items() if k not in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")}
 
 
+# The CLI's --model flag takes only these short aliases, not the full
+# "claude-sonnet-5"-style IDs the anthropic path bills against. Map each
+# feature's configured model onto the alias sharing its family name; a
+# family with no CLI alias yet (e.g. a newer model) falls back to
+# AI_CLI_MODEL so the dev provider keeps working instead of passing an
+# unrecognized value straight through to the CLI.
+_CLI_MODEL_ALIASES = ("opus", "sonnet", "haiku")
+
+
+def _cli_model_alias(model):
+    lowered = (model or "").lower()
+    for alias in _CLI_MODEL_ALIASES:
+        if alias in lowered:
+            return alias
+    return settings.AI_CLI_MODEL
+
+
 # ── structured output (blog drafts/topics, brand pack) ──────────────────────
 
 
@@ -103,7 +120,7 @@ def structured(*, system, user, output_model, model, max_tokens):
     cost_usd, effective_model). Raises AiError on provider or schema
     failure."""
     if settings.AI_PROVIDER == "cli":
-        return _cli_structured(system, user, output_model)
+        return _cli_structured(system, user, output_model, model)
     return _anthropic_structured(system, user, output_model, model, max_tokens)
 
 
@@ -123,7 +140,7 @@ def _anthropic_structured(system, user, output_model, model, max_tokens):
     return response.parsed_output, estimate_cost(response.usage, model), model
 
 
-def _cli_structured(system, user, output_model):
+def _cli_structured(system, user, output_model, model):
     """Local-dev provider: blocking `claude -p` on the developer's
     subscription. The CLI has no parse-forced structured output, so the
     schema contract is appended to the system prompt and the result is
@@ -141,7 +158,7 @@ def _cli_structured(system, user, output_model):
         "-p",
         user,
         "--model",
-        settings.AI_CLI_MODEL,
+        _cli_model_alias(model),
         "--system-prompt",
         system + schema_note,
         "--disallowedTools",
@@ -175,7 +192,9 @@ def _cli_structured(system, user, output_model):
                 if text.startswith("json"):
                     text = text[4:].lstrip()
             # Subscription usage — nothing accrues against the USD caps.
-            return output_model.model_validate_json(text), Decimal("0"), settings.AI_CLI_MODEL
+            # Return the requested model (not the CLI alias) so the audit
+            # trail matches the anthropic path's shape.
+            return output_model.model_validate_json(text), Decimal("0"), model
         except (ValueError, ValidationError) as exc:
             last_error = exc
     raise AiError(f"claude CLI output did not match schema: {last_error}") from last_error
@@ -188,7 +207,7 @@ def stream_text(*, system, history, model, max_tokens):
     """Yield ("delta", text) events, then exactly one ("done", info) where
     info = {"cost_usd": Decimal, "provider": str, "model": str}."""
     if settings.AI_PROVIDER == "cli":
-        yield from _stream_cli(system, history)
+        yield from _stream_cli(system, history, model)
     else:
         yield from _stream_anthropic(system, history, model, max_tokens)
 
@@ -219,7 +238,7 @@ def _cli_prompt(history):
     return "\n\n".join(parts)
 
 
-def _stream_cli(system, history):
+def _stream_cli(system, history, model):
     """Local-dev provider: `claude -p` on the developer's subscription.
     Flag set verified against claude CLI 2026-07: --system-prompt replaces
     the Claude Code persona entirely; stream-json + --include-partial-messages
@@ -229,7 +248,7 @@ def _stream_cli(system, history):
         "-p",
         _cli_prompt(history),
         "--model",
-        settings.AI_CLI_MODEL,
+        _cli_model_alias(model),
         "--system-prompt",
         system,
         "--disallowedTools",
@@ -267,7 +286,9 @@ def _stream_cli(system, history):
                     yield ("delta", delta["text"])
             elif obj.get("type") == "result":
                 # Subscription usage — nothing accrues against the USD caps.
-                done = {"cost_usd": Decimal("0"), "provider": "cli", "model": settings.AI_CLI_MODEL}
+                # Report the requested model (not the CLI alias), matching
+                # the anthropic path's shape.
+                done = {"cost_usd": Decimal("0"), "provider": "cli", "model": model}
         proc.wait(timeout=CLI_TIMEOUT_SECONDS)
     finally:
         if proc.poll() is None:

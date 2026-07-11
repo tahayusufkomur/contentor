@@ -12,6 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
+from apps.media.models import Photo
 
 from . import ai
 from .models import BlogAutopilot, BlogPost, BlogTopicIdea, unique_slug
@@ -115,9 +116,10 @@ def blog_generate(request):
     if not topic:
         return Response({"post": None, "source": "error", "remaining": status["remaining"]}, status=400)
     instructions = str(data.get("instructions") or "")[:500]
+    photos = Photo.objects.order_by("-created_at")[: ai.MAX_AVAILABLE_PHOTOS]
 
     try:
-        result = ai.generate_post(_brief_for_current_tenant(), topic, instructions)
+        result = ai.generate_post(_brief_for_current_tenant(), topic, instructions, photos=photos)
     except ai.BlogAiError as exc:
         ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
         logger.exception("blog generate failed")
@@ -129,12 +131,16 @@ def blog_generate(request):
 
     ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
     ai.record_success(tenant.schema_name)
+    fields = dict(result.fields)
+    cover_photo_id = fields.pop("cover_photo_id", "")
+    cover_photo = Photo.objects.filter(pk=cover_photo_id).first() if cover_photo_id else None
     post = BlogPost.objects.create(
-        slug=unique_slug(result.fields["title"]),
+        slug=unique_slug(fields["title"]),
         status="draft",
         source="ai",
         created_by=request.user,
-        **result.fields,
+        cover_photo=cover_photo,
+        **fields,
     )
     if topic_obj:
         BlogTopicIdea.objects.filter(pk=topic_obj.pk).update(status="used")
