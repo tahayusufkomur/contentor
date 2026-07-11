@@ -10,6 +10,7 @@ import {
   Inbox,
   MessagesSquare,
   Newspaper,
+  Bot,
 } from "lucide-react";
 
 import { AppSidebar, type NavItem } from "@/components/shared/app-sidebar";
@@ -33,6 +34,18 @@ const OVERVIEW: NavItem[] = [
     group: "Overview",
   },
 ];
+const AI: NavItem[] = [
+  { label: "AI", href: "/admin/ai", icon: Bot, group: "AI" },
+];
+const CONTENT: NavItem[] = [
+  { label: "Blog", href: "/admin/blog", icon: Newspaper, group: "Content" },
+  {
+    label: "Community",
+    href: "/admin/community",
+    icon: MessagesSquare,
+    group: "Content",
+  },
+];
 const COMMUNICATION: NavItem[] = [
   {
     label: "Inbox",
@@ -41,13 +54,6 @@ const COMMUNICATION: NavItem[] = [
     group: "Communication",
   },
   { label: "Email", href: "/admin/email", icon: Mail, group: "Communication" },
-  {
-    label: "Community",
-    href: "/admin/community",
-    icon: MessagesSquare,
-    group: "Communication",
-  },
-  { label: "Blog", href: "/admin/blog", icon: Newspaper, group: "Communication" },
 ];
 const SYSTEM: NavItem[] = [
   {
@@ -90,7 +96,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
       icon: kitIcon(model.icon),
       group: "Data",
     }));
-    return [...OVERVIEW, ...dataItems, ...COMMUNICATION, ...SYSTEM];
+    return [...OVERVIEW, ...AI, ...CONTENT, ...COMMUNICATION, ...dataItems, ...SYSTEM];
   }, [site]);
 
   return (
