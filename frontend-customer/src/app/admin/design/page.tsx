@@ -42,6 +42,17 @@ export default function DesignSettingsPage() {
     }
   }, []);
 
+  // Deep link from the coach nav: /admin/design?open=logoStudio
+  // (window.location in an effect, NOT useSearchParams — avoids the Next 14
+  // client-side Suspense bailout at build time, same reasoning as the
+  // ?studio=1 effect above.)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("open") === "logoStudio") {
+      setStudioOpen(true);
+      router.replace("/admin/design");
+    }
+  }, [router]);
+
   async function handleSave() {
     if (!config) return;
 
