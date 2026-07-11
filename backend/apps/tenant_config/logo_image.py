@@ -34,9 +34,10 @@ def enabled():
 def _cost(payload):
     try:
         usage = payload["usageMetadata"]
-        cost = Decimal(int(usage.get("promptTokenCount", 0))) * _USD_PER_INPUT_TOKEN + Decimal(
-            int(usage.get("candidatesTokenCount", 0))
-        ) * _USD_PER_OUTPUT_TOKEN
+        cost = (
+            Decimal(int(usage.get("promptTokenCount", 0))) * _USD_PER_INPUT_TOKEN
+            + Decimal(int(usage.get("candidatesTokenCount", 0))) * _USD_PER_OUTPUT_TOKEN
+        )
         return cost if cost > 0 else _FLAT_IMAGE_USD
     except (KeyError, TypeError, ValueError):
         return _FLAT_IMAGE_USD
