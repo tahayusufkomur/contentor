@@ -10,8 +10,10 @@ import {
 import {
   STYLE_CHIPS,
   applyRefinedDesign,
+  composeConverseDesign,
   composeDesigns,
   composeFromPack,
+  composeIconPreview,
   composePackWall,
   composeWall,
   moreLikeThis,
@@ -19,6 +21,7 @@ import {
   type Brief,
   type BrandPack,
   type BrandPackDesign,
+  type ConverseDesign,
   type RefinedDesign,
 } from "@/lib/logo/composer";
 import type { LogoRecipe } from "@/types/logo";
@@ -541,6 +544,77 @@ describe("composePackWall", () => {
 describe("packElementsByIndex v3", () => {
   it("is one-to-one with designs", () => {
     expect(packElementsByIndex(PACK_V3)).toEqual([DESIGN.elements]);
+  });
+});
+
+const iconDesign: ConverseDesign = {
+  concept: "c",
+  rationale: "r",
+  paths: [{ d: "M0 0 Z", fill: "mark" }],
+  palette: {
+    name: "P",
+    primary: "#0f766e",
+    secondary: "#14b8a6",
+    accent: "#f59e0b",
+    ink: "#111827",
+  },
+  color_roles: { mark: "primary", mark2: "secondary", mark_accent: "accent" },
+};
+const lockupDesign: ConverseDesign = {
+  ...iconDesign,
+  layout: "horizontal",
+  badge_shape: "none",
+  badge_outline: false,
+  font: "Manrope",
+  typography: { case: "none", tracking: 0, weight: 700 },
+  color_roles: {
+    badge: "primary",
+    mark: "ink",
+    mark2: "secondary",
+    mark_accent: "accent",
+    text: "ink",
+    tagline: "secondary",
+  },
+  mark_scale: 1.4,
+  mark_gradient: { to: "accent", angle: 45 },
+  tagline: "Breathe.",
+};
+
+describe("composeConverseDesign", () => {
+  it("maps mark_scale onto elements.mark.scale", () => {
+    const recipe = composeConverseDesign(lockupDesign, "Flow");
+    expect(recipe.elements.mark.scale).toBe(1.4);
+  });
+  it("materializes mark_gradient as a linear Fill from mark role to target role", () => {
+    const recipe = composeConverseDesign(lockupDesign, "Flow");
+    expect(recipe.colors.mark).toEqual({
+      type: "linear",
+      from: "#111827",
+      to: "#f59e0b",
+      angle: 45,
+    });
+  });
+  it("keeps solid mark when no gradient", () => {
+    const recipe = composeConverseDesign(
+      { ...lockupDesign, mark_gradient: null },
+      "Flow",
+    );
+    expect(recipe.colors.mark).toBe("#111827");
+  });
+  it("sets the design's tagline text", () => {
+    expect(composeConverseDesign(lockupDesign, "Flow").tagline).toBe(
+      "Breathe.",
+    );
+  });
+});
+
+describe("composeIconPreview", () => {
+  it("builds a badge-less custom-mark recipe with role-resolved colors", () => {
+    const recipe = composeIconPreview(iconDesign, "Flow");
+    expect(recipe.mark.type).toBe("custom");
+    expect(recipe.badge.shape).toBe("none");
+    expect(recipe.colors.mark).toBe("#0f766e");
+    expect(recipe.colors.mark2).toBe("#14b8a6");
   });
 });
 
