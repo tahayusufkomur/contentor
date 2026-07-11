@@ -66,7 +66,16 @@ def test_generate_requires_superuser(restore_public):
 def test_generate_records_public_usage_no_quota(superadmin_client, settings):
     settings.ANTHROPIC_API_KEY = "test-key"
     result = ai.DraftResult(
-        {"title": "T", "body_html": "<p>b</p>", "excerpt": "e", "meta_description": "m", "tags": [], "ai_model": "x"},
+        {
+            "title": "T",
+            "body_html": "<p>b</p>",
+            "excerpt": "e",
+            "meta_description": "m",
+            "tags": [],
+            "ai_model": "x",
+            "cover_photo_id": "",
+            "image_placements": [],
+        },
         Decimal("0.03"),
     )
     with mock.patch.object(ai, "generate_post", return_value=result):

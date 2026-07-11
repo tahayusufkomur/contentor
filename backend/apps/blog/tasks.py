@@ -72,6 +72,8 @@ def _notify_coach(title, body_html):
 
 
 def _generate_for_current_tenant(tenant):
+    from apps.media.models import Photo
+
     from . import ai
     from .models import BlogAutopilot, BlogPost, BlogTopicIdea, unique_slug
     from .views import _brief_for_current_tenant
@@ -114,13 +116,17 @@ def _generate_for_current_tenant(tenant):
 
     ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
     ai.record_success(tenant.schema_name)
+    fields = dict(result.fields)
+    cover_photo_id = fields.pop("cover_photo_id", "")
+    cover_photo = Photo.objects.filter(pk=cover_photo_id).first() if cover_photo_id else None
     publish = rule.auto_publish
     post = BlogPost.objects.create(
-        slug=unique_slug(result.fields["title"]),
+        slug=unique_slug(fields["title"]),
         status="published" if publish else "draft",
         published_at=timezone.now() if publish else None,
         source="autopilot",
-        **result.fields,
+        cover_photo=cover_photo,
+        **fields,
     )
     BlogTopicIdea.objects.filter(pk=topic.pk).update(status="used")
     if publish:

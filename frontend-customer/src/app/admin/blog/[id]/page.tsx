@@ -200,8 +200,8 @@ export default function BlogEditorPage() {
 
       <div className="space-y-2">
         <p className="text-sm font-medium">{t("blog.inlinePhotos")}</p>
-        {post.image_placements.map((placement) => (
-          <div key={placement.heading} className="flex items-center gap-2">
+        {post.image_placements.map((placement, idx) => (
+          <div key={`${placement.heading}-${idx}`} className="flex items-center gap-2">
             <select
               value={placement.heading}
               onChange={(e) =>

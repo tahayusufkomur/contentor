@@ -67,7 +67,16 @@ def _due_rule(**kw):
 
 def _draft_result():
     return ai.DraftResult(
-        {"title": "T", "body_html": "<p>b</p>", "excerpt": "e", "meta_description": "m", "tags": [], "ai_model": "x"},
+        {
+            "title": "T",
+            "body_html": "<p>b</p>",
+            "excerpt": "e",
+            "meta_description": "m",
+            "tags": [],
+            "ai_model": "x",
+            "cover_photo_id": "",
+            "image_placements": [],
+        },
         Decimal("0.03"),
     )
 

@@ -46,12 +46,31 @@ def test_resolve_inline_photos_omits_deleted_photo(tenant_ctx):
     assert resolve_inline_photos([{"heading": "Gone", "photo_id": "00000000-0000-0000-0000-000000000000"}]) == {}
 
 
+def test_resolve_inline_photos_skips_malformed_entries(tenant_ctx):
+    # image_placements is writable via the admin API with no shape
+    # validation — a missing photo_id key (or a non-dict entry entirely)
+    # must not raise (this feeds the public blog detail page).
+    assert resolve_inline_photos([{"heading": "x"}, "not-a-dict", {"photo_id": ""}]) == {}
+
+
 def test_splice_inserts_after_matching_heading():
     html = "<h2>Intro</h2><p>hi</p><h2>Stretch first</h2><p>bend</p>"
     placements = [{"heading": "Stretch first", "photo_id": "p2"}]
     photos = {"p2": {"id": "p2", "signed_url": "https://signed/2", "alt_text": "stretching"}}
     out = splice_image_placements(html, placements, photos)
     assert '<h2>Stretch first</h2><img src="https://signed/2" alt="stretching" loading="lazy">' in out
+
+
+def test_splice_matches_heading_with_apostrophe():
+    # render_body() emits headings as plain text (markdown/nh3 only escape
+    # &/</>), so apostrophes/quotes in a heading must stay literal for the
+    # match to work — a naive quote=True escape would turn ' into &#x27;
+    # and silently drop the placement.
+    html = "<h2>Intro</h2><p>hi</p><h2>Here's Why</h2><p>bend</p>"
+    placements = [{"heading": "Here's Why", "photo_id": "p2"}]
+    photos = {"p2": {"id": "p2", "signed_url": "https://signed/2", "alt_text": "stretching"}}
+    out = splice_image_placements(html, placements, photos)
+    assert "<h2>Here's Why</h2><img src=\"https://signed/2\" alt=\"stretching\" loading=\"lazy\">" in out
 
 
 def test_splice_skips_placement_with_no_matching_heading():

@@ -80,11 +80,17 @@ def platform_blog_generate(request):
         logger.exception("platform blog generate: AI call failed")
         return Response({"post": None, "source": "error"})
     ai.record_attempt_cost("public", result.cost_usd)
+    # PlatformBlogPost has no cover_photo/image_placements fields (unlike the
+    # coach-facing BlogPost) — generate_post's contract always includes both
+    # keys now, so they must be dropped here rather than passed through.
+    fields = dict(result.fields)
+    fields.pop("cover_photo_id", None)
+    fields.pop("image_placements", None)
     post = PlatformBlogPost.objects.create(
-        slug=platform_unique_slug(result.fields["title"]),
+        slug=platform_unique_slug(fields["title"]),
         status="draft",
         source="ai",
         created_by=request.user,
-        **result.fields,
+        **fields,
     )
     return Response({"post": PlatformBlogPostSerializer(post).data, "source": "ai"})

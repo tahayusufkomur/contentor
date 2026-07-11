@@ -1,6 +1,6 @@
 """Deterministic markdown->sanitized-HTML rendering. No AI, no network."""
 
-from apps.blog.ai import _Section, render_body
+from apps.blog.ai import _BLOG_ATTRS, _BLOG_TAGS, _Section, render_body
 
 
 def test_render_sections_to_headed_html():
@@ -32,3 +32,15 @@ def test_render_is_deterministic():
     sections = [_Section(heading="A", body_markdown="**b** and [l](https://x.com)")]
     assert render_body(sections) == render_body(sections)
     assert '<a href="https://x.com"' in render_body(sections)
+
+
+def test_sanitizer_allowlist_is_unchanged():
+    """Regression guard, not a design assertion: this pins the nh3 allow-list
+    so nobody widens the model-content trust boundary (e.g. adding "img")
+    without noticing. Images must only ever be inserted server-side by
+    splice_image_placements — never through render_body's markdown/AI
+    pipeline. If you're intentionally changing the allow-list, update this
+    test AND re-read render_body's docstring claim that this is the trust
+    boundary for model-generated content."""
+    assert _BLOG_TAGS == {"p", "br", "strong", "em", "b", "i", "ul", "ol", "li", "h2", "h3", "blockquote", "a"}
+    assert _BLOG_ATTRS == {"a": {"href"}}

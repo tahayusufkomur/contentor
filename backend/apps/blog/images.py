@@ -28,7 +28,10 @@ def resolve_inline_photos(image_placements):
     one query for all of them (not one query per placement). Missing/deleted
     photos are simply absent from the returned dict —
     splice_image_placements skips any placement it can't resolve."""
-    photo_ids = [p["photo_id"] for p in image_placements]
+    # image_placements is writable via the admin API with no shape validation
+    # on the JSON list itself — a malformed entry (missing photo_id, or not
+    # even a dict) must never raise here (this feeds the public detail page).
+    photo_ids = [p.get("photo_id") for p in image_placements if isinstance(p, dict) and p.get("photo_id")]
     if not photo_ids:
         return {}
     return {str(photo.id): _sign(photo) for photo in Photo.objects.filter(pk__in=photo_ids)}
@@ -44,9 +47,16 @@ def splice_image_placements(body_html, image_placements, resolved_photos):
         photo = resolved_photos.get(placement.get("photo_id"))
         if not photo:
             continue
-        heading_html = f"<h2>{html_lib.escape(placement.get('heading', ''))}</h2>"
+        # quote=False: render_body() emits headings as plain text where
+        # markdown/nh3 only ever produce &/</> entities — apostrophes and
+        # quotes stay literal (e.g. "Here's Why"), so escaping them here
+        # would make this match nothing.
+        heading_html = f"<h2>{html_lib.escape(placement.get('heading', ''), quote=False)}</h2>"
         if heading_html not in out:
             continue
-        img = f'<img src="{photo["signed_url"]}" alt="{html_lib.escape(photo["alt_text"])}" loading="lazy">'
+        img = (
+            f'<img src="{html_lib.escape(photo["signed_url"])}" '
+            f'alt="{html_lib.escape(photo["alt_text"])}" loading="lazy">'
+        )
         out = out.replace(heading_html, heading_html + img, 1)
     return out
