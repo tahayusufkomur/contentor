@@ -129,6 +129,26 @@ thick outline, or dense repetition. Never a couple of thin floating slivers.
 8. FAVICON TEST — no meaningful feature smaller than ~3 units; the mark \
 must survive a 48px render."""
 
+# KEEP IN SYNC: frontend-customer/src/lib/logo/catalog.ts LOGO_FONTS
+# Shared by STATIC_PROMPT and REFINE_PROMPT so the font list exists in
+# exactly one place.
+_FONT_CATALOG = """## Font catalog (family — voice)
+
+Modern: Inter — neutral clarity; Geist — technical precision; DM Sans — \
+warm geometric; Plus Jakarta Sans — contemporary polish.
+Elegant: Playfair Display — editorial serif; Lora — bookish calm; \
+EB Garamond — classical authority; Cormorant Garamond — fine luxury.
+Bold: Poppins — confident rounds; Montserrat — urban strength; Archivo — \
+industrial punch; Space Grotesk — techy edge.
+Playful: Nunito — soft friendly; Quicksand — light bounce; Baloo 2 — \
+chubby cheer; Fredoka — bubbly warmth.
+Minimal: Work Sans — quiet utility; Manrope — refined minimal; Sora — \
+future clean; Outfit — sleek geometry.
+Script (for the name only — never uppercase, never taglines): Dancing \
+Script — lively handwriting; Great Vibes — formal calligraphy; Pacifico — \
+retro brush; Caveat — casual marker.
+"""
+
 STATIC_PROMPT = (
     """You are a senior brand-identity designer producing a Brand Pack for a \
 coaching brand: 8 complete logo designs plus 3 brand color palettes. The \
@@ -176,23 +196,7 @@ with badge "none" the mark and text must read on white; text must always \
 read on white.
 
 """
-    # KEEP IN SYNC: frontend-customer/src/lib/logo/catalog.ts LOGO_FONTS
-    + """## Font catalog (family — voice)
-
-Modern: Inter — neutral clarity; Geist — technical precision; DM Sans — \
-warm geometric; Plus Jakarta Sans — contemporary polish.
-Elegant: Playfair Display — editorial serif; Lora — bookish calm; \
-EB Garamond — classical authority; Cormorant Garamond — fine luxury.
-Bold: Poppins — confident rounds; Montserrat — urban strength; Archivo — \
-industrial punch; Space Grotesk — techy edge.
-Playful: Nunito — soft friendly; Quicksand — light bounce; Baloo 2 — \
-chubby cheer; Fredoka — bubbly warmth.
-Minimal: Work Sans — quiet utility; Manrope — refined minimal; Sora — \
-future clean; Outfit — sleek geometry.
-Script (for the name only — never uppercase, never taglines): Dancing \
-Script — lively handwriting; Great Vibes — formal calligraphy; Pacifico — \
-retro brush; Caveat — casual marker.
-"""
+    + _FONT_CATALOG
     + """
 
 ## Style directives
@@ -518,18 +522,28 @@ custom mark that captures the same brand from scratch, guided by the \
 summary and the instruction). You'll also receive the coach's INSTRUCTION.
 
 Return one refined design: the mark (as elements, same vocabulary as \
-above), a 4-hex-role palette, the single best-fit font_vibe (Modern, \
-Elegant, Bold, Playful, or Minimal), a layout (horizontal, stacked, emblem, \
-horizontal_reversed, or name_only), and a one-sentence rationale — plain \
-words, addressed to the coach, saying what you changed and why."""
+above), a 4-hex-role palette, the whole lockup — layout, badge_shape + \
+badge_outline, one font from the catalog in the pack brief's voice, \
+typography (case/tracking/weight), and color_roles mapping palette roles \
+onto badge/mark/text/tagline (contrast is non-negotiable) — the best-fit \
+font_vibe, and a one-sentence rationale in plain words, addressed to the \
+coach, saying what you changed and why.
+
+"""
+    + _FONT_CATALOG
 )
 
 
 class _RefinedDesign(BaseModel):
     mark: _Mark
     palette: _Palette
-    font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
-    layout: Literal["horizontal", "stacked", "emblem", "horizontal_reversed", "name_only"]
+    font_vibe: _FONT_VIBES
+    layout: _LAYOUTS_LITERAL
+    badge_shape: _BADGES_LITERAL
+    badge_outline: bool = False
+    font: str
+    typography: _Typography
+    color_roles: _ColorRoles
     rationale: str
 
 
@@ -715,12 +729,14 @@ def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe="")
 
 def refine_design(recipe, elements, instruction):
     """One gated, uncached Claude call -> a refined design (mark, palette,
-    font_vibe, layout — whole-design scope). Raises RefineError (carrying
-    the estimated cost) on provider failure or if the refined mark's paths
-    don't survive validation. `elements` is capped defensively: it's
-    untrusted request input, only ever used as descriptive prompt text
-    (never compiled or persisted directly), but a hostile payload shouldn't
-    be able to inflate the prompt without bound."""
+    font_vibe, and the whole lockup — layout, badge, font, typography,
+    color_roles — same parity as a Brand Pack design). Raises RefineError
+    (carrying the estimated cost) on provider failure or if the refined
+    mark's paths don't survive validation. `elements` is capped
+    defensively: it's untrusted request input, only ever used as
+    descriptive prompt text (never compiled or persisted directly), but a
+    hostile payload shouldn't be able to inflate the prompt without
+    bound."""
     if elements:
         bounded = json.dumps(elements[:12])[:4000]
         current = f"Current mark elements (redesign these): {bounded}"
@@ -747,8 +763,8 @@ def refine_design(recipe, elements, instruction):
         "mark": mark,
         "palette": _validate_pack_palette(parsed.palette),
         "font_vibe": parsed.font_vibe,
-        "layout": parsed.layout,
         "rationale": str(parsed.rationale or "")[:300],
+        **_validate_lockup(parsed),
     }
     return RefineResult(design, cost)
 

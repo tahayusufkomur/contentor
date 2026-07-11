@@ -28,6 +28,18 @@ _FAKE_DESIGN = {
     "palette": {"name": "Sunrise", "primary": "#e11d48", "secondary": "#f97316", "accent": "#fbbf24", "ink": "#111827"},
     "font_vibe": "Elegant",
     "layout": "stacked",
+    "badge_shape": "none",
+    "badge_outline": False,
+    "font": "Manrope",
+    "typography": {"case": "none", "tracking": 0, "weight": 700},
+    "color_roles": {
+        "badge": "primary",
+        "mark": "ink",
+        "mark2": "secondary",
+        "mark_accent": "accent",
+        "text": "ink",
+        "tagline": "secondary",
+    },
     "rationale": "Warmed the palette and gave the mark more lift.",
 }
 

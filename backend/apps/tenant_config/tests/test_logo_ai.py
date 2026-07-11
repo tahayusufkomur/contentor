@@ -20,9 +20,9 @@ class _FakeMark:
     """Marks carry geometric elements (dicts are accepted alongside pydantic
     instances by _validate_pack_mark) that logo_geometry compiles to paths."""
 
-    def __init__(self, rationale, elements):
+    def __init__(self, rationale="A rising ring", elements=None):
         self.rationale = rationale
-        self.elements = elements
+        self.elements = elements if elements is not None else [logo_ai._Circle(type="circle", cx=50, cy=50, r=20)]
 
 
 class _FakeDesign:
@@ -47,12 +47,30 @@ class _FakeDesign:
 
 
 class _FakePalette:
-    def __init__(self, name, primary, secondary, accent, ink):
+    def __init__(self, name="Sunrise", primary="#1a56db", secondary="#93c5fd", accent="#f59e0b", ink="#111827"):
         self.name = name
         self.primary = primary
         self.secondary = secondary
         self.accent = accent
         self.ink = ink
+
+
+class _FakeRefined:
+    """A parsed _RefinedDesign: mark/palette are fakes too (same pattern as
+    _FakeDesign for the pack flow), plus the lockup fields
+    _validate_lockup adds on top."""
+
+    def __init__(self, **overrides):
+        self.mark = overrides.get("mark", _FakeMark())
+        self.palette = overrides.get("palette", _FakePalette())
+        self.font_vibe = overrides.get("font_vibe", "Elegant")
+        self.layout = overrides.get("layout", "horizontal")
+        self.badge_shape = overrides.get("badge_shape", "none")
+        self.badge_outline = overrides.get("badge_outline", False)
+        self.font = overrides.get("font", "Manrope")
+        self.typography = overrides.get("typography", logo_ai._Typography())
+        self.color_roles = overrides.get("color_roles", logo_ai._ColorRoles())
+        self.rationale = overrides.get("rationale", "Refined to fit the instruction.")
 
 
 class _FakeParsedOutput:
@@ -116,6 +134,13 @@ def _mock_client(monkeypatch, designs=None, palettes=None, usage=None):
         ),
         usage or _FakeUsage(),
     )
+    fake_client = SimpleNamespace(messages=SimpleNamespace(parse=lambda **kw: response))
+    monkeypatch.setattr(core_ai, "_anthropic_client", lambda: fake_client)
+    return response
+
+
+def _mock_refine_client(monkeypatch, parsed=None, usage=None):
+    response = _FakeResponse(parsed if parsed is not None else _FakeRefined(), usage or _FakeUsage())
     fake_client = SimpleNamespace(messages=SimpleNamespace(parse=lambda **kw: response))
     monkeypatch.setattr(core_ai, "_anthropic_client", lambda: fake_client)
     return response
@@ -271,6 +296,31 @@ class TestGenerateBrandPack:
         assert result.cost_usd == Decimal("0")
         assert len(result.pack["designs"]) == 1
         assert result.pack["palettes"][0]["primary"] == "#1a56db"
+
+
+@pytest.mark.django_db
+class TestRefineDesign:
+    def test_refine_design_carries_lockup_fields(self, monkeypatch):
+        parsed = _FakeRefined(
+            mark=_FakeMark(),
+            palette=_FakePalette(),
+            font_vibe="Script",
+            layout="stacked",
+            badge_shape="circle",
+            badge_outline=True,
+            font="Dancing Script",
+            typography=logo_ai._Typography(case="title", tracking=0, weight=500),
+            color_roles=logo_ai._ColorRoles(badge="ink", mark="white"),
+            rationale="Warmer and softer.",
+        )
+        _mock_refine_client(monkeypatch, parsed=parsed)
+        result = logo_ai.refine_design({}, [], "make it warmer")
+        assert result.design["badge_shape"] == "circle"
+        assert result.design["badge_outline"] is True
+        assert result.design["font"] == "Dancing Script"
+        assert result.design["typography"]["weight"] == 500
+        assert result.design["color_roles"]["badge"] == "ink"
+        assert result.design["layout"] == "stacked"
 
 
 class TestEstimateCost:
