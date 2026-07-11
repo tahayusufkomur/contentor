@@ -374,6 +374,10 @@ def logo_converse_finish(request):
             return Response({**draft_body, "source": "error"})
         try:
             result = logo_converse_mod.critique_refine(cached, images)
+        except logo_converse_mod.ConverseError as exc:
+            logo_ai.record_attempt_cost(tenant.schema_name, exc.cost_usd, month=month)
+            logger.exception("logo refine finish: critique failed — serving draft")
+            return Response({**draft_body, "source": "draft"})
         except Exception:
             logger.exception("logo refine finish: critique failed — serving draft")
             return Response({**draft_body, "source": "draft"})

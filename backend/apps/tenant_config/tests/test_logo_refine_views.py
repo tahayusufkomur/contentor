@@ -299,3 +299,24 @@ class TestRefineTwoPass:
         )
         resp = coach_client.post(FINISH_URL, {"token": draft["token"], "images": [DATA_URL]}, format="json")
         assert resp.data["phase"] == "final" and resp.data["design"]
+
+    def test_finish_failure_records_cost_and_falls_back_to_draft(
+        self, coach_client, paid_tenant, settings, monkeypatch
+    ):
+        settings.AI_PROVIDER = "anthropic"
+        settings.ANTHROPIC_API_KEY = "k"
+        _mock_refine_success(monkeypatch)
+        draft = coach_client.post(REFINE_URL, _payload(), format="json").data
+
+        def raise_error(cached, images):
+            raise logo_converse.ConverseError("critique failed", cost_usd=Decimal("0.01"))
+
+        monkeypatch.setattr(logo_converse, "critique_refine", raise_error)
+        resp = coach_client.post(FINISH_URL, {"token": draft["token"], "images": [DATA_URL]}, format="json")
+        assert resp.data["source"] == "draft"
+        assert resp.data["phase"] == "final"
+        assert resp.data["design"] == draft["design"]
+        row = logo_ai.tenant_usage(paid_tenant.schema_name, month=logo_ai._current_month())
+        # 0.02 from the initial draft call (_mock_refine_success) + 0.01 from
+        # the failed critique — both get recorded against the tenant's spend.
+        assert row.usd_spent == Decimal("0.03")

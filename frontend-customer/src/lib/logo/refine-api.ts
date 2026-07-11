@@ -43,7 +43,7 @@ export function fetchRefineFinish(
   images: string[],
 ): Promise<RefineResponse> {
   return clientFetch<RefineResponse>(
-    "/api/v1/admin/config/logo-refine/finish/",
+    "/api/v1/admin/config/logo-converse/finish/",
     {
       method: "POST",
       body: JSON.stringify({ token, images }),
