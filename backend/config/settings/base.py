@@ -246,6 +246,14 @@ LOGO_AI_MONTHLY_TURN_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_TURN_LIMIT", "4
 # separate from the pack limit above, shares the same budget kill-switch.
 LOGO_AI_MONTHLY_REFINE_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_REFINE_LIMIT", "20"))
 
+# --- Logo Studio image-model icon marks (generate -> vectorize) ---
+# Unset key = feature entirely off: the icon stage ships Claude-authored
+# paths exactly as before (mirrors the ANTHROPIC_API_KEY-unset pattern, so
+# tests/CI/e2e need no fake service). NOT routed through AI_PROVIDER — image
+# generation is a different modality with its own key and off-switch.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+LOGO_IMAGE_MODEL = os.environ.get("LOGO_IMAGE_MODEL", "gemini-3.5-flash-image")
+
 # --- Ask Contentor help bot (apps.tenant_config.help_bot; provider from AI_PROVIDER) ---
 HELP_BOT_MODEL = os.environ.get("HELP_BOT_MODEL", "claude-sonnet-5")
 # Per-tenant + global monthly USD caps and a per-tenant question cap.
