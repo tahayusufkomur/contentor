@@ -240,6 +240,33 @@ describe("moreLikeThis", () => {
       ).size,
     ).toBeGreaterThan(1);
   });
+
+  it("never pairs a variant's name or tagline with a weight its font doesn't ship", () => {
+    // A "More like this" base can be an AI wall tile (composeDesigns output),
+    // which — unlike composeWall — can carry a Script-vibe font. Simulate one
+    // directly: moreLikeThis only reads base.typography.name.font to pick its
+    // font pool, so overriding it on a composeWall base is a faithful stand-in.
+    const scriptBase: LogoRecipe = {
+      ...composeWall(BRIEF, 42)[0]!,
+      typography: {
+        name: { font: "Great Vibes", weight: 400, tracking: 0, case: "none" },
+        tagline: {
+          font: "Great Vibes",
+          weight: 400,
+          tracking: 0.08,
+          case: "upper",
+        },
+      },
+    };
+    for (let seed = 1; seed <= 10; seed++) {
+      for (const v of moreLikeThis(scriptBase, BRIEF, seed)) {
+        const nameEntry = fontEntry(v.typography.name.font);
+        const taglineEntry = fontEntry(v.typography.tagline.font);
+        expect(nameEntry.weights).toContain(v.typography.name.weight);
+        expect(taglineEntry.weights).toContain(v.typography.tagline.weight);
+      }
+    }
+  });
 });
 
 describe("composeFromPack", () => {

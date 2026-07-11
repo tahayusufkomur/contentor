@@ -436,7 +436,9 @@ export function moreLikeThis(
       if (used.has(key) && attempt < 11) continue;
       used.add(key);
       const entry = fontEntry(font);
-      const weight = entry.weights.includes(typo.weight) ? typo.weight : 700;
+      const weight = entry.weights.includes(typo.weight)
+        ? typo.weight
+        : entry.weights[entry.weights.length - 1]!;
       variants.push({
         ...base,
         layout,
@@ -449,7 +451,11 @@ export function moreLikeThis(
             tracking: typo.tracking,
             case: typo.case,
           },
-          tagline: { ...base.typography.tagline, font: entry.family },
+          tagline: {
+            ...base.typography.tagline,
+            font: entry.family,
+            weight: taglineWeight(entry),
+          },
         },
         colors: { ...base.colors },
         elements: {
