@@ -35,8 +35,11 @@ def test_new_vocabulary_parses_and_compiles():
     item = logo_ai._Mark(
         rationale="One line through a mirrored bloom.",
         elements=[
-            {"type": "mirror", "axis_x": 50,
-             "of": {"type": "petal", "cx": 38, "cy": 50, "length": 30, "width": 12, "rotate_deg": -30}},
+            {
+                "type": "mirror",
+                "axis_x": 50,
+                "of": {"type": "petal", "cx": 38, "cy": 50, "length": 30, "width": 12, "rotate_deg": -30},
+            },
             {"type": "curve", "points": [[20, 70], [50, 45], [80, 70]], "thickness": 4, "round_caps": True},
             {"type": "circle", "cx": 50, "cy": 30, "r": 10},
             {"type": "star", "cx": 50, "cy": 30, "points": 5, "outer_r": 6, "inner_r": 2.5, "cut": True},

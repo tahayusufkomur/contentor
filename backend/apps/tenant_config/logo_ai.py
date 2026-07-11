@@ -355,8 +355,22 @@ class _Mirror(_ElementBase):
 
 
 _Element = Annotated[
-    _Circle | _Ring | _DotRing | _DotGrid | _RoundedRect | _Polygon | _Arc | _FreePath
-    | _Star | _Petal | _Crescent | _Blob | _Wave | _Curve | _Repeat | _Mirror,
+    _Circle
+    | _Ring
+    | _DotRing
+    | _DotGrid
+    | _RoundedRect
+    | _Polygon
+    | _Arc
+    | _FreePath
+    | _Star
+    | _Petal
+    | _Crescent
+    | _Blob
+    | _Wave
+    | _Curve
+    | _Repeat
+    | _Mirror,
     Field(discriminator="type"),
 ]
 
