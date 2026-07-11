@@ -273,6 +273,46 @@ def converse_turn(stage, brief, transcript, pinned, message):
     return _validate_turn(stage, parsed, cost)
 
 
+class RefineCritiqueResult:
+    def __init__(self, design, cost_usd):
+        self.design = design
+        self.cost_usd = cost_usd
+
+
+def critique_refine(cached, images):
+    """Pass B for an editor refinement: one design, same checklist. The
+    output model is logo_ai's _RefinedDesign; validation mirrors
+    logo_ai.refine_design's (the injection trust boundary — mark paths still
+    flow through _validate_pack_mark -> validate_recipe)."""
+    from . import logo_ai
+
+    blocks = [
+        {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": img}} for img in images[:3]
+    ]
+    blocks.append({"type": "text", "text": "Your design:\n" + json.dumps(cached["design"])[:12000]})
+    try:
+        parsed, cost, _ = core_ai.structured_messages(
+            system=CRITIQUE_PROMPT,
+            messages=[{"role": "user", "content": blocks}],
+            output_model=logo_ai._RefinedDesign,
+            model=settings.LOGO_AI_MODEL,
+            max_tokens=3000,
+        )
+    except core_ai.AiError as exc:
+        raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
+    mark = _validate_pack_mark(parsed.mark)
+    if not mark:
+        raise ConverseError("critiqued refine mark left nothing usable", cost_usd=cost)
+    design = {
+        "mark": mark,
+        "palette": _validate_pack_palette(parsed.palette),
+        "font_vibe": parsed.font_vibe,
+        "rationale": str(parsed.rationale or "")[:300],
+        **_validate_lockup(parsed),
+    }
+    return RefineCritiqueResult(design, cost)
+
+
 def critique_turn(stage, draft, images):
     """Pass B: the model reviews renders of its own draft. `images` are raw
     base64 PNG strings (already size/magic-checked by the view). Raises

@@ -4,6 +4,7 @@ budget kill-switch. Anthropic itself is always mocked via
 ``logo_ai.refine_design`` — no real network access.
 """
 
+import base64
 from decimal import Decimal
 
 import pytest
@@ -11,13 +12,20 @@ from django_tenants.utils import schema_context
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.core import ai as core_ai
 from apps.core.models import LogoAiUsage, PlatformPlan, PlatformSubscription
-from apps.tenant_config import logo_ai
+from apps.tenant_config import logo_ai, logo_converse
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
 HOST = "shared-test.localhost"
 SHARED_SCHEMA = "shared_test"
+
+REFINE_URL = "/api/v1/admin/config/logo-refine/"
+# The refine two-pass finish is served by the shared converse finish endpoint.
+FINISH_URL = "/api/v1/admin/config/logo-converse/finish/"
+PNG_B64 = base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 64).decode()
+DATA_URL = "data:image/png;base64," + PNG_B64
 
 _FAKE_DESIGN = {
     "mark": {
@@ -110,6 +118,14 @@ def _mock_success(monkeypatch, cost_usd=Decimal("0.02"), design=None):
 
     monkeypatch.setattr(logo_ai, "refine_design", fake)
     return calls
+
+
+def _mock_refine_success(monkeypatch, **kwargs):
+    return _mock_success(monkeypatch, **kwargs)
+
+
+def _payload():
+    return {"recipe": _RECIPE, "elements": [{"type": "path", "d": "M0 0 Z"}], "instruction": "warmer and bolder"}
 
 
 class TestLogoRefine:
@@ -253,3 +269,33 @@ class TestLogoRefine:
         logo_ai.record_successful_refinement(paid_tenant.schema_name, month=logo_ai._current_month())
         resp = coach_client.get("/api/v1/admin/config/logo-ai/status/")
         assert resp.data["refine_remaining"] == 19
+
+
+class TestRefineTwoPass:
+    def test_refine_returns_draft_with_token_when_vision(self, coach_client, paid_tenant, settings, monkeypatch):
+        settings.AI_PROVIDER = "anthropic"
+        settings.ANTHROPIC_API_KEY = "k"
+        _mock_refine_success(monkeypatch)  # the file's existing helper
+        resp = coach_client.post(REFINE_URL, _payload(), format="json")
+        assert resp.data["phase"] == "draft" and resp.data["token"]
+        assert resp.data["design"]  # draft design still returned for fallback
+
+    def test_refine_final_on_cli(self, coach_client, paid_tenant, settings, monkeypatch):
+        settings.AI_PROVIDER = "cli"
+        monkeypatch.setattr(core_ai, "available", lambda: (True, "ok"))
+        _mock_refine_success(monkeypatch)
+        resp = coach_client.post(REFINE_URL, _payload(), format="json")
+        assert resp.data["phase"] == "final"
+
+    def test_finish_critiques_refine_draft(self, coach_client, paid_tenant, settings, monkeypatch):
+        settings.AI_PROVIDER = "anthropic"
+        settings.ANTHROPIC_API_KEY = "k"
+        _mock_refine_success(monkeypatch)
+        draft = coach_client.post(REFINE_URL, _payload(), format="json").data
+        monkeypatch.setattr(
+            logo_converse,
+            "critique_refine",
+            lambda cached, images: logo_converse.RefineCritiqueResult(cached["design"], Decimal("0.01")),
+        )
+        resp = coach_client.post(FINISH_URL, {"token": draft["token"], "images": [DATA_URL]}, format="json")
+        assert resp.data["phase"] == "final" and resp.data["design"]

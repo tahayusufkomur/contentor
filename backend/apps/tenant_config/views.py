@@ -367,6 +367,18 @@ def logo_converse_finish(request):
             {"phase": "final", "message": "", "designs": [], "source": "error", "turns_remaining": turns_remaining}
         )
     cache.delete(_DRAFT_CACHE_PREFIX + token)
+    if cached.get("kind") == "refine":
+        draft_body = {"phase": "final", "design": cached["design"], "turns_remaining": turns_remaining}
+        images = _decode_images(data.get("images"))
+        if images is None:
+            return Response({**draft_body, "source": "error"})
+        try:
+            result = logo_converse_mod.critique_refine(cached, images)
+        except Exception:
+            logger.exception("logo refine finish: critique failed — serving draft")
+            return Response({**draft_body, "source": "draft"})
+        logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
+        return Response({**draft_body, "design": result.design, "source": "ai"})
     draft_body = {
         "phase": "final",
         "message": cached["message"],
@@ -435,7 +447,16 @@ def logo_refine(request):
 
     logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
     logo_ai.record_successful_refinement(tenant.schema_name, month=month)
-    return Response({"design": result.design, "source": "ai", "refine_remaining": refine_remaining - 1})
+    body = {"design": result.design, "source": "ai", "refine_remaining": refine_remaining - 1}
+    if core_ai.supports_vision():
+        token = secrets.token_urlsafe(24)
+        cache.set(
+            _DRAFT_CACHE_PREFIX + token,
+            {"kind": "refine", "tenant": tenant.schema_name, "design": result.design},
+            timeout=_DRAFT_TTL_SECONDS,
+        )
+        return Response({**body, "phase": "draft", "token": token})
+    return Response({**body, "phase": "final"})
 
 
 class HelpBotRateThrottle(UserRateThrottle):
