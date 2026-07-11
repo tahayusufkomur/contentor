@@ -478,6 +478,11 @@ class _Typography(BaseModel):
     weight: Literal[400, 500, 600, 700, 800] = 700
 
 
+class _MarkGradient(BaseModel):
+    to: Literal["primary", "secondary", "accent", "ink"]
+    angle: float = 90
+
+
 class _ColorRoles(BaseModel):
     badge: _ROLE = "primary"
     mark: _ROLE = "ink"
@@ -498,6 +503,8 @@ class _Design(BaseModel):
     typography: _Typography
     palette_index: int = 0
     color_roles: _ColorRoles
+    mark_scale: float = 1.0
+    mark_gradient: _MarkGradient | None = None
 
 
 class _BrandPack(BaseModel):
@@ -551,6 +558,8 @@ class _RefinedDesign(BaseModel):
     typography: _Typography
     color_roles: _ColorRoles
     rationale: str
+    mark_scale: float = 1.0
+    mark_gradient: _MarkGradient | None = None
 
 
 class BrandPackError(Exception):
@@ -679,6 +688,15 @@ def _validate_lockup(item):
             "weight": item.typography.weight,
         },
         "color_roles": item.color_roles.model_dump(),
+        "mark_scale": max(0.6, min(1.8, float(item.mark_scale or 1.0))),
+        "mark_gradient": (
+            {
+                "to": item.mark_gradient.to,
+                "angle": max(0.0, min(360.0, float(item.mark_gradient.angle or 0))),
+            }
+            if item.mark_gradient
+            else None
+        ),
     }
 
 

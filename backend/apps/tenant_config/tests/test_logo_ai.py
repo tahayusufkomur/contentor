@@ -10,6 +10,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 
 import pytest
+from pydantic import ValidationError
 
 from apps.core import ai as core_ai
 from apps.core.models import LogoAiUsage
@@ -44,6 +45,8 @@ class _FakeDesign:
         self.typography = overrides.get("typography", logo_ai._Typography(case="upper", tracking=0.12, weight=600))
         self.palette_index = overrides.get("palette_index", 1)
         self.color_roles = overrides.get("color_roles", logo_ai._ColorRoles())
+        self.mark_scale = overrides.get("mark_scale", 1.0)
+        self.mark_gradient = overrides.get("mark_gradient")
 
 
 class _FakePalette:
@@ -71,6 +74,8 @@ class _FakeRefined:
         self.typography = overrides.get("typography", logo_ai._Typography())
         self.color_roles = overrides.get("color_roles", logo_ai._ColorRoles())
         self.rationale = overrides.get("rationale", "Refined to fit the instruction.")
+        self.mark_scale = overrides.get("mark_scale", 1.0)
+        self.mark_gradient = overrides.get("mark_gradient")
 
 
 class _FakeParsedOutput:
@@ -116,6 +121,26 @@ def _valid_designs():
             elements=[{"type": "path", "d": "javascript:alert(1)"}],
         ),
     ]
+
+
+def _design(**overrides):
+    """Builds a real, schema-validated `_Design` pydantic instance (unlike
+    `_FakeDesign`, which just duck-types the attributes) so tests can assert
+    on pydantic validation itself (e.g. an invalid mark_gradient role)."""
+    fields = {
+        "concept": "A rising ring",
+        "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 20}],
+        "rationale": "Feels like growth.",
+        "layout": "horizontal",
+        "badge_shape": "none",
+        "badge_outline": False,
+        "font": "Manrope",
+        "typography": {"case": "upper", "tracking": 0.12, "weight": 600},
+        "palette_index": 1,
+        "color_roles": {},
+    }
+    fields.update(overrides)
+    return logo_ai._Design(**fields)
 
 
 def _valid_palettes():
@@ -368,3 +393,24 @@ class TestUsageAccounting:
         logo_ai.record_successful_pack("beta", month="2026-07")
         assert logo_ai.tenant_usage("acme", month="2026-07").packs_used == 1
         assert logo_ai.tenant_usage("acme", month="2026-06").packs_used == 0
+
+
+class TestLockupProportionAndGradient:
+    def test_defaults_pass_through(self):
+        shaped = logo_ai._validate_lockup(_design())
+        assert shaped["mark_scale"] == 1.0
+        assert shaped["mark_gradient"] is None
+
+    def test_mark_scale_clamped(self):
+        shaped = logo_ai._validate_lockup(_design(mark_scale=9.0))
+        assert shaped["mark_scale"] == 1.8
+        shaped = logo_ai._validate_lockup(_design(mark_scale=0.1))
+        assert shaped["mark_scale"] == 0.6
+
+    def test_mark_gradient_shaped_and_angle_clamped(self):
+        shaped = logo_ai._validate_lockup(_design(mark_gradient={"to": "accent", "angle": 999}))
+        assert shaped["mark_gradient"] == {"to": "accent", "angle": 360.0}
+
+    def test_gradient_to_white_rejected_by_schema(self):
+        with pytest.raises(ValidationError):
+            _design(mark_gradient={"to": "white", "angle": 90})
