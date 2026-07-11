@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   Inbox,
   LayoutDashboard,
+  ListChecks,
   Mail,
   MessageCircleQuestion,
   MessagesSquare,
@@ -28,7 +29,6 @@ import { AppSidebar } from "@/components/shared/app-sidebar";
 import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
-import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import type { NavSection } from "@/components/shared/app-sidebar";
 import type { User } from "@/types/auth";
 
@@ -90,6 +90,11 @@ export function AdminShell({ children, user }: AdminShellProps) {
           label: t("nav.items.logoStudio"),
           href: "/admin/design?open=logoStudio",
           icon: Sparkles,
+        },
+        {
+          label: t("nav.items.setupAssistant"),
+          href: "/admin/setup",
+          icon: ListChecks,
         },
       ],
     },
@@ -154,7 +159,6 @@ export function AdminShell({ children, user }: AdminShellProps) {
         <MobileHeader title={t("title")} sections={navSections} user={user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
-      <SetupAssistantBubble />
       <ImpersonationBanner />
     </div>
   );
