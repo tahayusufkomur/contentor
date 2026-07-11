@@ -216,6 +216,368 @@ def _compile_arc(el):
     return d
 
 
+# Local copy of logo_recipe.MARK_CUSTOM_MAX_D_LEN (this module must stay
+# Django-free). KEEP IN SYNC.
+_MAX_D = 2000
+_CURVE_MAX_POINTS = 10
+
+
+def _catmull_rom(pts, samples_per_seg, closed=False):
+    """Dense polyline through ``pts`` (uniform Catmull-Rom; endpoints
+    duplicated when open, wrapped when closed)."""
+    n = len(pts)
+    if n == 2 and not closed:
+        (x0, y0), (x1, y1) = pts
+        return [
+            (x0 + (x1 - x0) * t / samples_per_seg, y0 + (y1 - y0) * t / samples_per_seg)
+            for t in range(samples_per_seg + 1)
+        ]
+    if closed:
+        ext = [pts[-1]] + pts + [pts[0], pts[1]]
+        seg_count = n
+    else:
+        ext = [pts[0]] + pts + [pts[-1]]
+        seg_count = n - 1
+    out = []
+    for i in range(seg_count):
+        p0, p1, p2, p3 = ext[i], ext[i + 1], ext[i + 2], ext[i + 3]
+        last_seg = i == seg_count - 1
+        steps = samples_per_seg + (1 if last_seg and not closed else 0)
+        for s in range(steps):
+            t = s / samples_per_seg
+            t2, t3 = t * t, t * t * t
+            out.append(
+                (
+                    0.5
+                    * (
+                        2 * p1[0]
+                        + (-p0[0] + p2[0]) * t
+                        + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2
+                        + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
+                    ),
+                    0.5
+                    * (
+                        2 * p1[1]
+                        + (-p0[1] + p2[1]) * t
+                        + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2
+                        + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
+                    ),
+                )
+            )
+    return out
+
+
+def _offset_edges(dense, half, closed=False):
+    """Left/right offset polylines at distance ``half`` from the spine,
+    coordinates clamped into the canvas."""
+    left, right = [], []
+    n = len(dense)
+    for i, (x, y) in enumerate(dense):
+        if closed:
+            px, py = dense[i - 1]
+            nx_, ny_ = dense[(i + 1) % n]
+        else:
+            px, py = dense[max(i - 1, 0)]
+            nx_, ny_ = dense[min(i + 1, n - 1)]
+        tx, ty = nx_ - px, ny_ - py
+        norm = math.hypot(tx, ty) or 1.0
+        ox, oy = -ty / norm * half, tx / norm * half
+        clampc = lambda v: min(max(v, 0.0), 100.0)  # noqa: E731
+        left.append((clampc(x + ox), clampc(y + oy)))
+        right.append((clampc(x - ox), clampc(y - oy)))
+    return left, right
+
+
+def _polyline(points, head_cmd="M"):
+    head, *rest = points
+    return f"{head_cmd}{_fmt(head[0])} {_fmt(head[1])}" + "".join(f"L{_fmt(x)} {_fmt(y)}" for x, y in rest)
+
+
+def _compile_curve(el):
+    raw = el.get("points") if isinstance(el.get("points"), list) else []
+    pts = []
+    for p in raw[:_CURVE_MAX_POINTS]:
+        if isinstance(p, list | tuple) and len(p) == 2:
+            q = (_clamp(p[0], _COORD, 50), _clamp(p[1], _COORD, 50))
+            if not pts or q != pts[-1]:
+                pts.append(q)
+    if len(pts) < 2:
+        return "", None
+    thickness = _clamp(el.get("thickness"), _THICKNESS, 4)
+    half = thickness / 2.0
+    closed = bool(el.get("closed"))
+    if closed and len(pts) < 3:
+        closed = False
+    samples = max(4, 32 // max(len(pts) - 1, 1))
+    dense = _catmull_rom(pts, samples, closed=closed)
+    left, right = _offset_edges(dense, half, closed=closed)
+    if closed:
+        return _polyline(left) + "Z" + _polyline(right) + "Z", "evenodd"
+    d = _polyline(left)
+    rev = list(reversed(right))
+    cap = f"A{_fmt(half)} {_fmt(half)} 0 0 1"
+    if el.get("round_caps"):
+        d += f"{cap} {_fmt(rev[0][0])} {_fmt(rev[0][1])}"
+    else:
+        d += f"L{_fmt(rev[0][0])} {_fmt(rev[0][1])}"
+    d += "".join(f"L{_fmt(x)} {_fmt(y)}" for x, y in rev[1:])
+    if el.get("round_caps"):
+        d += f"{cap} {_fmt(left[0][0])} {_fmt(left[0][1])}"
+    d += "Z"
+    return d, None
+
+
+def _compile_star(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    points = int(_clamp(el.get("points"), (3, 12), 5))
+    outer = _fit_radius(cx, cy, _clamp(el.get("outer_r"), _RADIUS, 30))
+    inner = _clamp(el.get("inner_r"), (1.0, outer), outer * 0.45)
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    verts = [_polar(cx, cy, outer if i % 2 == 0 else inner, rotate + i * 180.0 / points) for i in range(points * 2)]
+    return _poly_subpath(verts)
+
+
+def _compile_petal(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    length = _clamp(el.get("length"), (4.0, 90.0), 30)
+    width = _clamp(el.get("width"), (2.0, length), length * 0.45)
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    l2, wf = length / 2.0, width * 0.66
+    # tip, two cubic curves through max width at the middle, back to tip
+    pts = [
+        (cx, cy - l2),  # tip
+        (cx + wf, cy - l2 * 0.5),  # c1 out
+        (cx + wf, cy + l2 * 0.5),  # c2 out
+        (cx, cy + l2),  # bottom tip
+        (cx - wf, cy + l2 * 0.5),  # c1 back
+        (cx - wf, cy - l2 * 0.5),  # c2 back
+    ]
+    if rotate:
+        pts = _rotate(pts, cx, cy, rotate)
+    p = [f"{_fmt(x)} {_fmt(y)}" for x, y in pts]
+    return f"M{p[0]}C{p[1]} {p[2]} {p[3]}C{p[4]} {p[5]} {p[0]}Z"
+
+
+def _compile_crescent(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    r = _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 30))
+    cutter_r = _clamp(el.get("cutter_r"), (r * 0.4, r), r * 0.8)
+    lo, hi = max(r - cutter_r + 1.0, 1.0), r + cutter_r - 1.0
+    dist = _clamp(el.get("cutter_offset"), (lo, hi), min(max(r * 0.4, lo), hi))
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    # two-circle intersection (cutter center along the rotate direction)
+    a = (dist * dist + r * r - cutter_r * cutter_r) / (2.0 * dist)
+    h = math.sqrt(max(r * r - a * a, 0.0))
+    ux, uy = _polar(0.0, 0.0, 1.0, rotate)  # unit vector toward the cutter
+    bx, by = cx + a * ux, cy + a * uy
+    px, py = -uy, ux  # perpendicular
+    p1 = (bx + h * px, by + h * py)
+    p2 = (bx - h * px, by - h * py)
+    inner_large = 1 if a > dist else 0
+    return (
+        f"M{_fmt(p1[0])} {_fmt(p1[1])}"
+        f"A{_fmt(r)} {_fmt(r)} 0 1 1 {_fmt(p2[0])} {_fmt(p2[1])}"
+        f"A{_fmt(cutter_r)} {_fmt(cutter_r)} 0 {inner_large} 0 {_fmt(p1[0])} {_fmt(p1[1])}Z"
+    )
+
+
+def _prng(seed):
+    """mulberry32 — same algorithm as frontend abstract.ts, deterministic
+    across Python versions (unlike random.Random)."""
+    state = int(seed) & 0xFFFFFFFF
+
+    def rand():
+        nonlocal state
+        state = (state + 0x6D2B79F5) & 0xFFFFFFFF
+        t = state
+        t = (t ^ (t >> 15)) * (t | 1) & 0xFFFFFFFF
+        t = (t ^ (t + ((t ^ (t >> 7)) * (t | 61) & 0xFFFFFFFF))) & 0xFFFFFFFF
+        return ((t ^ (t >> 14)) & 0xFFFFFFFF) / 4294967296.0
+
+    return rand
+
+
+def _compile_blob(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    irregularity = _clamp(el.get("irregularity"), (0.0, 0.45), 0.25)
+    r = _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 25) * (1 + irregularity)) / (1 + irregularity)
+    sides = int(_clamp(el.get("sides"), (5, 12), 8))
+    rand = _prng(int(_clamp(el.get("seed"), (0, 10_000_000), 1)))
+    verts = [
+        _polar(cx, cy, r * (1 - irregularity + 2 * irregularity * rand()), i * 360.0 / sides) for i in range(sides)
+    ]
+    # closed Catmull-Rom -> cubic beziers (standard 1/6 tangent rule)
+    d = f"M{_fmt(verts[0][0])} {_fmt(verts[0][1])}"
+    n = len(verts)
+    for i in range(n):
+        p0, p1 = verts[i - 1], verts[i]
+        p2, p3 = verts[(i + 1) % n], verts[(i + 2) % n]
+        c1 = (p1[0] + (p2[0] - p0[0]) / 6.0, p1[1] + (p2[1] - p0[1]) / 6.0)
+        c2 = (p2[0] - (p3[0] - p1[0]) / 6.0, p2[1] - (p3[1] - p1[1]) / 6.0)
+        d += f"C{_fmt(c1[0])} {_fmt(c1[1])} {_fmt(c2[0])} {_fmt(c2[1])} {_fmt(p2[0])} {_fmt(p2[1])}"
+    return d + "Z"
+
+
+def _compile_wave(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    width = _clamp(el.get("width"), (10.0, 90.0), 60)
+    amplitude = _clamp(el.get("amplitude"), (1.0, 20.0), 6)
+    cycles = _clamp(el.get("cycles"), (0.5, 4.0), 1.5)
+    thickness = _clamp(el.get("thickness"), _THICKNESS, 4)
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    # scale the whole local shape down if its corner radius would leave canvas
+    rmax = math.hypot(width / 2.0, amplitude + thickness / 2.0)
+    fit = _fit_radius(cx, cy, rmax)
+    s = min(1.0, fit / rmax)
+    width, amplitude, thickness = width * s, amplitude * s, thickness * s
+    samples = 28
+    spine = []
+    for i in range(samples + 1):
+        t = i / samples
+        x = cx - width / 2.0 + width * t
+        y = cy + amplitude * math.sin(2 * math.pi * cycles * t)
+        spine.append((x, y))
+    left, right = _offset_edges(spine, thickness / 2.0)
+    pts = left + list(reversed(right))
+    if rotate:
+        pts = _rotate(pts, cx, cy, rotate)
+    return _polyline(pts) + "Z"
+
+
+_REPEATABLE = {"circle", "ring", "rounded_rect", "polygon", "arc", "star", "petal", "crescent", "blob", "wave", "curve"}
+_MIRRORABLE = _REPEATABLE - {"blob"}  # a blob can't be param-reflected (seeded shape)
+_CHILD_ROTATE_KEYS = {
+    "rounded_rect": "rotate_deg",
+    "polygon": "rotate_deg",
+    "star": "rotate_deg",
+    "petal": "rotate_deg",
+    "crescent": "rotate_deg",
+    "wave": "rotate_deg",
+    "arc": "start_deg",
+}
+
+
+def _norm_deg(deg):
+    return ((deg + 180.0) % 360.0) - 180.0
+
+
+def _compile_single(el):
+    """One element dict -> (d, fill_rule|None). Unknown/invalid -> ('', None)."""
+    kind = el.get("type")
+    fill_rule = None
+    if kind == "circle":
+        d = _compile_circle(el)
+    elif kind == "ring":
+        d, fill_rule = _compile_ring(el)
+    elif kind == "dot_ring":
+        d = _compile_dot_ring(el)
+    elif kind == "dot_grid":
+        d = _compile_dot_grid(el)
+    elif kind == "rounded_rect":
+        d = _compile_rounded_rect(el)
+    elif kind == "polygon":
+        d, fill_rule = _compile_polygon(el)
+    elif kind == "arc":
+        d = _compile_arc(el)
+    elif kind == "star":
+        d = _compile_star(el)
+    elif kind == "petal":
+        d = _compile_petal(el)
+    elif kind == "crescent":
+        d = _compile_crescent(el)
+    elif kind == "blob":
+        d = _compile_blob(el)
+    elif kind == "wave":
+        d = _compile_wave(el)
+    elif kind == "curve":
+        d, fill_rule = _compile_curve(el)
+    elif kind == "repeat":
+        d, fill_rule = _compile_repeat(el)
+    elif kind == "mirror":
+        d, fill_rule = _compile_mirror(el)
+    elif kind == "path":
+        d = str(el.get("d") or "")
+        fill_rule = el.get("fill_rule")
+    else:
+        d = ""
+    return d, fill_rule
+
+
+def _rotated_child(child, cx, cy, deg):
+    out = dict(child)
+    if child.get("type") == "curve":
+        raw = child.get("points") if isinstance(child.get("points"), list) else []
+        pts = [(p[0], p[1]) for p in raw if isinstance(p, list | tuple) and len(p) == 2]
+        out["points"] = [list(q) for q in _rotate(pts, cx, cy, deg)]
+        return out
+    ccx = _clamp(child.get("cx"), _COORD, 50)
+    ccy = _clamp(child.get("cy"), _COORD, 50)
+    ((out["cx"], out["cy"]),) = _rotate([(ccx, ccy)], cx, cy, deg)
+    key = _CHILD_ROTATE_KEYS.get(child.get("type"))
+    if key:
+        out[key] = _norm_deg(_clamp(child.get(key), (-360, 360), 0) + deg)
+    return out
+
+
+def _reflected_child(child, axis):
+    out = dict(child)
+    kind = child.get("type")
+    if kind == "curve":
+        raw = child.get("points") if isinstance(child.get("points"), list) else []
+        out["points"] = [[2 * axis - p[0], p[1]] for p in raw if isinstance(p, list | tuple) and len(p) == 2]
+        return out
+    out["cx"] = 2 * axis - _clamp(child.get("cx"), _COORD, 50)
+    if kind == "arc":
+        start = _clamp(child.get("start_deg"), (-360, 360), 0)
+        sweep = _clamp(child.get("sweep_deg"), (15.0, 340.0), 90)
+        out["start_deg"] = _norm_deg(-(start + sweep))
+    else:
+        key = _CHILD_ROTATE_KEYS.get(kind)
+        if key:
+            out[key] = -_clamp(child.get(key), (-360, 360), 0)
+    return out
+
+
+def _compile_repeat(el):
+    child = el.get("of") if isinstance(el.get("of"), dict) else None
+    if not child or child.get("type") not in _REPEATABLE:
+        return "", None
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    count = int(_clamp(el.get("count"), (2, 16), 6))
+    start = _clamp(el.get("start_deg"), (-360, 360), 0)
+    parts, rule, total = [], None, 0
+    for i in range(count):
+        d, fr = _compile_single(_rotated_child(child, cx, cy, start + i * 360.0 / count))
+        if not d or total + len(d) > _MAX_D - 100:
+            continue
+        parts.append(d)
+        total += len(d)
+        rule = rule or fr
+    return "".join(parts), rule
+
+
+def _compile_mirror(el):
+    child = el.get("of") if isinstance(el.get("of"), dict) else None
+    if not child or child.get("type") not in _MIRRORABLE:
+        return "", None
+    axis = _clamp(el.get("axis_x"), _COORD, 50)
+    include_original = el.get("include_original", True)
+    parts, rule = [], None
+    sources = ([child] if include_original else []) + [_reflected_child(child, axis)]
+    for src in sources:
+        d, fr = _compile_single(src)
+        if d:
+            parts.append(d)
+            rule = rule or fr
+    return "".join(parts), rule
+
+
 def compile_elements(elements):
     """Typed elements -> list of ``{d, fill[, fill_rule][, opacity]}`` path
     dicts ready for the custom-mark validator. Unknown element types are
@@ -224,28 +586,17 @@ def compile_elements(elements):
     for el in elements or []:
         if not isinstance(el, dict):
             continue
-        kind = el.get("type")
-        fill_rule = None
-        if kind == "circle":
-            d = _compile_circle(el)
-        elif kind == "ring":
-            d, fill_rule = _compile_ring(el)
-        elif kind == "dot_ring":
-            d = _compile_dot_ring(el)
-        elif kind == "dot_grid":
-            d = _compile_dot_grid(el)
-        elif kind == "rounded_rect":
-            d = _compile_rounded_rect(el)
-        elif kind == "polygon":
-            d, fill_rule = _compile_polygon(el)
-        elif kind == "arc":
-            d = _compile_arc(el)
-        elif kind == "path":
-            d = str(el.get("d") or "")
-            fill_rule = el.get("fill_rule")
-        else:
-            continue
+        d, fill_rule = _compile_single(el)
         if not d:
+            continue
+        if el.get("cut"):
+            # Punch the shape out of the element right before it. Skipped
+            # when there's no base yet or the merged d would blow the
+            # whitelist budget (the whole path would be dropped downstream).
+            if not paths or len(paths[-1]["d"]) + len(d) > _MAX_D:
+                continue
+            paths[-1]["d"] += d
+            paths[-1]["fill_rule"] = "evenodd"
             continue
         entry = {"d": d, "fill": el.get("fill") or "mark"}
         if fill_rule in ("nonzero", "evenodd"):

@@ -19,6 +19,7 @@ import {
   applyPalette,
   defaultRecipe,
   fontEntry,
+  type FontEntry,
   type FontVibe,
   type Palette,
 } from "@/lib/logo/catalog";
@@ -435,7 +436,9 @@ export function moreLikeThis(
       if (used.has(key) && attempt < 11) continue;
       used.add(key);
       const entry = fontEntry(font);
-      const weight = entry.weights.includes(typo.weight) ? typo.weight : 700;
+      const weight = entry.weights.includes(typo.weight)
+        ? typo.weight
+        : entry.weights[entry.weights.length - 1]!;
       variants.push({
         ...base,
         layout,
@@ -448,7 +451,11 @@ export function moreLikeThis(
             tracking: typo.tracking,
             case: typo.case,
           },
-          tagline: { ...base.typography.tagline, font: entry.family },
+          tagline: {
+            ...base.typography.tagline,
+            font: entry.family,
+            weight: taglineWeight(entry),
+          },
         },
         colors: { ...base.colors },
         elements: {
@@ -495,8 +502,42 @@ export interface BrandPackPalette {
   accent: string;
   ink: string;
 }
+
+export type PaletteRole = "primary" | "secondary" | "accent" | "ink" | "white";
+export interface BrandPackColorRoles {
+  badge: PaletteRole;
+  mark: PaletteRole;
+  mark2: PaletteRole;
+  mark_accent: PaletteRole;
+  text: Exclude<PaletteRole, "white" | "accent">;
+  tagline: Exclude<PaletteRole, "white">;
+}
+export interface BrandPackTypography {
+  case: TextCase;
+  tracking: number;
+  weight: FontWeight;
+}
+/** A v3 pack's complete lockup for one design — the AI designs the whole
+ * logo (layout, badge, font, colors), not just a bare mark; composeDesigns
+ * materializes this faithfully instead of dice-rolling combinations. */
+export interface BrandPackDesign {
+  concept: string;
+  rationale: string;
+  paths: BrandPackPath[];
+  elements?: BrandPackElement[];
+  layout: RecipeLayout;
+  badge_shape: BadgeShape;
+  badge_outline: boolean;
+  font: string;
+  typography: BrandPackTypography;
+  palette_index: number;
+  color_roles: BrandPackColorRoles;
+}
 export interface BrandPack {
-  marks: BrandPackMark[];
+  /** v3 packs (PROMPT_VERSION >= 5): complete designs. */
+  designs?: BrandPackDesign[];
+  /** Legacy packs from saved studio sessions (<= 14 days old). */
+  marks?: BrandPackMark[];
   palettes: BrandPackPalette[];
   tagline: string;
   font_vibe: FontVibe;
@@ -530,7 +571,7 @@ export function composeFromPack(
   const fonts = fontPool.length ? fontPool : LOGO_FONT_FAMILIES;
 
   const recipes: LogoRecipe[] = [];
-  for (const mark of pack.marks) {
+  for (const mark of pack.marks ?? []) {
     const paths: CustomMarkPath[] = mark.paths.map((p) => ({
       d: p.d,
       fill: p.fill ?? "mark",
@@ -559,7 +600,7 @@ export function composeFromPack(
           name: { font: entry.family, weight, tracking: 0, case: "none" },
           tagline: {
             font: entry.family,
-            weight: 500,
+            weight: taglineWeight(entry),
             tracking: 0.08,
             case: "upper",
           },
@@ -579,48 +620,149 @@ export function composeFromPack(
   return recipes;
 }
 
-/** Parallel index into the flattened `marks x palettes` order composeFromPack
- * builds recipes in — the single source of truth for that pairing, reused
+function resolveRole(role: PaletteRole, palette: BrandPackPalette): string {
+  return role === "white" ? "#ffffff" : palette[role];
+}
+
+const clampTracking = (t: number) => Math.max(-0.1, Math.min(0.4, t || 0));
+
+/** The tagline's preferred weight is 500 (a touch lighter than the name),
+ * but single-weight families (e.g. Great Vibes, Pacifico — Script vibe,
+ * weight 400 only) don't have it: snap to the family's heaviest available
+ * weight instead of requesting a Google Fonts variant that 404s. */
+const taglineWeight = (entry: FontEntry): FontWeight =>
+  entry.weights.includes(500) ? 500 : entry.weights[entry.weights.length - 1]!;
+
+/** v3 packs: the AI already designed the whole lockup (layout, badge, font,
+ * typography, colors) per design — materialize it faithfully, 1:1, with no
+ * dice-rolling. Font/weight/palette-index are still defensively resolved
+ * against the client catalogs (an AI response is untrusted input). */
+export function composeDesigns(pack: BrandPack, brief: Brief): LogoRecipe[] {
+  const vibePool = LOGO_FONTS.filter((f) => f.vibe === pack.font_vibe).map(
+    (f) => f.family,
+  );
+  return (pack.designs ?? []).map((design) => {
+    const palette =
+      pack.palettes[
+        Math.max(0, Math.min(design.palette_index, pack.palettes.length - 1))
+      ] ?? pack.palettes[0]!;
+    const family = LOGO_FONT_FAMILIES.includes(design.font)
+      ? design.font
+      : (vibePool[0] ?? LOGO_FONT_FAMILIES[0]!);
+    const entry = fontEntry(family);
+    const weight: FontWeight = entry.weights.includes(design.typography.weight)
+      ? design.typography.weight
+      : entry.weights[entry.weights.length - 1]!;
+    const roles = design.color_roles;
+    const noBadge =
+      design.badge_shape === "none" || design.layout === "name_only";
+    const markRole: PaletteRole =
+      noBadge && roles.mark === "white" ? "ink" : roles.mark;
+    const paths: CustomMarkPath[] = design.paths.map((p) => ({
+      d: p.d,
+      fill: p.fill ?? "mark",
+      fill_rule: p.fill_rule,
+      opacity: p.opacity,
+    }));
+    const base = defaultRecipe(brief.brandName || "My Brand", palette.primary);
+    return {
+      ...base,
+      layout: design.layout,
+      tagline: pack.tagline,
+      mark: { type: "custom", rationale: design.rationale, paths },
+      badge: { shape: design.badge_shape, outline: design.badge_outline },
+      typography: {
+        name: {
+          font: entry.family,
+          weight,
+          tracking: clampTracking(design.typography.tracking),
+          case: design.typography.case,
+        },
+        tagline: {
+          font: entry.family,
+          weight: taglineWeight(entry),
+          tracking: 0.08,
+          case: "upper",
+        },
+      },
+      colors: {
+        palette_id: null,
+        badge: { type: "solid", color: resolveRole(roles.badge, palette) },
+        mark: resolveRole(markRole, palette),
+        mark2: resolveRole(roles.mark2, palette),
+        mark_accent: resolveRole(roles.mark_accent, palette),
+        text: resolveRole(roles.text, palette),
+        tagline: resolveRole(roles.tagline, palette),
+      },
+    };
+  });
+}
+
+/** Single entry point for AI walls: v3 packs materialize their designs;
+ * legacy packs (old saved sessions) keep the deterministic fan-out. */
+export function composePackWall(
+  pack: BrandPack,
+  brief: Brief,
+  seed: number,
+): LogoRecipe[] {
+  return pack.designs?.length
+    ? composeDesigns(pack, brief)
+    : composeFromPack(pack, brief, seed);
+}
+
+/** Parallel index into the flattened wall order composeDesigns/composeFromPack
+ * build recipes in — the single source of truth for that pairing, reused
  * by logo-studio.tsx to know which source elements (if any) back a given
- * AI wall tile, for handing to logo-refine/ later. */
+ * AI wall tile, for handing to logo-refine/ later. v3 packs are 1:1 with
+ * designs; legacy packs keep the `marks x palettes` fan-out order. */
 export function packElementsByIndex(
   pack: BrandPack,
 ): (BrandPackElement[] | undefined)[] {
+  if (pack.designs?.length) return pack.designs.map((d) => d.elements);
   const out: (BrandPackElement[] | undefined)[] = [];
-  for (const mark of pack.marks) {
+  for (const mark of pack.marks ?? []) {
     for (let i = 0; i < pack.palettes.length; i++) out.push(mark.elements);
   }
   return out;
 }
 
 /** The logo-refine/ endpoint's response payload — a compact design (not a
- * full LogoRecipe) that applyRefinedDesign folds onto the current draft. */
+ * full LogoRecipe) that applyRefinedDesign folds onto the current draft.
+ * Carries a complete lockup (badge/font/typography/color roles), same as a
+ * v3 pack's BrandPackDesign, so a refinement can redesign the whole logo. */
 export interface RefinedDesign {
   mark: BrandPackMark;
   palette: BrandPackPalette;
   font_vibe: FontVibe;
   layout: RecipeLayout;
+  badge_shape: BadgeShape;
+  badge_outline: boolean;
+  font: string;
+  typography: BrandPackTypography;
+  color_roles: BrandPackColorRoles;
   rationale: string;
 }
 
 /** Applies an AI refinement to the current editor draft: reshapes the mark,
- * repalettes, and swaps to a font in the new font_vibe's pool (keeping the
- * current family if it already fits) — everything else on the recipe
- * (name, tagline text, badge, element placement) is left untouched. */
+ * repalettes, and replaces the badge/typography/color-role lockup with the
+ * AI's — everything else on the recipe (name, tagline text, element
+ * placement) is left untouched. Font/weight are defensively resolved
+ * against the client catalogs the same way composeDesigns does. */
 export function applyRefinedDesign(
   recipe: LogoRecipe,
   design: RefinedDesign,
 ): LogoRecipe {
-  const fontPool = LOGO_FONTS.filter((f) => f.vibe === design.font_vibe).map(
+  const vibePool = LOGO_FONTS.filter((f) => f.vibe === design.font_vibe).map(
     (f) => f.family,
   );
-  const fonts = fontPool.length ? fontPool : LOGO_FONT_FAMILIES;
-  const font = fonts.includes(recipe.typography.name.font)
-    ? recipe.typography.name.font
-    : fonts[0]!;
-  const entry = fontEntry(font);
-  const weight: FontWeight = entry.weights.includes(700)
-    ? 700
+  const family = LOGO_FONT_FAMILIES.includes(design.font)
+    ? design.font
+    : vibePool.includes(recipe.typography.name.font)
+      ? recipe.typography.name.font
+      : (vibePool[0] ?? LOGO_FONT_FAMILIES[0]!);
+  const entry = fontEntry(family);
+  const weight: FontWeight = entry.weights.includes(design.typography.weight)
+    ? design.typography.weight
     : entry.weights[entry.weights.length - 1]!;
   const paths: CustomMarkPath[] = design.mark.paths.map((p) => ({
     d: p.d,
@@ -628,23 +770,38 @@ export function applyRefinedDesign(
     fill_rule: p.fill_rule,
     opacity: p.opacity,
   }));
+  const roles = design.color_roles;
+  const noBadge =
+    design.badge_shape === "none" || design.layout === "name_only";
+  const markRole: PaletteRole =
+    noBadge && roles.mark === "white" ? "ink" : roles.mark;
   return {
     ...recipe,
     layout: design.layout,
     mark: { type: "custom", rationale: design.mark.rationale, paths },
+    badge: { shape: design.badge_shape, outline: design.badge_outline },
     typography: {
-      name: { ...recipe.typography.name, font, weight },
-      tagline: { ...recipe.typography.tagline, font, weight: 500 },
+      name: {
+        font: entry.family,
+        weight,
+        tracking: clampTracking(design.typography.tracking),
+        case: design.typography.case,
+      },
+      tagline: {
+        ...recipe.typography.tagline,
+        font: entry.family,
+        weight: taglineWeight(entry),
+      },
     },
     colors: {
       ...recipe.colors,
       palette_id: null,
-      badge: { type: "solid", color: design.palette.primary },
-      mark: design.palette.ink,
-      mark2: design.palette.secondary,
-      mark_accent: design.palette.accent,
-      text: design.palette.ink,
-      tagline: design.palette.secondary,
+      badge: { type: "solid", color: resolveRole(roles.badge, design.palette) },
+      mark: resolveRole(markRole, design.palette),
+      mark2: resolveRole(roles.mark2, design.palette),
+      mark_accent: resolveRole(roles.mark_accent, design.palette),
+      text: resolveRole(roles.text, design.palette),
+      tagline: resolveRole(roles.tagline, design.palette),
     },
   };
 }

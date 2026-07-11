@@ -13,7 +13,7 @@ import {
 import { LOGO_FONTS, defaultRecipe } from "@/lib/logo/catalog";
 import {
   applyRefinedDesign,
-  composeFromPack,
+  composePackWall,
   composeWall,
   moreLikeThis,
   packElementsByIndex,
@@ -159,7 +159,7 @@ export function LogoStudio({
       setWallSeed(saved.wallSeed);
       setWall(composeWall(saved.brief, saved.wallSeed, 24, theme.primaryHex));
       if (saved.pack) {
-        setAiWall(composeFromPack(saved.pack, saved.brief, saved.packSeed ?? 1));
+        setAiWall(composePackWall(saved.pack, saved.brief, saved.packSeed ?? 1));
         setAiWallElements(packElementsByIndex(saved.pack));
       } else {
         setAiWall(null);
@@ -273,7 +273,7 @@ export function LogoStudio({
         const seed = 1 + Math.floor(Math.random() * 1_000_000);
         setPack(resp.pack);
         setPackSeed(resp.pack ? seed : null);
-        setAiWall(resp.pack ? composeFromPack(resp.pack, brief, seed) : null);
+        setAiWall(resp.pack ? composePackWall(resp.pack, brief, seed) : null);
         setAiWallElements(resp.pack ? packElementsByIndex(resp.pack) : null);
       } else if (resp.source === "error") {
         setAiNotice("Couldn't reach the design studio — try again.");

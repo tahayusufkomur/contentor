@@ -10,14 +10,26 @@ import {
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 describe("font catalog", () => {
-  it("has 20 fonts across 5 vibes with legal weights", () => {
-    expect(LOGO_FONTS).toHaveLength(20);
-    expect(new Set(LOGO_FONTS.map((f) => f.vibe)).size).toBe(5);
+  it("has 24 fonts across 6 vibes with legal weights", () => {
+    expect(LOGO_FONTS).toHaveLength(24);
+    expect(new Set(LOGO_FONTS.map((f) => f.vibe)).size).toBe(6);
     for (const f of LOGO_FONTS) {
-      expect(f.weights.length).toBeGreaterThanOrEqual(4);
+      expect(f.weights.length).toBeGreaterThanOrEqual(1);
       for (const w of f.weights) expect([400, 500, 600, 700, 800]).toContain(w);
     }
-    expect(new Set(LOGO_FONT_FAMILIES).size).toBe(20);
+    expect(new Set(LOGO_FONT_FAMILIES).size).toBe(24);
+  });
+
+  it("ships a Script vibe with 4 families and honest weight lists", () => {
+    const script = LOGO_FONTS.filter((f) => f.vibe === "Script");
+    expect(script.map((f) => f.family)).toEqual([
+      "Dancing Script",
+      "Great Vibes",
+      "Pacifico",
+      "Caveat",
+    ]);
+    expect(script.find((f) => f.family === "Great Vibes")?.weights).toEqual([400]);
+    expect(script.find((f) => f.family === "Pacifico")?.weights).toEqual([400]);
   });
 
   it("fontEntry falls back to Inter for unknown families", () => {

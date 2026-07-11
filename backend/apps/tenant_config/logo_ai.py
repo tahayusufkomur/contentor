@@ -24,7 +24,7 @@ from apps.core.models import LogoAiUsage
 from .logo_geometry import compile_elements
 from .logo_recipe import _hex, validate_recipe
 
-PROMPT_VERSION = 4
+PROMPT_VERSION = 5
 
 # A minimal, already-valid v2 recipe skeleton used only to run a Brand Pack
 # mark's paths through validate_recipe's injection whitelist + clamps — the
@@ -79,8 +79,34 @@ thickness 0 = solid, greater = outline band only.
 partial ring segment; round_caps true gives soft rounded ends.
 - path {d, fill_rule} — freehand FILLED path for organic shapes or custom \
 letterforms when no primitive fits. Absolute commands (M L H V C S Q T A Z), \
-under 400 characters, closed shapes only, no strokes. Use fill_rule \
+under 800 characters, closed shapes only, no strokes. Use fill_rule \
 "evenodd" to cut negative space out of a solid form.
+- curve {points: [[x,y],...], thickness, round_caps, closed} — a smooth \
+even-width ribbon swept through 2-10 control points. You bend a wire; the \
+drafting engine makes a perfect stroke. round_caps true for soft ends. THE \
+line-art tool: swooshes, continuous-line motifs, simplified figures.
+- star {cx, cy, points, outer_r, inner_r, rotate_deg} — a pointed star.
+- crescent {cx, cy, r, cutter_r, cutter_offset, rotate_deg} — a disc with a \
+circular bite taken from the rotate_deg side: moons, leaves, smiles.
+- petal {cx, cy, length, width, rotate_deg} — an almond pointed at both \
+ends, length axis aimed at rotate_deg: leaves, drops, flames.
+- blob {cx, cy, r, sides, seed, irregularity} — a smooth organic form; same \
+seed always draws the same blob.
+- wave {cx, cy, width, amplitude, cycles, thickness, rotate_deg} — a \
+flowing sine ribbon: water, breath, sound.
+
+Combinators:
+- repeat {cx, cy, count, start_deg, of: <element>} — the child repeated \
+`count` times, spun evenly around (cx, cy): petal becomes flower, square \
+becomes pinwheel, arc becomes sunburst. Child: any element except path, \
+dot_grid, dot_ring, repeat, mirror.
+- mirror {axis_x, of: <element>, include_original} — the child plus its \
+perfect reflection across the vertical line x=axis_x: wings, lotus poses, \
+open books. Same children as repeat, except blob.
+- Any element may add "cut": true — instead of drawing, it punches its \
+shape OUT of the element right before it. The cut must sit fully inside \
+that element. Negative space anywhere: a bite from a disc, a ring of holes \
+(repeat as cut), a letter knocked out of a badge.
 
 Every element also takes fill: "mark" (primary, the default), "mark2", or \
 "accent" — and optional opacity (0.12-0.35 for quiet background texture, \
@@ -103,37 +129,81 @@ thick outline, or dense repetition. Never a couple of thin floating slivers.
 8. FAVICON TEST — no meaningful feature smaller than ~3 units; the mark \
 must survive a 48px render."""
 
+# KEEP IN SYNC: frontend-customer/src/lib/logo/catalog.ts LOGO_FONTS
+# Shared by STATIC_PROMPT and REFINE_PROMPT so the font list exists in
+# exactly one place.
+_FONT_CATALOG = """## Font catalog (family — voice)
+
+Modern: Inter — neutral clarity; Geist — technical precision; DM Sans — \
+warm geometric; Plus Jakarta Sans — contemporary polish.
+Elegant: Playfair Display — editorial serif; Lora — bookish calm; \
+EB Garamond — classical authority; Cormorant Garamond — fine luxury.
+Bold: Poppins — confident rounds; Montserrat — urban strength; Archivo — \
+industrial punch; Space Grotesk — techy edge.
+Playful: Nunito — soft friendly; Quicksand — light bounce; Baloo 2 — \
+chubby cheer; Fredoka — bubbly warmth.
+Minimal: Work Sans — quiet utility; Manrope — refined minimal; Sora — \
+future clean; Outfit — sleek geometry.
+Script (for the name only — never uppercase, never taglines): Dancing \
+Script — lively handwriting; Great Vibes — formal calligraphy; Pacifico — \
+retro brush; Caveat — casual marker.
+"""
+
 STATIC_PROMPT = (
     """You are a senior brand-identity designer producing a Brand Pack for a \
-coaching brand: 6 bespoke logo marks and 3 brand color palettes. The coach \
-sells courses and community under this brand — every mark must look like it \
-came from a serious studio engagement, never from a clipart library.
+coaching brand: 8 complete logo designs plus 3 brand color palettes. The \
+coach sells courses and community under this brand — every design must look \
+like it came from a serious studio engagement, never from a clipart library.
 
 """
     + _ELEMENT_VOCABULARY_AND_PRINCIPLES
     + """
 
-## The 6 marks — one per family, no repeats
+## The 8 designs — concept first, never a template
 
-1. PURE GEOMETRIC — solid shapes, rings, or overlap compositions.
-2. DOT PATTERN — dot_ring (possibly two concentric, different dot sizes) or \
-dot_grid with a sculpted skip-list.
-3. ARC SYSTEM — 2-4 arcs with rhythm: nested sweeps, offset starts, motion, \
-orbits, growth curves.
-4. NEGATIVE SPACE — one solid form with a meaningful cutout (evenodd path) \
-that draws the symbol with what ISN'T there.
-5. LETTERFORM — the brand's first initial abstracted into geometry (path) \
-or rendered as a dot_grid letter via skip — capture the letter's structural \
-DNA, never mimic a font glyph.
-6. LAYERED — a quiet low-opacity texture (dot_grid or dot_ring) behind one \
-bold foreground element.
+For each design, write `concept` FIRST: one sentence naming a real idea \
+drawn from THIS brand's name, niche and vibe (growth, calm, connection, \
+strength, focus, warmth...) and the visual device that will express it. \
+Then draw exactly that.
 
-Across the 6, vary density (sparse to dense), weight (light to bold), and \
-symmetry (make 2-3 clearly asymmetric). Tie each mark to THIS brand's niche \
-and name: pick a real concept (growth, calm, connection, strength, focus, \
-warmth...) and let the geometry express it. Never a generic swoosh, \
-sparkle, or globe. At least one mark must use a second fill role ("mark2" \
-or "accent") for tonal depth.
+Diversity is a hard rule: no two designs may share their primary visual \
+device. Devices to draw from (not limited to): solid geometry, \
+negative-space cut, continuous-line curve, mirrored organic composition, \
+dot system, arc system, letterform (the initial abstracted into geometry — \
+path or dot-grid skips — never a font glyph), petal/blob composition, \
+layered low-opacity texture. Vary density, weight and symmetry across the \
+8 (make 2-3 clearly asymmetric). Where they fit the brand, use `curve` \
+line-art in at least one design, a `cut` in at least one, and `mirror` \
+symmetry in at least one. Never a generic swoosh, sparkle, or globe.
+
+## The lockup — you design the whole logo, not just the mark
+
+Per design, choose:
+- layout: horizontal (versatile classic) | horizontal_reversed (mark on \
+the right) | stacked (centered, ceremonial) | emblem (mark inside the \
+badge above the name — requires a badge) | name_only (pure wordmark).
+- badge_shape + badge_outline: a badge is a container; pick "none" when \
+the mark should breathe directly on the page. emblem must have a badge.
+- font: exactly one family from the catalog below, matched to the brand's \
+voice.
+- typography: case (upper = authoritative, title = friendly, none = \
+modern), tracking (0.05-0.2 with upper, else 0), weight.
+- palette_index: which of your 3 palettes this design wears (spread all 3 \
+across the 8 designs).
+- color_roles: for EACH slot pick which PALETTE COLOR paints it. badge, \
+mark, mark2 and mark_accent each take one of: primary, secondary, accent, \
+ink, white. text takes one of: primary, secondary, ink (never accent, \
+never white — text always sits on white, so it must be a role that reads \
+there). tagline takes one of: primary, secondary, accent, ink (never \
+white). Never write a slot's own name as its value (mark2's value is a \
+palette color like "primary", never the word "mark2" — that word is only \
+ever an element's `fill`, a different vocabulary). Contrast is \
+non-negotiable: on a dark badge use white or a light role for the mark; \
+with badge "none" the mark and text must read on white.
+
+"""
+    + _FONT_CATALOG
+    + """
 
 ## Style directives
 
@@ -165,39 +235,48 @@ secondary supports, accent punctuates. The 3 palettes should feel like one \
 brand family at three volumes (e.g. calm / classic / vivid). Marks are \
 drawn in these colors on white cards, so secondary and accent must stay \
 clearly visible on white — no near-white pastels; when in doubt, darken.
+"""
+    + """
 
 ## Tagline & typography
 
 One short tagline — empty string if nothing natural fits; never force it. \
-font_vibe: the single best fit among Modern, Elegant, Bold, Playful, Minimal.
+font_vibe: the single best fit among Modern, Elegant, Bold, Playful, \
+Minimal, Script — the fallback pool if a design's font is ever unavailable.
 
-## Example marks (element JSON)
+## Example design (JSON)
 
-{"rationale": "Energy radiating from one warm center — a community growing \
-outward from your practice.", "elements": [{"type": "dot_ring", "cx": 50, \
-"cy": 50, "radius": 15, "count": 6, "dot_r": 3.5}, {"type": "dot_ring", \
-"cx": 50, "cy": 50, "radius": 27, "count": 12, "dot_r": 2.5, "start_deg": \
-15, "opacity": 0.65}, {"type": "circle", "cx": 50, "cy": 50, "r": 4.5, \
-"fill": "accent"}]}
+{"concept": "One unbroken line rising through a steady circle — a single \
+practice carried all the way.", "elements": [{"type": "circle", "cx": 50, \
+"cy": 50, "r": 30}, {"type": "curve", "points": [[28, 64], [45, 55], [56, \
+43], [72, 32]], "thickness": 4.5, "round_caps": true, "cut": true}], \
+"rationale": "One continuous path through a steady circle — your coaching \
+carries students all the way through.", "layout": "horizontal", \
+"badge_shape": "none", "badge_outline": false, "font": "Manrope", \
+"typography": {"case": "none", "tracking": 0, "weight": 700}, \
+"palette_index": 0, "color_roles": {"badge": "primary", "mark": "ink", \
+"mark2": "secondary", "mark_accent": "accent", "text": "ink", "tagline": \
+"secondary"}}
 
-{"rationale": "Two paths sweeping upward at their own pace — coaching that \
-meets each student where they are.", "elements": [{"type": "arc", "cx": 50, \
-"cy": 58, "r": 30, "thickness": 5, "start_deg": 250, "sweep_deg": 150, \
-"round_caps": true}, {"type": "arc", "cx": 50, "cy": 58, "r": 19, \
-"thickness": 5, "start_deg": 265, "sweep_deg": 115, "round_caps": true, \
-"fill": "mark2"}, {"type": "circle", "cx": 66, "cy": 24, "r": 3.5, "fill": \
-"accent"}]}
-
-{"rationale": "A rising peak carved out of a steady circle — progress held \
-inside consistency.", "elements": [{"type": "path", "d": "M50 14 A36 36 0 1 \
-0 50.1 14 Z M36 62 L50 38 L64 62 L57 62 L50 50 L43 62 Z", "fill_rule": \
-"evenodd"}]}"""
+{"concept": "A lotus opening — mirrored petals around a quiet center.", \
+"elements": [{"type": "mirror", "axis_x": 50, "of": {"type": "petal", \
+"cx": 38, "cy": 46, "length": 30, "width": 12, "rotate_deg": -35}}, \
+{"type": "petal", "cx": 50, "cy": 40, "length": 34, "width": 13, "fill": \
+"mark2"}, {"type": "circle", "cx": 50, "cy": 62, "r": 4, "fill": \
+"accent"}], "rationale": "A lotus opening around a still center — calm \
+that grows outward.", "layout": "stacked", "badge_shape": "none", \
+"badge_outline": false, "font": "Cormorant Garamond", "typography": \
+{"case": "title", "tracking": 0, "weight": 600}, "palette_index": 1, \
+"color_roles": {"badge": "primary", "mark": "primary", "mark2": \
+"secondary", "mark_accent": "accent", "text": "ink", "tagline": \
+"secondary"}}"""
 )
 
 
 class _ElementBase(BaseModel):
     fill: Literal["mark", "mark2", "accent"] = "mark"
     opacity: float | None = None
+    cut: bool = False
 
 
 class _Circle(_ElementBase):
@@ -273,8 +352,103 @@ class _FreePath(_ElementBase):
     fill_rule: Literal["nonzero", "evenodd"] | None = None
 
 
+class _Star(_ElementBase):
+    type: Literal["star"]
+    cx: float
+    cy: float
+    points: int
+    outer_r: float
+    inner_r: float
+    rotate_deg: float = 0
+
+
+class _Petal(_ElementBase):
+    type: Literal["petal"]
+    cx: float
+    cy: float
+    length: float
+    width: float
+    rotate_deg: float = 0
+
+
+class _Crescent(_ElementBase):
+    type: Literal["crescent"]
+    cx: float
+    cy: float
+    r: float
+    cutter_r: float
+    cutter_offset: float
+    rotate_deg: float = 0
+
+
+class _Blob(_ElementBase):
+    type: Literal["blob"]
+    cx: float
+    cy: float
+    r: float
+    sides: int = 8
+    seed: int = 1
+    irregularity: float = 0.25
+
+
+class _Wave(_ElementBase):
+    type: Literal["wave"]
+    cx: float
+    cy: float
+    width: float
+    amplitude: float
+    cycles: float = 1.5
+    thickness: float = 4
+    rotate_deg: float = 0
+
+
+class _Curve(_ElementBase):
+    type: Literal["curve"]
+    points: list[list[float]]
+    thickness: float = 4
+    round_caps: bool = False
+    closed: bool = False
+
+
+_RepeatChild = Annotated[
+    _Circle | _Ring | _RoundedRect | _Polygon | _Arc | _Star | _Petal | _Crescent | _Blob | _Wave | _Curve,
+    Field(discriminator="type"),
+]
+
+
+class _Repeat(_ElementBase):
+    type: Literal["repeat"]
+    cx: float
+    cy: float
+    count: int
+    start_deg: float = 0
+    of: _RepeatChild
+
+
+class _Mirror(_ElementBase):
+    type: Literal["mirror"]
+    axis_x: float = 50
+    include_original: bool = True
+    of: _RepeatChild
+
+
 _Element = Annotated[
-    _Circle | _Ring | _DotRing | _DotGrid | _RoundedRect | _Polygon | _Arc | _FreePath,
+    _Circle
+    | _Ring
+    | _DotRing
+    | _DotGrid
+    | _RoundedRect
+    | _Polygon
+    | _Arc
+    | _FreePath
+    | _Star
+    | _Petal
+    | _Crescent
+    | _Blob
+    | _Wave
+    | _Curve
+    | _Repeat
+    | _Mirror,
     Field(discriminator="type"),
 ]
 
@@ -292,11 +466,45 @@ class _Palette(BaseModel):
     ink: str
 
 
+_FONT_VIBES = Literal["Modern", "Elegant", "Bold", "Playful", "Minimal", "Script"]
+_LAYOUTS_LITERAL = Literal["horizontal", "stacked", "emblem", "horizontal_reversed", "name_only"]
+_BADGES_LITERAL = Literal["none", "circle", "rounded", "squircle", "hexagon", "shield", "diamond"]
+_ROLE = Literal["primary", "secondary", "accent", "ink", "white"]
+
+
+class _Typography(BaseModel):
+    case: Literal["none", "upper", "title"] = "none"
+    tracking: float = 0
+    weight: Literal[400, 500, 600, 700, 800] = 700
+
+
+class _ColorRoles(BaseModel):
+    badge: _ROLE = "primary"
+    mark: _ROLE = "ink"
+    mark2: _ROLE = "secondary"
+    mark_accent: _ROLE = "accent"
+    text: Literal["primary", "secondary", "ink"] = "ink"
+    tagline: Literal["primary", "secondary", "accent", "ink"] = "secondary"
+
+
+class _Design(BaseModel):
+    concept: str
+    elements: list[_Element]
+    rationale: str
+    layout: _LAYOUTS_LITERAL
+    badge_shape: _BADGES_LITERAL
+    badge_outline: bool = False
+    font: str
+    typography: _Typography
+    palette_index: int = 0
+    color_roles: _ColorRoles
+
+
 class _BrandPack(BaseModel):
-    marks: list[_Mark]
+    designs: list[_Design]
     palettes: list[_Palette]
     tagline: str
-    font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
+    font_vibe: _FONT_VIBES
 
 
 REFINE_PROMPT = (
@@ -320,18 +528,28 @@ custom mark that captures the same brand from scratch, guided by the \
 summary and the instruction). You'll also receive the coach's INSTRUCTION.
 
 Return one refined design: the mark (as elements, same vocabulary as \
-above), a 4-hex-role palette, the single best-fit font_vibe (Modern, \
-Elegant, Bold, Playful, or Minimal), a layout (horizontal, stacked, emblem, \
-horizontal_reversed, or name_only), and a one-sentence rationale — plain \
-words, addressed to the coach, saying what you changed and why."""
+above), a 4-hex-role palette, the whole lockup — layout, badge_shape + \
+badge_outline, one font from the catalog in the pack brief's voice, \
+typography (case/tracking/weight), and color_roles mapping palette roles \
+onto badge/mark/text/tagline (contrast is non-negotiable) — the best-fit \
+font_vibe, and a one-sentence rationale in plain words, addressed to the \
+coach, saying what you changed and why.
+
+"""
+    + _FONT_CATALOG
 )
 
 
 class _RefinedDesign(BaseModel):
     mark: _Mark
     palette: _Palette
-    font_vibe: Literal["Modern", "Elegant", "Bold", "Playful", "Minimal"]
-    layout: Literal["horizontal", "stacked", "emblem", "horizontal_reversed", "name_only"]
+    font_vibe: _FONT_VIBES
+    layout: _LAYOUTS_LITERAL
+    badge_shape: _BADGES_LITERAL
+    badge_outline: bool = False
+    font: str
+    typography: _Typography
+    color_roles: _ColorRoles
     rationale: str
 
 
@@ -446,6 +664,36 @@ def _validate_pack_palette(item):
     }
 
 
+def _validate_lockup(item):
+    """Shape the lockup fields shared by pack designs and refinements —
+    enums are already guaranteed by the pydantic Literals; free text and
+    numbers are clamped, never rejected."""
+    return {
+        "layout": item.layout,
+        "badge_shape": item.badge_shape,
+        "badge_outline": bool(item.badge_outline),
+        "font": str(item.font or "")[:60],
+        "typography": {
+            "case": item.typography.case,
+            "tracking": max(-0.1, min(0.4, float(item.typography.tracking or 0))),
+            "weight": item.typography.weight,
+        },
+        "color_roles": item.color_roles.model_dump(),
+    }
+
+
+def _validate_design(item, palette_count):
+    mark = _validate_pack_mark(item)
+    if not mark:
+        return None
+    return {
+        **mark,
+        "concept": str(item.concept or "")[:200],
+        "palette_index": int(max(0, min(palette_count - 1, item.palette_index))),
+        **_validate_lockup(item),
+    }
+
+
 def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe=""):
     """One structured AI call -> a validated Brand Pack. Raises BrandPackError
     (carrying the estimated cost) on provider failure or if the response
@@ -464,20 +712,20 @@ def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe="")
             user=user_content,
             output_model=_BrandPack,
             model=settings.LOGO_AI_MODEL,
-            # 6 marks of element-JSON are compact, but Sonnet's adaptive
-            # thinking bills within max_tokens too — 8000 leaves headroom.
-            max_tokens=8000,
+            # 8 full designs of element-JSON + lockups; adaptive thinking
+            # bills within max_tokens too — 16000 leaves headroom.
+            max_tokens=16000,
         )
     except core_ai.AiError as exc:
         raise BrandPackError(str(exc), cost_usd=exc.cost_usd) from exc
 
-    marks = [m for m in (_validate_pack_mark(item) for item in parsed.marks) if m]
     palettes = [_validate_pack_palette(item) for item in parsed.palettes]
-    if not marks or not palettes:
+    designs = [d for d in (_validate_design(item, len(palettes) or 1) for item in parsed.designs) if d]
+    if not designs or not palettes:
         raise BrandPackError("brand pack validation left nothing usable", cost_usd=cost)
 
     pack = {
-        "marks": marks,
+        "designs": designs,
         "palettes": palettes,
         "tagline": str(parsed.tagline or "")[:120],
         "font_vibe": parsed.font_vibe,
@@ -487,12 +735,14 @@ def generate_brand_pack(brand_name, niche, primary_hex, style_chips=(), vibe="")
 
 def refine_design(recipe, elements, instruction):
     """One gated, uncached Claude call -> a refined design (mark, palette,
-    font_vibe, layout — whole-design scope). Raises RefineError (carrying
-    the estimated cost) on provider failure or if the refined mark's paths
-    don't survive validation. `elements` is capped defensively: it's
-    untrusted request input, only ever used as descriptive prompt text
-    (never compiled or persisted directly), but a hostile payload shouldn't
-    be able to inflate the prompt without bound."""
+    font_vibe, and the whole lockup — layout, badge, font, typography,
+    color_roles — same parity as a Brand Pack design). Raises RefineError
+    (carrying the estimated cost) on provider failure or if the refined
+    mark's paths don't survive validation. `elements` is capped
+    defensively: it's untrusted request input, only ever used as
+    descriptive prompt text (never compiled or persisted directly), but a
+    hostile payload shouldn't be able to inflate the prompt without
+    bound."""
     if elements:
         bounded = json.dumps(elements[:12])[:4000]
         current = f"Current mark elements (redesign these): {bounded}"
@@ -519,8 +769,8 @@ def refine_design(recipe, elements, instruction):
         "mark": mark,
         "palette": _validate_pack_palette(parsed.palette),
         "font_vibe": parsed.font_vibe,
-        "layout": parsed.layout,
         "rationale": str(parsed.rationale or "")[:300],
+        **_validate_lockup(parsed),
     }
     return RefineResult(design, cost)
 

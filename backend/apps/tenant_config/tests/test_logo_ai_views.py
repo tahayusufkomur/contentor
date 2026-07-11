@@ -20,7 +20,28 @@ SHARED_SCHEMA = "shared_test"
 MONTH = "2026-07"
 
 _FAKE_PACK = {
-    "marks": [{"rationale": "A rising line.", "paths": [{"d": "M0 0 Z", "fill": "mark"}]}],
+    "designs": [
+        {
+            "concept": "A rising line.",
+            "rationale": "A rising line.",
+            "paths": [{"d": "M0 0 Z", "fill": "mark"}],
+            "elements": [{"type": "path", "d": "M0 0 Z", "fill": "mark"}],
+            "layout": "horizontal",
+            "badge_shape": "none",
+            "badge_outline": False,
+            "font": "Manrope",
+            "typography": {"case": "none", "tracking": 0, "weight": 700},
+            "palette_index": 0,
+            "color_roles": {
+                "badge": "primary",
+                "mark": "ink",
+                "mark2": "secondary",
+                "mark_accent": "accent",
+                "text": "ink",
+                "tagline": "secondary",
+            },
+        }
+    ],
     "palettes": [
         {"name": "Sunrise", "primary": "#e11d48", "secondary": "#f97316", "accent": "#fbbf24", "ink": "#111827"}
     ],

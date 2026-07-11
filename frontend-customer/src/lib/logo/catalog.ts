@@ -245,7 +245,13 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
   },
 ];
 
-export type FontVibe = "Modern" | "Elegant" | "Bold" | "Playful" | "Minimal";
+export type FontVibe =
+  | "Modern"
+  | "Elegant"
+  | "Bold"
+  | "Playful"
+  | "Minimal"
+  | "Script";
 export interface FontEntry {
   family: string;
   vibe: FontVibe;
@@ -254,9 +260,12 @@ export interface FontEntry {
 
 const W_FULL: FontWeight[] = [400, 500, 600, 700, 800];
 const W_TO_700: FontWeight[] = [400, 500, 600, 700];
+const W_400: FontWeight[] = [400];
+const W_400_TO_700: FontWeight[] = [400, 500, 600, 700];
 
-// 20 Google Fonts, 4 per vibe. weights list which of 400..800 the family
+// 24 Google Fonts, 4 per vibe. weights list which of 400..800 the family
 // actually ships — the UI and export must only request these.
+// KEEP IN SYNC: backend/apps/tenant_config/logo_ai.py _FONT_CATALOG
 export const LOGO_FONTS: FontEntry[] = [
   { family: "Inter", vibe: "Modern", weights: W_FULL },
   { family: "Geist", vibe: "Modern", weights: W_FULL },
@@ -278,6 +287,10 @@ export const LOGO_FONTS: FontEntry[] = [
   { family: "Manrope", vibe: "Minimal", weights: W_FULL },
   { family: "Sora", vibe: "Minimal", weights: W_FULL },
   { family: "Outfit", vibe: "Minimal", weights: W_FULL },
+  { family: "Dancing Script", vibe: "Script", weights: W_400_TO_700 },
+  { family: "Great Vibes", vibe: "Script", weights: W_400 },
+  { family: "Pacifico", vibe: "Script", weights: W_400 },
+  { family: "Caveat", vibe: "Script", weights: W_400_TO_700 },
 ];
 
 export const LOGO_FONT_FAMILIES = LOGO_FONTS.map((f) => f.family);
