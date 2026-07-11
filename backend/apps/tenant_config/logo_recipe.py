@@ -141,6 +141,18 @@ def _fill(value, default_color):
     return fill
 
 
+def _fill_or_hex(value, default_hex):
+    """Mark colors (recipe v3): plain hex string, or a Fill dict shaped by
+    the same rules as the badge fill. Anything malformed falls back to the
+    default hex — never rejected."""
+    if isinstance(value, dict):
+        if value.get("type") in ("linear", "radial", "solid"):
+            shaped = _fill(value, default_hex)
+            return shaped["color"] if shaped["type"] == "solid" else shaped
+        return default_hex
+    return _hex(value, default_hex)
+
+
 def _text_style(value, default_weight):
     value = value if isinstance(value, dict) else {}
     weight = value.get("weight")
@@ -224,25 +236,26 @@ def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
     raw_colors = value.get("colors") if isinstance(value.get("colors"), dict) else {}
     raw_elements = value.get("elements") if isinstance(value.get("elements"), dict) else {}
     palette_id = raw_colors.get("palette_id")
-    mark_hex = _hex(raw_colors.get("mark"), "#ffffff")
+    mark_fill = _fill_or_hex(raw_colors.get("mark"), "#ffffff")
 
     colors = {
         "palette_id": palette_id if palette_id in PALETTE_IDS else None,
         "badge": _fill(raw_colors.get("badge"), "#111827"),
-        "mark": mark_hex,
+        "mark": mark_fill,
         "text": _hex(raw_colors.get("text"), "#111827"),
         "tagline": _hex(raw_colors.get("tagline"), "#6b7280"),
     }
     # mark2/mark_accent are optional secondary fill roles for "custom" marks
     # (AI Brand Pack). Omitted entirely unless the input carried one, so
-    # every pre-existing recipe shape is unaffected.
+    # every pre-existing recipe shape is unaffected. Recipe v3: each accepts
+    # either a hex string or a shaped Fill, same as colors.mark.
     if raw_colors.get("mark2") is not None:
-        colors["mark2"] = _hex(raw_colors.get("mark2"), mark_hex)
+        colors["mark2"] = _fill_or_hex(raw_colors.get("mark2"), "#ffffff")
     if raw_colors.get("mark_accent") is not None:
-        colors["mark_accent"] = _hex(raw_colors.get("mark_accent"), mark_hex)
+        colors["mark_accent"] = _fill_or_hex(raw_colors.get("mark_accent"), "#ffffff")
 
     return {
-        "version": 2,
+        "version": 3,
         "layout": _enum(value.get("layout"), LAYOUTS, "layout"),
         "name": str(value.get("name") or "")[:80],
         "tagline": str(value.get("tagline") or "")[:120],

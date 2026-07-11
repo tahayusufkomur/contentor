@@ -1,6 +1,7 @@
-import hashlib
+import base64
 import json as _json
 import logging
+import secrets
 from decimal import Decimal
 
 from django.conf import settings
@@ -26,6 +27,7 @@ from apps.downloads.models import DownloadFile
 from apps.media.models import Photo
 
 from . import help_bot, logo_ai
+from . import logo_converse as logo_converse_mod
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
 
@@ -195,10 +197,10 @@ def setup_status(request):
 
 # Logo Studio ideas are generated entirely client-side by the deterministic
 # composer (frontend-customer/src/lib/logo/composer.ts) for every coach.
-# Paid-tier coaches additionally get an AI "Brand Pack" — bespoke vector
-# marks + brand palettes from one gated Claude call per brief — via the two
-# endpoints below. See apps/tenant_config/logo_ai.py and
-# docs/superpowers/specs/2026-07-08-logo-ai-brand-pack-design.md.
+# Paid-tier coaches additionally get "Design with AI" — a staged, live
+# conversation (apps/tenant_config/logo_converse.py) whose every design pass
+# is critiqued by the model's own vision before the coach sees it. See
+# docs/superpowers/specs/2026-07-11-logo-vision-critique-conversation-design.md.
 
 # Theme id -> primaryHex. KEEP IN SYNC with frontend-customer/src/lib/themes.ts.
 _THEME_PRIMARY_HEX = {
@@ -210,107 +212,194 @@ _THEME_PRIMARY_HEX = {
     "slate": "#334155",
 }
 
-
-def _brand_pack_cache_key(model, brand_name, niche, style_chips, vibe, primary_hex):
-    raw = "|".join(
-        [
-            str(logo_ai.PROMPT_VERSION),
-            model,
-            brand_name,
-            niche,
-            ",".join(sorted(style_chips)),
-            vibe,
-            primary_hex,
-        ]
-    )
-    digest = hashlib.sha256(raw.encode()).hexdigest()
-    return f"logo-ai:pack:{digest}"
+_DRAFT_CACHE_PREFIX = "logo_draft:"
+_DRAFT_TTL_SECONDS = 600
+_MAX_CRITIQUE_IMAGES = 3
+_MAX_IMAGE_B64_CHARS = 700_000
+_PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 
-def _brand_pack_status(tenant):
-    month = logo_ai._current_month()
+def _logo_ai_status(tenant):
+    enabled, _ = core_ai.available()
     eligible = tenant.has_paid_platform_plan
-    budget_ok = logo_ai.global_spend(month=month) < Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD))
-    enabled = core_ai.available()[0] and budget_ok
-    usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
-    remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
+    usage = logo_ai.tenant_usage(tenant.schema_name)
+    turns_remaining = max(0, settings.LOGO_AI_MONTHLY_TURN_LIMIT - usage.turns_used)
     refine_remaining = max(0, settings.LOGO_AI_MONTHLY_REFINE_LIMIT - usage.refinements_used)
+    reason = None
     if not eligible:
         reason = "upgrade_required"
     elif not enabled:
         reason = "disabled"
-    elif remaining <= 0:
+    elif turns_remaining <= 0:
         reason = "quota_exhausted"
-    else:
-        reason = None
     return {
         "enabled": enabled,
         "eligible": eligible,
-        "remaining": remaining,
-        "reason": reason,
+        "turns_remaining": turns_remaining,
         "refine_remaining": refine_remaining,
+        "reason": reason,
     }
 
 
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
-def logo_brand_pack_status(request):
-    return Response(_brand_pack_status(connection.tenant))
+def logo_ai_status(request):
+    return Response(_logo_ai_status(connection.tenant))
+
+
+def _cache_draft(kind, stage, result):
+    token = secrets.token_urlsafe(24)
+    cache.set(
+        _DRAFT_CACHE_PREFIX + token,
+        {
+            "kind": kind,
+            "stage": stage,
+            "tenant": connection.tenant.schema_name,
+            "message": result.message,
+            "designs": result.designs,
+        },
+        timeout=_DRAFT_TTL_SECONDS,
+    )
+    return token
 
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
-def logo_brand_pack(request):
-    """One gated Claude call -> a Brand Pack (bespoke marks + palettes) for
-    the studio to multiply client-side. Always a non-empty JSON body."""
+def logo_converse(request):
+    """Pass A of a Design-with-AI turn. Returns a draft + token when the
+    provider supports vision (the client renders and calls finish/), or a
+    final response on the cli provider. Always a non-empty JSON body."""
     tenant = connection.tenant
     month = logo_ai._current_month()
+    empty = {"phase": "final", "message": "", "designs": [], "turns_remaining": 0}
 
     if not core_ai.available()[0]:
-        return Response({"pack": None, "source": "disabled", "remaining": 0})
+        return Response({**empty, "source": "disabled"})
     if not tenant.has_paid_platform_plan:
-        return Response({"pack": None, "source": "upgrade_required", "remaining": 0})
-
-    config = TenantConfig.objects.first()
-    brand_name = (config.brand_name if config else "") or "My Brand"
-    theme = config.theme if config else "ocean"
-    primary_hex = _THEME_PRIMARY_HEX.get(theme, "#1a56db")
+        return Response({**empty, "source": "upgrade_required"})
 
     data = request.data if isinstance(request.data, dict) else {}
-    niche = str(data.get("niche") or "")[:120]
-    style_chips = [str(c)[:20] for c in (data.get("style_chips") or []) if isinstance(c, str)][:3]
-    vibe = str(data.get("vibe") or "")[:200]
+    stage = data.get("stage")
+    if stage not in logo_converse_mod.STAGES:
+        return Response({**empty, "source": "error"})
+    config = TenantConfig.objects.first()
+    raw_brief = data.get("brief") if isinstance(data.get("brief"), dict) else {}
+    brief = {
+        "brand_name": (config.brand_name if config else "") or "My Brand",
+        "primary_hex": _THEME_PRIMARY_HEX.get(config.theme if config else "ocean", "#1a56db"),
+        "niche": str(raw_brief.get("niche") or "")[:120],
+        "style_chips": ", ".join(str(c)[:20] for c in (raw_brief.get("style_chips") or [])[:3]),
+        "vibe": str(raw_brief.get("vibe") or "")[:200],
+    }
+    transcript = [m for m in (data.get("transcript") or []) if isinstance(m, dict)][:12]
+    pinned = data.get("pinned") if isinstance(data.get("pinned"), dict) else {}
+    message = str(data.get("message") or "")[:500]
 
     usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
-    remaining = max(0, settings.LOGO_AI_MONTHLY_PACK_LIMIT - usage.packs_used)
-
-    cache_key = _brand_pack_cache_key(settings.LOGO_AI_MODEL, brand_name, niche, style_chips, vibe, primary_hex)
-    cached = cache.get(cache_key)
-    if cached is not None:
-        return Response({"pack": cached, "source": "cache", "remaining": remaining})
-
-    if remaining <= 0:
-        return Response({"pack": None, "source": "quota_exhausted", "remaining": 0})
-
+    turns_remaining = max(0, settings.LOGO_AI_MONTHLY_TURN_LIMIT - usage.turns_used)
+    if turns_remaining <= 0:
+        return Response({**empty, "source": "quota_exhausted"})
     if logo_ai.global_spend(month=month) >= Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD)):
-        logger.warning("logo brand pack: monthly budget kill-switch tripped (%s)", month)
-        return Response({"pack": None, "source": "disabled", "remaining": remaining})
+        logger.warning("logo converse: monthly budget kill-switch tripped (%s)", month)
+        return Response({**empty, "source": "disabled", "turns_remaining": turns_remaining})
 
     try:
-        result = logo_ai.generate_brand_pack(brand_name, niche, primary_hex, style_chips=style_chips, vibe=vibe)
-    except logo_ai.BrandPackError as exc:
+        result = logo_converse_mod.converse_turn(stage, brief, transcript, pinned, message)
+    except logo_converse_mod.ConverseError as exc:
         logo_ai.record_attempt_cost(tenant.schema_name, exc.cost_usd, month=month)
-        logger.exception("logo brand pack: validation left nothing usable")
-        return Response({"pack": None, "source": "error", "remaining": remaining})
+        logger.exception("logo converse: turn failed")
+        return Response({**empty, "source": "error", "turns_remaining": turns_remaining})
     except Exception:
         logo_ai.record_attempt_cost(tenant.schema_name, Decimal("0"), month=month)
-        logger.exception("logo brand pack: AI call failed")
-        return Response({"pack": None, "source": "error", "remaining": remaining})
+        logger.exception("logo converse: AI call failed")
+        return Response({**empty, "source": "error", "turns_remaining": turns_remaining})
 
     logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
-    logo_ai.record_successful_pack(tenant.schema_name, month=month)
-    cache.set(cache_key, result.pack, timeout=60 * 60 * 24 * 30)  # 30 days
-    return Response({"pack": result.pack, "source": "ai", "remaining": remaining - 1})
+    logo_ai.record_successful_turn(tenant.schema_name, month=month)
+    body = {
+        "message": result.message,
+        "designs": result.designs,
+        "turns_remaining": turns_remaining - 1,
+        "source": "ai",
+    }
+    if core_ai.supports_vision():
+        return Response({**body, "phase": "draft", "token": _cache_draft("converse", stage, result)})
+    return Response({**body, "phase": "final"})
+
+
+def _decode_images(raw):
+    """data:image/png;base64 URLs -> raw base64 strings; enforce count, size
+    and PNG magic. Returns None if anything is off."""
+    if not isinstance(raw, list) or not 1 <= len(raw) <= _MAX_CRITIQUE_IMAGES:
+        return None
+    out = []
+    for item in raw:
+        if not isinstance(item, str) or not item.startswith("data:image/png;base64,"):
+            return None
+        b64 = item.split(",", 1)[1]
+        if len(b64) > _MAX_IMAGE_B64_CHARS:
+            return None
+        try:
+            head = base64.b64decode(b64[:64] + "=" * (-len(b64[:64]) % 4))
+        except Exception:
+            return None
+        if not head.startswith(_PNG_MAGIC):
+            return None
+        out.append(b64)
+    return out
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def logo_converse_finish(request):
+    """Pass B: vision critique of the server-cached draft against the
+    client's renders. Never costs a turn; any failure returns the draft."""
+    tenant = connection.tenant
+    month = logo_ai._current_month()
+    data = request.data if isinstance(request.data, dict) else {}
+    token = str(data.get("token") or "")
+    cached = cache.get(_DRAFT_CACHE_PREFIX + token) if token else None
+    usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
+    turns_remaining = max(0, settings.LOGO_AI_MONTHLY_TURN_LIMIT - usage.turns_used)
+
+    if not cached or cached.get("tenant") != tenant.schema_name:
+        return Response(
+            {"phase": "final", "message": "", "designs": [], "source": "error", "turns_remaining": turns_remaining}
+        )
+    cache.delete(_DRAFT_CACHE_PREFIX + token)
+    if cached.get("kind") == "refine":
+        draft_body = {"phase": "final", "design": cached["design"], "turns_remaining": turns_remaining}
+        images = _decode_images(data.get("images"))
+        if images is None:
+            return Response({**draft_body, "source": "error"})
+        try:
+            result = logo_converse_mod.critique_refine(cached, images)
+        except Exception:
+            logger.exception("logo refine finish: critique failed — serving draft")
+            return Response({**draft_body, "source": "draft"})
+        logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
+        return Response({**draft_body, "design": result.design, "source": "ai"})
+    draft_body = {
+        "phase": "final",
+        "message": cached["message"],
+        "designs": cached["designs"],
+        "turns_remaining": turns_remaining,
+    }
+    images = _decode_images(data.get("images"))
+    if images is None:
+        return Response({**draft_body, "source": "error"})
+    try:
+        result = logo_converse_mod.critique_turn(cached["stage"], cached, images)
+    except logo_converse_mod.ConverseError as exc:
+        logo_ai.record_attempt_cost(tenant.schema_name, exc.cost_usd, month=month)
+        logger.exception("logo converse finish: critique failed — serving draft")
+        return Response({**draft_body, "source": "draft"})
+    except Exception:
+        logo_ai.record_attempt_cost(tenant.schema_name, Decimal("0"), month=month)
+        logger.exception("logo converse finish: AI call failed — serving draft")
+        return Response({**draft_body, "source": "draft"})
+    logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
+    return Response({**draft_body, "message": result.message, "designs": result.designs, "source": "ai"})
 
 
 @api_view(["POST"])
@@ -358,7 +447,16 @@ def logo_refine(request):
 
     logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
     logo_ai.record_successful_refinement(tenant.schema_name, month=month)
-    return Response({"design": result.design, "source": "ai", "refine_remaining": refine_remaining - 1})
+    body = {"design": result.design, "source": "ai", "refine_remaining": refine_remaining - 1}
+    if core_ai.supports_vision():
+        token = secrets.token_urlsafe(24)
+        cache.set(
+            _DRAFT_CACHE_PREFIX + token,
+            {"kind": "refine", "tenant": tenant.schema_name, "design": result.design},
+            timeout=_DRAFT_TTL_SECONDS,
+        )
+        return Response({**body, "phase": "draft", "token": token})
+    return Response({**body, "phase": "final"})
 
 
 class HelpBotRateThrottle(UserRateThrottle):
@@ -504,7 +602,7 @@ def help_bot_human_request(request):
             send_email(
                 to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL,
                 subject=f"{label} asked for a human in Ask Contentor",
-                html=(f"<p>{label} asked for a human in Ask Contentor " f"(tenant: {tenant.schema_name}).</p>"),
+                html=(f"<p>{label} asked for a human in Ask Contentor (tenant: {tenant.schema_name}).</p>"),
             )
         except Exception:
             logger.exception("help bot: human-request email failed")

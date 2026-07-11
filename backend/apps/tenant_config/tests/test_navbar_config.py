@@ -2,14 +2,20 @@
 stripping, and the guarantee that navbar-only edits never flip pages_edited."""
 
 import pytest
+from rest_framework import serializers
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.tenant_config.models import TenantConfig
+from apps.tenant_config.serializers import TenantConfigSerializer
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
 HOST = "shared-test.localhost"
+
+
+def _validate(payload):
+    return TenantConfigSerializer().validate_navbar_config(payload)
 
 
 @pytest.fixture()
@@ -117,3 +123,21 @@ def test_navbar_edit_does_not_flip_pages_edited(client, config):
     assert resp.status_code == 200, resp.content
     config.refresh_from_db()
     assert config.setup_progress.get("pages_edited", []) == []
+
+
+class TestNavbarLogoControls:
+    def test_logo_size_defaults_to_md(self):
+        cleaned = _validate({"links": []})
+        assert cleaned["logo_size"] == "md"
+
+    def test_logo_size_accepts_presets(self):
+        for size in ("sm", "md", "lg", "xl"):
+            assert _validate({"logo_size": size})["logo_size"] == size
+
+    def test_logo_size_rejects_unknown(self):
+        with pytest.raises(serializers.ValidationError):
+            _validate({"logo_size": "huge"})
+
+    def test_show_brand_name_defaults_false_and_coerces(self):
+        assert _validate({})["show_brand_name"] is False
+        assert _validate({"show_brand_name": 1})["show_brand_name"] is True

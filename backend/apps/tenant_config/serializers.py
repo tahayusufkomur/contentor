@@ -94,6 +94,11 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         cleaned["show_login"] = bool(cleaned.get("show_login", True))
         cleaned["show_install"] = bool(cleaned.get("show_install", True))
         cleaned["transparent_over_hero"] = bool(cleaned.get("transparent_over_hero", False))
+        logo_size = cleaned.get("logo_size") or "md"
+        if logo_size not in {"sm", "md", "lg", "xl"}:
+            raise serializers.ValidationError("logo_size must be one of: lg, md, sm, xl.")
+        cleaned["logo_size"] = logo_size
+        cleaned["show_brand_name"] = bool(cleaned.get("show_brand_name", False))
         return cleaned
 
     def validate_pages(self, value):
