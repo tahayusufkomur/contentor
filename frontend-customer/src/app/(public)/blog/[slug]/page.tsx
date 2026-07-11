@@ -20,6 +20,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.meta_description || post.excerpt,
       type: "article",
+      ...(post.cover_photo && { images: [{ url: post.cover_photo.signed_url }] }),
     },
   };
 }
@@ -60,6 +61,14 @@ export default async function BlogPostPage({
       >
         {new Date(post.published_at).toLocaleDateString()}
       </time>
+      {post.cover_photo && (
+        <img
+          src={post.cover_photo.signed_url}
+          alt={post.cover_photo.alt_text}
+          className="mt-6 w-full rounded-lg object-cover"
+          loading="lazy"
+        />
+      )}
       <div
         className="prose prose-neutral dark:prose-invert mt-8 max-w-none"
         // Server-sanitized (nh3) before persisting — see apps/blog/ai.py

@@ -3,6 +3,12 @@
 import { DJANGO_API_URL } from "@/lib/constants";
 import { getTenantDomain } from "@/lib/tenant";
 
+export interface CoverPhoto {
+  id: string;
+  signed_url: string;
+  alt_text: string;
+}
+
 export interface BlogPostPublic {
   slug: string;
   title: string;
@@ -10,6 +16,7 @@ export interface BlogPostPublic {
   tags: string[];
   meta_description?: string;
   body_html?: string;
+  cover_photo?: CoverPhoto | null;
   published_at: string;
 }
 

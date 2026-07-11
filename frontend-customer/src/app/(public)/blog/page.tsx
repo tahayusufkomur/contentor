@@ -27,17 +27,27 @@ export default async function BlogIndexPage() {
       <ul className="space-y-8">
         {posts.map((post) => (
           <li key={post.slug}>
-            <Link href={`/blog/${post.slug}`} className="group block">
-              <h2 className="text-xl font-semibold group-hover:underline">
-                {post.title}
-              </h2>
-              <p className="mt-1 text-muted-foreground">{post.excerpt}</p>
-              <time
-                className="text-sm text-muted-foreground"
-                dateTime={post.published_at}
-              >
-                {new Date(post.published_at).toLocaleDateString()}
-              </time>
+            <Link href={`/blog/${post.slug}`} className="group flex gap-4">
+              {post.cover_photo && (
+                <img
+                  src={post.cover_photo.signed_url}
+                  alt={post.cover_photo.alt_text}
+                  className="h-24 w-24 shrink-0 rounded-md object-cover"
+                  loading="lazy"
+                />
+              )}
+              <div>
+                <h2 className="text-xl font-semibold group-hover:underline">
+                  {post.title}
+                </h2>
+                <p className="mt-1 text-muted-foreground">{post.excerpt}</p>
+                <time
+                  className="text-sm text-muted-foreground"
+                  dateTime={post.published_at}
+                >
+                  {new Date(post.published_at).toLocaleDateString()}
+                </time>
+              </div>
             </Link>
           </li>
         ))}
