@@ -181,6 +181,32 @@ def _cli_structured(system, user, output_model):
     raise AiError(f"claude CLI output did not match schema: {last_error}") from last_error
 
 
+def supports_vision():
+    """Whether the active provider can take image inputs. The cli provider
+    (claude -p) has no reliable image path — callers skip the critique pass."""
+    return settings.AI_PROVIDER != "cli"
+
+
+def structured_messages(*, system, messages, output_model, model, max_tokens):
+    """Structured output over a full messages array (content blocks may
+    include base64 images) -> (validated instance, cost_usd, model).
+    Anthropic provider only; raises AiError on the cli provider."""
+    if settings.AI_PROVIDER == "cli":
+        raise AiError("cli provider does not support vision calls")
+    client = _anthropic_client()
+    try:
+        response = client.messages.parse(
+            model=model,
+            max_tokens=max_tokens,
+            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+            messages=messages,
+            output_format=output_model,
+        )
+    except Exception as exc:
+        raise AiError(f"anthropic call failed: {exc}") from exc
+    return response.parsed_output, estimate_cost(response.usage, model), model
+
+
 # ── streaming chat (help bot) ────────────────────────────────────────────────
 
 
