@@ -577,9 +577,31 @@ export function LogoStudio({
                 </div>
               )}
 
-              {step === "ideas" && wall && (
-                <div className="flex min-h-0 flex-1">
-                  <div className="min-w-0 flex-1">
+              {step === "ideas" &&
+                wall &&
+                (chatOpen ? (
+                  // Design-with-AI takes the full modal body — an explicit
+                  // Describe → Icon → Name → Tagline wizard, not a side panel.
+                  <StudioChat
+                    open={chatOpen}
+                    state={chat}
+                    dispatch={chatDispatch}
+                    brief={brief}
+                    brandName={brief.brandName || config.brand_name}
+                    status={logoAiStatus}
+                    onUseDesign={(chosen, elements) => {
+                      handleCustomize(chosen, elements);
+                      setChatOpen(false);
+                    }}
+                    onStatusChange={(turns) =>
+                      setLogoAiStatus((s) =>
+                        s ? { ...s, turns_remaining: turns } : s,
+                      )
+                    }
+                    onClose={() => setChatOpen(false)}
+                  />
+                ) : (
+                  <div className="min-h-0 flex-1">
                     <StudioWall
                       wall={wall}
                       dark={wallDark}
@@ -593,28 +615,7 @@ export function LogoStudio({
                       onOpenChat={() => setChatOpen(true)}
                     />
                   </div>
-                  {chatOpen && (
-                    <StudioChat
-                      open={chatOpen}
-                      state={chat}
-                      dispatch={chatDispatch}
-                      brief={brief}
-                      brandName={brief.brandName || config.brand_name}
-                      status={logoAiStatus}
-                      onUseDesign={(chosen, elements) => {
-                        handleCustomize(chosen, elements);
-                        setChatOpen(false);
-                      }}
-                      onStatusChange={(turns) =>
-                        setLogoAiStatus((s) =>
-                          s ? { ...s, turns_remaining: turns } : s,
-                        )
-                      }
-                      onClose={() => setChatOpen(false)}
-                    />
-                  )}
-                </div>
-              )}
+                ))}
 
               {step === "editor" && (
                 <StudioEditor
