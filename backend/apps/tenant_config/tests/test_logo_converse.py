@@ -182,3 +182,44 @@ def test_name_stage_never_generates_images(monkeypatch):
     monkeypatch.setattr(logo_image, "enabled", lambda: True)
     monkeypatch.setattr(logo_image, "generate_mark_images", lambda prompts: pytest.fail("image gen on name stage"))
     logo_converse.converse_turn("name", {}, [], {}, "hi")
+
+
+# --- critique keep-rule: unchanged elements keep traced paths --------------
+# _TRACED_PATHS and _ICON_TURN already exist in this file (_ICON_TURN from
+# before this feature; _TRACED_PATHS added by the image-marks block above:
+# [{"d": "M 10.0 10.0 C 20.0 10.0 30.0 20.0 30.0 30.0 Z", "fill": "mark"}]).
+
+
+def _draft_with_traced_paths():
+    """A cached icon draft whose paths came from tracing (NOT from compiling
+    its elements) — exactly what apply_image_marks produces. Built through
+    the real validation path (not a raw _ICON_TURN dict) because
+    _validate_pack_mark normalizes `elements` (fills in fill/opacity/cut,
+    floats the coordinates) — a real cached draft always has that shape, and
+    the keep-rule compares against exactly this normalized form."""
+    parsed = logo_converse._IconTurn.model_validate({"message": "m", "designs": [_ICON_TURN["designs"][0]]})
+    design = logo_converse._validate_icon_design(parsed.designs[0])
+    design["paths"] = list(_TRACED_PATHS)
+    return {"stage": "icon", "designs": [design], "message": "draft"}
+
+
+def _critique(monkeypatch, draft, critique_designs):
+    parsed = logo_converse._IconTurn.model_validate({"message": "Reviewed.", "designs": critique_designs})
+    monkeypatch.setattr(logo_converse.core_ai, "structured_messages", lambda **kwargs: (parsed, Decimal("0.01"), "m"))
+    return logo_converse.critique_turn("icon", draft, ["ZmFrZQ=="])
+
+
+def test_critique_with_unchanged_elements_keeps_traced_paths(monkeypatch):
+    draft = _draft_with_traced_paths()
+    kept = dict(_ICON_TURN["designs"][0])  # same elements, no paths field
+    result = _critique(monkeypatch, draft, [kept])
+    assert result.designs[0]["paths"] == _TRACED_PATHS
+
+
+def test_critique_redraw_recompiles_from_new_elements(monkeypatch):
+    draft = _draft_with_traced_paths()
+    # Same element type, different geometry — a genuine redraw.
+    redrawn = {**_ICON_TURN["designs"][0], "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]}
+    result = _critique(monkeypatch, draft, [redrawn])
+    assert result.designs[0]["paths"] != _TRACED_PATHS
+    assert result.designs[0]["elements"][0]["r"] == 20

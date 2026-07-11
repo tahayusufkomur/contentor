@@ -244,6 +244,25 @@ def _validate_turn(stage, parsed, cost):
     return TurnResult(str(parsed.message or "")[:600], designs, cost)
 
 
+def _inherit_traced_paths(draft_designs, result):
+    """A critique that keeps a design 'byte-identical' re-emits its elements
+    and _validate_turn recompiles them — which would silently replace traced
+    (image-derived) paths with authored ones. Any critiqued design whose
+    elements match a draft design inherits that draft's exact paths; genuine
+    redraws keep their recompiled paths. Harmless for non-traced designs
+    (identical elements compile to identical paths)."""
+    paths_by_elements = {
+        json.dumps(design.get("elements"), sort_keys=True): design["paths"]
+        for design in draft_designs
+        if design.get("paths")
+    }
+    for design in result.designs:
+        kept = paths_by_elements.get(json.dumps(design.get("elements"), sort_keys=True))
+        if kept:
+            design["paths"] = kept
+    return result
+
+
 def apply_image_marks(result):
     """Icon-stage post-step (generate -> vectorize): draw each candidate's
     image_prompt with the image model, trace it, and swap the traced paths
@@ -377,4 +396,4 @@ def critique_turn(stage, draft, images):
         )
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
-    return _validate_turn(stage, parsed, cost)
+    return _inherit_traced_paths(draft.get("designs") or [], _validate_turn(stage, parsed, cost))
