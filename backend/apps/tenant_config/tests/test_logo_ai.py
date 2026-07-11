@@ -25,6 +25,27 @@ class _FakeMark:
         self.elements = elements
 
 
+class _FakeDesign:
+    """A full Brand Pack v3 design: geometry (rationale/elements, same shape
+    _validate_pack_mark already expects) plus the lockup fields
+    _validate_lockup/_validate_design add on top."""
+
+    def __init__(self, **overrides):
+        self.concept = overrides.get("concept", "A rising ring")
+        self.rationale = overrides.get("rationale", "Feels like growth.")
+        self.elements = overrides.get(
+            "elements",
+            [logo_ai._Circle(type="circle", cx=50, cy=50, r=20)],
+        )
+        self.layout = overrides.get("layout", "horizontal")
+        self.badge_shape = overrides.get("badge_shape", "none")
+        self.badge_outline = overrides.get("badge_outline", False)
+        self.font = overrides.get("font", "Manrope")
+        self.typography = overrides.get("typography", logo_ai._Typography(case="upper", tracking=0.12, weight=600))
+        self.palette_index = overrides.get("palette_index", 1)
+        self.color_roles = overrides.get("color_roles", logo_ai._ColorRoles())
+
+
 class _FakePalette:
     def __init__(self, name, primary, secondary, accent, ink):
         self.name = name
@@ -35,8 +56,8 @@ class _FakePalette:
 
 
 class _FakeParsedOutput:
-    def __init__(self, marks, palettes, tagline="Breathe deeply.", font_vibe="Elegant"):
-        self.marks = marks
+    def __init__(self, designs, palettes, tagline="Breathe deeply.", font_vibe="Elegant"):
+        self.designs = designs
         self.palettes = palettes
         self.tagline = tagline
         self.font_vibe = font_vibe
@@ -62,19 +83,19 @@ class _FakeResponse:
         self.usage = usage
 
 
-def _valid_marks():
+def _valid_designs():
     return [
-        _FakeMark(
-            "A rising line evokes growth.",
-            [{"type": "path", "d": "M10 10 L90 90 Z", "fill": "mark2"}],
+        _FakeDesign(
+            rationale="A rising line evokes growth.",
+            elements=[{"type": "path", "d": "M10 10 L90 90 Z", "fill": "mark2"}],
         ),
-        _FakeMark(
-            "A closed loop for community.",
-            [{"type": "ring", "cx": 50, "cy": 50, "r": 40, "thickness": 6}],
+        _FakeDesign(
+            rationale="A closed loop for community.",
+            elements=[{"type": "ring", "cx": 50, "cy": 50, "r": 40, "thickness": 6}],
         ),
-        _FakeMark(
-            "Bad mark, only unsafe paths.",
-            [{"type": "path", "d": "javascript:alert(1)"}],
+        _FakeDesign(
+            rationale="Bad mark, only unsafe paths.",
+            elements=[{"type": "path", "d": "javascript:alert(1)"}],
         ),
     ]
 
@@ -87,10 +108,10 @@ def _valid_palettes():
     ]
 
 
-def _mock_client(monkeypatch, marks=None, palettes=None, usage=None):
+def _mock_client(monkeypatch, designs=None, palettes=None, usage=None):
     response = _FakeResponse(
         _FakeParsedOutput(
-            marks if marks is not None else _valid_marks(),
+            designs if designs is not None else _valid_designs(),
             palettes if palettes is not None else _valid_palettes(),
         ),
         usage or _FakeUsage(),
@@ -106,18 +127,56 @@ class TestGenerateBrandPack:
         settings.LOGO_AI_MODEL = "claude-sonnet-5"
         _mock_client(monkeypatch)
         result = logo_ai.generate_brand_pack("Zeynep Yoga", "yoga", "#1a56db")
-        # the all-unsafe-path mark is dropped; the other two survive
-        assert len(result.pack["marks"]) == 2
-        assert result.pack["marks"][0]["paths"] == [{"d": "M10 10 L90 90 Z", "fill": "mark2"}]
-        assert result.pack["marks"][0]["rationale"] == "A rising line evokes growth."
+        # the all-unsafe-path design is dropped; the other two survive
+        assert len(result.pack["designs"]) == 2
+        assert result.pack["designs"][0]["paths"] == [{"d": "M10 10 L90 90 Z", "fill": "mark2"}]
+        assert result.pack["designs"][0]["rationale"] == "A rising line evokes growth."
         # the ring element was compiled to an evenodd two-disc path
-        ring = result.pack["marks"][1]["paths"][0]
+        ring = result.pack["designs"][1]["paths"][0]
         assert ring["fill_rule"] == "evenodd"
         assert ring["d"].count("M") == 2
         assert len(result.pack["palettes"]) == 3
         assert result.pack["tagline"] == "Breathe deeply."
         assert result.pack["font_vibe"] == "Elegant"
         assert result.cost_usd > 0
+
+    def test_pack_carries_full_designs(self, monkeypatch, settings):
+        _mock_client(
+            monkeypatch,
+            designs=[_FakeDesign()],
+            palettes=[_valid_palettes()[0]],
+        )
+        result = logo_ai.generate_brand_pack("Kai Coaching", "yoga", "#1a56db")
+        design = result.pack["designs"][0]
+        assert design["concept"] == "A rising ring"
+        assert design["layout"] == "horizontal"
+        assert design["badge_shape"] == "none"
+        assert design["font"] == "Manrope"
+        assert design["typography"] == {"case": "upper", "tracking": 0.12, "weight": 600}
+        assert design["palette_index"] == 0  # clamped: only 1 palette in the fake
+        assert design["color_roles"]["mark"] == "ink"
+        assert design["paths"]  # compiled + validated as before
+        assert "marks" not in result.pack
+
+    def test_palette_index_and_free_text_are_clamped(self, monkeypatch):
+        _mock_client(
+            monkeypatch,
+            designs=[
+                _FakeDesign(
+                    palette_index=99,
+                    font="F" * 200,
+                    concept="c" * 500,
+                    typography=logo_ai._Typography(case="none", tracking=9, weight=700),
+                )
+            ],
+            palettes=[_valid_palettes()[0]],
+        )
+        result = logo_ai.generate_brand_pack("Kai Coaching", "yoga", "#1a56db")
+        design = result.pack["designs"][0]
+        assert design["palette_index"] == 0
+        assert len(design["font"]) == 60
+        assert len(design["concept"]) == 200
+        assert design["typography"]["tracking"] == 0.4
 
     def test_substitutes_low_contrast_ink(self, monkeypatch):
         _mock_client(monkeypatch)
@@ -137,7 +196,7 @@ class TestGenerateBrandPack:
     def test_raises_when_every_mark_is_invalid(self, monkeypatch):
         _mock_client(
             monkeypatch,
-            marks=[_FakeMark("bad", [{"type": "path", "d": "javascript:alert(1)"}])],
+            designs=[_FakeDesign(rationale="bad", elements=[])],
         )
         with pytest.raises(logo_ai.BrandPackError):
             logo_ai.generate_brand_pack("Z", "yoga", "#1a56db")
@@ -145,7 +204,7 @@ class TestGenerateBrandPack:
     def test_error_carries_estimated_cost_even_on_validation_failure(self, monkeypatch):
         _mock_client(
             monkeypatch,
-            marks=[_FakeMark("bad", [{"type": "path", "d": "javascript:alert(1)"}])],
+            designs=[_FakeDesign(rationale="bad", elements=[])],
         )
         with pytest.raises(logo_ai.BrandPackError) as exc_info:
             logo_ai.generate_brand_pack("Z", "yoga", "#1a56db")
@@ -170,10 +229,25 @@ class TestGenerateBrandPack:
         settings.AI_CLI_MODEL = "haiku"
         pack_json = json.dumps(
             {
-                "marks": [
+                "designs": [
                     {
+                        "concept": "A steady ring.",
                         "rationale": "A ring.",
                         "elements": [{"type": "ring", "cx": 50, "cy": 50, "r": 42, "thickness": 8}],
+                        "layout": "horizontal",
+                        "badge_shape": "none",
+                        "badge_outline": False,
+                        "font": "Inter",
+                        "typography": {"case": "none", "tracking": 0, "weight": 700},
+                        "palette_index": 0,
+                        "color_roles": {
+                            "badge": "primary",
+                            "mark": "ink",
+                            "mark2": "secondary",
+                            "mark_accent": "accent",
+                            "text": "ink",
+                            "tagline": "secondary",
+                        },
                     }
                 ],
                 "palettes": [
@@ -195,7 +269,7 @@ class TestGenerateBrandPack:
         monkeypatch.setattr("subprocess.run", lambda cmd, **kw: completed)
         result = logo_ai.generate_brand_pack("Acme Coaching", "yoga", "#1a56db")
         assert result.cost_usd == Decimal("0")
-        assert len(result.pack["marks"]) == 1
+        assert len(result.pack["designs"]) == 1
         assert result.pack["palettes"][0]["primary"] == "#1a56db"
 
 
