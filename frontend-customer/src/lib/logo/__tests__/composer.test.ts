@@ -5,6 +5,7 @@ import {
   LOGO_ICONS,
   PALETTES,
   defaultRecipe,
+  fontEntry,
 } from "@/lib/logo/catalog";
 import {
   STYLE_CHIPS,
@@ -292,6 +293,18 @@ describe("composeFromPack", () => {
       expect(elegant.has(r.typography.name.font)).toBe(true);
   });
 
+  it("never requests a tagline weight the dice-rolled font doesn't ship (Script vibe)", () => {
+    // Great Vibes/Pacifico (Script vibe) only ship weight 400 — sweep several
+    // seeds so the dice roll actually lands on a single-weight family.
+    const scriptPack: BrandPack = { ...PACK, font_vibe: "Script" };
+    for (let seed = 1; seed <= 20; seed++) {
+      for (const r of composeFromPack(scriptPack, BRIEF, seed)) {
+        const entry = fontEntry(r.typography.name.font);
+        expect(entry.weights).toContain(r.typography.tagline.weight);
+      }
+    }
+  });
+
   it("carries the mark's rationale and role-token paths through untouched", () => {
     const recipes = composeFromPack(PACK, BRIEF, 1);
     const first = recipes.find(
@@ -464,6 +477,17 @@ describe("composeDesigns", () => {
     );
     expect(recipe!.typography.name.weight).toBe(400);
   });
+
+  it("snaps the tagline weight too, for single-weight families", () => {
+    // Great Vibes only ships weight 400 — the tagline's default preferred
+    // weight (500) doesn't exist for it and must not be requested verbatim,
+    // or the browser 404s fetching a nonexistent Google Fonts variant.
+    const [recipe] = composeDesigns(
+      { ...PACK_V3, designs: [{ ...DESIGN, font: "Great Vibes" }] },
+      BRIEF,
+    );
+    expect(recipe!.typography.tagline.weight).toBe(400);
+  });
 });
 
 describe("composePackWall", () => {
@@ -504,5 +528,27 @@ describe("applyRefinedDesign lockup", () => {
     expect(next.typography.name.font).toBe("Caveat");
     expect(next.colors.badge).toEqual({ type: "solid", color: "#112233" });
     expect(next.colors.mark).toBe("#ffffff");
+  });
+
+  it("snaps the tagline weight for single-weight families", () => {
+    // Great Vibes only ships weight 400 — same bug class as composeDesigns'
+    // tagline handling, reproduced live via the refine flow in the studio.
+    const refined: RefinedDesign = {
+      mark: { rationale: "r", paths: [{ d: "M1 1L2 2Z" }] },
+      palette: PACK_V3.palettes[0]!,
+      font_vibe: "Script",
+      layout: "emblem",
+      badge_shape: "none",
+      badge_outline: false,
+      font: "Great Vibes",
+      typography: { case: "none", tracking: 0, weight: 400 },
+      color_roles: DESIGN.color_roles,
+      rationale: "warmer",
+    };
+    const next = applyRefinedDesign(
+      defaultRecipe("Zeynep Yoga", "#1a56db"),
+      refined,
+    );
+    expect(next.typography.tagline.weight).toBe(400);
   });
 });

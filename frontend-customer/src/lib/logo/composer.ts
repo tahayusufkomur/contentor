@@ -19,6 +19,7 @@ import {
   applyPalette,
   defaultRecipe,
   fontEntry,
+  type FontEntry,
   type FontVibe,
   type Palette,
 } from "@/lib/logo/catalog";
@@ -593,7 +594,7 @@ export function composeFromPack(
           name: { font: entry.family, weight, tracking: 0, case: "none" },
           tagline: {
             font: entry.family,
-            weight: 500,
+            weight: taglineWeight(entry),
             tracking: 0.08,
             case: "upper",
           },
@@ -618,6 +619,13 @@ function resolveRole(role: PaletteRole, palette: BrandPackPalette): string {
 }
 
 const clampTracking = (t: number) => Math.max(-0.1, Math.min(0.4, t || 0));
+
+/** The tagline's preferred weight is 500 (a touch lighter than the name),
+ * but single-weight families (e.g. Great Vibes, Pacifico — Script vibe,
+ * weight 400 only) don't have it: snap to the family's heaviest available
+ * weight instead of requesting a Google Fonts variant that 404s. */
+const taglineWeight = (entry: FontEntry): FontWeight =>
+  entry.weights.includes(500) ? 500 : entry.weights[entry.weights.length - 1]!;
 
 /** v3 packs: the AI already designed the whole lockup (layout, badge, font,
  * typography, colors) per design — materialize it faithfully, 1:1, with no
@@ -666,7 +674,7 @@ export function composeDesigns(pack: BrandPack, brief: Brief): LogoRecipe[] {
         },
         tagline: {
           font: entry.family,
-          weight: 500,
+          weight: taglineWeight(entry),
           tracking: 0.08,
           case: "upper",
         },
@@ -776,7 +784,7 @@ export function applyRefinedDesign(
       tagline: {
         ...recipe.typography.tagline,
         font: entry.family,
-        weight: 500,
+        weight: taglineWeight(entry),
       },
     },
     colors: {
