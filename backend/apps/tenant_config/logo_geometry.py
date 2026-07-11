@@ -449,6 +449,135 @@ def _compile_wave(el):
     return _polyline(pts) + "Z"
 
 
+_REPEATABLE = {"circle", "ring", "rounded_rect", "polygon", "arc", "star", "petal", "crescent", "blob", "wave", "curve"}
+_MIRRORABLE = _REPEATABLE - {"blob"}  # a blob can't be param-reflected (seeded shape)
+_CHILD_ROTATE_KEYS = {
+    "rounded_rect": "rotate_deg",
+    "polygon": "rotate_deg",
+    "star": "rotate_deg",
+    "petal": "rotate_deg",
+    "crescent": "rotate_deg",
+    "wave": "rotate_deg",
+    "arc": "start_deg",
+}
+
+
+def _norm_deg(deg):
+    return ((deg + 180.0) % 360.0) - 180.0
+
+
+def _compile_single(el):
+    """One element dict -> (d, fill_rule|None). Unknown/invalid -> ('', None)."""
+    kind = el.get("type")
+    fill_rule = None
+    if kind == "circle":
+        d = _compile_circle(el)
+    elif kind == "ring":
+        d, fill_rule = _compile_ring(el)
+    elif kind == "dot_ring":
+        d = _compile_dot_ring(el)
+    elif kind == "dot_grid":
+        d = _compile_dot_grid(el)
+    elif kind == "rounded_rect":
+        d = _compile_rounded_rect(el)
+    elif kind == "polygon":
+        d, fill_rule = _compile_polygon(el)
+    elif kind == "arc":
+        d = _compile_arc(el)
+    elif kind == "star":
+        d = _compile_star(el)
+    elif kind == "petal":
+        d = _compile_petal(el)
+    elif kind == "crescent":
+        d = _compile_crescent(el)
+    elif kind == "blob":
+        d = _compile_blob(el)
+    elif kind == "wave":
+        d = _compile_wave(el)
+    elif kind == "curve":
+        d, fill_rule = _compile_curve(el)
+    elif kind == "repeat":
+        d, fill_rule = _compile_repeat(el)
+    elif kind == "mirror":
+        d, fill_rule = _compile_mirror(el)
+    elif kind == "path":
+        d = str(el.get("d") or "")
+        fill_rule = el.get("fill_rule")
+    else:
+        d = ""
+    return d, fill_rule
+
+
+def _rotated_child(child, cx, cy, deg):
+    out = dict(child)
+    if child.get("type") == "curve":
+        raw = child.get("points") if isinstance(child.get("points"), list) else []
+        pts = [(p[0], p[1]) for p in raw if isinstance(p, list | tuple) and len(p) == 2]
+        out["points"] = [list(q) for q in _rotate(pts, cx, cy, deg)]
+        return out
+    ccx = _clamp(child.get("cx"), _COORD, 50)
+    ccy = _clamp(child.get("cy"), _COORD, 50)
+    ((out["cx"], out["cy"]),) = _rotate([(ccx, ccy)], cx, cy, deg)
+    key = _CHILD_ROTATE_KEYS.get(child.get("type"))
+    if key:
+        out[key] = _norm_deg(_clamp(child.get(key), (-360, 360), 0) + deg)
+    return out
+
+
+def _reflected_child(child, axis):
+    out = dict(child)
+    kind = child.get("type")
+    if kind == "curve":
+        raw = child.get("points") if isinstance(child.get("points"), list) else []
+        out["points"] = [[2 * axis - p[0], p[1]] for p in raw if isinstance(p, list | tuple) and len(p) == 2]
+        return out
+    out["cx"] = 2 * axis - _clamp(child.get("cx"), _COORD, 50)
+    if kind == "arc":
+        start = _clamp(child.get("start_deg"), (-360, 360), 0)
+        sweep = _clamp(child.get("sweep_deg"), (15.0, 340.0), 90)
+        out["start_deg"] = _norm_deg(-(start + sweep))
+    else:
+        key = _CHILD_ROTATE_KEYS.get(kind)
+        if key:
+            out[key] = -_clamp(child.get(key), (-360, 360), 0)
+    return out
+
+
+def _compile_repeat(el):
+    child = el.get("of") if isinstance(el.get("of"), dict) else None
+    if not child or child.get("type") not in _REPEATABLE:
+        return "", None
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    count = int(_clamp(el.get("count"), (2, 16), 6))
+    start = _clamp(el.get("start_deg"), (-360, 360), 0)
+    parts, rule, total = [], None, 0
+    for i in range(count):
+        d, fr = _compile_single(_rotated_child(child, cx, cy, start + i * 360.0 / count))
+        if not d or total + len(d) > _MAX_D - 100:
+            continue
+        parts.append(d)
+        total += len(d)
+        rule = rule or fr
+    return "".join(parts), rule
+
+
+def _compile_mirror(el):
+    child = el.get("of") if isinstance(el.get("of"), dict) else None
+    if not child or child.get("type") not in _MIRRORABLE:
+        return "", None
+    axis = _clamp(el.get("axis_x"), _COORD, 50)
+    include_original = el.get("include_original", True)
+    parts, rule = [], None
+    sources = ([child] if include_original else []) + [_reflected_child(child, axis)]
+    for src in sources:
+        d, fr = _compile_single(src)
+        if d:
+            parts.append(d)
+            rule = rule or fr
+    return "".join(parts), rule
+
+
 def compile_elements(elements):
     """Typed elements -> list of ``{d, fill[, fill_rule][, opacity]}`` path
     dicts ready for the custom-mark validator. Unknown element types are
@@ -457,39 +586,7 @@ def compile_elements(elements):
     for el in elements or []:
         if not isinstance(el, dict):
             continue
-        kind = el.get("type")
-        fill_rule = None
-        if kind == "circle":
-            d = _compile_circle(el)
-        elif kind == "ring":
-            d, fill_rule = _compile_ring(el)
-        elif kind == "dot_ring":
-            d = _compile_dot_ring(el)
-        elif kind == "dot_grid":
-            d = _compile_dot_grid(el)
-        elif kind == "rounded_rect":
-            d = _compile_rounded_rect(el)
-        elif kind == "polygon":
-            d, fill_rule = _compile_polygon(el)
-        elif kind == "arc":
-            d = _compile_arc(el)
-        elif kind == "curve":
-            d, fill_rule = _compile_curve(el)
-        elif kind == "star":
-            d = _compile_star(el)
-        elif kind == "petal":
-            d = _compile_petal(el)
-        elif kind == "crescent":
-            d = _compile_crescent(el)
-        elif kind == "blob":
-            d = _compile_blob(el)
-        elif kind == "wave":
-            d = _compile_wave(el)
-        elif kind == "path":
-            d = str(el.get("d") or "")
-            fill_rule = el.get("fill_rule")
-        else:
-            continue
+        d, fill_rule = _compile_single(el)
         if not d:
             continue
         entry = {"d": d, "fill": el.get("fill") or "mark"}

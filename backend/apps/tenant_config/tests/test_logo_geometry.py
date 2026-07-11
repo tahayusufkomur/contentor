@@ -359,3 +359,150 @@ def test_wave_ribbon_closes_and_fits_budget():
     assert d.count("M") == 1
     assert d.endswith("Z")
     assert len(d) < 2000
+
+
+def test_repeat_places_rotated_copies_evenly():
+    d = compile_elements(
+        [
+            {
+                "type": "repeat",
+                "cx": 50,
+                "cy": 50,
+                "count": 4,
+                "of": {"type": "circle", "cx": 50, "cy": 30, "r": 4},
+            }
+        ]
+    )[0]["d"]
+    # child at (50,30) -> copies at (70,50), (50,70), (30,50)
+    for anchor in ("M46 30", "M66 50", "M46 70", "M26 50"):
+        assert anchor in d  # disc subpath starts at (cx - r, cy)
+
+
+def test_repeat_advances_child_rotation():
+    d = compile_elements(
+        [
+            {
+                "type": "repeat",
+                "cx": 50,
+                "cy": 50,
+                "count": 2,
+                "of": {"type": "petal", "cx": 50, "cy": 35, "length": 20, "width": 8},
+            }
+        ]
+    )[0]["d"]
+    # second copy is the petal rotated 180deg: its tip points down from (50,65)
+    assert "M50 25" in d and "M50 75" in d
+
+
+def test_repeat_of_ring_keeps_evenodd():
+    paths = compile_elements(
+        [
+            {
+                "type": "repeat",
+                "cx": 50,
+                "cy": 50,
+                "count": 3,
+                "of": {"type": "ring", "cx": 50, "cy": 30, "r": 8, "thickness": 3},
+            }
+        ]
+    )
+    assert paths[0]["fill_rule"] == "evenodd"
+
+
+def test_repeat_rejects_forbidden_children():
+    assert (
+        compile_elements([{"type": "repeat", "cx": 50, "cy": 50, "count": 4, "of": {"type": "path", "d": "M0 0L1 1Z"}}])
+        == []
+    )
+    assert (
+        compile_elements(
+            [
+                {
+                    "type": "repeat",
+                    "cx": 50,
+                    "cy": 50,
+                    "count": 4,
+                    "of": {
+                        "type": "repeat",
+                        "cx": 50,
+                        "cy": 50,
+                        "count": 2,
+                        "of": {"type": "circle", "cx": 50, "cy": 30, "r": 3},
+                    },
+                }
+            ]
+        )
+        == []
+    )
+
+
+def test_repeat_stops_before_length_budget():
+    paths = compile_elements(
+        [
+            {
+                "type": "repeat",
+                "cx": 50,
+                "cy": 50,
+                "count": 16,
+                "of": {
+                    "type": "arc",
+                    "cx": 50,
+                    "cy": 30,
+                    "r": 10,
+                    "thickness": 3,
+                    "start_deg": 0,
+                    "sweep_deg": 200,
+                    "round_caps": True,
+                },
+            }
+        ]
+    )
+    assert len(paths) == 1
+    assert len(paths[0]["d"]) < 2000
+
+
+def test_mirror_reflects_center_and_keeps_original():
+    d = compile_elements([{"type": "mirror", "axis_x": 50, "of": {"type": "circle", "cx": 30, "cy": 40, "r": 5}}])[0][
+        "d"
+    ]
+    assert "M25 40" in d and "M65 40" in d  # discs at x=30 and x=70
+
+
+def test_mirror_can_drop_the_original():
+    d = compile_elements(
+        [
+            {
+                "type": "mirror",
+                "axis_x": 50,
+                "include_original": False,
+                "of": {"type": "circle", "cx": 30, "cy": 40, "r": 5},
+            }
+        ]
+    )[0]["d"]
+    assert "M65 40" in d and "M25 40" not in d
+
+
+def test_mirror_reflects_arc_orientation():
+    # arc 0..90 (top->right quarter) mirrors to the top->left quarter
+    d = compile_elements(
+        [
+            {
+                "type": "mirror",
+                "axis_x": 50,
+                "include_original": False,
+                "of": {"type": "arc", "cx": 50, "cy": 50, "r": 20, "thickness": 4, "start_deg": 0, "sweep_deg": 90},
+            }
+        ]
+    )[0]["d"]
+    nums = [float(n) for n in d.replace("M", " ").replace("L", " ").replace("A", " ").replace("Z", " ").split()]
+    xs = nums[0::2]
+    assert min(xs) < 40  # geometry lives on the left half
+
+
+def test_mirror_rejects_blob_children():
+    assert (
+        compile_elements(
+            [{"type": "mirror", "axis_x": 50, "of": {"type": "blob", "cx": 30, "cy": 50, "r": 10, "seed": 3}}]
+        )
+        == []
+    )
