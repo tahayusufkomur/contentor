@@ -148,8 +148,6 @@ def _fill_or_hex(value, default_hex):
     if isinstance(value, dict):
         if value.get("type") in ("linear", "radial", "solid"):
             shaped = _fill(value, default_hex)
-            if shaped["type"] == "linear":
-                shaped["angle"] = max(0, min(360, float(value.get("angle", 90) or 0)))
             return shaped["color"] if shaped["type"] == "solid" else shaped
         return default_hex
     return _hex(value, default_hex)

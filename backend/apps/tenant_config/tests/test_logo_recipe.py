@@ -275,3 +275,11 @@ class TestMarkFillV3:
         recipe = _valid()
         recipe["colors"]["mark"] = {"type": "linear", "from": "#112233", "to": "#445566", "angle": 9999}
         assert validate_recipe(recipe)["colors"]["mark"]["angle"] == 360
+
+    def test_non_numeric_angle_does_not_raise(self):
+        recipe = _valid()
+        recipe["colors"]["mark"] = {"type": "linear", "from": "#112233", "to": "#445566", "angle": "purple"}
+        shaped = validate_recipe(recipe)
+        angle = shaped["colors"]["mark"]["angle"]
+        assert isinstance(angle, int | float)
+        assert 0 <= angle <= 360
