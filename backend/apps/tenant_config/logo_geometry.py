@@ -327,6 +327,128 @@ def _compile_curve(el):
     return d, None
 
 
+def _compile_star(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    points = int(_clamp(el.get("points"), (3, 12), 5))
+    outer = _fit_radius(cx, cy, _clamp(el.get("outer_r"), _RADIUS, 30))
+    inner = _clamp(el.get("inner_r"), (1.0, outer), outer * 0.45)
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    verts = [_polar(cx, cy, outer if i % 2 == 0 else inner, rotate + i * 180.0 / points) for i in range(points * 2)]
+    return _poly_subpath(verts)
+
+
+def _compile_petal(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    length = _clamp(el.get("length"), (4.0, 90.0), 30)
+    width = _clamp(el.get("width"), (2.0, length), length * 0.45)
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    l2, wf = length / 2.0, width * 0.66
+    # tip, two cubic curves through max width at the middle, back to tip
+    pts = [
+        (cx, cy - l2),  # tip
+        (cx + wf, cy - l2 * 0.5),  # c1 out
+        (cx + wf, cy + l2 * 0.5),  # c2 out
+        (cx, cy + l2),  # bottom tip
+        (cx - wf, cy + l2 * 0.5),  # c1 back
+        (cx - wf, cy - l2 * 0.5),  # c2 back
+    ]
+    if rotate:
+        pts = _rotate(pts, cx, cy, rotate)
+    p = [f"{_fmt(x)} {_fmt(y)}" for x, y in pts]
+    return f"M{p[0]}C{p[1]} {p[2]} {p[3]}C{p[4]} {p[5]} {p[0]}Z"
+
+
+def _compile_crescent(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    r = _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 30))
+    cutter_r = _clamp(el.get("cutter_r"), (r * 0.4, r), r * 0.8)
+    lo, hi = max(r - cutter_r + 1.0, 1.0), r + cutter_r - 1.0
+    dist = _clamp(el.get("cutter_offset"), (lo, hi), min(max(r * 0.4, lo), hi))
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    # two-circle intersection (cutter center along the rotate direction)
+    a = (dist * dist + r * r - cutter_r * cutter_r) / (2.0 * dist)
+    h = math.sqrt(max(r * r - a * a, 0.0))
+    ux, uy = _polar(0.0, 0.0, 1.0, rotate)  # unit vector toward the cutter
+    bx, by = cx + a * ux, cy + a * uy
+    px, py = -uy, ux  # perpendicular
+    p1 = (bx + h * px, by + h * py)
+    p2 = (bx - h * px, by - h * py)
+    inner_large = 1 if a > dist else 0
+    return (
+        f"M{_fmt(p1[0])} {_fmt(p1[1])}"
+        f"A{_fmt(r)} {_fmt(r)} 0 1 1 {_fmt(p2[0])} {_fmt(p2[1])}"
+        f"A{_fmt(cutter_r)} {_fmt(cutter_r)} 0 {inner_large} 0 {_fmt(p1[0])} {_fmt(p1[1])}Z"
+    )
+
+
+def _prng(seed):
+    """mulberry32 — same algorithm as frontend abstract.ts, deterministic
+    across Python versions (unlike random.Random)."""
+    state = int(seed) & 0xFFFFFFFF
+
+    def rand():
+        nonlocal state
+        state = (state + 0x6D2B79F5) & 0xFFFFFFFF
+        t = state
+        t = (t ^ (t >> 15)) * (t | 1) & 0xFFFFFFFF
+        t = (t ^ (t + ((t ^ (t >> 7)) * (t | 61) & 0xFFFFFFFF))) & 0xFFFFFFFF
+        return ((t ^ (t >> 14)) & 0xFFFFFFFF) / 4294967296.0
+
+    return rand
+
+
+def _compile_blob(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    irregularity = _clamp(el.get("irregularity"), (0.0, 0.45), 0.25)
+    r = _fit_radius(cx, cy, _clamp(el.get("r"), _RADIUS, 25) * (1 + irregularity)) / (1 + irregularity)
+    sides = int(_clamp(el.get("sides"), (5, 12), 8))
+    rand = _prng(int(_clamp(el.get("seed"), (0, 10_000_000), 1)))
+    verts = [
+        _polar(cx, cy, r * (1 - irregularity + 2 * irregularity * rand()), i * 360.0 / sides) for i in range(sides)
+    ]
+    # closed Catmull-Rom -> cubic beziers (standard 1/6 tangent rule)
+    d = f"M{_fmt(verts[0][0])} {_fmt(verts[0][1])}"
+    n = len(verts)
+    for i in range(n):
+        p0, p1 = verts[i - 1], verts[i]
+        p2, p3 = verts[(i + 1) % n], verts[(i + 2) % n]
+        c1 = (p1[0] + (p2[0] - p0[0]) / 6.0, p1[1] + (p2[1] - p0[1]) / 6.0)
+        c2 = (p2[0] - (p3[0] - p1[0]) / 6.0, p2[1] - (p3[1] - p1[1]) / 6.0)
+        d += f"C{_fmt(c1[0])} {_fmt(c1[1])} {_fmt(c2[0])} {_fmt(c2[1])} {_fmt(p2[0])} {_fmt(p2[1])}"
+    return d + "Z"
+
+
+def _compile_wave(el):
+    cx = _clamp(el.get("cx"), _COORD, 50)
+    cy = _clamp(el.get("cy"), _COORD, 50)
+    width = _clamp(el.get("width"), (10.0, 90.0), 60)
+    amplitude = _clamp(el.get("amplitude"), (1.0, 20.0), 6)
+    cycles = _clamp(el.get("cycles"), (0.5, 4.0), 1.5)
+    thickness = _clamp(el.get("thickness"), _THICKNESS, 4)
+    rotate = _clamp(el.get("rotate_deg"), (-360, 360), 0)
+    # scale the whole local shape down if its corner radius would leave canvas
+    rmax = math.hypot(width / 2.0, amplitude + thickness / 2.0)
+    fit = _fit_radius(cx, cy, rmax)
+    s = min(1.0, fit / rmax)
+    width, amplitude, thickness = width * s, amplitude * s, thickness * s
+    samples = 28
+    spine = []
+    for i in range(samples + 1):
+        t = i / samples
+        x = cx - width / 2.0 + width * t
+        y = cy + amplitude * math.sin(2 * math.pi * cycles * t)
+        spine.append((x, y))
+    left, right = _offset_edges(spine, thickness / 2.0)
+    pts = left + list(reversed(right))
+    if rotate:
+        pts = _rotate(pts, cx, cy, rotate)
+    return _polyline(pts) + "Z"
+
+
 def compile_elements(elements):
     """Typed elements -> list of ``{d, fill[, fill_rule][, opacity]}`` path
     dicts ready for the custom-mark validator. Unknown element types are
@@ -353,6 +475,16 @@ def compile_elements(elements):
             d = _compile_arc(el)
         elif kind == "curve":
             d, fill_rule = _compile_curve(el)
+        elif kind == "star":
+            d = _compile_star(el)
+        elif kind == "petal":
+            d = _compile_petal(el)
+        elif kind == "crescent":
+            d = _compile_crescent(el)
+        elif kind == "blob":
+            d = _compile_blob(el)
+        elif kind == "wave":
+            d = _compile_wave(el)
         elif kind == "path":
             d = str(el.get("d") or "")
             fill_rule = el.get("fill_rule")

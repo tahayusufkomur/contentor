@@ -180,7 +180,7 @@ def test_fill_and_opacity_pass_through():
 
 
 def test_unknown_element_type_is_skipped():
-    assert compile_elements([{"type": "blob", "cx": 50, "cy": 50}]) == []
+    assert compile_elements([{"type": "unknown_type", "cx": 50, "cy": 50}]) == []
 
 
 def test_edge_placed_radials_shrink_to_fit_canvas():
@@ -301,4 +301,61 @@ def test_curve_worst_case_fits_length_budget():
             }
         ]
     )[0]["d"]
+    assert len(d) < 2000
+
+
+def test_star_has_2n_vertices_top_point_up():
+    d = compile_elements([{"type": "star", "cx": 50, "cy": 50, "points": 5, "outer_r": 30, "inner_r": 13}])[0]["d"]
+    assert d.startswith("M50 20")  # top outer vertex at (50, 50-30)
+    assert d.count("L") == 9  # 10 vertices: 1 M + 9 L
+    assert d.endswith("Z")
+
+
+def test_petal_tips_on_the_length_axis():
+    d = compile_elements([{"type": "petal", "cx": 50, "cy": 50, "length": 30, "width": 14}])[0]["d"]
+    assert d.startswith("M50 35")  # tip at (50, 50-15)
+    assert "50 65" in d  # opposite tip
+    assert d.count("C") == 2
+
+
+def test_petal_rotates_clockwise():
+    d = compile_elements([{"type": "petal", "cx": 50, "cy": 50, "length": 30, "width": 14, "rotate_deg": 90}])[0]["d"]
+    assert d.startswith("M65 50")  # tip swung from up to right
+
+
+def test_crescent_is_two_arcs_with_expected_flags():
+    d = compile_elements([{"type": "crescent", "cx": 50, "cy": 50, "r": 30, "cutter_r": 24, "cutter_offset": 12}])[0][
+        "d"
+    ]
+    assert d.count("A") == 2
+    assert "A30 30 0 1 1" in d  # kept outer arc is major, clockwise
+    assert "A24 24 0 1 0" in d  # cutter arc: major here (chord beyond cutter center)
+    assert d.endswith("Z")
+
+
+def test_blob_is_deterministic_per_seed_and_regular_at_zero_irregularity():
+    a = compile_elements([{"type": "blob", "cx": 50, "cy": 50, "r": 25, "sides": 8, "seed": 7, "irregularity": 0.3}])[
+        0
+    ]["d"]
+    b = compile_elements([{"type": "blob", "cx": 50, "cy": 50, "r": 25, "sides": 8, "seed": 7, "irregularity": 0.3}])[
+        0
+    ]["d"]
+    c = compile_elements([{"type": "blob", "cx": 50, "cy": 50, "r": 25, "sides": 8, "seed": 8, "irregularity": 0.3}])[
+        0
+    ]["d"]
+    assert a == b
+    assert a != c
+    regular = compile_elements(
+        [{"type": "blob", "cx": 50, "cy": 50, "r": 25, "sides": 8, "seed": 7, "irregularity": 0}]
+    )[0]["d"]
+    assert regular.startswith("M50 25")  # top vertex exactly on r
+
+
+def test_wave_ribbon_closes_and_fits_budget():
+    paths = compile_elements(
+        [{"type": "wave", "cx": 50, "cy": 50, "width": 60, "amplitude": 8, "cycles": 2, "thickness": 4}]
+    )
+    d = paths[0]["d"]
+    assert d.count("M") == 1
+    assert d.endswith("Z")
     assert len(d) < 2000
