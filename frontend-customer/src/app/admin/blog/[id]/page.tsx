@@ -14,6 +14,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { PhotoPicker } from "@/components/admin/photo-picker";
 import { PostEditor } from "@/components/admin/blog/post-editor";
 import {
   type BlogPostAdmin,
@@ -22,6 +23,8 @@ import {
   getPost,
   updatePost,
 } from "@/lib/blog-api";
+import { extractHeadings, upsertPlacement } from "@/lib/blog-images";
+import type { Photo } from "@/types/photo";
 
 export default function BlogEditorPage() {
   const t = useTranslations("admin");
@@ -58,6 +61,11 @@ export default function BlogEditorPage() {
         tags: post.tags,
         slug: post.slug,
         body_html: post.body_html,
+        cover_photo: post.cover_photo,
+        // Drop any placement the coach added but never finished (empty
+        // photo_id) so we never persist a dangling reference the public
+        // page's resolve_inline_photos() can't resolve.
+        image_placements: post.image_placements.filter((p) => p.photo_id),
         ...fields,
       });
       setPost(updated);
@@ -177,6 +185,83 @@ export default function BlogEditorPage() {
               className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono"
             />
           </div>
+        )}
+      </div>
+
+      <PhotoPicker
+        label={t("blog.coverPhoto")}
+        value={post.cover_photo}
+        previewUrl={post.cover_photo_signed_url}
+        onSelect={(photo: Photo) =>
+          patch({ cover_photo: photo.id, cover_photo_signed_url: photo.signed_url })
+        }
+        onClear={() => patch({ cover_photo: null, cover_photo_signed_url: null })}
+      />
+
+      <div className="space-y-2">
+        <p className="text-sm font-medium">{t("blog.inlinePhotos")}</p>
+        {post.image_placements.map((placement) => (
+          <div key={placement.heading} className="flex items-center gap-2">
+            <select
+              value={placement.heading}
+              onChange={(e) =>
+                patch({
+                  image_placements: upsertPlacement(
+                    post.image_placements.filter((p) => p.heading !== placement.heading),
+                    { heading: e.target.value, photo_id: placement.photo_id },
+                  ),
+                })
+              }
+              className="rounded-md border bg-background px-3 py-2 text-sm"
+            >
+              {extractHeadings(post.body_html).map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
+            {/* No previewUrl here: image_placements only carries {heading,
+                photo_id} — the API doesn't resolve a signed preview per
+                placement (only the cover photo gets that treatment, since
+                it's the one shown before any picker interaction). Reopening
+                an existing placement shows the generic photo icon rather
+                than a thumbnail until the coach picks again; swap/remove
+                still works correctly. Add a resolved-preview field here if
+                that gap turns out to matter in practice. */}
+            <PhotoPicker
+              value={placement.photo_id}
+              onSelect={(photo: Photo) =>
+                patch({
+                  image_placements: upsertPlacement(post.image_placements, {
+                    heading: placement.heading,
+                    photo_id: photo.id,
+                  }),
+                })
+              }
+              onClear={() =>
+                patch({
+                  image_placements: post.image_placements.filter((p) => p.heading !== placement.heading),
+                })
+              }
+            />
+          </div>
+        ))}
+        {post.image_placements.length < 2 && extractHeadings(post.body_html).length > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              patch({
+                image_placements: upsertPlacement(post.image_placements, {
+                  heading: extractHeadings(post.body_html)[0],
+                  photo_id: "",
+                }),
+              })
+            }
+          >
+            {t("blog.addInlinePhoto")}
+          </Button>
         )}
       </div>
 

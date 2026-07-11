@@ -2,6 +2,17 @@
 // brand-pack-api.ts conventions.
 import { clientFetch } from "@/lib/api-client";
 
+export interface CoverPhoto {
+  id: string;
+  signed_url: string;
+  alt_text: string;
+}
+
+export interface ImagePlacement {
+  heading: string;
+  photo_id: string;
+}
+
 export interface BlogPostAdmin {
   id: number;
   slug: string;
@@ -12,6 +23,9 @@ export interface BlogPostAdmin {
   body_html: string;
   status: "draft" | "published";
   source: "manual" | "ai" | "autopilot";
+  cover_photo: string | null;
+  cover_photo_signed_url: string | null;
+  image_placements: ImagePlacement[];
   published_at: string | null;
   created_at: string;
   updated_at: string;
