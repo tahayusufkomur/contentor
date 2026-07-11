@@ -17,6 +17,7 @@ import {
   Palette,
   FileText,
   Settings,
+  Sparkles,
   Users,
   Video,
   Wallet,
@@ -73,7 +74,23 @@ export function AdminShell({ children, user }: AdminShellProps) {
         },
         { label: t("nav.items.liveEvents"), href: "/admin/live", icon: Video },
         { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
+      ],
+    },
+    {
+      id: "ai",
+      label: t("nav.sections.ai"),
+      items: [
         { label: t("nav.items.blog"), href: "/admin/blog", icon: Newspaper },
+        {
+          label: t("nav.items.assistant"),
+          href: "/admin/assistant",
+          icon: MessageCircleQuestion,
+        },
+        {
+          label: t("nav.items.logoStudio"),
+          href: "/admin/design?open=logoStudio",
+          icon: Sparkles,
+        },
       ],
     },
     {
@@ -104,11 +121,6 @@ export function AdminShell({ children, user }: AdminShellProps) {
       items: [
         { label: t("nav.items.pages"), href: "/admin/pages", icon: FileText },
         { label: t("nav.items.design"), href: "/admin/design", icon: Palette },
-        {
-          label: t("nav.items.assistant"),
-          href: "/admin/assistant",
-          icon: MessageCircleQuestion,
-        },
         {
           label: t("nav.items.settings"),
           href: "/admin/settings",

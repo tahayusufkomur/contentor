@@ -5,6 +5,7 @@
     "sections": {
       "overview": "Overview",
       "content": "Content",
+      "ai": "AI",
       "community": "Community",
       "site": "Site",
       "business": "Business"
@@ -25,6 +26,7 @@
       "pages": "Pages",
       "design": "Design",
       "assistant": "Site assistant",
+      "logoStudio": "Logo Studio",
       "settings": "Settings",
       "billing": "Billing",
       "payouts": "Payouts"

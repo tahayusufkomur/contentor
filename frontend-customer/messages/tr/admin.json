@@ -5,6 +5,7 @@
     "sections": {
       "overview": "Genel Bakış",
       "content": "İçerik",
+      "ai": "Yapay Zeka",
       "community": "Topluluk",
       "site": "Site",
       "business": "İş"
@@ -25,6 +26,7 @@
       "pages": "Sayfalar",
       "design": "Tasarım",
       "assistant": "Site asistanı",
+      "logoStudio": "Logo Stüdyosu",
       "settings": "Ayarlar",
       "billing": "Faturalandırma",
       "payouts": "Ödemeler"
