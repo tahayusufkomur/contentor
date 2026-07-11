@@ -9,10 +9,20 @@ import type {
   CustomMarkPath,
   Fill,
   LogoRecipe,
+  MarkFill,
   RecipeLayout,
   TextStyle,
 } from "@/types/logo";
 import { AbstractMark } from "./abstract-mark";
+
+// Solid color stand-in for a MarkFill (gradient -> its `from` stop) — same
+// fallback convention as the badge's `badgeSolid` below. Full gradient
+// painting for marks (defs/url(#id), like useFillPaint does for badges) is a
+// later-task concern; recipe v3 only widens the type here.
+function markFillSolid(fill: MarkFill): string {
+  if (typeof fill === "string") return fill;
+  return fill.type === "solid" ? fill.color : fill.from;
+}
 
 export const MARK_VIEWBOX = 256;
 
@@ -186,8 +196,14 @@ export function MarkContent({
     // badge/dark-aware `color` prop passed in above; mark2/accent are plain
     // secondary hexes — see types/logo.ts CustomMarkPath).
     const roleColor = (role: CustomMarkPath["fill"]) => {
-      if (role === "mark2") return recipe.colors.mark2 ?? color;
-      if (role === "accent") return recipe.colors.mark_accent ?? color;
+      if (role === "mark2")
+        return recipe.colors.mark2 !== undefined
+          ? markFillSolid(recipe.colors.mark2)
+          : color;
+      if (role === "accent")
+        return recipe.colors.mark_accent !== undefined
+          ? markFillSolid(recipe.colors.mark_accent)
+          : color;
       return color;
     };
     return (
@@ -357,7 +373,9 @@ function ComposedMark({
       ? recipe.colors.badge.color
       : recipe.colors.badge.from;
   const fg =
-    hasBadge && !recipe.badge.outline ? recipe.colors.mark : badgeSolid;
+    hasBadge && !recipe.badge.outline
+      ? markFillSolid(recipe.colors.mark)
+      : badgeSolid;
   const inner = size * (emblem ? 0.3 : hasBadge ? 0.55 : 0.8);
   const padX = (size - inner) / 2;
   const padY = emblem ? size * 0.18 : padX;
@@ -541,7 +559,7 @@ export function LogoRenderer({
 
   // In the emblem layout the badge is the big container; name sits inside it
   // and must contrast with the badge fill -> use colors.mark for the name.
-  const nameColor = slots.emblem ? colors.mark : colors.text;
+  const nameColor = slots.emblem ? markFillSolid(colors.mark) : colors.text;
 
   const place = (key: "mark" | "name" | "tagline", cx: number, cy: number) => {
     const p = elements[key];

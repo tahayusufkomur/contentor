@@ -19,12 +19,21 @@ import type {
   BadgeShape,
   FontWeight,
   LogoRecipe,
+  MarkFill,
   RecipeLayout,
   TextCase,
   TextStyle,
 } from "@/types/logo";
 import { AbstractMark } from "./abstract-mark";
 import type { ElementKey } from "./studio-canvas";
+
+// Solid color stand-in for a MarkFill when driving an <input type="color">
+// — full gradient mark-color editing UI is a later-task concern; recipe v3
+// only widens the type here.
+function markFillSolid(fill: MarkFill): string {
+  if (typeof fill === "string") return fill;
+  return fill.type === "solid" ? fill.color : fill.from;
+}
 
 const LAYOUTS: { id: RecipeLayout; label: string }[] = [
   { id: "horizontal", label: "Mark + name" },
@@ -58,7 +67,10 @@ interface StudioPanelProps {
   recipe: LogoRecipe;
   selected: ElementKey | null;
   onPatch: (part: Partial<LogoRecipe>, coalesceKey?: string) => void;
-  onUpdate: (updater: (r: LogoRecipe) => LogoRecipe, coalesceKey?: string) => void;
+  onUpdate: (
+    updater: (r: LogoRecipe) => LogoRecipe,
+    coalesceKey?: string,
+  ) => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -567,7 +579,7 @@ function MarkControls({
           <input
             type="color"
             aria-label="Mark color"
-            value={recipe.colors.mark}
+            value={markFillSolid(recipe.colors.mark)}
             onChange={(e) =>
               onPatch(
                 {
@@ -596,7 +608,10 @@ function MarkControls({
                     ...r,
                     elements: {
                       ...r.elements,
-                      mark: { ...r.elements.mark, scale: Number(e.target.value) },
+                      mark: {
+                        ...r.elements.mark,
+                        scale: Number(e.target.value),
+                      },
                     },
                   }),
                   "mark-scale",
@@ -616,7 +631,7 @@ function MarkControls({
               <input
                 type="color"
                 aria-label="Secondary color"
-                value={recipe.colors.mark2 ?? recipe.colors.mark}
+                value={markFillSolid(recipe.colors.mark2 ?? recipe.colors.mark)}
                 onChange={(e) =>
                   onPatch(
                     { colors: { ...recipe.colors, mark2: e.target.value } },
@@ -631,10 +646,14 @@ function MarkControls({
               <input
                 type="color"
                 aria-label="Accent color"
-                value={recipe.colors.mark_accent ?? recipe.colors.mark}
+                value={markFillSolid(
+                  recipe.colors.mark_accent ?? recipe.colors.mark,
+                )}
                 onChange={(e) =>
                   onPatch(
-                    { colors: { ...recipe.colors, mark_accent: e.target.value } },
+                    {
+                      colors: { ...recipe.colors, mark_accent: e.target.value },
+                    },
                     "mark-accent-color",
                   )
                 }

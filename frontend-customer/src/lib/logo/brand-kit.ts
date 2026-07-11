@@ -11,7 +11,7 @@
 import JSZip from "jszip";
 import { parse as parseFont, type Font } from "opentype.js";
 import { imageToDataUrl, svgToPngBlob, type FontSpec } from "@/lib/logo/export";
-import type { Fill, LogoRecipe } from "@/types/logo";
+import type { Fill, LogoRecipe, MarkFill } from "@/types/logo";
 
 /** WCAG-ish relative luminance of a #rrggbb hex, 0..1. */
 export function luminance(hex: string): number {
@@ -31,6 +31,18 @@ export function luminance(hex: string): number {
 // sky ~0.43) stay — they already read on dark backgrounds.
 const lighten = (hex: string, fallback: string) =>
   luminance(hex) < 0.4 ? fallback : hex;
+
+// Solid color stand-in for a MarkFill (gradient -> its `from` stop) so it
+// can be luminance-checked/lightened like any hex — full gradient-aware
+// dark-variant lightening is a later-task concern; recipe v3 only widens
+// the type here.
+function markFillSolid(fill: MarkFill): string {
+  return typeof fill === "string"
+    ? fill
+    : fill.type === "solid"
+      ? fill.color
+      : fill.from;
+}
 
 /** A recipe re-colored to stay readable on dark backgrounds. */
 export function darkVariant(recipe: LogoRecipe): LogoRecipe {
@@ -52,10 +64,10 @@ export function darkVariant(recipe: LogoRecipe): LogoRecipe {
       // Secondary fill roles on "custom" (AI Brand Pack) marks — only
       // present when the mark uses them, so most recipes are unaffected.
       ...(colors.mark2 !== undefined && {
-        mark2: lighten(colors.mark2, "#e5e7eb"),
+        mark2: lighten(markFillSolid(colors.mark2), "#e5e7eb"),
       }),
       ...(colors.mark_accent !== undefined && {
-        mark_accent: lighten(colors.mark_accent, "#e5e7eb"),
+        mark_accent: lighten(markFillSolid(colors.mark_accent), "#e5e7eb"),
       }),
     },
   };

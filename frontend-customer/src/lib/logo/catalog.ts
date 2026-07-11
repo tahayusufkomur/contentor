@@ -547,7 +547,7 @@ export function defaultRecipe(
   primaryHex: string,
 ): LogoRecipe {
   return {
-    version: 2,
+    version: 3,
     layout: "horizontal",
     name: brandName || "My Brand",
     tagline: "",

@@ -121,7 +121,7 @@ function markKey(r: LogoRecipe): string {
 
 /** Every composed recipe must survive backend validate_recipe: catalog enums only. */
 function assertStructurallyValid(r: LogoRecipe) {
-  expect(r.version).toBe(2);
+  expect(r.version).toBe(3);
   expect(LAYOUTS.has(r.layout)).toBe(true);
   expect(r.name).toBe("Zeynep Yoga");
   if (r.mark.type === "icon") expect(LOGO_ICONS[r.mark.icon]).toBeTruthy();
@@ -286,7 +286,7 @@ describe("composeFromPack", () => {
     const recipes = composeFromPack(PACK, BRIEF, 11);
     expect(recipes).toHaveLength(4); // 2 marks * 2 palettes
     for (const r of recipes) {
-      expect(r.version).toBe(2);
+      expect(r.version).toBe(3);
       expect(r.mark.type).toBe("custom");
       expect(r.tagline).toBe(PACK.tagline);
       expect(LAYOUTS.has(r.layout)).toBe(true);

@@ -12,11 +12,12 @@ import type {
 export function isRecipe(value: unknown): value is AnyLogoRecipe {
   if (!value || typeof value !== "object") return false;
   const v = (value as { version?: unknown }).version;
-  return v === 1 || v === 2;
+  return v === 1 || v === 2 || v === 3;
 }
 
 export function migrateRecipe(recipe: AnyLogoRecipe): LogoRecipe {
-  if (recipe.version === 2) return recipe;
+  if (recipe.version === 3) return recipe;
+  if (recipe.version === 2) return { ...recipe, version: 3 };
   const mark: LogoMark =
     recipe.mark.type === "icon"
       ? { type: "icon", icon: recipe.mark.icon, style: "outline" }
@@ -34,7 +35,7 @@ export function migrateRecipe(recipe: AnyLogoRecipe): LogoRecipe {
     case: "none",
   };
   return {
-    version: 2,
+    version: 3,
     layout: recipe.layout === "name_only" ? "name_only" : "horizontal",
     name: recipe.name,
     tagline: "",

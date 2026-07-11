@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isRecipe, migrateRecipe } from "@/lib/logo/migrate";
-import type { LogoRecipe, LogoRecipeV1 } from "@/types/logo";
+import type { AnyLogoRecipe, LogoRecipeV1, LogoRecipeV2 } from "@/types/logo";
 
 // KEEP IN SYNC: backend/apps/tenant_config/tests/test_logo_recipe.py uses
 // this exact fixture pair to guarantee TS/Python migration parity.
@@ -20,7 +20,7 @@ const V1: LogoRecipeV1 = {
   },
 };
 
-const V2: LogoRecipe = {
+const V2: LogoRecipeV2 = {
   version: 2,
   layout: "horizontal",
   name: "Zeynep Yoga",
@@ -50,13 +50,25 @@ const V2: LogoRecipe = {
   },
 };
 
+// v1 upgrades straight to v3 (same body as V2, just version: 3).
+const V3 = { ...V2, version: 3 as const };
+
 describe("migrateRecipe", () => {
   it("upgrades the parity fixture exactly", () => {
-    expect(migrateRecipe(V1)).toEqual(V2);
+    expect(migrateRecipe(V1)).toEqual(V3);
   });
 
-  it("passes v2 recipes through untouched", () => {
-    expect(migrateRecipe(V2)).toBe(V2);
+  it("accepts and upgrades a v2 recipe to v3 unchanged apart from version", () => {
+    const v2 = { ...V2 };
+    expect(isRecipe(v2)).toBe(true);
+    const out = migrateRecipe(v2 as AnyLogoRecipe);
+    expect(out.version).toBe(3);
+    expect(out.colors.mark).toBe(V2.colors.mark);
+  });
+
+  it("passes a v3 recipe through untouched", () => {
+    const v3 = { ...migrateRecipe(V2 as AnyLogoRecipe) };
+    expect(migrateRecipe(v3)).toEqual(v3);
   });
 
   it("maps icon_name to horizontal keeping the badge, initials to plain style", () => {
@@ -83,11 +95,12 @@ describe("migrateRecipe", () => {
 });
 
 describe("isRecipe", () => {
-  it("accepts v1 and v2, rejects junk", () => {
+  it("accepts v1, v2, and v3, rejects junk", () => {
     expect(isRecipe(V1)).toBe(true);
     expect(isRecipe(V2)).toBe(true);
+    expect(isRecipe(V3)).toBe(true);
     expect(isRecipe(null)).toBe(false);
     expect(isRecipe({})).toBe(false);
-    expect(isRecipe({ version: 3 })).toBe(false);
+    expect(isRecipe({ version: 4 })).toBe(false);
   });
 });
