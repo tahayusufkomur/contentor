@@ -128,11 +128,15 @@ def _trace_once(quantized_png, size, roles_by_rgb, tier):
 
 
 def trace_mark(png_bytes):
-    prepared = _prepare(png_bytes)
-    if not prepared:
+    try:
+        prepared = _prepare(png_bytes)
+        if not prepared:
+            return None
+        quantized_png, size, foreground = prepared
+        roles_by_rgb = {rgb: role for (_, rgb), role in zip(foreground, _ROLE_ORDER, strict=False)}
+    except Exception:
+        logger.exception("logo trace: mark preparation failed")
         return None
-    quantized_png, size, foreground = prepared
-    roles_by_rgb = {rgb: role for (_, rgb), role in zip(foreground, _ROLE_ORDER, strict=False)}
     for tier in _VTRACER_TIERS:
         try:
             paths = _trace_once(quantized_png, size, roles_by_rgb, tier)
