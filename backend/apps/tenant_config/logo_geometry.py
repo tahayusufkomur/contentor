@@ -589,6 +589,15 @@ def compile_elements(elements):
         d, fill_rule = _compile_single(el)
         if not d:
             continue
+        if el.get("cut"):
+            # Punch the shape out of the element right before it. Skipped
+            # when there's no base yet or the merged d would blow the
+            # whitelist budget (the whole path would be dropped downstream).
+            if not paths or len(paths[-1]["d"]) + len(d) > _MAX_D:
+                continue
+            paths[-1]["d"] += d
+            paths[-1]["fill_rule"] = "evenodd"
+            continue
         entry = {"d": d, "fill": el.get("fill") or "mark"}
         if fill_rule in ("nonzero", "evenodd"):
             entry["fill_rule"] = fill_rule

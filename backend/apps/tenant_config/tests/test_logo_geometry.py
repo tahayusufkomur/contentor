@@ -506,3 +506,84 @@ def test_mirror_rejects_blob_children():
         )
         == []
     )
+
+
+def test_cut_merges_into_previous_element_as_evenodd():
+    paths = compile_elements(
+        [
+            {"type": "circle", "cx": 50, "cy": 50, "r": 30, "fill": "mark2", "opacity": 0.9},
+            {"type": "circle", "cx": 50, "cy": 50, "r": 12, "cut": True, "fill": "accent", "opacity": 0.1},
+        ]
+    )
+    assert len(paths) == 1
+    assert paths[0]["fill_rule"] == "evenodd"
+    assert paths[0]["fill"] == "mark2"  # cut's own fill ignored
+    assert paths[0]["opacity"] == 0.9  # cut's own opacity ignored
+    assert paths[0]["d"].count("M") == 2  # base disc subpath + cut disc subpath
+
+
+def test_consecutive_cuts_stack_on_the_same_base():
+    paths = compile_elements(
+        [
+            {"type": "rounded_rect", "cx": 50, "cy": 50, "w": 60, "h": 60, "rx": 8},
+            {"type": "circle", "cx": 40, "cy": 50, "r": 6, "cut": True},
+            {"type": "circle", "cx": 60, "cy": 50, "r": 6, "cut": True},
+        ]
+    )
+    assert len(paths) == 1
+    assert paths[0]["d"].count("M") == 3
+
+
+def test_leading_cut_is_ignored():
+    paths = compile_elements(
+        [
+            {"type": "circle", "cx": 50, "cy": 50, "r": 10, "cut": True},
+            {"type": "circle", "cx": 50, "cy": 50, "r": 30},
+        ]
+    )
+    assert len(paths) == 1
+    assert "fill_rule" not in paths[0]
+
+
+def test_repeat_as_cut_punches_a_ring_of_holes():
+    paths = compile_elements(
+        [
+            {"type": "circle", "cx": 50, "cy": 50, "r": 32},
+            {
+                "type": "repeat",
+                "cx": 50,
+                "cy": 50,
+                "count": 6,
+                "cut": True,
+                "of": {"type": "circle", "cx": 50, "cy": 32, "r": 4},
+            },
+        ]
+    )
+    assert len(paths) == 1
+    assert paths[0]["fill_rule"] == "evenodd"
+    assert paths[0]["d"].count("M") == 7
+
+
+def test_cut_merging_never_exceeds_length_budget():
+    big_curve = {
+        "type": "curve",
+        "cut": True,
+        "thickness": 3,
+        "round_caps": True,
+        "points": [
+            [10, 10],
+            [30, 80],
+            [50, 15],
+            [70, 85],
+            [90, 20],
+            [10, 90],
+            [90, 90],
+            [50, 50],
+            [20, 30],
+            [80, 60],
+        ],
+    }
+    base = {"type": "circle", "cx": 50, "cy": 50, "r": 30}
+    paths = compile_elements([base, big_curve, big_curve])
+    assert len(paths) == 1
+    assert len(paths[0]["d"]) < 2000
