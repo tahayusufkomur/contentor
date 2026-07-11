@@ -246,13 +246,25 @@ describe("moreLikeThis", () => {
     // which — unlike composeWall — can carry a Script-vibe font. Simulate one
     // directly: moreLikeThis only reads base.typography.name.font to pick its
     // font pool, so overriding it on a composeWall base is a faithful stand-in.
+    //
+    // The base font must be "Dancing Script" (weights [400,500,600,700]) with
+    // weight 500, NOT "Great Vibes" (weights [400] only): 400 is valid for
+    // every font in the catalog, so a base tagline weight of 400 would pass
+    // even with the bug (carrying a stale-but-still-valid weight forward).
+    // 500 is valid for Dancing Script/Caveat but NOT Great Vibes/Pacifico —
+    // only that mismatch actually exercises the re-snap-on-reroll fix.
     const scriptBase: LogoRecipe = {
       ...composeWall(BRIEF, 42)[0]!,
       typography: {
-        name: { font: "Great Vibes", weight: 400, tracking: 0, case: "none" },
+        name: {
+          font: "Dancing Script",
+          weight: 500,
+          tracking: 0,
+          case: "none",
+        },
         tagline: {
-          font: "Great Vibes",
-          weight: 400,
+          font: "Dancing Script",
+          weight: 500,
           tracking: 0.08,
           case: "upper",
         },
