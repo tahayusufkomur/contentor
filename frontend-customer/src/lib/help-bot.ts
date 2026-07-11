@@ -7,6 +7,7 @@ import {
   type ThreadMessage,
   type ThreadPayload,
 } from "@/lib/assistant";
+import { ApiError } from "@/types/api";
 
 export type { AnswerMeta, ThreadMessage, ThreadPayload };
 
@@ -200,8 +201,27 @@ export async function streamHelpBotChat(
 /** Widget polling endpoint — coach console's own thread (mirrors
  * lib/assistant.ts's fetchThread). Via clientFetch since this is an
  * authenticated coach-admin surface (unlike the student bot's anonymous
- * plain-fetch equivalent); a 404 (no conversation yet — nothing sent) or any
- * other failure resolves to null so the poller just skips that tick. */
+ * plain-fetch equivalent) — clientFetch throws an `ApiError` on any non-OK
+ * response instead of returning a response object to inspect, so the 404
+ * case has to be caught and checked via `err.status` rather than a direct
+ * `res.status === 404` read.
+ *
+ * A 404 is deliberately NOT treated the same as a genuine failure (network
+ * error, 5xx — unknown state, resolves to `null` so the poller skips that
+ * tick): the backend returns it whenever this session has never sent a
+ * message yet (no AiConversation row exists for it to look up — see
+ * apps/tenant_config/views.py::help_bot_thread), which is the DEFINITIVE,
+ * expected answer for "zero messages". It happens on every brand-new
+ * session's very first poll tick, since the conversation row is only
+ * created lazily by the chat POST. Collapsing that into the same `null`
+ * used for real failures would leave `hydratedRef` (see HelpChat's polling
+ * effect) stuck at `false` past that always-404 first tick — so the NEXT
+ * tick to actually succeed would be wrongly treated as "initial" even
+ * though the coach may have already sent (and locally echoed) their first
+ * message by then, replaying it a second time on top of that echo. Mapping
+ * a 404 to an empty `ThreadPayload` instead lets that first tick complete
+ * hydration immediately with zero messages, exactly like a genuinely empty
+ * (200, `messages: []`) thread already does. */
 export async function fetchHelpThread(
   after = 0,
 ): Promise<ThreadPayload | null> {
@@ -209,7 +229,16 @@ export async function fetchHelpThread(
     return await clientFetch<ThreadPayload>(
       `/api/v1/admin/help-bot/thread/?session=${getHelpSessionId()}&after=${after}`,
     );
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return {
+        session_id: getHelpSessionId(),
+        status: "ai",
+        agent_label: "",
+        human_requested: false,
+        messages: [],
+      };
+    }
     return null;
   }
 }

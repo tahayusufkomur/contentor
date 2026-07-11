@@ -304,12 +304,41 @@ export async function streamAssistantChat(
   return "ai";
 }
 
+/** Widget polling endpoint — this session's own thread. Any failure OTHER
+ * than a 404 (network error, 5xx — genuinely unknown state) resolves to
+ * null so the poller just skips that tick.
+ *
+ * A 404 is deliberately NOT treated the same as those failures: the backend
+ * returns it whenever this session has never sent a message yet (no
+ * AiConversation row exists for it to look up — see
+ * apps/tenant_config/assistant_views.py::assistant_thread), which is the
+ * DEFINITIVE, expected answer for "zero messages", not an unknown one. It
+ * happens on literally every brand-new session's very first poll tick,
+ * since the conversation row is only created lazily by the chat POST.
+ * Collapsing that into the same `null` used for real failures would leave
+ * `hydratedRef` (see the widgets' polling effects) stuck at `false` past
+ * that always-404 first tick — so the NEXT tick to actually succeed would
+ * be wrongly treated as "initial" even though the visitor may have already
+ * sent (and locally echoed) their first message by then, replaying it a
+ * second time on top of that echo. Mapping a 404 to an empty
+ * `ThreadPayload` instead lets that first tick complete hydration
+ * immediately with zero messages, exactly like a genuinely empty (200,
+ * `messages: []`) thread already does. */
 export async function fetchThread(after = 0): Promise<ThreadPayload | null> {
   try {
     const res = await fetch(
       `/api/v1/assistant/thread/?session=${getSessionId()}&after=${after}`,
       { credentials: "same-origin" },
     );
+    if (res.status === 404) {
+      return {
+        session_id: getSessionId(),
+        status: "ai",
+        agent_label: "",
+        human_requested: false,
+        messages: [],
+      };
+    }
     if (!res.ok) return null;
     return (await res.json()) as ThreadPayload;
   } catch {

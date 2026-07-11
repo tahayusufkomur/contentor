@@ -84,11 +84,14 @@ export function HelpChat({ onNavigate }: { onNavigate: () => void }) {
   // Flips true once a fetchHelpThread() round-trip has actually completed —
   // deliberately NOT derived from lastIdRef (see applyThreadPoll's doc
   // comment in lib/assistant.ts for why `lastId === 0` is the wrong signal:
-  // a thread that's never had any messages yet — including one that 404s
-  // because no conversation row exists — never advances lastId, which would
-  // keep treating every later tick as "initial" too and re-replay the first
-  // exchange on top of its own local echo from send()). Stays false across
-  // a failed/missing tick so the eventual first real tick still gets the
+  // a thread that's never had any messages yet never advances lastId, which
+  // would keep treating every later tick as "initial" too and re-replay the
+  // first exchange on top of its own local echo from send()). A brand-new
+  // conversation's first tick 404s (no conversation row exists yet), which
+  // fetchHelpThread() maps to an empty ThreadPayload rather than null — see
+  // its doc comment in lib/help-bot.ts — so hydratedRef still flips true on
+  // that tick. It only stays false across a REAL failed/missing tick
+  // (network error, 5xx) so the eventual first real tick still gets the
   // full-replay treatment a returning session needs.
   const hydratedRef = useRef(false);
 
