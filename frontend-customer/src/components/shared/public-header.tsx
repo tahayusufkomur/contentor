@@ -14,6 +14,7 @@ import type {
   TenantConfig,
 } from "@/types/tenant";
 import AnnouncementBell from "@/components/shared/announcement-bell";
+import { logoSizeClass, showBrandName } from "@/lib/navbar";
 
 const VALID_LAYOUTS: ReadonlySet<string> = new Set([
   "classic",
@@ -32,18 +33,21 @@ const FALLBACK_LINKS: NavLinkType[] = [
 const SIGNED_IN_HIDDEN = new Set(["/about", "/faq"]);
 
 function Brand({ config }: { config: TenantConfig | null }) {
+  const layout = config?.navbar_config?.layout ?? "classic";
   return (
     <Link href="/" className="flex items-center gap-2 text-lg font-bold">
       {config?.logo_url ? (
         <img
           src={config.logo_url}
           alt={config.brand_name}
-          className="h-8 w-auto"
+          className={`${logoSizeClass(config.navbar_config?.logo_size, layout)} w-auto`}
         />
       ) : (
         <BookOpen className="h-5 w-5 text-primary" />
       )}
-      <span className="font-display">{config?.brand_name || "Welcome"}</span>
+      {showBrandName(config) && (
+        <span className="font-display">{config?.brand_name || "Welcome"}</span>
+      )}
     </Link>
   );
 }

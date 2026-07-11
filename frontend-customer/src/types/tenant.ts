@@ -10,6 +10,8 @@ export type NavbarLayout =
   | "minimal"
   | "pill";
 
+export type NavbarLogoSize = "sm" | "md" | "lg" | "xl";
+
 export interface NavbarConfig {
   links: NavLink[];
   cta: { text: string; href: string } | null;
@@ -20,6 +22,11 @@ export interface NavbarConfig {
   transparent_over_hero?: boolean;
   /** Show the "Install app" link (default true). */
   show_install?: boolean;
+  /** Navbar logo height preset: 24/32/40/48px. Missing renders as "md". */
+  logo_size?: NavbarLogoSize;
+  /** Show the brand-name text even when a logo image exists (default false —
+   * saved studio logos already contain the wordmark). */
+  show_brand_name?: boolean;
 }
 
 export interface LandingHero {
