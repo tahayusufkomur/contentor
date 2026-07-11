@@ -8,9 +8,14 @@ from .models import BlogAutopilot, BlogPost, BlogTopicIdea
 
 
 class BlogPostListSerializer(serializers.ModelSerializer):
+    cover_photo = serializers.SerializerMethodField()
+
     class Meta:
         model = BlogPost
-        fields = ("slug", "title", "excerpt", "tags", "published_at")
+        fields = ("slug", "title", "excerpt", "tags", "published_at", "cover_photo")
+
+    def get_cover_photo(self, obj):
+        return resolve_cover_photo(obj)
 
 
 class BlogPostDetailSerializer(serializers.ModelSerializer):
