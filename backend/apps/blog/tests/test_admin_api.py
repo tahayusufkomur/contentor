@@ -79,7 +79,7 @@ def _clean_shared():
     _scrub()
 
 
-def _draft_result():
+def _draft_result(cover_photo_id="", image_placements=None):
     return ai.DraftResult(
         {
             "title": "T",
@@ -88,6 +88,8 @@ def _draft_result():
             "meta_description": "m",
             "tags": ["t"],
             "ai_model": "x",
+            "cover_photo_id": cover_photo_id,
+            "image_placements": image_placements or [],
         },
         Decimal("0.03"),
     )
@@ -125,6 +127,36 @@ def test_generate_marks_topic_used(coach_client, paid_tenant, settings):
         coach_client.post("/api/v1/admin/blog/generate/", {"topic_id": topic.id}, format="json")
     topic.refresh_from_db()
     assert topic.status == "used"
+
+
+def test_generate_passes_tenant_photos_to_ai(coach_client, paid_tenant, settings):
+    from apps.media.models import Photo
+
+    settings.ANTHROPIC_API_KEY = "test-key"
+    Photo.objects.create(s3_key="k", title="Sunrise stretch")
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result()) as gen:
+        coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    passed_photos = list(gen.call_args.kwargs["photos"])
+    assert len(passed_photos) == 1 and passed_photos[0].title == "Sunrise stretch"
+
+
+def test_generate_resolves_cover_photo_fk(coach_client, paid_tenant, settings):
+    from apps.media.models import Photo
+
+    settings.ANTHROPIC_API_KEY = "test-key"
+    photo = Photo.objects.create(s3_key="k", title="Sunrise stretch")
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result(cover_photo_id=str(photo.id))):
+        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    post = BlogPost.objects.get(pk=res.data["post"]["id"])
+    assert post.cover_photo_id == photo.id
+
+
+def test_generate_with_no_cover_photo_id_leaves_field_null(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result()):
+        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    post = BlogPost.objects.get(pk=res.data["post"]["id"])
+    assert post.cover_photo_id is None
 
 
 def test_manual_create_without_slug_derives_one(coach_client, free_tenant):
