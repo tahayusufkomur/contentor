@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Loader2, Redo2, Sparkles, Undo2, Upload, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
-import type { BrandPackStatus } from "@/lib/logo/brand-pack-api";
+import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import {
   ICON_GROUPS,
   LOGO_FONTS,
@@ -67,7 +67,7 @@ interface StudioPanelProps {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
-  brandPackStatus: BrandPackStatus | null;
+  logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
   onRefine: (instruction: string) => void;
@@ -81,20 +81,20 @@ interface StudioPanelProps {
  * so it lives at the top of the panel regardless of which element is
  * selected, unlike the per-element control sections below it. */
 function RefinePromptBox({
-  brandPackStatus,
+  logoAiStatus,
   refining,
   refineNotice,
   onRefine,
 }: {
-  brandPackStatus: BrandPackStatus | null;
+  logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
   onRefine: (instruction: string) => void;
 }) {
   const [instruction, setInstruction] = useState("");
-  if (!brandPackStatus?.eligible) return null;
-  const remaining = brandPackStatus.refine_remaining;
-  const blocked = !brandPackStatus.enabled || remaining <= 0;
+  if (!logoAiStatus?.eligible) return null;
+  const remaining = logoAiStatus.refine_remaining;
+  const blocked = !logoAiStatus.enabled || remaining <= 0;
 
   return (
     <section className="space-y-1.5 rounded-md border bg-muted/30 p-3">
@@ -160,7 +160,7 @@ export function StudioPanel(props: StudioPanelProps) {
     canRedo,
     onUndo,
     onRedo,
-    brandPackStatus,
+    logoAiStatus,
     refining,
     refineNotice,
     onRefine,
@@ -188,7 +188,7 @@ export function StudioPanel(props: StudioPanelProps) {
         </button>
       </div>
       <RefinePromptBox
-        brandPackStatus={brandPackStatus}
+        logoAiStatus={logoAiStatus}
         refining={refining}
         refineNotice={refineNotice}
         onRefine={onRefine}

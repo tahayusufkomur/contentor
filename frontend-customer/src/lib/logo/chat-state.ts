@@ -7,6 +7,11 @@ export interface ChatMessage {
   role: "user" | "assistant";
   text: string;
   designs?: ConverseDesign[];
+  /** The stage an assistant turn's `designs` were generated for. Lets the view
+   * keep "Pick this" enabled only while the conversation is still on that
+   * stage — so an icon candidate can't be re-pinned as a lockup after the coach
+   * has moved on. Absent on user messages. */
+  stage?: ChatStage;
 }
 
 export interface ChatState {
@@ -27,6 +32,15 @@ export const initialChatState: ChatState = {
   done: false,
 };
 
+/** The persisted slice of a chat (see studio-session.ts StudioChatSession) —
+ * stage + transcript + pins, without the transient status/done. */
+export interface ChatSnapshot {
+  stage: ChatStage;
+  messages: ChatMessage[];
+  pinnedIcon: ConverseDesign | null;
+  pinnedLockup: ConverseDesign | null;
+}
+
 export type ChatEvent =
   | { type: "user_message"; text: string }
   | { type: "draft_received" }
@@ -34,10 +48,17 @@ export type ChatEvent =
   | { type: "turn_failed"; notice: string }
   | { type: "pin"; design: ConverseDesign }
   | { type: "skip_tagline" }
-  | { type: "back"; stage: ChatStage };
+  | { type: "back"; stage: ChatStage }
+  // Restore a persisted conversation (v2 session) or reset to a blank chat
+  // (snapshot === null). Transient status/done always start fresh.
+  | { type: "hydrate"; snapshot: ChatSnapshot | null };
 
 export function chatReducer(state: ChatState, event: ChatEvent): ChatState {
   switch (event.type) {
+    case "hydrate":
+      return event.snapshot
+        ? { ...initialChatState, ...event.snapshot }
+        : initialChatState;
     case "user_message":
       return {
         ...state,
@@ -52,7 +73,12 @@ export function chatReducer(state: ChatState, event: ChatEvent): ChatState {
         status: "idle",
         messages: [
           ...state.messages,
-          { role: "assistant", text: event.message, designs: event.designs },
+          {
+            role: "assistant",
+            text: event.message,
+            designs: event.designs,
+            stage: state.stage,
+          },
         ],
       };
     case "turn_failed":
