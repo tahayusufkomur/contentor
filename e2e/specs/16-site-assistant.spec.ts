@@ -44,7 +44,7 @@ function setupPaidTenant(): void {
     "-c",
     `
 from django_tenants.utils import tenant_context
-from apps.core.models import Tenant, PlatformPlan, PlatformSubscription, AiTranscript, StudentBotUsage
+from apps.core.models import Tenant, PlatformPlan, PlatformSubscription, AiConversation, AiTranscript, StudentBotUsage
 from apps.accounts.models import User
 
 t = Tenant.objects.get(slug="demo-yoga")
@@ -60,7 +60,13 @@ PlatformSubscription.objects.update_or_create(
     },
 )
 # Clean slate: previous runs (or a crashed prior run that skipped cleanup)
-# must not leak state into this run's assertions.
+# must not leak state into this run's assertions. AiConversation rows
+# (Task 5+) accumulate silently otherwise — a retry re-runs this whole test
+# from scratch without ever removing the attempt-1 conversation, and the
+# "Visitor" fallback label the anonymous visitor gets is identical every
+# time, so a leftover row eventually collides with the Task 16
+# ConversationsCard row lookup below.
+AiConversation.objects.filter(tenant_schema=t.schema_name, feature="student_bot").delete()
 AiTranscript.objects.filter(tenant_schema=t.schema_name, feature__in=("student_bot", "help_bot")).delete()
 StudentBotUsage.objects.filter(tenant_schema=t.schema_name).delete()
 with tenant_context(t):
@@ -86,7 +92,7 @@ function cleanupPaidTenant(): void {
     `
 from django.db import connection
 from django_tenants.utils import tenant_context
-from apps.core.models import Tenant, PlatformSubscription, AiTranscript, StudentBotUsage
+from apps.core.models import Tenant, PlatformSubscription, AiConversation, AiTranscript, StudentBotUsage
 
 t = Tenant.objects.get(slug="demo-yoga")
 try:
@@ -95,6 +101,7 @@ try:
         c.execute("DELETE FROM core_platformsubscription WHERE id = %s", [sub.pk])
 except PlatformSubscription.DoesNotExist:
     pass
+AiConversation.objects.filter(tenant_schema=t.schema_name, feature="student_bot").delete()
 AiTranscript.objects.filter(tenant_schema=t.schema_name, feature__in=("student_bot", "help_bot")).delete()
 StudentBotUsage.objects.filter(tenant_schema=t.schema_name).delete()
 with tenant_context(t):
@@ -242,7 +249,16 @@ test("free tenant: no bubble; paid+enabled: student chats and rates", async ({
     expect(rated.status()).toBe(204);
 
     // ── 6. Coach sees the transcript; "Add to knowledge" prefills the form ─
+    // ConversationsCard (Task 16) replaced the old always-expanded
+    // TranscriptsCard: conversations render collapsed, showing only the
+    // latest message (the assistant's answer) as a preview — the question
+    // and "Add to knowledge" only appear once the row is expanded. The
+    // anonymous visitor has no user_label, so the row falls back to the
+    // "Visitor" label (admin.assistant.convVisitor).
     await coachPage.goto(`${TENANT}/admin/assistant`);
+    const conversationRow = coachPage.getByRole("button", { name: /Visitor/ });
+    await expect(conversationRow).toBeVisible({ timeout: 10_000 });
+    await conversationRow.click();
     await expect(coachPage.getByText(QUESTION)).toBeVisible({
       timeout: 10_000,
     });
