@@ -1,9 +1,7 @@
-"""Logo Studio AI Brand Pack endpoints: paid-tier gate, monthly quota,
-30-day result cache, and the global budget kill-switch. Anthropic itself is
-always mocked via ``logo_ai.generate_brand_pack`` — no real network access.
+"""Logo Studio AI status endpoint: paid-tier gate, provider availability, and
+the per-tenant monthly turn/refine quotas. The batch Brand Pack endpoint is
+retired; conversation endpoints live in test_logo_converse_views.py.
 """
-
-from decimal import Decimal
 
 import pytest
 from django_tenants.utils import schema_context
@@ -19,41 +17,13 @@ HOST = "shared-test.localhost"
 SHARED_SCHEMA = "shared_test"
 MONTH = "2026-07"
 
-_FAKE_PACK = {
-    "designs": [
-        {
-            "concept": "A rising line.",
-            "rationale": "A rising line.",
-            "paths": [{"d": "M0 0 Z", "fill": "mark"}],
-            "elements": [{"type": "path", "d": "M0 0 Z", "fill": "mark"}],
-            "layout": "horizontal",
-            "badge_shape": "none",
-            "badge_outline": False,
-            "font": "Manrope",
-            "typography": {"case": "none", "tracking": 0, "weight": 700},
-            "palette_index": 0,
-            "color_roles": {
-                "badge": "primary",
-                "mark": "ink",
-                "mark2": "secondary",
-                "mark_accent": "accent",
-                "text": "ink",
-                "tagline": "secondary",
-            },
-        }
-    ],
-    "palettes": [
-        {"name": "Sunrise", "primary": "#e11d48", "secondary": "#f97316", "accent": "#fbbf24", "ink": "#111827"}
-    ],
-    "tagline": "Breathe deeply.",
-    "font_vibe": "Elegant",
-}
+STATUS_URL = "/api/v1/admin/config/logo-ai/status/"
 
 
 @pytest.fixture()
 def coach(tenant_ctx):
     return User.objects.create_user(
-        email="coach@brandpacktest.com",
+        email="coach@logoaitest.com",
         name="Coach",
         password="x",
         role="owner",
@@ -76,9 +46,9 @@ def paid_tenant(tenant_ctx):
     # the tenant schema and break the cross-schema FK — see the identical
     # pattern in apps/mailbox/tests/test_platform_address.py).
     with schema_context("public"):
-        plan = PlatformPlan.objects.create(name="Brand Pack Test Paid", price_monthly=19, transaction_fee_pct=5)
+        plan = PlatformPlan.objects.create(name="Logo AI Test Paid", price_monthly=19, transaction_fee_pct=5)
         owner = User.objects.create_user(
-            email="brandpack-owner@x.com",
+            email="logoai-owner@x.com",
             name="Owner",
             password="x",
             role="owner",  # noqa: S106
@@ -100,8 +70,8 @@ def _clean_shared():
         # apps/mailbox/tests/test_platform_address.py.
         with schema_context(SHARED_SCHEMA):
             PlatformSubscription.objects.all().delete()
-            PlatformPlan.objects.filter(name="Brand Pack Test Paid").delete()
-            User.objects.filter(email="brandpack-owner@x.com").delete()
+            PlatformPlan.objects.filter(name="Logo AI Test Paid").delete()
+            User.objects.filter(email="logoai-owner@x.com").delete()
             LogoAiUsage.objects.all().delete()
 
     _scrub()
@@ -109,149 +79,43 @@ def _clean_shared():
     _scrub()
 
 
-def _mock_success(monkeypatch, cost_usd=Decimal("0.05"), pack=None):
-    calls = []
-
-    def fake(*args, **kwargs):
-        calls.append((args, kwargs))
-        return logo_ai.BrandPackResult(pack or _FAKE_PACK, cost_usd)
-
-    monkeypatch.setattr(logo_ai, "generate_brand_pack", fake)
-    return calls
-
-
-class TestBrandPackStatus:
+class TestLogoAiStatus:
     def test_upgrade_required_for_free_tenant(self, coach_client, tenant_ctx, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
-        resp = coach_client.get("/api/v1/admin/config/logo-brand-pack/status/")
+        resp = coach_client.get(STATUS_URL)
         assert resp.status_code == 200
         assert resp.data["eligible"] is False
         assert resp.data["reason"] == "upgrade_required"
 
     def test_disabled_without_api_key_even_when_paid(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = ""
-        resp = coach_client.get("/api/v1/admin/config/logo-brand-pack/status/")
+        resp = coach_client.get(STATUS_URL)
         assert resp.data["eligible"] is True
         assert resp.data["enabled"] is False
         assert resp.data["reason"] == "disabled"
 
     def test_full_quota_for_fresh_paid_tenant(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
-        resp = coach_client.get("/api/v1/admin/config/logo-brand-pack/status/")
+        resp = coach_client.get(STATUS_URL)
         assert resp.data == {
             "enabled": True,
             "eligible": True,
-            "remaining": 5,
+            "turns_remaining": settings.LOGO_AI_MONTHLY_TURN_LIMIT,
+            "refine_remaining": settings.LOGO_AI_MONTHLY_REFINE_LIMIT,
             "reason": None,
-            "refine_remaining": 20,
         }
 
-    def test_quota_exhausted(self, coach_client, paid_tenant, settings):
+    def test_turn_quota_exhausted(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
-        for _ in range(5):
-            logo_ai.record_successful_pack(paid_tenant.schema_name, month=logo_ai._current_month())
-        resp = coach_client.get("/api/v1/admin/config/logo-brand-pack/status/")
-        assert resp.data["remaining"] == 0
+        settings.LOGO_AI_MONTHLY_TURN_LIMIT = 2
+        for _ in range(2):
+            logo_ai.record_successful_turn(paid_tenant.schema_name, month=logo_ai._current_month())
+        resp = coach_client.get(STATUS_URL)
+        assert resp.data["turns_remaining"] == 0
         assert resp.data["reason"] == "quota_exhausted"
 
-
-class TestBrandPackGenerate:
-    def test_disabled_without_api_key(self, coach_client, paid_tenant, settings, monkeypatch):
-        settings.ANTHROPIC_API_KEY = ""
-        calls = _mock_success(monkeypatch)
-        resp = coach_client.post("/api/v1/admin/config/logo-brand-pack/", {"niche": "yoga"}, format="json")
-        assert resp.status_code == 200
-        assert resp.data == {"pack": None, "source": "disabled", "remaining": 0}
-        assert calls == []
-
-    def test_upgrade_required_for_free_tenant(self, coach_client, tenant_ctx, settings, monkeypatch):
+    def test_refine_remaining_reflects_usage(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
-        calls = _mock_success(monkeypatch)
-        resp = coach_client.post("/api/v1/admin/config/logo-brand-pack/", {"niche": "yoga"}, format="json")
-        assert resp.data["source"] == "upgrade_required"
-        assert calls == []
-
-    def test_success_records_quota_and_cost_and_returns_pack(self, coach_client, paid_tenant, settings, monkeypatch):
-        settings.ANTHROPIC_API_KEY = "test-key"
-        _mock_success(monkeypatch, cost_usd=Decimal("0.05"))
-        resp = coach_client.post(
-            "/api/v1/admin/config/logo-brand-pack/",
-            {"niche": "yoga", "vibe": "calm and grounded"},
-            format="json",
-        )
-        assert resp.status_code == 200, resp.content
-        assert resp.data["source"] == "ai"
-        assert resp.data["pack"] == _FAKE_PACK
-        assert resp.data["remaining"] == 4
-
-        row = logo_ai.tenant_usage(paid_tenant.schema_name, month=logo_ai._current_month())
-        assert row.packs_used == 1
-        assert row.usd_spent == Decimal("0.05")
-
-    def test_cache_hit_is_free_and_does_not_call_anthropic_again(
-        self, coach_client, paid_tenant, settings, monkeypatch
-    ):
-        settings.ANTHROPIC_API_KEY = "test-key"
-        calls = _mock_success(monkeypatch)
-        body = {"niche": "yoga", "style_chips": ["Minimal"], "vibe": "calm"}
-        first = coach_client.post("/api/v1/admin/config/logo-brand-pack/", body, format="json")
-        assert first.data["source"] == "ai"
-        assert len(calls) == 1
-
-        second = coach_client.post("/api/v1/admin/config/logo-brand-pack/", body, format="json")
-        assert second.data["source"] == "cache"
-        assert second.data["pack"] == _FAKE_PACK
-        assert len(calls) == 1  # no second Anthropic call
-
-        row = logo_ai.tenant_usage(paid_tenant.schema_name, month=logo_ai._current_month())
-        assert row.packs_used == 1  # cache hit didn't consume quota
-
-    def test_quota_exhausted_blocks_new_generation(self, coach_client, paid_tenant, settings, monkeypatch):
-        settings.ANTHROPIC_API_KEY = "test-key"
-        for _ in range(5):
-            logo_ai.record_successful_pack(paid_tenant.schema_name, month=logo_ai._current_month())
-        calls = _mock_success(monkeypatch)
-        resp = coach_client.post("/api/v1/admin/config/logo-brand-pack/", {"niche": "a brand new brief"}, format="json")
-        assert resp.data == {"pack": None, "source": "quota_exhausted", "remaining": 0}
-        assert calls == []
-
-    def test_error_records_cost_but_not_quota(self, coach_client, paid_tenant, settings, monkeypatch):
-        settings.ANTHROPIC_API_KEY = "test-key"
-
-        def raise_error(*args, **kwargs):
-            raise logo_ai.BrandPackError("nothing usable", cost_usd=Decimal("0.02"))
-
-        monkeypatch.setattr(logo_ai, "generate_brand_pack", raise_error)
-        resp = coach_client.post("/api/v1/admin/config/logo-brand-pack/", {"niche": "yoga"}, format="json")
-        assert resp.data["source"] == "error"
-        assert resp.data["pack"] is None
-
-        row = logo_ai.tenant_usage(paid_tenant.schema_name, month=logo_ai._current_month())
-        assert row.packs_used == 0
-        assert row.usd_spent == Decimal("0.02")
-
-    def test_generic_exception_records_zero_cost_and_does_not_propagate(
-        self, coach_client, paid_tenant, settings, monkeypatch
-    ):
-        settings.ANTHROPIC_API_KEY = "test-key"
-
-        def raise_generic(*args, **kwargs):
-            raise RuntimeError("network blip")
-
-        monkeypatch.setattr(logo_ai, "generate_brand_pack", raise_generic)
-        resp = coach_client.post("/api/v1/admin/config/logo-brand-pack/", {"niche": "yoga"}, format="json")
-        assert resp.status_code == 200
-        assert resp.data["source"] == "error"
-
-        row = logo_ai.tenant_usage(paid_tenant.schema_name, month=logo_ai._current_month())
-        assert row.packs_used == 0
-        assert row.usd_spent == 0
-
-    def test_global_budget_kill_switch_blocks_new_generation(self, coach_client, paid_tenant, settings, monkeypatch):
-        settings.ANTHROPIC_API_KEY = "test-key"
-        settings.LOGO_AI_MONTHLY_BUDGET_USD = 1.0
-        logo_ai.record_attempt_cost(paid_tenant.schema_name, Decimal("1.5"), month=logo_ai._current_month())
-        calls = _mock_success(monkeypatch)
-        resp = coach_client.post("/api/v1/admin/config/logo-brand-pack/", {"niche": "a fresh brief"}, format="json")
-        assert resp.data["source"] == "disabled"
-        assert calls == []
+        logo_ai.record_successful_refinement(paid_tenant.schema_name, month=logo_ai._current_month())
+        resp = coach_client.get(STATUS_URL)
+        assert resp.data["refine_remaining"] == settings.LOGO_AI_MONTHLY_REFINE_LIMIT - 1

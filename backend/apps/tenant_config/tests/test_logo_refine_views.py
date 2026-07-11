@@ -251,5 +251,5 @@ class TestLogoRefine:
     def test_status_endpoint_reports_refine_remaining(self, coach_client, paid_tenant, settings):
         settings.ANTHROPIC_API_KEY = "test-key"
         logo_ai.record_successful_refinement(paid_tenant.schema_name, month=logo_ai._current_month())
-        resp = coach_client.get("/api/v1/admin/config/logo-brand-pack/status/")
+        resp = coach_client.get("/api/v1/admin/config/logo-ai/status/")
         assert resp.data["refine_remaining"] == 19
