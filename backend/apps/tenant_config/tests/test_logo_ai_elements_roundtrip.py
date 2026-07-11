@@ -19,8 +19,8 @@ def test_validate_pack_mark_returns_elements_that_recompile_to_same_paths():
     result = logo_ai._validate_pack_mark(item)
     assert result is not None
     assert result["elements"] == [
-        {"type": "circle", "cx": 30, "cy": 50, "r": 5, "fill": "mark", "opacity": None},
-        {"type": "circle", "cx": 70, "cy": 50, "r": 5, "fill": "accent", "opacity": None},
+        {"type": "circle", "cx": 30, "cy": 50, "r": 5, "fill": "mark", "opacity": None, "cut": False},
+        {"type": "circle", "cx": 70, "cy": 50, "r": 5, "fill": "accent", "opacity": None, "cut": False},
     ]
     recompiled = compile_elements(result["elements"])
     assert [p["d"] for p in recompiled] == [p["d"] for p in result["paths"]]
@@ -29,3 +29,20 @@ def test_validate_pack_mark_returns_elements_that_recompile_to_same_paths():
 def test_validate_pack_mark_drops_mark_when_nothing_survives_validation():
     item = logo_ai._Mark(rationale="x", elements=[])
     assert logo_ai._validate_pack_mark(item) is None
+
+
+def test_new_vocabulary_parses_and_compiles():
+    item = logo_ai._Mark(
+        rationale="One line through a mirrored bloom.",
+        elements=[
+            {"type": "mirror", "axis_x": 50,
+             "of": {"type": "petal", "cx": 38, "cy": 50, "length": 30, "width": 12, "rotate_deg": -30}},
+            {"type": "curve", "points": [[20, 70], [50, 45], [80, 70]], "thickness": 4, "round_caps": True},
+            {"type": "circle", "cx": 50, "cy": 30, "r": 10},
+            {"type": "star", "cx": 50, "cy": 30, "points": 5, "outer_r": 6, "inner_r": 2.5, "cut": True},
+        ],
+    )
+    result = logo_ai._validate_pack_mark(item)
+    assert result is not None
+    assert len(result["paths"]) == 3  # star cut merged into the circle
+    assert result["elements"][3]["cut"] is True

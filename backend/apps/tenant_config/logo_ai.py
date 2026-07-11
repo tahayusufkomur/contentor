@@ -198,6 +198,7 @@ inside consistency.", "elements": [{"type": "path", "d": "M50 14 A36 36 0 1 \
 class _ElementBase(BaseModel):
     fill: Literal["mark", "mark2", "accent"] = "mark"
     opacity: float | None = None
+    cut: bool = False
 
 
 class _Circle(_ElementBase):
@@ -273,8 +274,89 @@ class _FreePath(_ElementBase):
     fill_rule: Literal["nonzero", "evenodd"] | None = None
 
 
+class _Star(_ElementBase):
+    type: Literal["star"]
+    cx: float
+    cy: float
+    points: int
+    outer_r: float
+    inner_r: float
+    rotate_deg: float = 0
+
+
+class _Petal(_ElementBase):
+    type: Literal["petal"]
+    cx: float
+    cy: float
+    length: float
+    width: float
+    rotate_deg: float = 0
+
+
+class _Crescent(_ElementBase):
+    type: Literal["crescent"]
+    cx: float
+    cy: float
+    r: float
+    cutter_r: float
+    cutter_offset: float
+    rotate_deg: float = 0
+
+
+class _Blob(_ElementBase):
+    type: Literal["blob"]
+    cx: float
+    cy: float
+    r: float
+    sides: int = 8
+    seed: int = 1
+    irregularity: float = 0.25
+
+
+class _Wave(_ElementBase):
+    type: Literal["wave"]
+    cx: float
+    cy: float
+    width: float
+    amplitude: float
+    cycles: float = 1.5
+    thickness: float = 4
+    rotate_deg: float = 0
+
+
+class _Curve(_ElementBase):
+    type: Literal["curve"]
+    points: list[list[float]]
+    thickness: float = 4
+    round_caps: bool = False
+    closed: bool = False
+
+
+_RepeatChild = Annotated[
+    _Circle | _Ring | _RoundedRect | _Polygon | _Arc | _Star | _Petal | _Crescent | _Blob | _Wave | _Curve,
+    Field(discriminator="type"),
+]
+
+
+class _Repeat(_ElementBase):
+    type: Literal["repeat"]
+    cx: float
+    cy: float
+    count: int
+    start_deg: float = 0
+    of: _RepeatChild
+
+
+class _Mirror(_ElementBase):
+    type: Literal["mirror"]
+    axis_x: float = 50
+    include_original: bool = True
+    of: _RepeatChild
+
+
 _Element = Annotated[
-    _Circle | _Ring | _DotRing | _DotGrid | _RoundedRect | _Polygon | _Arc | _FreePath,
+    _Circle | _Ring | _DotRing | _DotGrid | _RoundedRect | _Polygon | _Arc | _FreePath
+    | _Star | _Petal | _Crescent | _Blob | _Wave | _Curve | _Repeat | _Mirror,
     Field(discriminator="type"),
 ]
 
