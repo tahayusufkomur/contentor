@@ -229,6 +229,40 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
         </div>
       </div>
 
+      {/* Logo size — only meaningful once a logo exists, but harmless before. */}
+      <div className="space-y-1.5">
+        <Label>Logo size</Label>
+        <div className="flex gap-1.5">
+          {(["sm", "md", "lg", "xl"] as const).map((size) => (
+            <button
+              key={size}
+              type="button"
+              aria-pressed={(navbar.logo_size ?? "md") === size}
+              onClick={() => emit({ logo_size: size })}
+              className={cn(
+                "rounded-md border px-3 py-1.5 text-sm uppercase",
+                (navbar.logo_size ?? "md") === size
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:border-foreground",
+              )}
+            >
+              {size}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {config.logo_url && (
+        <div className="flex items-center justify-between">
+          <Label htmlFor="show-brand-name">Show brand name next to logo</Label>
+          <Switch
+            id="show-brand-name"
+            checked={navbar.show_brand_name === true}
+            onCheckedChange={(v) => emit({ show_brand_name: v })}
+          />
+        </div>
+      )}
+
       {/* Transparent over hero (not applicable to the floating pill) */}
       {layout !== "pill" && (
         <div className="flex items-center justify-between rounded-lg border p-4">
