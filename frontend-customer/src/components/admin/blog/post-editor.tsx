@@ -5,14 +5,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import {
-  Bold,
-  Heading2,
-  Heading3,
-  Italic,
-  Link2,
-  List,
-} from "lucide-react";
+import { Bold, Heading2, Heading3, Italic, Link2, List } from "lucide-react";
 
 function ToolbarButton({
   active,
@@ -101,14 +94,18 @@ export function PostEditor({ value, onChange }: PostEditorProps) {
         <ToolbarButton
           label="Heading 2"
           active={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
         >
           <Heading2 className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
           label="Heading 3"
           active={editor.isActive("heading", { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
         >
           <Heading3 className="h-4 w-4" />
         </ToolbarButton>

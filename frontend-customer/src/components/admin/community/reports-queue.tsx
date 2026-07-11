@@ -53,13 +53,18 @@ function ReportCard({
     <Card>
       <CardContent className="space-y-3 p-4">
         <div className="flex items-center gap-2 text-sm">
-          <Badge variant="destructive">{REASON_LABELS[report.reason] ?? report.reason}</Badge>
+          <Badge variant="destructive">
+            {REASON_LABELS[report.reason] ?? report.reason}
+          </Badge>
           <span className="text-muted-foreground">
-            Reported by {report.reporter.display_name} · {timeAgo(report.created_at)}
+            Reported by {report.reporter.display_name} ·{" "}
+            {timeAgo(report.created_at)}
           </span>
         </div>
         {report.detail && (
-          <p className="text-sm italic text-muted-foreground">“{report.detail}”</p>
+          <p className="text-sm italic text-muted-foreground">
+            “{report.detail}”
+          </p>
         )}
         <div className="rounded-lg border bg-muted/40 p-3 text-sm">
           <div className="mb-1 text-xs font-medium text-muted-foreground">

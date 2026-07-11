@@ -50,7 +50,9 @@ export function ReportDialog({
           className="w-full max-w-sm space-y-4 rounded-xl border bg-background p-5"
           onClick={(e) => e.stopPropagation()}
         >
-          <h3 className="font-semibold">Report this {kind === "posts" ? "post" : "comment"}</h3>
+          <h3 className="font-semibold">
+            Report this {kind === "posts" ? "post" : "comment"}
+          </h3>
           <div className="grid gap-2">
             {REPORT_REASONS.map((r) => (
               <button

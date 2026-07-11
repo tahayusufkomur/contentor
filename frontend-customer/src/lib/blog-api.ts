@@ -43,7 +43,13 @@ export interface AutopilotSettings {
 
 export interface GenerateResponse {
   post: BlogPostAdmin | null;
-  source: "ai" | "upgrade_required" | "quota_exhausted" | "disabled" | "budget" | "error";
+  source:
+    | "ai"
+    | "upgrade_required"
+    | "quota_exhausted"
+    | "disabled"
+    | "budget"
+    | "error";
   remaining: number;
 }
 
@@ -65,7 +71,8 @@ export const updatePost = (id: number, body: Partial<BlogPostAdmin>) =>
   });
 export const deletePost = (id: number) =>
   clientFetch<void>(`${BASE}/posts/${id}/`, { method: "DELETE" });
-export const fetchAiStatus = () => clientFetch<BlogAiStatus>(`${BASE}/ai/status/`);
+export const fetchAiStatus = () =>
+  clientFetch<BlogAiStatus>(`${BASE}/ai/status/`);
 export const generatePost = (body: {
   topic_id?: number;
   custom_topic?: string;
@@ -82,7 +89,8 @@ export const refillTopics = () =>
   });
 export const dismissTopic = (id: number) =>
   clientFetch<void>(`${BASE}/topics/${id}/dismiss/`, { method: "POST" });
-export const getAutopilot = () => clientFetch<AutopilotSettings>(`${BASE}/autopilot/`);
+export const getAutopilot = () =>
+  clientFetch<AutopilotSettings>(`${BASE}/autopilot/`);
 export const updateAutopilot = (body: Partial<AutopilotSettings>) =>
   clientFetch<AutopilotSettings>(`${BASE}/autopilot/`, {
     method: "PATCH",

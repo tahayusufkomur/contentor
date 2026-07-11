@@ -83,7 +83,13 @@ function LayoutThumb({ id }: { id: NavbarLayout }) {
   }
 }
 
-function DestinationButton({ href, onClick }: { href: string; onClick: () => void }) {
+function DestinationButton({
+  href,
+  onClick,
+}: {
+  href: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -117,7 +123,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
   const [picker, setPicker] = useState<PickerTarget>(null);
   // Which capability suggestions apply (fetched once): hrefs the tenant has
   // content for. Filtered against current links at render time.
-  const [available, setAvailable] = useState<{ label: string; href: string }[]>([]);
+  const [available, setAvailable] = useState<{ label: string; href: string }[]>(
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -148,16 +156,21 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
     };
   }, []);
 
-  const suggestions = available.filter((s) => !links.some((l) => l.href === s.href));
+  const suggestions = available.filter(
+    (s) => !links.some((l) => l.href === s.href),
+  );
 
   const emit = (patch: Partial<NavbarConfig>) => {
     onChange({ navbar_config: { ...navbar, ...patch } });
   };
 
   const updateLink = (i: number, field: "label" | "href", value: string) => {
-    emit({ links: links.map((l, idx) => (idx === i ? { ...l, [field]: value } : l)) });
+    emit({
+      links: links.map((l, idx) => (idx === i ? { ...l, [field]: value } : l)),
+    });
   };
-  const removeLink = (i: number) => emit({ links: links.filter((_, idx) => idx !== i) });
+  const removeLink = (i: number) =>
+    emit({ links: links.filter((_, idx) => idx !== i) });
   const moveLink = (i: number, dir: -1 | 1) => {
     const j = i + dir;
     if (j < 0 || j >= links.length) return;
@@ -183,7 +196,11 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
   };
 
   const initialValue =
-    picker === "cta" ? ctaHref : typeof picker === "number" ? (links[picker]?.href ?? "") : "";
+    picker === "cta"
+      ? ctaHref
+      : typeof picker === "number"
+        ? (links[picker]?.href ?? "")
+        : "";
 
   return (
     <div className="space-y-5">
@@ -232,7 +249,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
       <div className="space-y-2">
         <Label>Navigation links</Label>
         {links.length === 0 && (
-          <p className="text-xs text-muted-foreground">No links yet. Add one below.</p>
+          <p className="text-xs text-muted-foreground">
+            No links yet. Add one below.
+          </p>
         )}
         <div className="space-y-2">
           {links.map((link, i) => (
@@ -263,7 +282,10 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
                 onChange={(e) => updateLink(i, "label", e.target.value)}
                 className="flex-1"
               />
-              <DestinationButton href={link.href} onClick={() => setPicker(i)} />
+              <DestinationButton
+                href={link.href}
+                onClick={() => setPicker(i)}
+              />
               <button
                 onClick={() => removeLink(i)}
                 className="text-muted-foreground transition-colors hover:text-destructive"
@@ -305,7 +327,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
           <Label>CTA button</Label>
           <Switch
             checked={ctaEnabled}
-            onCheckedChange={(v) => emit({ cta: v ? { text: ctaText, href: ctaHref } : null })}
+            onCheckedChange={(v) =>
+              emit({ cta: v ? { text: ctaText, href: ctaHref } : null })
+            }
           />
         </div>
         {ctaEnabled && (
@@ -313,9 +337,14 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
             <Input
               placeholder="Button text"
               value={ctaText}
-              onChange={(e) => emit({ cta: { text: e.target.value, href: ctaHref } })}
+              onChange={(e) =>
+                emit({ cta: { text: e.target.value, href: ctaHref } })
+              }
             />
-            <DestinationButton href={ctaHref} onClick={() => setPicker("cta")} />
+            <DestinationButton
+              href={ctaHref}
+              onClick={() => setPicker("cta")}
+            />
           </div>
         )}
       </div>
@@ -328,7 +357,10 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
             Display &quot;Sign In&quot; link in nav
           </p>
         </div>
-        <Switch checked={showLogin} onCheckedChange={(v) => emit({ show_login: v })} />
+        <Switch
+          checked={showLogin}
+          onCheckedChange={(v) => emit({ show_login: v })}
+        />
       </div>
 
       {/* Show Install app */}
@@ -339,7 +371,10 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
             Link visitors to installing your site as an app
           </p>
         </div>
-        <Switch checked={showInstall} onCheckedChange={(v) => emit({ show_install: v })} />
+        <Switch
+          checked={showInstall}
+          onCheckedChange={(v) => emit({ show_install: v })}
+        />
       </div>
 
       {picker !== null && (

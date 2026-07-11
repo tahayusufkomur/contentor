@@ -3,7 +3,12 @@ export interface NavLink {
   href: string;
 }
 
-export type NavbarLayout = "classic" | "centered" | "split" | "minimal" | "pill";
+export type NavbarLayout =
+  | "classic"
+  | "centered"
+  | "split"
+  | "minimal"
+  | "pill";
 
 export interface NavbarConfig {
   links: NavLink[];

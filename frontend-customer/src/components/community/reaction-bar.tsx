@@ -42,7 +42,10 @@ export function ReactionBar({
   useEffect(() => {
     if (!pickerOpen) return;
     const handleOutside = (e: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setPickerOpen(false);
       }
     };

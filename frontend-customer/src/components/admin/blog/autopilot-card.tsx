@@ -75,14 +75,20 @@ export function AutopilotCard({ eligible }: { eligible: boolean }) {
           <div className="flex items-center gap-3">
             <Select
               value={settings.frequency}
-              onValueChange={(v) => save({ frequency: v as "weekly" | "monthly" })}
+              onValueChange={(v) =>
+                save({ frequency: v as "weekly" | "monthly" })
+              }
             >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="weekly">{t("blog.frequencyWeekly")}</SelectItem>
-                <SelectItem value="monthly">{t("blog.frequencyMonthly")}</SelectItem>
+                <SelectItem value="weekly">
+                  {t("blog.frequencyWeekly")}
+                </SelectItem>
+                <SelectItem value="monthly">
+                  {t("blog.frequencyMonthly")}
+                </SelectItem>
               </SelectContent>
             </Select>
 

@@ -133,8 +133,14 @@ export default function BlogListPage() {
                   {post.title || t("blog.untitled")}
                 </Link>
                 <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant={post.status === "published" ? "success" : "outline"}>
-                    {post.status === "published" ? t("blog.published") : t("blog.draft")}
+                  <Badge
+                    variant={
+                      post.status === "published" ? "success" : "outline"
+                    }
+                  >
+                    {post.status === "published"
+                      ? t("blog.published")
+                      : t("blog.draft")}
                   </Badge>
                   {post.source !== "manual" && (
                     <Badge variant="brand">{t("blog.aiBadge")}</Badge>

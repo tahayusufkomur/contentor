@@ -45,12 +45,22 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
       <div className="space-y-1.5">
         <Label>Logo</Label>
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" size="sm" className="gap-1.5" onClick={() => setStudioOpen(true)}>
+          <Button
+            type="button"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setStudioOpen(true)}
+          >
             <Wand2 className="h-3.5 w-3.5" />
-            {config.logo_recipe && Object.keys(config.logo_recipe).length ? "Edit logo" : "Create a logo"}
+            {config.logo_recipe && Object.keys(config.logo_recipe).length
+              ? "Edit logo"
+              : "Create a logo"}
           </Button>
         </div>
-        <LogoUploader logoUrl={config.logo_url} onChange={(patch) => onChange(patch)} />
+        <LogoUploader
+          logoUrl={config.logo_url}
+          onChange={(patch) => onChange(patch)}
+        />
         <LogoStudio
           open={studioOpen}
           onOpenChange={setStudioOpen}

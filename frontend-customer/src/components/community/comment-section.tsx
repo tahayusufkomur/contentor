@@ -36,7 +36,9 @@ export function CommentSection({
 
   const load = async (p: number) => {
     const data = await getComments(post.id, p);
-    setComments((prev) => (p === 1 ? data.results : [...prev, ...data.results]));
+    setComments((prev) =>
+      p === 1 ? data.results : [...prev, ...data.results],
+    );
     setHasMore(Boolean(data.next));
     setPage(p);
   };
@@ -81,9 +83,7 @@ export function CommentSection({
           </Avatar>
           <div className="min-w-0 flex-1 rounded-lg bg-muted/50 px-3 py-2">
             <div className="flex items-center gap-2 text-xs">
-              <span className="font-medium">
-                {comment.author.display_name}
-              </span>
+              <span className="font-medium">{comment.author.display_name}</span>
               {comment.author.is_coach && (
                 <Badge variant="secondary" className="h-4 px-1 text-[10px]">
                   Coach

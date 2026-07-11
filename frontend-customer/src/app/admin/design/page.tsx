@@ -123,9 +123,16 @@ export default function DesignSettingsPage() {
             </div>
             <div className="space-y-2">
               <Label>Logo</Label>
-              <Button type="button" variant="outline" className="gap-2" onClick={() => setStudioOpen(true)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="gap-2"
+                onClick={() => setStudioOpen(true)}
+              >
                 <Wand2 className="h-4 w-4" />
-                {config.logo_recipe && Object.keys(config.logo_recipe).length ? "Edit logo in Logo Studio" : "Create a logo in Logo Studio"}
+                {config.logo_recipe && Object.keys(config.logo_recipe).length
+                  ? "Edit logo in Logo Studio"
+                  : "Create a logo in Logo Studio"}
               </Button>
             </div>
             <div className="space-y-2">

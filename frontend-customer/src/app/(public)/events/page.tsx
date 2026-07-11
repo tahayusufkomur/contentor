@@ -30,12 +30,17 @@ export default async function EventsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Upcoming events</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            Upcoming events
+          </h1>
           <p className="mt-1 text-muted-foreground">
             Live classes, streams, and in-person events over the next 90 days.
           </p>
         </div>
-        <Link href="/calendar" className="text-sm font-medium text-primary hover:underline">
+        <Link
+          href="/calendar"
+          className="text-sm font-medium text-primary hover:underline"
+        >
           View as calendar →
         </Link>
       </div>

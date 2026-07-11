@@ -68,7 +68,9 @@ export function JoinCard({
         >
           <Avatar className="h-20 w-20">
             <AvatarImage src={preview} alt="" />
-            <AvatarFallback>{(name || "?").slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>
+              {(name || "?").slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <span className="absolute bottom-0 right-0 rounded-full bg-primary p-1.5 text-primary-foreground">
             <Camera className="h-3.5 w-3.5" />

@@ -57,8 +57,13 @@ export function MembersTable() {
   const stateBadge = (m: ModerationMember) => {
     if (m.is_banned) return <Badge variant="destructive">Banned</Badge>;
     if (m.muted_until && new Date(m.muted_until) > new Date())
-      return <Badge variant="outline">Muted until {new Date(m.muted_until).toLocaleDateString()}</Badge>;
-    if (m.requires_approval) return <Badge variant="outline">Posts need approval</Badge>;
+      return (
+        <Badge variant="outline">
+          Muted until {new Date(m.muted_until).toLocaleDateString()}
+        </Badge>
+      );
+    if (m.requires_approval)
+      return <Badge variant="outline">Posts need approval</Badge>;
     return <Badge variant="secondary">Active</Badge>;
   };
 
@@ -100,7 +105,11 @@ export function MembersTable() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label="Member actions">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Member actions"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -108,7 +117,10 @@ export function MembersTable() {
                       {m.is_banned ? (
                         <DropdownMenuItem
                           onClick={() =>
-                            void run(() => unbanMember(m.id), `${m.display_name} can access the community again.`)
+                            void run(
+                              () => unbanMember(m.id),
+                              `${m.display_name} can access the community again.`,
+                            )
                           }
                         >
                           Unban
@@ -117,8 +129,15 @@ export function MembersTable() {
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => {
-                            if (window.confirm(`Ban ${m.display_name}? They lose all access to the community.`))
-                              void run(() => banMember(m.id), `${m.display_name} is banned.`);
+                            if (
+                              window.confirm(
+                                `Ban ${m.display_name}? They lose all access to the community.`,
+                              )
+                            )
+                              void run(
+                                () => banMember(m.id),
+                                `${m.display_name} is banned.`,
+                              );
                           }}
                         >
                           Ban
@@ -126,14 +145,19 @@ export function MembersTable() {
                       )}
                       {m.muted_until && new Date(m.muted_until) > new Date() ? (
                         <DropdownMenuItem
-                          onClick={() => void run(() => muteMember(m.id, 0), "Mute lifted.")}
+                          onClick={() =>
+                            void run(() => muteMember(m.id, 0), "Mute lifted.")
+                          }
                         >
                           Unmute
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem
                           onClick={() =>
-                            void run(() => muteMember(m.id, 7), `${m.display_name} muted for 7 days.`)
+                            void run(
+                              () => muteMember(m.id, 7),
+                              `${m.display_name} muted for 7 days.`,
+                            )
                           }
                         >
                           Mute for 7 days
@@ -142,14 +166,17 @@ export function MembersTable() {
                       <DropdownMenuItem
                         onClick={() =>
                           void run(
-                            () => setRequiresApproval(m.id, !m.requires_approval),
+                            () =>
+                              setRequiresApproval(m.id, !m.requires_approval),
                             m.requires_approval
                               ? "Their posts publish instantly again."
                               : "Their next posts will wait for your approval.",
                           )
                         }
                       >
-                        {m.requires_approval ? "Stop reviewing their posts" : "Review their posts first"}
+                        {m.requires_approval
+                          ? "Stop reviewing their posts"
+                          : "Review their posts first"}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

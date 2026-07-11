@@ -10,7 +10,11 @@ export const AI_DEFAULT_IDLE_DESCRIPTION =
  * reaches 100% — holds at the last checkpoint until the real response
  * lands, since the underlying call is a single blocking request with no
  * true progress signal (see docs/superpowers/specs/2026-07-10-logo-studio-ai-trigger-design.md). */
-const PROGRESS_CHECKPOINTS: { atSeconds: number; percent: number; label: string }[] = [
+const PROGRESS_CHECKPOINTS: {
+  atSeconds: number;
+  percent: number;
+  label: string;
+}[] = [
   { atSeconds: 0, percent: 8, label: "Sketching your marks…" },
   { atSeconds: 10, percent: 25, label: "Sketching your marks…" },
   { atSeconds: 25, percent: 45, label: "Choosing brand colors…" },
@@ -19,7 +23,10 @@ const PROGRESS_CHECKPOINTS: { atSeconds: number; percent: number; label: string 
   { atSeconds: 110, percent: 90, label: "Almost there…" },
 ];
 
-export function progressForElapsed(elapsedSeconds: number): { percent: number; label: string } {
+export function progressForElapsed(elapsedSeconds: number): {
+  percent: number;
+  label: string;
+} {
   let current = PROGRESS_CHECKPOINTS[0];
   for (const checkpoint of PROGRESS_CHECKPOINTS) {
     if (elapsedSeconds >= checkpoint.atSeconds) current = checkpoint;
@@ -47,7 +54,8 @@ export function deriveAiBannerState(params: {
   aiNotice: string | null | undefined;
   elapsedSeconds: number;
 }): AiBannerState {
-  const { brandPackStatus, aiLoading, aiWall, aiNotice, elapsedSeconds } = params;
+  const { brandPackStatus, aiLoading, aiWall, aiNotice, elapsedSeconds } =
+    params;
 
   if (!brandPackStatus) return { kind: "hidden" };
   if (aiLoading) {
@@ -64,6 +72,9 @@ export function deriveAiBannerState(params: {
     case "quota_exhausted":
       return { kind: "quota_exhausted" };
     default:
-      return { kind: "idle", description: aiNotice ?? AI_DEFAULT_IDLE_DESCRIPTION };
+      return {
+        kind: "idle",
+        description: aiNotice ?? AI_DEFAULT_IDLE_DESCRIPTION,
+      };
   }
 }

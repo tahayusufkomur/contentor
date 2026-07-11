@@ -8,7 +8,11 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
 import { BookOpen, LogOut, Menu, User as UserIcon, X, Zap } from "lucide-react";
 import type { User } from "@/types/auth";
-import type { NavLink as NavLinkType, NavbarLayout, TenantConfig } from "@/types/tenant";
+import type {
+  NavLink as NavLinkType,
+  NavbarLayout,
+  TenantConfig,
+} from "@/types/tenant";
 import AnnouncementBell from "@/components/shared/announcement-bell";
 
 const VALID_LAYOUTS: ReadonlySet<string> = new Set([
@@ -31,7 +35,11 @@ function Brand({ config }: { config: TenantConfig | null }) {
   return (
     <Link href="/" className="flex items-center gap-2 text-lg font-bold">
       {config?.logo_url ? (
-        <img src={config.logo_url} alt={config.brand_name} className="h-8 w-auto" />
+        <img
+          src={config.logo_url}
+          alt={config.brand_name}
+          className="h-8 w-auto"
+        />
       ) : (
         <BookOpen className="h-5 w-5 text-primary" />
       )}
@@ -105,11 +113,15 @@ function AuthCluster({
             href={dashboardHref}
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            {user.role === "owner" || user.role === "coach" ? "Admin" : "Dashboard"}
+            {user.role === "owner" || user.role === "coach"
+              ? "Admin"
+              : "Dashboard"}
           </Link>
           <AnnouncementBell />
           {!compact && (
-            <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+            <span className="text-sm text-muted-foreground">
+              {user.name || user.email}
+            </span>
           )}
           <Button
             asChild
@@ -174,10 +186,14 @@ export function PublicHeader({
 
   const navbar = config?.navbar_config;
   const layout: NavbarLayout =
-    navbar?.layout && VALID_LAYOUTS.has(navbar.layout) ? navbar.layout : "classic";
+    navbar?.layout && VALID_LAYOUTS.has(navbar.layout)
+      ? navbar.layout
+      : "classic";
   const showInstall = navbar?.show_install !== false;
   const transparent =
-    navbar?.transparent_over_hero === true && layout !== "pill" && pathname === "/";
+    navbar?.transparent_over_hero === true &&
+    layout !== "pill" &&
+    pathname === "/";
 
   const allNavLinks = navbar?.links?.length ? navbar.links : FALLBACK_LINKS;
   const navLinks = user
@@ -186,7 +202,10 @@ export function PublicHeader({
   // Signed-in members of a community-enabled tenant get a Community nav entry.
   const withCommunity: (NavLinkType & { dot?: boolean })[] =
     user && communityEnabled
-      ? [...navLinks, { label: "Community", href: "/community", dot: communityUnread }]
+      ? [
+          ...navLinks,
+          { label: "Community", href: "/community", dot: communityUnread },
+        ]
       : navLinks;
   // Blog only appears once the coach has published at least one post.
   const fullNavLinks: (NavLinkType & { dot?: boolean })[] = blogEnabled
@@ -275,7 +294,9 @@ export function PublicHeader({
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
-              {user.role === "owner" || user.role === "coach" ? "Admin" : "Dashboard"}
+              {user.role === "owner" || user.role === "coach"
+                ? "Admin"
+                : "Dashboard"}
             </Link>
             <Button
               asChild
@@ -290,7 +311,9 @@ export function PublicHeader({
             </Button>
             <div className="flex items-center gap-2 border-t pt-3">
               <UserIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+              <span className="text-sm text-muted-foreground">
+                {user.name || user.email}
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -337,7 +360,11 @@ export function PublicHeader({
           <div className="pointer-events-auto mx-auto flex h-14 max-w-4xl items-center justify-between gap-4 rounded-full border border-primary/10 bg-background/75 px-5 shadow-lg backdrop-blur-md">
             <Brand config={config} />
             <nav className="hidden items-center gap-5 md:flex">
-              <DesktopLinks links={fullNavLinks} showInstall={showInstall} className="gap-5" />
+              <DesktopLinks
+                links={fullNavLinks}
+                showInstall={showInstall}
+                className="gap-5"
+              />
               <AuthCluster {...authProps} compact />
             </nav>
             {burger}
@@ -353,12 +380,16 @@ export function PublicHeader({
   }
 
   // ── All other presets share the header shell ──────────────────────────────
-  const shellCls = transparent && !scrolled
-    ? "absolute inset-x-0 top-0 z-50 border-b border-transparent bg-transparent pt-safe"
-    : "sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md pt-safe";
+  const shellCls =
+    transparent && !scrolled
+      ? "absolute inset-x-0 top-0 z-50 border-b border-transparent bg-transparent pt-safe"
+      : "sticky top-0 z-50 border-b border-primary/10 bg-background/80 backdrop-blur-md pt-safe";
 
   return (
-    <header data-nav-layout={layout} className={`${shellCls} transition-colors duration-200`}>
+    <header
+      data-nav-layout={layout}
+      className={`${shellCls} transition-colors duration-200`}
+    >
       {layout === "centered" ? (
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center">
@@ -367,7 +398,9 @@ export function PublicHeader({
             <div className="hidden justify-end md:flex">
               <AuthCluster {...authProps} compact />
             </div>
-            <div className="col-start-3 flex justify-end md:hidden">{burger}</div>
+            <div className="col-start-3 flex justify-end md:hidden">
+              {burger}
+            </div>
           </div>
           <nav className="hidden h-10 items-center justify-center md:flex">
             <DesktopLinks links={fullNavLinks} showInstall={showInstall} />

@@ -142,9 +142,7 @@ export async function copyTemplate(
   );
 }
 
-export async function previewTemplates(
-  templateIds: string[],
-): Promise<{
+export async function previewTemplates(templateIds: string[]): Promise<{
   previews: Record<string, string>;
   errors: Record<string, string>;
 }> {

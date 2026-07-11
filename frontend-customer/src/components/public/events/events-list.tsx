@@ -32,7 +32,10 @@ export function EventsList({
         <CalendarDays className="h-8 w-8 text-muted-foreground" />
         <p className="text-muted-foreground">No upcoming events scheduled.</p>
         {isCoach && (
-          <Link href="/admin/live" className="text-sm font-medium text-primary hover:underline">
+          <Link
+            href="/admin/live"
+            className="text-sm font-medium text-primary hover:underline"
+          >
             Schedule your first live class →
           </Link>
         )}
@@ -85,7 +88,9 @@ export function EventsList({
                       </span>
                       <span>{formatTime(event.scheduled_at, tz)}</span>
                       <span className="ml-auto font-medium text-foreground">
-                        {event.pricing_type === "paid" ? `$${event.price}` : "Free"}
+                        {event.pricing_type === "paid"
+                          ? `$${event.price}`
+                          : "Free"}
                       </span>
                     </div>
                     <h3 className="font-medium leading-snug group-hover:text-primary">

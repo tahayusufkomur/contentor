@@ -193,8 +193,8 @@ function AiGenerateBanner({
       >
         <p className="flex items-center gap-2 text-sm">
           <Sparkles className="h-4 w-4 text-primary" />
-          AI logo designer — bespoke marks made for your brand, included
-          with paid plans.
+          AI logo designer — bespoke marks made for your brand, included with
+          paid plans.
         </p>
         <Button asChild size="sm" variant="outline">
           <a href="/admin/billing/subscription">Upgrade</a>
@@ -205,7 +205,9 @@ function AiGenerateBanner({
 
   if (state.kind === "generating") {
     return (
-      <div className={`space-y-2 rounded-lg border p-4 ${dark ? "border-zinc-700" : ""}`}>
+      <div
+        className={`space-y-2 rounded-lg border p-4 ${dark ? "border-zinc-700" : ""}`}
+      >
         <p className="flex items-center gap-2 text-sm font-medium">
           <Sparkles className="h-4 w-4 animate-pulse text-primary" />
           Generating AI logos for {brandName || "your brand"}…
@@ -222,7 +224,9 @@ function AiGenerateBanner({
             style={{ width: `${state.percent}%` }}
           />
         </div>
-        <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
+        <p
+          className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+        >
           {state.label} Usually takes about 2 minutes.
         </p>
       </div>
@@ -231,18 +235,21 @@ function AiGenerateBanner({
 
   if (state.kind === "quota_exhausted") {
     return (
-      <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
-        You&apos;ve used this month&apos;s AI logo generations. More next
-        month.
+      <p
+        className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+      >
+        You&apos;ve used this month&apos;s AI logo generations. More next month.
       </p>
     );
   }
 
   if (state.kind === "disabled") {
     return (
-      <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
-        AI logo generation is temporarily unavailable — your ideas below
-        are ready to use.
+      <p
+        className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+      >
+        AI logo generation is temporarily unavailable — your ideas below are
+        ready to use.
       </p>
     );
   }
@@ -251,7 +258,9 @@ function AiGenerateBanner({
     <div
       className={`flex flex-col gap-3 rounded-lg border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between ${dark ? "border-zinc-700" : ""}`}
     >
-      <p className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}>
+      <p
+        className={`text-xs ${dark ? "text-zinc-400" : "text-muted-foreground"}`}
+      >
         {state.description}
       </p>
       <Button

@@ -1402,7 +1402,7 @@ Expected: FAIL — no conversations created, thread routes 404.
         return Response({"mode": "human"})
 ```
 
-then append the user message once history validates, and pass `conversation=convo` into `help_bot.sse_events(...)`. Add three views — they mirror Task 5/6's student versions exactly, with the lookup filter `feature="help_bot", tenant_schema=connection.tenant.schema_name`, permission `IsCoachOrOwner` (no anon throttles needed — JWT-gated), and the human-request email going to `settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL` with subject `f"{label} asked for a human in Ask Contentor"` and the coach's tenant schema in the body. Name them `help_bot_thread`, `help_bot_human_message`, `help_bot_human_request`; import `send_email` at module top.
+then append the user message once history validates, and pass `conversation=convo` into `help_bot.sse_events(...)`. Add three views — copy `assistant_thread`, `assistant_human_message`, `assistant_human_request` from `apps/tenant_config/assistant_views.py` (in the repo since Tasks 4–6), changing the lookup filter to `feature="help_bot", tenant_schema=connection.tenant.schema_name`, permission to `IsCoachOrOwner` (no anon throttles needed — JWT-gated; drop the `human_handoff_enabled` gate), and the human-request email recipient to `settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL` with subject `f"{label} asked for a human in Ask Contentor"` and the coach's tenant schema in the body. Name them `help_bot_thread`, `help_bot_human_message`, `help_bot_human_request`; import `send_email` at module top.
 
 `apps/core/help/views.py` (marketing flavor) — same three views as public endpoints (`@authentication_classes([])` + `AllowAny` + `AiThreadThrottle`/`AiHumanMessageThrottle`/`AiHumanRequestThrottle`), lookup filter `feature="help_bot", tenant_schema=MARKETING_BUCKET`; `help_bot_public_chat` gains the identical conversation resolve (audience `"visitor"`, `user=None`) + human short-circuit + pre-stream user append + `conversation=convo`. Names: `help_bot_public_thread`, `help_bot_public_human_message`, `help_bot_public_human_request`. The marketing human-request email label is `"A visitor on contentor.app"`; no `human_handoff` flag gate (always on, D9).
 
@@ -1573,7 +1573,7 @@ def platform_ai_conversations(request):
     )
 ```
 
-The four detail views (`platform_ai_conversation_thread` / `_takeover` / `_message` / `_release`) are byte-level copies of Task 5's coach versions with three substitutions: lookup `_help_conversation(pk)`, permission `IsSuperUser`, and takeover label fixed to `PLATFORM_AGENT_LABEL` (no name derivation). Write them out fully in the module.
+The four detail views (`platform_ai_conversation_thread` / `_takeover` / `_message` / `_release`) are byte-level copies of `assistant_conversation_thread` / `_takeover` / `_message` / `_release` in `apps/tenant_config/assistant_views.py` (in the repo since Task 5) with three substitutions: lookup `_help_conversation(pk)`, permission `IsSuperUser`, and takeover label fixed to `PLATFORM_AGENT_LABEL` (no name derivation). Write them out fully in the module.
 
 `backend/apps/core/platform/urls.py`:
 
@@ -2255,4 +2255,1047 @@ git add backend/apps/core backend/apps/tenant_config
 git commit -m "fix(throttling): key anonymous AI throttles on the real client IP (CF-Connecting-IP)"
 ```
 
-<!-- APPEND -->
+### Task 13: IP blocklist — `AiIpBlock`, guard, auto-block, adminkit
+
+**Files:**
+- Modify: `backend/apps/core/models.py` (`AiIpBlock`)
+- Create: `backend/apps/core/migrations/00XX_aiipblock.py` (generated)
+- Create: `backend/apps/core/ipblock.py`
+- Modify: `backend/apps/core/throttling.py` (denial counting in `ClientIpAnonThrottle`)
+- Modify: `backend/apps/core/admin_panels.py` (+ expected-keys test `backend/apps/adminkit/tests/test_adminkit.py:258-276`)
+- Modify: `backend/apps/tenant_config/assistant_views.py`, `backend/apps/core/help/views.py`, `backend/apps/core/assistant_views.py` (guards)
+- Modify: `backend/config/settings/base.py`
+- Create: `backend/apps/core/tests/test_ai_ip_block.py`
+
+**Interfaces:**
+- Produces:
+  - `AiIpBlock` (public): `ip` (GenericIPAddressField unique), `reason` (char 200 blank), `source` (char 8, `manual|auto`, default manual), `expires_at` (null = forever), `created_at`.
+  - `apps.core.ipblock.blocked_response(request) -> Response | None` — 403 `{"detail": "blocked"}` when `client_ip` is actively blocked; 60s cached blocklist set (key `"ai-ip-blocklist"`).
+  - `apps.core.ipblock.record_throttle_denial(ip)` — Redis counter (24h TTL, key `f"aiblock:{ip}"`); at `AI_IP_AUTOBLOCK_THRESHOLD` creates an auto block expiring in `AI_IP_AUTOBLOCK_DAYS` days and invalidates the blocklist cache.
+  - `ClientIpAnonThrottle.allow_request` counts every denial — auto-block piggybacks on ALL AI anon throttles.
+  - Guard line at the top of every public AI view: `assistant_status`, `assistant_chat`, `assistant_thread`, `assistant_human_message`, `assistant_human_request`, `help_bot_public_*` (all five), `rate_answer`.
+  - Settings: `AI_IP_AUTOBLOCK_THRESHOLD = 5`, `AI_IP_AUTOBLOCK_DAYS = 7`.
+  - Adminkit: writable registration key `"ai-ip-blocks"` (PlatformKbEntry pattern) — the expected-keys set in `test_adminkit.py` gains `"ai-ip-blocks"`.
+
+- [ ] **Step 1: Write the failing tests**
+
+```python
+# backend/apps/core/tests/test_ai_ip_block.py
+"""IP blocklist: guard 403s, expiry, auto-block threshold."""
+
+from datetime import timedelta
+
+import pytest
+from django.core.cache import cache
+from django.utils import timezone
+from rest_framework.test import APIClient
+
+from apps.core import ipblock
+from apps.core.models import AiIpBlock
+
+pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def _clean_cache():
+    cache.delete(ipblock.BLOCKLIST_CACHE_KEY)
+    yield
+    cache.clear()
+
+
+def test_blocked_ip_gets_403_everywhere():
+    AiIpBlock.objects.create(ip="6.6.6.6", source="manual")
+    client = APIClient(REMOTE_ADDR="6.6.6.6")
+    assert client.get("/api/v1/help/status/").status_code == 403
+    assert client.post("/api/v1/help/chat/", {"messages": []}, format="json").status_code == 403
+    assert client.post("/api/v1/ai/rate/", {}, format="json").status_code == 403
+
+
+def test_expired_block_is_ignored():
+    AiIpBlock.objects.create(ip="6.6.6.7", expires_at=timezone.now() - timedelta(hours=1))
+    assert APIClient(REMOTE_ADDR="6.6.6.7").get("/api/v1/help/status/").status_code == 200
+
+
+def test_auto_block_after_threshold(settings):
+    settings.AI_IP_AUTOBLOCK_THRESHOLD = 5
+    for _ in range(4):
+        ipblock.record_throttle_denial("7.7.7.7")
+    assert not AiIpBlock.objects.filter(ip="7.7.7.7").exists()
+    ipblock.record_throttle_denial("7.7.7.7")
+    row = AiIpBlock.objects.get(ip="7.7.7.7")
+    assert row.source == "auto" and row.expires_at is not None
+
+
+def test_cf_header_beats_remote_addr():
+    AiIpBlock.objects.create(ip="1.2.3.4")
+    client = APIClient(REMOTE_ADDR="10.0.0.1", HTTP_CF_CONNECTING_IP="1.2.3.4")
+    assert client.get("/api/v1/help/status/").status_code == 403
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `docker compose exec -T django pytest apps/core/tests/test_ai_ip_block.py -v`
+Expected: FAIL — `ImportError` / 200s where 403 expected.
+
+- [ ] **Step 3: Implement**
+
+`models.py`:
+
+```python
+class AiIpBlock(models.Model):
+    """Per-IP ban for the public AI endpoints (v2 spec §10.2). Manual rows
+    via the superadmin panel; auto rows from repeated throttle denials."""
+
+    ip = models.GenericIPAddressField(unique=True)
+    reason = models.CharField(max_length=200, blank=True, default="")
+    source = models.CharField(max_length=8, choices=[("manual", "manual"), ("auto", "auto")], default="manual")
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.ip
+```
+
+`make makemigrations && make migrate`.
+
+`backend/apps/core/ipblock.py`:
+
+```python
+"""IP blocklist enforcement for the public AI endpoints."""
+
+import logging
+
+from django.core.cache import cache
+
+from apps.core.net import client_ip
+
+logger = logging.getLogger(__name__)
+
+BLOCKLIST_CACHE_KEY = "ai-ip-blocklist"
+BLOCKLIST_TTL = 60
+DENIAL_KEY = "aiblock:{ip}"
+DENIAL_TTL = 60 * 60 * 24
+
+
+def _active_blocklist():
+    blocklist = cache.get(BLOCKLIST_CACHE_KEY)
+    if blocklist is None:
+        from django.db.models import Q
+        from django.utils import timezone
+
+        from apps.core.models import AiIpBlock
+
+        blocklist = set(
+            AiIpBlock.objects.filter(Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now())).values_list(
+                "ip", flat=True
+            )
+        )
+        cache.set(BLOCKLIST_CACHE_KEY, blocklist, timeout=BLOCKLIST_TTL)
+    return blocklist
+
+
+def blocked_response(request):
+    """One cache hit per request; returns the 403 to short-circuit with, or
+    None. Call first thing in every public AI view."""
+    from rest_framework.response import Response
+
+    ip = client_ip(request)
+    if ip and ip in _active_blocklist():
+        return Response({"detail": "blocked"}, status=403)
+    return None
+
+
+def record_throttle_denial(ip):
+    """Redis counter per denied IP; trips an auto-block at the threshold."""
+    from datetime import timedelta
+
+    from django.conf import settings
+    from django.utils import timezone
+
+    if not ip:
+        return
+    key = DENIAL_KEY.format(ip=ip)
+    cache.add(key, 0, timeout=DENIAL_TTL)
+    try:
+        count = cache.incr(key)
+    except ValueError:
+        count = 1
+    if count >= settings.AI_IP_AUTOBLOCK_THRESHOLD:
+        from apps.core.models import AiIpBlock
+
+        AiIpBlock.objects.get_or_create(
+            ip=ip,
+            defaults={
+                "reason": "auto: repeated throttle denials",
+                "source": "auto",
+                "expires_at": timezone.now() + timedelta(days=settings.AI_IP_AUTOBLOCK_DAYS),
+            },
+        )
+        cache.delete(key)
+        cache.delete(BLOCKLIST_CACHE_KEY)
+        logger.warning("ai ipblock: auto-blocked %s", ip)
+```
+
+`throttling.py` — add to `ClientIpAnonThrottle`:
+
+```python
+    def allow_request(self, request, view):
+        allowed = super().allow_request(request, view)
+        if not allowed:
+            from apps.core.ipblock import record_throttle_denial
+
+            record_throttle_denial(client_ip(request))
+        return allowed
+```
+
+Guards — first line of each view body listed in Interfaces:
+
+```python
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
+```
+
+(with `from apps.core import ipblock` imported per module).
+
+`admin_panels.py` (import `AiIpBlock`; after the `PlatformKbEntryAdmin` block):
+
+```python
+@platform_site.register(AiIpBlock)
+class AiIpBlockAdmin(ModelAdmin):
+    key = "ai-ip-blocks"
+    icon = "ban"
+    description = "IPs banned from the AI endpoints — manual rows here, auto rows from repeated throttle denials."
+    list_display = ("ip", "source", "reason", "expires_at", "created_at")
+    search_fields = ("ip", "reason")
+    list_filters = ("source",)
+    ordering = ("-created_at",)
+    fields = ("ip", "reason", "source", "expires_at")
+```
+
+Update the expected-keys assertion in `apps/adminkit/tests/test_adminkit.py:258-276`: add `"ai-ip-blocks"` to the set. Settings:
+
+```python
+AI_IP_AUTOBLOCK_THRESHOLD = int(os.environ.get("AI_IP_AUTOBLOCK_THRESHOLD", "5"))
+AI_IP_AUTOBLOCK_DAYS = int(os.environ.get("AI_IP_AUTOBLOCK_DAYS", "7"))
+```
+
+- [ ] **Step 4: Run tests, migration check**
+
+Run: `docker compose exec -T django pytest apps/core/tests/test_ai_ip_block.py apps/adminkit/tests/test_adminkit.py apps/core/tests/test_ai_admin_registrations.py -v` → PASS. `make test-fresh` — green.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add backend/apps/core backend/apps/adminkit backend/apps/tenant_config backend/config/settings/base.py
+git commit -m "feat(hardening): AI IP blocklist with auto-block on repeated throttle denials"
+```
+
+---
+
+### Task 14: Answer cache + per-session daily cap
+
+**Files:**
+- Modify: `backend/apps/core/assistant.py` (`answer_cache_key`, `replay_cached`, `session_over_daily_cap`)
+- Modify: `backend/apps/tenant_config/student_bot.py`, `backend/apps/tenant_config/help_bot.py` (cache in `sse_events`)
+- Modify: `backend/apps/tenant_config/assistant_views.py`, `backend/apps/core/help/views.py` (session cap check)
+- Modify: `backend/config/settings/base.py`
+- Create: `backend/apps/core/tests/test_ai_cost_guards.py`
+
+**Interfaces:**
+- Produces:
+  - `assistant.answer_cache_key(feature, audience, prompt_version, kb_fingerprint, question) -> str` — `"ai-answer:" + sha256("feature|audience|version|fingerprint|normalized")`, normalization = whitespace-collapse + casefold.
+  - `assistant.replay_cached(cached, on_complete) -> Iterator[str]` — replays `{"answer", "suggestions", "model"}` as one delta + done; calls `on_complete({"cost_usd": Decimal("0"), "provider": "cache", "model": …, "answer": …, "suggestions": …})` (same contract as `run_chat`).
+  - `assistant.session_over_daily_cap(session_id) -> bool` — Redis counter `f"ai-sess:{session_id}:{YYYYMMDD}"`, increments per call, True when over `settings.ASSISTANT_SESSION_DAILY_QUESTIONS`.
+  - Both bots' `sse_events`: on a FIRST-TURN question (`len(history) == 1`) consult the cache — hit replays with a transcript row (`provider="cache"`, cost 0, **no** usage accrual, **no** question count) + thread messages; miss populates after success. Student fingerprint = `kb_hash`; help fingerprint = `_addenda_state(audience)[0]`.
+  - Chat views: order becomes human short-circuit → **session cap** (`{"enabled": False, "reason": "session_limit"}`) → availability → stream. Cap applies to `assistant_chat` + `help_bot_public_chat` (anon-facing) only.
+  - Settings: `AI_ANSWER_CACHE_TTL = 60*60*24`, `ASSISTANT_SESSION_DAILY_QUESTIONS = 40`.
+
+- [ ] **Step 1: Write the failing tests**
+
+```python
+# backend/apps/core/tests/test_ai_cost_guards.py
+"""Answer cache (free repeat first-turn answers) + per-session daily cap."""
+
+from decimal import Decimal
+from unittest.mock import patch
+
+import pytest
+from django.core.cache import cache
+
+from apps.core import assistant
+
+pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def _clean_cache():
+    cache.clear()
+    yield
+    cache.clear()
+
+
+def test_cache_key_normalizes_and_fingerprints():
+    a = assistant.answer_cache_key("student_bot", "student", 2, "abc", "  What   COURSES? ")
+    b = assistant.answer_cache_key("student_bot", "student", 2, "abc", "what courses?")
+    c = assistant.answer_cache_key("student_bot", "student", 2, "OTHER", "what courses?")
+    assert a == b != c and a.startswith("ai-answer:")
+
+
+def test_replay_cached_contract():
+    seen = {}
+    frames = list(
+        assistant.replay_cached(
+            {"answer": "cached!", "suggestions": ["more?"], "model": "m"},
+            lambda info: seen.update(info) or {"transcript_id": 9},
+        )
+    )
+    assert seen["provider"] == "cache" and seen["cost_usd"] == Decimal("0")
+    assert '"cached!"' in frames[0] and '"transcript_id": 9' in frames[-1]
+
+
+def test_session_daily_cap(settings):
+    settings.ASSISTANT_SESSION_DAILY_QUESTIONS = 3
+    assert not any(assistant.session_over_daily_cap("s1") for _ in range(3))
+    assert assistant.session_over_daily_cap("s1") is True
+    assert assistant.session_over_daily_cap("other") is False
+    assert assistant.session_over_daily_cap("") is False
+```
+
+End-to-end cache test (append to `apps/tenant_config/tests/test_assistant_thread_api.py`):
+
+```python
+class TestAnswerCache:
+    def test_second_identical_question_serves_from_cache(self, tenant_client, paid_tenant):
+        _sse_body(_chat(tenant_client, session_id="c-1", text="what courses?"))
+        before = student_bot.tenant_usage(paid_tenant.schema_name).questions
+
+        def explode(**kwargs):
+            raise AssertionError("model must not be called on a cache hit")
+
+        with (
+            patch.object(student_bot.core_ai, "available", return_value=(True, "ok")),
+            patch.object(assistant.core_ai, "stream_text", explode),
+        ):
+            res = tenant_client.post(
+                "/api/v1/assistant/chat/",
+                {"messages": [{"role": "user", "content": "what courses?"}], "session_id": "c-2"},
+                format="json",
+            )
+            body = _sse_body(res)
+        assert "hello" in body  # the cached answer
+        from apps.core.models import AiTranscript
+
+        with schema_context("public"):
+            assert AiTranscript.objects.filter(provider="cache").count() == 1
+            assert student_bot.tenant_usage(paid_tenant.schema_name).questions == before
+```
+
+Session-cap test (same file):
+
+```python
+    def test_session_limit_reason(self, tenant_client, paid_tenant, settings):
+        settings.ASSISTANT_SESSION_DAILY_QUESTIONS = 0
+        res = _chat(tenant_client, session_id="cap-1")
+        assert res.status_code == 200 and res.json() == {"enabled": False, "reason": "session_limit"}
+```
+
+(Add `from django.core.cache import cache` + a `cache.clear()` line to that file's autouse fixture so cache state never leaks between tests.)
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `docker compose exec -T django pytest apps/core/tests/test_ai_cost_guards.py apps/tenant_config/tests/test_assistant_thread_api.py -v`
+Expected: FAIL — missing kernel functions; second question hits the model.
+
+- [ ] **Step 3: Implement**
+
+Kernel (append to `assistant.py`; `import hashlib` at top):
+
+```python
+# ── Cost guards (v2 spec §10.3-10.4) ────────────────────────────────────────
+
+
+def answer_cache_key(feature, audience, prompt_version, kb_fingerprint, question):
+    norm = " ".join(str(question or "").split()).casefold()
+    digest = hashlib.sha256(f"{feature}|{audience}|{prompt_version}|{kb_fingerprint}|{norm}".encode()).hexdigest()
+    return f"ai-answer:{digest}"
+
+
+def replay_cached(cached, on_complete):
+    """Serve a cached first-turn answer over the same SSE wire — zero model
+    cost, still audited (the hook writes a provider="cache" transcript)."""
+    from decimal import Decimal
+
+    yield _event({"type": "delta", "text": cached["answer"]})
+    extras = None
+    if on_complete is not None:
+        try:
+            extras = on_complete(
+                {
+                    "cost_usd": Decimal("0"),
+                    "provider": "cache",
+                    "model": cached.get("model", ""),
+                    "answer": cached["answer"],
+                    "suggestions": cached.get("suggestions") or [],
+                }
+            )
+        except Exception:
+            logger.exception("assistant: cached completion hook failed")
+    yield _event({"type": "done", "suggestions": cached.get("suggestions") or [], **(extras or {})})
+
+
+def session_over_daily_cap(session_id):
+    from datetime import UTC, datetime
+
+    from django.conf import settings
+    from django.core.cache import cache
+
+    sid = (session_id or "").strip()[:36]
+    if not sid:
+        return False
+    key = f"ai-sess:{sid}:{datetime.now(UTC):%Y%m%d}"
+    cache.add(key, 0, timeout=60 * 60 * 24)
+    try:
+        count = cache.incr(key)
+    except ValueError:
+        count = 1
+    return count > settings.ASSISTANT_SESSION_DAILY_QUESTIONS
+```
+
+`student_bot.sse_events` — restructure to:
+
+```python
+def sse_events(history, tenant, month, question="", session_id="", is_preview=False, conversation=None):
+    from django.conf import settings as dj_settings
+    from django.core.cache import cache
+
+    from .models import TenantConfig
+
+    config = TenantConfig.objects.first()
+    system, kb_hash = build_system_prompt(tenant, config)
+    cache_key = (
+        assistant.answer_cache_key("student_bot", "student", PROMPT_VERSION, kb_hash, question)
+        if len(history) == 1 and not is_preview
+        else None
+    )
+
+    def on_complete(info):
+        cached_hit = info["provider"] == "cache"
+        if not cached_hit:
+            try:
+                record_question(tenant.schema_name, info["cost_usd"], month=month, count_question=not is_preview)
+            except Exception:
+                import logging
+
+                logging.getLogger(__name__).exception("student bot: usage recording failed")
+            if cache_key:
+                cache.set(
+                    cache_key,
+                    {"answer": info["answer"], "suggestions": info.get("suggestions") or [], "model": info["model"]},
+                    timeout=dj_settings.AI_ANSWER_CACHE_TTL,
+                )
+        row = assistant.log_transcript(
+            feature="student_bot",
+            audience="student",
+            tenant_schema=tenant.schema_name,
+            session_id=session_id,
+            question=question,
+            answer=info["answer"],
+            cost_usd=info["cost_usd"],
+            provider=info["provider"],
+            model=info["model"],
+            prompt_version=PROMPT_VERSION,
+            kb_hash=kb_hash,
+            is_preview=is_preview,
+        )
+        assistant.append_message(conversation, "assistant", info["answer"], transcript_id=row.id if row else None)
+        if row is None:
+            return None
+        return {"transcript_id": row.id, "rate_token": assistant.rate_token(row.id)}
+
+    if cache_key:
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return assistant.replay_cached(cached, on_complete)
+    return assistant.run_chat(
+        system=system,
+        history=history,
+        model=dj_settings.STUDENT_BOT_MODEL,
+        max_tokens=dj_settings.STUDENT_BOT_MAX_OUTPUT_TOKENS,
+        on_complete=on_complete,
+    )
+```
+
+`help_bot.sse_events` — same pattern: `fingerprint, _ = _addenda_state(audience)`; `cache_key = assistant.answer_cache_key("help_bot", audience, PROMPT_VERSION, fingerprint, question) if len(history) == 1 else None`; skip `record_question` + population on `provider == "cache"`.
+
+Views — in `assistant_chat` and `help_bot_public_chat`, directly after the human short-circuit:
+
+```python
+    if assistant.session_over_daily_cap(session_id):
+        return Response({"enabled": False, "reason": "session_limit"}, status=200)
+```
+
+Settings:
+
+```python
+AI_ANSWER_CACHE_TTL = int(os.environ.get("AI_ANSWER_CACHE_TTL", str(60 * 60 * 24)))
+ASSISTANT_SESSION_DAILY_QUESTIONS = int(os.environ.get("ASSISTANT_SESSION_DAILY_QUESTIONS", "40"))
+```
+
+- [ ] **Step 4: Run tests to verify they pass**
+
+Run: `docker compose exec -T django pytest apps/core/tests/test_ai_cost_guards.py apps/tenant_config/tests -v` → PASS (existing chat tests unaffected: their sessions are unique per test and the default cap is 40; watch for tests that reuse one session_id > 40 times — none exist today).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add backend/apps/core backend/apps/tenant_config backend/config/settings/base.py
+git commit -m "feat(hardening): first-turn answer cache + per-session daily question cap"
+```
+
+---
+
+### Task 15: Student widget v2 — persistent session, polling, human mode, chips, external links
+
+**Files:**
+- Modify: `frontend-customer/src/lib/assistant.ts`
+- Modify: `frontend-customer/src/components/assistant/site-assistant-bubble.tsx`
+- Create: `frontend-customer/src/lib/__tests__/assistant-session.test.ts`
+- Modify: `frontend-customer/messages/en/student.json`, `frontend-customer/messages/tr/student.json`
+
+**Interfaces:**
+- Consumes: Tasks 4–6, 9, 11, 14 endpoints.
+- Produces (lib exports used by the bubble and tested by vitest):
+  - `resolveSession(raw: string | null, now: number): { id: string; fresh: boolean }` (pure), `getSessionId(): string`, `touchSession(): void` — localStorage key `contentor.ai.session.assistant`, 24h idle rotation.
+  - `ThreadMessage { id; role: "user"|"assistant"|"agent"|"system"; content; created_at }`, `ThreadPayload { session_id; status: "ai"|"human"; agent_label; human_requested; messages: ThreadMessage[] }`.
+  - `fetchThread(after?: number): Promise<ThreadPayload | null>`, `sendHumanMessage(content: string): Promise<boolean>`, `requestHuman(): Promise<boolean>`.
+  - `decideLink(href: string, origin: string, whitelist: string[]): "internal" | "external" | null` (pure).
+  - `AnswerMeta` gains `suggestions?: string[]`; `AssistantStatus` gains `human_handoff: boolean`, `link_whitelist: string[]`, reason `"session_limit"`; `streamAssistantChat` returns `Promise<"ai" | "human">` (`"human"` = JSON `{"mode":"human"}` race response, message stored server-side).
+
+- [ ] **Step 1: Write the failing vitest**
+
+```ts
+// frontend-customer/src/lib/__tests__/assistant-session.test.ts
+import { describe, expect, it } from "vitest";
+
+import { decideLink, resolveSession } from "@/lib/assistant";
+
+const HOUR = 60 * 60 * 1000;
+
+describe("resolveSession", () => {
+  it("keeps a fresh stored id", () => {
+    const raw = JSON.stringify({ id: "abc", ts: 1000 });
+    expect(resolveSession(raw, 1000 + HOUR)).toEqual({ id: "abc", fresh: false });
+  });
+  it("rotates after 24h idle", () => {
+    const raw = JSON.stringify({ id: "abc", ts: 0 });
+    const out = resolveSession(raw, 25 * HOUR);
+    expect(out.fresh).toBe(true);
+    expect(out.id).not.toBe("abc");
+  });
+  it("survives garbage", () => {
+    expect(resolveSession("{not json", 0).fresh).toBe(true);
+    expect(resolveSession(null, 0).fresh).toBe(true);
+  });
+});
+
+describe("decideLink", () => {
+  const ORIGIN = "https://coach.contentor.app";
+  const WL = ["https://instagram.com/coach"];
+  it("same-site paths are internal", () => {
+    expect(decideLink("/store", ORIGIN, WL)).toBe("internal");
+  });
+  it("whitelisted https is external", () => {
+    expect(decideLink("https://instagram.com/coach", ORIGIN, WL)).toBe("external");
+  });
+  it("everything else is dropped", () => {
+    expect(decideLink("https://evil.com", ORIGIN, WL)).toBeNull();
+    expect(decideLink("//evil.com", ORIGIN, WL)).toBeNull();
+    expect(decideLink("/\\evil.com", ORIGIN, WL)).toBeNull();
+  });
+});
+```
+
+- [ ] **Step 2: Run to verify it fails**
+
+Run: `cd frontend-customer && npm run test`
+Expected: FAIL — `resolveSession`/`decideLink` not exported.
+
+- [ ] **Step 3: Implement the lib**
+
+In `frontend-customer/src/lib/assistant.ts` — replace the `sessionId` const (line ~27) with:
+
+```ts
+const SESSION_KEY = "contentor.ai.session.assistant";
+const SESSION_IDLE_MS = 24 * 60 * 60 * 1000;
+
+/** Pure so vitest can cover rotation without a DOM. */
+export function resolveSession(raw: string | null, now: number): { id: string; fresh: boolean } {
+  try {
+    if (raw) {
+      const parsed = JSON.parse(raw) as { id?: string; ts?: number };
+      if (parsed.id && typeof parsed.ts === "number" && now - parsed.ts < SESSION_IDLE_MS) {
+        return { id: parsed.id, fresh: false };
+      }
+    }
+  } catch {
+    // fall through to a fresh session
+  }
+  return { id: globalThis.crypto?.randomUUID?.() ?? String(Math.random()).slice(2), fresh: true };
+}
+
+let sessionId = "";
+
+export function getSessionId(): string {
+  if (sessionId) return sessionId;
+  const raw = typeof window === "undefined" ? null : window.localStorage.getItem(SESSION_KEY);
+  sessionId = resolveSession(raw, Date.now()).id;
+  touchSession();
+  return sessionId;
+}
+
+export function touchSession(): void {
+  if (typeof window === "undefined" || !sessionId) return;
+  try {
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify({ id: sessionId, ts: Date.now() }));
+  } catch {
+    // storage unavailable — session stays in-memory
+  }
+}
+```
+
+(Every existing `sessionId` reference in the file becomes `getSessionId()`.) Extend the types:
+
+```ts
+export interface AssistantStatus {
+  enabled: boolean;
+  reason: "ok" | "disabled" | "upgrade_required" | "budget" | "quota" | "session_limit";
+  greeting: string;
+  suggested_questions: string[];
+  brand: string;
+  human_handoff: boolean;
+  link_whitelist: string[];
+}
+
+export interface AnswerMeta {
+  transcriptId?: number;
+  rateToken?: string;
+  suggestions?: string[];
+}
+
+export interface ThreadMessage {
+  id: number;
+  role: "user" | "assistant" | "agent" | "system";
+  content: string;
+  created_at: string;
+}
+
+export interface ThreadPayload {
+  session_id: string;
+  status: "ai" | "human";
+  agent_label: string;
+  human_requested: boolean;
+  messages: ThreadMessage[];
+}
+```
+
+New client functions:
+
+```ts
+export async function fetchThread(after = 0): Promise<ThreadPayload | null> {
+  try {
+    const res = await fetch(`/api/v1/assistant/thread/?session=${getSessionId()}&after=${after}`, {
+      credentials: "same-origin",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as ThreadPayload;
+  } catch {
+    return null;
+  }
+}
+
+export async function sendHumanMessage(content: string): Promise<boolean> {
+  try {
+    const res = await fetch("/api/v1/assistant/human-message/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ session_id: getSessionId(), content }),
+    });
+    touchSession();
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function requestHuman(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/v1/assistant/human-request/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ session_id: getSessionId() }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+function isSameOriginPath(href: string, origin: string): boolean {
+  try {
+    return new URL(href, origin).origin === origin;
+  } catch {
+    return false;
+  }
+}
+
+/** Hard client-side link containment (v2 spec §9): same-origin paths render
+ * as internal links; absolute URLs only when exactly whitelisted. */
+export function decideLink(href: string, origin: string, whitelist: string[]): "internal" | "external" | null {
+  if (href.startsWith("/") && !href.startsWith("//") && !href.startsWith("/\\")) {
+    return isSameOriginPath(href, origin) ? "internal" : null;
+  }
+  return whitelist.includes(href) ? "external" : null;
+}
+```
+
+`streamAssistantChat` changes: return type `Promise<"ai" | "human">`; the JSON branch first checks `data.mode === "human"` → `touchSession(); return "human";` (before the existing gating throw); the `done` handler passes `suggestions: event.suggestions` into `onDone` (extend the parsed event type with `suggestions?: string[]`); the success path ends `touchSession(); return "ai";`.
+
+- [ ] **Step 4: Rework the bubble**
+
+`site-assistant-bubble.tsx` — targeted changes:
+
+1. `type Msg = { role: "user" | "assistant" | "agent" | "system"; content: string; meta?: AnswerMeta; rated?: "up" | "down" }` (replaces the `ChatMessage &` intersection). New state: `mode: "ai" | "human"`, `agentLabel: string`, `humanRequested: boolean`, `followUps: string[]`; ref `lastIdRef = useRef(0)`; `LINK_RE` widened to `/\[([^\]]+)\]\((\/(?!\/)[^)\s]*|https:\/\/[^)\s]+)\)/g`; `AnswerBody` takes `whitelist: string[]` and uses `decideLink` — `"internal"` → `<Link>` pill (as today), `"external"` → `<a target="_blank" rel="noopener noreferrer">` pill with an `ExternalLink` icon, `null` → drop.
+
+2. Hydration + polling effect:
+
+```tsx
+useEffect(() => {
+  if (!open) return;
+  let cancelled = false;
+  const tick = async () => {
+    const t = await fetchThread(lastIdRef.current);
+    if (cancelled || !t) return;
+    setMode(t.status);
+    setAgentLabel(t.agent_label);
+    setHumanRequested(t.human_requested);
+    const incoming = t.messages.filter((m) => m.id > lastIdRef.current);
+    if (!incoming.length) return;
+    lastIdRef.current = incoming[incoming.length - 1].id;
+    const initial = messagesRef.current.length === 0;
+    const fresh = incoming
+      .filter((m) => (initial ? true : m.role === "agent" || m.role === "system"))
+      .map((m) => ({ role: m.role, content: m.content }) as Msg);
+    if (fresh.length) setMessages((cur) => [...cur, ...fresh]);
+  };
+  void tick();
+  const iv = setInterval(tick, mode === "human" || humanRequested ? 3000 : 5000);
+  return () => {
+    cancelled = true;
+    clearInterval(iv);
+  };
+}, [open, mode, humanRequested]);
+```
+
+(`messagesRef` mirrors `messages` via a second effect — the standard ref-mirror pattern; on the initial hydration ALL roles replay the stored thread, on live ticks only `agent`/`system` rows append, because `user`/`assistant` are already local echoes.)
+
+3. `send()` gains the human branch and chips wiring:
+
+```tsx
+if (mode === "human") {
+  setMessages((cur) => [...cur, { role: "user", content: text }]);
+  setFollowUps([]);
+  if (!(await sendHumanMessage(text))) setError(t("error"));
+  return;
+}
+```
+
+AI branch: `setFollowUps([])` on send; `onDone` sets `meta` on the last message AND `setFollowUps(meta.suggestions ?? [])`; if `streamAssistantChat` resolves `"human"`, drop the assistant placeholder and `setMode("human")` (the poll will deliver replies).
+
+4. Rendering additions: `system` messages render as centered muted text via a token map (`agent_joined:X` → `t("agentJoined", {name: X})`, `assistant_resumed` → `t("assistantResumed")`, `human_requested` → `t("humanRequestedLine")`, unknown tokens render nothing); `agent` messages render like assistant bubbles but prefixed with `agentLabel`; a human-mode notice bar under the header when `mode === "human"` (`t("humanModeNotice", {name: agentLabel})`); follow-up chips reuse the suggestion-pill JSX fed by `followUps` (rendered under the last assistant message when not `busy`, each with `data-testid="assistant-suggestion"` — the e2e spec selects on it); a "Talk to a human" text button above the input when `status.human_handoff && mode === "ai" && !humanRequested && messages.length > 0` — onClick: `requestHuman()` then `setHumanRequested(true)`; `reason === "session_limit"` from a chat send renders `t("sessionLimit")` like the other unavailable states.
+
+5. i18n — add to `messages/en/student.json` under `student.assistant` (mirror in TR):
+
+```json
+"talkToHuman": "Talk to a human",
+"humanRequestedLine": "You asked to talk to a human — {brand} has been notified.",
+"agentJoined": "{name} joined the chat",
+"assistantResumed": "The assistant is back",
+"humanModeNotice": "You're chatting with {name}",
+"sessionLimit": "You've reached today's chat limit. Come back tomorrow or use the contact page."
+```
+
+- [ ] **Step 5: Verify**
+
+```bash
+cd frontend-customer && npm run test && npx prettier --write src messages && npx tsc --noEmit
+```
+Expected: vitest green, tsc clean. Manual smoke with `make dev`: open a seeded paid tenant site → widget chats, reload page → history persists, chips appear after an answer.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add frontend-customer/src frontend-customer/messages
+git commit -m "feat(widget): student assistant v2 — persistent session, polling, human mode, chips, external links"
+```
+
+### Task 16: Coach admin — Conversations tab, Links card, handoff toggle, preview chips
+
+**Files:**
+- Modify: `frontend-customer/src/lib/assistant.ts` (admin half)
+- Create: `frontend-customer/src/components/admin/assistant/conversations-card.tsx`
+- Create: `frontend-customer/src/components/admin/assistant/links-card.tsx`
+- Delete: `frontend-customer/src/components/admin/assistant/transcripts-card.tsx`
+- Modify: `frontend-customer/src/components/admin/assistant/enable-card.tsx`, `preview-chat-card.tsx`, `frontend-customer/src/app/admin/assistant/page.tsx`
+- Modify: `frontend-customer/messages/en/admin.json`, `frontend-customer/messages/tr/admin.json`
+
+**Interfaces:**
+- Consumes: Tasks 5, 6, 11 endpoints; existing `clientFetch`, `KnowledgePrefill` wiring, `parseAnswer` (`format-answer.ts` — stays).
+- Produces (lib, all via `clientFetch`):
+
+```ts
+export interface ConversationRow {
+  id: number;
+  session_id: string;
+  status: "ai" | "human";
+  user_label: string;
+  human_requested: boolean;
+  message_count: number;
+  last_message: string;
+  updated_at: string;
+}
+
+export interface AssistantLinkRow {
+  id: number;
+  label: string;
+  url: string;
+  note: string;
+  enabled: boolean;
+  position: number;
+}
+
+export const listConversations = (page = 1) =>
+  clientFetch<{ results: ConversationRow[]; has_more: boolean }>(
+    `/api/v1/admin/assistant/conversations/?page=${page}`,
+  );
+export const getConversationThread = (id: number, after = 0) =>
+  clientFetch<ThreadPayload>(`/api/v1/admin/assistant/conversations/${id}/thread/?after=${after}`);
+export const takeoverConversation = (id: number) =>
+  clientFetch<ThreadPayload>(`/api/v1/admin/assistant/conversations/${id}/takeover/`, { method: "POST" });
+export const releaseConversation = (id: number) =>
+  clientFetch<ThreadPayload>(`/api/v1/admin/assistant/conversations/${id}/release/`, { method: "POST" });
+export const sendAgentMessage = (id: number, content: string, after = 0) =>
+  clientFetch<ThreadPayload>(`/api/v1/admin/assistant/conversations/${id}/message/`, {
+    method: "POST",
+    body: JSON.stringify({ content, after }),
+  });
+export const listLinks = () => clientFetch<AssistantLinkRow[]>("/api/v1/admin/assistant/links/");
+export const createLink = (body: Pick<AssistantLinkRow, "label" | "url" | "note">) =>
+  clientFetch<AssistantLinkRow>("/api/v1/admin/assistant/links/", { method: "POST", body: JSON.stringify(body) });
+export const updateLink = (id: number, body: Partial<Omit<AssistantLinkRow, "id">>) =>
+  clientFetch<AssistantLinkRow>(`/api/v1/admin/assistant/links/${id}/`, { method: "PATCH", body: JSON.stringify(body) });
+export const deleteLink = (id: number) =>
+  clientFetch<void>(`/api/v1/admin/assistant/links/${id}/`, { method: "DELETE" });
+```
+
+  `AssistantAdminConfig` gains `human_handoff_enabled: boolean` (and `putAssistantConfig`'s `Pick` gains it). `streamAssistantPreview` gains an optional `onDone?: (meta: AnswerMeta) => void` third parameter wired exactly like `streamAssistantChat`'s.
+
+- [ ] **Step 1: Build `ConversationsCard`**
+
+Props `{ onAddToKnowledge: (question: string) => void }`. Structure (follow `transcripts-card.tsx`'s Card scaffolding, which this file replaces):
+
+- List state: `rows/page/hasMore/loading` from `listConversations` with the exact fetch/pagination pattern of the old TranscriptsCard; a 10s `setInterval` refresh of page 1 while no thread is open. Each row: `user_label || t("assistant.convVisitor")`, status dot (`human` → brand badge `t("assistant.convLive")`), `human_requested` → amber badge `t("assistant.convWantsHuman")`, `last_message` snippet, `message_count`, relative timestamp; clicking expands the thread inline.
+- Thread state: `active: number | null`, `thread: ThreadMessage[]`, `status/agentLabel`, `lastId` ref; on open fetch `getConversationThread(id)`, then poll every 3s with `after=lastId` appending ALL roles (the console shows everything, including `user`/`assistant`). System tokens render muted/centered with the same token map as Task 15 (add it to `format-answer.ts` as `export function systemLine(content: string, t: (k: string, v?: object) => string): string | null` so both surfaces share it). Assistant messages render via `parseAnswer` + get an "Add to knowledge" button passing the PRECEDING user message's content (walk the array backwards) — preserving the v1 teach loop.
+- Actions row: `status === "ai"` → Take over button (`takeoverConversation` → replace thread state); `status === "human"` → reply `<Input>` + send (`sendAgentMessage(id, text, lastId)` → append returned messages) and a Release button (`releaseConversation`). Errors → `toast.error(t("assistant.loadFailed"))`.
+
+- [ ] **Step 2: Build `LinksCard` + handoff toggle + preview chips + page wiring**
+
+- `LinksCard`: mirror `knowledge-card.tsx` line for line with fields `label` (Input, 60), `url` (Input, placeholder `https://instagram.com/you`), `note` (Input, 160), the same optimistic enable toggle / delete-with-confirm / cap handling (`MAX_LINKS = 20`), i18n keys below. No prefill plumbing.
+- `EnableCard`: add a second `Switch` row — label `t("assistant.handoff")`, hint `t("assistant.handoffHint")`, checked `config.human_handoff_enabled`, onChange → `putAssistantConfig({ human_handoff_enabled: next })` with the same optimistic/rollback pattern as the enable switch (extend the card's props with `onToggleHandoff`).
+- `PreviewChatCard`: pass an `onDone` to `streamAssistantPreview`; render returned `suggestions` as disabled-style pills under the answer (visual QA of the tail contract; clicking one fills the preview input).
+- `page.tsx`: replace `TranscriptsCard` import/usage with `ConversationsCard` (same `onAddToKnowledge` prop), add `<LinksCard />` between `KnowledgeCard` and `PreviewChatCard`, pass the handoff handler to `EnableCard`. Delete `transcripts-card.tsx`.
+
+- [ ] **Step 3: i18n** — add under `admin.assistant` (EN shown; mirror TR):
+
+```json
+"convTitle": "Conversations",
+"convHint": "Watch what visitors ask your assistant — and step in when a human answer is better.",
+"convVisitor": "Visitor",
+"convLive": "You're chatting",
+"convWantsHuman": "Wants a human",
+"convEmpty": "No conversations yet — they appear as soon as someone talks to your assistant.",
+"takeOver": "Take over",
+"release": "Hand back to assistant",
+"replyPlaceholder": "Write your reply…",
+"replySend": "Send",
+"agentJoined": "{name} joined the chat",
+"assistantResumed": "The assistant is back",
+"humanRequestedLine": "Asked to talk to a human",
+"linksTitle": "Links",
+"linksHint": "Places the assistant may send people — your booking page, Instagram, WhatsApp…",
+"linkLabel": "Name",
+"linkUrl": "Address",
+"linkNote": "When to suggest it",
+"linkAdd": "Add link",
+"linkLimit": "You can add up to 20 links.",
+"linksEmpty": "No links yet.",
+"handoff": "Let visitors ask for you",
+"handoffHint": "Shows a \"Talk to a human\" button; you get an email when someone taps it."
+```
+
+- [ ] **Step 4: Verify**
+
+```bash
+cd frontend-customer && npm run test && npx prettier --write src messages && npx tsc --noEmit
+```
+Manual smoke (`make dev`, seeded paid tenant): student chats → coach `/admin/assistant` Conversations tab shows the thread → Take over → reply lands in the student widget within ~5s → Release. Links card CRUD round-trips; preview shows chips.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add frontend-customer
+git commit -m "feat(admin): assistant conversations tab with takeover, links card, handoff toggle"
+```
+
+---
+
+### Task 17: Coach help chat — sessions, polling, superadmin-takeover handling
+
+**Files:**
+- Modify: `frontend-customer/src/lib/help-bot.ts`
+- Modify: `frontend-customer/src/components/setup/help-chat.tsx`
+- Modify: `frontend-customer/messages/en/admin.json`, `frontend-customer/messages/tr/admin.json`
+
+**Interfaces:**
+- Consumes: Task 7 coach-flavor endpoints (`/api/v1/admin/help-bot/thread|human-message|human-request/`).
+- Produces: `help-bot.ts` exports `getHelpSessionId()`/`touchHelpSession()` (localStorage key `contentor.ai.session.help`, same `resolveSession` import from `@/lib/assistant`), `fetchHelpThread(after = 0)` (via `clientFetch`, returns `ThreadPayload | null`), `sendHelpHumanMessage(content)`, `requestHelpHuman()`; `streamHelpBotChat` returns `Promise<"ai" | "human">` and surfaces `suggestions` through `onDone` — identical contracts to Task 15's student lib.
+
+- [ ] **Step 1: Implement the lib**
+
+Mirror Task 15's lib additions in `help-bot.ts` with the endpoint/key substitutions above (import `resolveSession`, `ThreadMessage`, `ThreadPayload`, `AnswerMeta` from `@/lib/assistant` — do NOT redeclare them). `streamHelpBotChat`'s JSON branch: `data.mode === "human"` → return `"human"` (checked before the `HelpBotUnavailable` throw).
+
+- [ ] **Step 2: Rework `HelpChat`**
+
+Apply Task 15's component changes 2–4 to `help-chat.tsx` with these deltas: poll while the component is mounted (the setup panel controls visibility); `Msg` role union gains `agent`/`system`; system-token map keys come from `admin.setup.help.*`; the "Talk to a human" button is ALWAYS eligible (no flag — D9) when `mode === "ai" && !humanRequested && messages.length > 0`, calling `requestHelpHuman()`; human-mode notice uses `agentLabel` (arrives as `"Contentor support"`); chips reuse the existing suggestion-pill styles feeding `send()`; link rendering is unchanged (`/admin/` regex — no external links in this surface).
+
+- [ ] **Step 3: i18n** — add under `admin.setup.help` (EN; mirror TR):
+
+```json
+"talkToHuman": "Talk to a human",
+"humanRequestedLine": "You asked for a human — the Contentor team has been notified.",
+"agentJoined": "{name} joined the chat",
+"assistantResumed": "The assistant is back",
+"humanModeNotice": "You're chatting with {name}"
+```
+
+- [ ] **Step 4: Verify + commit**
+
+```bash
+cd frontend-customer && npm run test && npx prettier --write src messages && npx tsc --noEmit
+git add frontend-customer
+git commit -m "feat(help-chat): persistent sessions, polling, human-takeover handling, follow-up chips"
+```
+
+---
+
+### Task 18: frontend-main — HelpBubble v2 + superadmin conversation console
+
+**Files:**
+- Modify: `frontend-main/src/components/shared/help-bubble.tsx`
+- Modify: `frontend-main/src/app/admin/ai/page.tsx`
+- Modify: `frontend-main/messages/en/marketing.json`, `frontend-main/messages/tr/marketing.json`
+
+**Interfaces:**
+- Consumes: Task 7 marketing endpoints (`/api/v1/help/thread|human-message|human-request/`), Task 8 platform endpoints.
+- Produces: marketing widget with the full v2 behavior; superadmin Conversations section on `/admin/ai`. frontend-main has no vitest — `npm run build` is the check.
+
+- [ ] **Step 1: HelpBubble v2**
+
+The bubble is self-contained — inline the additions (copy the bodies from Task 15, adjusting endpoints): `resolveSession` + `getSessionId`/`touchSession` on key `contentor.ai.session.help`; `fetchThread` → `/api/v1/help/thread/`; `sendHumanMessage` → `/api/v1/help/human-message/`; `requestHuman` → `/api/v1/help/human-request/`; `streamChat` JSON-branch returns `"human"`, `onDone` carries `suggestions`. Component: same state/polling/human-branch/system-lines/chips/talk-to-human changes as Task 15 items 2–4 (no external links — `LINK_RE` keeps its four marketing targets; no handoff flag — always eligible). New `marketing.helpBot` keys (EN; mirror TR):
+
+```json
+"talkToHuman": "Talk to a human",
+"humanRequestedLine": "You asked for a human — we've been notified and will jump in here.",
+"agentJoined": "{name} joined the chat",
+"assistantResumed": "The assistant is back",
+"humanModeNotice": "You're chatting with {name}"
+```
+
+- [ ] **Step 2: Superadmin Conversations section**
+
+In `admin/ai/page.tsx` (hardcoded EN like the rest of the page), add a "Conversations" `Card` between the feature grid and the top-tenants table:
+
+- Types: reuse the `ConversationRow` shape (inline interface + `tenant_schema`, `audience`). Fetch `/api/v1/platform/ai-conversations/?audience=${audienceFilter}` (`credentials: "same-origin"`, same error handling as the page's existing fetch), audience `<select>` (All / Coaches / Visitors), 10s refresh interval.
+- Row click → thread drawer (right-side fixed panel, matching the page's Card styling): fetch `/api/v1/platform/ai-conversations/{id}/thread/`, poll 3s with `after`; message list renders all roles (system tokens → plain text: `agent_joined:X` → `"X joined"`, `assistant_resumed` → `"Assistant resumed"`, `human_requested` → `"Asked for a human"`).
+- Actions: "Take over" (POST `…/takeover/`), reply input + "Send" (POST `…/message/` with `{content, after}`), "Release" (POST `…/release/`) — buttons enabled per `status` exactly like Task 16's card.
+
+- [ ] **Step 3: Verify + commit**
+
+```bash
+cd frontend-main && npx prettier --write src messages && npx tsc --noEmit && npm run build
+git add frontend-main
+git commit -m "feat(main): marketing help bubble v2 + superadmin AI conversation console with takeover"
+```
+
+---
+
+### Task 19: E2E capstone + full verification
+
+**Files:**
+- Create: `e2e/specs/22-assistant-takeover.spec.ts`
+
+**Interfaces:**
+- Consumes: everything. Helpers: `coachContext`/`superadminContext`/`TENANT` (`e2e/helpers/auth.ts`), `manage` (`e2e/helpers/compose.ts`); the seeding/cleanup pattern of `e2e/specs/16-site-assistant.spec.ts` (`setupPaidTenant`/`cleanupPaidTenant` via `manage(["shell","-c",…])`).
+
+- [ ] **Step 1: Write the spec**
+
+`test.setTimeout(180_000)`. Structure (mirror spec 16's seeding; provider-gated live-answer steps use `test.skip(reason !== "ok", …)`):
+
+1. **Seed**: promote `demo-yoga` to paid, reset `AssistantConfig` (enabled + handoff on), wipe `AiConversation`/`AiTranscript`/`StudentBotUsage`.
+2. **Student asks** (provider-gated): anonymous page on the tenant host → open bubble → send "What courses do you have?" → non-empty streamed answer; assert follow-up chips render (`[data-testid="assistant-suggestion"]` — add the test id in Task 15's chip JSX). Reload the page → prior messages still visible (session persistence).
+3. **Takeover без provider dependency**: coach page (`coachContext`) → `/admin/assistant` → Conversations card shows the row → "Take over" → student page shows "joined the chat" system line within 10s (`expect.poll`) → coach sends "Merhaba! I'm here." → student sees the agent bubble within 10s → student replies (human mode — no SSE) → coach thread shows it → "Hand back to assistant" → student sees "The assistant is back".
+4. **Human request + email**: student clicks "Talk to a human" → `GET /api/v1/dev/emails/latest/?to=<owner_email>` (email sink) contains "asked to talk to a human"; coach list shows the "Wants a human" badge.
+5. **Superadmin console**: seed a help-bot conversation directly via `manage(["shell","-c", …])` — in the shell snippet resolve the schema from the tenant (`Tenant.objects.get(schema_name__startswith="demo").schema_name` or the `TENANT` helper's slug with `-`→`_`), then create `AiConversation(feature="help_bot", audience="coach", tenant_schema=<that>, session_id="e2e-help")` + one user `AiMessage`; `superadminContext` → `/admin/ai` → Conversations card lists it → Take over → Send reply → row shows status human. (Pure DB + console — runs without any AI provider.)
+6. **Cleanup** in `finally`: restore Free plan, delete seeded conversations.
+
+- [ ] **Step 2: Run the suite**
+
+```bash
+make e2e
+```
+Expected: 22-assistant-takeover green (live-answer steps may skip without a provider; takeover + superadmin steps must PASS regardless). Existing specs stay green — 16-site-assistant exercises the same widget, so watch it for selector drift from Task 15's rework.
+
+- [ ] **Step 3: Full verification sweep**
+
+```bash
+make test-fresh                          # full backend suite
+cd frontend-customer && npm run test && npx tsc --noEmit && npm run build
+cd ../frontend-main && npx tsc --noEmit && npm run build
+cd .. && make lint                       # pre-commit, zero issues
+```
+Expected: everything green; backend count strictly above Task 1's baseline.
+
+- [ ] **Step 4: Commit + wrap up**
+
+```bash
+git add e2e
+git commit -m "test(e2e): assistant takeover capstone — student↔coach + superadmin console"
+```
+
+Do NOT merge or push — invoke superpowers:finishing-a-development-branch and let the owner choose (shared tree: re-verify `git status -sb` first).
+
+---
+
+## Task → spec traceability
+
+| Spec section | Tasks |
+|---|---|
+| §5 conversation layer | 2, 3, 4, 7, 15 |
+| §6 takeover (coach/superadmin/human-request) | 5, 6, 7, 8, 15, 16, 17, 18 |
+| §7 follow-up suggestions | 9, 15, 16, 17, 18 |
+| §8 viewer context | 10 |
+| §9 link registry | 11, 15, 16 |
+| §10 hardening (client_ip, ipblock, cache, caps) | 12, 13, 14 |
+| §12 frontend matrix | 15, 16, 17, 18 |
+| §14 testing / e2e | every task + 19 |
