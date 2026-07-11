@@ -228,3 +228,77 @@ def test_polar_full_circle_symmetry():
 
 def test_math_module_available():  # guards against accidental Django import
     assert math.pi
+
+
+def test_curve_two_points_is_a_straight_ribbon():
+    paths = compile_elements([{"type": "curve", "points": [[30, 50], [70, 50]], "thickness": 6}])
+    assert len(paths) == 1
+    d = paths[0]["d"]
+    # horizontal spine at y=50, thickness 6: edges at y=53 (left offset,
+    # normal (0,1) for tangent (1,0)) and y=47.
+    assert d.startswith("M30 53")
+    assert "70 47" in d
+    assert d.endswith("Z")
+    assert "A" not in d  # flat caps by default
+
+
+def test_curve_round_caps_add_two_cap_arcs():
+    d = compile_elements([{"type": "curve", "points": [[30, 50], [70, 50]], "thickness": 6, "round_caps": True}])[0][
+        "d"
+    ]
+    assert d.count("A3 3") == 2
+
+
+def test_curve_passes_near_interior_control_points():
+    # Catmull-Rom interpolates its control points: the ribbon must have
+    # coordinates within thickness of the middle point (50, 30).
+    d = compile_elements([{"type": "curve", "points": [[20, 70], [50, 30], [80, 70]], "thickness": 4}])[0]["d"]
+    ys_near_30 = [
+        pair
+        for pair in d.replace("M", " ").replace("L", " ").replace("Z", " ").split()
+        if pair  # numbers alternate x y; crude but deterministic scan below
+    ]
+    # parse alternating floats
+    nums = [float(n) for n in ys_near_30]
+    pts = list(zip(nums[0::2], nums[1::2], strict=False))
+    assert any(abs(x - 50) < 3 and abs(y - 30) < 4 for x, y in pts)
+
+
+def test_curve_closed_is_two_loops_evenodd():
+    paths = compile_elements(
+        [{"type": "curve", "points": [[50, 25], [75, 50], [50, 75], [25, 50]], "thickness": 4, "closed": True}]
+    )
+    assert paths[0].get("fill_rule") == "evenodd"
+    assert paths[0]["d"].count("M") == 2
+
+
+def test_curve_degenerate_inputs_are_dropped_or_survive():
+    assert compile_elements([{"type": "curve", "points": [[50, 50]], "thickness": 4}]) == []
+    assert compile_elements([{"type": "curve", "points": "junk", "thickness": 4}]) == []
+    # duplicate points collapse; a single distinct point -> dropped
+    assert compile_elements([{"type": "curve", "points": [[50, 50], [50, 50]], "thickness": 4}]) == []
+
+
+def test_curve_worst_case_fits_length_budget():
+    d = compile_elements(
+        [
+            {
+                "type": "curve",
+                "points": [
+                    [10, 10],
+                    [30, 80],
+                    [50, 15],
+                    [70, 85],
+                    [90, 20],
+                    [10, 90],
+                    [90, 90],
+                    [50, 50],
+                    [20, 30],
+                    [80, 60],
+                ],
+                "thickness": 3,
+                "round_caps": True,
+            }
+        ]
+    )[0]["d"]
+    assert len(d) < 2000

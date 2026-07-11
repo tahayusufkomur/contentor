@@ -216,6 +216,117 @@ def _compile_arc(el):
     return d
 
 
+# Local copy of logo_recipe.MARK_CUSTOM_MAX_D_LEN (this module must stay
+# Django-free). KEEP IN SYNC.
+_MAX_D = 2000
+_CURVE_MAX_POINTS = 10
+
+
+def _catmull_rom(pts, samples_per_seg, closed=False):
+    """Dense polyline through ``pts`` (uniform Catmull-Rom; endpoints
+    duplicated when open, wrapped when closed)."""
+    n = len(pts)
+    if n == 2 and not closed:
+        (x0, y0), (x1, y1) = pts
+        return [
+            (x0 + (x1 - x0) * t / samples_per_seg, y0 + (y1 - y0) * t / samples_per_seg)
+            for t in range(samples_per_seg + 1)
+        ]
+    if closed:
+        ext = [pts[-1]] + pts + [pts[0], pts[1]]
+        seg_count = n
+    else:
+        ext = [pts[0]] + pts + [pts[-1]]
+        seg_count = n - 1
+    out = []
+    for i in range(seg_count):
+        p0, p1, p2, p3 = ext[i], ext[i + 1], ext[i + 2], ext[i + 3]
+        last_seg = i == seg_count - 1
+        steps = samples_per_seg + (1 if last_seg and not closed else 0)
+        for s in range(steps):
+            t = s / samples_per_seg
+            t2, t3 = t * t, t * t * t
+            out.append(
+                (
+                    0.5
+                    * (
+                        2 * p1[0]
+                        + (-p0[0] + p2[0]) * t
+                        + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2
+                        + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
+                    ),
+                    0.5
+                    * (
+                        2 * p1[1]
+                        + (-p0[1] + p2[1]) * t
+                        + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2
+                        + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
+                    ),
+                )
+            )
+    return out
+
+
+def _offset_edges(dense, half, closed=False):
+    """Left/right offset polylines at distance ``half`` from the spine,
+    coordinates clamped into the canvas."""
+    left, right = [], []
+    n = len(dense)
+    for i, (x, y) in enumerate(dense):
+        if closed:
+            px, py = dense[i - 1]
+            nx_, ny_ = dense[(i + 1) % n]
+        else:
+            px, py = dense[max(i - 1, 0)]
+            nx_, ny_ = dense[min(i + 1, n - 1)]
+        tx, ty = nx_ - px, ny_ - py
+        norm = math.hypot(tx, ty) or 1.0
+        ox, oy = -ty / norm * half, tx / norm * half
+        clampc = lambda v: min(max(v, 0.0), 100.0)  # noqa: E731
+        left.append((clampc(x + ox), clampc(y + oy)))
+        right.append((clampc(x - ox), clampc(y - oy)))
+    return left, right
+
+
+def _polyline(points, head_cmd="M"):
+    head, *rest = points
+    return f"{head_cmd}{_fmt(head[0])} {_fmt(head[1])}" + "".join(f"L{_fmt(x)} {_fmt(y)}" for x, y in rest)
+
+
+def _compile_curve(el):
+    raw = el.get("points") if isinstance(el.get("points"), list) else []
+    pts = []
+    for p in raw[:_CURVE_MAX_POINTS]:
+        if isinstance(p, list | tuple) and len(p) == 2:
+            q = (_clamp(p[0], _COORD, 50), _clamp(p[1], _COORD, 50))
+            if not pts or q != pts[-1]:
+                pts.append(q)
+    if len(pts) < 2:
+        return "", None
+    thickness = _clamp(el.get("thickness"), _THICKNESS, 4)
+    half = thickness / 2.0
+    closed = bool(el.get("closed"))
+    if closed and len(pts) < 3:
+        closed = False
+    samples = max(4, 32 // max(len(pts) - 1, 1))
+    dense = _catmull_rom(pts, samples, closed=closed)
+    left, right = _offset_edges(dense, half, closed=closed)
+    if closed:
+        return _polyline(left) + "Z" + _polyline(right) + "Z", "evenodd"
+    d = _polyline(left)
+    rev = list(reversed(right))
+    cap = f"A{_fmt(half)} {_fmt(half)} 0 0 1"
+    if el.get("round_caps"):
+        d += f"{cap} {_fmt(rev[0][0])} {_fmt(rev[0][1])}"
+    else:
+        d += f"L{_fmt(rev[0][0])} {_fmt(rev[0][1])}"
+    d += "".join(f"L{_fmt(x)} {_fmt(y)}" for x, y in rev[1:])
+    if el.get("round_caps"):
+        d += f"{cap} {_fmt(left[0][0])} {_fmt(left[0][1])}"
+    d += "Z"
+    return d, None
+
+
 def compile_elements(elements):
     """Typed elements -> list of ``{d, fill[, fill_rule][, opacity]}`` path
     dicts ready for the custom-mark validator. Unknown element types are
@@ -240,6 +351,8 @@ def compile_elements(elements):
             d, fill_rule = _compile_polygon(el)
         elif kind == "arc":
             d = _compile_arc(el)
+        elif kind == "curve":
+            d, fill_rule = _compile_curve(el)
         elif kind == "path":
             d = str(el.get("d") or "")
             fill_rule = el.get("fill_rule")
