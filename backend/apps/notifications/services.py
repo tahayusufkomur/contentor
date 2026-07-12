@@ -44,6 +44,9 @@ def send_to_subscription(sub: PushSubscription, payload: dict) -> bool:
             vapid_private_key=_vapid_key_path(),
             vapid_claims={"sub": settings.VAPID_SUBJECT},
             ttl=3600,
+            # Bound the POST to the (browser-supplied) endpoint so a slow/hostile
+            # push endpoint can't hang a Celery worker indefinitely.
+            timeout=getattr(settings, "WEBPUSH_TIMEOUT", 10),
         )
         return True
     except WebPushException as exc:

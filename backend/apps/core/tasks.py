@@ -6,9 +6,66 @@ from django_tenants.utils import tenant_context
 logger = logging.getLogger(__name__)
 
 
+def _create_default_config(tenant, preferred_locale):
+    """Create the tenant's default TenantConfig (called once per tenant schema)."""
+    from apps.tenant_config.defaults import default_pages
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.create(
+        brand_name=tenant.name,
+        default_locale=preferred_locale,
+        pages=default_pages(tenant.name),
+        enabled_modules=[
+            "courses",
+            "live",
+            "community",
+            "downloads",
+            "billing",
+            "campaigns",
+            "analytics",
+            "pages",
+        ],
+        navbar_config={
+            "links": [
+                {"label": "Courses", "href": "/courses"},
+                {"label": "Events", "href": "/events"},
+                {"label": "About", "href": "/about"},
+            ],
+            "cta": {"text": "Get Started", "href": "/courses"},
+            "show_login": True,
+            "layout": "classic",
+        },
+        landing_sections={
+            "hero": {
+                "enabled": True,
+                "headline": f"Welcome to {tenant.name}",
+                "subheadline": "Explore our courses and start learning today.",
+                "cta_text": "Browse Courses",
+                "cta_href": "/courses",
+                "bg_image_url": None,
+            },
+            "about": {"enabled": False, "heading": "About Me", "body": "", "image_url": None},
+            "courses": {"enabled": True, "heading": "Featured Courses"},
+            "testimonials": {"enabled": False, "heading": "What students say", "items": []},
+            "faq": {"enabled": False, "heading": "FAQ", "items": []},
+            "cta": {
+                "enabled": True,
+                "heading": "Ready to start learning?",
+                "button_text": "Join Now",
+                "button_href": "/courses",
+            },
+        },
+        onboarding_completed=False,
+    )
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
 def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
     """Provision the tenant schema, owner, and config.
+
+    Idempotent: every step reuses existing rows, so a retry after partial
+    progress completes the signup instead of duplicating a TenantConfig or
+    crashing on a duplicate owner user.
 
     If `niche` is set, also seed niche-themed content via the live-tenant
     seeder. Seeding runs after the base provision so the seeder can assume an
@@ -45,68 +102,28 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
             },
         )
 
-        # Create owner + config in tenant schema
+        # Create owner + config in the tenant schema. Both steps are guarded so
+        # a retry after partial progress reuses what exists instead of creating
+        # a duplicate TenantConfig / crashing on the duplicate owner.
         with tenant_context(tenant):
-            from apps.tenant_config.defaults import default_pages
             from apps.tenant_config.models import TenantConfig
 
-            TenantConfig.objects.create(
-                brand_name=tenant.name,
-                default_locale=preferred_locale,
-                pages=default_pages(tenant.name),
-                enabled_modules=[
-                    "courses",
-                    "live",
-                    "community",
-                    "downloads",
-                    "billing",
-                    "campaigns",
-                    "analytics",
-                    "pages",
-                ],
-                navbar_config={
-                    "links": [
-                        {"label": "Courses", "href": "/courses"},
-                        {"label": "Events", "href": "/events"},
-                        {"label": "About", "href": "/about"},
-                    ],
-                    "cta": {"text": "Get Started", "href": "/courses"},
-                    "show_login": True,
-                    "layout": "classic",
-                },
-                landing_sections={
-                    "hero": {
-                        "enabled": True,
-                        "headline": f"Welcome to {tenant.name}",
-                        "subheadline": "Explore our courses and start learning today.",
-                        "cta_text": "Browse Courses",
-                        "cta_href": "/courses",
-                        "bg_image_url": None,
-                    },
-                    "about": {"enabled": False, "heading": "About Me", "body": "", "image_url": None},
-                    "courses": {"enabled": True, "heading": "Featured Courses"},
-                    "testimonials": {"enabled": False, "heading": "What students say", "items": []},
-                    "faq": {"enabled": False, "heading": "FAQ", "items": []},
-                    "cta": {
-                        "enabled": True,
-                        "heading": "Ready to start learning?",
-                        "button_text": "Join Now",
-                        "button_href": "/courses",
-                    },
-                },
-                onboarding_completed=False,
-            )
+            if not TenantConfig.objects.exists():
+                _create_default_config(tenant, preferred_locale)
+
             # Tenant schemas are isolated, but we still stamp region for
             # consistency with the public row and so JWT issuance has the
             # right value.
-            User.objects.create_user(
+            User.objects.get_or_create(
                 email=owner_email,
-                name=owner_name,
-                role="owner",
-                is_staff=True,
                 region=region,
-                preferred_locale=preferred_locale,
-                accessible_regions=[],
+                defaults={
+                    "name": owner_name,
+                    "role": "owner",
+                    "is_staff": True,
+                    "preferred_locale": preferred_locale,
+                    "accessible_regions": [],
+                },
             )
 
         if niche:
