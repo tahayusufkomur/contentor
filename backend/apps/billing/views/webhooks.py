@@ -492,6 +492,16 @@ def _handle_checkout_session_completed(event, webhook_event):
     if metadata.get("subscription_plan_id"):
         _handle_marketplace_subscription_checkout(event)
         return
+    # Only activate the plan once the session is actually paid. Async/delayed
+    # payment methods can complete the session with payment_status "unpaid" —
+    # granting the plan then would hand out a paid plan for free.
+    payment_status = session.get("payment_status")
+    if payment_status not in ("paid", "no_payment_required"):
+        logger.info(
+            "platform checkout.session.completed not paid (payment_status=%s); skipping activation",
+            payment_status,
+        )
+        return
     tenant = _resolve_tenant(metadata)
     user = _resolve_user(metadata)
     plan = _resolve_plan(metadata)
@@ -580,6 +590,28 @@ def _handle_subscription_event(event):
             "updated_at",
         ]
     )
+
+
+def _handle_platform_subscription_deleted(event):
+    """customer.subscription.deleted (platform): the coach's subscription has
+    actually ended (Stripe fires this at period end for cancel-at-period-end, or
+    immediately for a hard cancel). Mark our PlatformSubscription canceled so the
+    post_save signal reverts the tenant to the Free plan — otherwise a canceled
+    coach keeps their paid plan forever."""
+    sub_obj = event["data"]["object"]
+    provider_sub_id = sub_obj.get("id") or ""
+    if not provider_sub_id:
+        logger.warning("platform subscription.deleted with no subscription id; ignoring")
+        return
+    sub = PlatformSubscription.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
+    if sub is None:
+        logger.info("platform subscription.deleted for unknown sub=%s; nothing to do", provider_sub_id)
+        return
+    if sub.status != PlatformSubscription.STATUS_CANCELED:
+        sub.status = PlatformSubscription.STATUS_CANCELED
+        sub.cancel_at_period_end = False
+        sub.save(update_fields=["status", "cancel_at_period_end", "updated_at"])
+        logger.info("platform subscription %s canceled; tenant reverted to Free", provider_sub_id)
 
 
 def _handle_invoice_paid(event):
@@ -780,7 +812,7 @@ def stripe_webhook(request):
                     if connected:
                         _handle_marketplace_subscription_deleted(event_dict, connected)
                     else:
-                        logger.info("Acknowledged platform subscription.deleted (deferred)")
+                        _handle_platform_subscription_deleted(event_dict)
                 elif event_type == "invoice.paid":
                     if connected:
                         _handle_marketplace_invoice_paid(event_dict, connected)

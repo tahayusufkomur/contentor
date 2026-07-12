@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection
+from django.db import connection, transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -288,22 +288,33 @@ def payment_item_refund(request, payment_id, item_id):
     creates a refund Payment record, deactivates any Course Enrollment, and
     updates the original Payment status to 'partially_refunded' or 'refunded'.
     """
-    payment = get_object_or_404(Payment, pk=payment_id)
-    payment_item = get_object_or_404(PaymentItem, pk=item_id, payment=payment)
-
-    # Validate refundable state
-    if payment.status not in ("completed", "partially_refunded"):
-        return Response(
-            {"detail": "Payment is not in a refundable state."},
-            status=status.HTTP_400_BAD_REQUEST,
+    # Serialize concurrent refunds of the same item: lock the payment + item for
+    # the whole operation so a second request blocks, then sees is_refunded=True
+    # and is rejected — otherwise both would pass the check and double-refund on
+    # Stripe (real money). The whole handler runs inside this transaction.
+    with transaction.atomic():
+        payment = get_object_or_404(Payment.objects.select_for_update(), pk=payment_id)
+        payment_item = get_object_or_404(
+            PaymentItem.objects.select_for_update(), pk=item_id, payment=payment
         )
 
-    if payment_item.is_refunded:
-        return Response(
-            {"detail": "This item has already been refunded."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        # Validate refundable state
+        if payment.status not in ("completed", "partially_refunded"):
+            return Response(
+                {"detail": "Payment is not in a refundable state."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        if payment_item.is_refunded:
+            return Response(
+                {"detail": "This item has already been refunded."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return _do_refund(payment, payment_item)
+
+
+def _do_refund(payment, payment_item):
     # Issue the real refund on the connected account first (D8: the platform
     # keeps its application fee — connect.refund_payment never reverses it). Only
     # touch local state once Stripe confirms, so a failed refund leaves access

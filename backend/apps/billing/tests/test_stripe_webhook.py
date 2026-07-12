@@ -55,7 +55,7 @@ def plan(restore_public):
     return plan
 
 
-def _checkout_session_completed_event(*, tenant, user, plan, event_id="evt_phase1_001"):
+def _checkout_session_completed_event(*, tenant, user, plan, event_id="evt_phase1_001", payment_status="paid"):
     """Build a Stripe-shaped event dict the webhook view will accept."""
     body = {
         "id": event_id,
@@ -65,6 +65,7 @@ def _checkout_session_completed_event(*, tenant, user, plan, event_id="evt_phase
                 "id": "cs_test_phase1_001",
                 "subscription": "sub_phase1_001",
                 "customer": "cus_phase1_001",
+                "payment_status": payment_status,
                 "metadata": {
                     "tenant_id": str(tenant.pk),
                     "user_id": str(user.pk),
@@ -241,6 +242,62 @@ def test_webhook_failed_event_reprocesses_on_retry(restore_public, coach, plan):
     assert we.processed_at is not None
     assert we.processing_error == ""
     assert PlatformSubscription.objects.filter(tenant=tenant).exists()
+
+
+def _subscription_deleted_event(*, sub_id, event_id="evt_sub_del"):
+    body = {
+        "id": event_id,
+        "type": "customer.subscription.deleted",
+        "data": {"object": {"id": sub_id, "metadata": {}}},
+    }
+    return _wrap_event_dict(body)
+
+
+@override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
+def test_webhook_unpaid_checkout_does_not_activate(restore_public, coach, plan):
+    """An unpaid/async checkout session must not grant the paid plan."""
+    tenant = restore_public
+    PlatformSubscription.objects.filter(tenant=tenant).delete()
+    WebhookEvent.objects.filter(provider="stripe").delete()
+    client = APIClient()
+
+    event = _checkout_session_completed_event(
+        tenant=tenant, user=coach, plan=plan, event_id="evt_unpaid", payment_status="unpaid"
+    )
+    with patch("stripe.Webhook.construct_event", return_value=event):
+        response = _post_webhook(client, event)
+
+    assert response.status_code == 200, response.content
+    assert not PlatformSubscription.objects.filter(tenant=tenant).exists()
+
+
+@override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
+def test_webhook_platform_subscription_deleted_reverts_to_free(restore_public, coach, plan):
+    """customer.subscription.deleted cancels our sub so the tenant reverts to Free."""
+    tenant = restore_public
+    PlatformSubscription.objects.filter(tenant=tenant).delete()
+    WebhookEvent.objects.filter(provider="stripe").delete()
+    PlatformSubscription.objects.create(
+        tenant=tenant,
+        user=coach,
+        plan=plan,
+        provider="stripe",
+        provider_subscription_id="sub_del_1",
+        provider_customer_id="cus_del_1",
+        status=PlatformSubscription.STATUS_ACTIVE,
+    )
+    tenant.refresh_from_db()
+    assert tenant.plan_id == plan.pk  # active sub mirrored the plan on
+
+    client = APIClient()
+    event = _subscription_deleted_event(sub_id="sub_del_1")
+    with patch("stripe.Webhook.construct_event", return_value=event):
+        response = _post_webhook(client, event)
+
+    assert response.status_code == 200, response.content
+    assert PlatformSubscription.objects.get(tenant=tenant).status == PlatformSubscription.STATUS_CANCELED
+    tenant.refresh_from_db()
+    assert tenant.plan_id is None  # reverted to Free
 
 
 @override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
