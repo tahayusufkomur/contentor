@@ -154,6 +154,8 @@ REST_FRAMEWORK = {
         "ai_thread": "30/min",
         "ai_human_message": "20/min",
         "ai_human_request": "2/hour",
+        # Public creator signup — one verification email per call.
+        "signup": "5/min",
     },
 }
 

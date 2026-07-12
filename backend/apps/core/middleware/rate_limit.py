@@ -15,8 +15,12 @@ class TenantRateLimitMiddleware:
         self.get_response = get_response
 
     @staticmethod
-    def _is_admin(request):
-        """Check JWT cookie/header for owner/coach role (runs before DRF auth)."""
+    def _is_admin(request, schema_name):
+        """Check JWT cookie/header for owner/coach role (runs before DRF auth).
+
+        The token must belong to THIS tenant — a coach's token for tenant A must
+        not exempt them from tenant B's rate limit (the tenant is resolved from
+        the spoofable X-Tenant-Domain/Host header)."""
         token = request.COOKIES.get("contentor_access_token")
         if not token:
             auth_header = request.META.get("HTTP_AUTHORIZATION", "")
@@ -26,9 +30,18 @@ class TenantRateLimitMiddleware:
             return False
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            return payload.get("role") in ("owner", "coach")
+            return payload.get("role") in ("owner", "coach") and payload.get("tenant_id") == schema_name
         except Exception:
             return False
+
+    @staticmethod
+    def _client_ip(request):
+        """Real client IP behind Cloudflare -> cloudflared -> Caddy (first
+        X-Forwarded-For hop), falling back to REMOTE_ADDR."""
+        xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        if xff:
+            return xff.split(",")[0].strip()
+        return request.META.get("REMOTE_ADDR", "unknown")
 
     # The tenant-config endpoint resolves whether a site exists and is fetched on
     # every server-rendered page load (without the visitor's auth cookie). Rate
@@ -44,12 +57,16 @@ class TenantRateLimitMiddleware:
         if request.path in self.EXEMPT_PATHS:
             return self.get_response(request)
 
-        # Skip rate limiting for admin users (owner/coach)
-        if self._is_admin(request):
+        # Skip rate limiting for this tenant's own admin users (owner/coach)
+        if self._is_admin(request, tenant.schema_name):
             return self.get_response(request)
         is_upload = request.path.startswith("/api/v1/upload/")
         rate = self.UPLOAD_RATE if is_upload else self.DEFAULT_RATE
-        key = f"ratelimit:{tenant.schema_name}:{'upload' if is_upload else 'api'}"
+        # Bucket per client IP (not per whole tenant) so one abuser can't throttle
+        # every visitor of a tenant, and a spoofed X-Tenant-Domain can't fill a
+        # victim tenant's single shared window.
+        bucket = "upload" if is_upload else "api"
+        key = f"ratelimit:{tenant.schema_name}:{self._client_ip(request)}:{bucket}"
         now = time.time()
         window = 60
         try:

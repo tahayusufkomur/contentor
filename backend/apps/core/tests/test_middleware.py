@@ -71,7 +71,7 @@ class TestTenantRateLimitMiddleware(TestCase):
     def test_skips_admin_users(self, mock_connection, mock_jwt, mock_redis):
         """Admin users (owner/coach) skip rate limiting."""
         mock_connection.tenant = self._make_tenant("my_tenant")
-        mock_jwt.decode.return_value = {"role": "owner"}
+        mock_jwt.decode.return_value = {"role": "owner", "tenant_id": "my_tenant"}
         request = self._make_request(cookies={"contentor_access_token": "valid-jwt-token"})
 
         response = self.middleware(request)
@@ -83,10 +83,24 @@ class TestTenantRateLimitMiddleware(TestCase):
     @patch("apps.core.middleware.rate_limit.get_redis_connection")
     @patch("apps.core.middleware.rate_limit.jwt")
     @patch("apps.core.middleware.rate_limit.connection")
+    def test_admin_token_for_other_tenant_does_not_bypass(self, mock_connection, mock_jwt, mock_redis):
+        """A coach's token for tenant A must not exempt them from tenant B's limit."""
+        mock_connection.tenant = self._make_tenant("my_tenant")
+        mock_jwt.decode.return_value = {"role": "owner", "tenant_id": "other_tenant"}
+        request = self._make_request(cookies={"contentor_access_token": "valid-jwt-token"})
+
+        self.middleware(request)
+
+        # Not exempt -> the rate limiter (redis) is consulted.
+        mock_redis.assert_called()
+
+    @patch("apps.core.middleware.rate_limit.get_redis_connection")
+    @patch("apps.core.middleware.rate_limit.jwt")
+    @patch("apps.core.middleware.rate_limit.connection")
     def test_skips_admin_via_bearer_header(self, mock_connection, mock_jwt, mock_redis):
         """Admin users via Bearer authorization header skip rate limiting."""
         mock_connection.tenant = self._make_tenant("my_tenant")
-        mock_jwt.decode.return_value = {"role": "coach"}
+        mock_jwt.decode.return_value = {"role": "coach", "tenant_id": "my_tenant"}
         request = self._make_request(auth_header="Bearer valid-jwt-token")
 
         response = self.middleware(request)

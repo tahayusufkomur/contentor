@@ -2,9 +2,10 @@ import logging
 
 from django.conf import settings
 from django.utils.text import slugify
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 
 from ..models import Domain, Tenant
 from ..serializers import CreatorSignupSerializer
@@ -13,9 +14,17 @@ from ..tasks import provision_tenant
 logger = logging.getLogger(__name__)
 
 
+class SignupThrottle(AnonRateThrottle):
+    """Per-IP throttle for the public creator-signup endpoint — it sends a
+    verification email per call, so cap it to stop email-bomb / quota abuse."""
+
+    scope = "signup"
+
+
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([SignupThrottle])
 def creator_signup(request):
     """Step 1: Validate signup data and send verification email. Tenant is NOT created yet."""
     serializer = CreatorSignupSerializer(data=request.data)
