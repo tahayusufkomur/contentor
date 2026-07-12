@@ -26,6 +26,18 @@ _USD_PER_INPUT_TOKEN = Decimal("0.0000003")  # $0.30 / 1M
 _USD_PER_OUTPUT_TOKEN = Decimal("0.00003")  # $30 / 1M
 _FLAT_IMAGE_USD = Decimal("0.067")  # fallback when usageMetadata is absent/garbled
 
+# Appended to EVERY prompt, server-side: the icon must be a bare mark. The
+# stage prompt asks Claude to restate these, but the guarantee can't depend
+# on model compliance — text in the raster also ruins quantize/trace. Owner
+# requirement: "without any word in it, just logo icon."
+_STRICT_MARK_SUFFIX = (
+    ". Strict, non-negotiable constraints: a single logo icon only — absolutely no"
+    " text, no words, no letters, no numbers, no typography, no monogram, no"
+    " watermark, no signature; flat solid colors (no gradients, no shadows, no 3D,"
+    " no texture); plain pure-white background; one centered mark with generous"
+    " margin around it."
+)
+
 
 def enabled():
     return bool(settings.GEMINI_API_KEY)
@@ -77,6 +89,7 @@ def generate_mark_images(prompts):
     attempts (the caller records it against the budget kill-switch)."""
     if not prompts:
         return [], Decimal("0")
+    prompts = [prompt.rstrip(". ") + _STRICT_MARK_SUFFIX for prompt in prompts]
     with ThreadPoolExecutor(max_workers=min(_MAX_PARALLEL, len(prompts))) as pool:
         results = list(pool.map(_generate_one, prompts))
     return [image for image, _ in results], sum((cost for _, cost in results), Decimal("0"))

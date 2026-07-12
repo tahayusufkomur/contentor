@@ -48,9 +48,33 @@ def test_generate_returns_images_in_order_with_summed_cost(settings, monkeypatch
     images, cost = logo_image.generate_mark_images(["a leaf", "a wave"])
     assert len(images) == 2
     assert all(img == b"png-bytes" for img in images)
-    assert sorted(calls) == ["a leaf", "a wave"]
+    assert sorted(call.split(".")[0] for call in calls) == ["a leaf", "a wave"]
     # 2 * (20 in * 0.0000003 + 2240 out * 0.00003)
     assert cost == Decimal("0.000006") * 2 + Decimal("0.0672") * 2
+
+
+def test_every_prompt_gets_the_strict_no_text_suffix(settings, monkeypatch):
+    """Owner requirement: the icon is a bare mark, never words. The stage
+    prompt asks Claude to say so, but the server must not depend on model
+    compliance — every prompt Gemini sees carries the constraints."""
+    settings.GEMINI_API_KEY = "test-key"
+    calls = []
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        calls.append(json["contents"][0]["parts"][0]["text"])
+        return _FakeResponse(_image_payload())
+
+    monkeypatch.setattr(logo_image.requests, "post", fake_post)
+    logo_image.generate_mark_images(["a leaf mark, white background.", "a wave"])
+    assert len(calls) == 2
+    for sent in calls:
+        assert "no text" in sent
+        assert "no words" in sent
+        assert "no letters" in sent
+        assert sent.endswith(logo_image._STRICT_MARK_SUFFIX)
+    # Trailing punctuation on the model-authored prompt doesn't double up.
+    leaf = next(call for call in calls if call.startswith("a leaf"))
+    assert ".." not in leaf
 
 
 def test_generate_isolates_per_slot_failure(settings, monkeypatch):
