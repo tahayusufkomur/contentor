@@ -10,11 +10,7 @@ import { chatReducer, initialChatState } from "@/lib/logo/chat-state";
 import { LOGO_FONTS, defaultRecipe } from "@/lib/logo/catalog";
 import {
   applyRefinedDesign,
-  composePackWall,
-  composeWall,
-  moreLikeThis,
   type Brief,
-  type BrandPack,
   type BrandPackElement,
 } from "@/lib/logo/composer";
 import {
@@ -97,10 +93,7 @@ export function LogoStudio({
     niche: "",
     styleChips: [],
   });
-  const [wall, setWall] = useState<LogoRecipe[] | null>(null);
-  const [wallSeed, setWallSeed] = useState(1);
-  const [wallDark, setWallDark] = useState(false);
-  const [showingVariants, setShowingVariants] = useState(false);
+  const [ideasReady, setIdeasReady] = useState(false);
   const [library, setLibrary] = useState<CuratedLogo[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
 
@@ -109,11 +102,6 @@ export function LogoStudio({
   const [chat, chatDispatch] = useReducer(chatReducer, initialChatState);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatSeed, setChatSeed] = useState<string | null>(null);
-  // Legacy AI Brand Pack (old saved sessions only): kept solely so a restored
-  // session round-trips its pack and re-renders its wall as ordinary cards;
-  // the studio never fetches or sets these anew.
-  const [pack, setPack] = useState<BrandPack | null>(null);
-  const [packSeed, setPackSeed] = useState<number | null>(null);
 
   // ── Editor draft's AI-sourced mark elements (session-only) ─────────────
   const [activeElements, setActiveElements] = useState<
@@ -166,21 +154,6 @@ export function LogoStudio({
     const saved = loadStudioSession();
     if (saved) {
       setBrief(saved.brief);
-      setPack(saved.pack);
-      setPackSeed(saved.packSeed);
-      setWallSeed(saved.wallSeed);
-      const baseWall = composeWall(
-        saved.brief,
-        saved.wallSeed,
-        24,
-        theme.primaryHex,
-      );
-      // Legacy AI Brand Pack walls (old sessions) still render, folded in
-      // front of the deterministic wall as ordinary cards.
-      const legacyAiWall = saved.pack
-        ? composePackWall(saved.pack, saved.brief, saved.packSeed ?? 1)
-        : [];
-      setWall([...legacyAiWall, ...baseWall]);
       const restoredRecipe =
         saved.recipe ?? seedRecipe(config, theme.primaryHex);
       setRecipe(restoredRecipe);
@@ -189,6 +162,7 @@ export function LogoStudio({
       chatDispatch({ type: "hydrate", snapshot: saved.chat });
       setChatOpen(false);
       setStep(saved.step);
+      setIdeasReady(true);
       return;
     }
     const seeded = seedRecipe(config, theme.primaryHex);
@@ -198,6 +172,7 @@ export function LogoStudio({
     chatDispatch({ type: "hydrate", snapshot: null });
     setChatOpen(false);
     setBrief((b) => ({ ...b, brandName: config.brand_name || b.brandName }));
+    setIdeasReady(false);
     setStep(isRecipe(config.logo_recipe) ? "editor" : "brief");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -212,9 +187,6 @@ export function LogoStudio({
       saveStudioSession({
         step,
         brief,
-        wallSeed,
-        pack,
-        packSeed,
         recipe,
         elements: activeElements,
         chat:
@@ -231,18 +203,7 @@ export function LogoStudio({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [
-    open,
-    step,
-    brief,
-    wallSeed,
-    pack,
-    packSeed,
-    recipe,
-    activeElements,
-    chatOpen,
-    chat,
-  ]);
+  }, [open, step, brief, recipe, activeElements, chatOpen, chat]);
 
   function patch(part: Partial<LogoRecipe>, coalesceKey?: string) {
     const next = { ...recipe, ...part };
@@ -277,20 +238,8 @@ export function LogoStudio({
     });
   }
 
-  // The deterministic wall is instant, offline, and free — it's the studio's
-  // baseline for every coach. Paid-tier coaches additionally get the staged
-  // Design-with-AI chat (StudioChat), which converges on ONE bespoke logo.
-  function regenerateWall() {
-    const seed = 1 + Math.floor(Math.random() * 1_000_000);
-    setWallSeed(seed);
-    setWall(composeWall(brief, seed, 24, theme.primaryHex));
-    setShowingVariants(false);
-  }
-
   function startIdeas() {
-    regenerateWall();
-    setPack(null);
-    setPackSeed(null);
+    setIdeasReady(true);
     chatDispatch({ type: "hydrate", snapshot: null });
     setChatOpen(false);
     setStep("ideas");
@@ -299,17 +248,9 @@ export function LogoStudio({
   function handleStartOver() {
     clearStudioSession();
     setBrief({ brandName: config.brand_name || "", niche: "", styleChips: [] });
-    setWall(null);
-    setPack(null);
-    setPackSeed(null);
+    setIdeasReady(false);
     chatDispatch({ type: "hydrate", snapshot: null });
     setChatOpen(false);
-  }
-
-  function handleMoreLikeThis(base: LogoRecipe) {
-    const seed = 1 + Math.floor(Math.random() * 1_000_000);
-    setWall(moreLikeThis(base, brief, seed));
-    setShowingVariants(true);
   }
 
   function handleCustomize(chosen: LogoRecipe, elements?: BrandPackElement[]) {
@@ -588,7 +529,7 @@ export function LogoStudio({
                         key={s.id}
                         type="button"
                         aria-pressed={step === s.id}
-                        disabled={s.id === "ideas" && !wall}
+                        disabled={s.id === "ideas" && !ideasReady}
                         onClick={() => setStep(s.id)}
                         className={`rounded-md px-2.5 py-1.5 text-sm ${step === s.id ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:text-foreground disabled:opacity-40"}`}
                       >
@@ -636,7 +577,6 @@ export function LogoStudio({
               )}
 
               {step === "ideas" &&
-                wall &&
                 (chatOpen ? (
                   // Design-with-AI takes the full modal body — an explicit
                   // Describe → Icon → Name → Tagline wizard, not a side panel.
@@ -666,17 +606,9 @@ export function LogoStudio({
                   <StudioEntrance
                     logos={library}
                     loadingLibrary={loadingLibrary}
-                    wall={wall}
-                    wallDark={wallDark}
-                    showingVariants={showingVariants}
                     logoAiStatus={logoAiStatus}
-                    onToggleWallDark={() => setWallDark((v) => !v)}
-                    onShuffle={regenerateWall}
-                    onShowAll={regenerateWall}
                     onUseCurated={handleUseCurated}
                     onCreateFromCurated={handleCreateFromCurated}
-                    onUseWall={handleCustomize}
-                    onMoreLikeThisWall={handleMoreLikeThis}
                     onOpenChat={() => setChatOpen(true)}
                     onUpgrade={handleUpgrade}
                   />

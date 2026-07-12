@@ -5,7 +5,6 @@
 // must never break the studio. See
 // docs/superpowers/plans/2026-07-10-logo-studio-session-undo-refine.md.
 import type {
-  BrandPack,
   BrandPackElement,
   Brief,
   ConverseDesign,
@@ -15,7 +14,7 @@ import type { ChatStage } from "@/lib/logo/converse-api";
 import type { LogoRecipe } from "@/types/logo";
 
 const STORAGE_KEY = "contentor_logo_studio";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 const MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
 export type StudioStep = "brief" | "ideas" | "editor";
@@ -31,16 +30,10 @@ export interface StudioChatSession {
 }
 
 export interface StudioSession {
-  v: 1 | 2;
+  v: 1 | 2 | 3;
   savedAt: number;
   step: StudioStep;
   brief: Brief;
-  wallSeed: number;
-  /** Raw pack, not the 18-24 recipes composeFromPack multiplies it into —
-   * walls are re-derived on restore from pack + packSeed + brief. Legacy: only
-   * older saved sessions carry a pack; the studio no longer fetches them. */
-  pack: BrandPack | null;
-  packSeed: number | null;
   /** The editor's current draft, or null if the coach hasn't reached the
    * editor yet this session. */
   recipe: LogoRecipe | null;
@@ -65,7 +58,7 @@ export function loadStudioSession(): StudioSession | null {
     const parsed = JSON.parse(raw) as Partial<StudioSession>;
     // A v1 payload still loads (its chat slice is simply absent — the coach
     // resumes at the wall/editor, minus any in-progress chat).
-    if (parsed.v !== 1 && parsed.v !== 2) return null;
+    if (parsed.v !== 1 && parsed.v !== 2 && parsed.v !== 3) return null;
     if (
       typeof parsed.savedAt !== "number" ||
       Date.now() - parsed.savedAt > MAX_AGE_MS
@@ -73,18 +66,15 @@ export function loadStudioSession(): StudioSession | null {
       return null;
     }
     if (!isStudioStep(parsed.step)) return null;
-    if (!parsed.brief || typeof parsed.wallSeed !== "number") return null;
+    if (!parsed.brief) return null;
     return {
       v: parsed.v,
       savedAt: parsed.savedAt,
       step: parsed.step,
       brief: parsed.brief,
-      wallSeed: parsed.wallSeed,
-      pack: parsed.pack ?? null,
-      packSeed: parsed.packSeed ?? null,
       recipe: parsed.recipe ?? null,
       elements: parsed.elements ?? null,
-      chat: parsed.v === 2 ? (parsed.chat ?? null) : null,
+      chat: parsed.v >= 2 ? (parsed.chat ?? null) : null,
     };
   } catch {
     return null;

@@ -19,9 +19,6 @@ function baseSession() {
   return {
     step: "editor" as const,
     brief: BRIEF,
-    wallSeed: 42,
-    pack: null,
-    packSeed: null,
     recipe: RECIPE,
     elements: null,
     chat: null,
@@ -65,9 +62,6 @@ describe("studio-session", () => {
     saveStudioSession({
       step: "editor",
       brief: BRIEF,
-      wallSeed: 42,
-      pack: null,
-      packSeed: null,
       recipe: RECIPE,
       elements: null,
       chat: null,
@@ -75,7 +69,6 @@ describe("studio-session", () => {
     const loaded = loadStudioSession();
     expect(loaded?.step).toBe("editor");
     expect(loaded?.brief).toEqual(BRIEF);
-    expect(loaded?.wallSeed).toBe(42);
     expect(loaded?.recipe).toEqual(RECIPE);
   });
 
@@ -110,9 +103,6 @@ describe("studio-session", () => {
         savedAt: Date.now(),
         step: "editor",
         brief: BRIEF,
-        wallSeed: 1,
-        pack: null,
-        packSeed: null,
         recipe: RECIPE,
         elements: null,
       }),
@@ -129,9 +119,6 @@ describe("studio-session", () => {
         savedAt: fifteenDaysAgo,
         step: "editor",
         brief: BRIEF,
-        wallSeed: 1,
-        pack: null,
-        packSeed: null,
         recipe: RECIPE,
         elements: null,
       }),
@@ -148,9 +135,6 @@ describe("studio-session", () => {
         savedAt: tenDaysAgo,
         step: "editor",
         brief: BRIEF,
-        wallSeed: 1,
-        pack: null,
-        packSeed: null,
         recipe: RECIPE,
         elements: null,
       }),
@@ -172,9 +156,6 @@ describe("studio-session", () => {
     saveStudioSession({
       step: "brief",
       brief: BRIEF,
-      wallSeed: 1,
-      pack: null,
-      packSeed: null,
       recipe: null,
       elements: null,
       chat: null,
@@ -191,9 +172,6 @@ describe("studio-session", () => {
       saveStudioSession({
         step: "brief",
         brief: BRIEF,
-        wallSeed: 1,
-        pack: null,
-        packSeed: null,
         recipe: null,
         elements: null,
         chat: null,

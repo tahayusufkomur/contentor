@@ -1,26 +1,16 @@
 "use client";
 
 import { Sparkles, Wand2 } from "lucide-react";
-import type { LogoRecipe } from "@/types/logo";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import { CuratedGallery } from "./curated-gallery";
-import { StudioWall } from "./studio-wall";
 
 interface StudioEntranceProps {
   logos: CuratedLogo[];
   loadingLibrary: boolean;
-  wall: LogoRecipe[] | null;
-  wallDark: boolean;
-  showingVariants: boolean;
   logoAiStatus: LogoAiStatus | null;
-  onToggleWallDark: () => void;
-  onShuffle: () => void;
-  onShowAll: () => void;
   onUseCurated: (logo: CuratedLogo) => void;
   onCreateFromCurated: (logo: CuratedLogo) => void;
-  onUseWall: (recipe: LogoRecipe) => void;
-  onMoreLikeThisWall: (recipe: LogoRecipe) => void;
   onOpenChat: () => void;
   onUpgrade: () => void;
 }
@@ -28,17 +18,9 @@ interface StudioEntranceProps {
 export function StudioEntrance({
   logos,
   loadingLibrary,
-  wall,
-  wallDark,
-  showingVariants,
   logoAiStatus,
-  onToggleWallDark,
-  onShuffle,
-  onShowAll,
   onUseCurated,
   onCreateFromCurated,
-  onUseWall,
-  onMoreLikeThisWall,
   onOpenChat,
   onUpgrade,
 }: StudioEntranceProps) {
@@ -79,28 +61,6 @@ export function StudioEntrance({
         onCreateSimilar={onCreateFromCurated}
         onUpgrade={onUpgrade}
       />
-
-      {wall && (
-        <details className="border-t px-6 py-4">
-          <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
-            More auto-generated ideas
-          </summary>
-          <div className="mt-3">
-            <StudioWall
-              wall={wall}
-              dark={wallDark}
-              onToggleDark={onToggleWallDark}
-              onShuffle={onShuffle}
-              onCustomize={onUseWall}
-              onMoreLikeThis={onMoreLikeThisWall}
-              showingVariants={showingVariants}
-              onShowAll={onShowAll}
-              logoAiStatus={logoAiStatus}
-              onOpenChat={onOpenChat}
-            />
-          </div>
-        </details>
-      )}
     </div>
   );
 }
