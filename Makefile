@@ -75,8 +75,9 @@ migrate-shared: ## Run shared (public) schema migrations only
 makemigrations: ## Generate new migration files
 	docker compose exec django python manage.py makemigrations
 
-seed: ## Seed plans, public tenant, and superusers
+seed: ## Seed plans, public tenant, superusers, and the curated logo catalog
 	docker compose exec django python manage.py seed_plans
+	docker compose exec django python manage.py seed_curated_logos
 
 seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinIO (host-run, needs .env.prod)
 	python3 scripts/mirror_demo_assets.py

@@ -194,3 +194,39 @@ class TestCuratedMirrorSync:
         monkeypatch.setattr("apps.core.signals.get_s3_client", boom)
         row = CuratedLogo.objects.create(title="Y", image_key="platform/curated-logos/y.png")
         assert row.pk  # save succeeded despite mirror failure
+
+
+class TestSeedCommand:
+    @pytest.fixture()
+    def catalog_dir(self, tmp_path, settings, monkeypatch):
+        settings.CURATED_LOGO_SYNC_DIR = ""  # keep the mirror signal quiet
+        meta = [
+            {"title": "Yoga", "filename": "yoga.png", "prompt": "p1", "tags": "yoga"},
+            {"title": "Chef", "filename": "chef.png", "prompt": "p2", "tags": "chef"},
+            {"title": "Ghost", "filename": "missing.png", "prompt": "", "tags": ""},
+        ]
+        (tmp_path / "logo_meta.json").write_text(jsonlib.dumps(meta))
+        (tmp_path / "yoga.png").write_bytes(_PNG_BYTES)
+        (tmp_path / "chef.png").write_bytes(_PNG_BYTES)
+        self.stored = {}
+        monkeypatch.setattr(
+            "apps.core.management.commands.seed_curated_logos._store_object",
+            lambda key, fileobj, content_type: self.stored.update({key: fileobj.read()}),
+        )
+        return tmp_path
+
+    def test_seeds_rows_in_order_and_skips_missing(self, restore_public, catalog_dir):
+        from django.core.management import call_command
+
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        rows = list(CuratedLogo.objects.order_by("position"))
+        assert [(r.title, r.position) for r in rows] == [("Yoga", 1), ("Chef", 2)]
+        assert rows[0].image_key == "platform/curated-logos/yoga.png"
+        assert "platform/curated-logos/yoga.png" in self.stored
+
+    def test_idempotent_rerun(self, restore_public, catalog_dir):
+        from django.core.management import call_command
+
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        assert CuratedLogo.objects.count() == 2
