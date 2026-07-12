@@ -167,7 +167,8 @@ services:
 
   nextjs-main:
     build:
-      context: ./frontend-main
+      context: .
+      dockerfile: frontend-main/Dockerfile
       target: runner
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://django:8000}
@@ -187,7 +188,8 @@ services:
 
   nextjs-customer:
     build:
-      context: ./frontend-customer
+      context: .
+      dockerfile: frontend-customer/Dockerfile
       target: runner
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://django:8000}

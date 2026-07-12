@@ -112,6 +112,7 @@ format: ## Auto-format backend (ruff) and frontend (prettier)
 	cd backend && ruff format .
 	cd frontend-customer && npx prettier --write .
 	cd frontend-main && npx prettier --write .
+	cd frontend-customer && npx prettier --write ../packages/shared
 
 # ============================================================================
 # Utilities

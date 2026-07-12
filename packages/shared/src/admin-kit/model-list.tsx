@@ -8,12 +8,7 @@
 
 import { ArrowDown, ArrowUp, Inbox } from "lucide-react";
 
-import type {
-  ActionSchema,
-  ListPage,
-  ModelMeta,
-  Row,
-} from "@/lib/admin-kit/types";
+import type { ActionSchema, ListPage, ModelMeta, Row } from "./types";
 
 import { KitButton } from "./primitives";
 import { CellValue } from "./widgets";

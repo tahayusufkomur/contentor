@@ -1,4 +1,4 @@
-import { AdminModelPage } from "@/components/admin-kit/model-page";
+import { AdminModelPage } from "@shared/admin-kit/model-page";
 
 export default function StudioDataModelPage({
   params,

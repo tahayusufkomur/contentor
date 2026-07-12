@@ -1,0 +1,11 @@
+.git
+**/node_modules
+**/.next
+backend
+docs
+e2e
+tools
+monitoring
+scripts
+test-results
+frontend-customer/public/logos

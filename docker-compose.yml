@@ -111,7 +111,8 @@ services:
 
   nextjs-customer:
     build:
-      context: ./frontend-customer
+      context: .
+      dockerfile: frontend-customer/Dockerfile
       target: dev
     command: npm run dev -- -p 3000
     volumes:
@@ -120,6 +121,7 @@ services:
       - ./frontend-customer/messages:/app/messages
       - ./frontend-customer/next.config.mjs:/app/next.config.mjs
       - ./frontend-customer/package.json:/app/package.json
+      - ./packages:/packages
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
@@ -129,7 +131,8 @@ services:
 
   nextjs-main:
     build:
-      context: ./frontend-main
+      context: .
+      dockerfile: frontend-main/Dockerfile
       target: dev
     command: npm run dev -- -p 3000
     volumes:
@@ -139,6 +142,7 @@ services:
       - ./frontend-main/next.config.mjs:/app/next.config.mjs
       - ./frontend-main/middleware.ts:/app/middleware.ts
       - ./frontend-main/package.json:/app/package.json
+      - ./packages:/packages
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}

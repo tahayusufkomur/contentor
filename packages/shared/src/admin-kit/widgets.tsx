@@ -15,7 +15,7 @@ import type {
   FieldSchema,
   FkValue,
   RowValue,
-} from "@/lib/admin-kit/types";
+} from "./types";
 
 import {
   KitButton,
@@ -173,9 +173,7 @@ function ImageFieldInput({
         )}
         {basename || preview ? "Replace PNG" : "Upload PNG"}
       </KitButton>
-      {uploadError && (
-        <p className="text-xs text-destructive">{uploadError}</p>
-      )}
+      {uploadError && <p className="text-xs text-destructive">{uploadError}</p>}
     </div>
   );
 }
