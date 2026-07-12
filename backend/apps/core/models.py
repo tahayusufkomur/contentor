@@ -562,6 +562,11 @@ class CuratedLogo(models.Model):
     position = models.IntegerField(default=0, help_text="Sort order; 0 = append at the end on create.")
     enabled = models.BooleanField(default=True)
     image_key = models.CharField(max_length=300)
+    mark_paths = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Traced vector mark ({d, fill} dicts), or null when the PNG did not vectorize cleanly.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

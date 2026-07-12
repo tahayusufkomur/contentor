@@ -111,3 +111,36 @@ def curated_logo_mirror_on_save(sender, instance, **kwargs):
 @receiver(post_delete, sender=CuratedLogo)
 def curated_logo_mirror_on_delete(sender, instance, **kwargs):
     _mirror_curated_logos()
+
+
+@receiver(pre_save, sender=CuratedLogo)
+def curated_logo_detect_image_change(sender, instance, **kwargs):
+    """Flag whether the PNG changed, so post_save only re-traces when needed."""
+    if not instance.pk:
+        instance._image_changed = True
+        return
+    try:
+        old = CuratedLogo.objects.only("image_key").get(pk=instance.pk)
+    except CuratedLogo.DoesNotExist:
+        instance._image_changed = True
+        return
+    instance._image_changed = old.image_key != instance.image_key
+
+
+@receiver(post_save, sender=CuratedLogo)
+def curated_logo_trace_on_save(sender, instance, **kwargs):
+    """When the image is new/changed, vectorize it into mark_paths. Best effort;
+    uses a targeted .update() so it never recurses through save signals."""
+    if not getattr(instance, "_image_changed", False):
+        return
+    key = instance.image_key or ""
+    if not key.startswith("platform/"):
+        return
+    from apps.core.curated_logos.trace import trace_curated_mark
+
+    try:
+        body = get_s3_client().get_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)["Body"].read()
+    except Exception:
+        logger.warning("curated logo: could not fetch PNG to trace: %s", key, exc_info=True)
+        return
+    CuratedLogo.objects.filter(pk=instance.pk).update(mark_paths=trace_curated_mark(body))

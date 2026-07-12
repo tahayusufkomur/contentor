@@ -17,6 +17,14 @@ pytestmark = pytest.mark.django_db
 _PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 64
 
 
+@pytest.fixture(autouse=True)
+def _no_curated_s3(monkeypatch):
+    def _fail():
+        raise RuntimeError("no s3 in tests")
+
+    monkeypatch.setattr("apps.core.signals.get_s3_client", _fail)
+
+
 def _png_file(name="logo.png", content_type="image/png", body=_PNG_BYTES):
     from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -152,6 +160,50 @@ class TestCuratedCatalogEndpoint:
         assert first["prompt"] == "a yoga logo"
         assert first["tags"] == "yoga, zen"
         assert first["image_url"]  # presigned URL, non-empty
+        assert "mark_paths" in first  # present (null for these untraced rows)
+
+
+class TestCuratedTraceOnSave:
+    def _real_png(self):
+        from PIL import Image
+
+        img = Image.new("RGB", (80, 80), "white")
+        for x in range(24, 56):
+            for y in range(24, 56):
+                img.putpixel((x, y), (0, 0, 0))
+        buf = io.BytesIO()
+        img.save(buf, "PNG")
+        return buf.getvalue()
+
+    def _fake_s3(self, monkeypatch, body):
+        class FakeS3:
+            def get_object(self, Bucket, Key):  # noqa: N803
+                return {"Body": io.BytesIO(body)}
+
+        monkeypatch.setattr("apps.core.signals.get_s3_client", lambda: FakeS3())
+
+    def test_populates_mark_paths_from_traceable_png(self, restore_public, monkeypatch, settings):
+        settings.CURATED_LOGO_SYNC_DIR = ""
+        self._fake_s3(monkeypatch, self._real_png())
+        row = CuratedLogo.objects.create(title="Sq", image_key="platform/curated-logos/sq.png")
+        row.refresh_from_db()
+        assert row.mark_paths and isinstance(row.mark_paths, list)
+        assert all("d" in p for p in row.mark_paths)
+
+    def test_null_mark_paths_for_unreadable_png(self, restore_public, monkeypatch, settings):
+        settings.CURATED_LOGO_SYNC_DIR = ""
+        self._fake_s3(monkeypatch, b"not a png")
+        row = CuratedLogo.objects.create(title="Bad", image_key="platform/curated-logos/bad.png")
+        row.refresh_from_db()
+        assert row.mark_paths is None
+
+    def test_save_survives_s3_failure(self, restore_public, settings):
+        settings.CURATED_LOGO_SYNC_DIR = ""
+        # get_s3_client is the _no_curated_s3 fast-fail stub here.
+        row = CuratedLogo.objects.create(title="Y", image_key="platform/curated-logos/y.png")
+        assert row.pk
+        row.refresh_from_db()
+        assert row.mark_paths is None
 
 
 class TestCuratedMirrorSync:

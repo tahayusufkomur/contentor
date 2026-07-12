@@ -33,6 +33,7 @@ def curated_catalog(request):
                 "prompt": row.prompt,
                 "tags": row.tags,
                 "image_url": generate_presigned_download_url(key, expiry=86400),
+                "mark_paths": row.mark_paths,
             }
         )
     return Response(out)
