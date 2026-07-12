@@ -131,9 +131,7 @@ class TestPlatformUpload:
 class TestCuratedCatalogEndpoint:
     @pytest.fixture()
     def rows(self, restore_public):
-        CuratedLogo.objects.create(
-            title="Second", tags="chef", image_key="platform/curated-logos/chef.png", position=2
-        )
+        CuratedLogo.objects.create(title="Second", tags="chef", image_key="platform/curated-logos/chef.png", position=2)
         CuratedLogo.objects.create(
             title="First",
             prompt="a yoga logo",
@@ -163,7 +161,7 @@ class TestCuratedMirrorSync:
         self.dir = tmp_path
 
         class FakeS3:
-            def get_object(self, Bucket, Key):
+            def get_object(self, Bucket, Key):  # noqa: N803 (matches boto3's real param names)
                 return {"Body": io.BytesIO(_PNG_BYTES)}
 
         monkeypatch.setattr("apps.core.signals.get_s3_client", lambda: FakeS3())
