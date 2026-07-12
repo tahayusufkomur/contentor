@@ -1,8 +1,7 @@
 "use client";
 
 // Shared admin-kit (schema-driven admin renderer).
-// Canonical copy: frontend-customer. After editing, run scripts/sync-admin-kit.sh
-// to mirror into frontend-main — the two copies must stay byte-identical.
+// Canonical shared module — imported via @shared/admin-kit/* by both frontend-main and frontend-customer.
 //
 // The full model page: header, search, filters, bulk actions, table, paging,
 // and the slide-over form. Everything renders from the backend metadata.
