@@ -268,6 +268,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "domain-subscriptions",
         "platform-blog-posts",
         "platform-kb",
+        "curated-logos",
         "ai-transcripts",
         "help-bot-usage",
         "student-bot-usage",

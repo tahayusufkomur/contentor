@@ -551,6 +551,34 @@ class PlatformKbEntry(models.Model):
         return f"{self.audience}: {self.title}"
 
 
+class CuratedLogo(models.Model):
+    """Superadmin-managed ready-made Logo Studio illustrations (Phase 2 of the
+    curated library). Public schema; the PNG lives in object storage under
+    platform/curated-logos/ and image_key points at it."""
+
+    title = models.CharField(max_length=120)
+    prompt = models.TextField(blank=True, default="")
+    tags = models.CharField(max_length=500, blank=True, default="")  # comma-separated
+    position = models.IntegerField(default=0, help_text="Sort order; 0 = append at the end on create.")
+    enabled = models.BooleanField(default=True)
+    image_key = models.CharField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        ordering = ["position", "id"]
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and not self.position:
+            last = CuratedLogo.objects.aggregate(m=models.Max("position"))["m"] or 0
+            self.position = last + 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
 class AiConversation(models.Model):
     """One chat session (any of the three bots). Public schema, loose-coupled
     like AiTranscript: tenant_schema is a string, agent/user ids are plain

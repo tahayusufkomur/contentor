@@ -11,6 +11,7 @@ from .models import (
     AiIpBlock,
     AiTranscript,
     BlogAiUsage,
+    CuratedLogo,
     HelpBotUsage,
     LogoAiUsage,
     PlatformBlogPost,
@@ -352,6 +353,20 @@ class PlatformKbEntryAdmin(ModelAdmin):
     list_filters = ("audience", "enabled")
     ordering = ("position", "id")
     fields = ("audience", "title", "content", "enabled", "position")
+
+
+@platform_site.register(CuratedLogo)
+class CuratedLogoAdmin(ModelAdmin):
+    key = "curated-logos"
+    icon = "images"
+    description = "Ready-made Logo Studio illustrations coaches can use for free."
+    list_display = ("title", "tags", "enabled", "position", "updated_at")
+    search_fields = ("title", "tags", "prompt")
+    list_filters = ("enabled",)
+    ordering = ("position", "id")
+    fields = ("title", "prompt", "tags", "position", "enabled", "image_key")
+    image_fields = ("image_key",)
+    image_upload_prefix = "curated-logos"
 
 
 @platform_site.register(AiIpBlock)
