@@ -41,6 +41,11 @@ import {
   saveStudioSession,
 } from "@/lib/logo/studio-session";
 import { getThemePalette } from "@/lib/themes";
+import {
+  fetchCuratedCatalog,
+  rankByNiche,
+  type CuratedLogo,
+} from "@/lib/logo/library-catalog";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
 import { logoViewBox } from "./logo-renderer";
@@ -48,7 +53,7 @@ import { renderRecipesToPngs } from "./render-draft";
 import { StudioBrief } from "./studio-brief";
 import { StudioChat } from "./studio-chat";
 import { StudioEditor } from "./studio-editor";
-import { StudioWall } from "./studio-wall";
+import { StudioEntrance } from "./studio-entrance";
 
 type StudioStep = "brief" | "ideas" | "editor";
 
@@ -96,6 +101,8 @@ export function LogoStudio({
   const [wallSeed, setWallSeed] = useState(1);
   const [wallDark, setWallDark] = useState(false);
   const [showingVariants, setShowingVariants] = useState(false);
+  const [library, setLibrary] = useState<CuratedLogo[]>([]);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
 
   // ── Design with AI (paid-tier feature) ─────────────────────────────────
   const [logoAiStatus, setLogoAiStatus] = useState<LogoAiStatus | null>(null);
@@ -122,6 +129,15 @@ export function LogoStudio({
       .then(setLogoAiStatus)
       .catch(() => setLogoAiStatus(null));
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoadingLibrary(true);
+    fetchCuratedCatalog()
+      .then((all) => setLibrary(rankByNiche(all, config.niche ?? "")))
+      .catch(() => setLibrary([]))
+      .finally(() => setLoadingLibrary(false));
+  }, [open, config.niche]);
 
   // Load all studio fonts once so previews render true (each family's real
   // shipped weights).
@@ -436,6 +452,43 @@ export function LogoStudio({
     }
   }
 
+  async function handleUseCurated(logo: CuratedLogo) {
+    setError(null);
+    try {
+      const res = await fetch(logo.imageUrl);
+      const blob = await res.blob();
+      const file = new File([blob], logo.filename, {
+        type: blob.type || "image/png",
+      });
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const dataUrl = await imageToDataUrl(objectUrl);
+        const uploaded = await uploadPng(file, logo.filename, file.type);
+        const base = seedRecipe(config, theme.primaryHex);
+        const chosen: LogoRecipe = {
+          ...base,
+          name: brief.brandName || config.brand_name || base.name,
+          mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
+        };
+        handleCustomize(chosen);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't use that logo — try again.");
+    }
+  }
+
+  function handleCreateFromCurated(logo: CuratedLogo) {
+    // Completed in Task 5 (seed the chat with logo.prompt). Stub for now:
+    chatDispatch({ type: "hydrate", snapshot: null });
+    setChatOpen(true);
+  }
+
+  function handleUpgrade() {
+    window.location.href = "/admin/billing/subscription";
+  }
+
   const handleClose = () => {
     if (!saving) onOpenChange(false);
   };
@@ -601,20 +654,23 @@ export function LogoStudio({
                     onClose={() => setChatOpen(false)}
                   />
                 ) : (
-                  <div className="min-h-0 flex-1">
-                    <StudioWall
-                      wall={wall}
-                      dark={wallDark}
-                      onToggleDark={() => setWallDark((v) => !v)}
-                      onShuffle={regenerateWall}
-                      onCustomize={handleCustomize}
-                      onMoreLikeThis={handleMoreLikeThis}
-                      showingVariants={showingVariants}
-                      onShowAll={regenerateWall}
-                      logoAiStatus={logoAiStatus}
-                      onOpenChat={() => setChatOpen(true)}
-                    />
-                  </div>
+                  <StudioEntrance
+                    logos={library}
+                    loadingLibrary={loadingLibrary}
+                    wall={wall}
+                    wallDark={wallDark}
+                    showingVariants={showingVariants}
+                    logoAiStatus={logoAiStatus}
+                    onToggleWallDark={() => setWallDark((v) => !v)}
+                    onShuffle={regenerateWall}
+                    onShowAll={regenerateWall}
+                    onUseCurated={handleUseCurated}
+                    onCreateFromCurated={handleCreateFromCurated}
+                    onUseWall={handleCustomize}
+                    onMoreLikeThisWall={handleMoreLikeThis}
+                    onOpenChat={() => setChatOpen(true)}
+                    onUpgrade={handleUpgrade}
+                  />
                 ))}
 
               {step === "editor" && (
