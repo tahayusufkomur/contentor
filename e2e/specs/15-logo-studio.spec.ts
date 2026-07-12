@@ -67,7 +67,13 @@ test("coach creates a logo through brief, curated ideas, and editor", async ({
     const chat = dialog.getByTestId("studio-chat");
     await expect(chat).toBeVisible();
     await expect(chat.getByRole("textbox")).toBeVisible();
-    await dialog.getByRole("button", { name: "Ideas" }).click();
+    // Close via the chat's own back control (ArrowLeft + "Ideas" in its
+    // header, wired to onClose -> setChatOpen(false)), scoped to `chat` so it
+    // can't resolve to the outer "2 · Ideas" studio step-nav button, which
+    // also substring-matches "Ideas" but only changes the outer `step` state
+    // — it never touches `chatOpen`, so clicking it would leave the chat
+    // mounted and make the toBeHidden() assertion below a false pass.
+    await chat.getByRole("button", { name: "Ideas" }).click();
     await expect(chat).toBeHidden();
   }
 
