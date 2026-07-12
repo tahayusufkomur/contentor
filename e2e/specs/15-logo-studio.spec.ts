@@ -152,7 +152,7 @@ test("coach creates a logo through brief, wall, and editor", async ({
   const body = patch.request().postDataJSON();
   expect(body.logo_id).toBeTruthy();
   expect(body.icon_id).toBeTruthy();
-  expect(body.logo_recipe.version).toBe(2);
+  expect(body.logo_recipe.version).toBe(3);
   expect(body.logo_recipe.layout).toBe("horizontal");
   expect(body.logo_recipe.tagline).toBe("Move every day");
   expect(body.logo_recipe.mark).toEqual({
