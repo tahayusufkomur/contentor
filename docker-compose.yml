@@ -83,10 +83,12 @@ services:
       context: ./backend
       args:
         INSTALL_CLAUDE_CLI: "1"
-    # --timeout 300: the logo Brand Pack is a blocking HTTP call into the AI
-    # provider (cli: 120s ceiling + one schema-retry); gunicorn's default 30s
-    # kills the worker mid-generation.
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30 --timeout 300
+    # --timeout 600: a Design-with-AI icon turn is a blocking HTTP call whose
+    # worst case is cli 240s x 2 attempts (schema retry) + Gemini image
+    # generation ~60s; 300 killed workers mid-retry (CRITICAL WORKER TIMEOUT
+    # on logo-converse, seen 2026-07-12). Dev-only: Caddy doesn't cap proxy
+    # response time locally.
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30 --timeout 600
     volumes:
       - ./backend:/app/backend
     env_file: .env

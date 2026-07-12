@@ -99,12 +99,14 @@ services:
     # With plain sync workers, 2 such concurrent requests occupy BOTH workers and
     # take the whole platform down. Threads let a blocked request hold one thread
     # while the others keep serving (2 workers x 8 threads = 16 concurrent slots).
-    # --timeout 240: the Brand Pack Anthropic call (client timeout 100s,
-    # max_retries=1) must not be killed mid-generation. Cloudflare caps any
-    # request at ~100s regardless.
+    # --timeout 300: the Design-with-AI icon turn stacks the Anthropic call
+    # (client timeout 100s, max_retries=1 -> ~200s worst case) + Gemini image
+    # generation ~60s; must not be killed mid-generation. Cloudflare still
+    # caps the BROWSER's request at ~100s regardless — the long-term fix is
+    # async/celery + polling.
     command: >
       gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gthread
-      --threads 8 --graceful-timeout 30 --timeout 240 --error-logfile -
+      --threads 8 --graceful-timeout 30 --timeout 300 --error-logfile -
     env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
