@@ -39,7 +39,7 @@ import {
 import { getThemePalette } from "@/lib/themes";
 import {
   fetchCuratedCatalog,
-  rankByNiche,
+  rankForBrief,
   type CuratedLogo,
 } from "@/lib/logo/library-catalog";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
@@ -123,7 +123,7 @@ export function LogoStudio({
     if (!open) return;
     setLoadingLibrary(true);
     fetchCuratedCatalog()
-      .then((all) => setLibrary(rankByNiche(all, config.niche ?? "")))
+      .then((all) => setLibrary(rankForBrief(all, { niche: config.niche ?? "" })))
       .catch(() => setLibrary([]))
       .finally(() => setLoadingLibrary(false));
   }, [open, config.niche]);
@@ -240,6 +240,9 @@ export function LogoStudio({
 
   function startIdeas() {
     setIdeasReady(true);
+    setLibrary((prev) =>
+      rankForBrief(prev, { niche: brief.niche, styleChips: brief.styleChips }),
+    );
     chatDispatch({ type: "hydrate", snapshot: null });
     setChatOpen(false);
     setStep("ideas");

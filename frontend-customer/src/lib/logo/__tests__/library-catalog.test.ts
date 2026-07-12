@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchCuratedCatalog, rankByNiche } from "../library-catalog";
+import { fetchCuratedCatalog, rankForBrief } from "../library-catalog";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -41,13 +41,22 @@ describe("library-catalog", () => {
     expect(await fetchCuratedCatalog()).toEqual([]);
   });
 
-  it("ranks tag-matching logos first for the niche", () => {
-    const logos = RAW.map((r) => ({
-      ...r,
-      tags: r.tags.split(",").map((t) => t.trim()),
-      imageUrl: r.image_url,
-    }));
-    const ranked = rankByNiche(logos, "wellness");
-    expect(ranked.map((l) => l.title)).toEqual(["Yoga", "Chef"]);
+  it("ranks by combined niche + style-chip tag overlap, stable within ties", () => {
+    const logos = [
+      { title: "Yoga", filename: "y.png", prompt: "", tags: ["yoga", "minimal"], imageUrl: "y" },
+      { title: "Chef", filename: "c.png", prompt: "", tags: ["cooking"], imageUrl: "c" },
+      { title: "Zen", filename: "z.png", prompt: "", tags: ["yoga"], imageUrl: "z" },
+    ];
+    const ranked = rankForBrief(logos, { niche: "yoga studio", styleChips: ["Minimal"] });
+    // Yoga matches yoga + minimal (2); Zen matches yoga (1); Chef (0). Ties keep input order.
+    expect(ranked.map((l) => l.title)).toEqual(["Yoga", "Zen", "Chef"]);
+  });
+
+  it("returns the list unchanged when the brief has no keywords", () => {
+    const logos = [
+      { title: "A", filename: "a.png", prompt: "", tags: ["x"], imageUrl: "a" },
+      { title: "B", filename: "b.png", prompt: "", tags: ["y"], imageUrl: "b" },
+    ];
+    expect(rankForBrief(logos, {}).map((l) => l.title)).toEqual(["A", "B"]);
   });
 });
