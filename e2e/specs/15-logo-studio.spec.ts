@@ -51,6 +51,12 @@ test("coach creates a logo through brief, wall, and editor", async ({
   await dialog.getByRole("button", { name: "Elegant" }).click();
   await dialog.getByRole("button", { name: "Show my logo ideas" }).click();
 
+  // The curated library (Phase 2 of the logo-library work) is now the
+  // primary Browse entrance; the deterministic wall is demoted behind a
+  // collapsible "More auto-generated ideas" section — expand it to reach
+  // the wall this spec exercises.
+  await dialog.getByText("More auto-generated ideas").click();
+
   // Wall: 24 cards, instantly (no network dependency).
   await expect(dialog.getByTestId("logo-wall")).toBeVisible();
   await expect(dialog.getByTestId("wall-card")).toHaveCount(24);
@@ -72,10 +78,18 @@ test("coach creates a logo through brief, wall, and editor", async ({
   // auto-fires its first turn on open regardless (the provider may be off in
   // this env), so just confirm the panel + input + progress strip render and
   // close it immediately rather than waiting on that turn to resolve.
-  const designWithAiButton = dialog.getByRole("button", {
+  //
+  // Scoped to the wall itself (not `dialog`): the curated library's Browse
+  // entrance (logo-library work) also has a "Design with AI" door above the
+  // wall that's always clickable and, for an ineligible tenant, navigates to
+  // the upgrade page instead of opening chat — an unscoped locator can match
+  // that door and away-navigate this test. The wall's own banner only ever
+  // renders a "Design with AI"-named button when eligible.
+  const wall = dialog.getByTestId("logo-wall");
+  const designWithAiButton = wall.getByRole("button", {
     name: "Design with AI",
   });
-  const aiUpsell = dialog.getByText(/included with paid plans/);
+  const aiUpsell = wall.getByText(/included with paid plans/);
   await expect(designWithAiButton.or(aiUpsell).first()).toBeVisible({
     timeout: 15_000,
   });
