@@ -14,6 +14,10 @@ _HOST = "shared-test.localhost"
 @pytest.mark.django_db
 @override_settings(EMAIL_SINK_ENABLED=True, RESEND_API_KEY="")
 def test_send_email_stores_instead_of_sending(shared_tenant):
+    # DevOutboundEmail is a public-schema model not covered by the shared-schema
+    # test cleanup, so other transaction=True tests can leave rows behind; clear
+    # them within this (rolled-back) transaction so .get() is deterministic.
+    DevOutboundEmail.objects.all().delete()
     assert send_email("s@example.com", "Hi", "<b>hello</b>") is True
     row = DevOutboundEmail.objects.get()
     assert (row.to, row.subject) == ("s@example.com", "Hi")

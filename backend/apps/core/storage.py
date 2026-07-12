@@ -32,6 +32,31 @@ def build_s3_path(category, *parts):
     return f"tenants/{slug}/{category}/{joined}"
 
 
+def is_tenant_scoped_key(s3_key):
+    """True if s3_key belongs to the CURRENT tenant's storage prefix.
+
+    Client-supplied keys (the upload 'complete' endpoints) must be validated
+    against this — otherwise a coach can point a record at, and get a presigned
+    URL for, any object in the bucket (including other tenants')."""
+    if not isinstance(s3_key, str) or ".." in s3_key:
+        return False
+    return s3_key.startswith(f"tenants/{get_tenant_slug()}/")
+
+
+# Content types that could execute as active content if served inline from the
+# storage origin — never legitimate coach-uploaded media.
+_BLOCKED_CONTENT_TYPES = {
+    "text/html",
+    "application/xhtml+xml",
+    "application/javascript",
+    "text/javascript",
+}
+
+
+def is_blocked_content_type(content_type):
+    return (content_type or "").split(";")[0].strip().lower() in _BLOCKED_CONTENT_TYPES
+
+
 def generate_presigned_upload_url(s3_key, content_type="application/octet-stream"):
     client = get_s3_client(external=True)
     return client.generate_presigned_url(

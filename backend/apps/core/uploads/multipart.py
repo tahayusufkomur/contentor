@@ -6,11 +6,17 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
-from apps.core.storage import build_s3_path, get_s3_client
+from apps.core.storage import build_s3_path, get_s3_client, is_blocked_content_type, is_tenant_scoped_key
 
 # ---------------------------------------------------------------------------
 # Serializers
 # ---------------------------------------------------------------------------
+
+
+def _validate_tenant_s3_key(value):
+    if not is_tenant_scoped_key(value):
+        raise serializers.ValidationError("s3_key must be within this tenant's storage.")
+    return value
 
 
 class InitiateSerializer(serializers.Serializer):
@@ -19,6 +25,11 @@ class InitiateSerializer(serializers.Serializer):
     category = serializers.ChoiceField(choices=["library"])
     video_id = serializers.IntegerField(required=False)
     total_parts = serializers.IntegerField(min_value=1, max_value=10000)
+
+    def validate_content_type(self, value):
+        if is_blocked_content_type(value):
+            raise serializers.ValidationError("This content type is not allowed for uploads.")
+        return value
 
 
 class CompleteSerializer(serializers.Serializer):
@@ -30,10 +41,16 @@ class CompleteSerializer(serializers.Serializer):
     duration_seconds = serializers.IntegerField(required=False)
     file_size = serializers.IntegerField(required=False)
 
+    def validate_s3_key(self, value):
+        return _validate_tenant_s3_key(value)
+
 
 class AbortSerializer(serializers.Serializer):
     s3_key = serializers.CharField(max_length=500)
     upload_id = serializers.CharField(max_length=500)
+
+    def validate_s3_key(self, value):
+        return _validate_tenant_s3_key(value)
 
 
 # ---------------------------------------------------------------------------
