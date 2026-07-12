@@ -216,7 +216,9 @@ def _compile_arc(el):
     return d
 
 
-# Local copy of logo_recipe.MARK_CUSTOM_MAX_D_LEN (this module must stay
+# Compile budget for AUTHORED element marks — deliberately tighter than
+# logo_recipe.MARK_CUSTOM_MAX_D_LEN (which is sized for traced image-derived
+# marks); compiled primitives never legitimately need more (this module must stay
 # Django-free). KEEP IN SYNC.
 _MAX_D = 2000
 _CURVE_MAX_POINTS = 10

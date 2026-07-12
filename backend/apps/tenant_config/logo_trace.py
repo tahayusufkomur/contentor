@@ -20,8 +20,8 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-_MAX_PATHS = 8  # logo_recipe.MARK_CUSTOM_MAX_PATHS
-_MAX_D_LEN = 2000  # logo_recipe.MARK_CUSTOM_MAX_D_LEN
+_MAX_PATHS = 12  # logo_recipe.MARK_CUSTOM_MAX_PATHS
+_MAX_D_LEN = 12000  # logo_recipe.MARK_CUSTOM_MAX_D_LEN
 _MARGIN = 4.0  # breathing room inside the 0-100 viewBox
 _WHITE_MIN = 240  # every RGB channel >= this reads as background
 _MAX_TRACE_SIZE = 1024
@@ -36,8 +36,20 @@ _SVG_PATH_RE = re.compile(
 _D_TOKEN_RE = re.compile(r"([A-Za-z])|(-?\d*\.?\d+)")
 _ALLOWED_COMMANDS = set("MLCQZ")
 
-# Flat-mark settings; the second, coarser tier is the one retry before reject.
+# Detail-first: the fine tier preserves line art (a continuous one-line
+# figure is a single ~5-7k-char outline path — the image model's best
+# output); each later tier is the retry when the previous one blows the
+# caps, trading fidelity for fit before rejecting.
 _VTRACER_TIERS = (
+    {
+        "filter_speckle": 4,
+        "color_precision": 6,
+        "layer_difference": 64,
+        "corner_threshold": 45,
+        "length_threshold": 3.5,
+        "splice_threshold": 45,
+        "path_precision": 1,
+    },
     {
         "filter_speckle": 16,
         "color_precision": 6,
@@ -109,8 +121,13 @@ def _rescale_d(d, tx, ty, size):
 
 
 def _trace_once(quantized_png, size, roles_by_rgb, tier):
+    # hierarchical MUST be "cutout", not "stacked": stacked encodes holes
+    # (e.g. the enclosed regions of a continuous-line figure) as white
+    # shapes painted on top, which we drop as background — turning line art
+    # into a solid silhouette. Cutout punches holes into the shape itself
+    # as extra subpaths, so dropping white layers is loss-free.
     svg = vtracer.convert_raw_image_to_svg(
-        quantized_png, img_format="png", colormode="color", hierarchical="stacked", mode="spline", **tier
+        quantized_png, img_format="png", colormode="color", hierarchical="cutout", mode="spline", **tier
     )
     paths = []
     for d, hex_color, tx, ty in _SVG_PATH_RE.findall(svg):

@@ -26,8 +26,12 @@ WEIGHTS = {400, 500, 600, 700, 800}
 # AI Brand Pack "custom" mark: bespoke SVG path geometry. Role tokens let one
 # mark recolor across palettes / dark mode without carrying raw hex inline.
 MARK_FILL_ROLES = {"mark", "mark2", "accent"}
-MARK_CUSTOM_MAX_PATHS = 8
-MARK_CUSTOM_MAX_D_LEN = 2000
+# Sized for TRACED (image-derived) marks: fine line art (e.g. a continuous
+# one-line figure) traces to a single 5-7k-char outline path — the old
+# 8/2000 caps silently rejected exactly the marks the image model is best
+# at. Authored (element-compiled) marks stay within logo_geometry._MAX_D.
+MARK_CUSTOM_MAX_PATHS = 12
+MARK_CUSTOM_MAX_D_LEN = 12000
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 # Whitelist for custom-mark path `d` strings: SVG path-data commands, digits,

@@ -254,13 +254,12 @@ LOGO_AI_MONTHLY_REFINE_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_REFINE_LIMIT"
 # tests/CI/e2e need no fake service). NOT routed through AI_PROVIDER — image
 # generation is a different modality with its own key and off-switch.
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-# "gemini-2.5-flash-image" (Nano Banana) is the current stable model on the
-# generateContent REST endpoint as of 2026-07 — re-check
-# https://ai.google.dev/gemini-api/docs/models before bumping; the
-# "gemini-3.1-flash-image"/"gemini-3-pro-image" line uses a newer
-# Interactions API with a different request/response shape, not a drop-in
-# generateContent replacement.
-LOGO_IMAGE_MODEL = os.environ.get("LOGO_IMAGE_MODEL", "gemini-2.5-flash-image")
+# Verified live 2026-07-12: ListModels advertises generateContent for
+# "gemini-3.1-flash-image" and a real 1K generation succeeded through the
+# standard endpoint (an earlier note here claiming the 3.x line needed a
+# different API was wrong — only "gemini-3.5-flash-image" never existed).
+# "gemini-3-pro-image" is the pricier quality step-up if ever needed.
+LOGO_IMAGE_MODEL = os.environ.get("LOGO_IMAGE_MODEL", "gemini-3.1-flash-image")
 
 # --- Ask Contentor help bot (apps.tenant_config.help_bot; provider from AI_PROVIDER) ---
 HELP_BOT_MODEL = os.environ.get("HELP_BOT_MODEL", "claude-sonnet-5")

@@ -66,7 +66,10 @@ Banned clichés: generic swoosh, sparkle, globe, atom orbits, lightbulb.
   Describe the visual device concretely and ALWAYS restate the constraints:
   "flat vector logo mark, <the device>, <N> solid colors (<name them>),
   plain white background, no text, no letters, no gradients, no shadows,
-  centered, generous margin"."""
+  centered, generous margin". Vary the drawing style across candidates
+  where it fits the brand — e.g. one refined continuous-line drawing
+  (single elegant thin line), one solid silhouette, one geometric mark —
+  and say the style in the prompt."""
 )
 
 NAME_STAGE_PROMPT = (

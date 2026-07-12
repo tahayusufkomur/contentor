@@ -9,7 +9,12 @@ import copy
 import pytest
 from rest_framework import serializers as drf_serializers
 
-from apps.tenant_config.logo_recipe import upgrade_recipe, validate_recipe
+from apps.tenant_config.logo_recipe import (
+    MARK_CUSTOM_MAX_D_LEN,
+    MARK_CUSTOM_MAX_PATHS,
+    upgrade_recipe,
+    validate_recipe,
+)
 
 V1 = {
     "version": 1,
@@ -182,13 +187,13 @@ def test_validate_recipe_custom_mark_degrades_when_paths_empty():
 
 
 def test_validate_recipe_custom_mark_caps_path_count():
-    paths = [{"d": f"M{i} {i} L{i + 1} {i + 1} Z"} for i in range(12)]
+    paths = [{"d": f"M{i} {i} L{i + 1} {i + 1} Z"} for i in range(MARK_CUSTOM_MAX_PATHS + 4)]
     shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": paths}})
-    assert len(shaped["mark"]["paths"]) == 8
+    assert len(shaped["mark"]["paths"]) == MARK_CUSTOM_MAX_PATHS
 
 
 def test_validate_recipe_custom_mark_drops_overlong_path():
-    long_d = "M" + "1 " * 1200  # > 2000 chars
+    long_d = "M" + "1 " * ((MARK_CUSTOM_MAX_D_LEN + 100) // 2)
     shaped = validate_recipe({**V2, "mark": {"type": "custom", "paths": [{"d": long_d}, {"d": "M0 0 Z"}]}})
     assert shaped["mark"]["paths"] == [{"d": "M0 0 Z", "fill": "mark"}]
 
