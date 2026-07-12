@@ -510,6 +510,10 @@ export function generateThemeCSS(
     ? `  --font-sans: '${fontFamily}', system-ui, sans-serif;`
     : "";
 
+  // Defense-in-depth: strip the </style> breakout vector from any custom CSS
+  // (backend sanitizes on write; this also covers values stored before that).
+  const safeExtra = (extraCss || "").replace(/[<>]/g, "");
+
   return `:root {
 ${lightVars}
   --cinematic-bg: ${theme.cinematic.light};
@@ -520,5 +524,5 @@ ${darkVars}
   --cinematic-bg: ${theme.cinematic.dark};
 ${font}
 }
-${extraCss}`;
+${safeExtra}`;
 }

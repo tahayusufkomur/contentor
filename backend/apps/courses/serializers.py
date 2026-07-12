@@ -5,6 +5,7 @@ from django.db.models import Prefetch
 from rest_framework import serializers
 
 from apps.core.access import AccessInfo, ContentAccessService, content_currency
+from apps.core.sanitize import clean_rich_html
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
@@ -251,6 +252,10 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 class _NestedLessonSerializer(serializers.ModelSerializer):
     """Lesson payload inside a nested course create. Order is positional."""
 
+    def validate_content_html(self, value):
+        # Trust boundary: coach-authored lesson HTML is sanitized before storage.
+        return clean_rich_html(value)
+
     class Meta:
         model = Lesson
         fields = [
@@ -321,6 +326,10 @@ class ModuleCreateSerializer(serializers.ModelSerializer):
 
 
 class LessonCreateSerializer(serializers.ModelSerializer):
+    def validate_content_html(self, value):
+        # Trust boundary: coach-authored lesson HTML is sanitized before storage.
+        return clean_rich_html(value)
+
     class Meta:
         model = Lesson
         fields = [

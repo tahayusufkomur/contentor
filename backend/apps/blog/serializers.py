@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.core.models import PlatformBlogPost
+from apps.core.sanitize import clean_rich_html
 
 from .models import BlogAutopilot, BlogPost, BlogTopicIdea
 
@@ -18,6 +19,10 @@ class BlogPostDetailSerializer(serializers.ModelSerializer):
 
 
 class BlogPostAdminSerializer(serializers.ModelSerializer):
+    def validate_body_html(self, value):
+        # Trust boundary: coach-authored HTML is sanitized before storage.
+        return clean_rich_html(value)
+
     class Meta:
         model = BlogPost
         fields = (
@@ -70,6 +75,10 @@ class BlogAutopilotSerializer(serializers.ModelSerializer):
 
 
 class PlatformBlogPostSerializer(serializers.ModelSerializer):
+    def validate_body_html(self, value):
+        # Trust boundary: platform-authored HTML is sanitized before storage.
+        return clean_rich_html(value)
+
     class Meta:
         model = PlatformBlogPost
         fields = (

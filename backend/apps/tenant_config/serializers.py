@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import connection
 from rest_framework import serializers
 
+from apps.core.sanitize import clean_css
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.media.models import Photo
 
@@ -141,6 +142,12 @@ class TenantConfigSerializer(serializers.ModelSerializer):
                 }
             )
         return cleaned
+
+    def validate_custom_css(self, value):
+        # Trust boundary: this CSS is injected into a <style> tag on every
+        # tenant page. Strip the </style> breakout vector and active-content
+        # constructs before storage.
+        return clean_css(value)
 
     def validate_logo_recipe(self, value):
         """Defensively shape the Logo Studio recipe (schema v2; v1 input is
