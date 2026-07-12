@@ -96,9 +96,7 @@ def _mirror_curated_logos(fetch_png_for=None):
         (out / "logo_meta.json").write_text(json.dumps(meta, indent=4, ensure_ascii=False) + "\n")
         if fetch_png_for is not None and (fetch_png_for.image_key or "").startswith("platform/"):
             body = (
-                get_s3_client()
-                .get_object(Bucket=settings.AWS_BUCKET_NAME, Key=fetch_png_for.image_key)["Body"]
-                .read()
+                get_s3_client().get_object(Bucket=settings.AWS_BUCKET_NAME, Key=fetch_png_for.image_key)["Body"].read()
             )
             (out / fetch_png_for.image_key.rsplit("/", 1)[-1]).write_bytes(body)
     except Exception:

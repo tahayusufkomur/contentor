@@ -4,27 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0025_logoaiusage_turns_used'),
+        ("core", "0025_logoaiusage_turns_used"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CuratedLogo',
+            name="CuratedLogo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=120)),
-                ('prompt', models.TextField(blank=True, default='')),
-                ('tags', models.CharField(blank=True, default='', max_length=500)),
-                ('position', models.IntegerField(default=0, help_text='Sort order; 0 = append at the end on create.')),
-                ('enabled', models.BooleanField(default=True)),
-                ('image_key', models.CharField(max_length=300)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("title", models.CharField(max_length=120)),
+                ("prompt", models.TextField(blank=True, default="")),
+                ("tags", models.CharField(blank=True, default="", max_length=500)),
+                ("position", models.IntegerField(default=0, help_text="Sort order; 0 = append at the end on create.")),
+                ("enabled", models.BooleanField(default=True)),
+                ("image_key", models.CharField(max_length=300)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['position', 'id'],
+                "ordering": ["position", "id"],
             },
         ),
     ]
