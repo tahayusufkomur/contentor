@@ -28,15 +28,22 @@ export function CuratedGallery({
     () => Array.from(new Set(logos.flatMap((l) => l.tags))).sort(),
     [logos],
   );
-  const shown = activeTag ? logos.filter((l) => l.tags.includes(activeTag)) : logos;
+  const shown = activeTag
+    ? logos.filter((l) => l.tags.includes(activeTag))
+    : logos;
 
   if (loading) {
-    return <p className="p-6 text-sm text-muted-foreground">Loading ready-made logos…</p>;
+    return (
+      <p className="p-6 text-sm text-muted-foreground">
+        Loading ready-made logos…
+      </p>
+    );
   }
   if (!logos.length) {
     return (
       <p className="p-6 text-sm text-muted-foreground">
-        No ready-made logos yet — try Design with AI or the auto-generated ideas below.
+        No ready-made logos yet — try Design with AI or the auto-generated ideas
+        below.
       </p>
     );
   }
@@ -67,7 +74,10 @@ export function CuratedGallery({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((logo) => (
-          <div key={logo.filename} className="flex flex-col overflow-hidden rounded-xl border">
+          <div
+            key={logo.filename}
+            className="flex flex-col overflow-hidden rounded-xl border"
+          >
             <div className="flex items-center justify-center bg-white p-3">
               {/* Plain <img>: these are static public PNGs, not next/image-optimized. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -88,10 +98,16 @@ export function CuratedGallery({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => (aiEligible ? onCreateSimilar(logo) : onUpgrade())}
+                onClick={() =>
+                  aiEligible ? onCreateSimilar(logo) : onUpgrade()
+                }
                 className="gap-1"
               >
-                {aiEligible ? <Wand2 className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                {aiEligible ? (
+                  <Wand2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Lock className="h-3.5 w-3.5" />
+                )}
                 Create your own
               </Button>
             </div>

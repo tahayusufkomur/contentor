@@ -476,7 +476,11 @@ export function LogoStudio({
         URL.revokeObjectURL(objectUrl);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't use that logo — try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Couldn't use that logo — try again.",
+      );
     }
   }
 

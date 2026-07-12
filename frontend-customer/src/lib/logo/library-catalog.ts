@@ -33,7 +33,10 @@ export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
   }
 }
 
-export function rankByNiche(logos: CuratedLogo[], niche: string): CuratedLogo[] {
+export function rankByNiche(
+  logos: CuratedLogo[],
+  niche: string,
+): CuratedLogo[] {
   const key = (niche || "").trim().toLowerCase();
   if (!key) return logos;
   const match = logos.filter((l) => l.tags.includes(key));
