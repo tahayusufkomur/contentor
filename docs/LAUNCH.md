@@ -3,7 +3,7 @@
 > Written 2026-07-05. Companion to `docs/PRODUCT.md` (product gates) — this doc owns the
 > go-to-market side: positioning, landing page, content, channels, and the launch sequence.
 > Executable "today" work is split out into
-> `docs/superpowers/plans/2026-07-05-launch-copy-truth-fixes.md`.
+> `docs/superpowers/plans/archive/2026-07-05-launch-copy-truth-fixes.md`.
 
 ## 0. Hard gates before any traffic
 
@@ -153,7 +153,7 @@ zero testimonials, unverified checkout — wastes the one PH shot.
 ## 7. Sequenced week-1 checklist
 
 1. Deploy + live-money verify + rotate secrets (PRODUCT.md "Now" list — the gate).
-2. Landing/pricing truth fixes → `docs/superpowers/plans/2026-07-05-launch-copy-truth-fixes.md`.
+2. Landing/pricing truth fixes → `docs/superpowers/plans/archive/2026-07-05-launch-copy-truth-fixes.md`.
 3. Record videos #1 and #2 off the demo tenants.
 4. Write the founding-creator outreach list (20 names) and start 5–10 contacts/day.
 5. Add email capture + analytics.
