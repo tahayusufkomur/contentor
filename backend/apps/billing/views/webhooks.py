@@ -722,9 +722,15 @@ def stripe_webhook(request):
     # WebhookEvent in a tenant schema.
     connection.set_schema_to_public()
 
-    # Wrap the create() in its own atomic block so an IntegrityError doesn't
-    # poison any outer transaction (which pytest provides when run with
-    # `transaction=False` mode for db tests).
+    # Dedup semantics (critical): a WebhookEvent row must NOT mark an event as
+    # "seen" until it has actually been PROCESSED. Otherwise a transiently-failed
+    # event (500 → Stripe retry) would hit the duplicate fast-path on retry and
+    # be silently dropped forever. So:
+    #   - brand-new row            -> process it
+    #   - existing, processed_at set -> genuine duplicate, ack 200
+    #   - existing, not processed    -> a prior attempt failed; REPROCESS it
+    # Wrap create() in its own atomic block so the IntegrityError doesn't poison
+    # any outer transaction (pytest provides one in `transaction=False` db tests).
     try:
         with transaction.atomic():
             webhook_event = WebhookEvent.objects.create(
@@ -734,11 +740,15 @@ def stripe_webhook(request):
                 payload=event_dict,
             )
     except IntegrityError:
-        logger.info("Duplicate Stripe webhook event ignored: %s", event_id)
-        return Response(
-            {"received": True, "duplicate": True},
-            status=status.HTTP_200_OK,
-        )
+        existing = WebhookEvent.objects.filter(provider="stripe", provider_event_id=event_id).first()
+        if existing is None or existing.processed_at is not None:
+            logger.info("Duplicate Stripe webhook event ignored: %s", event_id)
+            return Response(
+                {"received": True, "duplicate": True},
+                status=status.HTTP_200_OK,
+            )
+        webhook_event = existing
+        logger.info("Reprocessing previously-failed Stripe webhook event: %s", event_id)
 
     if event_type not in _STRIPE_HANDLED:
         webhook_event.processed_at = timezone.now()
@@ -787,7 +797,9 @@ def stripe_webhook(request):
                     logger.info("Acknowledged Stripe event (no handler): %s", event_type)
 
         webhook_event.processed_at = timezone.now()
-        webhook_event.save(update_fields=["processed_at"])
+        # Clear any error from a prior failed attempt now that it succeeded.
+        webhook_event.processing_error = ""
+        webhook_event.save(update_fields=["processed_at", "processing_error"])
         logger.info("stripe webhook processed type=%s id=%s", event_type, event_id)
     except Exception:  # noqa: BLE001 — record + re-raise for Stripe retry
         webhook_event.processing_error = traceback.format_exc()

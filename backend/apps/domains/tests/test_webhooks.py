@@ -20,7 +20,9 @@ def _cd(restore_public, **kw):
     )
 
 
-def test_checkout_completed_enqueues_provision(restore_public, settings, monkeypatch):
+def test_checkout_completed_enqueues_provision(
+    restore_public, settings, monkeypatch, django_capture_on_commit_callbacks
+):
     settings.DOMAINS_BYPASS_ENABLED = True
     cd = _cd(restore_public)
     DomainSubscription.objects.create(tenant=restore_public, custom_domain=cd)
@@ -39,7 +41,10 @@ def test_checkout_completed_enqueues_provision(restore_public, settings, monkeyp
             }
         },
     }
-    assert handle_domain_event(event) is True
+    # Provisioning is now enqueued via transaction.on_commit, so capture+run the
+    # committed callbacks to observe the enqueue.
+    with django_capture_on_commit_callbacks(execute=True):
+        assert handle_domain_event(event) is True
     cd.subscription.refresh_from_db()
     assert cd.subscription.status == "active"
     assert cd.subscription.provider_subscription_id == "sub_123"

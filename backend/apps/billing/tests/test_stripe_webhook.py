@@ -210,6 +210,40 @@ def test_webhook_duplicate_event_returns_200_no_dup_payment(restore_public, coac
 
 
 @override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
+def test_webhook_failed_event_reprocesses_on_retry(restore_public, coach, plan):
+    """A transiently-failed event must NOT be dropped as a duplicate on Stripe's
+    retry — the dedup row only counts once the event is actually processed."""
+    tenant = restore_public
+    PlatformSubscription.objects.filter(tenant=tenant).delete()
+    WebhookEvent.objects.filter(provider="stripe").delete()
+    client = APIClient(raise_request_exception=False)
+
+    event = _checkout_session_completed_event(tenant=tenant, user=coach, plan=plan, event_id="evt_retry_001")
+
+    # First delivery: the handler blows up -> 500, event recorded but unprocessed.
+    with (
+        patch("stripe.Webhook.construct_event", return_value=event),
+        patch("apps.billing.views.webhooks._handle_checkout_session_completed", side_effect=RuntimeError("boom")),
+    ):
+        first = _post_webhook(client, event)
+    assert first.status_code == 500
+    we = WebhookEvent.objects.get(provider_event_id="evt_retry_001")
+    assert we.processed_at is None
+    assert we.processing_error  # traceback recorded
+
+    # Stripe retries the SAME event; this time it must reprocess (not dup-skip).
+    with patch("stripe.Webhook.construct_event", return_value=event):
+        retry = _post_webhook(client, event)
+    assert retry.status_code == 200, retry.content
+    assert retry.json()["handled"] is True
+    assert retry.json().get("duplicate") is not True
+    we.refresh_from_db()
+    assert we.processed_at is not None
+    assert we.processing_error == ""
+    assert PlatformSubscription.objects.filter(tenant=tenant).exists()
+
+
+@override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
 def test_webhook_for_subscription_updated_updates_status(restore_public, coach, plan):
     tenant = restore_public
     PlatformSubscription.objects.filter(tenant=tenant).delete()

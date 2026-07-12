@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from django.db import transaction
+
 from apps.core.models import Domain
 
 from .models import CustomDomain, DomainSubscription
@@ -78,7 +80,10 @@ def handle_domain_event(event: dict) -> bool:
         sub.provider_subscription_id = obj.get("subscription", "") or sub.provider_subscription_id
         sub.provider_customer_id = obj.get("customer", "") or sub.provider_customer_id
         sub.save(update_fields=["status", "provider_subscription_id", "provider_customer_id", "updated_at"])
-        provision_domain.delay(cd.id)
+        # Enqueue only after the webhook transaction commits, so a later
+        # rollback can't leave a provisioning task running for a domain whose
+        # activation was undone.
+        transaction.on_commit(lambda: provision_domain.delay(cd.id))
         return True
 
     if etype in ("customer.subscription.created", "customer.subscription.updated"):
