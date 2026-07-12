@@ -11,6 +11,14 @@ SHARED_DOMAIN = "shared-test.localhost"
 
 pytestmark = pytest.mark.django_db
 
+_PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"0" * 64
+
+
+def _png_file(name="logo.png", content_type="image/png", body=_PNG_BYTES):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    return SimpleUploadedFile(name, body, content_type=content_type)
+
 
 @pytest.fixture()
 def superuser(restore_public):
@@ -64,3 +72,54 @@ class TestCuratedLogoAdmin:
     def test_requires_superuser(self, restore_public):
         anon = APIClient(HTTP_HOST=SHARED_DOMAIN)
         assert anon.get("/api/v1/platform-admin/curated-logos/").status_code in (401, 403)
+
+
+class TestPlatformUpload:
+    @pytest.fixture(autouse=True)
+    def _no_s3(self, monkeypatch):
+        self.stored = {}
+        monkeypatch.setattr(
+            "apps.core.platform.uploads._store_object",
+            lambda key, fileobj, content_type: self.stored.update({key: fileobj.read()}),
+        )
+
+    def test_uploads_png_and_returns_key_and_url(self, superuser):
+        client = make_client(superuser)
+        resp = client.post(
+            "/api/v1/platform/upload/",
+            {"file": _png_file(), "prefix": "curated-logos"},
+            format="multipart",
+        )
+        assert resp.status_code == 201, resp.content
+        body = resp.json()
+        assert body["key"].startswith("platform/curated-logos/") and body["key"].endswith(".png")
+        assert body["url"]
+        assert body["key"] in self.stored
+
+    def test_rejects_non_superuser(self, restore_public):
+        anon = APIClient(HTTP_HOST=SHARED_DOMAIN)
+        resp = anon.post("/api/v1/platform/upload/", {"file": _png_file()}, format="multipart")
+        assert resp.status_code in (401, 403)
+
+    def test_rejects_non_png(self, superuser):
+        resp = make_client(superuser).post(
+            "/api/v1/platform/upload/",
+            {"file": _png_file(body=b"GIF89a" + b"0" * 64, content_type="image/png")},
+            format="multipart",
+        )
+        assert resp.status_code == 400
+
+    def test_rejects_bad_prefix(self, superuser):
+        resp = make_client(superuser).post(
+            "/api/v1/platform/upload/",
+            {"file": _png_file(), "prefix": "../tenants/x"},
+            format="multipart",
+        )
+        assert resp.status_code == 400
+
+    def test_rejects_oversize(self, superuser):
+        big = b"\x89PNG\r\n\x1a\n" + b"0" * (5 * 1024 * 1024)
+        resp = make_client(superuser).post(
+            "/api/v1/platform/upload/", {"file": _png_file(body=big)}, format="multipart"
+        )
+        assert resp.status_code == 400

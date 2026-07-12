@@ -1,8 +1,9 @@
 from django.urls import path
 
-from . import views
+from . import uploads, views
 
 urlpatterns = [
+    path("upload/", uploads.platform_upload, name="platform-upload"),
     path("dashboard/", views.platform_dashboard, name="platform-dashboard"),
     path("usage/", views.platform_usage, name="platform-usage"),
     path("ai-usage/", views.platform_ai_usage, name="platform-ai-usage"),
