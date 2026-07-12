@@ -38,6 +38,7 @@ import {
 } from "@/lib/logo/studio-session";
 import { getThemePalette } from "@/lib/themes";
 import {
+  curatedRecipe,
   fetchCuratedCatalog,
   rankForBrief,
   type CuratedLogo,
@@ -403,6 +404,24 @@ export function LogoStudio({
 
   async function handleUseCurated(logo: CuratedLogo) {
     setError(null);
+    const base = seedRecipe(config, theme.primaryHex);
+    const seed = {
+      brandName: brief.brandName || config.brand_name || base.name,
+      tagline: brief.tagline ?? "",
+      base,
+    };
+    // Traced vector mark: instant, editable, recolorable — no PNG round-trip.
+    if (logo.markPaths?.length) {
+      handleCustomize(
+        curatedRecipe(
+          logo,
+          { type: "custom", rationale: logo.title, paths: logo.markPaths },
+          seed,
+        ),
+      );
+      return;
+    }
+    // Fallback: fetch the PNG and use it as an image mark.
     try {
       const res = await fetch(logo.imageUrl);
       const blob = await res.blob();
@@ -413,21 +432,19 @@ export function LogoStudio({
       try {
         const dataUrl = await imageToDataUrl(objectUrl);
         const uploaded = await uploadPng(file, logo.filename, file.type);
-        const base = seedRecipe(config, theme.primaryHex);
-        const chosen: LogoRecipe = {
-          ...base,
-          name: brief.brandName || config.brand_name || base.name,
-          mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
-        };
-        handleCustomize(chosen);
+        handleCustomize(
+          curatedRecipe(
+            logo,
+            { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
+            seed,
+          ),
+        );
       } finally {
         URL.revokeObjectURL(objectUrl);
       }
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Couldn't use that logo — try again.",
+        err instanceof Error ? err.message : "Couldn't use that logo — try again.",
       );
     }
   }

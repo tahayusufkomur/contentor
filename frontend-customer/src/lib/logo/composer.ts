@@ -47,6 +47,8 @@ export interface Brief {
   styleChips: StyleChip[];
   /** Free-text vibe, consumed only by the AI Brand Pack endpoint. */
   vibe?: string;
+  /** Optional tagline the coach types in the Brief; seeded into picked ideas. */
+  tagline?: string;
 }
 
 // Shapes mirror the backend's structured-output schema — see

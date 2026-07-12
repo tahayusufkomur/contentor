@@ -63,6 +63,20 @@ export function StudioBrief({
 
       <label className="block space-y-1.5">
         <span className="text-sm font-medium">
+          Tagline{" "}
+          <span className="font-normal text-muted-foreground">(optional)</span>
+        </span>
+        <input
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+          value={brief.tagline ?? ""}
+          maxLength={120}
+          placeholder="e.g. Yoga for busy mothers"
+          onChange={(e) => onChange({ ...brief, tagline: e.target.value })}
+        />
+      </label>
+
+      <label className="block space-y-1.5">
+        <span className="text-sm font-medium">
           Describe your vibe{" "}
           <span className="font-normal text-muted-foreground">(optional)</span>
         </span>

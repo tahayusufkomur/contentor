@@ -1,9 +1,12 @@
+import type { CustomMarkPath, LogoMark, LogoRecipe } from "@/types/logo";
+
 export interface CuratedLogo {
   title: string;
   filename: string;
   prompt: string;
   tags: string[];
   imageUrl: string;
+  markPaths?: CustomMarkPath[];
 }
 
 interface RawEntry {
@@ -12,6 +15,7 @@ interface RawEntry {
   prompt: string;
   tags: string;
   image_url: string;
+  mark_paths?: CustomMarkPath[] | null;
 }
 
 export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
@@ -28,10 +32,26 @@ export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
         .map((t) => t.trim().toLowerCase())
         .filter(Boolean),
       imageUrl: e.image_url,
+      markPaths: e.mark_paths ?? undefined,
     }));
   } catch {
     return [];
   }
+}
+
+/** A picked curated logo → a complete Logo Studio recipe: the given mark
+ * (traced vector or uploaded image) plus the brief's name and tagline. */
+export function curatedRecipe(
+  logo: CuratedLogo,
+  mark: LogoMark,
+  opts: { brandName: string; tagline: string; base: LogoRecipe },
+): LogoRecipe {
+  return {
+    ...opts.base,
+    name: opts.brandName || opts.base.name,
+    tagline: opts.tagline,
+    mark,
+  };
 }
 
 export function rankForBrief(
