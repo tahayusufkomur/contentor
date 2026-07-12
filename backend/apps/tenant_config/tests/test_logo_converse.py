@@ -240,6 +240,43 @@ def test_critique_redraw_of_an_authored_mark_recompiles(monkeypatch):
     assert result.designs[0]["elements"][0]["r"] == 20
 
 
+def test_critique_refine_keeps_traced_mark(monkeypatch):
+    """Editor-refine Pass B: the cached (already traced-pinned) design's mark
+    survives the critique redraw, same immutability rule as the stages."""
+    from apps.tenant_config import logo_ai
+
+    parsed = logo_ai._RefinedDesign.model_validate(
+        {
+            "mark": {"rationale": "redrawn", "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]},
+            "palette": {
+                "name": "P",
+                "primary": "#0f766e",
+                "secondary": "#14b8a6",
+                "accent": "#f59e0b",
+                "ink": "#111827",
+            },
+            "font_vibe": "Minimal",
+            "layout": "horizontal",
+            "badge_shape": "none",
+            "badge_outline": False,
+            "font": "Manrope",
+            "typography": {"case": "none", "tracking": 0, "weight": 700},
+            "color_roles": {},
+            "rationale": "r",
+        }
+    )
+    monkeypatch.setattr(logo_converse.core_ai, "structured_messages", lambda **kwargs: (parsed, Decimal("0.01"), "m"))
+    traced_mark = {
+        "rationale": "traced",
+        "paths": list(_TRACED_PATHS),
+        "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 30}],
+    }
+    cached = {"kind": "refine", "design": {"mark": traced_mark}}
+    result = logo_converse.critique_refine(cached, ["ZmFrZQ=="])
+    assert result.design["mark"]["paths"] == _TRACED_PATHS
+    assert result.design["font"] == "Manrope"  # restyling still applied
+
+
 # --- pinned traced-path inheritance across stage transitions ---------------
 # _NAME_TURN's design spreads _ICON_TURN["designs"][0] verbatim, so its
 # "elements" is exactly [{"type": "circle", "cx": 50, "cy": 50, "r": 30}] —
@@ -293,7 +330,9 @@ def test_name_stage_authored_pinned_mark_keeps_recompile_flow(monkeypatch, setti
     settings.LOGO_AI_MODEL = "claude-sonnet-5"
     _mock_structured(monkeypatch, _NAME_TURN)
     authored_elements = [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]
-    authored_paths = logo_converse._validate_custom_paths(logo_converse.compile_elements(authored_elements))
+    from apps.tenant_config.logo_ai import compile_elements
+
+    authored_paths = logo_converse._validate_custom_paths(compile_elements(authored_elements))
     pinned = {"mark_elements": authored_elements, "mark_paths": authored_paths}
     result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
     (design,) = result.designs

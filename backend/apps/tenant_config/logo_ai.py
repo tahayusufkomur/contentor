@@ -523,6 +523,35 @@ def _validate_custom_paths(paths):
     return shaped["mark"]["paths"]
 
 
+def is_traced_mark(elements, paths):
+    """Traced (image-derived) paths never equal what their own elements
+    compile to; authored paths always do (same deterministic pipeline).
+    Missing elements with non-empty paths also counts as traced — there is
+    no source geometry to recompile from."""
+    try:
+        return paths != _validate_custom_paths(compile_elements(elements or []))
+    except Exception:
+        return True
+
+
+def _keep_traced_mark(recipe, elements, design):
+    """A traced custom mark is immutable through refine — the model can only
+    replace it with authored primitives (same rule as the conversation
+    stages). Restyling (palette/layout/typography/badge) still applies; the
+    mark geometry is pinned. The incoming recipe is untrusted client JSON,
+    so its paths re-cross the injection whitelist before being kept."""
+    raw_mark = recipe.get("mark") if isinstance(recipe.get("mark"), dict) else {}
+    if raw_mark.get("type") != "custom":
+        return
+    validated = _validate_custom_paths(raw_mark.get("paths"))
+    if validated and is_traced_mark(elements, validated):
+        design["mark"] = {
+            "rationale": design["mark"].get("rationale", ""),
+            "paths": validated,
+            "elements": elements or [],
+        }
+
+
 def _validate_pack_palette(item):
     primary = _hex(item.primary, "#1a56db")
     ink = _hex(item.ink, "#111827")
@@ -615,6 +644,7 @@ def refine_design(recipe, elements, instruction):
         "rationale": str(parsed.rationale or "")[:300],
         **_validate_lockup(parsed),
     }
+    _keep_traced_mark(recipe, elements, design)
     return RefineResult(design, cost)
 
 

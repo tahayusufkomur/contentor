@@ -124,6 +124,40 @@ class TestRefineDesign:
         assert result.design["color_roles"]["badge"] == "ink"
         assert result.design["layout"] == "stacked"
 
+    def test_refine_keeps_traced_custom_mark(self, monkeypatch):
+        """A traced (image-derived) mark is immutable through refine: the
+        model redraws elements, but the traced paths in the coach's current
+        recipe must survive — only the restyling applies."""
+        _mock_refine_client(monkeypatch)
+        traced_paths = [{"d": "M 10.0 10.0 C 20.0 10.0 30.0 20.0 30.0 30.0 Z", "fill": "mark"}]
+        elements = [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]  # compiles to something else
+        recipe = {"mark": {"type": "custom", "rationale": "traced", "paths": traced_paths}}
+        result = logo_ai.refine_design(recipe, elements, "make it warmer")
+        assert result.design["mark"]["paths"] == traced_paths
+        assert result.design["mark"]["elements"] == elements
+
+    def test_refine_redraws_authored_custom_mark(self, monkeypatch):
+        """An authored custom mark (paths == its own compiled elements) keeps
+        the redraw flow — the model's new mark wins."""
+        _mock_refine_client(monkeypatch)
+        elements = [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]
+        authored_paths = logo_ai._validate_custom_paths(logo_ai.compile_elements(elements))
+        recipe = {"mark": {"type": "custom", "rationale": "authored", "paths": authored_paths}}
+        result = logo_ai.refine_design(recipe, elements, "make it warmer")
+        # _FakeMark's default circle has r=20 too, so compare via elements: the
+        # refined mark must be the MODEL's mark (rationale from _FakeMark), not
+        # a pinned copy of the recipe's.
+        assert result.design["mark"]["rationale"] == "A rising ring"
+
+    def test_refine_hostile_traced_paths_rejected(self, monkeypatch):
+        """Recipe paths are untrusted client JSON — whitelist failures mean
+        the redraw flow proceeds instead of pinning hostile geometry."""
+        _mock_refine_client(monkeypatch)
+        hostile = [{"d": 'M0 0 url("x") Z', "fill": "mark"}]
+        recipe = {"mark": {"type": "custom", "rationale": "t", "paths": hostile}}
+        result = logo_ai.refine_design(recipe, [], "make it warmer")
+        assert result.design["mark"]["paths"] != hostile
+
 
 class TestEstimateCost:
     def test_sonnet_input_pricing(self):

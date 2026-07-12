@@ -78,6 +78,7 @@ def _prepare(png_bytes):
     try:
         image = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
     except Exception:
+        logger.info("logo trace: unreadable image bytes — rejecting")
         return None
     base = Image.new("RGBA", image.size, (255, 255, 255, 255))
     image = Image.alpha_composite(base, image).convert("RGB")
@@ -89,6 +90,12 @@ def _prepare(png_bytes):
     # The image prompt demands a white background; no white (or no shapes)
     # means the model ignored it — not a traceable mark.
     if not background or not foreground or len(foreground) > len(_ROLE_ORDER):
+        logger.info(
+            "logo trace: quantize rejected (background colors: %d, foreground colors: %d, max roles: %d)",
+            len(background),
+            len(foreground),
+            len(_ROLE_ORDER),
+        )
         return None
     buf = io.BytesIO()
     quantized.save(buf, "PNG")

@@ -7,6 +7,7 @@ Every mark still flows through logo_ai._validate_pack_mark -> validate_recipe
 (the injection trust boundary) — nothing reaches the caller unvalidated."""
 
 import json
+import logging
 from decimal import Decimal
 
 from django.conf import settings
@@ -31,8 +32,10 @@ from .logo_ai import (
     _validate_lockup,
     _validate_pack_mark,
     _validate_pack_palette,
+    is_traced_mark,
 )
-from .logo_geometry import compile_elements
+
+logger = logging.getLogger(__name__)
 
 STAGES = ("icon", "name", "tagline")
 
@@ -248,15 +251,6 @@ def _validate_turn(stage, parsed, cost):
     return TurnResult(str(parsed.message or "")[:600], designs, cost)
 
 
-def _is_traced(elements, paths):
-    """Traced (image-derived) paths never equal what their own elements
-    compile to; authored paths always do (same deterministic pipeline)."""
-    try:
-        return paths != _validate_custom_paths(compile_elements(elements))
-    except Exception:
-        return True
-
-
 def _inherit_traced_paths(draft_designs, result):
     """Critique keep-rule. A critique that keeps a design 'byte-identical'
     re-emits its elements and _validate_turn recompiles them — which would
@@ -280,7 +274,7 @@ def _inherit_traced_paths(draft_designs, result):
             design["paths"] = kept
     if len(result.designs) == len(draft_designs):
         for design, draft in zip(result.designs, draft_designs, strict=False):
-            if draft.get("paths") and _is_traced(draft.get("elements"), draft["paths"]):
+            if draft.get("paths") and is_traced_mark(draft.get("elements"), draft["paths"]):
                 design["paths"] = draft["paths"]
                 design["elements"] = draft["elements"]
     return result
@@ -293,7 +287,7 @@ def _stamp_pinned_traced_mark(pinned, result):
     original bug). Stamp the pinned geometry into every design. Authored
     pinned marks (paths == their compiled elements) keep the existing
     recompile/fine-tune flow untouched."""
-    entries = [e for e in _pinned_reference_designs(pinned) if _is_traced(e["elements"], e["paths"])]
+    entries = [e for e in _pinned_reference_designs(pinned) if is_traced_mark(e["elements"], e["paths"])]
     if not entries:
         return result
     chosen = entries[-1]  # the pinned lockup (later stage) wins over the icon pin
@@ -342,17 +336,29 @@ def apply_image_marks(result):
     if not logo_image.enabled():
         return result
     indexed = [(i, prompt) for i, prompt in enumerate(prompts) if prompt]
+    missing = [i for i, prompt in enumerate(prompts) if not prompt]
+    if missing:
+        logger.info("logo image marks: candidates %s: no image_prompt from the model — authored paths kept", missing)
     if not indexed:
         return result
     images, cost = logo_image.generate_mark_images([prompt for _, prompt in indexed])
     result.cost_usd = (result.cost_usd or Decimal("0")) + cost
     for (i, _), png in zip(indexed, images, strict=False):
         if not png:
+            logger.warning("logo image marks: candidate %d: generation failed — authored paths kept", i)
             continue
         traced = logo_trace.trace_mark(png)
         validated = _validate_custom_paths(traced) if traced else None
         if validated:
             result.designs[i]["paths"] = validated
+            logger.info(
+                "logo image marks: candidate %d: TRACED (%d paths, d lens %s)",
+                i,
+                len(validated),
+                [len(p["d"]) for p in validated],
+            )
+        else:
+            logger.info("logo image marks: candidate %d: trace rejected — authored paths kept", i)
     return result
 
 
@@ -433,6 +439,11 @@ def critique_refine(cached, images):
         "rationale": str(parsed.rationale or "")[:300],
         **_validate_lockup(parsed),
     }
+    # Same immutability rule as everywhere else: a traced mark survives the
+    # critique — the model can only replace it with authored primitives.
+    cached_mark = (cached.get("design") or {}).get("mark") or {}
+    if cached_mark.get("paths") and is_traced_mark(cached_mark.get("elements"), cached_mark["paths"]):
+        design["mark"] = cached_mark
     return RefineCritiqueResult(design, cost)
 
 
