@@ -1,6 +1,9 @@
 """Curated logo library (Phase 2): model, admin registration, catalog endpoint,
 platform upload, dev mirror sync, seed command."""
 
+import io
+import json as jsonlib
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -151,3 +154,43 @@ class TestCuratedCatalogEndpoint:
         assert first["prompt"] == "a yoga logo"
         assert first["tags"] == "yoga, zen"
         assert first["image_url"]  # presigned URL, non-empty
+
+
+class TestCuratedMirrorSync:
+    @pytest.fixture(autouse=True)
+    def _sync_dir(self, tmp_path, settings, monkeypatch):
+        settings.CURATED_LOGO_SYNC_DIR = str(tmp_path)
+        self.dir = tmp_path
+
+        class FakeS3:
+            def get_object(self, Bucket, Key):
+                return {"Body": io.BytesIO(_PNG_BYTES)}
+
+        monkeypatch.setattr("apps.core.signals.get_s3_client", lambda: FakeS3())
+
+    def test_save_writes_meta_and_png(self, restore_public):
+        CuratedLogo.objects.create(title="Yoga", prompt="p", tags="yoga", image_key="platform/curated-logos/yoga.png")
+        meta = jsonlib.loads((self.dir / "logo_meta.json").read_text())
+        assert meta == [{"title": "Yoga", "filename": "yoga.png", "prompt": "p", "tags": "yoga"}]
+        assert (self.dir / "yoga.png").read_bytes() == _PNG_BYTES
+
+    def test_disabled_row_leaves_meta_but_keeps_png(self, restore_public):
+        row = CuratedLogo.objects.create(title="Yoga", image_key="platform/curated-logos/yoga.png")
+        row.enabled = False
+        row.save()
+        meta = jsonlib.loads((self.dir / "logo_meta.json").read_text())
+        assert meta == []
+        assert (self.dir / "yoga.png").exists()  # mirror never deletes files
+
+    def test_sync_off_when_setting_unset(self, restore_public, settings):
+        settings.CURATED_LOGO_SYNC_DIR = ""
+        CuratedLogo.objects.create(title="X", image_key="platform/curated-logos/x.png")
+        assert not (self.dir / "logo_meta.json").exists()
+
+    def test_s3_failure_does_not_break_save(self, restore_public, monkeypatch):
+        def boom():
+            raise RuntimeError("s3 down")
+
+        monkeypatch.setattr("apps.core.signals.get_s3_client", boom)
+        row = CuratedLogo.objects.create(title="Y", image_key="platform/curated-logos/y.png")
+        assert row.pk  # save succeeded despite mirror failure

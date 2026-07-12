@@ -190,6 +190,14 @@ def _clear_rate_limits():
     _purge_rate_limit_keys()
 
 
+@pytest.fixture(autouse=True)
+def _curated_mirror_off(settings):
+    """The dev container exports CURATED_LOGO_SYNC_DIR (repo bind mount) — force
+    the CuratedLogo mirror OFF for every test so suites never write into the
+    repo or touch MinIO. Mirror tests re-enable it against tmp_path."""
+    settings.CURATED_LOGO_SYNC_DIR = ""
+
+
 # Cleanup targets in dependency order (children before parents).
 TENANT_CLEANUP_MODELS = [
     BlogTopicIdea,
