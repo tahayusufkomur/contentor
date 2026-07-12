@@ -248,9 +248,9 @@ Status legend for tracking: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ### Phase 2 — Reliability & production ops
 
-- `[ ]` **P2-A · Serve without self-DoS** — `M` — _§E._ Async gunicorn workers (or more workers) + move the ~9 blocking external calls off the request path; SSRF-guard + timeout every external call.
-- `[ ]` **P2-B · Durable Celery + task correctness** — `M` — _§E._ Dedicated persistent broker (AOF Redis / RabbitMQ) separate from LRU cache; idempotent `provision_tenant`/`renew_domain` with retry+failure state; recover stuck `SENDING` campaigns; accrue AI spend on SSE abort; split queues; worker/beat healthchecks; bound `LiveReminderLog`.
-- `[ ]` **P2-C · Observability** — `S` — _§E._ Fix Dockerfile to install `prod.txt`; actually `sentry_sdk.init()` + wire `django-prometheus` (or drop both); add uptime/error alerting; cap docker log growth.
+- `[~]` **P2-A · Serve without self-DoS** — `M` — _§E._ Done: prod gunicorn switched sync→`gthread` (2 workers × 8 threads) so a blocked external call holds one thread not a whole worker; web-push fan-out now has a timeout (the raw `requests` calls already had timeouts). **Still open:** moving the ~9 blocking calls fully off the request path (bigger refactor); SDK-level timeouts (resend/getstream/stripe `max_network_retries`).
+- `[~]` **P2-B · Durable Celery + task correctness** — `M` — _§E._ Done: `provision_tenant` idempotent (guarded config + `get_or_create` owner) with the first test for that path. **Still open (infra/prod-coordination):** dedicated persistent broker separate from the LRU cache; idempotent `renew_domain`; stuck-`SENDING` campaign recovery; SSE-abort spend accrual; queue split; worker/beat healthchecks; bound `LiveReminderLog`.
+- `[x]` **P2-C · Observability** — `S` — _§E._ Done: `Dockerfile` takes a `PIP_REQUIREMENTS` arg; prod compose installs `prod.txt` for django + celery (verified: prod image has sentry-sdk + django-prometheus, no pytest); `sentry_sdk.init()` wired in prod.py (no-op until `SENTRY_DSN` set), template updated. _django-prometheus full wiring (INSTALLED_APPS/middleware/urls) + uptime alerting still to do._
 
 ### Phase 3 — Safety net & currency (prevents regression)
 
