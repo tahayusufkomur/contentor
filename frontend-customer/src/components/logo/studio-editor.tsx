@@ -24,7 +24,7 @@ interface StudioEditorProps {
   logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
-  onRefine: (instruction: string) => void;
+  onRefine: (instruction: string, redrawMark: boolean) => void;
   primaryHex: string;
   onGetNewIdeas: () => void;
   onUploadMark: (file: File) => void;

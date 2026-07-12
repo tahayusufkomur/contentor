@@ -306,7 +306,9 @@ export interface RefinedDesign {
 export function applyRefinedDesign(
   recipe: LogoRecipe,
   design: RefinedDesign,
+  opts: { keepMark?: boolean } = {},
 ): LogoRecipe {
+  const keepMark = opts.keepMark ?? false;
   const vibePool = LOGO_FONTS.filter((f) => f.vibe === design.font_vibe).map(
     (f) => f.family,
   );
@@ -334,7 +336,9 @@ export function applyRefinedDesign(
   return {
     ...recipe,
     layout: design.layout,
-    mark: { type: "custom", rationale: design.mark.rationale, paths },
+    mark: keepMark
+      ? recipe.mark
+      : { type: "custom", rationale: design.mark.rationale, paths },
     badge: { shape: design.badge_shape, outline: design.badge_outline },
     typography: {
       name: {
@@ -353,15 +357,23 @@ export function applyRefinedDesign(
       ...recipe.colors,
       palette_id: null,
       badge: { type: "solid", color: resolveRole(roles.badge, design.palette) },
-      mark: markFillFor(design.mark_gradient, design.palette, markHex),
-      mark2: resolveRole(roles.mark2, design.palette),
-      mark_accent: resolveRole(roles.mark_accent, design.palette),
+      mark: keepMark
+        ? recipe.colors.mark
+        : markFillFor(design.mark_gradient, design.palette, markHex),
+      mark2: keepMark
+        ? recipe.colors.mark2
+        : resolveRole(roles.mark2, design.palette),
+      mark_accent: keepMark
+        ? recipe.colors.mark_accent
+        : resolveRole(roles.mark_accent, design.palette),
       text: resolveRole(roles.text, design.palette),
       tagline: resolveRole(roles.tagline, design.palette),
     },
     elements: {
       ...recipe.elements,
-      mark: { ...recipe.elements.mark, scale: clampScale(design.mark_scale) },
+      mark: keepMark
+        ? recipe.elements.mark
+        : { ...recipe.elements.mark, scale: clampScale(design.mark_scale) },
     },
   };
 }

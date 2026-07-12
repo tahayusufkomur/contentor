@@ -70,7 +70,7 @@ interface StudioPanelProps {
   logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
-  onRefine: (instruction: string) => void;
+  onRefine: (instruction: string, redrawMark: boolean) => void;
   primaryHex: string;
   onGetNewIdeas: () => void;
   onUploadMark: (file: File) => void;
@@ -89,9 +89,10 @@ function RefinePromptBox({
   logoAiStatus: LogoAiStatus | null;
   refining: boolean;
   refineNotice: string | null;
-  onRefine: (instruction: string) => void;
+  onRefine: (instruction: string, redrawMark: boolean) => void;
 }) {
   const [instruction, setInstruction] = useState("");
+  const [redrawMark, setRedrawMark] = useState(false);
   if (!logoAiStatus?.eligible) return null;
   const remaining = logoAiStatus.refine_remaining;
   const blocked = !logoAiStatus.enabled || remaining <= 0;
@@ -119,6 +120,15 @@ function RefinePromptBox({
             onChange={(e) => setInstruction(e.target.value)}
             disabled={refining}
           />
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={redrawMark}
+              onChange={(e) => setRedrawMark(e.target.checked)}
+              disabled={refining}
+            />
+            Redraw the icon (start the mark from scratch)
+          </label>
           <div className="flex items-center justify-between gap-2">
             <Button
               type="button"
@@ -126,8 +136,9 @@ function RefinePromptBox({
               className="gap-1.5"
               disabled={refining || !instruction.trim()}
               onClick={() => {
-                onRefine(instruction.trim());
+                onRefine(instruction.trim(), redrawMark);
                 setInstruction("");
+                setRedrawMark(false);
               }}
             >
               {refining ? (

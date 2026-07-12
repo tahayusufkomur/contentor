@@ -263,7 +263,7 @@ export function LogoStudio({
     setStep("editor");
   }
 
-  async function handleRefine(instruction: string) {
+  async function handleRefine(instruction: string, redrawMark: boolean) {
     setRefining(true);
     setRefineNotice(null);
     const baseRecipe = recipe;
@@ -289,7 +289,9 @@ export function LogoStudio({
       // work. Any failure keeps the draft the client already holds — the
       // coach's editor never lands on a blank refinement.
       if (resp.phase === "draft" && resp.token) {
-        const draftRecipe = applyRefinedDesign(baseRecipe, design);
+        const draftRecipe = applyRefinedDesign(baseRecipe, design, {
+          keepMark: !redrawMark,
+        });
         try {
           const images = await renderRecipesToPngs([draftRecipe], "name");
           const final = await fetchRefineFinish(resp.token, images);
@@ -298,7 +300,9 @@ export function LogoStudio({
           // keep the draft `design`
         }
       }
-      const applied = applyRefinedDesign(baseRecipe, design);
+      const applied = applyRefinedDesign(baseRecipe, design, {
+        keepMark: !redrawMark,
+      });
       setRecipe(applied);
       setEditHistory((h) => push(h, applied, null));
       setActiveElements(design.mark.elements ?? null);

@@ -190,3 +190,41 @@ describe("applyRefinedDesign lockup", () => {
     expect(next.typography.tagline.weight).toBe(400);
   });
 });
+
+describe("applyRefinedDesign keepMark", () => {
+  it("preserves the current mark, its colors, and scale while restyling the lockup", () => {
+    const base = defaultRecipe("Zeynep Yoga", "#1a56db");
+    const withIcon: LogoRecipe = {
+      ...base,
+      mark: { type: "icon", icon: "flower-2", style: "outline" },
+      colors: { ...base.colors, mark: "#0ea5e9" },
+      elements: { ...base.elements, mark: { offset: [0, 0], scale: 1.3 } },
+    };
+    const design: RefinedDesign = {
+      mark: { rationale: "unused", paths: [{ d: "M0 0 Z", fill: "mark" }] },
+      palette: PALETTE,
+      font_vibe: "Bold",
+      layout: "stacked",
+      badge_shape: "circle",
+      badge_outline: false,
+      font: "Poppins",
+      typography: { case: "none", tracking: 0, weight: 700 },
+      color_roles: {
+        badge: "primary",
+        mark: "ink",
+        mark2: "secondary",
+        mark_accent: "accent",
+        text: "ink",
+        tagline: "secondary",
+      },
+      rationale: "Restyle around the coach's icon.",
+    };
+    const next = applyRefinedDesign(withIcon, design, { keepMark: true });
+    expect(next.mark).toEqual(withIcon.mark); // icon untouched
+    expect(next.colors.mark).toBe("#0ea5e9"); // mark color untouched
+    expect(next.elements.mark.scale).toBe(1.3); // mark scale untouched
+    expect(next.layout).toBe("stacked"); // lockup restyled
+    expect(next.typography.name.font).toBe("Poppins");
+    expect(next.colors.text).toBe(PALETTE.ink);
+  });
+});
