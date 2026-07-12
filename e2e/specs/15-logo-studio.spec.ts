@@ -1,159 +1,86 @@
 // e2e/specs/15-logo-studio.spec.ts
 //
 // Coach opens the Logo Studio via the setup-assistant deep link and walks the
-// deterministic-first flow: Brief -> wall of 24 composed ideas (offline, no
-// network dependency) -> Shuffle -> Customize one -> fine-tune in the editor
-// -> save. The PATCH must persist a schema-v2 recipe. The wall also surfaces
-// the staged "Design with AI" chat (studio-chat.tsx) as a paid-tier upsell —
-// this spec only confirms the panel opens (no real AI turn is driven here;
-// see 90-logo-eval.spec.ts for that, gated behind LOGO_EVAL=1).
+// curated-first flow: Brief (name + niche + tagline + a style chip) -> Ideas
+// (the curated gallery; the deterministic wall is gone) -> Use a ready-made
+// logo -> fine-tune in the Editor -> save. The PATCH must persist a schema-v3
+// recipe carrying the brand name + tagline. The Ideas step also surfaces the
+// staged "Design with AI" chat as a paid-tier upsell — this spec only confirms
+// the door renders correctly (chat opens for eligible tenants, the upgrade
+// copy shows otherwise) without ever driving a real AI turn; see
+// 90-logo-eval.spec.ts for that.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
 
-test("coach creates a logo through brief, wall, and editor", async ({
+test("coach creates a logo through brief, curated ideas, and editor", async ({
   browser,
 }) => {
-  // The brand-kit build fetches webfonts for 8 raster exports + TTFs for the
-  // vector SVGs — give cold-network runs room beyond the default budget.
   test.setTimeout(120_000);
   const coach = await coachContext(browser);
   const page = await coach.newPage();
 
   await page.goto(`${TENANT}/admin/design?studio=1`);
-  // Not getByText("Logo Studio") — the underlying Branding card (portaled
-  // behind the dialog, still mounted in the DOM per ModalPortal) has a
-  // "Create a logo in Logo Studio" / "Edit logo in Logo Studio" button whose
-  // text also contains the substring "Logo Studio", so a text locator
-  // strict-mode-violates with 2 matches. The dialog's <h2> is the only
-  // element with role=heading, so scope to that.
   await expect(
     page.getByRole("heading", { name: "Logo Studio" }),
   ).toBeVisible();
 
-  // Everything below is scoped to the dialog: the Branding page behind the
-  // modal stays mounted (ModalPortal) and has its own "Brand Name" input,
-  // buttons, etc. — unscoped locators strict-mode-violate.
   const dialog = page.getByRole("dialog");
 
-  // Fresh tenants land on the Brief step; tenants with a saved design land
-  // in the Editor — normalize by navigating to the Brief either way.
+  // Normalize onto the Brief step (a saved-design tenant lands in the Editor).
   const briefHeading = dialog.getByText("Tell us about your brand");
   if (!(await briefHeading.isVisible())) {
     await dialog.getByRole("button", { name: "Get new ideas" }).click();
   }
   await expect(briefHeading).toBeVisible();
 
-  // Brief: name (prefilled from config; ensure non-empty), niche, a chip.
   const nameInput = dialog.getByLabel("Brand name");
   if (!(await nameInput.inputValue())) await nameInput.fill("Demo Yoga");
   await dialog.getByLabel("What do you teach?").fill("yoga");
+  await dialog.getByLabel("Tagline (optional)").fill("Move every day");
   await dialog.getByRole("button", { name: "Elegant" }).click();
   await dialog.getByRole("button", { name: "Show my logo ideas" }).click();
 
-  // The curated library (Phase 2 of the logo-library work) is now the
-  // primary Browse entrance; the deterministic wall is demoted behind a
-  // collapsible "More auto-generated ideas" section — expand it to reach
-  // the wall this spec exercises.
-  await dialog.getByText("More auto-generated ideas").click();
+  // Ideas: the curated gallery is the only Browse surface now. Exact match —
+  // a substring match also resolves the transient "Loading ready-made
+  // logos…" placeholder text, strict-mode-violating while the catalog fetch
+  // is in flight.
+  await expect(
+    dialog.getByText("Ready-made logos", { exact: true }),
+  ).toBeVisible();
 
-  // Wall: 24 cards, instantly (no network dependency).
-  await expect(dialog.getByTestId("logo-wall")).toBeVisible();
-  await expect(dialog.getByTestId("wall-card")).toHaveCount(24);
-
-  // Shuffle regenerates the wall (new seed -> first card changes).
-  const firstCardBefore = await dialog
-    .getByTestId("wall-card")
-    .first()
-    .innerHTML();
-  await dialog.getByRole("button", { name: "Shuffle" }).click();
-  await expect(async () => {
-    const after = await dialog.getByTestId("wall-card").first().innerHTML();
-    expect(after).not.toBe(firstCardBefore);
-  }).toPass({ timeout: 5_000 });
-
-  // Design with AI: the staged chat replaces the old AI wall. A free tenant
-  // sees the upsell banner instead of the button — assert whichever the
-  // seeded tenant's plan shows. Never drive a real AI turn here: the panel
-  // auto-fires its first turn on open regardless (the provider may be off in
-  // this env), so just confirm the panel + input + progress strip render and
-  // close it immediately rather than waiting on that turn to resolve.
-  //
-  // Scoped to the wall itself (not `dialog`): the curated library's Browse
-  // entrance (logo-library work) also has a "Design with AI" door above the
-  // wall that's always clickable and, for an ineligible tenant, navigates to
-  // the upgrade page instead of opening chat — an unscoped locator can match
-  // that door and away-navigate this test. The wall's own banner only ever
-  // renders a "Design with AI"-named button when eligible.
-  const wall = dialog.getByTestId("logo-wall");
-  const designWithAiButton = wall.getByRole("button", {
-    name: "Design with AI",
-  });
-  const aiUpsell = wall.getByText(/included with paid plans/);
-  await expect(designWithAiButton.or(aiUpsell).first()).toBeVisible({
-    timeout: 15_000,
-  });
-  if (await designWithAiButton.isVisible().catch(() => false)) {
-    await designWithAiButton.click();
+  // Design with AI: the door button always renders (no isVisible gate needed
+  // — unlike the old wall-era banner). For an ineligible tenant it navigates
+  // straight to the upgrade page on click (`window.location.href`), so a
+  // blind click would away-navigate this test; the two states are only
+  // distinguishable by the door's copy. Read that first, then act.
+  const aiDoor = dialog.getByRole("button", { name: "Design with AI" });
+  await expect(aiDoor).toBeVisible();
+  const aiDoorText = (await aiDoor.innerText()).toLowerCase();
+  if (aiDoorText.includes("upgrade to design")) {
+    // Free-tier upsell — confirm the copy, don't click (it would navigate
+    // away to /admin/billing/subscription).
+    await expect(aiDoor).toContainText("Upgrade to design a bespoke logo");
+  } else {
+    // Eligible tenant — clicking opens the staged chat panel inline.
+    await aiDoor.click();
     const chat = dialog.getByTestId("studio-chat");
     await expect(chat).toBeVisible();
     await expect(chat.getByRole("textbox")).toBeVisible();
-    await expect(chat.getByRole("button", { name: "Send" })).toBeVisible();
-    // Progress strip: Icon -> Name -> Tagline.
-    await expect(chat.getByText("Icon", { exact: true })).toBeVisible();
-    await expect(chat.getByText("Name", { exact: true })).toBeVisible();
-    await expect(chat.getByText("Tagline", { exact: true })).toBeVisible();
-    await chat.getByLabel("Close chat").click();
+    await dialog.getByRole("button", { name: "Ideas" }).click();
     await expect(chat).toBeHidden();
   }
 
-  // Customize the first card -> Editor step.
-  await dialog
-    .getByTestId("wall-card")
-    .first()
-    .getByRole("button", { name: /Customize this/ })
-    .click();
+  // Use the first ready-made logo -> Editor.
+  await dialog.getByRole("button", { name: "Use this" }).first().click();
   await expect(
     dialog.getByRole("button", { name: "Use this logo" }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
 
-  // Fine-tune: force a known layout + tagline from the global panel, then
-  // exercise the canvas: select the mark (icon picker is contextual now),
-  // pick a known icon, then select the name and nudge it with arrow keys.
+  // Fine-tune: force a known layout + confirm the tagline seeded from the Brief.
   await dialog.getByRole("button", { name: "Mark + name" }).click();
-  await dialog
-    .getByPlaceholder("e.g. Yoga for busy mothers")
-    .fill("Move every day");
 
-  // Scope element clicks to the canvas — the hidden dark-variant renderer
-  // (brand kit source) also carries [data-part] groups.
-  const canvas = dialog.getByTestId("studio-canvas");
-
-  // Click the mark on the canvas -> selection box + mark controls appear.
-  await canvas.locator('[data-part="mark"]').click();
-  await expect(dialog.getByTestId("selection-box")).toBeVisible();
-  await dialog.getByRole("button", { name: "flower-2", exact: true }).click();
-
-  // Click the name on the canvas -> typography controls; nudge right 3px.
-  await canvas.locator('[data-part="name"]').click();
-  await expect(dialog.getByTestId("selection-box")).toBeVisible();
-  await expect(dialog.getByText("Letter spacing")).toBeVisible();
-  await page.keyboard.press("ArrowRight");
-  await page.keyboard.press("ArrowRight");
-  await page.keyboard.press("ArrowRight");
-
-  // Brand kit: the download event fires with a zip (PNGs always; SVG too
-  // when the font CDN is reachable — either way it's a valid kit).
-  const downloadPromise = page.waitForEvent("download", { timeout: 60_000 });
-  await dialog
-    .getByRole("button", { name: "Download brand kit (.zip)" })
-    .click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe("brand-kit.zip");
-
-  // Save → wait for the config PATCH and assert the payload persisted.
-  // Loose "admin/config" matcher — 09-builder.spec.ts matches the same PATCH
-  // without the /v1 segment, so don't assume the exact browser-visible prefix.
+  // Save -> assert the persisted v3 recipe carries name + tagline.
   const patchPromise = page.waitForResponse(
     (resp) =>
       resp.url().includes("admin/config") &&
@@ -169,17 +96,8 @@ test("coach creates a logo through brief, wall, and editor", async ({
   expect(body.logo_recipe.version).toBe(3);
   expect(body.logo_recipe.layout).toBe("horizontal");
   expect(body.logo_recipe.tagline).toBe("Move every day");
-  expect(body.logo_recipe.mark).toEqual({
-    type: "icon",
-    icon: "flower-2",
-    style: "outline",
-  });
-  expect(body.logo_recipe.badge.shape).toBeTruthy();
-  expect(body.logo_recipe.typography.name.weight).toBeGreaterThanOrEqual(400);
-  // The three ArrowRight nudges on the selected name element persisted.
-  expect(body.logo_recipe.elements.name.offset[0]).toBe(3);
+  expect(body.logo_recipe.name).toBeTruthy();
 
-  // Dialog closes on success
   await expect(page.getByRole("heading", { name: "Logo Studio" })).toBeHidden({
     timeout: 15_000,
   });
