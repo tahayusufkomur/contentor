@@ -123,3 +123,31 @@ class TestPlatformUpload:
             "/api/v1/platform/upload/", {"file": _png_file(body=big)}, format="multipart"
         )
         assert resp.status_code == 400
+
+
+class TestCuratedCatalogEndpoint:
+    @pytest.fixture()
+    def rows(self, restore_public):
+        CuratedLogo.objects.create(
+            title="Second", tags="chef", image_key="platform/curated-logos/chef.png", position=2
+        )
+        CuratedLogo.objects.create(
+            title="First",
+            prompt="a yoga logo",
+            tags="yoga, zen",
+            image_key="platform/curated-logos/yoga.png",
+            position=1,
+        )
+        CuratedLogo.objects.create(title="Hidden", image_key="platform/curated-logos/hidden.png", enabled=False)
+        CuratedLogo.objects.create(title="BadKey", image_key="tenants/x/photo/evil.png")
+
+    def test_unauthenticated_ordered_enabled_only(self, rows):
+        resp = APIClient(HTTP_HOST=SHARED_DOMAIN).get("/api/v1/logos/curated/")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert [e["title"] for e in body] == ["First", "Second"]
+        first = body[0]
+        assert first["filename"] == "yoga.png"
+        assert first["prompt"] == "a yoga logo"
+        assert first["tags"] == "yoga, zen"
+        assert first["image_url"]  # presigned URL, non-empty
