@@ -372,3 +372,15 @@ def test_tagline_stage_inherits_pinned_lockup_traced_paths(monkeypatch, settings
     result = logo_converse.converse_turn("tagline", {"brand_name": "Flow"}, [], pinned, "go")
     (design,) = result.designs
     assert design["paths"] == _TRACED_PATHS
+
+
+def test_tagline_stage_prompt_never_permits_an_empty_tagline():
+    """Content guard, not a behavioral test: the model's real compliance is
+    unverifiable from a unit test (its response is always mocked here), so
+    this only pins the prompt text itself — the old escape-hatch sentence
+    must be gone and a positive non-empty requirement must be present. If
+    this ever needs to change, that's a deliberate product decision, not an
+    accidental revert."""
+    prompt = logo_converse.TAGLINE_STAGE_PROMPT
+    assert 'may keep tagline ""' not in prompt
+    assert "non-empty" in prompt

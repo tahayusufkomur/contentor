@@ -118,8 +118,8 @@ TAGLINE_STAGE_PROMPT = (
 The lockup is decided (in the conversation). Return 1-3 candidates that are
 the SAME design with different `tagline` text (and its color role if needed):
 short, concrete, in the coach's voice — never corporate filler. If the coach
-supplied their own words, style those (you may tighten them). If nothing
-natural fits, one candidate may keep tagline "".
+supplied their own words, style those (you may tighten them). Every
+candidate's tagline must be a real, non-empty line — never return "".
 
 """
     + _FONT_CATALOG
