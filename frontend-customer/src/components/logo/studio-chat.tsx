@@ -219,6 +219,9 @@ export function StudioChat({
         transcript: state.messages.map((m) => ({ role: m.role, text: m.text })),
         pinned: {
           mark_elements: state.pinnedIcon?.elements,
+          // Traced (image-derived) paths can't be recompiled from elements —
+          // the backend inherits them verbatim when the elements match.
+          mark_paths: state.pinnedIcon?.paths,
           lockup: state.pinnedLockup ?? undefined,
         },
         message: text,

@@ -4,7 +4,11 @@
 // name, tagline); composeIconPreview/composeConverseDesign (composer.ts)
 // materialize each returned ConverseDesign into a renderable recipe.
 import { clientFetch } from "@/lib/api-client";
-import type { BrandPackElement, ConverseDesign } from "@/lib/logo/composer";
+import type {
+  BrandPackElement,
+  BrandPackPath,
+  ConverseDesign,
+} from "@/lib/logo/composer";
 
 export type ChatStage = "icon" | "name" | "tagline";
 
@@ -39,7 +43,11 @@ export function fetchConverseTurn(body: {
   stage: ChatStage;
   brief: { niche: string; style_chips: string[]; vibe: string };
   transcript: { role: "user" | "assistant"; text: string }[];
-  pinned: { mark_elements?: BrandPackElement[]; lockup?: unknown };
+  pinned: {
+    mark_elements?: BrandPackElement[];
+    mark_paths?: BrandPackPath[];
+    lockup?: unknown;
+  };
   message: string;
 }): Promise<ConverseTurnResponse> {
   return clientFetch<ConverseTurnResponse>(
