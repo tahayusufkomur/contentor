@@ -11,11 +11,12 @@ interface RawEntry {
   filename: string;
   prompt: string;
   tags: string;
+  image_url: string;
 }
 
 export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
   try {
-    const res = await fetch("/logos/logo_meta.json");
+    const res = await fetch("/api/v1/logos/curated/");
     if (!res.ok) return [];
     const raw = (await res.json()) as RawEntry[];
     return raw.map((e) => ({
@@ -26,7 +27,7 @@ export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
         .split(",")
         .map((t) => t.trim().toLowerCase())
         .filter(Boolean),
-      imageUrl: `/logos/${e.filename}`,
+      imageUrl: e.image_url,
     }));
   } catch {
     return [];

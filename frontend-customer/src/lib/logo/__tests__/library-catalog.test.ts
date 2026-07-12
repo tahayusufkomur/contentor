@@ -9,26 +9,29 @@ const RAW = [
     filename: "yoga.png",
     prompt: "a yoga logo",
     tags: "yoga, wellness, zen",
+    image_url: "http://storage.local/platform/curated-logos/yoga.png?sig=1",
   },
   {
     title: "Chef",
     filename: "chef.png",
     prompt: "a chef logo",
     tags: "cooking, food",
+    image_url: "http://storage.local/platform/curated-logos/chef.png?sig=2",
   },
 ];
 
 describe("library-catalog", () => {
-  it("fetches, splits tags, and builds imageUrl", async () => {
+  it("fetches the catalog API, splits tags, and passes image_url through", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({ ok: true, json: async () => RAW }),
     );
     const logos = await fetchCuratedCatalog();
-    expect(fetch).toHaveBeenCalledWith("/logos/logo_meta.json");
+    expect(fetch).toHaveBeenCalledWith("/api/v1/logos/curated/");
     expect(logos[0]).toMatchObject({
       title: "Yoga",
-      imageUrl: "/logos/yoga.png",
+      filename: "yoga.png",
+      imageUrl: RAW[0].image_url,
       tags: ["yoga", "wellness", "zen"],
     });
   });
@@ -42,7 +45,7 @@ describe("library-catalog", () => {
     const logos = RAW.map((r) => ({
       ...r,
       tags: r.tags.split(",").map((t) => t.trim()),
-      imageUrl: `/logos/${r.filename}`,
+      imageUrl: r.image_url,
     }));
     const ranked = rankByNiche(logos, "wellness");
     expect(ranked.map((l) => l.title)).toEqual(["Yoga", "Chef"]);
