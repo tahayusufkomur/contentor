@@ -9,14 +9,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Trash2, X } from "lucide-react";
 
-import { AdminKitError, type AdminClient } from "@/lib/admin-kit/client";
+import { AdminKitError, type AdminClient } from "./client";
 import type {
   ChoiceOption,
   FieldSchema,
   ModelMeta,
   Row,
   RowValue,
-} from "@/lib/admin-kit/types";
+} from "./types";
 
 import { KitButton } from "./primitives";
 import { FieldInput } from "./widgets";

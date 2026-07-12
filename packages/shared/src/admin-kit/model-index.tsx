@@ -9,8 +9,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import { AdminKitError, createAdminClient } from "@/lib/admin-kit/client";
-import type { SiteMeta } from "@/lib/admin-kit/types";
+import { AdminKitError, createAdminClient } from "./client";
+import type { SiteMeta } from "./types";
 
 import { KitBanner, KitSkeletonRows, kitIcon } from "./primitives";
 

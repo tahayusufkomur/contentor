@@ -10,14 +10,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 
-import { AdminKitError, createAdminClient } from "@/lib/admin-kit/client";
+import { AdminKitError, createAdminClient } from "./client";
 import type {
   ActionSchema,
   ChoiceOption,
   ListPage,
   ModelMeta,
   Row,
-} from "@/lib/admin-kit/types";
+} from "./types";
 
 import { ModelForm } from "./model-form";
 import { ModelList } from "./model-list";
