@@ -74,11 +74,15 @@ def magic_link_request(request):
     locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
     sent = send_magic_link(email, link, brand_name, locale=locale, code=code)
     if not sent:
-        # Always print to console so the link is visible in `make logs`
-        print(f"\n{'=' * 60}")
-        print(f"MAGIC LINK for {email}:")
-        print(f"{link}")
-        print(f"{'=' * 60}\n")
+        if settings.DEBUG:
+            # Dev convenience only: surface the link locally when email is stubbed.
+            print(f"\n{'=' * 60}")
+            print(f"MAGIC LINK for {email}:")
+            print(f"{link}")
+            print(f"{'=' * 60}\n")
+        else:
+            # Never write the token/link to prod logs (they ship off-box).
+            logger.error("Failed to send magic-link email to %s (link withheld from logs)", email)
 
     from apps.core.i18n_helpers import msg
 
@@ -182,14 +186,22 @@ def logout(request):
 SESSION_COOKIE = "contentor_access_token"
 IMPERSONATOR_RETURN_COOKIE = "contentor_impersonator_return"
 
+# Send auth/session cookies with the Secure flag in every real deployment; only
+# local dev (DEBUG, plain http) relaxes it so the cookie is usable over http.
+_COOKIE_SECURE = not settings.DEBUG
+
 
 def _set_session_cookie(response, jwt_token, *, max_age=86400 * 7):
-    response.set_cookie(SESSION_COOKIE, jwt_token, httponly=True, secure=False, samesite="Lax", max_age=max_age)
+    response.set_cookie(
+        SESSION_COOKIE, jwt_token, httponly=True, secure=_COOKIE_SECURE, samesite="Lax", max_age=max_age
+    )
 
 
 def _set_locale_cookie(response, user, tenant):
     locale = user.preferred_locale or _tenant_default_locale(tenant) or "en"
-    response.set_cookie("user-locale", locale, httponly=False, secure=False, samesite="Lax", max_age=86400 * 365)
+    response.set_cookie(
+        "user-locale", locale, httponly=False, secure=_COOKIE_SECURE, samesite="Lax", max_age=86400 * 365
+    )
 
 
 def _decode_session(token):
@@ -264,7 +276,7 @@ def impersonate_verify(request):
             IMPERSONATOR_RETURN_COOKIE,
             request.COOKIES[SESSION_COOKIE],
             httponly=True,
-            secure=False,
+            secure=_COOKIE_SECURE,
             samesite="Lax",
             max_age=86400,
         )
@@ -342,7 +354,7 @@ def update_locale(request):
         "user-locale",
         locale,
         httponly=False,
-        secure=False,
+        secure=_COOKIE_SECURE,
         samesite="Lax",
         max_age=86400 * 365,
     )

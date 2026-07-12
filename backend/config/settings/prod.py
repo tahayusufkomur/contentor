@@ -6,6 +6,16 @@ from .base import *  # noqa: F401, F403
 from .base import _env_bool
 
 DEBUG = False
+
+# Fail fast rather than boot prod with dev-grade secrets or a wildcard host.
+# Re-read os.environ directly (not the star-imported base attributes) so the
+# guard sees the real env even when base was first imported under other env
+# state — same reasoning as the BILLING_BYPASS guard below.
+if os.environ.get("DJANGO_SECRET_KEY", "insecure-dev-key") == "insecure-dev-key":  # pragma: allowlist secret
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set to a strong unique secret in production.")
+if "*" in os.environ.get("DJANGO_ALLOWED_HOSTS", "*"):
+    raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must be an explicit host list in production (no '*').")
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from django.conf import settings
 from django.db import connection, transaction
 from rest_framework import status
@@ -17,6 +19,18 @@ from .pricing import compute_price
 from .registrar import get_registrar
 from .registrar.types import RegistrarError
 from .serializers import CustomDomainSerializer, DomainResultSerializer
+
+logger = logging.getLogger(__name__)
+
+
+def _registrar_error_response(exc) -> Response:
+    """Log the full registrar/AWS error but return only a safe, generic detail
+    (raw Route53/registrar text must not reach the client)."""
+    logger.warning("domain registrar error (%s): %s", getattr(exc, "code", "?"), exc)
+    return Response(
+        {"error": getattr(exc, "code", "REGISTRAR_ERROR"), "detail": "Domain service is temporarily unavailable."},
+        status=status.HTTP_502_BAD_GATEWAY,
+    )
 
 
 def _currency(tenant) -> str:
@@ -87,7 +101,7 @@ def _search_response(tenant, q: str | None) -> Response:
         results = [_priced(reg, primary, currency)]
         suggestions = [_priced(reg, s, currency) for s in reg.suggest(q)]
     except RegistrarError as exc:
-        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+        return _registrar_error_response(exc)
     return Response(
         {
             "results": DomainResultSerializer(results, many=True).data,
@@ -118,7 +132,7 @@ def _checkout_response(tenant, user, data) -> Response:
             )
         cost = reg.get_price(domain)
     except RegistrarError as exc:
-        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+        return _registrar_error_response(exc)
 
     currency = _currency(tenant)
     price_minor, fx = compute_price(cost.cost_minor, currency)
@@ -147,7 +161,7 @@ def _checkout_response(tenant, user, data) -> Response:
         )
     except ProviderError as exc:
         cd.delete()  # roll back the orphaned domain (cascades to DomainSubscription)
-        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+        return _registrar_error_response(exc)
 
     return Response({"checkout_url": session.url, "custom_domain_id": cd.id})
 

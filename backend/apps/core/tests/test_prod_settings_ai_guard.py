@@ -14,6 +14,7 @@ from django.core.exceptions import ImproperlyConfigured
 def _fresh_prod(monkeypatch, provider):
     sys.modules.pop("config.settings.prod", None)
     monkeypatch.setenv("DJANGO_SECRET_KEY", "test-secret")
+    monkeypatch.setenv("DJANGO_ALLOWED_HOSTS", "contentor.app")
     monkeypatch.setenv("BILLING_BYPASS_ENABLED", "false")
     monkeypatch.setenv("LIVE_FAKE_ENABLED", "false")
     monkeypatch.setenv("EMAIL_SINK_ENABLED", "false")

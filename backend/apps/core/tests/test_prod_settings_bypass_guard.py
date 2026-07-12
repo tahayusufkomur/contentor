@@ -22,6 +22,7 @@ def test_prod_settings_refuses_bypass_enabled(monkeypatch):
     # about the BILLING_BYPASS_ENABLED guardrail firing.
     monkeypatch.setenv("BILLING_BYPASS_ENABLED", "true")
     monkeypatch.setenv("DJANGO_SECRET_KEY", "test-secret")
+    monkeypatch.setenv("DJANGO_ALLOWED_HOSTS", "contentor.app")
 
     with pytest.raises(ImproperlyConfigured) as excinfo:
         importlib.import_module("config.settings.prod")
@@ -32,6 +33,7 @@ def test_prod_settings_accepts_bypass_disabled(monkeypatch):
     sys.modules.pop("config.settings.prod", None)
     monkeypatch.setenv("BILLING_BYPASS_ENABLED", "false")
     monkeypatch.setenv("DJANGO_SECRET_KEY", "test-secret")
+    monkeypatch.setenv("DJANGO_ALLOWED_HOSTS", "contentor.app")
     # Ensure dev-only fakes are off so prod guardrails don't fire.
     monkeypatch.setenv("LIVE_FAKE_ENABLED", "false")
     monkeypatch.setenv("EMAIL_SINK_ENABLED", "false")

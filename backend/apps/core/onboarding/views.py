@@ -86,10 +86,14 @@ def creator_signup(request):
         """,
     )
     if not sent:
-        print(f"\n{'=' * 60}")
-        print(f"SIGNUP VERIFICATION for {email}:")
-        print(f"{link}")
-        print(f"{'=' * 60}\n")
+        if settings.DEBUG:
+            print(f"\n{'=' * 60}")
+            print(f"SIGNUP VERIFICATION for {email}:")
+            print(f"{link}")
+            print(f"{'=' * 60}\n")
+        else:
+            # Never write the verification token/link to prod logs.
+            logger.error("Failed to send signup verification email to %s (link withheld from logs)", email)
 
     return Response({"detail": msg(request, "verification_sent")})
 

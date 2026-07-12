@@ -25,6 +25,19 @@ from ..serializers.payments import PaymentInitializeSerializer, PaymentItemInput
 logger = logging.getLogger(__name__)
 
 
+def _provider_error_response(exc, http_status=status.HTTP_400_BAD_REQUEST) -> Response:
+    """Log the full provider error but return only a safe, generic detail — raw
+    Stripe exception text must not reach the client."""
+    logger.warning("billing provider error (%s): %s", getattr(exc, "code", "?"), exc)
+    return Response(
+        {
+            "error": getattr(exc, "code", "PROVIDER_ERROR"),
+            "detail": "Payment could not be processed. Please try again.",
+        },
+        status=http_status,
+    )
+
+
 def _bypass_enabled() -> bool:
     return bool(getattr(settings, "BILLING_BYPASS_ENABLED", False))
 
@@ -84,8 +97,7 @@ def payment_initialize(request):
             return Response(
                 {
                     "detail": (
-                        f"Item not found: content_type={item_data['content_type']},"
-                        f" object_id={item_data['object_id']}."
+                        f"Item not found: content_type={item_data['content_type']}, object_id={item_data['object_id']}."
                     )
                 },
                 status=status.HTTP_404_NOT_FOUND,
@@ -217,10 +229,7 @@ def payment_initialize(request):
         )
     except ProviderError as exc:
         # Leave the pending Payment for audit; surface a clean error.
-        return Response(
-            {"error": exc.code, "detail": str(exc)},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return _provider_error_response(exc)
 
     payment.provider_payment_id = ""
     payment.metadata = {**(payment.metadata or {}), "checkout_session_id": checkout.session_id}
@@ -313,7 +322,7 @@ def payment_item_refund(request, payment_id, item_id):
                 amount_cents=_to_cents(payment_item.item_price),
             )
         except ProviderError as exc:
-            return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return _provider_error_response(exc)
 
     # Mark item as refunded
     payment_item.is_refunded = True
@@ -611,7 +620,7 @@ def subscribe(request):
             },
         )
     except ProviderError as exc:
-        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return _provider_error_response(exc)
 
     return Response(
         {"checkout_url": checkout.url, "plan": plan.name, "status": "pending"},
@@ -661,7 +670,7 @@ def subscription_cancel(request, subscription_id):
                 at_period_end=True,
             )
         except ProviderError as exc:
-            return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return _provider_error_response(exc)
 
     sub.cancel_at_period_end = True
     sub.save(update_fields=["cancel_at_period_end"])
@@ -698,7 +707,7 @@ def subscription_change_plan(request, subscription_id):
                 new_price_id=new_price_id,
             )
         except ProviderError as exc:
-            return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            return _provider_error_response(exc)
 
     sub.pending_plan = new_plan
     sub.save(update_fields=["pending_plan"])
