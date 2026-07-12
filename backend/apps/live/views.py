@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
-from apps.core.permissions import IsCoachOrOwner
+from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
 
 from . import stream_service
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
@@ -30,10 +30,6 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _is_coach_or_owner(user) -> bool:
-    return user.is_authenticated and user.role in ("owner", "coach")
 
 
 def _search_and_order_live_queryset(request, qs):
@@ -60,12 +56,12 @@ def _serialize_list_response(request, qs, serializer_class):
 def live_class_list_create(request):
     if request.method == "GET":
         qs = LiveClass.objects.all()
-        if not _is_coach_or_owner(request.user):
+        if not is_coach_or_owner(request.user):
             qs = qs.filter(status__in=["scheduled", "live", "ended"])
         qs = _search_and_order_live_queryset(request, qs)
         return _serialize_list_response(request, qs, LiveClassSerializer)
 
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = LiveClassCreateSerializer(data=request.data)
@@ -83,7 +79,7 @@ def live_class_detail(request, pk):
         return Response(LiveClassSerializer(live_class).data)
 
     if request.method == "PUT":
-        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+        if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
         serializer = LiveClassCreateSerializer(live_class, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -190,12 +186,12 @@ def live_class_token(request, pk):
 def live_stream_list_create(request):
     if request.method == "GET":
         qs = LiveStream.objects.all()
-        if not _is_coach_or_owner(request.user):
+        if not is_coach_or_owner(request.user):
             qs = qs.filter(status__in=["scheduled", "live", "ended"])
         qs = _search_and_order_live_queryset(request, qs)
         return _serialize_list_response(request, qs, LiveStreamSerializer)
 
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = LiveStreamCreateSerializer(data=request.data)
@@ -213,7 +209,7 @@ def live_stream_detail(request, pk):
         return Response(LiveStreamSerializer(live_stream).data)
 
     if request.method == "PUT":
-        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+        if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
         serializer = LiveStreamCreateSerializer(live_stream, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -322,12 +318,12 @@ def live_stream_token(request, pk):
 def zoom_class_list_create(request):
     if request.method == "GET":
         qs = ZoomClass.objects.all()
-        if not _is_coach_or_owner(request.user):
+        if not is_coach_or_owner(request.user):
             qs = qs.filter(status__in=["scheduled", "live", "ended"])
         qs = _search_and_order_live_queryset(request, qs)
         return _serialize_list_response(request, qs, ZoomClassSerializer)
 
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = ZoomClassCreateSerializer(data=request.data)
@@ -348,7 +344,7 @@ def zoom_class_detail(request, pk):
         return Response(ZoomClassSerializer(zoom_class, context={"request": request}).data)
 
     if request.method == "PUT":
-        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+        if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
         serializer = ZoomClassCreateSerializer(zoom_class, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -370,12 +366,12 @@ def zoom_class_detail(request, pk):
 def onsite_event_list_create(request):
     if request.method == "GET":
         qs = OnsiteEvent.objects.all()
-        if not _is_coach_or_owner(request.user):
+        if not is_coach_or_owner(request.user):
             qs = qs.filter(status__in=["scheduled", "ongoing", "ended"])
         qs = _search_and_order_live_queryset(request, qs)
         return _serialize_list_response(request, qs, OnsiteEventSerializer)
 
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = OnsiteEventCreateSerializer(data=request.data)
@@ -396,7 +392,7 @@ def onsite_event_detail(request, pk):
         return Response(OnsiteEventSerializer(event, context={"request": request}).data)
 
     if request.method == "PUT":
-        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+        if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
         serializer = OnsiteEventCreateSerializer(event, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

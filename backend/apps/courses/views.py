@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
-from apps.core.permissions import IsCoachOrOwner
+from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
 
 from .models import Course, Enrollment, Lesson, Module, Progress, Video
 from .serializers import (
@@ -35,7 +35,7 @@ def course_list_create(request):
     if request.method == "GET":
         return _course_list(request)
     # POST requires coach or owner
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
     return _course_create(request)
 
@@ -44,7 +44,7 @@ def _course_list(request):
     qs = Course.objects.all()
 
     # Unauthenticated users or students only see published courses
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         qs = qs.filter(is_published=True)
 
     # Search filter
@@ -99,14 +99,14 @@ def course_detail(request, slug):
     if request.method == "GET":
         # Unpublished courses require coach or owner
         if not course.is_published and (
-            not request.user.is_authenticated or request.user.role not in ("owner", "coach")
+            not is_coach_or_owner(request.user)
         ):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = CourseDetailSerializer(course, context={"request": request})
         return Response(serializer.data)
 
     if request.method == "PUT":
-        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+        if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
         serializer = CourseCreateUpdateSerializer(course, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

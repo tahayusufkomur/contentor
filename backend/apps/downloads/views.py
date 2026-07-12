@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
-from apps.core.permissions import IsCoachOrOwner
+from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
 from apps.core.storage import generate_presigned_download_url
 
 from .models import DownloadFile
@@ -22,7 +22,7 @@ def download_list_create(request):
     if request.method == "GET":
         qs = DownloadFile.objects.all()
         # Hide orphan rows (file_url="") from non-coach/owner users
-        if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+        if not is_coach_or_owner(request.user):
             qs = qs.exclude(file_url="")
         search = request.query_params.get("search", "").strip()
         if search:
@@ -40,7 +40,7 @@ def download_list_create(request):
         )
 
     # POST requires coach or owner
-    if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
+    if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = DownloadFileCreateSerializer(data=request.data)
