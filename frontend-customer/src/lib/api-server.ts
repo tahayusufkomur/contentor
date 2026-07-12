@@ -22,7 +22,16 @@ export async function serverFetch<T>(
   });
 
   if (!res.ok) {
-    throw new ApiError(res.status, await res.json());
+    // Guard: an error response may have an empty body — don't let res.json()
+    // throw a parse error that masks the real status.
+    const data = await res.json().catch(() => ({ detail: "Request failed" }));
+    throw new ApiError(res.status, data);
+  }
+
+  // Guard: a 204 / empty success body (Cloudflare can strip Content-Length) —
+  // res.json() would throw on the empty stream.
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return undefined as T;
   }
 
   return res.json();
