@@ -32,6 +32,7 @@ from .logo_ai import (
     _validate_pack_mark,
     _validate_pack_palette,
 )
+from .logo_geometry import compile_elements
 
 STAGES = ("icon", "name", "tagline")
 
@@ -244,13 +245,27 @@ def _validate_turn(stage, parsed, cost):
     return TurnResult(str(parsed.message or "")[:600], designs, cost)
 
 
+def _is_traced(elements, paths):
+    """Traced (image-derived) paths never equal what their own elements
+    compile to; authored paths always do (same deterministic pipeline)."""
+    try:
+        return paths != _validate_custom_paths(compile_elements(elements))
+    except Exception:
+        return True
+
+
 def _inherit_traced_paths(draft_designs, result):
-    """A critique that keeps a design 'byte-identical' re-emits its elements
-    and _validate_turn recompiles them — which would silently replace traced
-    (image-derived) paths with authored ones. Any critiqued design whose
-    elements match a draft design inherits that draft's exact paths; genuine
-    redraws keep their recompiled paths. Harmless for non-traced designs
-    (identical elements compile to identical paths)."""
+    """Critique keep-rule. A critique that keeps a design 'byte-identical'
+    re-emits its elements and _validate_turn recompiles them — which would
+    silently replace traced (image-derived) paths with authored ones.
+    Two layers:
+    1. Elements match -> inherit the draft's exact paths (covers authored
+       and traced designs alike; harmless for authored ones since identical
+       elements compile to identical paths).
+    2. A TRACED draft mark is immutable outright — stamped back by position
+       — because the model cannot re-author paths it never wrote, and
+       element-echo matching alone proved brittle in live runs (models
+       drift the JSON they echo, silently degrading the mark)."""
     paths_by_elements = {
         json.dumps(design.get("elements"), sort_keys=True): design["paths"]
         for design in draft_designs
@@ -260,6 +275,28 @@ def _inherit_traced_paths(draft_designs, result):
         kept = paths_by_elements.get(json.dumps(design.get("elements"), sort_keys=True))
         if kept:
             design["paths"] = kept
+    if len(result.designs) == len(draft_designs):
+        for design, draft in zip(result.designs, draft_designs, strict=False):
+            if draft.get("paths") and _is_traced(draft.get("elements"), draft["paths"]):
+                design["paths"] = draft["paths"]
+                design["elements"] = draft["elements"]
+    return result
+
+
+def _stamp_pinned_traced_mark(pinned, result):
+    """Cross-stage persistence: a pinned mark whose paths are traced is
+    immutable at the name/tagline stages — the model can't fine-tune organic
+    traced geometry, only silently replace it with authored primitives (the
+    original bug). Stamp the pinned geometry into every design. Authored
+    pinned marks (paths == their compiled elements) keep the existing
+    recompile/fine-tune flow untouched."""
+    entries = [e for e in _pinned_reference_designs(pinned) if _is_traced(e["elements"], e["paths"])]
+    if not entries:
+        return result
+    chosen = entries[-1]  # the pinned lockup (later stage) wins over the icon pin
+    for design in result.designs:
+        design["paths"] = chosen["paths"]
+        design["elements"] = chosen["elements"]
     return result
 
 
@@ -269,9 +306,9 @@ def _pinned_reference_designs(pinned):
     `lockup` (name -> tagline). Both are client-supplied, untrusted JSON (they
     round-tripped through the browser), so any path data is re-validated
     through _validate_custom_paths (the same injection whitelist every other
-    mark path crosses) before being offered to _inherit_traced_paths. A
-    validation failure just drops that entry — the design falls back to its
-    freshly recompiled, safe paths."""
+    mark path crosses) before being trusted. A validation failure just drops
+    that entry — the design falls back to its freshly recompiled, safe
+    paths."""
     out = []
     mark_elements = pinned.get("mark_elements")
     mark_paths = pinned.get("mark_paths")
@@ -353,11 +390,7 @@ def converse_turn(stage, brief, transcript, pinned, message):
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
     result = _validate_turn(stage, parsed, cost)
-    if stage == "icon":
-        result = apply_image_marks(result)
-    else:
-        result = _inherit_traced_paths(_pinned_reference_designs(pinned), result)
-    return result
+    return apply_image_marks(result) if stage == "icon" else _stamp_pinned_traced_mark(pinned, result)
 
 
 class RefineCritiqueResult:

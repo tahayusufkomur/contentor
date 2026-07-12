@@ -216,12 +216,27 @@ def test_critique_with_unchanged_elements_keeps_traced_paths(monkeypatch):
     assert result.designs[0]["paths"] == _TRACED_PATHS
 
 
-def test_critique_redraw_recompiles_from_new_elements(monkeypatch):
+def test_critique_cannot_replace_a_traced_mark(monkeypatch):
+    """A traced draft mark is immutable through the critique: the model
+    can't re-author paths it never wrote, and element-echo matching alone
+    proved brittle in live runs (drifted elements read as a 'redraw' and
+    silently degraded the Gemini mark to primitives)."""
     draft = _draft_with_traced_paths()
-    # Same element type, different geometry — a genuine redraw.
     redrawn = {**_ICON_TURN["designs"][0], "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]}
     result = _critique(monkeypatch, draft, [redrawn])
-    assert result.designs[0]["paths"] != _TRACED_PATHS
+    assert result.designs[0]["paths"] == _TRACED_PATHS
+    assert result.designs[0]["elements"] == draft["designs"][0]["elements"]
+
+
+def test_critique_redraw_of_an_authored_mark_recompiles(monkeypatch):
+    """Authored drafts (paths == their compiled elements) keep the redraw
+    flow: the critique's new elements win."""
+    parsed = logo_converse._IconTurn.model_validate({"message": "m", "designs": [_ICON_TURN["designs"][0]]})
+    design = logo_converse._validate_icon_design(parsed.designs[0])  # authored: paths match elements
+    draft = {"stage": "icon", "designs": [design], "message": "draft"}
+    redrawn = {**_ICON_TURN["designs"][0], "elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]}
+    result = _critique(monkeypatch, draft, [redrawn])
+    assert result.designs[0]["paths"] != design["paths"]
     assert result.designs[0]["elements"][0]["r"] == 20
 
 
@@ -255,16 +270,34 @@ def test_name_stage_inherits_pinned_icon_traced_paths(monkeypatch, settings):
     assert design["paths"] == _TRACED_PATHS
 
 
-def test_name_stage_recompiles_when_pinned_elements_dont_match(monkeypatch, settings):
+def test_name_stage_stamps_traced_paths_even_when_model_drifts_elements(monkeypatch, settings):
+    """THE fix for the live failure: haiku doesn't reliably echo the pinned
+    elements byte-identically, so a traced pinned mark must be stamped
+    unconditionally — element drift must never cost the coach their Gemini
+    mark."""
     settings.LOGO_AI_MODEL = "claude-sonnet-5"
     _mock_structured(monkeypatch, _NAME_TURN)
     pinned = {
-        "mark_elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 99}],  # different radius
+        "mark_elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 99}],  # != _NAME_TURN's elements
         "mark_paths": _TRACED_PATHS,
     }
     result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
     (design,) = result.designs
-    assert design["paths"] != _TRACED_PATHS
+    assert design["paths"] == _TRACED_PATHS
+
+
+def test_name_stage_authored_pinned_mark_keeps_recompile_flow(monkeypatch, settings):
+    """An authored pinned mark (paths == its own compiled elements) is NOT
+    stamped — the model may legitimately fine-tune authored geometry, so its
+    freshly compiled paths win."""
+    settings.LOGO_AI_MODEL = "claude-sonnet-5"
+    _mock_structured(monkeypatch, _NAME_TURN)
+    authored_elements = [{"type": "circle", "cx": 50, "cy": 50, "r": 20}]
+    authored_paths = logo_converse._validate_custom_paths(logo_converse.compile_elements(authored_elements))
+    pinned = {"mark_elements": authored_elements, "mark_paths": authored_paths}
+    result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
+    (design,) = result.designs
+    assert design["paths"] != authored_paths  # the model's own (r=30) mark, recompiled
 
 
 def test_name_stage_ignores_hostile_pinned_paths(monkeypatch, settings):
