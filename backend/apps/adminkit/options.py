@@ -67,6 +67,13 @@ class ModelAdmin:
     can_delete: bool = True
     permission_classes: tuple | None = None  # overrides the site default
 
+    # ---- image upload fields ----
+    # Fields whose value is an object-storage key set by uploading an image
+    # through `image_upload_url` (see field_schema's "image" type).
+    image_fields: tuple = ()
+    image_upload_url: str = "/api/v1/platform/upload/"
+    image_upload_prefix: str = "images"
+
     def __init__(self, model, site):
         self.model = model
         self.site = site

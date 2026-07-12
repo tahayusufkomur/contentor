@@ -295,6 +295,14 @@ def test_platform_plan_crud_and_actions(superuser):
     assert client.delete(f"/api/v1/platform-admin/platform-plans/{plan_id}/").status_code == 405
 
 
+def test_image_field_schema(superuser):
+    meta = make_client(superuser).get("/api/v1/platform-admin/curated-logos/meta/").json()
+    image_key = next(f for f in meta["form_fields"] if f["name"] == "image_key")
+    assert image_key["type"] == "image"
+    assert image_key["upload_url"] == "/api/v1/platform/upload/"
+    assert image_key["upload_prefix"] == "curated-logos"
+
+
 def test_tenant_admin_excludes_public_and_labels_fk(superuser, restore_public):
     plan = PlatformPlan.objects.create(name="kit-starter", price_monthly="9.00", transaction_fee_pct="8.00")
     Tenant.objects.filter(pk=restore_public.pk).update(plan=plan)

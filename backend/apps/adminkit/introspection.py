@@ -6,7 +6,7 @@ frontends render widgets from:
 
     {"name", "label", "type", "required", "read_only", "help_text",
      "default"?, "choices"?, "max_length"?, "min_value"?, "max_value"?,
-     "decimal_places"?}
+     "decimal_places"?, "upload_url"?, "upload_prefix"?}
 """
 
 from __future__ import annotations
@@ -109,6 +109,10 @@ def field_schema(admin, name, field) -> dict:
         "read_only": bool(field.read_only),
         "help_text": str(field.help_text or ""),
     }
+    if name in getattr(admin, "image_fields", ()):
+        schema["type"] = "image"
+        schema["upload_url"] = admin.image_upload_url
+        schema["upload_prefix"] = admin.image_upload_prefix
     default = _scalar_default(admin.model, name, field)
     if default is not None:
         schema["default"] = default
