@@ -45,13 +45,14 @@ def _search_and_order_live_queryset(request, qs):
 
 
 def _serialize_list_response(request, qs, serializer_class):
+    ctx = {"request": request}
     paginate = "limit" in request.query_params or "offset" in request.query_params
     if paginate:
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, request)
-        serializer = serializer_class(page, many=True)
+        serializer = serializer_class(page, many=True, context=ctx)
         return paginator.get_paginated_response(serializer.data)
-    return Response(serializer_class(qs, many=True).data)
+    return Response(serializer_class(qs, many=True, context=ctx).data)
 
 
 @api_view(["GET", "POST"])
@@ -160,7 +161,8 @@ def live_class_token(request, pk):
 
     try:
         stream_service.upsert_user(request.user)
-        token = stream_service.generate_user_token(request.user.id)
+        # Scope the token to THIS call so it can't be replayed to join others.
+        token = stream_service.generate_user_token(request.user.id, call_cids=[f"default:{live_class.room_name}"])
     except Exception:
         logger.exception("Failed to generate GetStream token for user %s", request.user.id)
         return Response(
@@ -168,7 +170,7 @@ def live_class_token(request, pk):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    is_host = request.user.id == live_class.instructor_id or request.user.role in ("owner", "coach")
+    is_host = request.user.id == live_class.instructor_id or request.user.role == "owner"
 
     return Response(
         {
@@ -289,7 +291,10 @@ def live_stream_token(request, pk):
 
     try:
         stream_service.upsert_user(request.user)
-        token = stream_service.generate_user_token(request.user.id)
+        # Scope the token to THIS stream's call AND chat channel (both are
+        # "livestream:<room_name>") so it can't read/join any other stream.
+        cid = f"livestream:{live_stream.room_name}"
+        token = stream_service.generate_user_token(request.user.id, call_cids=[cid], channel_cids=[cid])
     except Exception:
         logger.exception("Failed to generate GetStream token for user %s", request.user.id)
         return Response(
@@ -297,7 +302,7 @@ def live_stream_token(request, pk):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    is_host = request.user.id == live_stream.instructor_id or request.user.role in ("owner", "coach")
+    is_host = request.user.id == live_stream.instructor_id or request.user.role == "owner"
 
     return Response(
         {
@@ -328,7 +333,10 @@ def zoom_class_list_create(request):
     serializer = ZoomClassCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     zoom_class = serializer.save(instructor=request.user)
-    return Response(ZoomClassSerializer(zoom_class).data, status=status.HTTP_201_CREATED)
+    return Response(
+        ZoomClassSerializer(zoom_class, context={"request": request}).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["GET", "PUT", "DELETE"])
@@ -337,7 +345,7 @@ def zoom_class_detail(request, pk):
     zoom_class = get_object_or_404(ZoomClass, pk=pk)
 
     if request.method == "GET":
-        return Response(ZoomClassSerializer(zoom_class).data)
+        return Response(ZoomClassSerializer(zoom_class, context={"request": request}).data)
 
     if request.method == "PUT":
         if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
@@ -345,7 +353,7 @@ def zoom_class_detail(request, pk):
         serializer = ZoomClassCreateSerializer(zoom_class, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(ZoomClassSerializer(zoom_class).data)
+        return Response(ZoomClassSerializer(zoom_class, context={"request": request}).data)
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
@@ -373,7 +381,10 @@ def onsite_event_list_create(request):
     serializer = OnsiteEventCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     event = serializer.save(instructor=request.user)
-    return Response(OnsiteEventSerializer(event).data, status=status.HTTP_201_CREATED)
+    return Response(
+        OnsiteEventSerializer(event, context={"request": request}).data,
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["GET", "PUT", "DELETE"])
@@ -382,7 +393,7 @@ def onsite_event_detail(request, pk):
     event = get_object_or_404(OnsiteEvent, pk=pk)
 
     if request.method == "GET":
-        return Response(OnsiteEventSerializer(event).data)
+        return Response(OnsiteEventSerializer(event, context={"request": request}).data)
 
     if request.method == "PUT":
         if not request.user.is_authenticated or request.user.role not in ("owner", "coach"):
@@ -390,7 +401,7 @@ def onsite_event_detail(request, pk):
         serializer = OnsiteEventCreateSerializer(event, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(OnsiteEventSerializer(event).data)
+        return Response(OnsiteEventSerializer(event, context={"request": request}).data)
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":

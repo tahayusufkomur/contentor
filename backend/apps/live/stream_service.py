@@ -145,8 +145,23 @@ def stop_livestream(room_name):
         logger.exception("Failed to end livestream %s", room_name)
 
 
-def generate_user_token(user_id):
+def generate_user_token(user_id, call_cids=None, channel_cids=None):
+    """Issue a GetStream token for a user.
+
+    When ``call_cids`` and/or ``channel_cids`` are given the token is SCOPED to
+    exactly those calls/chat channels (format ``"<type>:<id>"``), so a token
+    handed out for one class/stream cannot be replayed to join or read any
+    other. Without scopes it falls back to a broad user token (kept only for
+    callers that legitimately need one). The scoped path uses the SDK's
+    lower-level token builder because it is the only one accepting channel_cids.
+    """
     if _fake():
         return fake_stream_service.generate_user_token(user_id)
     client = get_client()
+    if call_cids or channel_cids:
+        return client._create_token(
+            user_id=_user_id(user_id),
+            call_cids=call_cids,
+            channel_cids=channel_cids,
+        )
     return client.create_token(user_id=_user_id(user_id))

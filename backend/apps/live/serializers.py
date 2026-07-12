@@ -10,6 +10,23 @@ from apps.tags.serializers import TagSerializer, tag_ids_field
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 
+def _viewer_has_access(context, instance):
+    """True if the serializer's viewer may see the join/location secrets.
+
+    Reuses ContentAccessService (owner/coach, free content, or a purchase all
+    grant access). Missing request/user -> no access, so anonymous callers only
+    ever see the secrets of free content."""
+    from apps.core.access import ContentAccessService
+
+    request = context.get("request")
+    user = getattr(request, "user", None)
+    # Anonymous users only see the secrets of free content (check_access itself
+    # assumes an authenticated user for the purchase lookup).
+    if user is None or not getattr(user, "is_authenticated", False):
+        return getattr(instance, "pricing_type", "free") == "free"
+    return ContentAccessService().check_access(user, instance)
+
+
 def _filter_option_ids_field():
     return serializers.PrimaryKeyRelatedField(
         many=True,
@@ -307,6 +324,14 @@ class ZoomClassSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Paid join details are visible only to viewers with access.
+        if not _viewer_has_access(self.context, instance):
+            data["zoom_link"] = ""
+            data["zoom_meeting_id"] = ""
+        return data
+
 
 class ZoomClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
@@ -352,6 +377,14 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "tags",
         ]
         read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # The exact address is visible only to viewers with access; the general
+        # "location" stays public so the event can still be advertised.
+        if not _viewer_has_access(self.context, instance):
+            data["address"] = ""
+        return data
 
 
 class OnsiteEventCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
