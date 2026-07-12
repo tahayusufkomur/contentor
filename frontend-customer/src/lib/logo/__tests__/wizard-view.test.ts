@@ -3,6 +3,7 @@ import { chatReducer, initialChatState } from "@/lib/logo/chat-state";
 import type { ChatState } from "@/lib/logo/chat-state";
 import {
   activeStep,
+  briefTaglineButtonLabel,
   currentCandidates,
   currentSelection,
   stepStatus,
@@ -70,7 +71,10 @@ describe("stepStatus", () => {
       designs: [design("wordmark")],
     });
     s = chatReducer(s, { type: "pin", design: design("wordmark") }); // -> tagline
-    s = chatReducer(s, { type: "skip_tagline" }); // done
+    s = chatReducer(s, {
+      type: "use_brief_tagline",
+      tagline: "Move every day",
+    }); // done
     for (const step of ["describe", "icon", "name", "tagline"] as const) {
       expect(stepStatus(s, step)).toBe("done");
     }
@@ -129,5 +133,31 @@ describe("currentSelection", () => {
       kind: "lockup",
       design: design("wordmark"),
     });
+  });
+});
+
+describe("briefTaglineButtonLabel", () => {
+  it("returns null when the brief has no tagline", () => {
+    expect(briefTaglineButtonLabel(undefined)).toBeNull();
+    expect(briefTaglineButtonLabel("")).toBeNull();
+    expect(briefTaglineButtonLabel("   ")).toBeNull();
+  });
+
+  it("returns a quoted label for a short tagline", () => {
+    expect(briefTaglineButtonLabel("Move every day")).toBe(
+      'Use "Move every day"',
+    );
+  });
+
+  it("trims surrounding whitespace before quoting", () => {
+    expect(briefTaglineButtonLabel("  Move every day  ")).toBe(
+      'Use "Move every day"',
+    );
+  });
+
+  it("truncates a long tagline with an ellipsis", () => {
+    const long = "A".repeat(60);
+    const label = briefTaglineButtonLabel(long);
+    expect(label).toBe(`Use "${"A".repeat(40)}…"`);
   });
 });

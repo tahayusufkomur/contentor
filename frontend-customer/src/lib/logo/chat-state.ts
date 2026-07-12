@@ -47,7 +47,7 @@ export type ChatEvent =
   | { type: "final_received"; message: string; designs: ConverseDesign[] }
   | { type: "turn_failed"; notice: string }
   | { type: "pin"; design: ConverseDesign }
-  | { type: "skip_tagline" }
+  | { type: "use_brief_tagline"; tagline: string }
   | { type: "back"; stage: ChatStage }
   // Restore a persisted conversation (v2 session) or reset to a blank chat
   // (snapshot === null). Transient status/done always start fresh.
@@ -96,8 +96,14 @@ export function chatReducer(state: ChatState, event: ChatEvent): ChatState {
       if (state.stage === "name")
         return { ...state, stage: "tagline", pinnedLockup: event.design };
       return { ...state, pinnedLockup: event.design, done: true };
-    case "skip_tagline":
-      return { ...state, done: true };
+    case "use_brief_tagline":
+      return {
+        ...state,
+        pinnedLockup: state.pinnedLockup
+          ? { ...state.pinnedLockup, tagline: event.tagline }
+          : state.pinnedLockup,
+        done: true,
+      };
     case "back":
       if (event.stage === "icon")
         return {

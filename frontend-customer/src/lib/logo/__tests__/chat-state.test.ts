@@ -51,12 +51,15 @@ describe("chatReducer", () => {
     expect(s.done).toBe(true);
   });
 
-  it("skip_tagline finishes with the pinned lockup", () => {
+  it("use_brief_tagline finishes with the brief's tagline applied to the pinned lockup", () => {
     let s = chatReducer(initialChatState, { type: "pin", design });
     s = chatReducer(s, { type: "pin", design });
-    s = chatReducer(s, { type: "skip_tagline" });
+    s = chatReducer(s, {
+      type: "use_brief_tagline",
+      tagline: "Move every day",
+    });
     expect(s.done).toBe(true);
-    expect(s.pinnedLockup).toBe(design);
+    expect(s.pinnedLockup).toEqual({ ...design, tagline: "Move every day" });
   });
 
   it("back to icon clears later pins", () => {

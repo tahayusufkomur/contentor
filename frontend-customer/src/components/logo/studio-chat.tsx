@@ -29,6 +29,7 @@ import {
 } from "@/lib/logo/composer";
 import {
   activeStep,
+  briefTaglineButtonLabel,
   currentCandidates,
   currentSelection,
   stepStatus,
@@ -85,16 +86,16 @@ function DesignCard({
   design,
   brandName,
   canPick,
-  showSkipTagline,
+  briefTaglineLabel,
   onPick,
-  onSkipTagline,
+  onUseBriefTagline,
 }: {
   design: ConverseDesign;
   brandName: string;
   canPick: boolean;
-  showSkipTagline: boolean;
+  briefTaglineLabel: string | null;
   onPick: () => void;
-  onSkipTagline: () => void;
+  onUseBriefTagline: () => void;
 }) {
   const icon = isIconDesign(design);
   const recipe = icon
@@ -127,14 +128,14 @@ function DesignCard({
           >
             Pick this
           </Button>
-          {showSkipTagline && (
+          {briefTaglineLabel && (
             <Button
               type="button"
               size="sm"
               variant="outline"
-              onClick={onSkipTagline}
+              onClick={onUseBriefTagline}
             >
-              Skip tagline
+              {briefTaglineLabel}
             </Button>
           )}
         </div>
@@ -448,9 +449,18 @@ export function StudioChat({
                       design={design}
                       brandName={brandName}
                       canPick={canPick}
-                      showSkipTagline={state.stage === "tagline"}
+                      briefTaglineLabel={
+                        state.stage === "tagline"
+                          ? briefTaglineButtonLabel(brief.tagline)
+                          : null
+                      }
                       onPick={() => dispatch({ type: "pin", design })}
-                      onSkipTagline={() => dispatch({ type: "skip_tagline" })}
+                      onUseBriefTagline={() =>
+                        dispatch({
+                          type: "use_brief_tagline",
+                          tagline: (brief.tagline ?? "").trim(),
+                        })
+                      }
                     />
                   ))}
                 </div>
