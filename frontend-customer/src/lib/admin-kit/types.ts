@@ -19,6 +19,7 @@ export type FieldType =
   | "json"
   | "fk"
   | "m2m"
+  | "image"
   | "computed";
 
 export interface ChoiceOption {
@@ -39,6 +40,10 @@ export interface FieldSchema {
   min_value?: number;
   max_value?: number;
   decimal_places?: number;
+  /** image fields: where the widget POSTs the multipart upload */
+  upload_url?: string;
+  /** image fields: storage sub-prefix sent with the upload */
+  upload_prefix?: string;
 }
 
 export interface ColumnSchema {

@@ -6,7 +6,8 @@
 //
 // Cell renderers (schema → table cell) and form widgets (schema → input).
 
-import { Check, Minus } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, ImageIcon, Loader2, Minus, Upload } from "lucide-react";
 
 import type {
   ChoiceOption,
@@ -16,7 +17,13 @@ import type {
   RowValue,
 } from "@/lib/admin-kit/types";
 
-import { KitInput, KitSelect, KitTextarea, KitToggle } from "./primitives";
+import {
+  KitButton,
+  KitInput,
+  KitSelect,
+  KitTextarea,
+  KitToggle,
+} from "./primitives";
 
 function isFkValue(value: RowValue): value is FkValue {
   return (
@@ -80,6 +87,97 @@ export function CellValue({
         </span>
       );
   }
+}
+
+function ImageFieldInput({
+  field,
+  value,
+  onChange,
+  disabled,
+}: {
+  field: FieldSchema;
+  value: unknown;
+  onChange: (value: unknown) => void;
+  disabled: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  const key = typeof value === "string" ? value : "";
+  const basename = key ? key.split("/").pop() : "";
+
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !field.upload_url) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      if (field.upload_prefix) body.append("prefix", field.upload_prefix);
+      const res = await fetch(field.upload_url, {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          detail?: string;
+        } | null;
+        throw new Error(data?.detail ?? `Upload failed (${res.status}).`);
+      }
+      const data = (await res.json()) as { key: string; url: string };
+      onChange(data.key);
+      setPreview(data.url);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {preview ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={preview}
+          alt={field.label}
+          className="h-24 w-24 rounded-md border bg-white object-contain"
+        />
+      ) : basename ? (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <ImageIcon className="h-3.5 w-3.5" /> {basename}
+        </p>
+      ) : null}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png"
+        className="hidden"
+        onChange={onFile}
+        disabled={disabled}
+      />
+      <KitButton
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={disabled || uploading}
+      >
+        {uploading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Upload className="h-4 w-4" />
+        )}
+        {basename || preview ? "Replace PNG" : "Upload PNG"}
+      </KitButton>
+      {uploadError && (
+        <p className="text-xs text-destructive">{uploadError}</p>
+      )}
+    </div>
+  );
 }
 
 interface FieldInputProps {
@@ -164,6 +262,15 @@ export function FieldInput({
               </option>
             ))}
           </KitSelect>
+        );
+      case "image":
+        return (
+          <ImageFieldInput
+            field={field}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+          />
         );
       case "integer":
         return (
