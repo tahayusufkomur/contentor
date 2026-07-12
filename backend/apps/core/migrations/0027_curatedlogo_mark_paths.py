@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0026_curatedlogo'),
+        ("core", "0026_curatedlogo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='curatedlogo',
-            name='mark_paths',
-            field=models.JSONField(blank=True, help_text='Traced vector mark ({d, fill} dicts), or null when the PNG did not vectorize cleanly.', null=True),
+            model_name="curatedlogo",
+            name="mark_paths",
+            field=models.JSONField(
+                blank=True,
+                help_text="Traced vector mark ({d, fill} dicts), or null when the PNG did not vectorize cleanly.",
+                null=True,
+            ),
         ),
     ]
