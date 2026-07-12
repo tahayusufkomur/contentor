@@ -10,7 +10,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements/ requirements/
-RUN pip install --no-cache-dir -r requirements/dev.txt
+# Dev builds install dev.txt (test tooling); prod compose passes prod.txt so
+# production ships Sentry/Prometheus and NOT pytest/ruff/mypy/ipdb.
+ARG PIP_REQUIREMENTS=dev.txt
+RUN pip install --no-cache-dir -r requirements/${PIP_REQUIREMENTS}
 
 # Dev only (dev compose passes INSTALL_CLAUDE_CLI=1; prod never does): the
 # Ask Contentor help bot's local provider (HELP_BOT_PROVIDER=cli) shells out

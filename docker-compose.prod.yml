@@ -83,6 +83,9 @@ services:
   django:
     build:
       context: ./backend
+      args:
+        # Prod ships Sentry/Prometheus and omits the dev test tooling.
+        PIP_REQUIREMENTS: prod.txt
     container_name: contentor-django
     restart: unless-stopped
     mem_limit: 512m
@@ -126,6 +129,8 @@ services:
   celery-worker:
     build:
       context: ./backend
+      args:
+        PIP_REQUIREMENTS: prod.txt
     container_name: contentor-celery-worker
     restart: unless-stopped
     mem_limit: 384m
@@ -143,6 +148,8 @@ services:
   celery-beat:
     build:
       context: ./backend
+      args:
+        PIP_REQUIREMENTS: prod.txt
     container_name: contentor-celery-beat
     restart: unless-stopped
     mem_limit: 160m

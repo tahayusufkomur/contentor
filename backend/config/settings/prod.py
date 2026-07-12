@@ -90,3 +90,17 @@ if EMAIL_SINK_ENABLED:  # noqa: F405
 AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
 if AI_PROVIDER == "cli":
     raise ImproperlyConfigured("AI_PROVIDER=cli must never run in production; use 'anthropic'.")
+
+# --- Error monitoring (Sentry) ------------------------------------------------
+# The SDK ships in prod.txt; it stays a no-op until SENTRY_DSN is set in
+# .env.prod. Import inside the guard because sentry-sdk is not in dev.txt.
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment="production",
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
+        send_default_pii=False,
+    )
