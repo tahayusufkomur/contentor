@@ -67,6 +67,8 @@ interface StudioChatProps {
   brief: Brief;
   brandName: string;
   status: LogoAiStatus | null;
+  /** Prefills the Describe input (e.g. a curated logo's generation prompt). */
+  seedPrompt?: string;
   onUseDesign: (recipe: LogoRecipe, elements?: BrandPackElement[]) => void;
   onStatusChange: (turnsRemaining: number) => void;
   /** Return to the Ideas wall. */
@@ -186,12 +188,13 @@ export function StudioChat({
   brief,
   brandName,
   status,
+  seedPrompt,
   onUseDesign,
   onStatusChange,
   onClose,
 }: StudioChatProps) {
   const [input, setInput] = useState("");
-  const [describeInput, setDescribeInput] = useState("");
+  const [describeInput, setDescribeInput] = useState(seedPrompt ?? "");
   const bannerState = deriveAiBannerState({ status });
   const turnsRemaining = status?.turns_remaining ?? 0;
   const step = activeStep(state);

@@ -108,6 +108,7 @@ export function LogoStudio({
   const [logoAiStatus, setLogoAiStatus] = useState<LogoAiStatus | null>(null);
   const [chat, chatDispatch] = useReducer(chatReducer, initialChatState);
   const [chatOpen, setChatOpen] = useState(false);
+  const [chatSeed, setChatSeed] = useState<string | null>(null);
   // Legacy AI Brand Pack (old saved sessions only): kept solely so a restored
   // session round-trips its pack and re-renders its wall as ordinary cards;
   // the studio never fetches or sets these anew.
@@ -480,8 +481,8 @@ export function LogoStudio({
   }
 
   function handleCreateFromCurated(logo: CuratedLogo) {
-    // Completed in Task 5 (seed the chat with logo.prompt). Stub for now:
     chatDispatch({ type: "hydrate", snapshot: null });
+    setChatSeed(logo.prompt);
     setChatOpen(true);
   }
 
@@ -642,6 +643,7 @@ export function LogoStudio({
                     brief={brief}
                     brandName={brief.brandName || config.brand_name}
                     status={logoAiStatus}
+                    seedPrompt={chatSeed ?? undefined}
                     onUseDesign={(chosen, elements) => {
                       handleCustomize(chosen, elements);
                       setChatOpen(false);
@@ -651,7 +653,10 @@ export function LogoStudio({
                         s ? { ...s, turns_remaining: turns } : s,
                       )
                     }
-                    onClose={() => setChatOpen(false)}
+                    onClose={() => {
+                      setChatOpen(false);
+                      setChatSeed(null);
+                    }}
                   />
                 ) : (
                   <StudioEntrance
