@@ -223,3 +223,80 @@ def test_critique_redraw_recompiles_from_new_elements(monkeypatch):
     result = _critique(monkeypatch, draft, [redrawn])
     assert result.designs[0]["paths"] != _TRACED_PATHS
     assert result.designs[0]["elements"][0]["r"] == 20
+
+
+# --- pinned traced-path inheritance across stage transitions ---------------
+# _NAME_TURN's design spreads _ICON_TURN["designs"][0] verbatim, so its
+# "elements" is exactly [{"type": "circle", "cx": 50, "cy": 50, "r": 30}] —
+# the same fixture used below as the "pinned" side of the match.
+_TRACED_PATHS = [{"d": "M 10.0 10.0 C 20.0 10.0 30.0 20.0 30.0 30.0 Z", "fill": "mark"}]
+
+
+def _validated_icon_elements():
+    """The elements a real client actually echoes back as `pinned.mark_elements`
+    — already normalized by _validate_pack_mark (floats, explicit fill/opacity/
+    cut), exactly what the icon stage's API response hands back. Raw
+    _ICON_TURN elements (bare ints, no defaults) would never json-match the
+    equally-normalized elements _NAME_TURN's design recompiles to below (see
+    _draft_with_traced_paths above for the same normalization gotcha)."""
+    parsed = logo_converse._IconTurn.model_validate(_ICON_TURN)
+    return logo_converse._validate_icon_design(parsed.designs[0])["elements"]
+
+
+def test_name_stage_inherits_pinned_icon_traced_paths(monkeypatch, settings):
+    settings.LOGO_AI_MODEL = "claude-sonnet-5"
+    _mock_structured(monkeypatch, _NAME_TURN)
+    pinned = {
+        "mark_elements": _validated_icon_elements(),
+        "mark_paths": _TRACED_PATHS,
+    }
+    result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
+    (design,) = result.designs
+    assert design["paths"] == _TRACED_PATHS
+
+
+def test_name_stage_recompiles_when_pinned_elements_dont_match(monkeypatch, settings):
+    settings.LOGO_AI_MODEL = "claude-sonnet-5"
+    _mock_structured(monkeypatch, _NAME_TURN)
+    pinned = {
+        "mark_elements": [{"type": "circle", "cx": 50, "cy": 50, "r": 99}],  # different radius
+        "mark_paths": _TRACED_PATHS,
+    }
+    result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
+    (design,) = result.designs
+    assert design["paths"] != _TRACED_PATHS
+
+
+def test_name_stage_ignores_hostile_pinned_paths(monkeypatch, settings):
+    settings.LOGO_AI_MODEL = "claude-sonnet-5"
+    _mock_structured(monkeypatch, _NAME_TURN)
+    hostile = [{"d": 'M0 0 url("x") Z', "fill": "mark"}]  # fails the injection whitelist
+    pinned = {"mark_elements": _ICON_TURN["designs"][0]["elements"], "mark_paths": hostile}
+    result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
+    (design,) = result.designs
+    assert design["paths"] != hostile
+    assert design["paths"]  # still compiled through the trust boundary, not empty
+
+
+def test_name_stage_without_mark_paths_recompiles_as_before(monkeypatch, settings):
+    """No mark_paths sent at all (old client, or icon stage never picked) —
+    byte-identical to pre-fix behavior."""
+    settings.LOGO_AI_MODEL = "claude-sonnet-5"
+    _mock_structured(monkeypatch, _NAME_TURN)
+    pinned = {"mark_elements": _ICON_TURN["designs"][0]["elements"]}
+    result = logo_converse.converse_turn("name", {"brand_name": "Flow"}, [], pinned, "go")
+    (design,) = result.designs
+    assert design["paths"]
+    assert design["paths"] != _TRACED_PATHS
+
+
+def test_tagline_stage_inherits_pinned_lockup_traced_paths(monkeypatch, settings):
+    """The name -> tagline half: pinned.lockup carries the whole previously-
+    picked design, paths included (no frontend change needed for this half)."""
+    settings.LOGO_AI_MODEL = "claude-sonnet-5"
+    tagline_turn = {**_NAME_TURN, "message": "One line to finish it."}
+    _mock_structured(monkeypatch, tagline_turn)
+    pinned = {"lockup": {**_NAME_TURN["designs"][0], "elements": _validated_icon_elements(), "paths": _TRACED_PATHS}}
+    result = logo_converse.converse_turn("tagline", {"brand_name": "Flow"}, [], pinned, "go")
+    (design,) = result.designs
+    assert design["paths"] == _TRACED_PATHS

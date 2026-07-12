@@ -263,6 +263,32 @@ def _inherit_traced_paths(draft_designs, result):
     return result
 
 
+def _pinned_reference_designs(pinned):
+    """The client's `pinned` payload may carry a prior stage's traced mark —
+    `mark_paths` (icon -> name) or the whole previous lockup design under
+    `lockup` (name -> tagline). Both are client-supplied, untrusted JSON (they
+    round-tripped through the browser), so any path data is re-validated
+    through _validate_custom_paths (the same injection whitelist every other
+    mark path crosses) before being offered to _inherit_traced_paths. A
+    validation failure just drops that entry — the design falls back to its
+    freshly recompiled, safe paths."""
+    out = []
+    mark_elements = pinned.get("mark_elements")
+    mark_paths = pinned.get("mark_paths")
+    if mark_elements and mark_paths:
+        validated = _validate_custom_paths(mark_paths)
+        if validated:
+            out.append({"elements": mark_elements, "paths": validated})
+    lockup = pinned.get("lockup") if isinstance(pinned.get("lockup"), dict) else {}
+    lockup_elements = lockup.get("elements")
+    lockup_paths = lockup.get("paths")
+    if lockup_elements and lockup_paths:
+        validated = _validate_custom_paths(lockup_paths)
+        if validated:
+            out.append({"elements": lockup_elements, "paths": validated})
+    return out
+
+
 def apply_image_marks(result):
     """Icon-stage post-step (generate -> vectorize): draw each candidate's
     image_prompt with the image model, trace it, and swap the traced paths
@@ -329,6 +355,8 @@ def converse_turn(stage, brief, transcript, pinned, message):
     result = _validate_turn(stage, parsed, cost)
     if stage == "icon":
         result = apply_image_marks(result)
+    else:
+        result = _inherit_traced_paths(_pinned_reference_designs(pinned), result)
     return result
 
 
