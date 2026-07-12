@@ -55,11 +55,12 @@ def _cost(payload):
         return _FLAT_IMAGE_USD
 
 
-def _generate_one(prompt):
-    """One prompt -> (png_bytes | None, billed attempt cost). Never raises."""
+def _generate_one(prompt, model=None):
+    """One prompt -> (png_bytes | None, billed attempt cost). Never raises.
+    `model` overrides settings.LOGO_IMAGE_MODEL (used by the dev debug page)."""
     try:
         response = requests.post(
-            _ENDPOINT.format(model=settings.LOGO_IMAGE_MODEL),
+            _ENDPOINT.format(model=model or settings.LOGO_IMAGE_MODEL),
             headers={"x-goog-api-key": settings.GEMINI_API_KEY},
             json={
                 "contents": [{"parts": [{"text": prompt}]}],
