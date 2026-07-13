@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a fitness-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Fitness Academy",
     "slug": "demo-fitness",
@@ -13,149 +15,116 @@ TENANT = {
     "domain": "demo-fitness.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Fitness Academy",
-    "theme": "ember",
-    "dark_mode_enabled": True,
-    "font_family": "Inter",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Training", "href": "/courses"},
-        "show_login": True,
-        "layout": "classic",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Transform Your Body, Elevate Your Life",
-            "subheadline": (
-                "Science-backed fitness programs designed to build strength, "
-                "burn fat, and boost your confidence. Train anywhere, anytime "
-                "with expert-led video workouts."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/fitness_6.jpg",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Fitness Academy",
+        "theme": "ember",
+        "font_family": "Inter",
+        "navbar_config": {
+            "cta": {"text": "Start Training"},
+            "layout": "classic",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Certified personal trainer and sports science graduate with "
-                "over 8 years of coaching experience. I specialize in "
-                "functional training, HIIT, and strength programming for all "
-                "fitness levels. My mission is to make professional-grade "
-                "training accessible to everyone — no gym required."
-            ),
-            "image_url": "demo/photos/fitness_7.jpg",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Marcus T.",
-                    "text": (
-                        "The Total Body Transformation program completely "
-                        "changed my routine. I lost 12 kg in three months "
-                        "and feel stronger than ever. The structured approach "
-                        "kept me accountable every single day."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Sarah L.",
-                    "text": (
-                        "As a busy mom, I needed workouts I could do at home. "
-                        "The HIIT Power Program fits perfectly into my "
-                        "schedule — 30 minutes, maximum results. I have so "
-                        "much more energy now!"
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "David K.",
-                    "text": (
-                        "The Strength & Conditioning course gave me the "
-                        "foundation I was missing. My lifts have improved "
-                        "dramatically and I finally understand proper form "
-                        "and programming."
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "Do I need any equipment?",
-                    "a": (
-                        "The Total Body Transformation course requires no "
-                        "equipment at all — just your bodyweight. The HIIT "
-                        "and Strength programs recommend a set of dumbbells "
-                        "and a resistance band, but we always show bodyweight "
-                        "alternatives."
-                    ),
-                },
-                {
-                    "q": "I'm a complete beginner — is this for me?",
-                    "a": (
-                        "Absolutely! Each program includes form breakdowns "
-                        "and beginner modifications for every exercise. "
-                        "Start with the free Total Body Transformation "
-                        "course and progress at your own pace."
-                    ),
-                },
-                {
-                    "q": "Can I access the workouts on my phone?",
-                    "a": (
-                        "Yes! The platform is fully responsive. Stream "
-                        "lessons on your phone, tablet, or computer — "
-                        "perfect for training at home, in the gym, or "
-                        "while traveling."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enroll, you get lifetime access to the "
-                        "course material. Rewatch lessons as many times as "
-                        "you like and train at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Start Training?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Transform Your Body, Elevate Your Life",
+                "subheadline": (
+                    "Science-backed fitness programs designed to build strength, "
+                    "burn fat, and boost your confidence. Train anywhere, anytime "
+                    "with expert-led video workouts."
+                ),
+                "bg_image_url": "demo/photos/fitness_6.jpg",
+            },
+            "about": {
+                "body": (
+                    "Certified personal trainer and sports science graduate with "
+                    "over 8 years of coaching experience. I specialize in "
+                    "functional training, HIIT, and strength programming for all "
+                    "fitness levels. My mission is to make professional-grade "
+                    "training accessible to everyone — no gym required."
+                ),
+                "image_url": "demo/photos/fitness_7.jpg",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Marcus T.",
+                        "text": (
+                            "The Total Body Transformation program completely "
+                            "changed my routine. I lost 12 kg in three months "
+                            "and feel stronger than ever. The structured approach "
+                            "kept me accountable every single day."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Sarah L.",
+                        "text": (
+                            "As a busy mom, I needed workouts I could do at home. "
+                            "The HIIT Power Program fits perfectly into my "
+                            "schedule — 30 minutes, maximum results. I have so "
+                            "much more energy now!"
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "David K.",
+                        "text": (
+                            "The Strength & Conditioning course gave me the "
+                            "foundation I was missing. My lifts have improved "
+                            "dramatically and I finally understand proper form "
+                            "and programming."
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "Do I need any equipment?",
+                        "a": (
+                            "The Total Body Transformation course requires no "
+                            "equipment at all — just your bodyweight. The HIIT "
+                            "and Strength programs recommend a set of dumbbells "
+                            "and a resistance band, but we always show bodyweight "
+                            "alternatives."
+                        ),
+                    },
+                    {
+                        "q": "I'm a complete beginner — is this for me?",
+                        "a": (
+                            "Absolutely! Each program includes form breakdowns "
+                            "and beginner modifications for every exercise. "
+                            "Start with the free Total Body Transformation "
+                            "course and progress at your own pace."
+                        ),
+                    },
+                    {
+                        "q": "Can I access the workouts on my phone?",
+                        "a": (
+                            "Yes! The platform is fully responsive. Stream "
+                            "lessons on your phone, tablet, or computer — "
+                            "perfect for training at home, in the gym, or "
+                            "while traveling."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enroll, you get lifetime access to the "
+                            "course material. Rewatch lessons as many times as "
+                            "you like and train at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Start Training?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {

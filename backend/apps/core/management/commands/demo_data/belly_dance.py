@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a belly-dance-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Belly Dance Academy",
     "slug": "demo-bellydance",
@@ -13,142 +15,109 @@ TENANT = {
     "domain": "demo-bellydance.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Belly Dance Academy",
-    "theme": "sunset",
-    "dark_mode_enabled": True,
-    "font_family": "Poppins",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Dancing", "href": "/courses"},
-        "show_login": True,
-        "layout": "centered",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Discover the Art of Belly Dance",
-            "subheadline": (
-                "Express yourself through the ancient art of belly dance. "
-                "Join our community of dancers and unlock your inner rhythm."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/belly_dance_6.jpg",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Belly Dance Academy",
+        "theme": "sunset",
+        "font_family": "Poppins",
+        "navbar_config": {
+            "cta": {"text": "Start Dancing"},
+            "layout": "centered",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Passionate belly dance instructor with over 10 years of "
-                "experience in Oriental, Tribal Fusion, and Classical Egyptian "
-                "styles. I believe dance is for everyone — no experience needed, "
-                "just an open heart and a love for movement."
-            ),
-            "image_url": "demo/photos/belly_dance_7.jpg",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Ayşe K.",
-                    "text": (
-                        "This academy transformed the way I move. The "
-                        "structured lessons made it so easy to build "
-                        "confidence in my shimmies and isolations."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Leila M.",
-                    "text": (
-                        "I never imagined I could learn belly dance online, "
-                        "but the video quality and detailed breakdowns are "
-                        "incredible. I practice every single day!"
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Nadia S.",
-                    "text": (
-                        "The choreography course is a masterpiece. I went "
-                        "from feeling lost on stage to performing with real "
-                        "expression and musicality."
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "Do I need prior dance experience?",
-                    "a": (
-                        "Not at all! Our Belly Dance Basics course is "
-                        "designed for absolute beginners. We start with "
-                        "posture and simple hip movements before building "
-                        "up to combinations."
-                    ),
-                },
-                {
-                    "q": "What do I need to get started?",
-                    "a": (
-                        "All you need is comfortable clothing that lets you "
-                        "see your hip movements, a small open space, and a "
-                        "willingness to have fun. A hip scarf is optional "
-                        "but adds to the experience!"
-                    ),
-                },
-                {
-                    "q": "Can I access the courses on mobile?",
-                    "a": (
-                        "Yes! The platform is fully responsive. You can "
-                        "stream lessons on your phone, tablet, or computer "
-                        "— perfect for practicing anywhere."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enroll, you get lifetime access to the "
-                        "course material. Rewatch lessons as many times as "
-                        "you like and learn at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Start Dancing?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Discover the Art of Belly Dance",
+                "subheadline": (
+                    "Express yourself through the ancient art of belly dance. "
+                    "Join our community of dancers and unlock your inner rhythm."
+                ),
+                "bg_image_url": "demo/photos/belly_dance_6.jpg",
+            },
+            "about": {
+                "body": (
+                    "Passionate belly dance instructor with over 10 years of "
+                    "experience in Oriental, Tribal Fusion, and Classical Egyptian "
+                    "styles. I believe dance is for everyone — no experience needed, "
+                    "just an open heart and a love for movement."
+                ),
+                "image_url": "demo/photos/belly_dance_7.jpg",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Ayşe K.",
+                        "text": (
+                            "This academy transformed the way I move. The "
+                            "structured lessons made it so easy to build "
+                            "confidence in my shimmies and isolations."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Leila M.",
+                        "text": (
+                            "I never imagined I could learn belly dance online, "
+                            "but the video quality and detailed breakdowns are "
+                            "incredible. I practice every single day!"
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Nadia S.",
+                        "text": (
+                            "The choreography course is a masterpiece. I went "
+                            "from feeling lost on stage to performing with real "
+                            "expression and musicality."
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "Do I need prior dance experience?",
+                        "a": (
+                            "Not at all! Our Belly Dance Basics course is "
+                            "designed for absolute beginners. We start with "
+                            "posture and simple hip movements before building "
+                            "up to combinations."
+                        ),
+                    },
+                    {
+                        "q": "What do I need to get started?",
+                        "a": (
+                            "All you need is comfortable clothing that lets you "
+                            "see your hip movements, a small open space, and a "
+                            "willingness to have fun. A hip scarf is optional "
+                            "but adds to the experience!"
+                        ),
+                    },
+                    {
+                        "q": "Can I access the courses on mobile?",
+                        "a": (
+                            "Yes! The platform is fully responsive. You can "
+                            "stream lessons on your phone, tablet, or computer "
+                            "— perfect for practicing anywhere."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enroll, you get lifetime access to the "
+                            "course material. Rewatch lessons as many times as "
+                            "you like and learn at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Start Dancing?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {
