@@ -1,8 +1,7 @@
 "use client";
 
 // Shared admin-kit (schema-driven admin renderer).
-// Canonical copy: frontend-customer. After editing, run scripts/sync-admin-kit.sh
-// to mirror into frontend-main — the two copies must stay byte-identical.
+// Canonical shared module — imported via @shared/admin-kit/* by both frontend-main and frontend-customer.
 //
 // Cell renderers (schema → table cell) and form widgets (schema → input).
 
@@ -16,7 +15,7 @@ import type {
   FkValue,
   ImageValue,
   RowValue,
-} from "@/lib/admin-kit/types";
+} from "./types";
 
 import {
   KitButton,
@@ -194,9 +193,7 @@ function ImageFieldInput({
         )}
         {basename || preview ? "Replace PNG" : "Upload PNG"}
       </KitButton>
-      {uploadError && (
-        <p className="text-xs text-destructive">{uploadError}</p>
-      )}
+      {uploadError && <p className="text-xs text-destructive">{uploadError}</p>}
     </div>
   );
 }

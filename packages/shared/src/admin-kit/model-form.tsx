@@ -1,22 +1,21 @@
 "use client";
 
 // Shared admin-kit (schema-driven admin renderer).
-// Canonical copy: frontend-customer. After editing, run scripts/sync-admin-kit.sh
-// to mirror into frontend-main — the two copies must stay byte-identical.
+// Canonical shared module — imported via @shared/admin-kit/* by both frontend-main and frontend-customer.
 //
 // Slide-over create/edit form generated from a model's field schema.
 
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Trash2, X } from "lucide-react";
 
-import { AdminKitError, type AdminClient } from "@/lib/admin-kit/client";
+import { AdminKitError, type AdminClient } from "./client";
 import type {
   ChoiceOption,
   FieldSchema,
   ModelMeta,
   Row,
   RowValue,
-} from "@/lib/admin-kit/types";
+} from "./types";
 
 import { KitButton } from "./primitives";
 import { FieldInput } from "./widgets";

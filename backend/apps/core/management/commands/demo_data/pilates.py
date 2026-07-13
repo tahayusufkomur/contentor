@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a pilates-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Pilates Studio",
     "slug": "demo-pilates",
@@ -13,143 +15,110 @@ TENANT = {
     "domain": "demo-pilates.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Pilates Studio",
-    "theme": "ocean",
-    "dark_mode_enabled": True,
-    "font_family": "DM Sans",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Training", "href": "/courses"},
-        "show_login": True,
-        "layout": "split",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Transform Your Body with Pilates",
-            "subheadline": (
-                "Build core strength, improve flexibility, and move with "
-                "confidence. Join our studio and discover the power of "
-                "mindful movement."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/pilates_4.jpg",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Pilates Studio",
+        "theme": "ocean",
+        "font_family": "DM Sans",
+        "navbar_config": {
+            "cta": {"text": "Start Training"},
+            "layout": "split",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Certified Pilates instructor with over 12 years of "
-                "experience in mat and reformer Pilates. I specialise in "
-                "helping people of all fitness levels build a strong, "
-                "balanced body through precise, controlled movement — no "
-                "gym required, just a mat and commitment."
-            ),
-            "image_url": "demo/photos/pilates_5.jpg",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Clara D.",
-                    "text": (
-                        "After just four weeks my posture improved "
-                        "dramatically. The lessons are clear, well-paced, "
-                        "and I can feel every muscle engaging properly."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Marco T.",
-                    "text": (
-                        "I was sceptical about online Pilates, but the "
-                        "detailed cues and camera angles make it feel like "
-                        "a private session. My back pain is finally gone!"
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Hana Y.",
-                    "text": (
-                        "The Full Body Sculpt course pushed me in the best "
-                        "way. I feel stronger, more flexible, and genuinely "
-                        "look forward to every workout."
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "Do I need any equipment?",
-                    "a": (
-                        "All our courses are mat-based. You only need a "
-                        "yoga or Pilates mat and enough space to lie down "
-                        "and stretch your arms out. Optional props like a "
-                        "resistance band are noted in individual lessons."
-                    ),
-                },
-                {
-                    "q": "Is Pilates suitable for beginners?",
-                    "a": (
-                        "Absolutely! The Pilates Fundamentals course starts "
-                        "from scratch with breathing, alignment, and basic "
-                        "movements. No prior experience is needed."
-                    ),
-                },
-                {
-                    "q": "Can I access the courses on mobile?",
-                    "a": (
-                        "Yes! The platform is fully responsive. You can "
-                        "stream lessons on your phone, tablet, or computer "
-                        "— perfect for practising anywhere."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enrol, you get lifetime access to the "
-                        "course material. Rewatch lessons as many times as "
-                        "you like and progress at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Feel Stronger?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Transform Your Body with Pilates",
+                "subheadline": (
+                    "Build core strength, improve flexibility, and move with "
+                    "confidence. Join our studio and discover the power of "
+                    "mindful movement."
+                ),
+                "bg_image_url": "demo/photos/pilates_4.jpg",
+            },
+            "about": {
+                "body": (
+                    "Certified Pilates instructor with over 12 years of "
+                    "experience in mat and reformer Pilates. I specialise in "
+                    "helping people of all fitness levels build a strong, "
+                    "balanced body through precise, controlled movement — no "
+                    "gym required, just a mat and commitment."
+                ),
+                "image_url": "demo/photos/pilates_5.jpg",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Clara D.",
+                        "text": (
+                            "After just four weeks my posture improved "
+                            "dramatically. The lessons are clear, well-paced, "
+                            "and I can feel every muscle engaging properly."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Marco T.",
+                        "text": (
+                            "I was sceptical about online Pilates, but the "
+                            "detailed cues and camera angles make it feel like "
+                            "a private session. My back pain is finally gone!"
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Hana Y.",
+                        "text": (
+                            "The Full Body Sculpt course pushed me in the best "
+                            "way. I feel stronger, more flexible, and genuinely "
+                            "look forward to every workout."
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "Do I need any equipment?",
+                        "a": (
+                            "All our courses are mat-based. You only need a "
+                            "yoga or Pilates mat and enough space to lie down "
+                            "and stretch your arms out. Optional props like a "
+                            "resistance band are noted in individual lessons."
+                        ),
+                    },
+                    {
+                        "q": "Is Pilates suitable for beginners?",
+                        "a": (
+                            "Absolutely! The Pilates Fundamentals course starts "
+                            "from scratch with breathing, alignment, and basic "
+                            "movements. No prior experience is needed."
+                        ),
+                    },
+                    {
+                        "q": "Can I access the courses on mobile?",
+                        "a": (
+                            "Yes! The platform is fully responsive. You can "
+                            "stream lessons on your phone, tablet, or computer "
+                            "— perfect for practising anywhere."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enrol, you get lifetime access to the "
+                            "course material. Rewatch lessons as many times as "
+                            "you like and progress at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Feel Stronger?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {

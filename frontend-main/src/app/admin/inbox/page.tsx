@@ -1,4 +1,4 @@
-import InboxClient from "@/components/admin/mailbox/inbox-client";
+import { InboxClient } from "@shared/mailbox/inbox-client";
 
 export const dynamic = "force-dynamic";
 

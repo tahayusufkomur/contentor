@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import { TemplateGrid } from "@/components/admin/email/template-grid";
+import { TemplateGrid } from "@shared/email/template-grid";
 import {
   deleteTemplate,
   getTemplate,

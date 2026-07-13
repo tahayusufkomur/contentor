@@ -14,9 +14,9 @@ import {
 
 import { AppSidebar, type NavItem } from "@/components/shared/app-sidebar";
 import { MobileHeader } from "@/components/shared/mobile-header";
-import { createAdminClient } from "@/lib/admin-kit/client";
-import { kitIcon } from "@/components/admin-kit/primitives";
-import type { SiteMeta } from "@/lib/admin-kit/types";
+import { createAdminClient } from "@shared/admin-kit/client";
+import { kitIcon } from "@shared/admin-kit/primitives";
+import type { SiteMeta } from "@shared/admin-kit/types";
 
 interface AdminShellProps {
   children: React.ReactNode;

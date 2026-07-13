@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   EmailBuilderIframe,
   type EmailBuilderIframeHandle,
-} from "@/components/admin/email/email-builder-iframe";
+} from "@shared/email/email-builder-iframe";
 import { RecipientSelector } from "@/components/admin/email/recipient-selector";
-import { TemplateGrid } from "@/components/admin/email/template-grid";
+import { TemplateGrid } from "@shared/email/template-grid";
 import {
   getTemplate,
   listGallery,

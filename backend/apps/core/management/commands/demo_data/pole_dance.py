@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a pole-dance-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Pole Dance Studio",
     "slug": "demo-poledance",
@@ -13,141 +15,108 @@ TENANT = {
     "domain": "demo-poledance.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Pole Dance Studio",
-    "theme": "violet",
-    "dark_mode_enabled": True,
-    "font_family": "Poppins",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Training", "href": "/courses"},
-        "show_login": True,
-        "layout": "pill",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Unleash Your Strength on the Pole",
-            "subheadline": (
-                "Build confidence, strength, and artistry through pole dance. "
-                "Whether you are a total beginner or looking to master advanced "
-                "tricks, our studio has a program for you."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/pole_6.jpg",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Pole Dance Studio",
+        "theme": "violet",
+        "font_family": "Poppins",
+        "navbar_config": {
+            "cta": {"text": "Start Training"},
+            "layout": "pill",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Certified pole dance instructor and competitor with over 8 years "
-                "of teaching experience. My mission is to make pole dance "
-                "accessible to all body types and fitness levels — no gymnastics "
-                "background required, just the courage to try something new."
-            ),
-            "image_url": "demo/photos/pole_7.jpg",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Jessica R.",
-                    "text": (
-                        "I was terrified of trying pole dance, but the Basics "
-                        "course broke everything down so clearly. I can now do "
-                        "a fireman spin and I feel incredible!"
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Mia T.",
-                    "text": (
-                        "The spins and transitions course completely changed my "
-                        "flow. I went from clunky moves to smooth, connected "
-                        "sequences in just a few weeks."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Priya D.",
-                    "text": (
-                        "Advanced Pole Tricks pushed me beyond what I thought "
-                        "was possible. The detailed progressions for each trick "
-                        "made even the scary inversions feel safe."
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "Do I need to be strong to start?",
-                    "a": (
-                        "Not at all! Pole Basics is designed for complete "
-                        "beginners. You will build strength as you progress "
-                        "through the lessons. Everyone starts somewhere."
-                    ),
-                },
-                {
-                    "q": "What equipment do I need?",
-                    "a": (
-                        "You will need a pole (static or spinning) installed "
-                        "securely at home or access to a local studio. Wear "
-                        "shorts and a tank top so your skin can grip the pole."
-                    ),
-                },
-                {
-                    "q": "Can I access the courses on mobile?",
-                    "a": (
-                        "Yes! The platform is fully responsive. You can stream "
-                        "lessons on your phone, tablet, or computer — perfect "
-                        "for following along in your practice space."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enroll, you get lifetime access to the course "
-                        "material. Rewatch lessons as many times as you like "
-                        "and progress at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Own the Pole?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Unleash Your Strength on the Pole",
+                "subheadline": (
+                    "Build confidence, strength, and artistry through pole dance. "
+                    "Whether you are a total beginner or looking to master advanced "
+                    "tricks, our studio has a program for you."
+                ),
+                "bg_image_url": "demo/photos/pole_6.jpg",
+            },
+            "about": {
+                "body": (
+                    "Certified pole dance instructor and competitor with over 8 years "
+                    "of teaching experience. My mission is to make pole dance "
+                    "accessible to all body types and fitness levels — no gymnastics "
+                    "background required, just the courage to try something new."
+                ),
+                "image_url": "demo/photos/pole_7.jpg",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Jessica R.",
+                        "text": (
+                            "I was terrified of trying pole dance, but the Basics "
+                            "course broke everything down so clearly. I can now do "
+                            "a fireman spin and I feel incredible!"
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Mia T.",
+                        "text": (
+                            "The spins and transitions course completely changed my "
+                            "flow. I went from clunky moves to smooth, connected "
+                            "sequences in just a few weeks."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Priya D.",
+                        "text": (
+                            "Advanced Pole Tricks pushed me beyond what I thought "
+                            "was possible. The detailed progressions for each trick "
+                            "made even the scary inversions feel safe."
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "Do I need to be strong to start?",
+                        "a": (
+                            "Not at all! Pole Basics is designed for complete "
+                            "beginners. You will build strength as you progress "
+                            "through the lessons. Everyone starts somewhere."
+                        ),
+                    },
+                    {
+                        "q": "What equipment do I need?",
+                        "a": (
+                            "You will need a pole (static or spinning) installed "
+                            "securely at home or access to a local studio. Wear "
+                            "shorts and a tank top so your skin can grip the pole."
+                        ),
+                    },
+                    {
+                        "q": "Can I access the courses on mobile?",
+                        "a": (
+                            "Yes! The platform is fully responsive. You can stream "
+                            "lessons on your phone, tablet, or computer — perfect "
+                            "for following along in your practice space."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enroll, you get lifetime access to the course "
+                            "material. Rewatch lessons as many times as you like "
+                            "and progress at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Own the Pole?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {

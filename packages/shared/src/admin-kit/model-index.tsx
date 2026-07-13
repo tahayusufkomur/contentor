@@ -1,16 +1,15 @@
 "use client";
 
 // Shared admin-kit (schema-driven admin renderer).
-// Canonical copy: frontend-customer. After editing, run scripts/sync-admin-kit.sh
-// to mirror into frontend-main — the two copies must stay byte-identical.
+// Canonical shared module — imported via @shared/admin-kit/* by both frontend-main and frontend-customer.
 //
 // Landing page: one card per registered model, straight from the site meta.
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import { AdminKitError, createAdminClient } from "@/lib/admin-kit/client";
-import type { SiteMeta } from "@/lib/admin-kit/types";
+import { AdminKitError, createAdminClient } from "./client";
+import type { SiteMeta } from "./types";
 
 import { KitBanner, KitSkeletonRows, kitIcon } from "./primitives";
 

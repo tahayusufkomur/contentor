@@ -12,6 +12,7 @@ const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || "localhost";
 
 const nextConfig = {
   output: "standalone",
+  experimental: { externalDir: true },
   allowedDevOrigins: [`*.${BASE_DOMAIN}`],
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**.amazonaws.com" }],
@@ -23,6 +24,8 @@ const nextConfig = {
       __dirname,
       "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
     );
+    config.resolve.modules = [...(config.resolve.modules ?? ["node_modules"]),
+      path.resolve(__dirname, "node_modules")];
     return config;
   },
   async rewrites() {

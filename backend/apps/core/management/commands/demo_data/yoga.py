@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a yoga-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Yoga Studio",
     "slug": "demo-yoga",
@@ -13,144 +15,111 @@ TENANT = {
     "domain": "demo-yoga.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Yoga Studio",
-    "theme": "forest",
-    "dark_mode_enabled": True,
-    "font_family": "Nunito",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Your Practice", "href": "/courses"},
-        "show_login": True,
-        "layout": "centered",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Find Your Balance Through Yoga",
-            "subheadline": (
-                "Transform your body and mind with guided yoga practices. "
-                "Whether you're a complete beginner or an experienced yogi, "
-                "our courses will deepen your practice and bring you peace."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/yoga_6.jpg",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Yoga Studio",
+        "theme": "forest",
+        "font_family": "Nunito",
+        "navbar_config": {
+            "cta": {"text": "Start Your Practice"},
+            "layout": "centered",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Certified yoga instructor with over 12 years of teaching "
-                "experience in Hatha, Vinyasa, and Ashtanga traditions. "
-                "I believe yoga is a journey of self-discovery — meeting "
-                "yourself on the mat with compassion, breath, and intention."
-            ),
-            "image_url": "demo/photos/yoga_7.jpg",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Priya R.",
-                    "text": (
-                        "These classes changed my life. The beginner course "
-                        "gave me a solid foundation, and now I practice every "
-                        "morning before work. My flexibility and focus have "
-                        "improved so much."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Sarah L.",
-                    "text": (
-                        "The Vinyasa Flow course is beautifully structured. "
-                        "Each lesson builds on the last, and the cues are so "
-                        "clear that I always feel safe pushing my edge."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Marcus T.",
-                    "text": (
-                        "I was skeptical about learning yoga online, but the "
-                        "video quality and detailed alignment instructions "
-                        "made it feel like a private session. Highly recommend!"
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "Do I need to be flexible to start yoga?",
-                    "a": (
-                        "Absolutely not! Flexibility is a result of yoga, not "
-                        "a prerequisite. Our beginner course starts with "
-                        "gentle movements and modifications so you can "
-                        "practice safely at any level."
-                    ),
-                },
-                {
-                    "q": "What equipment do I need?",
-                    "a": (
-                        "A yoga mat is recommended but not required. You may "
-                        "also find blocks and a strap helpful for certain "
-                        "poses. Wear comfortable clothing that allows free "
-                        "movement."
-                    ),
-                },
-                {
-                    "q": "Can I access the courses on mobile?",
-                    "a": (
-                        "Yes! The platform is fully responsive. You can "
-                        "stream lessons on your phone, tablet, or computer "
-                        "— perfect for practicing anywhere."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enroll, you get lifetime access to the "
-                        "course material. Rewatch lessons as many times as "
-                        "you like and learn at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Begin Your Journey?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Find Your Balance Through Yoga",
+                "subheadline": (
+                    "Transform your body and mind with guided yoga practices. "
+                    "Whether you're a complete beginner or an experienced yogi, "
+                    "our courses will deepen your practice and bring you peace."
+                ),
+                "bg_image_url": "demo/photos/yoga_6.jpg",
+            },
+            "about": {
+                "body": (
+                    "Certified yoga instructor with over 12 years of teaching "
+                    "experience in Hatha, Vinyasa, and Ashtanga traditions. "
+                    "I believe yoga is a journey of self-discovery — meeting "
+                    "yourself on the mat with compassion, breath, and intention."
+                ),
+                "image_url": "demo/photos/yoga_7.jpg",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Priya R.",
+                        "text": (
+                            "These classes changed my life. The beginner course "
+                            "gave me a solid foundation, and now I practice every "
+                            "morning before work. My flexibility and focus have "
+                            "improved so much."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Sarah L.",
+                        "text": (
+                            "The Vinyasa Flow course is beautifully structured. "
+                            "Each lesson builds on the last, and the cues are so "
+                            "clear that I always feel safe pushing my edge."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Marcus T.",
+                        "text": (
+                            "I was skeptical about learning yoga online, but the "
+                            "video quality and detailed alignment instructions "
+                            "made it feel like a private session. Highly recommend!"
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "Do I need to be flexible to start yoga?",
+                        "a": (
+                            "Absolutely not! Flexibility is a result of yoga, not "
+                            "a prerequisite. Our beginner course starts with "
+                            "gentle movements and modifications so you can "
+                            "practice safely at any level."
+                        ),
+                    },
+                    {
+                        "q": "What equipment do I need?",
+                        "a": (
+                            "A yoga mat is recommended but not required. You may "
+                            "also find blocks and a strap helpful for certain "
+                            "poses. Wear comfortable clothing that allows free "
+                            "movement."
+                        ),
+                    },
+                    {
+                        "q": "Can I access the courses on mobile?",
+                        "a": (
+                            "Yes! The platform is fully responsive. You can "
+                            "stream lessons on your phone, tablet, or computer "
+                            "— perfect for practicing anywhere."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enroll, you get lifetime access to the "
+                            "course material. Rewatch lessons as many times as "
+                            "you like and learn at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Begin Your Journey?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {

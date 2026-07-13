@@ -1,8 +1,7 @@
 "use client";
 
 // Shared admin-kit (schema-driven admin renderer).
-// Canonical copy: frontend-customer. After editing, run scripts/sync-admin-kit.sh
-// to mirror into frontend-main — the two copies must stay byte-identical.
+// Canonical shared module — imported via @shared/admin-kit/* by both frontend-main and frontend-customer.
 //
 // The full model page: header, search, filters, bulk actions, table, paging,
 // and the slide-over form. Everything renders from the backend metadata.
@@ -10,14 +9,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 
-import { AdminKitError, createAdminClient } from "@/lib/admin-kit/client";
+import { AdminKitError, createAdminClient } from "./client";
 import type {
   ActionSchema,
   ChoiceOption,
   ListPage,
   ModelMeta,
   Row,
-} from "@/lib/admin-kit/types";
+} from "./types";
 
 import { ModelForm } from "./model-form";
 import { ModelList } from "./model-list";

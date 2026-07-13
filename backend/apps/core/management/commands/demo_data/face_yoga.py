@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a face-yoga-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Face Yoga Studio",
     "slug": "demo-faceyoga",
@@ -13,141 +15,108 @@ TENANT = {
     "domain": "demo-faceyoga.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Face Yoga Studio",
-    "theme": "forest",
-    "dark_mode_enabled": True,
-    "font_family": "Nunito",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Glowing", "href": "/courses"},
-        "show_login": True,
-        "layout": "minimal",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Natural Beauty Through Face Yoga",
-            "subheadline": (
-                "Tone, lift, and rejuvenate your face with simple daily exercises. "
-                "No injections, no products — just your hands and a few minutes "
-                "a day for visible, lasting results."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/face_yoga_4.png",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Face Yoga Studio",
+        "theme": "forest",
+        "font_family": "Nunito",
+        "navbar_config": {
+            "cta": {"text": "Start Glowing"},
+            "layout": "minimal",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Certified face yoga instructor and holistic wellness coach with "
-                "over 6 years of experience. After seeing dramatic results in my "
-                "own skin, I dedicated my career to teaching natural facial "
-                "rejuvenation techniques that anyone can do at home."
-            ),
-            "image_url": "demo/photos/face_yoga_5.png",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Sarah W.",
-                    "text": (
-                        "After just three weeks of the Basics course, my "
-                        "jawline is noticeably more defined. I cannot believe "
-                        "something so simple actually works!"
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Mei C.",
-                    "text": (
-                        "The Anti-Aging Routines course is my daily ritual now. "
-                        "My forehead lines have softened and my skin looks so "
-                        "much more lifted and radiant."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Astrid N.",
-                    "text": (
-                        "Sculpt & Tone gave me cheekbones I did not know I "
-                        "had! The targeted exercises are so effective and only "
-                        "take ten minutes a day."
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "How soon will I see results?",
-                    "a": (
-                        "Most students notice subtle changes within 2-3 weeks "
-                        "of daily practice. More significant lifting and toning "
-                        "typically appear after 6-8 weeks of consistent work."
-                    ),
-                },
-                {
-                    "q": "Do I need any equipment?",
-                    "a": (
-                        "No equipment at all! All exercises use your own hands "
-                        "and facial muscles. A mirror is helpful so you can "
-                        "check your form, but that is all you need."
-                    ),
-                },
-                {
-                    "q": "Can I access the courses on mobile?",
-                    "a": (
-                        "Yes! The platform is fully responsive. You can stream "
-                        "lessons on your phone, tablet, or computer — perfect "
-                        "for following along during your morning routine."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enroll, you get lifetime access to the course "
-                        "material. Rewatch lessons as many times as you like "
-                        "and progress at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Transform Your Face Naturally?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Natural Beauty Through Face Yoga",
+                "subheadline": (
+                    "Tone, lift, and rejuvenate your face with simple daily exercises. "
+                    "No injections, no products — just your hands and a few minutes "
+                    "a day for visible, lasting results."
+                ),
+                "bg_image_url": "demo/photos/face_yoga_4.png",
+            },
+            "about": {
+                "body": (
+                    "Certified face yoga instructor and holistic wellness coach with "
+                    "over 6 years of experience. After seeing dramatic results in my "
+                    "own skin, I dedicated my career to teaching natural facial "
+                    "rejuvenation techniques that anyone can do at home."
+                ),
+                "image_url": "demo/photos/face_yoga_5.png",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Sarah W.",
+                        "text": (
+                            "After just three weeks of the Basics course, my "
+                            "jawline is noticeably more defined. I cannot believe "
+                            "something so simple actually works!"
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Mei C.",
+                        "text": (
+                            "The Anti-Aging Routines course is my daily ritual now. "
+                            "My forehead lines have softened and my skin looks so "
+                            "much more lifted and radiant."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Astrid N.",
+                        "text": (
+                            "Sculpt & Tone gave me cheekbones I did not know I "
+                            "had! The targeted exercises are so effective and only "
+                            "take ten minutes a day."
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "How soon will I see results?",
+                        "a": (
+                            "Most students notice subtle changes within 2-3 weeks "
+                            "of daily practice. More significant lifting and toning "
+                            "typically appear after 6-8 weeks of consistent work."
+                        ),
+                    },
+                    {
+                        "q": "Do I need any equipment?",
+                        "a": (
+                            "No equipment at all! All exercises use your own hands "
+                            "and facial muscles. A mirror is helpful so you can "
+                            "check your form, but that is all you need."
+                        ),
+                    },
+                    {
+                        "q": "Can I access the courses on mobile?",
+                        "a": (
+                            "Yes! The platform is fully responsive. You can stream "
+                            "lessons on your phone, tablet, or computer — perfect "
+                            "for following along during your morning routine."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enroll, you get lifetime access to the course "
+                            "material. Rewatch lessons as many times as you like "
+                            "and progress at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Transform Your Face Naturally?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {

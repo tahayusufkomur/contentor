@@ -4,6 +4,11 @@ import path from "node:path";
 // Pure-logic tests only (src/lib/logo). React components are covered by
 // `npm run build` + the Playwright e2e suite, per repo convention.
 export default defineConfig({
-  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "../packages/shared/src"),
+    },
+  },
   test: { include: ["src/**/__tests__/**/*.test.ts"] },
 });

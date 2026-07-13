@@ -1,6 +1,11 @@
 // Shared admin-kit (schema-driven admin renderer).
-// Canonical copy: frontend-customer. After editing, run scripts/sync-admin-kit.sh
-// to mirror into frontend-main — the two copies must stay byte-identical.
+// Canonical shared module — imported via @shared/admin-kit/* by both frontend-main and frontend-customer.
+//
+// Editor note: if your local (non-Docker) tsserver shows false-positive
+// "cannot find module 'react'" errors here, that's expected — bare-specifier
+// resolution for packages/shared only works inside Docker containers (see the
+// node_modules symlink in frontend-main/Dockerfile and frontend-customer/Dockerfile).
+// Not a real build error.
 
 import type {
   ActionResult,

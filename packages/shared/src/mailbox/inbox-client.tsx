@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 import { Search, X } from "lucide-react";
 import { toast } from "sonner";
@@ -13,11 +14,11 @@ import {
   listConversations,
   reply,
   updateConversation,
-} from "@/lib/platform-mailbox-api";
+} from "@/lib/mailbox";
 import type {
   ConversationDetail,
   ConversationListItem,
-} from "@/lib/platform-mailbox-api";
+} from "@/lib/mailbox";
 
 import ComposeCard from "./compose-card";
 import ConversationList from "./conversation-list";
@@ -75,7 +76,12 @@ function DeleteConfirmDialog({
 
 // ── Main inbox component ───────────────────────────────────────────────────
 
-export default function InboxClient() {
+interface InboxClientProps {
+  /** Rendered between the header and the conversation list (e.g. send-only upsell). */
+  topBanner?: ReactNode;
+}
+
+export function InboxClient({ topBanner }: InboxClientProps = {}) {
   const [conversations, setConversations] = useState<ConversationListItem[]>(
     [],
   );
@@ -229,6 +235,8 @@ export default function InboxClient() {
 
   return (
     <div className="flex h-full flex-col">
+      {topBanner}
+
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <FolderRail
           folder={folder}

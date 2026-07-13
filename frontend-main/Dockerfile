@@ -1,22 +1,31 @@
 # --- Dev target (used by docker-compose.yml) ---
 FROM node:20-alpine AS dev
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY frontend-main/package.json frontend-main/package-lock.json* ./
 RUN npm ci || npm install
-COPY . .
+COPY packages /packages
+# packages/shared has no node_modules ancestor on its own filesystem path;
+# a root-level symlink lets Node's normal upward module resolution (used by
+# both tsc and this app's own node_modules) find react/lucide-react/etc from
+# shared files without any tsconfig "paths" trickery (which breaks @types
+# resolution for bare specifiers project-wide — see Task 3 notes).
+RUN ln -s /app/node_modules /node_modules
+COPY frontend-main .
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
 # --- Production build ---
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY frontend-main/package.json frontend-main/package-lock.json* ./
 RUN npm ci || npm install
 
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY packages /packages
+RUN ln -s /app/node_modules /node_modules
+COPY frontend-main .
 ENV NEXT_TELEMETRY_DISABLED=1
 # NEXT_PUBLIC_* are inlined into the client bundle at build time.
 ARG NEXT_PUBLIC_API_URL

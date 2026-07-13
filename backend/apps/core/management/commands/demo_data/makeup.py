@@ -5,6 +5,8 @@ This module provides tenant configuration, branding, landing page sections,
 and three complete courses with lessons for a makeup-themed demo tenant.
 """
 
+from . import _base
+
 TENANT = {
     "name": "Makeup Academy",
     "slug": "demo-makeup",
@@ -13,142 +15,109 @@ TENANT = {
     "domain": "demo-makeup.localhost",
 }
 
-CONFIG = {
-    "brand_name": "Makeup Academy",
-    "theme": "sunset",
-    "dark_mode_enabled": True,
-    "font_family": "Playfair Display",
-    "onboarding_completed": True,
-    "enabled_modules": [
-        "courses",
-        "live",
-        "community",
-        "downloads",
-        "billing",
-        "campaigns",
-        "analytics",
-        "pages",
-    ],
-    "navbar_config": {
-        "links": [
-            {"label": "Courses", "href": "/courses"},
-            {"label": "Live Classes", "href": "/events"},
-            {"label": "Store", "href": "/store"},
-            {"label": "About", "href": "/about"},
-            {"label": "FAQ", "href": "/faq"},
-        ],
-        "cta": {"text": "Start Learning", "href": "/courses"},
-        "show_login": True,
-        "layout": "pill",
-    },
-    "landing_sections": {
-        "hero": {
-            "enabled": True,
-            "headline": "Master the Art of Makeup",
-            "subheadline": (
-                "From everyday glam to editorial masterpieces, learn professional "
-                "makeup techniques from the comfort of your home. Join thousands "
-                "of aspiring artists on their beauty journey."
-            ),
-            "cta_text": "Browse Programs",
-            "cta_href": "/courses",
-            "bg_image_url": "demo/photos/make_up_4.png",
+CONFIG = _base.deep_merge(
+    _base.CONFIG_BASE,
+    {
+        "brand_name": "Makeup Academy",
+        "theme": "sunset",
+        "font_family": "Playfair Display",
+        "navbar_config": {
+            "cta": {"text": "Start Learning"},
+            "layout": "pill",
         },
-        "about": {
-            "enabled": True,
-            "heading": "About Me",
-            "body": (
-                "Professional makeup artist with over 12 years of experience in "
-                "bridal, editorial, and fashion makeup. I have worked backstage "
-                "at fashion weeks and with celebrity clients, and now I am "
-                "passionate about sharing my techniques with aspiring artists "
-                "around the world."
-            ),
-            "image_url": "demo/photos/make_up_5.png",
-        },
-        "courses": {
-            "enabled": True,
-            "heading": "Featured Programs",
-        },
-        "testimonials": {
-            "enabled": True,
-            "heading": "What Students Say",
-            "items": [
-                {
-                    "name": "Olivia H.",
-                    "text": (
-                        "The Everyday Glam course transformed my morning "
-                        "routine. I finally understand how to blend foundation "
-                        "properly and my skin looks flawless every day!"
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Zara B.",
-                    "text": (
-                        "Bridal Makeup Mastery gave me the confidence to start "
-                        "freelancing as a bridal artist. The business tips alone "
-                        "were worth the investment."
-                    ),
-                    "avatar_url": "",
-                },
-                {
-                    "name": "Hannah L.",
-                    "text": (
-                        "The editorial course blew my mind. I never thought I "
-                        "could create avant-garde looks, but the step-by-step "
-                        "breakdowns made it so accessible."
-                    ),
-                    "avatar_url": "",
-                },
-            ],
-        },
-        "faq": {
-            "enabled": True,
-            "heading": "Frequently Asked Questions",
-            "items": [
-                {
-                    "q": "Do I need professional makeup products to start?",
-                    "a": (
-                        "Not at all! We recommend affordable drugstore "
-                        "alternatives for every product used in the courses. "
-                        "You can upgrade your kit as you progress."
-                    ),
-                },
-                {
-                    "q": "Are the techniques suitable for all skin types?",
-                    "a": (
-                        "Absolutely. Each lesson covers adaptations for dry, "
-                        "oily, combination, and sensitive skin. We also address "
-                        "techniques for a wide range of skin tones."
-                    ),
-                },
-                {
-                    "q": "Can I access the courses on mobile?",
-                    "a": (
-                        "Yes! The platform is fully responsive. You can stream "
-                        "lessons on your phone, tablet, or computer — perfect "
-                        "for following along at your vanity."
-                    ),
-                },
-                {
-                    "q": "How long do I have access to the courses?",
-                    "a": (
-                        "Once you enroll, you get lifetime access to the course "
-                        "material. Rewatch lessons as many times as you like "
-                        "and learn at your own pace."
-                    ),
-                },
-            ],
-        },
-        "cta": {
-            "enabled": True,
-            "heading": "Ready to Glow Up?",
-            "button_text": "Join Now",
-            "button_href": "/courses",
+        "landing_sections": {
+            "hero": {
+                "headline": "Master the Art of Makeup",
+                "subheadline": (
+                    "From everyday glam to editorial masterpieces, learn professional "
+                    "makeup techniques from the comfort of your home. Join thousands "
+                    "of aspiring artists on their beauty journey."
+                ),
+                "bg_image_url": "demo/photos/make_up_4.png",
+            },
+            "about": {
+                "body": (
+                    "Professional makeup artist with over 12 years of experience in "
+                    "bridal, editorial, and fashion makeup. I have worked backstage "
+                    "at fashion weeks and with celebrity clients, and now I am "
+                    "passionate about sharing my techniques with aspiring artists "
+                    "around the world."
+                ),
+                "image_url": "demo/photos/make_up_5.png",
+            },
+            "testimonials": {
+                "items": [
+                    {
+                        "name": "Olivia H.",
+                        "text": (
+                            "The Everyday Glam course transformed my morning "
+                            "routine. I finally understand how to blend foundation "
+                            "properly and my skin looks flawless every day!"
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Zara B.",
+                        "text": (
+                            "Bridal Makeup Mastery gave me the confidence to start "
+                            "freelancing as a bridal artist. The business tips alone "
+                            "were worth the investment."
+                        ),
+                        "avatar_url": "",
+                    },
+                    {
+                        "name": "Hannah L.",
+                        "text": (
+                            "The editorial course blew my mind. I never thought I "
+                            "could create avant-garde looks, but the step-by-step "
+                            "breakdowns made it so accessible."
+                        ),
+                        "avatar_url": "",
+                    },
+                ],
+            },
+            "faq": {
+                "items": [
+                    {
+                        "q": "Do I need professional makeup products to start?",
+                        "a": (
+                            "Not at all! We recommend affordable drugstore "
+                            "alternatives for every product used in the courses. "
+                            "You can upgrade your kit as you progress."
+                        ),
+                    },
+                    {
+                        "q": "Are the techniques suitable for all skin types?",
+                        "a": (
+                            "Absolutely. Each lesson covers adaptations for dry, "
+                            "oily, combination, and sensitive skin. We also address "
+                            "techniques for a wide range of skin tones."
+                        ),
+                    },
+                    {
+                        "q": "Can I access the courses on mobile?",
+                        "a": (
+                            "Yes! The platform is fully responsive. You can stream "
+                            "lessons on your phone, tablet, or computer — perfect "
+                            "for following along at your vanity."
+                        ),
+                    },
+                    {
+                        "q": "How long do I have access to the courses?",
+                        "a": (
+                            "Once you enroll, you get lifetime access to the course "
+                            "material. Rewatch lessons as many times as you like "
+                            "and learn at your own pace."
+                        ),
+                    },
+                ],
+            },
+            "cta": {
+                "heading": "Ready to Glow Up?",
+            },
         },
     },
-}
+)
 
 COURSES = [
     {

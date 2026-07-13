@@ -1,23 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ModalPortal } from "@/components/ui/modal-portal";
 import { clientFetch } from "@/lib/api-client";
-import { Search, Upload, Video, X } from "lucide-react";
+import { Video, X } from "lucide-react";
 import { formatDuration } from "@/lib/format";
+import { MediaPickerBase, uploadToPresignedUrl, type PresignResponse } from "./media-picker-base";
 
 interface VideoItem {
   id: number;
   title: string;
   duration_seconds: number;
   video_signed_url: string | null;
-}
-
-interface PresignResponse {
-  upload_url: string;
-  s3_key: string;
 }
 
 interface VideoPickerProps {
@@ -50,102 +45,59 @@ export function VideoPicker({
   allowUrl = false,
 }: VideoPickerProps) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [videos, setVideos] = useState<VideoItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileRef = useRef<HTMLInputElement>(null);
 
-  const fetchVideos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ limit: "20", offset: "0" });
-      if (search) params.set("search", search);
-      const res = await clientFetch<{
-        results: VideoItem[];
-        next: string | null;
-      }>(`/api/v1/courses/videos/?${params}`);
-      setVideos(res.results);
-    } catch {
-      setVideos([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [search]);
+  async function fetchVideos(search: string): Promise<VideoItem[]> {
+    const params = new URLSearchParams({ limit: "20", offset: "0" });
+    if (search) params.set("search", search);
+    const res = await clientFetch<{
+      results: VideoItem[];
+      next: string | null;
+    }>(`/api/v1/courses/videos/?${params}`);
+    return res.results;
+  }
 
-  useEffect(() => {
-    if (!open) return;
-    const timer = setTimeout(fetchVideos, 300);
-    return () => clearTimeout(timer);
-  }, [open, fetchVideos]);
+  async function uploadVideo(
+    file: File,
+    onProgress: (percent: number) => void,
+  ) {
+    const duration_seconds = await extractDuration(file);
+    const title = file.name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");
 
-  async function handleUpload(file: File) {
-    setUploading(true);
-    setUploadProgress(0);
-    try {
-      const duration_seconds = await extractDuration(file);
-      const title = file.name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");
+    const videoData = await clientFetch<VideoItem>("/api/v1/courses/videos/", {
+      method: "POST",
+      body: JSON.stringify({ title, description: "" }),
+    });
 
-      const videoData = await clientFetch<VideoItem>(
-        "/api/v1/courses/videos/",
-        {
-          method: "POST",
-          body: JSON.stringify({ title, description: "" }),
-        },
-      );
-
-      const { upload_url, s3_key } = await clientFetch<PresignResponse>(
-        "/api/v1/upload/presign/",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            filename: file.name,
-            content_type: file.type,
-            category: "library",
-          }),
-        },
-      );
-
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", upload_url);
-        xhr.setRequestHeader("Content-Type", file.type);
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            setUploadProgress(Math.round((event.loaded / event.total) * 100));
-          }
-        };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve();
-          else reject(new Error(`Upload failed: ${xhr.status}`));
-        };
-        xhr.onerror = () => reject(new Error("Upload failed"));
-        xhr.send(file);
-      });
-
-      await clientFetch("/api/v1/upload/complete/", {
+    const { upload_url, s3_key } = await clientFetch<PresignResponse>(
+      "/api/v1/upload/presign/",
+      {
         method: "POST",
         body: JSON.stringify({
-          s3_key,
+          filename: file.name,
+          content_type: file.type,
           category: "library",
-          video_id: videoData.id,
-          duration_seconds,
-          file_size: file.size,
         }),
-      });
+      },
+    );
 
-      const updated = await clientFetch<VideoItem>(
-        `/api/v1/courses/videos/${videoData.id}/`,
-      );
-      onChange(updated.id, updated.video_signed_url);
-      setOpen(false);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
+    await uploadToPresignedUrl(upload_url, file, onProgress);
+
+    await clientFetch("/api/v1/upload/complete/", {
+      method: "POST",
+      body: JSON.stringify({
+        s3_key,
+        category: "library",
+        video_id: videoData.id,
+        duration_seconds,
+        file_size: file.size,
+      }),
+    });
+
+    const updated = await clientFetch<VideoItem>(
+      `/api/v1/courses/videos/${videoData.id}/`,
+    );
+    onChange(updated.id, updated.video_signed_url);
+    setOpen(false);
   }
 
   return (
@@ -193,109 +145,35 @@ export function VideoPicker({
         />
       )}
 
-      {open && (
-        <ModalPortal>
-          <div
-            className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4"
-            onClick={() => setOpen(false)}
+      <MediaPickerBase<VideoItem>
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Choose a video"
+        searchPlaceholder="Search videos..."
+        itemLabelPlural="videos"
+        accept="video/mp4,video/quicktime,video/webm"
+        contentClassName="p-3"
+        itemsContainerClassName="space-y-1"
+        fetchItems={fetchVideos}
+        uploadFile={uploadVideo}
+        renderItem={(video) => (
+          <button
+            key={video.id}
+            type="button"
+            onClick={() => {
+              onChange(video.id, video.video_signed_url);
+              setOpen(false);
+            }}
+            className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
           >
-            <div
-              className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between border-b px-5 py-3.5">
-                <h2 className="text-sm font-semibold">Choose a video</h2>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 border-b p-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search videos..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="h-9 pl-8 text-sm"
-                  />
-                </div>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="video/mp4,video/quicktime,video/webm"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleUpload(file);
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => fileRef.current?.click()}
-                  disabled={uploading}
-                >
-                  <Upload className="h-3.5 w-3.5" />
-                  Upload
-                </Button>
-              </div>
-
-              {uploading && (
-                <div className="space-y-1 border-b px-4 py-3">
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {uploadProgress}% uploaded
-                  </p>
-                </div>
-              )}
-
-              <div className="flex-1 overflow-y-auto p-3">
-                {loading ? (
-                  <div className="flex justify-center py-10">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                  </div>
-                ) : videos.length === 0 ? (
-                  <p className="py-10 text-center text-sm text-muted-foreground">
-                    {search ? "No videos match your search." : "No videos yet."}
-                  </p>
-                ) : (
-                  <div className="space-y-1">
-                    {videos.map((video) => (
-                      <button
-                        key={video.id}
-                        type="button"
-                        onClick={() => {
-                          onChange(video.id, video.video_signed_url);
-                          setOpen(false);
-                        }}
-                        className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
-                      >
-                        <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="flex-1 truncate">{video.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDuration(video.duration_seconds)}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
+            <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="flex-1 truncate">{video.title}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDuration(video.duration_seconds)}
+            </span>
+          </button>
+        )}
+      />
     </div>
   );
 }
