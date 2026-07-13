@@ -28,6 +28,7 @@ def curated_catalog(request):
             continue
         out.append(
             {
+                "id": row.id,
                 "title": row.title,
                 "filename": key.rsplit("/", 1)[-1],
                 "prompt": row.prompt,

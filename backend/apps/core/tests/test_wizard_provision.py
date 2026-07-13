@@ -101,3 +101,40 @@ def test_legacy_tenant_without_wizard_state_unchanged(cleanup):
         assert config.theme == "forest"  # yoga niche default untouched
         assert config.onboarding_completed is False
         assert CommunitySettings.load().is_enabled is False
+
+
+def test_curated_logo_applied_at_provision(cleanup):
+    from django.db import connection as conn
+
+    from apps.core.models import CuratedLogo
+
+    conn.set_schema_to_public()
+    curated = CuratedLogo.objects.create(
+        title="Lotus", prompt="a lotus", tags="yoga",
+        image_key="platform/curated-logos/lotus.png", enabled=True,
+    )
+    cleanup.append("prov-logo")
+    answers = {**WIZARD_ANSWERS, "logo": {"mode": "curated", "curated_id": curated.id}}
+    try:
+        tenant = _provision(_make_tenant("prov-logo", answers))
+        with tenant_context(tenant):
+            from apps.tenant_config.models import TenantConfig
+
+            config = TenantConfig.objects.first()
+            assert config.logo is not None
+            assert config.logo.s3_key == "platform/curated-logos/lotus.png"
+            assert config.navbar_config["show_brand_name"] is True
+    finally:
+        conn.set_schema_to_public()
+        curated.delete()
+
+
+def test_wordmark_logo_stores_nothing(cleanup):
+    cleanup.append("prov-word")
+    tenant = _provision(_make_tenant("prov-word", WIZARD_ANSWERS))  # logo.mode == wordmark
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        config = TenantConfig.objects.first()
+        assert config.logo is None
+        assert config.logo_url == ""

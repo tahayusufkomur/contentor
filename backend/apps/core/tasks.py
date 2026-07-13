@@ -66,7 +66,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
     photo ids) are available as raw material — and so these values WIN over
     the niche defaults. Pure overwrites, so a Celery retry is safe.
     """
-    from apps.core.onboarding.compose import build_config_overrides
+    from apps.core.onboarding.compose import apply_wizard_logo, build_config_overrides
     from apps.tenant_config.models import TenantConfig
 
     with tenant_context(tenant):
@@ -82,6 +82,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
         for field, value in overrides.items():
             setattr(config, field, value)
         config.onboarding_completed = True
+        apply_wizard_logo(config, answers)
         config.save()
 
         if "build_community" in (answers.get("goals") or []):

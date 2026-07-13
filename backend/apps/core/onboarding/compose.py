@@ -275,3 +275,39 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
         "faq": {"blocks": faq_page},
         "contact": {"blocks": contact},
     }
+
+
+def apply_wizard_logo(config, answers) -> None:
+    """Apply the wizard's logo choice. Runs inside tenant_context; the caller
+    saves ``config``.
+
+    wordmark: store nothing — with no logo image the public header renders
+    the brand name as text, which IS the wordmark door's promise.
+    curated: tenant Photo row pointing at the shared platform/ key (demo-photo
+    precedent; no S3 copy, DB-only erase can't orphan it) + show_brand_name
+    so mark + brand text form a lockup. Idempotent via the s3_key lookup.
+    """
+    logo = answers.get("logo") or {}
+    if logo.get("mode") != "curated" or not logo.get("curated_id"):
+        return
+
+    from django_tenants.utils import schema_context
+
+    from apps.core.models import CuratedLogo
+
+    with schema_context("public"):
+        row = CuratedLogo.objects.filter(id=logo["curated_id"], enabled=True).first()
+        image_key = row.image_key if row else ""
+    if not image_key.startswith("platform/"):
+        return
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.filter(s3_key=image_key).first()
+    if photo is None:
+        photo = Photo.objects.create(s3_key=image_key, title="Logo")
+    config.logo = photo
+    config.logo_url = ""
+    navbar = dict(config.navbar_config or {})
+    navbar["show_brand_name"] = True
+    config.navbar_config = navbar
