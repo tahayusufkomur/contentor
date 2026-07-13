@@ -100,6 +100,7 @@ export function LogoStudio({
     styleChips: [],
   });
   const [ideasReady, setIdeasReady] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
   const [library, setLibrary] = useState<CuratedLogo[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
 
@@ -169,6 +170,7 @@ export function LogoStudio({
       setChatOpen(false);
       setStep(saved.step);
       setIdeasReady(true);
+      setDraftReady(saved.step === "editor" || saved.recipe !== null);
       return;
     }
     const seeded = seedRecipe(config, theme.primaryHex);
@@ -179,6 +181,7 @@ export function LogoStudio({
     setChatOpen(false);
     setBrief((b) => ({ ...b, brandName: config.brand_name || b.brandName }));
     setIdeasReady(false);
+    setDraftReady(isRecipe(config.logo_recipe));
     setStep(isRecipe(config.logo_recipe) ? "editor" : "brief");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -255,6 +258,10 @@ export function LogoStudio({
   }
 
   function handleStartOver() {
+    if (
+      !window.confirm("Start over? This clears your brief and saved progress.")
+    )
+      return;
     clearStudioSession();
     setBrief({ brandName: config.brand_name || "", niche: "", styleChips: [] });
     setIdeasReady(false);
@@ -263,6 +270,7 @@ export function LogoStudio({
   }
 
   function handleCustomize(chosen: LogoRecipe, elements?: BrandPackElement[]) {
+    setDraftReady(true);
     setRecipe(chosen);
     setEditHistory(reset(chosen));
     setActiveElements(elements ?? null);
@@ -407,7 +415,17 @@ export function LogoStudio({
     }
   }
 
+  /** True when it's safe to replace the editor draft: either it has no real
+   * edits (undo history empty), or the coach confirmed the overwrite. */
+  function confirmReplaceDraft(): boolean {
+    if (!canUndo(editHistory)) return true;
+    return window.confirm(
+      "Replace your current draft? Your edits in the editor will be lost.",
+    );
+  }
+
   async function handleUseCurated(logo: CuratedLogo, preview: LogoRecipe) {
+    if (!confirmReplaceDraft()) return;
     setError(null);
     // Traced vector mark: the previewed recipe is already complete.
     if (logo.markPaths?.length) {
@@ -544,7 +562,10 @@ export function LogoStudio({
                         key={s.id}
                         type="button"
                         aria-pressed={step === s.id}
-                        disabled={s.id === "ideas" && !ideasReady}
+                        disabled={
+                          (s.id === "ideas" && !ideasReady) ||
+                          (s.id === "editor" && !draftReady)
+                        }
                         onClick={() => setStep(s.id)}
                         className={`rounded-md px-2.5 py-1.5 text-sm ${step === s.id ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:text-foreground disabled:opacity-40"}`}
                       >
