@@ -7,12 +7,12 @@ import { CheckCircle2, Loader2, AlertCircle, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth/auth-shell";
 
-import { QuestionnaireStep } from "./QuestionnaireStep";
+import { WizardFlow } from "./wizard/WizardFlow";
 import { requestHandoff } from "@/lib/api/onboarding";
 
 type VerifyState =
   | "verifying"
-  | "questionnaire"
+  | "wizard"
   | "provisioning"
   | "ready"
   | "error";
@@ -46,6 +46,7 @@ export default function SignupVerifyPage() {
   const [error, setError] = useState("");
   const [slug, setSlug] = useState("");
   const [domain, setDomain] = useState("");
+  const [wizardToken, setWizardToken] = useState<string | null>(null);
   const [loginUrl, setLoginUrl] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const verifiedRef = useRef(false);
@@ -86,11 +87,6 @@ export default function SignupVerifyPage() {
     [t],
   );
 
-  const handleQuestionnaireSubmitted = useCallback(() => {
-    setState("provisioning");
-    startPolling(slug);
-  }, [slug, startPolling]);
-
   useEffect(() => {
     if (verifiedRef.current) return;
     verifiedRef.current = true;
@@ -110,6 +106,17 @@ export default function SignupVerifyPage() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) {
+          // An expired (15-min) email link isn't necessarily a dead wizard —
+          // try the token this browser stashed on first verify before giving up.
+          const stored =
+            typeof window !== "undefined"
+              ? localStorage.getItem("contentor_wizard_token")
+              : null;
+          if (stored) {
+            setWizardToken(stored);
+            setState("wizard");
+            return;
+          }
           setError(data.detail || t("verify.errors.verificationFailed"));
           setState("error");
           return;
@@ -119,20 +126,27 @@ export default function SignupVerifyPage() {
         setDomain(data.domain);
 
         // If the tenant is somehow already provisioned (idempotent re-verify
-        // after the user previously submitted the questionnaire), skip ahead.
+        // after the user previously completed the wizard), skip ahead.
         if (data.status === "ready") {
           setState("ready");
           return;
         }
-        // status === 'provisioning' means the questionnaire was already
-        // submitted in a previous session; resume polling.
+        // status === 'provisioning' means the wizard was already finalized
+        // in a previous session; resume polling.
         if (data.status === "provisioning") {
           setState("provisioning");
           startPolling(data.slug);
           return;
         }
 
-        setState("questionnaire");
+        const wt = (data.wizard_token as string | undefined) ?? token;
+        setWizardToken(wt);
+        try {
+          localStorage.setItem("contentor_wizard_token", wt);
+        } catch {
+          // storage unavailable (private mode) — resume via email link only
+        }
+        setState("wizard");
       })
       .catch(() => {
         setError(t("verify.errors.network"));
@@ -170,11 +184,16 @@ export default function SignupVerifyPage() {
     );
   }
 
-  if (state === "questionnaire" && token) {
+  if (state === "wizard" && wizardToken) {
     return (
-      <QuestionnaireStep
-        token={token}
-        onSubmitted={handleQuestionnaireSubmitted}
+      <WizardFlow
+        token={wizardToken}
+        onProvisioning={(flowSlug) => {
+          const target = flowSlug || slug;
+          if (flowSlug) setSlug(flowSlug);
+          setState("provisioning");
+          startPolling(target);
+        }}
       />
     );
   }
