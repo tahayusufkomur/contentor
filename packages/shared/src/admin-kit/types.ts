@@ -92,6 +92,11 @@ export interface ModelMeta {
   can_delete: boolean;
   default_ordering: string;
   page_size: number;
+  /** "table" (default) or "gallery" — gallery renders image cards plus the
+   * drop-a-PNG → JSON-record flow instead of the table + slide-over form. */
+  list_mode?: "table" | "gallery";
+  /** Gallery mode: which image field the cards render. */
+  gallery_image_field?: string;
 }
 
 export interface SiteModelEntry {

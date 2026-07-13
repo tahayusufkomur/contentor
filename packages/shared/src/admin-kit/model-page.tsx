@@ -18,6 +18,8 @@ import type {
   Row,
 } from "./types";
 
+import { GalleryView } from "./gallery-view";
+import { JsonRecordModal, type GalleryTarget } from "./json-record-modal";
 import { ModelForm } from "./model-form";
 import { ModelList } from "./model-list";
 import {
@@ -82,6 +84,11 @@ export function AdminModelPage({
   const [pageNum, setPageNum] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [form, setForm] = useState<FormTarget>(null);
+  const [galleryTarget, setGalleryTarget] = useState<GalleryTarget | null>(null);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryUploadError, setGalleryUploadError] = useState("");
+  const [galleryBusy, setGalleryBusy] = useState(false);
+  const [galleryServerError, setGalleryServerError] = useState("");
   const [fkFilterOptions, setFkFilterOptions] = useState<
     Record<string, ChoiceOption[]>
   >({});
@@ -217,6 +224,97 @@ export function AdminModelPage({
     }
   };
 
+  // Gallery mode: upload the dropped/picked PNG through the image field's own
+  // endpoint, then open the JSON modal prefilled for a create.
+  const galleryUpload = async (file: File) => {
+    if (!meta) return;
+    const imageFieldSchema = meta.form_fields.find(
+      (f) => f.name === meta.gallery_image_field,
+    );
+    if (!imageFieldSchema?.upload_url) return;
+    setGalleryUploading(true);
+    setGalleryUploadError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      if (imageFieldSchema.upload_prefix)
+        body.append("prefix", imageFieldSchema.upload_prefix);
+      const res = await fetch(imageFieldSchema.upload_url, {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          detail?: string;
+        } | null;
+        throw new Error(data?.detail ?? `Upload failed (${res.status}).`);
+      }
+      const image = (await res.json()) as { key: string; url: string };
+      setGalleryServerError("");
+      setGalleryTarget({ mode: "create", image });
+    } catch (err) {
+      setGalleryUploadError(
+        err instanceof Error ? err.message : "Upload failed.",
+      );
+    } finally {
+      setGalleryUploading(false);
+    }
+  };
+
+  const gallerySave = async (data: Record<string, unknown>) => {
+    if (!meta || !galleryTarget) return;
+    setGalleryBusy(true);
+    setGalleryServerError("");
+    try {
+      if (galleryTarget.mode === "create") {
+        await client.create(modelKey, {
+          ...data,
+          [meta.gallery_image_field ?? ""]: galleryTarget.image.key,
+        });
+        showBanner("success", `${meta.label} created.`);
+      } else {
+        await client.update(
+          modelKey,
+          String(galleryTarget.row[meta.pk_field]),
+          data,
+        );
+        showBanner("success", `${meta.label} updated.`);
+      }
+      setGalleryTarget(null);
+      refresh();
+    } catch (err) {
+      setGalleryServerError(
+        err instanceof AdminKitError
+          ? err.detail ||
+              Object.entries(err.fieldErrors)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(" · ")
+          : "Save failed.",
+      );
+    } finally {
+      setGalleryBusy(false);
+    }
+  };
+
+  const galleryDelete = async () => {
+    if (!meta || galleryTarget?.mode !== "edit") return;
+    setGalleryBusy(true);
+    setGalleryServerError("");
+    try {
+      await client.destroy(modelKey, String(galleryTarget.row[meta.pk_field]));
+      showBanner("success", `${meta.label} deleted.`);
+      setGalleryTarget(null);
+      refresh();
+    } catch (err) {
+      setGalleryServerError(
+        err instanceof AdminKitError ? err.detail : "Delete failed.",
+      );
+    } finally {
+      setGalleryBusy(false);
+    }
+  };
+
   if (loadError) {
     return (
       <div className="p-4 md:p-6">
@@ -236,6 +334,7 @@ export function AdminModelPage({
   const bulkActions = meta.actions.filter((a) => !a.row);
   const rowActions = meta.actions.filter((a) => a.row);
   const selectable = bulkActions.length > 0;
+  const galleryMode = meta.list_mode === "gallery";
   const totalPages = page
     ? Math.max(1, Math.ceil(page.count / meta.page_size))
     : 1;
@@ -253,7 +352,7 @@ export function AdminModelPage({
             </p>
           )}
         </div>
-        {meta.can_create && (
+        {meta.can_create && !galleryMode && (
           <KitButton
             variant="primary"
             onClick={() => setForm({ mode: "create" })}
@@ -359,6 +458,18 @@ export function AdminModelPage({
       <div className="rounded-lg border bg-card">
         {page === null ? (
           <KitSkeletonRows />
+        ) : galleryMode ? (
+          <GalleryView
+            meta={meta}
+            rows={page.results}
+            uploading={galleryUploading}
+            uploadError={galleryUploadError}
+            onCardClick={(row) => {
+              setGalleryServerError("");
+              setGalleryTarget({ mode: "edit", row });
+            }}
+            onFile={galleryUpload}
+          />
         ) : (
           <ModelList
             meta={meta}
@@ -443,6 +554,19 @@ export function AdminModelPage({
             showBanner("success", message);
             refresh();
           }}
+        />
+      )}
+
+      {galleryTarget && meta && page && (
+        <JsonRecordModal
+          meta={meta}
+          target={galleryTarget}
+          rows={page.results}
+          busy={galleryBusy}
+          serverError={galleryServerError}
+          onSave={gallerySave}
+          onDelete={galleryDelete}
+          onClose={() => setGalleryTarget(null)}
         />
       )}
     </div>
