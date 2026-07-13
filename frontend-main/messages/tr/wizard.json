@@ -1,0 +1,31 @@
+{
+  "wizard": {
+    "chapters": { "business": "İşin", "look": "Görünümün", "pages": "Sayfaların", "logo": "Logon", "launch": "Yayına al" },
+    "common": { "back": "Geri", "continue": "Devam", "recommended": "Önerilen", "finishRest": "Kalanını benim için tamamla", "skip": "Şimdilik geç", "saving": "Kaydediliyor…", "showAll": "Tümünü göster", "preview": "Önizleme", "errors": { "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin." } },
+    "niche": { "heading": "Ne öğretiyorsun?", "subhead": "Platformunu buna göre şekillendireceğiz." },
+    "niches": {
+      "yoga": { "label": "Yoga", "tagline": "Akışlar, nefes, denge" },
+      "pilates": { "label": "Pilates", "tagline": "Merkez, kontrol, duruş" },
+      "fitness": { "label": "Fitness", "tagline": "Güç ve kondisyon" },
+      "pole_dance": { "label": "Pole Dance", "tagline": "Güç ve zarafet" },
+      "belly_dance": { "label": "Oryantal Dans", "tagline": "Ritim ve ifade" },
+      "face_yoga": { "label": "Yüz Yogası", "tagline": "Doğal yüz egzersizi" },
+      "makeup": { "label": "Makyaj", "tagline": "Teknik ve sanat" },
+      "general": { "label": "Başka bir şey", "tagline": "Kendi alanın" }
+    },
+    "describe": { "heading": "Ne yaptığını anlat", "subhead": "Bir iki cümle yeter. Sözlerini sitende kullanacağız — geçebilirsin.", "placeholder": "Yoğun çalışan yetişkinlere sakin bir günlük pratik kazandırıyorum…" },
+    "goals": { "heading": "Neler sunacaksın?", "subhead": "Planladığın her şeyi seç — sayfalarını ve menünü buna göre kurarız.", "items": { "sell_courses": "Kayıtlı kurs sat", "run_live_classes": "Canlı online ders yap", "in_person_events": "Yüz yüze etkinlik düzenle", "sell_downloads": "İndirilebilir kaynak sat", "email_marketing": "E-posta kampanyaları gönder", "build_community": "Topluluk kur" } },
+    "theme": { "heading": "Renklerini seç", "subhead": "Alanına göre önerildi — istediğin zaman değiştirebilirsin." },
+    "themes": { "ocean": "Okyanus", "ember": "Kor", "forest": "Orman", "sunset": "Gün batımı", "violet": "Menekşe", "slate": "Arduvaz" },
+    "font": { "heading": "Yazı tipini seç", "subhead": "Marka adın ve başlıkların böyle görünecek." },
+    "fonts": { "inter": { "label": "Inter", "vibe": "Sade ve modern" }, "nunito": { "label": "Nunito", "vibe": "Samimi ve yumuşak" }, "playfair": { "label": "Playfair Display", "vibe": "Zarif ve dergi tadında" } },
+    "navbar": { "heading": "Menü stilini seç", "subhead": "Her ziyaretçinin ilk gördüğü üst bar." },
+    "navbarLayouts": { "classic": "Klasik", "centered": "Ortalanmış", "minimal": "Minimal" },
+    "hero": { "heading": "Karşılamanı seç", "subhead": "Ana sayfanın ilk ekranı." },
+    "heroStyles": { "centered": { "label": "Fotoğraflı", "desc": "Tam genişlik fotoğraf üzerinde başlığın" }, "split": { "label": "İkiye bölünmüş", "desc": "Başlık fotoğrafın yanında" }, "minimal": { "label": "Minimal", "desc": "Sadece sözlerin, fotoğrafsız" } },
+    "pages": { "subhead": "İki görünüm — sana uyanı seç.", "titles": { "home": "Ana sayfa", "about": "Hakkında sayfası", "courses": "Kurslar sayfası", "pricing": "Fiyatlandırma sayfası", "faq": "SSS sayfası", "contact": "İletişim sayfası" } },
+    "layouts": { "home-spotlight": "Vitrin", "home-story": "Hikâyeci", "about-story": "Hikâye", "about-portrait": "Portre", "courses-grid": "Sade ızgara", "courses-guided": "Rehberli", "pricing-simple": "Sade", "pricing-reassure": "Güven veren", "faq-list": "Düz liste", "faq-welcoming": "Sıcak karşılama", "contact-form": "Sadece form", "contact-warm": "Sıcak giriş" },
+    "logo": { "heading": "Logon", "subhead": "Basit başla — Logo Stüdyosu'nda istediğin zaman geliştirebilirsin.", "wordmark": { "title": "Yazı logo", "desc": "Marka adın, özenle dizilmiş" }, "curated": { "title": "Hazır logo", "desc": "Galeriden bir amblem seç" }, "ai": { "title": "Yapay zekâ ile tasarla", "desc": "Sohbetle özel logo tasarla", "locked": "Yayından sonra ücretli planla açılır" }, "useThis": "Bunu kullan", "selected": "Seçildi" },
+    "review": { "heading": "Yayına hazır mısın?", "subhead": "Aşağıdaki her şey yayından sonra da düzenlenebilir.", "create": "Platformumu oluştur", "creating": "Platformun oluşturuluyor…", "edit": "Düzenle", "rows": { "niche": "Alan", "goals": "Sunacakların", "theme": "Renkler", "font": "Yazı tipi", "navbar": "Menü", "hero": "Karşılama", "pages": "Sayfalar", "logo": "Logo", "description": "Hakkında" } }
+  }
+}
