@@ -3,13 +3,18 @@
 import { Sparkles, Wand2 } from "lucide-react";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
+import type { LogoRecipe } from "@/types/logo";
 import { CuratedGallery } from "./curated-gallery";
 
 interface StudioEntranceProps {
   logos: CuratedLogo[];
   loadingLibrary: boolean;
   logoAiStatus: LogoAiStatus | null;
-  onUseCurated: (logo: CuratedLogo) => void;
+  brandName: string;
+  tagline: string;
+  baseRecipe: LogoRecipe;
+  primaryHex: string;
+  onUseCurated: (logo: CuratedLogo, preview: LogoRecipe) => void;
   onCreateFromCurated: (logo: CuratedLogo) => void;
   onOpenChat: () => void;
   onUpgrade: () => void;
@@ -19,6 +24,10 @@ export function StudioEntrance({
   logos,
   loadingLibrary,
   logoAiStatus,
+  brandName,
+  tagline,
+  baseRecipe,
+  primaryHex,
   onUseCurated,
   onCreateFromCurated,
   onOpenChat,
@@ -34,7 +43,7 @@ export function StudioEntrance({
             <Sparkles className="h-4 w-4 text-primary" /> Ready-made logos
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Hand-picked for your niche. Free to use, add your name and colors.
+            Complete logo ideas for your brand — free to use and fine-tune.
           </p>
         </div>
         <button
@@ -57,6 +66,10 @@ export function StudioEntrance({
         logos={logos}
         loading={loadingLibrary}
         aiEligible={aiEligible}
+        brandName={brandName}
+        tagline={tagline}
+        baseRecipe={baseRecipe}
+        primaryHex={primaryHex}
         onUse={onUseCurated}
         onCreateSimilar={onCreateFromCurated}
         onUpgrade={onUpgrade}

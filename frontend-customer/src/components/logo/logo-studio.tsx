@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -38,7 +38,6 @@ import {
 } from "@/lib/logo/studio-session";
 import { getThemePalette } from "@/lib/themes";
 import {
-  curatedRecipe,
   fetchCuratedCatalog,
   rankForBrief,
   type CuratedLogo,
@@ -74,6 +73,12 @@ export function LogoStudio({
   onSaved,
 }: LogoStudioProps) {
   const theme = getThemePalette(config.theme);
+  // Stable seed recipe for gallery previews — recomputed only when the coach's
+  // saved config/theme changes, so the preview memo in CuratedGallery holds.
+  const previewBase = useMemo(
+    () => seedRecipe(config, theme.primaryHex),
+    [config, theme.primaryHex],
+  );
   const [recipe, setRecipe] = useState<LogoRecipe>(() =>
     seedRecipe(config, theme.primaryHex),
   );
@@ -402,26 +407,15 @@ export function LogoStudio({
     }
   }
 
-  async function handleUseCurated(logo: CuratedLogo) {
+  async function handleUseCurated(logo: CuratedLogo, preview: LogoRecipe) {
     setError(null);
-    const base = seedRecipe(config, theme.primaryHex);
-    const seed = {
-      brandName: brief.brandName || config.brand_name || base.name,
-      tagline: brief.tagline ?? "",
-      base,
-    };
-    // Traced vector mark: instant, editable, recolorable — no PNG round-trip.
+    // Traced vector mark: the previewed recipe is already complete.
     if (logo.markPaths?.length) {
-      handleCustomize(
-        curatedRecipe(
-          logo,
-          { type: "custom", rationale: logo.title, paths: logo.markPaths },
-          seed,
-        ),
-      );
+      handleCustomize(preview);
       return;
     }
-    // Fallback: fetch the PNG and use it as an image mark.
+    // Untraced: persist the PNG first, then swap the display-only image mark
+    // for one carrying a real photo_id (the preview used imageUrl directly).
     try {
       const res = await fetch(logo.imageUrl);
       const blob = await res.blob();
@@ -432,13 +426,10 @@ export function LogoStudio({
       try {
         const dataUrl = await imageToDataUrl(objectUrl);
         const uploaded = await uploadPng(file, logo.filename, file.type);
-        handleCustomize(
-          curatedRecipe(
-            logo,
-            { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
-            seed,
-          ),
-        );
+        handleCustomize({
+          ...preview,
+          mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
+        });
       } finally {
         URL.revokeObjectURL(objectUrl);
       }
@@ -631,6 +622,10 @@ export function LogoStudio({
                     logos={library}
                     loadingLibrary={loadingLibrary}
                     logoAiStatus={logoAiStatus}
+                    brandName={brief.brandName || config.brand_name}
+                    tagline={brief.tagline ?? ""}
+                    baseRecipe={previewBase}
+                    primaryHex={theme.primaryHex}
                     onUseCurated={handleUseCurated}
                     onCreateFromCurated={handleCreateFromCurated}
                     onOpenChat={() => setChatOpen(true)}

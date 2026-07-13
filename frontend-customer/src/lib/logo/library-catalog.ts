@@ -1,4 +1,4 @@
-import type { CustomMarkPath, LogoMark, LogoRecipe } from "@/types/logo";
+import type { CustomMarkPath } from "@/types/logo";
 
 export interface CuratedLogo {
   title: string;
@@ -37,21 +37,6 @@ export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
   } catch {
     return [];
   }
-}
-
-/** A picked curated logo → a complete Logo Studio recipe: the given mark
- * (traced vector or uploaded image) plus the brief's name and tagline. */
-export function curatedRecipe(
-  logo: CuratedLogo,
-  mark: LogoMark,
-  opts: { brandName: string; tagline: string; base: LogoRecipe },
-): LogoRecipe {
-  return {
-    ...opts.base,
-    name: opts.brandName || opts.base.name,
-    tagline: opts.tagline,
-    mark,
-  };
 }
 
 export function rankForBrief(

@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defaultRecipe } from "@/lib/logo/catalog";
-import { curatedRecipe, fetchCuratedCatalog, rankForBrief } from "../library-catalog";
+import { fetchCuratedCatalog, rankForBrief } from "../library-catalog";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -70,18 +69,5 @@ describe("library-catalog", () => {
     const logos = await fetchCuratedCatalog();
     expect(logos[0].markPaths).toEqual([{ d: "M0 0 Z", fill: "mark" }]);
     expect(logos[1].markPaths).toBeUndefined();
-  });
-
-  it("builds a complete recipe from a curated logo, mark + name + tagline", () => {
-    const base = defaultRecipe("Placeholder", "#1a56db");
-    const logo = { title: "Lotus", filename: "l.png", prompt: "", tags: ["yoga"], imageUrl: "l", markPaths: [{ d: "M0 0 Z", fill: "mark" as const }] };
-    const recipe = curatedRecipe(
-      logo,
-      { type: "custom", rationale: logo.title, paths: logo.markPaths! },
-      { brandName: "Zeynep Yoga", tagline: "Breathe daily", base },
-    );
-    expect(recipe.name).toBe("Zeynep Yoga");
-    expect(recipe.tagline).toBe("Breathe daily");
-    expect(recipe.mark).toEqual({ type: "custom", rationale: "Lotus", paths: [{ d: "M0 0 Z", fill: "mark" }] });
   });
 });
