@@ -22,9 +22,9 @@ class HeaderAwareTenantMiddleware(TenantMainMiddleware):
         return TenantMainMiddleware.hostname_from_request(request)
 
     def process_request(self, request):
-        if request.path.startswith("/api/webhooks/"):
+        if request.path.startswith("/api/webhooks/") or request.path.startswith("/api/v1/onboarding/"):
             # Force public schema and skip tenant resolution. The handler
-            # resolves the tenant from event metadata.
+            # resolves the tenant from event metadata, or in the request body.
             connection.set_schema_to_public()
             return None
         return super().process_request(request)
