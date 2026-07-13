@@ -189,6 +189,7 @@ CONTENTOR_SUPERUSERS = [
     email.strip() for email in os.environ.get("CONTENTOR_SUPERUSERS", "").split(",") if email.strip()
 ]
 MAGIC_LINK_EXPIRY_MINUTES = 15
+WIZARD_TOKEN_EXPIRY_DAYS = 7  # pre-provision onboarding wizard sessions
 JWT_EXPIRY_DAYS = 7
 
 # --- Google OAuth ---

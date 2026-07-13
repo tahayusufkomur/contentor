@@ -43,6 +43,34 @@ def verify_signup_token(token: str) -> dict:
     return payload
 
 
+def create_wizard_token(email: str, name: str, brand_name: str, region: str = "global") -> str:
+    """Long-lived token for the pre-provision onboarding wizard.
+
+    Same claims as the signup token but a multi-day expiry, so a coach can
+    leave mid-wizard and resume. Deliberately a separate purpose: extending
+    the signup/magic-link TTL would also lengthen login links.
+    """
+    payload = {
+        "email": email,
+        "name": name,
+        "brand_name": brand_name,
+        "region": region,
+        "purpose": "wizard",
+        "exp": datetime.now(tz=UTC) + timedelta(days=settings.WIZARD_TOKEN_EXPIRY_DAYS),
+        "iat": datetime.now(tz=UTC),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+def verify_wizard_token(token: str) -> dict:
+    """Accepts wizard tokens AND (still-valid) signup tokens — the signup
+    token is the only credential the coach holds in the first 15 minutes."""
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    if payload.get("purpose") not in ("wizard", "signup"):
+        raise jwt.InvalidTokenError("Invalid token purpose")
+    return payload
+
+
 def create_jwt(user, tenant, region: str | None = None, extra_claims: dict | None = None) -> str:
     payload = {
         "user_id": user.id,
