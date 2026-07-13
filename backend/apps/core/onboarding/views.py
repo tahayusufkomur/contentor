@@ -168,6 +168,10 @@ def creator_signup_verify(request):
     region = payload.get("region", "global")
     slug = slugify(brand_name)[:63]
 
+    from apps.accounts.tokens import create_wizard_token
+
+    wizard_token = create_wizard_token(email, payload.get("name", ""), brand_name, region=region)
+
     # Build the tenant's FQDN based on region. TR tenants live under tr.{base}.
     base_domain = settings.CONTENTOR_DOMAIN
     tenant_fqdn = f"{slug}.tr.{base_domain}" if region == "tr" else f"{slug}.{base_domain}"
@@ -183,6 +187,7 @@ def creator_signup_verify(request):
                 "status": tenant.provisioning_status,
                 "region": tenant.region,
                 "domain": tenant_fqdn,
+                "wizard_token": wizard_token,
             }
         )
 
@@ -221,6 +226,7 @@ def creator_signup_verify(request):
             "region": region,
             "domain": tenant_fqdn,
             "locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            "wizard_token": wizard_token,
         },
         status=201,
     )

@@ -2,7 +2,7 @@ import pytest
 from django.db import connection
 from rest_framework.test import APIClient
 
-from apps.accounts.tokens import create_wizard_token
+from apps.accounts.tokens import create_signup_token, create_wizard_token
 from apps.core.models import Tenant
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -49,3 +49,73 @@ def tenant(restore_public):
 def test_wizard_state_defaults_to_empty_dict(tenant):
     tenant.refresh_from_db()
     assert tenant.wizard_state == {}
+
+
+def _read(token):
+    return _client().post("/api/v1/onboarding/wizard/state/", {"token": token}, format="json")
+
+
+def _patch(token, **body):
+    return _client().patch("/api/v1/onboarding/wizard/state/", {"token": token, **body}, format="json")
+
+
+def test_read_state_empty(tenant):
+    resp = _read(_token())
+    assert resp.status_code == 200, resp.content
+    data = resp.json()
+    assert data["slug"] == "wiz-studio"
+    assert data["state"] == {}
+    assert data["has_paid_platform_plan"] is False
+
+
+def test_patch_merges_answers_and_stamps(tenant):
+    resp = _patch(_token(), answers={"niche": "yoga"}, current_step="business.describe")
+    assert resp.status_code == 200, resp.content
+    resp2 = _patch(_token(), answers={"theme": "forest"})
+    state = resp2.json()["state"]
+    assert state["answers"] == {"niche": "yoga", "theme": "forest"}
+    assert state["current_step"] == "business.describe"
+    assert set(state["step_timestamps"]) == {"niche", "theme"}
+    tenant.refresh_from_db()
+    assert tenant.wizard_state["answers"]["niche"] == "yoga"
+
+
+def test_patch_rejects_invalid_answers(tenant):
+    resp = _patch(_token(), answers={"theme": "neon"})
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "invalid_answers"
+    tenant.refresh_from_db()
+    assert tenant.wizard_state == {}
+
+
+def test_patch_rejects_unknown_key(tenant):
+    assert _patch(_token(), answers={"evil": 1}).status_code == 400
+
+
+def test_patch_409_once_seeding(tenant):
+    tenant.template_seed_status = "seeding"
+    tenant.save(update_fields=["template_seed_status"])
+    resp = _patch(_token(), answers={"theme": "forest"})
+    assert resp.status_code == 409
+    assert _read(_token()).status_code == 200  # reads still fine
+
+
+def test_signup_token_accepted(tenant):
+    signup = create_signup_token("coach@x.com", "Coach", "Wiz Studio")
+    assert _read(signup).status_code == 200
+
+
+def test_bad_token_rejected(tenant):
+    assert _read("garbage").status_code == 400
+
+
+def test_verify_response_includes_wizard_token(restore_public):
+    from apps.accounts.tokens import verify_wizard_token
+
+    connection.set_schema_to_public()
+    signup = create_signup_token("new@x.com", "Coach", "Fresh Studio")
+    resp = _client().post("/api/v1/onboarding/signup/verify/", {"token": signup}, format="json")
+    assert resp.status_code in (200, 201), resp.content
+    wizard_token = resp.json()["wizard_token"]
+    assert verify_wizard_token(wizard_token)["purpose"] == "wizard"
+    Tenant.objects.filter(slug="fresh-studio").delete()
