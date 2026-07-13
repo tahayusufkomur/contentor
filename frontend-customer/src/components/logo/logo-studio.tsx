@@ -44,6 +44,7 @@ import {
 } from "@/lib/logo/library-catalog";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
 import type { TenantConfig } from "@/types/tenant";
+import { generateSimilar, SimilarError } from "./create-similar";
 import { logoViewBox } from "./logo-renderer";
 import { renderRecipesToPngs } from "./render-draft";
 import { StudioBrief } from "./studio-brief";
@@ -103,12 +104,12 @@ export function LogoStudio({
   const [draftReady, setDraftReady] = useState(false);
   const [library, setLibrary] = useState<CuratedLogo[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
+  const [similarBusy, setSimilarBusy] = useState<string | null>(null);
 
   // ── Design with AI (paid-tier feature) ─────────────────────────────────
   const [logoAiStatus, setLogoAiStatus] = useState<LogoAiStatus | null>(null);
   const [chat, chatDispatch] = useReducer(chatReducer, initialChatState);
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatSeed, setChatSeed] = useState<string | null>(null);
 
   // ── Editor draft's AI-sourced mark elements (session-only) ─────────────
   const [activeElements, setActiveElements] = useState<
@@ -458,10 +459,35 @@ export function LogoStudio({
     }
   }
 
-  function handleCreateFromCurated(logo: CuratedLogo) {
-    chatDispatch({ type: "hydrate", snapshot: null });
-    setChatSeed(logo.prompt);
-    setChatOpen(true);
+  async function handleCreateFromCurated(logo: CuratedLogo) {
+    if (similarBusy) return;
+    if (!confirmReplaceDraft()) return;
+    setError(null);
+    setSimilarBusy(logo.filename);
+    try {
+      const result = await generateSimilar(
+        logo,
+        brief,
+        brief.brandName || config.brand_name,
+      );
+      setLogoAiStatus((s) =>
+        s ? { ...s, turns_remaining: result.turnsRemaining } : s,
+      );
+      if (result.kind === "icon") {
+        setError(
+          "Your icon is ready, but the AI lockup didn't finish — style the text in the editor.",
+        );
+      }
+      handleCustomize(result.recipe, result.design.elements);
+    } catch (err) {
+      setError(
+        err instanceof SimilarError
+          ? err.message
+          : "Couldn't design a similar logo — try again.",
+      );
+    } finally {
+      setSimilarBusy(null);
+    }
   }
 
   function handleUpgrade() {
@@ -623,7 +649,6 @@ export function LogoStudio({
                     brief={brief}
                     brandName={brief.brandName || config.brand_name}
                     status={logoAiStatus}
-                    seedPrompt={chatSeed ?? undefined}
                     onUseDesign={(chosen, elements) => {
                       handleCustomize(chosen, elements);
                       setChatOpen(false);
@@ -633,10 +658,7 @@ export function LogoStudio({
                         s ? { ...s, turns_remaining: turns } : s,
                       )
                     }
-                    onClose={() => {
-                      setChatOpen(false);
-                      setChatSeed(null);
-                    }}
+                    onClose={() => setChatOpen(false)}
                   />
                 ) : (
                   <StudioEntrance
@@ -651,6 +673,7 @@ export function LogoStudio({
                     onCreateFromCurated={handleCreateFromCurated}
                     onOpenChat={() => setChatOpen(true)}
                     onUpgrade={handleUpgrade}
+                    generatingFilename={similarBusy}
                   />
                 ))}
 

@@ -18,6 +18,7 @@ interface StudioEntranceProps {
   onCreateFromCurated: (logo: CuratedLogo) => void;
   onOpenChat: () => void;
   onUpgrade: () => void;
+  generatingFilename: string | null;
 }
 
 export function StudioEntrance({
@@ -32,6 +33,7 @@ export function StudioEntrance({
   onCreateFromCurated,
   onOpenChat,
   onUpgrade,
+  generatingFilename,
 }: StudioEntranceProps) {
   const aiEligible = logoAiStatus?.eligible ?? false;
 
@@ -73,6 +75,7 @@ export function StudioEntrance({
         onUse={onUseCurated}
         onCreateSimilar={onCreateFromCurated}
         onUpgrade={onUpgrade}
+        generatingFilename={generatingFilename}
       />
     </div>
   );

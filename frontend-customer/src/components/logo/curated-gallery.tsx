@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Lock, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Lock, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { composeCuratedPreview } from "@/lib/logo/curated-preview";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
@@ -19,6 +19,7 @@ interface CuratedGalleryProps {
   onUse: (logo: CuratedLogo, preview: LogoRecipe) => void;
   onCreateSimilar: (logo: CuratedLogo) => void;
   onUpgrade: () => void;
+  generatingFilename: string | null;
 }
 
 export function CuratedGallery({
@@ -32,6 +33,7 @@ export function CuratedGallery({
   onUse,
   onCreateSimilar,
   onUpgrade,
+  generatingFilename,
 }: CuratedGalleryProps) {
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
@@ -100,43 +102,57 @@ export function CuratedGallery({
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((logo, index) => (
-          <div
-            key={logo.filename}
-            className="flex flex-col overflow-hidden rounded-xl border"
-          >
-            <div className="flex h-44 items-center justify-center overflow-hidden bg-white p-4">
-              <LogoRenderer recipe={previews[index]!} width={220} />
-            </div>
-            <div className="flex flex-col gap-2 border-t p-3">
-              <p className="truncate text-xs font-medium" title={logo.title}>
-                {logo.title}
-              </p>
-              <Button
-                size="sm"
-                onClick={() => onUse(logo, previews[index]!)}
-                className="gap-2"
-              >
-                <Sparkles className="h-4 w-4" /> Use this
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  aiEligible ? onCreateSimilar(logo) : onUpgrade()
-                }
-                className="gap-1"
-              >
-                {aiEligible ? (
-                  <Wand2 className="h-3.5 w-3.5" />
-                ) : (
-                  <Lock className="h-3.5 w-3.5" />
+        {shown.map((logo, index) => {
+          const generating = generatingFilename === logo.filename;
+          const anyGenerating = generatingFilename !== null;
+          return (
+            <div
+              key={logo.filename}
+              className="flex flex-col overflow-hidden rounded-xl border"
+            >
+              <div className="relative flex h-44 items-center justify-center overflow-hidden bg-white p-4">
+                <LogoRenderer recipe={previews[index]!} width={220} />
+                {generating && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <p className="text-xs font-medium text-primary">
+                      Designing your version…
+                    </p>
+                  </div>
                 )}
-                Create your own
-              </Button>
+              </div>
+              <div className="flex flex-col gap-2 border-t p-3">
+                <p className="truncate text-xs font-medium" title={logo.title}>
+                  {logo.title}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => onUse(logo, previews[index]!)}
+                  disabled={anyGenerating}
+                  className="gap-2"
+                >
+                  <Sparkles className="h-4 w-4" /> Use this
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    aiEligible ? onCreateSimilar(logo) : onUpgrade()
+                  }
+                  disabled={anyGenerating}
+                  className="gap-1"
+                >
+                  {aiEligible ? (
+                    <Wand2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <Lock className="h-3.5 w-3.5" />
+                  )}
+                  Create your own
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
