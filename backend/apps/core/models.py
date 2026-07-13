@@ -88,6 +88,14 @@ class Tenant(TenantMixin):
         ],
         default="pending",
     )
+    wizard_state = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=(
+            "Pre-provision onboarding wizard progress + answers. "
+            "Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py)."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     auto_create_schema = False
