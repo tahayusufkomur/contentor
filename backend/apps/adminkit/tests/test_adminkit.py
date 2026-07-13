@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.billing.models import Payment, Subscription, SubscriptionPlan
 from apps.core.currency import tenant_charge_currency
-from apps.core.models import Domain, PlatformPlan, Tenant, WebhookEvent
+from apps.core.models import CuratedLogo, Domain, PlatformPlan, Tenant, WebhookEvent
 from apps.courses.models import Course
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -301,6 +301,24 @@ def test_image_field_schema(superuser):
     assert image_key["type"] == "image"
     assert image_key["upload_url"] == "/api/v1/platform/upload/"
     assert image_key["upload_prefix"] == "curated-logos"
+
+
+def test_curated_logo_list_serves_presigned_image_url(superuser):
+    CuratedLogo.objects.create(title="Lotus", image_key="platform/curated-logos/lotus.png")
+
+    resp = make_client(superuser).get("/api/v1/platform-admin/curated-logos/")
+    assert resp.status_code == 200
+    (row,) = resp.json()["results"]
+    assert row["image_key"]["key"] == "platform/curated-logos/lotus.png"
+    assert row["image_key"]["url"].startswith("http")
+
+
+def test_curated_logo_list_image_field_null_when_no_key(superuser):
+    CuratedLogo.objects.create(title="No image", image_key="")
+
+    resp = make_client(superuser).get("/api/v1/platform-admin/curated-logos/")
+    (row,) = resp.json()["results"]
+    assert row["image_key"] is None
 
 
 def test_tenant_admin_excludes_public_and_labels_fk(superuser, restore_public):

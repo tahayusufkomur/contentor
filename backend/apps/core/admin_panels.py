@@ -360,7 +360,7 @@ class CuratedLogoAdmin(ModelAdmin):
     key = "curated-logos"
     icon = "images"
     description = "Ready-made Logo Studio illustrations coaches can use for free."
-    list_display = ("title", "tags", "enabled", "position", "updated_at")
+    list_display = ("image_key", "title", "tags", "enabled", "position", "updated_at")
     search_fields = ("title", "tags", "prompt")
     list_filters = ("enabled",)
     ordering = ("position", "id")

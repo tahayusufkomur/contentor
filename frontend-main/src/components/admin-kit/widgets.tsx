@@ -14,6 +14,7 @@ import type {
   ColumnSchema,
   FieldSchema,
   FkValue,
+  ImageValue,
   RowValue,
 } from "@/lib/admin-kit/types";
 
@@ -31,6 +32,15 @@ function isFkValue(value: RowValue): value is FkValue {
     value !== null &&
     "label" in value &&
     "value" in value
+  );
+}
+
+function isImageValue(value: RowValue): value is ImageValue {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "key" in value &&
+    "url" in value
   );
 }
 
@@ -53,6 +63,17 @@ export function CellValue({
       );
     case "fk":
       return <span>{isFkValue(value) ? value.label : String(value)}</span>;
+    case "image":
+      return isImageValue(value) ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={value.url}
+          alt={value.key.split("/").pop() || value.key}
+          className="h-12 w-12 rounded-md border bg-white object-contain"
+        />
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      );
     case "choice": {
       const match = column.choices?.find((c) => c.value === value);
       return (

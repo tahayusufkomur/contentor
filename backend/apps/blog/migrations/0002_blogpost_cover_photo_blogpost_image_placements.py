@@ -5,21 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('blog', '0001_initial'),
-        ('media', '0002_photo_tags'),
+        ("blog", "0001_initial"),
+        ("media", "0002_photo_tags"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='blogpost',
-            name='cover_photo',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='media.photo'),
+            model_name="blogpost",
+            name="cover_photo",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="+", to="media.photo"
+            ),
         ),
         migrations.AddField(
-            model_name='blogpost',
-            name='image_placements',
+            model_name="blogpost",
+            name="image_placements",
             field=models.JSONField(blank=True, default=list),
         ),
     ]

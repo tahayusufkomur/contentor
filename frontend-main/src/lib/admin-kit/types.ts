@@ -116,12 +116,20 @@ export interface FkValue {
   label: string;
 }
 
+/** An image-field value as serialized in rows: the storage key plus a
+ * presigned, time-limited download URL. Null when the field is unset. */
+export interface ImageValue {
+  key: string;
+  url: string;
+}
+
 export type RowValue =
   | string
   | number
   | boolean
   | null
   | FkValue
+  | ImageValue
   | Record<string, unknown>
   | unknown[];
 export type Row = Record<string, RowValue>;

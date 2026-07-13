@@ -11,6 +11,8 @@ from rest_framework import status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from apps.core.storage import sign_if_s3_key
+
 from .introspection import build_serializer, model_meta
 
 
@@ -83,6 +85,9 @@ class AdminKitViewSet(viewsets.ModelViewSet):
         for obj, row in zip(page, rows, strict=False):
             for name in self.model_admin.get_computed_columns():
                 row[name] = self.model_admin.compute_column(name, obj)
+            for name in self.model_admin.image_fields:
+                key = row.get(name)
+                row[name] = {"key": key, "url": sign_if_s3_key(key)} if key else None
         return self.get_paginated_response(rows)
 
     # ---- writes, gated by capabilities and delegated to admin hooks ----
