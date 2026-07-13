@@ -303,6 +303,17 @@ def test_image_field_schema(superuser):
     assert image_key["upload_prefix"] == "curated-logos"
 
 
+def test_gallery_list_mode_meta(superuser):
+    client = make_client(superuser)
+    meta = client.get("/api/v1/platform-admin/curated-logos/meta/").json()
+    assert meta["list_mode"] == "gallery"
+    assert meta["gallery_image_field"] == "image_key"
+    # Every other admin stays a table.
+    meta = client.get("/api/v1/platform-admin/platform-plans/meta/").json()
+    assert meta["list_mode"] == "table"
+    assert meta["gallery_image_field"] == ""
+
+
 def test_curated_logo_list_serves_presigned_image_url(superuser):
     CuratedLogo.objects.create(title="Lotus", image_key="platform/curated-logos/lotus.png")
 

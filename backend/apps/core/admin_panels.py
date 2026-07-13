@@ -367,6 +367,8 @@ class CuratedLogoAdmin(ModelAdmin):
     fields = ("title", "prompt", "tags", "position", "enabled", "image_key")
     image_fields = ("image_key",)
     image_upload_prefix = "curated-logos"
+    list_mode = "gallery"
+    gallery_image_field = "image_key"
 
 
 @platform_site.register(AiIpBlock)

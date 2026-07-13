@@ -56,6 +56,14 @@ class ModelAdmin:
     list_select_related: tuple = ()
     page_size: int = 20
 
+    # ---- list rendering ----
+    # "table" (default) or "gallery". Gallery renders image cards plus a
+    # drop-a-PNG -> JSON-record create flow instead of the table + form.
+    list_mode: str = "table"
+    # Gallery mode: the image field shown on cards (name one of image_fields;
+    # it must also be in list_display so rows carry its {key, url} value).
+    gallery_image_field: str = ""
+
     # ---- form ----
     fields: tuple | None = None  # editable fields; None → all editable concrete fields
     readonly_fields: tuple = ()  # shown on detail/form but never writable

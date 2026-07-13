@@ -230,4 +230,6 @@ def model_meta(admin) -> dict:
         "can_delete": admin.can_delete,
         "default_ordering": admin.ordering[0] if admin.ordering else f"-{admin.pk_name}",
         "page_size": admin.page_size,
+        "list_mode": admin.list_mode,
+        "gallery_image_field": admin.gallery_image_field,
     }
