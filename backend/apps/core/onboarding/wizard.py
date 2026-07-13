@@ -114,3 +114,40 @@ def wizard_state(request):
         logger.info("wizard state saved slug=%s keys=%s", tenant.slug, sorted(answers_in))
 
     return Response(_state_body(tenant))
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def wizard_finalize(request):
+    """"Create my platform": fill unanswered steps with recommended defaults,
+    sync the legacy template fields, and enqueue provisioning. Idempotent —
+    a second call is a cheap status echo, never a second enqueue."""
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err is not None:
+        return err
+
+    if tenant.template_seed_status in ("seeding", "ready", "skipped") or tenant.provisioning_status != "pending":
+        return Response(
+            {"slug": tenant.slug, "status": tenant.provisioning_status, "template_status": tenant.template_seed_status}
+        )
+
+    state = dict(tenant.wizard_state or {})
+    answers = dict(state.get("answers") or {})
+    defaults = wizard_catalog.recommended_answers(answers.get("niche") or "general")
+    merged = {**defaults, **answers}
+    merged["page_layouts"] = {**defaults["page_layouts"], **(answers.get("page_layouts") or {})}
+    state["answers"] = merged
+    state.setdefault("version", 1)
+
+    tenant.wizard_state = state
+    tenant.template_niche = merged["niche"]
+    tenant.template_goals = list(merged.get("goals") or [])[:20]
+    tenant.template_seed_status = "seeding"
+    tenant.save(update_fields=["wizard_state", "template_niche", "template_goals", "template_seed_status"])
+
+    from ..tasks import provision_tenant
+
+    provision_tenant.delay(tenant.id, payload["email"], payload.get("name", ""), merged["niche"])
+    logger.info("wizard finalized slug=%s niche=%s goals=%s", tenant.slug, merged["niche"], tenant.template_goals)
+    return Response({"slug": tenant.slug, "status": "pending", "template_status": "seeding"}, status=202)

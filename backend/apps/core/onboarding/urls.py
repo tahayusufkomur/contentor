@@ -9,7 +9,7 @@ from .views import (
     seed_from_template,
     skip_template,
 )
-from .wizard import wizard_catalog_view, wizard_state
+from .wizard import wizard_catalog_view, wizard_state, wizard_finalize
 
 urlpatterns = [
     path("signup/", creator_signup, name="creator-signup"),
@@ -21,4 +21,5 @@ urlpatterns = [
     path("status/", provisioning_status, name="provisioning-status"),
     path("wizard/catalog/", wizard_catalog_view, name="wizard-catalog"),
     path("wizard/state/", wizard_state, name="wizard-state"),
+    path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
 ]
