@@ -59,6 +59,40 @@ def _create_default_config(tenant, preferred_locale):
     )
 
 
+def _apply_wizard_answers(tenant, answers, preferred_locale):
+    """Overlay the coach's wizard choices on the freshly-seeded tenant.
+
+    Runs after the niche seeder so the merged landing_sections (niche copy +
+    photo ids) are available as raw material — and so these values WIN over
+    the niche defaults. Pure overwrites, so a Celery retry is safe.
+    """
+    from apps.core.onboarding.compose import build_config_overrides
+    from apps.tenant_config.models import TenantConfig
+
+    with tenant_context(tenant):
+        config = TenantConfig.objects.first()
+        if config is None:  # provisioning failed before config; retry will recreate
+            return
+        overrides = build_config_overrides(
+            answers,
+            brand_name=config.brand_name,
+            landing_sections=config.landing_sections or {},
+            locale=preferred_locale,
+        )
+        for field, value in overrides.items():
+            setattr(config, field, value)
+        config.onboarding_completed = True
+        config.save()
+
+        if "build_community" in (answers.get("goals") or []):
+            from apps.community.models import CommunitySettings
+
+            community = CommunitySettings.load()
+            if not community.is_enabled:
+                community.is_enabled = True
+                community.save(update_fields=["is_enabled", "updated_at"])
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
 def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
     """Provision the tenant schema, owner, and config.
@@ -136,6 +170,10 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
                 logger.exception("Template seed failed for tenant %s (niche=%s)", tenant.slug, niche)
                 tenant.template_seed_status = "failed"
             tenant.save(update_fields=["template_seed_status"])
+
+        wizard_answers = (tenant.wizard_state or {}).get("answers") or {}
+        if wizard_answers:
+            _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
 
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
