@@ -2,7 +2,7 @@ import pytest
 from django.db import connection
 from rest_framework.test import APIClient
 
-from apps.accounts.tokens import create_signup_token, create_wizard_token
+from apps.accounts.tokens import create_wizard_token
 from apps.core.models import Tenant
 
 pytestmark = pytest.mark.django_db(transaction=True)
