@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.billing.providers import ProviderError, get_provider
+
 from . import wizard_catalog
 
 logger = logging.getLogger(__name__)
@@ -151,3 +153,64 @@ def wizard_finalize(request):
     provision_tenant.delay(tenant.id, payload["email"], payload.get("name", ""), merged["niche"])
     logger.info("wizard finalized slug=%s niche=%s goals=%s", tenant.slug, merged["niche"], tenant.template_goals)
     return Response({"slug": tenant.slug, "status": "pending", "template_status": "seeding"}, status=202)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def wizard_checkout(request):
+    """Contextual upgrade inside the wizard: Stripe Checkout for a platform
+    plan BEFORE provisioning. The tenant row already exists, so the standard
+    webhook attaches the PlatformSubscription; no wizard-specific completion
+    handling is needed."""
+    from types import SimpleNamespace
+
+    from django.db import transaction
+
+    from apps.core.constants import REGION_DEFAULT_CURRENCY
+    from apps.core.models import PlatformPlan
+
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err is not None:
+        return err
+
+    if tenant.has_paid_platform_plan:
+        return Response({"detail": "already_subscribed"}, status=409)
+
+    try:
+        plan = PlatformPlan.objects.get(pk=request.data.get("plan_id"))
+    except (PlatformPlan.DoesNotExist, ValueError, TypeError):
+        return Response({"detail": "plan_not_found"}, status=404)
+    if getattr(plan, "is_free", False):
+        return Response({"detail": "plan_not_purchasable"}, status=400)
+
+    with transaction.atomic():
+        locked = type(tenant).objects.select_for_update().get(pk=tenant.pk)
+        if not locked.billing_currency:
+            locked.billing_currency = REGION_DEFAULT_CURRENCY.get(locked.region, "USD")
+            locked.save(update_fields=["billing_currency"])
+        tenant.billing_currency = locked.billing_currency
+
+    price_entry = (plan.prices or {}).get(tenant.billing_currency, {}) if isinstance(plan.prices, dict) else {}
+    if not price_entry.get("stripe_price_id"):
+        return Response({"detail": "price_not_available", "currency": tenant.billing_currency}, status=400)
+
+    scheme = "https" if request.is_secure() else "http"
+    origin = f"{scheme}://{request.get_host()}"
+    user = SimpleNamespace(email=payload["email"], name=payload.get("name", ""), pk=None, id=None)
+    locale = "tr" if tenant.region == "tr" else "en"
+    try:
+        session = get_provider(tenant).create_checkout_session(
+            tenant=tenant,
+            user=user,
+            plan=plan,
+            success_url=f"{origin}/signup/verify?upgraded=1",
+            cancel_url=f"{origin}/signup/verify?upgraded=0",
+            locale=locale,
+        )
+    except ProviderError as exc:
+        logger.warning("wizard checkout failed slug=%s plan=%s: %s", tenant.slug, plan.pk, exc)
+        return Response({"detail": exc.code}, status=400)
+
+    logger.info("wizard checkout started slug=%s plan=%s currency=%s", tenant.slug, plan.pk, tenant.billing_currency)
+    return Response({"checkout_url": session.url, "provider": get_provider(tenant).name})
