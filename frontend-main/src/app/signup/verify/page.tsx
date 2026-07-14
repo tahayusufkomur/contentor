@@ -97,6 +97,13 @@ export default function SignupVerifyPage() {
     verifiedRef.current = true;
 
     if (!token) {
+      const stored =
+        typeof window !== "undefined" ? localStorage.getItem("contentor_wizard_token") : null;
+      if (stored) {
+        setWizardToken(stored);
+        setState("wizard");
+        return;
+      }
       setError(t("verify.errors.noToken"));
       setState("error");
       return;
