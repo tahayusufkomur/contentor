@@ -437,6 +437,67 @@ class AiTranscriptAdmin(_ReadOnlyAdmin):
     )
 
 
+@platform_site.register(Tenant)
+class WizardFunnelAdmin(_ReadOnlyAdmin):
+    """Second registration of Tenant (adminkit keys on `key`, not model):
+    the signup-wizard funnel — where each coach is, stalls, and drop-offs.
+    Data source: wizard_state written by the wizard endpoints (phase 1)."""
+
+    key = "wizard-funnel"
+    label = "Wizard Funnel"
+    label_plural = "Wizard Funnel"
+    icon = "route"
+    description = "Signup-wizard progress per tenant: current step, per-step timestamps, recovery nudges."
+    list_display = (
+        "name",
+        "owner_email",
+        "region",
+        "current_step",
+        "answered",
+        "last_activity",
+        "template_seed_status",
+        "provisioning_status",
+        "recovery_email_sent_at",
+        "created_at",
+        "slug",
+    )
+    search_fields = ("name", "slug", "owner_email")
+    list_filters = ("region", "provisioning_status", "template_seed_status")
+    ordering = ("-created_at",)
+    readonly_fields = (
+        "name",
+        "slug",
+        "owner_email",
+        "region",
+        "provisioning_status",
+        "template_seed_status",
+        "recovery_email_sent_at",
+        "created_at",
+        "wizard_state",
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).exclude(schema_name="public").exclude(wizard_state={})
+
+    def current_step(self, obj):
+        return (obj.wizard_state or {}).get("current_step")
+
+    current_step.short_description = "Current Step"
+
+    def answered(self, obj):
+        return len((obj.wizard_state or {}).get("answers") or {})
+
+    answered.short_description = "Answers"
+
+    def last_activity(self, obj):
+        stamps = (obj.wizard_state or {}).get("step_timestamps") or {}
+        # ISO-8601 strings from timezone.now().isoformat() — lexicographic max
+        # is chronological max.
+        return max(stamps.values(), default=None)
+
+    last_activity.short_description = "Last Step At"
+
+
 def _usage_admin(key_, model, count_field, description_):
     @platform_site.register(model)
     class UsageAdmin(_ReadOnlyAdmin):

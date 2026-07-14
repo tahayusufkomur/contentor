@@ -264,6 +264,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "users",
         "platform-subscriptions",
         "webhook-events",
+        "wizard-funnel",
         "custom-domains",
         "domain-subscriptions",
         "platform-blog-posts",
