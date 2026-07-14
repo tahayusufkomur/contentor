@@ -34,12 +34,18 @@ async function waitForReady(page: Page) {
 }
 
 test.beforeAll(() => {
-  // Self-healing sweep of tenants left by previous runs.
+  // Self-healing sweep of tenants left by previous runs. PlatformSubscription
+  // rows (created by the bypass-checkout path, spec 23) must be deleted
+  // BEFORE the tenant — Tenant.delete(force_drop=True) drops the Postgres
+  // schema first, and Django's ORM cascade then fails trying to null out
+  // billing_payment.platform_subscription_id in a schema that's already gone.
   manage([
     "shell",
     "-c",
-    "from apps.core.models import Tenant\n" +
-      "[t.delete(force_drop=True) for t in Tenant.objects.filter(slug__startswith='e2e-studio-')]",
+    "from apps.core.models import PlatformSubscription, Tenant\n" +
+      "tenants = Tenant.objects.filter(slug__startswith='e2e-studio-')\n" +
+      "PlatformSubscription.objects.filter(tenant__in=tenants).delete()\n" +
+      "[t.delete(force_drop=True) for t in tenants]",
   ]);
 });
 
