@@ -63,6 +63,32 @@ class BypassProvider(PaymentProvider):
             processed_at=now,
         )
 
+        # Bypass writes PlatformSubscription.user synchronously (unlike Stripe,
+        # which only stringifies user.pk into async webhook metadata), so a
+        # pk-less placeholder (e.g. the pre-provision wizard checkout) needs a
+        # real User row. Get-or-create one from the placeholder's email,
+        # mirroring provision_tenant's own coach-user creation so a later real
+        # signup for the same (email, region) reuses this row instead of
+        # conflicting.
+        resolved_user = user
+        if not getattr(user, "pk", None):
+            email = getattr(user, "email", None)
+            if email:
+                from apps.accounts.models import User
+                from apps.core.constants import REGION_DEFAULT_LOCALE
+
+                region = tenant.region or "global"
+                resolved_user, _ = User.objects.get_or_create(
+                    email=email,
+                    region=region,
+                    defaults={
+                        "name": getattr(user, "name", "") or "",
+                        "role": "coach",
+                        "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+                        "accessible_regions": [],
+                    },
+                )
+
         # Bypass is for dev/test — short-circuit the real Stripe round trip and
         # transition the PlatformSubscription + tenant.plan immediately. This
         # gives the same in-app state the Stripe webhook handlers produce on
@@ -71,7 +97,7 @@ class BypassProvider(PaymentProvider):
         sub, _ = PlatformSubscription.objects.update_or_create(
             tenant=tenant,
             defaults={
-                "user": user if getattr(user, "pk", None) else None,
+                "user": resolved_user if getattr(resolved_user, "pk", None) else None,
                 "plan": plan,
                 "status": "active",
                 "provider": "bypass",

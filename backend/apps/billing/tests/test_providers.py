@@ -163,3 +163,38 @@ def test_bypass_provider_activates_platform_subscription_immediately(restore_pub
     shared_tenant.refresh_from_db()
     assert shared_tenant.plan_id == plan.pk
     assert shared_tenant.is_subscription_active is True
+
+
+def test_bypass_provider_create_checkout_session_with_pkless_placeholder_user(restore_public, shared_tenant, plan):
+    """Pre-provision wizard checkout (Task 5) passes a pk-less placeholder
+    user — a SimpleNamespace, not a real User row — because signup happens
+    before provision_tenant creates one. BypassProvider must get-or-create a
+    real User from the placeholder's email instead of writing user=None into
+    PlatformSubscription's required FK (regression: previously raised
+    IntegrityError)."""
+    from types import SimpleNamespace
+
+    from apps.accounts.models import User
+    from apps.core.models import PlatformSubscription
+
+    placeholder = SimpleNamespace(email="wizardplaceholder@example.com", name="Wizard Coach", pk=None, id=None)
+
+    BypassProvider().create_checkout_session(
+        tenant=shared_tenant,
+        user=placeholder,
+        plan=plan,
+        success_url="https://example.com/success",
+        cancel_url="https://example.com/cancel",
+        locale="en",
+    )
+
+    sub = PlatformSubscription.objects.get(tenant=shared_tenant)
+    assert sub.user is not None
+    assert sub.user.email == "wizardplaceholder@example.com"
+
+    created_user = User.objects.get(email="wizardplaceholder@example.com", region="global")
+    assert created_user.name == "Wizard Coach"
+    assert created_user.role == "coach"
+    # No manual cleanup: like the other tests in this module, the `db`/
+    # `restore_public` fixtures wrap the test in a transaction that Django
+    # rolls back automatically at teardown.
