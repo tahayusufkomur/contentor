@@ -161,7 +161,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
                 },
             )
 
-        if niche:
+        if niche and tenant.template_seed_status != "ready":
             from apps.core.demo.seed_template import TemplateSeedError, seed_template_into_tenant
 
             try:
