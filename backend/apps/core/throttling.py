@@ -34,3 +34,10 @@ class AiHumanMessageThrottle(ClientIpAnonThrottle):
 
 class AiHumanRequestThrottle(ClientIpAnonThrottle):
     scope = "ai_human_request"
+
+
+class WizardRecoverThrottle(ClientIpAnonThrottle):
+    """Recovery re-send — one outbound email per call, keep it tight. Uses
+    the denial-recording base so a hammering IP trips the AI auto-block."""
+
+    scope = "wizard_recover"

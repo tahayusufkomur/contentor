@@ -37,3 +37,28 @@ def test_wizard_token_expires_by_days_setting(settings):
     token = create_wizard_token("a@b.com", "Coach", "Glow Studio")
     with pytest.raises(pyjwt.ExpiredSignatureError):
         verify_wizard_token(token)
+
+
+def test_decode_allow_expired_reads_expired_wizard_token(settings):
+    from apps.accounts.tokens import decode_wizard_token_allow_expired
+
+    settings.WIZARD_TOKEN_EXPIRY_DAYS = -1
+    token = create_wizard_token("a@b.com", "Coach", "Glow Studio")
+    with pytest.raises(pyjwt.ExpiredSignatureError):
+        verify_wizard_token(token)
+    payload = decode_wizard_token_allow_expired(token)
+    assert payload["email"] == "a@b.com"
+    assert payload["brand_name"] == "Glow Studio"
+
+
+def test_decode_allow_expired_still_verifies_signature_and_purpose():
+    from apps.accounts.tokens import decode_wizard_token_allow_expired
+
+    with pytest.raises(pyjwt.InvalidTokenError):
+        decode_wizard_token_allow_expired("garbage")
+    forged = pyjwt.encode({"email": "a@b.com", "purpose": "magic_link"}, "wrong-key", algorithm="HS256")
+    with pytest.raises(pyjwt.InvalidTokenError):
+        decode_wizard_token_allow_expired(forged)
+    bad_purpose = pyjwt.encode({"email": "a@b.com", "purpose": "magic_link"}, dj_settings.SECRET_KEY, algorithm="HS256")
+    with pytest.raises(pyjwt.InvalidTokenError):
+        decode_wizard_token_allow_expired(bad_purpose)

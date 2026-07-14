@@ -71,6 +71,20 @@ def verify_wizard_token(token: str) -> dict:
     return payload
 
 
+def decode_wizard_token_allow_expired(token: str) -> dict:
+    """Signature-verified decode that tolerates expiry — recovery only.
+
+    An expired wizard/signup token still proves the bearer once held a
+    legitimate email link. Recovery uses the claims to re-send a FRESH link
+    to the tenant owner's email (never to the caller), so skipping only the
+    exp check is safe. The HS256 signature is always enforced.
+    """
+    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"], options={"verify_exp": False})
+    if payload.get("purpose") not in ("wizard", "signup"):
+        raise jwt.InvalidTokenError("Invalid token purpose")
+    return payload
+
+
 def create_jwt(user, tenant, region: str | None = None, extra_claims: dict | None = None) -> str:
     payload = {
         "user_id": user.id,

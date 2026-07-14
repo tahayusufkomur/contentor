@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .recovery import wizard_recover
 from .views import (
     creator_signup,
     creator_signup_authenticated,
@@ -30,6 +31,7 @@ urlpatterns = [
     path("wizard/state/", wizard_state, name="wizard-state"),
     path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
     path("wizard/checkout/", wizard_checkout, name="wizard-checkout"),
+    path("wizard/recover/", wizard_recover, name="wizard-recover"),
     path("wizard/logo-status/", wizard_logo_status, name="wizard-logo-status"),
     path("wizard/logo-converse/", wizard_logo_converse, name="wizard-logo-converse"),
     path("wizard/logo-converse/finish/", wizard_logo_converse_finish, name="wizard-logo-converse-finish"),

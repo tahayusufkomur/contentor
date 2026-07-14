@@ -156,6 +156,8 @@ REST_FRAMEWORK = {
         "ai_human_request": "2/hour",
         # Public creator signup — one verification email per call.
         "signup": "5/min",
+        # Wizard recovery re-send — one outbound email per call.
+        "wizard_recover": "5/hour",
     },
 }
 

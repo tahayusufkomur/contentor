@@ -17,6 +17,12 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone
 from django.utils.text import slugify
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from apps.core import ipblock
+from apps.core.throttling import WizardRecoverThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -147,3 +153,51 @@ def send_recovery_email(tenant) -> bool:
     else:
         logger.error("wizard recovery email FAILED slug=%s (link withheld from logs)", tenant.slug)
     return sent
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([WizardRecoverThrottle])
+def wizard_recover(request):
+    """Resume screen: re-send a fresh wizard link to the tenant owner.
+
+    Accepts EXPIRED (but signature-valid) wizard/signup tokens — that's the
+    whole point: the 7-day link died, the answers didn't. The email always
+    goes to tenant.owner_email; the caller never chooses the address.
+    """
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
+
+    from apps.accounts.tokens import decode_wizard_token_allow_expired
+    from apps.core.i18n_helpers import msg
+    from apps.core.models import Tenant
+
+    token = request.data.get("token")
+    if not token:
+        return Response({"detail": msg(request, "token_required")}, status=400)
+    try:
+        payload = decode_wizard_token_allow_expired(token)
+    except Exception:
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+
+    region = payload.get("region", "global")
+    slug = slugify(payload.get("brand_name") or "")[:63]
+    if not slug:
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+    try:
+        tenant = Tenant.objects.get(slug=slug, region=region)
+    except Tenant.DoesNotExist:
+        return Response({"detail": msg(request, "tenant_not_found")}, status=404)
+    if tenant.owner_email != payload.get("email"):
+        return Response({"detail": "Token does not match tenant owner."}, status=403)
+    if tenant.provisioning_status != "pending" or tenant.template_seed_status != "pending":
+        return Response({"detail": "wizard_closed"}, status=409)
+
+    if tenant.recovery_email_sent_at and timezone.now() - tenant.recovery_email_sent_at < RESEND_COOLDOWN:
+        return Response({"detail": "sent"})  # cooldown: idempotent from the UI's view
+
+    send_recovery_email(tenant)
+    # Deliberately "sent" even when the provider errored — no send-failure
+    # oracle for probers; failures are logged server-side.
+    return Response({"detail": "sent"})

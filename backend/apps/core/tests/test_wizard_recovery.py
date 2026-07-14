@@ -172,3 +172,65 @@ def test_beat_task_sends_once_and_only_once(tenant, settings):
     assert send_wizard_recovery_emails() == 1
     assert send_wizard_recovery_emails() == 0  # stamped -> not a candidate anymore
     assert DevOutboundEmail.objects.filter(to="coach@x.com").count() == 1
+
+
+RECOVER_URL = "/api/v1/onboarding/wizard/recover/"
+
+
+def _recover(token, **client_kwargs):
+    return _client(**client_kwargs).post(RECOVER_URL, {"token": token}, format="json")
+
+
+def test_recover_sends_with_valid_token(tenant, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    resp = _recover(_token())
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["detail"] == "sent"
+    assert DevOutboundEmail.objects.filter(to="coach@x.com").count() == 1
+    tenant.refresh_from_db()
+    assert tenant.recovery_email_sent_at is not None
+
+
+def test_recover_accepts_expired_token(tenant, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    settings.WIZARD_TOKEN_EXPIRY_DAYS = -1
+    expired = _token()
+    settings.WIZARD_TOKEN_EXPIRY_DAYS = 7  # fresh token in the email must be valid
+    resp = _recover(expired)
+    assert resp.status_code == 200, resp.content
+    mail = DevOutboundEmail.objects.filter(to="coach@x.com").latest("id")
+    new_token = mail.html.split("/signup/verify?token=")[1].split('"')[0]
+    assert verify_wizard_token(new_token)["purpose"] == "wizard"
+
+
+def test_recover_cooldown_suppresses_second_send(tenant, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    assert _recover(_token()).status_code == 200
+    assert _recover(_token()).status_code == 200  # still "sent" — idempotent UX
+    assert DevOutboundEmail.objects.filter(to="coach@x.com").count() == 1
+
+
+def test_recover_rejects_garbage_and_wrong_owner(tenant):
+    assert _recover("garbage").status_code == 400
+    assert _recover(_token(email="mallory@x.com")).status_code == 403
+
+
+def test_recover_404_when_tenant_gone(restore_public):
+    connection.set_schema_to_public()
+    assert _recover(_token(brand="Never Existed")).status_code == 404
+
+
+def test_recover_409_once_wizard_closed(tenant):
+    tenant.template_seed_status = "seeding"
+    tenant.save(update_fields=["template_seed_status"])
+    resp = _recover(_token())
+    assert resp.status_code == 409
+    assert resp.json()["detail"] == "wizard_closed"
+
+
+def test_recover_is_throttled_per_ip(tenant, settings):
+    # Sink off: we only care about the 429, not the email rows.
+    settings.EMAIL_SINK_ENABLED = False
+    settings.RESEND_API_KEY = ""
+    statuses = [_recover("garbage", REMOTE_ADDR="9.9.9.1").status_code for _ in range(6)]
+    assert 429 in statuses, statuses
