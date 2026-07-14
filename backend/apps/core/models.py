@@ -462,9 +462,7 @@ class OnboardingAiUsage(models.Model):
     class Meta:
         app_label = "core"
         constraints = [
-            models.UniqueConstraint(
-                fields=["tenant_schema", "month"], name="uniq_onboarding_ai_usage_tenant_month"
-            ),
+            models.UniqueConstraint(fields=["tenant_schema", "month"], name="uniq_onboarding_ai_usage_tenant_month"),
         ]
 
     def __str__(self):

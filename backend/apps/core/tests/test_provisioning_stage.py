@@ -28,9 +28,7 @@ def tenant(restore_public):
 
 
 def test_status_endpoint_exposes_stage(tenant):
-    resp = APIClient(HTTP_HOST="shared-test.localhost").get(
-        "/api/v1/onboarding/status/", {"slug": "stage-studio"}
-    )
+    resp = APIClient(HTTP_HOST="shared-test.localhost").get("/api/v1/onboarding/status/", {"slug": "stage-studio"})
     assert resp.status_code == 200
     assert resp.json()["stage"] == "ai_copy"
 
@@ -38,9 +36,7 @@ def test_status_endpoint_exposes_stage(tenant):
 def test_status_endpoint_stage_null_without_wizard(tenant):
     tenant.wizard_state = {}
     tenant.save(update_fields=["wizard_state"])
-    resp = APIClient(HTTP_HOST="shared-test.localhost").get(
-        "/api/v1/onboarding/status/", {"slug": "stage-studio"}
-    )
+    resp = APIClient(HTTP_HOST="shared-test.localhost").get("/api/v1/onboarding/status/", {"slug": "stage-studio"})
     assert resp.json()["stage"] is None
 
 
@@ -49,8 +45,12 @@ def test_set_stage_helper_preserves_other_state():
 
     connection.set_schema_to_public()
     t = Tenant.objects.create(
-        schema_name="stage_h", name="H", slug="stage-h", subdomain="stage-h",
-        owner_email="h@x.com", wizard_state={"answers": {"niche": "yoga"}},
+        schema_name="stage_h",
+        name="H",
+        slug="stage-h",
+        subdomain="stage-h",
+        owner_email="h@x.com",
+        wizard_state={"answers": {"niche": "yoga"}},
     )
     try:
         _set_provisioning_stage(t, "seed")

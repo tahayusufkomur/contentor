@@ -103,9 +103,7 @@ def current_month() -> str:
 
 
 def tenant_usage(tenant_schema: str, month: str | None = None) -> OnboardingAiUsage:
-    row, _ = OnboardingAiUsage.objects.get_or_create(
-        tenant_schema=tenant_schema, month=month or current_month()
-    )
+    row, _ = OnboardingAiUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month or current_month())
     return row
 
 
@@ -120,9 +118,7 @@ def _record_success(tenant_schema: str) -> None:
 
 
 def _global_spend(month: str | None = None) -> float:
-    total = OnboardingAiUsage.objects.filter(month=month or current_month()).aggregate(
-        t=Sum("usd_spent")
-    )["t"]
+    total = OnboardingAiUsage.objects.filter(month=month or current_month()).aggregate(t=Sum("usd_spent"))["t"]
     return float(total or 0)
 
 
@@ -204,9 +200,7 @@ def compose_pages(pages: dict, *, brand_name, niche, description, goals, locale,
     Raises ComposeError on ANY provider/validation failure — the caller
     falls back to the static pages. Spend is recorded even on failure.
     """
-    user_prompt = _brief(
-        pages, brand_name=brand_name, niche=niche, description=description, goals=goals, locale=locale
-    )
+    user_prompt = _brief(pages, brand_name=brand_name, niche=niche, description=description, goals=goals, locale=locale)
     try:
         parsed, cost, _model = core_ai.structured(
             system=SYSTEM_PROMPT,

@@ -99,9 +99,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
 
         state = dict(tenant.wizard_state or {})
         if not state.get("ai_compose_status"):
-            overrides["pages"], status = _compose_pages_with_ai(
-                tenant, answers, overrides["pages"], preferred_locale
-            )
+            overrides["pages"], status = _compose_pages_with_ai(tenant, answers, overrides["pages"], preferred_locale)
             state["ai_compose_status"] = status
             tenant.wizard_state = state
             tenant.save(update_fields=["wizard_state"])

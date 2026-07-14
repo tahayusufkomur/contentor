@@ -15,8 +15,11 @@ SHARED_DOMAIN = "shared-test.localhost"
 def test_curated_catalog_rows_include_id(restore_public):
     connection.set_schema_to_public()
     row = CuratedLogo.objects.create(
-        title="Lotus", prompt="a lotus", tags="yoga",
-        image_key="platform/curated-logos/lotus.png", enabled=True,
+        title="Lotus",
+        prompt="a lotus",
+        tags="yoga",
+        image_key="platform/curated-logos/lotus.png",
+        enabled=True,
     )
     try:
         resp = APIClient(HTTP_HOST=SHARED_DOMAIN).get("/api/v1/logos/curated/")

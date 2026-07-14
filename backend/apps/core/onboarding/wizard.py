@@ -120,7 +120,7 @@ def wizard_state(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def wizard_finalize(request):
-    """"Create my platform": fill unanswered steps with recommended defaults,
+    """ "Create my platform": fill unanswered steps with recommended defaults,
     sync the legacy template fields, and enqueue provisioning. Idempotent —
     a second call is a cheap status echo, never a second enqueue."""
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)

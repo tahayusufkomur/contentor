@@ -25,9 +25,7 @@ SECTIONS = {
 
 
 def _build(answers=None, locale="en"):
-    return build_config_overrides(
-        answers or {}, brand_name="Glow Studio", landing_sections=SECTIONS, locale=locale
-    )
+    return build_config_overrides(answers or {}, brand_name="Glow Studio", landing_sections=SECTIONS, locale=locale)
 
 
 def test_returns_exactly_the_override_keys():
@@ -102,7 +100,11 @@ def test_hero_style_and_photo_harvest():
 def test_home_story_layout_sequence():
     over = _build({"page_layouts": {"home": "home-story"}})
     assert [b["type"] for b in over["pages"]["home"]["blocks"]] == [
-        "hero", "imageText", "courseGrid", "faq", "cta",
+        "hero",
+        "imageText",
+        "courseGrid",
+        "faq",
+        "cta",
     ]
 
 

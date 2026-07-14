@@ -9,7 +9,7 @@ from .views import (
     seed_from_template,
     skip_template,
 )
-from .wizard import wizard_catalog_view, wizard_state, wizard_finalize
+from .wizard import wizard_catalog_view, wizard_finalize, wizard_state
 
 urlpatterns = [
     path("signup/", creator_signup, name="creator-signup"),

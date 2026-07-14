@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0027_curatedlogo_mark_paths'),
+        ("core", "0027_curatedlogo_mark_paths"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenant',
-            name='wizard_state',
-            field=models.JSONField(blank=True, default=dict, help_text='Pre-provision onboarding wizard progress + answers. Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py).'),
+            model_name="tenant",
+            name="wizard_state",
+            field=models.JSONField(
+                blank=True,
+                default=dict,
+                help_text="Pre-provision onboarding wizard progress + answers. Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py).",
+            ),
         ),
     ]
