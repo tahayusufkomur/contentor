@@ -14,6 +14,7 @@ from .models import (
     CuratedLogo,
     HelpBotUsage,
     LogoAiUsage,
+    OnboardingAiUsage,
     PlatformBlogPost,
     PlatformKbEntry,
     PlatformPlan,
@@ -456,3 +457,9 @@ _usage_admin(
 )
 _usage_admin("blog-ai-usage", BlogAiUsage, "generations_used", "AI blog generation spend/credits per tenant per month.")
 _usage_admin("logo-ai-usage", LogoAiUsage, "packs_used", "Brand Pack spend/packs per tenant per month.")
+_usage_admin(
+    "onboarding-ai-usage",
+    OnboardingAiUsage,
+    "composes_used",
+    "Onboarding wizard AI copywriting spend/composes per tenant per month.",
+)

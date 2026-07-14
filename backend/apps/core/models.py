@@ -444,6 +444,33 @@ class BlogAiUsage(models.Model):
         return f"{self.tenant_schema} {self.month}: {self.generations_used} posts / ${self.usd_spent}"
 
 
+class OnboardingAiUsage(models.Model):
+    """Durable per-tenant-per-month accounting for the signup-wizard page
+    compose (apps.core.onboarding.ai_compose) — same design as BlogAiUsage:
+    ``usd_spent`` accrues on EVERY attempt so a systematic-failure loop still
+    trips the global kill-switch; ``composes_used`` increments only on
+    success (informational — the real once-only guard is
+    wizard_state.ai_compose_status)."""
+
+    tenant_schema = models.CharField(max_length=63)
+    month = models.CharField(max_length=7)  # "YYYY-MM"
+    composes_used = models.PositiveIntegerField(default=0)
+    usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant_schema", "month"], name="uniq_onboarding_ai_usage_tenant_month"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.tenant_schema} {self.month}: {self.composes_used} composes / ${self.usd_spent}"
+
+
 class PlatformBlogPost(models.Model):
     """contentor.app marketing blog (public SEO). Same content shape as
     apps.blog.BlogPost but lives in the public schema — superadmin-managed,

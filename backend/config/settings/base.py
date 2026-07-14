@@ -286,6 +286,14 @@ BLOG_AI_TOPIC_MODEL = os.environ.get("BLOG_AI_TOPIC_MODEL", "claude-haiku-4-5")
 # Global monthly USD kill-switch across ALL blog AI (attempts included).
 BLOG_AI_MONTHLY_BUDGET_USD = float(os.environ.get("BLOG_AI_MONTHLY_BUDGET_USD", "30"))
 
+# --- Onboarding wizard page compose (apps.core.onboarding.ai_compose;
+# provider from AI_PROVIDER). Free for all signups -> its own off-switch so
+# dev/e2e stacks (AI_PROVIDER=cli) can provision deterministically.
+ONBOARDING_AI_ENABLED = os.environ.get("ONBOARDING_AI_ENABLED", "true").lower() == "true"
+ONBOARDING_AI_MODEL = os.environ.get("ONBOARDING_AI_MODEL", "claude-sonnet-5")
+# Global monthly USD kill-switch across ALL onboarding composes (attempts included).
+ONBOARDING_AI_MONTHLY_BUDGET_USD = float(os.environ.get("ONBOARDING_AI_MONTHLY_BUDGET_USD", "20"))
+
 # --- Student site assistant (apps.tenant_config.student_bot; provider from AI_PROVIDER) ---
 STUDENT_BOT_MODEL = os.environ.get("STUDENT_BOT_MODEL", "claude-haiku-4-5")
 STUDENT_BOT_MAX_OUTPUT_TOKENS = int(os.environ.get("STUDENT_BOT_MAX_OUTPUT_TOKENS", "700"))

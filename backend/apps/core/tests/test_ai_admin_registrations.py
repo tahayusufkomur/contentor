@@ -1,8 +1,8 @@
 """Read-only adminkit browsers for the AI audit trail + spend meters
 (platform-admin site, public schema): AiTranscript, HelpBotUsage,
-StudentBotUsage, BlogAiUsage, LogoAiUsage. No create/edit/delete path is
-reachable — every capability is verified over real HTTP verbs, not just
-asserted from the class definition."""
+StudentBotUsage, BlogAiUsage, LogoAiUsage, OnboardingAiUsage. No create/edit/
+delete path is reachable — every capability is verified over real HTTP
+verbs, not just asserted from the class definition."""
 
 from decimal import Decimal
 
@@ -10,7 +10,14 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
-from apps.core.models import AiTranscript, BlogAiUsage, HelpBotUsage, LogoAiUsage, StudentBotUsage
+from apps.core.models import (
+    AiTranscript,
+    BlogAiUsage,
+    HelpBotUsage,
+    LogoAiUsage,
+    OnboardingAiUsage,
+    StudentBotUsage,
+)
 
 SHARED_DOMAIN = "shared-test.localhost"
 
@@ -58,10 +65,13 @@ _USAGE_MODELS_BY_KEY = {
     "student-bot-usage": StudentBotUsage,
     "blog-ai-usage": BlogAiUsage,
     "logo-ai-usage": LogoAiUsage,
+    "onboarding-ai-usage": OnboardingAiUsage,
 }
 
 
-@pytest.mark.parametrize("key", ["help-bot-usage", "student-bot-usage", "blog-ai-usage", "logo-ai-usage"])
+@pytest.mark.parametrize(
+    "key", ["help-bot-usage", "student-bot-usage", "blog-ai-usage", "logo-ai-usage", "onboarding-ai-usage"]
+)
 def test_usage_meters_browsable_and_read_only(superuser, key):
     model = _USAGE_MODELS_BY_KEY[key]
     row = model.objects.create(tenant_schema="demo_yoga", month="2026-07")
