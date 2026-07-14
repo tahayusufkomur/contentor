@@ -96,6 +96,15 @@ class Tenant(TenantMixin):
             "Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py)."
         ),
     )
+    recovery_email_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Last wizard drop-off recovery email. NULL = never nudged; the "
+            "hourly beat task sends at most one per tenant (filters on NULL), "
+            "the manual recover endpoint re-stamps on every re-send."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     auto_create_schema = False
