@@ -26,6 +26,13 @@
     "pages": { "subhead": "İki görünüm — sana uyanı seç.", "titles": { "home": "Ana sayfa", "about": "Hakkında sayfası", "courses": "Kurslar sayfası", "pricing": "Fiyatlandırma sayfası", "faq": "SSS sayfası", "contact": "İletişim sayfası" } },
     "layouts": { "home-spotlight": "Vitrin", "home-story": "Hikâyeci", "about-story": "Hikâye", "about-portrait": "Portre", "courses-grid": "Sade ızgara", "courses-guided": "Rehberli", "pricing-simple": "Sade", "pricing-reassure": "Güven veren", "faq-list": "Düz liste", "faq-welcoming": "Sıcak karşılama", "contact-form": "Sadece form", "contact-warm": "Sıcak giriş" },
     "logo": { "heading": "Logon", "subhead": "Basit başla — Logo Stüdyosu'nda istediğin zaman geliştirebilirsin.", "wordmark": { "title": "Yazı logo", "desc": "Marka adın, özenle dizilmiş" }, "curated": { "title": "Hazır logo", "desc": "Galeriden bir amblem seç" }, "ai": { "title": "Yapay zekâ ile tasarla", "desc": "Sohbetle özel logo tasarla", "locked": "Yayından sonra ücretli planla açılır" }, "useThis": "Bunu kullan", "selected": "Seçildi" },
-    "review": { "heading": "Yayına hazır mısın?", "subhead": "Aşağıdaki her şey yayından sonra da düzenlenebilir.", "create": "Platformumu oluştur", "creating": "Platformun oluşturuluyor…", "edit": "Düzenle", "rows": { "niche": "Alan", "goals": "Sunacakların", "theme": "Renkler", "font": "Yazı tipi", "navbar": "Menü", "hero": "Karşılama", "pages": "Sayfalar", "logo": "Logo", "description": "Hakkında" } }
+    "review": { "heading": "Yayına hazır mısın?", "subhead": "Aşağıdaki her şey yayından sonra da düzenlenebilir.", "create": "Platformumu oluştur", "creating": "Platformun oluşturuluyor…", "edit": "Düzenle", "rows": { "niche": "Alan", "goals": "Sunacakların", "theme": "Renkler", "font": "Yazı tipi", "navbar": "Menü", "hero": "Karşılama", "pages": "Sayfalar", "logo": "Logo", "description": "Hakkında" } },
+    "provisioning": {
+      "schema": "Alanın hazırlanıyor…",
+      "config": "Platformun kuruluyor…",
+      "seed": "Taslak içeriklerin ekleniyor…",
+      "ai_copy": "Sayfaların senin ağzından yazılıyor…",
+      "finalizing": "Son dokunuşlar…"
+    }
   }
 }

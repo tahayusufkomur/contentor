@@ -17,6 +17,8 @@ type VerifyState =
   | "ready"
   | "error";
 
+const KNOWN_STAGES = ["schema", "config", "seed", "ai_copy", "finalizing"] as const;
+
 function StateIcon({
   variant,
   children,
@@ -40,12 +42,14 @@ function StateIcon({
 
 export default function SignupVerifyPage() {
   const t = useTranslations("auth.signup");
+  const tw = useTranslations("wizard");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [state, setState] = useState<VerifyState>("verifying");
   const [error, setError] = useState("");
   const [slug, setSlug] = useState("");
   const [domain, setDomain] = useState("");
+  const [stage, setStage] = useState<string | null>(null);
   const [wizardToken, setWizardToken] = useState<string | null>(null);
   const [loginUrl, setLoginUrl] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -69,6 +73,7 @@ export default function SignupVerifyPage() {
           );
           if (statusRes.ok) {
             const statusData = await statusRes.json();
+            setStage(typeof statusData.stage === "string" ? statusData.stage : null);
             if (statusData.status === "ready") {
               if (pollRef.current) clearInterval(pollRef.current);
               setDomain(statusData.domain);
@@ -211,7 +216,9 @@ export default function SignupVerifyPage() {
         <div className="mt-7 flex items-center justify-center gap-2 text-[14px] text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span>
-            {t("verify.creating")}{" "}
+            {stage && (KNOWN_STAGES as readonly string[]).includes(stage)
+              ? tw(`provisioning.${stage}`)
+              : t("verify.creating")}{" "}
             <strong className="text-foreground">{domain || slug}</strong>
           </span>
         </div>
