@@ -209,11 +209,18 @@ def test_usage_recorded_on_failure_and_success(monkeypatch):
 
 
 def test_compose_available_respects_flag_and_budget(monkeypatch, settings):
-    monkeypatch.setattr(ai_compose.core_ai, "available", lambda: True)
+    monkeypatch.setattr(ai_compose.core_ai, "available", lambda: (True, "ok"))
     settings.ONBOARDING_AI_ENABLED = False
     assert ai_compose.compose_available() is False
     settings.ONBOARDING_AI_ENABLED = True
     assert ai_compose.compose_available() is True
     settings.ONBOARDING_AI_MONTHLY_BUDGET_USD = 0.005
     ai_compose.record_spend("budget-tenant", 0.01)
+    assert ai_compose.compose_available() is False
+
+
+def test_compose_available_respects_provider_unavailable(monkeypatch, settings):
+    monkeypatch.setattr(ai_compose.core_ai, "available", lambda: (False, "cli_no_binary"))
+    settings.ONBOARDING_AI_ENABLED = True
+    settings.ONBOARDING_AI_MONTHLY_BUDGET_USD = 100
     assert ai_compose.compose_available() is False

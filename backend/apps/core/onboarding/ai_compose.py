@@ -125,7 +125,7 @@ def _global_spend(month: str | None = None) -> float:
 def compose_available() -> bool:
     if not settings.ONBOARDING_AI_ENABLED:
         return False
-    if not core_ai.available():
+    if not core_ai.available()[0]:
         return False
     return _global_spend() < settings.ONBOARDING_AI_MONTHLY_BUDGET_USD
 
