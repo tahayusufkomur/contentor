@@ -663,3 +663,14 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 - `tools/wizard-mockups/node_modules` and `package-lock.json` will be created by `npm install` in Task 4 Step 4 — add `tools/wizard-mockups/node_modules/` to `.gitignore` if it isn't already covered by a repo-wide `node_modules/` ignore rule (check before committing Task 4; do not commit `node_modules`).
 - If a 13th page-layout option is ever added to `wizard_catalog.PAGE_LAYOUTS`, add its entry to `capture.mjs`'s `LAYOUTS` array and re-run `make capture-wizard-mockups` — until then, `PageLayoutStep`'s fallback (Task 3) means it degrades to the wireframe automatically, never a broken image.
+
+## Execution notes (discovered while running Task 4, not anticipated in the design)
+
+The first capture run produced 12 files with every layout pair byte-identical — the layout change was never visible in the screenshot. Root cause was two independent caching layers, neither related to the browser:
+
+1. `apps/tenant_config/views.py`'s `TenantConfigView.get_object()` caches the `TenantConfig` instance for 5 minutes, keyed `tenant:<schema>:config`, invalidated only in `perform_update()` (the DRF PATCH path). `set_wizard_mockup_layout` writes via the ORM directly, so it never hit that invalidation — every capture after the first silently got the previous layout's cached response for up to 5 minutes. Fixed by having the command call `cache.delete(f"tenant:{schema_name}:config")` after saving.
+2. `frontend-customer/src/lib/tenant.ts`'s `fetchTenantConfig()` keeps its own separate 60-second in-memory cache keyed by request domain, independent of both Next.js's and Django's caching. Capturing two layouts back-to-back on the same domain hit this too. Fixed by giving the scratch tenant one extra `Domain` row per layout id (`wm-<layout-id>.<CONTENTOR_DOMAIN>`) in `seed_wizard_mockup_tenant`, so each capture has its own cache key.
+
+Both fixes are implemented in the actual `seed_wizard_mockup_tenant.py` / `set_wizard_mockup_layout.py` committed for Tasks 1–2 (this file's Task 1/2 code blocks above reflect the original pre-discovery design, not the final committed code — see those files directly for the current implementation). Also added: `seed_wizard_mockup_tenant` publishes all seeded courses (they default to draft, correct for a real coach's fresh signup, but this tenant only exists to look finished in screenshots).
+
+If this tool is ever extended (e.g., a 13th layout, a different niche), watch for both caches again — neither is visible from the browser or from `curl` run in isolation with pauses between requests (which is why the first diagnostic curl test misleadingly looked fine).
