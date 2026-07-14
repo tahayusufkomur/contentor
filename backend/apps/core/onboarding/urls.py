@@ -10,6 +10,12 @@ from .views import (
     skip_template,
 )
 from .wizard import wizard_catalog_view, wizard_finalize, wizard_state
+from .wizard_logo import (
+    wizard_logo_converse,
+    wizard_logo_converse_finish,
+    wizard_logo_refine,
+    wizard_logo_status,
+)
 
 urlpatterns = [
     path("signup/", creator_signup, name="creator-signup"),
@@ -22,4 +28,8 @@ urlpatterns = [
     path("wizard/catalog/", wizard_catalog_view, name="wizard-catalog"),
     path("wizard/state/", wizard_state, name="wizard-state"),
     path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
+    path("wizard/logo-status/", wizard_logo_status, name="wizard-logo-status"),
+    path("wizard/logo-converse/", wizard_logo_converse, name="wizard-logo-converse"),
+    path("wizard/logo-converse/finish/", wizard_logo_converse_finish, name="wizard-logo-converse-finish"),
+    path("wizard/logo-refine/", wizard_logo_refine, name="wizard-logo-refine"),
 ]
