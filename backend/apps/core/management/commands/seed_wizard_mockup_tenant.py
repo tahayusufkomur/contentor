@@ -14,7 +14,12 @@ from apps.core.models import Domain, Tenant
 from apps.core.onboarding import wizard_catalog
 from apps.core.tasks import _create_default_config
 
-NICHE = "general"
+# "general" is the sparsest niche module (no subscription plans, FAQ
+# disabled with zero items) — meant as a blank-slate fallback for real
+# coaches, not for producing convincing screenshots. "yoga" has real
+# content for every block type this tool captures (FAQ, pricing plans,
+# testimonials), so mockups don't show empty states.
+NICHE = "yoga"
 
 
 class Command(BaseCommand):
