@@ -130,10 +130,7 @@ def build_config_overrides(answers: dict, *, brand_name: str, landing_sections: 
 def _hero(answers, brand_name, sections) -> dict:
     hero = sections.get("hero") or {}
     style = answers.get("hero_style") or "centered"
-    if style == "minimal":
-        bg = _img()
-    else:
-        bg = _img(hero.get("bg_image_url"), hero.get("bg_image_photo_id"))
+    bg = _img() if style == "minimal" else _img(hero.get("bg_image_url"), hero.get("bg_image_photo_id"))
     welcome = f"Welcome to {brand_name}" if brand_name else "Welcome"
     return {
         "id": "blk_hero",
@@ -169,7 +166,11 @@ def _course_grid(copy, heading_key, block_id="blk_courses") -> dict:
 
 def _testimonials(sections, copy) -> dict:
     items = [
-        {"name": it.get("name", ""), "text": it.get("text", ""), "avatar": _img(it.get("avatar_url"), it.get("avatar_photo_id"))}
+        {
+            "name": it.get("name", ""),
+            "text": it.get("text", ""),
+            "avatar": _img(it.get("avatar_url"), it.get("avatar_photo_id")),
+        }
         for it in (sections.get("testimonials") or {}).get("items", [])
         if isinstance(it, dict)
     ]
@@ -204,7 +205,13 @@ def _cta(sections, copy, block_id="blk_cta") -> dict:
 
 
 def _intro(copy, block_id="blk_intro") -> dict:
-    return {"id": block_id, "type": "richText", "enabled": True, "heading": copy["intro_heading"], "body": copy["intro_body"]}
+    return {
+        "id": block_id,
+        "type": "richText",
+        "enabled": True,
+        "heading": copy["intro_heading"],
+        "body": copy["intro_body"],
+    }
 
 
 def _goal_blocks(goals, copy) -> list[dict]:
@@ -213,7 +220,9 @@ def _goal_blocks(goals, copy) -> list[dict]:
         if entry["goal"] in goals and entry["type"] not in seen:
             seen.add(entry["type"])
             heading = copy["events_heading"] if entry["type"] == "upcomingEvents" else copy["store_heading"]
-            blocks.append({"id": f"blk_{entry['type'].lower()}", "type": entry["type"], "enabled": True, "heading": heading})
+            blocks.append(
+                {"id": f"blk_{entry['type'].lower()}", "type": entry["type"], "enabled": True, "heading": heading}
+            )
     return blocks
 
 
@@ -227,12 +236,27 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
 
     home = [_hero(answers, brand_name, sections)]
     if layout("home") == "home-story":
-        home += [_about_image_text(sections, copy), _course_grid(copy, "featured_courses"), *_goal_blocks(goals, copy), _faq(sections, copy), _cta(sections, copy)]
+        home += [
+            _about_image_text(sections, copy),
+            _course_grid(copy, "featured_courses"),
+            *_goal_blocks(goals, copy),
+            _faq(sections, copy),
+            _cta(sections, copy),
+        ]
     else:  # home-spotlight
-        home += [_course_grid(copy, "featured_courses"), *_goal_blocks(goals, copy), _testimonials(sections, copy), _cta(sections, copy)]
+        home += [
+            _course_grid(copy, "featured_courses"),
+            *_goal_blocks(goals, copy),
+            _testimonials(sections, copy),
+            _cta(sections, copy),
+        ]
 
     if layout("about") == "about-portrait":
-        about = [_about_image_text(sections, copy, "blk_about_bio"), _testimonials(sections, copy), _cta(sections, copy)]
+        about = [
+            _about_image_text(sections, copy, "blk_about_bio"),
+            _testimonials(sections, copy),
+            _cta(sections, copy),
+        ]
     else:  # about-story
         about = [_intro(copy, "blk_about_intro"), _about_image_text(sections, copy, "blk_about_bio")]
 
@@ -240,13 +264,15 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
     if layout("courses") == "courses-guided":
         courses = [_intro(copy), *courses, _cta(sections, copy)]
 
-    pricing = [{
-        "id": "blk_pricing_plans",
-        "type": "pricingPlans",
-        "enabled": True,
-        "heading": copy["plans_heading"],
-        "subheading": copy["plans_subheading"],
-    }]
+    pricing = [
+        {
+            "id": "blk_pricing_plans",
+            "type": "pricingPlans",
+            "enabled": True,
+            "heading": copy["plans_heading"],
+            "subheading": copy["plans_subheading"],
+        }
+    ]
     if layout("pricing") == "pricing-reassure":
         pricing += [_faq(sections, copy, "blk_pricing_faq"), _cta(sections, copy, "blk_pricing_cta")]
 
