@@ -6,6 +6,14 @@ from django_tenants.utils import tenant_context
 logger = logging.getLogger(__name__)
 
 
+def _set_provisioning_stage(tenant, stage):
+    """Best-effort theater checkpoint for the signup progress screen."""
+    state = dict(tenant.wizard_state or {})
+    state["provisioning_stage"] = stage
+    tenant.wizard_state = state
+    tenant.save(update_fields=["wizard_state"])
+
+
 def _create_default_config(tenant, preferred_locale):
     """Create the tenant's default TenantConfig (called once per tenant schema)."""
     from apps.tenant_config.defaults import default_pages
@@ -79,6 +87,8 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
             landing_sections=config.landing_sections or {},
             locale=preferred_locale,
         )
+
+        _set_provisioning_stage(tenant, "ai_copy")
 
         state = dict(tenant.wizard_state or {})
         if not state.get("ai_compose_status"):
@@ -171,6 +181,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
     try:
         tenant.provisioning_status = "provisioning"
         tenant.save(update_fields=["provisioning_status"])
+        _set_provisioning_stage(tenant, "schema")
 
         tenant.create_schema(check_if_exists=True, verbosity=0)
 
@@ -199,6 +210,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         # Create owner + config in the tenant schema. Both steps are guarded so
         # a retry after partial progress reuses what exists instead of creating
         # a duplicate TenantConfig / crashing on the duplicate owner.
+        _set_provisioning_stage(tenant, "config")
         with tenant_context(tenant):
             from apps.tenant_config.models import TenantConfig
 
@@ -220,6 +232,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
                 },
             )
 
+        _set_provisioning_stage(tenant, "seed")
         if niche and tenant.template_seed_status != "ready":
             from apps.core.demo.seed_template import TemplateSeedError, seed_template_into_tenant
 
@@ -235,6 +248,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         if wizard_answers:
             _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
 
+        _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
         logger.info("Tenant %s provisioned successfully", tenant.slug)

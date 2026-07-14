@@ -368,5 +368,6 @@ def provisioning_status(request):
             "slug": tenant.slug,
             "status": tenant.provisioning_status,
             "domain": fqdn,
+            "stage": (tenant.wizard_state or {}).get("provisioning_stage"),
         }
     )

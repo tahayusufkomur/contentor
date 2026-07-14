@@ -70,6 +70,7 @@ def test_wizard_answers_override_niche_defaults(cleanup):
     tenant = _provision(_make_tenant("prov-wiz", WIZARD_ANSWERS))
     assert tenant.provisioning_status == "ready"
     assert tenant.template_seed_status == "ready"
+    assert tenant.wizard_state["provisioning_stage"] == "finalizing"
 
     with tenant_context(tenant):
         from apps.community.models import CommunitySettings
