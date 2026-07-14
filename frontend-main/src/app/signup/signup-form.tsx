@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { createPlatformAuthenticated } from "@/lib/api/onboarding";
+import { checkBrandName, createPlatformAuthenticated } from "@/lib/api/onboarding";
+import { LivePreview } from "./verify/wizard/previews";
+import { WizardShell } from "./verify/wizard/WizardShell";
 import { ApiError } from "@/types/api";
-
-type SignupState = "form" | "email-sent" | "error";
 
 interface SignupFormProps {
   /** Set when an already-logged-in coach is creating an additional platform. */
@@ -20,38 +20,103 @@ interface SignupFormProps {
 }
 
 export function SignupForm({ authenticatedName }: SignupFormProps) {
+  if (authenticatedName) {
+    return <AuthenticatedSignupForm authenticatedName={authenticatedName} />;
+  }
+  return <AnonymousSignupFlow />;
+}
+
+/** Already-logged-in coach creating an additional platform — unchanged from
+ * before this feature: single brand-name field, no email verification. */
+function AuthenticatedSignupForm({ authenticatedName }: { authenticatedName: string }) {
   const t = useTranslations("auth.signup");
   const router = useRouter();
-  const isAuthenticated = Boolean(authenticatedName);
   const [brandName, setBrandName] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [state, setState] = useState<SignupState>("form");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    // Logged-in coach: skip the email-verification round-trip entirely and
-    // jump straight into provisioning the new platform.
-    if (isAuthenticated) {
-      try {
-        const { token } = await createPlatformAuthenticated(brandName);
-        router.push(`/signup/verify?token=${encodeURIComponent(token)}`);
-      } catch (err) {
-        setError(
-          err instanceof ApiError
-            ? ((err.data?.detail as string | undefined) ?? t("errors.generic"))
-            : t("errors.generic"),
-        );
-        setLoading(false);
-      }
-      return;
+    try {
+      const { token } = await createPlatformAuthenticated(brandName);
+      router.push(`/signup/verify?token=${encodeURIComponent(token)}`);
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? ((err.data?.detail as string | undefined) ?? t("errors.generic"))
+          : t("errors.generic"),
+      );
+      setLoading(false);
     }
+  }
 
+  return (
+    <AuthShell eyebrow={t("authTitle")} title={t("authTitle")} subtitle={t("authSubtitle", { name: authenticatedName })}>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="brandName" className="text-[13px] font-medium text-foreground/80">
+            {t("brandNameLabel")}
+          </Label>
+          <Input
+            id="brandName"
+            placeholder={t("brandNamePlaceholder")}
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value)}
+            required
+          />
+        </div>
+        {error && (
+          <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5">
+            <p className="text-[13px] text-destructive">{error}</p>
+          </div>
+        )}
+        <Button type="submit" variant="brand" size="lg" className="w-full" loading={loading}>
+          {loading ? t("authSubmitting") : t("authSubmit")}
+        </Button>
+      </form>
+    </AuthShell>
+  );
+}
+
+type Step = "brand" | "contact" | "email-sent";
+
+/** New coach: brand name (with live preview) -> name+email -> verification
+ * email sent. Renders inside the wizard's own shell so this feels like the
+ * wizard's first step instead of a separate form. */
+function AnonymousSignupFlow() {
+  const t = useTranslations("auth.signup");
+  const [step, setStep] = useState<Step>("brand");
+  const [brandName, setBrandName] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleBrandContinue() {
+    const trimmed = brandName.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await checkBrandName(trimmed);
+      if (!result.available) {
+        setError(result.detail ?? t("errors.generic"));
+        return;
+      }
+      setStep("contact");
+    } catch {
+      setError(t("errors.generic"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleContactSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/v1/onboarding/signup/", {
         method: "POST",
@@ -62,24 +127,19 @@ export function SignupForm({ authenticatedName }: SignupFormProps) {
       const data = await res.json();
       if (!res.ok) {
         setError(data.detail || t("errors.generic"));
-        setLoading(false);
         return;
       }
-      setState("email-sent");
-      setLoading(false);
+      setStep("email-sent");
     } catch {
       setError(t("errors.generic"));
+    } finally {
       setLoading(false);
     }
   }
 
-  if (state === "email-sent") {
+  if (step === "email-sent") {
     return (
-      <AuthShell
-        eyebrow={t("verifyTitle")}
-        title={t("verifyTitle")}
-        subtitle={t("verifyDescription", { email })}
-      >
+      <AuthShell eyebrow={t("verifyTitle")} title={t("verifyTitle")} subtitle={t("verifyDescription", { email })}>
         <div className="text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong">
             <Mail className="h-6 w-6 text-primary" />
@@ -92,101 +152,123 @@ export function SignupForm({ authenticatedName }: SignupFormProps) {
     );
   }
 
-  return (
-    <AuthShell
-      eyebrow={isAuthenticated ? t("authTitle") : t("title")}
-      title={isAuthenticated ? t("authTitle") : t("title")}
-      subtitle={
-        isAuthenticated
-          ? t("authSubtitle", { name: authenticatedName ?? "" })
-          : t("subtitle")
-      }
-      footer={
-        isAuthenticated ? undefined : (
-          <p className="text-[13px] text-muted-foreground">
-            {t("alreadyHaveAccount")}{" "}
-            <Link
-              href="/login"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+  const preview = <LivePreview answers={{}} brand={brandName || t("brandNamePlaceholder")} />;
+  const signInLink = (
+    <p className="text-center text-[13px] text-muted-foreground">
+      {t("alreadyHaveAccount")}{" "}
+      <Link href="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
+        {t("signIn")}
+      </Link>
+    </p>
+  );
+
+  if (step === "brand") {
+    return (
+      <WizardShell
+        chapter="business"
+        progress={0}
+        canBack={false}
+        onBack={() => {}}
+        showFinishRest={false}
+        onFinishRest={() => {}}
+        error={error}
+        aside={preview}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="brand"
+              size="lg"
+              className="w-full"
+              loading={loading}
+              disabled={!brandName.trim()}
+              onClick={handleBrandContinue}
             >
-              {t("signIn")}
-            </Link>
-          </p>
-        )
+              {t("submit")}
+            </Button>
+            {signInLink}
+          </>
+        }
+      >
+        <div>
+          <h2 className="text-display text-[24px] leading-tight tracking-[-0.02em] md:text-[26px]">
+            {t("brandStepHeading")}
+          </h2>
+          <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">{t("brandStepSubhead")}</p>
+          <div className="mt-5 space-y-2">
+            <Label htmlFor="brandName" className="text-[13px] font-medium text-foreground/80">
+              {t("brandNameLabel")}
+            </Label>
+            <Input
+              id="brandName"
+              placeholder={t("brandNamePlaceholder")}
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
+              autoFocus
+            />
+          </div>
+        </div>
+      </WizardShell>
+    );
+  }
+
+  // step === "contact"
+  return (
+    <WizardShell
+      chapter="business"
+      progress={8}
+      canBack
+      onBack={() => {
+        setError(null);
+        setStep("brand");
+      }}
+      showFinishRest={false}
+      onFinishRest={() => {}}
+      error={error}
+      aside={preview}
+      footer={
+        <>
+          <Button type="submit" form="contact-form" variant="brand" size="lg" className="w-full" loading={loading}>
+            {loading ? t("submitting") : t("submit")}
+          </Button>
+          {signInLink}
+        </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2">
-          <Label
-            htmlFor="brandName"
-            className="text-[13px] font-medium text-foreground/80"
-          >
-            {t("brandNameLabel")}
-          </Label>
-          <Input
-            id="brandName"
-            placeholder={t("brandNamePlaceholder")}
-            value={brandName}
-            onChange={(e) => setBrandName(e.target.value)}
-            required
-          />
-        </div>
-        {!isAuthenticated && (
-          <>
-            <div className="space-y-2">
-              <Label
-                htmlFor="name"
-                className="text-[13px] font-medium text-foreground/80"
-              >
-                {t("nameLabel")}
-              </Label>
-              <Input
-                id="name"
-                placeholder={t("namePlaceholder")}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-[13px] font-medium text-foreground/80"
-              >
-                {t("emailLabel")}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("emailPlaceholder")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-          </>
-        )}
-        {error && (
-          <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5">
-            <p className="text-[13px] text-destructive">{error}</p>
+      <div>
+        <h2 className="text-display text-[24px] leading-tight tracking-[-0.02em] md:text-[26px]">
+          {t("contactStepHeading")}
+        </h2>
+        <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">{t("contactStepSubhead")}</p>
+        <form id="contact-form" onSubmit={handleContactSubmit} className="mt-5 space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-[13px] font-medium text-foreground/80">
+              {t("nameLabel")}
+            </Label>
+            <Input
+              id="name"
+              placeholder={t("namePlaceholder")}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+            />
           </div>
-        )}
-        <Button
-          type="submit"
-          variant="brand"
-          size="lg"
-          className="w-full"
-          loading={loading}
-        >
-          {loading
-            ? isAuthenticated
-              ? t("authSubmitting")
-              : t("submitting")
-            : isAuthenticated
-              ? t("authSubmit")
-              : t("submit")}
-        </Button>
-      </form>
-    </AuthShell>
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-[13px] font-medium text-foreground/80">
+              {t("emailLabel")}
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder={t("emailPlaceholder")}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+        </form>
+      </div>
+    </WizardShell>
   );
 }
