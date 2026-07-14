@@ -130,3 +130,47 @@ def test_finish_and_refine_delegate(paid, monkeypatch):
 def test_bad_token_rejected(tenant):
     resp = _client().post("/api/v1/onboarding/wizard/logo-status/", {"token": "junk"}, format="json")
     assert resp.status_code == 400
+
+
+PNG_1PX = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01"
+    b"\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
+
+def _upload(kind="logo", content=PNG_1PX, token=None):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    return _client().post(
+        "/api/v1/onboarding/wizard/logo-upload/",
+        {"token": token or _token(), "kind": kind, "file": SimpleUploadedFile("x.png", content, "image/png")},
+        format="multipart",
+    )
+
+
+def test_upload_requires_paid(tenant):
+    assert _upload().status_code == 403
+
+
+def test_upload_stores_under_wizard_prefix(paid, monkeypatch):
+    from apps.core.onboarding import wizard_logo
+
+    puts = {}
+    monkeypatch.setattr(wizard_logo, "_put_wizard_png", lambda key, blob: puts.setdefault(key, blob))
+    resp = _upload()
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["key"] == "wizard/ai_logo_studio/logo.png"
+    assert list(puts) == ["wizard/ai_logo_studio/logo.png"]
+
+    resp2 = _upload(kind="icon")
+    assert resp2.json()["key"] == "wizard/ai_logo_studio/icon.png"
+
+
+def test_upload_rejects_bad_kind_magic_and_size(paid, monkeypatch):
+    from apps.core.onboarding import wizard_logo
+
+    monkeypatch.setattr(wizard_logo, "_put_wizard_png", lambda key, blob: None)
+    assert _upload(kind="banner").status_code == 400
+    assert _upload(content=b"GIF89a not a png").status_code == 400
+    assert _upload(content=PNG_1PX + b"\x00" * (1_048_577)).status_code == 400

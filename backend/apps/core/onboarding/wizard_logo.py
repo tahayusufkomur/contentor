@@ -13,10 +13,12 @@ we rewrite it before delegating.
 
 import logging
 
+from django.conf import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.core.storage import get_s3_client
 from apps.tenant_config import logo_api
 
 from . import wizard_catalog
@@ -89,3 +91,47 @@ def wizard_logo_refine(request):
         return err
     data = request.data if isinstance(request.data, dict) else {}
     return Response(logo_api.refine(tenant, _engine_data(data)))
+
+
+_PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+_MAX_LOGO_UPLOAD_BYTES = 1_048_576  # 1 MB — studio exports are ~20-200 KB
+_UPLOAD_KINDS = ("logo", "icon")
+
+
+def _put_wizard_png(key: str, blob: bytes) -> None:
+    """S3 put for staged wizard logo exports. Same client construction + put
+    call as apps/core/platform/uploads.py's _store_object (same bucket,
+    ContentType image/png)."""
+    import io
+
+    get_s3_client().upload_fileobj(
+        io.BytesIO(blob), settings.AWS_BUCKET_NAME, key, ExtraArgs={"ContentType": "image/png"}
+    )
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def wizard_logo_upload(request):
+    """Stage the client-rendered logo/icon PNG for provisioning. Deterministic
+    key per tenant+kind so re-picks overwrite instead of accumulating."""
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err is not None:
+        return err
+    if not tenant.has_paid_platform_plan:
+        return Response({"detail": "upgrade_required"}, status=403)
+
+    kind = str(request.data.get("kind") or "")
+    if kind not in _UPLOAD_KINDS:
+        return Response({"detail": "kind must be logo or icon."}, status=400)
+    upload = request.FILES.get("file")
+    if upload is None or upload.size > _MAX_LOGO_UPLOAD_BYTES:
+        return Response({"detail": "file required, max 1MB."}, status=400)
+    blob = upload.read()
+    if not blob.startswith(_PNG_MAGIC):
+        return Response({"detail": "file must be a PNG."}, status=400)
+
+    key = f"wizard/{tenant.schema_name}/{kind}.png"
+    _put_wizard_png(key, blob)
+    logger.info("wizard logo upload slug=%s kind=%s bytes=%d", tenant.slug, kind, len(blob))
+    return Response({"key": key})

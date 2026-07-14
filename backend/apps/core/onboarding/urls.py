@@ -15,6 +15,7 @@ from .wizard_logo import (
     wizard_logo_converse_finish,
     wizard_logo_refine,
     wizard_logo_status,
+    wizard_logo_upload,
 )
 
 urlpatterns = [
@@ -32,4 +33,5 @@ urlpatterns = [
     path("wizard/logo-converse/", wizard_logo_converse, name="wizard-logo-converse"),
     path("wizard/logo-converse/finish/", wizard_logo_converse_finish, name="wizard-logo-converse-finish"),
     path("wizard/logo-refine/", wizard_logo_refine, name="wizard-logo-refine"),
+    path("wizard/logo-upload/", wizard_logo_upload, name="wizard-logo-upload"),
 ]
