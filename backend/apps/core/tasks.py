@@ -8,10 +8,17 @@ logger = logging.getLogger(__name__)
 
 def _set_provisioning_stage(tenant, stage):
     """Best-effort theater checkpoint for the signup progress screen."""
-    state = dict(tenant.wizard_state or {})
-    state["provisioning_stage"] = stage
-    tenant.wizard_state = state
-    tenant.save(update_fields=["wizard_state"])
+    try:
+        state = dict(tenant.wizard_state or {})
+        state["provisioning_stage"] = stage
+        tenant.wizard_state = state
+        tenant.save(update_fields=["wizard_state"])
+    except Exception:
+        logger.exception(
+            "Failed to set provisioning stage %s for tenant %s; ignoring",
+            stage,
+            tenant.slug,
+        )
 
 
 def _create_default_config(tenant, preferred_locale):
