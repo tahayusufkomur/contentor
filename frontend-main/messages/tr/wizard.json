@@ -14,11 +14,11 @@
       "general": { "label": "Başka bir şey", "tagline": "Kendi alanın" }
     },
     "describe": { "heading": "Ne yaptığını anlat", "subhead": "Bir iki cümle yeter. Sözlerini sitende kullanacağız — geçebilirsin.", "placeholder": "Yoğun çalışan yetişkinlere sakin bir günlük pratik kazandırıyorum…" },
-    "goals": { "heading": "Neler sunacaksın?", "subhead": "Planladığın her şeyi seç — sayfalarını ve menünü buna göre kurarız.", "items": { "sell_courses": "Kayıtlı kurs sat", "run_live_classes": "Canlı online ders yap", "in_person_events": "Yüz yüze etkinlik düzenle", "sell_downloads": "İndirilebilir kaynak sat", "email_marketing": "E-posta kampanyaları gönder", "build_community": "Topluluk kur" } },
+    "goals": { "heading": "Neler sunacaksın?", "subhead": "Planladığın her şeyi seç — sayfalarını ve menünü buna göre kurarız.", "selectAll": "Tümünü seç", "clearAll": "Tümünü temizle", "items": { "sell_courses": "Kayıtlı kurs sat", "run_live_classes": "Canlı online ders yap", "in_person_events": "Yüz yüze etkinlik düzenle", "sell_downloads": "İndirilebilir kaynak sat", "email_marketing": "E-posta kampanyaları gönder", "build_community": "Topluluk kur" } },
     "theme": { "heading": "Renklerini seç", "subhead": "Alanına göre önerildi — istediğin zaman değiştirebilirsin." },
     "themes": { "ocean": "Okyanus", "ember": "Kor", "forest": "Orman", "sunset": "Gün batımı", "violet": "Menekşe", "slate": "Arduvaz" },
     "font": { "heading": "Yazı tipini seç", "subhead": "Marka adın ve başlıkların böyle görünecek." },
-    "fonts": { "inter": { "label": "Inter", "vibe": "Sade ve modern" }, "nunito": { "label": "Nunito", "vibe": "Samimi ve yumuşak" }, "playfair": { "label": "Playfair Display", "vibe": "Zarif ve dergi tadında" } },
+    "fonts": { "inter": { "label": "Inter", "vibe": "Sade ve modern" }, "geist": { "label": "Geist", "vibe": "Keskin ve teknik" }, "poppins": { "label": "Poppins", "vibe": "Belirgin ve geometrik" }, "nunito": { "label": "Nunito", "vibe": "Samimi ve yumuşak" }, "dm_sans": { "label": "DM Sans", "vibe": "Nötr ve çok yönlü" }, "playfair": { "label": "Playfair Display", "vibe": "Zarif ve dergi tadında" }, "merriweather": { "label": "Merriweather", "vibe": "Güvenilir ve okunaklı" }, "lora": { "label": "Lora", "vibe": "Sıcak ve edebi" } },
     "navbar": { "heading": "Menü stilini seç", "subhead": "Her ziyaretçinin ilk gördüğü üst bar." },
     "navbarLayouts": { "classic": "Klasik", "centered": "Ortalanmış", "minimal": "Minimal" },
     "hero": { "heading": "Karşılamanı seç", "subhead": "Ana sayfanın ilk ekranı." },

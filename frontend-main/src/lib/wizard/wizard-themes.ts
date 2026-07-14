@@ -10,8 +10,16 @@ export const THEME_SWATCHES: Record<string, { primary: string; soft: string; ink
   slate: { primary: "#334155", soft: "#e2e8f0", ink: "#0f172a" },
 };
 
+// Loaded on-demand via a Google Fonts stylesheet link (see FontPreviewLoader
+// in previews.tsx) so these actually render as the named typeface in the
+// wizard's own preview, not just a generic sans/serif fallback.
 export const FONT_STACKS: Record<string, string> = {
-  Inter: "var(--font-wizard-inter, 'Inter'), system-ui, sans-serif",
-  Nunito: "var(--font-wizard-nunito, 'Nunito'), system-ui, sans-serif",
-  "Playfair Display": "var(--font-wizard-playfair, 'Playfair Display'), serif",
+  Inter: "'Inter', system-ui, sans-serif",
+  Geist: "'Geist', system-ui, sans-serif",
+  Poppins: "'Poppins', system-ui, sans-serif",
+  Nunito: "'Nunito', system-ui, sans-serif",
+  "DM Sans": "'DM Sans', system-ui, sans-serif",
+  "Playfair Display": "'Playfair Display', serif",
+  Merriweather: "'Merriweather', serif",
+  Lora: "'Lora', serif",
 };

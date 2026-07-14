@@ -133,6 +133,18 @@ export function WizardFlow({
     [token, onProvisioning, t],
   );
 
+  // Single-select steps (one option, one outcome) advance the moment the
+  // coach picks — no separate "Continue" tap needed. Multi-select
+  // (goals) and free-text (describe) steps stay on draft() + Continue.
+  const selectAndAdvance = useCallback(
+    (partial: WizardAnswers) => {
+      if (!step || busy) return;
+      const next = nextStep(steps, step.id);
+      void commit(partial, next?.id ?? "review");
+    },
+    [commit, steps, step, busy],
+  );
+
   const handleContinue = async () => {
     if (!catalog || !step || busy) return;
     if (step.id === "review") {
@@ -176,7 +188,7 @@ export function WizardFlow({
   let body: React.ReactNode;
   switch (step.id) {
     case "business.niche":
-      body = <NicheStep catalog={catalog} value={answers.niche} onChange={(niche) => draft({ niche })} />;
+      body = <NicheStep catalog={catalog} value={answers.niche} onChange={(niche) => selectAndAdvance({ niche })} />;
       break;
     case "business.describe":
       body = <DescribeStep catalog={catalog} value={answers.description} onChange={(description) => draft({ description })} />;
@@ -190,20 +202,20 @@ export function WizardFlow({
           catalog={catalog}
           niche={answers.niche}
           value={answers.theme ?? (catalog.theme_ranking[answers.niche ?? "general"] ?? catalog.themes)[0]}
-          onChange={(theme) => draft({ theme })}
+          onChange={(theme) => selectAndAdvance({ theme })}
           showAll={showAllThemes}
           onShowAll={() => setShowAllThemes(true)}
         />
       );
       break;
     case "look.font":
-      body = <FontStep catalog={catalog} brand={brand} value={answers.font_family ?? catalog.recommended.font_family} onChange={(font_family) => draft({ font_family })} />;
+      body = <FontStep catalog={catalog} brand={brand} value={answers.font_family ?? catalog.recommended.font_family} onChange={(font_family) => selectAndAdvance({ font_family })} />;
       break;
     case "look.navbar":
-      body = <NavbarStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.navbar_layout ?? catalog.recommended.navbar_layout} onChange={(navbar_layout) => draft({ navbar_layout })} />;
+      body = <NavbarStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.navbar_layout ?? catalog.recommended.navbar_layout} onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })} />;
       break;
     case "look.hero":
-      body = <HeroStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.hero_style ?? catalog.recommended.hero_style} onChange={(hero_style) => draft({ hero_style })} />;
+      body = <HeroStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.hero_style ?? catalog.recommended.hero_style} onChange={(hero_style) => selectAndAdvance({ hero_style })} />;
       break;
     case "logo":
       body = (
@@ -229,7 +241,9 @@ export function WizardFlow({
           catalog={catalog}
           page={page}
           value={answers.page_layouts?.[page] ?? catalog.page_layouts[page][0].id}
-          onChange={(layoutId) => draft({ page_layouts: { ...(answers.page_layouts ?? {}), [page]: layoutId } })}
+          onChange={(layoutId) =>
+            selectAndAdvance({ page_layouts: { ...(answers.page_layouts ?? {}), [page]: layoutId } })
+          }
           theme={answers.theme}
           goals={goals}
         />

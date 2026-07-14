@@ -40,13 +40,22 @@ THEME_RANKING = {
     "general": ("ocean", "forest", "slate"),
 }
 
-# Wizard font ids -> the TenantConfig.font_family value stored. All three
-# families already ship via niche modules, so the customer frontend renders
-# them today.
+# Wizard font ids -> the TenantConfig.font_family value stored. Mirrors the
+# post-launch coach admin's font picker (frontend-customer brand-tab.tsx
+# FONTS) — same 8 families, so what a coach can pick in the wizard is a
+# subset-turned-superset match of what they can switch to later. The
+# customer frontend loads font_family dynamically via Google Fonts (see
+# frontend-customer/src/app/layout.tsx), so any of these renders correctly
+# on the live site without further plumbing.
 FONTS = {
     "inter": "Inter",
+    "geist": "Geist",
+    "poppins": "Poppins",
     "nunito": "Nunito",
+    "dm_sans": "DM Sans",
     "playfair": "Playfair Display",
+    "merriweather": "Merriweather",
+    "lora": "Lora",
 }
 
 _RECOMMENDED_FONT = {

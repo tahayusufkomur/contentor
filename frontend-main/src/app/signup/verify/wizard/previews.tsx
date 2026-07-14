@@ -1,9 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 import type { WizardAnswers } from "@/lib/wizard/types";
 
 const FALLBACK = THEME_SWATCHES.ocean;
+
+const FONT_LOADER_ID = "wizard-font-preview-stylesheet";
+
+/** Loads every wizard font catalog family as a real web font (Google Fonts
+ * CSS2 API) so the "Pick your type" cards and live preview render the
+ * actual typeface instead of silently falling back to the browser's
+ * generic sans-serif/serif default (which made every sans option and every
+ * serif option look identical). Mount once near the wizard root. */
+export function FontPreviewLoader() {
+  useEffect(() => {
+    if (document.getElementById(FONT_LOADER_ID)) return;
+    const families = Object.keys(FONT_STACKS)
+      .map((f) => `family=${encodeURIComponent(f)}:wght@400;600;700`)
+      .join("&");
+    const link = document.createElement("link");
+    link.id = FONT_LOADER_ID;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+    document.head.appendChild(link);
+  }, []);
+  return null;
+}
 
 function swatch(theme?: string) {
   return THEME_SWATCHES[theme ?? ""] ?? FALLBACK;

@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 
 import { CHAPTERS, type ChapterId } from "@/lib/wizard/machine";
 
+import { FontPreviewLoader } from "./previews";
+
 interface WizardShellProps {
   chapter: ChapterId;
   progress: number; // 0-100
@@ -24,12 +26,13 @@ export function WizardShell({
   const t = useTranslations("wizard");
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-background">
+      <FontPreviewLoader />
       <div aria-hidden className="absolute inset-0 -z-10">
         <div className="aurora animate-aurora" />
         <div className="grid-fade absolute inset-0 opacity-40" />
       </div>
 
-      <div className="mx-auto flex h-full w-full max-w-[980px] gap-8 px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
+      <div className="mx-auto flex h-full w-full max-w-[980px] justify-center gap-8 px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
         <div className="flex h-full min-w-0 flex-1 flex-col md:max-w-[440px]">
           <header className="flex items-center gap-3 pt-1">
             <button

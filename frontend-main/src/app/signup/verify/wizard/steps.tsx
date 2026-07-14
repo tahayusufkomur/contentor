@@ -104,9 +104,21 @@ export function GoalsStep({ catalog, value, onChange }: { catalog: WizardCatalog
   const goals = value ?? [];
   const toggle = (key: string) =>
     onChange(goals.includes(key) ? goals.filter((g) => g !== key) : [...goals, key]);
+  const allSelected = catalog.goals.length > 0 && catalog.goals.every((key) => goals.includes(key));
   return (
     <div>
-      <SlideHeader heading={t("goals.heading")} subhead={t("goals.subhead")} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <SlideHeader heading={t("goals.heading")} subhead={t("goals.subhead")} />
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(allSelected ? [] : [...catalog.goals])}
+          className="mt-1 flex-shrink-0 text-[12.5px] font-medium text-primary hover:underline"
+        >
+          {allSelected ? t("goals.clearAll") : t("goals.selectAll")}
+        </button>
+      </div>
       <div className="mt-5 flex flex-col gap-2">
         {catalog.goals.map((key) => (
           <button
