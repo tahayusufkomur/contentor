@@ -58,27 +58,29 @@ export function LogoStep({
           </span>
         </OptionCard>
 
-        <div>
-          <p className="mb-2 mt-2 text-[12.5px] font-semibold text-muted-foreground">
-            {t("logo.curated.title")} — {t("logo.curated.desc")}
-          </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            {ranked.slice(0, 8).map((item) => (
-              <OptionCard
-                key={item.id}
-                selected={mode === "curated" && value?.curated_id === item.id}
-                onSelect={() => onChange({ mode: "curated", curated_id: item.id })}
-                title={item.title}
-              >
-                <span className="flex items-center gap-2 rounded-lg bg-white p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
-                  <img src={item.image_url} alt={item.title} className="h-10 w-10 object-contain" />
-                  <span className="truncate text-[12px] font-semibold" style={{ color: s.ink, fontFamily: stack }}>{brand}</span>
-                </span>
-              </OptionCard>
-            ))}
+        {ranked.length > 0 && (
+          <div>
+            <p className="mb-2 mt-2 text-[12.5px] font-semibold text-muted-foreground">
+              {t("logo.curated.title")} — {t("logo.curated.desc")}
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {ranked.slice(0, 8).map((item) => (
+                <OptionCard
+                  key={item.id}
+                  selected={mode === "curated" && value?.curated_id === item.id}
+                  onSelect={() => onChange({ mode: "curated", curated_id: item.id })}
+                  title={item.title}
+                >
+                  <span className="flex items-center gap-2 rounded-lg bg-white p-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
+                    <img src={item.image_url} alt={item.title} className="h-10 w-10 object-contain" />
+                    <span className="truncate text-[12px] font-semibold" style={{ color: s.ink, fontFamily: stack }}>{brand}</span>
+                  </span>
+                </OptionCard>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <AiLogoDoor
           token={token}
