@@ -303,18 +303,53 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
     }
 
 
-def apply_wizard_logo(config, answers) -> None:
+def apply_wizard_logo(config, answers, tenant) -> None:
     """Apply the wizard's logo choice. Runs inside tenant_context; the caller
     saves ``config``.
 
     wordmark: store nothing — with no logo image the public header renders
     the brand name as text, which IS the wordmark door's promise.
+    ai: AI Brand Pack — persist the composer's recipe (re-validated
+    defensively, same validator the wizard-answers check and the Logo Studio
+    serializer use) and attach the staged PNG exports. export_keys are
+    trusted ONLY when they equal this tenant's own staged path
+    (``wizard/<schema_name>/logo.png`` / ``.../icon.png``) — anything else
+    (forged, stale, or another tenant's key) is silently dropped rather than
+    attached. show_brand_name is off: studio lockups already contain the
+    wordmark, same reasoning the Logo Studio's own help text gives.
     curated: tenant Photo row pointing at the shared platform/ key (demo-photo
     precedent; no S3 copy, DB-only erase can't orphan it) + show_brand_name
     so mark + brand text form a lockup. Idempotent via the s3_key lookup.
     """
     logo = answers.get("logo") or {}
-    if logo.get("mode") != "curated" or not logo.get("curated_id"):
+    mode = logo.get("mode")
+
+    if mode == "ai" and isinstance(logo.get("recipe"), dict):
+        from apps.tenant_config import logo_recipe as logo_recipe_lib
+
+        try:
+            config.logo_recipe = logo_recipe_lib.validate_recipe(logo_recipe_lib.upgrade_recipe(logo["recipe"]))
+        except Exception:
+            return  # invalid recipe -> behave like wordmark (text fallback)
+
+        from apps.media.models import Photo
+
+        expected = {kind: f"wizard/{tenant.schema_name}/{kind}.png" for kind in ("logo", "icon")}
+        export_keys = logo.get("export_keys") or {}
+        for kind, expected_key in expected.items():
+            if export_keys.get(kind) != expected_key:
+                continue  # ownership re-check: only this tenant's staged keys
+            photo = Photo.objects.filter(s3_key=expected_key).first()
+            if photo is None:
+                photo = Photo.objects.create(s3_key=expected_key, title=kind.capitalize())
+            setattr(config, kind, photo)
+        config.logo_url = ""
+        navbar = dict(config.navbar_config or {})
+        navbar["show_brand_name"] = False  # studio lockups already contain the wordmark
+        config.navbar_config = navbar
+        return
+
+    if mode != "curated" or not logo.get("curated_id"):
         return
 
     from django_tenants.utils import schema_context

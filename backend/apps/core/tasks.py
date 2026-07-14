@@ -107,7 +107,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
         for field, value in overrides.items():
             setattr(config, field, value)
         config.onboarding_completed = True
-        apply_wizard_logo(config, answers)
+        apply_wizard_logo(config, answers, tenant)
         config.save()
 
         if ai_status is not None:

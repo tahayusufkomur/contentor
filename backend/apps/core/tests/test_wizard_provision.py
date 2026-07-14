@@ -212,3 +212,63 @@ def test_ai_compose_skipped_when_unavailable_and_idempotent(cleanup, monkeypatch
     monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
     _provision(tenant)
     assert calls == []
+
+
+# Full v2 shape (mark/badge/colors all present with explicit enum values) —
+# logo_recipe.validate_recipe has no defaults for those enums, so a bare
+# {"version": 2, "layout": ..., "name": ...} 400s on a missing mark.type
+# (see apps/core/tests/test_wizard_catalog.py's _VALID_AI_RECIPE, same shape).
+AI_RECIPE = {
+    "version": 2,
+    "layout": "name_only",
+    "name": "Prov Studio",
+    "mark": {"type": "initials", "style": "plain"},
+    "badge": {"shape": "circle", "outline": False},
+    "colors": {"badge": {"type": "solid", "color": "#111827"}, "mark": "#ffffff", "text": "#111827"},
+}
+
+
+def test_ai_logo_applied_at_provision(cleanup):
+    cleanup.append("prov-ai-logo")
+    answers = {
+        **WIZARD_ANSWERS,
+        "logo": {
+            "mode": "ai",
+            "curated_id": None,
+            "recipe": AI_RECIPE,
+            "export_keys": {
+                "logo": "wizard/prov_ai_logo/logo.png",
+                "icon": "wizard/prov_ai_logo/icon.png",
+            },
+        },
+    }
+    tenant = _provision(_make_tenant("prov-ai-logo", answers))
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        config = TenantConfig.objects.first()
+        assert config.logo_recipe.get("layout") == "name_only"
+        assert config.logo is not None and config.logo.s3_key == "wizard/prov_ai_logo/logo.png"
+        assert config.icon is not None and config.icon.s3_key == "wizard/prov_ai_logo/icon.png"
+        assert config.navbar_config.get("show_brand_name") is False
+
+
+def test_ai_logo_foreign_export_keys_ignored(cleanup):
+    cleanup.append("prov-ai-evil")
+    answers = {
+        **WIZARD_ANSWERS,
+        "logo": {
+            "mode": "ai",
+            "curated_id": None,
+            "recipe": AI_RECIPE,
+            "export_keys": {"logo": "wizard/someone_else/logo.png", "icon": "platform/x.png"},
+        },
+    }
+    tenant = _provision(_make_tenant("prov-ai-evil", answers))
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        config = TenantConfig.objects.first()
+        assert config.logo_recipe.get("layout") == "name_only"  # recipe still applies
+        assert config.logo is None  # foreign keys refused
+        assert config.icon is None
