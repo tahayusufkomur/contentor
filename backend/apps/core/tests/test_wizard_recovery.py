@@ -1,11 +1,15 @@
 """Wizard drop-off recovery: candidates, email send, beat task, recover endpoint."""
 
+from datetime import timedelta
+
 import pytest
 from django.db import connection
+from django.utils import timezone
 from rest_framework.test import APIClient
 
-from apps.accounts.tokens import create_wizard_token
+from apps.accounts.tokens import create_wizard_token, verify_wizard_token
 from apps.core.models import DevOutboundEmail, Tenant
+from apps.core.onboarding import recovery
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -38,9 +42,13 @@ def _make_tenant(schema, name, slug, **overrides):
     original = Tenant.auto_create_schema
     Tenant.auto_create_schema = False
     try:
+        defaults = {"name": name, "slug": slug, "subdomain": slug, "owner_email": "coach@x.com"}
+        # region is immutable after creation, so it must be in defaults
+        if "region" in overrides:
+            defaults["region"] = overrides.pop("region")
         t, _ = Tenant.objects.get_or_create(
             schema_name=schema,
-            defaults={"name": name, "slug": slug, "subdomain": slug, "owner_email": "coach@x.com"},
+            defaults=defaults,
         )
         t.provisioning_status = overrides.pop("provisioning_status", "pending")
         t.template_seed_status = overrides.pop("template_seed_status", "pending")
@@ -64,5 +72,92 @@ def tenant(restore_public):
 
 
 def test_recovery_email_sent_at_defaults_to_null(tenant):
+    tenant.refresh_from_db()
+    assert tenant.recovery_email_sent_at is None
+
+
+def _age(tenant, *, hours=0, days=0):
+    """Backdate created_at (auto_now_add ignores assignment on create)."""
+    Tenant.objects.filter(pk=tenant.pk).update(created_at=timezone.now() - timedelta(hours=hours, days=days))
+    tenant.refresh_from_db()
+
+
+def test_candidates_pick_only_idle_pending_tenants(tenant):
+    _age(tenant, hours=30)
+    assert tenant in recovery.recovery_candidates()
+
+    fresh = _make_tenant("rec_fresh", "Rec Fresh", "rec-fresh")
+    assert fresh not in recovery.recovery_candidates()  # < 24h old
+    Tenant.objects.filter(schema_name="rec_fresh").delete()
+
+
+def test_recent_step_activity_excludes_despite_old_signup(tenant):
+    _age(tenant, days=3)
+    tenant.wizard_state = {"step_timestamps": {"theme": timezone.now().isoformat()}}
+    tenant.save(update_fields=["wizard_state"])
+    assert tenant not in recovery.recovery_candidates()
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"recovery_email_sent_at": "SENTINEL_NOW"},  # already nudged
+        {"template_seed_status": "seeding"},  # finalized
+        {"template_seed_status": "ready"},
+        {"template_seed_status": "skipped"},
+        {"provisioning_status": "ready"},
+        {"is_demo": True},
+    ],
+)
+def test_candidates_exclusions(tenant, overrides):
+    _age(tenant, hours=30)
+    for field, value in overrides.items():
+        setattr(tenant, field, timezone.now() if value == "SENTINEL_NOW" else value)
+    tenant.save()
+    assert tenant not in recovery.recovery_candidates()
+
+
+def test_too_old_signups_never_nudged(tenant):
+    _age(tenant, days=8)
+    assert tenant not in recovery.recovery_candidates()
+
+
+def test_send_recovery_email_links_a_fresh_wizard_token(tenant, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    settings.SITE_SCHEME = "https"
+    assert recovery.send_recovery_email(tenant) is True
+
+    mail = DevOutboundEmail.objects.filter(to="coach@x.com").latest("id")
+    assert f"https://{settings.CONTENTOR_DOMAIN}/signup/verify?token=" in mail.html
+    token = mail.html.split("/signup/verify?token=")[1].split('"')[0]
+    assert verify_wizard_token(token)["purpose"] == "wizard"
+    assert verify_wizard_token(token)["email"] == "coach@x.com"
+
+    tenant.refresh_from_db()
+    assert tenant.recovery_email_sent_at is not None
+
+
+def test_send_recovery_email_tr_region_uses_tr_host_and_copy(restore_public, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    settings.SITE_SCHEME = "https"
+    t = _make_tenant("tr_rec_studio", "Rec Studio TR", "rec-studio-tr", region="tr")
+    try:
+        assert recovery.send_recovery_email(t) is True
+        mail = DevOutboundEmail.objects.filter(to="coach@x.com").latest("id")
+        assert f"https://tr.{settings.CONTENTOR_DOMAIN}/signup/verify?token=" in mail.html
+        assert "Kald" in mail.subject  # "Kaldığınız yerden devam edin"
+    finally:
+        connection.set_schema_to_public()
+        DevOutboundEmail.objects.filter(to="coach@x.com").delete()
+        Tenant.objects.filter(schema_name="tr_rec_studio").delete()
+
+
+def test_send_recovery_email_refuses_renamed_tenant(tenant, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    # Superadmin can rename a tenant; the token's brand_name must still
+    # slugify back to the tenant slug or the resume link dead-ends.
+    tenant.name = "Totally Different Name"
+    tenant.save(update_fields=["name"])
+    assert recovery.send_recovery_email(tenant) is False
     tenant.refresh_from_db()
     assert tenant.recovery_email_sent_at is None
