@@ -2,6 +2,7 @@ from django.urls import path
 
 from .recovery import wizard_recover
 from .views import (
+    check_brand_name,
     creator_signup,
     creator_signup_authenticated,
     creator_signup_verify,
@@ -21,6 +22,7 @@ from .wizard_logo import (
 
 urlpatterns = [
     path("signup/", creator_signup, name="creator-signup"),
+    path("check-brand-name/", check_brand_name, name="check-brand-name"),
     path("signup/authenticated/", creator_signup_authenticated, name="creator-signup-authenticated"),
     path("signup/verify/", creator_signup_verify, name="creator-signup-verify"),
     path("seed-from-template/", seed_from_template, name="seed-from-template"),

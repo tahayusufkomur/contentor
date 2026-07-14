@@ -7,6 +7,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from apps.core.throttling import BrandNameCheckThrottle
+
 from ..models import Domain, Tenant
 from ..serializers import CreatorSignupSerializer
 from ..tasks import provision_tenant
@@ -105,6 +107,26 @@ def creator_signup(request):
             logger.error("Failed to send signup verification email to %s (link withheld from logs)", email)
 
     return Response({"detail": msg(request, "verification_sent")})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([BrandNameCheckThrottle])
+def check_brand_name(request):
+    """Pre-wizard step 1: is this brand name available? Read-only — mirrors
+    creator_signup's own slug check without minting a token or emailing."""
+    from apps.core.i18n_helpers import msg
+
+    brand_name = (request.data.get("brand_name") or "").strip()
+    if not brand_name:
+        return Response({"detail": msg(request, "brand_required")}, status=400)
+
+    slug = slugify(brand_name)[:63]
+    region = getattr(request, "region", "global")
+    if Tenant.objects.filter(slug=slug, region=region).exists():
+        return Response({"available": False, "detail": msg(request, "brand_taken")})
+    return Response({"available": True})
 
 
 @api_view(["POST"])

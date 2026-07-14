@@ -45,3 +45,9 @@ class WizardRecoverThrottle(ClientIpAnonThrottle):
 
 class WizardLogoThrottle(ClientIpAnonThrottle):
     scope = "wizard_logo"
+
+
+class BrandNameCheckThrottle(ClientIpAnonThrottle):
+    """Pre-wizard step 1 availability check — read-only, no email sent."""
+
+    scope = "brand_name_check"

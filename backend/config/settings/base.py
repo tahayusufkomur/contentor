@@ -156,6 +156,9 @@ REST_FRAMEWORK = {
         "ai_human_request": "2/hour",
         # Public creator signup — one verification email per call.
         "signup": "5/min",
+        # Pre-wizard brand-name availability check — read-only, no email
+        # sent, generous but still capped against slug-enumeration scraping.
+        "brand_name_check": "30/min",
         # Wizard recovery re-send — one outbound email per call.
         "wizard_recover": "5/hour",
         # Public (wizard-token) logo AI endpoints — mirrors ai_rate.
