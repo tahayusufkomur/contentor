@@ -79,6 +79,8 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
 
   // Chapter 4 — logo (wordmark is the preselected default)
   await expect(page.getByText(W.logo.wordmark.title)).toBeVisible();
+  // AI door present but gated for free signups.
+  await expect(page.getByText(W.upgrade.title)).toBeVisible();
   await clickContinue(page);
 
   // Chapter 5 — review + create
