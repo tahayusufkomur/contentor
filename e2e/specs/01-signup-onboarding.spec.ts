@@ -35,16 +35,22 @@ async function waitForReady(page: Page) {
 
 test.beforeAll(() => {
   // Self-healing sweep of tenants left by previous runs. PlatformSubscription
-  // rows (created by the bypass-checkout path, spec 23) must be deleted
-  // BEFORE the tenant — Tenant.delete(force_drop=True) drops the Postgres
-  // schema first, and Django's ORM cascade then fails trying to null out
-  // billing_payment.platform_subscription_id in a schema that's already gone.
+  // rows (created by the bypass-checkout path, spec 23) must be deleted via
+  // raw SQL, not the ORM's .delete() — Payment.platform_subscription is a
+  // cross-schema FK (db_constraint=False), so Django's cascade collector
+  // still tries to touch the tenant-schema-only billing_payment table from
+  // the public-schema shell context and fails with "relation does not
+  // exist" regardless of delete order, unless the ORM cascade is bypassed
+  // entirely.
   manage([
     "shell",
     "-c",
-    "from apps.core.models import PlatformSubscription, Tenant\n" +
-      "tenants = Tenant.objects.filter(slug__startswith='e2e-studio-')\n" +
-      "PlatformSubscription.objects.filter(tenant__in=tenants).delete()\n" +
+    "from django.db import connection\n" +
+      "from apps.core.models import Tenant\n" +
+      "tenants = list(Tenant.objects.filter(slug__startswith='e2e-studio-'))\n" +
+      "ids = [t.id for t in tenants]\n" +
+      "with connection.cursor() as c:\n" +
+      "    c.execute('DELETE FROM core_platformsubscription WHERE tenant_id = ANY(%s)', [ids])\n" +
       "[t.delete(force_drop=True) for t in tenants]",
   ]);
 });
