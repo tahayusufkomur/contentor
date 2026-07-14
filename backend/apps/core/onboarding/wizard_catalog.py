@@ -61,7 +61,7 @@ NAVBAR_LAYOUTS = ("classic", "centered", "minimal")  # wizard subset of the 5 pr
 
 HERO_STYLES = ("centered", "split", "minimal")  # == hero block "layout" enum
 
-LOGO_MODES = ("wordmark", "curated")  # "ai" arrives in phase 3
+LOGO_MODES = ("wordmark", "curated", "ai")
 
 # Per-page layout options. "blocks" is the block-TYPE sequence the layout
 # seeds (compose.py builds the actual block dicts); the frontend draws its
@@ -167,10 +167,31 @@ def validate_answers(partial: dict) -> list[str]:
         elif key == "logo":
             if not isinstance(value, dict) or value.get("mode") not in LOGO_MODES:
                 errors.append("logo.mode must be one of: " + ", ".join(LOGO_MODES))
-            elif value.get("mode") == "curated" and not isinstance(value.get("curated_id"), int):
+                continue
+            mode = value["mode"]
+            if mode == "curated" and not isinstance(value.get("curated_id"), int):
                 errors.append("logo.curated_id must be an integer for curated mode")
-            elif value.get("curated_id") is not None and not isinstance(value.get("curated_id"), int):
+            if value.get("curated_id") is not None and not isinstance(value.get("curated_id"), int):
                 errors.append("logo.curated_id must be an integer or null")
+            recipe = value.get("recipe")
+            if mode == "ai":
+                if not isinstance(recipe, dict):
+                    errors.append("logo.recipe is required for ai mode")
+                else:
+                    from apps.tenant_config import logo_recipe as logo_recipe_lib
+
+                    try:
+                        logo_recipe_lib.validate_recipe(logo_recipe_lib.upgrade_recipe(recipe))
+                    except Exception:
+                        errors.append("logo.recipe failed validation")
+                export_keys = value.get("export_keys")
+                if export_keys is not None:
+                    if not isinstance(export_keys, dict) or set(export_keys) - {"logo", "icon"}:
+                        errors.append("logo.export_keys must be {logo, icon}")
+                    elif not all(isinstance(k, str) and k.startswith("wizard/") for k in export_keys.values()):
+                        errors.append("logo.export_keys must live under wizard/")
+            elif recipe is not None:
+                errors.append("logo.recipe is only allowed for ai mode")
         else:
             errors.append(f"unknown answer key '{key}'")
     return errors

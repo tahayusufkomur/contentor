@@ -78,3 +78,51 @@ def test_catalog_endpoint_serves_payload():
     assert "yoga" in data["niches"]
     assert len(data["page_layouts"]["home"]) == 2
     assert data["recommended"]["logo"]["mode"] == "wordmark"
+
+
+# NOTE: recipes below are full v2 shapes (mark/badge/colors all present with
+# explicit enum values) — logo_recipe.validate_recipe has no defaults for
+# those enums, so a bare {"version": 2, "layout": ..., "name": ...} 400s on
+# a missing mark.type regardless of the wizard-schema check under test here.
+_VALID_AI_RECIPE = {
+    "version": 2,
+    "layout": "name_only",
+    "name": "Glow",
+    "mark": {"type": "initials", "style": "plain"},
+    "badge": {"shape": "circle", "outline": False},
+    "colors": {"badge": {"type": "solid", "color": "#111827"}, "mark": "#ffffff", "text": "#111827"},
+}
+
+
+def test_logo_answer_accepts_ai_mode_with_recipe():
+    ok = wc.validate_answers(
+        {
+            "logo": {
+                "mode": "ai",
+                "curated_id": None,
+                "recipe": _VALID_AI_RECIPE,
+                "export_keys": {"logo": "wizard/glow/logo.png", "icon": "wizard/glow/icon.png"},
+            }
+        }
+    )
+    assert ok == []
+
+
+@pytest.mark.parametrize(
+    "logo",
+    [
+        {"mode": "ai", "curated_id": None, "recipe": None},  # ai requires recipe
+        {"mode": "ai", "recipe": {"version": 99, "layout": "bogus"}},  # invalid recipe
+        {
+            "mode": "ai",
+            "recipe": _VALID_AI_RECIPE,
+            "export_keys": {"logo": "platform/evil.png", "icon": "wizard/g/icon.png"},
+        },  # bad prefix
+        {
+            "mode": "wordmark",
+            "recipe": {"version": 2, "layout": "name_only", "name": {"text": "G"}},
+        },  # recipe only for ai
+    ],
+)
+def test_logo_answer_rejects_bad_ai_shapes(logo):
+    assert wc.validate_answers({"logo": logo}) != []
