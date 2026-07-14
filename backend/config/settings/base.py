@@ -196,6 +196,10 @@ MAGIC_LINK_EXPIRY_MINUTES = 15
 WIZARD_TOKEN_EXPIRY_DAYS = 7  # pre-provision onboarding wizard sessions
 WIZARD_RECOVERY_IDLE_HOURS = 24  # drop-off nudge: wizard idle at least this long
 WIZARD_RECOVERY_MAX_AGE_DAYS = 7  # never nudge signups older than this
+# Schema name of the hidden scratch tenant used to capture wizard
+# page-layout mockup screenshots (tools/wizard-mockups/). Never linked
+# from any public page — reachable only by exact host.
+WIZARD_MOCKUP_TENANT_SCHEMA = "wizard_mockups"
 JWT_EXPIRY_DAYS = 7
 
 # --- Google OAuth ---
