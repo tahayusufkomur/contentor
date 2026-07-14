@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { WizardCatalog } from "@/lib/wizard/types";
@@ -18,6 +19,31 @@ export function thumbnailBlocks(catalog: WizardCatalog, page: string, layoutBloc
   const idx = layoutBlocks.indexOf("courseGrid");
   if (idx === -1) return [...layoutBlocks, ...extra];
   return [...layoutBlocks.slice(0, idx + 1), ...extra, ...layoutBlocks.slice(idx + 1)];
+}
+
+/** Real screenshot (tools/wizard-mockups/capture.mjs) when one has been
+ * captured for this layout id, falling back to the abstract wireframe
+ * otherwise — so a layout added to the catalog before its screenshot
+ * exists never shows a broken image. */
+function LayoutThumbnail({
+  layoutId, blocks, theme, title,
+}: {
+  layoutId: string;
+  blocks: string[];
+  theme?: string;
+  title: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  if (imageFailed) return <MiniPageSketch blocks={blocks} theme={theme} />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed
+    <img
+      src={`/wizard-mockups/${layoutId}.png`}
+      alt={title}
+      className="w-full rounded-lg object-cover"
+      onError={() => setImageFailed(true)}
+    />
+  );
 }
 
 export function PageLayoutStep({
@@ -44,7 +70,12 @@ export function PageLayoutStep({
             title={t(`layouts.${option.id}`)}
             badge={i === 0 ? t("common.recommended") : undefined}
           >
-            <MiniPageSketch blocks={thumbnailBlocks(catalog, page, option.blocks, goals)} theme={theme} />
+            <LayoutThumbnail
+              layoutId={option.id}
+              blocks={thumbnailBlocks(catalog, page, option.blocks, goals)}
+              theme={theme}
+              title={t(`layouts.${option.id}`)}
+            />
           </OptionCard>
         ))}
       </div>
