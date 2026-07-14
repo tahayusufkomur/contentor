@@ -79,6 +79,16 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
             landing_sections=config.landing_sections or {},
             locale=preferred_locale,
         )
+
+        state = dict(tenant.wizard_state or {})
+        if not state.get("ai_compose_status"):
+            overrides["pages"], status = _compose_pages_with_ai(
+                tenant, answers, overrides["pages"], preferred_locale
+            )
+            state["ai_compose_status"] = status
+            tenant.wizard_state = state
+            tenant.save(update_fields=["wizard_state"])
+
         for field, value in overrides.items():
             setattr(config, field, value)
         config.onboarding_completed = True
@@ -92,6 +102,50 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
             if not community.is_enabled:
                 community.is_enabled = True
                 community.save(update_fields=["is_enabled", "updated_at"])
+
+
+AI_COMPOSE_TIMEOUT_SECONDS = 90
+
+
+def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
+    """AI copy pass with a hard time cap. Returns (pages, status). NEVER
+    raises: any failure returns the static pages unchanged. Runs the call in
+    a worker thread (fresh connection, public schema) so a hung provider
+    can't stall provisioning past the cap."""
+    from apps.core.onboarding import ai_compose
+
+    if not ai_compose.compose_available():
+        return pages, "skipped"
+
+    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import TimeoutError as FutureTimeout
+
+    def run():
+        from django.db import close_old_connections
+
+        close_old_connections()
+        try:
+            return ai_compose.compose_pages(
+                pages,
+                brand_name=tenant.name,
+                niche=answers.get("niche") or "general",
+                description=answers.get("description") or "",
+                goals=list(answers.get("goals") or []),
+                locale=preferred_locale,
+                tenant_schema=tenant.schema_name,
+            )
+        finally:
+            close_old_connections()
+
+    try:
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(run).result(timeout=AI_COMPOSE_TIMEOUT_SECONDS), "ok"
+    except FutureTimeout:
+        logger.warning("onboarding AI compose timed out for %s", tenant.slug)
+        return pages, "failed"
+    except Exception:
+        logger.exception("onboarding AI compose failed for %s", tenant.slug)
+        return pages, "failed"
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)

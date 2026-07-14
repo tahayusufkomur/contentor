@@ -21,8 +21,14 @@ WIZARD_ANSWERS = {
     "font_family": "Inter",
     "navbar_layout": "minimal",
     "hero_style": "split",
-    "page_layouts": {"home": "home-story", "about": "about-story", "courses": "courses-grid",
-                     "pricing": "pricing-simple", "faq": "faq-list", "contact": "contact-form"},
+    "page_layouts": {
+        "home": "home-story",
+        "about": "about-story",
+        "courses": "courses-grid",
+        "pricing": "pricing-simple",
+        "faq": "faq-list",
+        "contact": "contact-form",
+    },
     "logo": {"mode": "wordmark", "curated_id": None},
 }
 
@@ -110,8 +116,11 @@ def test_curated_logo_applied_at_provision(cleanup):
 
     conn.set_schema_to_public()
     curated = CuratedLogo.objects.create(
-        title="Lotus", prompt="a lotus", tags="yoga",
-        image_key="platform/curated-logos/lotus.png", enabled=True,
+        title="Lotus",
+        prompt="a lotus",
+        tags="yoga",
+        image_key="platform/curated-logos/lotus.png",
+        enabled=True,
     )
     cleanup.append("prov-logo")
     answers = {**WIZARD_ANSWERS, "logo": {"mode": "curated", "curated_id": curated.id}}
@@ -138,3 +147,67 @@ def test_wordmark_logo_stores_nothing(cleanup):
         config = TenantConfig.objects.first()
         assert config.logo is None
         assert config.logo_url == ""
+
+
+def _wiz_tenant(cleanup, slug, extra_state=None):
+    cleanup.append(slug)
+    tenant = _make_tenant(slug, WIZARD_ANSWERS)
+    if extra_state:
+        tenant.wizard_state = {**tenant.wizard_state, **extra_state}
+        tenant.save(update_fields=["wizard_state"])
+    return tenant
+
+
+def _home_hero_heading(tenant):
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        return TenantConfig.objects.first().pages["home"]["blocks"][0]["heading"]
+
+
+def test_ai_compose_ok_applies_copy(cleanup, monkeypatch):
+    from apps.core.onboarding import ai_compose
+
+    def fake_compose(pages, **kwargs):
+        import copy
+
+        out = copy.deepcopy(pages)
+        out["home"]["blocks"][0]["heading"] = "AI WROTE THIS"
+        return out
+
+    monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
+    monkeypatch.setattr(ai_compose, "compose_pages", fake_compose)
+    tenant = _provision(_wiz_tenant(cleanup, "prov-ai-ok"))
+    assert tenant.provisioning_status == "ready"
+    assert tenant.wizard_state["ai_compose_status"] == "ok"
+    assert _home_hero_heading(tenant) == "AI WROTE THIS"
+
+
+def test_ai_compose_failure_falls_back_to_static(cleanup, monkeypatch):
+    from apps.core.onboarding import ai_compose
+
+    def boom(pages, **kwargs):
+        raise ai_compose.ComposeError("provider down")
+
+    monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
+    monkeypatch.setattr(ai_compose, "compose_pages", boom)
+    tenant = _provision(_wiz_tenant(cleanup, "prov-ai-fail"))
+    assert tenant.provisioning_status == "ready"  # provisioning NEVER fails on AI
+    assert tenant.wizard_state["ai_compose_status"] == "failed"
+    assert _home_hero_heading(tenant) == "Find Your Balance Through Yoga"  # static niche copy stands
+
+
+def test_ai_compose_skipped_when_unavailable_and_idempotent(cleanup, monkeypatch):
+    from apps.core.onboarding import ai_compose
+
+    calls = []
+    monkeypatch.setattr(ai_compose, "compose_available", lambda: False)
+    monkeypatch.setattr(ai_compose, "compose_pages", lambda *a, **k: calls.append(1))
+    tenant = _provision(_wiz_tenant(cleanup, "prov-ai-skip"))
+    assert tenant.wizard_state["ai_compose_status"] == "skipped"
+    assert calls == []
+
+    # Retry with a status already recorded: no second attempt even if available.
+    monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
+    _provision(tenant)
+    assert calls == []
