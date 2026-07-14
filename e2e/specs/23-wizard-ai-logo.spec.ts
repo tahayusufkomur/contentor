@@ -17,6 +17,7 @@ test("AI logo door unlocks through bypass checkout", async ({ page }) => {
   test.setTimeout(240_000);
   await page.goto("http://localhost/signup");
   await page.getByPlaceholder(en.signup.brandNamePlaceholder).fill(`E2E Studio ${stamp}ai`);
+  await page.getByRole("button", { name: en.signup.submit }).click();
   await page.getByPlaceholder(en.signup.namePlaceholder).fill("E2E Coach");
   await page.getByPlaceholder(en.signup.emailPlaceholder).fill(`e2e-coach-${stamp}ai@example.com`);
   await page.getByRole("button", { name: en.signup.submit }).click();

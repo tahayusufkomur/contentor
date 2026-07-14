@@ -10,6 +10,7 @@ const stamp = Date.now();
 async function signupThroughVerify(page: Page, brand: string, email: string) {
   await page.goto("http://localhost/signup");
   await page.getByPlaceholder(en.signup.brandNamePlaceholder).fill(brand);
+  await page.getByRole("button", { name: en.signup.submit }).click();
   await page.getByPlaceholder(en.signup.namePlaceholder).fill("E2E Coach");
   await page.getByPlaceholder(en.signup.emailPlaceholder).fill(email);
   await page.getByRole("button", { name: en.signup.submit }).click();
