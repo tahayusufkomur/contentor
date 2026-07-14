@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -27,6 +28,8 @@ function brandFromToken(token: string): string {
 
 export function WizardFlow({ token, onProvisioning }: { token: string; onProvisioning: (slug?: string) => void }) {
   const t = useTranslations("wizard");
+  const searchParams = useSearchParams();
+  const initialUpgraded = searchParams.get("upgraded") === "1";
   const brand = useMemo(() => brandFromToken(token), [token]);
   const [catalog, setCatalog] = useState<WizardCatalog | null>(null);
   const [answers, setAnswers] = useState<WizardAnswers>({});
@@ -187,7 +190,18 @@ export function WizardFlow({ token, onProvisioning }: { token: string; onProvisi
       body = <HeroStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.hero_style ?? catalog.recommended.hero_style} onChange={(hero_style) => draft({ hero_style })} />;
       break;
     case "logo":
-      body = <LogoStep brand={brand} niche={answers.niche} theme={answers.theme} font={answers.font_family} value={answers.logo} onChange={(logo) => draft({ logo })} />;
+      body = (
+        <LogoStep
+          token={token}
+          brand={brand}
+          niche={answers.niche}
+          theme={answers.theme}
+          font={answers.font_family}
+          value={answers.logo}
+          onChange={(logo) => draft({ logo })}
+          initialUpgraded={initialUpgraded}
+        />
+      );
       break;
     case "review":
       body = <ReviewStep catalog={catalog} answers={answers} onEdit={(id) => setStepId(id)} />;

@@ -1,24 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { getCuratedLogos } from "@/lib/wizard/api";
 import type { CuratedLogoItem, WizardAnswers, WizardCatalog, WizardLogoAnswer } from "@/lib/wizard/types";
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 
+import { AiLogoDoor } from "./ai-logo";
 import { OptionCard, SlideHeader } from "./steps";
 
 export function LogoStep({
-  brand, niche, theme, font, value, onChange,
+  token, brand, niche, theme, font, value, onChange, initialUpgraded,
 }: {
+  token: string;
   brand: string;
   niche?: string;
   theme?: string;
   font?: string;
   value?: WizardLogoAnswer;
   onChange: (logo: WizardLogoAnswer) => void;
+  initialUpgraded?: boolean;
 }) {
   const t = useTranslations("wizard");
   const [items, setItems] = useState<CuratedLogoItem[]>([]);
@@ -77,13 +80,15 @@ export function LogoStep({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-foreground/[0.15] px-4 py-3.5 opacity-70">
-          <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          <span className="min-w-0">
-            <span className="block text-[13.5px] font-semibold">{t("logo.ai.title")}</span>
-            <span className="block text-[11.5px] text-muted-foreground">{t("logo.ai.locked")}</span>
-          </span>
-        </div>
+        <AiLogoDoor
+          token={token}
+          brand={brand}
+          niche={niche}
+          theme={theme}
+          value={value}
+          onPicked={onChange}
+          initialUpgraded={initialUpgraded}
+        />
       </div>
     </div>
   );
@@ -106,7 +111,16 @@ export function ReviewStep({
     { key: "navbar", step: "look.navbar", value: answers.navbar_layout ? t(`navbarLayouts.${answers.navbar_layout}`) : "—" },
     { key: "hero", step: "look.hero", value: answers.hero_style ? t(`heroStyles.${answers.hero_style}.label`) : "—" },
     { key: "pages", step: "pages.home", value: Object.values(answers.page_layouts ?? {}).map((id) => t(`layouts.${id}`)).join(" · ") || t("common.recommended") },
-    { key: "logo", step: "logo", value: answers.logo?.mode === "curated" ? t("logo.curated.title") : t("logo.wordmark.title") },
+    {
+      key: "logo",
+      step: "logo",
+      value:
+        answers.logo?.mode === "ai"
+          ? t("logo.ai.title")
+          : answers.logo?.mode === "curated"
+            ? t("logo.curated.title")
+            : t("logo.wordmark.title"),
+    },
   ];
   return (
     <div>

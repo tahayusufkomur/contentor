@@ -1,3 +1,5 @@
+import type { LogoRecipe } from "@/types/logo";
+
 export interface WizardCatalog {
   niches: string[];
   goals: string[];
@@ -14,8 +16,13 @@ export interface WizardCatalog {
 }
 
 export interface WizardLogoAnswer {
-  mode: "wordmark" | "curated";
+  mode: "wordmark" | "curated" | "ai";
   curated_id: number | null;
+  /** "ai" mode only: the composed recipe (LogoRenderer input, same shape
+   * the Logo Studio produces) and the S3 keys the client-rendered PNGs were
+   * staged under by wizardLogoUpload — applied at provisioning time. */
+  recipe?: LogoRecipe | null;
+  export_keys?: { logo: string; icon: string };
 }
 
 export interface WizardAnswers {
