@@ -105,6 +105,34 @@ def test_checkout_creates_session_and_locks_currency(tenant, plan, fake_provider
     assert fake_provider["success_url"].endswith("/signup/verify?upgraded=1")
     assert fake_provider["cancel_url"].endswith("/signup/verify?upgraded=0")
     assert fake_provider["user"].email == "coach@x.com"
+    # Regression pin: wizard_checkout must pass a REAL User (real pk), not a
+    # SimpleNamespace(pk=None) placeholder. stripe_provider.py stringifies
+    # user.pk into checkout metadata; str(None) -> "None" makes the
+    # checkout.session.completed webhook's _resolve_user's int("None") raise
+    # ValueError, silently dropping the PlatformSubscription for a paying coach.
+    assert fake_provider["user"].pk is not None
+
+
+def test_checkout_user_metadata_resolves_via_real_webhook_path(tenant, plan, fake_provider):
+    # Regression pin for the actual bug: build the checkout metadata exactly
+    # the way stripe_provider.py does from the user wizard_checkout passes in
+    # (str(user.pk)), then feed it through the REAL _resolve_user used by the
+    # checkout.session.completed webhook handler, and assert it resolves back
+    # to that same coach user. Before the fix, user.pk was None, metadata was
+    # str(None) == "None", and _resolve_user's int("None") raised ValueError
+    # -> resolved to None -> the subscription was never created.
+    from apps.billing.views.webhooks import _resolve_user
+
+    resp = _checkout(plan.pk)
+    assert resp.status_code == 200, resp.content
+    coach = fake_provider["user"]
+    assert coach.pk is not None
+
+    metadata = {"user_id": str(coach.pk)}
+    resolved = _resolve_user(metadata)
+    assert resolved is not None
+    assert resolved.pk == coach.pk
+    assert resolved.email == "coach@x.com"
 
 
 def test_checkout_rejects_unknown_plan_and_subscribed(tenant, plan, fake_provider):

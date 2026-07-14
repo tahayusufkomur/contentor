@@ -163,8 +163,6 @@ def wizard_checkout(request):
     plan BEFORE provisioning. The tenant row already exists, so the standard
     webhook attaches the PlatformSubscription; no wizard-specific completion
     handling is needed."""
-    from types import SimpleNamespace
-
     from django.db import transaction
 
     from apps.core.constants import REGION_DEFAULT_CURRENCY
@@ -197,7 +195,30 @@ def wizard_checkout(request):
 
     scheme = "https" if request.is_secure() else "http"
     origin = f"{scheme}://{request.get_host()}"
-    user = SimpleNamespace(email=payload["email"], name=payload.get("name", ""), pk=None, id=None)
+
+    # Get-or-create the REAL coach User row now, instead of passing a
+    # pk-less placeholder to the provider. Mirrors provision_tenant's own
+    # coach-user creation exactly (same (email, region) lookup key), so
+    # when provisioning later runs its own get_or_create for the same
+    # pair it just reuses this row — idempotent, no duplicate/conflict.
+    # A placeholder pk=None here would serialize into Stripe checkout
+    # metadata as the literal string "None", which the
+    # checkout.session.completed webhook's _resolve_user cannot parse
+    # back into a user — silently dropping the paid subscription.
+    from apps.accounts.models import User
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+
+    region = tenant.region or "global"
+    user, _ = User.objects.get_or_create(
+        email=payload["email"],
+        region=region,
+        defaults={
+            "name": payload.get("name", ""),
+            "role": "coach",
+            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            "accessible_regions": [],
+        },
+    )
     locale = "tr" if tenant.region == "tr" else "en"
     try:
         session = get_provider(tenant).create_checkout_session(
