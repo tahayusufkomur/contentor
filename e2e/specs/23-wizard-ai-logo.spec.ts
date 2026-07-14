@@ -23,8 +23,7 @@ test("AI logo door unlocks through bypass checkout", async ({ page }) => {
   const mail = await latestEmail(`e2e-coach-${stamp}ai@example.com`);
   await page.goto(firstLink(mail.html));
 
-  await page.getByRole("button", { name: W.niches.general.label }).click({ timeout: 20_000 });
-  await page.getByRole("button", { name: W.common.continue, exact: true }).click(); // niche
+  await page.getByRole("button", { name: W.niches.general.label }).click({ timeout: 20_000 }); // niche (auto-advances)
   await page.getByRole("button", { name: W.common.continue, exact: true }).click(); // describe
   await page.getByRole("button", { name: W.common.continue, exact: true }).click(); // goals
   await page.getByRole("button", { name: W.common.finishRest }).click();            // -> logo

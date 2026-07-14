@@ -45,8 +45,7 @@ test("recovery email resumes the wizard where the coach left off", async ({ page
   // Advance one step so there's real progress to resume to.
   await page
     .getByRole("button", { name: `${W.niches.yoga.label} ${W.niches.yoga.tagline}`, exact: true })
-    .click({ timeout: 20_000 });
-  await page.getByRole("button", { name: W.common.continue, exact: true }).click();
+    .click({ timeout: 20_000 }); // niche (single-select — auto-advances)
   await expect(page.getByText(W.describe.heading)).toBeVisible();
 
   // Simulate "came back later on another device": take the token, wipe local
