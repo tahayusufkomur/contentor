@@ -186,7 +186,7 @@ def validate_answers(partial: dict) -> list[str]:
                         errors.append("logo.recipe failed validation")
                 export_keys = value.get("export_keys")
                 if export_keys is not None:
-                    if not isinstance(export_keys, dict) or set(export_keys) - {"logo", "icon"}:
+                    if not isinstance(export_keys, dict) or set(export_keys) != {"logo", "icon"}:
                         errors.append("logo.export_keys must be {logo, icon}")
                     elif not all(isinstance(k, str) and k.startswith("wizard/") for k in export_keys.values()):
                         errors.append("logo.export_keys must live under wizard/")

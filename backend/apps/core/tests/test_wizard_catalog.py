@@ -122,6 +122,16 @@ def test_logo_answer_accepts_ai_mode_with_recipe():
             "mode": "wordmark",
             "recipe": {"version": 2, "layout": "name_only", "name": {"text": "G"}},
         },  # recipe only for ai
+        {
+            "mode": "ai",
+            "recipe": _VALID_AI_RECIPE,
+            "export_keys": {},
+        },  # empty export_keys (missing both logo and icon)
+        {
+            "mode": "ai",
+            "recipe": _VALID_AI_RECIPE,
+            "export_keys": {"icon": "wizard/x/icon.png"},
+        },  # missing logo key
     ],
 )
 def test_logo_answer_rejects_bad_ai_shapes(logo):
