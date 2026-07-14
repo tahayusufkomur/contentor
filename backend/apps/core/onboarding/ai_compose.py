@@ -68,8 +68,8 @@ class _BlockCopy(BaseModel):
     heading: str | None = None
     subheading: str | None = None
     body: str | None = None
-    ctaText: str | None = None
-    buttonText: str | None = None
+    ctaText: str | None = None  # noqa: N815
+    buttonText: str | None = None  # noqa: N815
     intro: str | None = None
     items: list[_QA] | None = None  # faq only
 
