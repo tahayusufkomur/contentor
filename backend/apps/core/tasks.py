@@ -137,15 +137,20 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
         finally:
             close_old_connections()
 
+    pool = ThreadPoolExecutor(max_workers=1)
+    future = pool.submit(run)
     try:
-        with ThreadPoolExecutor(max_workers=1) as pool:
-            return pool.submit(run).result(timeout=AI_COMPOSE_TIMEOUT_SECONDS), "ok"
+        result = future.result(timeout=AI_COMPOSE_TIMEOUT_SECONDS)
     except FutureTimeout:
         logger.warning("onboarding AI compose timed out for %s", tenant.slug)
+        pool.shutdown(wait=False)
         return pages, "failed"
     except Exception:
         logger.exception("onboarding AI compose failed for %s", tenant.slug)
+        pool.shutdown(wait=False)
         return pages, "failed"
+    pool.shutdown(wait=False)
+    return result, "ok"
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
