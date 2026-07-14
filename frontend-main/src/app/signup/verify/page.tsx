@@ -3,19 +3,24 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, Loader2, AlertCircle, Rocket } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, Rocket, MailPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 import { WizardFlow } from "./wizard/WizardFlow";
 import { requestHandoff } from "@/lib/api/onboarding";
+import { recoverWizard } from "@/lib/wizard/api";
+import { ApiError } from "@/types/api";
 
 type VerifyState =
   | "verifying"
   | "wizard"
   | "provisioning"
   | "ready"
+  | "expired"
   | "error";
+
+type ResumeState = "idle" | "sending" | "sent" | "closed" | "failed";
 
 const KNOWN_STAGES = ["schema", "config", "seed", "ai_copy", "finalizing"] as const;
 
@@ -52,6 +57,7 @@ export default function SignupVerifyPage() {
   const [stage, setStage] = useState<string | null>(null);
   const [wizardToken, setWizardToken] = useState<string | null>(null);
   const [loginUrl, setLoginUrl] = useState<string | null>(null);
+  const [resumeState, setResumeState] = useState<ResumeState>("idle");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const verifiedRef = useRef(false);
 
@@ -92,6 +98,27 @@ export default function SignupVerifyPage() {
     [t],
   );
 
+  const resumeToken = token ?? wizardToken;
+  const handleResend = useCallback(async () => {
+    if (!resumeToken) return;
+    setResumeState("sending");
+    try {
+      await recoverWizard(resumeToken);
+      try {
+        localStorage.removeItem("contentor_wizard_token");
+      } catch {
+        // storage unavailable — nothing to clear
+      }
+      setResumeState("sent");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setResumeState("closed");
+        return;
+      }
+      setResumeState("failed");
+    }
+  }, [resumeToken]);
+
   useEffect(() => {
     if (verifiedRef.current) return;
     verifiedRef.current = true;
@@ -129,8 +156,7 @@ export default function SignupVerifyPage() {
             setState("wizard");
             return;
           }
-          setError(data.detail || t("verify.errors.verificationFailed"));
-          setState("error");
+          setState("expired");
           return;
         }
 
@@ -200,6 +226,7 @@ export default function SignupVerifyPage() {
     return (
       <WizardFlow
         token={wizardToken}
+        onTokenExpired={() => setState("expired")}
         onProvisioning={(flowSlug) => {
           const target = flowSlug || slug;
           if (flowSlug) setSlug(flowSlug);
@@ -247,6 +274,82 @@ export default function SignupVerifyPage() {
           <a href={loginUrl ?? `http://${domain}`}>
             {t("verify.openCta", { domain })}
           </a>
+        </Button>
+      </AuthShell>
+    );
+  }
+
+  if (state === "expired") {
+    if (resumeState === "sent") {
+      return (
+        <AuthShell
+          eyebrow={tw("resume.eyebrow")}
+          title={tw("resume.sentTitle")}
+          subtitle={tw("resume.sentSubtitle")}
+        >
+          <StateIcon variant="success">
+            <CheckCircle2 className="h-6 w-6" />
+          </StateIcon>
+        </AuthShell>
+      );
+    }
+    if (resumeState === "closed") {
+      return (
+        <AuthShell
+          eyebrow={tw("resume.eyebrow")}
+          title={tw("resume.closedTitle")}
+          subtitle={tw("resume.closedSubtitle")}
+        >
+          <StateIcon variant="success">
+            <CheckCircle2 className="h-6 w-6" />
+          </StateIcon>
+          <Button asChild variant="brand" size="lg" className="mt-7 w-full">
+            <a href="/login">{tw("resume.closedCta")}</a>
+          </Button>
+        </AuthShell>
+      );
+    }
+    if (resumeState === "failed") {
+      return (
+        <AuthShell
+          eyebrow={tw("resume.eyebrow")}
+          title={tw("resume.title")}
+          subtitle={tw("resume.failed")}
+        >
+          <StateIcon variant="destructive">
+            <AlertCircle className="h-6 w-6" />
+          </StateIcon>
+          <Button asChild variant="outline" size="lg" className="mt-7 w-full">
+            <a href="/signup">{tw("resume.startOver")}</a>
+          </Button>
+        </AuthShell>
+      );
+    }
+    return (
+      <AuthShell
+        eyebrow={tw("resume.eyebrow")}
+        title={tw("resume.title")}
+        subtitle={tw("resume.subtitle")}
+      >
+        <StateIcon variant="primary">
+          <MailPlus className="h-6 w-6" />
+        </StateIcon>
+        <Button
+          type="button"
+          variant="brand"
+          size="lg"
+          className="mt-7 w-full"
+          onClick={handleResend}
+          disabled={resumeState === "sending"}
+        >
+          {resumeState === "sending" ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{tw("resume.sending")}</span>
+            </>
+          ) : (
+            tw("resume.resend")
+          )}
         </Button>
       </AuthShell>
     );

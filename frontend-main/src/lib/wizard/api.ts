@@ -56,3 +56,10 @@ export function finalizeWizard(token: string): Promise<{ slug: string; status: s
 export function getCuratedLogos(): Promise<CuratedLogoItem[]> {
   return request("/api/v1/logos/curated/");
 }
+
+export function recoverWizard(token: string): Promise<{ detail: string }> {
+  return request("/api/v1/onboarding/wizard/recover/", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}

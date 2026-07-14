@@ -35,6 +35,20 @@
       "seed": "Adding your draft content…",
       "ai_copy": "Writing your pages in your voice…",
       "finalizing": "Final touches…"
+    },
+    "resume": {
+      "eyebrow": "Welcome back",
+      "title": "Your setup link expired",
+      "subtitle": "No worries — everything you picked is saved. Get a fresh link by email and continue right where you left off.",
+      "resend": "Email me a new link",
+      "sending": "Sending…",
+      "sentTitle": "Link sent",
+      "sentSubtitle": "Check your inbox — the new link takes you straight back to your setup.",
+      "closedTitle": "Your platform is already set up",
+      "closedSubtitle": "This signup was already completed. Log in to continue.",
+      "closedCta": "Go to login",
+      "failed": "We couldn't send a link for this signup. Please start again.",
+      "startOver": "Start over"
     }
   }
 }

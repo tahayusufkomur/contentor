@@ -26,7 +26,15 @@ function brandFromToken(token: string): string {
   }
 }
 
-export function WizardFlow({ token, onProvisioning }: { token: string; onProvisioning: (slug?: string) => void }) {
+export function WizardFlow({
+  token,
+  onProvisioning,
+  onTokenExpired,
+}: {
+  token: string;
+  onProvisioning: (slug?: string) => void;
+  onTokenExpired: () => void;
+}) {
   const t = useTranslations("wizard");
   const searchParams = useSearchParams();
   const initialUpgraded = searchParams.get("upgraded") === "1";
@@ -55,8 +63,16 @@ export function WizardFlow({ token, onProvisioning }: { token: string; onProvisi
         const wanted = res.state.current_step;
         setStepId(wanted && steps.some((s) => s.id === wanted) ? wanted : firstUnansweredStep(steps, loaded).id);
       })
-      .catch(() => setError(t("common.errors.generic")));
-  }, [token, onProvisioning, t]);
+      .catch((err) => {
+        // readWizardState's only 400 is a bad/expired token — the stashed
+        // localStorage token can outlive its 7 days.
+        if (err instanceof ApiError && err.status === 400) {
+          onTokenExpired();
+          return;
+        }
+        setError(t("common.errors.generic"));
+      });
+  }, [token, onProvisioning, onTokenExpired, t]);
 
   const steps = useMemo(() => (catalog ? buildSteps(catalog, answers) : []), [catalog, answers]);
   const step = steps.find((s) => s.id === stepId) ?? steps[0];

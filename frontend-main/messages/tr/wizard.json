@@ -35,6 +35,20 @@
       "seed": "Taslak içeriklerin ekleniyor…",
       "ai_copy": "Sayfaların senin ağzından yazılıyor…",
       "finalizing": "Son dokunuşlar…"
+    },
+    "resume": {
+      "eyebrow": "Tekrar hoş geldiniz",
+      "title": "Kurulum bağlantınızın süresi doldu",
+      "subtitle": "Endişelenmeyin — yaptığınız tüm seçimler kayıtlı. E-postayla yeni bir bağlantı alın ve kaldığınız yerden devam edin.",
+      "resend": "Bana yeni bir bağlantı gönder",
+      "sending": "Gönderiliyor…",
+      "sentTitle": "Bağlantı gönderildi",
+      "sentSubtitle": "Gelen kutunuzu kontrol edin — yeni bağlantı sizi doğrudan kuruluma geri götürür.",
+      "closedTitle": "Platformunuz zaten kurulmuş",
+      "closedSubtitle": "Bu kayıt zaten tamamlanmış. Devam etmek için giriş yapın.",
+      "closedCta": "Girişe git",
+      "failed": "Bu kayıt için bağlantı gönderemedik. Lütfen yeniden başlayın.",
+      "startOver": "Baştan başla"
     }
   }
 }
