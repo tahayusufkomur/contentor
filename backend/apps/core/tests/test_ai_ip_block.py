@@ -67,7 +67,11 @@ WIZARD_AI_URLS = [
 ]
 
 
-def test_blocked_ip_gets_403_on_wizard_ai_endpoints(tenant_ctx):
+def test_blocked_ip_gets_403_on_wizard_ai_endpoints(restore_public):
+    # These endpoints live under /api/v1/onboarding/*, which
+    # HeaderAwareTenantMiddleware force-routes to the public schema (see
+    # apps/core/middleware/tenant.py) — no tenant_context() needed, just the
+    # public-schema tenant/domain rows restore_public guarantees exist.
     # The guard runs BEFORE token resolution, so no valid token is needed.
     AiIpBlock.objects.create(ip="6.6.6.8", source="manual")
     client = APIClient(HTTP_HOST=HOST, REMOTE_ADDR="6.6.6.8")
@@ -75,7 +79,7 @@ def test_blocked_ip_gets_403_on_wizard_ai_endpoints(tenant_ctx):
         assert client.post(url, {}, format="json").status_code == 403, url
 
 
-def test_wizard_logo_endpoints_throttle_per_ip(tenant_ctx):
+def test_wizard_logo_endpoints_throttle_per_ip(restore_public):
     client = APIClient(HTTP_HOST=HOST, REMOTE_ADDR="8.8.8.1")
     statuses = [
         client.post("/api/v1/onboarding/wizard/logo-status/", {}, format="json").status_code
