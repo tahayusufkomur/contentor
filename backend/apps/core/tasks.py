@@ -98,17 +98,22 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
         _set_provisioning_stage(tenant, "ai_copy")
 
         state = dict(tenant.wizard_state or {})
+        ai_status = None
         if not state.get("ai_compose_status"):
-            overrides["pages"], status = _compose_pages_with_ai(tenant, answers, overrides["pages"], preferred_locale)
-            state["ai_compose_status"] = status
-            tenant.wizard_state = state
-            tenant.save(update_fields=["wizard_state"])
+            overrides["pages"], ai_status = _compose_pages_with_ai(
+                tenant, answers, overrides["pages"], preferred_locale
+            )
 
         for field, value in overrides.items():
             setattr(config, field, value)
         config.onboarding_completed = True
         apply_wizard_logo(config, answers)
         config.save()
+
+        if ai_status is not None:
+            state["ai_compose_status"] = ai_status
+            tenant.wizard_state = state
+            tenant.save(update_fields=["wizard_state"])
 
         if "build_community" in (answers.get("goals") or []):
             from apps.community.models import CommunitySettings
