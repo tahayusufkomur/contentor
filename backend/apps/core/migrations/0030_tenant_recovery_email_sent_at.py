@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0029_onboardingaiusage'),
+        ("core", "0029_onboardingaiusage"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenant',
-            name='recovery_email_sent_at',
-            field=models.DateTimeField(blank=True, help_text='Last wizard drop-off recovery email. NULL = never nudged; the hourly beat task sends at most one per tenant (filters on NULL), the manual recover endpoint re-stamps on every re-send.', null=True),
+            model_name="tenant",
+            name="recovery_email_sent_at",
+            field=models.DateTimeField(
+                blank=True,
+                help_text="Last wizard drop-off recovery email. NULL = never nudged; the hourly beat task sends at most one per tenant (filters on NULL), the manual recover endpoint re-stamps on every re-send.",
+                null=True,
+            ),
         ),
     ]
