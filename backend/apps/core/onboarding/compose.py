@@ -324,7 +324,7 @@ def apply_wizard_logo(config, answers, tenant) -> None:
     logo = answers.get("logo") or {}
     mode = logo.get("mode")
 
-    if mode == "ai" and isinstance(logo.get("recipe"), dict):
+    if mode == "ai" and isinstance(logo.get("recipe"), dict) and tenant.has_paid_platform_plan:
         from apps.tenant_config import logo_recipe as logo_recipe_lib
 
         try:

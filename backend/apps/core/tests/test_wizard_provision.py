@@ -6,9 +6,9 @@ Kept to three cases; everything unit-testable lives in test_wizard_compose.
 
 import pytest
 from django.db import connection
-from django_tenants.utils import tenant_context
+from django_tenants.utils import schema_context, tenant_context
 
-from apps.core.models import Tenant
+from apps.core.models import PlatformPlan, PlatformSubscription, Tenant
 from apps.core.tasks import provision_tenant
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -55,6 +55,30 @@ def _provision(tenant):
     return tenant
 
 
+def _grant_paid_plan(tenant):
+    """Attach an active non-Free PlatformSubscription so has_paid_platform_plan
+    is True at provision time. PlatformPlan/PlatformSubscription/User are
+    public-schema models; create under schema_context("public") explicitly so
+    the subscription's user FK resolves correctly regardless of caller schema.
+    """
+    from apps.accounts.models import User
+
+    with schema_context("public"):
+        plan, _ = PlatformPlan.objects.get_or_create(
+            name="Starter",
+            defaults={"price_monthly": 19, "transaction_fee_pct": 8},
+        )
+        owner = User.objects.filter(email="prov-paid@x.com").first() or User.objects.create_user(
+            email="prov-paid@x.com",
+            name="Prov Paid Owner",
+            password="secret123",  # noqa: S106
+            role="owner",
+        )
+        PlatformSubscription.objects.create(tenant=tenant, user=owner, plan=plan, status="active", provider="bypass")
+    tenant.refresh_from_db()
+    return tenant
+
+
 @pytest.fixture()
 def cleanup(restore_public):
     created = []
@@ -62,6 +86,12 @@ def cleanup(restore_public):
     connection.set_schema_to_public()
     for slug in created:
         for t in Tenant.objects.filter(slug=slug):
+            # PlatformSubscription is public-schema but cascades into
+            # tenant-only tables (→ billing_payment), which are only visible
+            # with the tenant schema on the search_path — delete it first,
+            # same guard apps/mailbox/tests/test_platform_address.py uses.
+            with schema_context(t.schema_name):
+                PlatformSubscription.objects.filter(tenant=t).delete()
             t.delete(force_drop=True)
 
 
@@ -242,7 +272,8 @@ def test_ai_logo_applied_at_provision(cleanup):
             },
         },
     }
-    tenant = _provision(_make_tenant("prov-ai-logo", answers))
+    tenant = _grant_paid_plan(_make_tenant("prov-ai-logo", answers))
+    tenant = _provision(tenant)
     with tenant_context(tenant):
         from apps.tenant_config.models import TenantConfig
 
@@ -251,6 +282,38 @@ def test_ai_logo_applied_at_provision(cleanup):
         assert config.logo is not None and config.logo.s3_key == "wizard/prov_ai_logo/logo.png"
         assert config.icon is not None and config.icon.s3_key == "wizard/prov_ai_logo/icon.png"
         assert config.navbar_config.get("show_brand_name") is False
+
+
+def test_ai_logo_requires_paid_plan(cleanup):
+    """Defense-in-depth: a hand-crafted wizard-state PATCH could set mode:"ai"
+    with a valid recipe even without payment (validate_answers checks shape,
+    not payment). No PlatformSubscription is created for this tenant, so
+    has_paid_platform_plan is False (the default) — apply_wizard_logo must
+    refuse the AI branch and degrade to the wordmark behavior (stores nothing).
+    """
+    cleanup.append("prov-ai-unpaid")
+    answers = {
+        **WIZARD_ANSWERS,
+        "logo": {
+            "mode": "ai",
+            "curated_id": None,
+            "recipe": AI_RECIPE,
+            "export_keys": {
+                "logo": "wizard/prov_ai_unpaid/logo.png",
+                "icon": "wizard/prov_ai_unpaid/icon.png",
+            },
+        },
+    }
+    tenant = _provision(_make_tenant("prov-ai-unpaid", answers))
+    assert tenant.has_paid_platform_plan is False
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        config = TenantConfig.objects.first()
+        assert config.logo_recipe == {}
+        assert config.logo is None
+        assert config.icon is None
+        assert config.logo_url == ""
 
 
 def test_ai_logo_foreign_export_keys_ignored(cleanup):
@@ -264,7 +327,8 @@ def test_ai_logo_foreign_export_keys_ignored(cleanup):
             "export_keys": {"logo": "wizard/someone_else/logo.png", "icon": "platform/x.png"},
         },
     }
-    tenant = _provision(_make_tenant("prov-ai-evil", answers))
+    tenant = _grant_paid_plan(_make_tenant("prov-ai-evil", answers))
+    tenant = _provision(tenant)
     with tenant_context(tenant):
         from apps.tenant_config.models import TenantConfig
 
