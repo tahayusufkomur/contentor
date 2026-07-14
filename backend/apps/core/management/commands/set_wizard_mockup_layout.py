@@ -3,6 +3,7 @@ specific wizard layout choice, via the real compose pipeline — used by
 tools/wizard-mockups/capture.mjs before screenshotting each layout."""
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
 from django_tenants.utils import tenant_context
 
@@ -54,5 +55,13 @@ class Command(BaseCommand):
             pages[page] = overrides["pages"][page]
             config.pages = pages
             config.save(update_fields=["pages"])
+
+        # TenantConfigView.get_object() caches the config object for 5
+        # minutes (apps/tenant_config/views.py), invalidated only on the
+        # DRF update path (perform_update). This command writes via the ORM
+        # directly, bypassing that — without this, every capture after the
+        # first would silently serve the previous layout's cached response
+        # for up to 5 minutes.
+        cache.delete(f"tenant:{schema_name}:config")
 
         self.stdout.write(self.style.SUCCESS(f"{page} -> {layout_id}"))

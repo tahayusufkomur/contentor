@@ -11,6 +11,7 @@ from django_tenants.utils import tenant_context
 from apps.accounts.models import User
 from apps.core.demo.seed_template import seed_template_into_tenant
 from apps.core.models import Domain, Tenant
+from apps.core.onboarding import wizard_catalog
 from apps.core.tasks import _create_default_config
 
 NICHE = "general"
@@ -44,6 +45,18 @@ class Command(BaseCommand):
         Domain.objects.create(domain=domain, tenant=tenant, is_primary=True)
         self.stdout.write(f"Created domain: {domain}")
 
+        # frontend-customer's fetchTenantConfig() keeps its own 60s in-memory
+        # cache keyed by domain (frontend-customer/src/lib/tenant.ts,
+        # independent of Next's own caching) — capturing two layouts back to
+        # back on the SAME domain would silently serve the first layout's
+        # cached config for the second. One extra domain per layout id gives
+        # each capture its own cache key without touching that app-level
+        # cache at all.
+        layout_ids = [option["id"] for options in wizard_catalog.PAGE_LAYOUTS.values() for option in options]
+        for layout_id in layout_ids:
+            Domain.objects.create(domain=f"wm-{layout_id}.{settings.CONTENTOR_DOMAIN}", tenant=tenant)
+        self.stdout.write(f"Created {len(layout_ids)} per-layout capture domains")
+
         tenant.create_schema(check_if_exists=True, verbosity=0)
         self.stdout.write(f"Created schema: {tenant.schema_name}")
 
@@ -56,5 +69,14 @@ class Command(BaseCommand):
                 is_staff=True,
             )
             seed_template_into_tenant(tenant, NICHE, writer=self.stdout.write)
+
+            # seed_template_into_tenant creates courses as drafts (correct
+            # for a real coach's fresh signup — they review before publishing).
+            # This tenant only exists to look like a real, finished site in
+            # screenshots, so publish everything it seeded.
+            from apps.courses.models import Course
+
+            published = Course.objects.filter(is_published=False).update(is_published=True)
+            self.stdout.write(f"Published {published} seeded course(s)")
 
         self.stdout.write(self.style.SUCCESS(f"\nwizard-mockups tenant ready at: {domain}"))
