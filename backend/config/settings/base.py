@@ -158,6 +158,8 @@ REST_FRAMEWORK = {
         "signup": "5/min",
         # Wizard recovery re-send — one outbound email per call.
         "wizard_recover": "5/hour",
+        # Public (wizard-token) logo AI endpoints — mirrors ai_rate.
+        "wizard_logo": "20/min",
     },
 }
 

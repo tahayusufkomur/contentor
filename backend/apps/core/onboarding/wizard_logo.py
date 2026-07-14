@@ -14,11 +14,18 @@ we rewrite it before delegating.
 import logging
 
 from django.conf import settings
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+    throttle_classes,
+)
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.core import ipblock
 from apps.core.storage import get_s3_client
+from apps.core.throttling import WizardLogoThrottle
 from apps.tenant_config import logo_api
 
 from . import wizard_catalog
@@ -53,7 +60,10 @@ def _engine_data(data):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([WizardLogoThrottle])
 def wizard_logo_status(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err
@@ -63,7 +73,10 @@ def wizard_logo_status(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([WizardLogoThrottle])
 def wizard_logo_converse(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err
@@ -74,7 +87,10 @@ def wizard_logo_converse(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([WizardLogoThrottle])
 def wizard_logo_converse_finish(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err
@@ -85,7 +101,10 @@ def wizard_logo_converse_finish(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([WizardLogoThrottle])
 def wizard_logo_refine(request):
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err
@@ -112,9 +131,12 @@ def _put_wizard_png(key: str, blob: bytes) -> None:
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([WizardLogoThrottle])
 def wizard_logo_upload(request):
     """Stage the client-rendered logo/icon PNG for provisioning. Deterministic
     key per tenant+kind so re-picks overwrite instead of accumulating."""
+    if (denied := ipblock.blocked_response(request)) is not None:
+        return denied
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err

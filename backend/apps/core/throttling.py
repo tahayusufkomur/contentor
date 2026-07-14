@@ -41,3 +41,7 @@ class WizardRecoverThrottle(ClientIpAnonThrottle):
     the denial-recording base so a hammering IP trips the AI auto-block."""
 
     scope = "wizard_recover"
+
+
+class WizardLogoThrottle(ClientIpAnonThrottle):
+    scope = "wizard_logo"
