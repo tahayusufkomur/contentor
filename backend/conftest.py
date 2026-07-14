@@ -111,8 +111,16 @@ def shared_tenant(django_db_setup, django_db_blocker):
                 "slug": "shared-test",
                 "owner_email": "owner@sharedtest.com",
                 "subdomain": "shared-test",
+                "provisioning_status": "ready",
             },
         )
+        # Reused rows from a prior --reuse-db session predate this field
+        # being stamped, or were left "pending" — force it: this tenant's
+        # schema is always fully migrated by the time tests run, and tasks
+        # that fan out over tenants filter on provisioning_status="ready".
+        if tenant.provisioning_status != "ready":
+            tenant.provisioning_status = "ready"
+            tenant.save(update_fields=["provisioning_status"])
         tenant.create_schema(check_if_exists=True, sync_schema=True)
         _truncate_stale_tenant_data()
         Domain.objects.get_or_create(
@@ -138,11 +146,15 @@ def restore_public(shared_tenant, django_db_blocker):
                     "slug": "shared-test",
                     "owner_email": "owner@sharedtest.com",
                     "subdomain": "shared-test",
+                    "provisioning_status": "ready",
                 },
             )
         finally:
             Tenant.auto_create_schema = original
         tenant = Tenant.objects.get(schema_name=SHARED_SCHEMA)
+        if tenant.provisioning_status != "ready":
+            tenant.provisioning_status = "ready"
+            tenant.save(update_fields=["provisioning_status"])
         Domain.objects.get_or_create(
             domain=SHARED_DOMAIN,
             defaults={"tenant": tenant, "is_primary": True},

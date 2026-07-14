@@ -39,7 +39,7 @@ def _send_reminders_for_current_tenant() -> None:
 
 @shared_task
 def send_live_reminders() -> None:
-    for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+    for tenant in get_tenant_model().objects.exclude(schema_name="public").filter(provisioning_status="ready"):
         with tenant_context(tenant):
             try:
                 _send_reminders_for_current_tenant()
@@ -90,7 +90,7 @@ def dispatch_due_announcements() -> None:
     from .models import Announcement
 
     now = timezone.now()
-    for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+    for tenant in get_tenant_model().objects.exclude(schema_name="public").filter(provisioning_status="ready"):
         with tenant_context(tenant):
             try:
                 due = Announcement.objects.filter(status="scheduled", scheduled_at__lte=now)
@@ -102,7 +102,7 @@ def dispatch_due_announcements() -> None:
 
 @shared_task
 def dispatch_due_recurrences() -> None:
-    for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+    for tenant in get_tenant_model().objects.exclude(schema_name="public").filter(provisioning_status="ready"):
         with tenant_context(tenant):
             try:
                 _dispatch_recurrences_for_current_tenant()
