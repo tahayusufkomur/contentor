@@ -40,6 +40,31 @@ export async function createPlatformAuthenticated(
   return res.json();
 }
 
+/**
+ * Pre-wizard step 1: is this brand name available? Read-only — no token
+ * minted, no email sent.
+ */
+export async function checkBrandName(
+  brandName: string,
+): Promise<{ available: boolean; detail?: string }> {
+  const res = await fetch("/api/v1/onboarding/check-brand-name/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ brand_name: brandName }),
+  });
+  if (!res.ok) {
+    let body: unknown = { detail: "Request failed" };
+    try {
+      body = await res.json();
+    } catch {
+      // swallow parse failure
+    }
+    throw new ApiError(res.status, body as Record<string, unknown>);
+  }
+  return res.json();
+}
+
 export async function seedFromTemplate(
   token: string,
   niche: string,
