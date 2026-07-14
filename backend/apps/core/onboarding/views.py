@@ -330,10 +330,11 @@ def skip_template(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def onboarding_handoff(request):
-    """Step 4: exchange the signup token for a one-click login URL.
+    """Step 4: exchange the signup/wizard token for a one-click login URL.
 
-    The signup token is the email-ownership proof; the returned URL carries a
-    standard magic-link token consumed by the tenant's existing /callback flow.
+    Accepts both the short-lived signup token and the 7-day wizard token as
+    email-ownership proof; the returned URL carries a standard magic-link
+    token consumed by the tenant's existing /callback flow.
     """
     from .wizard import _resolve_tenant_from_wizard_token
 
