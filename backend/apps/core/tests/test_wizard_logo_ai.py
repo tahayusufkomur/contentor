@@ -52,9 +52,7 @@ def paid(tenant):
     plan, _ = PlatformPlan.objects.get_or_create(
         name="starter-wiz-test", defaults={"price_monthly": 19, "transaction_fee_pct": 8}
     )
-    owner, _ = User.objects.get_or_create(
-        email="wizlogo-owner@x.com", defaults={"name": "Owner", "role": "owner"}
-    )
+    owner, _ = User.objects.get_or_create(email="wizlogo-owner@x.com", defaults={"name": "Owner", "role": "owner"})
     PlatformSubscription.objects.update_or_create(
         tenant=tenant, defaults={"user": owner, "plan": plan, "status": "active"}
     )
@@ -112,19 +110,27 @@ def test_finish_and_refine_delegate(paid, monkeypatch):
     from apps.core.onboarding import wizard_logo
 
     monkeypatch.setattr(
-        wizard_logo.logo_api, "converse_finish",
+        wizard_logo.logo_api,
+        "converse_finish",
         lambda tenant, data: {"phase": "final", "message": "", "designs": [], "source": "draft", "turns_remaining": 1},
     )
     monkeypatch.setattr(
-        wizard_logo.logo_api, "refine",
+        wizard_logo.logo_api,
+        "refine",
         lambda tenant, data: {"design": None, "source": "error", "refine_remaining": 5},
     )
-    assert _client().post(
-        "/api/v1/onboarding/wizard/logo-converse/finish/", {"token": _token(), "token_draft": "x"}, format="json"
-    ).json()["source"] == "draft"
-    assert _client().post(
-        "/api/v1/onboarding/wizard/logo-refine/", {"token": _token(), "instruction": "bolder"}, format="json"
-    ).json()["refine_remaining"] == 5
+    assert (
+        _client()
+        .post("/api/v1/onboarding/wizard/logo-converse/finish/", {"token": _token(), "token_draft": "x"}, format="json")
+        .json()["source"]
+        == "draft"
+    )
+    assert (
+        _client()
+        .post("/api/v1/onboarding/wizard/logo-refine/", {"token": _token(), "instruction": "bolder"}, format="json")
+        .json()["refine_remaining"]
+        == 5
+    )
 
 
 def test_bad_token_rejected(tenant):

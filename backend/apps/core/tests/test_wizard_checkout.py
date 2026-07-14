@@ -24,8 +24,11 @@ def tenant(restore_public):
     t, _ = Tenant.objects.get_or_create(
         schema_name="pay_studio",
         defaults={
-            "name": "Pay Studio", "slug": "pay-studio", "subdomain": "pay-studio",
-            "owner_email": "coach@x.com", "region": "global",
+            "name": "Pay Studio",
+            "slug": "pay-studio",
+            "subdomain": "pay-studio",
+            "owner_email": "coach@x.com",
+            "region": "global",
         },
     )
     # Tenant.pre_save auto-fills billing_currency from region on creation and
@@ -54,7 +57,8 @@ def plan():
     plan, _ = PlatformPlan.objects.get_or_create(
         name="starter-checkout-test",
         defaults={
-            "price_monthly": 19, "transaction_fee_pct": 8,
+            "price_monthly": 19,
+            "transaction_fee_pct": 8,
             "prices": {"USD": {"stripe_price_id": "price_test_usd"}},
         },
     )
@@ -88,9 +92,7 @@ def fake_provider(monkeypatch):
 
 
 def _checkout(plan_id):
-    return _client().post(
-        "/api/v1/onboarding/wizard/checkout/", {"token": _token(), "plan_id": plan_id}, format="json"
-    )
+    return _client().post("/api/v1/onboarding/wizard/checkout/", {"token": _token(), "plan_id": plan_id}, format="json")
 
 
 def test_checkout_creates_session_and_locks_currency(tenant, plan, fake_provider):
@@ -135,9 +137,7 @@ def test_webhook_attaches_subscription_to_pending_tenant(tenant, plan):
         defaults={"name": "Coach", "role": "owner"},
     )
 
-    event = _checkout_session_completed_event(
-        tenant=tenant, user=coach, plan=plan, event_id="evt_wizard_checkout_001"
-    )
+    event = _checkout_session_completed_event(tenant=tenant, user=coach, plan=plan, event_id="evt_wizard_checkout_001")
     from apps.billing.views.webhooks import _handle_checkout_session_completed
 
     _handle_checkout_session_completed(event, webhook_event=None)
