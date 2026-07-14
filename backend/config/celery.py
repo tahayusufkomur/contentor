@@ -30,6 +30,10 @@ app.conf.beat_schedule = {
         "task": "apps.core.tasks.purge_ai_transcripts",
         "schedule": crontab(hour="4", minute="20"),
     },
+    "send-wizard-recovery-emails": {
+        "task": "apps.core.tasks.send_wizard_recovery_emails",
+        "schedule": crontab(minute="25"),
+    },
 }
 
 

@@ -161,3 +161,14 @@ def test_send_recovery_email_refuses_renamed_tenant(tenant, settings):
     assert recovery.send_recovery_email(tenant) is False
     tenant.refresh_from_db()
     assert tenant.recovery_email_sent_at is None
+
+
+def test_beat_task_sends_once_and_only_once(tenant, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    _age(tenant, hours=30)
+
+    from apps.core.tasks import send_wizard_recovery_emails
+
+    assert send_wizard_recovery_emails() == 1
+    assert send_wizard_recovery_emails() == 0  # stamped -> not a candidate anymore
+    assert DevOutboundEmail.objects.filter(to="coach@x.com").count() == 1

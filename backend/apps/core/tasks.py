@@ -288,3 +288,17 @@ def purge_ai_transcripts():
 
     convos, _ = AiConversation.objects.filter(updated_at__lt=cutoff).delete()
     logger.info("purge_ai_transcripts: deleted %s conversations", convos)
+
+
+@shared_task
+def send_wizard_recovery_emails():
+    """Hourly beat: one nudge to coaches who abandoned the signup wizard."""
+    from apps.core.onboarding import recovery
+
+    sent = 0
+    for tenant in recovery.recovery_candidates():
+        if recovery.send_recovery_email(tenant):
+            sent += 1
+    if sent:
+        logger.info("wizard recovery: sent %d email(s)", sent)
+    return sent
