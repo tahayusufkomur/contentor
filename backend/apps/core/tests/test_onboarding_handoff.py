@@ -64,3 +64,25 @@ def test_handoff_requires_ready(tenant):
 def test_handoff_rejects_bad_token(tenant):
     resp = _client().post("/api/v1/onboarding/handoff/", {"token": "garbage"}, format="json")
     assert resp.status_code == 400
+
+
+def test_handoff_accepts_wizard_token(tenant, settings):
+    from apps.accounts.tokens import create_wizard_token
+
+    settings.SITE_SCHEME = "https"
+    wizard = create_wizard_token("coach@x.com", "Coach", "Glow Studio")
+    resp = _client().post("/api/v1/onboarding/handoff/", {"token": wizard}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert "/callback?token=" in resp.json()["login_url"]
+
+
+def test_verify_accepts_wizard_token_for_existing_tenant(tenant):
+    from apps.accounts.tokens import create_wizard_token, verify_wizard_token
+
+    wizard = create_wizard_token("coach@x.com", "Coach", "Glow Studio")
+    resp = _client().post("/api/v1/onboarding/signup/verify/", {"token": wizard}, format="json")
+    assert resp.status_code == 200, resp.content
+    data = resp.json()
+    assert data["slug"] == "glow-studio"
+    # Every verify re-mints a fresh 7-day wizard token — resume never starves.
+    assert verify_wizard_token(data["wizard_token"])["purpose"] == "wizard"

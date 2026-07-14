@@ -156,10 +156,12 @@ def creator_signup_verify(request):
     if not token:
         return Response({"detail": msg(request, "token_required")}, status=400)
 
-    from apps.accounts.tokens import verify_signup_token
+    # verify_wizard_token accepts BOTH purposes (signup + wizard), so the
+    # 15-minute email link and the 7-day resume/recovery links all land here.
+    from apps.accounts.tokens import verify_wizard_token
 
     try:
-        payload = verify_signup_token(token)
+        payload = verify_wizard_token(token)
     except Exception:
         return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
@@ -333,7 +335,9 @@ def onboarding_handoff(request):
     The signup token is the email-ownership proof; the returned URL carries a
     standard magic-link token consumed by the tenant's existing /callback flow.
     """
-    payload, tenant, err = _resolve_tenant_from_signup_token(request)
+    from .wizard import _resolve_tenant_from_wizard_token
+
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err
     if tenant.provisioning_status != "ready":
