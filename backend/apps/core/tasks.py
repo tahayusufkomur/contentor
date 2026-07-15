@@ -150,6 +150,7 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
                 brand_name=tenant.name,
                 niche=answers.get("niche") or "general",
                 description=answers.get("description") or "",
+                followups=list(((answers.get("description_followups") or {}).get("items")) or []),
                 goals=list(answers.get("goals") or []),
                 locale=preferred_locale,
                 tenant_schema=tenant.schema_name,

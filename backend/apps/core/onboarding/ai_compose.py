@@ -130,7 +130,7 @@ def compose_available() -> bool:
     return _global_spend() < settings.ONBOARDING_AI_MONTHLY_BUDGET_USD
 
 
-def _brief(pages: dict, *, brand_name, niche, description, goals, locale) -> str:
+def _brief(pages: dict, *, brand_name, niche, description, followups, goals, locale) -> str:
     language = "Turkish" if locale == "tr" else "English"
     lines = [
         "<coach_brief>",
@@ -143,6 +143,16 @@ def _brief(pages: dict, *, brand_name, niche, description, goals, locale) -> str
         "",
         "<current_pages>",
     ]
+    followup_lines = []
+    for item in followups or []:
+        q = str(item.get("q") or "").strip()
+        a = str(item.get("a") or "").strip()
+        if q and a:
+            followup_lines.append(f'Asked: "{q}" — coach answered: "{a}"')
+    if followup_lines:
+        # Splice inside <coach_brief>, just before it closes.
+        idx = lines.index("</coach_brief>")
+        lines[idx:idx] = followup_lines
     for page_key, page in pages.items():
         for block in page.get("blocks", []):
             writable = WRITABLE_FIELDS.get(block.get("type"), ())
@@ -194,13 +204,21 @@ def _apply(pages: dict, updates: list[_BlockCopy]) -> dict:
     return out
 
 
-def compose_pages(pages: dict, *, brand_name, niche, description, goals, locale, tenant_schema) -> dict:
+def compose_pages(pages: dict, *, brand_name, niche, description, followups=(), goals, locale, tenant_schema) -> dict:
     """One structured call -> new pages dict with AI copy applied.
 
     Raises ComposeError on ANY provider/validation failure — the caller
     falls back to the static pages. Spend is recorded even on failure.
     """
-    user_prompt = _brief(pages, brand_name=brand_name, niche=niche, description=description, goals=goals, locale=locale)
+    user_prompt = _brief(
+        pages,
+        brand_name=brand_name,
+        niche=niche,
+        description=description,
+        followups=followups,
+        goals=goals,
+        locale=locale,
+    )
     try:
         parsed, cost, _model = core_ai.structured(
             system=SYSTEM_PROMPT,

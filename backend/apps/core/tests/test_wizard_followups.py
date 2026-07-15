@@ -106,3 +106,19 @@ def test_provider_failure_returns_empty_and_records_spend(tenant, monkeypatch):
     assert resp.status_code == 200
     assert resp.json() == {"questions": []}
     assert spends == [0.0]
+
+
+def test_brief_includes_answered_followups_and_skips_unanswered():
+    from apps.core.onboarding.ai_compose import _brief
+
+    brief = _brief(
+        {"home": {"blocks": []}},
+        brand_name="Glow",
+        niche="yoga",
+        description="Calm vinyasa.",
+        followups=[{"q": "Who are your students?", "a": "Busy parents"}, {"q": "Unanswered?", "a": "  "}],
+        goals=["sell_courses"],
+        locale="en",
+    )
+    assert 'Asked: "Who are your students?" — coach answered: "Busy parents"' in brief
+    assert "Unanswered?" not in brief
