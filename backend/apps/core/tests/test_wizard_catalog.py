@@ -76,7 +76,7 @@ def test_catalog_endpoint_serves_payload():
     assert resp.status_code == 200
     data = resp.json()
     assert "yoga" in data["niches"]
-    assert len(data["page_layouts"]["home"]) == 2
+    assert len(data["page_layouts"]["home"]) == 3
     assert data["recommended"]["logo"]["mode"] == "wordmark"
 
 

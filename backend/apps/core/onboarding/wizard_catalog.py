@@ -81,26 +81,32 @@ PAGE_LAYOUTS = {
     "home": (
         {"id": "home-spotlight", "blocks": ("hero", "courseGrid", "testimonials", "cta")},
         {"id": "home-story", "blocks": ("hero", "imageText", "courseGrid", "faq", "cta")},
+        {"id": "home-complete", "blocks": ("hero", "imageText", "courseGrid", "testimonials", "faq", "cta")},
     ),
     "about": (
         {"id": "about-story", "blocks": ("richText", "imageText")},
         {"id": "about-portrait", "blocks": ("imageText", "testimonials", "cta")},
+        {"id": "about-warm", "blocks": ("imageText", "faq", "cta")},
     ),
     "courses": (
         {"id": "courses-grid", "blocks": ("courseGrid",)},
         {"id": "courses-guided", "blocks": ("richText", "courseGrid", "cta")},
+        {"id": "courses-social", "blocks": ("courseGrid", "testimonials", "cta")},
     ),
     "pricing": (
         {"id": "pricing-simple", "blocks": ("pricingPlans",)},
         {"id": "pricing-reassure", "blocks": ("pricingPlans", "faq", "cta")},
+        {"id": "pricing-trust", "blocks": ("pricingPlans", "testimonials", "cta")},
     ),
     "faq": (
         {"id": "faq-list", "blocks": ("faq",)},
         {"id": "faq-welcoming", "blocks": ("richText", "faq", "cta")},
+        {"id": "faq-support", "blocks": ("faq", "contact")},
     ),
     "contact": (
         {"id": "contact-form", "blocks": ("contact",)},
         {"id": "contact-warm", "blocks": ("richText", "contact")},
+        {"id": "contact-reassure", "blocks": ("contact", "faq")},
     ),
 }
 

@@ -214,6 +214,18 @@ def _intro(copy, block_id="blk_intro") -> dict:
     }
 
 
+def _contact(copy, block_id="blk_contact") -> dict:
+    return {
+        "id": block_id,
+        "type": "contact",
+        "enabled": True,
+        "heading": copy["contact_heading"],
+        "intro": copy["contact_intro"],
+        "submitLabel": copy["contact_submit"],
+        "successMessage": copy["contact_success"],
+    }
+
+
 def _goal_blocks(goals, copy) -> list[dict]:
     blocks, seen = [], set()
     for entry in wizard_catalog.HOME_GOAL_BLOCKS:
@@ -235,11 +247,21 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
         return wanted if wanted in valid else wizard_catalog.PAGE_LAYOUTS[page][0]["id"]
 
     home = [_hero(answers, brand_name, sections)]
-    if layout("home") == "home-story":
+    home_layout = layout("home")
+    if home_layout == "home-story":
         home += [
             _about_image_text(sections, copy),
             _course_grid(copy, "featured_courses"),
             *_goal_blocks(goals, copy),
+            _faq(sections, copy),
+            _cta(sections, copy),
+        ]
+    elif home_layout == "home-complete":
+        home += [
+            _about_image_text(sections, copy),
+            _course_grid(copy, "featured_courses"),
+            *_goal_blocks(goals, copy),
+            _testimonials(sections, copy),
             _faq(sections, copy),
             _cta(sections, copy),
         ]
@@ -251,18 +273,28 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
             _cta(sections, copy),
         ]
 
-    if layout("about") == "about-portrait":
+    about_layout = layout("about")
+    if about_layout == "about-portrait":
         about = [
             _about_image_text(sections, copy, "blk_about_bio"),
             _testimonials(sections, copy),
+            _cta(sections, copy),
+        ]
+    elif about_layout == "about-warm":
+        about = [
+            _about_image_text(sections, copy, "blk_about_bio"),
+            _faq(sections, copy, "blk_about_faq"),
             _cta(sections, copy),
         ]
     else:  # about-story
         about = [_intro(copy, "blk_about_intro"), _about_image_text(sections, copy, "blk_about_bio")]
 
     courses = [_course_grid(copy, "all_courses", "blk_courses_grid")]
-    if layout("courses") == "courses-guided":
+    courses_layout = layout("courses")
+    if courses_layout == "courses-guided":
         courses = [_intro(copy), *courses, _cta(sections, copy)]
+    elif courses_layout == "courses-social":
+        courses = [*courses, _testimonials(sections, copy), _cta(sections, copy)]
 
     pricing = [
         {
@@ -273,25 +305,25 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
             "subheading": copy["plans_subheading"],
         }
     ]
-    if layout("pricing") == "pricing-reassure":
+    pricing_layout = layout("pricing")
+    if pricing_layout == "pricing-reassure":
         pricing += [_faq(sections, copy, "blk_pricing_faq"), _cta(sections, copy, "blk_pricing_cta")]
+    elif pricing_layout == "pricing-trust":
+        pricing += [_testimonials(sections, copy), _cta(sections, copy, "blk_pricing_cta")]
 
     faq_page = [_faq(sections, copy)]
-    if layout("faq") == "faq-welcoming":
+    faq_layout = layout("faq")
+    if faq_layout == "faq-welcoming":
         faq_page = [_intro(copy), *faq_page, _cta(sections, copy)]
+    elif faq_layout == "faq-support":
+        faq_page = [*faq_page, _contact(copy, "blk_faq_contact")]
 
-    contact_block = {
-        "id": "blk_contact",
-        "type": "contact",
-        "enabled": True,
-        "heading": copy["contact_heading"],
-        "intro": copy["contact_intro"],
-        "submitLabel": copy["contact_submit"],
-        "successMessage": copy["contact_success"],
-    }
-    contact = [contact_block]
-    if layout("contact") == "contact-warm":
-        contact = [_intro(copy), contact_block]
+    contact = [_contact(copy)]
+    contact_layout = layout("contact")
+    if contact_layout == "contact-warm":
+        contact = [_intro(copy), _contact(copy)]
+    elif contact_layout == "contact-reassure":
+        contact = [_contact(copy), _faq(sections, copy, "blk_contact_faq")]
 
     return {
         "home": {"blocks": home},

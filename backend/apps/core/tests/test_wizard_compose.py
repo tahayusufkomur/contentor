@@ -121,3 +121,44 @@ def test_empty_answers_still_valid():
     assert over["theme"] == "ocean"
     assert over["navbar_config"]["layout"] == "classic"
     assert len(over["pages"]["home"]["blocks"]) >= 3
+
+
+def _types(pages, page):
+    return [b["type"] for b in pages[page]["blocks"]]
+
+
+def test_home_complete_layout_blocks():
+    pages = _build({"page_layouts": {"home": "home-complete"}})["pages"]
+    assert _types(pages, "home") == ["hero", "imageText", "courseGrid", "testimonials", "faq", "cta"]
+
+
+def test_home_complete_goal_blocks_splice_after_course_grid():
+    pages = _build({"page_layouts": {"home": "home-complete"}, "goals": ["sell_downloads"]})["pages"]
+    assert _types(pages, "home") == ["hero", "imageText", "courseGrid", "storeProducts", "testimonials", "faq", "cta"]
+
+
+def test_about_warm_layout_blocks():
+    pages = _build({"page_layouts": {"about": "about-warm"}})["pages"]
+    assert _types(pages, "about") == ["imageText", "faq", "cta"]
+
+
+def test_courses_social_layout_blocks():
+    pages = _build({"page_layouts": {"courses": "courses-social"}})["pages"]
+    assert _types(pages, "courses") == ["courseGrid", "testimonials", "cta"]
+
+
+def test_pricing_trust_layout_blocks():
+    pages = _build({"page_layouts": {"pricing": "pricing-trust"}})["pages"]
+    assert _types(pages, "pricing") == ["pricingPlans", "testimonials", "cta"]
+
+
+def test_faq_support_layout_blocks():
+    pages = _build({"page_layouts": {"faq": "faq-support"}})["pages"]
+    assert _types(pages, "faq") == ["faq", "contact"]
+
+
+def test_contact_reassure_layout_blocks_have_unique_ids():
+    pages = _build({"page_layouts": {"contact": "contact-reassure"}})["pages"]
+    assert _types(pages, "contact") == ["contact", "faq"]
+    ids = [b["id"] for b in pages["contact"]["blocks"]]
+    assert len(ids) == len(set(ids))
