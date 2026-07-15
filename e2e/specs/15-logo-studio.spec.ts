@@ -36,6 +36,10 @@ test("coach creates a logo through brief, curated ideas, and editor", async ({
 
   const nameInput = dialog.getByLabel("Brand name");
   if (!(await nameInput.inputValue())) await nameInput.fill("Demo Yoga");
+  // Captured now, while the Brief step's form is still mounted — the Ideas
+  // step below is a mutually-exclusive `step === "ideas"` render branch, so
+  // `nameInput` no longer resolves once we've navigated past the Brief.
+  const brand = (await nameInput.inputValue()) || "Demo Yoga";
   await dialog.getByLabel("What do you teach?").fill("yoga");
   await dialog.getByLabel("Tagline (optional)").fill("Move every day");
   await dialog.getByRole("button", { name: "Elegant" }).click();
@@ -48,6 +52,12 @@ test("coach creates a logo through brief, curated ideas, and editor", async ({
   await expect(
     dialog.getByText("Ready-made logos", { exact: true }),
   ).toBeVisible();
+
+  // Full-logo cards: the coach's brand name is painted INSIDE the previews
+  // (SVG text), proving the gallery composes complete logos, not bare icons.
+  await expect(
+    dialog.locator("svg").getByText(new RegExp(brand, "i")).first(),
+  ).toBeVisible({ timeout: 15_000 });
 
   // Design with AI: the door button always renders (no isVisible gate needed
   // — unlike the old wall-era banner). For an ineligible tenant it navigates

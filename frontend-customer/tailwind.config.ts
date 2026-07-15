@@ -3,7 +3,13 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: "class",
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  // Include the shared admin-kit package (imported via the `@shared/*` path
+  // alias) so its Tailwind classes actually get generated — classes used
+  // ONLY there (never coincidentally reused in this app's own src/) were
+  // silently dropped otherwise (e.g. `max-h-32` on the gallery JSON modal's
+  // image preview, which left the uploaded image unconstrained and pushed
+  // the Save/Delete buttons off-screen).
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}", "../packages/shared/src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {

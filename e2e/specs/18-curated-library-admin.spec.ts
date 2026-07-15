@@ -1,10 +1,10 @@
 // e2e/specs/18-curated-library-admin.spec.ts
 //
-// Phase 2 loop: superadmin creates a curated logo through the generic
-// adminkit page (including a real PNG upload through /api/v1/platform/upload/),
-// a coach then sees it in the Logo Studio's Browse entrance, and the
-// superadmin deletes it again (idempotent re-runs). Assumes the dev stack is
-// seeded (make seed).
+// Superadmin curates the logo library through the adminkit GALLERY mode:
+// drop/pick a PNG -> prefilled JSON modal -> save (trace-on-save runs
+// server-side); a coach then sees the new logo in the Logo Studio's Ideas
+// gallery; the superadmin deletes it again via the card's JSON modal
+// (idempotent re-runs). Assumes the dev stack is seeded (make seed).
 
 import path from "node:path";
 import { test, expect } from "@playwright/test";
@@ -16,46 +16,41 @@ const FIXTURE_PNG = path.resolve(
 );
 const TITLE = "E2E Curated Logo";
 
-test("superadmin adds a curated logo; coach sees it in the studio", async ({
+test("superadmin adds a curated logo via the gallery; coach sees it", async ({
   browser,
 }) => {
-  // --- superadmin: create via the adminkit page -------------------------
+  // --- superadmin: create via drop -> JSON modal -------------------------
   const admin = await superadminContext(browser);
   const adminPage = await admin.newPage();
   await adminPage.goto(`${MAIN}/admin/m/curated-logos`);
-  await adminPage.getByRole("button", { name: /New Curated Logo/i }).click();
 
-  // The form renders as a fixed overlay that does NOT unmount the page
-  // behind it (the list's own search textbox stays in the DOM) — scope
-  // field lookups to the overlay panel, not the whole page.
-  const panel = adminPage.locator("div.fixed.inset-0.z-50");
-  await expect(panel.getByRole("heading", { name: "New Curated Logo" })).toBeVisible();
+  // Gallery mode: the hidden file input behind the "Add PNG" button is the
+  // accessible/e2e path for the drop zone.
+  await expect(
+    adminPage.getByRole("button", { name: "Add PNG" }),
+  ).toBeVisible();
+  await adminPage.locator('input[type="file"]').setInputFiles(FIXTURE_PNG);
 
-  // Adminkit form fields render in declared order: title, prompt, tags,
-  // position, enabled, image. Labels aren't programmatically associated
-  // (kit-wide), so address the text controls by order within the panel.
-  const boxes = panel.getByRole("textbox");
-  await boxes.nth(0).fill(TITLE); // title
-  await boxes.nth(1).fill("an e2e test logo prompt"); // prompt (textarea)
-  await boxes.nth(2).fill("e2e, yoga"); // tags
+  // Upload finished -> JSON modal opens with the image preview and the
+  // prefilled record template.
+  const modal = adminPage.locator("div.fixed.inset-0.z-50");
+  const textarea = modal.getByLabel("Record JSON");
+  await expect(textarea).toBeVisible({ timeout: 15_000 });
 
-  await panel.locator('input[type="file"]').setInputFiles(FIXTURE_PNG);
-  // Upload finished when the thumbnail preview appears.
-  await expect(panel.getByAltText("Image key")).toBeVisible({
-    timeout: 15_000,
-  });
+  const record = JSON.parse(await textarea.inputValue());
+  record.title = TITLE;
+  record.prompt = "an e2e test logo prompt";
+  record.tags = "e2e, yoga";
+  await textarea.fill(JSON.stringify(record, null, 2));
+  await modal.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(modal).toBeHidden({ timeout: 10_000 });
 
-  await panel.getByRole("button", { name: "Create", exact: true }).click();
-  await expect(panel).toBeHidden({ timeout: 10_000 });
-
-  // The catalog already has 20+ seeded rows (default page size 20, sorted by
-  // position) — the new row lands past page 1. Filter via the list's own
-  // search box instead of assuming default pagination shows it.
+  // The new card is findable via search (seeded catalog spans pages).
   const searchBox = adminPage.getByPlaceholder(/search curated logos/i);
   await searchBox.fill(TITLE);
   await expect(adminPage.getByText(TITLE)).toBeVisible({ timeout: 10_000 });
 
-  // --- coach: the new logo appears in the Browse entrance ---------------
+  // --- coach: the new logo appears in the Ideas gallery ------------------
   const coach = await coachContext(browser);
   const coachPage = await coach.newPage();
   await coachPage.goto(`${TENANT}/admin/design?studio=1`);
@@ -73,14 +68,12 @@ test("superadmin adds a curated logo; coach sees it in the studio", async ({
   await expect(dialog.getByText(TITLE)).toBeVisible({ timeout: 15_000 });
   await coach.close();
 
-  // --- superadmin: clean up so re-runs stay idempotent -------------------
-  // (still filtered to TITLE from the search above)
+  // --- superadmin: delete via the card's JSON modal (idempotent re-runs) --
   await adminPage.getByText(TITLE).first().click();
-  await expect(
-    panel.getByRole("heading", { name: "Edit Curated Logo" }),
-  ).toBeVisible();
+  await expect(textarea).toBeVisible();
   adminPage.once("dialog", (d) => d.accept()); // window.confirm on delete
-  await panel.getByRole("button", { name: "Delete", exact: true }).click();
+  await modal.getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(modal).toBeHidden({ timeout: 10_000 });
   await expect(adminPage.getByText(TITLE, { exact: true })).toBeHidden({
     timeout: 10_000,
   });

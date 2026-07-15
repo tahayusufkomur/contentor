@@ -1,10 +1,10 @@
 // e2e/specs/17-logo-curated-library.spec.ts
 //
-// Coach reaches the Browse entrance (Ideas step) of the Logo Studio, picks a
-// curated ready-made logo, and saves it. Files-first: the catalog is the
-// committed `public/logos/logo_meta.json` + PNGs — no backend involved on
-// the read side. See 15-logo-studio.spec.ts for the deterministic-wall /
-// Design-with-AI coverage this spec doesn't repeat.
+// Coach reaches the Ideas step of the Logo Studio, picks a curated
+// ready-made logo (rendered as a complete logo preview), and saves it.
+// The catalog is served by /api/v1/logos/curated/; traced rows land as
+// vector (custom) marks, untraced ones as uploaded image marks. See
+// 15-logo-studio.spec.ts for the full brief->ideas->editor walk.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
@@ -55,7 +55,9 @@ test("coach uses a curated logo and saves it", async ({ browser }) => {
   const body = patch.request().postDataJSON();
   expect(body.logo_id).toBeTruthy();
   expect(body.icon_id).toBeTruthy();
-  expect(body.logo_recipe.mark.type).toBe("image");
+  // Traced curated art lands as a recolorable vector mark; untraced PNGs as
+  // an uploaded image mark — both are valid picks.
+  expect(["custom", "image"]).toContain(body.logo_recipe.mark.type);
 
   await expect(page.getByRole("heading", { name: "Logo Studio" })).toBeHidden({
     timeout: 15_000,
