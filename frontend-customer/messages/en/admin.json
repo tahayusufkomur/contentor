@@ -260,6 +260,14 @@
         "title": "Send an announcement",
         "description": "Say hello to your students."
       },
+      "first_blog_post": {
+        "title": "Write your first blog post",
+        "description": "Share an article — your site's Blog section appears once the first post is published."
+      },
+      "first_community_post": {
+        "title": "Say hello in your community",
+        "description": "Post a welcome message so new members arrive to an active space."
+      },
       "share_site": {
         "title": "Share your site",
         "description": "Copy your link and send it to your students."

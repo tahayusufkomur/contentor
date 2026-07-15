@@ -25,6 +25,8 @@ ALL_ITEM_KEYS = frozenset(
         "first_download",
         "first_live",
         "first_announcement",
+        "first_blog_post",
+        "first_community_post",
         "share_site",
         "studio_email",
     ]
@@ -156,6 +158,17 @@ def compute_setup_state(config, tenant) -> dict:
             optional=True,
         )
     add("first_announcement", "extras", Announcement.objects.exists(), optional=True)
+    # Goal-driven extras: only for tenants whose wizard signup declared the
+    # matching intent (wizard_state survives provisioning untouched).
+    wizard_goals = (((getattr(tenant, "wizard_state", None) or {}).get("answers") or {}).get("goals")) or []
+    if "write_blog" in wizard_goals:
+        from apps.blog.models import BlogPost
+
+        add("first_blog_post", "extras", BlogPost.objects.exists(), optional=True)
+    if "build_community" in wizard_goals:
+        from apps.community.models import Post
+
+        add("first_community_post", "extras", Post.objects.exists(), optional=True)
     if published:
         add("share_site", "extras", False, optional=True)
     if is_paid_active(tenant):

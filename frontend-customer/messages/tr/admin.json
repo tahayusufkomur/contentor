@@ -260,6 +260,14 @@
         "title": "Duyuru gönder",
         "description": "Öğrencilerine selam ver."
       },
+      "first_blog_post": {
+        "title": "İlk blog yazını yaz",
+        "description": "Bir makale paylaş — ilk yazı yayınlandığında sitende Blog bölümü görünür."
+      },
+      "first_community_post": {
+        "title": "Topluluğunda merhaba de",
+        "description": "Yeni üyeler aktif bir alana gelsin diye bir hoş geldin mesajı paylaş."
+      },
       "share_site": {
         "title": "Stüdyonu paylaş",
         "description": "Bağlantını kopyala ve öğrencilerine gönder."

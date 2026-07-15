@@ -7,6 +7,8 @@ import {
   Info,
   Mail,
   Megaphone,
+  MessagesSquare,
+  Newspaper,
   Paintbrush,
   Phone,
   Rocket,
@@ -48,6 +50,8 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   first_download: { icon: Download, href: "/admin/downloads" },
   first_live: { icon: Video, href: "/admin/live" },
   first_announcement: { icon: Megaphone, href: "/admin/notifications" },
+  first_blog_post: { icon: Newspaper, href: "/admin/blog" },
+  first_community_post: { icon: MessagesSquare, href: "/admin/community" },
   share_site: { icon: Share2, href: null, action: "copy-link" },
   studio_email: { icon: Mail, href: "/admin/inbox" },
 };

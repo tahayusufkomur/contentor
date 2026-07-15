@@ -299,3 +299,48 @@ def test_resigned_photo_url_does_not_count_as_page_edit(client, config):
     )
     config.refresh_from_db()
     assert config.setup_progress.get("pages_edited", []) == []  # no real content changed
+
+
+@pytest.fixture()
+def wizard_goals_tenant(tenant_ctx):
+    from django.db import connection
+
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(schema_name=connection.schema_name)
+    original = tenant.wizard_state
+    tenant.wizard_state = {"answers": {"goals": ["write_blog", "build_community"]}}
+    tenant.save(update_fields=["wizard_state"])
+    yield tenant
+    tenant.wizard_state = original
+    tenant.save(update_fields=["wizard_state"])
+
+
+def test_goal_driven_items_absent_without_wizard_goals(client, config):
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        body = client.get("/api/v1/admin/setup-status/").json()
+    items = _items(body)
+    assert "first_blog_post" not in items
+    assert "first_community_post" not in items
+
+
+def test_goal_driven_items_present_with_wizard_goals(client, config, wizard_goals_tenant):
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        body = client.get("/api/v1/admin/setup-status/").json()
+    items = _items(body)
+    assert items["first_blog_post"]["optional"] is True
+    assert items["first_blog_post"]["done"] is False
+    assert items["first_community_post"]["optional"] is True
+    assert items["first_community_post"]["done"] is False
+
+
+def test_first_blog_post_autocompletes(client, config, wizard_goals_tenant):
+    from apps.blog.models import BlogPost
+
+    BlogPost.objects.create(title="Hello", slug="hello-setup-test")
+    try:
+        with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+            body = client.get("/api/v1/admin/setup-status/").json()
+        assert _items(body)["first_blog_post"]["done"] is True
+    finally:
+        BlogPost.objects.filter(slug="hello-setup-test").delete()
