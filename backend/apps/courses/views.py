@@ -98,9 +98,7 @@ def course_detail(request, slug):
 
     if request.method == "GET":
         # Unpublished courses require coach or owner
-        if not course.is_published and (
-            not is_coach_or_owner(request.user)
-        ):
+        if not course.is_published and (not is_coach_or_owner(request.user)):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = CourseDetailSerializer(course, context={"request": request})
         return Response(serializer.data)

@@ -34,6 +34,7 @@ class UploadCompleteSerializer(serializers.Serializer):
 
     def validate_s3_key(self, value):
         return _validate_tenant_s3_key(value)
+
     lesson_id = serializers.IntegerField(required=False)
     download_id = serializers.IntegerField(required=False)
     video_id = serializers.IntegerField(required=False)

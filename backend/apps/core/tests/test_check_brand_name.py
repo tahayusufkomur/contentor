@@ -45,8 +45,6 @@ def test_check_brand_name_is_throttled(restore_public):
     # configured rate (30/min) rather than overriding it — one call over
     # the limit within the same minute must 429.
     client = _client()
-    statuses = [
-        client.post(CHECK_URL, {"brand_name": f"Brand {i}"}, format="json").status_code for i in range(31)
-    ]
+    statuses = [client.post(CHECK_URL, {"brand_name": f"Brand {i}"}, format="json").status_code for i in range(31)]
     assert statuses[:30] == [s for s in statuses[:30] if s != 429]
     assert 429 in statuses, f"expected a 429 within 31 rapid calls, got {statuses}"

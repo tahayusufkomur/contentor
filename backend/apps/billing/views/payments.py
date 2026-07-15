@@ -294,9 +294,7 @@ def payment_item_refund(request, payment_id, item_id):
     # Stripe (real money). The whole handler runs inside this transaction.
     with transaction.atomic():
         payment = get_object_or_404(Payment.objects.select_for_update(), pk=payment_id)
-        payment_item = get_object_or_404(
-            PaymentItem.objects.select_for_update(), pk=item_id, payment=payment
-        )
+        payment_item = get_object_or_404(PaymentItem.objects.select_for_update(), pk=item_id, payment=payment)
 
         # Validate refundable state
         if payment.status not in ("completed", "partially_refunded"):
