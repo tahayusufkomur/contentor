@@ -62,6 +62,15 @@ class Command(BaseCommand):
             Domain.objects.create(domain=f"wm-{layout_id}.{settings.CONTENTOR_DOMAIN}", tenant=tenant)
         self.stdout.write(f"Created {len(layout_ids)} per-layout capture domains")
 
+        # Theme and hero captures get their own domains for the same
+        # frontend-customer 60s config-cache reason as the layouts above.
+        look_domains = [f"wm-theme-{theme}" for theme in wizard_catalog.THEMES] + [
+            f"wm-hero-{style}" for style in wizard_catalog.HERO_STYLES
+        ]
+        for sub in look_domains:
+            Domain.objects.create(domain=f"{sub}.{settings.CONTENTOR_DOMAIN}", tenant=tenant)
+        self.stdout.write(f"Created {len(look_domains)} per-look capture domains")
+
         tenant.create_schema(check_if_exists=True, verbosity=0)
         self.stdout.write(f"Created schema: {tenant.schema_name}")
 
