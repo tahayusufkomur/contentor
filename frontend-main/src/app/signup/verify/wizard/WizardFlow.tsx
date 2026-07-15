@@ -305,7 +305,7 @@ export function WizardFlow({
       showFinishRest={step.chapter !== "business" && step.id !== "review"}
       onFinishRest={handleFinishRest}
       error={error}
-      wide={step.chapter === "pages"}
+      wide={step.chapter === "pages" || step.id === "look.theme" || step.id === "look.hero"}
       footer={
         autoAdvance ? null : (
           <Button type="button" variant="brand" size="lg" className="w-full max-w-[340px]" onClick={handleContinue} disabled={busy}>

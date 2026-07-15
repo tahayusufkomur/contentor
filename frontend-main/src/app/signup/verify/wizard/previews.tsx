@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 
@@ -45,9 +45,30 @@ export function MiniNavbar({ layout, theme, font, brand }: { layout: string; the
       ))}
     </span>
   );
+  const brandEl = (
+    <span className="font-semibold" style={{ fontFamily: fontStack(font) }}>
+      {brand}
+    </span>
+  );
+  if (layout === "pill") {
+    return (
+      <div className="flex h-10 w-full items-center justify-center text-[10px]" style={{ color: s.ink }}>
+        <div
+          className="flex w-[94%] items-center justify-between rounded-full border bg-white px-3 py-1.5 shadow-sm"
+          style={{ borderColor: `${s.primary}33` }}
+        >
+          {brandEl}
+          {links}
+          <span className="rounded-full px-2 py-0.5 text-[8px] font-semibold text-white" style={{ background: s.primary }}>
+            CTA
+          </span>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
-      className="flex h-9 w-full items-center rounded-lg border px-3 text-[10px]"
+      className="flex h-10 w-full items-center rounded-lg border px-3 text-[10px]"
       style={{ borderColor: `${s.primary}33`, color: s.ink, background: "white" }}
     >
       {layout === "centered" ? (
@@ -57,12 +78,18 @@ export function MiniNavbar({ layout, theme, font, brand }: { layout: string; the
         </div>
       ) : layout === "minimal" ? (
         <div className="flex w-full items-center justify-between">
-          <span className="font-semibold" style={{ fontFamily: fontStack(font) }}>{brand}</span>
+          {brandEl}
           <span className="h-2.5 w-4 rounded-sm" style={{ background: `${s.ink}22` }} />
+        </div>
+      ) : layout === "split" ? (
+        <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center">
+          <span className="justify-self-start">{links}</span>
+          {brandEl}
+          <span className="justify-self-end">{links}</span>
         </div>
       ) : (
         <div className="flex w-full items-center justify-between">
-          <span className="font-semibold" style={{ fontFamily: fontStack(font) }}>{brand}</span>
+          {brandEl}
           {links}
           <span className="rounded-full px-2 py-0.5 text-[8px] font-semibold text-white" style={{ background: s.primary }}>
             CTA
@@ -78,7 +105,7 @@ export function MiniHero({ style, theme, font, brand, headline }: { style: strin
   const title = headline || brand;
   if (style === "split") {
     return (
-      <div className="flex h-20 w-full gap-2 rounded-lg border p-2" style={{ borderColor: `${s.primary}33`, background: "white" }}>
+      <div className="flex h-28 w-full gap-2 rounded-lg border p-2" style={{ borderColor: `${s.primary}33`, background: "white" }}>
         <div className="flex flex-1 flex-col justify-center gap-1.5">
           <span className="line-clamp-2 text-[10px] font-bold leading-tight" style={{ color: s.ink, fontFamily: fontStack(font) }}>{title}</span>
           <span className="h-3 w-12 rounded-full text-center text-[7px] font-semibold leading-3 text-white" style={{ background: s.primary }}>CTA</span>
@@ -89,7 +116,7 @@ export function MiniHero({ style, theme, font, brand, headline }: { style: strin
   }
   if (style === "minimal") {
     return (
-      <div className="flex h-20 w-full flex-col items-center justify-center gap-1.5 rounded-lg border" style={{ borderColor: `${s.primary}33`, background: "white" }}>
+      <div className="flex h-28 w-full flex-col items-center justify-center gap-1.5 rounded-lg border" style={{ borderColor: `${s.primary}33`, background: "white" }}>
         <span className="px-3 text-center text-[10px] font-bold leading-tight" style={{ color: s.ink, fontFamily: fontStack(font) }}>{title}</span>
         <span className="h-3 w-12 rounded-full text-center text-[7px] font-semibold leading-3 text-white" style={{ background: s.primary }}>CTA</span>
       </div>
@@ -97,7 +124,7 @@ export function MiniHero({ style, theme, font, brand, headline }: { style: strin
   }
   return (
     <div
-      className="flex h-20 w-full flex-col items-center justify-center gap-1.5 rounded-lg"
+      className="flex h-28 w-full flex-col items-center justify-center gap-1.5 rounded-lg"
       style={{ background: `linear-gradient(160deg, ${s.ink}dd, ${s.primary}bb), linear-gradient(0deg, ${s.soft}, ${s.soft})` }}
     >
       <span className="px-3 text-center text-[10px] font-bold leading-tight text-white" style={{ fontFamily: fontStack(font) }}>{title}</span>
@@ -149,5 +176,19 @@ export function BrowserFrame({ children }: { children: React.ReactNode }) {
       </div>
       {children}
     </div>
+  );
+}
+
+/** Real screenshot inside browser chrome, swapping to `fallback` when the
+ * PNG hasn't been captured yet (tools/wizard-mockups/) — a catalog option
+ * must never show a broken image. */
+export function ScreenshotThumbnail({ src, fallback }: { src: string; fallback: React.ReactNode }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <>{fallback}</>;
+  return (
+    <BrowserFrame>
+      {/* eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed */}
+      <img src={src} alt="" className="block w-full" onError={() => setFailed(true)} />
+    </BrowserFrame>
   );
 }

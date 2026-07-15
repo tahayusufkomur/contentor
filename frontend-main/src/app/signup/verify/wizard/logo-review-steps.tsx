@@ -65,7 +65,7 @@ export function LogoStep({
               {t("logo.curated.title")} — {t("logo.curated.desc")}
             </p>
             <div className="grid grid-cols-2 gap-2.5">
-              {ranked.slice(0, 8).map((item) => (
+              {ranked.slice(0, 12).map((item) => (
                 <OptionCard
                   key={item.id}
                   selected={mode === "curated" && value?.curated_id === item.id}

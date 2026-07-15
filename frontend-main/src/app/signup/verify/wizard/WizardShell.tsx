@@ -46,7 +46,7 @@ export function WizardShell({
         <motion.div
           layout
           transition={{ type: "spring", stiffness: 240, damping: 30 }}
-          className={`flex h-full w-full min-w-0 flex-col ${wide ? "md:max-w-[760px]" : "md:max-w-[520px]"}`}
+          className={`flex h-full w-full min-w-0 flex-col ${wide ? "md:max-w-[min(1100px,94vw)]" : "md:max-w-[640px]"}`}
         >
           <header className="flex items-center gap-3 pt-1">
             <button

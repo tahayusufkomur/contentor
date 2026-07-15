@@ -70,7 +70,7 @@ export function PageLayoutStep({
   return (
     <div>
       <SlideHeader heading={t(`pages.titles.${page}`)} subhead={t("pages.subhead")} />
-      <OptionList className="mx-auto mt-6 grid max-w-[720px] grid-cols-2 gap-4">
+      <OptionList className="mx-auto mt-6 grid w-full grid-cols-2 gap-4 md:grid-cols-3">
         {options.map((option, i) => (
           <OptionCard
             key={option.id}

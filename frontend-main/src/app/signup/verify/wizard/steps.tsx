@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 import type { DescriptionFollowups, WizardCatalog } from "@/lib/wizard/types";
 
-import { MiniHero, MiniNavbar } from "./previews";
+import { MiniHero, MiniNavbar, ScreenshotThumbnail } from "./previews";
 
 // Keys must match Python modules under backend demo_data/ (same list the
 // old QuestionnaireStep used).
@@ -221,16 +221,19 @@ export function ThemeStep({ catalog, niche, value, onChange, showAll, onShowAll 
   return (
     <div>
       <SlideHeader heading={t("theme.heading")} subhead={t("theme.subhead")} />
-      <OptionList className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3">
         {shown.map((theme, i) => {
           const s = THEME_SWATCHES[theme];
           return (
             <OptionCard key={theme} selected={value === theme} onSelect={() => onChange(theme)} title={t(`themes.${theme}`)} badge={i === 0 && !showAll ? t("common.recommended") : undefined}>
-              <span className="flex gap-1.5" aria-hidden>
-                {[s.primary, s.ink, s.soft].map((c) => (
-                  <span key={c} className="h-6 w-10 rounded-md border border-black/5" style={{ background: c }} />
-                ))}
-              </span>
+              <div className="flex w-full flex-col items-center gap-2">
+                <ScreenshotThumbnail src={`/wizard-mockups/theme-${theme}.png`} fallback={null} />
+                <span className="flex gap-1.5" aria-hidden>
+                  {[s.primary, s.ink, s.soft].map((c) => (
+                    <span key={c} className="h-5 w-9 rounded-md border border-black/5" style={{ background: c }} />
+                  ))}
+                </span>
+              </div>
             </OptionCard>
           );
         })}
@@ -283,10 +286,13 @@ export function HeroStep({ catalog, brand, theme, font, value, onChange }: { cat
   return (
     <div>
       <SlideHeader heading={t("hero.heading")} subhead={t("hero.subhead")} />
-      <OptionList className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
         {catalog.hero_styles.map((style) => (
           <OptionCard key={style} selected={value === style} onSelect={() => onChange(style)} title={t(`heroStyles.${style}.label`)} subtitle={t(`heroStyles.${style}.desc`)}>
-            <MiniHero style={style} theme={theme} font={font} brand={brand} />
+            <ScreenshotThumbnail
+              src={`/wizard-mockups/hero-${style}.png`}
+              fallback={<MiniHero style={style} theme={theme} font={font} brand={brand} />}
+            />
           </OptionCard>
         ))}
       </OptionList>
