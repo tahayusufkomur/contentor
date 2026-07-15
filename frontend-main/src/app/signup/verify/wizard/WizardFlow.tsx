@@ -6,14 +6,14 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { finalizeWizard, getWizardCatalog, patchWizardState, readWizardState } from "@/lib/wizard/api";
+import { finalizeWizard, getDescribeFollowups, getWizardCatalog, patchWizardState, readWizardState } from "@/lib/wizard/api";
 import { buildSteps, finishRestAnswers, firstUnansweredStep, nextStep, prevStep, progressPct } from "@/lib/wizard/machine";
 import type { WizardAnswers, WizardCatalog, WizardLogoAnswer } from "@/lib/wizard/types";
 import { ApiError } from "@/types/api";
 
 import { WizardShell } from "./WizardShell";
 import { PageLayoutStep } from "./pages-steps";
-import { DescribeStep, FontStep, GoalsStep, HeroStep, NavbarStep, NicheStep, ThemeStep } from "./steps";
+import { DescribeStep, FollowupsStep, FontStep, GoalsStep, HeroStep, NavbarStep, NicheStep, ThemeStep } from "./steps";
 import { LogoStep, ReviewStep } from "./logo-review-steps";
 
 function brandFromToken(token: string): string {
@@ -86,6 +86,8 @@ export function WizardFlow({
     switch (step?.id) {
       case "business.describe":
         return { description: answers.description ?? "" };
+      case "business.followups":
+        return answers.description_followups ? { description_followups: answers.description_followups } : {};
       case "business.goals":
         return { goals: answers.goals ?? [] };
       case "logo":
@@ -145,6 +147,36 @@ export function WizardFlow({
       }
       return;
     }
+    if (step.id === "business.describe") {
+      const description = answers.description ?? "";
+      const stored = answers.description_followups;
+      let followups = stored && stored.for === description && stored.items.length > 0 ? stored : undefined;
+      if (!followups && description.trim()) {
+        setBusy(true);
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 20_000);
+          const res = await getDescribeFollowups(token, description, controller.signal);
+          clearTimeout(timer);
+          if (res.questions.length > 0) {
+            followups = { for: description, items: res.questions.map((q) => ({ q, a: "" })) };
+          }
+        } catch {
+          // AI unavailable or slow — continue without follow-ups.
+        } finally {
+          setBusy(false);
+        }
+      }
+      const partial: WizardAnswers = {
+        description,
+        // Clear stale questions when the description changed and no new ones
+        // came back, so the step disappears instead of showing old questions.
+        description_followups: followups ?? { for: description, items: [] },
+      };
+      setDirection(1);
+      await commit(partial, followups ? "business.followups" : "business.goals");
+      return;
+    }
     const next = nextStep(steps, step.id);
     setDirection(1);
     await commit(currentSlice(), next?.id ?? "review");
@@ -186,6 +218,14 @@ export function WizardFlow({
       break;
     case "business.describe":
       body = <DescribeStep catalog={catalog} value={answers.description} onChange={(description) => draft({ description })} />;
+      break;
+    case "business.followups":
+      body = (
+        <FollowupsStep
+          value={answers.description_followups}
+          onChange={(description_followups) => draft({ description_followups })}
+        />
+      );
       break;
     case "business.goals":
       body = <GoalsStep catalog={catalog} value={answers.goals} onChange={(g) => draft({ goals: g })} />;

@@ -21,12 +21,17 @@ export function buildSteps(catalog: WizardCatalog, answers: WizardAnswers): Step
   const steps: StepDef[] = [
     { id: "business.niche", chapter: "business" },
     { id: "business.describe", chapter: "business" },
+  ];
+  if ((answers.description_followups?.items?.length ?? 0) > 0) {
+    steps.push({ id: "business.followups", chapter: "business" });
+  }
+  steps.push(
     { id: "business.goals", chapter: "business" },
     { id: "look.theme", chapter: "look" },
     { id: "look.font", chapter: "look" },
     { id: "look.navbar", chapter: "look" },
     { id: "look.hero", chapter: "look" },
-  ];
+  );
   for (const page of PAGE_ORDER) {
     if (page === "pricing" && !selling) continue; // answers matter: no selling -> no pricing step
     if ((catalog.page_layouts[page] ?? []).length < 2) continue;
@@ -62,6 +67,10 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
       return Boolean(answers.niche);
     case "business.describe":
       return answers.description !== undefined;
+    case "business.followups":
+      // Never blocks resume: questions are optional; current_step decides
+      // whether the coach returns here.
+      return true;
     case "business.goals":
       return answers.goals !== undefined;
     case "look.theme":

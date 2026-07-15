@@ -14,6 +14,7 @@
       "general": { "label": "Başka bir şey", "tagline": "Kendi alanın" }
     },
     "describe": { "heading": "Ne yaptığını anlat", "subhead": "Bir iki cümle yeter. Sözlerini sitende kullanacağız — geçebilirsin.", "placeholder": "Yoğun çalışan yetişkinlere sakin bir günlük pratik kazandırıyorum…" },
+    "followups": { "heading": "Birkaç kısa soru", "subhead": "Cevapların, site metinlerini senin ağzından yazmamıza yardımcı olur. İsteğe bağlı — boş bırakabilirsin." },
     "goals": { "heading": "Neler sunacaksın?", "subhead": "Planladığın her şeyi seç — sayfalarını ve menünü buna göre kurarız.", "selectAll": "Tümünü seç", "clearAll": "Tümünü temizle", "items": { "sell_courses": "Kayıtlı kurs sat", "run_live_classes": "Canlı online ders yap", "in_person_events": "Yüz yüze etkinlik düzenle", "sell_downloads": "İndirilebilir kaynak sat", "email_marketing": "E-posta kampanyaları gönder", "build_community": "Topluluk kur", "write_blog": "Makale ve ipuçları paylaş", "send_announcements": "Duyuru ve güncelleme gönder" } },
     "theme": { "heading": "Renklerini seç", "subhead": "Alanına göre önerildi — istediğin zaman değiştirebilirsin." },
     "themes": { "ocean": "Okyanus", "ember": "Kor", "forest": "Orman", "sunset": "Gün batımı", "violet": "Menekşe", "slate": "Arduvaz" },

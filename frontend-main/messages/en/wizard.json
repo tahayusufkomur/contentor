@@ -14,6 +14,7 @@
       "general": { "label": "Something else", "tagline": "Your own thing" }
     },
     "describe": { "heading": "Describe what you do", "subhead": "One or two sentences. We'll use your words across your site — you can skip this.", "placeholder": "I help busy professionals build a calm daily practice…" },
+    "followups": { "heading": "A couple quick questions", "subhead": "Your answers help us write your site's copy in your voice. Optional — leave blank to skip." },
     "goals": { "heading": "What will you offer?", "subhead": "Pick everything you plan to do — this shapes your pages and menu.", "selectAll": "Select all", "clearAll": "Clear all", "items": { "sell_courses": "Sell recorded courses", "run_live_classes": "Run live online classes", "in_person_events": "Host in-person events", "sell_downloads": "Sell downloads & resources", "email_marketing": "Send email campaigns", "build_community": "Build a community", "write_blog": "Share articles & tips", "send_announcements": "Send announcements & updates" } },
     "theme": { "heading": "Pick your colors", "subhead": "Chosen for your niche — you can change this anytime." },
     "themes": { "ocean": "Ocean", "ember": "Ember", "forest": "Forest", "sunset": "Sunset", "violet": "Violet", "slate": "Slate" },

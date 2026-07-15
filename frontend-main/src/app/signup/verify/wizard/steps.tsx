@@ -5,7 +5,7 @@ import { Brush, Check, Dumbbell, Flame, Flower2, Music4, ScanFace, Sparkles, Win
 import { useTranslations } from "next-intl";
 
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
-import type { WizardCatalog } from "@/lib/wizard/types";
+import type { DescriptionFollowups, WizardCatalog } from "@/lib/wizard/types";
 
 import { MiniHero, MiniNavbar } from "./previews";
 
@@ -130,6 +130,36 @@ export function DescribeStep({ catalog, value, onChange }: { catalog: WizardCata
         className="mt-5 w-full resize-none rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02] p-4 text-[14px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary"
       />
       <p className="mt-1 text-right text-[11px] text-muted-foreground">{(value ?? "").length}/{catalog.description_max_len}</p>
+    </div>
+  );
+}
+
+export function FollowupsStep({ value, onChange }: { value?: DescriptionFollowups; onChange: (v: DescriptionFollowups) => void }) {
+  const t = useTranslations("wizard");
+  const items = value?.items ?? [];
+  const setAnswer = (index: number, a: string) => {
+    if (!value) return;
+    onChange({ ...value, items: items.map((item, i) => (i === index ? { ...item, a: a.slice(0, 500) } : item)) });
+  };
+  return (
+    <div>
+      <SlideHeader heading={t("followups.heading")} subhead={t("followups.subhead")} />
+      <OptionList className="mt-5 flex flex-col gap-4">
+        {items.map((item, i) => (
+          <motion.div key={i} variants={itemVariants} className="flex flex-col gap-2">
+            <label className="text-[14px] font-medium tracking-tight" htmlFor={`followup-${i}`}>
+              {item.q}
+            </label>
+            <textarea
+              id={`followup-${i}`}
+              value={item.a}
+              onChange={(e) => setAnswer(i, e.target.value)}
+              rows={2}
+              className="w-full resize-none rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02] p-4 text-[14px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary"
+            />
+          </motion.div>
+        ))}
+      </OptionList>
     </div>
   );
 }

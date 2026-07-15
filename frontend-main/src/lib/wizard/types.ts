@@ -15,6 +15,13 @@ export interface WizardCatalog {
   recommended: WizardAnswers;
 }
 
+export interface DescriptionFollowups {
+  /** The description text these questions were generated for — lets the
+   * client skip regeneration when the coach didn't change their answer. */
+  for: string;
+  items: { q: string; a: string }[];
+}
+
 export interface WizardLogoAnswer {
   mode: "wordmark" | "curated" | "ai";
   curated_id: number | null;
@@ -28,6 +35,7 @@ export interface WizardLogoAnswer {
 export interface WizardAnswers {
   niche?: string;
   description?: string;
+  description_followups?: DescriptionFollowups;
   goals?: string[];
   theme?: string;
   font_family?: string;

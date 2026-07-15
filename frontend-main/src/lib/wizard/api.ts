@@ -53,6 +53,18 @@ export function finalizeWizard(token: string): Promise<{ slug: string; status: s
   });
 }
 
+export function getDescribeFollowups(
+  token: string,
+  description: string,
+  signal?: AbortSignal,
+): Promise<{ questions: string[] }> {
+  return request("/api/v1/onboarding/wizard/describe-followups/", {
+    method: "POST",
+    body: JSON.stringify({ token, description }),
+    signal,
+  });
+}
+
 export function getCuratedLogos(): Promise<CuratedLogoItem[]> {
   return request("/api/v1/logos/curated/");
 }
