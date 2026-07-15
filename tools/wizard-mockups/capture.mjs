@@ -33,12 +33,32 @@ const LAYOUTS = [
   { page: "faq", id: "faq-welcoming", path: "/faq" },
   { page: "contact", id: "contact-form", path: "/contact" },
   { page: "contact", id: "contact-warm", path: "/contact" },
+  { page: "home", id: "home-complete", path: "/" },
+  { page: "about", id: "about-warm", path: "/about" },
+  { page: "courses", id: "courses-social", path: "/courses" },
+  { page: "pricing", id: "pricing-trust", path: "/plans" },
+  { page: "faq", id: "faq-support", path: "/faq" },
+  { page: "contact", id: "contact-reassure", path: "/contact" },
 ];
+
+// Mirrors wizard_catalog.THEMES / HERO_STYLES.
+const THEMES = ["ocean", "ember", "forest", "sunset", "violet", "slate"];
+const HEROES = ["centered", "split", "minimal"];
+// Hero cards only sell the top of the page — clip before downscaling.
+const HERO_CLIP = { x: 0, y: 0, width: 1280, height: 640 };
 
 function setLayout(page, layoutId) {
   execFileSync(
     "docker",
     ["compose", "exec", "-T", "django", "python", "manage.py", "set_wizard_mockup_layout", page, layoutId],
+    { cwd: join(__dirname, "..", ".."), stdio: "inherit" },
+  );
+}
+
+function setLook(args) {
+  execFileSync(
+    "docker",
+    ["compose", "exec", "-T", "django", "python", "manage.py", "set_wizard_mockup_look", ...args],
     { cwd: join(__dirname, "..", ".."), stdio: "inherit" },
   );
 }
@@ -78,20 +98,46 @@ async function main() {
   const cdp = await context.newCDPSession(page);
   await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 
+  async function capture(host, path, outName, { clip, fullPage = false } = {}) {
+    await page.goto(`http://${host}${path}`, { waitUntil: "networkidle", timeout: 30000 });
+    // Hide Next.js's dev-only overlay, same as tools/flowmap/crawler/capture.js.
+    await page.addStyleTag({ content: "nextjs-portal{display:none !important}" }).catch(() => {});
+    const png = await page.screenshot(fullPage ? { fullPage: true } : { fullPage: false, ...(clip ? { clip } : {}) });
+    const downscaled = await downscale(page, png, OUTPUT_WIDTH);
+    writeFileSync(join(OUT_DIR, `${outName}.png`), downscaled);
+    console.log(`  -> ${outName}.png`);
+  }
+
+  // fullPage: true — a viewport-only crop made two layouts that share their
+  // first blocks (home-story/home-complete both open hero, imageText,
+  // courseGrid) render byte-identical thumbnails, since the block that
+  // actually distinguishes them sat below the fold. Capturing the whole
+  // scrollable page makes every layout option provably distinct, no matter
+  // which blocks a future option shares with an existing one.
   for (const { page: pageKey, id, path } of LAYOUTS) {
     console.log(`${id} ...`);
     setLayout(pageKey, id);
-    await page.goto(`http://wm-${id}.localhost${path}`, { waitUntil: "networkidle", timeout: 30000 });
-    // Hide Next.js's dev-only overlay, same as tools/flowmap/crawler/capture.js.
-    await page.addStyleTag({ content: "nextjs-portal{display:none !important}" }).catch(() => {});
-    const png = await page.screenshot({ fullPage: false });
-    const downscaled = await downscale(page, png, OUTPUT_WIDTH);
-    writeFileSync(join(OUT_DIR, `${id}.png`), downscaled);
-    console.log(`  -> ${id}.png`);
+    await capture(`wm-${id}.localhost`, path, id, { fullPage: true });
   }
 
+  for (const style of HEROES) {
+    console.log(`hero-${style} ...`);
+    setLook(["--hero", style]);
+    await capture(`wm-hero-${style}.localhost`, "/", `hero-${style}`, { clip: HERO_CLIP });
+  }
+  // Reset home (hero back to centered, spotlight layout) before theme shots.
+  setLayout("home", "home-spotlight");
+
+  for (const theme of THEMES) {
+    console.log(`theme-${theme} ...`);
+    setLook(["--theme", theme]);
+    await capture(`wm-theme-${theme}.localhost`, "/", `theme-${theme}`);
+  }
+  // Leave the scratch tenant on its seeded (yoga) theme.
+  setLook(["--theme", "forest"]);
+
   await browser.close();
-  console.log(`\nDone. ${LAYOUTS.length} screenshots written to ${OUT_DIR}`);
+  console.log(`\nDone. ${LAYOUTS.length + HEROES.length + THEMES.length} screenshots written to ${OUT_DIR}`);
 }
 
 main().catch((err) => {
