@@ -23,6 +23,8 @@ GOALS = (
     "sell_downloads",
     "email_marketing",
     "build_community",
+    "write_blog",
+    "send_announcements",
 )
 
 THEMES = ("ocean", "ember", "forest", "sunset", "violet", "slate")
@@ -66,7 +68,7 @@ _RECOMMENDED_FONT = {
     "makeup": "Playfair Display",
 }
 
-NAVBAR_LAYOUTS = ("classic", "centered", "minimal")  # wizard subset of the 5 presets
+NAVBAR_LAYOUTS = ("classic", "centered", "split", "minimal", "pill")  # all 5 public-header presets
 
 HERO_STYLES = ("centered", "split", "minimal")  # == hero block "layout" enum
 
@@ -111,6 +113,12 @@ HOME_GOAL_BLOCKS = (
 
 DESCRIPTION_MAX_LEN = 500
 
+# "Describe what you do" AI follow-up Q&A (wizard_followups.py generates the
+# questions; answers feed ai_compose's brief at provisioning).
+FOLLOWUP_MAX_QUESTIONS = 2
+FOLLOWUP_QUESTION_MAX_LEN = 200
+FOLLOWUP_ANSWER_MAX_LEN = 500
+
 
 def _layout_ids(page: str) -> set[str]:
     return {option["id"] for option in PAGE_LAYOUTS[page]}
@@ -149,6 +157,27 @@ def validate_answers(partial: dict) -> list[str]:
         elif key == "description":
             if not isinstance(value, str) or len(value) > DESCRIPTION_MAX_LEN:
                 errors.append(f"description must be a string of at most {DESCRIPTION_MAX_LEN} characters")
+        elif key == "description_followups":
+            items = value.get("items") if isinstance(value, dict) else None
+            if (
+                not isinstance(value, dict)
+                or not isinstance(value.get("for"), str)
+                or len(value["for"]) > DESCRIPTION_MAX_LEN
+                or not isinstance(items, list)
+                or len(items) > FOLLOWUP_MAX_QUESTIONS
+            ):
+                errors.append("description_followups must be {for, items} with at most 2 items")
+                continue
+            for item in items:
+                if (
+                    not isinstance(item, dict)
+                    or not isinstance(item.get("q"), str)
+                    or not isinstance(item.get("a"), str)
+                    or len(item["q"]) > FOLLOWUP_QUESTION_MAX_LEN
+                    or len(item["a"]) > FOLLOWUP_ANSWER_MAX_LEN
+                ):
+                    errors.append("description_followups items must be {q, a} strings within length caps")
+                    break
         elif key == "goals":
             if not isinstance(value, list) or not all(isinstance(g, str) and g in GOALS for g in value):
                 errors.append("goals must be a list of known goal keys")

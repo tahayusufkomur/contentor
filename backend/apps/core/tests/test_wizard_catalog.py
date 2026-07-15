@@ -64,7 +64,7 @@ def test_validate_answers_accepts_valid_partial():
         {"logo": {"mode": "ai"}},
         {"font_family": "Comic Sans"},
         {"hero_style": "gigantic"},
-        {"navbar_layout": "pill"},
+        {"navbar_layout": "sidebar"},
     ],
 )
 def test_validate_answers_rejects_invalid(partial):
@@ -136,3 +136,31 @@ def test_logo_answer_accepts_ai_mode_with_recipe():
 )
 def test_logo_answer_rejects_bad_ai_shapes(logo):
     assert wc.validate_answers({"logo": logo}) != []
+
+
+def test_new_goals_present():
+    assert "write_blog" in wc.GOALS
+    assert "send_announcements" in wc.GOALS
+
+
+def test_navbar_layouts_expose_all_presets():
+    assert set(wc.NAVBAR_LAYOUTS) == _NAVBAR_LAYOUTS
+
+
+def test_description_followups_valid():
+    answer = {"for": "Calm vinyasa for busy parents", "items": [{"q": "Who is it for?", "a": "Beginners"}]}
+    assert wc.validate_answers({"description_followups": answer}) == []
+
+
+def test_description_followups_empty_items_valid():
+    assert wc.validate_answers({"description_followups": {"for": "x", "items": []}}) == []
+
+
+def test_description_followups_invalid_shapes():
+    assert wc.validate_answers({"description_followups": "nope"})
+    assert wc.validate_answers({"description_followups": {"items": []}})  # missing "for"
+    assert wc.validate_answers({"description_followups": {"for": "x"}})  # missing items
+    assert wc.validate_answers({"description_followups": {"for": "x", "items": [{"q": "a"}]}})  # missing "a"
+    assert wc.validate_answers({"description_followups": {"for": "x", "items": [{}, {}, {}]}})  # > 2 items
+    assert wc.validate_answers({"description_followups": {"for": "x", "items": [{"q": "q" * 201, "a": ""}]}})
+    assert wc.validate_answers({"description_followups": {"for": "x", "items": [{"q": "q", "a": "a" * 501}]}})
