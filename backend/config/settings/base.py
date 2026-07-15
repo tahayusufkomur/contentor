@@ -163,6 +163,9 @@ REST_FRAMEWORK = {
         "wizard_recover": "5/hour",
         # Public (wizard-token) logo AI endpoints — mirrors ai_rate.
         "wizard_logo": "20/min",
+        # Public (wizard-token) describe-followups AI endpoint — one AI call
+        # per describe-step Continue, so tighter than wizard_logo.
+        "wizard_followups": "10/min",
     },
 }
 

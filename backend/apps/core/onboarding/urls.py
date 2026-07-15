@@ -12,6 +12,7 @@ from .views import (
     skip_template,
 )
 from .wizard import wizard_catalog_view, wizard_checkout, wizard_finalize, wizard_state
+from .wizard_followups import wizard_describe_followups
 from .wizard_logo import (
     wizard_logo_converse,
     wizard_logo_converse_finish,
@@ -32,6 +33,7 @@ urlpatterns = [
     path("wizard/catalog/", wizard_catalog_view, name="wizard-catalog"),
     path("wizard/state/", wizard_state, name="wizard-state"),
     path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
+    path("wizard/describe-followups/", wizard_describe_followups, name="wizard-describe-followups"),
     path("wizard/checkout/", wizard_checkout, name="wizard-checkout"),
     path("wizard/recover/", wizard_recover, name="wizard-recover"),
     path("wizard/logo-status/", wizard_logo_status, name="wizard-logo-status"),

@@ -47,6 +47,12 @@ class WizardLogoThrottle(ClientIpAnonThrottle):
     scope = "wizard_logo"
 
 
+class WizardFollowupThrottle(ClientIpAnonThrottle):
+    """Public (wizard-token) describe-followups AI endpoint."""
+
+    scope = "wizard_followups"
+
+
 class BrandNameCheckThrottle(ClientIpAnonThrottle):
     """Pre-wizard step 1 availability check — read-only, no email sent."""
 
