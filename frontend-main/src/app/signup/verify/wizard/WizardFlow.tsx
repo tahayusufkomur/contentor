@@ -12,7 +12,6 @@ import type { WizardAnswers, WizardCatalog, WizardLogoAnswer } from "@/lib/wizar
 import { ApiError } from "@/types/api";
 
 import { WizardShell } from "./WizardShell";
-import { LivePreview } from "./previews";
 import { PageLayoutStep } from "./pages-steps";
 import { DescribeStep, FontStep, GoalsStep, HeroStep, NavbarStep, NicheStep, ThemeStep } from "./steps";
 import { LogoStep, ReviewStep } from "./logo-review-steps";
@@ -42,6 +41,7 @@ export function WizardFlow({
   const [catalog, setCatalog] = useState<WizardCatalog | null>(null);
   const [answers, setAnswers] = useState<WizardAnswers>({});
   const [stepId, setStepId] = useState("business.niche");
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back; drives the slide
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAllThemes, setShowAllThemes] = useState(false);
@@ -79,38 +79,21 @@ export function WizardFlow({
 
   const draft = useCallback((partial: WizardAnswers) => setAnswers((a) => ({ ...a, ...partial })), []);
 
-  // The slice Continue commits: the user's pick, or the preselected
-  // recommendation they implicitly accepted by continuing.
+  // The slice Continue commits. Only the steps that still HAVE a Continue
+  // button appear here: single-select steps advance on the pick itself
+  // (selectAndAdvance), so they never route through this.
   const currentSlice = useCallback((): WizardAnswers => {
-    if (!catalog || !step) return {};
-    const rec = catalog.recommended;
-    const ranked = catalog.theme_ranking[answers.niche ?? "general"] ?? catalog.themes;
-    switch (step.id) {
-      case "business.niche":
-        return { niche: answers.niche };
+    switch (step?.id) {
       case "business.describe":
         return { description: answers.description ?? "" };
       case "business.goals":
         return { goals: answers.goals ?? [] };
-      case "look.theme":
-        return { theme: answers.theme ?? ranked[0] };
-      case "look.font":
-        return { font_family: answers.font_family ?? rec.font_family };
-      case "look.navbar":
-        return { navbar_layout: answers.navbar_layout ?? rec.navbar_layout };
-      case "look.hero":
-        return { hero_style: answers.hero_style ?? rec.hero_style };
       case "logo":
         return { logo: answers.logo ?? ({ mode: "wordmark", curated_id: null } as WizardLogoAnswer) };
-      case "review":
+      default:
         return {};
-      default: {
-        const page = step.id.replace("pages.", "");
-        const current = answers.page_layouts ?? {};
-        return { page_layouts: { ...current, [page]: current[page] ?? catalog.page_layouts[page][0].id } };
-      }
     }
-  }, [answers, catalog, step]);
+  }, [answers, step]);
 
   const commit = useCallback(
     async (partial: WizardAnswers, goToId: string, extra?: { finished_rest_for_me?: boolean }) => {
@@ -134,12 +117,15 @@ export function WizardFlow({
   );
 
   // Single-select steps (one option, one outcome) advance the moment the
-  // coach picks — no separate "Continue" tap needed. Multi-select
-  // (goals) and free-text (describe) steps stay on draft() + Continue.
+  // coach picks — they render no Continue button at all, so the pick is the
+  // only way forward and nothing sits pre-checked pretending to be chosen.
+  // Multi-select (goals) and free-text (describe) steps keep draft() +
+  // Continue, since there's no single click that means "done".
   const selectAndAdvance = useCallback(
     (partial: WizardAnswers) => {
       if (!step || busy) return;
       const next = nextStep(steps, step.id);
+      setDirection(1);
       void commit(partial, next?.id ?? "review");
     },
     [commit, steps, step, busy],
@@ -160,17 +146,22 @@ export function WizardFlow({
       return;
     }
     const next = nextStep(steps, step.id);
+    setDirection(1);
     await commit(currentSlice(), next?.id ?? "review");
   };
 
   const handleFinishRest = async () => {
     if (!catalog || busy) return;
+    setDirection(1);
     await commit(finishRestAnswers(catalog, answers), "logo", { finished_rest_for_me: true });
   };
 
   const handleBack = () => {
     const prev = step && prevStep(steps, step.id);
-    if (prev && !busy) setStepId(prev.id);
+    if (prev && !busy) {
+      setDirection(-1);
+      setStepId(prev.id);
+    }
   };
 
   if (!catalog || !step) {
@@ -182,8 +173,11 @@ export function WizardFlow({
   }
 
   const goals = answers.goals ?? [];
-  const continueDisabled = step.id === "business.niche" && !answers.niche;
-  const showPreview = step.chapter !== "business";
+  // Steps whose pick IS the advance render no Continue button. Nothing on
+  // them is pre-checked either — a checked card with no way forward reads as
+  // a dead end. "Finish the rest for me" stays the bulk-accept escape hatch,
+  // and finalize still fills any never-answered key with the recommendation.
+  const autoAdvance = step.chapter === "look" || step.chapter === "pages" || step.id === "business.niche";
 
   let body: React.ReactNode;
   switch (step.id) {
@@ -201,7 +195,7 @@ export function WizardFlow({
         <ThemeStep
           catalog={catalog}
           niche={answers.niche}
-          value={answers.theme ?? (catalog.theme_ranking[answers.niche ?? "general"] ?? catalog.themes)[0]}
+          value={answers.theme}
           onChange={(theme) => selectAndAdvance({ theme })}
           showAll={showAllThemes}
           onShowAll={() => setShowAllThemes(true)}
@@ -209,13 +203,13 @@ export function WizardFlow({
       );
       break;
     case "look.font":
-      body = <FontStep catalog={catalog} brand={brand} value={answers.font_family ?? catalog.recommended.font_family} onChange={(font_family) => selectAndAdvance({ font_family })} />;
+      body = <FontStep catalog={catalog} brand={brand} value={answers.font_family} onChange={(font_family) => selectAndAdvance({ font_family })} />;
       break;
     case "look.navbar":
-      body = <NavbarStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.navbar_layout ?? catalog.recommended.navbar_layout} onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })} />;
+      body = <NavbarStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.navbar_layout} onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })} />;
       break;
     case "look.hero":
-      body = <HeroStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.hero_style ?? catalog.recommended.hero_style} onChange={(hero_style) => selectAndAdvance({ hero_style })} />;
+      body = <HeroStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.hero_style} onChange={(hero_style) => selectAndAdvance({ hero_style })} />;
       break;
     case "logo":
       body = (
@@ -232,7 +226,16 @@ export function WizardFlow({
       );
       break;
     case "review":
-      body = <ReviewStep catalog={catalog} answers={answers} onEdit={(id) => setStepId(id)} />;
+      body = (
+        <ReviewStep
+          catalog={catalog}
+          answers={answers}
+          onEdit={(id) => {
+            setDirection(-1);
+            setStepId(id);
+          }}
+        />
+      );
       break;
     default: {
       const page = step.id.replace("pages.", "");
@@ -240,7 +243,7 @@ export function WizardFlow({
         <PageLayoutStep
           catalog={catalog}
           page={page}
-          value={answers.page_layouts?.[page] ?? catalog.page_layouts[page][0].id}
+          value={answers.page_layouts?.[page]}
           onChange={(layoutId) =>
             selectAndAdvance({ page_layouts: { ...(answers.page_layouts ?? {}), [page]: layoutId } })
           }
@@ -254,29 +257,33 @@ export function WizardFlow({
   return (
     <WizardShell
       chapter={step.chapter}
+      stepId={step.id}
+      direction={direction}
       progress={progressPct(steps, step.id)}
       canBack={Boolean(prevStep(steps, step.id))}
       onBack={handleBack}
       showFinishRest={step.chapter !== "business" && step.id !== "review"}
       onFinishRest={handleFinishRest}
       error={error}
-      aside={showPreview ? <LivePreview answers={answers} brand={brand} /> : undefined}
+      wide={step.chapter === "pages"}
       footer={
-        <Button type="button" variant="brand" size="lg" className="w-full" onClick={handleContinue} disabled={continueDisabled || busy}>
-          {busy ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{step.id === "review" ? t("review.creating") : t("common.saving")}</span>
-            </>
-          ) : step.id === "review" ? (
-            t("review.create")
-          ) : (
-            <>
-              {t("common.continue")}
-              <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
+        autoAdvance ? null : (
+          <Button type="button" variant="brand" size="lg" className="w-full max-w-[340px]" onClick={handleContinue} disabled={busy}>
+            {busy ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{step.id === "review" ? t("review.creating") : t("common.saving")}</span>
+              </>
+            ) : step.id === "review" ? (
+              t("review.create")
+            ) : (
+              <>
+                {t("common.continue")}
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        )
       }
     >
       {body}

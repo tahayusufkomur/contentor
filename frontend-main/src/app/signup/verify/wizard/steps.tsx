@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, type Variants } from "framer-motion";
 import { Brush, Check, Dumbbell, Flame, Flower2, Music4, ScanFace, Sparkles, Wind, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -15,11 +16,31 @@ const NICHE_ICONS: Record<string, LucideIcon> = {
   belly_dance: Music4, face_yoga: ScanFace, makeup: Brush, general: Sparkles,
 };
 
+/** Options cascade in rather than appearing all at once — the step's content
+ * lands after the slide-in, which reads as the page building itself. */
+export const listVariants: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
+};
+
+export const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 420, damping: 34 } },
+};
+
+export function OptionList({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <motion.div variants={listVariants} initial="hidden" animate="show" className={className}>
+      {children}
+    </motion.div>
+  );
+}
+
 export function SlideHeader({ heading, subhead }: { heading: string; subhead: string }) {
   return (
-    <div className="flex-shrink-0">
+    <div className="flex-shrink-0 text-center">
       <h2 className="text-display text-[24px] leading-tight tracking-[-0.02em] md:text-[26px]">{heading}</h2>
-      <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">{subhead}</p>
+      <p className="mx-auto mt-2 max-w-[46ch] text-[14px] leading-relaxed text-muted-foreground">{subhead}</p>
     </div>
   );
 }
@@ -35,29 +56,43 @@ export function OptionCard({
   children?: React.ReactNode;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onSelect}
-      className={`relative flex w-full flex-col gap-2 rounded-2xl border p-3 text-left transition-all active:scale-[0.99] ${
+      variants={itemVariants}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.985 }}
+      // No text-center here: the preview children (MiniHero/MiniNavbar) render
+      // real layouts, and inheriting centering would make a left-aligned
+      // layout like "Split" preview as centered — misrepresenting the choice.
+      // items-center centers the previews themselves; the label centers below.
+      className={`relative flex w-full flex-col items-center gap-2.5 rounded-2xl border p-3 transition-colors ${
         selected
           ? "border-primary bg-primary/[0.06]"
           : "border-foreground/[0.08] bg-foreground/[0.02] hover:border-foreground/20 hover:bg-foreground/[0.04]"
       }`}
     >
       {children}
-      <span className="flex items-baseline gap-2">
+      <span className="flex flex-col items-center gap-0.5 text-center">
         <span className="text-[13.5px] font-semibold tracking-tight">{title}</span>
-        {subtitle && <span className="text-[11.5px] text-muted-foreground">{subtitle}</span>}
-        {badge && (
-          <span className="ml-auto rounded-full bg-foreground/[0.06] px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{badge}</span>
-        )}
+        {subtitle && <span className="text-[11.5px] leading-snug text-muted-foreground">{subtitle}</span>}
       </span>
-      {selected && (
-        <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Check className="h-3 w-3" strokeWidth={3} />
+      {badge && (
+        <span className="absolute left-2 top-2 rounded-full bg-foreground/[0.06] px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          {badge}
         </span>
       )}
-    </button>
+      {selected && (
+        <motion.span
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 600, damping: 22 }}
+          className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+        >
+          <Check className="h-3 w-3" strokeWidth={3} />
+        </motion.span>
+      )}
+    </motion.button>
   );
 }
 
@@ -66,18 +101,18 @@ export function NicheStep({ catalog, value, onChange }: { catalog: WizardCatalog
   return (
     <div>
       <SlideHeader heading={t("niche.heading")} subhead={t("niche.subhead")} />
-      <div className="mt-5 grid grid-cols-2 gap-2.5">
+      <OptionList className="mt-5 grid grid-cols-2 gap-2.5">
         {catalog.niches.map((key) => {
           const Icon = NICHE_ICONS[key] ?? Sparkles;
           return (
             <OptionCard key={key} selected={value === key} onSelect={() => onChange(key)} title={t(`niches.${key}.label`)} subtitle={t(`niches.${key}.tagline`)}>
-              <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${value === key ? "bg-primary text-primary-foreground" : "bg-foreground/[0.06] text-foreground/70"}`}>
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${value === key ? "bg-primary text-primary-foreground" : "bg-foreground/[0.06] text-foreground/70"}`}>
                 <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </span>
             </OptionCard>
           );
         })}
-      </div>
+      </OptionList>
     </div>
   );
 }
@@ -107,37 +142,44 @@ export function GoalsStep({ catalog, value, onChange }: { catalog: WizardCatalog
   const allSelected = catalog.goals.length > 0 && catalog.goals.every((key) => goals.includes(key));
   return (
     <div>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <SlideHeader heading={t("goals.heading")} subhead={t("goals.subhead")} />
-        </div>
+      <SlideHeader heading={t("goals.heading")} subhead={t("goals.subhead")} />
+      <div className="mt-3 flex justify-center">
         <button
           type="button"
           onClick={() => onChange(allSelected ? [] : [...catalog.goals])}
-          className="mt-1 flex-shrink-0 text-[12.5px] font-medium text-primary hover:underline"
+          className="text-[12.5px] font-medium text-primary hover:underline"
         >
           {allSelected ? t("goals.clearAll") : t("goals.selectAll")}
         </button>
       </div>
-      <div className="mt-5 flex flex-col gap-2">
+      {/* Rows stay left-aligned: a checkbox reads as a checkbox only when the
+       * boxes line up in a column the eye can run down. */}
+      <OptionList className="mt-4 flex flex-col gap-2">
         {catalog.goals.map((key) => (
-          <button
+          <motion.button
             key={key}
             type="button"
             onClick={() => toggle(key)}
-            className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-all active:scale-[0.99] ${
+            variants={itemVariants}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.985 }}
+            className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors ${
               goals.includes(key)
                 ? "border-primary bg-primary/[0.06]"
                 : "border-foreground/[0.08] bg-foreground/[0.02] hover:border-foreground/20 hover:bg-foreground/[0.04]"
             }`}
           >
             <span className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${goals.includes(key) ? "border-primary bg-primary text-primary-foreground" : "border-foreground/30"}`}>
-              {goals.includes(key) && <Check className="h-3 w-3" strokeWidth={3} />}
+              {goals.includes(key) && (
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 600, damping: 22 }}>
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </motion.span>
+              )}
             </span>
             <span className="text-[14.5px] font-medium tracking-tight">{t(`goals.items.${key}`)}</span>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </OptionList>
     </div>
   );
 }
@@ -149,7 +191,7 @@ export function ThemeStep({ catalog, niche, value, onChange, showAll, onShowAll 
   return (
     <div>
       <SlideHeader heading={t("theme.heading")} subhead={t("theme.subhead")} />
-      <div className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-5 flex flex-col gap-2.5">
         {shown.map((theme, i) => {
           const s = THEME_SWATCHES[theme];
           return (
@@ -162,11 +204,13 @@ export function ThemeStep({ catalog, niche, value, onChange, showAll, onShowAll 
             </OptionCard>
           );
         })}
-      </div>
+      </OptionList>
       {!showAll && (
-        <button type="button" onClick={onShowAll} className="mt-3 text-[12.5px] font-medium text-muted-foreground hover:text-foreground">
-          {t("common.showAll")}
-        </button>
+        <div className="mt-3 flex justify-center">
+          <button type="button" onClick={onShowAll} className="text-[12.5px] font-medium text-muted-foreground hover:text-foreground">
+            {t("common.showAll")}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -177,13 +221,13 @@ export function FontStep({ catalog, brand, value, onChange }: { catalog: WizardC
   return (
     <div>
       <SlideHeader heading={t("font.heading")} subhead={t("font.subhead")} />
-      <div className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-5 flex flex-col gap-2.5">
         {Object.entries(catalog.fonts).map(([id, family]) => (
           <OptionCard key={id} selected={value === family} onSelect={() => onChange(family)} title={t(`fonts.${id}.label`)} subtitle={t(`fonts.${id}.vibe`)}>
             <span className="text-[22px] leading-snug" style={{ fontFamily: FONT_STACKS[family] ?? family }}>{brand}</span>
           </OptionCard>
         ))}
-      </div>
+      </OptionList>
     </div>
   );
 }
@@ -193,13 +237,13 @@ export function NavbarStep({ catalog, brand, theme, font, value, onChange }: { c
   return (
     <div>
       <SlideHeader heading={t("navbar.heading")} subhead={t("navbar.subhead")} />
-      <div className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-5 flex flex-col gap-2.5">
         {catalog.navbar_layouts.map((layout) => (
           <OptionCard key={layout} selected={value === layout} onSelect={() => onChange(layout)} title={t(`navbarLayouts.${layout}`)}>
             <MiniNavbar layout={layout} theme={theme} font={font} brand={brand} />
           </OptionCard>
         ))}
-      </div>
+      </OptionList>
     </div>
   );
 }
@@ -209,13 +253,13 @@ export function HeroStep({ catalog, brand, theme, font, value, onChange }: { cat
   return (
     <div>
       <SlideHeader heading={t("hero.heading")} subhead={t("hero.subhead")} />
-      <div className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-5 flex flex-col gap-2.5">
         {catalog.hero_styles.map((style) => (
           <OptionCard key={style} selected={value === style} onSelect={() => onChange(style)} title={t(`heroStyles.${style}.label`)} subtitle={t(`heroStyles.${style}.desc`)}>
             <MiniHero style={style} theme={theme} font={font} brand={brand} />
           </OptionCard>
         ))}
-      </div>
+      </OptionList>
     </div>
   );
 }

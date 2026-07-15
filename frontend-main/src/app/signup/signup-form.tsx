@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { checkBrandName, createPlatformAuthenticated } from "@/lib/api/onboarding";
-import { LivePreview } from "./verify/wizard/previews";
+import { SlideHeader } from "./verify/wizard/steps";
 import { WizardShell } from "./verify/wizard/WizardShell";
 import { ApiError } from "@/types/api";
 
@@ -82,12 +82,13 @@ function AuthenticatedSignupForm({ authenticatedName }: { authenticatedName: str
 
 type Step = "brand" | "contact" | "email-sent";
 
-/** New coach: brand name (with live preview) -> name+email -> verification
- * email sent. Renders inside the wizard's own shell so this feels like the
- * wizard's first step instead of a separate form. */
+/** New coach: brand name -> name+email -> verification email sent. Renders
+ * inside the wizard's own shell so this feels like the wizard's first step
+ * instead of a separate form. */
 function AnonymousSignupFlow() {
   const t = useTranslations("auth.signup");
   const [step, setStep] = useState<Step>("brand");
+  const [direction, setDirection] = useState(1);
   const [brandName, setBrandName] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -105,6 +106,7 @@ function AnonymousSignupFlow() {
         setError(result.detail ?? t("errors.generic"));
         return;
       }
+      setDirection(1);
       setStep("contact");
     } catch {
       setError(t("errors.generic"));
@@ -152,7 +154,6 @@ function AnonymousSignupFlow() {
     );
   }
 
-  const preview = <LivePreview answers={{}} brand={brandName || t("brandNamePlaceholder")} />;
   const signInLink = (
     <p className="text-center text-[13px] text-muted-foreground">
       {t("alreadyHaveAccount")}{" "}
@@ -166,20 +167,21 @@ function AnonymousSignupFlow() {
     return (
       <WizardShell
         chapter="business"
+        stepId="brand"
+        direction={direction}
         progress={0}
         canBack={false}
         onBack={() => {}}
         showFinishRest={false}
         onFinishRest={() => {}}
         error={error}
-        aside={preview}
         footer={
           <>
             <Button
               type="button"
               variant="brand"
               size="lg"
-              className="w-full"
+              className="w-full max-w-[340px]"
               loading={loading}
               disabled={!brandName.trim()}
               onClick={handleBrandContinue}
@@ -191,11 +193,8 @@ function AnonymousSignupFlow() {
         }
       >
         <div>
-          <h2 className="text-display text-[24px] leading-tight tracking-[-0.02em] md:text-[26px]">
-            {t("brandStepHeading")}
-          </h2>
-          <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">{t("brandStepSubhead")}</p>
-          <div className="mt-5 space-y-2">
+          <SlideHeader heading={t("brandStepHeading")} subhead={t("brandStepSubhead")} />
+          <div className="mx-auto mt-5 max-w-[380px] space-y-2">
             <Label htmlFor="brandName" className="text-[13px] font-medium text-foreground/80">
               {t("brandNameLabel")}
             </Label>
@@ -216,19 +215,21 @@ function AnonymousSignupFlow() {
   return (
     <WizardShell
       chapter="business"
+      stepId="contact"
+      direction={direction}
       progress={8}
       canBack
       onBack={() => {
         setError(null);
+        setDirection(-1);
         setStep("brand");
       }}
       showFinishRest={false}
       onFinishRest={() => {}}
       error={error}
-      aside={preview}
       footer={
         <>
-          <Button type="submit" form="contact-form" variant="brand" size="lg" className="w-full" loading={loading}>
+          <Button type="submit" form="contact-form" variant="brand" size="lg" className="w-full max-w-[340px]" loading={loading}>
             {loading ? t("submitting") : t("submit")}
           </Button>
           {signInLink}
@@ -236,11 +237,8 @@ function AnonymousSignupFlow() {
       }
     >
       <div>
-        <h2 className="text-display text-[24px] leading-tight tracking-[-0.02em] md:text-[26px]">
-          {t("contactStepHeading")}
-        </h2>
-        <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">{t("contactStepSubhead")}</p>
-        <form id="contact-form" onSubmit={handleContactSubmit} className="mt-5 space-y-5">
+        <SlideHeader heading={t("contactStepHeading")} subhead={t("contactStepSubhead")} />
+        <form id="contact-form" onSubmit={handleContactSubmit} className="mx-auto mt-5 max-w-[380px] space-y-5">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-[13px] font-medium text-foreground/80">
               {t("nameLabel")}

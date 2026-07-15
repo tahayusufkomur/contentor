@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -9,7 +10,7 @@ import type { CuratedLogoItem, WizardAnswers, WizardCatalog, WizardLogoAnswer } 
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 
 import { AiLogoDoor } from "./ai-logo";
-import { OptionCard, SlideHeader } from "./steps";
+import { OptionCard, OptionList, SlideHeader, itemVariants, listVariants } from "./steps";
 
 export function LogoStep({
   token, brand, niche, theme, font, value, onChange, initialUpgraded,
@@ -46,7 +47,7 @@ export function LogoStep({
     <div>
       <SlideHeader heading={t("logo.heading")} subhead={t("logo.subhead")} />
 
-      <div className="mt-5 flex flex-col gap-2.5">
+      <OptionList className="mt-5 flex flex-col gap-2.5">
         <OptionCard
           selected={mode === "wordmark"}
           onSelect={() => onChange({ mode: "wordmark", curated_id: null })}
@@ -91,7 +92,7 @@ export function LogoStep({
           onPicked={onChange}
           initialUpgraded={initialUpgraded}
         />
-      </div>
+      </OptionList>
     </div>
   );
 }
@@ -127,9 +128,16 @@ export function ReviewStep({
   return (
     <div>
       <SlideHeader heading={t("review.heading")} subhead={t("review.subhead")} />
-      <ul className="mt-5 divide-y divide-foreground/[0.06] rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02]">
+      {/* The last thing they see before "create" — every answer they gave,
+       * cascading in, so the summary lands as a reveal rather than a form. */}
+      <motion.ul
+        variants={listVariants}
+        initial="hidden"
+        animate="show"
+        className="mt-5 divide-y divide-foreground/[0.06] rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02]"
+      >
         {rows.map((row) => (
-          <li key={row.key} className="flex items-center gap-3 px-4 py-3">
+          <motion.li key={row.key} variants={itemVariants} className="flex items-center gap-3 px-4 py-3">
             <span className="w-24 flex-shrink-0 text-[12px] font-medium text-muted-foreground">{t(`review.rows.${row.key}`)}</span>
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{row.value}</span>
             <button
@@ -140,9 +148,9 @@ export function ReviewStep({
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
-          </li>
+          </motion.li>
         ))}
-      </ul>
+      </motion.ul>
     </div>
   );
 }

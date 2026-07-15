@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 
 import type { WizardCatalog } from "@/lib/wizard/types";
 
-import { MiniPageSketch } from "./previews";
-import { OptionCard, SlideHeader } from "./steps";
+import { BrowserFrame, MiniPageSketch } from "./previews";
+import { OptionCard, OptionList, SlideHeader } from "./steps";
 
 /** Block-type sequence for a layout thumbnail, with home-page goal blocks
  * spliced in after courseGrid — mirrors backend compose ordering. */
@@ -24,25 +24,34 @@ export function thumbnailBlocks(catalog: WizardCatalog, page: string, layoutBloc
 /** Real screenshot (tools/wizard-mockups/capture.mjs) when one has been
  * captured for this layout id, falling back to the abstract wireframe
  * otherwise — so a layout added to the catalog before its screenshot
- * exists never shows a broken image. */
+ * exists never shows a broken image. Shown uncropped inside browser chrome:
+ * the coach is choosing a whole page, so cropping it would hide the very
+ * blocks that distinguish the two options. alt is empty because the card's
+ * visible title already names the layout. */
 function LayoutThumbnail({
-  layoutId, blocks, theme, title,
+  layoutId, blocks, theme,
 }: {
   layoutId: string;
   blocks: string[];
   theme?: string;
-  title: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
-  if (imageFailed) return <MiniPageSketch blocks={blocks} theme={theme} />;
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed
-    <img
-      src={`/wizard-mockups/${layoutId}.png`}
-      alt={title}
-      className="w-full rounded-lg object-cover"
-      onError={() => setImageFailed(true)}
-    />
+    <BrowserFrame>
+      {imageFailed ? (
+        <div className="p-2">
+          <MiniPageSketch blocks={blocks} theme={theme} />
+        </div>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed
+        <img
+          src={`/wizard-mockups/${layoutId}.png`}
+          alt=""
+          className="block w-full"
+          onError={() => setImageFailed(true)}
+        />
+      )}
+    </BrowserFrame>
   );
 }
 
@@ -61,7 +70,7 @@ export function PageLayoutStep({
   return (
     <div>
       <SlideHeader heading={t(`pages.titles.${page}`)} subhead={t("pages.subhead")} />
-      <div className="mt-5 grid grid-cols-2 gap-2.5">
+      <OptionList className="mx-auto mt-6 grid max-w-[720px] grid-cols-2 gap-4">
         {options.map((option, i) => (
           <OptionCard
             key={option.id}
@@ -74,11 +83,10 @@ export function PageLayoutStep({
               layoutId={option.id}
               blocks={thumbnailBlocks(catalog, page, option.blocks, goals)}
               theme={theme}
-              title={t(`layouts.${option.id}`)}
             />
           </OptionCard>
         ))}
-      </div>
+      </OptionList>
     </div>
   );
 }

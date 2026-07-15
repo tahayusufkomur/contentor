@@ -77,13 +77,15 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
   await page.getByRole("button", { name: W.navbarLayouts.minimal }).click();
   await page.getByRole("button", { name: W.heroStyles.split.label }).click();
 
-  // Chapter 3 — pages (home explicit + auto-advances, rest keep the recommended preselect)
+  // Chapter 3 — pages (single-select, auto-advance: nothing is preselected,
+  // so each page needs its own pick — home takes the non-default to prove the
+  // choice sticks, the rest take the recommended card).
   await page.getByRole("button", { name: W.layouts["home-story"] }).click();
-  await clickContinue(page); // about
-  await clickContinue(page); // courses
-  await clickContinue(page); // pricing (present because sell_courses picked)
-  await clickContinue(page); // faq
-  await clickContinue(page); // contact
+  await page.getByRole("button", { name: W.layouts["about-story"] }).click();
+  await page.getByRole("button", { name: W.layouts["courses-grid"] }).click();
+  await page.getByRole("button", { name: W.layouts["pricing-simple"] }).click(); // present because sell_courses picked
+  await page.getByRole("button", { name: W.layouts["faq-list"] }).click();
+  await page.getByRole("button", { name: W.layouts["contact-form"] }).click();
 
   // Chapter 4 — logo (wordmark is the preselected default)
   await expect(page.getByText(W.logo.wordmark.title)).toBeVisible();

@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
-import type { WizardAnswers } from "@/lib/wizard/types";
 
 const FALLBACK = THEME_SWATCHES.ocean;
 
@@ -138,21 +137,17 @@ export function MiniPageSketch({ blocks, theme }: { blocks: string[]; theme?: st
   );
 }
 
-/** Right-hand "your site is assembling" frame (desktop only). */
-export function LivePreview({ answers, brand, headline }: { answers: WizardAnswers; brand: string; headline?: string }) {
-  const homeBlocks = ["courseGrid", "testimonials", "cta"];
+/** Browser-window chrome around a page rendering, so a layout screenshot
+ * reads as "this is your website" rather than a loose image. */
+export function BrowserFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full max-w-[360px] overflow-hidden rounded-2xl border border-foreground/10 bg-white shadow-xl">
-      <div className="flex items-center gap-1 border-b border-foreground/10 bg-foreground/[0.03] px-3 py-2" aria-hidden>
+    <div className="overflow-hidden rounded-xl border border-foreground/10 bg-white">
+      <div className="flex items-center gap-1 border-b border-foreground/10 bg-foreground/[0.03] px-2.5 py-1.5" aria-hidden>
         {[0, 1, 2].map((i) => (
-          <span key={i} className="h-2 w-2 rounded-full bg-foreground/15" />
+          <span key={i} className="h-1.5 w-1.5 rounded-full bg-foreground/20" />
         ))}
       </div>
-      <div className="flex flex-col gap-2 p-3">
-        <MiniNavbar layout={answers.navbar_layout ?? "classic"} theme={answers.theme} font={answers.font_family} brand={brand} />
-        <MiniHero style={answers.hero_style ?? "centered"} theme={answers.theme} font={answers.font_family} brand={brand} headline={headline} />
-        <MiniPageSketch blocks={homeBlocks} theme={answers.theme} />
-      </div>
+      {children}
     </div>
   );
 }
