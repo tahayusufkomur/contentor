@@ -254,7 +254,7 @@ def wizard_checkout_sync(request):
     if not tenant.has_paid_platform_plan:
         session_id = request.data.get("session_id")
         if isinstance(session_id, str) and session_id.strip():
-            from apps.billing.views.webhooks import sync_platform_checkout_session
+            from apps.billing.views.webhooks_platform import sync_platform_checkout_session
 
             if sync_platform_checkout_session(tenant, session_id.strip()):
                 tenant = type(tenant).objects.get(pk=tenant.pk)

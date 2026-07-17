@@ -16,7 +16,13 @@ export const BADGES: { id: BadgeShape; label: string }[] = [
   { id: "diamond", label: "Diamond" },
   { id: "none", label: "None" },
 ];
-export const VIBES = ["Modern", "Elegant", "Bold", "Playful", "Minimal"] as const;
+export const VIBES = [
+  "Modern",
+  "Elegant",
+  "Bold",
+  "Playful",
+  "Minimal",
+] as const;
 export const WEIGHT_LABELS: Record<number, string> = {
   400: "Regular",
   500: "Medium",
