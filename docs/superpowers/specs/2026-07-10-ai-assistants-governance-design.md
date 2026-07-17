@@ -424,7 +424,7 @@ This section is normative — new AI features copy this table into their spec:
 | Abuse / rate | DRF scopes: coach 10/min (user); anon per-IP burst+day (5/min + 40/day marketing, 5/min + 30/day student); rate endpoint 20/min |
 | Spend runaway | per-tenant monthly USD + count caps; global monthly USD kill-switch per feature; **accrue on every attempt** (failure loops still trip); DB-backed (Redis restart can't reset) |
 | Plan containment | student bot: paid plans only + per-plan question quota; blog quota: plan field (existing); brand pack: paid + 5/mo (existing) |
-| Prod provider safety | `AI_PROVIDER=cli` raises `ImproperlyConfigured` in prod; CLI subprocess env strips `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN`; CLI cost recorded $0 |
+| Prod provider safety | `AI_PROVIDER=cli` raises `ImproperlyConfigured` in prod; CLI subprocess env strips `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN`; CLI cost recorded $0 | <!-- pragma: allowlist secret -->
 | Tenant isolation | knowledge pack built only from `connection.tenant`'s schema; transcripts keyed by schema; coach endpoints `IsCoachOrOwner`, superadmin `IsSuperUser` |
 | PII minimization | context blocks carry flags/counts, never names/emails; transcripts store chat text only, purged after `AI_TRANSCRIPT_RETENTION_DAYS`; disclosure line on the student widget |
 | Auditability | every exchange → `AiTranscript` (cost, model, provider, prompt_version, kb_hash, rating); meters + transcripts read-only in superadmin |

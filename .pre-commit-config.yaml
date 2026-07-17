@@ -38,18 +38,36 @@ repos:
 
   - repo: local
     hooks:
-      - id: frontend-eslint
-        name: Frontend ESLint
-        entry: bash -c 'cd frontend && npx eslint --fix "$@"' --
+      # Each app runs its own eslint/prettier install; filenames arrive
+      # repo-relative, so the app prefix is stripped after the cd.
+      - id: frontend-main-eslint
+        name: Frontend-main ESLint
+        entry: bash -c 'cd frontend-main && npx --no-install eslint --fix "${@#frontend-main/}"' --
         language: system
-        files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        files: ^frontend-main/src/.*\.(ts|tsx|js|jsx)$
         pass_filenames: true
 
-      - id: frontend-prettier
-        name: Frontend Prettier
-        entry: bash -c 'cd frontend && npx prettier --write "$@"' --
+      - id: frontend-customer-eslint
+        name: Frontend-customer ESLint
+        entry: bash -c 'cd frontend-customer && npx --no-install eslint --fix "${@#frontend-customer/}"' --
         language: system
-        files: ^frontend/.*\.(ts|tsx|js|jsx|css|json)$
+        files: ^frontend-customer/src/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: true
+
+      - id: frontend-main-prettier
+        name: Frontend-main Prettier
+        entry: bash -c 'cd frontend-main && npx --no-install prettier --write "${@#frontend-main/}"' --
+        language: system
+        files: ^frontend-main/.*\.(ts|tsx|js|jsx|css|json)$
+        exclude: (package-lock\.json|\.next/)
+        pass_filenames: true
+
+      - id: frontend-customer-prettier
+        name: Frontend-customer Prettier
+        entry: bash -c 'cd frontend-customer && npx --no-install prettier --write "${@#frontend-customer/}"' --
+        language: system
+        files: ^frontend-customer/.*\.(ts|tsx|js|jsx|css|json)$
+        exclude: (package-lock\.json|\.next/)
         pass_filenames: true
 
   - repo: https://github.com/gitleaks/gitleaks
