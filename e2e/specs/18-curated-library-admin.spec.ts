@@ -9,12 +9,26 @@
 import path from "node:path";
 import { test, expect } from "@playwright/test";
 import { coachContext, superadminContext, MAIN, TENANT } from "../helpers/auth";
+import { manage } from "../helpers/compose";
 
 const FIXTURE_PNG = path.resolve(
   __dirname,
   "../../frontend-customer/public/logos/colorful_lotus_meditation_logo.png",
 );
 const TITLE = "E2E Curated Logo";
+
+test.beforeAll(() => {
+  // Self-healing sweep, same idea as 01-signup-onboarding's beforeAll: the
+  // spec deletes its own upload at the END of the test, so one failed run
+  // strands an "E2E Curated Logo" row — and a single leftover turns every
+  // later run's getByText(TITLE) into a strict-mode violation long before
+  // the in-test cleanup can reach it.
+  manage([
+    "shell",
+    "-c",
+    `from apps.core.models import CuratedLogo\nCuratedLogo.objects.filter(title="${TITLE}").delete()`,
+  ]);
+});
 
 test("superadmin adds a curated logo via the gallery; coach sees it", async ({
   browser,

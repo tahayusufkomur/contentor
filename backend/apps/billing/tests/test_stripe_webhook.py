@@ -277,6 +277,13 @@ def test_webhook_platform_subscription_deleted_reverts_to_free(restore_public, c
     tenant = restore_public
     PlatformSubscription.objects.filter(tenant=tenant).delete()
     WebhookEvent.objects.filter(provider="stripe").delete()
+    # The cancel-mirror resolves the plan NAMED "Free" when one exists and
+    # only falls back to NULL when none does. Fresh xdist worker DBs carry
+    # the 0005_backfill_free_plan row; flushed ones don't — so create Free
+    # explicitly instead of asserting whichever state this worker is in.
+    free_plan, _ = PlatformPlan.objects.get_or_create(
+        name="Free", defaults={"price_monthly": 0, "transaction_fee_pct": 0}
+    )
     PlatformSubscription.objects.create(
         tenant=tenant,
         user=coach,
@@ -297,7 +304,7 @@ def test_webhook_platform_subscription_deleted_reverts_to_free(restore_public, c
     assert response.status_code == 200, response.content
     assert PlatformSubscription.objects.get(tenant=tenant).status == PlatformSubscription.STATUS_CANCELED
     tenant.refresh_from_db()
-    assert tenant.plan_id is None  # reverted to Free
+    assert tenant.plan_id == free_plan.pk  # reverted to Free
 
 
 @override_settings(STRIPE_WEBHOOK_SECRET="whsec_phase1_test")  # noqa: S106
