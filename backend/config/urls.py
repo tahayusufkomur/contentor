@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth import login
 from django.http import HttpResponseRedirect
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView
 
 from apps.accounts.backends import AdminJWTBackend
 from apps.billing.views.webhooks import stripe_webhook
@@ -33,6 +34,11 @@ urlpatterns = [
     # not run on it; region + tenant middleware skip `/api/webhooks/*`.
     path("api/webhooks/stripe/", stripe_webhook, name="stripe-webhook"),
     path("api/health/", health_check, name="health-check"),
+    path(
+        "api/schema/",
+        SpectacularAPIView.as_view(authentication_classes=[], permission_classes=[]),
+        name="api-schema",
+    ),
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/demo/", include("apps.core.demo.urls")),
     path("api/v1/onboarding/", include("apps.core.onboarding.urls")),

@@ -14,7 +14,7 @@
 
 :80 {
 	# --- Platform API, webhooks, health — on every host ---
-	@api path /api/v1/* /api/health* /api/webhooks/*
+	@api path /api/v1/* /api/health* /api/webhooks/* /api/schema*
 	handle @api {
 		reverse_proxy django:8000 {
 			# cloudflared->Caddy is HTTP; tell Django the public scheme is HTTPS

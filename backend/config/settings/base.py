@@ -22,6 +22,7 @@ SHARED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
     "apps.core",
     "apps.accounts",
     # No models — registers API admin sites for both SPAs via admin_panels.py
@@ -140,6 +141,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "PAGE_SIZE": 20,
     "DEFAULT_THROTTLE_RATES": {
         "community_posts": "10/hour",
@@ -169,6 +171,12 @@ REST_FRAMEWORK = {
         # per describe-step Continue, so tighter than wizard_logo.
         "wizard_followups": "10/min",
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Contentor API",
+    "VERSION": "v1",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 STATIC_URL = "/static/"

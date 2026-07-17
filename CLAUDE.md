@@ -78,6 +78,8 @@ Auth: JWT-based. `TenantJWTAuthentication` is the default DRF auth class — pub
 
 API prefix: `/api/v1/` (also `/api/health/`).
 
+OpenAPI schema lives at `/api/schema/` (drf-spectacular). After changing any serializer, run `npm run gen:api` in `frontend-customer` and review the diff of `src/types/api-generated.ts` — a surprising diff there means the frontend contract moved.
+
 ### Frontend
 
 Two independent Next.js 14 apps, App Router, Tailwind + Radix UI:
