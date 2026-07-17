@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-fresh lint logs health-check ai-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe e2e-spec
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -17,7 +17,7 @@ help: ## Show this help
 	@grep -E '^(migrate|migrate-shared|makemigrations|seed|seed-demos|seed-demos-force):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Quality ---\033[0m"
-	@grep -E '^(test|test-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(test|test-backend|test-app|test-frontend|test-fresh|typecheck|typecheck-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Utilities ---\033[0m"
 	@grep -E '^(shell|health-check):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -26,7 +26,7 @@ help: ## Show this help
 	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- E2E ---\033[0m"
-	@grep -E '^(e2e|e2e-stripe):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(e2e|e2e-stripe|e2e-spec):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
 # ============================================================================
@@ -105,6 +105,20 @@ test-backend: ## Run backend tests (alias for test)
 test-fresh: ## Rebuild the test DB, then run tests (use after new migrations)
 	docker compose exec django pytest -n auto --create-db
 
+test-app: ## Run one backend app's tests: make test-app APP=billing
+	@test -n "$(APP)" || { echo "usage: make test-app APP=<app-name>  (e.g. APP=billing)"; exit 1; }
+	docker compose exec django pytest apps/$(APP) -n auto
+
+test-frontend: ## Run frontend-customer unit tests (vitest)
+	cd frontend-customer && npx vitest run
+
+typecheck: ## Typecheck both Next.js apps (tsc --noEmit; covers packages/shared via imports)
+	cd frontend-main && npm run typecheck
+	cd frontend-customer && npm run typecheck
+
+typecheck-backend: ## Advisory mypy run (config in backend/pyproject.toml; not yet a gate)
+	-docker compose exec django mypy apps --config-file pyproject.toml
+
 lint: ## Run all linters via pre-commit
 	pre-commit run --all-files
 	@$(MAKE) check-i18n
@@ -180,3 +194,7 @@ e2e: ## Run the local Playwright e2e suite (Stripe specs auto-skip)
 
 e2e-stripe: ## e2e incl. real Stripe test-mode specs (needs sk_test keys in .env + `make stripe-listen` running)
 	cd e2e && npm install --silent && npx playwright install chromium && STRIPE_E2E=1 npx playwright test
+
+e2e-spec: ## Run one e2e spec by substring: make e2e-spec SPEC=04-live-class
+	@test -n "$(SPEC)" || { echo "usage: make e2e-spec SPEC=<spec-substring>  (e.g. SPEC=04-live-class)"; exit 1; }
+	cd e2e && npm install --silent && npx playwright install chromium && npx playwright test $(SPEC)
