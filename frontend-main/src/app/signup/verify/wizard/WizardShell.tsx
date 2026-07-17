@@ -26,7 +26,18 @@ interface WizardShellProps {
 }
 
 export function WizardShell({
-  chapter, stepId, direction, progress, canBack, onBack, showFinishRest, onFinishRest, error, footer, children, wide,
+  chapter,
+  stepId,
+  direction,
+  progress,
+  canBack,
+  onBack,
+  showFinishRest,
+  onFinishRest,
+  error,
+  footer,
+  children,
+  wide,
 }: WizardShellProps) {
   const t = useTranslations("wizard");
 
@@ -35,20 +46,18 @@ export function WizardShell({
     // (x, y, scale, width morph) when the OS asks for less motion, keeping
     // only opacity — so no component below needs to gate motion by hand.
     <MotionConfig reducedMotion="user">
-    <div className="fixed inset-0 z-50 overflow-hidden bg-background">
-      <FontPreviewLoader />
-      <div aria-hidden className="absolute inset-0 -z-10">
-        <div className="aurora animate-aurora" />
-        <div className="grid-fade absolute inset-0 opacity-40" />
-      </div>
+      <div className="fixed inset-0 z-50 overflow-hidden bg-background">
+        <FontPreviewLoader />
+        <div aria-hidden className="absolute inset-0 -z-10">
+          <div className="aurora animate-aurora" />
+          <div className="grid-fade absolute inset-0 opacity-40" />
+        </div>
 
-      <div className="flex h-full w-full justify-center px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
-        <motion.div
-          layout
-          transition={{ type: "spring", stiffness: 240, damping: 30 }}
-          className={`flex h-full w-full min-w-0 flex-col ${wide ? "md:max-w-[min(1100px,94vw)]" : "md:max-w-[640px]"}`}
-        >
-          <header className="flex items-center gap-3 pt-1">
+        <div className="flex h-full w-full flex-col items-center px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
+          {/* The header sits OUTSIDE the width-morphing column below so the
+           * progress bar keeps one stable width on every step instead of
+           * stretching and shrinking with the content. */}
+          <header className="flex w-full items-center gap-3 pt-1 md:max-w-[640px]">
             <button
               type="button"
               onClick={onBack}
@@ -83,40 +92,49 @@ export function WizardShell({
             </div>
           </header>
 
-          <div className="relative mt-6 min-h-0 flex-1 overflow-y-auto pb-2">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={stepId}
-                initial={{ opacity: 0, x: 28 * direction }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -28 * direction }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                // Short steps sit centered in the viewport instead of stranded
-                // at the top; taller ones outgrow min-h-full and scroll.
-                className="flex min-h-full flex-col justify-center"
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <motion.div
+            layout
+            transition={{ type: "spring", stiffness: 240, damping: 30 }}
+            className={`flex min-h-0 w-full min-w-0 flex-1 flex-col ${wide ? "md:max-w-[min(1100px,94vw)]" : "md:max-w-[640px]"}`}
+          >
+            <div className="relative mt-6 min-h-0 flex-1 overflow-y-auto pb-2">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={stepId}
+                  initial={{ opacity: 0, x: 28 * direction }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -28 * direction }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  // Short steps sit centered in the viewport instead of stranded
+                  // at the top; taller ones outgrow min-h-full and scroll.
+                  className="flex min-h-full flex-col justify-center"
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-          {error && <p className="mt-2 text-center text-[12.5px] text-destructive">{error}</p>}
-
-          <footer className="mt-4 flex flex-col items-center gap-2">
-            {footer}
-            {showFinishRest && (
-              <button
-                type="button"
-                onClick={onFinishRest}
-                className="text-center text-[12.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {t("common.finishRest")}
-              </button>
+            {error && (
+              <p className="mt-2 text-center text-[12.5px] text-destructive">
+                {error}
+              </p>
             )}
-          </footer>
-        </motion.div>
+
+            <footer className="mt-4 flex flex-col items-center gap-2">
+              {footer}
+              {showFinishRest && (
+                <button
+                  type="button"
+                  onClick={onFinishRest}
+                  className="text-center text-[12.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {t("common.finishRest")}
+                </button>
+              )}
+            </footer>
+          </motion.div>
+        </div>
       </div>
-    </div>
     </MotionConfig>
   );
 }
