@@ -149,6 +149,107 @@ def test_checkout_rejects_unknown_plan_and_subscribed(tenant, plan, fake_provide
     assert _checkout(plan.pk).status_code == 409
 
 
+def _sync(session_id="cs_test_sync_1"):
+    return _client().post(
+        "/api/v1/onboarding/wizard/checkout/sync/",
+        {"token": _token(), "session_id": session_id},
+        format="json",
+    )
+
+
+def _fake_session(tenant, user, plan, **overrides):
+    """Minimal retrieved-Checkout-Session shape (expand=["subscription"])."""
+    session = {
+        "id": "cs_test_sync_1",
+        "mode": "subscription",
+        "payment_status": "paid",
+        "customer": "cus_sync_1",
+        "metadata": {"tenant_id": str(tenant.pk), "user_id": str(user.pk), "plan_id": str(plan.pk)},
+        "subscription": {
+            "id": "sub_sync_1",
+            "status": "active",
+            "current_period_start": 1_700_000_000,
+            "current_period_end": 1_702_600_000,
+        },
+    }
+    session.update(overrides)
+    return session
+
+
+@pytest.fixture()
+def coach():
+    from apps.accounts.models import User
+
+    user, _ = User.objects.get_or_create(email="coach@x.com", defaults={"name": "Coach", "role": "coach"})
+    return user
+
+
+def _patch_retrieve(monkeypatch, result):
+    """Patch at the source module — sync_platform_checkout_session imports it
+    lazily, so the name resolves at call time."""
+    from apps.billing.providers import stripe_provider
+
+    if isinstance(result, Exception):
+
+        def _raise(session_id):
+            raise result
+
+        monkeypatch.setattr(stripe_provider, "retrieve_checkout_session", _raise)
+    else:
+        monkeypatch.setattr(stripe_provider, "retrieve_checkout_session", lambda session_id: result)
+
+
+def test_checkout_sync_activates_paid_session(tenant, plan, coach, monkeypatch):
+    # The local-dev path: no webhook ever arrives, the browser comes back with
+    # ?upgraded=1&session_id=… and the sync endpoint must activate the plan.
+    _patch_retrieve(monkeypatch, _fake_session(tenant, coach, plan))
+    resp = _sync()
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["has_paid_platform_plan"] is True
+    sub = PlatformSubscription.objects.get(tenant=tenant)
+    assert sub.status == "active"
+    assert sub.provider_subscription_id == "sub_sync_1"
+    assert sub.provider_customer_id == "cus_sync_1"
+    assert sub.current_period_end is not None
+
+
+def test_checkout_sync_is_idempotent_with_webhook(tenant, plan, coach, monkeypatch):
+    # Webhook already landed -> sync must not touch Stripe at all.
+    PlatformSubscription.objects.update_or_create(
+        tenant=tenant, defaults={"plan": plan, "status": "active", "user": coach}
+    )
+    _patch_retrieve(monkeypatch, AssertionError("retrieve must not be called when already subscribed"))
+    resp = _sync()
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["has_paid_platform_plan"] is True
+
+
+def test_checkout_sync_rejects_unpaid_and_foreign_sessions(tenant, plan, coach, monkeypatch):
+    # Unpaid session (async payment method still pending) -> no activation.
+    _patch_retrieve(monkeypatch, _fake_session(tenant, coach, plan, payment_status="unpaid"))
+    assert _sync().json()["has_paid_platform_plan"] is False
+
+    # Paid session for a DIFFERENT tenant -> token holder gets nothing.
+    foreign = _fake_session(tenant, coach, plan)
+    foreign["metadata"] = {**foreign["metadata"], "tenant_id": "999999"}
+    _patch_retrieve(monkeypatch, foreign)
+    assert _sync().json()["has_paid_platform_plan"] is False
+    assert not PlatformSubscription.objects.filter(tenant=tenant).exists()
+
+
+def test_checkout_sync_survives_provider_error_and_missing_session_id(tenant, plan, monkeypatch):
+    from apps.billing.providers.types import ProviderError
+
+    _patch_retrieve(monkeypatch, ProviderError("boom", code="PROVIDER_ERROR"))
+    resp = _sync()
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["has_paid_platform_plan"] is False
+
+    resp = _client().post("/api/v1/onboarding/wizard/checkout/sync/", {"token": _token()}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["has_paid_platform_plan"] is False
+
+
 def test_webhook_attaches_subscription_to_pending_tenant(tenant, plan):
     # Regression pin for the spec's core assumption: the platform webhook
     # handler works before provisioning. Call the handler function directly

@@ -235,3 +235,28 @@ def wizard_checkout(request):
 
     logger.info("wizard checkout started slug=%s plan=%s currency=%s", tenant.slug, plan.pk, tenant.billing_currency)
     return Response({"checkout_url": session.url, "provider": get_provider(tenant).name})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def wizard_checkout_sync(request):
+    """Return-from-checkout probe: `?upgraded=1&session_id=…` posts the
+    session id here and we activate the subscription server-side instead of
+    waiting for the `checkout.session.completed` webhook — which local dev
+    never receives (no `stripe listen`) and which prod can deliver after the
+    redirect. Idempotent with the webhook; always answers the wizard state
+    body so the client reads one shape from state/ and here."""
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err is not None:
+        return err
+
+    if not tenant.has_paid_platform_plan:
+        session_id = request.data.get("session_id")
+        if isinstance(session_id, str) and session_id.strip():
+            from apps.billing.views.webhooks import sync_platform_checkout_session
+
+            if sync_platform_checkout_session(tenant, session_id.strip()):
+                tenant = type(tenant).objects.get(pk=tenant.pk)
+                logger.info("wizard checkout synced slug=%s", tenant.slug)
+    return Response(_state_body(tenant))

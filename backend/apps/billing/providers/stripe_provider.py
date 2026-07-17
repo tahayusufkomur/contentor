@@ -38,6 +38,19 @@ def _client() -> Any:
     return stripe
 
 
+def retrieve_checkout_session(session_id: str) -> Any:
+    """Fetch a Checkout Session with its subscription expanded.
+
+    Used by the return-from-checkout sync path (webhooks'
+    sync_platform_checkout_session) so callers outside this module never
+    touch the stripe SDK directly. Raises ProviderError on Stripe failure.
+    """
+    try:
+        return _client().checkout.Session.retrieve(session_id, expand=["subscription"])
+    except stripe.error.StripeError as exc:
+        raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
+
+
 class StripeProvider(PaymentProvider):
     """Production-mode adapter."""
 

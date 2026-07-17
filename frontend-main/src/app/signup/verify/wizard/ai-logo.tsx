@@ -3,8 +3,10 @@
 // The AI door: the third logo option in the wizard. Four states —
 //   locked   -> plan cards (GET platform plans), a click PATCHes current_step
 //               then redirects to Stripe checkout.
-//   syncing  -> after the `?upgraded=1` round-trip, poll the wizard state
-//               until has_paid_platform_plan flips true (or time out).
+//   syncing  -> after the `?upgraded=1` round-trip, POST the session_id to
+//               checkout/sync/ (server retrieves the session and activates
+//               the plan itself — no webhook needed), with the wizard-state
+//               poll kept as fallback until it flips (or times out).
 //   chat     -> a lean, staged Design-with-AI conversation (icon -> name ->
 //               tagline), reusing the same converse/finish two-pass the Logo
 //               Studio uses (render-draft.tsx's renderDraftPngs).
@@ -17,7 +19,11 @@ import { Loader2, RefreshCw, Send, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { LogoRenderer, MarkRenderer, logoViewBox } from "@/components/logo/logo-renderer";
+import {
+  LogoRenderer,
+  MarkRenderer,
+  logoViewBox,
+} from "@/components/logo/logo-renderer";
 import { svgToPngBlob } from "@/lib/logo/export";
 import { composeIconPreview, type ConverseDesign } from "@/lib/logo/composer";
 import { fontsFor, renderDraftPngs } from "@/lib/logo/render-draft";
@@ -26,6 +32,7 @@ import {
   designRecipe,
   fetchWizardLogoStatus,
   wizardCheckout,
+  wizardCheckoutSync,
   wizardConverse,
   wizardConverseFinish,
   wizardLogoUpload,
@@ -70,10 +77,13 @@ function formatPrice(currency: string, amountCents: number | null): string {
  * createRoot/flushSync/nextFrame idiom as render-draft.tsx's
  * renderRecipesToPngs (which is sized for draft-preview cards, not final
  * export), reusing its `fontsFor` + the shared `svgToPngBlob`. */
-async function renderFinalPngs(recipe: LogoRecipe): Promise<{ lockup: Blob; icon: Blob }> {
+async function renderFinalPngs(
+  recipe: LogoRecipe,
+): Promise<{ lockup: Blob; icon: Blob }> {
   const container = document.createElement("div");
   container.setAttribute("aria-hidden", "true");
-  container.style.cssText = "position:fixed;left:-10000px;top:0;pointer-events:none;opacity:0;";
+  container.style.cssText =
+    "position:fixed;left:-10000px;top:0;pointer-events:none;opacity:0;";
   document.body.appendChild(container);
   const root = createRoot(container);
   let lockupSvg: SVGSVGElement | null = null;
@@ -99,11 +109,18 @@ async function renderFinalPngs(recipe: LogoRecipe): Promise<{ lockup: Blob; icon
         </>,
       );
     });
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve()),
+    );
     if (!lockupSvg || !iconSvg) throw new Error("Render failed");
     const vb = logoViewBox(recipe.layout);
     const fonts = fontsFor(recipe);
-    const lockup = await svgToPngBlob(lockupSvg, 1024, Math.round((1024 * vb.h) / vb.w), fonts);
+    const lockup = await svgToPngBlob(
+      lockupSvg,
+      1024,
+      Math.round((1024 * vb.h) / vb.w),
+      fonts,
+    );
     const icon = await svgToPngBlob(iconSvg, 512, 512, fonts);
     return { lockup, icon };
   } finally {
@@ -120,6 +137,7 @@ export function AiLogoDoor({
   value,
   onPicked,
   initialUpgraded,
+  checkoutSessionId,
 }: {
   token: string;
   brand: string;
@@ -128,10 +146,13 @@ export function AiLogoDoor({
   value?: WizardLogoAnswer;
   onPicked: (logo: WizardLogoAnswer) => void;
   initialUpgraded?: boolean;
+  checkoutSessionId?: string;
 }) {
   const t = useTranslations("wizard");
   const swatch = THEME_SWATCHES[theme ?? ""] ?? THEME_SWATCHES.ocean;
-  const [doorState, setDoorState] = useState<DoorState>(value?.mode === "ai" ? "picked" : "loading");
+  const [doorState, setDoorState] = useState<DoorState>(
+    value?.mode === "ai" ? "picked" : "loading",
+  );
   const [plans, setPlans] = useState<PlanSummary[]>([]);
   const [checkoutBusyId, setCheckoutBusyId] = useState<number | null>(null);
   const [syncTimedOut, setSyncTimedOut] = useState(false);
@@ -166,6 +187,22 @@ export function AiLogoDoor({
     setSyncTimedOut(false);
     const startedAt = Date.now();
     if (pollRef.current) clearInterval(pollRef.current);
+    // Active probe first: hand the session_id back so Django retrieves the
+    // session and activates the plan itself. Without it, unlocking depends
+    // on the checkout webhook — which local dev never receives (needs
+    // `make stripe-listen`) and which prod can deliver after the redirect.
+    if (checkoutSessionId) {
+      wizardCheckoutSync(token, checkoutSessionId)
+        .then((res) => {
+          if (res.has_paid_platform_plan) {
+            if (pollRef.current) clearInterval(pollRef.current);
+            setDoorState("chat");
+          }
+        })
+        .catch(() => {
+          // probe failed — the poll below stays the fallback
+        });
+    }
     pollRef.current = setInterval(async () => {
       try {
         const res = await readWizardState(token);
@@ -182,7 +219,7 @@ export function AiLogoDoor({
         setSyncTimedOut(true);
       }
     }, SYNC_POLL_MS);
-  }, [token]);
+  }, [token, checkoutSessionId]);
 
   const loadLocked = useCallback(() => {
     setDoorState("locked");
@@ -242,23 +279,48 @@ export function AiLogoDoor({
     setMessages((m) => [...m, { role: "user", text }]);
     setInput("");
     setTurnBusy(true);
-    const transcript = messages.slice(-12).map((m) => ({ role: m.role, text: m.text }));
+    const transcript = messages
+      .slice(-12)
+      .map((m) => ({ role: m.role, text: m.text }));
     const pinned =
       stage === "icon"
         ? {}
         : stage === "name"
-          ? { mark_elements: pinnedIcon?.elements, mark_paths: pinnedIcon?.paths }
-          : { mark_elements: pinnedIcon?.elements, mark_paths: pinnedIcon?.paths, lockup: pinnedLockup };
+          ? {
+              mark_elements: pinnedIcon?.elements,
+              mark_paths: pinnedIcon?.paths,
+            }
+          : {
+              mark_elements: pinnedIcon?.elements,
+              mark_paths: pinnedIcon?.paths,
+              lockup: pinnedLockup,
+            };
     try {
-      const resp = await wizardConverse(token, { stage, message: text, transcript, pinned });
+      const resp = await wizardConverse(token, {
+        stage,
+        message: text,
+        transcript,
+        pinned,
+      });
       if (resp.source !== "ai") {
-        const msg = resp.source === "quota_exhausted" ? t("aiChat.quota") : t("common.errors.generic");
+        const msg =
+          resp.source === "quota_exhausted"
+            ? t("aiChat.quota")
+            : t("common.errors.generic");
         setMessages((m) => [...m, { role: "assistant", text: msg }]);
         setNotice(msg);
         return;
       }
       if (resp.phase === "final" || !resp.token) {
-        setMessages((m) => [...m, { role: "assistant", text: resp.message, designs: resp.designs, stage }]);
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            text: resp.message,
+            designs: resp.designs,
+            stage,
+          },
+        ]);
         return;
       }
       // Two-pass: render the drafts, let the AI critique its own work. Any
@@ -276,7 +338,15 @@ export function AiLogoDoor({
           },
         ]);
       } catch {
-        setMessages((m) => [...m, { role: "assistant", text: resp.message, designs: resp.designs, stage }]);
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            text: resp.message,
+            designs: resp.designs,
+            stage,
+          },
+        ]);
       }
     } catch {
       const msg = t("common.errors.generic");
@@ -342,8 +412,12 @@ export function AiLogoDoor({
           <Sparkles className="h-3.5 w-3.5" style={{ color: swatch.primary }} />
           {t("upgrade.title")}
         </p>
-        <p className="mt-1 text-[11.5px] text-muted-foreground">{t("upgrade.subtitle")}</p>
-        {doorError && <p className="mt-2 text-[12px] text-destructive">{doorError}</p>}
+        <p className="mt-1 text-[11.5px] text-muted-foreground">
+          {t("upgrade.subtitle")}
+        </p>
+        {doorError && (
+          <p className="mt-2 text-[12px] text-destructive">{doorError}</p>
+        )}
         <div className="mt-3 flex flex-col gap-2">
           {plans.map((plan) => (
             <OptionCard
@@ -365,16 +439,28 @@ export function AiLogoDoor({
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02] px-4 py-6 text-center">
         {syncTimedOut ? (
           <>
-            <p className="text-[13px] text-muted-foreground">{t("upgrade.syncSlow")}</p>
-            <Button type="button" variant="outline" size="sm" onClick={startSync}>
+            <p className="text-[13px] text-muted-foreground">
+              {t("upgrade.syncSlow")}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={startSync}
+            >
               <RefreshCw className="h-3.5 w-3.5" />
               {t("upgrade.retry")}
             </Button>
           </>
         ) : (
           <>
-            <Loader2 className="h-5 w-5 animate-spin" style={{ color: swatch.primary }} />
-            <p className="text-[13px] text-muted-foreground">{t("upgrade.syncing")}</p>
+            <Loader2
+              className="h-5 w-5 animate-spin"
+              style={{ color: swatch.primary }}
+            />
+            <p className="text-[13px] text-muted-foreground">
+              {t("upgrade.syncing")}
+            </p>
           </>
         )}
       </div>
@@ -388,8 +474,12 @@ export function AiLogoDoor({
           <LogoRenderer recipe={value.recipe} width={140} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[13.5px] font-semibold">{t("logo.ai.title")}</span>
-          <span className="block text-[11.5px] text-muted-foreground">{t("logo.selected")}</span>
+          <span className="block text-[13.5px] font-semibold">
+            {t("logo.ai.title")}
+          </span>
+          <span className="block text-[11.5px] text-muted-foreground">
+            {t("logo.selected")}
+          </span>
         </span>
         <button
           type="button"
@@ -406,9 +496,13 @@ export function AiLogoDoor({
   }
 
   // chat
-  const lastWithDesigns = [...messages].reverse().find((m) => m.designs?.length);
-  const showCards = !committed && Boolean(lastWithDesigns) && lastWithDesigns!.stage === stage;
-  const showNicheStarter = stage === "icon" && messages.length === 0 && Boolean(niche);
+  const lastWithDesigns = [...messages]
+    .reverse()
+    .find((m) => m.designs?.length);
+  const showCards =
+    !committed && Boolean(lastWithDesigns) && lastWithDesigns!.stage === stage;
+  const showNicheStarter =
+    stage === "icon" && messages.length === 0 && Boolean(niche);
 
   return (
     <div className="rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02] p-4">
@@ -419,10 +513,14 @@ export function AiLogoDoor({
             <span key={s} className="flex items-center gap-2">
               <span
                 className={`flex h-2 w-2 rounded-full transition-colors ${activeIdx >= i ? "" : "bg-foreground/15"}`}
-                style={activeIdx >= i ? { background: swatch.primary } : undefined}
+                style={
+                  activeIdx >= i ? { background: swatch.primary } : undefined
+                }
                 aria-label={t(`aiChat.stages.${s}`)}
               />
-              {i < STAGES.length - 1 && <span className="h-px w-4 bg-foreground/15" />}
+              {i < STAGES.length - 1 && (
+                <span className="h-px w-4 bg-foreground/15" />
+              )}
             </span>
           );
         })}
@@ -431,14 +529,28 @@ export function AiLogoDoor({
       {committed && pinnedLockup ? (
         <div className="flex flex-col items-center gap-3">
           <div className="flex items-center justify-center rounded-lg bg-white p-3">
-            <LogoRenderer recipe={designRecipe(pinnedLockup, brand)} width={220} />
+            <LogoRenderer
+              recipe={designRecipe(pinnedLockup, brand)}
+              width={220}
+            />
           </div>
           {notice && <p className="text-[12px] text-destructive">{notice}</p>}
           <div className="flex w-full gap-2">
-            <Button type="button" variant="brand" className="flex-1" onClick={useThisLogo} loading={finalizing}>
+            <Button
+              type="button"
+              variant="brand"
+              className="flex-1"
+              onClick={useThisLogo}
+              loading={finalizing}
+            >
               {t("aiChat.useThis")}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setCommitted(false)} disabled={finalizing}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCommitted(false)}
+              disabled={finalizing}
+            >
               {t("aiChat.change")}
             </Button>
           </div>
@@ -448,7 +560,14 @@ export function AiLogoDoor({
           {messages.length > 0 && (
             <div className="mb-3 flex max-h-40 flex-col gap-1.5 overflow-y-auto text-[12.5px]">
               {messages.map((m, i) => (
-                <p key={i} className={m.role === "user" ? "text-right text-foreground" : "text-muted-foreground"}>
+                <p
+                  key={i}
+                  className={
+                    m.role === "user"
+                      ? "text-right text-foreground"
+                      : "text-muted-foreground"
+                  }
+                >
                   {m.text}
                 </p>
               ))}
@@ -462,19 +581,34 @@ export function AiLogoDoor({
             </p>
           )}
 
-          {notice && !turnBusy && <p className="mb-3 text-[12px] text-destructive">{notice}</p>}
+          {notice && !turnBusy && (
+            <p className="mb-3 text-[12px] text-destructive">{notice}</p>
+          )}
 
           {showCards && (
             <div className="mb-3 grid grid-cols-2 gap-2.5">
               {lastWithDesigns!.designs!.map((design, i) => {
                 const icon = stage === "icon";
-                const recipe = icon ? composeIconPreview(design, brand) : designRecipe(design, brand);
+                const recipe = icon
+                  ? composeIconPreview(design, brand)
+                  : designRecipe(design, brand);
                 return (
-                  <div key={i} className="flex flex-col gap-2 rounded-xl border border-foreground/[0.08] bg-white p-2.5">
+                  <div
+                    key={i}
+                    className="flex flex-col gap-2 rounded-xl border border-foreground/[0.08] bg-white p-2.5"
+                  >
                     <span className="flex min-h-[72px] items-center justify-center">
-                      {icon ? <MarkRenderer recipe={recipe} size={64} /> : <LogoRenderer recipe={recipe} width={140} />}
+                      {icon ? (
+                        <MarkRenderer recipe={recipe} size={64} />
+                      ) : (
+                        <LogoRenderer recipe={recipe} width={140} />
+                      )}
                     </span>
-                    <Button type="button" size="sm" onClick={() => pick(design)}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => pick(design)}
+                    >
                       {t("aiChat.pick")}
                     </Button>
                   </div>
@@ -505,7 +639,11 @@ export function AiLogoDoor({
               disabled={turnBusy}
               className="min-w-0 flex-1 rounded-xl border border-foreground/[0.08] bg-white px-3 py-2 text-[13px] outline-none placeholder:text-muted-foreground/70 focus:border-primary"
             />
-            <Button type="button" onClick={runTurn} disabled={turnBusy || !input.trim()}>
+            <Button
+              type="button"
+              onClick={runTurn}
+              disabled={turnBusy || !input.trim()}
+            >
               <Send className="h-4 w-4" />
               {t("aiChat.send")}
             </Button>

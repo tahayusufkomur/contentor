@@ -6,14 +6,33 @@ import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { getCuratedLogos } from "@/lib/wizard/api";
-import type { CuratedLogoItem, WizardAnswers, WizardCatalog, WizardLogoAnswer } from "@/lib/wizard/types";
+import type {
+  CuratedLogoItem,
+  WizardAnswers,
+  WizardCatalog,
+  WizardLogoAnswer,
+} from "@/lib/wizard/types";
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 
 import { AiLogoDoor } from "./ai-logo";
-import { OptionCard, OptionList, SlideHeader, itemVariants, listVariants } from "./steps";
+import {
+  OptionCard,
+  OptionList,
+  SlideHeader,
+  itemVariants,
+  listVariants,
+} from "./steps";
 
 export function LogoStep({
-  token, brand, niche, theme, font, value, onChange, initialUpgraded,
+  token,
+  brand,
+  niche,
+  theme,
+  font,
+  value,
+  onChange,
+  initialUpgraded,
+  checkoutSessionId,
 }: {
   token: string;
   brand: string;
@@ -23,11 +42,14 @@ export function LogoStep({
   value?: WizardLogoAnswer;
   onChange: (logo: WizardLogoAnswer) => void;
   initialUpgraded?: boolean;
+  checkoutSessionId?: string;
 }) {
   const t = useTranslations("wizard");
   const [items, setItems] = useState<CuratedLogoItem[]>([]);
   useEffect(() => {
-    getCuratedLogos().then(setItems).catch(() => setItems([]));
+    getCuratedLogos()
+      .then(setItems)
+      .catch(() => setItems([]));
   }, []);
 
   // Niche-tagged marks first (lightweight port of the Logo Studio ranking).
@@ -35,7 +57,8 @@ export function LogoStep({
     const n = (niche ?? "").toLowerCase().replace("_", " ");
     return [...items].sort(
       (a, b) =>
-        Number(b.tags.toLowerCase().includes(n)) - Number(a.tags.toLowerCase().includes(n)),
+        Number(b.tags.toLowerCase().includes(n)) -
+        Number(a.tags.toLowerCase().includes(n)),
     );
   }, [items, niche]);
 
@@ -54,7 +77,10 @@ export function LogoStep({
           title={t("logo.wordmark.title")}
           subtitle={t("logo.wordmark.desc")}
         >
-          <span className="rounded-lg bg-white px-4 py-3 text-[20px] font-bold tracking-tight" style={{ color: s.ink, fontFamily: stack }}>
+          <span
+            className="rounded-lg bg-white px-4 py-3 text-[20px] font-bold tracking-tight"
+            style={{ color: s.ink, fontFamily: stack }}
+          >
             {brand}
           </span>
         </OptionCard>
@@ -69,13 +95,24 @@ export function LogoStep({
                 <OptionCard
                   key={item.id}
                   selected={mode === "curated" && value?.curated_id === item.id}
-                  onSelect={() => onChange({ mode: "curated", curated_id: item.id })}
+                  onSelect={() =>
+                    onChange({ mode: "curated", curated_id: item.id })
+                  }
                   title={item.title}
                 >
                   <span className="flex items-center gap-2 rounded-lg bg-white p-2">
                     {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
-                    <img src={item.image_url} alt={item.title} className="h-10 w-10 object-contain" />
-                    <span className="truncate text-[12px] font-semibold" style={{ color: s.ink, fontFamily: stack }}>{brand}</span>
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="h-10 w-10 object-contain"
+                    />
+                    <span
+                      className="truncate text-[12px] font-semibold"
+                      style={{ color: s.ink, fontFamily: stack }}
+                    >
+                      {brand}
+                    </span>
                   </span>
                 </OptionCard>
               ))}
@@ -91,6 +128,7 @@ export function LogoStep({
           value={value}
           onPicked={onChange}
           initialUpgraded={initialUpgraded}
+          checkoutSessionId={checkoutSessionId}
         />
       </OptionList>
     </div>
@@ -98,7 +136,9 @@ export function LogoStep({
 }
 
 export function ReviewStep({
-  catalog, answers, onEdit,
+  catalog,
+  answers,
+  onEdit,
 }: {
   catalog: WizardCatalog;
   answers: WizardAnswers;
@@ -106,14 +146,53 @@ export function ReviewStep({
 }) {
   const t = useTranslations("wizard");
   const rows: { key: string; step: string; value: string }[] = [
-    { key: "niche", step: "business.niche", value: answers.niche ? t(`niches.${answers.niche}.label`) : "—" },
-    { key: "description", step: "business.describe", value: answers.description ? `${answers.description.slice(0, 60)}${answers.description.length > 60 ? "…" : ""}` : "—" },
-    { key: "goals", step: "business.goals", value: (answers.goals ?? []).map((g) => t(`goals.items.${g}`)).join(", ") || "—" },
-    { key: "theme", step: "look.theme", value: answers.theme ? t(`themes.${answers.theme}`) : "—" },
+    {
+      key: "niche",
+      step: "business.niche",
+      value: answers.niche ? t(`niches.${answers.niche}.label`) : "—",
+    },
+    {
+      key: "description",
+      step: "business.describe",
+      value: answers.description
+        ? `${answers.description.slice(0, 60)}${answers.description.length > 60 ? "…" : ""}`
+        : "—",
+    },
+    {
+      key: "goals",
+      step: "business.goals",
+      value:
+        (answers.goals ?? []).map((g) => t(`goals.items.${g}`)).join(", ") ||
+        "—",
+    },
+    {
+      key: "theme",
+      step: "look.theme",
+      value: answers.theme ? t(`themes.${answers.theme}`) : "—",
+    },
     { key: "font", step: "look.font", value: answers.font_family ?? "—" },
-    { key: "navbar", step: "look.navbar", value: answers.navbar_layout ? t(`navbarLayouts.${answers.navbar_layout}`) : "—" },
-    { key: "hero", step: "look.hero", value: answers.hero_style ? t(`heroStyles.${answers.hero_style}.label`) : "—" },
-    { key: "pages", step: "pages.home", value: Object.values(answers.page_layouts ?? {}).map((id) => t(`layouts.${id}`)).join(" · ") || t("common.recommended") },
+    {
+      key: "navbar",
+      step: "look.navbar",
+      value: answers.navbar_layout
+        ? t(`navbarLayouts.${answers.navbar_layout}`)
+        : "—",
+    },
+    {
+      key: "hero",
+      step: "look.hero",
+      value: answers.hero_style
+        ? t(`heroStyles.${answers.hero_style}.label`)
+        : "—",
+    },
+    {
+      key: "pages",
+      step: "pages.home",
+      value:
+        Object.values(answers.page_layouts ?? {})
+          .map((id) => t(`layouts.${id}`))
+          .join(" · ") || t("common.recommended"),
+    },
     {
       key: "logo",
       step: "logo",
@@ -127,7 +206,10 @@ export function ReviewStep({
   ];
   return (
     <div>
-      <SlideHeader heading={t("review.heading")} subhead={t("review.subhead")} />
+      <SlideHeader
+        heading={t("review.heading")}
+        subhead={t("review.subhead")}
+      />
       {/* The last thing they see before "create" — every answer they gave,
        * cascading in, so the summary lands as a reveal rather than a form. */}
       <motion.ul
@@ -137,9 +219,17 @@ export function ReviewStep({
         className="mt-5 divide-y divide-foreground/[0.06] rounded-2xl border border-foreground/[0.08] bg-foreground/[0.02]"
       >
         {rows.map((row) => (
-          <motion.li key={row.key} variants={itemVariants} className="flex items-center gap-3 px-4 py-3">
-            <span className="w-24 flex-shrink-0 text-[12px] font-medium text-muted-foreground">{t(`review.rows.${row.key}`)}</span>
-            <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{row.value}</span>
+          <motion.li
+            key={row.key}
+            variants={itemVariants}
+            className="flex items-center gap-3 px-4 py-3"
+          >
+            <span className="w-24 flex-shrink-0 text-[12px] font-medium text-muted-foreground">
+              {t(`review.rows.${row.key}`)}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">
+              {row.value}
+            </span>
             <button
               type="button"
               onClick={() => onEdit(row.step)}

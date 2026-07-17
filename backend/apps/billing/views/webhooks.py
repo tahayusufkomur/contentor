@@ -524,6 +524,63 @@ def _handle_checkout_session_completed(event, webhook_event):
     )
 
 
+def sync_platform_checkout_session(tenant, session_id: str) -> bool:
+    """Activate a platform plan by pulling the Checkout Session ourselves.
+
+    The return-from-checkout path (wizard `?upgraded=1&session_id=…`) calls
+    this instead of waiting for `checkout.session.completed`: local dev
+    receives no webhooks unless `make stripe-listen` is running, and even in
+    prod the redirect can beat the webhook. Applies the same guards and the
+    same upsert as the webhook handler, so whichever path lands second is a
+    no-op. Returns True when a subscription was upserted.
+    """
+    from apps.billing.providers.stripe_provider import retrieve_checkout_session
+    from apps.billing.providers.types import ProviderError
+
+    try:
+        session = retrieve_checkout_session(session_id)
+    except ProviderError as exc:
+        logger.warning("checkout sync: retrieve failed session=%s tenant=%s: %s", session_id, tenant.slug, exc)
+        return False
+
+    metadata = session.get("metadata") or {}
+    if str(metadata.get("tenant_id") or "") != str(tenant.pk):
+        logger.warning("checkout sync: tenant mismatch session=%s tenant=%s", session_id, tenant.slug)
+        return False
+    if session.get("mode") != "subscription" or metadata.get("payment_id") or metadata.get("subscription_plan_id"):
+        return False  # marketplace sessions are webhook-only territory
+    if session.get("payment_status") not in ("paid", "no_payment_required"):
+        logger.info(
+            "checkout sync: session not paid (payment_status=%s) session=%s",
+            session.get("payment_status"),
+            session_id,
+        )
+        return False
+    user = _resolve_user(metadata)
+    plan = _resolve_plan(metadata)
+    if not (user and plan):
+        logger.warning("checkout sync: unresolved metadata refs session=%s metadata=%s", session_id, dict(metadata))
+        return False
+
+    # `expand=["subscription"]` inlines the subscription object where the
+    # webhook event carries only its id — flatten back to the id for the
+    # session dict and pass the object separately so period/status land too.
+    session = dict(session)
+    subscription_obj = session.get("subscription")
+    if isinstance(subscription_obj, str) or subscription_obj is None:
+        subscription_obj = None
+    else:
+        session["subscription"] = subscription_obj.get("id") or ""
+    _upsert_subscription_from_event(
+        tenant=tenant,
+        user=user,
+        plan=plan,
+        session_obj=session,
+        subscription_obj=subscription_obj,
+    )
+    return True
+
+
 def _handle_subscription_event(event):
     """Handle customer.subscription.{created,updated}.
 

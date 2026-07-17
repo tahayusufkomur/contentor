@@ -6,19 +6,47 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { finalizeWizard, getDescribeFollowups, getWizardCatalog, patchWizardState, readWizardState } from "@/lib/wizard/api";
-import { buildSteps, finishRestAnswers, firstUnansweredStep, nextStep, prevStep, progressPct } from "@/lib/wizard/machine";
-import type { WizardAnswers, WizardCatalog, WizardLogoAnswer } from "@/lib/wizard/types";
+import {
+  finalizeWizard,
+  getDescribeFollowups,
+  getWizardCatalog,
+  patchWizardState,
+  readWizardState,
+} from "@/lib/wizard/api";
+import {
+  buildSteps,
+  finishRestAnswers,
+  firstUnansweredStep,
+  nextStep,
+  prevStep,
+  progressPct,
+} from "@/lib/wizard/machine";
+import type {
+  WizardAnswers,
+  WizardCatalog,
+  WizardLogoAnswer,
+} from "@/lib/wizard/types";
 import { ApiError } from "@/types/api";
 
 import { WizardShell } from "./WizardShell";
 import { PageLayoutStep } from "./pages-steps";
-import { DescribeStep, FollowupsStep, FontStep, GoalsStep, HeroStep, NavbarStep, NicheStep, ThemeStep } from "./steps";
+import {
+  DescribeStep,
+  FollowupsStep,
+  FontStep,
+  GoalsStep,
+  HeroStep,
+  NavbarStep,
+  NicheStep,
+  ThemeStep,
+} from "./steps";
 import { LogoStep, ReviewStep } from "./logo-review-steps";
 
 function brandFromToken(token: string): string {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
     return typeof payload.brand_name === "string" ? payload.brand_name : "";
   } catch {
     return "";
@@ -37,6 +65,9 @@ export function WizardFlow({
   const t = useTranslations("wizard");
   const searchParams = useSearchParams();
   const initialUpgraded = searchParams.get("upgraded") === "1";
+  // Stripe substitutes {CHECKOUT_SESSION_ID} into the success URL; the AI
+  // door posts it to checkout/sync/ so payment lands without a webhook.
+  const checkoutSessionId = searchParams.get("session_id") ?? undefined;
   const brand = useMemo(() => brandFromToken(token), [token]);
   const [catalog, setCatalog] = useState<WizardCatalog | null>(null);
   const [answers, setAnswers] = useState<WizardAnswers>({});
@@ -52,7 +83,10 @@ export function WizardFlow({
     loadedRef.current = true;
     Promise.all([getWizardCatalog(), readWizardState(token)])
       .then(([cat, res]) => {
-        if (res.status !== "pending" || ["seeding", "ready", "skipped"].includes(res.template_status)) {
+        if (
+          res.status !== "pending" ||
+          ["seeding", "ready", "skipped"].includes(res.template_status)
+        ) {
           onProvisioning(res.slug);
           return;
         }
@@ -61,7 +95,11 @@ export function WizardFlow({
         setAnswers(loaded);
         const steps = buildSteps(cat, loaded);
         const wanted = res.state.current_step;
-        setStepId(wanted && steps.some((s) => s.id === wanted) ? wanted : firstUnansweredStep(steps, loaded).id);
+        setStepId(
+          wanted && steps.some((s) => s.id === wanted)
+            ? wanted
+            : firstUnansweredStep(steps, loaded).id,
+        );
       })
       .catch((err) => {
         // readWizardState's only 400 is a bad/expired token — the stashed
@@ -74,10 +112,16 @@ export function WizardFlow({
       });
   }, [token, onProvisioning, onTokenExpired, t]);
 
-  const steps = useMemo(() => (catalog ? buildSteps(catalog, answers) : []), [catalog, answers]);
+  const steps = useMemo(
+    () => (catalog ? buildSteps(catalog, answers) : []),
+    [catalog, answers],
+  );
   const step = steps.find((s) => s.id === stepId) ?? steps[0];
 
-  const draft = useCallback((partial: WizardAnswers) => setAnswers((a) => ({ ...a, ...partial })), []);
+  const draft = useCallback(
+    (partial: WizardAnswers) => setAnswers((a) => ({ ...a, ...partial })),
+    [],
+  );
 
   // The slice Continue commits. Only the steps that still HAVE a Continue
   // button appear here: single-select steps advance on the pick itself
@@ -87,22 +131,36 @@ export function WizardFlow({
       case "business.describe":
         return { description: answers.description ?? "" };
       case "business.followups":
-        return answers.description_followups ? { description_followups: answers.description_followups } : {};
+        return answers.description_followups
+          ? { description_followups: answers.description_followups }
+          : {};
       case "business.goals":
         return { goals: answers.goals ?? [] };
       case "logo":
-        return { logo: answers.logo ?? ({ mode: "wordmark", curated_id: null } as WizardLogoAnswer) };
+        return {
+          logo:
+            answers.logo ??
+            ({ mode: "wordmark", curated_id: null } as WizardLogoAnswer),
+        };
       default:
         return {};
     }
   }, [answers, step]);
 
   const commit = useCallback(
-    async (partial: WizardAnswers, goToId: string, extra?: { finished_rest_for_me?: boolean }) => {
+    async (
+      partial: WizardAnswers,
+      goToId: string,
+      extra?: { finished_rest_for_me?: boolean },
+    ) => {
       setBusy(true);
       setError(null);
       try {
-        await patchWizardState(token, { answers: partial, current_step: goToId, ...extra });
+        await patchWizardState(token, {
+          answers: partial,
+          current_step: goToId,
+          ...extra,
+        });
         setAnswers((a) => ({ ...a, ...partial }));
         setStepId(goToId);
       } catch (err) {
@@ -150,16 +208,26 @@ export function WizardFlow({
     if (step.id === "business.describe") {
       const description = answers.description ?? "";
       const stored = answers.description_followups;
-      let followups = stored && stored.for === description && stored.items.length > 0 ? stored : undefined;
+      let followups =
+        stored && stored.for === description && stored.items.length > 0
+          ? stored
+          : undefined;
       if (!followups && description.trim()) {
         setBusy(true);
         try {
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), 20_000);
-          const res = await getDescribeFollowups(token, description, controller.signal);
+          const res = await getDescribeFollowups(
+            token,
+            description,
+            controller.signal,
+          );
           clearTimeout(timer);
           if (res.questions.length > 0) {
-            followups = { for: description, items: res.questions.map((q) => ({ q, a: "" })) };
+            followups = {
+              for: description,
+              items: res.questions.map((q) => ({ q, a: "" })),
+            };
           }
         } catch {
           // AI unavailable or slow — continue without follow-ups.
@@ -174,7 +242,10 @@ export function WizardFlow({
         description_followups: followups ?? { for: description, items: [] },
       };
       setDirection(1);
-      await commit(partial, followups ? "business.followups" : "business.goals");
+      await commit(
+        partial,
+        followups ? "business.followups" : "business.goals",
+      );
       return;
     }
     const next = nextStep(steps, step.id);
@@ -185,7 +256,9 @@ export function WizardFlow({
   const handleFinishRest = async () => {
     if (!catalog || busy) return;
     setDirection(1);
-    await commit(finishRestAnswers(catalog, answers), "logo", { finished_rest_for_me: true });
+    await commit(finishRestAnswers(catalog, answers), "logo", {
+      finished_rest_for_me: true,
+    });
   };
 
   const handleBack = () => {
@@ -199,7 +272,11 @@ export function WizardFlow({
   if (!catalog || !step) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        {error ? <p className="text-[14px] text-destructive">{error}</p> : <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />}
+        {error ? (
+          <p className="text-[14px] text-destructive">{error}</p>
+        ) : (
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        )}
       </div>
     );
   }
@@ -209,15 +286,30 @@ export function WizardFlow({
   // them is pre-checked either — a checked card with no way forward reads as
   // a dead end. "Finish the rest for me" stays the bulk-accept escape hatch,
   // and finalize still fills any never-answered key with the recommendation.
-  const autoAdvance = step.chapter === "look" || step.chapter === "pages" || step.id === "business.niche";
+  const autoAdvance =
+    step.chapter === "look" ||
+    step.chapter === "pages" ||
+    step.id === "business.niche";
 
   let body: React.ReactNode;
   switch (step.id) {
     case "business.niche":
-      body = <NicheStep catalog={catalog} value={answers.niche} onChange={(niche) => selectAndAdvance({ niche })} />;
+      body = (
+        <NicheStep
+          catalog={catalog}
+          value={answers.niche}
+          onChange={(niche) => selectAndAdvance({ niche })}
+        />
+      );
       break;
     case "business.describe":
-      body = <DescribeStep catalog={catalog} value={answers.description} onChange={(description) => draft({ description })} />;
+      body = (
+        <DescribeStep
+          catalog={catalog}
+          value={answers.description}
+          onChange={(description) => draft({ description })}
+        />
+      );
       break;
     case "business.followups":
       body = (
@@ -228,7 +320,13 @@ export function WizardFlow({
       );
       break;
     case "business.goals":
-      body = <GoalsStep catalog={catalog} value={answers.goals} onChange={(g) => draft({ goals: g })} />;
+      body = (
+        <GoalsStep
+          catalog={catalog}
+          value={answers.goals}
+          onChange={(g) => draft({ goals: g })}
+        />
+      );
       break;
     case "look.theme":
       body = (
@@ -243,13 +341,38 @@ export function WizardFlow({
       );
       break;
     case "look.font":
-      body = <FontStep catalog={catalog} brand={brand} value={answers.font_family} onChange={(font_family) => selectAndAdvance({ font_family })} />;
+      body = (
+        <FontStep
+          catalog={catalog}
+          brand={brand}
+          value={answers.font_family}
+          onChange={(font_family) => selectAndAdvance({ font_family })}
+        />
+      );
       break;
     case "look.navbar":
-      body = <NavbarStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.navbar_layout} onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })} />;
+      body = (
+        <NavbarStep
+          catalog={catalog}
+          brand={brand}
+          theme={answers.theme}
+          font={answers.font_family}
+          value={answers.navbar_layout}
+          onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })}
+        />
+      );
       break;
     case "look.hero":
-      body = <HeroStep catalog={catalog} brand={brand} theme={answers.theme} font={answers.font_family} value={answers.hero_style} onChange={(hero_style) => selectAndAdvance({ hero_style })} />;
+      body = (
+        <HeroStep
+          catalog={catalog}
+          brand={brand}
+          theme={answers.theme}
+          font={answers.font_family}
+          value={answers.hero_style}
+          onChange={(hero_style) => selectAndAdvance({ hero_style })}
+        />
+      );
       break;
     case "logo":
       body = (
@@ -262,6 +385,7 @@ export function WizardFlow({
           value={answers.logo}
           onChange={(logo) => draft({ logo })}
           initialUpgraded={initialUpgraded}
+          checkoutSessionId={checkoutSessionId}
         />
       );
       break;
@@ -285,7 +409,12 @@ export function WizardFlow({
           page={page}
           value={answers.page_layouts?.[page]}
           onChange={(layoutId) =>
-            selectAndAdvance({ page_layouts: { ...(answers.page_layouts ?? {}), [page]: layoutId } })
+            selectAndAdvance({
+              page_layouts: {
+                ...(answers.page_layouts ?? {}),
+                [page]: layoutId,
+              },
+            })
           }
           theme={answers.theme}
           goals={goals}
@@ -305,14 +434,29 @@ export function WizardFlow({
       showFinishRest={step.chapter !== "business" && step.id !== "review"}
       onFinishRest={handleFinishRest}
       error={error}
-      wide={step.chapter === "pages" || step.id === "look.theme" || step.id === "look.hero"}
+      wide={
+        step.chapter === "pages" ||
+        step.id === "look.theme" ||
+        step.id === "look.hero"
+      }
       footer={
         autoAdvance ? null : (
-          <Button type="button" variant="brand" size="lg" className="w-full max-w-[340px]" onClick={handleContinue} disabled={busy}>
+          <Button
+            type="button"
+            variant="brand"
+            size="lg"
+            className="w-full max-w-[340px]"
+            onClick={handleContinue}
+            disabled={busy}
+          >
             {busy ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{step.id === "review" ? t("review.creating") : t("common.saving")}</span>
+                <span>
+                  {step.id === "review"
+                    ? t("review.creating")
+                    : t("common.saving")}
+                </span>
               </>
             ) : step.id === "review" ? (
               t("review.create")

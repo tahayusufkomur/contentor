@@ -12,7 +12,11 @@
  * studio's design cards (studio-chat.tsx) use to turn a ConverseDesign into
  * a renderable LogoRecipe. */
 
-import { composeConverseDesign, type ConverseDesign, type RefinedDesign } from "@/lib/logo/composer";
+import {
+  composeConverseDesign,
+  type ConverseDesign,
+  type RefinedDesign,
+} from "@/lib/logo/composer";
 import type { LogoRecipe } from "@/types/logo";
 import { ApiError } from "@/types/api";
 
@@ -43,7 +47,9 @@ export interface WizardLogoStatus {
   reason: string | null;
 }
 
-export function fetchWizardLogoStatus(token: string): Promise<WizardLogoStatus> {
+export function fetchWizardLogoStatus(
+  token: string,
+): Promise<WizardLogoStatus> {
   return request("/api/v1/onboarding/wizard/logo-status/", {
     method: "POST",
     body: JSON.stringify({ token }),
@@ -143,11 +149,29 @@ export function wizardCheckout(
   });
 }
 
+/** Return-from-checkout probe: hands the `session_id` Stripe appended to the
+ * success URL back to Django, which retrieves the session and activates the
+ * subscription itself — the `?upgraded=1` poll alone dies in local dev
+ * (webhooks need `make stripe-listen`) and races the webhook in prod.
+ * Responds with the same body as wizard/state/. */
+export function wizardCheckoutSync(
+  token: string,
+  sessionId: string,
+): Promise<{ has_paid_platform_plan: boolean }> {
+  return request("/api/v1/onboarding/wizard/checkout/sync/", {
+    method: "POST",
+    body: JSON.stringify({ token, session_id: sessionId }),
+  });
+}
+
 /** A ConverseDesign -> a renderable LogoRecipe, for the full lockup stages
  * (name/tagline). This is the exact accessor the studio's design cards use
  * (studio-chat.tsx: `composeConverseDesign(d, brandName)`) — Task 8 should
  * import ONLY this, not composer.ts directly, so the wizard has one place
  * that knows how a design becomes a recipe. */
-export function designRecipe(design: ConverseDesign, brandName: string): LogoRecipe {
+export function designRecipe(
+  design: ConverseDesign,
+  brandName: string,
+): LogoRecipe {
   return composeConverseDesign(design, brandName);
 }
