@@ -2,9 +2,9 @@
 the tenant's capabilities (events + store links), never say "Programs", and
 carry its assigned layout preset."""
 
-import importlib
-
 import pytest
+
+from apps.demo_seed.registry import load_niche
 
 EXPECTED_LAYOUTS = {
     "yoga": "centered",
@@ -21,8 +21,8 @@ VALID_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
 
 @pytest.mark.parametrize("name", sorted(EXPECTED_LAYOUTS))
 def test_template_navbar_truthful(name):
-    mod = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{name}")
-    nav = mod.CONFIG["navbar_config"]
+    data = load_niche(name)
+    nav = data.CONFIG["navbar_config"]
     hrefs = [link["href"] for link in nav["links"]]
     labels = [link["label"] for link in nav["links"]]
     assert "/events" in hrefs, f"{name}: no events link"

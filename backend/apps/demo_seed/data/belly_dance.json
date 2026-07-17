@@ -1,0 +1,609 @@
+{
+  "TENANT": {
+    "name": "Belly Dance Academy",
+    "slug": "demo-bellydance",
+    "subdomain": "demo-bellydance",
+    "schema_name": "demo_bellydance",
+    "domain": "demo-bellydance.localhost"
+  },
+  "CONFIG": {
+    "dark_mode_enabled": true,
+    "onboarding_completed": true,
+    "enabled_modules": [
+      "courses",
+      "live",
+      "community",
+      "downloads",
+      "billing",
+      "campaigns",
+      "analytics",
+      "pages"
+    ],
+    "navbar_config": {
+      "links": [
+        {
+          "label": "Courses",
+          "href": "/courses"
+        },
+        {
+          "label": "Live Classes",
+          "href": "/events"
+        },
+        {
+          "label": "Store",
+          "href": "/store"
+        },
+        {
+          "label": "About",
+          "href": "/about"
+        },
+        {
+          "label": "FAQ",
+          "href": "/faq"
+        }
+      ],
+      "cta": {
+        "href": "/courses",
+        "text": "Start Dancing"
+      },
+      "show_login": true,
+      "layout": "centered"
+    },
+    "landing_sections": {
+      "hero": {
+        "enabled": true,
+        "cta_text": "Browse Programs",
+        "cta_href": "/courses",
+        "headline": "Discover the Art of Belly Dance",
+        "subheadline": "Express yourself through the ancient art of belly dance. Join our community of dancers and unlock your inner rhythm.",
+        "bg_image_url": "demo/photos/belly_dance_6.jpg"
+      },
+      "about": {
+        "enabled": true,
+        "heading": "About Me",
+        "body": "Passionate belly dance instructor with over 10 years of experience in Oriental, Tribal Fusion, and Classical Egyptian styles. I believe dance is for everyone — no experience needed, just an open heart and a love for movement.",
+        "image_url": "demo/photos/belly_dance_7.jpg"
+      },
+      "courses": {
+        "enabled": true,
+        "heading": "Featured Programs"
+      },
+      "testimonials": {
+        "enabled": true,
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Ayşe K.",
+            "text": "This academy transformed the way I move. The structured lessons made it so easy to build confidence in my shimmies and isolations.",
+            "avatar_url": ""
+          },
+          {
+            "name": "Leila M.",
+            "text": "I never imagined I could learn belly dance online, but the video quality and detailed breakdowns are incredible. I practice every single day!",
+            "avatar_url": ""
+          },
+          {
+            "name": "Nadia S.",
+            "text": "The choreography course is a masterpiece. I went from feeling lost on stage to performing with real expression and musicality.",
+            "avatar_url": ""
+          }
+        ]
+      },
+      "faq": {
+        "enabled": true,
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need prior dance experience?",
+            "a": "Not at all! Our Belly Dance Basics course is designed for absolute beginners. We start with posture and simple hip movements before building up to combinations."
+          },
+          {
+            "q": "What do I need to get started?",
+            "a": "All you need is comfortable clothing that lets you see your hip movements, a small open space, and a willingness to have fun. A hip scarf is optional but adds to the experience!"
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for practicing anywhere."
+          },
+          {
+            "q": "How long do I have access to the courses?",
+            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and learn at your own pace."
+          }
+        ]
+      },
+      "cta": {
+        "enabled": true,
+        "button_text": "Join Now",
+        "button_href": "/courses",
+        "heading": "Ready to Start Dancing?"
+      }
+    },
+    "brand_name": "Belly Dance Academy",
+    "theme": "sunset",
+    "font_family": "Poppins"
+  },
+  "COURSES": [
+    {
+      "title": "Belly Dance Basics",
+      "description": "A beginner-friendly journey into the foundations of belly dance. Learn posture, core hip movements, graceful arm lines, and your very first combination — no experience required.",
+      "pricing_type": "free",
+      "price": 0,
+      "order": 1,
+      "is_published": true,
+      "thumbnail_url": "demo/photos/belly_dance_1.png",
+      "module_title": "Getting Started",
+      "lessons": [
+        {
+          "title": "Introduction to Belly Dance",
+          "order": 1,
+          "video_url": "demo/videos/belly_dance_1.mp4",
+          "duration_seconds": 420,
+          "is_free_preview": true,
+          "content_html": "<p>Welcome to the enchanting world of belly dance! In this opening lesson we explore the rich cultural roots of Raqs Sharqi and set intentions for your practice.</p><h4>Key takeaways</h4><ul><li>Understand the origins and regional styles of belly dance</li><li>Learn proper warm-up techniques to protect your joints</li><li>Set up your practice space for safe, focused training</li></ul>"
+        },
+        {
+          "title": "Basic Stance & Posture",
+          "order": 2,
+          "video_url": "demo/videos/belly_dance_2.mp4",
+          "duration_seconds": 360,
+          "is_free_preview": false,
+          "content_html": "<p>Great belly dance starts with a strong foundation. We'll build your neutral stance — soft knees, engaged core, lifted sternum — so every movement flows from a stable center.</p><h4>Key takeaways</h4><ul><li>Find your neutral pelvis position for safe hip work</li><li>Engage the transverse abdominis without holding your breath</li><li>Maintain a lifted, elegant upper body while relaxing the shoulders</li></ul>"
+        },
+        {
+          "title": "Hip Drops & Lifts",
+          "order": 3,
+          "video_url": "demo/videos/belly_dance_3.mp4",
+          "duration_seconds": 480,
+          "is_free_preview": false,
+          "content_html": "<p>Hip drops and lifts are the bread and butter of belly dance vocabulary. In this lesson you will isolate each hip using the oblique muscles while keeping the upper body perfectly still.</p><h4>Key takeaways</h4><ul><li>Execute clean single-hip drops on both sides</li><li>Perform hip lifts with control and musicality</li><li>Combine drops and lifts into a basic hip pattern</li></ul>"
+        },
+        {
+          "title": "Arm Movements & Framing",
+          "order": 4,
+          "video_url": "demo/videos/belly_dance_4.mp4",
+          "duration_seconds": 390,
+          "is_free_preview": false,
+          "content_html": "<p>Beautiful arms transform good dancing into captivating performance. Learn classic arm positions — serpentine arms, framing gestures, and flowing port de bras adapted for Oriental dance.</p><h4>Key takeaways</h4><ul><li>Master the snake arms technique with fluid wrist rolls</li><li>Use arm framing to highlight hip work</li><li>Coordinate arm pathways with weight shifts</li></ul>"
+        },
+        {
+          "title": "Your First Combination",
+          "order": 5,
+          "video_url": "demo/videos/belly_dance_5.mp4",
+          "duration_seconds": 540,
+          "is_free_preview": false,
+          "content_html": "<p>Time to put it all together! We'll chain hip drops, lifts, and arm movements into an 8-count combination set to a classic baladi rhythm.</p><h4>Key takeaways</h4><ul><li>Link individual movements into a seamless combination</li><li>Count and move to the baladi rhythm structure</li><li>Practice transitioning between moves with grace</li></ul>"
+        }
+      ]
+    },
+    {
+      "title": "Shimmy & Isolations",
+      "description": "Take your technique to the next level with Egyptian shimmies, chest and shoulder isolations, and the art of layering movements. Perfect for dancers ready to add texture and complexity to their repertoire.",
+      "pricing_type": "paid",
+      "price": 39,
+      "order": 2,
+      "is_published": true,
+      "thumbnail_url": "demo/photos/belly_dance_2.png",
+      "module_title": "Master the Shimmy",
+      "lessons": [
+        {
+          "title": "Egyptian Shimmy Fundamentals",
+          "order": 1,
+          "video_url": "demo/videos/belly_dance_1.mp4",
+          "duration_seconds": 450,
+          "is_free_preview": true,
+          "content_html": "<p>The Egyptian shimmy is a rapid, knee-driven vibration that adds dazzling texture to any movement. We'll break it down slowly and build speed over time.</p><h4>Key takeaways</h4><ul><li>Understand the knee-driven mechanics of the Egyptian shimmy</li><li>Build shimmy endurance without tensing the upper body</li><li>Control shimmy speed and intensity to match the music</li></ul>"
+        },
+        {
+          "title": "Hip Shimmy Variations",
+          "order": 2,
+          "video_url": "demo/videos/belly_dance_2.mp4",
+          "duration_seconds": 380,
+          "is_free_preview": false,
+          "content_html": "<p>Beyond the basic shimmy lies a world of variation — three-quarter shimmies, twist shimmies, and glute-driven shimmies each create a distinct visual effect on the hip line.</p><h4>Key takeaways</h4><ul><li>Differentiate between twist, vibration, and three-quarter shimmies</li><li>Switch seamlessly between shimmy types mid-phrase</li><li>Apply each variation to appropriate musical accents</li></ul>"
+        },
+        {
+          "title": "Chest & Shoulder Isolations",
+          "order": 3,
+          "video_url": "demo/videos/belly_dance_3.mp4",
+          "duration_seconds": 420,
+          "is_free_preview": false,
+          "content_html": "<p>Isolating the chest and shoulders independently from the hips opens up a new dimension of expression. We cover chest circles, chest drops, shoulder shimmies, and locks.</p><h4>Key takeaways</h4><ul><li>Perform chest slides, lifts, and circles in all directions</li><li>Execute a clean shoulder shimmy at various tempos</li><li>Isolate the upper body while the lower body maintains a separate pattern</li></ul>"
+        },
+        {
+          "title": "Layering Movements",
+          "order": 4,
+          "video_url": "demo/videos/belly_dance_4.mp4",
+          "duration_seconds": 510,
+          "is_free_preview": false,
+          "content_html": "<p>Layering is the hallmark of an intermediate belly dancer — performing a shimmy on top of a hip circle, or an arm pattern over a traveling step. This lesson teaches you how to split your focus.</p><h4>Key takeaways</h4><ul><li>Layer a shimmy over hip circles and figure eights</li><li>Add arm work on top of a lower-body pattern</li><li>Use layering to create visual complexity and depth</li></ul>"
+        },
+        {
+          "title": "Shimmy Combinations",
+          "order": 5,
+          "video_url": "demo/videos/belly_dance_5.mp4",
+          "duration_seconds": 480,
+          "is_free_preview": false,
+          "content_html": "<p>Bring every shimmy and isolation technique together in a dynamic combination. We'll drill a 16-count phrase that showcases your new skills to a maqsoum beat.</p><h4>Key takeaways</h4><ul><li>Chain shimmy types into a flowing combination</li><li>Add chest accents and arm layers for visual richness</li><li>Perform with confidence and musicality to a maqsoum rhythm</li></ul>"
+        }
+      ]
+    },
+    {
+      "title": "Choreography Flow",
+      "description": "Learn to build a complete belly dance routine from the ground up. This course covers musicality, transitions, veil work, stage presence, and culminates in a full choreography you can perform with confidence.",
+      "pricing_type": "paid",
+      "price": 59,
+      "order": 3,
+      "is_published": true,
+      "thumbnail_url": "demo/photos/belly_dance_3.png",
+      "module_title": "Build Your Routine",
+      "lessons": [
+        {
+          "title": "Musicality & Rhythm",
+          "order": 1,
+          "video_url": "demo/videos/belly_dance_1.mp4",
+          "duration_seconds": 390,
+          "is_free_preview": true,
+          "content_html": "<p>Great choreography begins with deep listening. In this lesson you will learn to identify common Arabic rhythms — baladi, maqsoum, saidi — and translate their accents into movement.</p><h4>Key takeaways</h4><ul><li>Recognize doum and tek patterns in popular belly dance rhythms</li><li>Map musical phrases to movement sequences</li><li>Use pauses and accents to create dramatic moments</li></ul>"
+        },
+        {
+          "title": "Transitions & Floor Work",
+          "order": 2,
+          "video_url": "demo/videos/belly_dance_2.mp4",
+          "duration_seconds": 450,
+          "is_free_preview": false,
+          "content_html": "<p>Smooth transitions separate a collection of moves from a true dance. We'll work on level changes, traveling steps, and graceful descents to the floor and back.</p><h4>Key takeaways</h4><ul><li>Transition between standing and floor work safely</li><li>Use grapevine, chassé, and pivot turns as connectors</li><li>Maintain audience engagement during level changes</li></ul>"
+        },
+        {
+          "title": "Veil Technique",
+          "order": 3,
+          "video_url": "demo/videos/belly_dance_3.mp4",
+          "duration_seconds": 420,
+          "is_free_preview": false,
+          "content_html": "<p>The veil adds ethereal beauty to any performance. Learn to unfurl, wrap, toss, and butterfly your veil with control and artistry.</p><h4>Key takeaways</h4><ul><li>Handle a silk veil with confident grip and release</li><li>Execute wraps, tosses, and butterfly turns</li><li>Integrate veil work into your choreography seamlessly</li></ul>"
+        },
+        {
+          "title": "Expression & Stage Presence",
+          "order": 4,
+          "video_url": "demo/videos/belly_dance_4.mp4",
+          "duration_seconds": 360,
+          "is_free_preview": false,
+          "content_html": "<p>Technique alone doesn't captivate an audience — expression does. This lesson focuses on facial expression, eye contact, spatial awareness, and the inner confidence that radiates outward.</p><h4>Key takeaways</h4><ul><li>Project emotion through facial expression and eye contact</li><li>Use stage space effectively with deliberate pathways</li><li>Develop a performance persona that feels authentic</li></ul>"
+        },
+        {
+          "title": "Full Choreography",
+          "order": 5,
+          "video_url": "demo/videos/belly_dance_5.mp4",
+          "duration_seconds": 600,
+          "is_free_preview": false,
+          "content_html": "<p>Everything comes together in this capstone lesson. We'll learn a complete three-minute choreography that showcases shimmies, isolations, veil work, floor transitions, and expressive performance.</p><h4>Key takeaways</h4><ul><li>Perform a polished three-minute belly dance routine</li><li>Apply musicality, layering, and expression in context</li><li>Build confidence to perform for an audience</li></ul>"
+        }
+      ]
+    }
+  ],
+  "DOWNLOADS": [
+    {
+      "title": "Belly Dance Practice Guide (PDF)",
+      "file_url": "demo/photos/belly_dance_4.png",
+      "file_size": 2500000,
+      "download_count": 142,
+      "pricing_type": "free"
+    },
+    {
+      "title": "Shimmy Drills Cheat Sheet",
+      "file_url": "demo/photos/belly_dance_5.png",
+      "file_size": 1200000,
+      "download_count": 87,
+      "pricing_type": "free"
+    },
+    {
+      "title": "Choreography Music Playlist",
+      "file_url": "demo/photos/belly_dance_8.jpg",
+      "file_size": 800000,
+      "download_count": 215,
+      "pricing_type": "paid"
+    }
+  ],
+  "STUDENTS": [
+    {
+      "email": "ayse@demo.test",
+      "name": "Ayşe Karaca"
+    },
+    {
+      "email": "leila@demo.test",
+      "name": "Leila Mansour"
+    },
+    {
+      "email": "nadia@demo.test",
+      "name": "Nadia Saeed"
+    },
+    {
+      "email": "sofia@demo.test",
+      "name": "Sofia Reyes"
+    },
+    {
+      "email": "emma@demo.test",
+      "name": "Emma Chen"
+    }
+  ],
+  "SUBSCRIPTION_PLANS": [
+    {
+      "name": "Monthly Pass",
+      "description": "Access all subscription courses and live classes for one month.",
+      "price": "49.00",
+      "currency": "TRY",
+      "sort_order": 1,
+      "access_course_indices": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "Annual Pass",
+      "description": "Full year of unlimited access — save 40% compared to monthly.",
+      "billing_interval_months": 12,
+      "price": "349.00",
+      "currency": "TRY",
+      "sort_order": 2,
+      "access_course_indices": [
+        1,
+        2
+      ]
+    }
+  ],
+  "BUNDLES": [
+    {
+      "name": "Complete Belly Dance Collection",
+      "description": "All three courses at a discounted price. Start from scratch and perform with confidence.",
+      "price": "79.00",
+      "currency": "TRY",
+      "course_indices": [
+        0,
+        1,
+        2
+      ]
+    }
+  ],
+  "LIVE_CLASSES": [
+    {
+      "title": "Open Practice Session",
+      "description": "Bring your questions and we'll drill combinations together.",
+      "duration_minutes": 45,
+      "pricing_type": "free",
+      "price": 0
+    },
+    {
+      "title": "Shimmy Bootcamp LIVE",
+      "description": "Intensive 45-minute shimmy drill — bring water!",
+      "duration_minutes": 45,
+      "pricing_type": "paid",
+      "price": 15
+    },
+    {
+      "title": "Choreography Q&A",
+      "description": "Live feedback on your choreography submissions.",
+      "duration_minutes": 60,
+      "pricing_type": "paid",
+      "price": 0
+    }
+  ],
+  "LIVE_STREAMS": [
+    {
+      "title": "Friday Night Dance Party",
+      "description": "Weekly community stream — free for everyone!",
+      "duration_minutes": 90,
+      "pricing_type": "free",
+      "price": 0
+    }
+  ],
+  "RECURRING_LIVE_CLASS": {
+    "title": "Weekly Flow Class",
+    "description": "Our signature weekly belly dance class — open to all levels.",
+    "duration_minutes": 60,
+    "pricing_type": "free",
+    "price": 0,
+    "day_of_week": 2,
+    "hour": 19,
+    "minute": 0,
+    "weeks": 8
+  },
+  "ZOOM_CLASSES": [
+    {
+      "title": "Private Coaching — Small Group",
+      "description": "Intimate 4-person coaching session via Zoom. Camera on required.",
+      "zoom_link": "https://zoom.us/j/1234567890",
+      "duration_minutes": 60,
+      "pricing_type": "paid",
+      "price": 25
+    },
+    {
+      "title": "Beginner Orientation (Zoom)",
+      "description": "Meet the instructor and get oriented before your first course.",
+      "zoom_link": "https://zoom.us/j/9876543210",
+      "duration_minutes": 60,
+      "pricing_type": "free",
+      "price": 0
+    }
+  ],
+  "ONSITE_EVENTS": [
+    {
+      "title": "Weekend Belly Dance Workshop",
+      "description": "Full-day in-person workshop covering shimmies, isolations, and choreography.",
+      "location": "Dance Studio Istanbul",
+      "address": "Cihangir Mah. Sıraselviler Cd. No:42, Beyoğlu, Istanbul",
+      "max_capacity": 20,
+      "duration_minutes": 240,
+      "pricing_type": "paid",
+      "price": 120
+    },
+    {
+      "title": "Community Dance Meetup",
+      "description": "Free social dance evening — bring friends!",
+      "location": "Kadıköy Cultural Center",
+      "address": "Caferağa Mah. Moda Cd. No:18, Kadıköy, Istanbul",
+      "max_capacity": 50,
+      "duration_minutes": 180,
+      "pricing_type": "free",
+      "price": 0
+    }
+  ],
+  "STUDENT_BILLING": [
+    {
+      "email": "ayse@demo.test",
+      "purchases": [
+        1
+      ],
+      "bundle_index": null,
+      "subscription_plan_index": 0,
+      "progress": [
+        [
+          0,
+          0,
+          420,
+          true
+        ],
+        [
+          0,
+          1,
+          360,
+          true
+        ],
+        [
+          0,
+          2,
+          300,
+          false
+        ],
+        [
+          1,
+          0,
+          450,
+          true
+        ],
+        [
+          1,
+          1,
+          200,
+          false
+        ]
+      ]
+    },
+    {
+      "email": "leila@demo.test",
+      "purchases": [],
+      "bundle_index": 0,
+      "subscription_plan_index": null,
+      "progress": [
+        [
+          0,
+          0,
+          420,
+          true
+        ],
+        [
+          0,
+          1,
+          360,
+          true
+        ],
+        [
+          0,
+          2,
+          480,
+          true
+        ],
+        [
+          0,
+          3,
+          390,
+          true
+        ],
+        [
+          0,
+          4,
+          540,
+          true
+        ],
+        [
+          1,
+          0,
+          100,
+          false
+        ]
+      ]
+    },
+    {
+      "email": "nadia@demo.test",
+      "purchases": [],
+      "bundle_index": null,
+      "subscription_plan_index": 1,
+      "progress": [
+        [
+          0,
+          0,
+          420,
+          true
+        ],
+        [
+          2,
+          0,
+          200,
+          false
+        ]
+      ]
+    },
+    {
+      "email": "sofia@demo.test",
+      "purchases": [
+        2
+      ],
+      "bundle_index": null,
+      "subscription_plan_index": null,
+      "progress": [
+        [
+          2,
+          0,
+          390,
+          true
+        ],
+        [
+          2,
+          1,
+          450,
+          true
+        ],
+        [
+          2,
+          2,
+          420,
+          true
+        ],
+        [
+          2,
+          3,
+          180,
+          false
+        ]
+      ]
+    },
+    {
+      "email": "emma@demo.test",
+      "purchases": [],
+      "bundle_index": null,
+      "subscription_plan_index": null,
+      "progress": [
+        [
+          0,
+          0,
+          420,
+          true
+        ],
+        [
+          0,
+          1,
+          100,
+          false
+        ]
+      ]
+    }
+  ]
+}

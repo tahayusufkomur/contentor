@@ -1,17 +1,15 @@
-import importlib
-from pathlib import Path
-
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from apps.core.models import Tenant
+from apps.demo_seed.registry import list_niches, load_niche
 
 
 class Command(BaseCommand):
     help = (
-        "Seed (or re-seed) all niche demo tenants under apps/demo_seed/management/"
-        "commands/demo_data/. By default, niches that already exist as demo "
-        "tenants are skipped. Pass --force to tear them down and recreate."
+        "Seed (or re-seed) all niche demo tenants under apps/demo_seed/data/. "
+        "By default, niches that already exist as demo tenants are skipped. "
+        "Pass --force to tear them down and recreate."
     )
 
     def add_arguments(self, parser):
@@ -22,8 +20,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        demo_dir = Path(__file__).parent / "demo_data"
-        niches = sorted(f.stem for f in demo_dir.glob("*.py") if not f.stem.startswith("_"))
+        niches = list_niches()
 
         if not niches:
             self.stdout.write(self.style.WARNING("No niche modules found."))
@@ -31,7 +28,7 @@ class Command(BaseCommand):
 
         force = options["force"]
         for niche in niches:
-            module = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
+            module = load_niche(niche)
             slug = module.TENANT["slug"]
             exists = Tenant.objects.filter(slug=slug, is_demo=True).exists()
             if exists and not force:

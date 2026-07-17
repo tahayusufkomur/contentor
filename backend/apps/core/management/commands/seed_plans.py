@@ -203,14 +203,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Superusers synced"))
 
         # Seed demo tenants
-        from pathlib import Path
-
         from django.core.management import call_command
 
-        from apps.demo_seed.management.commands import demo_data as demo_data_pkg
+        from apps.demo_seed.registry import list_niches
 
-        demo_data_dir = Path(demo_data_pkg.__file__).parent
-        niches = [f.stem for f in demo_data_dir.glob("*.py") if not f.stem.startswith("_")]
+        niches = list_niches()
         if niches:
             self.stdout.write(f"\nSeeding {len(niches)} demo tenants...")
             for niche in sorted(niches):

@@ -1,4 +1,3 @@
-import importlib
 import logging
 import random
 from datetime import timedelta
@@ -13,6 +12,7 @@ from django_tenants.utils import tenant_context
 from apps.accounts.models import User
 from apps.core.demo.views import DEMO_COACH_EMAIL, DEMO_STUDENT_EMAIL
 from apps.core.models import Domain, PlatformPlan, Tenant
+from apps.demo_seed.registry import load_niche
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ class Command(BaseCommand):
         niche = options["niche"]
 
         try:
-            data = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
-        except ModuleNotFoundError:
+            data = load_niche(niche)
+        except FileNotFoundError:
             raise CommandError(f"No demo data module found for niche: {niche}") from None
 
         tenant_data = data.TENANT

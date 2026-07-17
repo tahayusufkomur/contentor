@@ -13,7 +13,6 @@ Shared between two callers:
 
 from __future__ import annotations
 
-import importlib
 import logging
 import secrets
 from datetime import timedelta
@@ -23,6 +22,8 @@ from typing import TYPE_CHECKING
 from django.db import transaction
 from django.utils import timezone
 from django_tenants.utils import tenant_context
+
+from apps.demo_seed.registry import list_niches, load_niche
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -47,32 +48,14 @@ class TemplateSeedError(Exception):
 
 def _resolve_niche_module(niche: str):
     try:
-        return importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
-    except ModuleNotFoundError as exc:
+        return load_niche(niche)
+    except FileNotFoundError as exc:
         raise TemplateSeedError(f"No demo data module found for niche: {niche}") from exc
 
 
 def available_niches() -> list[str]:
-    """Return the list of niche keys that can be seeded.
-
-    Discovered by importing the demo_data package and listing submodules that
-    have a `TENANT` attribute — keeps the source of truth in one place.
-    """
-    import pkgutil
-
-    from apps.demo_seed.management.commands import demo_data
-
-    keys = []
-    for mod_info in pkgutil.iter_modules(demo_data.__path__):
-        name = mod_info.name
-        try:
-            mod = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{name}")
-        except ImportError:
-            logger.warning("Skipping demo_data module %s: import failed", name)
-            continue
-        if hasattr(mod, "TENANT") and hasattr(mod, "CONFIG"):
-            keys.append(name)
-    return sorted(keys)
+    """Return the list of niche keys that can be seeded."""
+    return list_niches()
 
 
 def seed_template_into_tenant(
