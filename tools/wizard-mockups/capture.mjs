@@ -18,6 +18,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(__dirname, "..", "..", "frontend-main", "public", "wizard-mockups");
 const VIEWPORT = { width: 1280, height: 960 };
 const OUTPUT_WIDTH = 800; // downscaled width; height follows viewport aspect ratio
+// Capture at 2x and let downscale() supersample — thumbnail text and photos
+// come out visibly crisper than a 1x capture at the same output size.
+const DEVICE_SCALE = 2;
 
 // Mirrors backend/apps/core/onboarding/wizard_catalog.py PAGE_LAYOUTS.
 const LAYOUTS = [
@@ -76,7 +79,9 @@ async function downscale(page, pngBuffer, targetWidth) {
       const c = document.createElement("canvas");
       c.width = Math.max(1, Math.round(img.naturalWidth * scale));
       c.height = Math.max(1, Math.round(img.naturalHeight * scale));
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      const ctx = c.getContext("2d");
+      ctx.imageSmoothingQuality = "high"; // 2x-capture -> big ratio; default bilinear aliases
+      ctx.drawImage(img, 0, 0, c.width, c.height);
       return c.toDataURL("image/png");
     },
     { src: b64, targetWidth },
@@ -87,8 +92,23 @@ async function downscale(page, pngBuffer, targetWidth) {
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewport: VIEWPORT });
+  const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: DEVICE_SCALE });
   const page = await context.newPage();
+  // Broken media means a broken catalog card — refuse to write the PNG.
+  // (The Jul 15 captures shipped broken-image icons because dev MinIO had
+  // been wiped and every presigned demo photo 404'd.) Track failures at the
+  // network layer so CSS background-image fetches count too, not just <img>.
+  const failedMedia = new Set();
+  page.on("response", (res) => {
+    const type = res.request().resourceType();
+    if ((type === "image" || type === "media") && res.status() >= 400) {
+      failedMedia.add(`${res.status()} ${res.url()}`);
+    }
+  });
+  page.on("requestfailed", (req) => {
+    const type = req.resourceType();
+    if (type === "image" || type === "media") failedMedia.add(`FAILED ${req.url()}`);
+  });
   // Belt-and-suspenders: disable Chromium's own HTTP cache too. The real fix
   // for stale layouts is per-layout domains (see seed_wizard_mockup_tenant) —
   // frontend-customer's fetchTenantConfig() keeps its own 60s in-memory
@@ -99,9 +119,23 @@ async function main() {
   await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 
   async function capture(host, path, outName, { clip, fullPage = false } = {}) {
+    failedMedia.clear();
     await page.goto(`http://${host}${path}`, { waitUntil: "networkidle", timeout: 30000 });
     // Hide Next.js's dev-only overlay, same as tools/flowmap/crawler/capture.js.
     await page.addStyleTag({ content: "nextjs-portal{display:none !important}" }).catch(() => {});
+    // Second net: <img> elements that attempted a load and got nothing
+    // (complete && naturalWidth 0) — catches failures the response listener
+    // can't attribute, without tripping on below-fold lazy images.
+    const brokenImgs = await page.evaluate(() =>
+      [...document.images].filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.src || i.currentSrc),
+    );
+    if (failedMedia.size || brokenImgs.length) {
+      const details = [...failedMedia, ...brokenImgs].join("\n  ");
+      throw new Error(
+        `${outName}: page has broken media — refusing to capture.\n  ${details}\n` +
+          "Run `make seed-demo-assets` (mirrors demo photos/videos into dev MinIO), then retry.",
+      );
+    }
     const png = await page.screenshot(fullPage ? { fullPage: true } : { fullPage: false, ...(clip ? { clip } : {}) });
     const downscaled = await downscale(page, png, OUTPUT_WIDTH);
     writeFileSync(join(OUT_DIR, `${outName}.png`), downscaled);

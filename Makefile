@@ -85,7 +85,7 @@ seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinI
 seed-demos: seed-demo-assets ## Seed read-only marketing demo tenants for all niches
 	docker compose exec django python manage.py seed_all_demos
 
-capture-wizard-mockups: ## Capture real-page screenshots for the wizard's page-layout step (needs make dev running)
+capture-wizard-mockups: seed-demo-assets ## Capture real-page screenshots for the wizard's page-layout step (needs make dev running)
 	docker compose exec django python manage.py seed_wizard_mockup_tenant
 	cd tools/wizard-mockups && npm install --silent && npx playwright install chromium && npm run capture
 
