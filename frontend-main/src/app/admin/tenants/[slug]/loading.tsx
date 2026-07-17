@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TenantDetailLoading() {
   return (
@@ -31,5 +31,5 @@ export default function TenantDetailLoading() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

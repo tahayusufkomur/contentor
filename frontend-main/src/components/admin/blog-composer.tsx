@@ -5,7 +5,10 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { generatePlatformPost, type PlatformBlogPostAdmin } from "@/lib/platform-blog-admin";
+import {
+  generatePlatformPost,
+  type PlatformBlogPostAdmin,
+} from "@/lib/platform-blog-admin";
 
 export function BlogComposer({
   onGenerated,
@@ -31,7 +34,9 @@ export function BlogComposer({
         setTopic("");
         setInstructions("");
       } else if (res.source === "budget") {
-        setError("AI writing is temporarily unavailable (monthly budget reached).");
+        setError(
+          "AI writing is temporarily unavailable (monthly budget reached).",
+        );
       } else {
         setError("Something went wrong generating the post.");
       }

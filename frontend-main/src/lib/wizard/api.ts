@@ -2,7 +2,12 @@
  * convention as src/lib/api/onboarding.ts. */
 
 import { ApiError } from "@/types/api";
-import type { CuratedLogoItem, WizardAnswers, WizardCatalog, WizardStateResponse } from "./types";
+import type {
+  CuratedLogoItem,
+  WizardAnswers,
+  WizardCatalog,
+  WizardStateResponse,
+} from "./types";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -39,14 +44,19 @@ export interface PatchWizardBody {
   finished_rest_for_me?: boolean;
 }
 
-export function patchWizardState(token: string, body: PatchWizardBody): Promise<WizardStateResponse> {
+export function patchWizardState(
+  token: string,
+  body: PatchWizardBody,
+): Promise<WizardStateResponse> {
   return request("/api/v1/onboarding/wizard/state/", {
     method: "PATCH",
     body: JSON.stringify({ token, ...body }),
   });
 }
 
-export function finalizeWizard(token: string): Promise<{ slug: string; status: string; template_status: string }> {
+export function finalizeWizard(
+  token: string,
+): Promise<{ slug: string; status: string; template_status: string }> {
   return request("/api/v1/onboarding/wizard/finalize/", {
     method: "POST",
     body: JSON.stringify({ token }),

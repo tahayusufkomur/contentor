@@ -69,7 +69,10 @@ export function redo<T>(history: EditHistory<T>): EditHistory<T> {
   if (history.future.length === 0) return history;
   const next = history.future[0]!;
   return {
-    past: [...history.past, { value: history.present, key: next.key, at: next.at }],
+    past: [
+      ...history.past,
+      { value: history.present, key: next.key, at: next.at },
+    ],
     present: next.value,
     future: history.future.slice(1),
   };

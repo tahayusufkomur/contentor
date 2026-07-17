@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { checkBrandName, createPlatformAuthenticated } from "@/lib/api/onboarding";
+import {
+  checkBrandName,
+  createPlatformAuthenticated,
+} from "@/lib/api/onboarding";
 import { SlideHeader } from "./verify/wizard/steps";
 import { WizardShell } from "./verify/wizard/WizardShell";
 import { ApiError } from "@/types/api";
@@ -28,7 +31,11 @@ export function SignupForm({ authenticatedName }: SignupFormProps) {
 
 /** Already-logged-in coach creating an additional platform — unchanged from
  * before this feature: single brand-name field, no email verification. */
-function AuthenticatedSignupForm({ authenticatedName }: { authenticatedName: string }) {
+function AuthenticatedSignupForm({
+  authenticatedName,
+}: {
+  authenticatedName: string;
+}) {
   const t = useTranslations("auth.signup");
   const router = useRouter();
   const [brandName, setBrandName] = useState("");
@@ -53,10 +60,17 @@ function AuthenticatedSignupForm({ authenticatedName }: { authenticatedName: str
   }
 
   return (
-    <AuthShell eyebrow={t("authTitle")} title={t("authTitle")} subtitle={t("authSubtitle", { name: authenticatedName })}>
+    <AuthShell
+      eyebrow={t("authTitle")}
+      title={t("authTitle")}
+      subtitle={t("authSubtitle", { name: authenticatedName })}
+    >
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="brandName" className="text-[13px] font-medium text-foreground/80">
+          <Label
+            htmlFor="brandName"
+            className="text-[13px] font-medium text-foreground/80"
+          >
             {t("brandNameLabel")}
           </Label>
           <Input
@@ -72,7 +86,13 @@ function AuthenticatedSignupForm({ authenticatedName }: { authenticatedName: str
             <p className="text-[13px] text-destructive">{error}</p>
           </div>
         )}
-        <Button type="submit" variant="brand" size="lg" className="w-full" loading={loading}>
+        <Button
+          type="submit"
+          variant="brand"
+          size="lg"
+          className="w-full"
+          loading={loading}
+        >
           {loading ? t("authSubmitting") : t("authSubmit")}
         </Button>
       </form>
@@ -141,7 +161,11 @@ function AnonymousSignupFlow() {
 
   if (step === "email-sent") {
     return (
-      <AuthShell eyebrow={t("verifyTitle")} title={t("verifyTitle")} subtitle={t("verifyDescription", { email })}>
+      <AuthShell
+        eyebrow={t("verifyTitle")}
+        title={t("verifyTitle")}
+        subtitle={t("verifyDescription", { email })}
+      >
         <div className="text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong">
             <Mail className="h-6 w-6 text-primary" />
@@ -157,7 +181,10 @@ function AnonymousSignupFlow() {
   const signInLink = (
     <p className="text-center text-[13px] text-muted-foreground">
       {t("alreadyHaveAccount")}{" "}
-      <Link href="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
+      <Link
+        href="/login"
+        className="font-medium text-foreground underline-offset-4 hover:underline"
+      >
         {t("signIn")}
       </Link>
     </p>
@@ -193,9 +220,15 @@ function AnonymousSignupFlow() {
         }
       >
         <div>
-          <SlideHeader heading={t("brandStepHeading")} subhead={t("brandStepSubhead")} />
+          <SlideHeader
+            heading={t("brandStepHeading")}
+            subhead={t("brandStepSubhead")}
+          />
           <div className="mx-auto mt-5 max-w-[380px] space-y-2">
-            <Label htmlFor="brandName" className="text-[13px] font-medium text-foreground/80">
+            <Label
+              htmlFor="brandName"
+              className="text-[13px] font-medium text-foreground/80"
+            >
               {t("brandNameLabel")}
             </Label>
             <Input
@@ -229,7 +262,14 @@ function AnonymousSignupFlow() {
       error={error}
       footer={
         <>
-          <Button type="submit" form="contact-form" variant="brand" size="lg" className="w-full max-w-[340px]" loading={loading}>
+          <Button
+            type="submit"
+            form="contact-form"
+            variant="brand"
+            size="lg"
+            className="w-full max-w-[340px]"
+            loading={loading}
+          >
             {loading ? t("submitting") : t("submit")}
           </Button>
           {signInLink}
@@ -237,10 +277,20 @@ function AnonymousSignupFlow() {
       }
     >
       <div>
-        <SlideHeader heading={t("contactStepHeading")} subhead={t("contactStepSubhead")} />
-        <form id="contact-form" onSubmit={handleContactSubmit} className="mx-auto mt-5 max-w-[380px] space-y-5">
+        <SlideHeader
+          heading={t("contactStepHeading")}
+          subhead={t("contactStepSubhead")}
+        />
+        <form
+          id="contact-form"
+          onSubmit={handleContactSubmit}
+          className="mx-auto mt-5 max-w-[380px] space-y-5"
+        >
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-[13px] font-medium text-foreground/80">
+            <Label
+              htmlFor="name"
+              className="text-[13px] font-medium text-foreground/80"
+            >
               {t("nameLabel")}
             </Label>
             <Input
@@ -253,7 +303,10 @@ function AnonymousSignupFlow() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-[13px] font-medium text-foreground/80">
+            <Label
+              htmlFor="email"
+              className="text-[13px] font-medium text-foreground/80"
+            >
               {t("emailLabel")}
             </Label>
             <Input

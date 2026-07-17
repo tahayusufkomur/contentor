@@ -1,30 +1,42 @@
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { ArrowUpRight, Clock, Globe2, Plus, Sparkles } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { PlatformHeader } from '@/components/shared/platform-header'
-import { PlatformFooter } from '@/components/shared/platform-footer'
-import { Monogram } from '@/components/shared/logo-mark'
-import { getAuthUser } from '@/lib/auth'
-import { getMyTenants, type MyTenant } from '@/lib/tenants'
-import { PublishControls } from '@/components/dashboard/publish-controls'
-import { PlatformCardDomainCta } from '@/components/dashboard/platform-card-domain-cta'
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { ArrowUpRight, Clock, Globe2, Plus, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PlatformHeader } from "@/components/shared/platform-header";
+import { PlatformFooter } from "@/components/shared/platform-footer";
+import { Monogram } from "@/components/shared/logo-mark";
+import { getAuthUser } from "@/lib/auth";
+import { getMyTenants, type MyTenant } from "@/lib/tenants";
+import { PublishControls } from "@/components/dashboard/publish-controls";
+import { PlatformCardDomainCta } from "@/components/dashboard/platform-card-domain-cta";
 
-const STATUS_COPY: Record<MyTenant['provisioning_status'], { label: string; tone: string }> = {
-  ready: { label: 'Live', tone: 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300' },
-  provisioning: { label: 'Setting up', tone: 'bg-primary/12 text-primary' },
-  pending: { label: 'Pending', tone: 'bg-foreground/[0.06] text-muted-foreground' },
-  failed: { label: 'Setup failed', tone: 'bg-destructive/12 text-destructive' },
-}
+const STATUS_COPY: Record<
+  MyTenant["provisioning_status"],
+  { label: string; tone: string }
+> = {
+  ready: {
+    label: "Live",
+    tone: "bg-emerald-500/12 text-emerald-600 dark:text-emerald-300",
+  },
+  provisioning: { label: "Setting up", tone: "bg-primary/12 text-primary" },
+  pending: {
+    label: "Pending",
+    tone: "bg-foreground/[0.06] text-muted-foreground",
+  },
+  failed: { label: "Setup failed", tone: "bg-destructive/12 text-destructive" },
+};
 
 function PlatformCard({ tenant }: { tenant: MyTenant }) {
-  const status = STATUS_COPY[tenant.provisioning_status]
-  const isReady = tenant.provisioning_status === 'ready' && tenant.is_active
+  const status = STATUS_COPY[tenant.provisioning_status];
+  const isReady = tenant.provisioning_status === "ready" && tenant.is_active;
 
   return (
     <div className="glass-pane group relative flex flex-col p-7 transition-transform duration-300 hover:-translate-y-1">
       <div className="flex items-start justify-between gap-3">
-        <Monogram size={48} label={(tenant.name || tenant.slug || 'C').charAt(0).toUpperCase()} />
+        <Monogram
+          size={48}
+          label={(tenant.name || tenant.slug || "C").charAt(0).toUpperCase()}
+        />
         <span
           className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${status.tone}`}
         >
@@ -42,17 +54,17 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
 
       <div className="mt-5 flex items-center gap-4 text-[12.5px] text-muted-foreground/90">
         <span>
-          Plan{' '}
+          Plan{" "}
           <span className="font-medium text-foreground/85">
-            {tenant.plan_name ?? 'Free'}
+            {tenant.plan_name ?? "Free"}
           </span>
         </span>
         <span className="inline-flex items-center gap-1">
           <Clock className="h-3 w-3" />
           {new Date(tenant.created_at).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+            year: "numeric",
+            month: "short",
+            day: "numeric",
           })}
         </span>
       </div>
@@ -84,7 +96,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
         />
       )}
     </div>
-  )
+  );
 }
 
 function EmptyState() {
@@ -93,7 +105,9 @@ function EmptyState() {
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl glass-strong">
         <Sparkles className="h-7 w-7 text-primary" />
       </div>
-      <h2 className="text-headline mt-6 text-2xl">Launch your first platform</h2>
+      <h2 className="text-headline mt-6 text-2xl">
+        Launch your first platform
+      </h2>
       <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-muted-foreground">
         Create a beautifully designed studio for your courses, live classes, and
         email campaigns — all under your own brand.
@@ -105,16 +119,16 @@ function EmptyState() {
         </Link>
       </Button>
     </div>
-  )
+  );
 }
 
 export default async function DashboardPage() {
-  const user = await getAuthUser()
-  if (!user) redirect('/login')
+  const user = await getAuthUser();
+  if (!user) redirect("/login");
   // Superadmins live in /admin — keep this surface coach-only.
-  if (user.is_superuser) redirect('/admin')
+  if (user.is_superuser) redirect("/admin");
 
-  const tenants = await getMyTenants()
+  const tenants = await getMyTenants();
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
@@ -130,10 +144,10 @@ export default async function DashboardPage() {
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
               <p className="text-eyebrow text-muted-foreground/80">
-                {user.name ? `Hi, ${user.name.split(' ')[0]}` : 'Your studio'}
+                {user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your studio"}
               </p>
               <h1 className="text-display mt-3 text-5xl leading-[1.05] md:text-6xl">
-                <span className="text-foreground/95">Your</span>{' '}
+                <span className="text-foreground/95">Your</span>{" "}
                 <span className="brand-gradient">platforms</span>
               </h1>
               <p className="mt-4 max-w-xl text-[15.5px] leading-relaxed text-muted-foreground">
@@ -170,5 +184,5 @@ export default async function DashboardPage() {
 
       <PlatformFooter />
     </div>
-  )
+  );
 }

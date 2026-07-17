@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { Globe2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import { Globe2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function PlatformCardDomainCta({ slug }: { slug: string }) {
   return (
@@ -9,5 +9,5 @@ export function PlatformCardDomainCta({ slug }: { slug: string }) {
         <Globe2 className="h-3.5 w-3.5" /> Custom domain
       </Link>
     </Button>
-  )
+  );
 }

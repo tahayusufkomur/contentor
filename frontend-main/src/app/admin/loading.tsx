@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboardLoading() {
   return (
@@ -35,5 +35,5 @@ export default function AdminDashboardLoading() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

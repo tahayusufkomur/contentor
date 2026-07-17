@@ -3,7 +3,13 @@
 
 import type { WizardAnswers, WizardCatalog } from "./types";
 
-export const CHAPTERS = ["business", "look", "pages", "logo", "launch"] as const;
+export const CHAPTERS = [
+  "business",
+  "look",
+  "pages",
+  "logo",
+  "launch",
+] as const;
 export type ChapterId = (typeof CHAPTERS)[number];
 
 export interface StepDef {
@@ -11,13 +17,24 @@ export interface StepDef {
   chapter: ChapterId;
 }
 
-const PAGE_ORDER = ["home", "about", "courses", "pricing", "faq", "contact"] as const;
+const PAGE_ORDER = [
+  "home",
+  "about",
+  "courses",
+  "pricing",
+  "faq",
+  "contact",
+] as const;
 
 const SELLING_GOALS = ["sell_courses", "sell_downloads"];
 
-export function buildSteps(catalog: WizardCatalog, answers: WizardAnswers): StepDef[] {
+export function buildSteps(
+  catalog: WizardCatalog,
+  answers: WizardAnswers,
+): StepDef[] {
   const goals = answers.goals ?? [];
-  const selling = goals.length === 0 || goals.some((g) => SELLING_GOALS.includes(g));
+  const selling =
+    goals.length === 0 || goals.some((g) => SELLING_GOALS.includes(g));
   const steps: StepDef[] = [
     { id: "business.niche", chapter: "business" },
     { id: "business.describe", chapter: "business" },
@@ -58,7 +75,9 @@ export function prevStep(steps: StepDef[], id: string): StepDef | null {
 
 /** Endowed progress: verify already "earned" 15%. */
 export function progressPct(steps: StepDef[], id: string): number {
-  return Math.round(15 + (85 * stepIndex(steps, id)) / Math.max(steps.length - 1, 1));
+  return Math.round(
+    15 + (85 * stepIndex(steps, id)) / Math.max(steps.length - 1, 1),
+  );
 }
 
 function answered(step: StepDef, answers: WizardAnswers): boolean {
@@ -92,13 +111,19 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
   }
 }
 
-export function firstUnansweredStep(steps: StepDef[], answers: WizardAnswers): StepDef {
+export function firstUnansweredStep(
+  steps: StepDef[],
+  answers: WizardAnswers,
+): StepDef {
   return steps.find((s) => !answered(s, answers)) ?? steps[steps.length - 1];
 }
 
 /** "Finish the rest for me": recommended values for every unanswered design
  * key (niche-aware theme/font), leaving explicit answers untouched. */
-export function finishRestAnswers(catalog: WizardCatalog, answers: WizardAnswers): WizardAnswers {
+export function finishRestAnswers(
+  catalog: WizardCatalog,
+  answers: WizardAnswers,
+): WizardAnswers {
   const rec = catalog.recommended;
   const niche = answers.niche ?? rec.niche ?? "general";
   const ranked = catalog.theme_ranking[niche] ?? catalog.themes;

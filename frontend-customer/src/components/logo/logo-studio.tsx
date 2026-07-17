@@ -131,7 +131,9 @@ export function LogoStudio({
     if (!open) return;
     setLoadingLibrary(true);
     fetchCuratedCatalog()
-      .then((all) => setLibrary(rankForBrief(all, { niche: config.niche ?? "" })))
+      .then((all) =>
+        setLibrary(rankForBrief(all, { niche: config.niche ?? "" })),
+      )
       .catch(() => setLibrary([]))
       .finally(() => setLoadingLibrary(false));
   }, [open, config.niche]);
@@ -454,7 +456,9 @@ export function LogoStudio({
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Couldn't use that logo — try again.",
+        err instanceof Error
+          ? err.message
+          : "Couldn't use that logo — try again.",
       );
     }
   }

@@ -1,12 +1,12 @@
-import Link from 'next/link'
-import { Wordmark } from '@/components/shared/logo-mark'
+import Link from "next/link";
+import { Wordmark } from "@/components/shared/logo-mark";
 
 interface AuthShellProps {
-  eyebrow?: string
-  title: string
-  subtitle?: string
-  children: React.ReactNode
-  footer?: React.ReactNode
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
 /**
@@ -14,7 +14,13 @@ interface AuthShellProps {
  * left → brand panel with aurora & quote; right → floating glass form.
  * On mobile, collapses to a single centered glass panel over aurora.
  */
-export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthShellProps) {
+export function AuthShell({
+  eyebrow,
+  title,
+  subtitle,
+  children,
+  footer,
+}: AuthShellProps) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
       {/* Aurora backdrop */}
@@ -35,15 +41,17 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthSh
               aria-hidden
               className="absolute -inset-x-16 -top-24 -z-10 h-72 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] via-[oklch(0.55_0.24_270)] to-[oklch(0.7_0.2_210)] opacity-30 blur-3xl"
             />
-            <p className="text-eyebrow text-muted-foreground/80">For creators</p>
+            <p className="text-eyebrow text-muted-foreground/80">
+              For creators
+            </p>
             <h2 className="text-display mt-4 text-5xl leading-[1.05]">
               <span className="text-foreground/95">Your studio.</span>
               <br />
               <span className="brand-gradient">Your brand.</span>
             </h2>
             <p className="mt-5 text-[15.5px] leading-relaxed text-muted-foreground">
-              Launch a beautifully designed platform for courses, live classes, and
-              email — all under your name. No code. No clutter.
+              Launch a beautifully designed platform for courses, live classes,
+              and email — all under your name. No code. No clutter.
             </p>
           </div>
 
@@ -63,7 +71,9 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthSh
             <div className="glass-pane p-8 md:p-9">
               <div className="text-center">
                 {eyebrow && (
-                  <p className="text-eyebrow text-muted-foreground/80">{eyebrow}</p>
+                  <p className="text-eyebrow text-muted-foreground/80">
+                    {eyebrow}
+                  </p>
                 )}
                 <h1 className="text-display mt-2 text-[28px] leading-[1.1] md:text-[32px]">
                   {title}
@@ -83,5 +93,5 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthSh
         </main>
       </div>
     </div>
-  )
+  );
 }

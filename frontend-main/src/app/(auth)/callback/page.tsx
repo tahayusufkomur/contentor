@@ -1,57 +1,57 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { AlertCircle, Loader2 } from 'lucide-react'
-import { AuthShell } from '@/components/auth/auth-shell'
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function CallbackPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [error, setError] = useState('')
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = searchParams.get('token')
-    const source = searchParams.get('source')
+    const token = searchParams.get("token");
+    const source = searchParams.get("source");
     if (!token) {
-      setError('No token provided')
-      return
+      setError("No token provided");
+      return;
     }
 
-    if (source === 'google') {
-      fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    if (source === "google") {
+      fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
-        credentials: 'same-origin',
+        credentials: "same-origin",
       })
         .then(async (res) => {
           if (!res.ok) {
-            setError('Authentication failed')
-            return
+            setError("Authentication failed");
+            return;
           }
-          router.push('/')
+          router.push("/");
         })
-        .catch(() => setError('Network error'))
-      return
+        .catch(() => setError("Network error"));
+      return;
     }
 
-    fetch('/api/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/auth/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
-      credentials: 'same-origin',
+      credentials: "same-origin",
     })
       .then(async (res) => {
         if (!res.ok) {
-          const data = await res.json()
-          setError(data.detail || 'Verification failed')
-          return
+          const data = await res.json();
+          setError(data.detail || "Verification failed");
+          return;
         }
-        router.push('/')
+        router.push("/");
       })
-      .catch(() => setError('Network error'))
-  }, [searchParams, router])
+      .catch(() => setError("Network error"));
+  }, [searchParams, router]);
 
   if (error) {
     return (
@@ -60,7 +60,7 @@ export default function CallbackPage() {
           <AlertCircle className="h-6 w-6" />
         </div>
       </AuthShell>
-    )
+    );
   }
 
   return (
@@ -73,5 +73,5 @@ export default function CallbackPage() {
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     </AuthShell>
-  )
+  );
 }

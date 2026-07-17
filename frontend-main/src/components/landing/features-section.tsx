@@ -131,22 +131,25 @@ const POINT_KEYS: Record<(typeof FEATURE_KEYS)[number], readonly string[]> = {
 
 export function FeaturesSection() {
   const t = useTranslations("marketing.features");
-  const illustrations: Record<(typeof FEATURE_KEYS)[number], React.ReactNode> = {
-    courses: (
-      <CourseIllustration
-        progressLabel={t("illustrations.progress")}
-        lessons={(count) => t("illustrations.lessonsCount", { count })}
-      />
-    ),
-    live: (
-      <LiveClassIllustration
-        live={t("illustrations.live")}
-        watching={(count) => t("illustrations.watchingCount", { count })}
-      />
-    ),
-    branding: <BrandingIllustration />,
-    autopilot: <AutomationIllustration step3={t("illustrations.automationStep3")} />,
-  };
+  const illustrations: Record<(typeof FEATURE_KEYS)[number], React.ReactNode> =
+    {
+      courses: (
+        <CourseIllustration
+          progressLabel={t("illustrations.progress")}
+          lessons={(count) => t("illustrations.lessonsCount", { count })}
+        />
+      ),
+      live: (
+        <LiveClassIllustration
+          live={t("illustrations.live")}
+          watching={(count) => t("illustrations.watchingCount", { count })}
+        />
+      ),
+      branding: <BrandingIllustration />,
+      autopilot: (
+        <AutomationIllustration step3={t("illustrations.automationStep3")} />
+      ),
+    };
 
   return (
     <section id="features" className="relative px-6 py-32 md:py-40">

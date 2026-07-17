@@ -32,7 +32,10 @@ export default async function PlatformBlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [user, post] = await Promise.all([getAuthUser(), fetchPlatformPost(slug)]);
+  const [user, post] = await Promise.all([
+    getAuthUser(),
+    fetchPlatformPost(slug),
+  ]);
   if (!post) notFound();
 
   const jsonLd = {

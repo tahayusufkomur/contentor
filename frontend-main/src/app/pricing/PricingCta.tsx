@@ -1,22 +1,22 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
-import { Button, type ButtonProps } from '@/components/ui/button'
-import { startCheckout } from '@/lib/api/billing-platform'
-import { ApiError } from '@/types/api'
+import { Button, type ButtonProps } from "@/components/ui/button";
+import { startCheckout } from "@/lib/api/billing-platform";
+import { ApiError } from "@/types/api";
 
 interface PricingCtaProps {
-  planId: number | null
+  planId: number | null;
   /** Free plans don't checkout — they route to /signup instead. */
-  isFreePlan: boolean
+  isFreePlan: boolean;
   /** True when the marketing user is logged in. Unauthenticated users get routed to /signup. */
-  isAuthenticated: boolean
-  variant?: ButtonProps['variant']
-  size?: ButtonProps['size']
-  className?: string
+  isAuthenticated: boolean;
+  variant?: ButtonProps["variant"];
+  size?: ButtonProps["size"];
+  className?: string;
 }
 
 /**
@@ -30,32 +30,35 @@ export function PricingCta({
   planId,
   isFreePlan,
   isAuthenticated,
-  variant = 'default',
+  variant = "default",
   size,
   className,
 }: PricingCtaProps) {
-  const t = useTranslations('pricing')
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const t = useTranslations("pricing");
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleClick() {
-    setError(null)
+    setError(null);
     if (!isAuthenticated || isFreePlan || planId == null) {
-      router.push('/signup')
-      return
+      router.push("/signup");
+      return;
     }
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await startCheckout(planId)
-      window.location.assign(res.checkout_url)
+      const res = await startCheckout(planId);
+      window.location.assign(res.checkout_url);
     } catch (err) {
-      if (err instanceof ApiError && (err.data?.error as string | undefined) === 'PRICE_NOT_AVAILABLE') {
-        setError(t('errors.priceNotAvailable'))
+      if (
+        err instanceof ApiError &&
+        (err.data?.error as string | undefined) === "PRICE_NOT_AVAILABLE"
+      ) {
+        setError(t("errors.priceNotAvailable"));
       } else {
-        setError(t('errors.generic'))
+        setError(t("errors.generic"));
       }
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -69,9 +72,11 @@ export function PricingCta({
         size={size}
         className={className}
       >
-        {loading ? t('ctaProcessing') : t('cta')}
+        {loading ? t("ctaProcessing") : t("cta")}
       </Button>
-      {error != null && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      {error != null && (
+        <p className="mt-2 text-sm text-destructive">{error}</p>
+      )}
     </>
-  )
+  );
 }

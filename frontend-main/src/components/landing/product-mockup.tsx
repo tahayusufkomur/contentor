@@ -36,22 +36,29 @@ export function ProductMockup() {
         <div className="grid grid-cols-1 gap-0 md:grid-cols-[220px_1fr]">
           {/* Sidebar */}
           <aside className="hidden flex-col gap-1 border-r bg-sidebar p-5 md:flex">
-            <div className="text-eyebrow mb-2 text-muted-foreground">Studio</div>
-            {["Dashboard", "Courses", "Students", "Live", "Email", "Settings"].map(
-              (label, i) => (
-                <div
-                  key={label}
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
-                    i === 0
-                      ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  <span className="size-1.5 rounded-full bg-muted-foreground/50" />
-                  {label}
-                </div>
-              ),
-            )}
+            <div className="text-eyebrow mb-2 text-muted-foreground">
+              Studio
+            </div>
+            {[
+              "Dashboard",
+              "Courses",
+              "Students",
+              "Live",
+              "Email",
+              "Settings",
+            ].map((label, i) => (
+              <div
+                key={label}
+                className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
+                  i === 0
+                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <span className="size-1.5 rounded-full bg-muted-foreground/50" />
+                {label}
+              </div>
+            ))}
           </aside>
 
           {/* Main */}
@@ -99,7 +106,11 @@ export function ProductMockup() {
                       {course.lessons} lessons
                     </p>
                   </div>
-                  <Badge variant={course.status === "Published" ? "success" : "outline"}>
+                  <Badge
+                    variant={
+                      course.status === "Published" ? "success" : "outline"
+                    }
+                  >
                     {course.status}
                   </Badge>
                 </div>

@@ -10,15 +10,25 @@ import { OptionCard, OptionList, SlideHeader } from "./steps";
 
 /** Block-type sequence for a layout thumbnail, with home-page goal blocks
  * spliced in after courseGrid — mirrors backend compose ordering. */
-export function thumbnailBlocks(catalog: WizardCatalog, page: string, layoutBlocks: string[], goals: string[]): string[] {
+export function thumbnailBlocks(
+  catalog: WizardCatalog,
+  page: string,
+  layoutBlocks: string[],
+  goals: string[],
+): string[] {
   if (page !== "home") return layoutBlocks;
   const extra: string[] = [];
   for (const gb of catalog.home_goal_blocks) {
-    if (goals.includes(gb.goal) && !extra.includes(gb.type)) extra.push(gb.type);
+    if (goals.includes(gb.goal) && !extra.includes(gb.type))
+      extra.push(gb.type);
   }
   const idx = layoutBlocks.indexOf("courseGrid");
   if (idx === -1) return [...layoutBlocks, ...extra];
-  return [...layoutBlocks.slice(0, idx + 1), ...extra, ...layoutBlocks.slice(idx + 1)];
+  return [
+    ...layoutBlocks.slice(0, idx + 1),
+    ...extra,
+    ...layoutBlocks.slice(idx + 1),
+  ];
 }
 
 /** Real screenshot (tools/wizard-mockups/capture.mjs) when one has been
@@ -29,7 +39,9 @@ export function thumbnailBlocks(catalog: WizardCatalog, page: string, layoutBloc
  * blocks that distinguish the two options. alt is empty because the card's
  * visible title already names the layout. */
 function LayoutThumbnail({
-  layoutId, blocks, theme,
+  layoutId,
+  blocks,
+  theme,
 }: {
   layoutId: string;
   blocks: string[];
@@ -56,7 +68,12 @@ function LayoutThumbnail({
 }
 
 export function PageLayoutStep({
-  catalog, page, value, onChange, theme, goals,
+  catalog,
+  page,
+  value,
+  onChange,
+  theme,
+  goals,
 }: {
   catalog: WizardCatalog;
   page: string;
@@ -69,7 +86,10 @@ export function PageLayoutStep({
   const options = catalog.page_layouts[page] ?? [];
   return (
     <div>
-      <SlideHeader heading={t(`pages.titles.${page}`)} subhead={t("pages.subhead")} />
+      <SlideHeader
+        heading={t(`pages.titles.${page}`)}
+        subhead={t("pages.subhead")}
+      />
       <OptionList className="mx-auto mt-6 grid w-full grid-cols-2 gap-4 md:grid-cols-3">
         {options.map((option, i) => (
           <OptionCard

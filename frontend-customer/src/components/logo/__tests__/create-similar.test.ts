@@ -104,9 +104,7 @@ describe("generateSimilar", () => {
     turnMock
       .mockResolvedValueOnce(turnResponse({ phase: "draft", token: "t1" }))
       .mockResolvedValueOnce(turnResponse({ turns_remaining: 6 }));
-    finishMock.mockResolvedValueOnce(
-      turnResponse({ designs: [finalDesign] }),
-    );
+    finishMock.mockResolvedValueOnce(turnResponse({ designs: [finalDesign] }));
     const result = await generateSimilar(LOGO, BRIEF, "Zeynep Yoga");
     expect(renderDraftPngs).toHaveBeenCalledTimes(1);
     expect(finishMock).toHaveBeenCalledWith("t1", ["data:image/png;base64,x"]);

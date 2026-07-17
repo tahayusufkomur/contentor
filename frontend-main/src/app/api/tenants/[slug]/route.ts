@@ -1,24 +1,31 @@
-import { cookies } from 'next/headers'
-import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-import { BASE_DOMAIN, COOKIE_NAME, DJANGO_API_URL } from '@/lib/constants'
+import { BASE_DOMAIN, COOKIE_NAME, DJANGO_API_URL } from "@/lib/constants";
 
-export async function PATCH(req: NextRequest, { params }: { params: { slug: string } }) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(COOKIE_NAME)?.value
-  if (!token) return NextResponse.json({ detail: 'unauthorized' }, { status: 401 })
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+  if (!token)
+    return NextResponse.json({ detail: "unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}))
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/me/tenants/${params.slug}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'X-Tenant-Domain': BASE_DOMAIN,
+  const body = await req.json().catch(() => ({}));
+  const res = await fetch(
+    `${DJANGO_API_URL}/api/v1/me/tenants/${params.slug}/`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Tenant-Domain": BASE_DOMAIN,
+      },
+      body: JSON.stringify(body),
     },
-    body: JSON.stringify(body),
-  })
+  );
 
-  const data = await res.json().catch(() => ({}))
-  return NextResponse.json(data, { status: res.status })
+  const data = await res.json().catch(() => ({}));
+  return NextResponse.json(data, { status: res.status });
 }

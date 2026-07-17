@@ -25,7 +25,11 @@ import {
 } from "@/lib/logo/composer";
 import { svgToPngBlob, type FontSpec } from "@/lib/logo/export";
 import type { LogoRecipe } from "@/types/logo";
-import { LogoRenderer, MarkRenderer, logoViewBox } from "@/components/logo/logo-renderer";
+import {
+  LogoRenderer,
+  MarkRenderer,
+  logoViewBox,
+} from "@/components/logo/logo-renderer";
 
 type ChatStage = "icon" | "name" | "tagline";
 

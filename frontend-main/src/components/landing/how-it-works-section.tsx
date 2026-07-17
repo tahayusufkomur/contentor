@@ -27,7 +27,12 @@ export function HowItWorksSection() {
           />
 
           {STEP_KEYS.map((key, i) => (
-            <ScrollReveal key={key} direction="up" duration={0.7} delay={i * 0.12}>
+            <ScrollReveal
+              key={key}
+              direction="up"
+              duration={0.7}
+              delay={i * 0.12}
+            >
               <div className="relative text-center">
                 <div className="relative mx-auto inline-flex size-14 items-center justify-center rounded-full border bg-card shadow-sm">
                   <span className="text-display text-lg tabular-nums text-marketing-accent">

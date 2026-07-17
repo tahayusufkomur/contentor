@@ -1,7 +1,7 @@
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
 interface WordmarkProps {
-  className?: string
+  className?: string;
 }
 
 /**
@@ -12,32 +12,32 @@ export function Wordmark({ className }: WordmarkProps) {
   return (
     <span
       className={cn(
-        'font-semibold tracking-tight text-foreground select-none',
+        "font-semibold tracking-tight text-foreground select-none",
         className,
       )}
     >
       Content<span className="text-marketing-accent">or</span>
     </span>
-  )
+  );
 }
 
 interface MonogramProps {
   /** Width/height of the square tile in px. */
-  size?: number
+  size?: number;
   /** Letter(s) shown inside the tile. Defaults to the brand initial. */
-  label?: string
-  className?: string
+  label?: string;
+  className?: string;
 }
 
 /**
  * Monogram tile — an app-icon-style square built from a letter. Drops into the
  * square/icon slots the old SVG mark used to fill, scaling with `size`.
  */
-export function Monogram({ size = 32, label = 'C', className }: MonogramProps) {
+export function Monogram({ size = 32, label = "C", className }: MonogramProps) {
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-[28%] bg-primary font-semibold leading-none text-primary-foreground select-none',
+        "inline-flex shrink-0 items-center justify-center rounded-[28%] bg-primary font-semibold leading-none text-primary-foreground select-none",
         className,
       )}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.5) }}
@@ -45,8 +45,8 @@ export function Monogram({ size = 32, label = 'C', className }: MonogramProps) {
     >
       {label}
     </span>
-  )
+  );
 }
 
 /** Back-compat alias — existing call sites import `LogoMark`. */
-export const LogoMark = Monogram
+export const LogoMark = Monogram;

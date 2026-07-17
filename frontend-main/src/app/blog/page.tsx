@@ -14,7 +14,10 @@ export const metadata = {
 };
 
 export default async function PlatformBlogIndexPage() {
-  const [user, posts] = await Promise.all([getAuthUser(), fetchPlatformPosts()]);
+  const [user, posts] = await Promise.all([
+    getAuthUser(),
+    fetchPlatformPosts(),
+  ]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">

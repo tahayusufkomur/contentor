@@ -43,11 +43,32 @@ describe("library-catalog", () => {
 
   it("ranks by combined niche + style-chip tag overlap, stable within ties", () => {
     const logos = [
-      { title: "Yoga", filename: "y.png", prompt: "", tags: ["yoga", "minimal"], imageUrl: "y" },
-      { title: "Chef", filename: "c.png", prompt: "", tags: ["cooking"], imageUrl: "c" },
-      { title: "Zen", filename: "z.png", prompt: "", tags: ["yoga"], imageUrl: "z" },
+      {
+        title: "Yoga",
+        filename: "y.png",
+        prompt: "",
+        tags: ["yoga", "minimal"],
+        imageUrl: "y",
+      },
+      {
+        title: "Chef",
+        filename: "c.png",
+        prompt: "",
+        tags: ["cooking"],
+        imageUrl: "c",
+      },
+      {
+        title: "Zen",
+        filename: "z.png",
+        prompt: "",
+        tags: ["yoga"],
+        imageUrl: "z",
+      },
     ];
-    const ranked = rankForBrief(logos, { niche: "yoga studio", styleChips: ["Minimal"] });
+    const ranked = rankForBrief(logos, {
+      niche: "yoga studio",
+      styleChips: ["Minimal"],
+    });
     // Yoga matches yoga + minimal (2); Zen matches yoga (1); Chef (0). Ties keep input order.
     expect(ranked.map((l) => l.title)).toEqual(["Yoga", "Zen", "Chef"]);
   });
@@ -62,10 +83,27 @@ describe("library-catalog", () => {
 
   it("parses mark_paths into markPaths when present, undefined otherwise", async () => {
     const raw = [
-      { title: "V", filename: "v.png", prompt: "", tags: "yoga", image_url: "v", mark_paths: [{ d: "M0 0 Z", fill: "mark" }] },
-      { title: "R", filename: "r.png", prompt: "", tags: "yoga", image_url: "r", mark_paths: null },
+      {
+        title: "V",
+        filename: "v.png",
+        prompt: "",
+        tags: "yoga",
+        image_url: "v",
+        mark_paths: [{ d: "M0 0 Z", fill: "mark" }],
+      },
+      {
+        title: "R",
+        filename: "r.png",
+        prompt: "",
+        tags: "yoga",
+        image_url: "r",
+        mark_paths: null,
+      },
     ];
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => raw }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, json: async () => raw }),
+    );
     const logos = await fetchCuratedCatalog();
     expect(logos[0].markPaths).toEqual([{ d: "M0 0 Z", fill: "mark" }]);
     expect(logos[1].markPaths).toBeUndefined();

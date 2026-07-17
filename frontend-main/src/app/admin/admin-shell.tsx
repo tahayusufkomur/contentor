@@ -47,7 +47,12 @@ const COMMUNICATION: NavItem[] = [
     icon: MessagesSquare,
     group: "Communication",
   },
-  { label: "Blog", href: "/admin/blog", icon: Newspaper, group: "Communication" },
+  {
+    label: "Blog",
+    href: "/admin/blog",
+    icon: Newspaper,
+    group: "Communication",
+  },
 ];
 const SYSTEM: NavItem[] = [
   {

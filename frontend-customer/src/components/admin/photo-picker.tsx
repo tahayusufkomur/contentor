@@ -5,7 +5,11 @@ import { Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import type { Photo } from "@/types/photo";
-import { MediaPickerBase, uploadToPresignedUrl, type PresignResponse } from "./media-picker-base";
+import {
+  MediaPickerBase,
+  uploadToPresignedUrl,
+  type PresignResponse,
+} from "./media-picker-base";
 
 interface PhotoPickerProps {
   value?: string | null;
@@ -66,7 +70,9 @@ export function PhotoPicker({
     });
 
     // Fetch the full photo object and auto-select it
-    const photo = await clientFetch<Photo>(`/api/v1/photos/${result.photo_id}/`);
+    const photo = await clientFetch<Photo>(
+      `/api/v1/photos/${result.photo_id}/`,
+    );
     onSelect(photo);
     setOpen(false);
   }

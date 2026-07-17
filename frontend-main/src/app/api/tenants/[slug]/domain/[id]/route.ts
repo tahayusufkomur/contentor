@@ -1,17 +1,27 @@
-import { cookies } from 'next/headers'
-import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
-import { BASE_DOMAIN, COOKIE_NAME, DJANGO_API_URL } from '@/lib/constants'
+import { BASE_DOMAIN, COOKIE_NAME, DJANGO_API_URL } from "@/lib/constants";
 
-export async function DELETE(_req: NextRequest, { params }: { params: { slug: string; id: string } }) {
-  const token = (await cookies()).get(COOKIE_NAME)?.value
-  if (!token) return NextResponse.json({ detail: 'unauthorized' }, { status: 401 })
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { slug: string; id: string } },
+) {
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  if (!token)
+    return NextResponse.json({ detail: "unauthorized" }, { status: 401 });
 
-  const res = await fetch(`${DJANGO_API_URL}/api/v1/me/tenants/${params.slug}/domain/${params.id}/`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}`, 'X-Tenant-Domain': BASE_DOMAIN },
-  })
-  if (res.status === 204) return new NextResponse(null, { status: 204 })
-  const data = await res.json().catch(() => ({}))
-  return NextResponse.json(data, { status: res.status })
+  const res = await fetch(
+    `${DJANGO_API_URL}/api/v1/me/tenants/${params.slug}/domain/${params.id}/`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-Tenant-Domain": BASE_DOMAIN,
+      },
+    },
+  );
+  if (res.status === 204) return new NextResponse(null, { status: 204 });
+  const data = await res.json().catch(() => ({}));
+  return NextResponse.json(data, { status: res.status });
 }

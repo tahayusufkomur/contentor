@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsLoading() {
   return (
@@ -14,7 +14,10 @@ export default function SettingsLoading() {
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div
+              key={i}
+              className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4"
+            >
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-8 w-48 rounded-md" />
             </div>
@@ -22,5 +25,5 @@ export default function SettingsLoading() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

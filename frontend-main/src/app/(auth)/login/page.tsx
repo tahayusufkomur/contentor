@@ -1,37 +1,37 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { Button } from '@/components/ui/button'
-import { MagicLinkForm } from '@/components/auth/magic-link-form'
-import { AuthShell } from '@/components/auth/auth-shell'
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { MagicLinkForm } from "@/components/auth/magic-link-form";
+import { AuthShell } from "@/components/auth/auth-shell";
 
 const GOOGLE_ERROR_KEYS: Record<string, string> = {
-  google_denied: 'googleDenied',
-  invalid_request: 'invalidRequest',
-  invalid_state: 'invalidState',
-  tenant_mismatch: 'tenantMismatch',
-  token_exchange_failed: 'tokenExchangeFailed',
-  userinfo_failed: 'userinfoFailed',
-  no_email: 'noEmail',
-}
+  google_denied: "googleDenied",
+  invalid_request: "invalidRequest",
+  invalid_state: "invalidState",
+  tenant_mismatch: "tenantMismatch",
+  token_exchange_failed: "tokenExchangeFailed",
+  userinfo_failed: "userinfoFailed",
+  no_email: "noEmail",
+};
 
 export default function LoginPage() {
-  const t = useTranslations('auth.login')
-  const searchParams = useSearchParams()
-  const googleError = searchParams.get('error')
-  const [googleLoading, setGoogleLoading] = useState(false)
+  const t = useTranslations("auth.login");
+  const searchParams = useSearchParams();
+  const googleError = searchParams.get("error");
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   return (
-    <AuthShell eyebrow="Sign in" title={t('title')} subtitle={t('subtitle')}>
+    <AuthShell eyebrow="Sign in" title={t("title")} subtitle={t("subtitle")}>
       <div className="space-y-4">
         {googleError && (
           <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-center">
             <p className="text-[13px] text-destructive">
               {GOOGLE_ERROR_KEYS[googleError]
                 ? t(`googleErrors.${GOOGLE_ERROR_KEYS[googleError]}` as never)
-                : t('googleErrors.generic')}
+                : t("googleErrors.generic")}
             </p>
           </div>
         )}
@@ -42,22 +42,22 @@ export default function LoginPage() {
           className="w-full"
           loading={googleLoading}
           onClick={async () => {
-            setGoogleLoading(true)
+            setGoogleLoading(true);
             try {
-              const res = await fetch('/api/v1/auth/google/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+              const res = await fetch("/api/v1/auth/google/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ origin: window.location.origin }),
-                credentials: 'same-origin',
-              })
+                credentials: "same-origin",
+              });
               if (res.ok) {
-                const data = await res.json()
-                window.location.href = data.url
+                const data = await res.json();
+                window.location.href = data.url;
               } else {
-                setGoogleLoading(false)
+                setGoogleLoading(false);
               }
             } catch {
-              setGoogleLoading(false)
+              setGoogleLoading(false);
             }
           }}
         >
@@ -79,7 +79,7 @@ export default function LoginPage() {
               fill="#EA4335"
             />
           </svg>
-          {t('googleCta')}
+          {t("googleCta")}
         </Button>
 
         <div className="relative py-1">
@@ -88,7 +88,7 @@ export default function LoginPage() {
           </div>
           <div className="relative flex justify-center">
             <span className="bg-card px-3 text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground">
-              {t('or')}
+              {t("or")}
             </span>
           </div>
         </div>
@@ -96,5 +96,5 @@ export default function LoginPage() {
         <MagicLinkForm />
       </div>
     </AuthShell>
-  )
+  );
 }

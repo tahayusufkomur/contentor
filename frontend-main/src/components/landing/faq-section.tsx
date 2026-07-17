@@ -25,7 +25,9 @@ export function FaqSection() {
             <h2 className="text-display mt-4 text-4xl text-foreground md:text-5xl">
               {t("title")}
             </h2>
-            <p className="mt-4 text-sm text-muted-foreground">{t("subtitle")}</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              {t("subtitle")}
+            </p>
           </div>
         </ScrollReveal>
 

@@ -1,7 +1,10 @@
 /** Swatch colors for wizard previews. primary values MIRROR
  * frontend-customer/src/lib/themes.ts primaryHex — keep in sync. */
 
-export const THEME_SWATCHES: Record<string, { primary: string; soft: string; ink: string }> = {
+export const THEME_SWATCHES: Record<
+  string,
+  { primary: string; soft: string; ink: string }
+> = {
   ocean: { primary: "#1a56db", soft: "#dbeafe", ink: "#0f2f6d" },
   ember: { primary: "#c2410c", soft: "#ffedd5", ink: "#7c2d12" },
   forest: { primary: "#15803d", soft: "#dcfce7", ink: "#14532d" },

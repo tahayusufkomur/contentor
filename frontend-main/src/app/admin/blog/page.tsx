@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 
 export default function PlatformBlogAdminPage() {
   const [posts, setPosts] = useState<PlatformBlogPostAdmin[] | null>(null);
-  const [lastGenerated, setLastGenerated] = useState<PlatformBlogPostAdmin | null>(null);
+  const [lastGenerated, setLastGenerated] =
+    useState<PlatformBlogPostAdmin | null>(null);
 
   useEffect(() => {
     listPlatformPosts()
@@ -58,7 +59,10 @@ export default function PlatformBlogAdminPage() {
         ) : (
           <div className="divide-y divide-border rounded-xl border border-border">
             {posts.map((post) => (
-              <div key={post.id} className="flex items-center gap-3 p-3 text-sm">
+              <div
+                key={post.id}
+                className="flex items-center gap-3 p-3 text-sm"
+              >
                 <span className="flex-1 font-medium">{post.title}</span>
                 <a
                   href={`https://contentor.app/blog/${post.slug}`}

@@ -6,7 +6,11 @@ import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Video, X } from "lucide-react";
 import { formatDuration } from "@/lib/format";
-import { MediaPickerBase, uploadToPresignedUrl, type PresignResponse } from "./media-picker-base";
+import {
+  MediaPickerBase,
+  uploadToPresignedUrl,
+  type PresignResponse,
+} from "./media-picker-base";
 
 interface VideoItem {
   id: number;

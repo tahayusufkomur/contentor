@@ -9,7 +9,10 @@ const config: Config = {
   // silently dropped otherwise (e.g. `max-h-32` on the gallery JSON modal's
   // image preview, which left the uploaded image unconstrained and pushed
   // the Save/Delete buttons off-screen).
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}", "../packages/shared/src/**/*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "../packages/shared/src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
     extend: {
       colors: {

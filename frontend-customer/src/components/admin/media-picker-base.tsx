@@ -47,7 +47,10 @@ export interface MediaPickerBaseProps<T> {
   contentClassName: string; // padding on the scrollable items container
   itemsContainerClassName: string; // layout of the items container (list vs grid)
   fetchItems: (search: string) => Promise<T[]>;
-  uploadFile: (file: File, onProgress: (percent: number) => void) => Promise<void>; // wrapper owns the full upload flow (incl. selection callback + close)
+  uploadFile: (
+    file: File,
+    onProgress: (percent: number) => void,
+  ) => Promise<void>; // wrapper owns the full upload flow (incl. selection callback + close)
   renderItem: (item: T) => ReactNode; // wrapper owns card markup + its onClick select (must set its own `key`)
 }
 

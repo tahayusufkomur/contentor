@@ -1,15 +1,19 @@
-import { Settings, Globe, ShieldCheck } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { EmptyState } from '@/components/shared/empty-state'
-import { BASE_DOMAIN } from '@/lib/constants'
+import { Settings, Globe, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BASE_DOMAIN } from "@/lib/constants";
 
 export default function SettingsPage() {
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Platform configuration and environment.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Settings
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Platform configuration and environment.
+        </p>
       </div>
 
       <Card>
@@ -22,8 +26,12 @@ export default function SettingsPage() {
         <CardContent>
           <dl className="space-y-4">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
-              <dt className="text-sm font-medium text-muted-foreground sm:w-48">CONTENTOR_DOMAIN</dt>
-              <dd className="rounded-md bg-muted px-3 py-1.5 font-mono text-sm text-foreground">{BASE_DOMAIN}</dd>
+              <dt className="text-sm font-medium text-muted-foreground sm:w-48">
+                CONTENTOR_DOMAIN
+              </dt>
+              <dd className="rounded-md bg-muted px-3 py-1.5 font-mono text-sm text-foreground">
+                {BASE_DOMAIN}
+              </dd>
             </div>
             <Separator />
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
@@ -32,7 +40,11 @@ export default function SettingsPage() {
                 Superusers
               </dt>
               <dd className="text-sm text-muted-foreground">
-                Configured via <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">SUPERUSER_EMAILS</code> environment variable
+                Configured via{" "}
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  SUPERUSER_EMAILS
+                </code>{" "}
+                environment variable
               </dd>
             </div>
           </dl>
@@ -49,5 +61,5 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -38,7 +38,10 @@ const BASE = "/api/v1/platform/blog";
 export const listPlatformPosts = () =>
   clientFetch<{ results: PlatformBlogPostAdmin[] }>(`${BASE}/posts/`);
 
-export const generatePlatformPost = (body: { topic: string; instructions?: string }) =>
+export const generatePlatformPost = (body: {
+  topic: string;
+  instructions?: string;
+}) =>
   clientFetch<GenerateResponse>(`${BASE}/generate/`, {
     method: "POST",
     body: JSON.stringify(body),
