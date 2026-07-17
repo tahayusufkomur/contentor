@@ -113,15 +113,18 @@ test-frontend: ## Run frontend-customer unit tests (vitest)
 	cd frontend-customer && npx vitest run
 
 typecheck: ## Typecheck both Next.js apps (tsc --noEmit; covers packages/shared via imports)
-	cd frontend-main && npm run typecheck
-	cd frontend-customer && npm run typecheck
+	# Runs inside the containers: packages/shared has no node_modules ancestor
+	# on the host, only under the /node_modules symlink each Dockerfile sets up.
+	docker compose exec nextjs-main npm run typecheck
+	docker compose exec nextjs-customer npm run typecheck
 
 typecheck-backend: ## Advisory mypy run (config in backend/pyproject.toml; not yet a gate)
 	-docker compose exec django mypy apps --config-file pyproject.toml
 
-lint: ## Run all linters via pre-commit
+lint: ## Run all linters via pre-commit, then i18n parity and TS typecheck
 	pre-commit run --all-files
 	@$(MAKE) check-i18n
+	@$(MAKE) typecheck
 
 check-i18n: ## Verify EN and TR catalogs have identical keys
 	node scripts/check-i18n-parity.mjs

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { chatReducer, initialChatState } from "@/lib/logo/chat-state";
+import type { ConverseDesign } from "@/lib/logo/composer";
 
-const design = {
+const design: ConverseDesign = {
   concept: "c",
   rationale: "r",
   paths: [],
@@ -13,7 +14,7 @@ const design = {
     ink: "#000000",
   },
   color_roles: { mark: "primary", mark2: "secondary", mark_accent: "accent" },
-} as never;
+};
 
 describe("chatReducer", () => {
   it("starts at the icon stage, idle", () => {
