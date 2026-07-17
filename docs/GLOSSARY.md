@@ -38,6 +38,29 @@ to use in conversation, code, and commits.
 - **Coach admin** — the `/admin/*` area **inside the coach app**, where a coach manages
   their courses, billing, students, design, and email. *Distinct from the superadmin panel
   — both apps have an `/admin`; never conflate them.*
+- **Notifications** (`apps.notifications`) — tenant-scoped web push + coach broadcast
+  announcements (one-off or recurring) to students, plus email opt-out tracking.
+- **Community** (`apps.community`) — tenant-scoped student social feed (posts, comments,
+  reactions) with report-driven auto-hide and a coach moderation queue.
+- **Blog** (`apps.blog`) — tenant-scoped coach blog on the public tenant site, with an AI
+  topic queue and an autopilot generation schedule.
+- **Mailbox** — dual-schema messaging (`apps.mailbox`): public rows = superadmin platform
+  inbox, tenant rows = coach↔student/lead mail, both sharing the same `Conversation`/
+  `Message` models.
+- **Domains** (`apps.domains`) — public-schema custom-domain registration, pricing, and
+  provisioning (registrar + Cloudflare + Resend) for a tenant's own domain.
+- **Platform email** (`apps.platform_email`) — public-schema mirror of the coach email-
+  campaign feature, used by the superadmin to email coaches via the platform's own
+  MailCraft org.
+- **Admin Kit** (`apps.adminkit`) — no models; the shared framework (`platform_site` /
+  `studio_site`) that turns other apps' registered `ModelAdmin`s into API endpoints for
+  the two admin SPAs.
+- **Tags** (`apps.tags`) — tenant-scoped, coach-defined free-text labels scoped per
+  content type; admin-only organization, never shown to students.
+- **Filters** (`apps.filters`) — tenant-scoped, coach-defined structured filter
+  groups/options meant to surface as student-facing browse facets.
+- **Usage** (`apps.usage`) — tenant-scoped PWA-vs-browser session tracking for students,
+  rolled up into an admin usage-adoption summary.
 
 ## Tenancy
 

@@ -228,7 +228,148 @@ from `scheduled_at` + `duration_minutes`):
   `default_locale`, `onboarding_completed`, `emailcraft_api_key`, plus per-tenant Zoom
   OAuth (`zoom_refresh_token` encrypted, `zoom_connected`, `zoom_connected_email`).
 
-### 4.6 Relationship sketch
+### 4.7 Notifications (`apps.notifications`)
+
+- Tenant-scoped. `PushSubscription` [T] — a browser's web-push keys per user.
+  `LiveReminderLog` [T] — dedupe key so a live event's reminder is sent once.
+  `Announcement` [T] — a coach broadcast (title/body/link, `status ∈ {scheduled, sent}`,
+  `recipient_count`/`push_sent_count`), optionally spawned by a `RecurringAnnouncement` [T]
+  rule (`frequency ∈ {daily, weekly, monthly}`, `next_run_at`). `AnnouncementRecipient`
+  [T] — per-user push/email delivery status + `read_at`. `AnnouncementTemplate` [T] —
+  coach-saved reusable announcement. `EmailOptOut` [T] — per-tenant email unsubscribe list.
+- API: `vapid-key`, `subscribe`/`unsubscribe` (web push), `feed` + `feed/<id>/read` (student
+  inbox), `email/unsubscribe` (public, `AllowAny`); coach CRUD for announcements/templates/
+  recurring rules lives in `admin_urls.py`/`admin_views.py`.
+- Cross-app: `apps.blog`'s autopilot schedule reuses `recurrence.next_occurrence()` from
+  this app verbatim.
+
+### 4.8 Community (`apps.community`)
+
+- Tenant-scoped. `CommunitySettings` [T] — singleton feature gate + welcome message.
+  `CommunityMember` [T] — 1:1 with `User` (display name, avatar, ban/mute,
+  `requires_approval`). `Post` / `Comment` [T] — student-generated content,
+  `PostStatus ∈ {visible, pending, hidden, removed}` (auto-hidden past a report
+  threshold). `Reaction` [T] — one emoji per member per post XOR comment.
+  `Report` [T] — a flagged post/comment (`reason`, `status`, `action_taken`).
+- API: `settings`, `me`, `presign` (S3 upload for post images), `posts`/`comments`/
+  `reactions`/`reports`, plus a `moderation/*` surface (queue, resolve, pin/unpin, remove,
+  ban/mute/require-approval) gated by `is_moderator`. `urls_platform.py` exposes a
+  cross-tenant report-count rollup to the superadmin.
+- New visible posts/comments fan out via Celery (`tasks.py`) — the likely trigger point for
+  `apps.notifications` push, though that wiring lives in the task, not this doc's scope.
+
+### 4.9 Blog (`apps.blog`)
+
+- Tenant-scoped. `BlogPost` [T] — a coach's public post (`slug`, `body_html`, `status ∈
+  {draft, published}`, `source ∈ {manual, ai, autopilot}`, optional `cover_photo`).
+  `BlogTopicIdea` [T] — AI-suggested topics, generated in batches of 12 to keep topic
+  selection free of a per-decision LLM call. `BlogAutopilot` [T] — singleton hands-off
+  generation schedule, field-shape mirrors `RecurringAnnouncement`.
+- API: anonymous `posts/` + `posts/<slug>/` (served on the tenant's public site), a coach
+  `ModelViewSet` (`BlogPostAdminViewSet`), and AI endpoints `blog_ai_status`,
+  `blog_generate`, `blog_topics`, `blog_topic_dismiss`, `blog_autopilot` (`IsCoachOrOwner`).
+  A superadmin equivalent lives under `urls_platform.py`/`platform_views.py`.
+- Cross-app: depends on `apps.notifications.recurrence.next_occurrence()` for the autopilot
+  schedule, `apps.media.Photo` for cover images, and `apps.courses.Course` +
+  `apps.tenant_config.TenantConfig` for AI brand-brief context.
+
+### 4.10 Mailbox (`apps.mailbox` — dual-listed)
+
+- Same models run in both `SHARED_APPS` (public schema = the **superadmin's own platform
+  inbox**) and `TENANT_APPS` (tenant schema = the **per-coach mailbox**) — see
+  `backend/config/settings/base.py`. `Conversation` [P+T] — a thread keyed by
+  counterparty email (unique open conversation per counterparty). `Message` [P+T] —
+  inbound/outbound, threaded via `message_id`/`in_reply_to`. `MessageAttachment` [P+T] —
+  `message` FK is null between composer upload and send.
+- API: `conversations/` list+detail+`reply`, `compose/`, `attachments/` upload, and a
+  signed `inbound/` webhook (`AllowAny`, HMAC-verified in `signing.py`) that the Cloudflare
+  Email Routing worker posts to. `mailbox_settings` reads/writes the coach's custom-domain
+  local part or platform-domain address. `urls_platform.py` mounts the same actions for the
+  superadmin (`IsSuperUser`), minus `settings`/`inbound`.
+- The `inbound` webhook always resolves at the apex host: it looks up `apps.domains.
+  CustomDomain` (public schema) or a `PlatformMailboxAddress`, then explicitly enters
+  `tenant_context`/`schema_context` before storing the message — required because both
+  schemas now have mailbox tables.
+
+### 4.11 Domains (`apps.domains`)
+
+- Public schema. `CustomDomain` [P] — a tenant's registered custom domain: registrar/
+  Cloudflare/Resend ids, `provisioning_status` (`pending → registering → dns_zone →
+  dns_records → email_auth → ssl → live` / `failed` / `lapsed`), pricing in minor units +
+  `fx_rate`, `mailbox_local_part`/`mailbox_enabled`. `PlatformMailboxAddress` [P] — a paid
+  coach's claimed `<local_part>@PLATFORM_MAIL_DOMAIN` address; kept-but-inert if the
+  subscription lapses. `DomainSubscription` [P] — the Stripe subscription billing a
+  custom domain's recurring renewal cost.
+- API: the same logic mounted twice — tenant-scoped (`/api/v1/domains/*`, resolves
+  `connection.tenant`) and account-scoped (`/api/v1/me/tenants/<slug>/domain/*`, resolves
+  the tenant by slug + `owner_email` from the public-schema apex JWT) — `search`,
+  `checkout` (Stripe), `current`, `retry`, `destroy`.
+- Cross-app: `billing.py` drives `apps.billing`'s Stripe Connect checkout; `provisioning.py`/
+  `tasks.py` orchestrate the registrar + Cloudflare zone/DNS/SSL steps; `apps.mailbox`
+  reads `CustomDomain`/`PlatformMailboxAddress` to resolve inbound mail and sending identity.
+
+### 4.12 Platform email (`apps.platform_email`)
+
+- Public schema. Mirrors `apps.email_campaigns` for the platform's own outbound campaigns
+  to coaches. `PlatformEmailConfig` [P] — singleton holding the platform's own MailCraft
+  org/API key (lazily provisioned on first use). `PlatformEmailCampaign` [P] — subject/
+  `template_id`/`recipient_filter`/status, reusing `CampaignStatus`/`RecipientStatus` from
+  `apps.email_campaigns`. `PlatformCampaignRecipient` [P] — per-recipient delivery outcome;
+  the recipient is a coach, stored denormalized (`user_id`/`user_name`/`user_email`)
+  rather than an FK.
+- API (superadmin only, `IsSuperUser`): `setup`/`session` (MailCraft), `templates`/
+  `gallery`/`recipient-options`, `send`, `campaigns` list+detail+recipients.
+- Cross-app: reuses `apps.email_campaigns.emailcraft_client` for the MailCraft API and the
+  same Resend sending path as the coach-facing feature.
+
+### 4.13 Admin Kit (`apps.adminkit`)
+
+- No models. Supplies the generic admin-site framework every other app's
+  `admin_panels.py` registers against: `AdminSite` (`sites.py`) turns registered
+  `ModelAdmin`s into viewsets (list/create/retrieve/update/destroy/`meta`/`actions`/
+  `autocomplete`) under a namespace. Two singleton sites: `platform_site` (superadmin SPA,
+  `IsSuperUser`, public-schema models) and `studio_site` (coach admin SPA,
+  `IsCoachOrOwner`, `tenant_only=True`). `AppConfig.ready()` autodiscovers each app's
+  `admin_panels` module (mirrors Django's own `admin.py` autodiscovery without clashing
+  with it).
+- API: mounted via `urls_platform.py`/`urls_studio.py` — `<namespace>/meta/` plus
+  per-registered-model CRUD/`meta`/`actions`/`autocomplete` routes generated from each
+  `ModelAdmin` (`options.py`, field/relation introspection in `introspection.py`).
+- Every tenant/public app with an admin surface (`apps.billing`, `apps.courses`, …)
+  depends on `adminkit` to expose itself to the two admin SPAs; it has no models of its own.
+
+### 4.14 Tags (`apps.tags`)
+
+- Tenant-scoped. `Tag` [T] — a flat, coach-defined free-text label scoped to one content
+  type (`course`/`video`/`photo`/`download`/`event` — the four live-event models share the
+  `event` pool). Unique per `(scope, slug)`; auto-slugified with de-dupe suffixing.
+- API (`IsCoachOrOwner`): list+create (dedupes by name within a scope instead of creating
+  a near-duplicate) and retrieve/update/delete.
+- Distinct from `apps.filters`: tags are unstructured admin-only organization and never
+  surface to students.
+
+### 4.15 Filters (`apps.filters`)
+
+- Tenant-scoped. `FilterGroup` [T] — a coach-defined structured filter dimension (e.g.
+  "Level"); `applies_to ∈ {course, event, both}`, ordered. `FilterOption` [T] — a
+  selectable value within a group (e.g. "Beginner"); unique per group.
+- API (`IsCoachOrOwner`): `groups/` and `options/` list+create+detail; options filterable
+  by group.
+- The structured, student-facing counterpart to `apps.tags` (browse facets on course/event
+  catalogs), as opposed to tags' unstructured admin-only labels.
+
+### 4.16 Usage (`apps.usage`)
+
+- Tenant-scoped. `UsageEvent` [T] — one row per `(user, mode, platform, day)` recording
+  whether a student session came from the installed PWA or the browser, and which
+  platform (`ios`/`android`/`desktop`/`other`).
+- API: `record_usage` (`IsAuthenticated`, students only — no-ops for coach/owner roles)
+  upserts today's row and updates `User.last_display_mode`/`last_platform`/`first_pwa_at`;
+  `usage_summary` (`IsCoachOrOwner`, mounted via `admin_urls.py`) aggregates PWA-vs-browser
+  session counts and a daily series over a configurable window, plus a global
+  `installed_students` count from `apps.accounts.User`.
+
+### 4.17 Relationship sketch
 
 ```
 [public]  User(email,region)──< PlatformSubscription >──Tenant──> PlatformPlan
