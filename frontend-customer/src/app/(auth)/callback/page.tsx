@@ -49,9 +49,20 @@ export default function CallbackPage() {
           return;
         }
         const data = await res.json();
+        // Honor ?next= when it's a same-site relative path — the onboarding
+        // handoff sends next=/ so a fresh coach lands on their new homepage,
+        // not the admin. Absolute/protocol-relative values are dropped.
+        const rawNext = searchParams.get("next");
+        const next =
+          rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//")
+            ? rawNext
+            : null;
         const role = data.user?.role;
-        const dest = role === "owner" || role === "coach" ? "/admin" : "/";
-        router.push(`${dest}?toast=Welcome+back!&toast_type=success`);
+        const dest =
+          next ?? (role === "owner" || role === "coach" ? "/admin" : "/");
+        router.push(
+          `${dest}${dest.includes("?") ? "&" : "?"}toast=Welcome+back!&toast_type=success`,
+        );
       })
       .catch(() => setError("Network error"));
   }, [searchParams, router]);

@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, Loader2, AlertCircle, Rocket, MailPlus } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  Rocket,
+  MailPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth/auth-shell";
 
@@ -22,7 +28,13 @@ type VerifyState =
 
 type ResumeState = "idle" | "sending" | "sent" | "closed" | "failed";
 
-const KNOWN_STAGES = ["schema", "config", "seed", "ai_copy", "finalizing"] as const;
+const KNOWN_STAGES = [
+  "schema",
+  "config",
+  "seed",
+  "ai_copy",
+  "finalizing",
+] as const;
 
 function StateIcon({
   variant,
@@ -79,7 +91,9 @@ export default function SignupVerifyPage() {
           );
           if (statusRes.ok) {
             const statusData = await statusRes.json();
-            setStage(typeof statusData.stage === "string" ? statusData.stage : null);
+            setStage(
+              typeof statusData.stage === "string" ? statusData.stage : null,
+            );
             if (statusData.status === "ready") {
               if (pollRef.current) clearInterval(pollRef.current);
               setDomain(statusData.domain);
@@ -125,7 +139,9 @@ export default function SignupVerifyPage() {
 
     if (!token) {
       const stored =
-        typeof window !== "undefined" ? localStorage.getItem("contentor_wizard_token") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("contentor_wizard_token")
+          : null;
       if (stored) {
         setWizardToken(stored);
         setState("wizard");
@@ -193,15 +209,17 @@ export default function SignupVerifyPage() {
   }, [token, t, startPolling]);
 
   // One-click login: when the studio is ready, swap the CTA for an
-  // authenticated URL. Falls back to the plain domain link on any failure
-  // (e.g. the signup token expired) — the lock screen's owner-login path
-  // remains the safety net.
+  // authenticated URL. Uses resumeToken, not just the URL token — after the
+  // wizard's checkout round-trip or a localStorage resume there IS no URL
+  // token, and the CTA silently degraded to a logged-out domain link. Falls
+  // back to the plain domain link on any failure (e.g. every token expired)
+  // — the lock screen's owner-login path remains the safety net.
   useEffect(() => {
-    if (state !== "ready" || !token || loginUrl) return;
-    requestHandoff(token)
+    if (state !== "ready" || !resumeToken || loginUrl) return;
+    requestHandoff(resumeToken)
       .then((d) => setLoginUrl(d.login_url))
       .catch(() => {});
-  }, [state, token, loginUrl]);
+  }, [state, resumeToken, loginUrl]);
 
   if (state === "verifying") {
     return (
