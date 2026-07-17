@@ -30,11 +30,15 @@ make seed              # seed_plans (plans + public tenant + superusers)
 make test              # pytest -v inside django container
 make lint              # pre-commit on all files
 make format            # ruff (backend) + prettier (both frontends)
+make test-app APP=billing   # one backend app's tests
+make test-frontend          # frontend-customer vitest
+make typecheck               # tsc --noEmit, both apps (advisory — not yet gated in make lint; see Task 3 of docs/superpowers/plans/2026-07-17-vibe-coding-restructure.md)
 
 make shell             # Django shell
 make health-check      # curl /api/health/
 make e2e               # Playwright suite vs the running dev stack (Stripe specs skip)
 make e2e-stripe        # + real Stripe test-mode specs (needs make stripe-listen running)
+make e2e-spec SPEC=04-live-class  # one Playwright spec
 ```
 
 ## Architecture
@@ -44,17 +48,28 @@ make e2e-stripe        # + real Stripe test-mode specs (needs make stripe-listen
 Layout: `config/` (project) + `apps/` (Django apps). Settings split into `base.py` / `dev.py` / `prod.py`.
 
 **SHARED_APPS** (public schema only):
-- `apps.core` — tenants, organizations, middleware (`HeaderAwareTenantMiddleware`, `TenantRateLimitMiddleware`), routers, access service, platform serializers
+- `apps.core` — tenants, organizations, middleware (`HeaderAwareTenantMiddleware`, `TenantRateLimitMiddleware`), routers, access service, platform serializers; also hosts the onboarding wizard (`core/onboarding/`), superadmin platform API (`core/platform/`), AI infra (`ai.py`, `assistant.py`), and demo template seeding (`core/demo/`)
 - `apps.accounts` — user model, auth backends (`AdminJWTBackend`, `TenantJWTAuthentication`)
+- `apps.adminkit` — no models; registers API admin sites for both SPAs via `admin_panels.py` autodiscovery
+- `apps.platform_email` — platform-level email campaigns (public schema; superadmin → coaches)
+- `apps.domains` — custom-domain lifecycle for tenants
+- `apps.mailbox` — dual-listed: public-schema rows are the superadmin platform inbox; also in TENANT_APPS for the per-coach mailbox
 
 **TENANT_APPS** (per-tenant schema):
-- `apps.tenant_config` — per-tenant settings (theme, branding)
+- `apps.tenant_config` — per-tenant settings (theme, branding), logo studio backend, site assistant
+- `apps.filters` — reusable filter options attached to content
+- `apps.tags` — tagging for content lists
 - `apps.courses` — course content + modules
 - `apps.downloads` — file/resource downloads
 - `apps.live` — video sessions via Stream.io (`getstream` SDK in `apps/live/stream_service.py`)
 - `apps.media` — S3 / Hetzner object storage uploads (boto3)
-- `apps.billing` — plans, subscriptions, payments via **Stripe Connect** (marketplace: `providers/connect.py`, `stripe_provider.py`, webhooks); `bypass` provider for dev/CI. (`iyzico` is a declared provider choice but not yet implemented.)
+- `apps.billing` — plans, subscriptions, payments via **Stripe Connect** (marketplace: `providers/connect.py`, `stripe_provider.py`, webhooks); `bypass` provider for dev/CI
 - `apps.email_campaigns` — outbound campaigns; integrates MailCraft via `django-contentor-email-builder`
+- `apps.notifications` — in-app/student notifications
+- `apps.mailbox` — coach ↔ student mailbox (see dual-listing note above)
+- `apps.usage` — per-tenant usage counters
+- `apps.community` — community/discussion features
+- `apps.blog` — tenant blog posts
 
 Tenant routing: `apps.core.routers.TenantRouter` keeps tenant-only apps out of the public schema.
 
@@ -84,7 +99,7 @@ Only the gunicorn entrypoint runs migrations + collectstatic — celery skips to
 
 ### Local fakes + e2e
 
-Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). `LIVE_FAKE_ENABLED=true` (set in dev `.env`) stubs GetStream so live-class specs run offline — unset to use real GetStream keys. `EMAIL_SINK_ENABLED=true` captures outbound email; read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses both flags). Dev `.env` runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set it `true` for fully-offline payments (bypass provider). E2e suite lives in `e2e/` — `make e2e` runs 17 specs against the live dev stack (Stripe specs auto-skip); `make e2e-stripe` adds the 2 Stripe specs (needs `sk_test_*` keys and `make stripe-listen` in another shell — `stripe-listen` injects `--api-key` from `.env` and forwards connect events automatically).
+Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). `LIVE_FAKE_ENABLED=true` (set in dev `.env`) stubs GetStream so live-class specs run offline — unset to use real GetStream keys. `EMAIL_SINK_ENABLED=true` captures outbound email; read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses both flags). Dev `.env` runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set it `true` for fully-offline payments (bypass provider). E2e suite lives in `e2e/` — `make e2e` runs the 24 non-Stripe specs in `e2e/specs/` (26 spec files total; the 2 Stripe specs auto-skip without `STRIPE_E2E`, and `90-logo-eval` is an AI-scored eval); `make e2e-stripe` adds the 2 Stripe specs (needs `sk_test_*` keys and `make stripe-listen` in another shell — `stripe-listen` injects `--api-key` from `.env` and forwards connect events automatically).
 
 ## MailCraft Integration
 
