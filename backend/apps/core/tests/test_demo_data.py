@@ -7,9 +7,9 @@ NICHES = ["fitness", "yoga", "pilates", "belly_dance", "face_yoga", "makeup", "p
 
 @pytest.mark.parametrize("niche", NICHES)
 def test_vertical_config_is_built_on_the_shared_base(niche):
-    from apps.core.management.commands.demo_data import _base
+    from apps.demo_seed.management.commands.demo_data import _base
 
-    mod = importlib.import_module(f"apps.core.management.commands.demo_data.{niche}")
+    mod = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
     # Every key in the shared base must exist in the merged CONFIG …
     for key in _base.CONFIG_BASE:
         assert key in mod.CONFIG, f"{niche}.CONFIG lost base key {key!r}"
@@ -19,7 +19,7 @@ def test_vertical_config_is_built_on_the_shared_base(niche):
 
 
 def test_deep_merge_semantics():
-    from apps.core.management.commands.demo_data._base import deep_merge
+    from apps.demo_seed.management.commands.demo_data._base import deep_merge
 
     base = {"a": 1, "nested": {"x": 1, "y": 2}, "lst": [1, 2]}
     out = deep_merge(base, {"nested": {"y": 3}, "lst": [9]})

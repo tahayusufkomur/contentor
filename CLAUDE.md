@@ -54,6 +54,7 @@ Layout: `config/` (project) + `apps/` (Django apps). Settings split into `base.p
 - `apps.platform_email` — platform-level email campaigns (public schema; superadmin → coaches)
 - `apps.domains` — custom-domain lifecycle for tenants
 - `apps.mailbox` — dual-listed: public-schema rows are the superadmin platform inbox; also in TENANT_APPS for the per-coach mailbox
+- `apps.demo_seed` — no models; demo-tenant seed commands + JSON content (`registry.py` is the import-pure loader)
 
 **TENANT_APPS** (per-tenant schema):
 - `apps.tenant_config` — per-tenant settings (theme, branding), logo studio backend, site assistant

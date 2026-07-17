@@ -10,7 +10,7 @@ def test_general_niche_available():
 
 
 def test_general_module_shape():
-    from apps.core.management.commands.demo_data import general
+    from apps.demo_seed.management.commands.demo_data import general
 
     assert general.CONFIG["enabled_modules"]
     assert len(general.COURSES) == 3

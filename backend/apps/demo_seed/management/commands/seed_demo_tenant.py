@@ -35,7 +35,7 @@ class Command(BaseCommand):
         niche = options["niche"]
 
         try:
-            data = importlib.import_module(f"apps.core.management.commands.demo_data.{niche}")
+            data = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
         except ModuleNotFoundError:
             raise CommandError(f"No demo data module found for niche: {niche}") from None
 

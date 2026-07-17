@@ -207,8 +207,10 @@ class Command(BaseCommand):
 
         from django.core.management import call_command
 
-        demo_data_dir = Path(__file__).parent / "demo_data"
-        niches = [f.stem for f in demo_data_dir.glob("*.py") if f.stem != "__init__"]
+        from apps.demo_seed.management.commands import demo_data as demo_data_pkg
+
+        demo_data_dir = Path(demo_data_pkg.__file__).parent
+        niches = [f.stem for f in demo_data_dir.glob("*.py") if not f.stem.startswith("_")]
         if niches:
             self.stdout.write(f"\nSeeding {len(niches)} demo tenants...")
             for niche in sorted(niches):

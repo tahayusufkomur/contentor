@@ -47,7 +47,7 @@ class TemplateSeedError(Exception):
 
 def _resolve_niche_module(niche: str):
     try:
-        return importlib.import_module(f"apps.core.management.commands.demo_data.{niche}")
+        return importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
     except ModuleNotFoundError as exc:
         raise TemplateSeedError(f"No demo data module found for niche: {niche}") from exc
 
@@ -60,13 +60,13 @@ def available_niches() -> list[str]:
     """
     import pkgutil
 
-    from apps.core.management.commands import demo_data
+    from apps.demo_seed.management.commands import demo_data
 
     keys = []
     for mod_info in pkgutil.iter_modules(demo_data.__path__):
         name = mod_info.name
         try:
-            mod = importlib.import_module(f"apps.core.management.commands.demo_data.{name}")
+            mod = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{name}")
         except ImportError:
             logger.warning("Skipping demo_data module %s: import failed", name)
             continue

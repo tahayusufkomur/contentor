@@ -9,7 +9,7 @@ from apps.core.models import Tenant
 
 class Command(BaseCommand):
     help = (
-        "Seed (or re-seed) all niche demo tenants under apps/core/management/"
+        "Seed (or re-seed) all niche demo tenants under apps/demo_seed/management/"
         "commands/demo_data/. By default, niches that already exist as demo "
         "tenants are skipped. Pass --force to tear them down and recreate."
     )
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         force = options["force"]
         for niche in niches:
-            module = importlib.import_module(f"apps.core.management.commands.demo_data.{niche}")
+            module = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{niche}")
             slug = module.TENANT["slug"]
             exists = Tenant.objects.filter(slug=slug, is_demo=True).exists()
             if exists and not force:

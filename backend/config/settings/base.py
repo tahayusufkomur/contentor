@@ -33,6 +33,8 @@ SHARED_APPS = [
     # Coach mailbox models also live in the public schema — those public rows
     # are the superadmin platform inbox. Still tenant-listed below for coaches.
     "apps.mailbox",
+    # No models — demo-tenant seed commands + content registry (import-pure).
+    "apps.demo_seed",
 ]
 
 TENANT_APPS = [

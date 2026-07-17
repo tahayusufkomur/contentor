@@ -21,7 +21,7 @@ VALID_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
 
 @pytest.mark.parametrize("name", sorted(EXPECTED_LAYOUTS))
 def test_template_navbar_truthful(name):
-    mod = importlib.import_module(f"apps.core.management.commands.demo_data.{name}")
+    mod = importlib.import_module(f"apps.demo_seed.management.commands.demo_data.{name}")
     nav = mod.CONFIG["navbar_config"]
     hrefs = [link["href"] for link in nav["links"]]
     labels = [link["label"] for link in nav["links"]]
