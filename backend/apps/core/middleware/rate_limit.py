@@ -13,6 +13,11 @@ class TenantRateLimitMiddleware:
 
     def __init__(self, get_response):
         self.get_response = get_response
+        # Settings-overridable so dev can run the e2e suite (whose student and
+        # anonymous traffic all shares one client IP) without tripping 429s;
+        # prod and tests keep the class defaults.
+        self.default_rate = getattr(settings, "TENANT_RATE_LIMIT_DEFAULT", self.DEFAULT_RATE)
+        self.upload_rate = getattr(settings, "TENANT_RATE_LIMIT_UPLOAD", self.UPLOAD_RATE)
 
     @staticmethod
     def _is_admin(request, schema_name):
@@ -61,7 +66,7 @@ class TenantRateLimitMiddleware:
         if self._is_admin(request, tenant.schema_name):
             return self.get_response(request)
         is_upload = request.path.startswith("/api/v1/upload/")
-        rate = self.UPLOAD_RATE if is_upload else self.DEFAULT_RATE
+        rate = self.upload_rate if is_upload else self.default_rate
         # Bucket per client IP (not per whole tenant) so one abuser can't throttle
         # every visitor of a tenant, and a spoofed X-Tenant-Domain can't fill a
         # victim tenant's single shared window.

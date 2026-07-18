@@ -30,6 +30,11 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 AI_PROVIDER = "anthropic"
 
+# Undo dev's raised e2e ceiling: the middleware tests assert the prod
+# thresholds (TenantRateLimitMiddleware.DEFAULT_RATE / UPLOAD_RATE).
+TENANT_RATE_LIMIT_DEFAULT = 100
+TENANT_RATE_LIMIT_UPLOAD = 10
+
 _worker = os.environ.get("PYTEST_XDIST_WORKER")  # e.g. "gw0"
 if _worker:
     _redis_db = 2 + (int(_worker.removeprefix("gw")) % 14)
