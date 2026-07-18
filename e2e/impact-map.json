@@ -1,0 +1,67 @@
+{
+  "backend": {
+    "billing": ["20-stripe-platform", "21-stripe-marketplace"],
+    "blog": "none",
+    "community": ["15-community"],
+    "courses": ["02-courses"],
+    "demo_seed": "none",
+    "domains": "none",
+    "downloads": ["12-downloads"],
+    "email_campaigns": "none",
+    "filters": ["02-courses"],
+    "live": ["03-calendar", "04-live-class", "13-events-page"],
+    "mailbox": ["07-mailbox"],
+    "media": ["05-media"],
+    "notifications": ["06-announcements"],
+    "platform_email": "none",
+    "tags": ["02-courses"],
+    "tenant_config": [
+      "09-builder",
+      "14-navbar-layouts",
+      "15-logo-studio",
+      "16-site-assistant",
+      "17-logo-curated-library",
+      "18-curated-library-admin",
+      "22-assistant-takeover"
+    ],
+    "usage": "none"
+  },
+  "frontend-customer": {
+    "src/app/(student)/community": ["15-community"],
+    "src/app/(student)/learn": ["02-courses"],
+    "src/app/live": ["04-live-class"],
+    "src/app/manifest.ts": ["08-pwa"],
+    "src/app/sw.ts": ["08-pwa"],
+    "src/components/assistant": ["16-site-assistant", "22-assistant-takeover"],
+    "src/components/blocks": ["09-builder", "14-navbar-layouts"],
+    "src/components/community": ["15-community"],
+    "src/components/live": ["04-live-class"],
+    "src/components/logo": [
+      "15-logo-studio",
+      "17-logo-curated-library",
+      "18-curated-library-admin",
+      "23-wizard-ai-logo"
+    ],
+    "src/lib/assistant.ts": ["16-site-assistant", "22-assistant-takeover"],
+    "src/lib/blocks": ["09-builder", "14-navbar-layouts"],
+    "src/lib/community": ["15-community"],
+    "src/lib/logo": [
+      "15-logo-studio",
+      "17-logo-curated-library",
+      "18-curated-library-admin",
+      "23-wizard-ai-logo"
+    ],
+    "src/lib/mailbox.ts": ["07-mailbox"],
+    "src/lib/navbar.ts": ["14-navbar-layouts"]
+  },
+  "frontend-main": [
+    "01-signup-onboarding",
+    "10-impersonation",
+    "11-login-code",
+    "18-curated-library-admin",
+    "19-wizard-recovery",
+    "22-assistant-takeover",
+    "23-wizard-ai-logo"
+  ],
+  "manual": ["90-logo-eval"]
+}

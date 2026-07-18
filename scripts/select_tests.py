@@ -459,6 +459,29 @@ def run_self_tests():
     else:
         print("ok   repo graph: billing -> courses edge present")
 
+    impact_map = load_impact_map()
+    if not impact_map:
+        print("FAIL impact map: e2e/impact-map.json missing or empty")
+        failures += 1
+    else:
+        referenced = {SMOKE_SPEC, *impact_map.get("manual", []), *impact_map.get("frontend-main", [])}
+        for section in ("backend", "frontend-customer"):
+            for value in impact_map.get(section, {}).values():
+                if isinstance(value, list):
+                    referenced.update(value)
+        stems = set(list_spec_stems())
+        unmapped = sorted(stems - referenced)
+        ghosts = sorted(referenced - stems)
+        if unmapped:
+            print(f"FAIL impact map: specs never referenced: {', '.join(unmapped)} "
+                  "(add them to e2e/impact-map.json or its 'manual' list)")
+            failures += 1
+        if ghosts:
+            print(f"FAIL impact map: references to nonexistent specs: {', '.join(ghosts)}")
+            failures += 1
+        if not unmapped and not ghosts:
+            print(f"ok   impact map: all {len(stems)} specs referenced")
+
     if failures:
         print(f"{failures} self-test case(s) failed")
     return 1 if failures else 0
