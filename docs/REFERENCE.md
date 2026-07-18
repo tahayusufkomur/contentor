@@ -568,7 +568,9 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
 `make dev` (compose up --build, hot-reload). Caddy (parametrized `Caddyfile`, `CONTENTOR_DOMAIN=localhost`) routes `/api/v1`, `/api/health`,
 `/api/webhooks` and `/static/*` → Django; apex + `tr.localhost` → `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
 Useful: `make dev-reset`, `make migrate` / `make migrate-shared` / `make makemigrations`,
-`make seed`, `make test`, `make lint`, `make format`, `make shell`, `make health-check`.
+`make seed`, `make test`, `make test-changed` / `make e2e-changed` (diff-scoped runs
+via `scripts/select_tests.py` + `e2e/impact-map.json`), `make lint`, `make format`,
+`make shell`, `make health-check`.
 (Full list: `make help`.)
 
 ### Prod (home server)

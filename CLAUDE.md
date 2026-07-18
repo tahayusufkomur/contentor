@@ -31,6 +31,7 @@ make test              # pytest -v inside django container
 make lint              # pre-commit on all files
 make format            # ruff (backend) + prettier (both frontends)
 make test-app APP=billing   # one backend app's tests
+make test-changed      # only tests affected by the git diff (BASE=<ref>, PLAN=1 to preview) — scripts/select_tests.py
 make test-frontend          # frontend-customer vitest
 make typecheck               # tsc --noEmit, both apps (advisory — not yet gated in make lint; see Task 3 of docs/superpowers/plans/2026-07-17-vibe-coding-restructure.md)
 
@@ -39,6 +40,7 @@ make health-check      # curl /api/health/
 make e2e               # Playwright suite vs the running dev stack (Stripe specs skip)
 make e2e-stripe        # + real Stripe test-mode specs (needs make stripe-listen running)
 make e2e-spec SPEC=04-live-class  # one Playwright spec
+make e2e-changed       # only e2e specs affected by the diff (e2e/impact-map.json; 00-smoke always runs)
 ```
 
 ## Architecture
@@ -102,7 +104,7 @@ Only the gunicorn entrypoint runs migrations + collectstatic — celery skips to
 
 ### Local fakes + e2e
 
-Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). `LIVE_FAKE_ENABLED=true` (set in dev `.env`) stubs GetStream so live-class specs run offline — unset to use real GetStream keys. `EMAIL_SINK_ENABLED=true` captures outbound email; read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses both flags). Dev `.env` runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set it `true` for fully-offline payments (bypass provider). E2e suite lives in `e2e/` — `make e2e` runs the 24 non-Stripe specs in `e2e/specs/` (26 spec files total; the 2 Stripe specs auto-skip without `STRIPE_E2E`, and `90-logo-eval` is an AI-scored eval); `make e2e-stripe` adds the 2 Stripe specs (needs `sk_test_*` keys and `make stripe-listen` in another shell — `stripe-listen` injects `--api-key` from `.env` and forwards connect events automatically).
+Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). `LIVE_FAKE_ENABLED=true` (set in dev `.env`) stubs GetStream so live-class specs run offline — unset to use real GetStream keys. `EMAIL_SINK_ENABLED=true` captures outbound email; read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses both flags). Dev `.env` runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set it `true` for fully-offline payments (bypass provider). E2e suite lives in `e2e/` — `make e2e` runs the 24 non-Stripe specs in `e2e/specs/` (26 spec files total; the 2 Stripe specs auto-skip without `STRIPE_E2E`, and `90-logo-eval` is an AI-scored eval); `make e2e-stripe` adds the 2 Stripe specs (needs `sk_test_*` keys and `make stripe-listen` in another shell — `stripe-listen` injects `--api-key` from `.env` and forwards connect events automatically). `make e2e-changed` runs only the specs mapped to the current diff via `e2e/impact-map.json` — fail-closed (unmapped areas run everything), `00-smoke` always included; the selector self-test in `make lint` fails if a spec file has no map entry.
 
 ## MailCraft Integration
 
@@ -182,6 +184,7 @@ Domain `contentor.app` (apex + `tr.` locale + `*.` tenant subdomains).
 - **Secrets:** `.env.prod` at repo root (gitignored, rsynced to the box; template
   in `.env.prod.example`). Prod runs `config.settings.prod` with live Stripe —
   `BILLING_BYPASS_ENABLED` MUST be false.
-- **Deploy:** from the Mac, `cd ~/ws/home-server && ./deploy.sh contentor`
+- **Deploy:** from the Mac, `make deploy` — runs the full backend suite first
+  (`SKIP_TESTS=1` to bypass), then `cd ~/ws/home-server && ./deploy.sh contentor`
   (rsync + build + up + health). Tunnel ingress: `./deploy.sh edge`. The repo is
   reached via a symlink at `~/ws/projects-active/home-server/contentor`.
