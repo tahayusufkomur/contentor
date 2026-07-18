@@ -11,8 +11,12 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
+import re
+import subprocess
 import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 
 SMOKE_SPEC = "00-smoke"
 
@@ -50,6 +54,11 @@ ROOT_IGNORED_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif")  # stray screenshots
 FC_PREFIX = "frontend-customer/"
 FM_PREFIX = "frontend-main/"
 SHARED_PREFIX = "packages/shared/"
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+APPS_DIR = REPO_ROOT / "backend" / "apps"
+SPECS_DIR = REPO_ROOT / "e2e" / "specs"
+IMPACT_MAP_PATH = REPO_ROOT / "e2e" / "impact-map.json"
 
 
 @dataclass
@@ -203,6 +212,120 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
 
 
 # ---------------------------------------------------------------------------
+# Repo integration (everything below touches git / the filesystem).
+# ---------------------------------------------------------------------------
+
+
+def _git(*args):
+    result = subprocess.run(
+        ["git", *args], cwd=REPO_ROOT, check=True, capture_output=True, text=True
+    )
+    return [line for line in result.stdout.splitlines() if line.strip()]
+
+
+def git_changed_files(base):
+    """Tracked changes vs `base` plus untracked (not-ignored) files."""
+    return sorted(
+        set(_git("diff", "--name-only", base))
+        | set(_git("ls-files", "--others", "--exclude-standard"))
+    )
+
+
+def list_backend_apps():
+    return sorted(
+        p.name for p in APPS_DIR.iterdir() if p.is_dir() and (p / "__init__.py").exists()
+    )
+
+
+def build_import_graph(apps):
+    """importers[X] = apps whose .py files reference `apps.X` (imports or strings)."""
+    importers = {app: set() for app in apps}
+    ref_re = re.compile(r"apps\.([a-z_][a-z0-9_]*)")
+    for app in apps:
+        for py in (APPS_DIR / app).rglob("*.py"):
+            try:
+                text = py.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            for target in set(ref_re.findall(text)):
+                if target != app and target in importers:
+                    importers[target].add(app)
+    return importers
+
+
+def load_impact_map():
+    if not IMPACT_MAP_PATH.exists():
+        return {}
+    return json.loads(IMPACT_MAP_PATH.read_text(encoding="utf-8"))
+
+
+def list_spec_stems():
+    return sorted(p.name.removesuffix(".spec.ts") for p in SPECS_DIR.glob("*.spec.ts"))
+
+
+def _has_tests(app):
+    return (APPS_DIR / app / "tests").is_dir() or (APPS_DIR / app / "tests.py").exists()
+
+
+def _run(cmd, cwd, dry):
+    print(f"$ ({cwd.relative_to(REPO_ROOT) if cwd != REPO_ROOT else '.'}) {' '.join(cmd)}")
+    if dry:
+        return 0
+    return subprocess.run(cmd, cwd=cwd).returncode
+
+
+def execute(plan, mode, base, dry):
+    rc = 0
+    if mode == "backend":
+        if plan.backend_kind == "full-create-db":
+            rc = max(rc, _run(
+                ["docker", "compose", "exec", "django", "pytest", "-n", "auto", "--create-db"],
+                REPO_ROOT, dry))
+        elif plan.backend_kind == "full":
+            rc = max(rc, _run(
+                ["docker", "compose", "exec", "django", "pytest", "-n", "auto"],
+                REPO_ROOT, dry))
+        elif plan.backend_kind == "apps":
+            testable = [a for a in plan.backend_apps if _has_tests(a)]
+            skipped = [a for a in plan.backend_apps if not _has_tests(a)]
+            if skipped:
+                print(f"note: no tests dir in: {', '.join(skipped)}")
+            if testable:
+                cmd = ["docker", "compose", "exec", "django", "pytest",
+                       *[f"apps/{a}" for a in testable], "-n", "auto"]
+                rc = max(rc, _run(cmd, REPO_ROOT, dry))
+        else:
+            print("backend: nothing selected")
+
+        if plan.vitest_kind == "changed":
+            flag = "--changed" if base == "HEAD" else f"--changed={base}"
+            rc = max(rc, _run(["npx", "vitest", "run", flag],
+                              REPO_ROOT / "frontend-customer", dry))
+        elif plan.vitest_kind == "full":
+            rc = max(rc, _run(["npx", "vitest", "run"],
+                              REPO_ROOT / "frontend-customer", dry))
+
+        if plan.e2e_kind != "none":
+            what = "all specs" if plan.e2e_kind == "all" else ", ".join(plan.e2e_specs)
+            print(f"e2e impact ({what}) — run `make e2e-changed` with the dev stack up")
+
+    elif mode == "e2e":
+        if plan.e2e_kind == "none":
+            print("e2e: nothing selected")
+            return rc
+        for pre in (["npm", "install", "--silent"],
+                    ["npx", "playwright", "install", "chromium"]):
+            rc = max(rc, _run(pre, REPO_ROOT / "e2e", dry))
+            if rc:
+                return rc
+        cmd = ["npx", "playwright", "test"]
+        if plan.e2e_kind == "specs":
+            cmd += plan.e2e_specs
+        rc = max(rc, _run(cmd, REPO_ROOT / "e2e", dry))
+    return rc
+
+
+# ---------------------------------------------------------------------------
 # Self-test fixtures — pure cases against build_plan.
 # ---------------------------------------------------------------------------
 
@@ -326,6 +449,16 @@ def run_self_tests():
                 break
         else:
             print(f"ok   {name}")
+
+    # Repo-level checks (real filesystem, still fast).
+    apps = list_backend_apps()
+    graph = build_import_graph(apps)
+    if "billing" not in graph.get("courses", set()):
+        print("FAIL repo graph: expected apps/billing to reference apps.courses")
+        failures += 1
+    else:
+        print("ok   repo graph: billing -> courses edge present")
+
     if failures:
         print(f"{failures} self-test case(s) failed")
     return 1 if failures else 0
@@ -340,7 +473,24 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.self_test:
         return run_self_tests()
-    raise SystemExit("integration not implemented yet (Task 2)")
+
+    changed = git_changed_files(args.base)
+    if not changed:
+        print(f"No changes vs {args.base} — nothing to run. "
+              "Try BASE=main (or another ref), or `make test` for the full suite.")
+        return 0
+
+    apps = list_backend_apps()
+    plan = build_plan(changed, build_import_graph(apps), apps, load_impact_map())
+
+    print(f"Diff vs {args.base}: {len(changed)} changed file(s)")
+    for reason in plan.reasons:
+        print(f"  {reason}")
+    print(f"plan: backend={plan.backend_kind}"
+          f"{' [' + ' '.join(plan.backend_apps) + ']' if plan.backend_apps else ''}"
+          f" vitest={plan.vitest_kind} e2e={plan.e2e_kind}"
+          f"{' [' + ' '.join(plan.e2e_specs) + ']' if plan.e2e_specs else ''}")
+    return execute(plan, args.mode, args.base, dry=args.plan)
 
 
 if __name__ == "__main__":
