@@ -74,6 +74,7 @@ export function PageLayoutStep({
   onChange,
   theme,
   goals,
+  disabled,
 }: {
   catalog: WizardCatalog;
   page: string;
@@ -81,6 +82,7 @@ export function PageLayoutStep({
   onChange: (layoutId: string) => void;
   theme?: string;
   goals: string[];
+  disabled?: boolean;
 }) {
   const t = useTranslations("wizard");
   const options = catalog.page_layouts[page] ?? [];
@@ -98,6 +100,7 @@ export function PageLayoutStep({
             onSelect={() => onChange(option.id)}
             title={t(`layouts.${option.id}`)}
             badge={i === 0 ? t("common.recommended") : undefined}
+            disabled={disabled}
           >
             <LayoutThumbnail
               layoutId={option.id}

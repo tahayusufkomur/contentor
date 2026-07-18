@@ -299,6 +299,7 @@ export function WizardFlow({
           catalog={catalog}
           value={answers.niche}
           onChange={(niche) => selectAndAdvance({ niche })}
+          disabled={busy}
         />
       );
       break;
@@ -337,6 +338,7 @@ export function WizardFlow({
           onChange={(theme) => selectAndAdvance({ theme })}
           showAll={showAllThemes}
           onShowAll={() => setShowAllThemes(true)}
+          disabled={busy}
         />
       );
       break;
@@ -347,6 +349,7 @@ export function WizardFlow({
           brand={brand}
           value={answers.font_family}
           onChange={(font_family) => selectAndAdvance({ font_family })}
+          disabled={busy}
         />
       );
       break;
@@ -359,6 +362,7 @@ export function WizardFlow({
           font={answers.font_family}
           value={answers.navbar_layout}
           onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })}
+          disabled={busy}
         />
       );
       break;
@@ -371,6 +375,7 @@ export function WizardFlow({
           font={answers.font_family}
           value={answers.hero_style}
           onChange={(hero_style) => selectAndAdvance({ hero_style })}
+          disabled={busy}
         />
       );
       break;
@@ -418,6 +423,7 @@ export function WizardFlow({
           }
           theme={answers.theme}
           goals={goals}
+          disabled={busy}
         />
       );
     }

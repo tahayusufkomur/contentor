@@ -93,6 +93,7 @@ export function OptionCard({
   title,
   subtitle,
   badge,
+  disabled,
   children,
 }: {
   selected: boolean;
@@ -100,12 +101,18 @@ export function OptionCard({
   title: string;
   subtitle?: string;
   badge?: string;
+  disabled?: boolean;
   children?: React.ReactNode;
 }) {
   return (
     <motion.button
       type="button"
       onClick={onSelect}
+      // Auto-advance steps save-then-advance; while that save is in flight
+      // the step is still on screen, and an enabled card would swallow the
+      // click in WizardFlow's busy guard with zero feedback. Same idiom as
+      // the Continue button's disabled={busy}.
+      disabled={disabled}
       variants={itemVariants}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.985 }}
@@ -113,7 +120,10 @@ export function OptionCard({
       // real layouts, and inheriting centering would make a left-aligned
       // layout like "Split" preview as centered — misrepresenting the choice.
       // items-center centers the previews themselves; the label centers below.
-      className={`relative flex w-full flex-col items-center gap-2.5 rounded-2xl border p-3 transition-colors ${
+      // The dim targets descendants, not the button: the entrance animation
+      // (itemVariants) leaves an inline opacity:1 on the button itself that
+      // would override a plain disabled:opacity-*.
+      className={`relative flex w-full flex-col items-center gap-2.5 rounded-2xl border p-3 transition-colors disabled:pointer-events-none [&:disabled>*]:opacity-50 ${
         selected
           ? "border-primary bg-primary/[0.06]"
           : "border-foreground/[0.08] bg-foreground/[0.02] hover:border-foreground/20 hover:bg-foreground/[0.04]"
@@ -153,10 +163,12 @@ export function NicheStep({
   catalog,
   value,
   onChange,
+  disabled,
 }: {
   catalog: WizardCatalog;
   value?: string;
   onChange: (niche: string) => void;
+  disabled?: boolean;
 }) {
   const t = useTranslations("wizard");
   return (
@@ -172,6 +184,7 @@ export function NicheStep({
               onSelect={() => onChange(key)}
               title={t(`niches.${key}.label`)}
               subtitle={t(`niches.${key}.tagline`)}
+              disabled={disabled}
             >
               <span
                 className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${value === key ? "bg-primary text-primary-foreground" : "bg-foreground/[0.06] text-foreground/70"}`}
@@ -346,6 +359,7 @@ export function ThemeStep({
   onChange,
   showAll,
   onShowAll,
+  disabled,
 }: {
   catalog: WizardCatalog;
   niche?: string;
@@ -353,6 +367,7 @@ export function ThemeStep({
   onChange: (theme: string) => void;
   showAll: boolean;
   onShowAll: () => void;
+  disabled?: boolean;
 }) {
   const t = useTranslations("wizard");
   const ranked = catalog.theme_ranking[niche ?? "general"] ?? catalog.themes;
@@ -372,6 +387,7 @@ export function ThemeStep({
               onSelect={() => onChange(theme)}
               title={t(`themes.${theme}`)}
               badge={i === 0 && !showAll ? t("common.recommended") : undefined}
+              disabled={disabled}
             >
               <div className="flex w-full flex-col items-center gap-2">
                 <ScreenshotThumbnail
@@ -412,11 +428,13 @@ export function FontStep({
   brand,
   value,
   onChange,
+  disabled,
 }: {
   catalog: WizardCatalog;
   brand: string;
   value?: string;
   onChange: (family: string) => void;
+  disabled?: boolean;
 }) {
   const t = useTranslations("wizard");
   return (
@@ -430,6 +448,7 @@ export function FontStep({
             onSelect={() => onChange(family)}
             title={t(`fonts.${id}.label`)}
             subtitle={t(`fonts.${id}.vibe`)}
+            disabled={disabled}
           >
             <span
               className="text-[22px] leading-snug"
@@ -451,6 +470,7 @@ export function NavbarStep({
   font,
   value,
   onChange,
+  disabled,
 }: {
   catalog: WizardCatalog;
   brand: string;
@@ -458,6 +478,7 @@ export function NavbarStep({
   font?: string;
   value?: string;
   onChange: (layout: string) => void;
+  disabled?: boolean;
 }) {
   const t = useTranslations("wizard");
   return (
@@ -473,6 +494,7 @@ export function NavbarStep({
             selected={value === layout}
             onSelect={() => onChange(layout)}
             title={t(`navbarLayouts.${layout}`)}
+            disabled={disabled}
           >
             <MiniNavbar
               layout={layout}
@@ -494,6 +516,7 @@ export function HeroStep({
   font,
   value,
   onChange,
+  disabled,
 }: {
   catalog: WizardCatalog;
   brand: string;
@@ -501,6 +524,7 @@ export function HeroStep({
   font?: string;
   value?: string;
   onChange: (style: string) => void;
+  disabled?: boolean;
 }) {
   const t = useTranslations("wizard");
   return (
@@ -514,6 +538,7 @@ export function HeroStep({
             onSelect={() => onChange(style)}
             title={t(`heroStyles.${style}.label`)}
             subtitle={t(`heroStyles.${style}.desc`)}
+            disabled={disabled}
           >
             <ScreenshotThumbnail
               src={`/wizard-mockups/hero-${style}.png`}
