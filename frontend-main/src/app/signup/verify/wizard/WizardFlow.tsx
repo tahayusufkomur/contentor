@@ -371,6 +371,7 @@ export function WizardFlow({
         <HeroStep
           catalog={catalog}
           brand={brand}
+          niche={answers.niche}
           theme={answers.theme}
           font={answers.font_family}
           value={answers.hero_style}
@@ -385,6 +386,7 @@ export function WizardFlow({
           token={token}
           brand={brand}
           niche={answers.niche}
+          description={answers.description}
           theme={answers.theme}
           font={answers.font_family}
           value={answers.logo}
@@ -422,6 +424,7 @@ export function WizardFlow({
             })
           }
           theme={answers.theme}
+          niche={answers.niche}
           goals={goals}
           disabled={busy}
         />

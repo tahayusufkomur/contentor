@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 import type { DescriptionFollowups, WizardCatalog } from "@/lib/wizard/types";
+import { mockupSrcs } from "@shared/wizard/mockups";
 
 import { MiniHero, MiniNavbar, ScreenshotThumbnail } from "./previews";
 
@@ -391,7 +392,7 @@ export function ThemeStep({
             >
               <div className="flex w-full flex-col items-center gap-2">
                 <ScreenshotThumbnail
-                  src={`/wizard-mockups/theme-${theme}.png`}
+                  srcs={mockupSrcs(niche, `theme-${theme}`)}
                   fallback={null}
                 />
                 <span className="flex gap-1.5" aria-hidden>
@@ -512,6 +513,7 @@ export function NavbarStep({
 export function HeroStep({
   catalog,
   brand,
+  niche,
   theme,
   font,
   value,
@@ -520,6 +522,7 @@ export function HeroStep({
 }: {
   catalog: WizardCatalog;
   brand: string;
+  niche?: string;
   theme?: string;
   font?: string;
   value?: string;
@@ -541,7 +544,7 @@ export function HeroStep({
             disabled={disabled}
           >
             <ScreenshotThumbnail
-              src={`/wizard-mockups/hero-${style}.png`}
+              srcs={mockupSrcs(niche, `hero-${style}`)}
               fallback={
                 <MiniHero
                   style={style}

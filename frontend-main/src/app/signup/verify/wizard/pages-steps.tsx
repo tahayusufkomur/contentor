@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import type { WizardCatalog } from "@/lib/wizard/types";
+import { mockupSrcs } from "@shared/wizard/mockups";
 
 import { BrowserFrame, MiniPageSketch } from "./previews";
 import { OptionCard, OptionList, SlideHeader } from "./steps";
@@ -31,37 +32,40 @@ export function thumbnailBlocks(
   ];
 }
 
-/** Real screenshot (tools/wizard-mockups/capture.mjs) when one has been
- * captured for this layout id, falling back to the abstract wireframe
- * otherwise — so a layout added to the catalog before its screenshot
- * exists never shows a broken image. Shown uncropped inside browser chrome:
- * the coach is choosing a whole page, so cropping it would hide the very
- * blocks that distinguish the two options. alt is empty because the card's
- * visible title already names the layout. */
+/** Real screenshot (tools/wizard-mockups/capture.mjs) for this layout id —
+ * the coach's niche set first, then the yoga fallback set — falling back to
+ * the abstract wireframe when neither exists, so a layout added to the
+ * catalog before its screenshots exist never shows a broken image. Shown
+ * uncropped inside browser chrome: the coach is choosing a whole page, so
+ * cropping it would hide the very blocks that distinguish the two options.
+ * alt is empty because the card's visible title already names the layout. */
 function LayoutThumbnail({
   layoutId,
   blocks,
   theme,
+  niche,
 }: {
   layoutId: string;
   blocks: string[];
   theme?: string;
+  niche?: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  const src = mockupSrcs(niche, layoutId).find((s) => !failed[s]);
   return (
     <BrowserFrame>
-      {imageFailed ? (
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed
+        <img
+          src={src}
+          alt=""
+          className="block w-full"
+          onError={() => setFailed((f) => ({ ...f, [src]: true }))}
+        />
+      ) : (
         <div className="p-2">
           <MiniPageSketch blocks={blocks} theme={theme} />
         </div>
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed
-        <img
-          src={`/wizard-mockups/${layoutId}.png`}
-          alt=""
-          className="block w-full"
-          onError={() => setImageFailed(true)}
-        />
       )}
     </BrowserFrame>
   );
@@ -73,6 +77,7 @@ export function PageLayoutStep({
   value,
   onChange,
   theme,
+  niche,
   goals,
   disabled,
 }: {
@@ -81,6 +86,7 @@ export function PageLayoutStep({
   value?: string;
   onChange: (layoutId: string) => void;
   theme?: string;
+  niche?: string;
   goals: string[];
   disabled?: boolean;
 }) {
@@ -106,6 +112,7 @@ export function PageLayoutStep({
               layoutId={option.id}
               blocks={thumbnailBlocks(catalog, page, option.blocks, goals)}
               theme={theme}
+              niche={niche}
             />
           </OptionCard>
         ))}

@@ -295,18 +295,21 @@ export function BrowserFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Real screenshot inside browser chrome, swapping to `fallback` when the
- * PNG hasn't been captured yet (tools/wizard-mockups/) — a catalog option
- * must never show a broken image. */
+/** Real screenshot inside browser chrome. `srcs` is an ordered candidate
+ * list (per-niche file, then the yoga fallback set — see
+ * @shared/wizard/mockups); swaps to `fallback` when every candidate fails
+ * to load — a catalog option must never show a broken image. Failures are
+ * keyed by URL so switching niche mid-wizard retries the new niche's file. */
 export function ScreenshotThumbnail({
-  src,
+  srcs,
   fallback,
 }: {
-  src: string;
+  srcs: string[];
   fallback: React.ReactNode;
 }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return <>{fallback}</>;
+  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  const src = srcs.find((s) => !failed[s]);
+  if (!src) return <>{fallback}</>;
   return (
     <BrowserFrame>
       {/* eslint-disable-next-line @next/next/no-img-element -- static asset, no next/image loader needed */}
@@ -314,7 +317,7 @@ export function ScreenshotThumbnail({
         src={src}
         alt=""
         className="block w-full"
-        onError={() => setFailed(true)}
+        onError={() => setFailed((f) => ({ ...f, [src]: true }))}
       />
     </BrowserFrame>
   );
