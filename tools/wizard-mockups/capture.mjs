@@ -1,12 +1,16 @@
-// Captures one real screenshot per wizard page-layout option, from the
-// hidden wizard-mockups scratch tenant (seed_wizard_mockup_tenant), and
-// saves downscaled PNGs into frontend-main/public/wizard-mockups/. Manual
-// dev tool — re-run whenever demo content or page templates change.
+// Captures one real screenshot per wizard catalog option (page layouts,
+// hero styles, themes), per niche, from the hidden wizard-mockups scratch
+// tenant (seed_wizard_mockup_tenant --niche <n>), and saves downscaled
+// WebPs into frontend-main/public/wizard-mockups/<niche>/. Manual dev
+// tool — re-run whenever demo content or page templates change.
 //
-// Prereqs: dev stack up (`make dev`), scratch tenant seeded
-// (`docker compose exec django python manage.py seed_wizard_mockup_tenant`).
+// Prereqs: dev stack up (`make dev`) and demo media mirrored into dev
+// MinIO (`make seed-demo-assets`). The scratch tenant is (re)seeded per
+// niche by this script — no manual seeding step.
 //
-// Usage: npm run capture   (from tools/wizard-mockups/)
+// Usage (from tools/wizard-mockups/):
+//   npm run capture                       # all niches (~30-45 min)
+//   npm run capture -- --niche belly_dance   # one niche while iterating
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -15,12 +19,19 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = join(__dirname, "..", "..", "frontend-main", "public", "wizard-mockups");
+const OUT_ROOT = join(__dirname, "..", "..", "frontend-main", "public", "wizard-mockups");
 const VIEWPORT = { width: 1280, height: 960 };
 const OUTPUT_WIDTH = 800; // downscaled width; height follows viewport aspect ratio
 // Capture at 2x and let downscale() supersample — thumbnail text and photos
 // come out visibly crisper than a 1x capture at the same output size.
 const DEVICE_SCALE = 2;
+const WEBP_QUALITY = 0.85;
+
+// Mirrors backend/apps/demo_seed/data/ minus "general" (deliberately
+// sparse — no plans, FAQ disabled — it would produce empty-state
+// screenshots; the wizard maps it to the yoga set). Must stay in sync
+// with MOCKUP_NICHES in packages/shared/src/wizard/mockups.ts.
+const NICHES = ["belly_dance", "face_yoga", "fitness", "makeup", "pilates", "pole_dance", "yoga"];
 
 // Mirrors backend/apps/core/onboarding/wizard_catalog.py PAGE_LAYOUTS.
 const LAYOUTS = [
@@ -50,28 +61,41 @@ const HEROES = ["centered", "split", "minimal"];
 // Hero cards only sell the top of the page — clip before downscaling.
 const HERO_CLIP = { x: 0, y: 0, width: 1280, height: 640 };
 
-function setLayout(page, layoutId) {
+function manage(args) {
   execFileSync(
     "docker",
-    ["compose", "exec", "-T", "django", "python", "manage.py", "set_wizard_mockup_layout", page, layoutId],
+    ["compose", "exec", "-T", "django", "python", "manage.py", ...args],
     { cwd: join(__dirname, "..", ".."), stdio: "inherit" },
   );
 }
 
-function setLook(args) {
-  execFileSync(
-    "docker",
-    ["compose", "exec", "-T", "django", "python", "manage.py", "set_wizard_mockup_look", ...args],
-    { cwd: join(__dirname, "..", ".."), stdio: "inherit" },
-  );
+const setLayout = (page, layoutId) => manage(["set_wizard_mockup_layout", page, layoutId]);
+const setLook = (args) => manage(["set_wizard_mockup_look", ...args]);
+const seedNiche = (niche) => manage(["seed_wizard_mockup_tenant", "--niche", niche]);
+
+function nichesFromArgv() {
+  const picked = [];
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--niche") {
+      const value = argv[++i];
+      if (!NICHES.includes(value)) {
+        throw new Error(`Unknown niche '${value}'. Available: ${NICHES.join(", ")}`);
+      }
+      picked.push(value);
+    } else {
+      throw new Error(`Unknown argument '${argv[i]}'. Usage: npm run capture [-- --niche <name>]`);
+    }
+  }
+  return picked.length ? picked : NICHES;
 }
 
-/** Downscale via an in-page canvas (no native image dependency — same
- * approach as tools/flowmap/crawler/thumbnail.js). */
+/** Downscale + encode via an in-page canvas (no native image dependency —
+ * same approach as tools/flowmap/crawler/thumbnail.js). */
 async function downscale(page, pngBuffer, targetWidth) {
   const b64 = pngBuffer.toString("base64");
   const dataUrl = await page.evaluate(
-    async ({ src, targetWidth }) => {
+    async ({ src, targetWidth, quality }) => {
       const img = new Image();
       img.src = "data:image/png;base64," + src;
       await img.decode();
@@ -82,19 +106,19 @@ async function downscale(page, pngBuffer, targetWidth) {
       const ctx = c.getContext("2d");
       ctx.imageSmoothingQuality = "high"; // 2x-capture -> big ratio; default bilinear aliases
       ctx.drawImage(img, 0, 0, c.width, c.height);
-      return c.toDataURL("image/png");
+      return c.toDataURL("image/webp", quality);
     },
-    { src: b64, targetWidth },
+    { src: b64, targetWidth, quality: WEBP_QUALITY },
   );
   return Buffer.from(dataUrl.split(",")[1], "base64");
 }
 
 async function main() {
-  mkdirSync(OUT_DIR, { recursive: true });
+  const niches = nichesFromArgv();
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: DEVICE_SCALE });
   const page = await context.newPage();
-  // Broken media means a broken catalog card — refuse to write the PNG.
+  // Broken media means a broken catalog card — refuse to write the file.
   // (The Jul 15 captures shipped broken-image icons because dev MinIO had
   // been wiped and every presigned demo photo 404'd.) Track failures at the
   // network layer so CSS background-image fetches count too, not just <img>.
@@ -118,7 +142,7 @@ async function main() {
   const cdp = await context.newCDPSession(page);
   await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 
-  async function capture(host, path, outName, { clip, fullPage = false } = {}) {
+  async function capture(outDir, host, path, outName, { clip, fullPage = false } = {}) {
     failedMedia.clear();
     await page.goto(`http://${host}${path}`, { waitUntil: "networkidle", timeout: 30000 });
     // Hide Next.js's dev-only overlay, same as tools/flowmap/crawler/capture.js.
@@ -138,40 +162,49 @@ async function main() {
     }
     const png = await page.screenshot(fullPage ? { fullPage: true } : { fullPage: false, ...(clip ? { clip } : {}) });
     const downscaled = await downscale(page, png, OUTPUT_WIDTH);
-    writeFileSync(join(OUT_DIR, `${outName}.png`), downscaled);
-    console.log(`  -> ${outName}.png`);
+    writeFileSync(join(outDir, `${outName}.webp`), downscaled);
+    console.log(`  -> ${outName}.webp`);
   }
 
-  // fullPage: true — a viewport-only crop made two layouts that share their
-  // first blocks (home-story/home-complete both open hero, imageText,
-  // courseGrid) render byte-identical thumbnails, since the block that
-  // actually distinguishes them sat below the fold. Capturing the whole
-  // scrollable page makes every layout option provably distinct, no matter
-  // which blocks a future option shares with an existing one.
-  for (const { page: pageKey, id, path } of LAYOUTS) {
-    console.log(`${id} ...`);
-    setLayout(pageKey, id);
-    await capture(`wm-${id}.localhost`, path, id, { fullPage: true });
-  }
+  let written = 0;
+  for (const niche of niches) {
+    console.log(`\n=== ${niche} ===`);
+    seedNiche(niche);
+    const outDir = join(OUT_ROOT, niche);
+    mkdirSync(outDir, { recursive: true });
 
-  for (const style of HEROES) {
-    console.log(`hero-${style} ...`);
-    setLook(["--hero", style]);
-    await capture(`wm-hero-${style}.localhost`, "/", `hero-${style}`, { clip: HERO_CLIP });
-  }
-  // Reset home (hero back to centered, spotlight layout) before theme shots.
-  setLayout("home", "home-spotlight");
+    // fullPage: true — a viewport-only crop made two layouts that share their
+    // first blocks (home-story/home-complete both open hero, imageText,
+    // courseGrid) render byte-identical thumbnails, since the block that
+    // actually distinguishes them sat below the fold. Capturing the whole
+    // scrollable page makes every layout option provably distinct, no matter
+    // which blocks a future option shares with an existing one.
+    for (const { page: pageKey, id, path } of LAYOUTS) {
+      console.log(`${id} ...`);
+      setLayout(pageKey, id);
+      await capture(outDir, `wm-${id}.localhost`, path, id, { fullPage: true });
+    }
 
-  for (const theme of THEMES) {
-    console.log(`theme-${theme} ...`);
-    setLook(["--theme", theme]);
-    await capture(`wm-theme-${theme}.localhost`, "/", `theme-${theme}`);
+    for (const style of HEROES) {
+      console.log(`hero-${style} ...`);
+      setLook(["--hero", style]);
+      await capture(outDir, `wm-hero-${style}.localhost`, "/", `hero-${style}`, { clip: HERO_CLIP });
+    }
+    // Reset home (hero back to centered, spotlight layout) before theme shots.
+    setLayout("home", "home-spotlight");
+
+    for (const theme of THEMES) {
+      console.log(`theme-${theme} ...`);
+      setLook(["--theme", theme]);
+      await capture(outDir, `wm-theme-${theme}.localhost`, "/", `theme-${theme}`);
+    }
+    // No trailing look-reset: the next niche (or next run) reseeds the
+    // scratch tenant from its template anyway.
+    written += LAYOUTS.length + HEROES.length + THEMES.length;
   }
-  // Leave the scratch tenant on its seeded (yoga) theme.
-  setLook(["--theme", "forest"]);
 
   await browser.close();
-  console.log(`\nDone. ${LAYOUTS.length + HEROES.length + THEMES.length} screenshots written to ${OUT_DIR}`);
+  console.log(`\nDone. ${written} screenshots written under ${OUT_ROOT}/<niche>/`);
 }
 
 main().catch((err) => {
