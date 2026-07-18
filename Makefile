@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe e2e-spec
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe e2e-spec test-changed e2e-changed
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -17,7 +17,7 @@ help: ## Show this help
 	@grep -E '^(migrate|migrate-shared|makemigrations|seed|seed-demos|seed-demos-force):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Quality ---\033[0m"
-	@grep -E '^(test|test-backend|test-app|test-frontend|test-fresh|typecheck|typecheck-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(test|test-backend|test-app|test-changed|test-frontend|test-fresh|typecheck|typecheck-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Utilities ---\033[0m"
 	@grep -E '^(shell|health-check):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -26,7 +26,7 @@ help: ## Show this help
 	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- E2E ---\033[0m"
-	@grep -E '^(e2e|e2e-stripe|e2e-spec):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(e2e|e2e-stripe|e2e-spec|e2e-changed):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
 # ============================================================================
@@ -109,6 +109,9 @@ test-app: ## Run one backend app's tests: make test-app APP=billing
 	@test -n "$(APP)" || { echo "usage: make test-app APP=<app-name>  (e.g. APP=billing)"; exit 1; }
 	docker compose exec django pytest apps/$(APP) -n auto
 
+test-changed: ## Run only tests affected by the git diff (BASE=<ref> to widen, PLAN=1 to preview)
+	python3 scripts/select_tests.py --mode backend $(if $(BASE),--base $(BASE),) $(if $(PLAN),--plan,)
+
 test-frontend: ## Run frontend-customer unit tests (vitest)
 	cd frontend-customer && npx vitest run
 
@@ -121,9 +124,10 @@ typecheck: ## Typecheck both Next.js apps (tsc --noEmit; covers packages/shared 
 typecheck-backend: ## Advisory mypy run (config in backend/pyproject.toml; not yet a gate)
 	-docker compose exec django mypy apps --config-file pyproject.toml
 
-lint: ## Run all linters via pre-commit, then i18n parity and TS typecheck
+lint: ## Run all linters via pre-commit, then i18n parity, selector self-test, and TS typecheck
 	pre-commit run --all-files
 	@$(MAKE) check-i18n
+	python3 scripts/select_tests.py --self-test
 	@$(MAKE) typecheck
 
 check-i18n: ## Verify EN and TR catalogs have identical keys
@@ -166,7 +170,8 @@ stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/
 # Deploy (prod runs remotely on the home server via deploy.sh)
 # ============================================================================
 
-deploy: ## Deploy contentor to the home server (rsync + build + up + health)
+deploy: ## Deploy contentor to the home server (full backend tests first; SKIP_TESTS=1 to skip)
+	@if [ -z "$(SKIP_TESTS)" ]; then $(MAKE) test; else echo "skipping test preflight (SKIP_TESTS=1)"; fi
 	cd ~/ws/home-server && ./deploy.sh contentor
 
 prod-build: ## Build the prod images locally (catches prod build breaks; no network needed)
@@ -201,3 +206,6 @@ e2e-stripe: ## e2e incl. real Stripe test-mode specs (needs sk_test keys in .env
 e2e-spec: ## Run one e2e spec by substring: make e2e-spec SPEC=04-live-class
 	@test -n "$(SPEC)" || { echo "usage: make e2e-spec SPEC=<spec-substring>  (e.g. SPEC=04-live-class)"; exit 1; }
 	cd e2e && npm install --silent && npx playwright install chromium && npx playwright test $(SPEC)
+
+e2e-changed: ## Run only e2e specs affected by the diff, via e2e/impact-map.json (BASE=<ref>, PLAN=1)
+	python3 scripts/select_tests.py --mode e2e $(if $(BASE),--base $(BASE),) $(if $(PLAN),--plan,)
