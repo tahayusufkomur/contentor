@@ -56,7 +56,10 @@ test("coach edits brand name via builder; public homepage reflects it", async ({
   // The "Brand" accordion is expanded by default (initial state includes "brand").
   // Wait for the brand name input to become visible. If the accordion happens to
   // be collapsed, click the section header to expand it first.
-  const brandInput = edit.getByLabel("Brand name");
+  // exact: once the tenant has a saved logo the sidebar also renders the
+  // "Show brand name next to logo" switch, which a substring getByLabel
+  // resolves too — strict-mode violation.
+  const brandInput = edit.getByLabel("Brand name", { exact: true });
   const brandVisible = await brandInput.isVisible().catch(() => false);
   if (!brandVisible) {
     await edit.getByRole("button", { name: /^Brand$/i }).click();
@@ -83,9 +86,11 @@ test("coach edits brand name via builder; public homepage reflects it", async ({
   try {
     // ── 3. Verify the public homepage (unauthenticated request) reflects the change
     await page.goto(`${TENANT}/`);
-    // The brand name appears in the sticky header nav link.
+    // The brand lands in the header's home link: as visible text when the
+    // tenant has no saved logo, as the logo <img>'s alt (with the text hidden
+    // by default) once one is saved — the link's accessible name covers both.
     await expect(
-      page.getByRole("banner").getByText(BRAND),
+      page.getByRole("banner").getByRole("link", { name: BRAND }),
       "Updated brand name must appear in the public header after autosave",
     ).toBeVisible({ timeout: 10_000 });
   } finally {
