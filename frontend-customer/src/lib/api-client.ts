@@ -60,7 +60,12 @@ export async function clientFetch<T>(
     if (res.status === 403 && isDemoReadonly(data)) {
       showDemoReadonlyToast(data);
     }
-    throw new ApiError(res.status, data);
+    const retryAfter = Number(res.headers.get("Retry-After"));
+    throw new ApiError(
+      res.status,
+      data,
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
+    );
   }
 
   if (res.status === 204 || res.headers.get("content-length") === "0") {
@@ -68,6 +73,41 @@ export async function clientFetch<T>(
   }
 
   return res.json();
+}
+
+/** Rate limiting (429), server errors (5xx), and network failures (fetch
+ * rejects with TypeError) are worth one quick retry; every other failure is a
+ * deliberate API outcome the caller must interpret. */
+export function isTransientApiError(err: unknown): boolean {
+  if (err instanceof ApiError) return err.status === 429 || err.status >= 500;
+  return err instanceof TypeError;
+}
+
+/** Run `fn`, retrying transient failures (see isTransientApiError) a limited
+ * number of times. Honors the server's Retry-After hint but caps the wait —
+ * the tenant rate limiter hints 60s, and a page gate must fail over to its
+ * error state rather than hang that long. Non-transient errors rethrow
+ * untouched, first try. */
+export async function retryTransient<T>(
+  fn: () => Promise<T>,
+  {
+    retries = 1,
+    baseDelayMs = 800,
+    maxDelayMs = 3_000,
+  }: { retries?: number; baseDelayMs?: number; maxDelayMs?: number } = {},
+): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt >= retries || !isTransientApiError(err)) throw err;
+      const hintedMs =
+        err instanceof ApiError && err.retryAfter
+          ? err.retryAfter * 1000
+          : baseDelayMs;
+      await new Promise((r) => setTimeout(r, Math.min(hintedMs, maxDelayMs)));
+    }
+  }
 }
 
 /**

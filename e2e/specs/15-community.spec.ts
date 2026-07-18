@@ -27,9 +27,28 @@
 
 import { test, expect } from "@playwright/test";
 import { coachContext, studentContext, TENANT } from "../helpers/auth";
+import { manage } from "../helpers/compose";
 
 const POST_BODY = `E2E community post ${Date.now()}`;
 const COACH_POST = `E2E coach post ${Date.now()}`;
+
+test.beforeAll(() => {
+  // Self-healing sweep, same idea as 01-signup-onboarding's beforeAll: the
+  // unban is this spec's FINAL step, so a failed, interrupted, or
+  // silently-unlucky earlier run leaves the seeded student banned — and a
+  // banned member dead-ends the student page ("You can't access the
+  // community") before the join/composer wait can ever succeed.
+  manage([
+    "shell",
+    "-c",
+    "from django_tenants.utils import tenant_context\n" +
+      "from apps.core.models import Tenant\n" +
+      "t = Tenant.objects.get(slug='demo-yoga')\n" +
+      "with tenant_context(t):\n" +
+      "    from apps.community.models import CommunityMember\n" +
+      "    CommunityMember.objects.filter(is_banned=True).update(is_banned=False)",
+  ]);
+});
 
 test("community: enable → post → pin → report → remove → ban", async ({
   browser,
@@ -54,17 +73,23 @@ test("community: enable → post → pin → report → remove → ban", async (
   const studentPage = await student.newPage();
   await studentPage.goto(`${TENANT}/community`);
 
-  // Join card may or may not show (depends on prior runs) — handle both.
+  // Join card may or may not show: ban→unban at the end of a successful run
+  // leaves the student a non-member, so the next run must re-join. The page
+  // resolves membership client-side after load — an instant isVisible()
+  // check races that fetch (and a lost race strands the composer wait until
+  // the test times out), so wait for whichever of the two states renders.
   const joinButton = studentPage.getByRole("button", {
     name: /join the community/i,
   });
-  if (await joinButton.isVisible().catch(() => false)) {
+  const composer = studentPage.getByPlaceholder(/share something/i);
+  await expect(joinButton.or(composer).first()).toBeVisible({
+    timeout: 15_000,
+  });
+  if (await joinButton.isVisible()) {
     await joinButton.click();
   }
 
-  await studentPage
-    .getByPlaceholder(/share something/i)
-    .fill(POST_BODY);
+  await composer.fill(POST_BODY);
   await studentPage.getByRole("button", { name: /^post$/i }).click();
   await expect(studentPage.getByText(POST_BODY)).toBeVisible({
     timeout: 10_000,
@@ -127,6 +152,9 @@ test("community: enable → post → pin → report → remove → ban", async (
   const bannedRow = coachPage.getByRole("row").filter({ hasText: /banned/i });
   await bannedRow.getByLabel("Member actions").click();
   await coachPage.getByRole("menuitem", { name: /unban/i }).click();
+  // Verify the unban actually landed — an unasserted click here once no-oped
+  // silently, leaving the student banned and dead-ending every later run.
+  await expect(bannedRow).toHaveCount(0, { timeout: 10_000 });
 
   await coach.close();
   await student.close();
