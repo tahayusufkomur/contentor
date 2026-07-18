@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, MapPin } from "lucide-react";
@@ -11,6 +12,8 @@ import {
   matchesFacets,
   type FacetSelection,
 } from "@/components/public/facet-pills";
+import { useTenant } from "@/hooks/use-tenant";
+import { formatEventWhen } from "@/lib/calendar-utils";
 import type { CalendarEvent } from "@/types/live";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -19,14 +22,6 @@ const TYPE_LABELS: Record<string, string> = {
   onsite_event: "Event",
   zoom_class: "Live Class",
 };
-
-const fmtWhen = (d: Date) =>
-  d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 interface EventsCatalogClientProps {
   events: CalendarEvent[];
@@ -39,6 +34,9 @@ export function EventsCatalogClient({
   layout,
   filterGroupIds,
 }: EventsCatalogClientProps) {
+  const locale = useLocale();
+  const tz = useTenant()?.timezone || "UTC";
+  const fmtWhen = (dateStr: string) => formatEventWhen(dateStr, locale, tz);
   const [facetSel, setFacetSel] = useState<FacetSelection>({});
   const facets = useMemo(
     () => buildFacets(events, filterGroupIds),
@@ -61,7 +59,6 @@ export function EventsCatalogClient({
         {facetBar}
         <div className="space-y-3">
           {filtered.map((event) => {
-            const when = new Date(event.scheduled_at);
             return (
               <Link
                 key={`${event.type}-${event.id}`}
@@ -78,7 +75,7 @@ export function EventsCatalogClient({
                     </span>
                     <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <CalendarDays className="h-3.5 w-3.5" />
-                      {fmtWhen(when)}
+                      {fmtWhen(event.scheduled_at)}
                     </span>
                     {event.location && (
                       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -101,7 +98,6 @@ export function EventsCatalogClient({
       {facetBar}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((event) => {
-          const when = new Date(event.scheduled_at);
           return (
             <Link
               key={`${event.type}-${event.id}`}
@@ -117,7 +113,7 @@ export function EventsCatalogClient({
                   </h3>
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    {fmtWhen(when)}
+                    {fmtWhen(event.scheduled_at)}
                   </div>
                   {event.location && (
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">

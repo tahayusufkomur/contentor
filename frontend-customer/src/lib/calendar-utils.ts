@@ -111,6 +111,25 @@ export function formatTime(dateStr: string, tz: string = "UTC"): string {
   });
 }
 
+/**
+ * "Jul 18, 12:00 PM" for event cards. Locale and IANA timezone are explicit
+ * so the server-rendered HTML and the client hydration produce identical
+ * text (the process TZ/locale must never leak into public markup).
+ */
+export function formatEventWhen(
+  dateStr: string,
+  locale: string,
+  tz: string = "UTC",
+): string {
+  return new Date(dateStr).toLocaleDateString(locale, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: tz,
+  });
+}
+
 export function formatDateHeader(dateStr: string): string {
   const date = new Date(dateStr + "T00:00:00");
   const today = new Date();
