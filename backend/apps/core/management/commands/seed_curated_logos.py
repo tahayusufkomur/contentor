@@ -8,6 +8,7 @@ mount): run with an explicit --dir, e.g. via a one-off bind mount:
     python manage.py seed_curated_logos --dir /seed
 """
 
+import io
 import json
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django_tenants.utils import schema_context
 
+from apps.core.curated_logos.clean import clean_curated_png
 from apps.core.models import CuratedLogo
 from apps.core.platform.uploads import _store_object
 
@@ -41,8 +43,9 @@ class Command(BaseCommand):
                     self.stderr.write(f"skip {filename}: file missing")
                     continue
                 key = f"platform/curated-logos/{filename}"
-                with png.open("rb") as fh:
-                    _store_object(key, fh, "image/png")
+                # The source art sits on an opaque white canvas; store a
+                # transparent, cropped version so it blends with tenant UIs.
+                _store_object(key, io.BytesIO(clean_curated_png(png.read_bytes())), "image/png")
                 _, created = CuratedLogo.objects.update_or_create(
                     image_key=key,
                     defaults={

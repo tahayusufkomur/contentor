@@ -45,6 +45,25 @@ def make_client(user=None, host=SHARED_DOMAIN):
     return client
 
 
+def _white_bg_png(size=(120, 120)):
+    """A parseable mark-on-white PNG: cleaning should strip the background."""
+    from PIL import Image
+
+    img = Image.new("RGB", size, "white")
+    for x in range(40, 80):
+        for y in range(40, 80):
+            img.putpixel((x, y), (0, 0, 0))
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
+def _corner_alpha(data):
+    from PIL import Image
+
+    return Image.open(io.BytesIO(data)).convert("RGBA").getpixel((0, 0))[3]
+
+
 class TestCuratedLogoModel:
     def test_position_defaults_to_max_plus_one(self, restore_public):
         a = CuratedLogo.objects.create(title="A", image_key="platform/curated-logos/a.png")
@@ -106,6 +125,25 @@ class TestPlatformUpload:
         assert body["key"].startswith("platform/curated-logos/") and body["key"].endswith(".png")
         assert body["url"]
         assert body["key"] in self.stored
+
+    def test_curated_prefix_cleans_white_background(self, superuser):
+        resp = make_client(superuser).post(
+            "/api/v1/platform/upload/",
+            {"file": _png_file(body=_white_bg_png()), "prefix": "curated-logos"},
+            format="multipart",
+        )
+        assert resp.status_code == 201, resp.content
+        assert _corner_alpha(self.stored[resp.json()["key"]]) == 0
+
+    def test_other_prefixes_stay_untouched(self, superuser):
+        body = _white_bg_png()
+        resp = make_client(superuser).post(
+            "/api/v1/platform/upload/",
+            {"file": _png_file(body=body), "prefix": "images"},
+            format="multipart",
+        )
+        assert resp.status_code == 201, resp.content
+        assert self.stored[resp.json()["key"]] == body
 
     def test_rejects_non_superuser(self, restore_public):
         anon = APIClient(HTTP_HOST=SHARED_DOMAIN)
@@ -291,3 +329,10 @@ class TestSeedCommand:
         call_command("seed_curated_logos", dir=str(catalog_dir))
         call_command("seed_curated_logos", dir=str(catalog_dir))
         assert CuratedLogo.objects.count() == 2
+
+    def test_uploads_cleaned_pngs(self, restore_public, catalog_dir):
+        from django.core.management import call_command
+
+        (catalog_dir / "yoga.png").write_bytes(_white_bg_png())
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        assert _corner_alpha(self.stored["platform/curated-logos/yoga.png"]) == 0

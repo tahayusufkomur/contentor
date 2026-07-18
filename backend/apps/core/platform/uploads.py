@@ -2,6 +2,7 @@
 platform/<prefix>/, returns {key, url}. The generic adminkit image widget
 posts here (ModelAdmin.image_upload_url)."""
 
+import io
 import re
 import uuid
 
@@ -11,6 +12,7 @@ from rest_framework.decorators import api_view, parser_classes, permission_class
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
+from apps.core.curated_logos.clean import clean_curated_png
 from apps.core.permissions import IsSuperUser
 from apps.core.storage import generate_presigned_download_url, get_s3_client
 
@@ -40,7 +42,10 @@ def platform_upload(request):
     if head != _PNG_MAGIC:
         return Response({"detail": "Only PNG images are supported."}, status=status.HTTP_400_BAD_REQUEST)
     key = f"platform/{prefix}/{uuid.uuid4().hex}.png"
-    _store_object(key, file, "image/png")
+    # Curated library art must blend with tenant UIs: strip the white canvas
+    # and crop to the mark on the way in (best effort, other prefixes as-is).
+    fileobj = io.BytesIO(clean_curated_png(file.read())) if prefix == "curated-logos" else file
+    _store_object(key, fileobj, "image/png")
     return Response(
         {"key": key, "url": generate_presigned_download_url(key, expiry=86400)},
         status=status.HTTP_201_CREATED,
