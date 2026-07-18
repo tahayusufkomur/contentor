@@ -132,11 +132,16 @@ export function LogoStudio({
     setLoadingLibrary(true);
     fetchCuratedCatalog()
       .then((all) =>
-        setLibrary(rankForBrief(all, { niche: config.niche ?? "" })),
+        setLibrary(
+          rankForBrief(all, {
+            niche: config.niche ?? "",
+            description: config.meta_description ?? "",
+          }),
+        ),
       )
       .catch(() => setLibrary([]))
       .finally(() => setLoadingLibrary(false));
-  }, [open, config.niche]);
+  }, [open, config.niche, config.meta_description]);
 
   // Load all studio fonts once so previews render true (each family's real
   // shipped weights).

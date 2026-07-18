@@ -1,3 +1,5 @@
+import { briefKeywords, rankCuratedLogos } from "@shared/logo/curated-rank";
+
 import type { CustomMarkPath } from "@/types/logo";
 
 export interface CuratedLogo {
@@ -41,18 +43,7 @@ export async function fetchCuratedCatalog(): Promise<CuratedLogo[]> {
 
 export function rankForBrief(
   logos: CuratedLogo[],
-  opts: { niche?: string; styleChips?: string[] },
+  opts: { niche?: string; description?: string; styleChips?: string[] },
 ): CuratedLogo[] {
-  const keywords = new Set<string>();
-  for (const token of (opts.niche ?? "").toLowerCase().split(/[^a-z0-9]+/)) {
-    if (token) keywords.add(token);
-  }
-  for (const chip of opts.styleChips ?? []) keywords.add(chip.toLowerCase());
-  if (keywords.size === 0) return logos;
-  const score = (l: CuratedLogo) =>
-    l.tags.reduce((n, t) => n + (keywords.has(t) ? 1 : 0), 0);
-  return logos
-    .map((l, i) => ({ l, i, s: score(l) }))
-    .sort((a, b) => b.s - a.s || a.i - b.i)
-    .map((x) => x.l);
+  return rankCuratedLogos(logos, briefKeywords(opts));
 }

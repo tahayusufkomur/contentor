@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { briefKeywords, rankCuratedLogos } from "@shared/logo/curated-rank";
+
 import { getCuratedLogos } from "@/lib/wizard/api";
 import type {
   CuratedLogoItem,
@@ -27,6 +29,7 @@ export function LogoStep({
   token,
   brand,
   niche,
+  description,
   theme,
   font,
   value,
@@ -37,6 +40,7 @@ export function LogoStep({
   token: string;
   brand: string;
   niche?: string;
+  description?: string;
   theme?: string;
   font?: string;
   value?: WizardLogoAnswer;
@@ -52,15 +56,23 @@ export function LogoStep({
       .catch(() => setItems([]));
   }, []);
 
-  // Niche-tagged marks first (lightweight port of the Logo Studio ranking).
-  const ranked = useMemo(() => {
-    const n = (niche ?? "").toLowerCase().replace("_", " ");
-    return [...items].sort(
-      (a, b) =>
-        Number(b.tags.toLowerCase().includes(n)) -
-        Number(a.tags.toLowerCase().includes(n)),
-    );
-  }, [items, niche]);
+  // Marks matching the coach's niche and their own description first (same
+  // ranking as the Logo Studio's Browse entrance).
+  const ranked = useMemo(
+    () =>
+      rankCuratedLogos(
+        items.map((item) => ({
+          item,
+          title: item.title,
+          tags: item.tags
+            .split(",")
+            .map((tag) => tag.trim().toLowerCase())
+            .filter(Boolean),
+        })),
+        briefKeywords({ niche, description }),
+      ).map((ranked) => ranked.item),
+    [items, niche, description],
+  );
 
   const s = THEME_SWATCHES[theme ?? ""] ?? THEME_SWATCHES.ocean;
   const stack = FONT_STACKS[font ?? "Inter"] ?? FONT_STACKS.Inter;
