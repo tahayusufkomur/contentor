@@ -232,6 +232,17 @@ class TestCuratedMirrorSync:
         assert meta == []
         assert (self.dir / "yoga.png").exists()  # mirror never deletes files
 
+    def test_deleting_last_row_never_clobbers_meta(self, restore_public):
+        # logo_meta.json is gitignored and doubles as seed_curated_logos'
+        # input: once the table is empty, the mirror must not overwrite the
+        # only local copy of the catalog with [].
+        row = CuratedLogo.objects.create(
+            title="Yoga", prompt="p", tags="yoga", image_key="platform/curated-logos/yoga.png"
+        )
+        row.delete()
+        meta = jsonlib.loads((self.dir / "logo_meta.json").read_text())
+        assert meta == [{"title": "Yoga", "filename": "yoga.png", "prompt": "p", "tags": "yoga"}]
+
     def test_sync_off_when_setting_unset(self, restore_public, settings):
         settings.CURATED_LOGO_SYNC_DIR = ""
         CuratedLogo.objects.create(title="X", image_key="platform/curated-logos/x.png")

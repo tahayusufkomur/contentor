@@ -83,6 +83,7 @@ def _mirror_curated_logos(fetch_png_for=None):
         out.mkdir(parents=True, exist_ok=True)
         with schema_context("public"):
             rows = list(CuratedLogo.objects.filter(enabled=True).order_by("position", "id"))
+            table_empty = not rows and not CuratedLogo.objects.exists()
         meta = [
             {
                 "title": r.title,
@@ -93,6 +94,13 @@ def _mirror_curated_logos(fetch_png_for=None):
             for r in rows
             if (r.image_key or "").startswith("platform/")
         ]
+        # logo_meta.json doubles as seed_curated_logos' input, and it is
+        # gitignored — when the whole table is empty (fresh DB, stray cleanup,
+        # a delete of the last row), writing [] would permanently destroy the
+        # only local copy of the catalog. Skipping that sync is the cheaper
+        # failure; disabled-but-present rows still sync an empty list.
+        if table_empty and (out / "logo_meta.json").exists():
+            return
         (out / "logo_meta.json").write_text(json.dumps(meta, indent=4, ensure_ascii=False) + "\n")
         if fetch_png_for is not None and (fetch_png_for.image_key or "").startswith("platform/"):
             body = (
