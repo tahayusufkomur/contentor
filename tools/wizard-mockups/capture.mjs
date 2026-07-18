@@ -144,7 +144,21 @@ async function main() {
 
   async function capture(outDir, host, path, outName, { clip, fullPage = false } = {}) {
     failedMedia.clear();
-    await page.goto(`http://${host}${path}`, { waitUntil: "networkidle", timeout: 30000 });
+    const resp = await page.goto(`http://${host}${path}`, { waitUntil: "networkidle", timeout: 30000 });
+    // A non-OK main document (typically a 502 when the Next dev server has
+    // been OOM-killed mid-run) renders as a blank white page with zero image
+    // requests, so the broken-media guard below never fires. Without this
+    // check the tool would silently write a blank thumbnail and exit 0 — the
+    // batch on Jul 18 shipped 162 blank webps that way. Refuse loudly and
+    // point at the recovery step.
+    const status = resp ? resp.status() : "no response";
+    if (!resp || !resp.ok()) {
+      throw new Error(
+        `${outName}: main document returned ${status} at ${host}${path} — refusing to capture.\n` +
+          "The Next dev server (nextjs-customer) is likely down or was OOM-killed. " +
+          "Restart it (`docker compose up -d nextjs-customer`), let it come up, then retry.",
+      );
+    }
     // Hide Next.js's dev-only overlay, same as tools/flowmap/crawler/capture.js.
     await page.addStyleTag({ content: "nextjs-portal{display:none !important}" }).catch(() => {});
     // Second net: <img> elements that attempted a load and got nothing
