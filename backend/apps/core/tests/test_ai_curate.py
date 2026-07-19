@@ -2,6 +2,8 @@
 
 from types import SimpleNamespace
 
+import pytest
+
 from apps.core.onboarding import ai_curate
 
 
@@ -71,3 +73,41 @@ def test_shortlist_empty_brief_returns_position_order():
     brief = ai_curate.CoachBrief()
     rows = [_row(1, "B", "b", position=2), _row(2, "A", "a", position=1)]
     assert [r.pk for r in ai_curate.shortlist(rows, brief, limit=2)] == [2, 1]
+
+
+def _seed_logos():
+    from apps.core.models import CuratedLogo
+
+    rows = [
+        CuratedLogo.objects.create(
+            title="Lotus Mark", tags="yoga, lotus, calm", image_key="platform/curated-logos/a.png", position=1
+        ),
+        CuratedLogo.objects.create(
+            title="Barbell Mark", tags="gym, barbell", image_key="platform/curated-logos/b.png", position=2
+        ),
+    ]
+    return rows
+
+
+@pytest.mark.django_db
+def test_rank_logos_returns_validated_ordered_ids(monkeypatch):
+    rows = _seed_logos()
+
+    def fake(**kwargs):
+        parsed = kwargs["output_model"].model_validate(
+            {"logo_ids": [rows[1].pk, 999999, rows[0].pk, rows[1].pk]}  # hallucination + dupe
+        )
+        return parsed, 0.005, "claude-haiku-4-5"
+
+    monkeypatch.setattr(ai_curate.core_ai, "structured", fake)
+    ids = ai_curate.rank_logos(ai_curate.CoachBrief(niche="yoga"), tenant_schema="glow")
+    assert ids == [rows[1].pk, rows[0].pk]
+
+
+@pytest.mark.django_db
+def test_rank_logos_empty_catalog_no_call(monkeypatch):
+    def boom(**kwargs):
+        raise AssertionError("no call expected")
+
+    monkeypatch.setattr(ai_curate.core_ai, "structured", boom)
+    assert ai_curate.rank_logos(ai_curate.CoachBrief(), tenant_schema="glow") == []

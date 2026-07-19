@@ -119,3 +119,25 @@ def test_verify_response_includes_wizard_token(restore_public):
     wizard_token = resp.json()["wizard_token"]
     assert verify_wizard_token(wizard_token)["purpose"] == "wizard"
     Tenant.objects.filter(slug="fresh-studio").delete()
+
+
+def test_business_chapter_patch_enqueues_logo_rank(tenant, monkeypatch):
+    from apps.core import tasks as core_tasks
+
+    calls = []
+    monkeypatch.setattr(core_tasks.rank_curated_logos, "delay", lambda tenant_id: calls.append(tenant_id))
+
+    _patch(_token(), answers={"niche": "yoga"})
+    assert calls == []  # description not yet present
+    _patch(_token(), answers={"description": "Vinyasa for busy professionals"})
+    assert calls == [tenant.id]
+
+
+def test_theme_patch_does_not_enqueue_logo_rank(tenant, monkeypatch):
+    from apps.core import tasks as core_tasks
+
+    calls = []
+    monkeypatch.setattr(core_tasks.rank_curated_logos, "delay", lambda tenant_id: calls.append(tenant_id))
+    _patch(_token(), answers={"niche": "yoga"})
+    _patch(_token(), answers={"theme": "forest"})
+    assert calls == []

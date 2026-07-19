@@ -330,6 +330,40 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
 
 
 @shared_task
+def rank_curated_logos(tenant_id):
+    """Wizard-time helper: AI-rank the curated logo catalog for this coach and
+    stash the order in wizard_state. Fired when the business chapter is saved;
+    the logo step reads the result a few steps later. Every failure path is a
+    silent no-op — the wizard falls back to the client-side keyword rank."""
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.models import Tenant
+    from apps.core.onboarding import ai_compose, ai_curate
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None or tenant.provisioning_status != "pending":
+        return
+    if not ai_compose.compose_available():
+        return
+    locale = REGION_DEFAULT_LOCALE.get(tenant.region or "global", "en")
+    brief = ai_curate.CoachBrief.from_tenant(tenant, locale=locale)
+    try:
+        ids = ai_curate.rank_logos(brief, tenant_schema=tenant.schema_name)
+    except Exception:
+        logger.exception("curated logo rank failed for %s", tenant.slug)
+        return
+    if not ids:
+        return
+    # Re-read right before writing: the coach is actively PATCHing answers
+    # while this task runs; last-write-wins on the whole JSON is the wizard's
+    # existing contract, keep the window small.
+    tenant.refresh_from_db()
+    state = dict(tenant.wizard_state or {})
+    state["curated_logo_rank"] = ids
+    tenant.wizard_state = state
+    tenant.save(update_fields=["wizard_state"])
+
+
+@shared_task
 def purge_ai_transcripts():
     """Retention: drop assistant transcripts older than
     AI_TRANSCRIPT_RETENTION_DAYS (audit content, not billing state — the

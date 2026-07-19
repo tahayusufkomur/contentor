@@ -12,6 +12,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from django.conf import settings
+from django_tenants.utils import schema_context
+from pydantic import BaseModel, Field
+
+from apps.core import ai as core_ai
+
 
 @dataclass(frozen=True)
 class CoachBrief:
@@ -86,3 +92,57 @@ def shortlist(rows, brief: CoachBrief, *, limit: int = 40) -> list:
         return len(bt & (tokens(row.tags.replace(",", " ")) | tokens(row.title)))
 
     return sorted(rows, key=lambda r: (-score(r), r.position, r.pk))[:limit]
+
+
+LOGO_RANK_TOP = 24
+LOGO_RANK_POOL = 60
+LOGO_RANK_MAX_TOKENS = 600
+
+
+class _LogoRank(BaseModel):
+    logo_ids: list[int] = Field(default_factory=list)
+
+
+# Static system prompt: byte-identical across tenants (prompt caching).
+LOGO_RANK_SYSTEM_PROMPT = """You rank ready-made logo marks for a solo coach's new brand.
+
+You receive the coach's brief and a candidate list of logo marks (id, title,
+tags). Return logo_ids: the candidate ids ordered best-fit first — subject
+match with the coach's niche and their own description weighs most, then
+overall style fit. Return at most 24 ids; ids must come from the list.
+"""
+
+
+def rank_logos(brief: CoachBrief, *, tenant_schema: str) -> list[int]:
+    """One structured call -> ordered CuratedLogo ids (validated, deduped,
+    capped). Re-raises core_ai.AiError upward — an empty result is not the
+    same as a failure, so callers treat exceptions as "no rank"."""
+    from apps.core.models import CuratedLogo
+    from apps.core.onboarding import ai_compose
+
+    with schema_context("public"):
+        rows = list(CuratedLogo.objects.filter(enabled=True).order_by("position", "id"))
+    pool = shortlist(rows, brief, limit=LOGO_RANK_POOL)
+    if not pool:
+        return []
+    lines = [brief_block(brief), "", "<curated_logos>"]
+    lines += [f'{r.pk}: "{r.title}" tags: {r.tags}' for r in pool]
+    lines.append("</curated_logos>")
+    try:
+        parsed, cost, _model = core_ai.structured(
+            system=LOGO_RANK_SYSTEM_PROMPT,
+            user="\n".join(lines),
+            output_model=_LogoRank,
+            model=settings.ONBOARDING_AI_MODEL,
+            max_tokens=LOGO_RANK_MAX_TOKENS,
+        )
+    except core_ai.AiError as exc:
+        ai_compose.record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))
+        raise
+    ai_compose.record_spend(tenant_schema, float(cost or 0))
+    valid = {r.pk for r in pool}
+    out: list[int] = []
+    for logo_id in parsed.logo_ids:
+        if logo_id in valid and logo_id not in out:
+            out.append(logo_id)
+    return out[:LOGO_RANK_TOP]

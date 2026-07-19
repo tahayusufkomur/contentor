@@ -115,6 +115,14 @@ def wizard_state(request):
         tenant.save(update_fields=["wizard_state"])
         logger.info("wizard state saved slug=%s keys=%s", tenant.slug, sorted(answers_in))
 
+        # Business chapter complete (niche + description present): kick off the
+        # AI curated-logo rank so it's ready by the time the coach reaches the
+        # logo step. Fail-silent; the logo step falls back to the keyword rank.
+        if {"description", "goals"} & set(answers_in) and answers.get("niche") and answers.get("description"):
+            from ..tasks import rank_curated_logos
+
+            rank_curated_logos.delay(tenant.id)
+
     return Response(_state_body(tenant))
 
 
