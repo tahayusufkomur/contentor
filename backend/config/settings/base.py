@@ -460,6 +460,34 @@ LOGGING = {
 # is the `setup_logging` signal in config/celery.py.
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 
+# --- Logbook: log pipeline + activity trail (apps.logbook) --------------------
+# Vector ships container stdout to /api/v1/platform/logs/ingest/ guarded by
+# this shared secret; empty token = ingest disabled (503).
+LOGS_INGEST_TOKEN = os.environ.get("LOGS_INGEST_TOKEN", "")
+LOGBOOK_RETENTION_DAYS = 14
+LOGBOOK_HARD_CAP_DAYS = 21  # purge even unarchived rows past this; logs ERROR
+# Minimum stored level per compose service; "*" is the fallback for the rest.
+LOGBOOK_LEVEL_FLOORS = {
+    "django": "INFO",
+    "celery-worker": "INFO",
+    "celery-beat": "INFO",
+    "*": "WARNING",
+}
+# Requests that must not generate RequestEvents (health probes flood, the
+# panel/track/ingest endpoints would self-amplify, dev sink is noise).
+LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES = (
+    "/api/health/",
+    "/static/",
+    "/api/v1/platform/logs/",
+    "/api/v1/platform/activity/",
+    "/api/v1/track/",
+    "/api/v1/dev/",
+)
+# Query params whose values are replaced with "redacted" before storage
+# (magic-link tokens and friends must never sit in a 14-day table or S3).
+LOGBOOK_REDACT_PARAMS = ("token", "key", "code", "signature", "session", "password")
+LOGBOOK_ARCHIVE_PREFIXES = {"logs": "logs/archive/", "activity": "activity/archive/"}
+
 # --- Custom domains (apps.domains) -------------------------------------------
 # When true, registrar/Cloudflare/Resend use deterministic fakes (no live API
 # calls or real purchases). Overridden per-environment below.
