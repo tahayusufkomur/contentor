@@ -43,12 +43,31 @@ Extra photo-batch gotchas (learned on the 168-cover run, 2026-07-19):
 - **One automatic download per tab**: after a tab's first "Download full-sized image", later
   download clicks in that tab silently do nothing (no request, no file). Fresh tab per image —
   or recover a missed one by opening the chat URL in a NEW tab and clicking download there.
-- **Parallel subagents work** (one tab each, pure-DOM injection via `document.execCommand('insertText')`
-  + JS send — never coordinate clicks in background tabs), but downloads MUST be serialized via a
-  lockdir since ~/Downloads is shared; claim by before/after file-set diff + `mv`, never `ls -t | head -1`.
 - Quota "limit resets" banners can be stale/per-chat — always empirically test one generation
   before declaring an account dry.
 - Görkem (/u/1, Plus) renders 2752×1536; TAHA (/u/0) renders 1376×768.
+
+## Parallel run recipe (proven 2026-07-19: 3×Sonnet did 88 imgs / ~100 min, 2 transient fails)
+
+Spawn **3-5 Sonnet subagents** (`model: sonnet`), each with a JSON slice file of
+`{filename, prompt}` items and its OWN browser tab. Per agent, per item:
+1. `tabs_create_mcp` → fresh tab (one-download-per-tab rule) → navigate `https://gemini.google.com/u/<N>/app`.
+2. ONE `browser_batch`: wait 4s → JS inject prompt (`ed=document.querySelector('div.ql-editor');
+   ed.focus(); document.execCommand('insertText', false, PROMPT)`, verify `ed.innerText` length) →
+   wait 3s → JS click `button[aria-label="Send message"]` → wait 40s → JS click last
+   `button[aria-label="Download full-sized image"]` if count grew. Never coordinate clicks —
+   pure DOM is background-tab safe.
+3. Download claim under a **shared lockdir** (`until mkdir $LOCK; do sleep 1; done`, steal if
+   >120s old): snapshot `~/Downloads/Gemini_Generated_Image_*.png` BEFORE the download click,
+   claim the diff-new file with `mv` to the target filename, release. Never `ls -t | head -1`
+   without the diff — parallel downloads mis-attribute.
+4. Close the tab, log `OK/FAIL <filename>`, continue. Stop on a CONFIRMED quota hit (retry once —
+   banners lie), report `{ok, fail, quota_hit, failed_items}` as JSON.
+
+Scaling notes: the download lock holds ~30s/item, so ~5 agents saturate it — more adds nothing.
+Steps 2+3 as single batched calls ≈ 90-120s/item/agent. The REAL cap is account quota
+(~100-150 imgs/day across both accounts, soft) — parallelism just reaches it sooner. The
+orchestrator should md5-dedupe at the end and regenerate any misses serially (fresh-tab loop).
 
 ## Ingest (per batch)
 
