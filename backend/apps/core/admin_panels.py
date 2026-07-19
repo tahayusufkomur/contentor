@@ -12,6 +12,7 @@ from .models import (
     AiTranscript,
     BlogAiUsage,
     CuratedLogo,
+    CuratedPhoto,
     HelpBotUsage,
     LogoAiUsage,
     OnboardingAiUsage,
@@ -368,6 +369,22 @@ class CuratedLogoAdmin(ModelAdmin):
     fields = ("title", "prompt", "tags", "position", "enabled", "image_key")
     image_fields = ("image_key",)
     image_upload_prefix = "curated-logos"
+    list_mode = "gallery"
+    gallery_image_field = "image_key"
+
+
+@platform_site.register(CuratedPhoto)
+class CuratedPhotoAdmin(ModelAdmin):
+    key = "curated-photos"
+    icon = "image"
+    description = "Curated stock/illustration library coaches can drop into their blog posts."
+    list_display = ("image_key", "title", "kind", "tags", "enabled", "position", "updated_at")
+    search_fields = ("title", "tags", "prompt")
+    list_filters = ("enabled", "kind")
+    ordering = ("position", "id")
+    fields = ("title", "prompt", "tags", "alt_text", "kind", "position", "enabled", "image_key")
+    image_fields = ("image_key",)
+    image_upload_prefix = "curated-photos"
     list_mode = "gallery"
     gallery_image_field = "image_key"
 

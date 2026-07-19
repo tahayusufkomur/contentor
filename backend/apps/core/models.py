@@ -626,6 +626,43 @@ class CuratedLogo(models.Model):
         return self.title
 
 
+class CuratedPhoto(models.Model):
+    """Superadmin-curated stock/illustration library for tenant content
+    (blogs first). Public schema; objects live in storage under
+    platform/curated-photos/ and are NEVER deleted — rows are disabled
+    instead, so tenant media.Photo rows materialized from them never break.
+    Spec: docs/superpowers/specs/2026-07-19-curated-photos-design.md."""
+
+    KINDS = ["hero", "stock", "spot", "texture", "divider", "icon"]
+    AI_KINDS = ("hero", "stock", "spot")  # the only kinds offered to the blog AI writer
+
+    title = models.CharField(max_length=120)
+    prompt = models.TextField(blank=True, default="")
+    tags = models.CharField(max_length=500, blank=True, default="")  # comma-separated
+    alt_text = models.CharField(max_length=300, blank=True, default="")
+    kind = models.CharField(max_length=10, choices=[(k, k) for k in KINDS], default="stock")
+    image_key = models.CharField(max_length=300)
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    position = models.IntegerField(default=0, help_text="Sort order; 0 = append at the end on create.")
+    enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        ordering = ["position", "id"]
+
+    def save(self, *args, **kwargs):
+        if self._state.adding and not self.position:
+            last = CuratedPhoto.objects.aggregate(m=models.Max("position"))["m"] or 0
+            self.position = last + 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
 class AiConversation(models.Model):
     """One chat session (any of the three bots). Public schema, loose-coupled
     like AiTranscript: tenant_schema is a string, agent/user ids are plain
