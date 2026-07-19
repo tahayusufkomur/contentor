@@ -82,3 +82,89 @@ def test_materialize_is_idempotent_per_tenant(tenant_ctx, curated_row):
     second = materialize_curated_photo(curated_row)
     assert first.pk == second.pk
     assert Photo.objects.filter(s3_key=curated_row.image_key).count() == 1
+
+
+# ── coach API ────────────────────────────────────────────────────────────────
+
+from rest_framework.test import APIClient  # noqa: E402
+
+from apps.accounts.models import User  # noqa: E402
+
+HOST = "shared-test.localhost"
+
+
+@pytest.fixture()
+def coach_client(tenant_ctx):
+    coach = User.objects.create_user(
+        email="coach@curatedphotos.test",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    client = APIClient(HTTP_HOST=HOST)
+    client.force_authenticate(user=coach)
+    return client
+
+
+@pytest.fixture()
+def catalog(tenant_ctx):
+    with schema_context("public"):
+        rows = [
+            CuratedPhoto.objects.create(
+                title="Sunrise run", tags="fitness, running", kind="hero",
+                image_key="platform/curated-photos/run.png",
+            ),
+            CuratedPhoto.objects.create(
+                title="Meal prep", tags="cooking, nutrition", kind="stock",
+                image_key="platform/curated-photos/meal.png",
+            ),
+            CuratedPhoto.objects.create(
+                title="Disabled", tags="x", kind="hero",
+                image_key="platform/curated-photos/off.png", enabled=False,
+            ),
+            CuratedPhoto.objects.create(
+                title="Escapee", tags="x", kind="hero",
+                image_key="tenant-secrets/oops.png",
+            ),
+        ]
+    return rows
+
+
+def test_search_requires_auth(tenant_ctx, catalog):
+    res = APIClient(HTTP_HOST=HOST).get("/api/v1/curated-photos/")
+    assert res.status_code in (401, 403)
+
+
+def test_search_filters_kind_and_query_and_guards_prefix(coach_client, catalog):
+    res = coach_client.get("/api/v1/curated-photos/")
+    assert res.status_code == 200
+    titles = [r["title"] for r in res.data]
+    assert "Sunrise run" in titles and "Meal prep" in titles
+    assert "Disabled" not in titles  # enabled=False hidden
+    assert "Escapee" not in titles  # non-platform key never signed
+
+    res = coach_client.get("/api/v1/curated-photos/?kind=hero")
+    assert [r["title"] for r in res.data] == ["Sunrise run"]
+
+    res = coach_client.get("/api/v1/curated-photos/?q=nutri")
+    assert [r["title"] for r in res.data] == ["Meal prep"]
+    assert res.data[0]["image_url"]
+
+
+def test_use_materializes_and_is_idempotent(coach_client, catalog):
+    from apps.media.models import Photo
+
+    row_id = catalog[0].id
+    res = coach_client.post(f"/api/v1/curated-photos/{row_id}/use/")
+    assert res.status_code == 201
+    assert res.data["s3_key"] == "platform/curated-photos/run.png"
+    again = coach_client.post(f"/api/v1/curated-photos/{row_id}/use/")
+    assert again.status_code == 201
+    assert again.data["id"] == res.data["id"]
+    assert Photo.objects.filter(s3_key="platform/curated-photos/run.png").count() == 1
+
+
+def test_use_404_for_disabled(coach_client, catalog):
+    res = coach_client.post(f"/api/v1/curated-photos/{catalog[2].id}/use/")
+    assert res.status_code == 404

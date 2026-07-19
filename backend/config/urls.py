@@ -59,6 +59,7 @@ urlpatterns = [
     path("api/v1/platform/blog/", include("apps.blog.urls_platform")),
     path("api/v1/platform/", include("apps.core.platform.urls")),
     path("api/v1/logos/", include("apps.core.curated_logos.urls")),
+    path("api/v1/curated-photos/", include("apps.core.curated_photos.urls")),
     # Schema-driven admin kit: superadmin (public schema) + coach studio
     # (tenant schema) sites. See apps/adminkit/.
     path("api/v1/platform-admin/", include("apps.adminkit.urls_platform")),
