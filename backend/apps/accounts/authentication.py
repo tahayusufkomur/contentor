@@ -57,4 +57,7 @@ class TenantJWTAuthentication(BaseAuthentication):
         except User.DoesNotExist:
             return None
 
+        from apps.logbook.context import set_current_user
+
+        set_current_user(user.email)
         return (user, payload)

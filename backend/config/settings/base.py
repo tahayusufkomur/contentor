@@ -73,6 +73,7 @@ MIDDLEWARE = [
     "apps.core.middleware.region.RegionResolverMiddleware",
     "apps.core.middleware.tenant.HeaderAwareTenantMiddleware",
     "apps.core.middleware.demo_readonly.DemoReadOnlyMiddleware",
+    "apps.logbook.context.UserContextMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -413,10 +414,11 @@ LOGGING = {
     "disable_existing_loggers": False,
     "filters": {
         "tenant_context": {"()": "apps.core.logging.TenantContextFilter"},
+        "user_context": {"()": "apps.logbook.context.UserContextFilter"},
     },
     "formatters": {
         "console": {
-            "format": "%(asctime)s %(levelname)-7s %(name)s [tenant=%(tenant)s] %(message)s",
+            "format": "%(asctime)s %(levelname)-7s %(name)s [tenant=%(tenant)s] [user=%(user)s] %(message)s",
             "datefmt": "%Y-%m-%dT%H:%M:%S%z",
         },
     },
@@ -425,7 +427,7 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stdout",
             "formatter": "console",
-            "filters": ["tenant_context"],
+            "filters": ["tenant_context", "user_context"],
         },
     },
     # Root catches anything unconfigured at WARNING so third-party noise stays
