@@ -5,9 +5,13 @@ import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { briefKeywords, rankCuratedLogos } from "@shared/logo/curated-rank";
+import {
+  applyAiRank,
+  briefKeywords,
+  rankCuratedLogos,
+} from "@shared/logo/curated-rank";
 
-import { getCuratedLogos } from "@/lib/wizard/api";
+import { getCuratedLogos, readWizardState } from "@/lib/wizard/api";
 import type {
   CuratedLogoItem,
   WizardAnswers,
@@ -56,22 +60,35 @@ export function LogoStep({
       .catch(() => setItems([]));
   }, []);
 
+  const [aiRank, setAiRank] = useState<number[] | undefined>(undefined);
+  useEffect(() => {
+    // Server-side AI rank computed while the coach walked the look/pages
+    // chapters; absent (task still running / AI off) -> keyword rank only.
+    readWizardState(token)
+      .then((res) => setAiRank(res.state.curated_logo_rank))
+      .catch(() => setAiRank(undefined));
+  }, [token]);
+
   // Marks matching the coach's niche and their own description first (same
-  // ranking as the Logo Studio's Browse entrance).
+  // ranking as the Logo Studio's Browse entrance), with the server AI rank
+  // overlaid on top when it has landed.
   const ranked = useMemo(
     () =>
-      rankCuratedLogos(
-        items.map((item) => ({
-          item,
-          title: item.title,
-          tags: item.tags
-            .split(",")
-            .map((tag) => tag.trim().toLowerCase())
-            .filter(Boolean),
-        })),
-        briefKeywords({ niche, description }),
-      ).map((ranked) => ranked.item),
-    [items, niche, description],
+      applyAiRank(
+        rankCuratedLogos(
+          items.map((item) => ({
+            item,
+            title: item.title,
+            tags: item.tags
+              .split(",")
+              .map((tag) => tag.trim().toLowerCase())
+              .filter(Boolean),
+          })),
+          briefKeywords({ niche, description }),
+        ).map((ranked) => ranked.item),
+        aiRank,
+      ),
+    [items, niche, description, aiRank],
   );
 
   const s = THEME_SWATCHES[theme ?? ""] ?? THEME_SWATCHES.ocean;

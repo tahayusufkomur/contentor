@@ -86,3 +86,21 @@ describe("rankCuratedLogos", () => {
     expect(ranked.map((l) => l.title)).toEqual(catalog.map((l) => l.title));
   });
 });
+
+import { applyAiRank } from "@shared/logo/curated-rank";
+
+describe("applyAiRank", () => {
+  const items = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
+
+  it("puts AI-ranked ids first in rank order, rest keep keyword order", () => {
+    expect(applyAiRank(items, [3, 1]).map((x) => x.id)).toEqual([3, 1, 2, 4]);
+  });
+
+  it("skips unknown ids and handles empty/absent rank", () => {
+    expect(applyAiRank(items, [99, 2]).map((x) => x.id)).toEqual([2, 1, 3, 4]);
+    expect(applyAiRank(items, undefined).map((x) => x.id)).toEqual([
+      1, 2, 3, 4,
+    ]);
+    expect(applyAiRank(items, []).map((x) => x.id)).toEqual([1, 2, 3, 4]);
+  });
+});

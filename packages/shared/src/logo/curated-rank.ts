@@ -110,3 +110,21 @@ export function rankCuratedLogos<T extends RankableCuratedLogo>(
     .sort((a, b) => b.s - a.s || a.index - b.index)
     .map((x) => x.logo);
 }
+
+/**
+ * Overlay a server-computed AI rank (ordered logo ids, best first) on an
+ * already keyword-ranked list: AI picks first, everything else keeps its
+ * order. Absent/empty rank = unchanged list.
+ */
+export function applyAiRank<T extends { id: number }>(
+  items: T[],
+  aiRank?: number[] | null,
+): T[] {
+  if (!aiRank || aiRank.length === 0) return items;
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const picked = aiRank
+    .map((id) => byId.get(id))
+    .filter((item): item is T => item !== undefined);
+  const pickedIds = new Set(picked.map((item) => item.id));
+  return [...picked, ...items.filter((item) => !pickedIds.has(item.id))];
+}

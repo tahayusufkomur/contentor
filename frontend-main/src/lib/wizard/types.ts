@@ -51,6 +51,8 @@ export interface WizardState {
   answers?: WizardAnswers;
   step_timestamps?: Record<string, string>;
   finished_rest_for_me?: boolean;
+  /** Server-computed AI logo rank (ordered CuratedLogo ids, best first). */
+  curated_logo_rank?: number[];
 }
 
 export interface WizardStateResponse {
