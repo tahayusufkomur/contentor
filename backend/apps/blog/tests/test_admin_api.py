@@ -206,3 +206,28 @@ def test_generate_with_no_cover_photo_id_leaves_field_null(coach_client, paid_te
         res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
     post = BlogPost.objects.get(pk=res.data["post"]["id"])
     assert post.cover_photo_id is None
+
+
+def test_generate_materializes_curated_cover(coach_client, paid_tenant, settings):
+    from django_tenants.utils import schema_context as _sc
+
+    from apps.core.models import CuratedPhoto
+    from apps.media.models import Photo
+
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with _sc("public"):
+        row = CuratedPhoto.objects.create(
+            title="Sunrise run", tags="habits", kind="hero",
+            alt_text="runner", image_key="platform/curated-photos/run.png",
+        )
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result(cover_photo_id=f"curated:{row.pk}")) as gen:
+        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    assert res.status_code == 200 and res.data["source"] == "ai"
+    photo = Photo.objects.get(s3_key="platform/curated-photos/run.png")
+    post = BlogPost.objects.get(pk=res.data["post"]["id"])
+    assert post.cover_photo_id == photo.id
+    # curated candidates were offered alongside tenant photos
+    offered_ids = [str(p.id) for p in gen.call_args.kwargs["photos"]]
+    assert f"curated:{row.pk}" in offered_ids
+    with _sc("public"):
+        CuratedPhoto.objects.all().delete()

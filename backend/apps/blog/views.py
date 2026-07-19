@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.media.models import Photo
 
-from . import ai
+from . import ai, curated
 from .models import BlogAutopilot, BlogPost, BlogTopicIdea, unique_slug
 from .serializers import (
     BlogAutopilotSerializer,
@@ -116,7 +116,8 @@ def blog_generate(request):
     if not topic:
         return Response({"post": None, "source": "error", "remaining": status["remaining"]}, status=400)
     instructions = str(data.get("instructions") or "")[:500]
-    photos = Photo.objects.order_by("-created_at")[: ai.MAX_AVAILABLE_PHOTOS]
+    photos = list(Photo.objects.order_by("-created_at")[: ai.MAX_AVAILABLE_PHOTOS])
+    photos += curated.curated_candidates(topic, limit=ai.MAX_AVAILABLE_PHOTOS - len(photos))
 
     try:
         result = ai.generate_post(_brief_for_current_tenant(), topic, instructions, photos=photos)
@@ -132,6 +133,7 @@ def blog_generate(request):
     ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
     ai.record_success(tenant.schema_name)
     fields = dict(result.fields)
+    curated.resolve_curated_photo_ids(fields)
     cover_photo_id = fields.pop("cover_photo_id", "")
     cover_photo = Photo.objects.filter(pk=cover_photo_id).first() if cover_photo_id else None
     post = BlogPost.objects.create(
