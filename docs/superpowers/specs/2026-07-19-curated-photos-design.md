@@ -142,6 +142,19 @@ Extend `apps.blog.ai.generate_post`:
 - Consuming the catalog outside blog (email campaigns, site sections) — the
   catalog shape deliberately supports this later.
 
+## Implementation notes (post-spec discovery)
+
+Exploration during planning found that `BlogPost.cover_photo` and
+`image_placements` are stored (and populated by the AI) but surfaced nowhere:
+no serializer exposes them and neither public blog page renders any image.
+The implementation therefore includes the missing rendering slice — admin
+serializer write support, public serializers with signed cover URLs and
+serve-time `<figure>` injection for placements (URLs are presigned and expire,
+so they are attached at serialization time, never stored in `body_html`) —
+and builds the editor image UI from scratch (there was no existing "Upload"
+flow to add a Library tab beside). Inline placement editing is a small
+placements manager (heading + image pairs), not rich-text image insertion.
+
 ## Testing
 
 - **Backend:** model + seed-command tests mirroring `test_curated_logos`
