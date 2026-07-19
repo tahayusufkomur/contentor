@@ -41,7 +41,9 @@ export function searchCuratedPhotos(params: {
 
 // Named materialize*, not use* — ESLint treats use-prefixed functions as
 // React hooks and would reject calls from event handlers.
-export function materializeCuratedPhoto(id: number): Promise<MaterializedPhoto> {
+export function materializeCuratedPhoto(
+  id: number,
+): Promise<MaterializedPhoto> {
   return clientFetch<MaterializedPhoto>(`/api/v1/curated-photos/${id}/use/`, {
     method: "POST",
   });

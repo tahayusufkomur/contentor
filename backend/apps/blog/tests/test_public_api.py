@@ -45,7 +45,9 @@ def test_public_detail_has_cover_url_and_injected_images(tenant_ctx):
     cover = Photo.objects.create(s3_key="platform/curated-photos/c.png", title="Cover")
     inline = Photo.objects.create(s3_key="platform/curated-photos/i.png", title="Inline", alt_text="inline alt")
     BlogPost.objects.create(
-        title="Post", slug="post", status="published",
+        title="Post",
+        slug="post",
+        status="published",
         body_html="<p>a</p><h2>Sec</h2><p>b</p>",
         cover_photo=cover,
         image_placements=[{"heading": "Sec", "photo_id": str(inline.id)}],

@@ -34,7 +34,16 @@ class BlogPostDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BlogPost
-        fields = ("slug", "title", "excerpt", "meta_description", "tags", "body_html", "published_at", "cover_photo_url")
+        fields = (
+            "slug",
+            "title",
+            "excerpt",
+            "meta_description",
+            "tags",
+            "body_html",
+            "published_at",
+            "cover_photo_url",
+        )
 
     def get_body_html(self, obj):
         return inject_placement_images(obj.body_html, resolve_placements(obj))

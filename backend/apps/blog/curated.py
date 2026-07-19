@@ -56,7 +56,7 @@ def curated_candidates(topic, limit=MAX_CURATED_CANDIDATES):
 
 
 def _materialize_id(curated_id):
-    """"curated:<pk>" -> materialized tenant Photo UUID string, or ""."""
+    """ "curated:<pk>" -> materialized tenant Photo UUID string, or ""."""
     pk = curated_id[len(CURATED_PREFIX) :]
     row = None
     if pk.isdigit():

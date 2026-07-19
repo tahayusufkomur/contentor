@@ -31,7 +31,8 @@ def test_resolve_drops_missing_and_malformed_photos(tenant_ctx):
 
     photo = Photo.objects.create(s3_key="platform/curated-photos/x.png", title="X", alt_text="alt x")
     post = BlogPost.objects.create(
-        title="t", slug="t",
+        title="t",
+        slug="t",
         image_placements=[
             {"heading": "Good", "photo_id": str(photo.id)},
             {"heading": "Gone", "photo_id": "0b6beec4-8e42-4f47-a94c-9d1e9a1e2f3a"},

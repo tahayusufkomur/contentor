@@ -112,19 +112,28 @@ def catalog(tenant_ctx):
     with schema_context("public"):
         rows = [
             CuratedPhoto.objects.create(
-                title="Sunrise run", tags="fitness, running", kind="hero",
+                title="Sunrise run",
+                tags="fitness, running",
+                kind="hero",
                 image_key="platform/curated-photos/run.png",
             ),
             CuratedPhoto.objects.create(
-                title="Meal prep", tags="cooking, nutrition", kind="stock",
+                title="Meal prep",
+                tags="cooking, nutrition",
+                kind="stock",
                 image_key="platform/curated-photos/meal.png",
             ),
             CuratedPhoto.objects.create(
-                title="Disabled", tags="x", kind="hero",
-                image_key="platform/curated-photos/off.png", enabled=False,
+                title="Disabled",
+                tags="x",
+                kind="hero",
+                image_key="platform/curated-photos/off.png",
+                enabled=False,
             ),
             CuratedPhoto.objects.create(
-                title="Escapee", tags="x", kind="hero",
+                title="Escapee",
+                tags="x",
+                kind="hero",
                 image_key="tenant-secrets/oops.png",
             ),
         ]
@@ -208,8 +217,13 @@ def catalog_dir(tmp_path):
     (tmp_path / "photo_meta.json").write_text(
         jsonlib.dumps(
             [
-                {"title": "Sunrise run", "filename": "run.png", "tags": "fitness", "kind": "hero",
-                 "alt_text": "runner at sunrise"},
+                {
+                    "title": "Sunrise run",
+                    "filename": "run.png",
+                    "tags": "fitness",
+                    "kind": "hero",
+                    "alt_text": "runner at sunrise",
+                },
                 {"title": "Lotus mark", "filename": "mark.png", "kind": "spot"},
                 {"title": "Ghost", "filename": "missing.png", "kind": "hero"},
                 {"title": "Bad kind", "filename": "run.png", "kind": "sticker"},

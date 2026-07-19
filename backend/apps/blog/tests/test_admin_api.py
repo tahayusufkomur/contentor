@@ -217,8 +217,11 @@ def test_generate_materializes_curated_cover(coach_client, paid_tenant, settings
     settings.ANTHROPIC_API_KEY = "test-key"
     with _sc("public"):
         row = CuratedPhoto.objects.create(
-            title="Sunrise run", tags="habits", kind="hero",
-            alt_text="runner", image_key="platform/curated-photos/run.png",
+            title="Sunrise run",
+            tags="habits",
+            kind="hero",
+            alt_text="runner",
+            image_key="platform/curated-photos/run.png",
         )
     with mock.patch.object(ai, "generate_post", return_value=_draft_result(cover_photo_id=f"curated:{row.pk}")) as gen:
         res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")

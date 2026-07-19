@@ -150,14 +150,21 @@ def test_autopilot_offers_and_materializes_curated_photos(paid_tenant, settings)
     BlogTopicIdea.objects.create(title="Morning habits", angle="beginner")
     with schema_context("public"):
         row = CuratedPhoto.objects.create(
-            title="Morning light", tags="morning, habits", kind="hero",
+            title="Morning light",
+            tags="morning, habits",
+            kind="hero",
             image_key="platform/curated-photos/morning.png",
         )
     draft = ai.DraftResult(
         {
-            "title": "T", "body_html": "<p>b</p>", "excerpt": "e", "meta_description": "m",
-            "tags": ["t"], "ai_model": "x",
-            "cover_photo_id": f"curated:{row.pk}", "image_placements": [],
+            "title": "T",
+            "body_html": "<p>b</p>",
+            "excerpt": "e",
+            "meta_description": "m",
+            "tags": ["t"],
+            "ai_model": "x",
+            "cover_photo_id": f"curated:{row.pk}",
+            "image_placements": [],
         },
         Decimal("0.03"),
     )

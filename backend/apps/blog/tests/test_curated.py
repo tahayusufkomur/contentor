@@ -15,19 +15,29 @@ def catalog(tenant_ctx):
     with schema_context("public"):
         rows = {
             "run": CuratedPhoto.objects.create(
-                title="Sunrise run", tags="fitness, running, morning", kind="hero",
-                alt_text="runner at sunrise", image_key="platform/curated-photos/run.png",
+                title="Sunrise run",
+                tags="fitness, running, morning",
+                kind="hero",
+                alt_text="runner at sunrise",
+                image_key="platform/curated-photos/run.png",
             ),
             "meal": CuratedPhoto.objects.create(
-                title="Meal prep", tags="cooking, nutrition", kind="stock",
+                title="Meal prep",
+                tags="cooking, nutrition",
+                kind="stock",
                 image_key="platform/curated-photos/meal.png",
             ),
             "texture": CuratedPhoto.objects.create(
-                title="Fitness texture", tags="fitness", kind="texture",
+                title="Fitness texture",
+                tags="fitness",
+                kind="texture",
                 image_key="platform/curated-photos/tex.png",
             ),
             "disabled": CuratedPhoto.objects.create(
-                title="Old fitness", tags="fitness", kind="hero", enabled=False,
+                title="Old fitness",
+                tags="fitness",
+                kind="hero",
+                enabled=False,
                 image_key="platform/curated-photos/old.png",
             ),
         }
