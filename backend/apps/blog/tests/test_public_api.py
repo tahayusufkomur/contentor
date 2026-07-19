@@ -36,3 +36,25 @@ def test_detail_serves_published(posts):
 
 def test_detail_404s_draft(posts):
     assert APIClient(HTTP_HOST=HOST).get("/api/v1/blog/posts/draft/").status_code == 404
+
+
+def test_public_detail_has_cover_url_and_injected_images(tenant_ctx):
+    from apps.blog.models import BlogPost
+    from apps.media.models import Photo
+
+    cover = Photo.objects.create(s3_key="platform/curated-photos/c.png", title="Cover")
+    inline = Photo.objects.create(s3_key="platform/curated-photos/i.png", title="Inline", alt_text="inline alt")
+    BlogPost.objects.create(
+        title="Post", slug="post", status="published",
+        body_html="<p>a</p><h2>Sec</h2><p>b</p>",
+        cover_photo=cover,
+        image_placements=[{"heading": "Sec", "photo_id": str(inline.id)}],
+    )
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    res = client.get("/api/v1/blog/posts/post/")
+    assert res.status_code == 200
+    assert res.data["cover_photo_url"]
+    assert '<figure class="blog-inline-image">' in res.data["body_html"]
+
+    listing = client.get("/api/v1/blog/posts/")
+    assert listing.data["results"][0]["cover_photo_url"]

@@ -41,7 +41,7 @@ class PublicPostList(generics.ListAPIView):
     pagination_class = _PublicPagination
 
     def get_queryset(self):
-        return BlogPost.objects.filter(status="published").order_by("-published_at")
+        return BlogPost.objects.filter(status="published").select_related("cover_photo").order_by("-published_at")
 
 
 class PublicPostDetail(generics.RetrieveAPIView):
@@ -51,7 +51,7 @@ class PublicPostDetail(generics.RetrieveAPIView):
     lookup_field = "slug"
 
     def get_queryset(self):
-        return BlogPost.objects.filter(status="published")
+        return BlogPost.objects.filter(status="published").select_related("cover_photo")
 
 
 # ── Coach admin ───────────────────────────────────────────────────────────────

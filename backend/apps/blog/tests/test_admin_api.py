@@ -231,3 +231,40 @@ def test_generate_materializes_curated_cover(coach_client, paid_tenant, settings
     assert f"curated:{row.pk}" in offered_ids
     with _sc("public"):
         CuratedPhoto.objects.all().delete()
+
+
+def test_admin_can_set_and_clear_cover(coach_client, paid_tenant):
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="platform/curated-photos/c.png", title="Cover")
+    created = coach_client.post("/api/v1/admin/blog/posts/", {"title": "P", "body_html": ""}, format="json")
+    post_id = created.data["id"]
+    res = coach_client.patch(f"/api/v1/admin/blog/posts/{post_id}/", {"cover_photo": str(photo.id)}, format="json")
+    assert res.status_code == 200
+    assert res.data["cover_photo"] == photo.id
+    assert res.data["cover_photo_url"]
+    res = coach_client.patch(f"/api/v1/admin/blog/posts/{post_id}/", {"cover_photo": None}, format="json")
+    assert res.data["cover_photo"] is None and res.data["cover_photo_url"] is None
+
+
+def test_admin_placements_validated(coach_client, paid_tenant):
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="platform/curated-photos/i.png", title="I")
+    created = coach_client.post(
+        "/api/v1/admin/blog/posts/", {"title": "P2", "body_html": "<h2>Sec</h2>"}, format="json"
+    )
+    post_id = created.data["id"]
+    good = coach_client.patch(
+        f"/api/v1/admin/blog/posts/{post_id}/",
+        {"image_placements": [{"heading": "Sec", "photo_id": str(photo.id)}]},
+        format="json",
+    )
+    assert good.status_code == 200
+    assert good.data["image_placements_resolved"][0]["url"]
+    bad = coach_client.patch(
+        f"/api/v1/admin/blog/posts/{post_id}/",
+        {"image_placements": [{"heading": "Sec", "photo_id": "not-a-photo"}]},
+        format="json",
+    )
+    assert bad.status_code == 400
