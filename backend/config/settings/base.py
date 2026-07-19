@@ -488,6 +488,7 @@ LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES = (
 # (magic-link tokens and friends must never sit in a 14-day table or S3).
 LOGBOOK_REDACT_PARAMS = ("token", "key", "code", "signature", "session", "password")
 LOGBOOK_ARCHIVE_PREFIXES = {"logs": "logs/archive/", "activity": "activity/archive/"}
+LOGBOOK_PAGEVIEW_RATE = "60/min"  # per client IP; PageViewThrottle reads this
 
 # --- Custom domains (apps.domains) -------------------------------------------
 # When true, registrar/Cloudflare/Resend use deterministic fakes (no live API

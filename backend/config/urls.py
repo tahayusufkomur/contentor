@@ -60,6 +60,7 @@ urlpatterns = [
     # Log pipeline + viewer endpoints — declared before the broader
     # /platform/ include so logs/activity resolve here.
     path("api/v1/platform/", include("apps.logbook.urls_platform")),
+    path("api/v1/track/", include("apps.logbook.urls_track")),
     path("api/v1/platform/", include("apps.core.platform.urls")),
     path("api/v1/logos/", include("apps.core.curated_logos.urls")),
     path("api/v1/curated-photos/", include("apps.core.curated_photos.urls")),
