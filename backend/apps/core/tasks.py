@@ -104,14 +104,21 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
                 tenant, answers, overrides["pages"], preferred_locale
             )
 
+        photos_status = None
+        if not state.get("ai_photos_status"):
+            photos_status = _pick_photos_with_ai(tenant, answers, overrides["pages"], preferred_locale)
+
         for field, value in overrides.items():
             setattr(config, field, value)
         config.onboarding_completed = True
         apply_wizard_logo(config, answers, tenant)
         config.save()
 
-        if ai_status is not None:
-            state["ai_compose_status"] = ai_status
+        if ai_status is not None or photos_status is not None:
+            if ai_status is not None:
+                state["ai_compose_status"] = ai_status
+            if photos_status is not None:
+                state["ai_photos_status"] = photos_status
             tenant.wizard_state = state
             tenant.save(update_fields=["wizard_state"])
 
@@ -125,18 +132,14 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
 
 
 AI_COMPOSE_TIMEOUT_SECONDS = 90
+AI_PHOTO_PICK_TIMEOUT_SECONDS = 60
 
 
-def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
-    """AI copy pass with a hard time cap. Returns (pages, status). NEVER
-    raises: any failure returns the static pages unchanged. Runs the call in
-    a worker thread (fresh connection, public schema) so a hung provider
-    can't stall provisioning past the cap."""
-    from apps.core.onboarding import ai_compose
-
-    if not ai_compose.compose_available():
-        return pages, "skipped"
-
+def _run_ai_step(label, tenant, fn, timeout_seconds):
+    """Run one AI step in a capped worker thread. Returns (result, "ok") or
+    (None, "failed"); NEVER raises. The thread gets fresh DB connections and
+    must only do public-schema reads/writes or pure compute — tenant-schema
+    writes belong to the caller's thread."""
     from concurrent.futures import ThreadPoolExecutor
     from concurrent.futures import TimeoutError as FutureTimeout
 
@@ -145,33 +148,88 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
 
         close_old_connections()
         try:
-            return ai_compose.compose_pages(
-                pages,
-                brand_name=tenant.name,
-                niche=answers.get("niche") or "general",
-                description=answers.get("description") or "",
-                followups=list(((answers.get("description_followups") or {}).get("items")) or []),
-                goals=list(answers.get("goals") or []),
-                locale=preferred_locale,
-                tenant_schema=tenant.schema_name,
-            )
+            return fn()
         finally:
             close_old_connections()
 
     pool = ThreadPoolExecutor(max_workers=1)
     future = pool.submit(run)
     try:
-        result = future.result(timeout=AI_COMPOSE_TIMEOUT_SECONDS)
+        result = future.result(timeout=timeout_seconds)
     except FutureTimeout:
-        logger.warning("onboarding AI compose timed out for %s", tenant.slug)
+        logger.warning("onboarding %s timed out for %s", label, tenant.slug)
         pool.shutdown(wait=False)
-        return pages, "failed"
+        return None, "failed"
     except Exception:
-        logger.exception("onboarding AI compose failed for %s", tenant.slug)
+        logger.exception("onboarding %s failed for %s", label, tenant.slug)
         pool.shutdown(wait=False)
-        return pages, "failed"
+        return None, "failed"
     pool.shutdown(wait=False)
     return result, "ok"
+
+
+def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
+    """AI copy pass. Returns (pages, status); falls back to the static pages."""
+    from apps.core.onboarding import ai_compose
+
+    if not ai_compose.compose_available():
+        return pages, "skipped"
+
+    def run():
+        return ai_compose.compose_pages(
+            pages,
+            brand_name=tenant.name,
+            niche=answers.get("niche") or "general",
+            description=answers.get("description") or "",
+            followups=list(((answers.get("description_followups") or {}).get("items")) or []),
+            goals=list(answers.get("goals") or []),
+            locale=preferred_locale,
+            tenant_schema=tenant.schema_name,
+        )
+
+    result, status = _run_ai_step("ai compose", tenant, run, AI_COMPOSE_TIMEOUT_SECONDS)
+    return (result if status == "ok" else pages), status
+
+
+def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
+    """Curated-photo pick: LLM step in the capped thread (public-schema reads
+    only), apply in this thread (we're inside tenant_context). Mutates `pages`
+    in place on success. Returns a status string; never raises."""
+    from apps.core.onboarding import ai_compose, ai_curate, ai_photos
+
+    if not ai_compose.compose_available():
+        return "skipped"
+
+    from apps.courses.models import Course
+    from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
+
+    brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+    courses = list(Course.objects.order_by("id")[:8])
+    events = [
+        *LiveClass.objects.filter(status="draft").order_by("id"),
+        *LiveStream.objects.filter(status="draft").order_by("id"),
+        *ZoomClass.objects.filter(status="draft").order_by("id"),
+        *OnsiteEvent.objects.filter(status="draft").order_by("id"),
+    ]
+    slots = ai_photos.build_slots(answers, courses, events)
+    picks, status = _run_ai_step(
+        "ai photo pick",
+        tenant,
+        lambda: ai_photos.pick_photos(brief, slots, tenant_schema=tenant.schema_name),
+        AI_PHOTO_PICK_TIMEOUT_SECONDS,
+    )
+    if status != "ok":
+        return status
+    if not picks:
+        return "empty"
+    try:
+        ai_photos.apply_photo_picks(
+            picks, pages=pages, courses=courses, events=events, niche=tenant.template_niche or "general"
+        )
+    except Exception:
+        logger.exception("onboarding ai photo apply failed for %s", tenant.slug)
+        return "failed"
+    return "ok"
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)

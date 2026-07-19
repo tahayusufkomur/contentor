@@ -244,6 +244,59 @@ def test_ai_compose_skipped_when_unavailable_and_idempotent(cleanup, monkeypatch
     assert calls == []
 
 
+def test_provision_applies_ai_photo_picks(cleanup, monkeypatch):
+    """AI-picked curated photos land in pages + course thumbnails; status recorded."""
+    from apps.core.models import CuratedPhoto
+    from apps.core.onboarding import ai_compose, ai_photos
+
+    connection.set_schema_to_public()
+    hero_row = CuratedPhoto.objects.create(
+        title="Yoga Sunrise",
+        tags="yoga, calm",
+        kind="hero",
+        image_key="platform/curated-photos/test-hero.jpg",
+        position=1,
+    )
+
+    def fake_pick(brief, slots, *, tenant_schema):
+        # Deterministic stand-in for the LLM: hero + first course slot.
+        picks = {}
+        for slot in slots:
+            if slot.name == "hero":
+                picks["hero"] = hero_row
+            elif slot.name.startswith("course:") and "course" not in {k.split(":")[0] for k in picks}:
+                picks[slot.name] = hero_row
+        return picks
+
+    monkeypatch.setattr(ai_photos, "pick_photos", fake_pick)
+    # AI gate open for photos, but the compose call itself must not run:
+    monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
+
+    def boom(*a, **k):
+        raise ai_compose.ComposeError("off")
+
+    monkeypatch.setattr(ai_compose, "compose_pages", boom)
+
+    try:
+        tenant = _provision(_wiz_tenant(cleanup, "prov-ai-photos"))
+
+        assert tenant.provisioning_status == "ready"
+        assert (tenant.wizard_state or {}).get("ai_photos_status") == "ok"
+        with tenant_context(tenant):
+            from apps.courses.models import Course
+            from apps.media.models import Photo
+            from apps.tenant_config.models import TenantConfig
+
+            config = TenantConfig.objects.first()
+            hero_block = config.pages["home"]["blocks"][0]
+            photo = Photo.objects.get(s3_key="platform/curated-photos/test-hero.jpg")
+            assert hero_block["bgImage"]["photo_id"] == str(photo.pk)
+            assert Course.objects.filter(thumbnail=photo).exists()
+    finally:
+        connection.set_schema_to_public()
+        hero_row.delete()
+
+
 # Full v2 shape (mark/badge/colors all present with explicit enum values) —
 # logo_recipe.validate_recipe has no defaults for those enums, so a bare
 # {"version": 2, "layout": ..., "name": ...} 400s on a missing mark.type
