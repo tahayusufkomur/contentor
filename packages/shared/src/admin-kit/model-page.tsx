@@ -7,7 +7,7 @@
 // and the slide-over form. Everything renders from the backend metadata.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search, Loader2 } from "lucide-react";
 
 import { AdminKitError, createAdminClient } from "./client";
 import type {
@@ -60,6 +60,84 @@ function StringFilter({
   );
 }
 
+/** A button-group filter that replaces the old dropdown. */
+function ButtonSelectFilter({
+  label,
+  value,
+  options,
+  onChange,
+  allLabel = "All",
+}: {
+  label: string;
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (val: string) => void;
+  allLabel?: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1 rounded-md border bg-card p-1 text-sm shadow-sm">
+      <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}:</span>
+      <button
+        type="button"
+        onClick={() => onChange("")}
+        className={`rounded-sm px-2.5 py-1 transition-colors ${
+          value === ""
+            ? "bg-primary text-primary-foreground font-medium"
+            : "text-foreground hover:bg-muted"
+        }`}
+      >
+        {allLabel}
+      </button>
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`rounded-sm px-2.5 py-1 transition-colors ${
+            value === opt.value
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-foreground hover:bg-muted"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function InfiniteScrollSentinel({ onIntersect, isFetching }: { onIntersect: () => void; isFetching: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const onIntersectRef = useRef(onIntersect);
+
+  useEffect(() => {
+    onIntersectRef.current = onIntersect;
+  }, [onIntersect]);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetching) {
+          onIntersectRef.current();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [isFetching]);
+
+  return (
+    <div ref={ref} className="py-4 text-center text-sm text-muted-foreground flex justify-center">
+      <span className="flex items-center gap-2 min-h-[1.5rem]">
+         {isFetching && <Loader2 className="h-4 w-4 animate-spin" />}
+         {isFetching ? "Loading more..." : ""}
+      </span>
+    </div>
+  );
+}
+
 export function AdminModelPage({
   apiBase,
   modelKey,
@@ -71,6 +149,8 @@ export function AdminModelPage({
 
   const [meta, setMeta] = useState<ModelMeta | null>(null);
   const [page, setPage] = useState<ListPage | null>(null);
+  const [accumulatedResults, setAccumulatedResults] = useState<Row[]>([]);
+  const [isFetchingList, setIsFetchingList] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [banner, setBanner] = useState<{
     kind: "success" | "error";
@@ -143,25 +223,37 @@ export function AdminModelPage({
   useEffect(() => {
     if (!meta) return;
     let cancelled = false;
+    setIsFetchingList(true);
     client
       .list(modelKey, { page: pageNum, q, ordering, filters })
       .then((data) => {
         if (cancelled) return;
         setPage(data);
-        setSelected(new Set());
+        if (pageNum === 1) {
+          setAccumulatedResults(data.results);
+          setSelected(new Set());
+        } else {
+          setAccumulatedResults((prev) => [...prev, ...data.results]);
+        }
       })
       .catch((err) => {
         if (!cancelled)
           setLoadError(
             err instanceof AdminKitError ? err.detail : "Failed to load rows.",
           );
+      })
+      .finally(() => {
+        if (!cancelled) setIsFetchingList(false);
       });
     return () => {
       cancelled = true;
     };
   }, [client, modelKey, meta, pageNum, q, ordering, filters, refreshTick]);
 
-  const refresh = useCallback(() => setRefreshTick((tick) => tick + 1), []);
+  const refresh = useCallback(() => {
+    setPageNum(1);
+    setRefreshTick((tick) => tick + 1);
+  }, []);
 
   // Keep one banner at a time; auto-dismiss successes.
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -345,9 +437,16 @@ export function AdminModelPage({
     <div className="space-y-4 p-4 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {meta.label_plural}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {meta.label_plural}
+            </h1>
+            {page && (
+              <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                {page.count} {page.count === 1 ? meta.label.toLowerCase() : meta.label_plural.toLowerCase()}
+              </span>
+            )}
+          </div>
           {meta.description && (
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
               {meta.description}
@@ -384,52 +483,42 @@ export function AdminModelPage({
             />
           </div>
         )}
-        {meta.filters.map((filter) =>
-          filter.type === "string" ? (
-            <StringFilter
+        {meta.filters.map((filter) => {
+          if (filter.type === "string") {
+            return (
+              <StringFilter
+                key={filter.name}
+                label={filter.label}
+                value={filters[filter.name] ?? ""}
+                onApply={(value) => {
+                  setFilters((prev) => ({ ...prev, [filter.name]: value }));
+                  setPageNum(1);
+                }}
+              />
+            );
+          }
+
+          const options = filter.type === "boolean"
+            ? [{ label: "Yes", value: "true" }, { label: "No", value: "false" }]
+            : (filter.choices ?? fkFilterOptions[filter.name] ?? []).map((o) => ({ label: o.label, value: String(o.value) }));
+
+          return (
+            <ButtonSelectFilter
               key={filter.name}
               label={filter.label}
               value={filters[filter.name] ?? ""}
-              onApply={(value) => {
-                setFilters((prev) => ({ ...prev, [filter.name]: value }));
-                setPageNum(1);
-              }}
-            />
-          ) : (
-            <KitSelect
-              key={filter.name}
-              aria-label={filter.label}
-              value={filters[filter.name] ?? ""}
-              onChange={(e) => {
+              options={options}
+              allLabel={filter.total_count !== undefined ? `All (${filter.total_count})` : "All"}
+              onChange={(val) => {
                 setFilters((prev) => ({
                   ...prev,
-                  [filter.name]: e.target.value,
+                  [filter.name]: val,
                 }));
                 setPageNum(1);
               }}
-              className="w-auto min-w-[9rem]"
-            >
-              <option value="">{filter.label}: all</option>
-              {filter.type === "boolean" ? (
-                <>
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </>
-              ) : (
-                (filter.choices ?? fkFilterOptions[filter.name] ?? []).map(
-                  (option) => (
-                    <option
-                      key={String(option.value)}
-                      value={String(option.value)}
-                    >
-                      {option.label}
-                    </option>
-                  ),
-                )
-              )}
-            </KitSelect>
-          ),
-        )}
+            />
+          );
+        })}
       </div>
 
       {selectable && selected.size > 0 && (
@@ -463,7 +552,7 @@ export function AdminModelPage({
         ) : galleryMode ? (
           <GalleryView
             meta={meta}
-            rows={page.results}
+            rows={accumulatedResults}
             uploading={galleryUploading}
             uploadError={galleryUploadError}
             onCardClick={(row) => {
@@ -475,7 +564,7 @@ export function AdminModelPage({
         ) : (
           <ModelList
             meta={meta}
-            page={page}
+            page={{ ...page, results: accumulatedResults }}
             ordering={ordering}
             onOrdering={(next) => {
               setOrdering(next);
@@ -492,7 +581,7 @@ export function AdminModelPage({
             }
             onToggleAll={() =>
               setSelected((prev) => {
-                const pks = page.results.map((row) =>
+                const pks = accumulatedResults.map((row) =>
                   String(row[meta.pk_field]),
                 );
                 return pks.every((pk) => prev.has(pk))
@@ -509,34 +598,11 @@ export function AdminModelPage({
         )}
       </div>
 
-      {page && page.count > 0 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {page.count}{" "}
-            {(page.count === 1 ? meta.label : meta.label_plural).toLowerCase()}
-          </span>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <KitButton
-                className="h-8 px-2"
-                disabled={pageNum <= 1}
-                onClick={() => setPageNum(pageNum - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </KitButton>
-              <span>
-                Page {pageNum} of {totalPages}
-              </span>
-              <KitButton
-                className="h-8 px-2"
-                disabled={pageNum >= totalPages}
-                onClick={() => setPageNum(pageNum + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </KitButton>
-            </div>
-          )}
-        </div>
+      {page && page.next && (
+        <InfiniteScrollSentinel
+          isFetching={isFetchingList}
+          onIntersect={() => setPageNum((prev) => prev + 1)}
+        />
       )}
 
       {form && (
@@ -570,7 +636,7 @@ export function AdminModelPage({
           }
           meta={meta}
           target={galleryTarget}
-          rows={page.results}
+          rows={accumulatedResults}
           busy={galleryBusy}
           serverError={galleryServerError}
           onSave={gallerySave}
@@ -579,6 +645,10 @@ export function AdminModelPage({
           onNavigate={(row) => {
             setGalleryServerError("");
             setGalleryTarget({ mode: "edit", row });
+          }}
+          hasMore={!!page.next}
+          onLoadMore={() => {
+            if (!isFetchingList) setPageNum((prev) => prev + 1);
           }}
         />
       )}

@@ -158,25 +158,45 @@ def filter_schema(admin) -> list[dict]:
     else a text input matched exactly."""
     serializer = build_serializer(admin)()
     out = []
+    qs = admin.model._default_manager.all()
     for name in admin.list_filters:
         field = serializer.fields.get(name)
         if field is not None:
             schema = field_schema(admin, name, field)
             ftype = schema["type"] if schema["type"] in ("boolean", "choice", "fk") else "string"
-            entry = {"name": name, "label": schema["label"], "type": ftype}
-            if "choices" in schema:
+            entry = {"name": name, "label": schema["label"], "type": ftype, "total_count": qs.count()}
+            
+            if ftype in ("choice", "boolean"):
+                if ftype == "boolean" and "choices" not in schema:
+                    schema["choices"] = [{"value": "true", "label": "Yes"}, {"value": "false", "label": "No"}]
+                if "choices" in schema:
+                    new_choices = []
+                    for c in schema["choices"]:
+                        val = c["value"]
+                        filter_val = True if val == "true" else False if val == "false" else val
+                        count = qs.filter(**{name: filter_val}).count()
+                        new_choices.append({"value": c["value"], "label": f"{c['label']} ({count})"})
+                    entry["choices"] = new_choices
+                    entry["type"] = "choice"  # Force choices UI instead of boolean fallback
+            elif "choices" in schema:
                 entry["choices"] = schema["choices"]
+                
             out.append(entry)
             continue
         # Not a serializer field — support relations (e.g. an M2M tag) directly.
         choices = _relation_filter_choices(admin.model, name)
         if choices is not None:
+            new_choices = []
+            for c in choices:
+                count = qs.filter(**{name: c["value"]}).count()
+                new_choices.append({"value": c["value"], "label": f"{c['label']} ({count})"})
             out.append(
                 {
                     "name": name,
                     "label": name.replace("_", " ").title(),
                     "type": "choice",
-                    "choices": choices,
+                    "choices": new_choices,
+                    "total_count": qs.count(),
                 }
             )
     return out

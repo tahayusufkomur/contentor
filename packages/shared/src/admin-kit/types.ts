@@ -58,6 +58,7 @@ export interface FilterSchema {
   label: string;
   type: "boolean" | "choice" | "fk" | "string";
   choices?: ChoiceOption[];
+  total_count?: number;
 }
 
 export interface ActionSchema {
