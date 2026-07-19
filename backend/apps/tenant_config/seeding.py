@@ -65,3 +65,16 @@ def register_seeded(objs, niche: str = "") -> None:
             )
         )
     SeededObject.objects.bulk_create(rows, ignore_conflicts=True)
+
+
+def refresh_seeded_fingerprints(objs) -> None:
+    """Re-baseline SeededObject fingerprints after a system-driven mutation
+    (onboarding AI renames/thumbnails). Without this, AI edits made right
+    after seeding would read as coach edits and break the erase flow's
+    "has the coach touched this?" answer. Unregistered objects are skipped."""
+    for obj in objs:
+        obj.refresh_from_db()
+        SeededObject.objects.filter(
+            content_type=ContentType.objects.get_for_model(obj, for_concrete_model=True),
+            object_id=str(obj.pk),
+        ).update(fingerprint=fingerprint_for(obj))
