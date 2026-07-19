@@ -368,6 +368,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         wizard_answers = (tenant.wizard_state or {}).get("answers") or {}
         if wizard_answers:
             _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
+            _seed_starter_post(tenant, preferred_locale)
 
         _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
@@ -379,6 +380,38 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Tenant provisioning failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
+
+
+AI_STARTER_POST_TIMEOUT_SECONDS = 90
+
+
+def _seed_starter_post(tenant, preferred_locale):
+    """One draft welcome blog post. Fail-silent; status in wizard_state."""
+    from apps.core.onboarding import ai_compose, ai_curate, starter_post
+
+    state = dict(tenant.wizard_state or {})
+    if state.get("ai_blog_status"):
+        return
+    if not ai_compose.compose_available():
+        status = "skipped"
+    else:
+        brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+        fields, status = _run_ai_step(
+            "starter post",
+            tenant,
+            lambda: starter_post.generate_starter_draft(brief, tenant.schema_name),
+            AI_STARTER_POST_TIMEOUT_SECONDS,
+        )
+        if status == "ok":
+            try:
+                with tenant_context(tenant):
+                    starter_post.create_starter_post(fields, tenant.template_niche or "general")
+            except Exception:
+                logger.exception("starter post create failed for %s", tenant.slug)
+                status = "failed"
+    state["ai_blog_status"] = status
+    tenant.wizard_state = state
+    tenant.save(update_fields=["wizard_state"])
 
 
 @shared_task
