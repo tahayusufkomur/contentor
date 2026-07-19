@@ -1,0 +1,58 @@
+# monitoring/vector/vector.yaml
+# Ships every compose container's stdout/stderr to Django's logbook ingest.
+# Socket-based (docker_logs) so the same config works on Docker Desktop (dev)
+# and Linux (prod). Parsing/level-floors happen in Django — Vector is dumb
+# transport. The vector container itself is excluded (no feedback loop).
+api:
+  enabled: false
+
+sources:
+  app_logs: # django + celery: multiline so tracebacks stay one event
+    type: docker_logs
+    include_containers: ["contentor-django", "contentor-celery"]
+    exclude_containers: ["contentor-vector"]
+    multiline:
+      start_pattern: '^\d{4}-\d{2}-\d{2}T'
+      mode: halt_before
+      condition_pattern: '^\d{4}-\d{2}-\d{2}T'
+      timeout_ms: 1000
+  infra_logs:
+    type: docker_logs
+    include_containers:
+      - contentor-caddy
+      - contentor-postgres
+      - contentor-redis
+      - contentor-nextjs
+      - contentor-minio
+    exclude_containers: ["contentor-vector"]
+
+transforms:
+  shaped:
+    type: remap
+    inputs: [app_logs, infra_logs]
+    source: |
+      . = {
+        "timestamp": format_timestamp!(.timestamp, format: "%+"),
+        "container_name": .container_name,
+        "stream": .stream,
+        "message": .message
+      }
+
+sinks:
+  logbook:
+    type: http
+    inputs: [shaped]
+    uri: http://django:8000/api/v1/platform/logs/ingest/
+    method: post
+    encoding:
+      codec: json
+    batch:
+      max_events: 400
+      timeout_secs: 2
+    request:
+      headers:
+        X-Logs-Token: "${LOGS_INGEST_TOKEN}"
+    buffer:
+      type: disk
+      max_size: 268435488 # 256MiB (vector's disk-buffer minimum)
+      when_full: drop_newest

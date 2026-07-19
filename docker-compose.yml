@@ -92,6 +92,7 @@ services:
     environment:
       CURATED_LOGO_SYNC_DIR: /app/logo_sync
       CURATED_PHOTO_SYNC_DIR: /app/photo_sync
+      LOGS_INGEST_TOKEN: ${LOGS_INGEST_TOKEN:-dev-logs-token}
     volumes:
       - ./backend:/app/backend
       - ./frontend-customer/public/logos:/app/logo_sync
@@ -172,6 +173,18 @@ services:
     depends_on:
       - celery-worker
 
+  vector:
+    image: timberio/vector:0.46.1-alpine
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./monitoring/vector/vector.yaml:/etc/vector/vector.yaml:ro
+      - vector_data:/var/lib/vector
+    command: --config /etc/vector/vector.yaml
+    environment:
+      - LOGS_INGEST_TOKEN=${LOGS_INGEST_TOKEN:-dev-logs-token}
+    depends_on:
+      django:
+        condition: service_healthy
 
   prometheus:
     image: prom/prometheus:latest
@@ -217,3 +230,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  vector_data:
