@@ -204,7 +204,7 @@ def test_ai_compose_ok_applies_copy(cleanup, monkeypatch):
 
         out = copy.deepcopy(pages)
         out["home"]["blocks"][0]["heading"] = "AI WROTE THIS"
-        return out
+        return out, None
 
     monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
     monkeypatch.setattr(ai_compose, "compose_pages", fake_compose)
@@ -295,6 +295,40 @@ def test_provision_applies_ai_photo_picks(cleanup, monkeypatch):
     finally:
         connection.set_schema_to_public()
         hero_row.delete()
+
+
+def test_provision_applies_compose_extras(cleanup, monkeypatch):
+    """The compose pass's extras (meta description, navbar CTA, draft renames)
+    land on the tenant."""
+    from apps.core.onboarding import ai_compose, ai_photos
+
+    # Keep the test focused on compose extras; skip the photo pick.
+    monkeypatch.setattr(ai_photos, "pick_photos", lambda *a, **k: {})
+    monkeypatch.setattr(ai_compose, "compose_available", lambda: True)
+
+    def fake_compose(pages, *, courses=(), downloads=(), **kwargs):
+        first = courses[0]
+        extras = {
+            "meta_description": "Vinyasa yoga for busy professionals.",
+            "navbar_cta": "Start Now",
+            "courses": {first["id"]: {"title": "Renamed By AI", "description": "Fresh copy."}},
+            "downloads": {},
+        }
+        return pages, extras
+
+    monkeypatch.setattr(ai_compose, "compose_pages", fake_compose)
+
+    tenant = _provision(_wiz_tenant(cleanup, "prov-ai-extras"))
+    assert tenant.provisioning_status == "ready"
+    assert tenant.wizard_state["ai_compose_status"] == "ok"
+    with tenant_context(tenant):
+        from apps.courses.models import Course
+        from apps.tenant_config.models import TenantConfig
+
+        config = TenantConfig.objects.first()
+        assert config.meta_description == "Vinyasa yoga for busy professionals."
+        assert config.navbar_config["cta"]["text"] == "Start Now"
+        assert Course.objects.filter(title="Renamed By AI").exists()
 
 
 # Full v2 shape (mark/badge/colors all present with explicit enum values) —

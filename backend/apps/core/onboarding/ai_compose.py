@@ -26,6 +26,12 @@ MAX_OUTPUT_TOKENS = 3000
 MAX_FAQ_ITEMS = 6
 MAX_BLOCK_UPDATES = 40
 
+ITEM_TITLE_CAP = 120
+ITEM_DESC_CAP = 500
+META_DESCRIPTION_CAP = 170
+NAVBAR_CTA_CAP = 30
+MAX_ITEM_UPDATES = 12
+
 # The ONLY fields the model may rewrite, per block type. testimonials is
 # deliberately absent. hrefs/images/layout are never writable.
 WRITABLE_FIELDS = {
@@ -74,8 +80,18 @@ class _BlockCopy(BaseModel):
     items: list[_QA] | None = None  # faq only
 
 
+class _ItemCopy(BaseModel):
+    id: int
+    title: str = ""
+    description: str = ""
+
+
 class _ComposeResult(BaseModel):
     blocks: list[_BlockCopy] = Field(default_factory=list)
+    meta_description: str | None = None
+    navbar_cta: str | None = None
+    courses: list[_ItemCopy] = Field(default_factory=list)
+    downloads: list[_ItemCopy] = Field(default_factory=list)
 
 
 # Static system prompt: byte-identical across tenants (prompt caching) —
@@ -95,6 +111,15 @@ Hard rules:
   ask this coach, with honest, reassuring answers.
 - body fields: plain sentences or simple <p>/<ul><li> HTML only.
 - Respect the character caps given per field.
+
+Also return:
+- meta_description: one sentence (max 170 chars) describing this coach's site
+  for search engines, in the brief's language.
+- navbar_cta: a 1-3 word call-to-action button label (max 30 chars).
+- courses / downloads: the draft items listed in <draft_content>, retitled in
+  the coach's voice (title max 120 chars; course description 1-2 honest
+  sentences, max 500 chars; downloads have titles only). Only return items
+  you improve; never invent new ids.
 """
 
 
@@ -130,7 +155,7 @@ def compose_available() -> bool:
     return _global_spend() < settings.ONBOARDING_AI_MONTHLY_BUDGET_USD
 
 
-def _brief(pages: dict, *, brand_name, niche, description, followups, goals, locale) -> str:
+def _brief(pages: dict, *, brand_name, niche, description, followups, goals, locale, courses=(), downloads=()) -> str:
     language = "Turkish" if locale == "tr" else "English"
     lines = [
         "<coach_brief>",
@@ -166,11 +191,23 @@ def _brief(pages: dict, *, brand_name, niche, description, followups, goals, loc
                     current = str(block.get(field) or "")[:200]
                     lines.append(f'  {field} (max {FIELD_CAPS[field]} chars): "{current}"')
     lines.append("</current_pages>")
+    if courses or downloads:
+        lines.append("")
+        lines.append("<draft_content>")
+        for c in courses:
+            lines.append(f'course id={c["id"]} title="{c["title"]}" description="{(c["description"] or "")[:160]}"')
+        for d in downloads:
+            lines.append(f'download id={d["id"]} title="{d["title"]}"')
+        lines.append("</draft_content>")
     return "\n".join(lines)
 
 
 def _clamp(value: str, field: str) -> str:
     return str(value)[: FIELD_CAPS[field]].strip()
+
+
+def _clamp_to(value: str, cap: int) -> str:
+    return str(value)[:cap].strip()
 
 
 def _apply(pages: dict, updates: list[_BlockCopy]) -> dict:
@@ -204,11 +241,16 @@ def _apply(pages: dict, updates: list[_BlockCopy]) -> dict:
     return out
 
 
-def compose_pages(pages: dict, *, brand_name, niche, description, followups=(), goals, locale, tenant_schema) -> dict:
-    """One structured call -> new pages dict with AI copy applied.
+def compose_pages(
+    pages: dict, *, brand_name, niche, description, followups=(), goals, locale, tenant_schema, courses=(), downloads=()
+) -> tuple[dict, dict]:
+    """One structured call -> (new pages dict with AI copy applied, extras).
 
-    Raises ComposeError on ANY provider/validation failure — the caller
-    falls back to the static pages. Spend is recorded even on failure.
+    `extras` carries the compose call's non-page outputs: `meta_description`,
+    `navbar_cta`, and `courses`/`downloads` retitle maps (keyed by the ids the
+    caller sent; hallucinated ids dropped). Raises ComposeError on ANY
+    provider/validation failure — the caller falls back to the static pages.
+    Spend is recorded even on failure.
     """
     user_prompt = _brief(
         pages,
@@ -218,6 +260,8 @@ def compose_pages(pages: dict, *, brand_name, niche, description, followups=(), 
         followups=followups,
         goals=goals,
         locale=locale,
+        courses=courses,
+        downloads=downloads,
     )
     try:
         parsed, cost, _model = core_ai.structured(
@@ -231,6 +275,26 @@ def compose_pages(pages: dict, *, brand_name, niche, description, followups=(), 
         record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))
         raise ComposeError(str(exc)) from exc
     record_spend(tenant_schema, float(cost or 0))
+
+    sent_course_ids = {c["id"] for c in courses}
+    sent_download_ids = {d["id"] for d in downloads}
+    extras = {
+        "meta_description": _clamp_to(parsed.meta_description or "", META_DESCRIPTION_CAP),
+        "navbar_cta": _clamp_to(parsed.navbar_cta or "", NAVBAR_CTA_CAP),
+        "courses": {
+            item.id: {
+                "title": _clamp_to(item.title, ITEM_TITLE_CAP),
+                "description": _clamp_to(item.description, ITEM_DESC_CAP),
+            }
+            for item in parsed.courses[:MAX_ITEM_UPDATES]
+            if item.id in sent_course_ids and item.title.strip()
+        },
+        "downloads": {
+            item.id: {"title": _clamp_to(item.title, ITEM_TITLE_CAP), "description": ""}
+            for item in parsed.downloads[:MAX_ITEM_UPDATES]
+            if item.id in sent_download_ids and item.title.strip()
+        },
+    }
     result = _apply(pages, parsed.blocks)
     _record_success(tenant_schema)
-    return result
+    return result, extras

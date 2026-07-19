@@ -62,19 +62,23 @@ PAGES = {
 }
 
 
-def _fake_structured(blocks):
-    """Monkeypatch factory: core_ai.structured returning the given block updates."""
+def _fake_structured_dict(result_dict):
+    """Monkeypatch factory: core_ai.structured returning the given result dict."""
 
     def fake(**kwargs):
-        output_model = kwargs["output_model"]
-        parsed = output_model.model_validate({"blocks": blocks})
+        parsed = kwargs["output_model"].model_validate(result_dict)
         return parsed, 0.03, "claude-sonnet-5"
 
     return fake
 
 
-def _compose(monkeypatch, blocks, **overrides):
-    monkeypatch.setattr(ai_compose.core_ai, "structured", _fake_structured(blocks))
+def _fake_structured(blocks):
+    """Back-compat shim: only block updates, no extras."""
+    return _fake_structured_dict({"blocks": blocks})
+
+
+def _compose_full(monkeypatch, result_dict, **overrides):
+    monkeypatch.setattr(ai_compose.core_ai, "structured", _fake_structured_dict(result_dict))
     kwargs = {
         "brand_name": "Glow",
         "niche": "yoga",
@@ -85,6 +89,11 @@ def _compose(monkeypatch, blocks, **overrides):
     }
     kwargs.update(overrides)
     return ai_compose.compose_pages(PAGES, **kwargs)
+
+
+def _compose(monkeypatch, blocks, **overrides):
+    pages, _extras = _compose_full(monkeypatch, {"blocks": blocks}, **overrides)
+    return pages
 
 
 def test_applies_whitelisted_copy(monkeypatch):
@@ -158,7 +167,7 @@ def test_body_is_sanitized(monkeypatch):
         "structured",
         _fake_structured([{"page": "about", "block_id": "blk_intro", "body": "<p>Hi</p><script>evil()</script>"}]),
     )
-    out = ai_compose.compose_pages(
+    out, _extras = ai_compose.compose_pages(
         pages, brand_name="G", niche="yoga", description="", goals=[], locale="en", tenant_schema="glow"
     )
     assert "<script>" not in out["about"]["blocks"][0]["body"]
@@ -206,6 +215,34 @@ def test_usage_recorded_on_failure_and_success(monkeypatch):
     _compose(monkeypatch, [], tenant_schema="spend1")
     row.refresh_from_db()
     assert row.composes_used == 1
+
+
+def test_extras_clamped_and_validated(monkeypatch):
+    _pages, extras = _compose_full(
+        monkeypatch,
+        {
+            "blocks": [],
+            "meta_description": "Calm vinyasa yoga for busy professionals. " * 10,  # over 170 chars
+            "navbar_cta": "Start Your Yoga Journey Today Right Now",  # over 30 chars
+            "courses": [
+                {"id": 1, "title": "Morning Flow Foundations", "description": "Gentle start."},
+                {"id": 99, "title": "Hallucinated", "description": "x"},  # id not sent -> dropped
+            ],
+            "downloads": [{"id": 5, "title": "Breathing Guide"}],
+        },
+        courses=({"id": 1, "title": "Yoga Course 1", "description": "old"},),
+        downloads=({"id": 5, "title": "Guide 1", "description": ""},),
+    )
+    assert len(extras["meta_description"]) <= 170
+    assert len(extras["navbar_cta"]) <= 30
+    assert set(extras["courses"]) == {1}
+    assert extras["courses"][1]["title"] == "Morning Flow Foundations"
+    assert set(extras["downloads"]) == {5}
+
+
+def test_extras_empty_when_model_returns_none(monkeypatch):
+    _pages, extras = _compose_full(monkeypatch, {"blocks": []})
+    assert extras == {"meta_description": "", "navbar_cta": "", "courses": {}, "downloads": {}}
 
 
 def test_compose_available_respects_flag_and_budget(monkeypatch, settings):

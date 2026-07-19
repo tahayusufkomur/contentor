@@ -100,9 +100,11 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
         state = dict(tenant.wizard_state or {})
         ai_status = None
         if not state.get("ai_compose_status"):
-            overrides["pages"], ai_status = _compose_pages_with_ai(
+            overrides["pages"], extras, ai_status = _compose_pages_with_ai(
                 tenant, answers, overrides["pages"], preferred_locale
             )
+            if extras:
+                _apply_compose_extras(config, overrides, extras)
 
         photos_status = None
         if not state.get("ai_photos_status"):
@@ -169,11 +171,25 @@ def _run_ai_step(label, tenant, fn, timeout_seconds):
 
 
 def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
-    """AI copy pass. Returns (pages, status); falls back to the static pages."""
+    """AI copy pass. Returns (pages, extras, status); falls back to the static
+    pages (extras None) on skip/failure. Draft content is gathered HERE, in
+    the caller's tenant_context — the worker thread's fresh connection lands on
+    the public schema and could not read the tenant's courses/downloads."""
     from apps.core.onboarding import ai_compose
 
     if not ai_compose.compose_available():
-        return pages, "skipped"
+        return pages, None, "skipped"
+
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+
+    course_items = tuple(
+        {"id": c.pk, "title": c.title, "description": (c.description or "")[:300]}
+        for c in Course.objects.filter(is_published=False).order_by("id")[:8]
+    )
+    download_items = tuple(
+        {"id": d.pk, "title": d.title, "description": ""} for d in DownloadFile.objects.order_by("id")[:8]
+    )
 
     def run():
         return ai_compose.compose_pages(
@@ -185,10 +201,46 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
             goals=list(answers.get("goals") or []),
             locale=preferred_locale,
             tenant_schema=tenant.schema_name,
+            courses=course_items,
+            downloads=download_items,
         )
 
     result, status = _run_ai_step("ai compose", tenant, run, AI_COMPOSE_TIMEOUT_SECONDS)
-    return (result if status == "ok" else pages), status
+    if status != "ok":
+        return pages, None, status
+    new_pages, extras = result
+    return new_pages, extras, status
+
+
+def _apply_compose_extras(config, overrides, extras):
+    """Write the compose call's non-page outputs. Runs inside tenant_context."""
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+    from apps.tenant_config.seeding import refresh_seeded_fingerprints
+
+    if extras.get("meta_description"):
+        config.meta_description = extras["meta_description"]
+    if extras.get("navbar_cta"):
+        overrides["navbar_config"]["cta"]["text"] = extras["navbar_cta"]
+
+    touched = []
+    for pk, copy in (extras.get("courses") or {}).items():
+        course = Course.objects.filter(pk=pk, is_published=False).first()
+        if course is None:
+            continue
+        course.title = copy["title"] or course.title
+        if copy["description"]:
+            course.description = copy["description"]
+        course.save(update_fields=["title", "description"])
+        touched.append(course)
+    for pk, copy in (extras.get("downloads") or {}).items():
+        download = DownloadFile.objects.filter(pk=pk).first()
+        if download is None:
+            continue
+        download.title = copy["title"] or download.title
+        download.save(update_fields=["title"])
+        touched.append(download)
+    refresh_seeded_fingerprints(touched)
 
 
 def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
