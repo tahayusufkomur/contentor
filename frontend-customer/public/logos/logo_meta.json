@@ -1,1046 +1,1346 @@
 [
-    {
-        "title": "Abstract Bodybuilder Back Pose",
-        "filename": "abstract_bodybuilder_back_pose.png",
-        "prompt": "",
-        "tags": "fitness, bodybuilder, muscles, back, bold"
-    },
-    {
-        "title": "Abstract Colorful Face Logo",
-        "filename": "abstract_colorful_face_logo.png",
-        "prompt": "",
-        "tags": "makeup, face yoga, face, woman, colorful, bold"
-    },
-    {
-        "title": "Abstract Crescent Moon Striped Logo",
-        "filename": "abstract_crescent_moon_striped_logo.png",
-        "prompt": "",
-        "tags": "yoga, belly dance, moon, crescent, waves, minimal, modern"
-    },
-    {
-        "title": "Abstract Dancer Floral Silhouette",
-        "filename": "abstract_dancer_floral_silhouette.png",
-        "prompt": "",
-        "tags": "yoga, belly dance, dancer, floral, silhouette, organic, elegant"
-    },
-    {
-        "title": "Abstract Pink Fashion Dress Logo",
-        "filename": "abstract_pink_fashion_dress_logo.png",
-        "prompt": "",
-        "tags": "belly dance, yoga, dancer, lotus, petals, elegant, organic"
-    },
-    {
-        "title": "Belly Dancer Silhouette Logo 2",
-        "filename": "belly-dancer-silhouette-logo-2.png",
-        "prompt": "",
-        "tags": "belly dance, dancer, silhouette, elegant, bold"
-    },
-    {
-        "title": "Belly Dancer Silhouette Logo",
-        "filename": "belly-dancer-silhouette-logo.png",
-        "prompt": "",
-        "tags": "belly dance, dancer, silhouette, moon, elegant, bold"
-    },
-    {
-        "title": "Bodybuilder Front Side Flex",
-        "filename": "bodybuilder_front_side_flex.png",
-        "prompt": "",
-        "tags": "fitness, bodybuilder, muscles, flex, bold"
-    },
-    {
-        "title": "Bodybuilder Lightning Bolt Logo",
-        "filename": "bodybuilder_lightning_bolt_logo.png",
-        "prompt": "",
-        "tags": "fitness, bodybuilder, lightning, silhouette, bold, modern"
-    },
-    {
-        "title": "Books And Coffee Cup Line Art",
-        "filename": "books_and_coffee_cup_line_art.png",
-        "prompt": "",
-        "tags": "book, coffee, cup, minimal"
-    },
-    {
-        "title": "Celestial Goddess Moon Sun Logo",
-        "filename": "celestial_goddess_moon_sun_logo.png",
-        "prompt": "",
-        "tags": "yoga, belly dance, goddess, moon, sun, elegant, colorful"
-    },
-    {
-        "title": "Colorful Lotus Meditation Logo",
-        "filename": "colorful_lotus_meditation_logo.png",
-        "prompt": "",
-        "tags": "yoga, lotus, meditation, silhouette, colorful, calm"
-    },
-    {
-        "title": "Continuous Line Face Framing Hands",
-        "filename": "continuous_line_face_framing_hands.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, face, hands, hair, minimal, elegant"
-    },
-    {
-        "title": "Continuous Line Female Back Pink Dumbbells",
-        "filename": "continuous_line_female_back_pink_dumbbells.png",
-        "prompt": "",
-        "tags": "fitness, pilates, dumbbell, woman, minimal, elegant"
-    },
-    {
-        "title": "Dynamic Yoga Gymnastics Silhouette Logo",
-        "filename": "dynamic-yoga-gymnastics-silhouette-logo.png",
-        "prompt": "",
-        "tags": "yoga, pilates, fitness, dancer, silhouette, modern, playful"
-    },
-    {
-        "title": "Education Teamwork Book Climbing Logo",
-        "filename": "education_teamwork_book_climbing_logo.png",
-        "prompt": "",
-        "tags": "book, people, climbing, colorful, playful"
-    },
-    {
-        "title": "Educational Growth Community Book Logo",
-        "filename": "educational_growth_community_book_logo.png",
-        "prompt": "",
-        "tags": "book, people, leaves, colorful, playful"
-    },
-    {
-        "title": "Elegant Pregnant Woman Magenta Silhouette",
-        "filename": "elegant_pregnant_woman_magenta_silhouette.png",
-        "prompt": "",
-        "tags": "yoga, pilates, pregnancy, woman, silhouette, elegant, minimal"
-    },
-    {
-        "title": "Elegant Wellness Goddess Leaf Logo",
-        "filename": "elegant_wellness_goddess_leaf_logo.png",
-        "prompt": "",
-        "tags": "yoga, pilates, woman, leaf, silhouette, elegant, organic"
-    },
-    {
-        "title": "Elegant Woman Wavy Bob Vector",
-        "filename": "elegant_woman_wavy_bob_vector.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, woman, jar, leaves, elegant, calm"
-    },
-    {
-        "title": "Facial Massage Lift Diagram",
-        "filename": "facial_massage_lift_diagram.png",
-        "prompt": "",
-        "tags": "face yoga, face, hands, massage, minimal, calm"
-    },
-    {
-        "title": "Female Fitness Dumbbell Logo",
-        "filename": "female_fitness_dumbbell_logo.png",
-        "prompt": "",
-        "tags": "fitness, dumbbell, woman, silhouette, bold"
-    },
-    {
-        "title": "Female Fitness Dumbbell Shoulder Press",
-        "filename": "female_fitness_dumbbell_shoulder_press.png",
-        "prompt": "",
-        "tags": "fitness, dumbbell, woman, back, bold"
-    },
-    {
-        "title": "Female Fitness Line Art Logo",
-        "filename": "female_fitness_line_art_logo.png",
-        "prompt": "",
-        "tags": "fitness, woman, flex, circle, bold, minimal"
-    },
-    {
-        "title": "Graduation Cap Student Success Logo",
-        "filename": "graduation_cap_student_success_logo.png",
-        "prompt": "",
-        "tags": "graduation cap, student, circle, modern"
-    },
-    {
-        "title": "Lipstick Application Silhouette",
-        "filename": "lipstick_application_silhouette.png",
-        "prompt": "",
-        "tags": "makeup, lipstick, silhouette, woman, elegant, bold"
-    },
-    {
-        "title": "Mascara Beauty Silhouette Logo",
-        "filename": "mascara_beauty_silhouette_logo.png",
-        "prompt": "",
-        "tags": "makeup, face yoga, mascara, face, silhouette, playful, elegant"
-    },
-    {
-        "title": "Maternity Pregnant Woman Heart Logo",
-        "filename": "maternity_pregnant_woman_heart_logo.png",
-        "prompt": "",
-        "tags": "yoga, pilates, pregnancy, mother, elegant, calm"
-    },
-    {
-        "title": "Minimalist Line Art Woman Flowers",
-        "filename": "minimalist-line-art-woman-flowers.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, face, flowers, minimal, elegant"
-    },
-    {
-        "title": "Minimalist Yoga Logo Abstract Circles",
-        "filename": "minimalist-yoga-logo-abstract-circles.png",
-        "prompt": "",
-        "tags": "yoga, meditation, figure, circles, minimal, calm"
-    },
-    {
-        "title": "Minimalist Yoga Meditation Logo",
-        "filename": "minimalist-yoga-meditation-logo.png",
-        "prompt": "",
-        "tags": "yoga, pilates, meditation, figure, colorful, calm"
-    },
-    {
-        "title": "Minimalist Colorful Face Logo",
-        "filename": "minimalist_colorful_face_logo.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, face, watercolor, minimal, calm"
-    },
-    {
-        "title": "Minimalist Face Cupped Hands",
-        "filename": "minimalist_face_cupped_hands.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, face, hands, minimal, elegant"
-    },
-    {
-        "title": "Minimalist Line Art Headless Female Lifting Barbell",
-        "filename": "minimalist_line_art_headless_female_lifting_barbell.png",
-        "prompt": "",
-        "tags": "fitness, barbell, woman, deadlift, minimal, bold"
-    },
-    {
-        "title": "Muscular Bodybuilder Fitness Emblem",
-        "filename": "muscular_bodybuilder_fitness_emblem.png",
-        "prompt": "",
-        "tags": "fitness, bodybuilder, muscles, emblem, bold, modern"
-    },
-    {
-        "title": "Muscular Female Fitness Flex Logo",
-        "filename": "muscular_female_fitness_flex_logo.png",
-        "prompt": "",
-        "tags": "fitness, woman, flex, bold, modern"
-    },
-    {
-        "title": "One Line Face Art",
-        "filename": "one_line_face_art.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, face, profile, hair, minimal, elegant"
-    },
-    {
-        "title": "Ornate Buddha Lotus Silhouette",
-        "filename": "ornate-buddha-lotus-silhouette.png",
-        "prompt": "",
-        "tags": "yoga, buddha, lotus, leaves, organic, calm"
-    },
-    {
-        "title": "Pole Dancer Dynamic Silhouette",
-        "filename": "pole_dancer_dynamic_silhouette.png",
-        "prompt": "",
-        "tags": "pole dance, dancer, pole, silhouette, bold, elegant"
-    },
-    {
-        "title": "Pole Dancer Silhouette",
-        "filename": "pole_dancer_silhouette.png",
-        "prompt": "",
-        "tags": "pole dance, dancer, pole, silhouette, bold, elegant"
-    },
-    {
-        "title": "Pregnant Woman Line Art Logo",
-        "filename": "pregnant_woman_line_art_logo.png",
-        "prompt": "",
-        "tags": "yoga, pilates, pregnancy, woman, elegant, calm"
-    },
-    {
-        "title": "Pure Black Yoga Pigeon Pose Silhouette",
-        "filename": "pure-black-yoga-pigeon-pose-silhouette.png",
-        "prompt": "",
-        "tags": "yoga, pilates, silhouette, woman, bold, elegant"
-    },
-    {
-        "title": "Serene Woman Pastel Vector",
-        "filename": "serene_woman_pastel_vector.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, woman, skincare, leaf, calm, elegant"
-    },
-    {
-        "title": "Skincare Woman Face Mask Vector",
-        "filename": "skincare_woman_face_mask_vector.png",
-        "prompt": "",
-        "tags": "face yoga, makeup, face mask, jar, leaves, calm, modern"
-    },
-    {
-        "title": "Woman Profile Lotus Flower Logo",
-        "filename": "woman_profile_lotus_flower_logo.png",
-        "prompt": "",
-        "tags": "face yoga, yoga, lotus, face, profile, elegant, organic"
-    },
-    {
-        "title": "Yoga Tree Of Life Silhouette",
-        "filename": "yoga-tree-of-life-silhouette.png",
-        "prompt": "",
-        "tags": "yoga, tree, silhouette, roots, organic, bold"
-    },
-    {
-        "title": "Yoga Leaf Angel Logo",
-        "filename": "yoga_leaf_angel_logo.png",
-        "prompt": "",
-        "tags": "yoga, pilates, leaf, figure, organic, modern"
-    },
-    {
-        "title": "Pole Dancer Gold Circle",
-        "filename": "pole_dancer_gold_circle.png",
-        "prompt": "Minimalist logo of a female pole dancer in an elegant back-arch pose on a vertical pole, enclosed in a thin open circle outline, flat vector style, single gold color on a plain white background, clean smooth curves, no text, no watermark",
-        "tags": "pole dance, dancer, pole, circle, silhouette, elegant, minimal"
-    },
-    {
-        "title": "Pole Dancer Ink Circle",
-        "filename": "pole_dancer_ink_circle.png",
-        "prompt": "Bold logo of a female pole dancer in a graceful split leap pose on a vertical pole, white silhouette cut out of a solid black hand-painted ink brush-stroke circle, flat vector style, black and white only, on a plain white background, no text, no watermark",
-        "tags": "pole dance, dancer, pole, circle, silhouette, bold, modern"
-    },
-    {
-        "title": "Pole Dancer Inverted Silhouette",
-        "filename": "pole_dancer_inverted_silhouette.png",
-        "prompt": "Minimal logo of a female pole dancer performing an inverted pose upside down on a vertical pole, legs extended gracefully upward, solid black silhouette with flowing hair, flat vector style, black on a plain white background, clean elegant lines, no text, no watermark",
-        "tags": "pole dance, dancer, pole, silhouette, elegant, minimal"
-    },
-    {
-        "title": "Pilates Reformer Line Art",
-        "filename": "pilates_reformer_line_art.png",
-        "prompt": "Elegant minimal line-art logo of a person performing the teaser pilates exercise on a reformer machine, legs raised in a V shape, drawn with flowing black calligraphic ink strokes, abstract simplified reformer shape, on a plain white background, no text, no watermark",
-        "tags": "pilates, reformer, teaser, line art, figure, minimal, elegant"
-    },
-    {
-        "title": "Pilates Reformer Side Plank",
-        "filename": "pilates_reformer_side_plank.png",
-        "prompt": "Bold logo of a woman performing a side plank on a pilates reformer machine, one arm raised straight up, solid black silhouette including the simplified reformer, flat vector style on a plain white background, clean shapes, no text, no watermark",
-        "tags": "pilates, reformer, woman, silhouette, plank, bold, modern"
-    },
-    {
-        "title": "Enso Meditation Figure",
-        "filename": "enso_meditation_figure.png",
-        "prompt": "Minimal zen logo of a person sitting cross-legged in meditation inside a hand-brushed enso circle, single sweeping ink brush stroke circle open at the top, flat vector style, black ink on a plain white background, calm balanced composition, no text, no watermark",
-        "tags": "meditation, zen, enso, figure, circle, minimal, calm"
-    },
-    {
-        "title": "Mountain Summit Path",
-        "filename": "mountain_summit_path_logo.png",
-        "prompt": "Modern minimal logo of a mountain peak with a winding path leading up to a small flag at the summit, geometric flat vector style, single deep blue color on a plain white background, clean simple lines, no text, no watermark",
-        "tags": "coaching, mountain, summit, path, growth, modern, minimal"
-    },
-    {
-        "title": "Leafy Nutrition Bowl",
-        "filename": "leafy_nutrition_bowl.png",
-        "prompt": "Minimal logo of a bowl filled with leafy greens and a small heart rising as steam, flat vector style, fresh green single color on a plain white background, clean rounded shapes, no text, no watermark",
-        "tags": "nutrition, bowl, leaves, heart, wellness, minimal, organic"
-    },
-    {
-        "title": "Avocado Line Art",
-        "filename": "avocado_line_art.png",
-        "prompt": "Elegant continuous line-art logo of an avocado half with a leaf, single flowing black line, minimal composition on a plain white background, no text, no watermark",
-        "tags": "nutrition, avocado, leaf, line art, minimal, elegant"
-    },
-    {
-        "title": "Mortar And Pestle Herbs",
-        "filename": "mortar_pestle_herbs.png",
-        "prompt": "Minimal logo of a mortar and pestle with fresh herb leaves, flat vector style, deep green on a plain white background, balanced composition, no text, no watermark",
-        "tags": "nutrition, herbs, mortar, wellness, minimal, organic"
-    },
-    {
-        "title": "Apple Heart Mark",
-        "filename": "apple_heart_mark.png",
-        "prompt": "Modern minimal logo of an apple whose core cutout forms a heart shape, negative space design, flat vector style, red single color on a plain white background, no text, no watermark",
-        "tags": "nutrition, apple, heart, negative space, minimal, modern"
-    },
-    {
-        "title": "Kettlebell Wings Emblem",
-        "filename": "kettlebell_wings_emblem.png",
-        "prompt": "Bold circular emblem logo of a kettlebell with subtle wing shapes on both sides, flat vector badge style, black on a plain white background, strong symmetric composition, no text, no watermark",
-        "tags": "fitness, kettlebell, emblem, badge, bold, modern"
-    },
-    {
-        "title": "Kettlebell Swing Silhouette",
-        "filename": "kettlebell_swing_silhouette.png",
-        "prompt": "Bold logo of an athlete performing a kettlebell swing, solid black silhouette, dynamic pose, flat vector style on a plain white background, no text, no watermark",
-        "tags": "fitness, kettlebell, athlete, silhouette, bold, modern"
-    },
-    {
-        "title": "Barbell Laurel Badge",
-        "filename": "barbell_laurel_badge.png",
-        "prompt": "Classic badge logo of a barbell framed by two laurel branches forming a circle, flat vector style, black on a plain white background, symmetric emblem composition, no text, no watermark",
-        "tags": "fitness, barbell, laurel, badge, emblem, bold"
-    },
-    {
-        "title": "Monoline Dumbbell Heartbeat",
-        "filename": "monoline_dumbbell_heartbeat.png",
-        "prompt": "Minimal monoline logo of a dumbbell whose bar becomes a heartbeat pulse line in the middle, single black line, flat vector style on a plain white background, no text, no watermark",
-        "tags": "fitness, dumbbell, heartbeat, monoline, minimal, modern"
-    },
-    {
-        "title": "Warrior Pose Line Art",
-        "filename": "warrior_pose_line_art.png",
-        "prompt": "Elegant continuous line-art logo of a person in warrior two yoga pose, single flowing black line, minimal composition on a plain white background, no text, no watermark",
-        "tags": "yoga, warrior pose, figure, line art, minimal, elegant"
-    },
-    {
-        "title": "Tree Pose Circle",
-        "filename": "tree_pose_circle.png",
-        "prompt": "Minimal logo of a person in tree yoga pose inside a thin open circle, small leaves at the raised hands, flat vector style, forest green on a plain white background, no text, no watermark",
-        "tags": "yoga, tree pose, circle, leaves, minimal, calm"
-    },
-    {
-        "title": "Sun Salutation Geometric",
-        "filename": "sun_salutation_geometric.png",
-        "prompt": "Modern geometric logo of a figure with arms raised toward a rising sun made of radiating rays, flat vector style, warm orange and deep navy on a plain white background, no text, no watermark",
-        "tags": "yoga, sun, figure, geometric, modern, colorful"
-    },
-    {
-        "title": "Breathing Waves Mark",
-        "filename": "breathing_waves_mark.png",
-        "prompt": "Minimal logo of three soft flowing horizontal waves passing through an open circle, representing calm breath, flat vector style, soft blue on a plain white background, no text, no watermark",
-        "tags": "meditation, breathwork, waves, circle, minimal, calm"
-    },
-    {
-        "title": "Lotus Mind Profile",
-        "filename": "lotus_mind_profile.png",
-        "prompt": "Minimal logo of a human head in profile with a lotus flower blooming where the mind is, flat vector style, violet single color on a plain white background, elegant curves, no text, no watermark",
-        "tags": "meditation, mindfulness, lotus, head, minimal, calm"
-    },
-    {
-        "title": "Gua Sha Face Lines",
-        "filename": "gua_sha_face_lines.png",
-        "prompt": "Elegant minimal line-art logo of a woman's face in profile with a gua sha stone tracing a curved line along the cheek, single black line with a soft pink accent, on a plain white background, no text, no watermark",
-        "tags": "face yoga, gua sha, face, line art, minimal, elegant"
-    },
-    {
-        "title": "Face Roller Bloom",
-        "filename": "face_roller_bloom.png",
-        "prompt": "Minimal logo of a jade face roller with a small flower blooming from its handle, flat vector style, soft green and pink on a plain white background, no text, no watermark",
-        "tags": "face yoga, skincare, roller, flower, minimal, playful"
-    },
-    {
-        "title": "Lips Brush Stroke",
-        "filename": "lips_brush_stroke.png",
-        "prompt": "Modern minimal logo of lips formed by a single elegant paint brush stroke, flat vector style, deep red on a plain white background, no text, no watermark",
-        "tags": "makeup, lips, brush stroke, minimal, bold, elegant"
-    },
-    {
-        "title": "Veil Dancer Gold",
-        "filename": "veil_dancer_gold.png",
-        "prompt": "Elegant logo of a belly dancer with a flowing veil arcing over her head, graceful silhouette, flat vector style, single gold color on a plain white background, no text, no watermark",
-        "tags": "belly dance, dancer, veil, silhouette, gold, elegant"
-    },
-    {
-        "title": "Crescent Dancer Duo",
-        "filename": "crescent_dancer_duo.png",
-        "prompt": "Minimal logo of a belly dancer silhouette dancing inside a large crescent moon, stars around, flat vector style, deep violet on a plain white background, no text, no watermark",
-        "tags": "belly dance, dancer, moon, stars, silhouette, elegant"
-    },
-    {
-        "title": "Runner Sunrise Mark",
-        "filename": "runner_sunrise_mark.png",
-        "prompt": "Modern minimal logo of a running figure with motion lines, a rising sun semicircle behind, flat vector style, energetic orange on a plain white background, no text, no watermark",
-        "tags": "fitness, running, sun, figure, modern, bold"
-    },
-    {
-        "title": "Jump Rope Star",
-        "filename": "jump_rope_star.png",
-        "prompt": "Playful minimal logo of a figure mid-jump with a jump rope forming a star-like arc overhead, flat vector style, bright teal on a plain white background, no text, no watermark",
-        "tags": "fitness, jump rope, figure, playful, modern, minimal"
-    },
-    {
-        "title": "Lotus Pose Mandala",
-        "filename": "lotus_pose_mandala.png",
-        "prompt": "Generate a logo image: elegant logo of a woman seated in lotus meditation pose inside a circular mandala, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "yoga, meditation, mandala, elegant, calm"
-    },
-    {
-        "title": "Downward Dog Line Art",
-        "filename": "downward_dog_line_art.png",
-        "prompt": "Generate a logo image: minimal continuous-line logo of a woman in downward dog yoga pose, flat vector style, one forest green line on a plain white background, no text, no watermark. Square image.",
-        "tags": "yoga, pose, minimal, calm, organic"
-    },
-    {
-        "title": "Cobra Pose Silhouette",
-        "filename": "cobra_pose_silhouette.png",
-        "prompt": "Generate a logo image: minimal logo of a woman in cobra yoga backbend pose silhouette, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
-        "tags": "yoga, pose, minimal, calm"
-    },
-    {
-        "title": "Namaste Prayer Hands",
-        "filename": "namaste_prayer_hands.png",
-        "prompt": "Generate a logo image: elegant logo of two hands pressed together in namaste prayer with a small lotus, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "yoga, meditation, hands, elegant, calm"
-    },
-    {
-        "title": "Chakra Spine Alignment",
-        "filename": "chakra_spine_alignment.png",
-        "prompt": "Generate a logo image: modern logo of a seated figure profile with seven aligned chakra dots along the spine, flat vector style, colorful gradient dots on a plain white background, no text, no watermark. Square image.",
-        "tags": "yoga, meditation, chakra, colorful, modern"
-    },
-    {
-        "title": "Yoga Wheel Backbend",
-        "filename": "yoga_wheel_backbend.png",
-        "prompt": "Generate a logo image: minimal logo of a woman arched over a yoga wheel in a backbend, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "yoga, pose, minimal, calm"
-    },
-    {
-        "title": "Pilates Ball Core Figure",
-        "filename": "pilates_ball_core_figure.png",
-        "prompt": "Generate a logo image: minimal line-art logo of a woman balancing on a small pilates stability ball doing a core exercise, flat vector style, one slate blue line on a plain white background, no text, no watermark. Square image.",
-        "tags": "pilates, core, minimal, modern"
-    },
-    {
-        "title": "Pilates Ring Silhouette",
-        "filename": "pilates_ring_silhouette.png",
-        "prompt": "Generate a logo image: minimal logo of a woman pressing a pilates magic ring between her legs seated, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "pilates, ring, minimal, elegant"
-    },
-    {
-        "title": "Pilates Roll Up Line Art",
-        "filename": "pilates_roll_up_line_art.png",
-        "prompt": "Generate a logo image: minimal continuous-line logo of a woman performing a pilates roll-up on a mat, flat vector style, one ember orange line on a plain white background, no text, no watermark. Square image.",
-        "tags": "pilates, core, minimal, modern"
-    },
-    {
-        "title": "Squat Strength Silhouette",
-        "filename": "squat_strength_silhouette.png",
-        "prompt": "Generate a logo image: bold logo of a strong woman in a deep squat holding a barbell overhead silhouette, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, strength, bold, modern"
-    },
-    {
-        "title": "Battle Ropes Energy Mark",
-        "filename": "battle_ropes_energy_mark.png",
-        "prompt": "Generate a logo image: bold dynamic logo of a woman swinging battle ropes with wave motion, flat vector style, two colors ember orange and slate on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, cardio, bold, colorful"
-    },
-    {
-        "title": "Resistance Band Stretch",
-        "filename": "resistance_band_stretch.png",
-        "prompt": "Generate a logo image: minimal line-art logo of a woman stretching a resistance band overhead, flat vector style, one ocean teal line on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, mobility, minimal, modern"
-    },
-    {
-        "title": "Kettlebell Goblet Squat",
-        "filename": "kettlebell_goblet_squat.png",
-        "prompt": "Generate a logo image: bold logo of a woman in a goblet squat holding a kettlebell at her chest silhouette, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, strength, bold, modern"
-    },
-    {
-        "title": "Plank Core Line Art",
-        "filename": "plank_core_line_art.png",
-        "prompt": "Generate a logo image: minimal continuous-line logo of a woman holding a forearm plank pose, flat vector style, one violet line on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, core, minimal, modern"
-    },
-    {
-        "title": "Eyelash Curler Beauty Mark",
-        "filename": "eyelash_curler_beauty_mark.png",
-        "prompt": "Generate a logo image: elegant logo of an eye with long curled lashes and an eyelash curler, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "makeup, beauty, elegant, minimal"
-    },
-    {
-        "title": "Cosmetic Cream Jar Bloom",
-        "filename": "cosmetic_cream_jar_bloom.png",
-        "prompt": "Generate a logo image: elegant logo of a skincare cream jar with a blooming flower rising from it, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
-        "tags": "skincare, beauty, elegant, organic"
-    },
-    {
-        "title": "Perfume Bottle Elegant",
-        "filename": "perfume_bottle_elegant.png",
-        "prompt": "Generate a logo image: elegant minimal logo of a faceted perfume bottle with a delicate spray, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "beauty, elegant, minimal"
-    },
-    {
-        "title": "Nail Polish Manicure Mark",
-        "filename": "nail_polish_manicure_mark.png",
-        "prompt": "Generate a logo image: minimal logo of a hand with painted nails beside a nail polish bottle, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
-        "tags": "beauty, makeup, minimal, elegant"
-    },
-    {
-        "title": "Eyebrow Arch Beauty Line",
-        "filename": "eyebrow_arch_beauty_line.png",
-        "prompt": "Generate a logo image: minimal single-line logo of an eye with a perfectly arched sculpted eyebrow, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "makeup, beauty, minimal, elegant"
-    },
-    {
-        "title": "Facial Steam Glow Mark",
-        "filename": "facial_steam_glow_mark.png",
-        "prompt": "Generate a logo image: elegant logo of a woman's face profile with rising facial steam and glow lines, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "skincare, face_yoga, elegant, calm"
-    },
-    {
-        "title": "Ballet Dancer En Pointe",
-        "filename": "ballet_dancer_en_pointe.png",
-        "prompt": "Generate a logo image: elegant logo of a ballet dancer balanced en pointe with arms raised silhouette, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "dance, ballet, elegant, minimal"
-    },
-    {
-        "title": "Contemporary Dancer Leap",
-        "filename": "contemporary_dancer_leap.png",
-        "prompt": "Generate a logo image: dynamic elegant logo of a contemporary dancer mid-leap with flowing motion silhouette, flat vector style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "dance, bold, elegant, modern"
-    },
-    {
-        "title": "Flamenco Dancer Fan",
-        "filename": "flamenco_dancer_fan.png",
-        "prompt": "Generate a logo image: elegant logo of a flamenco dancer holding a fan with a ruffled dress silhouette, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
-        "tags": "dance, belly_dance, elegant, bold"
-    },
-    {
-        "title": "Zen Stones Balance Stack",
-        "filename": "zen_stones_balance_stack.png",
-        "prompt": "Generate a logo image: minimal logo of a balanced stack of zen pebbles with a small leaf, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "meditation, wellness, minimal, calm"
-    },
-    {
-        "title": "Meditation Aura Rings",
-        "filename": "meditation_aura_rings.png",
-        "prompt": "Generate a logo image: calm logo of a seated meditating figure surrounded by concentric aura rings, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "meditation, yoga, calm, minimal"
-    },
-    {
-        "title": "Singing Bowl Sound Healing",
-        "filename": "singing_bowl_sound_healing.png",
-        "prompt": "Generate a logo image: calm logo of a tibetan singing bowl with a mallet and rising sound waves, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "meditation, sound healing, calm, minimal"
-    },
-    {
-        "title": "Incense Smoke Calm Mark",
-        "filename": "incense_smoke_calm_mark.png",
-        "prompt": "Generate a logo image: minimal elegant logo of an incense stick with a curling smoke swirl, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "meditation, wellness, minimal, calm"
-    },
-    {
-        "title": "Third Eye Awakening",
-        "filename": "third_eye_awakening.png",
-        "prompt": "Generate a logo image: mystical elegant logo of a third eye with radiating lashes and a lotus above, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "meditation, spiritual, elegant, calm"
-    },
-    {
-        "title": "Green Smoothie Glass",
-        "filename": "green_smoothie_glass.png",
-        "prompt": "Generate a logo image: minimal logo of a tall smoothie glass with a straw and a leaf garnish, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "nutrition, wellness, minimal, organic"
-    },
-    {
-        "title": "Meal Prep Balance Plate",
-        "filename": "meal_prep_balance_plate.png",
-        "prompt": "Generate a logo image: modern logo of a top-down balanced meal plate divided into portions with a leaf, flat vector style, two colors forest green and ember orange on a plain white background, no text, no watermark. Square image.",
-        "tags": "nutrition, wellness, modern, colorful"
-    },
-    {
-        "title": "Hydration Water Drop Leaf",
-        "filename": "hydration_water_drop_leaf.png",
-        "prompt": "Generate a logo image: minimal logo of a water droplet enclosing a small leaf, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "nutrition, wellness, minimal, organic"
-    },
-    {
-        "title": "Honey Jar Dipper",
-        "filename": "honey_jar_dipper.png",
-        "prompt": "Generate a logo image: minimal logo of a honey jar with a wooden dipper and a drip, flat vector style, one sunset amber color on a plain white background, no text, no watermark. Square image.",
-        "tags": "nutrition, wellness, minimal, organic"
-    },
-    {
-        "title": "Herbal Tea Steam Cup",
-        "filename": "herbal_tea_steam_cup.png",
-        "prompt": "Generate a logo image: minimal logo of a cup of herbal tea with a leaf and rising steam swirl, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "nutrition, wellness, calm, minimal"
-    },
-    {
-        "title": "Lighthouse Guidance Beam",
-        "filename": "lighthouse_guidance_beam.png",
-        "prompt": "Generate a logo image: modern logo of a lighthouse casting a guiding beam over waves, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coaching, mindset, modern, bold"
-    },
-    {
-        "title": "Compass Direction Mark",
-        "filename": "compass_direction_mark.png",
-        "prompt": "Generate a logo image: minimal modern logo of a compass with a needle pointing to a small star, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coaching, mindset, minimal, modern"
-    },
-    {
-        "title": "Growth Arrow Plant",
-        "filename": "growth_arrow_plant.png",
-        "prompt": "Generate a logo image: modern logo of an upward arrow formed by a growing sprouting plant, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coaching, growth, modern, organic"
-    },
-    {
-        "title": "Stepping Stones Path",
-        "filename": "stepping_stones_path.png",
-        "prompt": "Generate a logo image: minimal logo of stepping stones forming a rising path toward a sun, flat vector style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coaching, mindset, minimal, calm"
-    },
-    {
-        "title": "Butterfly Transformation Line",
-        "filename": "butterfly_transformation_line.png",
-        "prompt": "Generate a logo image: elegant single-line logo of a butterfly mid-flight, flat vector style, one violet line on a plain white background, no text, no watermark. Square image.",
-        "tags": "coaching, transformation, elegant, minimal"
-    },
-    {
-        "title": "Origami Crane Mindset",
-        "filename": "origami_crane_mindset.png",
-        "prompt": "Generate a logo image: modern geometric logo of a folded origami crane, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coaching, mindset, modern, minimal"
-    },
-    {
-        "title": "Hormone Balance Bloom",
-        "filename": "hormone_balance_bloom.png",
-        "prompt": "Generate a logo image: elegant logo of a flowering cycle circle around a female symbol, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
-        "tags": "womens health, wellness, elegant, organic"
-    },
-    {
-        "title": "Postnatal Mother Baby Line",
-        "filename": "postnatal_mother_baby_line.png",
-        "prompt": "Generate a logo image: minimal continuous-line logo of a mother cradling a baby, flat vector style, one violet line on a plain white background, no text, no watermark. Square image.",
-        "tags": "maternity, womens health, minimal, elegant"
-    },
-    {
-        "title": "Crescent Moon Sleep Face",
-        "filename": "crescent_moon_sleep_face.png",
-        "prompt": "Generate a logo image: calm logo of a sleeping woman's face resting on a crescent moon, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "wellness, sleep, calm, elegant"
-    },
-    {
-        "title": "Breathwork Lungs Leaf",
-        "filename": "breathwork_lungs_leaf.png",
-        "prompt": "Generate a logo image: minimal logo of a pair of lungs formed by two leaves, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "wellness, breathwork, minimal, organic"
-    },
-    {
-        "title": "Sunrise Stretch Figure",
-        "filename": "sunrise_stretch_figure.png",
-        "prompt": "Generate a logo image: minimal logo of a woman stretching arms overhead in front of a rising sun, flat vector style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, mobility, calm, minimal"
-    },
-    {
-        "title": "Cyclist Wheel Motion",
-        "filename": "cyclist_wheel_motion.png",
-        "prompt": "Generate a logo image: bold dynamic logo of a woman cycling with motion lines behind the wheel silhouette, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, cardio, bold, modern"
-    },
-    {
-        "title": "Swimmer Wave Arc",
-        "filename": "swimmer_wave_arc.png",
-        "prompt": "Generate a logo image: minimal logo of a swimmer doing freestyle stroke inside a wave arc, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "fitness, cardio, minimal, modern"
-    },
-    {
-        "title": "Hamsa Hand Wellness",
-        "filename": "hamsa_hand_wellness.png",
-        "prompt": "Generate a logo image: elegant symmetrical logo of a hamsa hand with a lotus in the palm, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "spiritual, meditation, elegant, calm"
-    },
-    {
-        "title": "Moon Phases Cycle Arc",
-        "filename": "moon_phases_cycle_arc.png",
-        "prompt": "Generate a logo image: minimal logo of the eight moon phases arranged in an arc, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "spiritual, wellness, minimal, calm"
-    },
-    {
-        "title": "Crystal Healing Cluster",
-        "filename": "crystal_healing_cluster.png",
-        "prompt": "Generate a logo image: minimal geometric logo of a cluster of healing crystals, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "spiritual, wellness, minimal, elegant"
-    },
-    {
-        "title": "Flower Of Life Geometry",
-        "filename": "flower_of_life_geometry.png",
-        "prompt": "Generate a logo image: minimal sacred-geometry logo of the flower of life pattern, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "spiritual, meditation, minimal, elegant"
-    },
-    {
-        "title": "Acoustic Guitar Line",
-        "filename": "acoustic_guitar_line.png",
-        "prompt": "Generate a logo image: minimal single-line logo of an acoustic guitar, flat vector style, one ember orange line on a plain white background, no text, no watermark. Square image.",
-        "tags": "music, guitar, minimal, modern"
-    },
-    {
-        "title": "Piano Keys Wave",
-        "filename": "piano_keys_wave.png",
-        "prompt": "Generate a logo image: modern logo of piano keys curving into a sound wave, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "music, piano, modern, bold"
-    },
-    {
-        "title": "Microphone Star Vocal",
-        "filename": "microphone_star_vocal.png",
-        "prompt": "Generate a logo image: bold logo of a vintage stage microphone with a small star, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "music, vocal, bold, modern"
-    },
-    {
-        "title": "Headphones Sound Wave",
-        "filename": "headphones_sound_wave.png",
-        "prompt": "Generate a logo image: modern logo of headphones with a sound wave across the band, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "music, dj, modern, bold"
-    },
-    {
-        "title": "Violin Elegant Scroll",
-        "filename": "violin_elegant_scroll.png",
-        "prompt": "Generate a logo image: elegant minimal logo of a violin with an ornate scroll, flat vector style, one ember brown color on a plain white background, no text, no watermark. Square image.",
-        "tags": "music, strings, elegant, minimal"
-    },
-    {
-        "title": "Music Note Heartbeat",
-        "filename": "music_note_heartbeat.png",
-        "prompt": "Generate a logo image: modern logo of a music note merging into a heartbeat line, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "music, modern, minimal"
-    },
-    {
-        "title": "Paint Brush Palette Stroke",
-        "filename": "paint_brush_palette_stroke.png",
-        "prompt": "Generate a logo image: playful logo of a paintbrush with a colorful stroke, flat vector style, colorful paint on a plain white background, no text, no watermark. Square image.",
-        "tags": "art, painting, playful, colorful"
-    },
-    {
-        "title": "Artist Palette Dots",
-        "filename": "artist_palette_dots.png",
-        "prompt": "Generate a logo image: modern logo of an artist's paint palette with colorful blobs, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
-        "tags": "art, colorful, modern, playful"
-    },
-    {
-        "title": "Pottery Wheel Hands",
-        "filename": "pottery_wheel_hands.png",
-        "prompt": "Generate a logo image: minimal logo of two hands shaping a pot on a pottery wheel, flat vector style, one ember clay color on a plain white background, no text, no watermark. Square image.",
-        "tags": "art, pottery, craft, organic"
-    },
-    {
-        "title": "Calligraphy Pen Swirl",
-        "filename": "calligraphy_pen_swirl.png",
-        "prompt": "Generate a logo image: elegant logo of a calligraphy pen nib with an ink swirl flourish, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "art, lettering, elegant, minimal"
-    },
-    {
-        "title": "Camera Aperture Bloom",
-        "filename": "camera_aperture_bloom.png",
-        "prompt": "Generate a logo image: modern logo of a camera aperture shaped like a blooming flower, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "photography, modern, minimal"
-    },
-    {
-        "title": "Vintage Camera Line",
-        "filename": "vintage_camera_line.png",
-        "prompt": "Generate a logo image: minimal single-line logo of a vintage film camera, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "photography, minimal, modern"
-    },
-    {
-        "title": "Film Clapperboard Play",
-        "filename": "film_clapperboard_play.png",
-        "prompt": "Generate a logo image: bold modern logo of a film clapperboard with a play triangle, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
-        "tags": "video, film, bold, modern"
-    },
-    {
-        "title": "Creator Play Button",
-        "filename": "creator_play_button.png",
-        "prompt": "Generate a logo image: modern logo of a rounded play button inside a speech bubble, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "video, content, modern, bold"
-    },
-    {
-        "title": "Chef Hat Whisk Cross",
-        "filename": "chef_hat_whisk_cross.png",
-        "prompt": "Generate a logo image: modern logo of a chef hat above a crossed whisk and spoon, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "cooking, culinary, modern, bold"
-    },
-    {
-        "title": "Rolling Pin Dough",
-        "filename": "rolling_pin_dough.png",
-        "prompt": "Generate a logo image: minimal logo of a rolling pin over a dough circle, flat vector style, one ember brown color on a plain white background, no text, no watermark. Square image.",
-        "tags": "baking, cooking, minimal, organic"
-    },
-    {
-        "title": "Cupcake Swirl Mark",
-        "filename": "cupcake_swirl_mark.png",
-        "prompt": "Generate a logo image: playful logo of a cupcake with a swirled frosting top, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
-        "tags": "baking, playful, minimal"
-    },
-    {
-        "title": "Knife Board Herb",
-        "filename": "knife_board_herb.png",
-        "prompt": "Generate a logo image: minimal logo of a chef knife on a cutting board with an herb sprig, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "cooking, culinary, minimal, organic"
-    },
-    {
-        "title": "Barista Coffee Leaf",
-        "filename": "barista_coffee_leaf.png",
-        "prompt": "Generate a logo image: elegant logo of a coffee cup with latte-art leaf and rising steam, flat vector style, one ember brown color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coffee, barista, elegant, calm"
-    },
-    {
-        "title": "Growth Chart Arrow",
-        "filename": "growth_chart_arrow.png",
-        "prompt": "Generate a logo image: modern logo of a rising bar chart with an upward arrow, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "business, growth, modern, bold"
-    },
-    {
-        "title": "Lightbulb Idea Rays",
-        "filename": "lightbulb_idea_rays.png",
-        "prompt": "Generate a logo image: modern logo of a lightbulb with radiating idea rays, flat vector style, one sunset amber color on a plain white background, no text, no watermark. Square image.",
-        "tags": "business, ideas, modern, bold"
-    },
-    {
-        "title": "Rocket Launch Startup",
-        "filename": "rocket_launch_startup.png",
-        "prompt": "Generate a logo image: bold modern logo of a rocket launching with a trail, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "business, startup, bold, modern"
-    },
-    {
-        "title": "Target Dart Bullseye",
-        "filename": "target_dart_bullseye.png",
-        "prompt": "Generate a logo image: modern logo of a dart hitting the center of a bullseye target, flat vector style, two colors ember red and slate on a plain white background, no text, no watermark. Square image.",
-        "tags": "marketing, business, modern, bold"
-    },
-    {
-        "title": "Handshake Deal Mark",
-        "filename": "handshake_deal_mark.png",
-        "prompt": "Generate a logo image: minimal modern logo of two hands in a handshake, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
-        "tags": "business, minimal, modern"
-    },
-    {
-        "title": "Piggy Bank Coin",
-        "filename": "piggy_bank_coin.png",
-        "prompt": "Generate a logo image: playful minimal logo of a piggy bank with a coin dropping in, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
-        "tags": "finance, playful, minimal"
-    },
-    {
-        "title": "Sales Funnel Mark",
-        "filename": "sales_funnel_mark.png",
-        "prompt": "Generate a logo image: modern logo of a marketing funnel with dots flowing through, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "marketing, business, modern, minimal"
-    },
-    {
-        "title": "Quill Pen Ink",
-        "filename": "quill_pen_ink.png",
-        "prompt": "Generate a logo image: elegant logo of a feather quill with an ink drop, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "writing, elegant, minimal"
-    },
-    {
-        "title": "Open Book Pen",
-        "filename": "open_book_pen.png",
-        "prompt": "Generate a logo image: minimal logo of an open book with a pen forming the pages, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "writing, author, minimal, modern"
-    },
-    {
-        "title": "Podcast Mic Waves",
-        "filename": "podcast_mic_waves.png",
-        "prompt": "Generate a logo image: modern logo of a podcast microphone with sound waves on each side, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "podcast, audio, modern, bold"
-    },
-    {
-        "title": "Code Brackets Cursor",
-        "filename": "code_brackets_cursor.png",
-        "prompt": "Generate a logo image: modern minimal logo of angle-bracket code symbols with a blinking cursor, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coding, tech, modern, minimal"
-    },
-    {
-        "title": "Terminal Prompt Mark",
-        "filename": "terminal_prompt_mark.png",
-        "prompt": "Generate a logo image: modern logo of a terminal window with a command prompt arrow, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "coding, tech, modern, minimal"
-    },
-    {
-        "title": "Laptop Rocket Tech",
-        "filename": "laptop_rocket_tech.png",
-        "prompt": "Generate a logo image: modern logo of a laptop with a small rocket flying out of the screen, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
-        "tags": "tech, startup, modern, playful"
-    },
-    {
-        "title": "Speech Bubble Globe",
-        "filename": "speech_bubble_globe.png",
-        "prompt": "Generate a logo image: modern logo of a speech bubble containing a globe, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "language, learning, modern, minimal"
-    },
-    {
-        "title": "Abacus Counting Beads",
-        "filename": "abacus_counting_beads.png",
-        "prompt": "Generate a logo image: playful modern logo of an abacus with colorful beads, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
-        "tags": "education, kids, playful, colorful"
-    },
-    {
-        "title": "Pencil Ruler Cross",
-        "filename": "pencil_ruler_cross.png",
-        "prompt": "Generate a logo image: modern logo of a pencil and ruler crossed, flat vector style, one sunset amber color on a plain white background, no text, no watermark. Square image.",
-        "tags": "education, tutoring, modern, minimal"
-    },
-    {
-        "title": "Graduation Owl",
-        "filename": "graduation_owl.png",
-        "prompt": "Generate a logo image: playful minimal logo of an owl wearing a graduation cap, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
-        "tags": "education, tutoring, playful, minimal"
-    },
-    {
-        "title": "ABC Building Blocks",
-        "filename": "abc_building_blocks.png",
-        "prompt": "Generate a logo image: playful logo of three stacked children's building blocks, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
-        "tags": "kids, education, playful, colorful"
-    },
-    {
-        "title": "Karate High Kick",
-        "filename": "karate_high_kick.png",
-        "prompt": "Generate a logo image: bold logo of a martial artist performing a high kick silhouette, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
-        "tags": "martial arts, bold, modern"
-    },
-    {
-        "title": "Boxing Gloves Pair",
-        "filename": "boxing_gloves_pair.png",
-        "prompt": "Generate a logo image: bold logo of a pair of hanging boxing gloves, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
-        "tags": "boxing, fitness, bold, modern"
-    },
-    {
-        "title": "Soccer Ball Motion",
-        "filename": "soccer_ball_motion.png",
-        "prompt": "Generate a logo image: bold dynamic logo of a soccer ball with motion lines, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "sports, soccer, bold, modern"
-    },
-    {
-        "title": "Tennis Racket Ball",
-        "filename": "tennis_racket_ball.png",
-        "prompt": "Generate a logo image: modern logo of a tennis racket with a ball, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "sports, tennis, modern, minimal"
-    },
-    {
-        "title": "Coach Whistle Mark",
-        "filename": "coach_whistle_mark.png",
-        "prompt": "Generate a logo image: bold minimal logo of a coach's whistle with a motion swoosh, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "sports, coaching, bold, minimal"
-    },
-    {
-        "title": "Hiking Boot Mountain",
-        "filename": "hiking_boot_mountain.png",
-        "prompt": "Generate a logo image: modern logo of a hiking boot with a mountain peak, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "outdoor, adventure, modern, bold"
-    },
-    {
-        "title": "Tent Pine Campfire",
-        "filename": "tent_pine_campfire.png",
-        "prompt": "Generate a logo image: modern logo of a camping tent beside a pine tree and campfire, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "outdoor, camping, modern, organic"
-    },
-    {
-        "title": "Kayak Paddle Wave",
-        "filename": "kayak_paddle_wave.png",
-        "prompt": "Generate a logo image: bold dynamic logo of a kayaker paddling over a wave, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
-        "tags": "outdoor, water, bold, modern"
-    },
-    {
-        "title": "Dog Paw Heart",
-        "filename": "dog_paw_heart.png",
-        "prompt": "Generate a logo image: playful minimal logo of a dog paw print forming a heart, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
-        "tags": "pet, dog, playful, minimal"
-    },
-    {
-        "title": "Playful Dog Sit",
-        "filename": "playful_dog_sit.png",
-        "prompt": "Generate a logo image: playful minimal logo of a sitting dog in profile silhouette, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
-        "tags": "pet, dog training, playful, minimal"
-    },
-    {
-        "title": "Watering Can Sprout",
-        "filename": "watering_can_sprout.png",
-        "prompt": "Generate a logo image: minimal logo of a watering can pouring over a sprouting seedling, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "gardening, plants, minimal, organic"
-    },
-    {
-        "title": "Potted Monstera Plant",
-        "filename": "potted_monstera_plant.png",
-        "prompt": "Generate a logo image: modern logo of a potted monstera plant, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
-        "tags": "gardening, plants, modern, organic"
-    },
-    {
-        "title": "Brain Heart Balance",
-        "filename": "brain_heart_balance.png",
-        "prompt": "Generate a logo image: modern logo of a brain and a heart balanced together, flat vector style, two colors violet and sunset pink on a plain white background, no text, no watermark. Square image.",
-        "tags": "therapy, mindset, modern, minimal"
-    }
+  {
+    "title": "Abstract Bodybuilder Back Pose",
+    "filename": "abstract_bodybuilder_back_pose.png",
+    "prompt": "Generate a logo image: bold logo of a muscular bodybuilder flexing both biceps, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, bodybuilder, muscles, back, bold"
+  },
+  {
+    "title": "Abstract Colorful Face Logo",
+    "filename": "abstract_colorful_face_logo.png",
+    "prompt": "Generate a logo image: colorful logo of a woman's face with flowing rainbow hair and makeup, flat vector style, vibrant multicolor on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, face yoga, face, woman, colorful, bold"
+  },
+  {
+    "title": "Abstract Crescent Moon Striped Logo",
+    "filename": "abstract_crescent_moon_striped_logo.png",
+    "prompt": "Generate a logo image: modern logo of a crescent moon with flowing wave stripes, flat vector style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, belly dance, moon, crescent, waves, minimal, modern"
+  },
+  {
+    "title": "Abstract Dancer Floral Silhouette",
+    "filename": "abstract_dancer_floral_silhouette.png",
+    "prompt": "Generate a logo image: elegant logo of a dancer silhouette forming ornate symmetrical floral petals, flat vector style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, belly dance, dancer, floral, silhouette, organic, elegant"
+  },
+  {
+    "title": "Abstract Pink Fashion Dress Logo",
+    "filename": "abstract_pink_fashion_dress_logo.png",
+    "prompt": "Generate a logo image: elegant logo of a stylized woman figure forming ornate floral petals, flat vector style, one magenta pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "belly dance, yoga, dancer, lotus, petals, elegant, organic"
+  },
+  {
+    "title": "Belly Dancer Silhouette Logo 2",
+    "filename": "belly-dancer-silhouette-logo-2.png",
+    "prompt": "Generate a logo image: elegant logo of a belly dancer in an ornate costume with one arm raised, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "belly dance, dancer, silhouette, elegant, bold"
+  },
+  {
+    "title": "Belly Dancer Silhouette Logo",
+    "filename": "belly-dancer-silhouette-logo.png",
+    "prompt": "Generate a logo image: elegant logo of a belly dancer with one arm raised, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "belly dance, dancer, silhouette, moon, elegant, bold"
+  },
+  {
+    "title": "Bodybuilder Front Side Flex",
+    "filename": "bodybuilder_front_side_flex.png",
+    "prompt": "Generate a logo image: bold logo of a muscular bald bodybuilder flexing both biceps, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, bodybuilder, muscles, flex, bold"
+  },
+  {
+    "title": "Bodybuilder Lightning Bolt Logo",
+    "filename": "bodybuilder_lightning_bolt_logo.png",
+    "prompt": "Generate a logo image: bold logo of a muscular bodybuilder split by a lightning bolt, flat vector style, two colors orange and dark gray on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, bodybuilder, lightning, silhouette, bold, modern"
+  },
+  {
+    "title": "Books And Coffee Cup Line Art",
+    "filename": "books_and_coffee_cup_line_art.png",
+    "prompt": "Generate a logo image: minimal logo of a steaming coffee cup resting on a stack of books, flat vector line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "book, coffee, cup, minimal"
+  },
+  {
+    "title": "Celestial Goddess Moon Sun Logo",
+    "filename": "celestial_goddess_moon_sun_logo.png",
+    "prompt": "Generate a logo image: elegant logo of a celestial goddess with arms raised inside a radiant sun and crescent moon, flat vector style, two colors blue and orange on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, belly dance, goddess, moon, sun, elegant, colorful"
+  },
+  {
+    "title": "Colorful Lotus Meditation Logo",
+    "filename": "colorful_lotus_meditation_logo.png",
+    "prompt": "Generate a logo image: colorful logo of a person meditating in lotus pose beneath a blooming lotus, flat vector style, a teal figure with colorful teal pink and orange petals on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, lotus, meditation, silhouette, colorful, calm"
+  },
+  {
+    "title": "Continuous Line Face Framing Hands",
+    "filename": "continuous_line_face_framing_hands.png",
+    "prompt": "Generate a logo image: minimal logo of a woman's serene face framed by flowing hair and hands, continuous single-line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, face, hands, hair, minimal, elegant"
+  },
+  {
+    "title": "Continuous Line Female Back Pink Dumbbells",
+    "filename": "continuous_line_female_back_pink_dumbbells.png",
+    "prompt": "Generate a logo image: minimal logo of a woman bending to lift dumbbells, continuous single-line art style, one black line with pink dumbbells on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, pilates, dumbbell, woman, minimal, elegant"
+  },
+  {
+    "title": "Dynamic Yoga Gymnastics Silhouette Logo",
+    "filename": "dynamic-yoga-gymnastics-silhouette-logo.png",
+    "prompt": "Generate a logo image: modern logo of a dynamic yoga warrior pose inside a circle, flat vector silhouette style, a black figure with orange and teal accent circles on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, fitness, dancer, silhouette, modern, playful"
+  },
+  {
+    "title": "Education Teamwork Book Climbing Logo",
+    "filename": "education_teamwork_book_climbing_logo.png",
+    "prompt": "Generate a logo image: playful logo of colorful people climbing a stack of books, flat vector style, colorful blue red and coral on a plain white background, no text, no watermark. Square image.",
+    "tags": "book, people, climbing, colorful, playful"
+  },
+  {
+    "title": "Educational Growth Community Book Logo",
+    "filename": "educational_growth_community_book_logo.png",
+    "prompt": "Generate a logo image: playful logo of colorful figures with leafy arms rising from an open book, flat vector style, colorful red blue orange and green on a plain white background, no text, no watermark. Square image.",
+    "tags": "book, people, leaves, colorful, playful"
+  },
+  {
+    "title": "Elegant Pregnant Woman Magenta Silhouette",
+    "filename": "elegant_pregnant_woman_magenta_silhouette.png",
+    "prompt": "Generate a logo image: elegant logo of a kneeling pregnant woman, flat vector line art style, one magenta color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, pregnancy, woman, silhouette, elegant, minimal"
+  },
+  {
+    "title": "Elegant Wellness Goddess Leaf Logo",
+    "filename": "elegant_wellness_goddess_leaf_logo.png",
+    "prompt": "Generate a logo image: elegant logo of a slender woman figure with a sweeping leaf, flat vector style, one sage green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, woman, leaf, silhouette, elegant, organic"
+  },
+  {
+    "title": "Elegant Woman Wavy Bob Vector",
+    "filename": "elegant_woman_wavy_bob_vector.png",
+    "prompt": "Generate a logo image: elegant logo of a serene woman with a wavy bob holding a skincare jar framed by leaves in a circle, flat vector style, soft brown and teal on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, woman, jar, leaves, elegant, calm"
+  },
+  {
+    "title": "Facial Massage Lift Diagram",
+    "filename": "facial_massage_lift_diagram.png",
+    "prompt": "Generate a logo image: minimal logo of a face with two hands performing a lifting facial massage, flat vector line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, face, hands, massage, minimal, calm"
+  },
+  {
+    "title": "Female Fitness Dumbbell Logo",
+    "filename": "female_fitness_dumbbell_logo.png",
+    "prompt": "Generate a logo image: bold logo of a fit woman with a ponytail holding a dumbbell inside a circle, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, dumbbell, woman, silhouette, bold"
+  },
+  {
+    "title": "Female Fitness Dumbbell Shoulder Press",
+    "filename": "female_fitness_dumbbell_shoulder_press.png",
+    "prompt": "Generate a logo image: bold logo of a muscular woman seen from behind doing a dumbbell shoulder press, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, dumbbell, woman, back, bold"
+  },
+  {
+    "title": "Female Fitness Line Art Logo",
+    "filename": "female_fitness_line_art_logo.png",
+    "prompt": "Generate a logo image: bold logo of a fit woman flexing both biceps inside a circle, flat vector line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, woman, flex, circle, bold, minimal"
+  },
+  {
+    "title": "Graduation Cap Student Success Logo",
+    "filename": "graduation_cap_student_success_logo.png",
+    "prompt": "Generate a logo image: modern logo of a graduate figure with arms raised beside a graduation cap and a circular swoosh, flat vector style, two colors navy blue and gray on a plain white background, no text, no watermark. Square image.",
+    "tags": "graduation cap, student, circle, modern"
+  },
+  {
+    "title": "Lipstick Application Silhouette",
+    "filename": "lipstick_application_silhouette.png",
+    "prompt": "Generate a logo image: elegant logo of a woman's profile silhouette applying lipstick, flat vector style, a black silhouette with a red lipstick on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, lipstick, silhouette, woman, elegant, bold"
+  },
+  {
+    "title": "Mascara Beauty Silhouette Logo",
+    "filename": "mascara_beauty_silhouette_logo.png",
+    "prompt": "Generate a logo image: playful logo of a woman's profile applying mascara with a wand inside a circle, flat vector style, a brown silhouette on a pink circle on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, face yoga, mascara, face, silhouette, playful, elegant"
+  },
+  {
+    "title": "Maternity Pregnant Woman Heart Logo",
+    "filename": "maternity_pregnant_woman_heart_logo.png",
+    "prompt": "Generate a logo image: elegant logo of a pregnant woman cradling her belly, flat vector line art style, one coral pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, pregnancy, mother, elegant, calm"
+  },
+  {
+    "title": "Minimalist Line Art Woman Flowers",
+    "filename": "minimalist-line-art-woman-flowers.png",
+    "prompt": "Generate a logo image: minimal logo of a woman's face with flowers in her hair, flat vector line art style, a black line with a soft pink accent on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, face, flowers, minimal, elegant"
+  },
+  {
+    "title": "Minimalist Yoga Logo Abstract Circles",
+    "filename": "minimalist-yoga-logo-abstract-circles.png",
+    "prompt": "Generate a logo image: minimal logo of a person meditating in lotus pose with abstract accent circles, flat vector line art style, a black figure with orange teal and red circles on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, meditation, figure, circles, minimal, calm"
+  },
+  {
+    "title": "Minimalist Yoga Meditation Logo",
+    "filename": "minimalist-yoga-meditation-logo.png",
+    "prompt": "Generate a logo image: minimal logo of a person meditating in lotus pose, flat vector line art style, a colorful violet and orange gradient on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, meditation, figure, colorful, calm"
+  },
+  {
+    "title": "Minimalist Colorful Face Logo",
+    "filename": "minimalist_colorful_face_logo.png",
+    "prompt": "Generate a logo image: minimal logo of a woman's face in profile with soft watercolor splashes, flat vector line art style, a black line with peach and teal watercolor on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, face, watercolor, minimal, calm"
+  },
+  {
+    "title": "Minimalist Face Cupped Hands",
+    "filename": "minimalist_face_cupped_hands.png",
+    "prompt": "Generate a logo image: minimal logo of a serene face held in two cupped hands, flat vector line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, face, hands, minimal, elegant"
+  },
+  {
+    "title": "Minimalist Line Art Headless Female Lifting Barbell",
+    "filename": "minimalist_line_art_headless_female_lifting_barbell.png",
+    "prompt": "Generate a logo image: minimal logo of a woman lifting a barbell, flat vector line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, barbell, woman, deadlift, minimal, bold"
+  },
+  {
+    "title": "Muscular Bodybuilder Fitness Emblem",
+    "filename": "muscular_bodybuilder_fitness_emblem.png",
+    "prompt": "Generate a logo image: bold logo of a muscular bodybuilder flexing both biceps with dynamic swirls, flat vector style, two colors black and orange on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, bodybuilder, muscles, emblem, bold, modern"
+  },
+  {
+    "title": "Muscular Female Fitness Flex Logo",
+    "filename": "muscular_female_fitness_flex_logo.png",
+    "prompt": "Generate a logo image: bold logo of a fit woman with a ponytail flexing both biceps, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, woman, flex, bold, modern"
+  },
+  {
+    "title": "One Line Face Art",
+    "filename": "one_line_face_art.png",
+    "prompt": "Generate a logo image: minimal logo of a woman's face in profile with long flowing hair, continuous single-line art style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, face, profile, hair, minimal, elegant"
+  },
+  {
+    "title": "Ornate Buddha Lotus Silhouette",
+    "filename": "ornate-buddha-lotus-silhouette.png",
+    "prompt": "Generate a logo image: elegant logo of an ornate Buddha meditating framed by a blooming lotus, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, buddha, lotus, leaves, organic, calm"
+  },
+  {
+    "title": "Pole Dancer Dynamic Silhouette",
+    "filename": "pole_dancer_dynamic_silhouette.png",
+    "prompt": "Generate a logo image: bold logo of a pole dancer in a dynamic horizontal hold on a pole, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "pole dance, dancer, pole, silhouette, bold, elegant"
+  },
+  {
+    "title": "Pole Dancer Silhouette",
+    "filename": "pole_dancer_silhouette.png",
+    "prompt": "Generate a logo image: bold logo of a pole dancer inverted on a pole, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "pole dance, dancer, pole, silhouette, bold, elegant"
+  },
+  {
+    "title": "Pregnant Woman Line Art Logo",
+    "filename": "pregnant_woman_line_art_logo.png",
+    "prompt": "Generate a logo image: elegant logo of a pregnant woman in profile cradling her belly, flat vector line art style, one coral color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, pregnancy, woman, elegant, calm"
+  },
+  {
+    "title": "Pure Black Yoga Pigeon Pose Silhouette",
+    "filename": "pure-black-yoga-pigeon-pose-silhouette.png",
+    "prompt": "Generate a logo image: bold logo of a woman in a yoga pigeon pose, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, silhouette, woman, bold, elegant"
+  },
+  {
+    "title": "Serene Woman Pastel Vector",
+    "filename": "serene_woman_pastel_vector.png",
+    "prompt": "Generate a logo image: elegant logo of a serene woman holding a skincare jar framed by leaves in a circle, flat vector style, soft pastel blue and green on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, woman, skincare, leaf, calm, elegant"
+  },
+  {
+    "title": "Skincare Woman Face Mask Vector",
+    "filename": "skincare_woman_face_mask_vector.png",
+    "prompt": "Generate a logo image: elegant logo of a woman in profile with a skincare jar and leaves in a circle, flat vector style, soft pastel blue and green on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, makeup, face mask, jar, leaves, calm, modern"
+  },
+  {
+    "title": "Woman Profile Lotus Flower Logo",
+    "filename": "woman_profile_lotus_flower_logo.png",
+    "prompt": "Generate a logo image: elegant logo of a woman's profile within a blooming lotus mandala, flat vector style, one coral color on a plain white background, no text, no watermark. Square image.",
+    "tags": "face yoga, yoga, lotus, face, profile, elegant, organic"
+  },
+  {
+    "title": "Yoga Tree Of Life Silhouette",
+    "filename": "yoga-tree-of-life-silhouette.png",
+    "prompt": "Generate a logo image: organic logo of a tree of life with a yoga tree pose figure in the trunk and roots below, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, tree, silhouette, roots, organic, bold"
+  },
+  {
+    "title": "Yoga Leaf Angel Logo",
+    "filename": "yoga_leaf_angel_logo.png",
+    "prompt": "Generate a logo image: modern logo of a meditating figure with arms raised forming leaf wings, flat vector style, a gradient green on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pilates, leaf, figure, organic, modern"
+  },
+  {
+    "title": "Pole Dancer Gold Circle",
+    "filename": "pole_dancer_gold_circle.png",
+    "prompt": "Minimalist logo of a female pole dancer in an elegant back-arch pose on a vertical pole, enclosed in a thin open circle outline, flat vector style, single gold color on a plain white background, clean smooth curves, no text, no watermark",
+    "tags": "pole dance, dancer, pole, circle, silhouette, elegant, minimal"
+  },
+  {
+    "title": "Pole Dancer Ink Circle",
+    "filename": "pole_dancer_ink_circle.png",
+    "prompt": "Bold logo of a female pole dancer in a graceful split leap pose on a vertical pole, white silhouette cut out of a solid black hand-painted ink brush-stroke circle, flat vector style, black and white only, on a plain white background, no text, no watermark",
+    "tags": "pole dance, dancer, pole, circle, silhouette, bold, modern"
+  },
+  {
+    "title": "Pole Dancer Inverted Silhouette",
+    "filename": "pole_dancer_inverted_silhouette.png",
+    "prompt": "Minimal logo of a female pole dancer performing an inverted pose upside down on a vertical pole, legs extended gracefully upward, solid black silhouette with flowing hair, flat vector style, black on a plain white background, clean elegant lines, no text, no watermark",
+    "tags": "pole dance, dancer, pole, silhouette, elegant, minimal"
+  },
+  {
+    "title": "Pilates Reformer Line Art",
+    "filename": "pilates_reformer_line_art.png",
+    "prompt": "Elegant minimal line-art logo of a person performing the teaser pilates exercise on a reformer machine, legs raised in a V shape, drawn with flowing black calligraphic ink strokes, abstract simplified reformer shape, on a plain white background, no text, no watermark",
+    "tags": "pilates, reformer, teaser, line art, figure, minimal, elegant"
+  },
+  {
+    "title": "Pilates Reformer Side Plank",
+    "filename": "pilates_reformer_side_plank.png",
+    "prompt": "Bold logo of a woman performing a side plank on a pilates reformer machine, one arm raised straight up, solid black silhouette including the simplified reformer, flat vector style on a plain white background, clean shapes, no text, no watermark",
+    "tags": "pilates, reformer, woman, silhouette, plank, bold, modern"
+  },
+  {
+    "title": "Enso Meditation Figure",
+    "filename": "enso_meditation_figure.png",
+    "prompt": "Minimal zen logo of a person sitting cross-legged in meditation inside a hand-brushed enso circle, single sweeping ink brush stroke circle open at the top, flat vector style, black ink on a plain white background, calm balanced composition, no text, no watermark",
+    "tags": "meditation, zen, enso, figure, circle, minimal, calm"
+  },
+  {
+    "title": "Mountain Summit Path",
+    "filename": "mountain_summit_path_logo.png",
+    "prompt": "Modern minimal logo of a mountain peak with a winding path leading up to a small flag at the summit, geometric flat vector style, single deep blue color on a plain white background, clean simple lines, no text, no watermark",
+    "tags": "coaching, mountain, summit, path, growth, modern, minimal"
+  },
+  {
+    "title": "Leafy Nutrition Bowl",
+    "filename": "leafy_nutrition_bowl.png",
+    "prompt": "Minimal logo of a bowl filled with leafy greens and a small heart rising as steam, flat vector style, fresh green single color on a plain white background, clean rounded shapes, no text, no watermark",
+    "tags": "nutrition, bowl, leaves, heart, wellness, minimal, organic"
+  },
+  {
+    "title": "Avocado Line Art",
+    "filename": "avocado_line_art.png",
+    "prompt": "Elegant continuous line-art logo of an avocado half with a leaf, single flowing black line, minimal composition on a plain white background, no text, no watermark",
+    "tags": "nutrition, avocado, leaf, line art, minimal, elegant"
+  },
+  {
+    "title": "Mortar And Pestle Herbs",
+    "filename": "mortar_pestle_herbs.png",
+    "prompt": "Minimal logo of a mortar and pestle with fresh herb leaves, flat vector style, deep green on a plain white background, balanced composition, no text, no watermark",
+    "tags": "nutrition, herbs, mortar, wellness, minimal, organic"
+  },
+  {
+    "title": "Apple Heart Mark",
+    "filename": "apple_heart_mark.png",
+    "prompt": "Modern minimal logo of an apple whose core cutout forms a heart shape, negative space design, flat vector style, red single color on a plain white background, no text, no watermark",
+    "tags": "nutrition, apple, heart, negative space, minimal, modern"
+  },
+  {
+    "title": "Kettlebell Wings Emblem",
+    "filename": "kettlebell_wings_emblem.png",
+    "prompt": "Bold circular emblem logo of a kettlebell with subtle wing shapes on both sides, flat vector badge style, black on a plain white background, strong symmetric composition, no text, no watermark",
+    "tags": "fitness, kettlebell, emblem, badge, bold, modern"
+  },
+  {
+    "title": "Kettlebell Swing Silhouette",
+    "filename": "kettlebell_swing_silhouette.png",
+    "prompt": "Bold logo of an athlete performing a kettlebell swing, solid black silhouette, dynamic pose, flat vector style on a plain white background, no text, no watermark",
+    "tags": "fitness, kettlebell, athlete, silhouette, bold, modern"
+  },
+  {
+    "title": "Barbell Laurel Badge",
+    "filename": "barbell_laurel_badge.png",
+    "prompt": "Classic badge logo of a barbell framed by two laurel branches forming a circle, flat vector style, black on a plain white background, symmetric emblem composition, no text, no watermark",
+    "tags": "fitness, barbell, laurel, badge, emblem, bold"
+  },
+  {
+    "title": "Monoline Dumbbell Heartbeat",
+    "filename": "monoline_dumbbell_heartbeat.png",
+    "prompt": "Minimal monoline logo of a dumbbell whose bar becomes a heartbeat pulse line in the middle, single black line, flat vector style on a plain white background, no text, no watermark",
+    "tags": "fitness, dumbbell, heartbeat, monoline, minimal, modern"
+  },
+  {
+    "title": "Warrior Pose Line Art",
+    "filename": "warrior_pose_line_art.png",
+    "prompt": "Elegant continuous line-art logo of a person in warrior two yoga pose, single flowing black line, minimal composition on a plain white background, no text, no watermark",
+    "tags": "yoga, warrior pose, figure, line art, minimal, elegant"
+  },
+  {
+    "title": "Tree Pose Circle",
+    "filename": "tree_pose_circle.png",
+    "prompt": "Minimal logo of a person in tree yoga pose inside a thin open circle, small leaves at the raised hands, flat vector style, forest green on a plain white background, no text, no watermark",
+    "tags": "yoga, tree pose, circle, leaves, minimal, calm"
+  },
+  {
+    "title": "Sun Salutation Geometric",
+    "filename": "sun_salutation_geometric.png",
+    "prompt": "Modern geometric logo of a figure with arms raised toward a rising sun made of radiating rays, flat vector style, warm orange and deep navy on a plain white background, no text, no watermark",
+    "tags": "yoga, sun, figure, geometric, modern, colorful"
+  },
+  {
+    "title": "Breathing Waves Mark",
+    "filename": "breathing_waves_mark.png",
+    "prompt": "Minimal logo of three soft flowing horizontal waves passing through an open circle, representing calm breath, flat vector style, soft blue on a plain white background, no text, no watermark",
+    "tags": "meditation, breathwork, waves, circle, minimal, calm"
+  },
+  {
+    "title": "Lotus Mind Profile",
+    "filename": "lotus_mind_profile.png",
+    "prompt": "Minimal logo of a human head in profile with a lotus flower blooming where the mind is, flat vector style, violet single color on a plain white background, elegant curves, no text, no watermark",
+    "tags": "meditation, mindfulness, lotus, head, minimal, calm"
+  },
+  {
+    "title": "Gua Sha Face Lines",
+    "filename": "gua_sha_face_lines.png",
+    "prompt": "Elegant minimal line-art logo of a woman's face in profile with a gua sha stone tracing a curved line along the cheek, single black line with a soft pink accent, on a plain white background, no text, no watermark",
+    "tags": "face yoga, gua sha, face, line art, minimal, elegant"
+  },
+  {
+    "title": "Face Roller Bloom",
+    "filename": "face_roller_bloom.png",
+    "prompt": "Minimal logo of a jade face roller with a small flower blooming from its handle, flat vector style, soft green and pink on a plain white background, no text, no watermark",
+    "tags": "face yoga, skincare, roller, flower, minimal, playful"
+  },
+  {
+    "title": "Lips Brush Stroke",
+    "filename": "lips_brush_stroke.png",
+    "prompt": "Modern minimal logo of lips formed by a single elegant paint brush stroke, flat vector style, deep red on a plain white background, no text, no watermark",
+    "tags": "makeup, lips, brush stroke, minimal, bold, elegant"
+  },
+  {
+    "title": "Veil Dancer Gold",
+    "filename": "veil_dancer_gold.png",
+    "prompt": "Elegant logo of a belly dancer with a flowing veil arcing over her head, graceful silhouette, flat vector style, single gold color on a plain white background, no text, no watermark",
+    "tags": "belly dance, dancer, veil, silhouette, gold, elegant"
+  },
+  {
+    "title": "Crescent Dancer Duo",
+    "filename": "crescent_dancer_duo.png",
+    "prompt": "Minimal logo of a belly dancer silhouette dancing inside a large crescent moon, stars around, flat vector style, deep violet on a plain white background, no text, no watermark",
+    "tags": "belly dance, dancer, moon, stars, silhouette, elegant"
+  },
+  {
+    "title": "Runner Sunrise Mark",
+    "filename": "runner_sunrise_mark.png",
+    "prompt": "Modern minimal logo of a running figure with motion lines, a rising sun semicircle behind, flat vector style, energetic orange on a plain white background, no text, no watermark",
+    "tags": "fitness, running, sun, figure, modern, bold"
+  },
+  {
+    "title": "Jump Rope Star",
+    "filename": "jump_rope_star.png",
+    "prompt": "Playful minimal logo of a figure mid-jump with a jump rope forming a star-like arc overhead, flat vector style, bright teal on a plain white background, no text, no watermark",
+    "tags": "fitness, jump rope, figure, playful, modern, minimal"
+  },
+  {
+    "title": "Lotus Pose Mandala",
+    "filename": "lotus_pose_mandala.png",
+    "prompt": "Generate a logo image: elegant logo of a woman seated in lotus meditation pose inside a circular mandala, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, meditation, mandala, elegant, calm"
+  },
+  {
+    "title": "Downward Dog Line Art",
+    "filename": "downward_dog_line_art.png",
+    "prompt": "Generate a logo image: minimal continuous-line logo of a woman in downward dog yoga pose, flat vector style, one forest green line on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pose, minimal, calm, organic"
+  },
+  {
+    "title": "Cobra Pose Silhouette",
+    "filename": "cobra_pose_silhouette.png",
+    "prompt": "Generate a logo image: minimal logo of a woman in cobra yoga backbend pose silhouette, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pose, minimal, calm"
+  },
+  {
+    "title": "Namaste Prayer Hands",
+    "filename": "namaste_prayer_hands.png",
+    "prompt": "Generate a logo image: elegant logo of two hands pressed together in namaste prayer with a small lotus, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, meditation, hands, elegant, calm"
+  },
+  {
+    "title": "Chakra Spine Alignment",
+    "filename": "chakra_spine_alignment.png",
+    "prompt": "Generate a logo image: modern logo of a seated figure profile with seven aligned chakra dots along the spine, flat vector style, colorful gradient dots on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, meditation, chakra, colorful, modern"
+  },
+  {
+    "title": "Yoga Wheel Backbend",
+    "filename": "yoga_wheel_backbend.png",
+    "prompt": "Generate a logo image: minimal logo of a woman arched over a yoga wheel in a backbend, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, pose, minimal, calm"
+  },
+  {
+    "title": "Pilates Ball Core Figure",
+    "filename": "pilates_ball_core_figure.png",
+    "prompt": "Generate a logo image: minimal line-art logo of a woman balancing on a small pilates stability ball doing a core exercise, flat vector style, one slate blue line on a plain white background, no text, no watermark. Square image.",
+    "tags": "pilates, core, minimal, modern"
+  },
+  {
+    "title": "Pilates Ring Silhouette",
+    "filename": "pilates_ring_silhouette.png",
+    "prompt": "Generate a logo image: minimal logo of a woman pressing a pilates magic ring between her legs seated, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "pilates, ring, minimal, elegant"
+  },
+  {
+    "title": "Pilates Roll Up Line Art",
+    "filename": "pilates_roll_up_line_art.png",
+    "prompt": "Generate a logo image: minimal continuous-line logo of a woman performing a pilates roll-up on a mat, flat vector style, one ember orange line on a plain white background, no text, no watermark. Square image.",
+    "tags": "pilates, core, minimal, modern"
+  },
+  {
+    "title": "Squat Strength Silhouette",
+    "filename": "squat_strength_silhouette.png",
+    "prompt": "Generate a logo image: bold logo of a strong woman in a deep squat holding a barbell overhead silhouette, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, strength, bold, modern"
+  },
+  {
+    "title": "Battle Ropes Energy Mark",
+    "filename": "battle_ropes_energy_mark.png",
+    "prompt": "Generate a logo image: bold dynamic logo of a woman swinging battle ropes with wave motion, flat vector style, two colors ember orange and slate on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, cardio, bold, colorful"
+  },
+  {
+    "title": "Resistance Band Stretch",
+    "filename": "resistance_band_stretch.png",
+    "prompt": "Generate a logo image: minimal line-art logo of a woman stretching a resistance band overhead, flat vector style, one ocean teal line on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, mobility, minimal, modern"
+  },
+  {
+    "title": "Kettlebell Goblet Squat",
+    "filename": "kettlebell_goblet_squat.png",
+    "prompt": "Generate a logo image: bold logo of a woman in a goblet squat holding a kettlebell at her chest silhouette, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, strength, bold, modern"
+  },
+  {
+    "title": "Plank Core Line Art",
+    "filename": "plank_core_line_art.png",
+    "prompt": "Generate a logo image: minimal continuous-line logo of a woman holding a forearm plank pose, flat vector style, one violet line on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, core, minimal, modern"
+  },
+  {
+    "title": "Eyelash Curler Beauty Mark",
+    "filename": "eyelash_curler_beauty_mark.png",
+    "prompt": "Generate a logo image: elegant logo of an eye with long curled lashes and an eyelash curler, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, beauty, elegant, minimal"
+  },
+  {
+    "title": "Cosmetic Cream Jar Bloom",
+    "filename": "cosmetic_cream_jar_bloom.png",
+    "prompt": "Generate a logo image: elegant logo of a skincare cream jar with a blooming flower rising from it, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "skincare, beauty, elegant, organic"
+  },
+  {
+    "title": "Perfume Bottle Elegant",
+    "filename": "perfume_bottle_elegant.png",
+    "prompt": "Generate a logo image: elegant minimal logo of a faceted perfume bottle with a delicate spray, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "beauty, elegant, minimal"
+  },
+  {
+    "title": "Nail Polish Manicure Mark",
+    "filename": "nail_polish_manicure_mark.png",
+    "prompt": "Generate a logo image: minimal logo of a hand with painted nails beside a nail polish bottle, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "beauty, makeup, minimal, elegant"
+  },
+  {
+    "title": "Eyebrow Arch Beauty Line",
+    "filename": "eyebrow_arch_beauty_line.png",
+    "prompt": "Generate a logo image: minimal single-line logo of an eye with a perfectly arched sculpted eyebrow, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, beauty, minimal, elegant"
+  },
+  {
+    "title": "Facial Steam Glow Mark",
+    "filename": "facial_steam_glow_mark.png",
+    "prompt": "Generate a logo image: elegant logo of a woman's face profile with rising facial steam and glow lines, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "skincare, face_yoga, elegant, calm"
+  },
+  {
+    "title": "Ballet Dancer En Pointe",
+    "filename": "ballet_dancer_en_pointe.png",
+    "prompt": "Generate a logo image: elegant logo of a ballet dancer balanced en pointe with arms raised silhouette, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "dance, ballet, elegant, minimal"
+  },
+  {
+    "title": "Contemporary Dancer Leap",
+    "filename": "contemporary_dancer_leap.png",
+    "prompt": "Generate a logo image: dynamic elegant logo of a contemporary dancer mid-leap with flowing motion silhouette, flat vector style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "dance, bold, elegant, modern"
+  },
+  {
+    "title": "Flamenco Dancer Fan",
+    "filename": "flamenco_dancer_fan.png",
+    "prompt": "Generate a logo image: elegant logo of a flamenco dancer holding a fan with a ruffled dress silhouette, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "dance, belly_dance, elegant, bold"
+  },
+  {
+    "title": "Zen Stones Balance Stack",
+    "filename": "zen_stones_balance_stack.png",
+    "prompt": "Generate a logo image: minimal logo of a balanced stack of zen pebbles with a small leaf, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "meditation, wellness, minimal, calm"
+  },
+  {
+    "title": "Meditation Aura Rings",
+    "filename": "meditation_aura_rings.png",
+    "prompt": "Generate a logo image: calm logo of a seated meditating figure surrounded by concentric aura rings, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "meditation, yoga, calm, minimal"
+  },
+  {
+    "title": "Singing Bowl Sound Healing",
+    "filename": "singing_bowl_sound_healing.png",
+    "prompt": "Generate a logo image: calm logo of a tibetan singing bowl with a mallet and rising sound waves, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "meditation, sound healing, calm, minimal"
+  },
+  {
+    "title": "Incense Smoke Calm Mark",
+    "filename": "incense_smoke_calm_mark.png",
+    "prompt": "Generate a logo image: minimal elegant logo of an incense stick with a curling smoke swirl, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "meditation, wellness, minimal, calm"
+  },
+  {
+    "title": "Third Eye Awakening",
+    "filename": "third_eye_awakening.png",
+    "prompt": "Generate a logo image: mystical elegant logo of a third eye with radiating lashes and a lotus above, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "meditation, spiritual, elegant, calm"
+  },
+  {
+    "title": "Green Smoothie Glass",
+    "filename": "green_smoothie_glass.png",
+    "prompt": "Generate a logo image: minimal logo of a tall smoothie glass with a straw and a leaf garnish, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, wellness, minimal, organic"
+  },
+  {
+    "title": "Meal Prep Balance Plate",
+    "filename": "meal_prep_balance_plate.png",
+    "prompt": "Generate a logo image: modern logo of a top-down balanced meal plate divided into portions with a leaf, flat vector style, two colors forest green and ember orange on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, wellness, modern, colorful"
+  },
+  {
+    "title": "Hydration Water Drop Leaf",
+    "filename": "hydration_water_drop_leaf.png",
+    "prompt": "Generate a logo image: minimal logo of a water droplet enclosing a small leaf, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, wellness, minimal, organic"
+  },
+  {
+    "title": "Honey Jar Dipper",
+    "filename": "honey_jar_dipper.png",
+    "prompt": "Generate a logo image: minimal logo of a honey jar with a wooden dipper and a drip, flat vector style, one sunset amber color on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, wellness, minimal, organic"
+  },
+  {
+    "title": "Herbal Tea Steam Cup",
+    "filename": "herbal_tea_steam_cup.png",
+    "prompt": "Generate a logo image: minimal logo of a cup of herbal tea with a leaf and rising steam swirl, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, wellness, calm, minimal"
+  },
+  {
+    "title": "Lighthouse Guidance Beam",
+    "filename": "lighthouse_guidance_beam.png",
+    "prompt": "Generate a logo image: modern logo of a lighthouse casting a guiding beam over waves, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, mindset, modern, bold"
+  },
+  {
+    "title": "Compass Direction Mark",
+    "filename": "compass_direction_mark.png",
+    "prompt": "Generate a logo image: minimal modern logo of a compass with a needle pointing to a small star, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, mindset, minimal, modern"
+  },
+  {
+    "title": "Growth Arrow Plant",
+    "filename": "growth_arrow_plant.png",
+    "prompt": "Generate a logo image: modern logo of an upward arrow formed by a growing sprouting plant, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, growth, modern, organic"
+  },
+  {
+    "title": "Stepping Stones Path",
+    "filename": "stepping_stones_path.png",
+    "prompt": "Generate a logo image: minimal logo of stepping stones forming a rising path toward a sun, flat vector style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, mindset, minimal, calm"
+  },
+  {
+    "title": "Butterfly Transformation Line",
+    "filename": "butterfly_transformation_line.png",
+    "prompt": "Generate a logo image: elegant single-line logo of a butterfly mid-flight, flat vector style, one violet line on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, transformation, elegant, minimal"
+  },
+  {
+    "title": "Origami Crane Mindset",
+    "filename": "origami_crane_mindset.png",
+    "prompt": "Generate a logo image: modern geometric logo of a folded origami crane, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, mindset, modern, minimal"
+  },
+  {
+    "title": "Hormone Balance Bloom",
+    "filename": "hormone_balance_bloom.png",
+    "prompt": "Generate a logo image: elegant logo of a flowering cycle circle around a female symbol, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "womens health, wellness, elegant, organic"
+  },
+  {
+    "title": "Postnatal Mother Baby Line",
+    "filename": "postnatal_mother_baby_line.png",
+    "prompt": "Generate a logo image: minimal continuous-line logo of a mother cradling a baby, flat vector style, one violet line on a plain white background, no text, no watermark. Square image.",
+    "tags": "maternity, womens health, minimal, elegant"
+  },
+  {
+    "title": "Crescent Moon Sleep Face",
+    "filename": "crescent_moon_sleep_face.png",
+    "prompt": "Generate a logo image: calm logo of a sleeping woman's face resting on a crescent moon, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, sleep, calm, elegant"
+  },
+  {
+    "title": "Breathwork Lungs Leaf",
+    "filename": "breathwork_lungs_leaf.png",
+    "prompt": "Generate a logo image: minimal logo of a pair of lungs formed by two leaves, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, breathwork, minimal, organic"
+  },
+  {
+    "title": "Sunrise Stretch Figure",
+    "filename": "sunrise_stretch_figure.png",
+    "prompt": "Generate a logo image: minimal logo of a woman stretching arms overhead in front of a rising sun, flat vector style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, mobility, calm, minimal"
+  },
+  {
+    "title": "Cyclist Wheel Motion",
+    "filename": "cyclist_wheel_motion.png",
+    "prompt": "Generate a logo image: bold dynamic logo of a woman cycling with motion lines behind the wheel silhouette, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, cardio, bold, modern"
+  },
+  {
+    "title": "Swimmer Wave Arc",
+    "filename": "swimmer_wave_arc.png",
+    "prompt": "Generate a logo image: minimal logo of a swimmer doing freestyle stroke inside a wave arc, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, cardio, minimal, modern"
+  },
+  {
+    "title": "Hamsa Hand Wellness",
+    "filename": "hamsa_hand_wellness.png",
+    "prompt": "Generate a logo image: elegant symmetrical logo of a hamsa hand with a lotus in the palm, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spiritual, meditation, elegant, calm"
+  },
+  {
+    "title": "Moon Phases Cycle Arc",
+    "filename": "moon_phases_cycle_arc.png",
+    "prompt": "Generate a logo image: minimal logo of the eight moon phases arranged in an arc, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spiritual, wellness, minimal, calm"
+  },
+  {
+    "title": "Crystal Healing Cluster",
+    "filename": "crystal_healing_cluster.png",
+    "prompt": "Generate a logo image: minimal geometric logo of a cluster of healing crystals, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spiritual, wellness, minimal, elegant"
+  },
+  {
+    "title": "Flower Of Life Geometry",
+    "filename": "flower_of_life_geometry.png",
+    "prompt": "Generate a logo image: minimal sacred-geometry logo of the flower of life pattern, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spiritual, meditation, minimal, elegant"
+  },
+  {
+    "title": "Acoustic Guitar Line",
+    "filename": "acoustic_guitar_line.png",
+    "prompt": "Generate a logo image: minimal single-line logo of an acoustic guitar, flat vector style, one ember orange line on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, guitar, minimal, modern"
+  },
+  {
+    "title": "Piano Keys Wave",
+    "filename": "piano_keys_wave.png",
+    "prompt": "Generate a logo image: modern logo of piano keys curving into a sound wave, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, piano, modern, bold"
+  },
+  {
+    "title": "Microphone Star Vocal",
+    "filename": "microphone_star_vocal.png",
+    "prompt": "Generate a logo image: bold logo of a vintage stage microphone with a small star, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, vocal, bold, modern"
+  },
+  {
+    "title": "Headphones Sound Wave",
+    "filename": "headphones_sound_wave.png",
+    "prompt": "Generate a logo image: modern logo of headphones with a sound wave across the band, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, dj, modern, bold"
+  },
+  {
+    "title": "Violin Elegant Scroll",
+    "filename": "violin_elegant_scroll.png",
+    "prompt": "Generate a logo image: elegant minimal logo of a violin with an ornate scroll, flat vector style, one ember brown color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, strings, elegant, minimal"
+  },
+  {
+    "title": "Music Note Heartbeat",
+    "filename": "music_note_heartbeat.png",
+    "prompt": "Generate a logo image: modern logo of a music note merging into a heartbeat line, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, modern, minimal"
+  },
+  {
+    "title": "Paint Brush Palette Stroke",
+    "filename": "paint_brush_palette_stroke.png",
+    "prompt": "Generate a logo image: playful logo of a paintbrush with a colorful stroke, flat vector style, colorful paint on a plain white background, no text, no watermark. Square image.",
+    "tags": "art, painting, playful, colorful"
+  },
+  {
+    "title": "Artist Palette Dots",
+    "filename": "artist_palette_dots.png",
+    "prompt": "Generate a logo image: modern logo of an artist's paint palette with colorful blobs, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+    "tags": "art, colorful, modern, playful"
+  },
+  {
+    "title": "Pottery Wheel Hands",
+    "filename": "pottery_wheel_hands.png",
+    "prompt": "Generate a logo image: minimal logo of two hands shaping a pot on a pottery wheel, flat vector style, one ember clay color on a plain white background, no text, no watermark. Square image.",
+    "tags": "art, pottery, craft, organic"
+  },
+  {
+    "title": "Calligraphy Pen Swirl",
+    "filename": "calligraphy_pen_swirl.png",
+    "prompt": "Generate a logo image: elegant logo of a calligraphy pen nib with an ink swirl flourish, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "art, lettering, elegant, minimal"
+  },
+  {
+    "title": "Camera Aperture Bloom",
+    "filename": "camera_aperture_bloom.png",
+    "prompt": "Generate a logo image: modern logo of a camera aperture shaped like a blooming flower, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "photography, modern, minimal"
+  },
+  {
+    "title": "Vintage Camera Line",
+    "filename": "vintage_camera_line.png",
+    "prompt": "Generate a logo image: minimal single-line logo of a vintage film camera, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "photography, minimal, modern"
+  },
+  {
+    "title": "Film Clapperboard Play",
+    "filename": "film_clapperboard_play.png",
+    "prompt": "Generate a logo image: bold modern logo of a film clapperboard with a play triangle, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "video, film, bold, modern"
+  },
+  {
+    "title": "Creator Play Button",
+    "filename": "creator_play_button.png",
+    "prompt": "Generate a logo image: modern logo of a rounded play button inside a speech bubble, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "video, content, modern, bold"
+  },
+  {
+    "title": "Chef Hat Whisk Cross",
+    "filename": "chef_hat_whisk_cross.png",
+    "prompt": "Generate a logo image: modern logo of a chef hat above a crossed whisk and spoon, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, culinary, modern, bold"
+  },
+  {
+    "title": "Rolling Pin Dough",
+    "filename": "rolling_pin_dough.png",
+    "prompt": "Generate a logo image: minimal logo of a rolling pin over a dough circle, flat vector style, one ember brown color on a plain white background, no text, no watermark. Square image.",
+    "tags": "baking, cooking, minimal, organic"
+  },
+  {
+    "title": "Cupcake Swirl Mark",
+    "filename": "cupcake_swirl_mark.png",
+    "prompt": "Generate a logo image: playful logo of a cupcake with a swirled frosting top, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "baking, playful, minimal"
+  },
+  {
+    "title": "Knife Board Herb",
+    "filename": "knife_board_herb.png",
+    "prompt": "Generate a logo image: minimal logo of a chef knife on a cutting board with an herb sprig, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, culinary, minimal, organic"
+  },
+  {
+    "title": "Barista Coffee Leaf",
+    "filename": "barista_coffee_leaf.png",
+    "prompt": "Generate a logo image: elegant logo of a coffee cup with latte-art leaf and rising steam, flat vector style, one ember brown color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coffee, barista, elegant, calm"
+  },
+  {
+    "title": "Growth Chart Arrow",
+    "filename": "growth_chart_arrow.png",
+    "prompt": "Generate a logo image: modern logo of a rising bar chart with an upward arrow, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, growth, modern, bold"
+  },
+  {
+    "title": "Lightbulb Idea Rays",
+    "filename": "lightbulb_idea_rays.png",
+    "prompt": "Generate a logo image: modern logo of a lightbulb with radiating idea rays, flat vector style, one sunset amber color on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, ideas, modern, bold"
+  },
+  {
+    "title": "Rocket Launch Startup",
+    "filename": "rocket_launch_startup.png",
+    "prompt": "Generate a logo image: bold modern logo of a rocket launching with a trail, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, startup, bold, modern"
+  },
+  {
+    "title": "Target Dart Bullseye",
+    "filename": "target_dart_bullseye.png",
+    "prompt": "Generate a logo image: modern logo of a dart hitting the center of a bullseye target, flat vector style, two colors ember red and slate on a plain white background, no text, no watermark. Square image.",
+    "tags": "marketing, business, modern, bold"
+  },
+  {
+    "title": "Handshake Deal Mark",
+    "filename": "handshake_deal_mark.png",
+    "prompt": "Generate a logo image: minimal modern logo of two hands in a handshake, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, minimal, modern"
+  },
+  {
+    "title": "Piggy Bank Coin",
+    "filename": "piggy_bank_coin.png",
+    "prompt": "Generate a logo image: playful minimal logo of a piggy bank with a coin dropping in, flat vector style, one sunset pink color on a plain white background, no text, no watermark. Square image.",
+    "tags": "finance, playful, minimal"
+  },
+  {
+    "title": "Sales Funnel Mark",
+    "filename": "sales_funnel_mark.png",
+    "prompt": "Generate a logo image: modern logo of a marketing funnel with dots flowing through, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "marketing, business, modern, minimal"
+  },
+  {
+    "title": "Quill Pen Ink",
+    "filename": "quill_pen_ink.png",
+    "prompt": "Generate a logo image: elegant logo of a feather quill with an ink drop, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "writing, elegant, minimal"
+  },
+  {
+    "title": "Open Book Pen",
+    "filename": "open_book_pen.png",
+    "prompt": "Generate a logo image: minimal logo of an open book with a pen forming the pages, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "writing, author, minimal, modern"
+  },
+  {
+    "title": "Podcast Mic Waves",
+    "filename": "podcast_mic_waves.png",
+    "prompt": "Generate a logo image: modern logo of a podcast microphone with sound waves on each side, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "podcast, audio, modern, bold"
+  },
+  {
+    "title": "Code Brackets Cursor",
+    "filename": "code_brackets_cursor.png",
+    "prompt": "Generate a logo image: modern minimal logo of angle-bracket code symbols with a blinking cursor, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coding, tech, modern, minimal"
+  },
+  {
+    "title": "Terminal Prompt Mark",
+    "filename": "terminal_prompt_mark.png",
+    "prompt": "Generate a logo image: modern logo of a terminal window with a command prompt arrow, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coding, tech, modern, minimal"
+  },
+  {
+    "title": "Laptop Rocket Tech",
+    "filename": "laptop_rocket_tech.png",
+    "prompt": "Generate a logo image: modern logo of a laptop with a small rocket flying out of the screen, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "tech, startup, modern, playful"
+  },
+  {
+    "title": "Speech Bubble Globe",
+    "filename": "speech_bubble_globe.png",
+    "prompt": "Generate a logo image: modern logo of a speech bubble containing a globe, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "language, learning, modern, minimal"
+  },
+  {
+    "title": "Abacus Counting Beads",
+    "filename": "abacus_counting_beads.png",
+    "prompt": "Generate a logo image: playful modern logo of an abacus with colorful beads, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, kids, playful, colorful"
+  },
+  {
+    "title": "Pencil Ruler Cross",
+    "filename": "pencil_ruler_cross.png",
+    "prompt": "Generate a logo image: modern logo of a pencil and ruler crossed, flat vector style, one sunset amber color on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, tutoring, modern, minimal"
+  },
+  {
+    "title": "Graduation Owl",
+    "filename": "graduation_owl.png",
+    "prompt": "Generate a logo image: playful minimal logo of an owl wearing a graduation cap, flat vector style, one slate blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, tutoring, playful, minimal"
+  },
+  {
+    "title": "ABC Building Blocks",
+    "filename": "abc_building_blocks.png",
+    "prompt": "Generate a logo image: playful logo of three stacked children's building blocks, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+    "tags": "kids, education, playful, colorful"
+  },
+  {
+    "title": "Karate High Kick",
+    "filename": "karate_high_kick.png",
+    "prompt": "Generate a logo image: bold logo of a martial artist performing a high kick silhouette, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "martial arts, bold, modern"
+  },
+  {
+    "title": "Boxing Gloves Pair",
+    "filename": "boxing_gloves_pair.png",
+    "prompt": "Generate a logo image: bold logo of a pair of hanging boxing gloves, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "boxing, fitness, bold, modern"
+  },
+  {
+    "title": "Soccer Ball Motion",
+    "filename": "soccer_ball_motion.png",
+    "prompt": "Generate a logo image: bold dynamic logo of a soccer ball with motion lines, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "sports, soccer, bold, modern"
+  },
+  {
+    "title": "Tennis Racket Ball",
+    "filename": "tennis_racket_ball.png",
+    "prompt": "Generate a logo image: modern logo of a tennis racket with a ball, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "sports, tennis, modern, minimal"
+  },
+  {
+    "title": "Coach Whistle Mark",
+    "filename": "coach_whistle_mark.png",
+    "prompt": "Generate a logo image: bold minimal logo of a coach's whistle with a motion swoosh, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "sports, coaching, bold, minimal"
+  },
+  {
+    "title": "Hiking Boot Mountain",
+    "filename": "hiking_boot_mountain.png",
+    "prompt": "Generate a logo image: modern logo of a hiking boot with a mountain peak, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "outdoor, adventure, modern, bold"
+  },
+  {
+    "title": "Tent Pine Campfire",
+    "filename": "tent_pine_campfire.png",
+    "prompt": "Generate a logo image: modern logo of a camping tent beside a pine tree and campfire, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "outdoor, camping, modern, organic"
+  },
+  {
+    "title": "Kayak Paddle Wave",
+    "filename": "kayak_paddle_wave.png",
+    "prompt": "Generate a logo image: bold dynamic logo of a kayaker paddling over a wave, flat vector style, one ocean teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "outdoor, water, bold, modern"
+  },
+  {
+    "title": "Dog Paw Heart",
+    "filename": "dog_paw_heart.png",
+    "prompt": "Generate a logo image: playful minimal logo of a dog paw print forming a heart, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "pet, dog, playful, minimal"
+  },
+  {
+    "title": "Playful Dog Sit",
+    "filename": "playful_dog_sit.png",
+    "prompt": "Generate a logo image: playful minimal logo of a sitting dog in profile silhouette, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "pet, dog training, playful, minimal"
+  },
+  {
+    "title": "Watering Can Sprout",
+    "filename": "watering_can_sprout.png",
+    "prompt": "Generate a logo image: minimal logo of a watering can pouring over a sprouting seedling, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "gardening, plants, minimal, organic"
+  },
+  {
+    "title": "Potted Monstera Plant",
+    "filename": "potted_monstera_plant.png",
+    "prompt": "Generate a logo image: modern logo of a potted monstera plant, flat vector style, one forest green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "gardening, plants, modern, organic"
+  },
+  {
+    "title": "Brain Heart Balance",
+    "filename": "brain_heart_balance.png",
+    "prompt": "Generate a logo image: modern logo of a brain and a heart balanced together, flat vector style, two colors violet and sunset pink on a plain white background, no text, no watermark. Square image.",
+    "tags": "therapy, mindset, modern, minimal"
+  },
+  {
+    "title": "Aerial Yoga Hammock",
+    "filename": "aerial_yoga_hammock.png",
+    "prompt": "Generate a logo image: elegant logo of a woman suspended in an aerial yoga silk hammock, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, aerial, silhouette, elegant, modern"
+  },
+  {
+    "title": "TRX Suspension Trainer",
+    "filename": "trx_suspension_trainer.png",
+    "prompt": "Generate a logo image: bold logo of a suspension trainer strap with handles, flat vector style, one slate gray color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, suspension, strength, bold, modern"
+  },
+  {
+    "title": "Medicine Ball Slam",
+    "filename": "medicine_ball_slam.png",
+    "prompt": "Generate a logo image: bold logo of an athlete slamming a medicine ball overhead, flat vector silhouette style, one ember orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, strength, silhouette, bold, modern"
+  },
+  {
+    "title": "Rowing Machine Erg",
+    "filename": "rowing_machine_erg.png",
+    "prompt": "Generate a logo image: modern logo of a person on a rowing machine mid-stroke, flat vector silhouette style, one ocean blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, cardio, rowing, bold, modern"
+  },
+  {
+    "title": "Foam Roller Recovery",
+    "filename": "foam_roller_recovery.png",
+    "prompt": "Generate a logo image: minimal logo of a person foam rolling a leg, flat vector line art style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, mobility, recovery, minimal, modern"
+  },
+  {
+    "title": "Spin Bike Indoor Cycling",
+    "filename": "spin_bike_indoor_cycling.png",
+    "prompt": "Generate a logo image: bold logo of an indoor spin bike side profile, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, cardio, cycling, bold, modern"
+  },
+  {
+    "title": "Speed Bag Boxing",
+    "filename": "speed_bag_boxing.png",
+    "prompt": "Generate a logo image: bold logo of a boxing speed bag on its platform, flat vector style, one crimson color on a plain white background, no text, no watermark. Square image.",
+    "tags": "boxing, fitness, bold, modern"
+  },
+  {
+    "title": "Sprint Track Blocks",
+    "filename": "sprint_track_blocks.png",
+    "prompt": "Generate a logo image: bold logo of a sprinter crouched on starting blocks, flat vector silhouette style, one sunset orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, running, sprint, silhouette, bold"
+  },
+  {
+    "title": "Pull Up Bar Rig",
+    "filename": "pull_up_bar_rig.png",
+    "prompt": "Generate a logo image: bold logo of an athlete doing a pull up on a bar, flat vector silhouette style, one slate gray color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, crossfit, strength, silhouette, bold"
+  },
+  {
+    "title": "Balance Dome Core",
+    "filename": "balance_dome_core.png",
+    "prompt": "Generate a logo image: modern logo of a person balancing on a half dome balance trainer, flat vector line art style, one teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, balance, core, minimal, modern"
+  },
+  {
+    "title": "Sound Bath Gong",
+    "filename": "sound_bath_gong.png",
+    "prompt": "Generate a logo image: elegant logo of a hanging gong with a mallet, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+    "tags": "meditation, sound healing, calm, elegant, minimal"
+  },
+  {
+    "title": "Reiki Healing Hands",
+    "filename": "reiki_healing_hands.png",
+    "prompt": "Generate a logo image: elegant logo of two open hands radiating energy waves, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spiritual, reiki, energy, elegant, calm"
+  },
+  {
+    "title": "Acupuncture Needle Points",
+    "filename": "acupuncture_needle_points.png",
+    "prompt": "Generate a logo image: minimal logo of acupuncture needles arranged with meridian points, flat vector line art style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, therapy, acupuncture, minimal, calm"
+  },
+  {
+    "title": "Reflexology Foot Map",
+    "filename": "reflexology_foot_map.png",
+    "prompt": "Generate a logo image: minimal logo of a foot outline with reflexology pressure points, flat vector line art style, one teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, massage, reflexology, minimal, calm"
+  },
+  {
+    "title": "Cupping Therapy Circles",
+    "filename": "cupping_therapy_circles.png",
+    "prompt": "Generate a logo image: minimal logo of cupping therapy cups arranged on a back, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, therapy, massage, minimal, modern"
+  },
+  {
+    "title": "Massage Hands Back",
+    "filename": "massage_hands_back.png",
+    "prompt": "Generate a logo image: elegant logo of two hands giving a back massage, flat vector line art style, one calm blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "massage, wellness, therapy, elegant, calm"
+  },
+  {
+    "title": "Essential Oil Dropper",
+    "filename": "essential_oil_dropper.png",
+    "prompt": "Generate a logo image: elegant logo of an essential oil dropper bottle with a leaf, flat vector style, one sage green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "aromatherapy, wellness, organic, elegant, minimal"
+  },
+  {
+    "title": "Spa Candle Lotus",
+    "filename": "spa_candle_lotus.png",
+    "prompt": "Generate a logo image: calm logo of a lit spa candle framed by a lotus, flat vector style, one warm amber color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spa, wellness, candle, calm, elegant"
+  },
+  {
+    "title": "Ayurveda Leaf Balance",
+    "filename": "ayurveda_leaf_balance.png",
+    "prompt": "Generate a logo image: organic logo of balanced leaves representing ayurveda doshas, flat vector style, two colors sage green and amber on a plain white background, no text, no watermark. Square image.",
+    "tags": "ayurveda, wellness, organic, calm, elegant"
+  },
+  {
+    "title": "Salsa Couple Dance",
+    "filename": "salsa_couple_dance.png",
+    "prompt": "Generate a logo image: elegant logo of a salsa dancing couple in motion, flat vector silhouette style, one crimson red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "dance, salsa, latin, silhouette, elegant"
+  },
+  {
+    "title": "Tap Dance Shoes",
+    "filename": "tap_dance_shoes.png",
+    "prompt": "Generate a logo image: playful logo of a pair of tap dance shoes, flat vector style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "dance, tap, playful, minimal, bold"
+  },
+  {
+    "title": "Hip Hop Dancer Freeze",
+    "filename": "hip_hop_dancer_freeze.png",
+    "prompt": "Generate a logo image: bold logo of a hip hop dancer in a freeze pose, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "dance, hip hop, urban, silhouette, bold"
+  },
+  {
+    "title": "Scissors Comb Salon",
+    "filename": "scissors_comb_salon.png",
+    "prompt": "Generate a logo image: elegant logo of hair scissors crossed with a comb, flat vector style, one slate gray color on a plain white background, no text, no watermark. Square image.",
+    "tags": "hair, salon, beauty, elegant, minimal"
+  },
+  {
+    "title": "Hair Braid Swirl",
+    "filename": "hair_braid_swirl.png",
+    "prompt": "Generate a logo image: elegant logo of a flowing braided hair swirl, flat vector line art style, one warm brown color on a plain white background, no text, no watermark. Square image.",
+    "tags": "hair, salon, beauty, elegant, organic"
+  },
+  {
+    "title": "Lash Extension Fan",
+    "filename": "lash_extension_fan.png",
+    "prompt": "Generate a logo image: elegant logo of an eyelash extension fan, flat vector style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, lashes, beauty, elegant, minimal"
+  },
+  {
+    "title": "Microblading Brow Feather",
+    "filename": "microblading_brow_feather.png",
+    "prompt": "Generate a logo image: elegant logo of a feathered eyebrow with a microblading pen, flat vector line art style, one warm brown color on a plain white background, no text, no watermark. Square image.",
+    "tags": "makeup, brows, beauty, elegant, minimal"
+  },
+  {
+    "title": "Tattoo Machine Needle",
+    "filename": "tattoo_machine_needle.png",
+    "prompt": "Generate a logo image: bold logo of a tattoo machine, flat vector style, one black color on a plain white background, no text, no watermark. Square image.",
+    "tags": "tattoo, art, bold, modern, minimal"
+  },
+  {
+    "title": "Hair Dryer Style",
+    "filename": "hair_dryer_style.png",
+    "prompt": "Generate a logo image: modern logo of a hair dryer with a swirl of air, flat vector style, one magenta color on a plain white background, no text, no watermark. Square image.",
+    "tags": "hair, salon, beauty, modern, playful"
+  },
+  {
+    "title": "Protein Shaker Bottle",
+    "filename": "protein_shaker_bottle.png",
+    "prompt": "Generate a logo image: bold logo of a protein shaker bottle, flat vector style, one ember orange color on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, fitness, supplement, bold, modern"
+  },
+  {
+    "title": "Vegan Sprout Fork",
+    "filename": "vegan_sprout_fork.png",
+    "prompt": "Generate a logo image: organic logo of a fork with a sprouting leaf, flat vector style, one leaf green color on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, vegan, organic, minimal, modern"
+  },
+  {
+    "title": "Sushi Roll Minimal",
+    "filename": "sushi_roll_minimal.png",
+    "prompt": "Generate a logo image: minimal logo of a sushi roll piece with chopsticks, flat vector style, two colors coral and black on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, culinary, sushi, minimal, modern"
+  },
+  {
+    "title": "Wine Glass Grapes",
+    "filename": "wine_glass_grapes.png",
+    "prompt": "Generate a logo image: elegant logo of a wine glass with a grape cluster, flat vector style, one burgundy color on a plain white background, no text, no watermark. Square image.",
+    "tags": "culinary, wine, sommelier, elegant, minimal"
+  },
+  {
+    "title": "Berry Bowl Antioxidant",
+    "filename": "berry_bowl_antioxidant.png",
+    "prompt": "Generate a logo image: colorful logo of a bowl of mixed berries, flat vector style, two colors berry purple and red on a plain white background, no text, no watermark. Square image.",
+    "tags": "nutrition, wellness, colorful, organic, minimal"
+  },
+  {
+    "title": "Ramen Bowl Noodles",
+    "filename": "ramen_bowl_noodles.png",
+    "prompt": "Generate a logo image: modern logo of a steaming ramen noodle bowl with chopsticks, flat vector style, one ember red color on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, culinary, ramen, modern, minimal"
+  },
+  {
+    "title": "Ukulele Line",
+    "filename": "ukulele_line.png",
+    "prompt": "Generate a logo image: playful logo of a ukulele, flat vector line art style, one teal color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, ukulele, playful, minimal, modern"
+  },
+  {
+    "title": "Saxophone Jazz",
+    "filename": "saxophone_jazz.png",
+    "prompt": "Generate a logo image: elegant logo of a saxophone, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, jazz, saxophone, elegant, bold"
+  },
+  {
+    "title": "Turntable DJ Vinyl",
+    "filename": "turntable_dj_vinyl.png",
+    "prompt": "Generate a logo image: bold logo of a DJ turntable with a vinyl record, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, dj, turntable, bold, modern"
+  },
+  {
+    "title": "Knitting Yarn Needles",
+    "filename": "knitting_yarn_needles.png",
+    "prompt": "Generate a logo image: playful logo of a ball of yarn with knitting needles, flat vector style, one coral color on a plain white background, no text, no watermark. Square image.",
+    "tags": "craft, knitting, hobby, playful, organic"
+  },
+  {
+    "title": "Embroidery Hoop Flower",
+    "filename": "embroidery_hoop_flower.png",
+    "prompt": "Generate a logo image: elegant logo of an embroidery hoop with a stitched flower, flat vector style, two colors sage and coral on a plain white background, no text, no watermark. Square image.",
+    "tags": "craft, embroidery, hobby, elegant, organic"
+  },
+  {
+    "title": "Sewing Machine Tailor",
+    "filename": "sewing_machine_tailor.png",
+    "prompt": "Generate a logo image: modern logo of a sewing machine with thread, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "craft, sewing, fashion, modern, minimal"
+  },
+  {
+    "title": "Chess Knight Strategy",
+    "filename": "chess_knight_strategy.png",
+    "prompt": "Generate a logo image: bold logo of a chess knight piece, flat vector style, one slate gray color on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, strategy, chess, bold, modern"
+  },
+  {
+    "title": "Puzzle Piece Connect",
+    "filename": "puzzle_piece_connect.png",
+    "prompt": "Generate a logo image: modern logo of two interlocking puzzle pieces, flat vector style, two colors ocean blue and sunset orange on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, teamwork, puzzle, modern, minimal"
+  },
+  {
+    "title": "Pie Chart Analytics",
+    "filename": "pie_chart_analytics.png",
+    "prompt": "Generate a logo image: modern logo of a segmented pie chart, flat vector style, two colors teal and violet on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, data, analytics, modern, minimal"
+  },
+  {
+    "title": "Social Heart Like",
+    "filename": "social_heart_like.png",
+    "prompt": "Generate a logo image: playful logo of a speech bubble with a heart like icon, flat vector style, one magenta color on a plain white background, no text, no watermark. Square image.",
+    "tags": "marketing, social, playful, modern, minimal"
+  },
+  {
+    "title": "Chemistry Flask Science",
+    "filename": "chemistry_flask_science.png",
+    "prompt": "Generate a logo image: playful logo of a chemistry flask with bubbles, flat vector style, two colors teal and lime on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, science, kids, playful, colorful"
+  },
+  {
+    "title": "Globe Geography Learn",
+    "filename": "globe_geography_learn.png",
+    "prompt": "Generate a logo image: modern logo of a globe with a graduation element, flat vector style, one ocean blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, geography, learning, modern, minimal"
+  },
+  {
+    "title": "Xylophone Kids Music",
+    "filename": "xylophone_kids_music.png",
+    "prompt": "Generate a logo image: playful logo of a colorful kids xylophone, flat vector style, colorful rainbow colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "kids, music, education, playful, colorful"
+  },
+  {
+    "title": "Public Speaking Podium",
+    "filename": "public_speaking_podium.png",
+    "prompt": "Generate a logo image: bold logo of a speaker at a podium with a microphone, flat vector silhouette style, one slate color on a plain white background, no text, no watermark. Square image.",
+    "tags": "coaching, speaking, business, bold, modern"
+  },
+  {
+    "title": "House Key Real Estate",
+    "filename": "house_key_real_estate.png",
+    "prompt": "Generate a logo image: modern logo of a house shape combined with a key, flat vector style, one ocean blue color on a plain white background, no text, no watermark. Square image.",
+    "tags": "real estate, business, modern, minimal"
+  },
+  {
+    "title": "Zodiac Astrology Wheel",
+    "filename": "zodiac_astrology_wheel.png",
+    "prompt": "Generate a logo image: elegant logo of a celestial astrology wheel with a moon and stars, flat vector style, one deep violet color on a plain white background, no text, no watermark. Square image.",
+    "tags": "spiritual, astrology, celestial, elegant, calm"
+  }
 ]
