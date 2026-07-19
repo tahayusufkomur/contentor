@@ -44,6 +44,7 @@ export default async function BlogPostPage({
     description: post.meta_description || post.excerpt,
     datePublished: post.published_at,
     author: { "@type": "Organization", name: config?.brand_name ?? "" },
+    ...(post.cover_photo_url ? { image: post.cover_photo_url } : {}),
   };
 
   return (
@@ -60,8 +61,16 @@ export default async function BlogPostPage({
       >
         {new Date(post.published_at).toLocaleDateString()}
       </time>
+      {post.cover_photo_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={post.cover_photo_url}
+          alt=""
+          className="mt-6 aspect-[2/1] w-full rounded-xl object-cover"
+        />
+      )}
       <div
-        className="prose prose-neutral dark:prose-invert mt-8 max-w-none"
+        className="prose prose-neutral dark:prose-invert mt-8 max-w-none [&_figure.blog-inline-image]:my-6 [&_figure.blog-inline-image_img]:w-full [&_figure.blog-inline-image_img]:rounded-lg"
         // Server-sanitized (nh3) before persisting — see apps/blog/ai.py
         // render_body(). This is the only place body_html is trusted.
         // eslint-disable-next-line react/no-danger

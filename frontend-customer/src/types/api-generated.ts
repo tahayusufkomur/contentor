@@ -2171,6 +2171,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/curated-photos/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_curated_photos_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curated-photos/{id}/use/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_curated_photos_use_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/demo/enter/": {
     parameters: {
       query?: never;
@@ -4210,6 +4242,140 @@ export interface paths {
      *     behaviour is driven by the `model_admin` declaration.
      */
     get: operations["v1_platform_admin_curated_logos_meta_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/curated-photos/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_curated_photos_list"];
+    put?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    post: operations["v1_platform_admin_curated_photos_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/curated-photos/{id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_curated_photos_retrieve"];
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    put: operations["v1_platform_admin_curated_photos_update"];
+    post?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    delete: operations["v1_platform_admin_curated_photos_destroy"];
+    options?: never;
+    head?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    patch: operations["v1_platform_admin_curated_photos_partial_update"];
+    trace?: never;
+  };
+  "/api/v1/platform-admin/curated-photos/actions/{action_name}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    post: operations["v1_platform_admin_curated_photos_actions_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/curated-photos/autocomplete/{field_name}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_curated_photos_autocomplete_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/curated-photos/meta/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_curated_photos_meta_retrieve"];
     put?: never;
     post?: never;
     delete?: never;
@@ -8285,6 +8451,11 @@ export interface components {
       readonly created_at: string;
       /** Format: date-time */
       readonly updated_at: string;
+      /** Format: uuid */
+      cover_photo?: string | null;
+      readonly cover_photo_url: string;
+      image_placements?: unknown;
+      readonly image_placements_resolved: string;
     };
     /**
      * @description * `manual` - Manual
@@ -8299,9 +8470,10 @@ export interface components {
       excerpt?: string;
       meta_description?: string;
       tags?: unknown;
-      body_html?: string;
+      readonly body_html: string;
       /** Format: date-time */
       published_at?: string | null;
+      readonly cover_photo_url: string;
     };
     BlogPostList: {
       slug: string;
@@ -8310,6 +8482,7 @@ export interface components {
       tags?: unknown;
       /** Format: date-time */
       published_at?: string | null;
+      readonly cover_photo_url: string;
     };
     BundleAdmin: {
       readonly id: number;
@@ -8360,6 +8533,20 @@ export interface components {
       title: string;
       prompt?: string;
       tags?: string;
+      /** @description Sort order; 0 = append at the end on create. */
+      position?: number;
+      enabled?: boolean;
+      image_key: string;
+      /** Format: date-time */
+      readonly updated_at: string;
+    };
+    CuratedPhotoAdmin: {
+      readonly id: number;
+      title: string;
+      prompt?: string;
+      tags?: string;
+      alt_text?: string;
+      kind?: components["schemas"]["KindEnum"];
       /** @description Sort order; 0 = append at the end on create. */
       position?: number;
       enabled?: boolean;
@@ -8440,6 +8627,16 @@ export interface components {
       /** Format: date-time */
       readonly updated_at: string;
     };
+    /**
+     * @description * `hero` - hero
+     *     * `stock` - stock
+     *     * `spot` - spot
+     *     * `texture` - texture
+     *     * `divider` - divider
+     *     * `icon` - icon
+     * @enum {string}
+     */
+    KindEnum: "hero" | "stock" | "spot" | "texture" | "divider" | "icon";
     LogoAiUsageAdmin: {
       readonly id: number;
       readonly tenant_schema: string;
@@ -8613,6 +8810,21 @@ export interface components {
        */
       previous?: string | null;
       results: components["schemas"]["CuratedLogoAdmin"][];
+    };
+    PaginatedCuratedPhotoAdminList: {
+      /** @example 123 */
+      count: number;
+      /**
+       * Format: uri
+       * @example http://api.example.org/accounts/?page=4
+       */
+      next?: string | null;
+      /**
+       * Format: uri
+       * @example http://api.example.org/accounts/?page=2
+       */
+      previous?: string | null;
+      results: components["schemas"]["CuratedPhotoAdmin"][];
     };
     PaginatedCustomDomainAdminList: {
       /** @example 123 */
@@ -8942,6 +9154,11 @@ export interface components {
       readonly created_at?: string;
       /** Format: date-time */
       readonly updated_at?: string;
+      /** Format: uuid */
+      cover_photo?: string | null;
+      readonly cover_photo_url?: string;
+      image_placements?: unknown;
+      readonly image_placements_resolved?: string;
     };
     PatchedBundleAdmin: {
       readonly id?: number;
@@ -8992,6 +9209,20 @@ export interface components {
       title?: string;
       prompt?: string;
       tags?: string;
+      /** @description Sort order; 0 = append at the end on create. */
+      position?: number;
+      enabled?: boolean;
+      image_key?: string;
+      /** Format: date-time */
+      readonly updated_at?: string;
+    };
+    PatchedCuratedPhotoAdmin: {
+      readonly id?: number;
+      title?: string;
+      prompt?: string;
+      tags?: string;
+      alt_text?: string;
+      kind?: components["schemas"]["KindEnum"];
       /** @description Sort order; 0 = append at the end on create. */
       position?: number;
       enabled?: boolean;
@@ -12819,6 +13050,44 @@ export interface operations {
       };
     };
   };
+  v1_curated_photos_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_curated_photos_use_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_demo_enter_create: {
     parameters: {
       query?: never;
@@ -15783,6 +16052,217 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CuratedLogoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_list: {
+    parameters: {
+      query?: {
+        /** @description A page number within the paginated result set. */
+        page?: number;
+        /** @description Number of results to return per page. */
+        page_size?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PaginatedCuratedPhotoAdminList"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["CuratedPhotoAdmin"];
+        "multipart/form-data": components["schemas"]["CuratedPhotoAdmin"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["CuratedPhotoAdmin"];
+        "multipart/form-data": components["schemas"]["CuratedPhotoAdmin"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["PatchedCuratedPhotoAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["PatchedCuratedPhotoAdmin"];
+        "multipart/form-data": components["schemas"]["PatchedCuratedPhotoAdmin"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_actions_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        action_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["CuratedPhotoAdmin"];
+        "multipart/form-data": components["schemas"]["CuratedPhotoAdmin"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_autocomplete_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        field_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_curated_photos_meta_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CuratedPhotoAdmin"];
         };
       };
     };

@@ -139,3 +139,44 @@ def test_empty_queue_triggers_refill(paid_tenant, settings):
         tasks._generate_for_current_tenant(paid_tenant)
     refill.assert_called_once()
     assert BlogPost.objects.get().title == "T"
+
+
+def test_autopilot_offers_and_materializes_curated_photos(paid_tenant, settings):
+    from apps.core.models import CuratedPhoto
+    from apps.media.models import Photo
+
+    settings.ANTHROPIC_API_KEY = "test-key"
+    _due_rule(auto_publish=False)
+    BlogTopicIdea.objects.create(title="Morning habits", angle="beginner")
+    with schema_context("public"):
+        row = CuratedPhoto.objects.create(
+            title="Morning light",
+            tags="morning, habits",
+            kind="hero",
+            image_key="platform/curated-photos/morning.png",
+        )
+    draft = ai.DraftResult(
+        {
+            "title": "T",
+            "body_html": "<p>b</p>",
+            "excerpt": "e",
+            "meta_description": "m",
+            "tags": ["t"],
+            "ai_model": "x",
+            "cover_photo_id": f"curated:{row.pk}",
+            "image_placements": [],
+        },
+        Decimal("0.03"),
+    )
+    with (
+        mock.patch.object(ai, "generate_post", return_value=draft) as gen,
+        mock.patch.object(tasks, "_notify_coach"),
+    ):
+        tasks._generate_for_current_tenant(paid_tenant)
+    post = BlogPost.objects.latest("created_at")
+    photo = Photo.objects.get(s3_key="platform/curated-photos/morning.png")
+    assert post.cover_photo_id == photo.id
+    offered_ids = [str(p.id) for p in gen.call_args.kwargs["photos"]]
+    assert f"curated:{row.pk}" in offered_ids
+    with schema_context("public"):
+        CuratedPhoto.objects.all().delete()

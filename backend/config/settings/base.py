@@ -370,6 +370,10 @@ EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
 # so the git-committed snapshot tracks the DB. Unset in prod = sync off.
 CURATED_LOGO_SYNC_DIR = os.environ.get("CURATED_LOGO_SYNC_DIR", "")
 
+# Same idea for the curated PHOTO catalog (photo_meta.json + images) —
+# seed_curated_photos reads this directory when --dir is not passed.
+CURATED_PHOTO_SYNC_DIR = os.environ.get("CURATED_PHOTO_SYNC_DIR", "")
+
 # Demo tenants (is_demo=True) reject mutating requests and show a read-only banner.
 # Disable locally (dev.py sets this False) to make demo tenants fully interactive
 # for testing. MUST stay True in production so marketing demos can't be edited.

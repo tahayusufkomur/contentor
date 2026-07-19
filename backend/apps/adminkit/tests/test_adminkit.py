@@ -270,6 +270,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "platform-blog-posts",
         "platform-kb",
         "curated-logos",
+        "curated-photos",
         "ai-transcripts",
         "help-bot-usage",
         "student-bot-usage",

@@ -14,6 +14,8 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CoverPicker } from "@/components/admin/blog/cover-picker";
+import { InlineImages } from "@/components/admin/blog/inline-images";
 import { PostEditor } from "@/components/admin/blog/post-editor";
 import {
   type BlogPostAdmin,
@@ -107,6 +109,8 @@ export default function BlogEditorPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-6">
+      <CoverPicker post={post} onPatched={patch} />
+
       <input
         value={post.title}
         onChange={(e) => patch({ title: e.target.value })}
@@ -184,6 +188,8 @@ export default function BlogEditorPage() {
         value={post.body_html}
         onChange={(html) => patch({ body_html: html })}
       />
+
+      <InlineImages post={post} onPatched={patch} />
 
       <div className="flex items-center justify-between border-t pt-4">
         <div className="flex items-center gap-2">
