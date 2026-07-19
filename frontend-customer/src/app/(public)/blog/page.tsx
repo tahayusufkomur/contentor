@@ -28,6 +28,14 @@ export default async function BlogIndexPage() {
         {posts.map((post) => (
           <li key={post.slug}>
             <Link href={`/blog/${post.slug}`} className="group block">
+              {post.cover_photo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.cover_photo_url}
+                  alt=""
+                  className="mb-3 aspect-[2/1] w-full rounded-lg object-cover"
+                />
+              )}
               <h2 className="text-xl font-semibold group-hover:underline">
                 {post.title}
               </h2>

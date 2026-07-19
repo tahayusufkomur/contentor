@@ -11,6 +11,7 @@ export interface BlogPostPublic {
   meta_description?: string;
   body_html?: string;
   published_at: string;
+  cover_photo_url?: string | null;
 }
 
 async function domainHeader(): Promise<Record<string, string>> {
