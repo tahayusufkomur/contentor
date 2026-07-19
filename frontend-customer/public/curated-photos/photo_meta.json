@@ -1342,5 +1342,1461 @@
     "tags": "events, wedding, planning, celebration, decor",
     "kind": "hero",
     "alt_text": "planner arranging a wedding table setting"
+  },
+  {
+    "title": "Kettlebell Row",
+    "filename": "stock_fitness_kettlebell_row.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a row of kettlebells on a sunlit gym floor, athlete tying shoes in soft-focus background, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, gym, strength, training, workout",
+    "kind": "stock",
+    "alt_text": "Row of kettlebells on a gym floor with an athlete preparing in the background"
+  },
+  {
+    "title": "Morning Run",
+    "filename": "stock_fitness_morning_run.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a runner on an empty misty road at sunrise, seen from behind, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, running, cardio, morning, motivation",
+    "kind": "stock",
+    "alt_text": "Runner on a misty road at sunrise seen from behind"
+  },
+  {
+    "title": "Yoga Balance",
+    "filename": "stock_fitness_yoga_balance.jpg",
+    "prompt": "Ultra-realistic photograph, 4:5 vertical editorial stock photo: a woman holding a tree pose on a wooden deck overlooking hills, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, balance, wellness, mindset, calm",
+    "kind": "stock",
+    "alt_text": "Woman holding tree pose on a wooden deck overlooking green hills"
+  },
+  {
+    "title": "Protein Meal Prep",
+    "filename": "stock_fitness_protein_prep.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a meal-prep station with grilled chicken, rice and containers on a kitchen counter, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, nutrition, meal prep, protein, healthy eating",
+    "kind": "stock",
+    "alt_text": "Meal-prep containers with grilled chicken and rice on a kitchen counter"
+  },
+  {
+    "title": "Resistance Band Stretch",
+    "filename": "stock_fitness_stretch_band.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: close-up of hands stretching a resistance band, gym window light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, mobility, stretching, recovery",
+    "kind": "stock",
+    "alt_text": "Close-up of hands stretching a resistance band in a gym"
+  },
+  {
+    "title": "Pasta in the Pan",
+    "filename": "stock_cooking_pasta_toss.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a chef tossing fresh pasta in a steel pan with flames, dark kitchen, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, chef, pasta, kitchen, culinary",
+    "kind": "stock",
+    "alt_text": "Chef tossing fresh pasta in a flaming steel pan"
+  },
+  {
+    "title": "Kneading Dough",
+    "filename": "stock_cooking_bread_dough.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: floured hands kneading bread dough on a wooden table, morning window light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, baking, bread, artisan, hands-on",
+    "kind": "stock",
+    "alt_text": "Floured hands kneading bread dough on a wooden table"
+  },
+  {
+    "title": "Spice Bowls",
+    "filename": "stock_cooking_spice_market.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: colorful spice bowls arranged on a rustic market table, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, spices, flavor, market, ingredients",
+    "kind": "stock",
+    "alt_text": "Colorful bowls of spices on a rustic market table"
+  },
+  {
+    "title": "Fine Plating",
+    "filename": "stock_cooking_plating_fine.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a chef plating a fine-dining dish with tweezers, shallow focus, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, fine dining, plating, chef, culinary art",
+    "kind": "stock",
+    "alt_text": "Chef plating a fine-dining dish with tweezers"
+  },
+  {
+    "title": "Chopping Vegetables",
+    "filename": "stock_cooking_veggie_chop.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: overhead shot of hands chopping vibrant vegetables on a big cutting board, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, vegetables, knife skills, healthy, prep",
+    "kind": "stock",
+    "alt_text": "Overhead view of hands chopping colorful vegetables"
+  },
+  {
+    "title": "Whiteboard Strategy",
+    "filename": "stock_business_whiteboard_plan.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a founder sketching a growth chart on a whiteboard in a bright startup office, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, strategy, startup, planning, growth",
+    "kind": "stock",
+    "alt_text": "Founder sketching a growth chart on a whiteboard"
+  },
+  {
+    "title": "Closing the Deal",
+    "filename": "stock_business_handshake_deal.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two professionals shaking hands across a table with laptops, warm office light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, negotiation, partnership, sales, meeting",
+    "kind": "stock",
+    "alt_text": "Two professionals shaking hands across a meeting table"
+  },
+  {
+    "title": "Founder's Desk",
+    "filename": "stock_business_desk_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: overhead flat lay of a tidy desk with notebook, coffee and laptop, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, productivity, desk, workspace, minimal",
+    "kind": "stock",
+    "alt_text": "Overhead flat lay of a tidy desk with notebook, coffee and laptop"
+  },
+  {
+    "title": "Team Standup",
+    "filename": "stock_business_team_standup.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small team in a standup meeting around a kanban board with sticky notes, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, team, agile, meeting, collaboration",
+    "kind": "stock",
+    "alt_text": "Team gathered around a kanban board during standup"
+  },
+  {
+    "title": "Morning Pages",
+    "filename": "stock_mindset_journal_coffee.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an open journal with a fountain pen beside a cup of coffee on a linen tablecloth, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, journaling, reflection, morning routine, calm",
+    "kind": "stock",
+    "alt_text": "Open journal with fountain pen beside a cup of coffee"
+  },
+  {
+    "title": "Dawn Meditation",
+    "filename": "stock_mindset_meditation_window.jpg",
+    "prompt": "Ultra-realistic photograph, 4:5 vertical editorial stock photo: a man meditating cross-legged by a large window at dawn, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, meditation, mindfulness, calm, morning",
+    "kind": "stock",
+    "alt_text": "Man meditating cross-legged by a large window at dawn"
+  },
+  {
+    "title": "Above the Clouds",
+    "filename": "stock_mindset_mountain_top.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a hiker standing on a summit above a sea of clouds at sunrise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, achievement, goals, perseverance, outdoors",
+    "kind": "stock",
+    "alt_text": "Hiker standing on a mountain summit above clouds at sunrise"
+  },
+  {
+    "title": "Deep Breath",
+    "filename": "stock_mindset_breathwork.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: close-up profile of a woman breathing deeply with eyes closed, soft golden light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, breathwork, calm, stress relief, wellness",
+    "kind": "stock",
+    "alt_text": "Profile of a woman breathing deeply with eyes closed"
+  },
+  {
+    "title": "Studio Flow",
+    "filename": "stock_yoga_studio_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small yoga class in a sunlit loft studio, mats in a row, mid-pose, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, class, studio, flow, community",
+    "kind": "stock",
+    "alt_text": "Yoga class mid-pose in a sunlit loft studio"
+  },
+  {
+    "title": "Rolling the Mat",
+    "filename": "stock_yoga_mat_rollup.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: close-up of hands rolling a cork yoga mat, plants in background, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, props, studio, calm, routine",
+    "kind": "stock",
+    "alt_text": "Hands rolling up a cork yoga mat"
+  },
+  {
+    "title": "Sunset Warrior",
+    "filename": "stock_yoga_beach_sunset.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a silhouetted yoga warrior pose on a beach at sunset, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, beach, sunset, silhouette, strength",
+    "kind": "stock",
+    "alt_text": "Silhouette of a warrior pose on a beach at sunset"
+  },
+  {
+    "title": "On the Fretboard",
+    "filename": "stock_music_guitar_closeup.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close-up of fingers on an acoustic guitar fretboard, warm stage light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, guitar, practice, acoustic, musician",
+    "kind": "stock",
+    "alt_text": "Close-up of fingers on an acoustic guitar fretboard"
+  },
+  {
+    "title": "Home Studio",
+    "filename": "stock_music_home_studio.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a cozy home recording studio with microphone, headphones and warm lamps, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, recording, studio, production, creative",
+    "kind": "stock",
+    "alt_text": "Cozy home recording studio with microphone and headphones"
+  },
+  {
+    "title": "Piano Hands",
+    "filename": "stock_music_piano_hands.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: elegant hands playing a grand piano, dramatic side light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, piano, performance, classical, practice",
+    "kind": "stock",
+    "alt_text": "Hands playing a grand piano in dramatic side light"
+  },
+  {
+    "title": "Vinyl Corner",
+    "filename": "stock_music_vinyl_shelf.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a wall shelf of vinyl records with a turntable spinning, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, vinyl, listening, collection, analog",
+    "kind": "stock",
+    "alt_text": "Shelf of vinyl records with a spinning turntable"
+  },
+  {
+    "title": "Watercolor Wash",
+    "filename": "stock_art_watercolor_wash.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an artist brushing a watercolor wash across thick paper, palette nearby, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, watercolor, painting, creative, studio",
+    "kind": "stock",
+    "alt_text": "Artist brushing a watercolor wash across thick paper"
+  },
+  {
+    "title": "At the Wheel",
+    "filename": "stock_art_pottery_wheel.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: hands shaping wet clay on a spinning pottery wheel, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, pottery, ceramics, craft, hands-on",
+    "kind": "stock",
+    "alt_text": "Hands shaping wet clay on a pottery wheel"
+  },
+  {
+    "title": "Cafe Sketches",
+    "filename": "stock_art_sketchbook_cafe.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an open sketchbook with pencil drawings on a cafe table beside espresso, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, sketching, drawing, cafe, creative practice",
+    "kind": "stock",
+    "alt_text": "Open sketchbook with pencil drawings beside an espresso"
+  },
+  {
+    "title": "Gallery Wall",
+    "filename": "stock_art_gallery_wall.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a bright gallery wall with framed abstract paintings, visitor in soft focus, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, gallery, exhibition, curation, inspiration",
+    "kind": "stock",
+    "alt_text": "Gallery wall of framed abstract paintings"
+  },
+  {
+    "title": "Flashcard Session",
+    "filename": "stock_language_flashcards_desk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: colorful language flashcards spread on a desk with a notebook and tea, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "language, learning, vocabulary, study, flashcards",
+    "kind": "stock",
+    "alt_text": "Language flashcards spread on a desk with notebook and tea"
+  },
+  {
+    "title": "Conversation Practice",
+    "filename": "stock_language_conversation_cafe.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two people in animated conversation at a cafe table, notebooks open, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "language, speaking, practice, cafe, exchange",
+    "kind": "stock",
+    "alt_text": "Two people practicing conversation at a cafe table"
+  },
+  {
+    "title": "Listening Practice",
+    "filename": "stock_language_headphones_listen.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a young woman with headphones repeating phrases, laptop with audio waveform, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "language, listening, pronunciation, study, audio",
+    "kind": "stock",
+    "alt_text": "Woman with headphones doing language listening practice"
+  },
+  {
+    "title": "Golden Hour Shoot",
+    "filename": "stock_photography_golden_hour.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a photographer crouching with a DSLR in a golden wheat field, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "photography, golden hour, outdoors, camera, creative",
+    "kind": "stock",
+    "alt_text": "Photographer crouching with a camera in a golden wheat field"
+  },
+  {
+    "title": "The Edit",
+    "filename": "stock_photography_editing_desk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a photo editing desk with calibrated monitor showing a landscape, tablet and pen, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "photography, editing, post-processing, workflow, desk",
+    "kind": "stock",
+    "alt_text": "Photo editing desk with a landscape image on a monitor"
+  },
+  {
+    "title": "Lens Kit",
+    "filename": "stock_photography_lens_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: overhead flat lay of camera lenses and filters on dark slate, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "photography, gear, lenses, equipment, flat lay",
+    "kind": "stock",
+    "alt_text": "Overhead flat lay of camera lenses on dark slate"
+  },
+  {
+    "title": "Portrait Setup",
+    "filename": "stock_photography_portrait_setup.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a portrait photo shoot with softbox lighting in a small studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "photography, portrait, studio, lighting, shoot",
+    "kind": "stock",
+    "alt_text": "Portrait shoot with softbox lighting in a studio"
+  },
+  {
+    "title": "Deep in Code",
+    "filename": "stock_tech_code_screen.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: over-the-shoulder view of clean code on a large monitor in a dim room, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, coding, programming, developer, focus",
+    "kind": "stock",
+    "alt_text": "Over-the-shoulder view of code on a large monitor"
+  },
+  {
+    "title": "Remote Work",
+    "filename": "stock_tech_laptop_terrace.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a developer working on a laptop at a rooftop terrace, city skyline behind, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, remote work, laptop, freelance, lifestyle",
+    "kind": "stock",
+    "alt_text": "Developer working on a laptop on a rooftop terrace"
+  },
+  {
+    "title": "Circuit Macro",
+    "filename": "stock_tech_circuit_macro.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: macro shot of a green circuit board with soldered components, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, hardware, electronics, engineering, macro",
+    "kind": "stock",
+    "alt_text": "Macro shot of a green circuit board"
+  },
+  {
+    "title": "Rising Chart",
+    "filename": "stock_finance_chart_tablet.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a tablet showing a rising stock chart on a desk with glasses and coffee, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "finance, investing, chart, growth, planning",
+    "kind": "stock",
+    "alt_text": "Tablet showing a rising chart on a desk"
+  },
+  {
+    "title": "Savings Stack",
+    "filename": "stock_finance_piggy_coins.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a ceramic piggy bank beside neat stacks of coins on a wooden table, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "finance, saving, budgeting, money, habits",
+    "kind": "stock",
+    "alt_text": "Piggy bank beside stacks of coins on a wooden table"
+  },
+  {
+    "title": "Monthly Budget",
+    "filename": "stock_finance_budget_notebook.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands writing a monthly budget in a notebook with calculator and receipts, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "finance, budgeting, planning, money management, personal finance",
+    "kind": "stock",
+    "alt_text": "Hands writing a monthly budget in a notebook"
+  },
+  {
+    "title": "Route Planning",
+    "filename": "stock_travel_map_planning.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands tracing a route on a paper map with camera and passport nearby, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, planning, map, adventure, trip",
+    "kind": "stock",
+    "alt_text": "Hands tracing a route on a paper map with passport nearby"
+  },
+  {
+    "title": "On the Trail",
+    "filename": "stock_travel_backpack_trail.jpg",
+    "prompt": "Ultra-realistic photograph, 4:5 vertical editorial stock photo: a backpacker walking a forest trail with morning fog, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, hiking, backpacking, nature, adventure",
+    "kind": "stock",
+    "alt_text": "Backpacker walking a foggy forest trail"
+  },
+  {
+    "title": "Old Town Evening",
+    "filename": "stock_travel_old_town.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a narrow European old-town street with warm evening lanterns, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, europe, city, evening, wanderlust",
+    "kind": "stock",
+    "alt_text": "Narrow European old-town street lit by lanterns"
+  },
+  {
+    "title": "Skincare Ritual",
+    "filename": "stock_beauty_skincare_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: minimal flat lay of skincare bottles on pastel silk with soft shadows, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "beauty, skincare, self-care, flat lay, minimal",
+    "kind": "stock",
+    "alt_text": "Flat lay of skincare bottles on pastel silk"
+  },
+  {
+    "title": "Brush Set",
+    "filename": "stock_beauty_makeup_brushes.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a set of makeup brushes in a ceramic cup by a bright vanity mirror, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "beauty, makeup, tools, vanity, routine",
+    "kind": "stock",
+    "alt_text": "Makeup brushes in a ceramic cup by a vanity mirror"
+  },
+  {
+    "title": "Story Time",
+    "filename": "stock_parenting_story_time.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a parent reading a picture book to a toddler in a cozy armchair, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "parenting, reading, family, bonding, kids",
+    "kind": "stock",
+    "alt_text": "Parent reading a picture book to a toddler"
+  },
+  {
+    "title": "Building Blocks",
+    "filename": "stock_parenting_play_blocks.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a child stacking wooden blocks on a rug, parent's hands helping, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "parenting, play, learning, toddler, development",
+    "kind": "stock",
+    "alt_text": "Child stacking wooden blocks with a parent helping"
+  },
+  {
+    "title": "Key Handover",
+    "filename": "stock_realestate_keys_handover.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close-up of house keys being handed over in front of a blurred doorway, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "real estate, home buying, keys, closing, property",
+    "kind": "stock",
+    "alt_text": "House keys being handed over in front of a doorway"
+  },
+  {
+    "title": "Staged to Sell",
+    "filename": "stock_realestate_staged_living.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a bright staged living room with neutral furniture and large windows, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "real estate, staging, interior, home, listing",
+    "kind": "stock",
+    "alt_text": "Bright staged living room with neutral furniture"
+  },
+  {
+    "title": "Interview Prep",
+    "filename": "stock_career_interview_prep.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a candidate reviewing notes outside a glass office building, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "career, interview, preparation, job search, professional",
+    "kind": "stock",
+    "alt_text": "Candidate reviewing notes outside a glass office building"
+  },
+  {
+    "title": "Resume Review",
+    "filename": "stock_career_resume_review.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands holding a printed resume over a desk with laptop and coffee, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "career, resume, job search, coaching, feedback",
+    "kind": "stock",
+    "alt_text": "Hands holding a printed resume over a desk"
+  },
+  {
+    "title": "At the Machine",
+    "filename": "stock_crafts_sewing_machine.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close-up of fabric feeding through a sewing machine, thread spools behind, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "crafts, sewing, fabric, maker, handmade",
+    "kind": "stock",
+    "alt_text": "Fabric feeding through a sewing machine"
+  },
+  {
+    "title": "Candle Pouring",
+    "filename": "stock_crafts_candle_pour.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: hands pouring wax into candle jars on a workbench with dried flowers, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "crafts, candles, maker, small business, handmade",
+    "kind": "stock",
+    "alt_text": "Hands pouring wax into candle jars"
+  },
+  {
+    "title": "Seedling Tray",
+    "filename": "stock_gardening_seedlings_tray.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: young seedlings in a tray on a greenhouse bench, watering can nearby, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "gardening, seedlings, greenhouse, spring, growth",
+    "kind": "stock",
+    "alt_text": "Tray of young seedlings on a greenhouse bench"
+  },
+  {
+    "title": "Garden Harvest",
+    "filename": "stock_gardening_harvest_basket.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a wicker basket of fresh-picked vegetables on garden soil, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "gardening, harvest, vegetables, homegrown, organic",
+    "kind": "stock",
+    "alt_text": "Wicker basket of fresh vegetables on garden soil"
+  },
+  {
+    "title": "Good Dog",
+    "filename": "stock_pets_dog_training.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a trainer rewarding a border collie with a treat in a park, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pets, dog training, obedience, reward, park",
+    "kind": "stock",
+    "alt_text": "Trainer rewarding a border collie with a treat"
+  },
+  {
+    "title": "Window Cat",
+    "filename": "stock_pets_cat_windowsill.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a cat lounging on a sunny windowsill beside potted plants, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pets, cat, home, cozy, calm",
+    "kind": "stock",
+    "alt_text": "Cat lounging on a sunny windowsill"
+  },
+  {
+    "title": "Rehearsal",
+    "filename": "stock_dance_studio_mirror.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: dancers rehearsing in a mirrored studio, motion blur in limbs, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "dance, studio, rehearsal, movement, performance",
+    "kind": "stock",
+    "alt_text": "Dancers rehearsing in a mirrored studio"
+  },
+  {
+    "title": "Pointe Shoes",
+    "filename": "stock_dance_ballet_shoes.jpg",
+    "prompt": "Ultra-realistic photograph, 4:5 vertical editorial stock photo: worn ballet pointe shoes hanging on a barre, soft window light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "dance, ballet, discipline, practice, studio",
+    "kind": "stock",
+    "alt_text": "Worn ballet pointe shoes hanging on a barre"
+  },
+  {
+    "title": "The Blank Page",
+    "filename": "stock_writing_typewriter_desk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a vintage typewriter with a fresh page on a writer's desk, books stacked, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "writing, author, typewriter, creativity, desk",
+    "kind": "stock",
+    "alt_text": "Vintage typewriter with a fresh page on a writer's desk"
+  },
+  {
+    "title": "Rainy Draft",
+    "filename": "stock_writing_notebook_rain.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a notebook and pen by a rain-streaked window with tea, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "writing, journaling, cozy, rain, inspiration",
+    "kind": "stock",
+    "alt_text": "Notebook and pen by a rain-streaked window"
+  },
+  {
+    "title": "Smoothie Bowls",
+    "filename": "stock_nutrition_smoothie_bowls.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: vibrant smoothie bowls topped with fruit and seeds, overhead shot, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nutrition, smoothie, breakfast, healthy, colorful",
+    "kind": "stock",
+    "alt_text": "Overhead shot of vibrant smoothie bowls with fruit"
+  },
+  {
+    "title": "Fresh Toss",
+    "filename": "stock_nutrition_salad_toss.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands tossing a fresh green salad in a big wooden bowl, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nutrition, salad, healthy eating, fresh, cooking",
+    "kind": "stock",
+    "alt_text": "Hands tossing a green salad in a wooden bowl"
+  },
+  {
+    "title": "Content Calendar",
+    "filename": "stock_marketing_content_planning.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a content calendar wall of colorful sticky notes, marketer pointing, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "marketing, content, planning, social media, strategy",
+    "kind": "stock",
+    "alt_text": "Content calendar wall of colorful sticky notes"
+  },
+  {
+    "title": "On Air",
+    "filename": "stock_marketing_podcast_mic.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: a podcast microphone with pop filter in a warm-lit recording nook, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "marketing, podcast, audio, creator, recording",
+    "kind": "stock",
+    "alt_text": "Podcast microphone with pop filter in a recording nook"
+  },
+  {
+    "title": "In the Classroom",
+    "filename": "stock_education_lecture_hall.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a lecturer at a whiteboard in a small bright classroom, students engaged, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, teaching, classroom, lecture, learning",
+    "kind": "stock",
+    "alt_text": "Lecturer at a whiteboard in a bright classroom"
+  },
+  {
+    "title": "Online Course",
+    "filename": "stock_education_online_study.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a student taking notes while watching an online course on a laptop, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, e-learning, study, online course, notes",
+    "kind": "stock",
+    "alt_text": "Student taking notes during an online course"
+  },
+  {
+    "title": "Spa Ritual",
+    "filename": "stock_wellness_spa_towels.jpg",
+    "prompt": "Ultra-realistic photograph, square editorial stock photo: rolled spa towels with eucalyptus sprigs and candles on stone, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "wellness, spa, relaxation, self-care, calm",
+    "kind": "stock",
+    "alt_text": "Rolled spa towels with eucalyptus and candles"
+  },
+  {
+    "title": "Tea Ritual",
+    "filename": "stock_wellness_tea_ceremony.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a minimalist tea ceremony setup with steam rising from a clay pot, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "wellness, tea, ritual, mindfulness, calm",
+    "kind": "stock",
+    "alt_text": "Minimalist tea ceremony with steam rising from a clay pot"
+  },
+  {
+    "title": "The Interview",
+    "filename": "stock_business_podcast_interview.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two people recording a podcast interview across a table with mics, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, podcast, interview, conversation, media",
+    "kind": "stock",
+    "alt_text": "Two people recording a podcast interview"
+  },
+  {
+    "title": "Wrap Up",
+    "filename": "stock_fitness_boxing_wraps.jpg",
+    "prompt": "Ultra-realistic photograph, 4:5 vertical editorial stock photo: an athlete wrapping hands with boxing wraps, gym bag beside, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, boxing, preparation, discipline, gym",
+    "kind": "stock",
+    "alt_text": "Athlete wrapping hands with boxing wraps"
+  },
+  {
+    "title": "Market Fresh",
+    "filename": "stock_cooking_farmers_market.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a vendor handing fresh produce to a customer at a farmers market stall, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, farmers market, produce, local, fresh",
+    "kind": "stock",
+    "alt_text": "Vendor handing fresh produce to a customer at a market stall"
+  },
+  {
+    "title": "Cold Plunge",
+    "filename": "stock_mindset_cold_plunge.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a man stepping into a cold plunge tub outdoors, steam in cool air, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, cold exposure, discipline, recovery, wellness",
+    "kind": "stock",
+    "alt_text": "Man stepping into an outdoor cold plunge tub"
+  },
+  {
+    "title": "Dumbbell",
+    "filename": "spot_dumbbell_curl.png",
+    "prompt": "Minimal flat vector illustration of a dumbbell with motion arcs, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, gym, strength, workout",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a dumbbell"
+  },
+  {
+    "title": "Running Shoe",
+    "filename": "spot_running_shoe.png",
+    "prompt": "Minimal flat vector illustration of a running shoe with speed lines, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "fitness, running, cardio, gear",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a running shoe"
+  },
+  {
+    "title": "Lotus Pose",
+    "filename": "spot_yoga_pose_lotus.png",
+    "prompt": "Minimal flat vector illustration of a person seated in lotus meditation pose, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "yoga, meditation, mindset, calm",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a person in lotus pose"
+  },
+  {
+    "title": "Chef Tools",
+    "filename": "spot_chef_hat_whisk.png",
+    "prompt": "Minimal flat vector illustration of a chef hat crossed with a whisk, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, chef, kitchen, baking",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a chef hat and whisk"
+  },
+  {
+    "title": "Steaming Pot",
+    "filename": "spot_steaming_pot.png",
+    "prompt": "Minimal flat vector illustration of a steaming cooking pot, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, kitchen, meal, recipe",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a steaming cooking pot"
+  },
+  {
+    "title": "Prep Board",
+    "filename": "spot_cutting_board_knife.png",
+    "prompt": "Minimal flat vector illustration of a cutting board with a chef knife and tomato, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "cooking, prep, knife, ingredients",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a cutting board with knife and tomato"
+  },
+  {
+    "title": "Growth Chart",
+    "filename": "spot_growth_chart_arrow.png",
+    "prompt": "Minimal flat vector illustration of a bar chart with an upward arrow, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, growth, analytics, success",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a growth chart with rising arrow"
+  },
+  {
+    "title": "Big Idea",
+    "filename": "spot_lightbulb_idea.png",
+    "prompt": "Minimal flat vector illustration of a glowing lightbulb with rays, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, idea, creativity, innovation",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a glowing lightbulb"
+  },
+  {
+    "title": "Handshake",
+    "filename": "spot_handshake_simple.png",
+    "prompt": "Minimal flat vector illustration of two hands in a handshake, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, partnership, deal, trust",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a handshake"
+  },
+  {
+    "title": "On Target",
+    "filename": "spot_target_arrow.png",
+    "prompt": "Minimal flat vector illustration of an archery target with an arrow in the bullseye, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, goals, focus, achievement",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a target with arrow in bullseye"
+  },
+  {
+    "title": "Launch",
+    "filename": "spot_rocket_launch.png",
+    "prompt": "Minimal flat vector illustration of a rocket launching with a smoke trail, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "business, startup, launch, growth",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a launching rocket"
+  },
+  {
+    "title": "Thinking Machine",
+    "filename": "spot_brain_gears.png",
+    "prompt": "Minimal flat vector illustration of a brain with gears inside, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "mindset, learning, psychology, thinking",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a brain with gears"
+  },
+  {
+    "title": "Summit Flag",
+    "filename": "spot_mountain_flag.png",
+    "prompt": "Minimal flat vector illustration of a mountain peak with a flag on top, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "mindset, goals, achievement, perseverance",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a mountain with a flag on the summit"
+  },
+  {
+    "title": "Compass",
+    "filename": "spot_compass_direction.png",
+    "prompt": "Minimal flat vector illustration of a navigation compass, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "mindset, direction, travel, guidance",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a compass"
+  },
+  {
+    "title": "Hourglass",
+    "filename": "spot_hourglass_time.png",
+    "prompt": "Minimal flat vector illustration of an hourglass with flowing sand, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "productivity, time, patience, focus",
+    "kind": "spot",
+    "alt_text": "Flat illustration of an hourglass"
+  },
+  {
+    "title": "Acoustic Guitar",
+    "filename": "spot_guitar_simple.png",
+    "prompt": "Minimal flat vector illustration of an acoustic guitar, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, guitar, instrument, practice",
+    "kind": "spot",
+    "alt_text": "Flat illustration of an acoustic guitar"
+  },
+  {
+    "title": "Headphones",
+    "filename": "spot_headphones_music.png",
+    "prompt": "Minimal flat vector illustration of over-ear headphones with music notes, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, listening, audio, podcast",
+    "kind": "spot",
+    "alt_text": "Flat illustration of headphones with music notes"
+  },
+  {
+    "title": "Studio Mic",
+    "filename": "spot_microphone_stand.png",
+    "prompt": "Minimal flat vector illustration of a studio microphone on a stand, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "music, podcast, recording, voice",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a studio microphone"
+  },
+  {
+    "title": "Palette & Brush",
+    "filename": "spot_paint_palette_brush.png",
+    "prompt": "Minimal flat vector illustration of a paint palette with a brush, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "art, painting, creativity, palette",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a paint palette and brush"
+  },
+  {
+    "title": "Camera",
+    "filename": "spot_camera_shutter.png",
+    "prompt": "Minimal flat vector illustration of a camera with a big lens, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "photography, camera, creative, shoot",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a camera"
+  },
+  {
+    "title": "Conversation",
+    "filename": "spot_speech_bubbles_chat.png",
+    "prompt": "Minimal flat vector illustration of two overlapping speech bubbles, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "language, communication, chat, speaking",
+    "kind": "spot",
+    "alt_text": "Flat illustration of two speech bubbles"
+  },
+  {
+    "title": "Open Book",
+    "filename": "spot_open_book_pages.png",
+    "prompt": "Minimal flat vector illustration of an open book with turning pages, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, reading, learning, study",
+    "kind": "spot",
+    "alt_text": "Flat illustration of an open book"
+  },
+  {
+    "title": "Graduation",
+    "filename": "spot_graduation_cap.png",
+    "prompt": "Minimal flat vector illustration of a graduation cap with tassel, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "education, graduation, achievement, course",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a graduation cap"
+  },
+  {
+    "title": "Code Laptop",
+    "filename": "spot_laptop_code.png",
+    "prompt": "Minimal flat vector illustration of a laptop with code brackets on screen, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "tech, coding, developer, laptop",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a laptop with code on screen"
+  },
+  {
+    "title": "Piggy Bank",
+    "filename": "spot_piggy_bank_coin.png",
+    "prompt": "Minimal flat vector illustration of a piggy bank with a coin dropping in, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "finance, saving, money, budgeting",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a piggy bank with coin"
+  },
+  {
+    "title": "Wallet",
+    "filename": "spot_wallet_cards.png",
+    "prompt": "Minimal flat vector illustration of a wallet with cards and bills, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "finance, money, spending, budget",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a wallet with cards"
+  },
+  {
+    "title": "Paper Plane Route",
+    "filename": "spot_airplane_route.png",
+    "prompt": "Minimal flat vector illustration of a paper plane with a dotted route path, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "travel, journey, planning, adventure",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a paper plane with dotted route"
+  },
+  {
+    "title": "Suitcase",
+    "filename": "spot_suitcase_travel.png",
+    "prompt": "Minimal flat vector illustration of a travel suitcase with stickers, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "travel, luggage, trip, vacation",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a travel suitcase"
+  },
+  {
+    "title": "Sprout",
+    "filename": "spot_leaf_sprout.png",
+    "prompt": "Minimal flat vector illustration of a young sprout with two leaves, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "gardening, growth, nature, beginning",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a young sprout"
+  },
+  {
+    "title": "Watering Can",
+    "filename": "spot_watering_can.png",
+    "prompt": "Minimal flat vector illustration of a watering can sprinkling drops, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "gardening, care, growth, plants",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a watering can"
+  },
+  {
+    "title": "Paw & Heart",
+    "filename": "spot_dog_paw_heart.png",
+    "prompt": "Minimal flat vector illustration of a dog paw print with a heart, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "pets, dog, love, care",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a paw print with a heart"
+  },
+  {
+    "title": "Heartbeat",
+    "filename": "spot_heart_pulse.png",
+    "prompt": "Minimal flat vector illustration of a heart with a pulse line, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, health, fitness, vitality",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a heart with pulse line"
+  },
+  {
+    "title": "Zen Stones",
+    "filename": "spot_meditation_zen_stones.png",
+    "prompt": "Minimal flat vector illustration of stacked zen balance stones, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, balance, calm, meditation",
+    "kind": "spot",
+    "alt_text": "Flat illustration of stacked zen stones"
+  },
+  {
+    "title": "Tea Cup",
+    "filename": "spot_teacup_steam.png",
+    "prompt": "Minimal flat vector illustration of a teacup with rising steam, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "wellness, tea, calm, ritual",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a steaming teacup"
+  },
+  {
+    "title": "New Mail",
+    "filename": "spot_envelope_mail.png",
+    "prompt": "Minimal flat vector illustration of an envelope with a notification dot, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "marketing, email, newsletter, communication",
+    "kind": "spot",
+    "alt_text": "Flat illustration of an envelope with notification dot"
+  },
+  {
+    "title": "Announcement",
+    "filename": "spot_megaphone_announce.png",
+    "prompt": "Minimal flat vector illustration of a megaphone with sound waves, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "marketing, announcement, promotion, launch",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a megaphone"
+  },
+  {
+    "title": "Scheduled",
+    "filename": "spot_calendar_check.png",
+    "prompt": "Minimal flat vector illustration of a calendar page with a checkmark, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "productivity, calendar, planning, schedule",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a calendar with checkmark"
+  },
+  {
+    "title": "Trophy",
+    "filename": "spot_trophy_win.png",
+    "prompt": "Minimal flat vector illustration of a trophy cup with a star, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "achievement, success, winner, milestone",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a trophy cup"
+  },
+  {
+    "title": "Puzzle Fit",
+    "filename": "spot_puzzle_pieces.png",
+    "prompt": "Minimal flat vector illustration of two interlocking puzzle pieces, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "problem solving, teamwork, fit, strategy",
+    "kind": "spot",
+    "alt_text": "Flat illustration of interlocking puzzle pieces"
+  },
+  {
+    "title": "Protected",
+    "filename": "spot_shield_check.png",
+    "prompt": "Minimal flat vector illustration of a shield with a checkmark, flat vector style, 1-2 colors on a plain white background, no text, no watermark. Square image.",
+    "tags": "security, trust, safety, guarantee",
+    "kind": "spot",
+    "alt_text": "Flat illustration of a shield with checkmark"
+  },
+  {
+    "title": "Cream Paper",
+    "filename": "texture_paper_cream.jpg",
+    "prompt": "Seamless tileable background pattern, cream handmade paper grain, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "paper, cream, warm, organic",
+    "kind": "texture",
+    "alt_text": "Subtle cream handmade paper texture"
+  },
+  {
+    "title": "Natural Linen",
+    "filename": "texture_linen_natural.jpg",
+    "prompt": "Seamless tileable background pattern, natural linen fabric weave, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "linen, fabric, natural, neutral",
+    "kind": "texture",
+    "alt_text": "Subtle natural linen weave texture"
+  },
+  {
+    "title": "White Marble",
+    "filename": "texture_marble_white.jpg",
+    "prompt": "Seamless tileable background pattern, white marble with faint grey veins, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "marble, elegant, stone, luxury",
+    "kind": "texture",
+    "alt_text": "White marble texture with faint grey veins"
+  },
+  {
+    "title": "Blush Wash",
+    "filename": "texture_watercolor_blush.jpg",
+    "prompt": "Seamless tileable background pattern, soft blush pink watercolor wash, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "watercolor, pink, soft, feminine",
+    "kind": "texture",
+    "alt_text": "Soft blush watercolor wash texture"
+  },
+  {
+    "title": "Sage Wash",
+    "filename": "texture_watercolor_sage.jpg",
+    "prompt": "Seamless tileable background pattern, pale sage green watercolor wash, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "watercolor, green, calm, natural",
+    "kind": "texture",
+    "alt_text": "Pale sage green watercolor wash texture"
+  },
+  {
+    "title": "Pastel Terrazzo",
+    "filename": "texture_terrazzo_pastel.jpg",
+    "prompt": "Seamless tileable background pattern, pastel terrazzo chips on ivory, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "terrazzo, pastel, playful, modern",
+    "kind": "texture",
+    "alt_text": "Pastel terrazzo texture on ivory"
+  },
+  {
+    "title": "Micro Dots",
+    "filename": "texture_dots_polka_micro.jpg",
+    "prompt": "Seamless tileable background pattern, tiny polka dots on off-white, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "dots, minimal, geometric, clean",
+    "kind": "texture",
+    "alt_text": "Tiny polka dot pattern on off-white"
+  },
+  {
+    "title": "Notebook Grid",
+    "filename": "texture_grid_notebook.jpg",
+    "prompt": "Seamless tileable background pattern, fine light-grey notebook grid lines, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "grid, stationery, minimal, study",
+    "kind": "texture",
+    "alt_text": "Fine light-grey notebook grid texture"
+  },
+  {
+    "title": "Pale Waves",
+    "filename": "texture_waves_japanese.jpg",
+    "prompt": "Seamless tileable background pattern, gentle japanese seigaiha wave curves in pale blue, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "waves, japanese, blue, calm",
+    "kind": "texture",
+    "alt_text": "Gentle pale blue Japanese wave pattern"
+  },
+  {
+    "title": "Eucalyptus Scatter",
+    "filename": "texture_leaves_eucalyptus.jpg",
+    "prompt": "Seamless tileable background pattern, scattered eucalyptus leaves in muted green, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "leaves, botanical, green, natural",
+    "kind": "texture",
+    "alt_text": "Scattered eucalyptus leaf pattern in muted green"
+  },
+  {
+    "title": "Soft Concrete",
+    "filename": "texture_concrete_soft.jpg",
+    "prompt": "Seamless tileable background pattern, soft light-grey concrete surface, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "concrete, grey, industrial, minimal",
+    "kind": "texture",
+    "alt_text": "Soft light-grey concrete texture"
+  },
+  {
+    "title": "Kraft Paper",
+    "filename": "texture_kraft_brown.jpg",
+    "prompt": "Seamless tileable background pattern, warm kraft paper fiber, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "kraft, brown, rustic, craft",
+    "kind": "texture",
+    "alt_text": "Warm kraft paper texture"
+  },
+  {
+    "title": "Light Denim",
+    "filename": "texture_denim_light.jpg",
+    "prompt": "Seamless tileable background pattern, light washed denim fabric, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "denim, fabric, blue, casual",
+    "kind": "texture",
+    "alt_text": "Light washed denim texture"
+  },
+  {
+    "title": "Pale Oak",
+    "filename": "texture_wood_pale_oak.jpg",
+    "prompt": "Seamless tileable background pattern, pale oak wood grain, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "wood, oak, natural, warm",
+    "kind": "texture",
+    "alt_text": "Pale oak wood grain texture"
+  },
+  {
+    "title": "Soft Clouds",
+    "filename": "texture_clouds_soft.jpg",
+    "prompt": "Seamless tileable background pattern, soft dreamy clouds on pale sky blue, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "clouds, sky, dreamy, light",
+    "kind": "texture",
+    "alt_text": "Soft cloud pattern on pale blue"
+  },
+  {
+    "title": "Peach Gradient",
+    "filename": "texture_gradient_peach.jpg",
+    "prompt": "Seamless tileable background pattern, smooth peach to soft lavender gradient, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "gradient, peach, lavender, modern",
+    "kind": "texture",
+    "alt_text": "Smooth peach to lavender gradient texture"
+  },
+  {
+    "title": "Ocean Gradient",
+    "filename": "texture_gradient_ocean.jpg",
+    "prompt": "Seamless tileable background pattern, smooth deep teal to soft aqua gradient, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "gradient, teal, aqua, calm",
+    "kind": "texture",
+    "alt_text": "Smooth teal to aqua gradient texture"
+  },
+  {
+    "title": "Ink Speckle",
+    "filename": "texture_speckle_ink.jpg",
+    "prompt": "Seamless tileable background pattern, fine ink speckles on warm white, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "speckle, minimal, artisan, print",
+    "kind": "texture",
+    "alt_text": "Fine ink speckle texture on warm white"
+  },
+  {
+    "title": "Scandi Triangles",
+    "filename": "texture_triangles_scandi.jpg",
+    "prompt": "Seamless tileable background pattern, sparse scandinavian triangles in muted mustard and grey, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "triangles, scandinavian, geometric, muted",
+    "kind": "texture",
+    "alt_text": "Sparse muted triangle pattern"
+  },
+  {
+    "title": "Honeycomb",
+    "filename": "texture_hexagon_honeycomb.jpg",
+    "prompt": "Seamless tileable background pattern, thin-line honeycomb hexagons in pale gold, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "hexagon, gold, geometric, elegant",
+    "kind": "texture",
+    "alt_text": "Thin-line pale gold honeycomb pattern"
+  },
+  {
+    "title": "Brush Strokes",
+    "filename": "texture_brush_strokes_grey.jpg",
+    "prompt": "Seamless tileable background pattern, loose dry brush strokes in warm grey, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "brush, strokes, artistic, grey",
+    "kind": "texture",
+    "alt_text": "Loose warm grey brush stroke texture"
+  },
+  {
+    "title": "Forest Velvet",
+    "filename": "texture_velvet_forest.jpg",
+    "prompt": "Seamless tileable background pattern, deep forest green velvet sheen, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "velvet, green, luxury, rich",
+    "kind": "texture",
+    "alt_text": "Deep forest green velvet texture"
+  },
+  {
+    "title": "Sand Ripples",
+    "filename": "texture_sand_ripples.jpg",
+    "prompt": "Seamless tileable background pattern, fine sand ripples in warm beige, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "sand, beach, beige, natural",
+    "kind": "texture",
+    "alt_text": "Fine sand ripple texture in warm beige"
+  },
+  {
+    "title": "Moroccan Tile",
+    "filename": "texture_mosaic_moroccan.jpg",
+    "prompt": "Seamless tileable background pattern, muted moroccan tile mosaic in dusty blue, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "mosaic, moroccan, tile, dusty blue",
+    "kind": "texture",
+    "alt_text": "Muted Moroccan tile mosaic pattern"
+  },
+  {
+    "title": "Pencil Crosshatch",
+    "filename": "texture_crosshatch_pencil.jpg",
+    "prompt": "Seamless tileable background pattern, light pencil crosshatch on ivory, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "crosshatch, pencil, sketch, artisan",
+    "kind": "texture",
+    "alt_text": "Light pencil crosshatch texture on ivory"
+  },
+  {
+    "title": "Night Stars",
+    "filename": "texture_stars_night_minimal.jpg",
+    "prompt": "Seamless tileable background pattern, tiny scattered stars on deep navy, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "stars, navy, night, dreamy",
+    "kind": "texture",
+    "alt_text": "Tiny star pattern on deep navy"
+  },
+  {
+    "title": "Dark Slate",
+    "filename": "texture_slate_dark.jpg",
+    "prompt": "Seamless tileable background pattern, dark slate stone surface, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "slate, dark, stone, moody",
+    "kind": "texture",
+    "alt_text": "Dark slate stone texture"
+  },
+  {
+    "title": "Ditsy Floral",
+    "filename": "texture_floral_ditsy.jpg",
+    "prompt": "Seamless tileable background pattern, tiny ditsy florals in cream and dusty rose, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "floral, ditsy, rose, vintage",
+    "kind": "texture",
+    "alt_text": "Tiny ditsy floral pattern in cream and rose"
+  },
+  {
+    "title": "Soft Chevron",
+    "filename": "texture_chevron_soft.jpg",
+    "prompt": "Seamless tileable background pattern, soft wide chevron in warm taupe, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "chevron, taupe, geometric, warm",
+    "kind": "texture",
+    "alt_text": "Soft wide chevron pattern in taupe"
+  },
+  {
+    "title": "Warm Grain",
+    "filename": "texture_noise_grain_warm.jpg",
+    "prompt": "Seamless tileable background pattern, fine warm film grain noise, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "grain, film, warm, analog",
+    "kind": "texture",
+    "alt_text": "Fine warm film grain texture"
+  },
+  {
+    "title": "Monstera",
+    "filename": "texture_leaves_monstera.jpg",
+    "prompt": "Seamless tileable background pattern, sparse monstera leaves in deep green on cream, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "monstera, tropical, green, botanical",
+    "kind": "texture",
+    "alt_text": "Sparse monstera leaf pattern on cream"
+  },
+  {
+    "title": "Chunky Knit",
+    "filename": "texture_knit_chunky.jpg",
+    "prompt": "Seamless tileable background pattern, chunky cream knit wool, subtle, muted, low contrast, no text, no watermark. Square image.",
+    "tags": "knit, wool, cozy, winter",
+    "kind": "texture",
+    "alt_text": "Chunky cream knit wool texture"
+  },
+  {
+    "title": "Dot Line",
+    "filename": "divider_line_dot_center.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin line with a single dot at the center, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, minimal, line, dot",
+    "kind": "divider",
+    "alt_text": "Thin divider line with a center dot"
+  },
+  {
+    "title": "Laurel",
+    "filename": "divider_laurel_branches.png",
+    "prompt": "A single thin horizontal decorative divider ornament: two small laurel branches meeting at the center, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, laurel, elegant, classic",
+    "kind": "divider",
+    "alt_text": "Laurel branch divider ornament"
+  },
+  {
+    "title": "Wave Line",
+    "filename": "divider_wave_single.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a single gentle wave line, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, wave, calm, flow",
+    "kind": "divider",
+    "alt_text": "Gentle wave divider line"
+  },
+  {
+    "title": "Diamond Trio",
+    "filename": "divider_diamond_trio.png",
+    "prompt": "A single thin horizontal decorative divider ornament: three small diamonds in a row connected by thin lines, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, diamond, geometric, elegant",
+    "kind": "divider",
+    "alt_text": "Three-diamond divider ornament"
+  },
+  {
+    "title": "Flourish",
+    "filename": "divider_flourish_swirl.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a delicate symmetrical calligraphic flourish, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, flourish, calligraphy, ornate",
+    "kind": "divider",
+    "alt_text": "Calligraphic flourish divider"
+  },
+  {
+    "title": "Fading Dots",
+    "filename": "divider_dots_five_fade.png",
+    "prompt": "A single thin horizontal decorative divider ornament: five dots fading smaller toward the edges, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, dots, minimal, rhythm",
+    "kind": "divider",
+    "alt_text": "Row of five fading dots divider"
+  },
+  {
+    "title": "Arrow Line",
+    "filename": "divider_arrow_double_end.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin line with small arrowheads at both ends, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, arrow, direction, minimal",
+    "kind": "divider",
+    "alt_text": "Thin line divider with arrowheads"
+  },
+  {
+    "title": "Leaf Vine",
+    "filename": "divider_leaf_vine.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin vine with small alternating leaves, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, vine, botanical, natural",
+    "kind": "divider",
+    "alt_text": "Thin leaf vine divider"
+  },
+  {
+    "title": "Zigzag",
+    "filename": "divider_zigzag_short.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a short compact zigzag stitch, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, zigzag, playful, stitch",
+    "kind": "divider",
+    "alt_text": "Short zigzag divider"
+  },
+  {
+    "title": "Sun Line",
+    "filename": "divider_sun_center_line.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin line broken by a small sun symbol at center, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, sun, warm, boho",
+    "kind": "divider",
+    "alt_text": "Line divider with a central sun symbol"
+  },
+  {
+    "title": "Moon Line",
+    "filename": "divider_moon_stars_line.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin line with a crescent moon and two tiny stars at center, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, moon, stars, dreamy",
+    "kind": "divider",
+    "alt_text": "Line divider with crescent moon and stars"
+  },
+  {
+    "title": "Heart Line",
+    "filename": "divider_heart_center_line.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin line with a small heart at the center, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, heart, love, warm",
+    "kind": "divider",
+    "alt_text": "Line divider with a central heart"
+  },
+  {
+    "title": "Ink Stroke",
+    "filename": "divider_brush_stroke_single.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a single tapered ink brush stroke, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, brush, ink, artistic",
+    "kind": "divider",
+    "alt_text": "Single tapered brush stroke divider"
+  },
+  {
+    "title": "Triangle Beads",
+    "filename": "divider_triangle_beads.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a row of tiny alternating up-down triangles, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, triangle, geometric, tribal",
+    "kind": "divider",
+    "alt_text": "Row of tiny alternating triangles divider"
+  },
+  {
+    "title": "Infinity Line",
+    "filename": "divider_infinity_center.png",
+    "prompt": "A single thin horizontal decorative divider ornament: a thin line with a small infinity loop at the center, minimal flat vector, one color, centered on a plain white background, very wide and short composition, lots of empty white space above and below, no text, no watermark.",
+    "tags": "divider, infinity, elegant, flow",
+    "kind": "divider",
+    "alt_text": "Line divider with a central infinity loop"
+  },
+  {
+    "title": "Check",
+    "filename": "icon_checkmark_circle.png",
+    "prompt": "Minimal flat icon of a checkmark inside a circle, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "check, done, success, confirm",
+    "kind": "icon",
+    "alt_text": "Check icon"
+  },
+  {
+    "title": "Star",
+    "filename": "icon_star_solid.png",
+    "prompt": "Minimal flat icon of a five-pointed star, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "star, favorite, rating, quality",
+    "kind": "icon",
+    "alt_text": "Star icon"
+  },
+  {
+    "title": "Heart",
+    "filename": "icon_heart_solid.png",
+    "prompt": "Minimal flat icon of a heart, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "heart, love, like, favorite",
+    "kind": "icon",
+    "alt_text": "Heart icon"
+  },
+  {
+    "title": "Tip",
+    "filename": "icon_lightbulb_tip.png",
+    "prompt": "Minimal flat icon of a lightbulb, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "tip, idea, insight, hint",
+    "kind": "icon",
+    "alt_text": "Tip icon"
+  },
+  {
+    "title": "Warning",
+    "filename": "icon_warning_triangle.png",
+    "prompt": "Minimal flat icon of an exclamation mark inside a triangle, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "warning, caution, alert, important",
+    "kind": "icon",
+    "alt_text": "Warning icon"
+  },
+  {
+    "title": "Info",
+    "filename": "icon_info_circle.png",
+    "prompt": "Minimal flat icon of a lowercase letter i inside a circle, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "info, information, note, detail",
+    "kind": "icon",
+    "alt_text": "Info icon"
+  },
+  {
+    "title": "Quote",
+    "filename": "icon_quote_marks.png",
+    "prompt": "Minimal flat icon of double quotation marks, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "quote, testimonial, citation, blockquote",
+    "kind": "icon",
+    "alt_text": "Quote icon"
+  },
+  {
+    "title": "Clock",
+    "filename": "icon_clock_time.png",
+    "prompt": "Minimal flat icon of a clock face, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "time, schedule, duration, deadline",
+    "kind": "icon",
+    "alt_text": "Clock icon"
+  },
+  {
+    "title": "Calendar",
+    "filename": "icon_calendar_date.png",
+    "prompt": "Minimal flat icon of a calendar page, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "calendar, date, schedule, event",
+    "kind": "icon",
+    "alt_text": "Calendar icon"
+  },
+  {
+    "title": "Link",
+    "filename": "icon_link_chain.png",
+    "prompt": "Minimal flat icon of two chain links, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "link, url, connection, reference",
+    "kind": "icon",
+    "alt_text": "Link icon"
+  },
+  {
+    "title": "Download",
+    "filename": "icon_download_arrow.png",
+    "prompt": "Minimal flat icon of a downward arrow into a tray, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "download, save, file, export",
+    "kind": "icon",
+    "alt_text": "Download icon"
+  },
+  {
+    "title": "Play",
+    "filename": "icon_play_button.png",
+    "prompt": "Minimal flat icon of a play triangle inside a circle, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "play, video, media, watch",
+    "kind": "icon",
+    "alt_text": "Play icon"
+  },
+  {
+    "title": "Pause",
+    "filename": "icon_pause_button.png",
+    "prompt": "Minimal flat icon of two pause bars inside a circle, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "pause, break, media, stop",
+    "kind": "icon",
+    "alt_text": "Pause icon"
+  },
+  {
+    "title": "Settings",
+    "filename": "icon_gear_settings.png",
+    "prompt": "Minimal flat icon of a settings gear, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "settings, gear, configuration, options",
+    "kind": "icon",
+    "alt_text": "Settings icon"
+  },
+  {
+    "title": "Delete",
+    "filename": "icon_trash_bin.png",
+    "prompt": "Minimal flat icon of a trash bin, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "delete, trash, remove, clean",
+    "kind": "icon",
+    "alt_text": "Delete icon"
+  },
+  {
+    "title": "Lock",
+    "filename": "icon_lock_secure.png",
+    "prompt": "Minimal flat icon of a padlock, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "lock, secure, private, password",
+    "kind": "icon",
+    "alt_text": "Lock icon"
+  },
+  {
+    "title": "Flag",
+    "filename": "icon_flag_milestone.png",
+    "prompt": "Minimal flat icon of a flag on a pole, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "flag, milestone, goal, marker",
+    "kind": "icon",
+    "alt_text": "Flag icon"
+  },
+  {
+    "title": "Sun",
+    "filename": "icon_sun_bright.png",
+    "prompt": "Minimal flat icon of a sun with rays, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "sun, bright, day, energy",
+    "kind": "icon",
+    "alt_text": "Sun icon"
+  },
+  {
+    "title": "Gift",
+    "filename": "icon_gift_box.png",
+    "prompt": "Minimal flat icon of a gift box with ribbon, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "gift, bonus, present, reward",
+    "kind": "icon",
+    "alt_text": "Gift icon"
+  },
+  {
+    "title": "Bar Chart",
+    "filename": "icon_chart_bars.png",
+    "prompt": "Minimal flat icon of three ascending bar chart bars, simple geometric flat vector, single solid color on a plain white background, centered with generous margins, no text, no watermark. Square image.",
+    "tags": "chart, stats, data, growth",
+    "kind": "icon",
+    "alt_text": "Bar Chart icon"
   }
 ]
