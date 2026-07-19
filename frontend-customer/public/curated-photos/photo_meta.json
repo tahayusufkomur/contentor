@@ -318,5 +318,1029 @@
     "tags": "kids, art, craft, education, creative",
     "kind": "hero",
     "alt_text": "child doing a colorful craft project"
+  },
+  {
+    "title": "Kettlebell Power",
+    "filename": "hero_fitness_kettlebell.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a strong athlete mid kettlebell swing in an industrial gym, sweat and motion, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, kettlebell, strength, gym, training",
+    "kind": "hero",
+    "alt_text": "athlete performing a kettlebell swing in an industrial gym"
+  },
+  {
+    "title": "Treadmill Cardio",
+    "filename": "hero_fitness_treadmill.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person running on a treadmill in a modern gym, dynamic motion blur on the legs, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, treadmill, running, cardio, gym",
+    "kind": "hero",
+    "alt_text": "person running on a treadmill in a modern gym"
+  },
+  {
+    "title": "Boxing Training",
+    "filename": "hero_fitness_boxing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a focused boxer striking a heavy bag in a gritty gym, dramatic side light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, boxing, training, strength, gym",
+    "kind": "hero",
+    "alt_text": "boxer hitting a heavy bag in a gym"
+  },
+  {
+    "title": "Outdoor Pull-Ups",
+    "filename": "hero_fitness_pullup.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a muscular athlete doing pull-ups on an outdoor bar at a calisthenics park, morning light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, calisthenics, strength, outdoor, training",
+    "kind": "hero",
+    "alt_text": "athlete doing pull-ups on an outdoor bar"
+  },
+  {
+    "title": "Battle Ropes",
+    "filename": "hero_fitness_battle_ropes.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a determined person slamming battle ropes in a functional training gym, energy and motion, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, battle ropes, conditioning, gym, training",
+    "kind": "hero",
+    "alt_text": "person doing a battle ropes workout"
+  },
+  {
+    "title": "Barbell Squat",
+    "filename": "hero_fitness_barbell_squat.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an athlete performing a barbell back squat in a gym, chalk dust and focus, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, weightlifting, squat, strength, gym",
+    "kind": "hero",
+    "alt_text": "athlete performing a barbell back squat"
+  },
+  {
+    "title": "Pilates Reformer",
+    "filename": "hero_yoga_pilates_reformer.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a woman exercising on a pilates reformer in a bright minimalist studio, controlled poise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pilates, yoga, reformer, wellness, studio",
+    "kind": "hero",
+    "alt_text": "woman exercising on a pilates reformer"
+  },
+  {
+    "title": "Warrior Pose",
+    "filename": "hero_yoga_warrior_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person holding a strong warrior yoga pose on a wooden deck outdoors at golden hour, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, warrior pose, outdoor, balance, wellness",
+    "kind": "hero",
+    "alt_text": "person in warrior yoga pose outdoors"
+  },
+  {
+    "title": "Group Yoga Class",
+    "filename": "hero_yoga_group_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a group yoga class in seated pose in a sunlit studio, calm and unified, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, group class, studio, community, wellness",
+    "kind": "hero",
+    "alt_text": "group yoga class in a sunlit studio"
+  },
+  {
+    "title": "Candlelit Meditation",
+    "filename": "hero_yoga_meditation_candles.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person meditating on a cushion in a serene dim room with soft candlelight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "meditation, yoga, mindfulness, calm, wellness",
+    "kind": "hero",
+    "alt_text": "person meditating in a calm room with candles"
+  },
+  {
+    "title": "Park Stretch",
+    "filename": "hero_yoga_stretch_park.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person stretching on a mat in a lush green park in early morning light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, stretching, park, outdoor, wellness",
+    "kind": "hero",
+    "alt_text": "person stretching on a mat in a green park"
+  },
+  {
+    "title": "Kneading Bread",
+    "filename": "hero_cooking_baking_bread.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands kneading bread dough on a floured wooden surface, flour dust in warm light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, baking, bread, food, artisan",
+    "kind": "hero",
+    "alt_text": "hands kneading bread dough on a floured surface"
+  },
+  {
+    "title": "Latte Art Pour",
+    "filename": "hero_cooking_coffee_pour.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a barista pouring delicate latte art into a ceramic cup, close-up, steam rising, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "coffee, barista, cafe, food, drink",
+    "kind": "hero",
+    "alt_text": "barista pouring latte art into a cup"
+  },
+  {
+    "title": "Fresh Salad Bowl",
+    "filename": "hero_cooking_salad_bowl.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an overhead shot of a vibrant fresh green salad bowl with colorful vegetables on a marble counter, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nutrition, salad, healthy, food, vegetables",
+    "kind": "hero",
+    "alt_text": "overhead of a fresh green salad bowl"
+  },
+  {
+    "title": "Grilled Vegetables",
+    "filename": "hero_cooking_grilling.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: colorful vegetable skewers sizzling on a grill, smoke and warm evening light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, grilling, food, vegetables, summer",
+    "kind": "hero",
+    "alt_text": "colorful vegetable skewers on a grill"
+  },
+  {
+    "title": "Fresh Green Juice",
+    "filename": "hero_cooking_green_juice.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a glass of fresh green juice surrounded by fruits and leafy vegetables on a bright counter, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nutrition, juice, healthy, food, detox",
+    "kind": "hero",
+    "alt_text": "fresh green juice with fruits and vegetables"
+  },
+  {
+    "title": "Giving a Presentation",
+    "filename": "hero_business_presentation.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a confident person giving a presentation to a small engaged group in a bright office, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, presentation, speaking, coaching, career",
+    "kind": "hero",
+    "alt_text": "person presenting to a small group in an office"
+  },
+  {
+    "title": "Remote Video Call",
+    "filename": "hero_business_video_call.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a professional smiling on a laptop video call at a tidy home office desk, natural light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, remote work, video call, home office, career",
+    "kind": "hero",
+    "alt_text": "professional on a video call at a home desk"
+  },
+  {
+    "title": "Coworking Space",
+    "filename": "hero_business_coworking.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: people working at laptops in a stylish modern coworking space with plants and warm light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, coworking, startup, workspace, career",
+    "kind": "hero",
+    "alt_text": "people working in a modern coworking space"
+  },
+  {
+    "title": "Focused Writing",
+    "filename": "hero_business_writing_desk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person writing thoughtfully in a notebook at a wooden desk with coffee and soft window light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "writing, business, career, focus, workspace",
+    "kind": "hero",
+    "alt_text": "person writing at a desk with coffee"
+  },
+  {
+    "title": "Networking Event",
+    "filename": "hero_business_networking.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: professionals chatting and shaking hands at a bright networking event, warm candid mood, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, networking, event, community, career",
+    "kind": "hero",
+    "alt_text": "professionals talking at a networking event"
+  },
+  {
+    "title": "Whiteboard Brainstorm",
+    "filename": "hero_business_whiteboard.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small team brainstorming with sticky notes at a whiteboard in a modern office, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "business, startup, brainstorming, strategy, teamwork",
+    "kind": "hero",
+    "alt_text": "team brainstorming at a whiteboard"
+  },
+  {
+    "title": "Gratitude Journaling",
+    "filename": "hero_mindset_gratitude.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands writing in a gratitude journal beside a cup of tea on a cozy table, soft light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, gratitude, journaling, habits, calm",
+    "kind": "hero",
+    "alt_text": "writing in a gratitude journal with tea"
+  },
+  {
+    "title": "Meditation Corner",
+    "filename": "hero_wellness_meditation_cushion.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a meditation cushion by a window in a minimal calming room with a plant and soft daylight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "wellness, meditation, mindfulness, calm, minimal",
+    "kind": "hero",
+    "alt_text": "meditation cushion in a minimal room"
+  },
+  {
+    "title": "Self-Care Bath",
+    "filename": "hero_wellness_bath_selfcare.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a serene self-care bath scene with lit candles, towels and eucalyptus, soft steam, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "wellness, self-care, bath, relax, spa",
+    "kind": "hero",
+    "alt_text": "relaxing bath with candles and towels"
+  },
+  {
+    "title": "Forest Bathing",
+    "filename": "hero_wellness_forest_walk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person walking peacefully through a lush green sunlit forest, dappled light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "wellness, nature, forest, mindfulness, outdoor",
+    "kind": "hero",
+    "alt_text": "person walking through a lush green forest"
+  },
+  {
+    "title": "Sunrise Coffee",
+    "filename": "hero_mindset_sunrise_coffee.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a steaming coffee cup held on a balcony railing overlooking a soft sunrise skyline, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "mindset, morning, coffee, calm, lifestyle",
+    "kind": "hero",
+    "alt_text": "coffee cup on a balcony at sunrise"
+  },
+  {
+    "title": "Violin Performance",
+    "filename": "hero_music_violin.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a musician playing a violin with expressive focus, warm stage light, shallow depth of field, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, violin, instrument, classical, creative",
+    "kind": "hero",
+    "alt_text": "musician playing a violin"
+  },
+  {
+    "title": "Drum Session",
+    "filename": "hero_music_drums.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a drummer mid-strike behind a drum kit in a moody rehearsal space, motion and energy, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, drums, instrument, rhythm, creative",
+    "kind": "hero",
+    "alt_text": "drummer playing a drum kit"
+  },
+  {
+    "title": "Vocal Recording",
+    "filename": "hero_music_singing_mic.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a singer at a large studio microphone with headphones, intimate warm lighting, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, singing, vocals, studio, creative",
+    "kind": "hero",
+    "alt_text": "singer at a studio microphone"
+  },
+  {
+    "title": "DJ Set",
+    "filename": "hero_music_dj.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a DJ performing at illuminated turntables and mixer, moody club lighting, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, dj, turntable, production, creative",
+    "kind": "hero",
+    "alt_text": "dj performing at a turntable"
+  },
+  {
+    "title": "Vinyl & Turntable",
+    "filename": "hero_music_vinyl.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an overhead flatlay of vinyl records and a turntable on a warm wooden surface, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "music, vinyl, records, turntable, creative",
+    "kind": "hero",
+    "alt_text": "vinyl records and turntable flatlay"
+  },
+  {
+    "title": "Watercolor Painting",
+    "filename": "hero_art_watercolor.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a hand painting delicate watercolors on paper surrounded by brushes and paint palettes, natural light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, watercolor, painting, creative, illustration",
+    "kind": "hero",
+    "alt_text": "hand painting with watercolors on paper"
+  },
+  {
+    "title": "Calligraphy Practice",
+    "filename": "hero_art_calligraphy.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a hand practicing elegant calligraphy with a dip pen and ink on cream paper, close-up, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, calligraphy, lettering, creative, craft",
+    "kind": "hero",
+    "alt_text": "hand practicing calligraphy with ink"
+  },
+  {
+    "title": "Knitting by Hand",
+    "filename": "hero_art_knitting.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands knitting with soft wool yarn in a cozy warm-lit room, tactile detail, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, knitting, handmade, creative, hobby",
+    "kind": "hero",
+    "alt_text": "hands knitting with soft yarn"
+  },
+  {
+    "title": "Film Photography Prints",
+    "filename": "hero_art_film_prints.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: analog film photo prints and negatives spread on a table under warm desk light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, photography, film, prints, creative",
+    "kind": "hero",
+    "alt_text": "film photo prints laid on a table"
+  },
+  {
+    "title": "Handmade Ceramics",
+    "filename": "hero_art_ceramics_shelf.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a shelf of finished handmade ceramic mugs and bowls in earthy tones, soft studio light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "art, ceramics, pottery, handmade, craft",
+    "kind": "hero",
+    "alt_text": "finished handmade ceramics on a shelf"
+  },
+  {
+    "title": "Filmmaker at Work",
+    "filename": "hero_video_filmmaker.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a filmmaker operating a cinema camera on a set, focused expression, cinematic lighting, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "video, filmmaking, cinema, creative, production",
+    "kind": "hero",
+    "alt_text": "filmmaker operating a cinema camera"
+  },
+  {
+    "title": "Studio Lighting Setup",
+    "filename": "hero_photography_studio_light.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a professional portrait studio lighting setup with softboxes and a backdrop, moody atmosphere, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "photography, studio, lighting, creative, production",
+    "kind": "hero",
+    "alt_text": "portrait studio lighting setup"
+  },
+  {
+    "title": "Landscape Photographer",
+    "filename": "hero_photography_landscape.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a landscape photographer with a tripod shooting a dramatic mountain vista at sunrise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "photography, landscape, outdoor, creative, nature",
+    "kind": "hero",
+    "alt_text": "photographer shooting a mountain vista"
+  },
+  {
+    "title": "Online Language Class",
+    "filename": "hero_language_online_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person taking an online language lesson on a laptop with notes, bright home setting, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "language, online, learning, education, elearning",
+    "kind": "hero",
+    "alt_text": "online language lesson on a laptop"
+  },
+  {
+    "title": "One-on-One Tutoring",
+    "filename": "hero_education_tutoring.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a tutor helping a student with a workbook at a table, warm encouraging mood, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, tutoring, learning, teaching, coaching",
+    "kind": "hero",
+    "alt_text": "tutor helping a student at a table"
+  },
+  {
+    "title": "Library Study",
+    "filename": "hero_education_library.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a student studying with books in a quiet sunlit library, tall shelves in the background, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, library, study, learning, books",
+    "kind": "hero",
+    "alt_text": "student studying in a library"
+  },
+  {
+    "title": "Language Flashcards",
+    "filename": "hero_language_flashcards.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: handwritten language flashcards and a notebook spread on a bright wooden desk, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "language, flashcards, study, learning, education",
+    "kind": "hero",
+    "alt_text": "language flashcards spread on a desk"
+  },
+  {
+    "title": "Skincare Ritual",
+    "filename": "hero_beauty_skincare.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an elegant flatlay of minimalist skincare products, a towel and greenery on marble, soft light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "beauty, skincare, self-care, wellness, cosmetics",
+    "kind": "hero",
+    "alt_text": "skincare products flatlay on marble"
+  },
+  {
+    "title": "Acupuncture Therapy",
+    "filename": "hero_wellness_acupuncture.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a calm acupuncture treatment scene with needles on a back, soft spa lighting, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "wellness, acupuncture, therapy, holistic, health",
+    "kind": "hero",
+    "alt_text": "acupuncture needles in a calm treatment room"
+  },
+  {
+    "title": "Therapy Session",
+    "filename": "hero_therapy_session.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two people in a calm supportive counseling conversation in a warm cozy room, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "therapy, counseling, mental health, wellness, coaching",
+    "kind": "hero",
+    "alt_text": "calm counseling session in a warm room"
+  },
+  {
+    "title": "Makeup Artistry",
+    "filename": "hero_beauty_makeup.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a makeup artist applying makeup with a brush, close-up of hands and palette, bright light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "beauty, makeup, cosmetics, artist, creative",
+    "kind": "hero",
+    "alt_text": "makeup artist applying makeup"
+  },
+  {
+    "title": "Smoothie Prep",
+    "filename": "hero_wellness_smoothie_prep.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands adding fresh fruit to a blender to make a healthy smoothie on a bright kitchen counter, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nutrition, smoothie, healthy, food, wellness",
+    "kind": "hero",
+    "alt_text": "preparing a healthy smoothie in a blender"
+  },
+  {
+    "title": "Lake Kayaking",
+    "filename": "hero_outdoor_kayaking.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person kayaking across a calm mirror-like lake surrounded by mountains at golden hour, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, kayaking, adventure, water, nature",
+    "kind": "hero",
+    "alt_text": "person kayaking on a calm lake"
+  },
+  {
+    "title": "Rock Climbing",
+    "filename": "hero_outdoor_climbing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a rock climber ascending a dramatic cliff face with a valley far below, epic light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, climbing, adventure, sport, nature",
+    "kind": "hero",
+    "alt_text": "rock climber ascending a cliff"
+  },
+  {
+    "title": "Beach Running",
+    "filename": "hero_outdoor_beach_run.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person running along the shoreline of a beach at sunrise, splashing water and motion, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, running, beach, fitness, cardio",
+    "kind": "hero",
+    "alt_text": "person running along a beach at sunrise"
+  },
+  {
+    "title": "Tennis Match",
+    "filename": "hero_sports_tennis.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a tennis player mid-swing on an outdoor court, dynamic action and bright daylight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, tennis, fitness, athlete, competition",
+    "kind": "hero",
+    "alt_text": "tennis player mid-swing on a court"
+  },
+  {
+    "title": "Pool Swimming",
+    "filename": "hero_sports_swimming.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a swimmer doing freestyle in a clear blue pool, splashing water and dynamic motion, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, swimming, fitness, athlete, water",
+    "kind": "hero",
+    "alt_text": "swimmer doing freestyle in a pool"
+  },
+  {
+    "title": "Planting in the Garden",
+    "filename": "hero_garden_planting.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands planting green seedlings into rich soil in a sunny garden, earthy detail, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "garden, gardening, plants, outdoor, hobby",
+    "kind": "hero",
+    "alt_text": "hands planting seedlings in soil"
+  },
+  {
+    "title": "Windowsill Herbs",
+    "filename": "hero_garden_herbs.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: fresh potted herbs like basil and mint on a sunny kitchen windowsill, crisp light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "garden, herbs, plants, home, cooking",
+    "kind": "hero",
+    "alt_text": "potted herbs on a sunny windowsill"
+  },
+  {
+    "title": "Dog Walk in the Park",
+    "filename": "hero_pets_dog_walk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person walking a happy dog on a leash along a tree-lined park path in warm afternoon light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pets, dog, outdoor, lifestyle, park",
+    "kind": "hero",
+    "alt_text": "person walking a dog in a park"
+  },
+  {
+    "title": "Cozy Living Room",
+    "filename": "hero_home_cozy_living.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a cozy minimalist living room with a soft sofa, plants and warm natural light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "home, lifestyle, interior, cozy, minimal",
+    "kind": "hero",
+    "alt_text": "cozy minimalist living room with plants"
+  },
+  {
+    "title": "Morning Routine Flatlay",
+    "filename": "hero_lifestyle_morning_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an overhead flatlay of a morning routine: coffee, journal, glasses and a plant on a light table, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "lifestyle, morning, routine, flatlay, habits",
+    "kind": "hero",
+    "alt_text": "morning routine items flatlay"
+  },
+  {
+    "title": "Indoor Plants",
+    "filename": "hero_home_indoor_plants.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a collection of lush indoor plants arranged by a bright window in a calm home, soft daylight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "home, plants, interior, lifestyle, greenery",
+    "kind": "hero",
+    "alt_text": "indoor plants by a bright window"
+  },
+  {
+    "title": "Ballet Rehearsal",
+    "filename": "hero_dance_ballet.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a ballet dancer in mid-pose rehearsing at a barre in a bright dance studio with large mirrors, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "dance, ballet, studio, performance, creative",
+    "kind": "hero",
+    "alt_text": "ballet dancer rehearsing in a bright studio"
+  },
+  {
+    "title": "Salsa Dancing",
+    "filename": "hero_dance_salsa.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a couple dancing salsa with joyful energy in a warm-lit dance studio, twirling motion, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "dance, salsa, latin, couple, energy",
+    "kind": "hero",
+    "alt_text": "couple dancing salsa in a warm-lit studio"
+  },
+  {
+    "title": "Hip-Hop Session",
+    "filename": "hero_dance_hiphop.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a hip-hop dancer freezing mid-move in an urban studio with concrete walls, dynamic pose, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "dance, hip-hop, urban, street, energy",
+    "kind": "hero",
+    "alt_text": "hip-hop dancer freezing mid-move"
+  },
+  {
+    "title": "Contemporary Flow",
+    "filename": "hero_dance_contemporary.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a contemporary dancer mid-leap in a sunlit loft studio, flowing fabric and grace, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "dance, contemporary, expression, studio, creative",
+    "kind": "hero",
+    "alt_text": "contemporary dancer leaping in a loft studio"
+  },
+  {
+    "title": "Karate Practice",
+    "filename": "hero_martial_karate.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a karate practitioner in a crisp white gi executing a high kick in a traditional dojo, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "martial arts, karate, discipline, dojo, training",
+    "kind": "hero",
+    "alt_text": "karate practitioner in a crisp gi executing a kick"
+  },
+  {
+    "title": "Judo Training",
+    "filename": "hero_martial_judo.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two judoka gripping and practicing a throw on tatami mats in a bright dojo, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "martial arts, judo, grappling, dojo, training",
+    "kind": "hero",
+    "alt_text": "two judoka practicing a throw on tatami"
+  },
+  {
+    "title": "Kickboxing Pads",
+    "filename": "hero_martial_kickboxing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a kickboxer striking focus pads held by a coach in a boxing gym, sweat and intensity, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "martial arts, kickboxing, pads, training, fitness",
+    "kind": "hero",
+    "alt_text": "kickboxer striking training pads with a coach"
+  },
+  {
+    "title": "Soccer Drill",
+    "filename": "hero_sports_soccer.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a soccer player dribbling a ball through training cones on a green pitch at golden hour, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, soccer, football, training, athlete",
+    "kind": "hero",
+    "alt_text": "soccer player dribbling through cones"
+  },
+  {
+    "title": "Basketball Court",
+    "filename": "hero_sports_basketball.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a basketball player rising for a jump shot on an outdoor court, late afternoon sun, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, basketball, court, athlete, urban",
+    "kind": "hero",
+    "alt_text": "basketball player shooting on an outdoor court"
+  },
+  {
+    "title": "Golf Swing",
+    "filename": "hero_sports_golf.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a golfer captured mid-swing on a lush green fairway with morning mist, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, golf, swing, course, precision",
+    "kind": "hero",
+    "alt_text": "golfer mid-swing on a lush fairway"
+  },
+  {
+    "title": "Badminton Rally",
+    "filename": "hero_sports_badminton.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a badminton player lunging for a shuttlecock on an indoor court, dynamic action, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, badminton, racket, indoor, athlete",
+    "kind": "hero",
+    "alt_text": "badminton player lunging for a shuttlecock"
+  },
+  {
+    "title": "Beach Volleyball",
+    "filename": "hero_sports_volleyball.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a beach volleyball player jumping to spike the ball over a net, bright summer sky, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "sports, volleyball, beach, summer, athlete",
+    "kind": "hero",
+    "alt_text": "beach volleyball player jumping to spike"
+  },
+  {
+    "title": "Catching a Wave",
+    "filename": "hero_water_surfing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a surfer carving across a curling turquoise ocean wave, spray and sunlight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, surfing, ocean, adventure, water",
+    "kind": "hero",
+    "alt_text": "surfer riding a curling ocean wave"
+  },
+  {
+    "title": "Alpine Skiing",
+    "filename": "hero_winter_skiing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a skier carving through fresh powder snow on an alpine slope under a blue sky, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, skiing, winter, mountains, adventure",
+    "kind": "hero",
+    "alt_text": "skier carving through fresh powder"
+  },
+  {
+    "title": "Ice Skating",
+    "filename": "hero_winter_ice_skating.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an ice skater gliding gracefully across an outdoor winter rink, soft dusk light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, ice skating, winter, rink, graceful",
+    "kind": "hero",
+    "alt_text": "ice skater gliding on a winter rink"
+  },
+  {
+    "title": "Morning Paddleboard",
+    "filename": "hero_water_paddleboard.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person stand-up paddleboarding across a glassy calm lake in soft morning mist, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, paddleboard, lake, water, calm",
+    "kind": "hero",
+    "alt_text": "person paddleboarding on a calm morning lake"
+  },
+  {
+    "title": "Airport Departure",
+    "filename": "hero_travel_airport.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a traveler with a rolling suitcase watching planes from a bright airport terminal window, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, airport, journey, adventure, lifestyle",
+    "kind": "hero",
+    "alt_text": "traveler with a suitcase at an airport window"
+  },
+  {
+    "title": "Trip Planning",
+    "filename": "hero_travel_map_planning.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands planning a route over an unfolded paper map with a camera and coffee on a wooden table, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, planning, map, adventure, lifestyle",
+    "kind": "hero",
+    "alt_text": "hands planning a trip over maps and a camera"
+  },
+  {
+    "title": "Van Life Sunset",
+    "filename": "hero_travel_van_life.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a camper van parked at a scenic mountain overlook at sunset, open doors and warm interior light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, van life, road trip, adventure, freedom",
+    "kind": "hero",
+    "alt_text": "camper van parked at a scenic overlook at sunset"
+  },
+  {
+    "title": "Old Town Wander",
+    "filename": "hero_travel_old_town.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a traveler wandering a charming cobblestone old-town street with colorful facades, golden light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "travel, city, culture, europe, explore",
+    "kind": "hero",
+    "alt_text": "traveler wandering a cobblestone old town street"
+  },
+  {
+    "title": "Personal Budgeting",
+    "filename": "hero_finance_budgeting.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a tidy desk with a calculator, receipts and an open budgeting notebook, focused detail, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "finance, budgeting, money, planning, business",
+    "kind": "hero",
+    "alt_text": "desk with calculator, receipts and a budget notebook"
+  },
+  {
+    "title": "Market Analysis",
+    "filename": "hero_finance_charts.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person analyzing colorful financial charts on dual monitors in a dim modern office, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "finance, investing, charts, analysis, business",
+    "kind": "hero",
+    "alt_text": "person analyzing financial charts on screens"
+  },
+  {
+    "title": "Client Consultation",
+    "filename": "hero_consulting_meeting.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a consultant advising a client one-on-one across a bright table with a notebook between them, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "consulting, coaching, meeting, business, advice",
+    "kind": "hero",
+    "alt_text": "consultant advising a client across a table"
+  },
+  {
+    "title": "New Home Keys",
+    "filename": "hero_realestate_keys.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a hand passing house keys to another in front of a bright new home doorway, shallow focus, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "real estate, home, keys, property, lifestyle",
+    "kind": "hero",
+    "alt_text": "hand receiving house keys at a doorway"
+  },
+  {
+    "title": "Podcast Recording",
+    "filename": "hero_creator_podcast.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two people in conversation recording a podcast with large microphones and headphones in a cozy studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "podcast, creator, microphone, audio, content",
+    "kind": "hero",
+    "alt_text": "two people recording a podcast at a table"
+  },
+  {
+    "title": "Vlogging Setup",
+    "filename": "hero_creator_vlogging.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a content creator talking to a camera mounted with a ring light in a stylish room, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "vlog, creator, camera, content, video",
+    "kind": "hero",
+    "alt_text": "creator talking to a camera on a ring light setup"
+  },
+  {
+    "title": "Live Streaming Desk",
+    "filename": "hero_creator_streaming.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a streamer at a desk with dual monitors and soft LED accent lighting, headset on, engaged, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "streaming, creator, gaming, desk, content",
+    "kind": "hero",
+    "alt_text": "streamer at a colorful LED-lit desk setup"
+  },
+  {
+    "title": "Content Calendar",
+    "filename": "hero_creator_content_plan.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an overhead shot of hands arranging a content calendar with sticky notes, phone and coffee, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "content, planning, calendar, creator, marketing",
+    "kind": "hero",
+    "alt_text": "planning a content calendar with notes and phone"
+  },
+  {
+    "title": "Blogging in a Cafe",
+    "filename": "hero_creator_writing_blog.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a writer typing on a laptop at a cozy cafe window table, latte beside, city softly blurred outside, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "blogging, writing, cafe, laptop, creator",
+    "kind": "hero",
+    "alt_text": "writer typing on a laptop in a cozy cafe"
+  },
+  {
+    "title": "Woodworking Shop",
+    "filename": "hero_craft_woodworking.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a woodworker hand-planing a wooden board in a workshop, sawdust in warm window light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, woodworking, workshop, handmade, maker",
+    "kind": "hero",
+    "alt_text": "woodworker planing a board in a workshop"
+  },
+  {
+    "title": "Sewing Studio",
+    "filename": "hero_craft_sewing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands guiding colorful fabric through a sewing machine in a bright creative studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, sewing, fashion, fabric, maker",
+    "kind": "hero",
+    "alt_text": "hands guiding fabric through a sewing machine"
+  },
+  {
+    "title": "Jewelry Making",
+    "filename": "hero_craft_jewelry.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an artisan assembling a delicate silver necklace with pliers at a jeweler's bench, macro detail, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, jewelry, handmade, artisan, maker",
+    "kind": "hero",
+    "alt_text": "artisan assembling delicate jewelry at a bench"
+  },
+  {
+    "title": "Candle Making",
+    "filename": "hero_craft_candles.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands pouring melted wax into glass candle jars on a rustic table with dried flowers, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, candles, handmade, artisan, cozy",
+    "kind": "hero",
+    "alt_text": "pouring wax into candle jars"
+  },
+  {
+    "title": "Flower Arranging",
+    "filename": "hero_craft_floristry.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a florist arranging a lush fresh bouquet at a flower shop counter surrounded by blooms, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, florist, flowers, arrangement, creative",
+    "kind": "hero",
+    "alt_text": "florist arranging a fresh bouquet"
+  },
+  {
+    "title": "Artisan Soap",
+    "filename": "hero_craft_soap.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: stacked handmade soap bars with lavender sprigs and natural ingredients on a wooden board, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "craft, soap, handmade, natural, artisan",
+    "kind": "hero",
+    "alt_text": "handmade soap bars with lavender"
+  },
+  {
+    "title": "Fresh Pasta",
+    "filename": "hero_food_pasta_making.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: hands rolling fresh pasta dough through a pasta machine, flour dusting a wooden counter, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, pasta, italian, handmade, food",
+    "kind": "hero",
+    "alt_text": "hands rolling fresh pasta dough"
+  },
+  {
+    "title": "Sushi Craft",
+    "filename": "hero_food_sushi.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a chef's hands slicing a fresh sushi roll on a bamboo board, precise culinary detail, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "cooking, sushi, japanese, culinary, food",
+    "kind": "hero",
+    "alt_text": "chef slicing a fresh sushi roll"
+  },
+  {
+    "title": "Pastry Decorating",
+    "filename": "hero_food_pastry.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pastry chef piping swirls of cream onto an elegant layer cake in a bakery kitchen, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "baking, pastry, cake, dessert, food",
+    "kind": "hero",
+    "alt_text": "pastry chef piping cream onto a cake"
+  },
+  {
+    "title": "Craft Cocktails",
+    "filename": "hero_food_cocktails.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a bartender garnishing a glowing amber craft cocktail at a moody bar counter, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "drinks, cocktails, mixology, bar, lifestyle",
+    "kind": "hero",
+    "alt_text": "bartender garnishing a craft cocktail"
+  },
+  {
+    "title": "Wine Tasting",
+    "filename": "hero_food_wine_tasting.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: wine glasses being swirled at a tasting table on a vineyard terrace at golden hour, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "drinks, wine, tasting, vineyard, lifestyle",
+    "kind": "hero",
+    "alt_text": "wine glasses at a tasting on a vineyard terrace"
+  },
+  {
+    "title": "Weekend Pancakes",
+    "filename": "hero_food_pancakes.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a tall stack of fluffy pancakes with fresh berries and dripping maple syrup, bright morning kitchen, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "breakfast, pancakes, food, cozy, family",
+    "kind": "hero",
+    "alt_text": "stack of pancakes with berries and syrup"
+  },
+  {
+    "title": "Tea Ceremony",
+    "filename": "hero_food_tea_ceremony.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person pouring steaming tea from a clay teapot into small cups, serene minimalist setting, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tea, ceremony, mindfulness, culture, calm",
+    "kind": "hero",
+    "alt_text": "pouring tea in a traditional ceremony"
+  },
+  {
+    "title": "Farmers Market",
+    "filename": "hero_food_farmers_market.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a colorful produce stall piled with fresh fruit and vegetables at a lively farmers market, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "food, market, fresh, local, lifestyle",
+    "kind": "hero",
+    "alt_text": "colorful produce stall at a farmers market"
+  },
+  {
+    "title": "Deep in Code",
+    "filename": "hero_tech_programmer.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a developer writing code across two monitors in a dim room with warm desk lighting, focused, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, coding, programming, developer, career",
+    "kind": "hero",
+    "alt_text": "developer coding on multiple monitors"
+  },
+  {
+    "title": "Robotics Workshop",
+    "filename": "hero_tech_robotics.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an engineer assembling a small robot with tools and circuit boards on a workbench, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, robotics, engineering, maker, education",
+    "kind": "hero",
+    "alt_text": "engineer assembling a small robot"
+  },
+  {
+    "title": "Drone Flight",
+    "filename": "hero_tech_drone.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person piloting a quadcopter drone over an open green field, controller in hand, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, drone, aerial, photography, outdoor",
+    "kind": "hero",
+    "alt_text": "person piloting a drone in an open field"
+  },
+  {
+    "title": "Virtual Reality",
+    "filename": "hero_tech_vr.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person wearing a VR headset reaching out in a bright modern living room, immersed, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "tech, vr, virtual reality, innovation, future",
+    "kind": "hero",
+    "alt_text": "person exploring virtual reality with a headset"
+  },
+  {
+    "title": "Chemistry Lab",
+    "filename": "hero_edu_chemistry.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a scientist pipetting colorful liquid into test tubes in a bright modern laboratory, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, science, chemistry, lab, learning",
+    "kind": "hero",
+    "alt_text": "scientist pipetting in a bright laboratory"
+  },
+  {
+    "title": "Stargazing Night",
+    "filename": "hero_edu_telescope.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person looking through a telescope under a brilliant starry night sky on a hillside, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, astronomy, telescope, night, science",
+    "kind": "hero",
+    "alt_text": "person at a telescope under a starry sky"
+  },
+  {
+    "title": "Book Club Circle",
+    "filename": "hero_edu_book_club.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small group of friends discussing books in a cozy living room circle with tea and warm light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "education, books, reading, community, discussion",
+    "kind": "hero",
+    "alt_text": "friends discussing books in a cozy circle"
+  },
+  {
+    "title": "Family Picnic",
+    "filename": "hero_family_picnic.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a happy family enjoying a picnic blanket spread with food on a sunny green meadow, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "family, picnic, outdoor, lifestyle, summer",
+    "kind": "hero",
+    "alt_text": "family enjoying a picnic on a sunny meadow"
+  },
+  {
+    "title": "Birthday Celebration",
+    "filename": "hero_family_birthday.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a child blowing out candles on a birthday cake surrounded by smiling family, warm candlelight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "family, birthday, celebration, kids, joy",
+    "kind": "hero",
+    "alt_text": "child blowing out birthday candles"
+  },
+  {
+    "title": "Dog Training",
+    "filename": "hero_pets_dog_training.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a trainer rewarding an attentive border collie during obedience training in a sunny park, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pets, dog, training, obedience, outdoor",
+    "kind": "hero",
+    "alt_text": "trainer teaching a dog to sit in a park"
+  },
+  {
+    "title": "Cat by the Window",
+    "filename": "hero_pets_cat_window.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a fluffy cat lounging on a sunny windowsill beside a potted plant, soft home light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pets, cat, home, cozy, lifestyle",
+    "kind": "hero",
+    "alt_text": "cat lounging on a sunny windowsill"
+  },
+  {
+    "title": "Pet Grooming",
+    "filename": "hero_pets_grooming.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a groomer gently brushing a happy small dog on a grooming table in a bright salon, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pets, grooming, dog, care, service",
+    "kind": "hero",
+    "alt_text": "groomer brushing a happy small dog"
+  },
+  {
+    "title": "Evening Campfire",
+    "filename": "hero_nature_campfire.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: friends gathered around a glowing campfire at dusk with sparks rising into a purple sky, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, campfire, camping, evening, adventure",
+    "kind": "hero",
+    "alt_text": "friends around a glowing campfire at dusk"
+  },
+  {
+    "title": "Waterfall Hike",
+    "filename": "hero_nature_waterfall.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a hiker standing at the base of a lush green waterfall, mist and sunbeams, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "outdoor, waterfall, hiking, nature, adventure",
+    "kind": "hero",
+    "alt_text": "hiker at the base of a lush waterfall"
+  },
+  {
+    "title": "Autumn Park Walk",
+    "filename": "hero_nature_autumn_park.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a tree-lined park path blanketed in golden autumn leaves, soft warm afternoon light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nature, autumn, park, seasonal, calm",
+    "kind": "hero",
+    "alt_text": "tree-lined park path covered in autumn leaves"
+  },
+  {
+    "title": "Spring Blossoms",
+    "filename": "hero_nature_spring_blossom.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: cherry blossom branches in full pink bloom against a soft blue spring sky, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nature, spring, blossom, seasonal, fresh",
+    "kind": "hero",
+    "alt_text": "cherry blossom branches in full bloom"
+  },
+  {
+    "title": "Winter Forest",
+    "filename": "hero_nature_winter_forest.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a quiet snow-covered pine forest with soft diffused winter light and untouched snow, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nature, winter, snow, forest, calm",
+    "kind": "hero",
+    "alt_text": "snow-covered pine forest in soft light"
+  },
+  {
+    "title": "Physiotherapy Session",
+    "filename": "hero_health_physio.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a physiotherapist guiding a patient through a shoulder exercise in a bright clinic, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "health, physiotherapy, rehab, therapy, wellness",
+    "kind": "hero",
+    "alt_text": "physiotherapist guiding a patient's arm exercise"
+  },
+  {
+    "title": "Personal Training",
+    "filename": "hero_health_pt_client.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a personal trainer encouraging a client doing dumbbell lunges in a bright gym, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, personal trainer, coaching, gym, client",
+    "kind": "hero",
+    "alt_text": "personal trainer coaching a client with weights"
+  },
+  {
+    "title": "Active Seniors",
+    "filename": "hero_health_senior_fitness.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: smiling senior adults exercising with light dumbbells in a bright community studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "fitness, seniors, active aging, health, wellness",
+    "kind": "hero",
+    "alt_text": "smiling seniors exercising with light weights"
+  },
+  {
+    "title": "Prenatal Yoga",
+    "filename": "hero_health_prenatal_yoga.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pregnant woman in a gentle seated yoga pose on a mat in a serene bright studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, prenatal, pregnancy, wellness, calm",
+    "kind": "hero",
+    "alt_text": "pregnant woman in a gentle yoga pose"
+  },
+  {
+    "title": "Nutrition Consult",
+    "filename": "hero_health_nutrition_consult.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a nutritionist consulting a client at a table with fresh vegetables and a meal plan notebook, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "nutrition, consultation, coaching, health, diet",
+    "kind": "hero",
+    "alt_text": "nutritionist consulting a client over healthy food"
+  },
+  {
+    "title": "Interior Moodboard",
+    "filename": "hero_design_moodboard.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a designer arranging fabric swatches, color chips and photos into a moodboard on a large table, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "design, interior, moodboard, creative, style",
+    "kind": "hero",
+    "alt_text": "designer arranging fabric and color swatches"
+  },
+  {
+    "title": "Architecture Sketch",
+    "filename": "hero_design_architecture.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an architect sketching building plans at a drafting table with rulers and a model nearby, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "design, architecture, sketch, drafting, creative",
+    "kind": "hero",
+    "alt_text": "architect sketching plans at a drafting table"
+  },
+  {
+    "title": "Wedding Planning",
+    "filename": "hero_event_wedding_planning.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an event planner arranging an elegant wedding table setting with flowers and candles, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "events, wedding, planning, celebration, decor",
+    "kind": "hero",
+    "alt_text": "planner arranging a wedding table setting"
   }
 ]

@@ -57,7 +57,8 @@ class Command(BaseCommand):
                 with Image.open(io.BytesIO(body)) as img:
                     width, height = img.size
                 key = f"platform/curated-photos/{filename}"
-                _store_object(key, io.BytesIO(body), "image/png")
+                content_type = "image/jpeg" if filename.lower().endswith((".jpg", ".jpeg")) else "image/png"
+                _store_object(key, io.BytesIO(body), content_type)
                 _, created = CuratedPhoto.objects.update_or_create(
                     image_key=key,
                     defaults={

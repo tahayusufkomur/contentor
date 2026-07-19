@@ -15,11 +15,12 @@ def materialize_curated_photo(row):
     existing = Photo.objects.filter(s3_key=row.image_key).first()
     if existing is not None:
         return existing
+    content_type = "image/jpeg" if row.image_key.lower().endswith((".jpg", ".jpeg")) else "image/png"
     return Photo.objects.create(
         s3_key=row.image_key,
         title=row.title,
         alt_text=row.alt_text,
-        content_type="image/png",
+        content_type=content_type,
         width=row.width,
         height=row.height,
     )

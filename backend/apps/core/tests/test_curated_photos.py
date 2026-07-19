@@ -210,10 +210,20 @@ def _mark_on_white_png(size=(64, 64)):
     return buf.getvalue()
 
 
+def _jpg_bytes(size=(160, 90), color=(30, 120, 200)):
+    from PIL import Image
+
+    img = Image.new("RGB", size, color)
+    buf = io.BytesIO()
+    img.save(buf, "JPEG")
+    return buf.getvalue()
+
+
 @pytest.fixture()
 def catalog_dir(tmp_path):
     (tmp_path / "run.png").write_bytes(_png_bytes(size=(160, 90)))
     (tmp_path / "mark.png").write_bytes(_mark_on_white_png())
+    (tmp_path / "hike.jpg").write_bytes(_jpg_bytes(size=(320, 180)))
     (tmp_path / "photo_meta.json").write_text(
         jsonlib.dumps(
             [
@@ -225,6 +235,7 @@ def catalog_dir(tmp_path):
                     "alt_text": "runner at sunrise",
                 },
                 {"title": "Lotus mark", "filename": "mark.png", "kind": "spot"},
+                {"title": "Trail hike", "filename": "hike.jpg", "kind": "hero"},
                 {"title": "Ghost", "filename": "missing.png", "kind": "hero"},
                 {"title": "Bad kind", "filename": "run.png", "kind": "sticker"},
             ]
@@ -237,7 +248,7 @@ def test_seed_creates_rows_and_dimensions(restore_public, catalog_dir, monkeypat
     stored = {}
     monkeypatch.setattr(
         "apps.core.management.commands.seed_curated_photos._store_object",
-        lambda key, fileobj, content_type: stored.__setitem__(key, fileobj.read()),
+        lambda key, fileobj, content_type: stored.__setitem__(key, content_type),
     )
     call_command("seed_curated_photos", dir=str(catalog_dir))
     with schema_context("public"):
@@ -245,9 +256,12 @@ def test_seed_creates_rows_and_dimensions(restore_public, catalog_dir, monkeypat
         assert run.kind == "hero" and run.alt_text == "runner at sunrise"
         assert (run.width, run.height) == (160, 90)
         assert CuratedPhoto.objects.filter(image_key__endswith="mark.png").exists()
+        hike = CuratedPhoto.objects.get(image_key="platform/curated-photos/hike.jpg")
+        assert (hike.width, hike.height) == (320, 180)
         assert not CuratedPhoto.objects.filter(title="Ghost").exists()  # missing file skipped
-        assert CuratedPhoto.objects.count() == 2  # bad kind skipped too
-    assert "platform/curated-photos/run.png" in stored
+        assert CuratedPhoto.objects.count() == 3  # bad kind skipped too
+    assert stored["platform/curated-photos/run.png"] == "image/png"
+    assert stored["platform/curated-photos/hike.jpg"] == "image/jpeg"
 
 
 def test_seed_is_idempotent(restore_public, catalog_dir, monkeypatch):
@@ -258,4 +272,4 @@ def test_seed_is_idempotent(restore_public, catalog_dir, monkeypatch):
     call_command("seed_curated_photos", dir=str(catalog_dir))
     call_command("seed_curated_photos", dir=str(catalog_dir))
     with schema_context("public"):
-        assert CuratedPhoto.objects.count() == 2
+        assert CuratedPhoto.objects.count() == 3
