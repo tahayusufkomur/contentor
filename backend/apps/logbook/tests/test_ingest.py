@@ -18,6 +18,11 @@ URL = "/api/v1/platform/logs/ingest/"
 TOKEN = "test-logs-token"  # noqa: S105 — test fixture value
 
 
+@pytest.fixture(autouse=True)
+def _tenant_rows(restore_public):
+    """shared-test.localhost must resolve even when this file runs alone."""
+
+
 def _event(message, container="contentor-django-1", ts="2026-07-19T12:00:00.000000001Z"):
     return {"timestamp": ts, "container_name": container, "stream": "stdout", "message": message}
 
@@ -66,10 +71,12 @@ def test_ingest_is_idempotent_on_retry():
 
 @override_settings(LOGS_INGEST_TOKEN=TOKEN)
 def test_activity_lines_become_request_events():
+    # Payload tenant/user intentionally differ from the outer [tenant=]/[user=]
+    # brackets: RequestEvent fields must come from the activity JSON payload.
     payload = {
         "kind": "api",
-        "tenant": "yoga",
-        "user": "s@t.io",
+        "tenant": "yoga-payload",
+        "user": "payload@t.io",
         "ip": "203.0.113.9",
         "session_id": "11111111-1111-1111-1111-111111111111",
         "method": "GET",
@@ -83,7 +90,31 @@ def test_activity_lines_become_request_events():
     assert resp.json() == {"accepted": 1, "logs": 0, "activity": 1}
     ev = RequestEvent.objects.get()
     assert ev.kind == "api" and ev.path == "/api/v1/courses/" and ev.status == 200
-    assert ev.user_label == "s@t.io" and ev.ip == "203.0.113.9" and ev.duration_ms == 45
+    assert ev.tenant == "yoga-payload" and ev.user_label == "payload@t.io"
+    assert ev.ip == "203.0.113.9" and ev.duration_ms == 45
+
+
+@override_settings(LOGS_INGEST_TOKEN=TOKEN)
+def test_activity_ingest_is_idempotent_on_retry():
+    payload = {"kind": "api", "path": "/api/v1/courses/", "status": 200}
+    line = f"2026-07-19T12:00:04+0000 INFO    {ACTIVITY_LOGGER} [tenant=yoga] [user=s@t.io] " + json.dumps(payload)
+    events = [_event(line)]
+    assert _post(events).status_code == 200
+    assert _post(events).status_code == 200  # Vector retry of same batch
+    assert RequestEvent.objects.count() == 1
+
+
+@override_settings(LOGS_INGEST_TOKEN=TOKEN)
+def test_activity_hostile_values_coerced_not_500():
+    payload = {"kind": "x" * 20, "ip": "not-an-ip", "status": True, "path": "/p/"}
+    line = f"2026-07-19T12:00:05+0000 INFO    {ACTIVITY_LOGGER} [tenant=-] [user=-] " + json.dumps(payload)
+    resp = _post([_event(line)])
+    assert resp.status_code == 200
+    assert resp.json() == {"accepted": 1, "logs": 0, "activity": 1}
+    ev = RequestEvent.objects.get()
+    assert ev.kind == "x" * 10  # truncated to field max_length
+    assert ev.ip is None  # invalid IP dropped, not 500
+    assert ev.status is None  # bool is not an int here
 
 
 @override_settings(LOGS_INGEST_TOKEN=TOKEN)

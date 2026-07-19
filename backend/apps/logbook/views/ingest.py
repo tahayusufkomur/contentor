@@ -6,6 +6,7 @@ endpoint regardless of exposure."""
 from __future__ import annotations
 
 import hmac
+import ipaddress
 
 from django.conf import settings
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -18,21 +19,34 @@ from ..parsing import parse_event, passes_floor
 MAX_BATCH = 500
 
 
+def _ip_or_none(value):
+    """Validate before hitting the inet column — a bad string inside
+    bulk_create would 500 the whole batch. str() first so ints are not
+    read as packed addresses (ip_address(123) == 0.0.0.123)."""
+    try:
+        return str(ipaddress.ip_address(str(value))) if value else None
+    except ValueError:
+        return None
+
+
+def _int_or_none(value):
+    # bool is an int subtype — `true` must not persist as 1.
+    return int(value) if isinstance(value, int) and not isinstance(value, bool) else None
+
+
 def _request_event(parsed):
     a = parsed.activity
-    status = a.get("status")
-    duration = a.get("duration_ms")
     return RequestEvent(
         ts=parsed.ts,
-        kind=a.get("kind") or RequestEvent.KIND_API,
+        kind=str(a.get("kind") or RequestEvent.KIND_API)[:10],
         tenant=str(a.get("tenant") or "")[:63],
         user_label=str(a.get("user") or "")[:254],
-        ip=a.get("ip") or None,
+        ip=_ip_or_none(a.get("ip")),
         session_id=str(a.get("session_id") or "")[:36],
         method=str(a.get("method") or "")[:8],
         path=str(a.get("path") or "")[:512],
-        status=int(status) if isinstance(status, int) else None,
-        duration_ms=int(duration) if isinstance(duration, int) else None,
+        status=_int_or_none(a.get("status")),
+        duration_ms=_int_or_none(a.get("duration_ms")),
         referrer=str(a.get("referrer") or "")[:512],
         user_agent=str(a.get("user_agent") or "")[:256],
         line_hash=line_digest(parsed.message),
