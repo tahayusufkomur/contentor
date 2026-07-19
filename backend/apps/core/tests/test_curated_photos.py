@@ -168,3 +168,80 @@ def test_use_materializes_and_is_idempotent(coach_client, catalog):
 def test_use_404_for_disabled(coach_client, catalog):
     res = coach_client.post(f"/api/v1/curated-photos/{catalog[2].id}/use/")
     assert res.status_code == 404
+
+
+# ── seed command ─────────────────────────────────────────────────────────────
+
+import io  # noqa: E402
+import json as jsonlib  # noqa: E402
+
+from django.core.management import call_command  # noqa: E402
+
+
+def _png_bytes(size=(64, 32), color=(200, 30, 30)):
+    from PIL import Image
+
+    img = Image.new("RGB", size, color)
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
+def _mark_on_white_png(size=(64, 64)):
+    """A parseable mark-on-white PNG so kind=spot cleaning has something to
+    crop (mirrors test_curated_logos._white_bg_png)."""
+    from PIL import Image
+
+    img = Image.new("RGB", size, "white")
+    for x in range(20, 44):
+        for y in range(20, 44):
+            img.putpixel((x, y), (0, 0, 0))
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
+@pytest.fixture()
+def catalog_dir(tmp_path):
+    (tmp_path / "run.png").write_bytes(_png_bytes(size=(160, 90)))
+    (tmp_path / "mark.png").write_bytes(_mark_on_white_png())
+    (tmp_path / "photo_meta.json").write_text(
+        jsonlib.dumps(
+            [
+                {"title": "Sunrise run", "filename": "run.png", "tags": "fitness", "kind": "hero",
+                 "alt_text": "runner at sunrise"},
+                {"title": "Lotus mark", "filename": "mark.png", "kind": "spot"},
+                {"title": "Ghost", "filename": "missing.png", "kind": "hero"},
+                {"title": "Bad kind", "filename": "run.png", "kind": "sticker"},
+            ]
+        )
+    )
+    return tmp_path
+
+
+def test_seed_creates_rows_and_dimensions(restore_public, catalog_dir, monkeypatch):
+    stored = {}
+    monkeypatch.setattr(
+        "apps.core.management.commands.seed_curated_photos._store_object",
+        lambda key, fileobj, content_type: stored.__setitem__(key, fileobj.read()),
+    )
+    call_command("seed_curated_photos", dir=str(catalog_dir))
+    with schema_context("public"):
+        run = CuratedPhoto.objects.get(image_key="platform/curated-photos/run.png")
+        assert run.kind == "hero" and run.alt_text == "runner at sunrise"
+        assert (run.width, run.height) == (160, 90)
+        assert CuratedPhoto.objects.filter(image_key__endswith="mark.png").exists()
+        assert not CuratedPhoto.objects.filter(title="Ghost").exists()  # missing file skipped
+        assert CuratedPhoto.objects.count() == 2  # bad kind skipped too
+    assert "platform/curated-photos/run.png" in stored
+
+
+def test_seed_is_idempotent(restore_public, catalog_dir, monkeypatch):
+    monkeypatch.setattr(
+        "apps.core.management.commands.seed_curated_photos._store_object",
+        lambda key, fileobj, content_type: None,
+    )
+    call_command("seed_curated_photos", dir=str(catalog_dir))
+    call_command("seed_curated_photos", dir=str(catalog_dir))
+    with schema_context("public"):
+        assert CuratedPhoto.objects.count() == 2

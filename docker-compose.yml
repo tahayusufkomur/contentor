@@ -91,9 +91,11 @@ services:
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30 --timeout 600
     environment:
       CURATED_LOGO_SYNC_DIR: /app/logo_sync
+      CURATED_PHOTO_SYNC_DIR: /app/photo_sync
     volumes:
       - ./backend:/app/backend
       - ./frontend-customer/public/logos:/app/logo_sync
+      - ./frontend-customer/public/curated-photos:/app/photo_sync
     env_file: .env
     depends_on:
       postgres:
