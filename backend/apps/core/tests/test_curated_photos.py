@@ -42,3 +42,43 @@ def test_defaults(restore_public):
         assert row.kind == "stock"
         assert row.enabled is True
         assert row.width is None and row.height is None
+
+
+# ── materialize ──────────────────────────────────────────────────────────────
+
+
+@pytest.fixture()
+def curated_row(tenant_ctx):
+    with schema_context("public"):
+        row = CuratedPhoto.objects.create(
+            title="Sunrise run",
+            tags="fitness, running",
+            alt_text="runner at sunrise",
+            kind="hero",
+            image_key="platform/curated-photos/sunrise_run.png",
+            width=1600,
+            height=900,
+        )
+    return row
+
+
+def test_materialize_creates_tenant_photo(tenant_ctx, curated_row):
+    from apps.core.curated_photos.materialize import materialize_curated_photo
+    from apps.media.models import Photo
+
+    photo = materialize_curated_photo(curated_row)
+    assert Photo.objects.filter(pk=photo.pk).exists()
+    assert photo.s3_key == "platform/curated-photos/sunrise_run.png"
+    assert photo.title == "Sunrise run"
+    assert photo.alt_text == "runner at sunrise"
+    assert photo.width == 1600 and photo.height == 900
+
+
+def test_materialize_is_idempotent_per_tenant(tenant_ctx, curated_row):
+    from apps.core.curated_photos.materialize import materialize_curated_photo
+    from apps.media.models import Photo
+
+    first = materialize_curated_photo(curated_row)
+    second = materialize_curated_photo(curated_row)
+    assert first.pk == second.pk
+    assert Photo.objects.filter(s3_key=curated_row.image_key).count() == 1
