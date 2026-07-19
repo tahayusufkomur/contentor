@@ -145,7 +145,21 @@
     "autopilotPublish": "Otomatik yayınla",
     "nextRun": "Sıradaki yazı: {date}",
     "frequencyWeekly": "Haftalık",
-    "frequencyMonthly": "Aylık"
+    "frequencyMonthly": "Aylık",
+    "coverLabel": "Kapak görseli",
+    "coverChange": "Kapağı değiştir",
+    "coverChoose": "Kapak seç",
+    "coverRemove": "Kaldır",
+    "libraryTab": "Kütüphane",
+    "myPhotosTab": "Fotoğraflarım",
+    "librarySearch": "Görsel ara…",
+    "libraryEmpty": "Görsel bulunamadı.",
+    "kindHero": "Kapaklar",
+    "kindStock": "Stok",
+    "kindSpot": "İllüstrasyonlar",
+    "kindTexture": "Dokular",
+    "kindDivider": "Ayraçlar",
+    "kindIcon": "Simgeler"
   },
   "inbox": {
     "title": "Gelen Kutusu",

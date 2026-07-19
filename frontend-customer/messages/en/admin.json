@@ -145,7 +145,21 @@
     "autopilotPublish": "Publish automatically",
     "nextRun": "Next post: {date}",
     "frequencyWeekly": "Weekly",
-    "frequencyMonthly": "Monthly"
+    "frequencyMonthly": "Monthly",
+    "coverLabel": "Cover image",
+    "coverChange": "Change cover",
+    "coverChoose": "Choose cover",
+    "coverRemove": "Remove",
+    "libraryTab": "Library",
+    "myPhotosTab": "My photos",
+    "librarySearch": "Search images…",
+    "libraryEmpty": "No images found.",
+    "kindHero": "Covers",
+    "kindStock": "Stock",
+    "kindSpot": "Illustrations",
+    "kindTexture": "Textures",
+    "kindDivider": "Dividers",
+    "kindIcon": "Icons"
   },
   "inbox": {
     "title": "Inbox",
