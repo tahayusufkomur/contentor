@@ -85,6 +85,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.core.middleware.rate_limit.TenantRateLimitMiddleware",
+    "apps.logbook.activity.RequestActivityMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

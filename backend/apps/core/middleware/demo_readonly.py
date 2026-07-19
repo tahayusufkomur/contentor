@@ -12,6 +12,9 @@ DEMO_EXEMPT_PATH_PREFIXES = (
     # The public contact form must work on demo tenants; the view itself
     # no-ops the email send when the tenant is a demo.
     "/api/v1/contact/",
+    # Pageview beacons must work on demo tenants — demo visitors are exactly
+    # the prospects worth watching in the activity trail.
+    "/api/v1/track/",
 )
 
 
