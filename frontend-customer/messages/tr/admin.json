@@ -159,7 +159,11 @@
     "kindSpot": "İllüstrasyonlar",
     "kindTexture": "Dokular",
     "kindDivider": "Ayraçlar",
-    "kindIcon": "Simgeler"
+    "kindIcon": "Simgeler",
+    "inlineImages": "Metin içi görseller",
+    "inlineAdd": "Görsel ekle",
+    "inlineHeadingPrompt": "Hangi bölümün altına eklensin?",
+    "inlineNoHeadings": "Metin içi görsel eklemek için önce bölüm başlıkları (H2) ekleyin."
   },
   "inbox": {
     "title": "Gelen Kutusu",
