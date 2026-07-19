@@ -84,7 +84,9 @@ export function AdminModelPage({
   const [pageNum, setPageNum] = useState(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [form, setForm] = useState<FormTarget>(null);
-  const [galleryTarget, setGalleryTarget] = useState<GalleryTarget | null>(null);
+  const [galleryTarget, setGalleryTarget] = useState<GalleryTarget | null>(
+    null,
+  );
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryUploadError, setGalleryUploadError] = useState("");
   const [galleryBusy, setGalleryBusy] = useState(false);
@@ -559,6 +561,13 @@ export function AdminModelPage({
 
       {galleryTarget && meta && page && (
         <JsonRecordModal
+          // Remount on row switch so the modal's internal JSON-textarea
+          // state reloads cleanly instead of carrying over stale edits.
+          key={
+            galleryTarget.mode === "edit"
+              ? String(galleryTarget.row[meta.pk_field])
+              : `create:${galleryTarget.image.key}`
+          }
           meta={meta}
           target={galleryTarget}
           rows={page.results}
@@ -567,6 +576,10 @@ export function AdminModelPage({
           onSave={gallerySave}
           onDelete={galleryDelete}
           onClose={() => setGalleryTarget(null)}
+          onNavigate={(row) => {
+            setGalleryServerError("");
+            setGalleryTarget({ mode: "edit", row });
+          }}
         />
       )}
     </div>

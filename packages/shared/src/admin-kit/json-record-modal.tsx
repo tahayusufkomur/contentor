@@ -1,13 +1,20 @@
 "use client";
 
 // Shared admin-kit (schema-driven admin renderer).
-// Gallery mode's create/edit surface: an image preview + ONE JSON textarea
-// for all editable fields — a bulk-curation workflow, not a field form.
+// Gallery mode's create/edit surface: a fullscreen image pane + a metadata
+// sidebar with ONE JSON textarea for all editable fields — a bulk-curation
+// workflow, not a field form.
 
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, ImageIcon, Loader2, X } from "lucide-react";
 
-import type { FieldSchema, ImageValue, ModelMeta, Row, RowValue } from "./types";
+import type {
+  FieldSchema,
+  ImageValue,
+  ModelMeta,
+  Row,
+  RowValue,
+} from "./types";
 
 import { KitButton, KitTextarea } from "./primitives";
 
@@ -94,12 +101,24 @@ export function parseRecord(
 }
 
 function imageOf(value: RowValue | undefined): ImageValue | null {
-  return value &&
-    typeof value === "object" &&
-    "key" in value &&
-    "url" in value
+  return value && typeof value === "object" && "key" in value && "url" in value
     ? (value as ImageValue)
     : null;
+}
+
+/** Sibling row in `rows` one step before/after `row`, by matching pk — null
+ * at either end of the currently loaded page (no cross-page wrap/fetch). */
+function siblingRow(
+  meta: ModelMeta,
+  rows: Row[],
+  row: Row,
+  direction: -1 | 1,
+): Row | null {
+  const index = rows.findIndex(
+    (r) => String(r[meta.pk_field]) === String(row[meta.pk_field]),
+  );
+  if (index === -1) return null;
+  return rows[index + direction] ?? null;
 }
 
 export function JsonRecordModal({
@@ -111,6 +130,7 @@ export function JsonRecordModal({
   onSave,
   onDelete,
   onClose,
+  onNavigate,
 }: {
   meta: ModelMeta;
   target: GalleryTarget;
@@ -120,6 +140,8 @@ export function JsonRecordModal({
   onSave: (data: Record<string, unknown>) => void;
   onDelete: () => void;
   onClose: () => void;
+  /** Switch the modal to another row without closing it (prev/next). */
+  onNavigate?: (row: Row) => void;
 }) {
   const [text, setText] = useState(() => initialJson(meta, target, rows));
   const [parseError, setParseError] = useState("");
@@ -127,6 +149,27 @@ export function JsonRecordModal({
     target.mode === "create"
       ? target.image
       : imageOf(target.row[meta.gallery_image_field ?? ""]);
+
+  const prevRow =
+    target.mode === "edit" ? siblingRow(meta, rows, target.row, -1) : null;
+  const nextRow =
+    target.mode === "edit" ? siblingRow(meta, rows, target.row, 1) : null;
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const activeTag = document.activeElement?.tagName;
+      if (activeTag === "TEXTAREA" || activeTag === "INPUT") return;
+      if (e.key === "ArrowLeft" && prevRow) onNavigate?.(prevRow);
+      if (e.key === "ArrowRight" && nextRow) onNavigate?.(nextRow);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, onNavigate, prevRow, nextRow]);
 
   const save = () => {
     const { data, error } = parseRecord(meta, text);
@@ -139,28 +182,62 @@ export function JsonRecordModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-full w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-lg border bg-card p-5 shadow-xl">
-        <h2 className="text-lg font-semibold text-foreground">
-          {target.mode === "create" ? `New ${meta.label}` : `Edit ${meta.label}`}
-        </h2>
-        {image && (
-          <div className="flex items-center justify-center rounded-md border bg-white p-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={image.url}
-              alt={image.key.split("/").pop() || image.key}
-              className="max-h-32 object-contain"
-            />
-          </div>
+    <div className="fixed inset-0 z-50 flex flex-col bg-background sm:flex-row">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center bg-white p-6 sm:p-10">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image.url}
+            alt={image.key.split("/").pop() || image.key}
+            className="max-h-full max-w-full object-contain"
+          />
+        ) : (
+          <ImageIcon className="h-10 w-10 text-muted-foreground" />
         )}
+        {prevRow && (
+          <button
+            type="button"
+            aria-label="Previous item"
+            onClick={() => onNavigate?.(prevRow)}
+            className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+        )}
+        {nextRow && (
+          <button
+            type="button"
+            aria-label="Next item"
+            onClick={() => onNavigate?.(nextRow)}
+            className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        )}
+      </div>
+
+      <div className="flex w-full shrink-0 flex-col gap-4 overflow-y-auto border-t bg-card p-5 sm:h-full sm:w-96 sm:border-l sm:border-t-0">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold text-foreground">
+            {target.mode === "create"
+              ? `New ${meta.label}`
+              : `Edit ${meta.label}`}
+          </h2>
+          <KitButton
+            variant="ghost"
+            aria-label="Close"
+            onClick={onClose}
+            className="h-8 w-8 shrink-0 px-0"
+          >
+            <X className="h-4 w-4" />
+          </KitButton>
+        </div>
         <KitTextarea
           aria-label="Record JSON"
           value={text}
           onChange={(e) => setText(e.target.value)}
           spellCheck={false}
-          rows={10}
-          className="font-mono text-xs"
+          className="flex-1 resize-none font-mono text-xs"
         />
         {(parseError || serverError) && (
           <p className="text-xs text-destructive">
