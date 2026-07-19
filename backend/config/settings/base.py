@@ -36,6 +36,8 @@ SHARED_APPS = [
     "apps.mailbox",
     # No models — demo-tenant seed commands + content registry (import-pure).
     "apps.demo_seed",
+    # Platform log store + activity trail (superadmin log viewer).
+    "apps.logbook",
 ]
 
 TENANT_APPS = [
