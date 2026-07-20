@@ -22,7 +22,7 @@ from rest_framework.response import Response
 
 from apps.core.permissions import IsSuperUser
 
-from ..models import LogEntry
+from ..models import LogEntry, RequestEvent
 
 PAGE_SIZE = 100
 FACET_LIMIT = 20
@@ -143,5 +143,65 @@ def platform_logs_facets(request):
             "containers": _facet(_log_queryset, params, "container", "container"),
             "tenants": _facet(_log_queryset, params, "tenant", "tenant", limit=FACET_LIMIT),
             "users": _facet(_log_queryset, params, "user", "user_label", limit=FACET_LIMIT, extra_q=users_extra),
+        }
+    )
+
+
+_STATUS_CLASSES = {"2xx": (200, 300), "3xx": (300, 400), "4xx": (400, 500), "5xx": (500, 600)}
+
+
+def _status_class_q(values):
+    q = Q()
+    for v in values:
+        bounds = _STATUS_CLASSES.get(v)
+        if bounds:
+            q |= Q(status__gte=bounds[0], status__lt=bounds[1])
+    return q
+
+
+def _activity_queryset(params, skip=""):
+    spec = {"kind": "kind", "method": "method", "tenant": "tenant", "user": "user_label", "session": "session_id"}
+    filters = Q()
+    for param, field in spec.items():
+        if param == skip:
+            continue
+        values = _multi(params, param)
+        if values:
+            filters &= Q(**{f"{field}__in": values})
+    if skip != "status_class":
+        classes = _multi(params, "status_class")
+        if classes:
+            filters &= _status_class_q(classes)
+    if skip != "ip":
+        ip = (params.get("ip") or "").strip()
+        if ip:
+            filters &= Q(ip=ip)
+    qs = RequestEvent.objects.filter(filters)
+    return _apply_time_and_q(qs, params, "path")
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_activity(request):
+    return Response(_paginate(_activity_queryset(request.query_params), request.query_params, ACTIVITY_FIELDS))
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def platform_activity_facets(request):
+    params = request.query_params
+    status_counts = []
+    base = _activity_queryset(params, skip="status_class")
+    for name, (lo, hi) in _STATUS_CLASSES.items():
+        count = base.filter(status__gte=lo, status__lt=hi).count()
+        if count:
+            status_counts.append({"value": name, "count": count})
+    return Response(
+        {
+            "kinds": _facet(_activity_queryset, params, "kind", "kind"),
+            "methods": _facet(_activity_queryset, params, "method", "method"),
+            "status_classes": status_counts,
+            "tenants": _facet(_activity_queryset, params, "tenant", "tenant", limit=FACET_LIMIT),
+            "users": _facet(_activity_queryset, params, "user", "user_label", limit=FACET_LIMIT),
         }
     )
