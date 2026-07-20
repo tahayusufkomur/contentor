@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getSessionId,
@@ -39,10 +39,33 @@ describe("getSessionId", () => {
     });
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("mints once and is stable per tab", () => {
     const first = getSessionId();
     expect(first).toBe("11111111-1111-1111-1111-111111111111");
     expect(getSessionId()).toBe(first);
+  });
+
+  it("returns empty string on the server (no window)", () => {
+    vi.unstubAllGlobals(); // node env has no window global
+    expect(getSessionId()).toBe("");
+  });
+
+  it("returns empty string when storage is blocked", () => {
+    vi.stubGlobal("window", {
+      sessionStorage: {
+        getItem: () => {
+          throw new Error("storage blocked");
+        },
+        setItem: () => {
+          throw new Error("storage blocked");
+        },
+      },
+    });
+    expect(getSessionId()).toBe("");
   });
 
   it("exports the header name", () => {
