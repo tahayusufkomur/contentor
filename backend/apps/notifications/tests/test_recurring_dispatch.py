@@ -11,8 +11,16 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def _cfg():
-    TenantConfig.objects.all().delete()
-    TenantConfig.objects.create(brand_name="Z", theme="ocean", timezone="UTC")
+    # Reuse-and-reset in place — never delete the tenant's shared TenantConfig
+    # row. See test_announcement_email.py's _cfg() for why: under
+    # pytest-xdist, TenantConfig.objects.all().delete() here can delete the
+    # row a concurrently-running worker's test (e.g. tenant_config's
+    # test_setup_status.py) is mid-request on, raising DoesNotExist there.
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Z")
+    cfg.brand_name = "Z"
+    cfg.theme = "ocean"
+    cfg.timezone = "UTC"
+    cfg.save()
 
 
 def test_due_recurrence_spawns_announcement(tenant_ctx, monkeypatch):

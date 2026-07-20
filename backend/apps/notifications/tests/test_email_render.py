@@ -8,8 +8,18 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def _cfg(**kw):
-    TenantConfig.objects.all().delete()
-    return TenantConfig.objects.create(brand_name=kw.pop("brand_name", "Zen"), theme=kw.pop("theme", "ocean"), **kw)
+    # Reuse-and-reset in place — never delete the tenant's shared TenantConfig
+    # row. See test_announcement_email.py's _cfg() for why: under
+    # pytest-xdist, TenantConfig.objects.all().delete() here can delete the
+    # row a concurrently-running worker's test (e.g. tenant_config's
+    # test_setup_status.py) is mid-request on, raising DoesNotExist there.
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Zen")
+    cfg.brand_name = kw.pop("brand_name", "Zen")
+    cfg.theme = kw.pop("theme", "ocean")
+    for field, value in kw.items():
+        setattr(cfg, field, value)
+    cfg.save()
+    return cfg
 
 
 def test_render_has_title_cta_and_unsub(tenant_ctx):

@@ -11,8 +11,23 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def _cfg():
-    TenantConfig.objects.all().delete()
-    return TenantConfig.objects.create(brand_name="Z", theme="ocean")
+    # Reuse-and-reset TenantConfig's one shared row in place rather than
+    # TenantConfig.objects.all().delete() + .create(). backend/conftest.py's
+    # shared_test tenant schema is the SAME Postgres schema for every
+    # pytest-xdist worker process, and other apps' tests (e.g.
+    # apps/tenant_config/tests/test_setup_status.py) hold a Python reference
+    # to this row across an HTTP round-trip. Deleting it out from under a
+    # concurrently running worker raises TenantConfig.DoesNotExist there, or
+    # silently redirects its request onto this file's freshly-created
+    # replacement row (confirmed via a controlled-timing repro: the PATCH
+    # landed on the wrong row and the victim's refresh_from_db() raised
+    # DoesNotExist) — the cause of an intermittent xdist-only flake in
+    # test_config_save_tracks_page_and_look_edits.
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Z")
+    cfg.brand_name = "Z"
+    cfg.theme = "ocean"
+    cfg.save()
+    return cfg
 
 
 def _student(email):
