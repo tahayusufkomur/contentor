@@ -34,6 +34,14 @@ app.conf.beat_schedule = {
         "task": "apps.core.tasks.send_wizard_recovery_emails",
         "schedule": crontab(minute="25"),
     },
+    "logbook-archive": {
+        "task": "apps.logbook.tasks.archive_logbook_days",
+        "schedule": crontab(hour="3", minute="40"),
+    },
+    "logbook-purge": {
+        "task": "apps.logbook.tasks.purge_logbook",
+        "schedule": crontab(hour="4", minute="20"),
+    },
 }
 
 
