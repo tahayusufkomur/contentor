@@ -165,6 +165,25 @@ services:
     depends_on:
       - celery-worker
 
+  vector:
+    image: timberio/vector:0.46.1-alpine
+    container_name: contentor-vector
+    restart: unless-stopped
+    mem_limit: 128m
+    logging: *logging
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./monitoring/vector/vector.yaml:/etc/vector/vector.yaml:ro
+      - vector_data:/var/lib/vector
+    command: --config /etc/vector/vector.yaml
+    environment:
+      - LOGS_INGEST_TOKEN=${LOGS_INGEST_TOKEN:?LOGS_INGEST_TOKEN required in .env.prod}
+    networks:
+      - internal
+    depends_on:
+      django:
+        condition: service_healthy
+
   nextjs-main:
     build:
       context: .
@@ -221,3 +240,4 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  vector_data:
