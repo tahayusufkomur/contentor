@@ -10,6 +10,7 @@
     "email_campaigns": "none",
     "filters": ["02-courses"],
     "live": ["03-calendar", "04-live-class", "13-events-page"],
+    "logbook": ["24-admin-logs"],
     "mailbox": ["07-mailbox"],
     "media": ["05-media"],
     "notifications": ["06-announcements"],
@@ -61,7 +62,8 @@
     "18-curated-library-admin",
     "19-wizard-recovery",
     "22-assistant-takeover",
-    "23-wizard-ai-logo"
+    "23-wizard-ai-logo",
+    "24-admin-logs"
   ],
   "manual": ["90-logo-eval"]
 }
