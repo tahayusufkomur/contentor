@@ -67,3 +67,31 @@ def test_activity_facets(client, rows):
     assert {f["value"]: f["count"] for f in body["status_classes"]} == {"2xx": 1, "5xx": 1}
     # own-dimension rule: tenant facet still shows pilates
     assert {f["value"] for f in body["tenants"]} == {"yoga", "pilates"}
+
+
+def test_activity_requires_superuser(restore_public):
+    coach = User.objects.create(email="act-coach@x.io", region="global", role="owner")
+    c = APIClient(HTTP_HOST="shared-test.localhost")
+    c.force_authenticate(user=coach)
+    assert c.get("/api/v1/platform/activity/").status_code == 403
+    assert c.get("/api/v1/platform/activity/facets/").status_code == 403
+
+
+def test_invalid_status_class_400(client, rows):
+    for url in ("/api/v1/platform/activity/", "/api/v1/platform/activity/facets/"):
+        resp = client.get(url, {"status_class": "bogus"})
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "invalid 'status_class' value"}
+        # one bad value poisons the whole param even when mixed with valid ones
+        assert client.get(url, {"status_class": "2xx,bogus"}).status_code == 400
+
+
+def test_invalid_ip_400(client, rows):
+    for url in ("/api/v1/platform/activity/", "/api/v1/platform/activity/facets/"):
+        resp = client.get(url, {"ip": "not-an-ip"})
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "invalid 'ip' address"}
+    # a well-formed ip still filters normally (no rows carry one → empty page)
+    ok = client.get("/api/v1/platform/activity/", {"ip": "203.0.113.9"})
+    assert ok.status_code == 200
+    assert ok.json()["results"] == []

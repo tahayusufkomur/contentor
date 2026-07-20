@@ -6,13 +6,15 @@ active filter (plus q/since/until) but never its own — picking level=ERROR
 narrows the container options to containers that HAVE errors, while the level
 facet itself keeps showing the alternatives. Zero-count options are omitted.
 
-Malformed `since`/`until`/`cursor` params are rejected with 400 (never
-silently ignored — an unfiltered result mid-incident is worse than an error);
-the shared helpers raise DRF ValidationError so every endpoint reusing them
-(Task 10 activity views included) enforces the same contract."""
+Malformed `since`/`until`/`cursor` params — and, on the activity endpoints,
+`status_class`/`ip` — are rejected with 400 (never silently ignored — an
+unfiltered result mid-incident is worse than an error); the shared helpers
+raise DRF ValidationError so every endpoint reusing them enforces the same
+contract."""
 
 from __future__ import annotations
 
+import ipaddress
 from datetime import datetime
 
 from django.db.models import Count, Q
@@ -151,11 +153,11 @@ _STATUS_CLASSES = {"2xx": (200, 300), "3xx": (300, 400), "4xx": (400, 500), "5xx
 
 
 def _status_class_q(values):
+    """OR of status ranges; callers validate values against `_STATUS_CLASSES` first."""
     q = Q()
     for v in values:
-        bounds = _STATUS_CLASSES.get(v)
-        if bounds:
-            q |= Q(status__gte=bounds[0], status__lt=bounds[1])
+        lo, hi = _STATUS_CLASSES[v]
+        q |= Q(status__gte=lo, status__lt=hi)
     return q
 
 
@@ -168,13 +170,20 @@ def _activity_queryset(params, skip=""):
         values = _multi(params, param)
         if values:
             filters &= Q(**{f"{field}__in": values})
-    if skip != "status_class":
-        classes = _multi(params, "status_class")
-        if classes:
-            filters &= _status_class_q(classes)
-    if skip != "ip":
-        ip = (params.get("ip") or "").strip()
-        if ip:
+    # status_class/ip are validated even when their dimension is skipped —
+    # a malformed param is a 400 regardless of which facet build sees it first.
+    classes = _multi(params, "status_class")
+    if any(v not in _STATUS_CLASSES for v in classes):
+        raise ValidationError({"detail": "invalid 'status_class' value"})
+    if classes and skip != "status_class":
+        filters &= _status_class_q(classes)
+    ip = (params.get("ip") or "").strip()
+    if ip:
+        try:
+            ipaddress.ip_address(ip)
+        except ValueError as exc:
+            raise ValidationError({"detail": "invalid 'ip' address"}) from exc
+        if skip != "ip":
             filters &= Q(ip=ip)
     qs = RequestEvent.objects.filter(filters)
     return _apply_time_and_q(qs, params, "path")
