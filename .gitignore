@@ -64,10 +64,6 @@ tools/flowmap/flowmap.db-shm
 tools/flowmap/walk-shots/
 test-results/
 
-# Curated-logo seed catalog: DB+S3 is the source of truth (Phase 2);
-# this dir is a local seed source / dev mirror only — 69MB of PNGs.
-frontend-customer/public/logos/
-
 # Generated crawl/e2e artifacts
 e2e/screenshots/
 docs/screenshot-map/*
