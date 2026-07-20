@@ -2,6 +2,7 @@ import { toast } from "sonner";
 
 import { BASE_DOMAIN } from "@/lib/constants";
 import { ApiError } from "@/types/api";
+import { getSessionId, SESSION_HEADER } from "@shared/tracking/session";
 
 interface DemoReadonlyPayload {
   detail: "demo_readonly";
@@ -46,10 +47,12 @@ export async function clientFetch<T>(
   options?: RequestInit,
 ): Promise<T> {
   const isFormData = options?.body instanceof FormData;
+  const sid = getSessionId();
   const res = await fetch(path, {
     ...options,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
+      ...(sid ? { [SESSION_HEADER]: sid } : {}),
       ...options?.headers,
     },
     credentials: "same-origin",

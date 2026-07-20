@@ -21,6 +21,7 @@ import { getAuthUser } from "@/lib/auth";
 import { COOKIE_NAME } from "@/lib/constants";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { getThemePalette } from "@/lib/themes";
+import { TrackPageView } from "@shared/tracking/track-page-view";
 
 // Routes that must stay reachable even when the site is unpublished, so the
 // owner can log in to preview.
@@ -165,6 +166,7 @@ export default async function RootLayout({
           >
             <TenantProvider config={config}>
               <TenantThemeEnforcer />
+              <TrackPageView />
               <Toaster position="top-center" richColors />
               {gated ? (
                 <PreviewGate

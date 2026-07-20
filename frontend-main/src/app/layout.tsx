@@ -8,6 +8,7 @@ import { headers } from "next/headers";
 import { HelpBubble } from "@/components/shared/help-bubble";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { resolveHost } from "@/i18n/config";
+import { TrackPageView } from "@shared/tracking/track-page-view";
 import "@/styles/globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -68,6 +69,7 @@ export default async function RootLayout({
           >
             {children}
             <HelpBubble />
+            <TrackPageView />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
