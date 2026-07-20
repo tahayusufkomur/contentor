@@ -84,3 +84,12 @@ def test_middleware_never_breaks_response(monkeypatch):
     )
     resp = _run("/api/v1/courses/")
     assert resp.status_code == 200
+
+
+def test_activity_logger_pinned_to_info_in_logging_config():
+    """Guards against DJANGO_LOG_LEVEL=WARNING silently killing the trail."""
+    from django.conf import settings
+
+    logger_cfg = settings.LOGGING["loggers"]["apps.logbook.activity"]
+    assert logger_cfg["level"] == "INFO"
+    assert logger_cfg["propagate"] is False

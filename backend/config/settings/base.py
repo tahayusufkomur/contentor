@@ -438,6 +438,9 @@ LOGGING = {
         # Our code — the events we actually want to watch.
         "apps": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "config": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        # The activity/pageview trail is data, not diagnostics — it must not
+        # vanish when an operator raises DJANGO_LOG_LEVEL above INFO.
+        "apps.logbook.activity": {"handlers": ["console"], "level": "INFO", "propagate": False},
         # Django framework: keep request errors (5xx → ERROR, 4xx → WARNING).
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},

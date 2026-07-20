@@ -29,9 +29,12 @@ def _ip_or_none(value):
         return None
 
 
-def _int_or_none(value):
-    # bool is an int subtype — `true` must not persist as 1.
-    return int(value) if isinstance(value, int) and not isinstance(value, bool) else None
+def _int_or_none(value, max_value):
+    # bool is an int subtype — `true` must not persist as 1. Out-of-range
+    # ints (e.g. status=99999999999) would raise DataError in bulk_create and
+    # 500 the whole batch — Vector would then retry the poisoned batch
+    # forever — so clamp to the column's valid range instead of trusting it.
+    return int(value) if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= max_value else None
 
 
 def _request_event(parsed):
@@ -45,8 +48,8 @@ def _request_event(parsed):
         session_id=str(a.get("session_id") or "")[:36],
         method=str(a.get("method") or "")[:8],
         path=str(a.get("path") or "")[:512],
-        status=_int_or_none(a.get("status")),
-        duration_ms=_int_or_none(a.get("duration_ms")),
+        status=_int_or_none(a.get("status"), 32767),
+        duration_ms=_int_or_none(a.get("duration_ms"), 2_147_483_647),
         referrer=str(a.get("referrer") or "")[:512],
         user_agent=str(a.get("user_agent") or "")[:256],
         line_hash=line_digest(parsed.message),

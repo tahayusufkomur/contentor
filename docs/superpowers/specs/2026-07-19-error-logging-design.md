@@ -151,9 +151,10 @@ with `…` — magic-link tokens appear in URLs today and must never sit in a
 
 `POST /api/v1/platform/logs/ingest/` — `@authentication_classes([])` (public
 endpoints MUST set this per repo auth rules) + constant-time check of
-`X-Logs-Token` against `LOGS_INGEST_TOKEN` env (403 otherwise; endpoint is
-never exposed via Caddy routes to the outside — Vector reaches Django on the
-internal network, but the token guards it regardless). Body: JSON array from
+`X-Logs-Token` against `LOGS_INGEST_TOKEN` env (403 otherwise). Caddy's
+catch-all `/api/v1/*` proxy makes this route internet-reachable like any other
+API endpoint — the shared-secret token is the sole and sufficient guard; rate
+limiting the route is a possible future hardening. Body: JSON array from
 Vector, ≤2MB, ≤500 events.
 
 Per event: identify container family → parse → floor-filter → route:

@@ -76,7 +76,11 @@ test("browsing a tenant page produces a pageview with a session", async ({ brows
   // subdomain slug — for the demo-yoga.localhost domain that schema is
   // `demo_yoga` (underscore; verified via apps.core.models.Domain in the dev
   // DB). Querying `tenant=demo-yoga` (hyphen) permanently returns zero rows.
-  const ACTIVITY_URL = `${MAIN}/api/v1/platform/activity/?kind=pageview&tenant=demo_yoga`;
+  // Time-scoped to the last 2 minutes: once >=100 demo_yoga pageviews exist
+  // within the 14-day retention window, an unscoped page 1 saturates at
+  // PAGE_SIZE=100 and the baseline comparison below would false-fail forever.
+  const sinceParam = encodeURIComponent(new Date(Date.now() - 2 * 60_000).toISOString());
+  const ACTIVITY_URL = `${MAIN}/api/v1/platform/activity/?kind=pageview&tenant=demo_yoga&since=${sinceParam}`;
   const stitched = (body: { results: { session_id: string }[] }) =>
     body.results.filter((r) => r.session_id).length;
 

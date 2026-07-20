@@ -108,13 +108,20 @@ def test_activity_ingest_is_idempotent_on_retry():
 def test_activity_hostile_values_coerced_not_500():
     payload = {"kind": "x" * 20, "ip": "not-an-ip", "status": True, "path": "/p/"}
     line = f"2026-07-19T12:00:05+0000 INFO    {ACTIVITY_LOGGER} [tenant=-] [user=-] " + json.dumps(payload)
-    resp = _post([_event(line)])
+    # A second, differently-hostile event in the same batch: an out-of-range
+    # int (poison pill) must not raise DataError in bulk_create and 500 the
+    # whole batch — Vector would then retry the poisoned batch forever.
+    payload2 = {"kind": "api", "status": 99999999999, "path": "/p2/"}
+    line2 = f"2026-07-19T12:00:06+0000 INFO    {ACTIVITY_LOGGER} [tenant=-] [user=-] " + json.dumps(payload2)
+    resp = _post([_event(line), _event(line2)])
     assert resp.status_code == 200
-    assert resp.json() == {"accepted": 1, "logs": 0, "activity": 1}
-    ev = RequestEvent.objects.get()
+    assert resp.json() == {"accepted": 2, "logs": 0, "activity": 2}
+    ev = RequestEvent.objects.get(path="/p/")
     assert ev.kind == "x" * 10  # truncated to field max_length
     assert ev.ip is None  # invalid IP dropped, not 500
     assert ev.status is None  # bool is not an int here
+    ev2 = RequestEvent.objects.get(path="/p2/")
+    assert ev2.status is None  # out-of-range int (poison pill) dropped, not 500
 
 
 @override_settings(LOGS_INGEST_TOKEN=TOKEN)
