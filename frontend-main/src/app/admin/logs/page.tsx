@@ -331,6 +331,9 @@ export default function AdminLogsPage() {
           onIpClick={(ip) => setParam("ip", ip)}
           onSessionClick={(s) => setParam("session", s)}
           onViewLogs={(user) => {
+            // Mirror switchTab: a pending debounced `q` must not stamp onto
+            // the Logs tab's URL after this jump.
+            if (searchDebounce.current) clearTimeout(searchDebounce.current);
             // Keep shared dimensions (tenant/range), mirroring switchTab.
             const next = new URLSearchParams({
               tab: "logs",
