@@ -69,32 +69,41 @@ test("ingest → panel rows with dynamic facets", async ({ browser, request }) =
 });
 
 test("browsing a tenant page produces a pageview with a session", async ({ browser }) => {
+  const admin = await superadminContext(browser);
+  const adminPage = await admin.newPage();
+  // NOTE (brief-vs-reality fix): the activity `tenant` column stores
+  // `connection.tenant.schema_name` (apps/logbook/views/track.py), not the
+  // subdomain slug — for the demo-yoga.localhost domain that schema is
+  // `demo_yoga` (underscore; verified via apps.core.models.Domain in the dev
+  // DB). Querying `tenant=demo-yoga` (hyphen) permanently returns zero rows.
+  const ACTIVITY_URL = `${MAIN}/api/v1/platform/activity/?kind=pageview&tenant=demo_yoga`;
+  const stitched = (body: { results: { session_id: string }[] }) =>
+    body.results.filter((r) => r.session_id).length;
+
+  // Baseline BEFORE the visit: the dev DB is never reset, so a bare `> 0`
+  // would be satisfied by stale rows from earlier runs even with a dead
+  // beacon/Vector/ingest pipeline. Only a STRICT increase over the baseline
+  // proves this run's beacon made it through.
+  const baselineRes = await adminPage.request.get(ACTIVITY_URL);
+  expect(baselineRes.ok()).toBeTruthy();
+  const baseline = stitched(await baselineRes.json());
+
   const visitor = await browser.newContext();
   const page = await visitor.newPage();
   await page.goto(`${TENANT}/`);
   await page.waitForTimeout(1500); // beacon fires post-hydration
   await visitor.close();
 
-  const admin = await superadminContext(browser);
-  const adminPage = await admin.newPage();
   // The beacon line travels stdout → Vector (2s flush) → ingest; poll the API.
-  // NOTE (brief-vs-reality fix): the activity `tenant` column stores
-  // `connection.tenant.schema_name` (apps/logbook/views/track.py), not the
-  // subdomain slug — for the demo-yoga.localhost domain that schema is
-  // `demo_yoga` (underscore; verified via apps.core.models.Domain in the dev
-  // DB). Querying `tenant=demo-yoga` (hyphen) permanently returns zero rows.
   await expect
     .poll(
       async () => {
-        const res = await adminPage.request.get(
-          `${MAIN}/api/v1/platform/activity/?kind=pageview&tenant=demo_yoga`,
-        );
-        if (!res.ok()) return 0;
-        const body = await res.json();
-        return body.results.filter((r: { session_id: string }) => r.session_id).length;
+        const res = await adminPage.request.get(ACTIVITY_URL);
+        if (!res.ok()) return baseline; // transient failure — keep polling
+        return stitched(await res.json());
       },
       { timeout: 30_000, intervals: [2_000] },
     )
-    .toBeGreaterThan(0);
+    .toBeGreaterThan(baseline);
   await admin.close();
 });
