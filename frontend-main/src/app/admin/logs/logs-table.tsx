@@ -44,7 +44,16 @@ export function LogsTable({
         {rows.map((r) => (
           <tr
             key={r.id}
+            tabIndex={0}
+            role="button"
+            aria-expanded={expanded === r.id}
             onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                if (e.key === " ") e.preventDefault();
+                setExpanded(expanded === r.id ? null : r.id);
+              }
+            }}
             className="cursor-pointer border-b align-top hover:bg-muted/50"
           >
             <td className="py-2 pr-2 font-mono text-xs text-muted-foreground">

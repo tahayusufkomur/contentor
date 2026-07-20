@@ -67,28 +67,51 @@ export default function AdminLogsPage() {
     [router, searchParams],
   );
 
-  const filters = useMemo<LogsFilters>(
-    () => ({ ...params, since: sinceForRange(range) }),
-    [params, range],
-  );
-
   const [rows, setRows] = useState<LogRow[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [facets, setFacets] = useState<Record<string, Facet[]>>({});
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(false);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Latest searchParams for the debounced search commit — the timeout must
+  // rebuild the URL at fire time, not from a stale keystroke-time closure
+  // (a chip click landing inside the 300ms window would get reverted).
+  const searchParamsRef = useRef(searchParams);
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
+  // Response sequencing: only the latest load()/loadMore() may write state,
+  // so a slow response can't clobber a newer tab/filter's results.
+  const seqRef = useRef(0);
+  // `since` snapshot of the currently displayed result set; loadMore reuses
+  // it so pagination stays on one window while refreshes advance it.
+  const sinceRef = useRef("");
+
+  // Clear a pending debounce on unmount so it can't router.replace the
+  // browser back to /admin/logs after navigating away.
+  useEffect(
+    () => () => {
+      if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    },
+    [],
+  );
 
   const load = useCallback(async () => {
+    const seq = ++seqRef.current;
     setError("");
+    // Fresh window on every fetch — auto-refresh must advance `since`.
+    sinceRef.current = sinceForRange(range);
+    const filters: LogsFilters = { ...params, since: sinceRef.current };
     try {
       if (tab === "logs") {
         const [page, f] = await Promise.all([
           fetchLogs(filters),
           fetchLogFacets(filters),
         ]);
+        if (seq !== seqRef.current) return;
         setRows(page.results);
         setCursor(page.next_cursor);
         setFacets(f as unknown as Record<string, Facet[]>);
@@ -97,16 +120,18 @@ export default function AdminLogsPage() {
           fetchActivity(filters),
           fetchActivityFacets(filters),
         ]);
+        if (seq !== seqRef.current) return;
         setActivity(page.results);
         setCursor(page.next_cursor);
         setFacets(f as unknown as Record<string, Facet[]>);
       }
     } catch (err) {
+      if (seq !== seqRef.current) return;
       setError(err instanceof Error ? err.message : "Failed to load logs");
     } finally {
-      setLoading(false);
+      if (seq === seqRef.current) setLoading(false);
     }
-  }, [tab, filters]);
+  }, [tab, params, range]);
 
   useEffect(() => {
     setLoading(true);
@@ -120,21 +145,35 @@ export default function AdminLogsPage() {
   }, [autoRefresh, load]);
 
   const loadMore = async () => {
-    if (!cursor) return;
-    if (tab === "logs") {
-      const page = await fetchLogs(filters, cursor);
-      setRows((prev) => [...prev, ...page.results]);
-      setCursor(page.next_cursor);
-    } else {
-      const page = await fetchActivity(filters, cursor);
-      setActivity((prev) => [...prev, ...page.results]);
-      setCursor(page.next_cursor);
+    if (!cursor || loadingMore) return;
+    const seq = ++seqRef.current;
+    setLoadingMore(true);
+    const filters: LogsFilters = { ...params, since: sinceRef.current };
+    try {
+      if (tab === "logs") {
+        const page = await fetchLogs(filters, cursor);
+        if (seq !== seqRef.current) return;
+        setRows((prev) => [...prev, ...page.results]);
+        setCursor(page.next_cursor);
+      } else {
+        const page = await fetchActivity(filters, cursor);
+        if (seq !== seqRef.current) return;
+        setActivity((prev) => [...prev, ...page.results]);
+        setCursor(page.next_cursor);
+      }
+    } finally {
+      setLoadingMore(false);
     }
   };
 
   const onSearch = (value: string) => {
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
-    searchDebounce.current = setTimeout(() => setParam("q", value), 300);
+    searchDebounce.current = setTimeout(() => {
+      const next = new URLSearchParams(searchParamsRef.current.toString());
+      if (value) next.set("q", value);
+      else next.delete("q");
+      router.replace(`/admin/logs?${next.toString()}`, { scroll: false });
+    }, 300);
   };
 
   const switchTab = (next: Tab) => {
@@ -208,6 +247,7 @@ export default function AdminLogsPage() {
             </select>
           </label>
           <SearchBox
+            key={tab} /* remount on tab switch so dropped q clears the input */
             value={params.q ?? ""}
             onChange={onSearch}
             placeholder={tab === "logs" ? "Search messages…" : "Search paths…"}
@@ -300,8 +340,13 @@ export default function AdminLogsPage() {
 
       {cursor && !loading && (
         <div className="flex justify-center">
-          <Button variant="outline" size="sm" onClick={() => void loadMore()}>
-            Load more
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={loadingMore}
+            onClick={() => void loadMore()}
+          >
+            {loadingMore ? "Loading…" : "Load more"}
           </Button>
         </div>
       )}
