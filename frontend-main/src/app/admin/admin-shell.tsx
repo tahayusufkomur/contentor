@@ -10,6 +10,7 @@ import {
   Inbox,
   MessagesSquare,
   Newspaper,
+  ScrollText,
 } from "lucide-react";
 
 import { AppSidebar, type NavItem } from "@/components/shared/app-sidebar";
@@ -61,6 +62,7 @@ const SYSTEM: NavItem[] = [
     icon: Settings,
     group: "System",
   },
+  { label: "Logs", href: "/admin/logs", icon: ScrollText, group: "System" },
   { label: "Health", href: "/admin/health", icon: Activity, group: "System" },
   {
     label: "Go to site",
