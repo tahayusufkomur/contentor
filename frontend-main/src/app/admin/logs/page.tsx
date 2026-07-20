@@ -177,6 +177,9 @@ export default function AdminLogsPage() {
   };
 
   const switchTab = (next: Tab) => {
+    // A pending debounced search commit must not stamp its stale `q` onto
+    // the URL after we've already navigated to a different tab.
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
     // Keep shared dimensions (tenant/user/range), drop tab-specific ones.
     const keep = new URLSearchParams();
     keep.set("tab", next);
@@ -328,11 +331,14 @@ export default function AdminLogsPage() {
           onIpClick={(ip) => setParam("ip", ip)}
           onSessionClick={(s) => setParam("session", s)}
           onViewLogs={(user) => {
+            // Keep shared dimensions (tenant/range), mirroring switchTab.
             const next = new URLSearchParams({
               tab: "logs",
               range,
               ...(user ? { user } : {}),
             });
+            const tenant = searchParams.get("tenant");
+            if (tenant) next.set("tenant", tenant);
             router.replace(`/admin/logs?${next.toString()}`, { scroll: false });
           }}
         />

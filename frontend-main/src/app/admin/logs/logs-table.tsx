@@ -49,6 +49,7 @@ export function LogsTable({
             aria-expanded={expanded === r.id}
             onClick={() => setExpanded(expanded === r.id ? null : r.id)}
             onKeyDown={(e) => {
+              if (e.target !== e.currentTarget) return;
               if (e.key === "Enter" || e.key === " ") {
                 if (e.key === " ") e.preventDefault();
                 setExpanded(expanded === r.id ? null : r.id);
