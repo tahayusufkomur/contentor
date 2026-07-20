@@ -1,0 +1,54 @@
+{
+  "commands": [
+    {
+      "name": "dev-up",
+      "command": "make dev",
+      "description": "Start development server with container-reload and minio storage"
+    },
+    {
+      "name": "dev-reset",
+      "command": "make dev-reset",
+      "description": "Rebuild entire stack from scratch, wiping volumes/cache"
+    },
+    {
+      "name": "test-backend",
+      "command": "make test",
+      "description": "Run full backing Pytest suite inside Docker container"
+    },
+    {
+      "name": "test-backend-app",
+      "command": "make test-app APP={APP}",
+      "description": "Run Django tests targeting a specific package, e.g. adminkit"
+    },
+    {
+      "name": "test-frontend",
+      "command": "make test-frontend",
+      "description": "Run Vitest client tests for customer-frontend"
+    },
+    {
+      "name": "migrate-public",
+      "command": "make migrate-shared",
+      "description": "Apply migrations to the shared public DB schema"
+    },
+    {
+      "name": "migrate-tenants",
+      "command": "make migrate",
+      "description": "Apply migrations to all tenant DB schemas"
+    },
+    {
+      "name": "lint",
+      "command": "make lint",
+      "description": "Validate format and safety conventions across active repository files"
+    },
+    {
+      "name": "typecheck",
+      "command": "make typecheck",
+      "description": "Run TypeScript compilation checks across frontend workspaces"
+    },
+    {
+      "name": "sync-definitions",
+      "command": "npm run gen:api",
+      "description": "Generate API TypeScript definitions inside frontend-customer"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ from unittest import mock
 
 import pytest
 from django.utils import timezone
-from django_tenants.utils import schema_context
+from django_tenants.utils import get_tenant_model, schema_context
 
 from apps.accounts.models import User
 from apps.blog import ai, tasks
@@ -180,3 +180,22 @@ def test_autopilot_offers_and_materializes_curated_photos(paid_tenant, settings)
     assert f"curated:{row.pk}" in offered_ids
     with schema_context("public"):
         CuratedPhoto.objects.all().delete()
+
+
+def test_dispatch_skips_non_ready_tenants(paid_tenant):
+    """Pending/half-provisioned tenants have no schema; the sweep must skip them
+    (queryset guard) instead of erroring on missing tables. Mirrors the
+    notifications sweeps."""
+
+    def _swept_schemas():
+        with mock.patch.object(tasks, "_dispatch_for_current_tenant") as dispatch:
+            tasks.dispatch_due_blog_autopilot()
+        return {call.args[0] for call in dispatch.call_args_list}
+
+    with schema_context("public"):
+        get_tenant_model().objects.filter(pk=paid_tenant.pk).update(provisioning_status="pending")
+    assert paid_tenant.schema_name not in _swept_schemas()
+
+    with schema_context("public"):
+        get_tenant_model().objects.filter(pk=paid_tenant.pk).update(provisioning_status="ready")
+    assert paid_tenant.schema_name in _swept_schemas()

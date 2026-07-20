@@ -13,7 +13,10 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def dispatch_due_blog_autopilot():
-    for tenant in get_tenant_model().objects.exclude(schema_name="public"):
+    # Only ready tenants have provisioned schemas; skipping the rest avoids
+    # UndefinedTable errors on half-provisioned/pending tenants (mirrors the
+    # notifications sweeps).
+    for tenant in get_tenant_model().objects.exclude(schema_name="public").filter(provisioning_status="ready"):
         with tenant_context(tenant):
             try:
                 _dispatch_for_current_tenant(tenant.schema_name)

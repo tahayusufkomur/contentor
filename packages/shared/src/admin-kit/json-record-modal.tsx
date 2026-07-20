@@ -131,6 +131,8 @@ export function JsonRecordModal({
   onDelete,
   onClose,
   onNavigate,
+  hasMore,
+  onLoadMore,
 }: {
   meta: ModelMeta;
   target: GalleryTarget;
@@ -142,9 +144,12 @@ export function JsonRecordModal({
   onClose: () => void;
   /** Switch the modal to another row without closing it (prev/next). */
   onNavigate?: (row: Row) => void;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
 }) {
   const [text, setText] = useState(() => initialJson(meta, target, rows));
   const [parseError, setParseError] = useState("");
+  const [waitingForNext, setWaitingForNext] = useState(false);
   const image =
     target.mode === "create"
       ? target.image
@@ -156,6 +161,13 @@ export function JsonRecordModal({
     target.mode === "edit" ? siblingRow(meta, rows, target.row, 1) : null;
 
   useEffect(() => {
+    if (waitingForNext && nextRow) {
+      setWaitingForNext(false);
+      onNavigate?.(nextRow);
+    }
+  }, [waitingForNext, nextRow, onNavigate]);
+
+  useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         onClose();
@@ -164,12 +176,20 @@ export function JsonRecordModal({
       if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
       const activeTag = document.activeElement?.tagName;
       if (activeTag === "TEXTAREA" || activeTag === "INPUT") return;
+
       if (e.key === "ArrowLeft" && prevRow) onNavigate?.(prevRow);
-      if (e.key === "ArrowRight" && nextRow) onNavigate?.(nextRow);
+      if (e.key === "ArrowRight") {
+        if (nextRow) {
+          onNavigate?.(nextRow);
+        } else if (hasMore && onLoadMore && !waitingForNext) {
+          setWaitingForNext(true);
+          onLoadMore();
+        }
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, onNavigate, prevRow, nextRow]);
+  }, [onClose, onNavigate, prevRow, nextRow, hasMore, onLoadMore, waitingForNext]);
 
   const save = () => {
     const { data, error } = parseRecord(meta, text);
@@ -204,14 +224,22 @@ export function JsonRecordModal({
             <ChevronLeft className="h-6 w-6" />
           </button>
         )}
-        {nextRow && (
+        {(nextRow || hasMore) && (
           <button
             type="button"
             aria-label="Next item"
-            onClick={() => onNavigate?.(nextRow)}
-            className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
+            onClick={() => {
+              if (nextRow) {
+                onNavigate?.(nextRow);
+              } else if (hasMore && onLoadMore && !waitingForNext) {
+                setWaitingForNext(true);
+                onLoadMore();
+              }
+            }}
+            disabled={waitingForNext}
+            className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60 disabled:opacity-50"
           >
-            <ChevronRight className="h-6 w-6" />
+            {waitingForNext ? <Loader2 className="h-6 w-6 animate-spin" /> : <ChevronRight className="h-6 w-6" />}
           </button>
         )}
       </div>
