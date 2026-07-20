@@ -101,3 +101,37 @@ def test_facets_zero_options_omitted(client, rows):
     body = client.get("/api/v1/platform/logs/facets/", {"container": "caddy"}).json()
     assert {f["value"] for f in body["levels"]} == {"WARNING"}
     assert body["users"] == []
+
+
+def test_invalid_since_or_until_400(client, rows):
+    for url in ("/api/v1/platform/logs/", "/api/v1/platform/logs/facets/"):
+        resp = client.get(url, {"since": "garbage"})
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "invalid 'since' timestamp"}
+        resp = client.get(url, {"until": "garbage"})
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "invalid 'until' timestamp"}
+
+
+def test_invalid_cursor_400(client, rows):
+    for bad in ("garbage", "2026-01-01T00:00:00+00:00|notanid"):
+        resp = client.get("/api/v1/platform/logs/", {"cursor": bad})
+        assert resp.status_code == 400
+        assert resp.json() == {"detail": "invalid cursor"}
+
+
+def test_keyset_tiebreak_equal_ts(client, restore_public):
+    ids = sorted(
+        LogEntry.objects.create(
+            ts=BASE, container="django", level="INFO", message=f"same-ts {i}", line_hash=line_digest(f"same-ts {i}")
+        ).id
+        for i in range(3)
+    )
+    body = client.get("/api/v1/platform/logs/", {"cursor": f"{BASE.isoformat()}|{ids[1]}"}).json()
+    assert [r["id"] for r in body["results"]] == [ids[0]]
+    assert body["next_cursor"] is None
+
+
+def test_multi_filter_tolerates_whitespace(client, rows):
+    body = client.get("/api/v1/platform/logs/", {"level": "ERROR, WARNING"}).json()
+    assert len(body["results"]) == 3  # rows 1 + 3 (ERROR) and 4 (WARNING)

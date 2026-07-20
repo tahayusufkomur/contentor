@@ -4,7 +4,12 @@
 Faceted-search semantics: each facet dimension is counted under every OTHER
 active filter (plus q/since/until) but never its own — picking level=ERROR
 narrows the container options to containers that HAVE errors, while the level
-facet itself keeps showing the alternatives. Zero-count options are omitted."""
+facet itself keeps showing the alternatives. Zero-count options are omitted.
+
+Malformed `since`/`until`/`cursor` params are rejected with 400 (never
+silently ignored — an unfiltered result mid-incident is worse than an error);
+the shared helpers raise DRF ValidationError so every endpoint reusing them
+(Task 10 activity views included) enforces the same contract."""
 
 from __future__ import annotations
 
@@ -12,6 +17,7 @@ from datetime import datetime
 
 from django.db.models import Count, Q
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from apps.core.permissions import IsSuperUser
@@ -41,10 +47,14 @@ ACTIVITY_FIELDS = (
 
 def _multi(params, name):
     raw = (params.get(name) or "").strip()
-    return [v for v in raw.split(",") if v] if raw else []
+    return [v.strip() for v in raw.split(",") if v.strip()] if raw else []
 
 
 def _parse_dt(value):
+    """ISO-8601 → aware datetime, Z tolerated; None when absent OR unparseable.
+
+    Pure parser — callers decide whether a present-but-unparseable value is a
+    400 (`_apply_time_and_q` and `_paginate` both do)."""
     if not value:
         return None
     try:
@@ -54,11 +64,14 @@ def _parse_dt(value):
 
 
 def _apply_time_and_q(qs, params, q_field):
-    since, until = _parse_dt(params.get("since")), _parse_dt(params.get("until"))
-    if since:
-        qs = qs.filter(ts__gte=since)
-    if until:
-        qs = qs.filter(ts__lt=until)
+    for name, lookup in (("since", "ts__gte"), ("until", "ts__lt")):
+        raw = (params.get(name) or "").strip()
+        if not raw:
+            continue
+        parsed = _parse_dt(raw)
+        if parsed is None:
+            raise ValidationError({"detail": f"invalid '{name}' timestamp"})
+        qs = qs.filter(**{lookup: parsed})
     q = (params.get("q") or "").strip()
     if q:
         qs = qs.filter(**{f"{q_field}__icontains": q})
@@ -84,12 +97,13 @@ def _log_queryset(params, skip=""):
 
 
 def _paginate(qs, params, fields):
-    cursor = params.get("cursor") or ""
-    if "|" in cursor:
-        ts_raw, _, id_raw = cursor.partition("|")
-        cts, cid = _parse_dt(ts_raw), int(id_raw) if id_raw.isdigit() else 0
-        if cts:
-            qs = qs.filter(Q(ts__lt=cts) | (Q(ts=cts) & Q(id__lt=cid)))
+    cursor = (params.get("cursor") or "").strip()
+    if cursor:
+        ts_raw, sep, id_raw = cursor.partition("|")
+        cts = _parse_dt(ts_raw)
+        if not sep or cts is None or not id_raw.isdigit():
+            raise ValidationError({"detail": "invalid cursor"})
+        qs = qs.filter(Q(ts__lt=cts) | (Q(ts=cts) & Q(id__lt=int(id_raw))))
     rows = list(qs.order_by("-ts", "-id").values(*fields)[: PAGE_SIZE + 1])
     next_cursor = None
     if len(rows) > PAGE_SIZE:
