@@ -1,5 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import {
   Bell,
   BookOpen,
@@ -18,18 +21,20 @@ import {
   Newspaper,
   Palette,
   FileText,
+  Search,
   Settings,
   Users,
   Video,
   Wallet,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 
+import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
+import { CommandPalette } from "@/components/admin/command-palette";
 import type { NavSection } from "@/components/shared/app-sidebar";
 import type { User } from "@/types/auth";
 
@@ -37,10 +42,6 @@ interface AdminShellProps {
   children: React.ReactNode;
   user?: User | null;
 }
-
-import { CommandPalette } from "@/components/admin/command-palette";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
 
 export function AdminShell({ children, user }: AdminShellProps) {
   const t = useTranslations("admin");
