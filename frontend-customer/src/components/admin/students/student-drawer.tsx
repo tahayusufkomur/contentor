@@ -138,15 +138,15 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
   const handleGrantAccess = async () => {
     if (!selectedCourseId) return;
     try {
-      await clientFetch(`/api/v1/courses/${selectedCourseId}/grant-access/`, {
+      await clientFetch(`/api/v1/auth/students/${student.id}/grant-access/`, {
         method: "POST",
-        body: JSON.stringify({ student_id: student.id }),
+        body: JSON.stringify({ course_id: parseInt(selectedCourseId) }),
       });
       toast.success("Course access granted successfully!");
       setGrantingAccess(false);
       if (onRefresh) onRefresh();
     } catch {
-      toast.success("Course access granted!");
+      toast.error("Failed to grant course access");
       setGrantingAccess(false);
     }
   };

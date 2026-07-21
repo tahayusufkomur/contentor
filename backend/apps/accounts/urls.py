@@ -16,4 +16,5 @@ urlpatterns = [
     path("users/me/locale/", views.update_locale, name="user-locale"),
     path("students/", views.student_list, name="student-list"),
     path("students/<int:pk>/", views.student_delete, name="student-delete"),
+    path("students/<int:pk>/grant-access/", views.student_grant_access, name="student-grant-access"),
 ]

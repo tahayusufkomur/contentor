@@ -411,6 +411,45 @@ def student_delete(request, pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def student_grant_access(request, pk):
+    """Grant a student free enrollment into a course (coach/owner only)."""
+    from apps.core.permissions import IsCoachOrOwner
+    from apps.courses.models import Course, Enrollment
+
+    perm = IsCoachOrOwner()
+    if not perm.has_permission(request, None):
+        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        student = User.objects.get(pk=pk, role="student")
+    except User.DoesNotExist:
+        return Response({"detail": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    course_id = request.data.get("course_id")
+    if not course_id:
+        return Response({"detail": "course_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        course = Course.objects.get(pk=course_id)
+    except Course.DoesNotExist:
+        return Response({"detail": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    enrollment, _ = Enrollment.objects.get_or_create(user=student, course=course)
+    enrollment.is_active = True
+    enrollment.save()
+
+    return Response(
+        {
+            "detail": "Access granted successfully.",
+            "course_id": course.id,
+            "course_title": course.title,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"  # noqa: S105
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"

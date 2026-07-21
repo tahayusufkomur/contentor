@@ -72,10 +72,10 @@ export default function StudentsPage() {
       const count = Array.isArray(data) ? data.length : data.count;
       const next = Array.isArray(data) ? null : data.next;
 
-      // Add mock/computed progress percentage for UX visualization
-      list = list.map((s, idx) => ({
+      // Use overall_progress returned from Django backend
+      list = list.map((s) => ({
         ...s,
-        progress_percent: s.progress_percent ?? (idx % 3 === 0 ? 100 : idx % 2 === 0 ? 75 : 40),
+        progress_percent: s.overall_progress ?? 0,
       }));
 
       return { results: list, next, count };
