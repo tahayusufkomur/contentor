@@ -242,19 +242,22 @@ export default function VideosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Videos</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Video Asset Library</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your video library.
+            Upload, manage, copy CDN links, and embed videos across your platform.
           </p>
         </div>
-        {!showUpload && (
-          <Button onClick={() => setShowUpload(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Upload Video
-          </Button>
-        )}
+        <Button onClick={() => setShowUpload((prev) => !prev)} className="gap-2 shadow-sm">
+          <Plus className="h-4 w-4" /> {showUpload ? "Hide Uploader" : "Batch Upload"}
+        </Button>
       </div>
+
+      <BatchDropzone
+        category="video"
+        onUploadComplete={() => browserRef.current?.refresh()}
+      />
 
       {/* Persistent file input — always in DOM so "Change file" works */}
       <input

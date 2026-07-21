@@ -125,12 +125,10 @@ export default function PhotosPage() {
         </Button>
       </div>
 
-      {showDropzone && (
-        <BatchDropzone
-          category="photo"
-          onUploadComplete={() => browserRef.current?.refresh()}
-        />
-      )}
+      <BatchDropzone
+        category="photo"
+        onUploadComplete={() => browserRef.current?.refresh()}
+      />
 
       <MediaBrowser<Photo>
         ref={browserRef}

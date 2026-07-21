@@ -31,6 +31,7 @@ export function BatchDropzone({
   onUploadComplete,
 }: BatchDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [windowDragging, setWindowDragging] = useState(false);
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,6 +117,52 @@ export function BatchDropzone({
     [uploadSingleFile]
   );
 
+  useEffect(() => {
+    let dragCounter = 0;
+
+    const handleWindowDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter++;
+      if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+        setWindowDragging(true);
+      }
+    };
+
+    const handleWindowDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        setWindowDragging(false);
+      }
+    };
+
+    const handleWindowDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleWindowDrop = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter = 0;
+      setWindowDragging(false);
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        handleFilesAdded(e.dataTransfer.files);
+      }
+    };
+
+    window.addEventListener("dragenter", handleWindowDragEnter);
+    window.addEventListener("dragleave", handleWindowDragLeave);
+    window.addEventListener("dragover", handleWindowDragOver);
+    window.addEventListener("drop", handleWindowDrop);
+
+    return () => {
+      window.removeEventListener("dragenter", handleWindowDragEnter);
+      window.removeEventListener("dragleave", handleWindowDragLeave);
+      window.removeEventListener("dragover", handleWindowDragOver);
+      window.removeEventListener("drop", handleWindowDrop);
+    };
+  }, [handleFilesAdded]);
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -140,6 +187,16 @@ export function BatchDropzone({
 
   return (
     <div className="space-y-4">
+      {/* Full Window Drop Overlay */}
+      {windowDragging && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-md border-4 border-dashed border-primary animate-in fade-in duration-200 pointer-events-none">
+          <div className="bg-card p-8 rounded-2xl shadow-2xl text-center flex flex-col items-center gap-3 border border-primary/30">
+            <UploadCloud className="h-16 w-16 text-primary animate-bounce" />
+            <h2 className="text-xl font-bold">Drop your {category === "photo" ? "photos" : "videos"} anywhere to upload!</h2>
+            <p className="text-xs text-muted-foreground">Release files to start batch upload automatically</p>
+          </div>
+        </div>
+      )}
       {/* Dropzone Container */}
       <div
         onDragOver={handleDragOver}
