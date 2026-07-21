@@ -2566,5 +2566,515 @@
         "filename": "gouache_cactus_study.png",
         "prompt": "Generate a logo image: a textured gouache painting of a potted cactus with visible brush texture, forest green gouache, on a plain white background, no text, no watermark. Square image.",
         "tags": "gardening, cactus, gouache, artistic"
+    },
+    {
+        "title": "Budget Pie Slice Coins",
+        "filename": "budget_pie_slice_coins.png",
+        "prompt": "Generate a logo image: modern logo of a pie chart made of stacked coins, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "personal finance, budgeting, coins, modern"
+    },
+    {
+        "title": "Tax Document Stamp Approve",
+        "filename": "tax_document_stamp_approve.png",
+        "prompt": "Generate a logo image: minimal logo of a tax form document with an approval stamp, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "tax prep, accounting, document, minimal"
+    },
+    {
+        "title": "Insurance Umbrella Shield",
+        "filename": "insurance_umbrella_shield.png",
+        "prompt": "Generate a logo image: bold logo of an umbrella merged into a protective shield, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "insurance, protection, bold"
+    },
+    {
+        "title": "Notary Seal Ribbon",
+        "filename": "notary_seal_ribbon.png",
+        "prompt": "Generate a logo image: elegant logo of an official wax seal with a ribbon tail, flat vector style, one burgundy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "notary, legal, elegant"
+    },
+    {
+        "title": "HR Handshake Org Circle",
+        "filename": "hr_handshake_org_circle.png",
+        "prompt": "Generate a logo image: modern logo of a handshake inside a circle of connected people icons, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "hr consulting, people, modern"
+    },
+    {
+        "title": "Franchise Storefront Row",
+        "filename": "franchise_storefront_row.png",
+        "prompt": "Generate a logo image: bold logo of three identical storefronts in a row, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "franchise, business, bold"
+    },
+    {
+        "title": "Dropship Package Arrow Cycle",
+        "filename": "dropship_package_arrow_cycle.png",
+        "prompt": "Generate a logo image: modern logo of a shipping package inside a circular arrow cycle, flat vector style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "ecommerce, dropshipping, modern"
+    },
+    {
+        "title": "Amazon Box Growth Arrow",
+        "filename": "amazon_box_growth_arrow.png",
+        "prompt": "Generate a logo image: bold logo of a delivery box with a growth arrow rising from it, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "ecommerce, fba seller, bold"
+    },
+    {
+        "title": "Affiliate Link Chain Star",
+        "filename": "affiliate_link_chain_star.png",
+        "prompt": "Generate a logo image: modern logo of a chain link with a star badge attached, flat vector style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "affiliate marketing, modern"
+    },
+    {
+        "title": "Forex Candlestick Arrows",
+        "filename": "forex_candlestick_arrows.png",
+        "prompt": "Generate a logo image: bold logo of crossed up and down candlestick arrows, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "forex trading, finance, bold"
+    },
+    {
+        "title": "NFT Digital Frame Sparkle",
+        "filename": "nft_digital_frame_sparkle.png",
+        "prompt": "Generate a logo image: modern logo of a digital picture frame with a sparkle corner, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "nft, web3, modern"
+    },
+    {
+        "title": "Cyber Lock Circuit Shield",
+        "filename": "cyber_lock_circuit_shield.png",
+        "prompt": "Generate a logo image: bold logo of a padlock fused with a circuit-pattern shield, flat vector style, one slate navy on a plain white background, no text, no watermark. Square image.",
+        "tags": "cybersecurity, tech, bold"
+    },
+    {
+        "title": "No Code Blocks Stack",
+        "filename": "no_code_blocks_stack.png",
+        "prompt": "Generate a logo image: playful logo of interlocking building blocks forming an app window, flat vector style, one coral color on a plain white background, no text, no watermark. Square image.",
+        "tags": "no code, app builder, playful"
+    },
+    {
+        "title": "Virtual Assistant Headset Cloud",
+        "filename": "virtual_assistant_headset_cloud.png",
+        "prompt": "Generate a logo image: modern logo of a headset floating inside a cloud outline, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "virtual assistant, remote work, modern"
+    },
+    {
+        "title": "Freelance Writer Feather Laptop",
+        "filename": "freelance_writer_feather_laptop.png",
+        "prompt": "Generate a logo image: elegant logo of a quill feather resting across an open laptop, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "freelance writing, elegant"
+    },
+    {
+        "title": "LinkedIn Profile Arrow Up",
+        "filename": "linkedin_profile_arrow_up.png",
+        "prompt": "Generate a logo image: modern logo of a profile silhouette badge with an arrow rising, flat vector style, one navy blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "linkedin coaching, career, modern"
+    },
+    {
+        "title": "Executive Chess King Crown",
+        "filename": "executive_chess_king_crown.png",
+        "prompt": "Generate a logo image: bold logo of a chess king piece topped with a small crown, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "executive coaching, leadership, bold"
+    },
+    {
+        "title": "Negotiation Table Handshake",
+        "filename": "negotiation_table_handshake.png",
+        "prompt": "Generate a logo image: modern logo of two hands meeting across a small table shape, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "negotiation coaching, modern"
+    },
+    {
+        "title": "Franchise Growth Roots Building",
+        "filename": "franchise_growth_roots_building.png",
+        "prompt": "Generate a logo image: modern logo of a building icon growing roots like a tree, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "franchise, growth, modern"
+    },
+    {
+        "title": "Startup Rocket Coin Trail",
+        "filename": "startup_rocket_coin_trail.png",
+        "prompt": "Generate a logo image: playful logo of a rocket launching leaving a trail of small coins, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "startup, funding, playful"
+    },
+    {
+        "title": "Chiropractic Spine Adjustment",
+        "filename": "chiropractic_spine_adjustment.png",
+        "prompt": "Generate a logo image: minimal logo of a spine with one vertebra highlighted mid-adjustment, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "chiropractic, spine, minimal, calm"
+    },
+    {
+        "title": "Physical Therapy Resistance Loop",
+        "filename": "physical_therapy_resistance_loop.png",
+        "prompt": "Generate a logo image: modern logo of a leg silhouette stretching a resistance loop band, flat vector style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "physical therapy, rehab, modern"
+    },
+    {
+        "title": "Occupational Therapy Hand Puzzle",
+        "filename": "occupational_therapy_hand_puzzle.png",
+        "prompt": "Generate a logo image: calm logo of a hand holding a single puzzle piece, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "occupational therapy, calm"
+    },
+    {
+        "title": "Speech Therapy Sound Bubble",
+        "filename": "speech_therapy_sound_bubble.png",
+        "prompt": "Generate a logo image: playful logo of a speech bubble containing a single sound wave, flat vector style, one coral color on a plain white background, no text, no watermark. Square image.",
+        "tags": "speech therapy, playful"
+    },
+    {
+        "title": "Lactation Consultant Baby Bottle Heart",
+        "filename": "lactation_consultant_baby_bottle_heart.png",
+        "prompt": "Generate a logo image: calm logo of a baby bottle with a heart shaped nipple cap, flat vector style, one soft pink on a plain white background, no text, no watermark. Square image.",
+        "tags": "lactation consulting, calm"
+    },
+    {
+        "title": "Doula Birth Support Hands",
+        "filename": "doula_birth_support_hands.png",
+        "prompt": "Generate a logo image: calm logo of two cupped hands cradling a small crescent moon, flat vector style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "doula, birth coaching, calm"
+    },
+    {
+        "title": "Hospice Grief Candle Wing",
+        "filename": "hospice_grief_candle_wing.png",
+        "prompt": "Generate a logo image: elegant logo of a single candle flame shaped like a wing, flat vector style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "grief coaching, hospice, elegant, calm"
+    },
+    {
+        "title": "Sobriety Recovery Path Steps",
+        "filename": "sobriety_recovery_path_steps.png",
+        "prompt": "Generate a logo image: bold logo of footprints climbing a rising staircase, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "addiction recovery, sobriety, bold"
+    },
+    {
+        "title": "Anger Management Calm Wave Fist",
+        "filename": "anger_management_calm_wave_fist.png",
+        "prompt": "Generate a logo image: calm logo of a clenched fist softening into calm wave lines, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "anger management, calm"
+    },
+    {
+        "title": "Anxiety Relief Breathing Circle",
+        "filename": "anxiety_relief_breathing_circle.png",
+        "prompt": "Generate a logo image: calm logo of a figure at the center of expanding breathing rings, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "anxiety coaching, stress management, calm"
+    },
+    {
+        "title": "ADHD Focus Arrow Maze",
+        "filename": "adhd_focus_arrow_maze.png",
+        "prompt": "Generate a logo image: modern logo of an arrow tracing a clean path out of a small maze, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "adhd coaching, modern"
+    },
+    {
+        "title": "Neurodivergent Rainbow Infinity",
+        "filename": "neurodivergent_rainbow_infinity.png",
+        "prompt": "Generate a logo image: playful logo of an infinity loop made of a gradient rainbow line, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "neurodivergent support, playful, colorful"
+    },
+    {
+        "title": "Hypnotherapy Spiral Eye",
+        "filename": "hypnotherapy_spiral_eye.png",
+        "prompt": "Generate a logo image: elegant logo of a calm human eye with a soft spiral iris, flat vector style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "hypnotherapy, elegant, calm"
+    },
+    {
+        "title": "Naturopathy Leaf Mortar",
+        "filename": "naturopathy_leaf_mortar.png",
+        "prompt": "Generate a logo image: calm logo of a mortar and pestle with a leaf sprouting from it, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "naturopathy, herbalism, calm"
+    },
+    {
+        "title": "Functional Medicine Root Cause Tree",
+        "filename": "functional_medicine_root_cause_tree.png",
+        "prompt": "Generate a logo image: modern logo of a tree with visible roots shaped like a question mark, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "functional medicine, modern"
+    },
+    {
+        "title": "Sports Psychology Mind Target",
+        "filename": "sports_psychology_mind_target.png",
+        "prompt": "Generate a logo image: bold logo of a target with a brain silhouette at the bullseye, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "sports psychology, bold"
+    },
+    {
+        "title": "Sleep Coach Moon Wave Pillow",
+        "filename": "sleep_coach_moon_wave_pillow.png",
+        "prompt": "Generate a logo image: calm logo of a crescent moon resting on a soft pillow wave, flat vector style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "sleep coaching, calm"
+    },
+    {
+        "title": "Men's Health Shield Heart",
+        "filename": "men_s_health_shield_heart.png",
+        "prompt": "Generate a logo image: bold logo of a shield with a heartbeat line through the center, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "men's health, bold"
+    },
+    {
+        "title": "Menopause Bloom Warmth",
+        "filename": "menopause_bloom_warmth.png",
+        "prompt": "Generate a logo image: elegant logo of a flower blooming from a small sun burst, flat vector style, one sunset coral on a plain white background, no text, no watermark. Square image.",
+        "tags": "menopause coaching, women's health, elegant"
+    },
+    {
+        "title": "Gut Health Microbiome Circle",
+        "filename": "gut_health_microbiome_circle.png",
+        "prompt": "Generate a logo image: modern logo of a ring of small organic microbe shapes around a gut outline, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "gut health, nutrition, modern"
+    },
+    {
+        "title": "Judo Throw Silhouette",
+        "filename": "judo_throw_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of two judokas mid throw in a gi, flat vector silhouette style, one black color on a plain white background, no text, no watermark. Square image.",
+        "tags": "judo, martial arts, bold"
+    },
+    {
+        "title": "BJJ Guard Position Silhouette",
+        "filename": "bjj_guard_position_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a jiu jitsu practitioner in guard position, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "bjj, jiu jitsu, martial arts, bold"
+    },
+    {
+        "title": "Taekwondo High Kick Silhouette",
+        "filename": "taekwondo_high_kick_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a taekwondo fighter mid high kick, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "taekwondo, martial arts, bold"
+    },
+    {
+        "title": "Muay Thai Elbow Strike",
+        "filename": "muay_thai_elbow_strike.png",
+        "prompt": "Generate a logo image: bold logo of a muay thai fighter throwing an elbow strike, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "muay thai, martial arts, bold"
+    },
+    {
+        "title": "Wrestling Takedown Silhouette",
+        "filename": "wrestling_takedown_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of two wrestlers locked in a takedown, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "wrestling, sport, bold"
+    },
+    {
+        "title": "Kickboxing Roundhouse Silhouette",
+        "filename": "kickboxing_roundhouse_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a kickboxer mid roundhouse kick, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "kickboxing, martial arts, bold"
+    },
+    {
+        "title": "Self Defense Guard Stance",
+        "filename": "self_defense_guard_stance.png",
+        "prompt": "Generate a logo image: bold logo of a figure in a protective guard stance with raised forearms, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "self defense, bold"
+    },
+    {
+        "title": "Kendo Sword Stance Silhouette",
+        "filename": "kendo_sword_stance_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a kendo fighter holding a bamboo sword in ready stance, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "kendo, sword, martial arts, bold"
+    },
+    {
+        "title": "Capoeira Cartwheel Kick",
+        "filename": "capoeira_cartwheel_kick.png",
+        "prompt": "Generate a logo image: playful logo of a capoeira practitioner mid cartwheel kick, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "capoeira, dance, martial arts, playful"
+    },
+    {
+        "title": "Sumo Stance Silhouette",
+        "filename": "sumo_stance_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a sumo wrestler in a low ready stance, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "sumo, martial arts, bold"
+    },
+    {
+        "title": "Wing Chun Block Hands",
+        "filename": "wing_chun_block_hands.png",
+        "prompt": "Generate a logo image: bold logo of two forearms crossed in a wing chun blocking form, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "wing chun, martial arts, bold"
+    },
+    {
+        "title": "Krav Maga Defense Silhouette",
+        "filename": "krav_maga_defense_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a krav maga practitioner in a defensive block, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "krav maga, self defense, bold"
+    },
+    {
+        "title": "Nunchaku Spin Motion",
+        "filename": "nunchaku_spin_motion.png",
+        "prompt": "Generate a logo image: bold logo of a nunchaku mid spin with motion arc lines, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "nunchaku, martial arts, bold"
+    },
+    {
+        "title": "Martial Arts Belt Rank Stack",
+        "filename": "martial_arts_belt_rank_stack.png",
+        "prompt": "Generate a logo image: minimal logo of a folded martial arts belt with a small knot, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "martial arts, belt rank, minimal"
+    },
+    {
+        "title": "Dojo Bow Respect Silhouette",
+        "filename": "dojo_bow_respect_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of two martial artists bowing to each other, flat vector silhouette style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "dojo, martial arts, elegant"
+    },
+    {
+        "title": "Childs Pose Rest Silhouette",
+        "filename": "childs_pose_rest_silhouette.png",
+        "prompt": "Generate a logo image: calm logo of a figure folded forward in child's pose, flat vector silhouette style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, childs pose, calm"
+    },
+    {
+        "title": "Triangle Pose Line Art",
+        "filename": "triangle_pose_line_art.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi in extended triangle pose, flat vector line art style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, triangle pose, elegant"
+    },
+    {
+        "title": "Eagle Pose Twist Silhouette",
+        "filename": "eagle_pose_twist_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi balancing in eagle pose with wrapped limbs, flat vector silhouette style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, eagle pose, elegant"
+    },
+    {
+        "title": "Camel Pose Backbend Silhouette",
+        "filename": "camel_pose_backbend_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a yogi in a deep camel pose backbend, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, camel pose, bold"
+    },
+    {
+        "title": "Crow Pose Arm Balance",
+        "filename": "crow_pose_arm_balance.png",
+        "prompt": "Generate a logo image: bold logo of a yogi balanced on hands in crow pose, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, crow pose, arm balance, bold"
+    },
+    {
+        "title": "Boat Pose Core Balance",
+        "filename": "boat_pose_core_balance.png",
+        "prompt": "Generate a logo image: bold logo of a yogi balanced in a v shaped boat pose, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, boat pose, bold"
+    },
+    {
+        "title": "Bridge Pose Lift Silhouette",
+        "filename": "bridge_pose_lift_silhouette.png",
+        "prompt": "Generate a logo image: calm logo of a yogi lifted into bridge pose, flat vector silhouette style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, bridge pose, calm"
+    },
+    {
+        "title": "Fish Pose Heart Open",
+        "filename": "fish_pose_heart_open.png",
+        "prompt": "Generate a logo image: calm logo of a yogi in fish pose with an open chest arch, flat vector silhouette style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, fish pose, calm"
+    },
+    {
+        "title": "Half Moon Pose Line Art",
+        "filename": "half_moon_pose_line_art.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi balanced sideways in half moon pose, flat vector line art style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, half moon pose, elegant"
+    },
+    {
+        "title": "Dancer Pose Natarajasana",
+        "filename": "dancer_pose_natarajasana.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi in dancer pose holding one raised foot, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, dancer pose, elegant"
+    },
+    {
+        "title": "Cat Cow Spine Flow",
+        "filename": "cat_cow_spine_flow.png",
+        "prompt": "Generate a logo image: calm logo of a figure flowing between cat and cow spine positions, flat vector line art style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, cat cow pose, calm"
+    },
+    {
+        "title": "Mountain Pose Standing Line",
+        "filename": "mountain_pose_standing_line.png",
+        "prompt": "Generate a logo image: minimal logo of a figure standing tall in mountain pose, flat vector line art style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, mountain pose, minimal"
+    },
+    {
+        "title": "Standing Forward Fold Line",
+        "filename": "standing_forward_fold_line.png",
+        "prompt": "Generate a logo image: calm logo of a yogi folded forward touching the floor, flat vector line art style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, forward fold, calm"
+    },
+    {
+        "title": "Chaturanga Plank Pose",
+        "filename": "chaturanga_plank_pose.png",
+        "prompt": "Generate a logo image: bold logo of a yogi holding a low chaturanga plank, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, plank pose, bold"
+    },
+    {
+        "title": "Scorpion Pose Backbend Silhouette",
+        "filename": "scorpion_pose_backbend_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a yogi in an inverted scorpion pose backbend, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, scorpion pose, bold"
+    },
+    {
+        "title": "Locust Pose Lift Silhouette",
+        "filename": "locust_pose_lift_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a yogi lifted chest and legs in locust pose, flat vector silhouette style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, locust pose, bold"
+    },
+    {
+        "title": "Crescent Lunge Pose Line Art",
+        "filename": "crescent_lunge_pose_line_art.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi in a low crescent lunge with arms raised, flat vector line art style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, crescent lunge, elegant"
+    },
+    {
+        "title": "Goddess Pose Wide Squat",
+        "filename": "goddess_pose_wide_squat.png",
+        "prompt": "Generate a logo image: bold logo of a yogi in a wide legged goddess squat pose, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, goddess pose, bold"
+    },
+    {
+        "title": "Bound Angle Butterfly Pose",
+        "filename": "bound_angle_butterfly_pose.png",
+        "prompt": "Generate a logo image: calm logo of a yogi seated in bound angle butterfly pose, flat vector silhouette style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, bound angle pose, calm"
+    },
+    {
+        "title": "Hero Pose Seated Silhouette",
+        "filename": "hero_pose_seated_silhouette.png",
+        "prompt": "Generate a logo image: calm logo of a yogi seated calmly in hero pose, flat vector silhouette style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, hero pose, calm"
+    },
+    {
+        "title": "Savasana Corpse Pose Rest",
+        "filename": "savasana_corpse_pose_rest.png",
+        "prompt": "Generate a logo image: calm logo of a figure resting flat in savasana pose, flat vector silhouette style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, savasana, calm"
+    },
+    {
+        "title": "Chair Pose Utkatasana Silhouette",
+        "filename": "chair_pose_utkatasana_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a yogi holding chair pose with arms overhead, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, chair pose, bold"
+    },
+    {
+        "title": "Standing Split Pose Line Art",
+        "filename": "standing_split_pose_line_art.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi balanced in a standing split, flat vector line art style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, standing split, elegant"
+    },
+    {
+        "title": "Wild Thing Pose Silhouette",
+        "filename": "wild_thing_pose_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a yogi in an open backbending wild thing pose, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, wild thing pose, bold"
+    },
+    {
+        "title": "King Pigeon Pose Silhouette",
+        "filename": "king_pigeon_pose_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a yogi in a deep king pigeon backbend, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, king pigeon pose, elegant"
+    },
+    {
+        "title": "Om Symbol Lotus Mark",
+        "filename": "om_symbol_lotus_mark.png",
+        "prompt": "Generate a logo image: elegant logo of an om symbol resting inside a lotus outline, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, om symbol, spiritual, elegant"
+    },
+    {
+        "title": "Yoga Mat Roll Leaf",
+        "filename": "yoga_mat_roll_leaf.png",
+        "prompt": "Generate a logo image: minimal logo of a rolled yoga mat with a small leaf tucked in, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, yoga mat, minimal"
+    },
+    {
+        "title": "Yoga Block Stack Balance",
+        "filename": "yoga_block_stack_balance.png",
+        "prompt": "Generate a logo image: minimal logo of two yoga blocks stacked in balance, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, yoga block, minimal"
+    },
+    {
+        "title": "Third Eye Chakra Point Mark",
+        "filename": "third_eye_chakra_point_mark.png",
+        "prompt": "Generate a logo image: elegant logo of a forehead third eye chakra point with radiating lines, flat vector style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, third eye chakra, spiritual, elegant"
+    },
+    {
+        "title": "Restorative Yoga Bolster Rest",
+        "filename": "restorative_yoga_bolster_rest.png",
+        "prompt": "Generate a logo image: calm logo of a figure resting over a bolster cushion, flat vector silhouette style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "yoga, restorative yoga, calm"
     }
 ]
