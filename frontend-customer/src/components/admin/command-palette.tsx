@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   BookOpen,
+  CalendarDays,
   Video,
   Download,
   Users,
@@ -122,6 +123,14 @@ export function CommandPalette({
         href: "/admin/live",
         icon: Video,
         keywords: ["streaming", "webinars", "zoom"],
+      },
+      {
+        id: "nav-calendar",
+        label: "Unified Content Calendar",
+        category: "Products",
+        href: "/admin/calendar",
+        icon: CalendarDays,
+        keywords: ["schedule", "events", "blog", "email", "publishing", "calendar"],
       },
       {
         id: "nav-downloads",

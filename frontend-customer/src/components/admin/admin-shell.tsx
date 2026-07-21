@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import {
   Bell,
   BookOpen,
+  Calendar,
   CreditCard,
   Database,
   Download,
@@ -80,6 +81,11 @@ export function AdminShell({ children, user }: AdminShellProps) {
           icon: BookOpen,
         },
         { label: t("nav.items.liveEvents"), href: "/admin/live", icon: Video },
+        {
+          label: t("nav.items.calendar"),
+          href: "/admin/calendar",
+          icon: Calendar,
+        },
         {
           label: t("nav.items.downloads"),
           href: "/admin/downloads",
