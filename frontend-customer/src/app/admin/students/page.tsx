@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { Users, Mail, Receipt, Smartphone, Globe, UserCheck, ShieldAlert, Sparkles, ChevronRight } from "lucide-react";
