@@ -83,6 +83,7 @@ services:
       context: ./backend
       args:
         INSTALL_CLAUDE_CLI: "1"
+    restart: unless-stopped
     # --timeout 600: a Design-with-AI icon turn is a blocking HTTP call whose
     # worst case is cli 240s x 2 attempts (schema retry) + Gemini image
     # generation ~60s; 300 killed workers mid-retry (CRITICAL WORKER TIMEOUT
@@ -119,6 +120,7 @@ services:
       dockerfile: frontend-customer/Dockerfile
       target: dev
     command: npm run dev -- -p 3000
+    restart: unless-stopped
     volumes:
       - ./frontend-customer/src:/app/src
       - ./frontend-customer/public:/app/public
@@ -139,6 +141,7 @@ services:
       dockerfile: frontend-main/Dockerfile
       target: dev
     command: npm run dev -- -p 3000
+    restart: unless-stopped
     volumes:
       - ./frontend-main/src:/app/src
       - ./frontend-main/public:/app/public
