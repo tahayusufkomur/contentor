@@ -3700,5 +3700,53 @@
         "filename": "line_dance_row_silhouette.png",
         "prompt": "Generate a logo image: playful logo of a row of dancers in matching line dance step, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
         "tags": "line dancing, dance, playful"
+    },
+    {
+        "title": "Belly Dance Tribal Fusion Pose",
+        "filename": "belly_dance_tribal_fusion_pose.png",
+        "prompt": "Generate a logo image: bold logo of a belly dancer in a tribal fusion arm pose, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, tribal fusion, bold"
+    },
+    {
+        "title": "Belly Dance Snake Arms Pose",
+        "filename": "belly_dance_snake_arms_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer with snake like flowing arms, flat vector silhouette style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, snake arms, elegant"
+    },
+    {
+        "title": "Belly Dance Hip Drop Accent",
+        "filename": "belly_dance_hip_drop_accent.png",
+        "prompt": "Generate a logo image: bold logo of a belly dancer mid sharp hip drop accent, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, hip drop, bold"
+    },
+    {
+        "title": "Belly Dance Camel Walk Pose",
+        "filename": "belly_dance_camel_walk_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer mid rolling camel walk pose, flat vector silhouette style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, camel walk, elegant"
+    },
+    {
+        "title": "Belly Dance Shoulder Shimmy",
+        "filename": "belly_dance_shoulder_shimmy.png",
+        "prompt": "Generate a logo image: playful logo of a belly dancer mid shoulder shimmy motion, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, shoulder shimmy, playful"
+    },
+    {
+        "title": "Belly Dance Turkish Drop Pose",
+        "filename": "belly_dance_turkish_drop_pose.png",
+        "prompt": "Generate a logo image: bold logo of a belly dancer mid dramatic turkish drop, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, turkish drop, bold"
+    },
+    {
+        "title": "Belly Dance Isis Wings Pose",
+        "filename": "belly_dance_isis_wings_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer with wing like fan veils extended, flat vector silhouette style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, isis wings, elegant"
+    },
+    {
+        "title": "Belly Dance Candle Balance Pose",
+        "filename": "belly_dance_candle_balance_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer balancing a candle tray on her head, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, candle balance, elegant"
     }
 ]

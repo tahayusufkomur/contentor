@@ -19,6 +19,9 @@ import { UsageAdoptionCard } from "@/components/admin/usage-adoption-card";
 import { PublishCard } from "@/components/admin/publish-card";
 import { SetupGuideCard } from "@/components/admin/setup-guide-card";
 
+import { RecentActivityCard } from "@/components/admin/recent-activity-card";
+import { Mail, Newspaper, Video } from "lucide-react";
+
 export const dynamic = "force-dynamic";
 
 interface DashboardStats {
@@ -74,11 +77,40 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back. Here is an overview of your platform.
-        </p>
+      {/* Header & Quick Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground text-sm">
+            Welcome back. Here is an overview of your platform.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild size="sm" className="gap-1.5 shadow-sm">
+            <Link href="/admin/courses/new">
+              <Plus className="h-4 w-4" />
+              New Course
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-1.5 shadow-sm">
+            <Link href="/admin/live">
+              <Video className="h-4 w-4" />
+              Live Event
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-1.5 shadow-sm">
+            <Link href="/admin/email/compose">
+              <Mail className="h-4 w-4" />
+              Email
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-1.5 shadow-sm">
+            <Link href="/admin/blog">
+              <Newspaper className="h-4 w-4" />
+              Blog
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <SetupGuideCard />
@@ -117,28 +149,10 @@ export default function AdminDashboard() {
             ))}
       </div>
 
-      {/* App adoption */}
+      {/* Adoption & Recent Activity Grid */}
       <div className="grid gap-4 lg:grid-cols-2">
         <UsageAdoptionCard />
-      </div>
-
-      {/* Quick actions */}
-      <div>
-        <h2 className="mb-3 text-lg font-semibold">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
-          <Button asChild className="gap-2">
-            <Link href="/admin/courses/new">
-              <Plus className="h-4 w-4" />
-              Create Course
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="gap-2">
-            <Link href="/admin/downloads">
-              <Upload className="h-4 w-4" />
-              Upload Content
-            </Link>
-          </Button>
-        </div>
+        <RecentActivityCard />
       </div>
     </div>
   );

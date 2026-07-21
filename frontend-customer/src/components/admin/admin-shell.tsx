@@ -36,8 +36,24 @@ interface AdminShellProps {
   user?: User | null;
 }
 
+import { CommandPalette } from "@/components/admin/command-palette";
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+
 export function AdminShell({ children, user }: AdminShellProps) {
   const t = useTranslations("admin");
+  const [cmdOpen, setCmdOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const navSections: NavSection[] = [
     {
@@ -146,8 +162,25 @@ export function AdminShell({ children, user }: AdminShellProps) {
       </AppSidebar>
       <div className="flex flex-1 flex-col overflow-hidden">
         <MobileHeader title={t("title")} sections={navSections} user={user} />
+
+        {/* Top Header Bar with Global Cmd+K Search */}
+        <div className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => setCmdOpen(true)}
+            className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full max-w-sm"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span className="truncate">Search commands or pages...</span>
+            <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 font-mono text-[10px] bg-background border px-1.5 py-0.5 rounded shadow-sm text-foreground/80">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
+      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
       <SetupAssistantBubble />
       <ImpersonationBanner />
     </div>
