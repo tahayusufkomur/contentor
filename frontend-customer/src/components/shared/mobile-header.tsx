@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, ExternalLink, Globe, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,11 +67,32 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
 
   return (
     <div className="md:hidden">
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <span className="text-sm font-semibold">{title}</span>
-        <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+      <div className="flex h-14 items-center justify-between border-b px-4 gap-2">
+        <Link
+          href="/admin"
+          className="text-sm font-bold tracking-tight hover:text-primary transition-colors truncate"
+          title="Back to Admin Overview"
+        >
+          {title}
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 px-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            <Link href="/" target="_blank" rel="noopener noreferrer">
+              <Globe className="h-3.5 w-3.5" />
+              <span>View Site</span>
+            </Link>
+          </Button>
+
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOpen(!open)}>
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
       {open && (
         <nav className="border-b bg-card p-2 space-y-1">

@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronLeft } from "lucide-react";
+import { ChevronDown, ChevronLeft, ExternalLink, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/hooks/use-tenant";
 import { Button } from "@/components/ui/button";
@@ -68,14 +68,20 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
       )}
     >
       {/* Header */}
-      <div className="flex h-14 items-center justify-between border-b px-3">
+      <div className="flex h-14 items-center justify-between border-b px-3 gap-2">
         {!collapsed && (
-          <span className="text-sm font-semibold truncate">{title}</span>
+          <Link
+            href="/admin"
+            className="text-sm font-bold tracking-tight truncate hover:text-primary transition-colors"
+            title="Back to Admin Overview"
+          >
+            {title}
+          </Link>
         )}
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 shrink-0"
+          className="h-8 w-8 shrink-0 ml-auto"
           onClick={() => setCollapsed(!collapsed)}
         >
           <ChevronLeft

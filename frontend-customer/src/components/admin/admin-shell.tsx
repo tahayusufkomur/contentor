@@ -1,12 +1,14 @@
-"use client";
-
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Bell,
   BookOpen,
   CreditCard,
   Database,
   Download,
+  ExternalLink,
   Film,
+  Globe,
   Image as ImageIcon,
   Inbox,
   LayoutDashboard,
@@ -163,7 +165,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <MobileHeader title={t("title")} sections={navSections} user={user} />
 
-        {/* Top Header Bar with Global Cmd+K Search */}
+        {/* Top Header Bar with Global Cmd+K Search & View Site */}
         <div className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4">
           <button
             type="button"
@@ -176,6 +178,19 @@ export function AdminShell({ children, user }: AdminShellProps) {
               ⌘K
             </kbd>
           </button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs font-medium shrink-0 shadow-sm"
+          >
+            <Link href="/" target="_blank" rel="noopener noreferrer">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>View Site</span>
+              <ExternalLink className="h-3 w-3 text-muted-foreground/60" />
+            </Link>
+          </Button>
         </div>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
