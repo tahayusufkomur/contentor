@@ -2798,5 +2798,965 @@
     "tags": "chart, stats, data, growth",
     "kind": "icon",
     "alt_text": "Bar Chart icon"
+  },
+  {
+    "title": "Kids Reading Circle",
+    "filename": "hero_kids_reading_circle.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a group of children sitting in a circle reading picture books with a smiling teacher in a cozy classroom, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "kids, education, group, cozy",
+    "kind": "hero",
+    "alt_text": "children reading picture books together in a classroom circle"
+  },
+  {
+    "title": "Kids Art Class",
+    "filename": "hero_kids_art_class.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: children painting at easels in a bright, colorful art studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "kids, art, creativity, bright",
+    "kind": "hero",
+    "alt_text": "kids painting at easels in a bright art studio"
+  },
+  {
+    "title": "Kids Science Experiment",
+    "filename": "hero_kids_science_experiment.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: children doing a hands-on science experiment with an encouraging coach in a colorful classroom lab, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "kids, education, curiosity, hands-on",
+    "kind": "hero",
+    "alt_text": "children doing a science experiment with their teacher"
+  },
+  {
+    "title": "Parent and Toddler Bonding",
+    "filename": "hero_parenting_playroom_bonding.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a parent playing on the floor with a toddler surrounded by toys in a cozy living room, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "parenting, family, bonding, warm",
+    "kind": "hero",
+    "alt_text": "parent playing on the floor with a toddler"
+  },
+  {
+    "title": "Parenting Workshop",
+    "filename": "hero_parenting_workshop_group.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small group of parents sitting in a supportive circle with a facilitator during a parenting workshop, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "parenting, community, support, workshop",
+    "kind": "hero",
+    "alt_text": "parents sitting in a circle at a parenting workshop"
+  },
+  {
+    "title": "Bedtime Story Time",
+    "filename": "hero_parenting_bedtime_story.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a parent reading a bedtime story to a child under warm lamp light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "parenting, cozy, bedtime, love",
+    "kind": "hero",
+    "alt_text": "parent reading a bedtime story to a child"
+  },
+  {
+    "title": "Family Walk",
+    "filename": "hero_parenting_walk_outdoors.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a parent and child walking hand in hand outdoors at golden hour, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "parenting, outdoor, golden hour, connection",
+    "kind": "hero",
+    "alt_text": "parent and child walking hand in hand outdoors"
+  },
+  {
+    "title": "Pilates Reformer Session",
+    "filename": "hero_pilates_reformer_studio.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person using a pilates reformer machine in a bright, minimal studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "pilates, studio, strength, control",
+    "kind": "hero",
+    "alt_text": "person using a pilates reformer machine in a bright studio"
+  },
+  {
+    "title": "Pilates Mat Work",
+    "filename": "hero_pilates_mat_core_work.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person doing a mat pilates core exercise in a calm sunlit studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "pilates, core, mat, calm",
+    "kind": "hero",
+    "alt_text": "person doing mat pilates core exercise in a studio"
+  },
+  {
+    "title": "Pilates Group Class",
+    "filename": "hero_pilates_group_class.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small group pilates class following an instructor in a bright studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "pilates, group, class, instructor",
+    "kind": "hero",
+    "alt_text": "small group pilates class with an instructor"
+  },
+  {
+    "title": "Pilates Stretch",
+    "filename": "hero_pilates_stretch_wall.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person stretching with a pilates ring in a minimalist studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "pilates, stretch, minimal, flexibility",
+    "kind": "hero",
+    "alt_text": "person stretching with a pilates ring in a studio"
+  },
+  {
+    "title": "Sunrise Meditation",
+    "filename": "hero_meditation_sunrise_session.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person meditating cross-legged outdoors at sunrise, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "meditation, calm, sunrise, mindfulness",
+    "kind": "hero",
+    "alt_text": "person meditating cross-legged outdoors at sunrise"
+  },
+  {
+    "title": "Meditation Circle",
+    "filename": "hero_meditation_group_circle.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small group seated together in a meditation circle indoors, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "meditation, group, calm, community",
+    "kind": "hero",
+    "alt_text": "small group seated in a meditation circle"
+  },
+  {
+    "title": "Candlelight Meditation",
+    "filename": "hero_meditation_candlelight.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person meditating surrounded by candles in a dim, calm room, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "meditation, candles, calm, quiet",
+    "kind": "hero",
+    "alt_text": "person meditating with candles in a calm room"
+  },
+  {
+    "title": "Beach Meditation",
+    "filename": "hero_meditation_beach.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person meditating on a quiet beach at dawn, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "meditation, beach, dawn, calm",
+    "kind": "hero",
+    "alt_text": "person meditating on a quiet beach at dawn"
+  },
+  {
+    "title": "Pour-Over Coffee",
+    "filename": "hero_coffee_pour_over.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a barista pouring hand-drip coffee in close warm light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "coffee, brewing, artisanal, warm",
+    "kind": "hero",
+    "alt_text": "barista pouring hand-drip pour-over coffee"
+  },
+  {
+    "title": "Latte Art",
+    "filename": "hero_coffee_latte_art.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a barista pouring latte art into a cup in a cozy cafe, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "coffee, cafe, latte art, cozy",
+    "kind": "hero",
+    "alt_text": "barista pouring latte art in a cozy cafe"
+  },
+  {
+    "title": "Coffee Roasting",
+    "filename": "hero_coffee_roasting.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: coffee beans roasting in a small-batch roaster with warm tones, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "coffee, roasting, artisanal, warm",
+    "kind": "hero",
+    "alt_text": "coffee beans roasting in a small-batch roaster"
+  },
+  {
+    "title": "Coffee Cupping",
+    "filename": "hero_coffee_tasting_cupping.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a coffee cupping tasting session with several cups lined up on a table, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "coffee, tasting, craft, professional",
+    "kind": "hero",
+    "alt_text": "coffee cupping tasting session with several cups on a table"
+  },
+  {
+    "title": "Writer's Desk",
+    "filename": "hero_writing_desk_notebook.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a writer at a wooden desk writing in a notebook beside a window, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "writing, desk, notebook, focus",
+    "kind": "hero",
+    "alt_text": "writer at a wooden desk writing in a notebook"
+  },
+  {
+    "title": "Vintage Typewriter",
+    "filename": "hero_writing_typewriter_vintage.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: hands typing on a vintage typewriter in a cozy study, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "writing, vintage, cozy, craft",
+    "kind": "hero",
+    "alt_text": "hands typing on a vintage typewriter"
+  },
+  {
+    "title": "Writing Workshop",
+    "filename": "hero_writing_workshop_group.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small writing workshop group gathered around a table with notebooks, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "writing, workshop, group, community",
+    "kind": "hero",
+    "alt_text": "small writing workshop group with notebooks"
+  },
+  {
+    "title": "Writing in a Cafe",
+    "filename": "hero_writing_cafe_laptop.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a writer typing on a laptop in a quiet cafe corner, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "writing, cafe, laptop, focus",
+    "kind": "hero",
+    "alt_text": "writer typing on a laptop in a quiet cafe"
+  },
+  {
+    "title": "Video Editing Studio",
+    "filename": "hero_video_editing_studio.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a creator editing video footage at a multi-monitor desk setup, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "video, editing, studio, workflow",
+    "kind": "hero",
+    "alt_text": "creator editing video footage on multiple monitors"
+  },
+  {
+    "title": "Camera Setup",
+    "filename": "hero_video_camera_setup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a filmmaker adjusting a camera on a tripod in a studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "video, filmmaking, camera, studio",
+    "kind": "hero",
+    "alt_text": "filmmaker adjusting a camera on a tripod"
+  },
+  {
+    "title": "Studio Lighting Setup",
+    "filename": "hero_video_lighting_rig.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a content creator setting up a softbox lighting rig for a shoot, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "video, lighting, studio, production",
+    "kind": "hero",
+    "alt_text": "content creator setting up softbox lighting"
+  },
+  {
+    "title": "Interview Setup",
+    "filename": "hero_video_interview_setup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a two-person interview being filmed with professional studio lighting, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "video, interview, production, studio",
+    "kind": "hero",
+    "alt_text": "two-person interview being filmed in a studio"
+  },
+  {
+    "title": "Skincare Routine",
+    "filename": "hero_beauty_skincare_routine.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a woman applying skincare product in front of a bright bathroom mirror, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "beauty, skincare, routine, bright",
+    "kind": "hero",
+    "alt_text": "woman applying skincare product in a bright bathroom"
+  },
+  {
+    "title": "Makeup Application",
+    "filename": "hero_beauty_makeup_application.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a makeup artist applying makeup to a client under studio light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "beauty, makeup, studio, artistry",
+    "kind": "hero",
+    "alt_text": "makeup artist applying makeup to a client"
+  },
+  {
+    "title": "Spa Facial Treatment",
+    "filename": "hero_beauty_spa_treatment.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a calm spa facial treatment in a serene, softly lit room, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "beauty, spa, calm, serene",
+    "kind": "hero",
+    "alt_text": "spa facial treatment in a serene setting"
+  },
+  {
+    "title": "Beauty Product Flatlay",
+    "filename": "hero_beauty_product_flatlay.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a flatlay of skincare and beauty products arranged in soft natural light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "beauty, flatlay, products, minimal",
+    "kind": "hero",
+    "alt_text": "flatlay of skincare and beauty products"
+  },
+  {
+    "title": "Therapy Session Room",
+    "filename": "hero_therapy_session_room.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a warm therapist's office with two armchairs and calm decor, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "therapy, office, calm, warm",
+    "kind": "hero",
+    "alt_text": "warm therapist office with two armchairs"
+  },
+  {
+    "title": "Support Group",
+    "filename": "hero_therapy_group_support.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small support group sitting in a circle talking openly, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "therapy, group, support, community",
+    "kind": "hero",
+    "alt_text": "small support group sitting in a circle"
+  },
+  {
+    "title": "Therapeutic Journaling",
+    "filename": "hero_therapy_journaling.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person journaling on a couch in soft daylight, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "therapy, journaling, reflection, calm",
+    "kind": "hero",
+    "alt_text": "person journaling on a couch in soft daylight"
+  },
+  {
+    "title": "Walk and Talk Therapy",
+    "filename": "hero_therapy_walk_talk.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a therapist and client walking and talking together outdoors, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "therapy, outdoor, conversation, calm",
+    "kind": "hero",
+    "alt_text": "therapist and client walking and talking outdoors"
+  },
+  {
+    "title": "Tending Raised Garden Beds",
+    "filename": "hero_garden_raised_beds.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a gardener tending raised vegetable garden beds on a sunny morning, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "garden, gardening, morning, outdoor",
+    "kind": "hero",
+    "alt_text": "gardener tending raised vegetable beds"
+  },
+  {
+    "title": "Potting Bench",
+    "filename": "hero_garden_potting_bench.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: hands potting plants at a rustic wooden potting bench, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "garden, potting, hands-on, rustic",
+    "kind": "hero",
+    "alt_text": "hands potting plants at a wooden potting bench"
+  },
+  {
+    "title": "Greenhouse Watering",
+    "filename": "hero_garden_greenhouse.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person watering plants inside a sunlit greenhouse, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "garden, greenhouse, plants, sunlit",
+    "kind": "hero",
+    "alt_text": "person watering plants inside a sunlit greenhouse"
+  },
+  {
+    "title": "Home Organizing",
+    "filename": "hero_home_organizing_shelves.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person organizing neatly labeled shelves in a bright, tidy home, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "home, organizing, tidy, bright",
+    "kind": "hero",
+    "alt_text": "person organizing neatly labeled shelves at home"
+  },
+  {
+    "title": "DIY Home Renovation",
+    "filename": "hero_home_diy_renovation.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person painting a wall during a DIY home improvement project, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "home, diy, renovation, hands-on",
+    "kind": "hero",
+    "alt_text": "person painting a wall during a DIY project"
+  },
+  {
+    "title": "Decluttering and Folding",
+    "filename": "hero_home_declutter_folding.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person folding laundry in a tidy, bright room while decluttering, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "home, declutter, tidy, calm",
+    "kind": "hero",
+    "alt_text": "person folding laundry in a tidy bright room"
+  },
+  {
+    "title": "Morning Routine",
+    "filename": "hero_lifestyle_morning_routine.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person stretching by a sunny window with a cup of coffee during their morning routine, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "lifestyle, morning, routine, calm",
+    "kind": "hero",
+    "alt_text": "person stretching by a sunny window with coffee"
+  },
+  {
+    "title": "Morning Journaling",
+    "filename": "hero_lifestyle_journaling_bed.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person journaling in bed with soft morning light coming through the window, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "lifestyle, journaling, morning, cozy",
+    "kind": "hero",
+    "alt_text": "person journaling in bed in soft morning light"
+  },
+  {
+    "title": "Slow Living Porch",
+    "filename": "hero_lifestyle_slow_living.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person reading a book on a cozy porch with a cup of tea, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "lifestyle, slow living, cozy, calm",
+    "kind": "hero",
+    "alt_text": "person reading on a cozy porch with tea"
+  },
+  {
+    "title": "Capsule Wardrobe",
+    "filename": "hero_lifestyle_capsule_wardrobe.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person organizing a minimalist capsule wardrobe closet, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "lifestyle, minimal, wardrobe, organizing",
+    "kind": "hero",
+    "alt_text": "person organizing a minimalist capsule wardrobe"
+  },
+  {
+    "title": "Dance Studio Rehearsal",
+    "filename": "hero_dance_studio_rehearsal.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a dancer captured mid-movement in a mirrored dance studio with natural light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "dance, studio, movement, expression",
+    "kind": "hero",
+    "alt_text": "dancer mid-movement in a mirrored dance studio"
+  },
+  {
+    "title": "Dojo Training",
+    "filename": "hero_martial_arts_dojo_training.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a martial artist training in a traditional dojo with a focused stance, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "martial arts, dojo, discipline, focus",
+    "kind": "hero",
+    "alt_text": "martial artist training in a traditional dojo"
+  },
+  {
+    "title": "Sparring Practice",
+    "filename": "hero_martial_arts_sparring_gloves.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: two martial artists sparring with training pads in a gym, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "martial arts, sparring, gym, discipline",
+    "kind": "hero",
+    "alt_text": "two martial artists sparring with training pads"
+  },
+  {
+    "title": "Backpacker Overlook",
+    "filename": "hero_travel_backpacker_overlook.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a traveler with a backpack overlooking a scenic mountain vista, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "travel, adventure, mountain, overlook",
+    "kind": "hero",
+    "alt_text": "traveler with a backpack overlooking a mountain vista"
+  },
+  {
+    "title": "Budgeting at a Desk",
+    "filename": "hero_finance_budgeting_desk.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person reviewing a budget spreadsheet at a desk with a laptop and calculator, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "finance, budgeting, desk, focus",
+    "kind": "hero",
+    "alt_text": "person reviewing a budget spreadsheet at a desk"
+  },
+  {
+    "title": "Financial Coaching Session",
+    "filename": "hero_finance_coaching_session.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a financial coach and client reviewing documents together at a table, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "finance, coaching, consultation, professional",
+    "kind": "hero",
+    "alt_text": "financial coach and client reviewing documents"
+  },
+  {
+    "title": "Savings and Growth",
+    "filename": "hero_finance_savings_jar.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: hands stacking coins next to a laptop displaying financial growth charts, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "finance, savings, growth, planning",
+    "kind": "hero",
+    "alt_text": "hands stacking coins beside a laptop with charts"
+  },
+  {
+    "title": "Consulting Whiteboard Session",
+    "filename": "hero_consulting_whiteboard_session.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a consultant presenting a strategy on a whiteboard to a small team, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "consulting, strategy, whiteboard, team",
+    "kind": "hero",
+    "alt_text": "consultant presenting strategy on a whiteboard"
+  },
+  {
+    "title": "Client Meeting",
+    "filename": "hero_consulting_laptop_meeting.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a consultant and client reviewing a laptop together in a modern meeting room, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "consulting, meeting, professional, modern",
+    "kind": "hero",
+    "alt_text": "consultant and client reviewing a laptop in a meeting"
+  },
+  {
+    "title": "Consulting Handshake",
+    "filename": "hero_consulting_handshake_office.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a consultant shaking hands with a client in a modern office, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "consulting, handshake, office, professional",
+    "kind": "hero",
+    "alt_text": "consultant shaking hands with a client in an office"
+  },
+  {
+    "title": "Consulting Video Call",
+    "filename": "hero_consulting_video_call.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a consultant on a video call at a clean, modern home office desk, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "consulting, video call, home office, modern",
+    "kind": "hero",
+    "alt_text": "consultant on a video call at a home office desk"
+  },
+  {
+    "title": "Open House Showing",
+    "filename": "hero_real_estate_open_house.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a real estate agent showing a bright modern living room to clients, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "real estate, showing, modern, bright",
+    "kind": "hero",
+    "alt_text": "real estate agent showing a bright living room to clients"
+  },
+  {
+    "title": "Key Handoff",
+    "filename": "hero_real_estate_key_handoff.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a real estate agent handing over house keys to new homeowners, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "real estate, handoff, milestone, joyful",
+    "kind": "hero",
+    "alt_text": "real estate agent handing over house keys to new owners"
+  },
+  {
+    "title": "Property Walkthrough",
+    "filename": "hero_real_estate_exterior_walkthrough.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: an agent and clients walking together in front of an attractive house exterior, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "real estate, exterior, walkthrough, professional",
+    "kind": "hero",
+    "alt_text": "agent and clients walking in front of a house exterior"
+  },
+  {
+    "title": "Reviewing Listings",
+    "filename": "hero_real_estate_office_desk.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a real estate agent reviewing property listings on a laptop in a bright office, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "real estate, office, listings, focus",
+    "kind": "hero",
+    "alt_text": "real estate agent reviewing property listings on a laptop"
+  },
+  {
+    "title": "Podcast Recording",
+    "filename": "hero_podcast_studio_mics.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: two people recording a podcast together with professional microphones, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "podcast, recording, studio, conversation",
+    "kind": "hero",
+    "alt_text": "two people recording a podcast with microphones"
+  },
+  {
+    "title": "Podcast Host",
+    "filename": "hero_podcast_host_headphones.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a podcast host wearing headphones speaking into a microphone, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "podcast, host, headphones, focus",
+    "kind": "hero",
+    "alt_text": "podcast host wearing headphones speaking into a mic"
+  },
+  {
+    "title": "Podcast Interview",
+    "filename": "hero_podcast_interview_setup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a podcast interview setup with two microphones facing each other across a table, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "podcast, interview, setup, studio",
+    "kind": "hero",
+    "alt_text": "podcast interview setup with two microphones"
+  },
+  {
+    "title": "Podcast Production",
+    "filename": "hero_podcast_editing_soundboard.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a producer adjusting a soundboard mixer in a podcast studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "podcast, production, soundboard, studio",
+    "kind": "hero",
+    "alt_text": "producer adjusting a soundboard in a podcast studio"
+  },
+  {
+    "title": "Vlogging Outdoors",
+    "filename": "hero_vlog_selfie_camera.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a vlogger filming themselves with a handheld camera outdoors, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "vlog, outdoor, handheld, casual",
+    "kind": "hero",
+    "alt_text": "vlogger filming themselves with a handheld camera"
+  },
+  {
+    "title": "Vlog Desk Setup",
+    "filename": "hero_vlog_ring_light_desk.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a creator sitting at a desk with a ring light filming a vlog, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "vlog, ring light, desk, setup",
+    "kind": "hero",
+    "alt_text": "creator filming a vlog at a desk with a ring light"
+  },
+  {
+    "title": "City Vlog Walk",
+    "filename": "hero_vlog_daily_life_walk.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a vlogger holding a camera while walking through a lively city street, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "vlog, city, walk, lifestyle",
+    "kind": "hero",
+    "alt_text": "vlogger holding a camera walking through a city street"
+  },
+  {
+    "title": "Reviewing Footage",
+    "filename": "hero_vlog_behind_scenes.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a vlogger reviewing footage on a camera screen in a casual setting, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "vlog, review, casual, behind the scenes",
+    "kind": "hero",
+    "alt_text": "vlogger reviewing footage on a camera screen"
+  },
+  {
+    "title": "Streaming Setup",
+    "filename": "hero_streaming_gaming_setup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a streamer at a gaming desk with multiple monitors and ambient RGB lighting, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "streaming, gaming, setup, desk",
+    "kind": "hero",
+    "alt_text": "streamer at a gaming desk with multiple monitors"
+  },
+  {
+    "title": "Live Streaming to Camera",
+    "filename": "hero_streaming_live_chat_overlay.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a streamer talking to a webcam with a microphone in a home studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "streaming, webcam, mic, home studio",
+    "kind": "hero",
+    "alt_text": "streamer talking to a webcam with a microphone"
+  },
+  {
+    "title": "Live Music Stream",
+    "filename": "hero_streaming_music_performance.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a musician streaming a live performance from a home studio, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "streaming, music, performance, home studio",
+    "kind": "hero",
+    "alt_text": "musician streaming a live performance from home"
+  },
+  {
+    "title": "Multi-Camera Streaming",
+    "filename": "hero_streaming_control_room.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a content creator managing a multi-camera streaming control setup, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "streaming, control room, production, multi-camera",
+    "kind": "hero",
+    "alt_text": "creator managing a multi-camera streaming setup"
+  },
+  {
+    "title": "Content Creator Workspace",
+    "filename": "hero_content_creator_workspace.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a creator working at a stylish desk with a camera and laptop for content creation, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "content, workspace, creator, desk",
+    "kind": "hero",
+    "alt_text": "creator working at a desk with a camera and laptop"
+  },
+  {
+    "title": "Content Planning",
+    "filename": "hero_content_planning_calendar.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a creator planning a content calendar on a whiteboard, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "content, planning, calendar, whiteboard",
+    "kind": "hero",
+    "alt_text": "creator planning a content calendar on a whiteboard"
+  },
+  {
+    "title": "Content Photo Shoot",
+    "filename": "hero_content_photo_shoot.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a creator setting up a product photo shoot with softbox lights, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "content, photo shoot, product, lighting",
+    "kind": "hero",
+    "alt_text": "creator setting up a product photo shoot"
+  },
+  {
+    "title": "Batch Filming Clips",
+    "filename": "hero_content_batch_filming.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a creator filming short clips with a phone mounted on a tripod, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "content, filming, phone, tripod",
+    "kind": "hero",
+    "alt_text": "creator filming short clips with a phone on a tripod"
+  },
+  {
+    "title": "Blogging in a Cafe",
+    "filename": "hero_blogging_laptop_cafe.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a blogger typing on a laptop beside a notebook in a cozy cafe, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "blogging, cafe, laptop, cozy",
+    "kind": "hero",
+    "alt_text": "blogger typing on a laptop in a cozy cafe"
+  },
+  {
+    "title": "Blog Photo Flatlay",
+    "filename": "hero_blogging_photography_flatlay.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a blogger arranging a styled flatlay photo for a blog post, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "blogging, flatlay, styling, photography",
+    "kind": "hero",
+    "alt_text": "blogger arranging a styled flatlay photo"
+  },
+  {
+    "title": "Blogger's Home Office",
+    "filename": "hero_blogging_home_office.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a blogger writing at a bright, minimalist home office desk, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "blogging, home office, minimal, bright",
+    "kind": "hero",
+    "alt_text": "blogger writing at a bright minimalist desk"
+  },
+  {
+    "title": "Writing Outdoors",
+    "filename": "hero_blogging_outdoor_writing.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a blogger writing notes on a laptop outdoors in a park, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "blogging, outdoor, park, laptop",
+    "kind": "hero",
+    "alt_text": "blogger writing notes on a laptop in a park"
+  },
+  {
+    "title": "Editorial Calendar",
+    "filename": "hero_blogging_editorial_calendar.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a blogger reviewing an editorial calendar pinned to a corkboard, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "blogging, calendar, planning, corkboard",
+    "kind": "hero",
+    "alt_text": "blogger reviewing an editorial calendar on a corkboard"
+  },
+  {
+    "title": "Kneading Bread Dough",
+    "filename": "hero_baking_bread_kneading.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a baker kneading bread dough on a floured wooden counter, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "baking, bread, hands-on, artisanal",
+    "kind": "hero",
+    "alt_text": "baker kneading dough on a floured wooden counter"
+  },
+  {
+    "title": "Cake Decorating",
+    "filename": "hero_baking_cake_decorating.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a baker piping frosting onto a layer cake, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "baking, decorating, cake, craft",
+    "kind": "hero",
+    "alt_text": "baker piping frosting onto a layer cake"
+  },
+  {
+    "title": "Fresh from the Oven",
+    "filename": "hero_baking_pastry_oven.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a baker pulling a tray of fresh pastries from the oven, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "baking, pastry, oven, warm",
+    "kind": "hero",
+    "alt_text": "baker pulling a tray of pastries from the oven"
+  },
+  {
+    "title": "Baking Class",
+    "filename": "hero_baking_cookie_class.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small baking class decorating cookies together at a table, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "baking, class, group, cookies",
+    "kind": "hero",
+    "alt_text": "small baking class decorating cookies together"
+  },
+  {
+    "title": "Sourdough Starter",
+    "filename": "hero_baking_sourdough_starter.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: hands stirring a bubbly sourdough starter in a glass jar, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "baking, sourdough, artisanal, hands-on",
+    "kind": "hero",
+    "alt_text": "hands stirring a sourdough starter in a glass jar"
+  },
+  {
+    "title": "Craft Cocktail Mixing",
+    "filename": "hero_drinks_cocktail_mixing.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a bartender mixing a craft cocktail under warm bar lighting, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "drinks, cocktail, bar, craft",
+    "kind": "hero",
+    "alt_text": "bartender mixing a craft cocktail at a bar"
+  },
+  {
+    "title": "Smoothie Prep",
+    "filename": "hero_drinks_smoothie_prep.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person blending a fresh smoothie in a bright kitchen, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "drinks, smoothie, kitchen, fresh",
+    "kind": "hero",
+    "alt_text": "person blending a fresh smoothie in a bright kitchen"
+  },
+  {
+    "title": "Wine Tasting",
+    "filename": "hero_drinks_wine_tasting.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a small wine tasting with glasses lined up on a table, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "drinks, wine, tasting, table",
+    "kind": "hero",
+    "alt_text": "wine tasting with glasses lined up on a table"
+  },
+  {
+    "title": "Pancake Stack",
+    "filename": "hero_breakfast_pancake_stack.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a stack of pancakes with syrup on a rustic table in morning light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "breakfast, pancakes, rustic, morning",
+    "kind": "hero",
+    "alt_text": "stack of pancakes with syrup on a rustic table"
+  },
+  {
+    "title": "Avocado Toast",
+    "filename": "hero_breakfast_avocado_toast.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: avocado toast plated on a bright kitchen counter, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "breakfast, avocado toast, bright, kitchen",
+    "kind": "hero",
+    "alt_text": "avocado toast plated on a bright kitchen counter"
+  },
+  {
+    "title": "Breakfast Table Spread",
+    "filename": "hero_breakfast_table_spread.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a full breakfast table spread with fruit, eggs, and coffee, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "breakfast, spread, fruit, coffee",
+    "kind": "hero",
+    "alt_text": "full breakfast table spread with fruit and coffee"
+  },
+  {
+    "title": "Smoothie Bowl",
+    "filename": "hero_breakfast_smoothie_bowl.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a colorful smoothie bowl topped with fruit, shot from overhead, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "breakfast, smoothie bowl, colorful, overhead",
+    "kind": "hero",
+    "alt_text": "colorful smoothie bowl topped with fruit"
+  },
+  {
+    "title": "Family Breakfast",
+    "filename": "hero_breakfast_family_kitchen.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a family gathered making breakfast together in a sunny kitchen, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "breakfast, family, kitchen, morning",
+    "kind": "hero",
+    "alt_text": "family making breakfast together in a sunny kitchen"
+  },
+  {
+    "title": "Tea Pouring",
+    "filename": "hero_tea_pouring_ceremony.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: hands pouring tea from a ceramic teapot into a cup, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "tea, pouring, ceramic, calm",
+    "kind": "hero",
+    "alt_text": "hands pouring tea from a ceramic teapot"
+  },
+  {
+    "title": "Garden Tea Set",
+    "filename": "hero_tea_garden_setup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a tea set arranged on a table in a garden setting, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "tea, garden, tea set, outdoor",
+    "kind": "hero",
+    "alt_text": "tea set arranged on a table in a garden"
+  },
+  {
+    "title": "Loose Tea Leaves",
+    "filename": "hero_tea_leaves_closeup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: loose tea leaves in a wooden scoop, close editorial detail shot, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "tea, tea leaves, detail, editorial",
+    "kind": "hero",
+    "alt_text": "loose tea leaves in a wooden scoop"
+  },
+  {
+    "title": "Afternoon Tea",
+    "filename": "hero_tea_afternoon_relax.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person relaxing with a cup of tea beside a window, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "tea, relax, afternoon, window",
+    "kind": "hero",
+    "alt_text": "person relaxing with a cup of tea by a window"
+  },
+  {
+    "title": "Chef Plating",
+    "filename": "hero_food_plating_chef.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a chef plating a gourmet dish in a professional kitchen, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "food, chef, plating, professional",
+    "kind": "hero",
+    "alt_text": "chef plating a gourmet dish in a professional kitchen"
+  },
+  {
+    "title": "Meal Prep",
+    "filename": "hero_food_meal_prep.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person meal-prepping food into containers on a kitchen counter, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "food, meal prep, containers, kitchen",
+    "kind": "hero",
+    "alt_text": "person meal-prepping food into containers"
+  },
+  {
+    "title": "Family Dinner",
+    "filename": "hero_food_family_dinner.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a family sharing a dinner meal together at a table in warm light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "food, family, dinner, warm",
+    "kind": "hero",
+    "alt_text": "family sharing a dinner meal at a table"
+  },
+  {
+    "title": "Developer Workspace",
+    "filename": "hero_tech_coding_workspace.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a developer coding at a dual-monitor desk setup, focused, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "tech, coding, workspace, focus",
+    "kind": "hero",
+    "alt_text": "developer coding at a dual-monitor desk setup"
+  },
+  {
+    "title": "Family Picnic",
+    "filename": "hero_family_picnic_park.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a family having a picnic together in a sunny park, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "family, picnic, park, sunny",
+    "kind": "hero",
+    "alt_text": "family having a picnic together in a sunny park"
+  },
+  {
+    "title": "Family Game Night",
+    "filename": "hero_family_game_night.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a family playing a board game together at home, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "family, game night, home, together",
+    "kind": "hero",
+    "alt_text": "family playing a board game together at home"
+  },
+  {
+    "title": "Cooking Together",
+    "filename": "hero_family_cooking_together.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: parents and kids cooking together in a bright kitchen, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "family, cooking, kids, kitchen",
+    "kind": "hero",
+    "alt_text": "parents and kids cooking together in a kitchen"
+  },
+  {
+    "title": "Forest Hike",
+    "filename": "hero_nature_forest_hike.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a hiker walking through a sunlit forest trail, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "nature, hike, forest, trail",
+    "kind": "hero",
+    "alt_text": "hiker walking through a sunlit forest trail"
+  },
+  {
+    "title": "Mountain Sunrise",
+    "filename": "hero_nature_mountain_sunrise.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a wide landscape view of mountains at sunrise with soft mist, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "nature, mountains, sunrise, landscape",
+    "kind": "hero",
+    "alt_text": "wide landscape of mountains at sunrise"
+  },
+  {
+    "title": "Health Coaching Consult",
+    "filename": "hero_health_checkup_consult.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a health coach reviewing a wellness plan with a client at a desk, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "health, coaching, consult, wellness",
+    "kind": "hero",
+    "alt_text": "health coach reviewing a wellness plan with a client"
+  },
+  {
+    "title": "Morning Stretch",
+    "filename": "hero_health_stretching_home.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person doing a gentle stretch routine at home in the morning, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "health, stretch, home, morning",
+    "kind": "hero",
+    "alt_text": "person doing a gentle stretch routine at home"
+  },
+  {
+    "title": "Wind-Down Routine",
+    "filename": "hero_health_sleep_routine.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person winding down for sleep in a cozy bedroom with soft lamp light, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "health, sleep, cozy, calm",
+    "kind": "hero",
+    "alt_text": "person winding down for sleep in a cozy bedroom"
+  },
+  {
+    "title": "Brisk Walk",
+    "filename": "hero_health_walking_outdoors.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person walking briskly outdoors on a park path for exercise, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "health, walking, outdoor, exercise",
+    "kind": "hero",
+    "alt_text": "person walking briskly outdoors on a park path"
+  },
+  {
+    "title": "Designer's Studio",
+    "filename": "hero_design_studio_desk.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a designer sketching on a tablet at a creative studio desk, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "design, sketching, studio, creative",
+    "kind": "hero",
+    "alt_text": "designer sketching on a tablet at a studio desk"
+  },
+  {
+    "title": "Moodboard Wall",
+    "filename": "hero_design_moodboard_wall.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a designer pinning fabric swatches and moodboard items to a wall, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "design, moodboard, swatches, creative",
+    "kind": "hero",
+    "alt_text": "designer pinning swatches to a moodboard wall"
+  },
+  {
+    "title": "Product Prototype Review",
+    "filename": "hero_design_product_prototype.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a designer reviewing a 3D printed product prototype on a workbench, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "design, prototype, workbench, review",
+    "kind": "hero",
+    "alt_text": "designer reviewing a 3D printed prototype"
+  },
+  {
+    "title": "Wedding Table Setting",
+    "filename": "hero_events_wedding_planning.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: an event planner arranging elegant table settings for a wedding reception, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "events, wedding, planning, elegant",
+    "kind": "hero",
+    "alt_text": "event planner arranging table settings for a wedding"
+  },
+  {
+    "title": "Conference Setup",
+    "filename": "hero_events_conference_setup.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: event staff setting up chairs and signage for a conference, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "events, conference, setup, staff",
+    "kind": "hero",
+    "alt_text": "event staff setting up chairs and signage for a conference"
+  },
+  {
+    "title": "Floral Centerpiece",
+    "filename": "hero_events_florals_arrangement.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a florist arranging a floral centerpiece for an event, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "events, florals, arrangement, craft",
+    "kind": "hero",
+    "alt_text": "florist arranging a floral centerpiece for an event"
+  },
+  {
+    "title": "Celebration Toast",
+    "filename": "hero_events_celebration_toast.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: guests raising a toast together at a celebration event, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "events, celebration, toast, joyful",
+    "kind": "hero",
+    "alt_text": "guests raising a toast at a celebration event"
+  },
+  {
+    "title": "Dog Training Session",
+    "filename": "hero_pets_dog_training_park.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a dog trainer working with a dog in a park during a positive training moment, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "pets, training, outdoor, bond",
+    "kind": "hero",
+    "alt_text": "dog trainer working with a dog in a park"
+  },
+  {
+    "title": "Farmers Market",
+    "filename": "hero_food_farmers_market_produce.jpg",
+    "prompt": "Generate a photorealistic 16:9 editorial stock photo: a person selecting fresh produce at a farmers market stall, natural light, premium magazine look, no text, no watermark, no logos.",
+    "tags": "food, market, produce, fresh",
+    "kind": "hero",
+    "alt_text": "person selecting fresh produce at a farmers market"
   }
 ]
