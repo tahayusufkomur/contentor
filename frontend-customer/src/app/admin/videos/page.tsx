@@ -13,6 +13,8 @@ import {
   Upload,
   Video,
   X,
+  Copy,
+  Code,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +37,8 @@ import {
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import { useChunkedUpload } from "@/hooks/use-chunked-upload";
+import { BatchDropzone } from "@/components/admin/batch-dropzone";
+import { LightboxModal, type MediaItemPayload } from "@/components/admin/lightbox-modal";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +92,7 @@ function extractDuration(file: File): Promise<number> {
 export default function VideosPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
@@ -501,17 +506,31 @@ export default function VideosPage() {
           { label: "Video", key: "video" },
           { label: "Actions", key: "actions" },
         ]}
-        renderGalleryItem={(video, _selected) => (
-          <div className="group overflow-hidden rounded-lg border bg-card">
+        renderGalleryItem={(video) => (
+          <div className="group overflow-hidden rounded-xl border bg-card shadow-sm hover:shadow-md transition-all">
             {video.video_signed_url ? (
-              <div className="relative aspect-video bg-black">
+              <div
+                className="relative aspect-video bg-black cursor-pointer overflow-hidden"
+                onClick={() =>
+                  setPreviewItem({
+                    id: video.id,
+                    title: video.title || "Untitled Video",
+                    type: "video",
+                    url: video.video_signed_url!,
+                    s3_key: video.s3_key,
+                    file_size: video.file_size,
+                    duration_seconds: video.duration_seconds,
+                    created_at: video.created_at,
+                  })
+                }
+              >
                 <video
                   src={video.video_signed_url}
                   className="h-full w-full object-contain"
                   preload="metadata"
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Play className="h-10 w-10 text-white" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Play className="h-10 w-10 text-white drop-shadow-md" />
                 </div>
               </div>
             ) : (
@@ -521,7 +540,7 @@ export default function VideosPage() {
             )}
             <div className="p-3 space-y-2">
               <div className="min-w-0">
-                <div className="font-medium truncate">
+                <div className="font-medium truncate text-sm">
                   {video.title}
                   <DemoBadge type="videos" id={video.id} />
                 </div>
@@ -531,15 +550,48 @@ export default function VideosPage() {
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {formatDuration(video.duration_seconds)}
                 </span>
-                {video.file_size > 0 && (
-                  <span>{formatFileSize(video.file_size)}</span>
-                )}
-                <span>{formatDate(video.created_at)}</span>
+                <div className="flex items-center gap-1">
+                  {video.video_signed_url && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(video.video_signed_url!);
+                          toast.success("CDN Video URL copied!");
+                        }}
+                        className="p-1 hover:text-foreground rounded"
+                        title="Copy CDN Link"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const embed = `<video src="${video.video_signed_url}" controls class="rounded-lg w-full max-w-2xl"></video>`;
+                          navigator.clipboard.writeText(embed);
+                          toast.success("HTML Video Embed code copied!");
+                        }}
+                        className="p-1 hover:text-foreground rounded"
+                        title="Copy Video Embed"
+                      >
+                        <Code className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(video.id)}
+                    className="p-1 hover:text-foreground rounded"
+                    title="Edit Details"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -576,16 +628,47 @@ export default function VideosPage() {
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
+                {video.video_signed_url && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        navigator.clipboard.writeText(video.video_signed_url!);
+                        toast.success("CDN Video URL copied!");
+                      }}
+                      title="Copy CDN Link"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        const embed = `<video src="${video.video_signed_url}" controls class="rounded-lg w-full max-w-2xl"></video>`;
+                        navigator.clipboard.writeText(embed);
+                        toast.success("HTML Video Embed code copied!");
+                      }}
+                      title="Copy Video Embed"
+                    >
+                      <Code className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </>
+                )}
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="h-8 w-8 p-0"
                   onClick={() => setEditingId(video.id)}
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="h-8 w-8 p-0 text-destructive"
                   onClick={() => handleDelete(video.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -613,6 +696,8 @@ export default function VideosPage() {
           ) : null
         }
       />
+
+      <LightboxModal item={previewItem} onClose={() => setPreviewItem(null)} />
     </div>
   );
 }

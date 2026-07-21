@@ -3862,5 +3862,35 @@
         "filename": "pole_dance_handstand_pose.png",
         "prompt": "Generate a logo image: bold logo of a pole dancer inverted in a handstand against the pole, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
         "tags": "pole dance, handstand, bold"
+    },
+    {
+        "title": "Shamanic Drum Feather Circle",
+        "filename": "shamanic_drum_feather_circle.png",
+        "prompt": "Generate a logo image: organic logo of a hand drum circled by a single feather, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "shamanic healing, spiritual, organic"
+    },
+    {
+        "title": "Past Life Regression Hourglass Spiral",
+        "filename": "past_life_regression_hourglass_spiral.png",
+        "prompt": "Generate a logo image: elegant logo of an hourglass with a spiral of sand inside, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "past life regression, spiritual, elegant"
+    },
+    {
+        "title": "Feng Shui Bagua Balance",
+        "filename": "feng_shui_bagua_balance.png",
+        "prompt": "Generate a logo image: elegant logo of a bagua octagon balanced with a small compass needle, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "feng shui, spiritual, elegant"
+    },
+    {
+        "title": "Sage Smudge Smoke Curl",
+        "filename": "sage_smudge_smoke_curl.png",
+        "prompt": "Generate a logo image: calm logo of a bundle of sage with a curling smoke line, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "sage smudging, spiritual, calm"
+    },
+    {
+        "title": "Mala Beads Meditation Hand",
+        "filename": "mala_beads_meditation_hand.png",
+        "prompt": "Generate a logo image: calm logo of a hand holding a strand of mala beads, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "mala beads, meditation, calm"
     }
 ]

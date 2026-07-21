@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Image as ImageIcon, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Image as ImageIcon, Pencil, Plus, Trash2, Copy, Code, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
@@ -19,14 +19,11 @@ import {
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { DemoBadge } from "@/components/setup/demo-badge";
+import { BatchDropzone } from "@/components/admin/batch-dropzone";
+import { LightboxModal, type MediaItemPayload } from "@/components/admin/lightbox-modal";
 import type { Photo } from "@/types/photo";
 
 export const dynamic = "force-dynamic";
-
-interface PresignResponse {
-  upload_url: string;
-  s3_key: string;
-}
 
 const SORT_OPTIONS = [
   { label: "Newest", value: "-created_at" },
@@ -39,11 +36,10 @@ const SORT_OPTIONS = [
 
 export default function PhotosPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [showDropzone, setShowDropzone] = useState(false);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
@@ -64,58 +60,7 @@ export default function PhotosPage() {
     [tagFilter],
   );
 
-  async function handleUpload(file: File) {
-    setUploading(true);
-    setUploadProgress(0);
-    try {
-      const { upload_url, s3_key } = await clientFetch<PresignResponse>(
-        "/api/v1/upload/presign/",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            filename: file.name,
-            content_type: file.type,
-            category: "photo",
-          }),
-        },
-      );
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", upload_url);
-        xhr.setRequestHeader("Content-Type", file.type);
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable)
-            setUploadProgress(Math.round((event.loaded / event.total) * 100));
-        };
-        xhr.onload = () =>
-          xhr.status >= 200 && xhr.status < 300
-            ? resolve()
-            : reject(new Error(`Upload failed: ${xhr.status}`));
-        xhr.onerror = () => reject(new Error("Upload failed"));
-        xhr.send(file);
-      });
-      await clientFetch("/api/v1/upload/complete/", {
-        method: "POST",
-        body: JSON.stringify({
-          s3_key,
-          category: "photo",
-          content_type: file.type,
-          file_size: file.size,
-          title: file.name.replace(/\.[^.]+$/, ""),
-        }),
-      });
-      toast.success("Photo uploaded");
-      browserRef.current?.refresh();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to upload photo");
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
-
-  const photoFields: FieldConfig<Photo>[] = [
+  const photoFields: FieldConfig[] = [
     { key: "title", label: "Title", type: "text", required: true },
     { key: "alt_text", label: "Alt Text", type: "text" },
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "photo" },
@@ -152,48 +97,39 @@ export default function PhotosPage() {
     }
   }
 
+  const copyCdnUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast.success("CDN Link copied to clipboard!");
+  };
+
+  const copyEmbedCode = (url: string, title: string) => {
+    const embed = `<img src="${url}" alt="${title}" class="rounded-lg max-w-full" />`;
+    navigator.clipboard.writeText(embed);
+    toast.success("HTML embed code copied!");
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Photos</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Photo Asset Library</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your photo library.
+            Upload, manage, copy CDN links, and embed photos across your platform.
           </p>
         </div>
-        <div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleUpload(file);
-            }}
-          />
-          <Button
-            onClick={() => fileRef.current?.click()}
-            className="gap-2"
-            disabled={uploading}
-          >
-            <Plus className="h-4 w-4" /> Upload Photo
-          </Button>
-        </div>
+        <Button
+          onClick={() => setShowDropzone((prev) => !prev)}
+          className="gap-2 shadow-sm"
+        >
+          <Plus className="h-4 w-4" /> {showDropzone ? "Hide Uploader" : "Batch Upload"}
+        </Button>
       </div>
 
-      {uploading && (
-        <div className="space-y-2">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {uploadProgress}% uploaded
-          </p>
-        </div>
+      {showDropzone && (
+        <BatchDropzone
+          category="photo"
+          onUploadComplete={() => browserRef.current?.refresh()}
+        />
       )}
 
       <MediaBrowser<Photo>
@@ -211,7 +147,7 @@ export default function PhotosPage() {
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={ImageIcon}
-        emptyMessage="No photos yet. Upload one to get started."
+        emptyMessage="No photos yet. Upload photos to get started."
         getItemId={(p) => p.id}
         onDelete={async (selection) => {
           let ids = selection.ids;
@@ -219,17 +155,14 @@ export default function PhotosPage() {
             ids = [];
             let offset = 0;
             while (true) {
-              const sp = new URLSearchParams();
-              sp.set("limit", "100");
-              sp.set("offset", String(offset));
-              sp.set("ordering", selection.ordering);
-              if (selection.search) sp.set("search", selection.search);
-              const data = await clientFetch<{
-                results: Photo[];
-                next: string | null;
-              }>(`/api/v1/photos/?${sp}`);
-              ids.push(...data.results.map((p) => p.id));
-              if (!data.next) break;
+              const res = await fetchPage({
+                offset,
+                limit: 100,
+                ordering: selection.ordering,
+                search: selection.search,
+              });
+              ids.push(...res.results.map((p) => p.id));
+              if (!res.next) break;
               offset += 100;
             }
           }
@@ -249,15 +182,33 @@ export default function PhotosPage() {
           { label: "Date", key: "date" },
           { label: "Actions", key: "actions" },
         ]}
-        renderGalleryItem={(photo, _selected) => (
-          <div className="group overflow-hidden rounded-lg border bg-card">
+        renderGalleryItem={(photo) => (
+          <div className="group overflow-hidden rounded-xl border bg-card shadow-sm hover:shadow-md transition-all">
             {photo.signed_url ? (
-              <div className="relative aspect-video overflow-hidden bg-muted">
+              <div
+                className="relative aspect-video overflow-hidden bg-muted cursor-pointer"
+                onClick={() =>
+                  setPreviewItem({
+                    id: photo.id,
+                    title: photo.title || "Untitled Photo",
+                    type: "photo",
+                    url: photo.signed_url!,
+                    s3_key: photo.s3_key,
+                    file_size: photo.file_size,
+                    created_at: photo.created_at,
+                  })
+                }
+              >
                 <img
                   src={photo.signed_url}
                   alt={photo.alt_text || photo.title}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button size="sm" variant="secondary" className="h-8 gap-1.5 text-xs shadow-md">
+                    <Eye className="h-3.5 w-3.5" /> Lightbox
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="flex aspect-video items-center justify-center bg-muted">
@@ -265,25 +216,67 @@ export default function PhotosPage() {
               </div>
             )}
             <div className="p-3 space-y-2">
-              <div className="font-medium truncate">
+              <div className="font-medium truncate text-sm">
                 {photo.title || "Untitled"}
                 <DemoBadge type="photos" id={photo.id} />
               </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{formatFileSize(photo.file_size)}</span>
-                <span>{formatDate(photo.created_at)}</span>
+                <div className="flex items-center gap-1">
+                  {photo.signed_url && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => copyCdnUrl(photo.signed_url!)}
+                        className="p-1 hover:text-foreground rounded"
+                        title="Copy CDN URL"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => copyEmbedCode(photo.signed_url!, photo.title)}
+                        className="p-1 hover:text-foreground rounded"
+                        title="Copy HTML Embed"
+                      >
+                        <Code className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(photo.id)}
+                    className="p-1 hover:text-foreground rounded"
+                    title="Edit Details"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
         renderListRow={(photo) => (
           <>
-            <TableCell className="w-16">
+            <TableCell
+              className="w-16 cursor-pointer"
+              onClick={() =>
+                setPreviewItem({
+                  id: photo.id,
+                  title: photo.title || "Untitled Photo",
+                  type: "photo",
+                  url: photo.signed_url!,
+                  s3_key: photo.s3_key,
+                  file_size: photo.file_size,
+                  created_at: photo.created_at,
+                })
+              }
+            >
               {photo.signed_url ? (
                 <img
                   src={photo.signed_url}
                   alt={photo.alt_text || photo.title}
-                  className="h-10 w-14 rounded object-cover"
+                  className="h-10 w-14 rounded object-cover shadow-sm hover:scale-105 transition-transform"
                 />
               ) : (
                 <div className="flex h-10 w-14 items-center justify-center rounded bg-muted">
@@ -299,16 +292,40 @@ export default function PhotosPage() {
             <TableCell>{formatDate(photo.created_at)}</TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
+                {photo.signed_url && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => copyCdnUrl(photo.signed_url!)}
+                      title="Copy CDN Link"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => copyEmbedCode(photo.signed_url!, photo.title)}
+                      title="Copy HTML Embed"
+                    >
+                      <Code className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Button>
+                  </>
+                )}
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="h-8 w-8 p-0"
                   onClick={() => setEditingId(photo.id)}
                 >
-                  <Pencil className="h-3.5 w-3.5" />
+                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="h-8 w-8 p-0 text-destructive"
                   onClick={() => handleDelete(photo.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -336,6 +353,8 @@ export default function PhotosPage() {
           ) : null
         }
       />
+
+      <LightboxModal item={previewItem} onClose={() => setPreviewItem(null)} />
     </div>
   );
 }
