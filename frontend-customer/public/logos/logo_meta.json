@@ -3820,5 +3820,47 @@
         "filename": "pole_dance_needle_spin_pose.png",
         "prompt": "Generate a logo image: elegant logo of a pole dancer in a vertical needle split spin, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
         "tags": "pole dance, needle pose, elegant"
+    },
+    {
+        "title": "Aromatherapy Diffuser Steam Leaf",
+        "filename": "aromatherapy_diffuser_steam_leaf.png",
+        "prompt": "Generate a logo image: calm logo of an oil diffuser releasing steam shaped like a leaf, flat vector style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "aromatherapy, wellness, calm"
+    },
+    {
+        "title": "Herbal Naturopath Roots Hands",
+        "filename": "herbal_naturopath_roots_hands.png",
+        "prompt": "Generate a logo image: organic logo of two hands cupping herb roots, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "naturopathy, herbalism, organic"
+    },
+    {
+        "title": "Numerology Number Spiral",
+        "filename": "numerology_number_spiral.png",
+        "prompt": "Generate a logo image: elegant logo of a spiral of small numerals winding inward, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "numerology, spiritual, elegant"
+    },
+    {
+        "title": "Manifestation Star Trail Hand",
+        "filename": "manifestation_star_trail_hand.png",
+        "prompt": "Generate a logo image: elegant logo of an open hand releasing a trail of stars, flat vector style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "manifestation, law of attraction, elegant"
+    },
+    {
+        "title": "Pole Dance Chair Spin Pose",
+        "filename": "pole_dance_chair_spin_pose.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer seated in a chair spin pose, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, chair spin, bold"
+    },
+    {
+        "title": "Pole Dance Floor Flow Pose",
+        "filename": "pole_dance_floor_flow_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a pole dancer in a graceful floor flow pose beside the pole, flat vector silhouette style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, floor flow, elegant"
+    },
+    {
+        "title": "Pole Dance Handstand Pose",
+        "filename": "pole_dance_handstand_pose.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer inverted in a handstand against the pole, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, handstand, bold"
     }
 ]
