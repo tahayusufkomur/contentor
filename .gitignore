@@ -19,6 +19,7 @@ backend/staticfiles/
 # Environment
 .env
 .env.*
+.stripe_whsec
 !.env.example
 !.env.prod.example
 

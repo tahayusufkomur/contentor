@@ -3076,5 +3076,503 @@
         "filename": "restorative_yoga_bolster_rest.png",
         "prompt": "Generate a logo image: calm logo of a figure resting over a bolster cushion, flat vector silhouette style, one lavender color on a plain white background, no text, no watermark. Square image.",
         "tags": "yoga, restorative yoga, calm"
+    },
+    {
+        "title": "Pilates Hundred Exercise Pulse",
+        "filename": "pilates_hundred_exercise_pulse.png",
+        "prompt": "Generate a logo image: bold logo of a figure holding the pilates hundred position with pumping arms, flat vector silhouette style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, hundred exercise, bold"
+    },
+    {
+        "title": "Pilates Teaser Pose V Sit",
+        "filename": "pilates_teaser_pose_v_sit.png",
+        "prompt": "Generate a logo image: bold logo of a figure balanced in a teaser v sit pose, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, teaser pose, bold"
+    },
+    {
+        "title": "Pilates Swan Dive Backbend",
+        "filename": "pilates_swan_dive_backbend.png",
+        "prompt": "Generate a logo image: elegant logo of a figure lifted into a swan dive backbend, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, swan dive, elegant"
+    },
+    {
+        "title": "Pilates Mermaid Side Stretch",
+        "filename": "pilates_mermaid_side_stretch.png",
+        "prompt": "Generate a logo image: elegant logo of a figure in a seated mermaid side stretch, flat vector silhouette style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, mermaid stretch, elegant"
+    },
+    {
+        "title": "Pilates Saw Twist Reach",
+        "filename": "pilates_saw_twist_reach.png",
+        "prompt": "Generate a logo image: modern logo of a figure seated twisting to reach past the foot, flat vector line art style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, saw exercise, modern"
+    },
+    {
+        "title": "Pilates Spine Stretch Forward",
+        "filename": "pilates_spine_stretch_forward.png",
+        "prompt": "Generate a logo image: calm logo of a figure seated stretching forward over long legs, flat vector line art style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, spine stretch, calm"
+    },
+    {
+        "title": "Pilates Single Leg Stretch",
+        "filename": "pilates_single_leg_stretch.png",
+        "prompt": "Generate a logo image: bold logo of a figure holding one knee in tabletop stretch, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, single leg stretch, bold"
+    },
+    {
+        "title": "Pilates Double Leg Stretch",
+        "filename": "pilates_double_leg_stretch.png",
+        "prompt": "Generate a logo image: bold logo of a figure with arms and legs extended in double stretch, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, double leg stretch, bold"
+    },
+    {
+        "title": "Pilates Criss Cross Twist",
+        "filename": "pilates_criss_cross_twist.png",
+        "prompt": "Generate a logo image: bold logo of a figure mid twist in a criss cross exercise, flat vector silhouette style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, criss cross, bold"
+    },
+    {
+        "title": "Pilates Barrel Arch Stretch",
+        "filename": "pilates_barrel_arch_stretch.png",
+        "prompt": "Generate a logo image: elegant logo of a figure arched back over a pilates barrel, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, pilates barrel, elegant"
+    },
+    {
+        "title": "Pilates Wunda Chair Press",
+        "filename": "pilates_wunda_chair_press.png",
+        "prompt": "Generate a logo image: modern logo of a figure pressing pedals on a pilates chair, flat vector silhouette style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, wunda chair, modern"
+    },
+    {
+        "title": "Pilates Cadillac Trapeze Reach",
+        "filename": "pilates_cadillac_trapeze_reach.png",
+        "prompt": "Generate a logo image: modern logo of a figure reaching for trapeze bars on a cadillac frame, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, cadillac, modern"
+    },
+    {
+        "title": "Pilates Reformer Footwork",
+        "filename": "pilates_reformer_footwork.png",
+        "prompt": "Generate a logo image: modern logo of a figure pressing a reformer carriage with feet on the bar, flat vector silhouette style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, reformer footwork, modern"
+    },
+    {
+        "title": "Pilates Jackknife Roll Up",
+        "filename": "pilates_jackknife_roll_up.png",
+        "prompt": "Generate a logo image: bold logo of a figure mid roll into a jackknife lift, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, jackknife, bold"
+    },
+    {
+        "title": "Pilates Swimming Prone Lift",
+        "filename": "pilates_swimming_prone_lift.png",
+        "prompt": "Generate a logo image: playful logo of a figure prone lifting arms and legs in a swimming motion, flat vector silhouette style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, swimming exercise, playful"
+    },
+    {
+        "title": "Pilates Side Kick Series",
+        "filename": "pilates_side_kick_series.png",
+        "prompt": "Generate a logo image: bold logo of a figure lying on side lifting one leg in a kick series, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, side kick series, bold"
+    },
+    {
+        "title": "Pilates Spine Twist Seated",
+        "filename": "pilates_spine_twist_seated.png",
+        "prompt": "Generate a logo image: modern logo of a figure seated twisting the spine with arms out, flat vector line art style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, spine twist, modern"
+    },
+    {
+        "title": "Pilates Rollover Control",
+        "filename": "pilates_rollover_control.png",
+        "prompt": "Generate a logo image: bold logo of a figure rolling legs overhead in a controlled rollover, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, rollover, bold"
+    },
+    {
+        "title": "Pilates Bridge Lift Silhouette",
+        "filename": "pilates_bridge_lift_silhouette.png",
+        "prompt": "Generate a logo image: calm logo of a figure lifted into a pilates bridge with feet on a ball, flat vector silhouette style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, pilates bridge, calm"
+    },
+    {
+        "title": "Pilates Scissor Kick Silhouette",
+        "filename": "pilates_scissor_kick_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a figure scissoring legs in the air, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, scissor kick, bold"
+    },
+    {
+        "title": "Pilates Flat Back Series",
+        "filename": "pilates_flat_back_series.png",
+        "prompt": "Generate a logo image: minimal logo of a figure seated with a perfectly flat back posture, flat vector line art style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, flat back, minimal"
+    },
+    {
+        "title": "Pilates Standing Arm Weights",
+        "filename": "pilates_standing_arm_weights.png",
+        "prompt": "Generate a logo image: modern logo of a figure standing pressing small hand weights, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, standing series, modern"
+    },
+    {
+        "title": "Pilates Grip Socks Balance",
+        "filename": "pilates_grip_socks_balance.png",
+        "prompt": "Generate a logo image: minimal logo of a pair of grip socks beside a balance line, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, grip socks, minimal"
+    },
+    {
+        "title": "Pilates Band Stretch Line",
+        "filename": "pilates_band_stretch_line.png",
+        "prompt": "Generate a logo image: modern logo of a figure stretching a long pilates band overhead, flat vector line art style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, resistance band, modern"
+    },
+    {
+        "title": "Pilates Diaphragm Breath Mark",
+        "filename": "pilates_diaphragm_breath_mark.png",
+        "prompt": "Generate a logo image: calm logo of a torso outline with breath expansion rings at the ribs, flat vector style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "pilates, breathing, calm"
+    },
+    {
+        "title": "Box Jump Explosive Silhouette",
+        "filename": "box_jump_explosive_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete mid explosive box jump, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, box jump, bold"
+    },
+    {
+        "title": "Agility Ladder Footwork",
+        "filename": "agility_ladder_footwork.png",
+        "prompt": "Generate a logo image: bold logo of footprints stepping through an agility ladder grid, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, agility ladder, bold"
+    },
+    {
+        "title": "Farmers Carry Walk Silhouette",
+        "filename": "farmers_carry_walk_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete walking with heavy carry handles, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, farmers carry, bold"
+    },
+    {
+        "title": "Sandbag Carry Shoulder Silhouette",
+        "filename": "sandbag_carry_shoulder_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete carrying a sandbag on one shoulder, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, sandbag carry, bold"
+    },
+    {
+        "title": "Wall Ball Throw Arc",
+        "filename": "wall_ball_throw_arc.png",
+        "prompt": "Generate a logo image: bold logo of an athlete throwing a wall ball upward in an arc, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, wall ball, bold"
+    },
+    {
+        "title": "Plyo Jump Squat Silhouette",
+        "filename": "plyo_jump_squat_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete mid explosive plyometric jump squat, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, plyometrics, bold"
+    },
+    {
+        "title": "Sled Drag Reverse Pull",
+        "filename": "sled_drag_reverse_pull.png",
+        "prompt": "Generate a logo image: bold logo of an athlete dragging a sled backward by straps, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, sled drag, bold"
+    },
+    {
+        "title": "Ab Wheel Rollout Silhouette",
+        "filename": "ab_wheel_rollout_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete extended low in an ab wheel rollout, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, ab wheel, bold"
+    },
+    {
+        "title": "Dip Bar Tricep Silhouette",
+        "filename": "dip_bar_tricep_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete lowered between parallel dip bars, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, dip bars, bold"
+    },
+    {
+        "title": "Pickleball Paddle Ball Arc",
+        "filename": "pickleball_paddle_ball_arc.png",
+        "prompt": "Generate a logo image: bold logo of a pickleball paddle beside a ball with a motion arc, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "pickleball, sport, bold"
+    },
+    {
+        "title": "Badminton Shuttlecock Swing",
+        "filename": "badminton_shuttlecock_swing.png",
+        "prompt": "Generate a logo image: bold logo of a badminton racket mid swing at a shuttlecock, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "badminton, sport, bold"
+    },
+    {
+        "title": "Squash Racket Wall Bounce",
+        "filename": "squash_racket_wall_bounce.png",
+        "prompt": "Generate a logo image: bold logo of a squash racket with a ball bouncing off a wall line, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "squash, sport, bold"
+    },
+    {
+        "title": "Rugby Ball Try Line",
+        "filename": "rugby_ball_try_line.png",
+        "prompt": "Generate a logo image: bold logo of a rugby ball crossing a try line, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "rugby, sport, bold"
+    },
+    {
+        "title": "Cricket Bat Wicket Mark",
+        "filename": "cricket_bat_wicket_mark.png",
+        "prompt": "Generate a logo image: bold logo of a cricket bat crossed in front of wicket stumps, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "cricket, sport, bold"
+    },
+    {
+        "title": "Water Polo Ball Splash",
+        "filename": "water_polo_ball_splash.png",
+        "prompt": "Generate a logo image: bold logo of a water polo ball rising from a splash wave, flat vector style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "water polo, sport, bold"
+    },
+    {
+        "title": "Field Hockey Stick Ball",
+        "filename": "field_hockey_stick_ball.png",
+        "prompt": "Generate a logo image: bold logo of a field hockey stick hooking a ball, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "field hockey, sport, bold"
+    },
+    {
+        "title": "Lacrosse Stick Net Catch",
+        "filename": "lacrosse_stick_net_catch.png",
+        "prompt": "Generate a logo image: bold logo of a lacrosse stick net catching a ball, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "lacrosse, sport, bold"
+    },
+    {
+        "title": "Handball Throw Motion Arc",
+        "filename": "handball_throw_motion_arc.png",
+        "prompt": "Generate a logo image: bold logo of a hand throwing a handball with a motion arc trail, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "handball, sport, bold"
+    },
+    {
+        "title": "Dodgeball Circle Throw",
+        "filename": "dodgeball_circle_throw.png",
+        "prompt": "Generate a logo image: playful logo of a ball frozen mid throw inside a dashed circle, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "dodgeball, sport, playful"
+    },
+    {
+        "title": "Bowling Pin Strike Sweep",
+        "filename": "bowling_pin_strike_sweep.png",
+        "prompt": "Generate a logo image: bold logo of a bowling ball knocking pins in a sweeping arc, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "bowling, sport, bold"
+    },
+    {
+        "title": "Darts Triple Bullseye",
+        "filename": "darts_triple_bullseye.png",
+        "prompt": "Generate a logo image: bold logo of three darts clustered on a bullseye target, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "darts, sport, bold"
+    },
+    {
+        "title": "Curling Stone Sweep Broom",
+        "filename": "curling_stone_sweep_broom.png",
+        "prompt": "Generate a logo image: bold logo of a curling stone with a broom sweeping motion lines, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "curling, sport, bold"
+    },
+    {
+        "title": "Ping Pong Paddle Spin",
+        "filename": "ping_pong_paddle_spin.png",
+        "prompt": "Generate a logo image: playful logo of a table tennis paddle with a spinning ball trail, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "table tennis, ping pong, playful"
+    },
+    {
+        "title": "Racquetball Court Corner Shot",
+        "filename": "racquetball_court_corner_shot.png",
+        "prompt": "Generate a logo image: bold logo of a racquetball mid bounce in a court corner, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "racquetball, sport, bold"
+    },
+    {
+        "title": "Incline Bench Press Silhouette",
+        "filename": "incline_bench_press_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete pressing a barbell on an incline bench, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, bench press, bold"
+    },
+    {
+        "title": "Decline Situp Core Silhouette",
+        "filename": "decline_situp_core_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete curling up on a decline bench, flat vector silhouette style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, sit up, bold"
+    },
+    {
+        "title": "Cable Pulldown Silhouette",
+        "filename": "cable_pulldown_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete pulling a cable bar down to the chest, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, cable machine, bold"
+    },
+    {
+        "title": "Treadmill Sprint Silhouette",
+        "filename": "treadmill_sprint_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a runner mid stride on a treadmill belt, flat vector silhouette style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, treadmill, bold"
+    },
+    {
+        "title": "Elliptical Stride Motion",
+        "filename": "elliptical_stride_motion.png",
+        "prompt": "Generate a logo image: modern logo of an elliptical machine pedal mid stride with motion lines, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, elliptical, modern"
+    },
+    {
+        "title": "Stair Climber Step Silhouette",
+        "filename": "stair_climber_step_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete climbing a stair machine, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, stair climber, bold"
+    },
+    {
+        "title": "Bear Crawl Ground Silhouette",
+        "filename": "bear_crawl_ground_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete low in a bear crawl position, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, bear crawl, bold"
+    },
+    {
+        "title": "Scuba Diver Bubble Trail",
+        "filename": "scuba_diver_bubble_trail.png",
+        "prompt": "Generate a logo image: bold logo of a scuba diver descending with a bubble trail, flat vector silhouette style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "scuba diving, outdoor, bold"
+    },
+    {
+        "title": "Freediver Single Breath Silhouette",
+        "filename": "freediver_single_breath_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a freediver gliding down in a streamlined pose, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "freediving, outdoor, elegant, calm"
+    },
+    {
+        "title": "Whitewater Raft Wave Crest",
+        "filename": "whitewater_raft_wave_crest.png",
+        "prompt": "Generate a logo image: bold logo of a raft cresting a whitewater wave, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "whitewater rafting, outdoor, bold"
+    },
+    {
+        "title": "Mountaineer Ice Axe Peak",
+        "filename": "mountaineer_ice_axe_peak.png",
+        "prompt": "Generate a logo image: bold logo of a climber planting an ice axe at a snowy peak, flat vector style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "mountaineering, outdoor, bold"
+    },
+    {
+        "title": "Via Ferrata Cable Climb",
+        "filename": "via_ferrata_cable_climb.png",
+        "prompt": "Generate a logo image: bold logo of a climber clipped to a cable route up a cliff, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "via ferrata, climbing, outdoor, bold"
+    },
+    {
+        "title": "Snorkeler Mask Fish Trail",
+        "filename": "snorkeler_mask_fish_trail.png",
+        "prompt": "Generate a logo image: playful logo of a snorkel mask with a trail of small fish, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "snorkeling, outdoor, playful"
+    },
+    {
+        "title": "Mountain Climber Silhouette",
+        "filename": "mountain_climber_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete mid mountain climber core exercise, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, mountain climber, bold"
+    },
+    {
+        "title": "Burpee Jump Silhouette",
+        "filename": "burpee_jump_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete mid explosive burpee jump, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, burpee, bold"
+    },
+    {
+        "title": "Wall Sit Hold Silhouette",
+        "filename": "wall_sit_hold_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete holding a wall sit position, flat vector silhouette style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, wall sit, bold"
+    },
+    {
+        "title": "Glute Bridge Lift Silhouette",
+        "filename": "glute_bridge_lift_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete lifted into a glute bridge, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, glute bridge, bold"
+    },
+    {
+        "title": "Hip Thrust Barbell Silhouette",
+        "filename": "hip_thrust_barbell_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete thrusting a barbell up at the hips, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, hip thrust, bold"
+    },
+    {
+        "title": "Lat Pulldown Machine Silhouette",
+        "filename": "lat_pulldown_machine_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete pulling a lat bar down behind the neck, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, lat pulldown, bold"
+    },
+    {
+        "title": "Shoulder Press Dumbbell Silhouette",
+        "filename": "shoulder_press_dumbbell_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete pressing dumbbells overhead, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, shoulder press, bold"
+    },
+    {
+        "title": "Bicep Curl Dumbbell Silhouette",
+        "filename": "bicep_curl_dumbbell_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete curling a dumbbell at the elbow, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, bicep curl, bold"
+    },
+    {
+        "title": "Tricep Extension Overhead Silhouette",
+        "filename": "tricep_extension_overhead_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete extending a dumbbell overhead behind the head, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, tricep extension, bold"
+    },
+    {
+        "title": "Leg Press Machine Silhouette",
+        "filename": "leg_press_machine_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete pressing a weighted leg press platform, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, leg press, bold"
+    },
+    {
+        "title": "Calf Raise Step Silhouette",
+        "filename": "calf_raise_step_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete rising onto toes on a step edge, flat vector silhouette style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, calf raise, bold"
+    },
+    {
+        "title": "Side Plank Reach Silhouette",
+        "filename": "side_plank_reach_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete holding a side plank with top arm reaching, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, side plank, bold"
+    },
+    {
+        "title": "Superman Back Extension Silhouette",
+        "filename": "superman_back_extension_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete lifted prone in a superman back extension, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, back extension, bold"
+    },
+    {
+        "title": "Kettlebell Snatch Overhead Silhouette",
+        "filename": "kettlebell_snatch_overhead_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete snatching a kettlebell overhead in one motion, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "fitness, kettlebell snatch, bold"
+    },
+    {
+        "title": "Belly Dance Hip Scarf Coins",
+        "filename": "belly_dance_hip_scarf_coins.png",
+        "prompt": "Generate a logo image: playful logo of a hip scarf fringed with small coins mid shimmy, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, hip scarf, playful"
+    },
+    {
+        "title": "Belly Dance Finger Cymbals",
+        "filename": "belly_dance_finger_cymbals.png",
+        "prompt": "Generate a logo image: playful logo of a pair of finger cymbals mid clink with sound lines, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, finger cymbals, playful"
+    },
+    {
+        "title": "Belly Dance Shimmy Silhouette",
+        "filename": "belly_dance_shimmy_silhouette.png",
+        "prompt": "Generate a logo image: playful logo of a belly dancer mid hip shimmy with motion lines, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, shimmy, playful"
+    },
+    {
+        "title": "Belly Dance Backbend Silhouette",
+        "filename": "belly_dance_backbend_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer in a dramatic backbend, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, backbend, elegant"
+    },
+    {
+        "title": "Belly Dance Floor Work Pose",
+        "filename": "belly_dance_floor_work_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer in a graceful floor work pose, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, floor work, elegant"
+    },
+    {
+        "title": "Belly Dance Sword Balance",
+        "filename": "belly_dance_sword_balance.png",
+        "prompt": "Generate a logo image: bold logo of a belly dancer balancing a sword on her head, flat vector silhouette style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, sword balance, bold"
+    },
+    {
+        "title": "Belly Dance Cane Dance Pose",
+        "filename": "belly_dance_cane_dance_pose.png",
+        "prompt": "Generate a logo image: playful logo of a belly dancer holding a cane overhead in dance pose, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, cane dance, playful"
     }
 ]

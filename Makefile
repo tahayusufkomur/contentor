@@ -155,15 +155,12 @@ ai-check: ## Verify the AI provider (cli subscription / anthropic key) end-to-en
 # Stripe
 # ============================================================================
 
-stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/ (incl. Connect account events via --forward-connect-to)
+stripe-listen: ## Forward Stripe test-mode events to local /api/webhooks/stripe/ and auto-update STRIPE_WEBHOOK_SECRET in .env
 	@command -v stripe >/dev/null 2>&1 || { \
 		echo "Stripe CLI not installed. Install with: brew install stripe/stripe-cli/stripe"; \
 		exit 1; \
 	}
-	stripe listen \
-		--api-key "$$(grep -E '^STRIPE_SECRET_KEY=' .env | cut -d= -f2)" \
-		--forward-to http://localhost/api/webhooks/stripe/ \
-		--forward-connect-to http://localhost/api/webhooks/stripe/
+	./scripts/stripe_listen_auto.sh .env
 
 # ============================================================================
 # Deploy (prod runs remotely on the home server via deploy.sh)

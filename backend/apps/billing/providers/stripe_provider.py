@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
+import os
 import stripe
 from django.conf import settings
 
@@ -134,10 +135,37 @@ class StripeProvider(PaymentProvider):
         timestamp, malformed payload, missing secret.
         """
         client = _client()
-        secret = settings.STRIPE_WEBHOOK_SECRET
+        secret = _get_webhook_secret()
         if not secret:
             raise InvalidWebhookSignature("STRIPE_WEBHOOK_SECRET not configured")
         try:
             return client.Webhook.construct_event(payload, sig_header, secret)
         except (stripe.error.SignatureVerificationError, ValueError) as exc:
             raise InvalidWebhookSignature(str(exc)) from exc
+
+
+def _get_webhook_secret() -> str:
+    secret = getattr(settings, "STRIPE_WEBHOOK_SECRET", "")
+    if settings.DEBUG:
+        # In dev, attempt to dynamically read fresh secret from .stripe_whsec or .env if updated by stripe-listen
+        env_paths = [
+            os.path.join(settings.BASE_DIR, ".stripe_whsec"),
+            os.path.join(settings.BASE_DIR, "..", ".env"),
+            os.path.join(settings.BASE_DIR, ".env"),
+            "/app/.env",
+        ]
+        for env_path in env_paths:
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path, "r") as f:
+                        content = f.read().strip()
+                        if content.startswith("whsec_"):
+                            return content
+                        for line in content.splitlines():
+                            if line.startswith("STRIPE_WEBHOOK_SECRET="):
+                                val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                                if val:
+                                    return val
+                except Exception:
+                    pass
+    return secret
