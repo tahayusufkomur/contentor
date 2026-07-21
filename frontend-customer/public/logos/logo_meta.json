@@ -3778,5 +3778,47 @@
         "filename": "burlesque_feather_fan_pose.png",
         "prompt": "Generate a logo image: elegant logo of a dancer holding a large feather fan pose, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
         "tags": "burlesque, dance, elegant"
+    },
+    {
+        "title": "Pole Dance Spin Motion Silhouette",
+        "filename": "pole_dance_spin_motion_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer mid spinning turn around the pole, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, spin, bold"
+    },
+    {
+        "title": "Pole Dance Climb Pose Silhouette",
+        "filename": "pole_dance_climb_pose_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer climbing upward on the pole, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, climb, bold"
+    },
+    {
+        "title": "Pole Dance Flag Pose Silhouette",
+        "filename": "pole_dance_flag_pose_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer holding a horizontal human flag pose, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, flag pose, bold"
+    },
+    {
+        "title": "Pole Dance Superman Pose Silhouette",
+        "filename": "pole_dance_superman_pose_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer extended in a superman pose on the pole, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, superman pose, bold"
+    },
+    {
+        "title": "Pole Dance Shoulder Mount Pose",
+        "filename": "pole_dance_shoulder_mount_pose.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer inverted in a shoulder mount, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, shoulder mount, bold"
+    },
+    {
+        "title": "Pole Dance Ayesha Pose Silhouette",
+        "filename": "pole_dance_ayesha_pose_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a pole dancer in an extended ayesha pose, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, ayesha pose, elegant"
+    },
+    {
+        "title": "Pole Dance Needle Spin Pose",
+        "filename": "pole_dance_needle_spin_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a pole dancer in a vertical needle split spin, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, needle pose, elegant"
     }
 ]
