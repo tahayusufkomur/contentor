@@ -3748,5 +3748,35 @@
         "filename": "belly_dance_candle_balance_pose.png",
         "prompt": "Generate a logo image: elegant logo of a belly dancer balancing a candle tray on her head, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
         "tags": "belly dance, candle balance, elegant"
+    },
+    {
+        "title": "Zumba Energy Burst Silhouette",
+        "filename": "zumba_energy_burst_silhouette.png",
+        "prompt": "Generate a logo image: playful logo of a dancer mid energetic zumba arm raise, flat vector silhouette style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "zumba, fitness dance, playful, colorful"
+    },
+    {
+        "title": "Folk Dance Circle Hold Hands",
+        "filename": "folk_dance_circle_hold_hands.png",
+        "prompt": "Generate a logo image: playful logo of a circle of dancers holding hands in folk dance, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "folk dance, dance, playful"
+    },
+    {
+        "title": "Irish Step Dance Silhouette",
+        "filename": "irish_step_dance_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a dancer mid irish step dance jump with arms at sides, flat vector silhouette style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "irish step dance, dance, bold"
+    },
+    {
+        "title": "Aerial Silks Wrap Pose",
+        "filename": "aerial_silks_wrap_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a performer wrapped in aerial silks mid pose, flat vector silhouette style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "aerial silks, circus arts, elegant"
+    },
+    {
+        "title": "Burlesque Feather Fan Pose",
+        "filename": "burlesque_feather_fan_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a dancer holding a large feather fan pose, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "burlesque, dance, elegant"
     }
 ]

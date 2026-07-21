@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TenantContext } from "@/hooks/use-tenant";
 import { generateThemeCSS } from "@/lib/themes";
+import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import {
   PAGE_KEYS,
   PAGE_LABELS,
@@ -445,6 +446,9 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                 <TenantContext.Provider value={config}>
                   {children}
                 </TenantContext.Provider>
+                {(!config.is_published || config.is_demo) && (
+                  <SetupAssistantBubble />
+                )}
               </div>
             </div>
           </CanvasDndProvider>
