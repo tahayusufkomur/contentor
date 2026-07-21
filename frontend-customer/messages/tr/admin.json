@@ -4,10 +4,11 @@
   "nav": {
     "sections": {
       "overview": "Genel Bakış",
-      "content": "İçerik",
-      "community": "Topluluk",
-      "site": "Site",
-      "business": "İş"
+      "products": "Ürünler ve Eğitim",
+      "audience": "Kitle ve Pazarlama",
+      "website": "Web Sitesi",
+      "media": "Medya",
+      "operations": "Ayarlar ve Finans"
     },
     "items": {
       "communityFeed": "Topluluk",

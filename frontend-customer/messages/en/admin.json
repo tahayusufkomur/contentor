@@ -4,10 +4,11 @@
   "nav": {
     "sections": {
       "overview": "Overview",
-      "content": "Content",
-      "community": "Community",
-      "site": "Site",
-      "business": "Business"
+      "products": "Products & Teaching",
+      "audience": "Audience & Marketing",
+      "website": "Website",
+      "media": "Media",
+      "operations": "Settings & Finance"
     },
     "items": {
       "communityFeed": "Community",

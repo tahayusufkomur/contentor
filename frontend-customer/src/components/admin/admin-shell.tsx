@@ -52,55 +52,49 @@ export function AdminShell({ children, user }: AdminShellProps) {
       ],
     },
     {
-      id: "content",
-      label: t("nav.sections.content"),
+      id: "products",
+      label: t("nav.sections.products"),
       items: [
         {
           label: t("nav.items.courses"),
           href: "/admin/courses",
           icon: BookOpen,
         },
-        {
-          label: t("nav.items.photos"),
-          href: "/admin/photos",
-          icon: ImageIcon,
-        },
-        { label: t("nav.items.videos"), href: "/admin/videos", icon: Film },
+        { label: t("nav.items.liveEvents"), href: "/admin/live", icon: Video },
         {
           label: t("nav.items.downloads"),
           href: "/admin/downloads",
           icon: Download,
         },
-        { label: t("nav.items.liveEvents"), href: "/admin/live", icon: Video },
-        { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
-        { label: t("nav.items.blog"), href: "/admin/blog", icon: Newspaper },
       ],
     },
     {
-      id: "community",
-      label: t("nav.sections.community"),
+      id: "audience",
+      label: t("nav.sections.audience"),
       items: [
-        {
-          label: t("nav.items.communityFeed"),
-          href: "/admin/community",
-          icon: MessagesSquare,
-        },
         {
           label: t("nav.items.students"),
           href: "/admin/students",
           icon: Users,
         },
         {
+          label: t("nav.items.communityFeed"),
+          href: "/admin/community",
+          icon: MessagesSquare,
+        },
+        { label: t("nav.items.inbox"), href: "/admin/inbox", icon: Inbox },
+        {
           label: t("nav.items.notifications"),
           href: "/admin/notifications",
           icon: Bell,
         },
-        { label: t("nav.items.inbox"), href: "/admin/inbox", icon: Inbox },
+        { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
+        { label: t("nav.items.blog"), href: "/admin/blog", icon: Newspaper },
       ],
     },
     {
-      id: "site",
-      label: t("nav.sections.site"),
+      id: "website",
+      label: t("nav.sections.website"),
       items: [
         { label: t("nav.items.pages"), href: "/admin/pages", icon: FileText },
         { label: t("nav.items.design"), href: "/admin/design", icon: Palette },
@@ -109,23 +103,35 @@ export function AdminShell({ children, user }: AdminShellProps) {
           href: "/admin/assistant",
           icon: MessageCircleQuestion,
         },
-        {
-          label: t("nav.items.settings"),
-          href: "/admin/settings",
-          icon: Settings,
-        },
       ],
     },
     {
-      id: "business",
-      label: t("nav.sections.business"),
+      id: "media",
+      label: t("nav.sections.media"),
       items: [
+        {
+          label: t("nav.items.photos"),
+          href: "/admin/photos",
+          icon: ImageIcon,
+        },
+        { label: t("nav.items.videos"), href: "/admin/videos", icon: Film },
+      ],
+    },
+    {
+      id: "operations",
+      label: t("nav.sections.operations"),
+      items: [
+        { label: t("nav.items.payouts"), href: "/admin/payouts", icon: Wallet },
         {
           label: t("nav.items.billing"),
           href: "/admin/billing",
           icon: CreditCard,
         },
-        { label: t("nav.items.payouts"), href: "/admin/payouts", icon: Wallet },
+        {
+          label: t("nav.items.settings"),
+          href: "/admin/settings",
+          icon: Settings,
+        },
         // Schema-driven admin kit: model labels come from the API, so the
         // entry point keeps a plain (untranslated) label.
         { label: "Data", href: "/admin/m", icon: Database },

@@ -3574,5 +3574,131 @@
         "filename": "belly_dance_cane_dance_pose.png",
         "prompt": "Generate a logo image: playful logo of a belly dancer holding a cane overhead in dance pose, flat vector silhouette style, one terracotta color on a plain white background, no text, no watermark. Square image.",
         "tags": "belly dance, cane dance, playful"
+    },
+    {
+        "title": "Paddleboard Yoga Balance Pose",
+        "filename": "paddleboard_yoga_balance_pose.png",
+        "prompt": "Generate a logo image: calm logo of a figure in a balance yoga pose on a paddleboard, flat vector silhouette style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "paddleboard yoga, outdoor, calm"
+    },
+    {
+        "title": "Sailing Regatta Wind Sail",
+        "filename": "sailing_regatta_wind_sail.png",
+        "prompt": "Generate a logo image: bold logo of a sailboat sail catching a gust of wind lines, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "sailing, outdoor, bold"
+    },
+    {
+        "title": "Ice Fishing Hole Line",
+        "filename": "ice_fishing_hole_line.png",
+        "prompt": "Generate a logo image: minimal logo of a fishing line dropped through an ice hole, flat vector style, one slate blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "ice fishing, outdoor, minimal"
+    },
+    {
+        "title": "Foraging Mushroom Basket",
+        "filename": "foraging_mushroom_basket.png",
+        "prompt": "Generate a logo image: organic logo of a woven basket filled with foraged mushrooms, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "foraging, mushroom hunting, organic"
+    },
+    {
+        "title": "Beekeeper Hive Frame",
+        "filename": "beekeeper_hive_frame.png",
+        "prompt": "Generate a logo image: organic logo of a beekeeper holding a honeycomb frame with bees, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "beekeeping, organic"
+    },
+    {
+        "title": "Homestead Barn Sunrise",
+        "filename": "homestead_barn_sunrise.png",
+        "prompt": "Generate a logo image: organic logo of a small barn silhouette under a rising sun, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "homesteading, farming, organic"
+    },
+    {
+        "title": "Camping Tent Star Sky",
+        "filename": "camping_tent_star_sky.png",
+        "prompt": "Generate a logo image: calm logo of a camping tent under a sky of small stars, flat vector style, one slate navy on a plain white background, no text, no watermark. Square image.",
+        "tags": "camping, outdoor, calm"
+    },
+    {
+        "title": "RV Road Trip Mountain",
+        "filename": "rv_road_trip_mountain.png",
+        "prompt": "Generate a logo image: playful logo of an RV van silhouette on a road before mountains, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "rv travel, road trip, playful"
+    },
+    {
+        "title": "Geocaching Compass Box",
+        "filename": "geocaching_compass_box.png",
+        "prompt": "Generate a logo image: playful logo of a small treasure box beside a compass rose, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "geocaching, outdoor, playful"
+    },
+    {
+        "title": "Belly Dance Drum Solo Pose",
+        "filename": "belly_dance_drum_solo_pose.png",
+        "prompt": "Generate a logo image: bold logo of a belly dancer mid sharp drum solo accent pose, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, drum solo, bold"
+    },
+    {
+        "title": "Belly Dance Figure Eight Hips",
+        "filename": "belly_dance_figure_eight_hips.png",
+        "prompt": "Generate a logo image: playful logo of hips tracing a figure eight motion line, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, isolation, playful"
+    },
+    {
+        "title": "Belly Dance Skirt Twirl",
+        "filename": "belly_dance_skirt_twirl.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer twirling in a flowing skirt, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, skirt twirl, elegant"
+    },
+    {
+        "title": "Belly Dance Arm Wave Motion",
+        "filename": "belly_dance_arm_wave_motion.png",
+        "prompt": "Generate a logo image: elegant logo of two arms flowing in a snake like wave motion, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, arm wave, elegant"
+    },
+    {
+        "title": "Belly Dance Undulation Pose",
+        "filename": "belly_dance_undulation_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a belly dancer mid body undulation wave, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "belly dance, undulation, elegant"
+    },
+    {
+        "title": "Tango Couple Dip Silhouette",
+        "filename": "tango_couple_dip_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a tango couple mid dramatic dip, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "tango, dance, elegant, bold"
+    },
+    {
+        "title": "Bachata Couple Spin Silhouette",
+        "filename": "bachata_couple_spin_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a bachata couple mid spin close hold, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "bachata, dance, elegant"
+    },
+    {
+        "title": "Ballroom Waltz Gown Silhouette",
+        "filename": "ballroom_waltz_gown_silhouette.png",
+        "prompt": "Generate a logo image: elegant logo of a ballroom dancer in a flowing waltz gown, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "ballroom, waltz, dance, elegant"
+    },
+    {
+        "title": "K Pop Dance Freeze Pose",
+        "filename": "k_pop_dance_freeze_pose.png",
+        "prompt": "Generate a logo image: bold logo of a dancer frozen mid sharp k pop choreography pose, flat vector silhouette style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "k pop dance, dance, bold, colorful"
+    },
+    {
+        "title": "Breakdance Freeze Silhouette",
+        "filename": "breakdance_freeze_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a breakdancer frozen in a one hand freeze, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "breakdance, dance, bold"
+    },
+    {
+        "title": "Jazz Dance Kick Silhouette",
+        "filename": "jazz_dance_kick_silhouette.png",
+        "prompt": "Generate a logo image: playful logo of a jazz dancer mid high kick with jazz hands, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "jazz dance, dance, playful"
+    },
+    {
+        "title": "Line Dance Row Silhouette",
+        "filename": "line_dance_row_silhouette.png",
+        "prompt": "Generate a logo image: playful logo of a row of dancers in matching line dance step, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "line dancing, dance, playful"
     }
 ]
