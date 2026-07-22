@@ -9,11 +9,17 @@ import { useTenant } from "@/hooks/use-tenant";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
+import type { EntitlementKey } from "@/lib/entitlements";
 
 export interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Render an "AI" badge on this item (the feature is AI-powered). */
+  ai?: boolean;
+  /** Render a "Paid" badge while the coach's plan lacks this entitlement. */
+  requiresEntitlement?: EntitlementKey;
 }
 
 export interface NavSection {
@@ -135,7 +141,21 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
                         title={collapsed ? item.label : undefined}
                       >
                         <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && <span>{item.label}</span>}
+                        {!collapsed && (
+                          <>
+                            <span>{item.label}</span>
+                            {(item.ai || item.requiresEntitlement) && (
+                              <span className="ml-auto flex items-center gap-1">
+                                {item.ai && <AiBadge />}
+                                {item.requiresEntitlement && (
+                                  <PaidFeatureBadge
+                                    feature={item.requiresEntitlement}
+                                  />
+                                )}
+                              </span>
+                            )}
+                          </>
+                        )}
                       </Link>
                     );
                   })}

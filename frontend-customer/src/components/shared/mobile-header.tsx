@@ -3,23 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, ExternalLink, Globe, LogOut, Menu, X } from "lucide-react";
+import {
+  ChevronDown,
+  ExternalLink,
+  Globe,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
+import type { NavSection } from "@/components/shared/app-sidebar";
 import type { User } from "@/types/auth";
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-interface NavSection {
-  id: string;
-  label: string;
-  items: NavItem[];
-}
 
 interface MobileHeaderProps {
   title: string;
@@ -89,7 +86,12 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOpen(!open)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setOpen(!open)}
+          >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
@@ -133,7 +135,17 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                           )}
                         >
                           <item.icon className="h-4 w-4" />
-                          {item.label}
+                          <span>{item.label}</span>
+                          {(item.ai || item.requiresEntitlement) && (
+                            <span className="ml-auto flex items-center gap-1">
+                              {item.ai && <AiBadge />}
+                              {item.requiresEntitlement && (
+                                <PaidFeatureBadge
+                                  feature={item.requiresEntitlement}
+                                />
+                              )}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}

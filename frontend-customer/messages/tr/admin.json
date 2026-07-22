@@ -1,6 +1,12 @@
 {
   "title": "Yönetim",
   "welcome": "Hoş geldiniz, {name}",
+  "badges": {
+    "ai": "AI",
+    "aiTooltip": "Yapay zekâ destekli özellik",
+    "paid": "Ücretli",
+    "paidTooltip": "Ücretli planlarda mevcut"
+  },
   "nav": {
     "sections": {
       "overview": "Genel Bakış",

@@ -1,12 +1,16 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { LiveClassesTab } from "@/components/admin/live/classes-tab";
 import { LiveStreamsTab } from "@/components/admin/live/streams-tab";
 import { ZoomClassesTab } from "@/components/admin/live/zoom-tab";
 import { OnsiteEventsTab } from "@/components/admin/live/onsite-tab";
+import { useIsLocked } from "@/components/admin/entitlements-provider";
 
 export default function LiveEventsPage() {
+  const liveLocked = useIsLocked("live");
   return (
     <div className="space-y-6">
       <div>
@@ -15,6 +19,19 @@ export default function LiveEventsPage() {
           Manage live classes, streams, Zoom sessions, and on-site events.
         </p>
       </div>
+
+      {liveLocked && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-4">
+          <p className="flex items-center gap-2 text-sm">
+            <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            Live events are a paid feature. Upgrade to host live classes,
+            streams, and events.
+          </p>
+          <Button asChild size="sm" variant="outline">
+            <a href="/admin/billing/subscription">Upgrade</a>
+          </Button>
+        </div>
+      )}
 
       <Tabs defaultValue="classes">
         <TabsList>

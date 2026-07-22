@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { EraseDemoDialog } from "@/components/setup/erase-demo-dialog";
 import { HelpChat } from "@/components/setup/help-chat";
+import { AiBadge } from "@/components/admin/feature-badges";
 import { SETUP_CATALOG, SETUP_GROUP_ORDER } from "@/components/setup/catalog";
 import { useHelpBotStatus } from "@/lib/help-bot";
 import {
@@ -170,13 +171,16 @@ export function SetupAssistantPanel({
         <aside className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col bg-background shadow-xl">
           <div className={showHelp ? "border-b p-4 pb-0" : "border-b p-4"}>
             <div className="mb-2 flex items-start justify-between gap-3">
-              <h2 className="text-lg font-semibold">
-                {showHelp
-                  ? t("setup.help.title")
-                  : allDone
-                    ? t("setup.celebrateTitle")
-                    : t("setup.title")}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">
+                  {showHelp
+                    ? t("setup.help.title")
+                    : allDone
+                      ? t("setup.celebrateTitle")
+                      : t("setup.title")}
+                </h2>
+                {showHelp && <AiBadge />}
+              </div>
               <button
                 type="button"
                 aria-label={t("setup.dismiss")}

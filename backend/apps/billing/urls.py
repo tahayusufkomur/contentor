@@ -46,5 +46,6 @@ urlpatterns = [
     # Platform subscription (coach -> Contentor billing). Stripe-backed in M1.
     path("platform/checkout/", platform_views.start_checkout, name="platform-checkout"),
     path("platform/subscription/", platform_views.get_subscription, name="platform-subscription"),
+    path("platform/entitlements/", platform_views.get_entitlements, name="platform-entitlements"),
     path("platform/plans/", platform_views.list_plans, name="platform-plans-public"),
 ]

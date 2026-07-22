@@ -22,6 +22,7 @@ import {
 } from "@/lib/blog-api";
 import { GenerateDialog } from "@/components/admin/blog/generate-dialog";
 import { AutopilotCard } from "@/components/admin/blog/autopilot-card";
+import { PaidFeatureBadge } from "@/components/admin/feature-badges";
 
 export default function BlogListPage() {
   const t = useTranslations("admin");
@@ -84,6 +85,7 @@ export default function BlogListPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <PaidFeatureBadge feature="ai_blog" />
           <Button
             variant="outline"
             onClick={() => setShowGenerate(true)}

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { AiBadge } from "@/components/admin/feature-badges";
 import {
   Select,
   SelectContent,
@@ -60,7 +61,10 @@ export function AutopilotCard({ eligible }: { eligible: boolean }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <div>
-          <CardTitle>{t("blog.autopilotTitle")}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            {t("blog.autopilotTitle")}
+            <AiBadge />
+          </CardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("blog.autopilotHint")}
           </p>

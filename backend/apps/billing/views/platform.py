@@ -214,6 +214,49 @@ def get_subscription(request):
     )
 
 
+def _compute_entitlements(tenant) -> dict:
+    """Per-feature "does this tenant's plan include it" map for the admin badges.
+
+    Each key mirrors the gate the feature's own page enforces, so the "Paid"
+    badge (shown by the frontend when a value is False) never disagrees with the
+    paywall the coach actually hits:
+
+      - ``ai_blog`` / ``student_bot`` — a paid plan AND a non-zero monthly quota
+        (matches ``blog.ai.availability`` / ``tenant_config.student_bot``).
+      - ``logo_studio`` / ``platform_mailbox`` — ``has_paid_platform_plan``.
+      - ``live`` — the live subscription plan's ``is_live_enabled`` flag.
+      - ``payouts`` — ``monetization.is_paid_active`` (paid plan + active sub;
+        the gate for reaching Connect onboarding / selling paid content).
+
+    Reads the live ``platform_subscription.plan`` (not the ``Tenant.plan`` FK,
+    which is set at signup and is only mirrored by the grant/checkout paths) for
+    every plan-quota feature.
+    """
+    from apps.core.monetization import is_paid_active
+
+    plan = tenant.platform_subscription.plan if tenant.is_subscription_active else None
+    paid = tenant.has_paid_platform_plan
+    return {
+        "live": bool(plan and plan.is_live_enabled),
+        "ai_blog": bool(paid and plan and plan.max_ai_blog_posts > 0),
+        "student_bot": bool(paid and plan and plan.max_student_bot_questions > 0),
+        "logo_studio": paid,
+        "platform_mailbox": paid,
+        "payouts": is_paid_active(tenant),
+    }
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def get_entitlements(request):
+    """Per-feature entitlement map for the active tenant.
+
+    Powers the coach-admin "Paid feature" badges — the frontend renders a badge
+    for any feature whose value is ``False`` (the plan does not include it).
+    """
+    return Response(_compute_entitlements(connection.tenant), status=status.HTTP_200_OK)
+
+
 _SUPPORTED_CURRENCIES = ("USD", "TRY")
 
 

@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { LogoStudio } from "@/components/logo/logo-studio";
+import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { clientFetch } from "@/lib/api-client";
 import { getThemePalette } from "@/lib/themes";
 import type { TenantConfig } from "@/types/tenant";
@@ -122,7 +123,11 @@ export default function DesignSettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Logo</Label>
+              <div className="flex items-center gap-2">
+                <Label>Logo</Label>
+                <AiBadge />
+                <PaidFeatureBadge feature="logo_studio" />
+              </div>
               <Button
                 type="button"
                 variant="outline"

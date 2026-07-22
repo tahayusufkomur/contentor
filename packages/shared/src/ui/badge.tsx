@@ -17,6 +17,10 @@ const badgeVariants = cva(
           "border-transparent bg-marketing-accent/15 text-marketing-accent",
         warning: "border-transparent bg-muted text-muted-foreground",
         brand: "border-transparent bg-primary/10 text-primary",
+        // Amber "premium / paid feature" treatment — matches the app's
+        // monetize-nudge + live upsell color, with explicit light/dark variants
+        // so it reads as premium (not alarm) in both themes.
+        pro: "border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
         accent: "border-transparent bg-accent text-accent-foreground",
         glass: "border-border bg-card text-card-foreground",
       },
