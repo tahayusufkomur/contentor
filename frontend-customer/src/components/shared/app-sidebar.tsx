@@ -20,6 +20,9 @@ export interface NavItem {
   ai?: boolean;
   /** Render a "Paid" badge while the coach's plan lacks this entitlement. */
   requiresEntitlement?: EntitlementKey;
+  /** The section is only PARTLY paid (some sub-features are free) — softens the
+   *  Paid badge tooltip to "Contains paid features". */
+  partialPaid?: boolean;
 }
 
 export interface NavSection {
@@ -150,6 +153,7 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
                                 {item.requiresEntitlement && (
                                   <PaidFeatureBadge
                                     feature={item.requiresEntitlement}
+                                    partial={item.partialPaid}
                                   />
                                 )}
                               </span>

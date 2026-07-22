@@ -14,6 +14,7 @@ const ALL_FALSE: Entitlements = {
   logo_studio: false,
   payouts: false,
   platform_mailbox: false,
+  selling: false,
 };
 
 describe("isFeatureLocked", () => {

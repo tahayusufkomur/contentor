@@ -5,7 +5,8 @@
     "ai": "AI",
     "aiTooltip": "Yapay zekâ destekli özellik",
     "paid": "Ücretli",
-    "paidTooltip": "Ücretli planlarda mevcut"
+    "paidTooltip": "Ücretli planlarda mevcut",
+    "paidPartialTooltip": "Ücretli özellikler içerir"
   },
   "nav": {
     "sections": {
@@ -35,6 +36,7 @@
       "assistant": "Site asistanı",
       "settings": "Ayarlar",
       "billing": "Faturalandırma",
+      "store": "Mağaza",
       "payouts": "Ödemeler"
     }
   },

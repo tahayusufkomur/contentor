@@ -8,6 +8,7 @@ import { Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { InboxClient as SharedInboxClient } from "@shared/mailbox/inbox-client";
+import { PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { getSettings, type MailboxSettings } from "@/lib/mailbox";
 
 export default function InboxClient() {
@@ -26,6 +27,7 @@ export default function InboxClient() {
     settings && !canReceive && !bannerDismissed ? (
       <div className="flex flex-wrap items-center gap-3 border-b bg-muted/50 px-4 py-2.5 text-sm">
         <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <PaidFeatureBadge feature="platform_mailbox" className="shrink-0" />
         <span className="min-w-0 flex-1 text-muted-foreground">
           {settings.platform_eligible ? (
             <>

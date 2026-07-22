@@ -5,7 +5,8 @@
     "ai": "AI",
     "aiTooltip": "AI-powered feature",
     "paid": "Paid",
-    "paidTooltip": "Available on paid plans"
+    "paidTooltip": "Available on paid plans",
+    "paidPartialTooltip": "Contains paid features"
   },
   "nav": {
     "sections": {
@@ -35,6 +36,7 @@
       "assistant": "Site assistant",
       "settings": "Settings",
       "billing": "Billing",
+      "store": "Store",
       "payouts": "Payouts"
     }
   },

@@ -28,6 +28,7 @@ FEATURE_KEYS = {
     "logo_studio",
     "payouts",
     "platform_mailbox",
+    "selling",
 }
 
 
@@ -148,6 +149,8 @@ def test_entitlements_reflect_per_feature_plan_flags(restore_public, live_only_p
     assert body["logo_studio"] is True
     assert body["payouts"] is True
     assert body["platform_mailbox"] is True
+    # Selling (products/bundles/plans) shares the payouts gate.
+    assert body["selling"] is True
 
 
 def test_entitlements_requires_coach_role(restore_public):

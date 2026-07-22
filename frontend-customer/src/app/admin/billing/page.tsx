@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { clientFetch } from "@/lib/api-client";
 import { ChangePlanCard } from "./subscription/ChangePlanCard";
 import { SubscriptionTile } from "./subscription/SubscriptionTile";
@@ -315,12 +316,24 @@ export default function BillingPage() {
         </p>
       </div>
 
-      <Tabs defaultValue={defaultTab}>
+      {/* key={defaultTab} remounts the tabs when the URL ?tab= changes, so the
+          separate "Billing" (subscription) and "Store" (products) nav items
+          each land on their own tab even when navigating between them. */}
+      <Tabs defaultValue={defaultTab} key={defaultTab}>
         <TabsList>
           <TabsTrigger value="subscription">Subscription</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="bundles">Bundles</TabsTrigger>
-          <TabsTrigger value="plans">Subscription Plans</TabsTrigger>
+          <TabsTrigger value="products">
+            Products
+            <PaidFeatureBadge feature="selling" className="ml-1.5" />
+          </TabsTrigger>
+          <TabsTrigger value="bundles">
+            Bundles
+            <PaidFeatureBadge feature="selling" className="ml-1.5" />
+          </TabsTrigger>
+          <TabsTrigger value="plans">
+            Subscription Plans
+            <PaidFeatureBadge feature="selling" className="ml-1.5" />
+          </TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
 

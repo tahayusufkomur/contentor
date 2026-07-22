@@ -8,6 +8,7 @@ import { LiveStreamsTab } from "@/components/admin/live/streams-tab";
 import { ZoomClassesTab } from "@/components/admin/live/zoom-tab";
 import { OnsiteEventsTab } from "@/components/admin/live/onsite-tab";
 import { useIsLocked } from "@/components/admin/entitlements-provider";
+import { PaidFeatureBadge } from "@/components/admin/feature-badges";
 
 export default function LiveEventsPage() {
   const liveLocked = useIsLocked("live");
@@ -24,8 +25,8 @@ export default function LiveEventsPage() {
         <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-4">
           <p className="flex items-center gap-2 text-sm">
             <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            Live events are a paid feature. Upgrade to host live classes,
-            streams, and events.
+            Live classes and live streams need a paid plan. Zoom classes and
+            on-site events are always free.
           </p>
           <Button asChild size="sm" variant="outline">
             <a href="/admin/billing/subscription">Upgrade</a>
@@ -35,8 +36,14 @@ export default function LiveEventsPage() {
 
       <Tabs defaultValue="classes">
         <TabsList>
-          <TabsTrigger value="classes">Live Classes</TabsTrigger>
-          <TabsTrigger value="streams">Live Streams</TabsTrigger>
+          <TabsTrigger value="classes">
+            Live Classes
+            <PaidFeatureBadge feature="live" className="ml-1.5" />
+          </TabsTrigger>
+          <TabsTrigger value="streams">
+            Live Streams
+            <PaidFeatureBadge feature="live" className="ml-1.5" />
+          </TabsTrigger>
           <TabsTrigger value="zoom">Zoom Classes</TabsTrigger>
           <TabsTrigger value="onsite">On-site Events</TabsTrigger>
         </TabsList>

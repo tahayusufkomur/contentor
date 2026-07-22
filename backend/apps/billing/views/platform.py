@@ -225,8 +225,9 @@ def _compute_entitlements(tenant) -> dict:
         (matches ``blog.ai.availability`` / ``tenant_config.student_bot``).
       - ``logo_studio`` / ``platform_mailbox`` — ``has_paid_platform_plan``.
       - ``live`` — the live subscription plan's ``is_live_enabled`` flag.
-      - ``payouts`` — ``monetization.is_paid_active`` (paid plan + active sub;
-        the gate for reaching Connect onboarding / selling paid content).
+      - ``payouts`` / ``selling`` — ``monetization.is_paid_active`` (paid plan +
+        active sub; the gate for reaching Connect onboarding and for selling
+        paid content — products, bundles, subscription plans — to students).
 
     Reads the live ``platform_subscription.plan`` (not the ``Tenant.plan`` FK,
     which is set at signup and is only mirrored by the grant/checkout paths) for
@@ -236,13 +237,17 @@ def _compute_entitlements(tenant) -> dict:
 
     plan = tenant.platform_subscription.plan if tenant.is_subscription_active else None
     paid = tenant.has_paid_platform_plan
+    paid_active = is_paid_active(tenant)
     return {
         "live": bool(plan and plan.is_live_enabled),
         "ai_blog": bool(paid and plan and plan.max_ai_blog_posts > 0),
         "student_bot": bool(paid and plan and plan.max_student_bot_questions > 0),
         "logo_studio": paid,
         "platform_mailbox": paid,
-        "payouts": is_paid_active(tenant),
+        "payouts": paid_active,
+        # Selling to students (products / bundles / subscription plans) shares
+        # the payouts gate — monetizing requires a paid platform plan.
+        "selling": paid_active,
     }
 
 

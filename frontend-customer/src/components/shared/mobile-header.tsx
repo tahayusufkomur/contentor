@@ -142,6 +142,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                               {item.requiresEntitlement && (
                                 <PaidFeatureBadge
                                   feature={item.requiresEntitlement}
+                                  partial={item.partialPaid}
                                 />
                               )}
                             </span>

@@ -26,11 +26,25 @@ export function AiBadge({ className }: { className?: string }) {
  * "Paid" pill — marks a feature the coach's current plan does not include.
  * Purely presentational: it always renders when mounted. Gate visibility with
  * {@link PaidFeatureBadge} (or `useIsLocked`) so it only shows when locked.
+ *
+ * `partial` swaps the tooltip to "Contains paid features" — use it on a nav
+ * item whose section is only *partly* paid (e.g. Live, where Zoom + on-site
+ * events are free), so the badge doesn't imply the whole section is paid.
  */
-export function PaidBadge({ className }: { className?: string }) {
+export function PaidBadge({
+  className,
+  partial,
+}: {
+  className?: string;
+  partial?: boolean;
+}) {
   const t = useTranslations("admin");
   return (
-    <Badge variant="pro" title={t("badges.paidTooltip")} className={className}>
+    <Badge
+      variant="pro"
+      title={t(partial ? "badges.paidPartialTooltip" : "badges.paidTooltip")}
+      className={className}
+    >
       <Lock aria-hidden="true" />
       {t("badges.paid")}
     </Badge>
@@ -40,16 +54,19 @@ export function PaidBadge({ className }: { className?: string }) {
 /**
  * Renders a {@link PaidBadge} only when the current plan lacks `feature`.
  * Nothing renders while entitlements are still loading (or on a failed fetch),
- * so the badge never flashes on for a paying coach.
+ * so the badge never flashes on for a paying coach. Pass `partial` when the
+ * badge sits on a section that is only partly paid.
  */
 export function PaidFeatureBadge({
   feature,
   className,
+  partial,
 }: {
   feature: EntitlementKey;
   className?: string;
+  partial?: boolean;
 }) {
   const locked = useIsLocked(feature);
   if (!locked) return null;
-  return <PaidBadge className={className} />;
+  return <PaidBadge className={className} partial={partial} />;
 }

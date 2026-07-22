@@ -15,7 +15,8 @@ export type EntitlementKey =
   | "student_bot"
   | "logo_studio"
   | "payouts"
-  | "platform_mailbox";
+  | "platform_mailbox"
+  | "selling";
 
 export type Entitlements = Record<EntitlementKey, boolean>;
 

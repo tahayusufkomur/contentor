@@ -8,7 +8,7 @@ import {
   BookOpen,
   Calendar,
   CreditCard,
-  Database,
+  Store,
   Download,
   ExternalLink,
   Film,
@@ -86,6 +86,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
           href: "/admin/live",
           icon: Video,
           requiresEntitlement: "live",
+          partialPaid: true,
         },
         {
           label: t("nav.items.calendar"),
@@ -113,14 +114,27 @@ export function AdminShell({ children, user }: AdminShellProps) {
           href: "/admin/community",
           icon: MessagesSquare,
         },
-        { label: t("nav.items.inbox"), href: "/admin/inbox", icon: Inbox },
+        {
+          label: t("nav.items.inbox"),
+          href: "/admin/inbox",
+          icon: Inbox,
+          requiresEntitlement: "platform_mailbox",
+          partialPaid: true,
+        },
         {
           label: t("nav.items.notifications"),
           href: "/admin/notifications",
           icon: Bell,
         },
         { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
-        { label: t("nav.items.blog"), href: "/admin/blog", icon: Newspaper },
+        {
+          label: t("nav.items.blog"),
+          href: "/admin/blog",
+          icon: Newspaper,
+          ai: true,
+          requiresEntitlement: "ai_blog",
+          partialPaid: true,
+        },
       ],
     },
     {
@@ -128,7 +142,14 @@ export function AdminShell({ children, user }: AdminShellProps) {
       label: t("nav.sections.website"),
       items: [
         { label: t("nav.items.pages"), href: "/admin/pages", icon: FileText },
-        { label: t("nav.items.design"), href: "/admin/design", icon: Palette },
+        {
+          label: t("nav.items.design"),
+          href: "/admin/design",
+          icon: Palette,
+          ai: true,
+          requiresEntitlement: "logo_studio",
+          partialPaid: true,
+        },
         {
           label: t("nav.items.assistant"),
           href: "/admin/assistant",
@@ -161,18 +182,24 @@ export function AdminShell({ children, user }: AdminShellProps) {
           requiresEntitlement: "payouts",
         },
         {
+          // Coach's own subscription to Contentor (payment to us).
           label: t("nav.items.billing"),
           href: "/admin/billing",
           icon: CreditCard,
+        },
+        {
+          // Selling to students — products, bundles, subscription plans.
+          // Deep-links into the billing page's product tabs; paid-plan gated.
+          label: t("nav.items.store"),
+          href: "/admin/billing?tab=products",
+          icon: Store,
+          requiresEntitlement: "selling",
         },
         {
           label: t("nav.items.settings"),
           href: "/admin/settings",
           icon: Settings,
         },
-        // Schema-driven admin kit: model labels come from the API, so the
-        // entry point keeps a plain (untranslated) label.
-        { label: "Data", href: "/admin/m", icon: Database },
       ],
     },
   ];
