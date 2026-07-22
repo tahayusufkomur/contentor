@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from apps.accounts.impersonation import impersonate_tenant_admin
 from apps.accounts.models import User
-from apps.adminkit.options import ModelAdmin, admin_action
+from apps.adminkit.options import ModelAdmin, TagChoiceFilter, admin_action
 from apps.adminkit.sites import platform_site
 
 from .models import (
@@ -364,7 +364,7 @@ class CuratedLogoAdmin(ModelAdmin):
     description = "Ready-made Logo Studio illustrations coaches can use for free."
     list_display = ("image_key", "title", "tags", "enabled", "position", "updated_at")
     search_fields = ("title", "tags", "prompt")
-    list_filters = ("enabled",)
+    list_filters = ("enabled", TagChoiceFilter())
     ordering = ("position", "id")
     fields = ("title", "prompt", "tags", "position", "enabled", "image_key")
     image_fields = ("image_key",)
@@ -380,7 +380,7 @@ class CuratedPhotoAdmin(ModelAdmin):
     description = "Curated stock/illustration library coaches can drop into their blog posts."
     list_display = ("image_key", "title", "kind", "tags", "enabled", "position", "updated_at")
     search_fields = ("title", "tags", "prompt")
-    list_filters = ("enabled", "kind")
+    list_filters = ("enabled", "kind", TagChoiceFilter())
     ordering = ("position", "id")
     fields = ("title", "prompt", "tags", "alt_text", "kind", "position", "enabled", "image_key")
     image_fields = ("image_key",)

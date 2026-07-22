@@ -160,6 +160,10 @@ def filter_schema(admin) -> list[dict]:
     out = []
     qs = admin.model._default_manager.all()
     for name in admin.list_filters:
+        # A filter descriptor (e.g. TagChoiceFilter) builds its own entry.
+        if not isinstance(name, str):
+            out.append(name.schema(admin.model))
+            continue
         field = serializer.fields.get(name)
         if field is not None:
             schema = field_schema(admin, name, field)

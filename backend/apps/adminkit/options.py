@@ -8,8 +8,65 @@ the same idea as `django.contrib.admin`, but speaking JSON to the two SPAs.
 
 from __future__ import annotations
 
+import re
+
 from django.db import models
 from django.utils.text import slugify
+
+
+class TagChoiceFilter:
+    """A `list_filters` entry over a comma-separated tag CharField.
+
+    A bare field name in `list_filters` gives an exact-match text box — useless
+    for a "yoga, lotus, calm" field. This descriptor instead renders a choice of
+    the distinct tags across all rows (each with a match count) and narrows the
+    list to rows whose tag list contains the picked tag. Tags are normalized the
+    way the coach galleries split them: split on ",", stripped, lowercased,
+    blanks dropped (see frontend-customer library-catalog.ts).
+
+    Drop one into `list_filters` in place of a field name:
+
+        list_filters = ("enabled", TagChoiceFilter())
+    """
+
+    def __init__(self, field_name: str = "tags", *, param: str = "tag", label: str = "Tag"):
+        self.field_name = field_name
+        self.name = param  # query-param key the frontend sends
+        self.label = label
+
+    @staticmethod
+    def _split(raw: str | None) -> list[str]:
+        return [t.strip().lower() for t in (raw or "").split(",") if t.strip()]
+
+    def _tag_counts(self, model) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for raw in model._default_manager.values_list(self.field_name, flat=True):
+            for tag in set(self._split(raw)):
+                counts[tag] = counts.get(tag, 0) + 1
+        return counts
+
+    def schema(self, model) -> dict:
+        """Filter descriptor for `filter_schema` (a choice of distinct tags).
+
+        Choices are ordered by descending row count (ties broken
+        alphabetically) so the frontend can show the most-used tags first and
+        keep the rest behind a search box.
+        """
+        counts = self._tag_counts(model)
+        ordered = sorted(counts, key=lambda tag: (-counts[tag], tag))
+        return {
+            "name": self.name,
+            "label": self.label,
+            "type": "choice",
+            "choices": [{"value": tag, "label": f"{tag} ({counts[tag]})"} for tag in ordered],
+            "total_count": model._default_manager.count(),
+        }
+
+    def filter_queryset(self, queryset, value: str):
+        """Narrow to rows whose tag list contains `value`, matched on comma
+        boundaries so "art" never matches "startup" or "cart"."""
+        pattern = r"(^|,)[[:space:]]*" + re.escape(value.strip().lower()) + r"[[:space:]]*(,|$)"
+        return queryset.filter(**{f"{self.field_name}__iregex": pattern})
 
 
 def admin_action(label=None, *, style="default", confirm=None, row=False):

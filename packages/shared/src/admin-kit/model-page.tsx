@@ -60,7 +60,22 @@ function StringFilter({
   );
 }
 
-/** A button-group filter that replaces the old dropdown. */
+// Filters with more options than this get the scrollable treatment (search box
+// + arrow-scrolled strip). Below it, a plain wrapping button group. The backend
+// orders choices by count desc, so the most-used land first in the strip.
+const FILTER_TOP_N = 10;
+
+const filterChipClass = (active: boolean) =>
+  `shrink-0 rounded-sm px-2.5 py-1 transition-colors ${
+    active
+      ? "bg-primary text-primary-foreground font-medium"
+      : "text-foreground hover:bg-muted"
+  }`;
+
+/** A button-group filter that replaces the old dropdown. Small filters render as
+ *  a plain wrapping group; a filter with more than FILTER_TOP_N options (e.g.
+ *  hundreds of tags) becomes a search box plus a single-row strip you scroll
+ *  left/right through with arrow buttons. */
 function ButtonSelectFilter({
   label,
   value,
@@ -74,34 +89,125 @@ function ButtonSelectFilter({
   onChange: (val: string) => void;
   allLabel?: string;
 }) {
+  const [search, setSearch] = useState("");
+  const stripRef = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+  const isLarge = options.length > FILTER_TOP_N;
+
+  const query = search.trim().toLowerCase();
+  const matches = query
+    ? options.filter((o) => o.label.toLowerCase().includes(query))
+    : options;
+
+  const syncArrows = useCallback(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 1);
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  // Recompute arrow state when the visible set changes (search, new data).
+  useEffect(() => {
+    syncArrows();
+  }, [matches.length, isLarge, syncArrows]);
+
+  const scrollStrip = (direction: number) => {
+    const el = stripRef.current;
+    if (el) el.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: "smooth" });
+  };
+
+  // Pull a just-clicked chip to the middle of the strip, so clicking an
+  // edge/last-visible tag reveals its neighbours instead of leaving it clipped.
+  const centerChip = (chipEl: HTMLElement) => {
+    const el = stripRef.current;
+    if (!el) return;
+    const chipBox = chipEl.getBoundingClientRect();
+    const stripBox = el.getBoundingClientRect();
+    const delta = chipBox.left + chipBox.width / 2 - (stripBox.left + stripBox.width / 2);
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
+  const allButton = (
+    <button
+      type="button"
+      onClick={() => onChange("")}
+      className={filterChipClass(value === "")}
+    >
+      {allLabel}
+    </button>
+  );
+
+  const chip = (opt: { label: string; value: string }) => (
+    <button
+      key={opt.value}
+      type="button"
+      onClick={(e) => {
+        onChange(opt.value);
+        centerChip(e.currentTarget);
+      }}
+      className={filterChipClass(value === opt.value)}
+    >
+      {opt.label}
+    </button>
+  );
+
+  // Small filters (booleans, kinds): a plain wrapping group, unchanged.
+  if (!isLarge) {
+    return (
+      <div className="flex flex-wrap items-center gap-1 rounded-md border bg-card p-1 text-sm shadow-sm">
+        <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}:</span>
+        {allButton}
+        {options.map(chip)}
+      </div>
+    );
+  }
+
+  // Large filters: search box + a horizontally scrollable strip with arrows.
   return (
-    <div className="flex flex-wrap items-center gap-1 rounded-md border bg-card p-1 text-sm shadow-sm">
+    <div className="flex items-center gap-1 rounded-md border bg-card p-1 text-sm shadow-sm">
       <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}:</span>
+      {allButton}
+      <div className="relative flex items-center">
+        <Search className="pointer-events-none absolute left-1.5 h-3.5 w-3.5 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search…"
+          aria-label={`Search ${label} options`}
+          className="w-28 rounded-sm border bg-background py-1 pr-2 pl-6 text-sm outline-none focus:ring-1 focus:ring-ring"
+        />
+      </div>
       <button
         type="button"
-        onClick={() => onChange("")}
-        className={`rounded-sm px-2.5 py-1 transition-colors ${
-          value === ""
-            ? "bg-primary text-primary-foreground font-medium"
-            : "text-foreground hover:bg-muted"
-        }`}
+        onClick={() => scrollStrip(-1)}
+        disabled={!canLeft}
+        aria-label={`Scroll ${label} options left`}
+        className="shrink-0 rounded-sm p-1 text-foreground transition-colors hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent"
       >
-        {allLabel}
+        <ChevronLeft className="h-4 w-4" />
       </button>
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={`rounded-sm px-2.5 py-1 transition-colors ${
-            value === opt.value
-              ? "bg-primary text-primary-foreground font-medium"
-              : "text-foreground hover:bg-muted"
-          }`}
-        >
-          {opt.label}
-        </button>
-      ))}
+      <div
+        ref={stripRef}
+        onScroll={syncArrows}
+        className="flex max-w-[22rem] items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {matches.length === 0 ? (
+          <span className="px-1.5 text-xs whitespace-nowrap text-muted-foreground">No matches</span>
+        ) : (
+          matches.map(chip)
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => scrollStrip(1)}
+        disabled={!canRight}
+        aria-label={`Scroll ${label} options right`}
+        className="shrink-0 rounded-sm p-1 text-foreground transition-colors hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
     </div>
   );
 }

@@ -335,6 +335,43 @@ def test_curated_logo_list_image_field_null_when_no_key(superuser):
     assert row["image_key"] is None
 
 
+def test_curated_logo_tag_filter_meta_lists_distinct_tags_with_counts(superuser):
+    CuratedLogo.objects.create(title="Lotus", image_key="platform/curated-logos/a.png", tags="yoga, lotus, calm")
+    CuratedLogo.objects.create(title="Dumbbell", image_key="platform/curated-logos/b.png", tags="fitness, bold")
+    CuratedLogo.objects.create(title="Zen", image_key="platform/curated-logos/c.png", tags="Yoga, Calm")  # dupe casing
+
+    meta = make_client(superuser).get("/api/v1/platform-admin/curated-logos/meta/").json()
+    tag_filter = next(f for f in meta["filters"] if f["name"] == "tag")
+    assert tag_filter["type"] == "choice"
+    assert tag_filter["total_count"] == 3
+    # Distinct, lowercased, ordered by row count desc (ties alphabetical), with counts.
+    assert tag_filter["choices"] == [
+        {"value": "calm", "label": "calm (2)"},
+        {"value": "yoga", "label": "yoga (2)"},
+        {"value": "bold", "label": "bold (1)"},
+        {"value": "fitness", "label": "fitness (1)"},
+        {"value": "lotus", "label": "lotus (1)"},
+    ]
+
+
+def test_curated_logo_tag_filter_narrows_list_on_comma_boundary(superuser):
+    CuratedLogo.objects.create(title="Lotus", image_key="platform/curated-logos/a.png", tags="yoga, lotus")
+    CuratedLogo.objects.create(title="Zen", image_key="platform/curated-logos/b.png", tags="Yoga, calm")
+    CuratedLogo.objects.create(title="Cart", image_key="platform/curated-logos/c.png", tags="startup, cart")
+
+    client = make_client(superuser)
+    rows = client.get("/api/v1/platform-admin/curated-logos/", {"tag": "yoga"}).json()
+    assert {r["title"] for r in rows["results"]} == {"Lotus", "Zen"}  # case-insensitive, both matched
+
+    # Substring "art" must NOT match "startup"/"cart" — comma-boundary precision.
+    rows = client.get("/api/v1/platform-admin/curated-logos/", {"tag": "art"}).json()
+    assert rows["results"] == []
+
+    # No tag param → unfiltered.
+    rows = client.get("/api/v1/platform-admin/curated-logos/").json()
+    assert rows["count"] == 3
+
+
 def test_tenant_admin_excludes_public_and_labels_fk(superuser, restore_public):
     plan = PlatformPlan.objects.create(name="kit-starter", price_monthly="9.00", transaction_fee_pct="8.00")
     Tenant.objects.filter(pk=restore_public.pk).update(plan=plan)

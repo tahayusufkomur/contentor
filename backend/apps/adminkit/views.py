@@ -55,6 +55,12 @@ class AdminKitViewSet(viewsets.ModelViewSet):
 
         needs_distinct = False
         for name in admin.list_filters:
+            # A filter descriptor (e.g. TagChoiceFilter) applies its own logic.
+            if not isinstance(name, str):
+                raw = params.get(name.name, "").strip()
+                if raw:
+                    queryset = name.filter_queryset(queryset, raw)
+                continue
             raw = params.get(name, "").strip()
             if raw == "":
                 continue
