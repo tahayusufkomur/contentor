@@ -70,6 +70,8 @@ export default function ComposePage() {
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
+  const [scheduledAt, setScheduledAt] = useState("");
 
   // Sync key state to URL so refresh preserves selections
   const syncUrl = useCallback((overrides: Record<string, string>) => {
@@ -248,6 +250,20 @@ export default function ComposePage() {
       return;
     }
 
+    let scheduledIso: string | undefined;
+    if (scheduleMode === "later") {
+      if (!scheduledAt) {
+        setError("Please pick a date and time to schedule.");
+        return;
+      }
+      const when = new Date(scheduledAt);
+      if (Number.isNaN(when.getTime()) || when.getTime() <= Date.now()) {
+        setError("Scheduled time must be in the future.");
+        return;
+      }
+      scheduledIso = when.toISOString();
+    }
+
     setSending(true);
     setError(null);
 
@@ -257,8 +273,11 @@ export default function ComposePage() {
         template_name: savedTemplateName,
         subject,
         recipient_filter: recipientFilter,
+        scheduled_at: scheduledIso,
       });
-      router.push("/admin/email");
+      // Scheduled campaigns land on the content calendar; immediate sends go
+      // back to the email dashboard.
+      router.push(scheduledIso ? "/admin/calendar" : "/admin/email");
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to send campaign.";
@@ -400,6 +419,44 @@ export default function ComposePage() {
             onCountChange={setRecipientCount}
           />
 
+          {/* Delivery timing */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Delivery</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setScheduleMode("now")}
+                className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                  scheduleMode === "now"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Send now
+              </button>
+              <button
+                type="button"
+                onClick={() => setScheduleMode("later")}
+                className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                  scheduleMode === "later"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Schedule for later
+              </button>
+            </div>
+            {scheduleMode === "later" && (
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                aria-label="Scheduled send time"
+              />
+            )}
+          </div>
+
           {error && (
             <div className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
               {error}
@@ -411,7 +468,13 @@ export default function ComposePage() {
             disabled={sending}
             className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {sending ? "Sending..." : "Send Campaign"}
+            {sending
+              ? scheduleMode === "later"
+                ? "Scheduling..."
+                : "Sending..."
+              : scheduleMode === "later"
+                ? "Schedule Campaign"
+                : "Send Campaign"}
           </button>
         </div>
       )}

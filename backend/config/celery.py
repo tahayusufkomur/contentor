@@ -26,6 +26,10 @@ app.conf.beat_schedule = {
         "task": "apps.blog.tasks.dispatch_due_blog_autopilot",
         "schedule": crontab(minute="*/15"),
     },
+    "dispatch-due-email-campaigns": {
+        "task": "apps.email_campaigns.tasks.dispatch_due_email_campaigns",
+        "schedule": crontab(minute="*"),
+    },
     "purge-ai-transcripts": {
         "task": "apps.core.tasks.purge_ai_transcripts",
         "schedule": crontab(hour="4", minute="20"),

@@ -54,10 +54,11 @@ export interface EmailCampaign {
   recipient_count: number;
   success_count: number;
   failure_count: number;
-  status: "sending" | "sent" | "partial" | "failed";
+  status: "scheduled" | "sending" | "sent" | "partial" | "failed";
   rendered_html: string;
   recipient_summary: string;
   created_at: string;
+  scheduled_at: string | null;
   sent_at: string | null;
 }
 
@@ -110,6 +111,9 @@ export async function sendCampaign(data: {
   template_name?: string;
   subject: string;
   recipient_filter: RecipientFilter;
+  /** ISO 8601. When set (and in the future), the campaign is scheduled
+   * instead of sent immediately. */
+  scheduled_at?: string;
 }): Promise<EmailCampaign> {
   return clientFetch<EmailCampaign>("/api/v1/email/send/", {
     method: "POST",

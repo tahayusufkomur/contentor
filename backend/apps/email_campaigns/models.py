@@ -3,6 +3,7 @@ from django.db import models
 
 
 class CampaignStatus(models.TextChoices):
+    SCHEDULED = "scheduled", "Scheduled"
     SENDING = "sending", "Sending"
     SENT = "sent", "Sent"
     PARTIAL = "partial", "Partial"
@@ -37,6 +38,10 @@ class EmailCampaign(models.Model):
     rendered_html = models.TextField(blank=True, default="")
     recipient_summary = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
+    # When set, the campaign is queued for a future send: it stays in status
+    # SCHEDULED until the beat sweep (dispatch_due_email_campaigns) claims it at
+    # scheduled_at. Null = send-now (the historical default).
+    scheduled_at = models.DateTimeField(null=True, blank=True)
     sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

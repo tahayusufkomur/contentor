@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -21,7 +21,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getMonthGridDates, getWeekDates, isSameDay, isToday, toDateKey } from "@/lib/calendar-utils";
+import {
+  getMonthGridDates,
+  getWeekDates,
+  isSameDay,
+  isToday,
+  toDateKey,
+} from "@/lib/calendar-utils";
+import { listContentCalendar } from "@/lib/content-calendar-api";
 
 export type EventCategory = "all" | "live" | "email" | "blog";
 
@@ -30,7 +37,18 @@ export interface UnifiedCalendarItem {
   title: string;
   category: "live" | "email" | "blog";
   scheduledAt: string; // ISO date string
-  status: "scheduled" | "published" | "draft" | "completed";
+  // Display-only status. Live: draft|scheduled|live|ended; blog: draft|published;
+  // email: scheduled|sending|completed|partial|failed.
+  status:
+    | "scheduled"
+    | "published"
+    | "draft"
+    | "completed"
+    | "live"
+    | "ended"
+    | "sending"
+    | "partial"
+    | "failed";
   subtitle?: string;
   href: string;
 }
@@ -74,66 +92,48 @@ interface UnifiedCalendarProps {
 export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
-  const [selectedCategory, setSelectedCategory] = useState<EventCategory>("all");
-  const [selectedItem, setSelectedItem] = useState<UnifiedCalendarItem | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<EventCategory>("all");
+  const [selectedItem, setSelectedItem] = useState<UnifiedCalendarItem | null>(
+    null,
+  );
+  const [items, setItems] = useState<UnifiedCalendarItem[]>(initialItems);
+  const [loading, setLoading] = useState(initialItems.length === 0);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock initial events if empty to give instant visual feedback to coach
-  const items = useMemo<UnifiedCalendarItem[]>(() => {
-    if (initialItems.length > 0) return initialItems;
+  // The [from, to] window (YYYY-MM-DD) covering the visible grid.
+  const { fetchFrom, fetchTo } = useMemo(() => {
+    const grid =
+      viewMode === "month"
+        ? getMonthGridDates(currentDate.getFullYear(), currentDate.getMonth())
+        : getWeekDates(currentDate);
+    return {
+      fetchFrom: toDateKey(grid[0]),
+      fetchTo: toDateKey(grid[grid.length - 1]),
+    };
+  }, [currentDate, viewMode]);
 
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const d = now.getDate();
-
-    return [
-      {
-        id: "live-1",
-        title: "Live Pilates Masterclass",
-        category: "live",
-        scheduledAt: new Date(y, m, d, 18, 0).toISOString(),
-        status: "scheduled",
-        subtitle: "60 mins • Zoom Room A",
-        href: "/admin/live",
-      },
-      {
-        id: "email-1",
-        title: "Weekly Motivation Newsletter",
-        category: "email",
-        scheduledAt: new Date(y, m, d + 2, 9, 0).toISOString(),
-        status: "scheduled",
-        subtitle: "Recipients: All Active Students (342)",
-        href: "/admin/email",
-      },
-      {
-        id: "blog-1",
-        title: "5 Tips for Posture Alignment",
-        category: "blog",
-        scheduledAt: new Date(y, m, d + 4, 14, 0).toISOString(),
-        status: "published",
-        subtitle: "SEO Keywords: Pilates, Health",
-        href: "/admin/blog",
-      },
-      {
-        id: "live-2",
-        title: "Sunset Breathwork & Q&A",
-        category: "live",
-        scheduledAt: new Date(y, m, d + 7, 19, 30).toISOString(),
-        status: "scheduled",
-        subtitle: "Interactive Workshop",
-        href: "/admin/live",
-      },
-      {
-        id: "email-2",
-        title: "New Course Announcement",
-        category: "email",
-        scheduledAt: new Date(y, m, d + 10, 10, 0).toISOString(),
-        status: "draft",
-        subtitle: "Draft Campaign",
-        href: "/admin/email",
-      },
-    ];
-  }, [initialItems]);
+  // Fetch the coach's real Live + Blog + Email items for the visible window,
+  // refetching whenever the window changes (month/week navigation).
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    listContentCalendar(fetchFrom, fetchTo)
+      .then((data) => {
+        if (cancelled) return;
+        setItems(data);
+        setError(null);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Failed to load calendar items.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchFrom, fetchTo]);
 
   // Filter items by category
   const filteredItems = useMemo(() => {
@@ -173,7 +173,10 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
   // Calendar dates calculation
   const gridDates = useMemo(() => {
     if (viewMode === "month") {
-      return getMonthGridDates(currentDate.getFullYear(), currentDate.getMonth());
+      return getMonthGridDates(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+      );
     }
     return getWeekDates(currentDate);
   }, [currentDate, viewMode]);
@@ -204,26 +207,39 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             Unified Content Calendar
           </h1>
           <p className="text-sm text-muted-foreground">
-            Schedule and manage Live Events, Email Broadcasts, and Blog Posts in one place.
+            Schedule and manage Live Events, Email Broadcasts, and Blog Posts in
+            one place.
           </p>
         </div>
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Create Dropdown buttons */}
-          <Button asChild size="sm" className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm">
+          <Button
+            asChild
+            size="sm"
+            className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+          >
             <Link href="/admin/live">
               <Plus className="h-4 w-4" />
               Live Event
             </Link>
           </Button>
-          <Button asChild size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+          <Button
+            asChild
+            size="sm"
+            className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+          >
             <Link href="/admin/email/compose">
               <Plus className="h-4 w-4" />
               Broadcast Email
             </Link>
           </Button>
-          <Button asChild size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+          <Button
+            asChild
+            size="sm"
+            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+          >
             <Link href="/admin/blog">
               <Plus className="h-4 w-4" />
               Blog Article
@@ -313,13 +329,28 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           </div>
 
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrev}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handlePrev}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs font-medium" onClick={handleToday}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs font-medium"
+              onClick={handleToday}
+            >
               Today
             </Button>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleNext}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleNext}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -327,9 +358,28 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
       </div>
 
       {/* Month Year Title */}
-      <div className="text-lg font-bold tracking-tight text-foreground">
-        {monthLabel}
+      <div className="flex items-center gap-3">
+        <div className="text-lg font-bold tracking-tight text-foreground">
+          {monthLabel}
+        </div>
+        {loading && (
+          <span className="text-xs text-muted-foreground animate-pulse">
+            Loading…
+          </span>
+        )}
       </div>
+
+      {/* Load error / empty status */}
+      {error ? (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {error}
+        </div>
+      ) : !loading && filteredItems.length === 0 ? (
+        <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          No scheduled content in this range. Create a live event, broadcast, or
+          blog post to see it appear here.
+        </div>
+      ) : null}
 
       {/* Grid View */}
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
@@ -363,7 +413,9 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                 <div className="flex items-center justify-between px-1 mb-1">
                   <span
                     className={`inline-flex items-center justify-center text-xs h-5 w-5 rounded-full ${
-                      today ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground"
+                      today
+                        ? "bg-primary text-primary-foreground font-bold"
+                        : "text-muted-foreground"
                     }`}
                   >
                     {date.getDate()}
@@ -380,7 +432,9 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                   {dayEvents.map((item) => {
                     const style = CATEGORY_STYLES[item.category];
                     const Icon = style.icon;
-                    const eventTime = new Date(item.scheduledAt).toLocaleTimeString([], {
+                    const eventTime = new Date(
+                      item.scheduledAt,
+                    ).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     });
@@ -398,7 +452,9 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                         </div>
                         <div className="flex items-center justify-between text-[10px] opacity-80 mt-0.5">
                           <span>{eventTime}</span>
-                          <span className="uppercase font-mono text-[9px]">{item.status}</span>
+                          <span className="uppercase font-mono text-[9px]">
+                            {item.status}
+                          </span>
                         </div>
                       </button>
                     );
@@ -445,14 +501,17 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {new Date(selectedItem.scheduledAt).toLocaleString("default", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {new Date(selectedItem.scheduledAt).toLocaleString(
+                    "default",
+                    {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  )}
                 </span>
               </div>
 
@@ -465,7 +524,10 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
 
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Status:</span>
-                <Badge variant="outline" className="capitalize font-mono text-xs">
+                <Badge
+                  variant="outline"
+                  className="capitalize font-mono text-xs"
+                >
                   {selectedItem.status}
                 </Badge>
               </div>
@@ -473,12 +535,18 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-2 border-t pt-4">
-              <Button variant="outline" size="sm" onClick={() => setSelectedItem(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedItem(null)}
+              >
                 Close
               </Button>
               <Button asChild size="sm" className="gap-1.5">
                 <Link href={selectedItem.href}>
-                  <span>Manage {CATEGORY_STYLES[selectedItem.category].label}</span>
+                  <span>
+                    Manage {CATEGORY_STYLES[selectedItem.category].label}
+                  </span>
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </Button>

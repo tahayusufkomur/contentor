@@ -138,6 +138,15 @@ class Command(BaseCommand):
             # pages show real upcoming/past events instead of an empty state.
             self._publish_seeded_events()
 
+            # Blog posts + email campaigns so the coach content calendar
+            # (/admin/calendar) shows a full Live + Blog + Email mix.
+            from apps.demo_seed.calendar_content import seed_blog_posts, seed_email_campaigns
+
+            blog_posts = seed_blog_posts(owner)
+            email_campaigns = seed_email_campaigns(owner)
+            self.stdout.write(f"  Blog posts: {len(blog_posts)} created")
+            self.stdout.write(f"  Email campaigns: {len(email_campaigns)} created")
+
             # Students with purchases, subscriptions, and progress
             if students_data:
                 self._seed_students_full(

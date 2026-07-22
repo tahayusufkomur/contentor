@@ -53,6 +53,7 @@ from apps.community.models import (
 from apps.core.models import Domain, Tenant
 from apps.courses.models import Course, Enrollment, Lesson, Module, Progress, Video
 from apps.downloads.models import DownloadFile
+from apps.email_campaigns.models import CampaignRecipient, EmailCampaign
 from apps.live.models import LiveClass, LiveStream
 from apps.mailbox.models import Conversation, Message
 from apps.media.models import Photo
@@ -233,6 +234,8 @@ TENANT_CLEANUP_MODELS = [
     SubscriptionPlan,
     BundleItem,
     Bundle,
+    CampaignRecipient,
+    EmailCampaign,
     LiveStream,
     LiveClass,
     DownloadFile,

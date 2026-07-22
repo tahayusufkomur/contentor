@@ -181,6 +181,7 @@ def send_campaign(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
+    scheduled_at = data.get("scheduled_at")
     recipient_count = get_recipient_count(data["recipient_filter"])
 
     tenant = connection.tenant
@@ -198,11 +199,11 @@ def send_campaign(request):
         sender=request.user,
         template_id=data["template_id"],
         subject=data["subject"],
-        status=CampaignStatus.SENDING,
+        status__in=(CampaignStatus.SCHEDULED, CampaignStatus.SENDING),
     ).exists()
     if existing:
         return Response(
-            {"detail": "A campaign with this template and subject is already being sent."},
+            {"detail": "A campaign with this template and subject is already queued."},
             status=status.HTTP_409_CONFLICT,
         )
 
@@ -213,12 +214,16 @@ def send_campaign(request):
         sender=request.user,
         recipient_filter=data["recipient_filter"],
         recipient_count=recipient_count,
-        status=CampaignStatus.SENDING,
+        status=CampaignStatus.SCHEDULED if scheduled_at else CampaignStatus.SENDING,
+        scheduled_at=scheduled_at,
     )
 
-    from .tasks import send_campaign_emails
+    # Scheduled campaigns are picked up later by the dispatch_due_email_campaigns
+    # beat sweep; only send-now campaigns dispatch at request time.
+    if not scheduled_at:
+        from .tasks import send_campaign_emails
 
-    send_campaign_emails.delay(campaign.id, connection.tenant.schema_name)
+        send_campaign_emails.delay(campaign.id, connection.tenant.schema_name)
 
     return Response(EmailCampaignSerializer(campaign).data, status=status.HTTP_201_CREATED)
 
@@ -339,11 +344,22 @@ def campaign_recipients(request, pk: int):
     return Response({"results": CampaignRecipientSerializer(recipients, many=True).data})
 
 
-@api_view(["GET"])
+@api_view(["GET", "DELETE"])
 @permission_classes([IsCoachOrOwner])
-def campaign_detail(_request, pk: int):
+def campaign_detail(request, pk: int):
     campaign = EmailCampaign.objects.select_related("sender").filter(pk=pk).first()
     if not campaign:
         return Response({"detail": "Campaign not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        # Only a not-yet-sent scheduled campaign can be cancelled; sent/sending
+        # campaigns are immutable historical records.
+        if campaign.status != CampaignStatus.SCHEDULED:
+            return Response(
+                {"detail": "Only scheduled campaigns can be cancelled."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        campaign.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     return Response(EmailCampaignSerializer(campaign).data)

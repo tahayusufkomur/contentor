@@ -3,12 +3,43 @@ import logging
 from celery import shared_task
 from django.db.models import F
 from django.utils import timezone
-from django_tenants.utils import tenant_context
+from django_tenants.utils import get_tenant_model, tenant_context
 from requests import HTTPError
 
 from apps.core.email import send_email
 
 logger = logging.getLogger(__name__)
+
+
+@shared_task
+def dispatch_due_email_campaigns():
+    """Beat sweep: hand every due scheduled campaign to the send worker.
+
+    Mirrors apps.blog.tasks.dispatch_due_blog_autopilot — only ready tenants
+    have provisioned schemas, so skipping the rest avoids UndefinedTable errors
+    on half-provisioned tenants.
+    """
+    for tenant in get_tenant_model().objects.exclude(schema_name="public").filter(provisioning_status="ready"):
+        with tenant_context(tenant):
+            try:
+                _dispatch_email_for_current_tenant(tenant.schema_name)
+            except Exception:  # noqa: BLE001  one tenant must not break the rest
+                logger.exception("email campaign dispatch failed for %s", tenant.schema_name)
+
+
+def _dispatch_email_for_current_tenant(schema_name):
+    """Claim each due SCHEDULED campaign exactly once, then spawn the sender."""
+    from .models import CampaignStatus, EmailCampaign
+
+    now = timezone.now()
+    due = EmailCampaign.objects.filter(status=CampaignStatus.SCHEDULED, scheduled_at__lte=now)
+    for campaign in due:
+        # Exactly-once claim: only the worker that flips SCHEDULED→SENDING spawns.
+        claimed = EmailCampaign.objects.filter(pk=campaign.pk, status=CampaignStatus.SCHEDULED).update(
+            status=CampaignStatus.SENDING
+        )
+        if claimed:
+            send_campaign_emails.delay(campaign.id, schema_name)
 
 
 def _build_recipient_summary(recipient_filter: dict) -> str:

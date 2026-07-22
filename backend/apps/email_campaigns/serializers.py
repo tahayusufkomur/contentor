@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import CampaignRecipient, EmailCampaign
@@ -9,6 +10,13 @@ class SendEmailSerializer(serializers.Serializer):
     template_name = serializers.CharField(max_length=255, required=False, default="")
     subject = serializers.CharField(max_length=255)
     recipient_filter = serializers.JSONField()
+    # Optional future send time. Null/absent = send now.
+    scheduled_at = serializers.DateTimeField(required=False, allow_null=True)
+
+    def validate_scheduled_at(self, value):
+        if value is not None and value <= timezone.now():
+            raise serializers.ValidationError("scheduled_at must be in the future.")
+        return value
 
     def validate_recipient_filter(self, value):
         if not isinstance(value, dict):
@@ -60,6 +68,7 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
             "failure_count",
             "status",
             "created_at",
+            "scheduled_at",
             "sent_at",
             "rendered_html",
             "recipient_summary",
