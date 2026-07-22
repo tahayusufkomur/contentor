@@ -33,5 +33,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|sw.js).*)"],
+  // Exclude ALL Next internals (`_next`), not just static/image — the previous
+  // list missed `_next/webpack-hmr`, so middleware ran on the dev HMR websocket
+  // and Caddy logged a steady stream of `502 malformed HTTP response
+  // "Unauthorized"`. App-router RSC requests hit real route paths (`?_rsc=`),
+  // not `/_next/*`, so they still get the tenant headers.
+  matcher: ["/((?!_next|favicon.ico|icons|sw.js).*)"],
 };
