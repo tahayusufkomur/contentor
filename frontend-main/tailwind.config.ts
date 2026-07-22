@@ -8,6 +8,7 @@ const config: Config = {
     "variant",
     [
       "&:is(.dark, .dark *)",
+      "&:is(.dim, .dim *)",
       "&:is(.midnight, .midnight *)",
       "&:is(.graphite, .graphite *)",
       "&:is(.graphite-plus, .graphite-plus *)",

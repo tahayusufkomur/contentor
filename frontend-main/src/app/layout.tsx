@@ -66,6 +66,7 @@ export default async function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
+            themes={["light", "dim", "dark"]}
           >
             {children}
             <HelpBubble />
