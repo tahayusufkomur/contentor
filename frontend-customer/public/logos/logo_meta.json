@@ -3912,22 +3912,10 @@
         "tags": "spiritual, third eye, elegant"
     },
     {
-        "title": "Pole Dance Fan Kick Pose",
-        "filename": "pole_dance_fan_kick_pose.png",
-        "prompt": "Generate a logo image: playful logo of a pole dancer mid high fan kick beside the pole, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
-        "tags": "pole dance, fan kick, playful"
-    },
-    {
         "title": "Angel Number Wings Glow",
         "filename": "angel_number_wings_glow.png",
         "prompt": "Generate a logo image: elegant logo of small wings framing a glowing numeral shape, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
         "tags": "spiritual, angel numbers, elegant"
-    },
-    {
-        "title": "Pole Dance Iron X Pose Silhouette",
-        "filename": "pole_dance_iron_x_pose_silhouette.png",
-        "prompt": "Generate a logo image: bold logo of a pole dancer in a horizontal iron x pose, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
-        "tags": "pole dance, iron x pose, bold"
     },
     {
         "title": "Cat Behaviorist Toy Paw",
@@ -3948,10 +3936,22 @@
         "tags": "aquarium, fishkeeping, playful, colorful"
     },
     {
+        "title": "Pole Dance Fan Kick Pose",
+        "filename": "pole_dance_fan_kick_pose.png",
+        "prompt": "Generate a logo image: playful logo of a pole dancer mid high fan kick beside the pole, flat vector silhouette style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, fan kick, playful"
+    },
+    {
         "title": "Reptile Care Lizard Basking",
         "filename": "reptile_care_lizard_basking.png",
         "prompt": "Generate a logo image: playful logo of a lizard basking under a small sun icon, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
         "tags": "reptile care, pets, playful"
+    },
+    {
+        "title": "Pole Dance Iron X Pose Silhouette",
+        "filename": "pole_dance_iron_x_pose_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer in a horizontal iron x pose, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, iron x pose, bold"
     },
     {
         "title": "Exotic Pet Vet Stethoscope Paw",
@@ -4000,5 +4000,485 @@
         "filename": "puppy_training_leash_loop.png",
         "prompt": "Generate a logo image: playful logo of a puppy sitting beside a looped leash, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
         "tags": "dog training, pets, playful"
+    },
+    {
+        "title": "Interior Design Room Swatch",
+        "filename": "interior_design_room_swatch.png",
+        "prompt": "Generate a logo image: elegant logo of a room corner outline with a paint swatch fan, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "interior design, elegant"
+    },
+    {
+        "title": "Home Staging Sofa Frame",
+        "filename": "home_staging_sofa_frame.png",
+        "prompt": "Generate a logo image: modern logo of a sofa silhouette inside a picture frame, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "home staging, modern"
+    },
+    {
+        "title": "Declutter Minimalism Box Arrow",
+        "filename": "declutter_minimalism_box_arrow.png",
+        "prompt": "Generate a logo image: minimal logo of a single box with an arrow pointing out the door, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "decluttering, minimalism, minimal"
+    },
+    {
+        "title": "Floristry Bouquet Ribbon Tie",
+        "filename": "floristry_bouquet_ribbon_tie.png",
+        "prompt": "Generate a logo image: elegant logo of a hand tying ribbon around a flower bouquet, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "floristry, elegant"
+    },
+    {
+        "title": "Gift Wrap Bow Ribbon Curl",
+        "filename": "gift_wrap_bow_ribbon_curl.png",
+        "prompt": "Generate a logo image: playful logo of a wrapped gift box topped with a curling ribbon bow, flat vector style, one coral color on a plain white background, no text, no watermark. Square image.",
+        "tags": "gift wrapping, playful"
+    },
+    {
+        "title": "Wedding Planner Rings Calendar",
+        "filename": "wedding_planner_rings_calendar.png",
+        "prompt": "Generate a logo image: elegant logo of wedding rings resting on a small calendar page, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "wedding planning, elegant"
+    },
+    {
+        "title": "Vintage Thrift Hanger Star",
+        "filename": "vintage_thrift_hanger_star.png",
+        "prompt": "Generate a logo image: playful logo of a clothes hanger with a small vintage star tag, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "thrifting, vintage fashion, playful"
+    },
+    {
+        "title": "Capsule Wardrobe Folded Stack",
+        "filename": "capsule_wardrobe_folded_stack.png",
+        "prompt": "Generate a logo image: minimal logo of a small stack of folded clothing in a capsule, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "capsule wardrobe, styling, minimal"
+    },
+    {
+        "title": "Leathercraft Awl Stitch Line",
+        "filename": "leathercraft_awl_stitch_line.png",
+        "prompt": "Generate a logo image: bold logo of a leatherworking awl beside a stitched seam line, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "leathercraft, craft, bold"
+    },
+    {
+        "title": "Glassblowing Molten Bubble",
+        "filename": "glassblowing_molten_bubble.png",
+        "prompt": "Generate a logo image: bold logo of a glassblowing pipe shaping a molten glass bubble, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "glassblowing, craft, bold"
+    },
+    {
+        "title": "Ceramic Wheel Hands Shaping",
+        "filename": "ceramic_wheel_hands_shaping.png",
+        "prompt": "Generate a logo image: organic logo of hands shaping clay on a spinning pottery wheel, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "ceramics, craft, organic"
+    },
+    {
+        "title": "Blacksmith Anvil Hammer Spark",
+        "filename": "blacksmith_anvil_hammer_spark.png",
+        "prompt": "Generate a logo image: bold logo of a hammer striking an anvil with small sparks, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "metalworking, blacksmith, craft, bold"
+    },
+    {
+        "title": "Upholstery Needle Fabric Fold",
+        "filename": "upholstery_needle_fabric_fold.png",
+        "prompt": "Generate a logo image: minimal logo of an upholstery needle threading through folded fabric, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "upholstery, craft, minimal"
+    },
+    {
+        "title": "Candle Making Pour Mold",
+        "filename": "candle_making_pour_mold.png",
+        "prompt": "Generate a logo image: calm logo of melted wax pouring into a candle mold, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "candle making, craft, calm"
+    },
+    {
+        "title": "Soap Making Bar Swirl Mold",
+        "filename": "soap_making_bar_swirl_mold.png",
+        "prompt": "Generate a logo image: calm logo of a bar of soap with a swirl pattern in a mold, flat vector style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "soap making, craft, calm"
+    },
+    {
+        "title": "Sourdough Starter Jar Bubbles",
+        "filename": "sourdough_starter_jar_bubbles.png",
+        "prompt": "Generate a logo image: organic logo of a jar of bubbling sourdough starter with a spoon, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "sourdough baking, food, organic"
+    },
+    {
+        "title": "Homebrew Beer Bottle Cap",
+        "filename": "homebrew_beer_bottle_cap.png",
+        "prompt": "Generate a logo image: bold logo of a homebrew bottle with a cap popping off, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "homebrewing, beverage, bold"
+    },
+    {
+        "title": "Winemaking Barrel Grape Cluster",
+        "filename": "winemaking_barrel_grape_cluster.png",
+        "prompt": "Generate a logo image: elegant logo of a wine barrel beside a cluster of grapes, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "winemaking, beverage, elegant"
+    },
+    {
+        "title": "Tea Ceremony Whisk Bowl",
+        "filename": "tea_ceremony_whisk_bowl.png",
+        "prompt": "Generate a logo image: calm logo of a bamboo whisk resting in a shallow tea bowl, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "tea ceremony, beverage, calm"
+    },
+    {
+        "title": "Chocolate Making Melt Drizzle",
+        "filename": "chocolate_making_melt_drizzle.png",
+        "prompt": "Generate a logo image: playful logo of melted chocolate drizzling over a mold shape, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "chocolate making, food, playful"
+    },
+    {
+        "title": "Cheese Board Wedge Grapes",
+        "filename": "cheese_board_wedge_grapes.png",
+        "prompt": "Generate a logo image: elegant logo of a cheese wedge arranged with a small grape cluster, flat vector style, one gold color on a plain white background, no text, no watermark. Square image.",
+        "tags": "cheese board, food, elegant"
+    },
+    {
+        "title": "Food Stylist Camera Plate",
+        "filename": "food_stylist_camera_plate.png",
+        "prompt": "Generate a logo image: modern logo of a camera lens framing a styled food plate, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "food styling, photography, modern"
+    },
+    {
+        "title": "Farm To Table Basket Crop",
+        "filename": "farm_to_table_basket_crop.png",
+        "prompt": "Generate a logo image: organic logo of a harvest basket overflowing with fresh vegetables, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "farm to table, food, organic"
+    },
+    {
+        "title": "BBQ Pitmaster Smoke Grill",
+        "filename": "bbq_pitmaster_smoke_grill.png",
+        "prompt": "Generate a logo image: bold logo of a grill grate with rising smoke curls, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "bbq, pitmaster, food, bold"
+    },
+    {
+        "title": "Mixology Bar Shaker Twist",
+        "filename": "mixology_bar_shaker_twist.png",
+        "prompt": "Generate a logo image: elegant logo of a cocktail shaker beside a citrus twist garnish, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "mixology, beverage, elegant"
+    },
+    {
+        "title": "Smoothie Bowl Toppings Swirl",
+        "filename": "smoothie_bowl_toppings_swirl.png",
+        "prompt": "Generate a logo image: playful logo of a smoothie bowl topped with a swirl of fruit slices, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "smoothie bowl, nutrition, playful, colorful"
+    },
+    {
+        "title": "Plant Based Chef Hat Leaf",
+        "filename": "plant_based_chef_hat_leaf.png",
+        "prompt": "Generate a logo image: organic logo of a chef hat with a small leaf tucked in the fold, flat vector style, one forest green on a plain white background, no text, no watermark. Square image.",
+        "tags": "plant based cooking, food, organic"
+    },
+    {
+        "title": "Spice Blending Jar Swirl",
+        "filename": "spice_blending_jar_swirl.png",
+        "prompt": "Generate a logo image: organic logo of a spice jar with a swirl of scattered spice specks, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "spice blending, food, organic"
+    },
+    {
+        "title": "Kombucha Fermentation Jar Scoby",
+        "filename": "kombucha_fermentation_jar_scoby.png",
+        "prompt": "Generate a logo image: organic logo of a fermentation jar with a floating scoby disc, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "kombucha, fermentation, food, organic"
+    },
+    {
+        "title": "Dumpling Steamer Basket Steam",
+        "filename": "dumpling_steamer_basket_steam.png",
+        "prompt": "Generate a logo image: playful logo of a bamboo steamer basket with rising steam, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "dumplings, food, playful"
+    },
+    {
+        "title": "App Developer Screen Blocks",
+        "filename": "app_developer_screen_blocks.png",
+        "prompt": "Generate a logo image: modern logo of a phone screen outline with interlocking code blocks, flat vector style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "app development, tech, modern"
+    },
+    {
+        "title": "Data Analyst Bar Magnify",
+        "filename": "data_analyst_bar_magnify.png",
+        "prompt": "Generate a logo image: modern logo of a magnifying glass hovering over rising data bars, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "data analytics, tech, modern"
+    },
+    {
+        "title": "AI Prompt Engineer Spark Text",
+        "filename": "ai_prompt_engineer_spark_text.png",
+        "prompt": "Generate a logo image: modern logo of a text cursor line beside a small spark burst, flat vector style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "ai, prompt engineering, tech, modern"
+    },
+    {
+        "title": "Video Editor Timeline Scissors",
+        "filename": "video_editor_timeline_scissors.png",
+        "prompt": "Generate a logo image: modern logo of a film timeline strip being cut by scissors, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "video editing, tech, modern"
+    },
+    {
+        "title": "Animator Frame Bounce Ball",
+        "filename": "animator_frame_bounce_ball.png",
+        "prompt": "Generate a logo image: playful logo of a bouncing ball across sequential animation frames, flat vector style, one coral color on a plain white background, no text, no watermark. Square image.",
+        "tags": "animation, tech, playful"
+    },
+    {
+        "title": "3D Modeler Cube Wireframe",
+        "filename": "3d_modeler_cube_wireframe.png",
+        "prompt": "Generate a logo image: modern logo of a rotating cube shown in wireframe geometry, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "3d modeling, tech, modern"
+    },
+    {
+        "title": "Streamer Webcam Chat Bubble",
+        "filename": "streamer_webcam_chat_bubble.png",
+        "prompt": "Generate a logo image: playful logo of a webcam frame beside a small chat bubble, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "streaming, twitch, tech, playful"
+    },
+    {
+        "title": "Drone Pilot Aerial Path",
+        "filename": "drone_pilot_aerial_path.png",
+        "prompt": "Generate a logo image: modern logo of a drone silhouette tracing a dotted flight path, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "drone piloting, tech, modern"
+    },
+    {
+        "title": "UX Researcher Magnify Persona",
+        "filename": "ux_researcher_magnify_persona.png",
+        "prompt": "Generate a logo image: modern logo of a magnifying glass over a simple user persona icon, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "ux research, tech, modern"
+    },
+    {
+        "title": "Cybersecurity Shield Binary",
+        "filename": "cybersecurity_shield_binary.png",
+        "prompt": "Generate a logo image: bold logo of a shield made of small binary digit texture, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "cybersecurity, tech, bold"
+    },
+    {
+        "title": "Blockchain Link Cube Chain",
+        "filename": "blockchain_link_cube_chain.png",
+        "prompt": "Generate a logo image: modern logo of a chain of connected cube blocks, flat vector style, one violet indigo on a plain white background, no text, no watermark. Square image.",
+        "tags": "blockchain, tech, modern"
+    },
+    {
+        "title": "Robotics Gear Arm Joint",
+        "filename": "robotics_gear_arm_joint.png",
+        "prompt": "Generate a logo image: bold logo of a robotic arm joint with a gear at the elbow, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "robotics, tech, bold"
+    },
+    {
+        "title": "Game Designer Level Blocks",
+        "filename": "game_designer_level_blocks.png",
+        "prompt": "Generate a logo image: playful logo of stacked platformer level blocks with a small flag, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "game design, tech, playful, colorful"
+    },
+    {
+        "title": "Podcast Studio Wave Headset",
+        "filename": "podcast_studio_wave_headset.png",
+        "prompt": "Generate a logo image: modern logo of a headset with sound waves radiating from the ear cup, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "podcasting, audio, modern"
+    },
+    {
+        "title": "No Code Automation Flow Arrows",
+        "filename": "no_code_automation_flow_arrows.png",
+        "prompt": "Generate a logo image: modern logo of connected flow boxes linked by curved arrows, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "automation, no code, tech, modern"
+    },
+    {
+        "title": "Stand Up Comedy Mic Laugh",
+        "filename": "stand_up_comedy_mic_laugh.png",
+        "prompt": "Generate a logo image: playful logo of a microphone stand beside a laughing face shape, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "stand up comedy, performing arts, playful"
+    },
+    {
+        "title": "Improv Theatre Mask Swap",
+        "filename": "improv_theatre_mask_swap.png",
+        "prompt": "Generate a logo image: playful logo of two theatre masks mid swap of expressions, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "improv comedy, theatre, playful"
+    },
+    {
+        "title": "Magic Illusion Top Hat Cards",
+        "filename": "magic_illusion_top_hat_cards.png",
+        "prompt": "Generate a logo image: playful logo of a top hat with playing cards fanning out, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "magic, illusion, playful"
+    },
+    {
+        "title": "Puppetry Hand Strings Figure",
+        "filename": "puppetry_hand_strings_figure.png",
+        "prompt": "Generate a logo image: playful logo of a hand puppet figure with visible control strings, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "puppetry, performing arts, playful"
+    },
+    {
+        "title": "Circus Juggling Ball Arc",
+        "filename": "circus_juggling_ball_arc.png",
+        "prompt": "Generate a logo image: playful logo of three juggling balls arcing in a circular pattern, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "juggling, circus arts, playful, colorful"
+    },
+    {
+        "title": "Poker Chip Card Fan",
+        "filename": "poker_chip_card_fan.png",
+        "prompt": "Generate a logo image: bold logo of a stack of poker chips beside a fanned card hand, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "poker, card games, bold"
+    },
+    {
+        "title": "Board Game Cafe Dice Pair",
+        "filename": "board_game_cafe_dice_pair.png",
+        "prompt": "Generate a logo image: playful logo of a pair of dice beside a small game token, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "board games, hobby, playful"
+    },
+    {
+        "title": "Tabletop RPG Dice Set",
+        "filename": "tabletop_rpg_dice_set.png",
+        "prompt": "Generate a logo image: playful logo of a scatter of polyhedral role playing dice, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "tabletop rpg, hobby, playful, colorful"
+    },
+    {
+        "title": "Astronomy Stargazing Telescope",
+        "filename": "astronomy_stargazing_telescope.png",
+        "prompt": "Generate a logo image: calm logo of a telescope pointed at a small crescent moon and stars, flat vector style, one slate navy on a plain white background, no text, no watermark. Square image.",
+        "tags": "astronomy, stargazing, calm"
+    },
+    {
+        "title": "Model Train Track Loop",
+        "filename": "model_train_track_loop.png",
+        "prompt": "Generate a logo image: playful logo of a small model train rounding a looping track, flat vector style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "model trains, hobby, playful"
+    },
+    {
+        "title": "Origami Crane Fold Lines",
+        "filename": "origami_crane_fold_lines.png",
+        "prompt": "Generate a logo image: minimal logo of an origami crane with visible fold crease lines, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "origami, craft, minimal"
+    },
+    {
+        "title": "Hand Lettering Brush Swash",
+        "filename": "hand_lettering_brush_swash.png",
+        "prompt": "Generate a logo image: elegant logo of a calligraphy brush pen mid decorative swash stroke, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "hand lettering, craft, elegant"
+    },
+    {
+        "title": "Scrapbooking Photo Corner Tape",
+        "filename": "scrapbooking_photo_corner_tape.png",
+        "prompt": "Generate a logo image: playful logo of a photo corner with washi tape and a small sticker, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "scrapbooking, craft, playful, colorful"
+    },
+    {
+        "title": "Bookbinding Thread Spine Stitch",
+        "filename": "bookbinding_thread_spine_stitch.png",
+        "prompt": "Generate a logo image: minimal logo of a book spine being stitched with visible thread, flat vector style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "bookbinding, craft, minimal"
+    },
+    {
+        "title": "Stamp Collecting Album Magnify",
+        "filename": "stamp_collecting_album_magnify.png",
+        "prompt": "Generate a logo image: minimal logo of a magnifying glass over a postage stamp in an album, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "philately, stamp collecting, minimal"
+    },
+    {
+        "title": "Powerlifting Barbell Rack Pull",
+        "filename": "powerlifting_barbell_rack_pull.png",
+        "prompt": "Generate a logo image: bold logo of a loaded barbell mid rack pull lift, flat vector style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "powerlifting, fitness, bold"
+    },
+    {
+        "title": "Olympic Weightlifting Overhead Silhouette",
+        "filename": "olympic_weightlifting_overhead_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a lifter in an overhead snatch lock out position, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "olympic weightlifting, fitness, bold"
+    },
+    {
+        "title": "Calisthenics Bar Muscle Up",
+        "filename": "calisthenics_bar_muscle_up.png",
+        "prompt": "Generate a logo image: bold logo of a calisthenics athlete mid muscle up on a bar, flat vector silhouette style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "calisthenics, street workout, fitness, bold"
+    },
+    {
+        "title": "Parkour Wall Vault Silhouette",
+        "filename": "parkour_wall_vault_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of a parkour athlete mid wall vault, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "parkour, fitness, bold"
+    },
+    {
+        "title": "Barre Fitness Ballet Bar Pose",
+        "filename": "barre_fitness_ballet_bar_pose.png",
+        "prompt": "Generate a logo image: elegant logo of a figure at a ballet barre in a fitness pose, flat vector silhouette style, one plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "barre fitness, fitness, elegant"
+    },
+    {
+        "title": "Senior Fitness Chair Stretch",
+        "filename": "senior_fitness_chair_stretch.png",
+        "prompt": "Generate a logo image: calm logo of a seated figure stretching arms overhead in a chair, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "senior fitness, chair exercise, calm"
+    },
+    {
+        "title": "Prenatal Fitness Belly Stretch",
+        "filename": "prenatal_fitness_belly_stretch.png",
+        "prompt": "Generate a logo image: calm logo of a pregnant figure in a gentle side stretch pose, flat vector silhouette style, one lavender color on a plain white background, no text, no watermark. Square image.",
+        "tags": "prenatal fitness, calm"
+    },
+    {
+        "title": "Kids Fitness Jump Star",
+        "filename": "kids_fitness_jump_star.png",
+        "prompt": "Generate a logo image: playful logo of a child mid jump beside a small star burst, flat vector style, colorful on a plain white background, no text, no watermark. Square image.",
+        "tags": "kids fitness, playful, colorful"
+    },
+    {
+        "title": "Functional Fitness Sled Push",
+        "filename": "functional_fitness_sled_push.png",
+        "prompt": "Generate a logo image: bold logo of an athlete pushing a weighted sled low to the ground, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "functional fitness, sled push, bold"
+    },
+    {
+        "title": "HIIT Circuit Timer Burst",
+        "filename": "hiit_circuit_timer_burst.png",
+        "prompt": "Generate a logo image: bold logo of a stopwatch face with a small energy burst behind it, flat vector style, one sunset orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "hiit, circuit training, bold"
+    },
+    {
+        "title": "Altitude Mask Training Breath",
+        "filename": "altitude_mask_training_breath.png",
+        "prompt": "Generate a logo image: bold logo of a training mask silhouette with breath lines radiating, flat vector style, one slate color on a plain white background, no text, no watermark. Square image.",
+        "tags": "altitude training, fitness, bold"
+    },
+    {
+        "title": "Water Aerobics Pool Splash",
+        "filename": "water_aerobics_pool_splash.png",
+        "prompt": "Generate a logo image: playful logo of a figure mid arm raise in a splash of pool water, flat vector style, one ocean blue on a plain white background, no text, no watermark. Square image.",
+        "tags": "water aerobics, fitness, playful"
+    },
+    {
+        "title": "Bootcamp Tire Flip Silhouette",
+        "filename": "bootcamp_tire_flip_silhouette.png",
+        "prompt": "Generate a logo image: bold logo of an athlete mid tire flip in a bootcamp drill, flat vector silhouette style, one charcoal black on a plain white background, no text, no watermark. Square image.",
+        "tags": "bootcamp, fitness, bold"
+    },
+    {
+        "title": "Recovery Ice Bath Steam",
+        "filename": "recovery_ice_bath_steam.png",
+        "prompt": "Generate a logo image: bold logo of a figure seated in an ice bath tub with steam rising, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "cold plunge, recovery, bold"
+    },
+    {
+        "title": "SAT Prep Pencil Score Arrow",
+        "filename": "sat_prep_pencil_score_arrow.png",
+        "prompt": "Generate a logo image: modern logo of a pencil beside a rising test score arrow, flat vector style, one navy color on a plain white background, no text, no watermark. Square image.",
+        "tags": "sat prep, tutoring, modern"
+    },
+    {
+        "title": "Montessori Wooden Blocks Arc",
+        "filename": "montessori_wooden_blocks_arc.png",
+        "prompt": "Generate a logo image: organic logo of wooden montessori blocks arranged in a learning arc, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "montessori, education, organic"
+    },
+    {
+        "title": "ESL Language Speech Globe",
+        "filename": "esl_language_speech_globe.png",
+        "prompt": "Generate a logo image: modern logo of a speech bubble wrapped around a small globe, flat vector style, one ocean teal on a plain white background, no text, no watermark. Square image.",
+        "tags": "esl, language tutoring, modern"
+    },
+    {
+        "title": "Sign Language Hands Letters",
+        "filename": "sign_language_hands_letters.png",
+        "prompt": "Generate a logo image: modern logo of two hands forming a sign language letter shape, flat vector style, one violet color on a plain white background, no text, no watermark. Square image.",
+        "tags": "sign language, education, modern"
+    },
+    {
+        "title": "Homeschool Book Sun Window",
+        "filename": "homeschool_book_sun_window.png",
+        "prompt": "Generate a logo image: organic logo of an open book beside a sunny window frame, flat vector style, one terracotta color on a plain white background, no text, no watermark. Square image.",
+        "tags": "homeschooling, education, organic"
+    },
+    {
+        "title": "Pole Dance Brass Monkey Pose",
+        "filename": "pole_dance_brass_monkey_pose.png",
+        "prompt": "Generate a logo image: bold logo of a pole dancer inverted in a brass monkey pose, flat vector silhouette style, one ember rust on a plain white background, no text, no watermark. Square image.",
+        "tags": "pole dance, brass monkey pose, bold"
     }
 ]
