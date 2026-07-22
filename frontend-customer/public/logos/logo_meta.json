@@ -4600,5 +4600,101 @@
         "filename": "face_yoga_chin_tuck_profile.png",
         "prompt": "Generate a logo image: calm logo of a neck profile tucking the chin inward, flat vector style, one slate blue on a plain white background, no text, no watermark. Square image.",
         "tags": "face yoga, chin tuck, calm"
+    },
+    {
+        "title": "Pole Dance Layback",
+        "filename": "pole_dance_layback_silhouette.png",
+        "prompt": "elegant logo of a pole dancer in a graceful layback pose on a vertical pole, flat vector style, deep violet silhouette on a plain white background, no text, no watermark. Square image.",
+        "tags": "['pole dance', 'aerial', 'dance', 'fitness', 'elegant']"
+    },
+    {
+        "title": "Aerial Silk Drop",
+        "filename": "aerial_silk_performer_drop.png",
+        "prompt": "elegant logo of an aerial silk performer mid-drop wrapped in flowing fabric, flat vector style, magenta and gold on a plain white background, no text, no watermark. Square image.",
+        "tags": "['aerial silk', 'aerial', 'performance', 'dance', 'elegant']"
+    },
+    {
+        "title": "Aerial Hoop Crescent",
+        "filename": "aerial_hoop_lyra_crescent.png",
+        "prompt": "minimal logo of an aerial hoop lyra performer posed inside a crescent moon ring, flat vector style, single plum color on a plain white background, no text, no watermark. Square image.",
+        "tags": "['aerial hoop', 'lyra', 'aerial', 'dance', 'minimal']"
+    },
+    {
+        "title": "Pole Fitness Spin",
+        "filename": "pole_fitness_spin_star.png",
+        "prompt": "bold logo of a pole fitness dancer in a dynamic spinning star pose, flat vector style, hot pink on a plain white background, no text, no watermark. Square image.",
+        "tags": "['pole fitness', 'pole dance', 'fitness', 'dance', 'bold']"
+    },
+    {
+        "title": "Burlesque Feather Fan",
+        "filename": "burlesque_feather_fan.png",
+        "prompt": "elegant logo of a burlesque feather fan, flat vector style, ruby red and gold on a plain white background, no text, no watermark. Square image.",
+        "tags": "['burlesque', 'cabaret', 'performance', 'vintage', 'elegant']"
+    },
+    {
+        "title": "Burlesque Showgirl",
+        "filename": "burlesque_showgirl_silhouette.png",
+        "prompt": "elegant logo of a vintage burlesque showgirl silhouette with a feather headdress, flat vector style, deep crimson on a plain white background, no text, no watermark. Square image.",
+        "tags": "['burlesque', 'showgirl', 'cabaret', 'vintage', 'elegant']"
+    },
+    {
+        "title": "Corset",
+        "filename": "burlesque_corset_lace.png",
+        "prompt": "minimal logo of a laced corset silhouette, flat vector style, wine red on a plain white background, no text, no watermark. Square image.",
+        "tags": "['burlesque', 'corset', 'lingerie', 'vintage', 'minimal']"
+    },
+    {
+        "title": "Boudoir Camera",
+        "filename": "boudoir_camera_rose.png",
+        "prompt": "elegant logo of a vintage camera with a single rose, flat vector style, dusty rose and charcoal on a plain white background, no text, no watermark. Square image.",
+        "tags": "['boudoir', 'photography', 'camera', 'rose', 'elegant']"
+    },
+    {
+        "title": "Boudoir Silhouette",
+        "filename": "boudoir_reclining_silhouette.png",
+        "prompt": "elegant logo of a graceful reclining feminine silhouette, tasteful and modest, flat vector style, mauve on a plain white background, no text, no watermark. Square image.",
+        "tags": "['boudoir', 'photography', 'silhouette', 'elegant', 'calm']"
+    },
+    {
+        "title": "Lace Garter",
+        "filename": "boudoir_lace_garter.png",
+        "prompt": "minimal logo of a delicate lace garter with a small bow, flat vector style, blush pink on a plain white background, no text, no watermark. Square image.",
+        "tags": "['boudoir', 'lingerie', 'lace', 'romance', 'minimal']"
+    },
+    {
+        "title": "Tantra Lotus",
+        "filename": "tantra_lotus_union.png",
+        "prompt": "elegant logo of a lotus flower with two intertwined figures at its center, flat vector style, violet and gold on a plain white background, no text, no watermark. Square image.",
+        "tags": "['tantra', 'intimacy', 'lotus', 'spiritual', 'elegant']"
+    },
+    {
+        "title": "Sacred Doves",
+        "filename": "tantra_sacred_doves.png",
+        "prompt": "minimal logo of two doves forming a heart, flat vector style, deep purple on a plain white background, no text, no watermark. Square image.",
+        "tags": "['tantra', 'intimacy', 'doves', 'love', 'minimal']"
+    },
+    {
+        "title": "Heart Mandala",
+        "filename": "tantra_heart_mandala.png",
+        "prompt": "elegant logo of a heart shaped mandala, flat vector style, magenta and violet on a plain white background, no text, no watermark. Square image.",
+        "tags": "['tantra', 'intimacy', 'mandala', 'heart', 'elegant']"
+    },
+    {
+        "title": "Bachata Dip",
+        "filename": "bachata_dip_pose.png",
+        "prompt": "elegant logo of a bachata couple in a dip pose silhouette, flat vector style, deep rose on a plain white background, no text, no watermark. Square image.",
+        "tags": "['bachata', 'latin dance', 'dance', 'couple', 'elegant']"
+    },
+    {
+        "title": "Dance Heel & Rose",
+        "filename": "latin_dance_heel_rose.png",
+        "prompt": "bold logo of a dance stiletto heel with a rose, flat vector style, crimson on a plain white background, no text, no watermark. Square image.",
+        "tags": "['latin dance', 'salsa', 'heel', 'rose', 'bold']"
+    },
+    {
+        "title": "Salsa Couple Turn",
+        "filename": "salsa_couple_turn.png",
+        "prompt": "bold logo of a salsa dancing couple silhouette mid turn, flat vector style, fiery red orange on a plain white background, no text, no watermark. Square image.",
+        "tags": "['salsa', 'latin dance', 'dance', 'couple', 'bold']"
     }
 ]
