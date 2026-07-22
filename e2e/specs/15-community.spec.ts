@@ -60,7 +60,13 @@ test("community: enable → post → pin → report → remove → ban", async (
   const coachPage = await coach.newPage();
 
   await coachPage.goto(`${TENANT}/admin/community`);
-  await coachPage.getByRole("button", { name: /settings/i }).click();
+  // Exact match: the admin sidebar now has a "Settings & Finance" section
+  // header (also a <button>), so a loose /settings/i regex strict-mode-violates
+  // against it. Only the community tab is named exactly "Settings" (the
+  // sidebar's own "Settings" entry is a <Link>, not matched by role=button).
+  await coachPage
+    .getByRole("button", { name: "Settings", exact: true })
+    .click();
   // Idempotent: switch ON if currently off.
   const enableSwitch = coachPage.getByRole("switch").first();
   if ((await enableSwitch.getAttribute("aria-checked")) !== "true") {
