@@ -483,7 +483,7 @@
   }
 }
 
-.animate-fade-in-up {
+.reveal-fade-up {
   animation: reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .animate-float {

@@ -20,7 +20,7 @@ export function HeroSection() {
 
       <div className="hero-scroll-out relative mx-auto max-w-5xl px-6 text-center">
         {/* Eyebrow capsule */}
-        <div className="inline-flex animate-fade-in-up items-center gap-2 rounded-full border bg-card px-3 py-1.5 shadow-sm">
+        <div className="inline-flex reveal-fade-up items-center gap-2 rounded-full border bg-card px-3 py-1.5 shadow-sm">
           <span className="relative flex size-1.5">
             <span className="absolute inline-flex h-full w-full animate-pulse-soft rounded-full bg-marketing-accent opacity-75" />
             <span className="relative inline-flex size-1.5 rounded-full bg-marketing-accent" />
@@ -34,13 +34,13 @@ export function HeroSection() {
         {/* Display title */}
         <h1 className="text-display mt-8 text-[44px] leading-[1.02] sm:text-[64px] md:text-[80px] lg:text-[96px]">
           <span
-            className="block animate-fade-in-up text-foreground"
+            className="block reveal-fade-up text-foreground"
             style={{ animationDelay: "0.08s" }}
           >
             {t("title1")}
           </span>
           <span
-            className="mt-2 block animate-fade-in-up text-marketing-accent"
+            className="mt-2 block reveal-fade-up text-marketing-accent"
             style={{ animationDelay: "0.2s" }}
           >
             {t("title2")}
@@ -48,14 +48,14 @@ export function HeroSection() {
         </h1>
 
         <p
-          className="mx-auto mt-7 max-w-2xl animate-fade-in-up text-balance text-lg leading-relaxed text-muted-foreground"
+          className="mx-auto mt-7 max-w-2xl reveal-fade-up text-balance text-lg leading-relaxed text-muted-foreground"
           style={{ animationDelay: "0.32s" }}
         >
           {t("subtitle")}
         </p>
 
         <div
-          className="mt-10 flex animate-fade-in-up items-center justify-center gap-3"
+          className="mt-10 flex reveal-fade-up items-center justify-center gap-3"
           style={{ animationDelay: "0.44s" }}
         >
           <Button asChild size="xl">
@@ -67,7 +67,7 @@ export function HeroSection() {
         </div>
 
         <p
-          className="mt-6 animate-fade-in-up text-xs text-muted-foreground"
+          className="mt-6 reveal-fade-up text-xs text-muted-foreground"
           style={{ animationDelay: "0.56s" }}
         >
           {t("trustNote")}
@@ -75,7 +75,7 @@ export function HeroSection() {
 
         {/* Brand plate — framed wordmark with a soft accent glow behind */}
         <div
-          className="relative mx-auto mt-20 flex animate-fade-in-up items-center justify-center"
+          className="relative mx-auto mt-20 flex reveal-fade-up items-center justify-center"
           style={{ animationDelay: "0.68s" }}
         >
           <div

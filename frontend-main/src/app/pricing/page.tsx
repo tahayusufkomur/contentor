@@ -179,17 +179,17 @@ export default async function PricingPage() {
         <div className="grid-fade pointer-events-none absolute inset-0 -z-10 opacity-60" />
 
         <div className="mx-auto max-w-3xl text-center">
-          <p className="animate-fade-in-up text-eyebrow text-muted-foreground/80">
+          <p className="reveal-fade-up text-eyebrow text-muted-foreground/80">
             Pricing
           </p>
           <h1
-            className="text-display mt-4 animate-fade-in-up text-5xl leading-[1.05] md:text-6xl lg:text-7xl"
+            className="text-display mt-4 reveal-fade-up text-5xl leading-[1.05] md:text-6xl lg:text-7xl"
             style={{ animationDelay: "0.1s" }}
           >
             <span className="text-foreground/95">{t("title")}</span>
           </h1>
           <p
-            className="mx-auto mt-5 max-w-xl animate-fade-in-up text-[17px] leading-relaxed text-muted-foreground md:text-lg"
+            className="mx-auto mt-5 max-w-xl reveal-fade-up text-[17px] leading-relaxed text-muted-foreground md:text-lg"
             style={{ animationDelay: "0.22s" }}
           >
             {t("subtitle")}

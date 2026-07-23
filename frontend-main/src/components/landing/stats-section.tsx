@@ -15,7 +15,7 @@ export function StatsSection() {
             {STAT_KEYS.map((key, i) => (
               <div
                 key={key}
-                className="animate-fade-in-up"
+                className="reveal-fade-up"
                 style={{ animationDelay: `${i * 0.12}s` }}
               >
                 <p className="text-display text-5xl tabular-nums text-foreground md:text-6xl">
