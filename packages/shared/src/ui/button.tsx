@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:border-destructive aria-invalid:ring-destructive/20",
+  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 motion-safe:active:scale-[0.98] [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:border-destructive aria-invalid:ring-destructive/20",
   {
     variants: {
       variant: {
@@ -46,6 +46,8 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean;
+  /** When loading, show spinner + this text instead of overlaying children. */
+  loadingText?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -56,6 +58,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size,
       asChild = false,
       loading = false,
+      loadingText,
       children,
       disabled,
       ...props
@@ -63,10 +66,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     if (asChild) {
+      // Slot can't inject a spinner into an arbitrary child; loading only
+      // blocks interaction and signals busy.
       return (
         <Slot
           data-slot="button"
-          className={cn(buttonVariants({ variant, size, className }))}
+          aria-busy={loading || undefined}
+          className={cn(
+            buttonVariants({ variant, size, className }),
+            loading && "pointer-events-none opacity-50",
+          )}
           ref={ref}
           {...props}
         >
@@ -77,13 +86,34 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         data-slot="button"
+        aria-busy={loading || undefined}
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
         {...props}
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {children}
+        {loading ? (
+          loadingText ? (
+            <>
+              <Loader2 className="animate-spin" aria-hidden="true" />
+              {loadingText}
+            </>
+          ) : (
+            <>
+              <span className="absolute inset-0 inline-flex items-center justify-center">
+                <Loader2 className="animate-spin" aria-hidden="true" />
+              </span>
+              <span
+                aria-hidden="true"
+                className="invisible inline-flex items-center gap-2"
+              >
+                {children}
+              </span>
+            </>
+          )
+        ) : (
+          children
+        )}
       </button>
     );
   },
