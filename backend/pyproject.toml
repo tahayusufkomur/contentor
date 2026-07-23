@@ -8,8 +8,8 @@ select = ["E", "F", "I", "S", "B", "UP", "N", "C4", "SIM", "TCH"]
 ignore = ["S101"]
 
 [tool.ruff.lint.per-file-ignores]
-# Demo seeding uses random for decorative variety, not cryptography.
-"**/management/commands/seed_demo_tenant.py" = ["S311"]
+# Demo/dev seeding uses random for decorative variety, not cryptography.
+"**/demo_seed/seeding_helpers.py" = ["S311"]
 # All test files use hard-coded passwords/tokens for fixtures - not a security issue.
 "**/tests/*.py" = ["S105", "S106"]
 # Migrations are auto-generated; long help_text strings are acceptable.

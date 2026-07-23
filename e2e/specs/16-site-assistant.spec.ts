@@ -20,13 +20,14 @@
 // skipped via test.skip() — every gating/UI/navigation assertion above that
 // point still runs unconditionally.
 //
-// Tenant strategy: demo-yoga starts on the Free plan (no PlatformSubscription
-// row — verified against the running dev stack), which is exactly the "free
-// tenant" fixture checklist point 1 needs. This spec promotes it to paid via
-// a Django-shell PlatformSubscription (mirrors the paid_tenant fixture in
-// backend/apps/tenant_config/tests/test_assistant_*_api.py) and always
-// restores it to Free in a `finally` block using the same raw-SQL delete
-// 20-stripe-platform.spec.ts uses, so seed_demo_tenant's teardown and
+// Tenant strategy: demo-yoga is seeded pro/paid by seed_dev_tenants (active
+// PlatformSubscription + AssistantConfig(enabled=True)), so this spec forces
+// it back to the free/disabled starting state itself (step 0, via
+// cleanupPaidTenant()) before checklist point 1's "free tenant" assertions.
+// It then promotes to paid via a Django-shell PlatformSubscription (mirrors
+// the paid_tenant fixture in backend/apps/tenant_config/tests/test_assistant_*_api.py)
+// and always restores it to free in a `finally` block using the same raw-SQL
+// delete 20-stripe-platform.spec.ts uses, so seed_dev_tenants's teardown and
 // subsequent `make e2e` runs are unaffected.
 
 import { test, expect } from "@playwright/test";
@@ -129,6 +130,19 @@ test("free tenant: no bubble; paid+enabled: student chats and rates", async ({
   let coach: Awaited<ReturnType<typeof coachContext>> | undefined;
 
   try {
+    // ── 0. Force the free starting state ───────────────────────────────────
+    // seed_dev_tenants now seeds demo-yoga (pro) with an active
+    // PlatformSubscription + AssistantConfig(enabled=True) by default (fixed
+    // during the remove-demo-websites plan — Tenant.has_paid_platform_plan
+    // needs a real PlatformSubscription row, not just Tenant.plan). This
+    // spec's "free tenant" fixture premise needs demo-yoga demoted to
+    // free/disabled first; cleanupPaidTenant() already does exactly that
+    // (deletes the subscription, disables the config) and is idempotent
+    // (a DoesNotExist on the subscription is caught), so it's safe to call
+    // here even though the tenant may already be "free" on a from-scratch
+    // seed run.
+    cleanupPaidTenant();
+
     // ── 1. Free tenant: status upgrade_required, no bubble on the site ────
     const statusFree = await page.request.get(
       `${TENANT}/api/v1/assistant/status/`,

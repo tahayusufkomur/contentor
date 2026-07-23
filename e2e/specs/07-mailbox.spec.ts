@@ -22,7 +22,7 @@ import { coachContext, TENANT } from "../helpers/auth";
 import { manage } from "../helpers/compose";
 import { latestEmail } from "../helpers/email";
 
-// A real seeded student in demo-yoga (from seed_all_demos).
+// A real seeded student in demo-yoga (from seed_dev_tenants).
 const STUDENT_EMAIL = "priya@demo.test";
 const SUBJECT = `E2E mailbox ${Date.now()}`;
 const MESSAGE_TEXT = "Hello from the e2e mailbox test.";

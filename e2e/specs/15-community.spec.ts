@@ -32,6 +32,28 @@ import { manage } from "../helpers/compose";
 const POST_BODY = `E2E community post ${Date.now()}`;
 const COACH_POST = `E2E coach post ${Date.now()}`;
 
+// Resolves the real seeded student's email (the same user studentContext()
+// logs in as — the first role="student" user by id, per issue_login_token).
+// seed_dev_tenants names students after real people per niche (e.g. "Priya
+// Raghavan" for yoga) rather than the old demo seeder's generic
+// "student"-branded placeholder, so the Members table row for this user has
+// no "student" substring anywhere — filtering by hasText: "student" (this
+// spec's original approach) never matches. The email is stable and unique,
+// so searching the admin Members table by it reliably scopes to one row.
+function studentEmail(): string {
+  return manage([
+    "shell",
+    "-c",
+    "from django_tenants.utils import tenant_context\n" +
+      "from apps.core.models import Tenant\n" +
+      "from apps.accounts.models import User\n" +
+      "t = Tenant.objects.get(slug='demo-yoga')\n" +
+      "with tenant_context(t):\n" +
+      "    u = User.objects.filter(role='student').order_by('id').first()\n" +
+      "    print(u.email, end='')",
+  ]);
+}
+
 test.beforeAll(() => {
   // Self-healing sweep, same idea as 01-signup-onboarding's beforeAll: the
   // unban is this spec's FINAL step, so a failed, interrupted, or
@@ -142,7 +164,11 @@ test("community: enable → post → pin → report → remove → ban", async (
 
   // ── 5. Coach bans the student; student is blocked ────────────────────────
   await coachPage.getByRole("button", { name: /members/i }).click();
-  const studentRow = coachPage.getByRole("row").filter({ hasText: "student" });
+  // Search by the real student's email (seeded names aren't guaranteed to
+  // contain "student") to scope the table down to their single row.
+  await coachPage.getByPlaceholder("Search members…").fill(studentEmail());
+  const studentRow = coachPage.getByRole("row").filter({ hasText: "@" });
+  await expect(studentRow).toHaveCount(1, { timeout: 10_000 });
   await studentRow.getByLabel("Member actions").click();
   coachPage.once("dialog", (d) => void d.accept());
   await coachPage.getByRole("menuitem", { name: /^ban$/i }).click();

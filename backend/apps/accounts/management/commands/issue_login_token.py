@@ -12,8 +12,12 @@ from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
 from apps.accounts.tokens import create_jwt
-from apps.core.demo.views import DEMO_COACH_EMAIL, DEMO_STUDENT_EMAIL
 from apps.core.models import Tenant
+
+ROLE_FILTERS = {
+    "coach": {"role": "owner", "is_staff": True},
+    "student": {"role": "student"},
+}
 
 
 class Command(BaseCommand):
@@ -49,9 +53,8 @@ class Command(BaseCommand):
         if not slug:
             raise CommandError(f"--tenant is required for role={role}")
         tenant = Tenant.objects.get(slug=slug)
-        email = DEMO_COACH_EMAIL if role == "coach" else DEMO_STUDENT_EMAIL
         with tenant_context(tenant):
-            user = User.objects.filter(email=email).first()
+            user = User.objects.filter(**ROLE_FILTERS[role]).order_by("id").first()
             if user is None:
-                raise CommandError(f"No {role} user '{email}' in tenant '{slug}'. Run `make seed-demos`.")
+                raise CommandError(f"No {role} user in tenant '{slug}'. Run `make seed`.")
             self.stdout.write(create_jwt(user, tenant))

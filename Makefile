@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets seed-demos seed-demos-force format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe e2e-spec test-changed e2e-changed
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config flowmap flowmap-register flowmap-show e2e e2e-stripe e2e-spec test-changed e2e-changed
 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
@@ -14,7 +14,7 @@ help: ## Show this help
 	@grep -E '^(dev|dev-reset|down|build|restart|reset|logs):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Database ---\033[0m"
-	@grep -E '^(migrate|migrate-shared|makemigrations|seed|seed-demos|seed-demos-force):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(migrate|migrate-shared|makemigrations|seed):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Quality ---\033[0m"
 	@grep -E '^(test|test-backend|test-app|test-changed|test-frontend|test-fresh|typecheck|typecheck-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -75,21 +75,18 @@ migrate-shared: ## Run shared (public) schema migrations only
 makemigrations: ## Generate new migration files
 	docker compose exec django python manage.py makemigrations
 
-seed: ## Seed plans, public tenant, superusers, and the curated logo catalog
+seed: ## Seed plans, public tenant, superusers, 3 dev tenants, and the curated logo catalog
 	docker compose exec django python manage.py seed_plans
+	docker compose exec django python manage.py seed_dev_tenants --force
 	docker compose exec django python manage.py seed_curated_logos
 
 seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinIO (host-run, needs .env.prod)
 	python3 scripts/mirror_demo_assets.py
 
-seed-demos: seed-demo-assets ## Seed read-only marketing demo tenants for all niches
-	docker compose exec django python manage.py seed_all_demos
 
 capture-wizard-mockups: seed-demo-assets ## Capture per-niche wizard screenshots (needs make dev running; ARGS="--niche belly_dance" for one niche)
 	cd tools/wizard-mockups && npm install --silent && npx playwright install chromium && npm run capture -- $(ARGS)
 
-seed-demos-force: seed-demo-assets ## Recreate all demo tenants from scratch
-	docker compose exec django python manage.py seed_all_demos --force
 
 # ============================================================================
 # Quality

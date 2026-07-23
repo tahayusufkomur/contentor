@@ -17,7 +17,7 @@
  *   The test cleans up the Stripe subscription at the end (via the Stripe API)
  *   so that demo-yoga is left on the Free plan. This allows `make e2e` to re-seed
  *   demo-yoga correctly on subsequent runs (a live PlatformSubscription causes
- *   the seed_demo_tenant teardown to fail due to a cross-schema SET_NULL signal).
+ *   the seed_dev_tenants teardown to fail due to a cross-schema SET_NULL signal).
  *
  * The checkout body is `{ plan_id: <int> }` — reconciled against
  * `backend/apps/billing/views/platform.py::start_checkout`.
@@ -37,7 +37,7 @@ test.skip(!process.env.STRIPE_E2E, "stripe-mode only (STRIPE_E2E=1 npx playwrigh
  * Cancel and delete the PlatformSubscription for demo-yoga via Django shell.
  * This cleanup is needed because a live PlatformSubscription triggers a
  * cross-schema SET_NULL signal (Payment.platform_subscription) when
- * seed_demo_tenant tears down the tenant, breaking subsequent `make e2e` runs.
+ * seed_dev_tenants tears down the tenant, breaking subsequent `make e2e` runs.
  *
  * Uses raw SQL DELETE to bypass Django ORM's SET_NULL signal on
  * Payment.platform_subscription (which looks for billing_payment in the public
@@ -98,7 +98,7 @@ test("coach subscribes to a paid platform plan via real test Checkout", async ({
   const coach = await coachContext(browser);
 
   // ── 0. Ensure demo-yoga has no active subscription (idempotency) ───────────
-  // Idempotency is NOT guaranteed by reseeding (seed_all_demos skips existing
+  // Idempotency is NOT guaranteed by reseeding (seed_dev_tenants skips existing
   // tenants without --force). Instead it is enforced at runtime: we check the
   // subscription status here and call cleanupSubscription() when needed; the
   // same cleanup also runs unconditionally at the end of the test (step 5).
@@ -155,7 +155,7 @@ test("coach subscribes to a paid platform plan via real test Checkout", async ({
 
   // ── 5. Cleanup — cancel the subscription so demo-yoga can be re-seeded ───
   // Removes the PlatformSubscription row from the public schema so that
-  // subsequent `make e2e` → seed_demo_tenant teardown doesn't fail with a
+  // subsequent `make e2e` → seed_dev_tenants teardown doesn't fail with a
   // cross-schema SET_NULL signal on billing_payment.
   cleanupSubscription();
 

@@ -134,7 +134,7 @@ function touchSession(): void {
 }
 
 // The visitor persona may only emit these marketing targets.
-const LINK_RE = /\[([^\]]+)\]\((\/(?:signup|pricing|demo|login)[^)\s]*)\)/g;
+const LINK_RE = /\[([^\]]+)\]\((\/(?:signup|pricing|login)[^)\s]*)\)/g;
 // Marketing pages only — never the superadmin SPA, dashboard or auth flows.
 const HIDDEN_PREFIXES = ["/admin", "/dashboard", "/callback"];
 

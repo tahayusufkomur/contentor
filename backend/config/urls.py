@@ -40,7 +40,6 @@ urlpatterns = [
         name="api-schema",
     ),
     path("api/v1/auth/", include("apps.accounts.urls")),
-    path("api/v1/demo/", include("apps.core.demo.urls")),
     path("api/v1/onboarding/", include("apps.core.onboarding.urls")),
     path("api/v1/contact/", include("apps.core.contact.urls")),
     path("api/v1/help/", include("apps.core.help.urls")),

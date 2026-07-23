@@ -111,7 +111,7 @@ class TenantAdmin(ModelAdmin):
         "created_at",
     )
     search_fields = ("name", "slug", "owner_email")
-    list_filters = ("is_active", "is_published", "region", "provisioning_status", "plan", "is_demo")
+    list_filters = ("is_active", "is_published", "region", "provisioning_status", "plan")
     ordering = ("-created_at",)
     list_select_related = ("plan",)
     fields = ("name", "plan", "is_active", "is_published")
@@ -125,7 +125,6 @@ class TenantAdmin(ModelAdmin):
         "stripe_charges_enabled",
         "stripe_payouts_enabled",
         "provisioning_status",
-        "is_demo",
         "created_at",
     )
     # Tenants are created by signup provisioning and removed by an offboarding

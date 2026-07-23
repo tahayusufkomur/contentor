@@ -146,7 +146,7 @@ test("student buys a fresh paid course through Connect test checkout", async ({ 
   // CRITICAL: cleanupPlatformSub() MUST be called in a finally block after
   // ensurePaidActive() so that even a mid-test failure doesn't leave a synthetic
   // PlatformSubscription in the DB. If it remains, the next global setup's
-  // seed_demo_tenant teardown fails with a cross-schema SET_NULL error on
+  // seed_dev_tenants teardown fails with a cross-schema SET_NULL error on
   // billing_payment, leaving demo-yoga with no domain record (see memory
   // contentor-deploy-tenant-migrations-gotcha.md for the bug context).
   ensurePaidActive();

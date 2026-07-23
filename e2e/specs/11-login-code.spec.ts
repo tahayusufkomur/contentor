@@ -39,7 +39,6 @@ if not Tenant.objects.filter(slug=slug).exists():
         schema_name=slug.replace("-", "_"),
         owner_email="owner-${stamp}@example.com",
         provisioning_status="ready",
-        is_demo=False,
     )
     Domain.objects.create(domain="${HOST}", tenant=t, is_primary=True)
     t.create_schema(check_if_exists=True, verbosity=0)

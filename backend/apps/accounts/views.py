@@ -46,8 +46,8 @@ def magic_link_request(request):
     token = create_magic_link_token(email, tenant.schema_name, tenant.slug)
     logger.info("magic link requested email=%s tenant=%s", email, tenant.slug)
 
-    # Demo tenants: bypass email, return token directly for instant login
-    if tenant.slug.startswith("demo-"):
+    # Dev tenants (DEBUG only): bypass email, return token directly for instant login.
+    if settings.DEBUG and tenant.slug.startswith("demo-"):
         scheme = "https" if request.is_secure() else "http"
         callback_url = f"{scheme}://{request.get_host()}/callback?token={token}"
         return Response({"detail": "Demo mode", "demo_redirect": callback_url})

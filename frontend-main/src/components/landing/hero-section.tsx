@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/shared/logo-mark";
@@ -55,19 +55,13 @@ export function HeroSection() {
         </p>
 
         <div
-          className="mt-10 flex animate-fade-in-up flex-col items-center justify-center gap-3 sm:flex-row"
+          className="mt-10 flex animate-fade-in-up items-center justify-center gap-3"
           style={{ animationDelay: "0.44s" }}
         >
           <Button asChild size="xl">
             <Link href="/signup">
               {t("ctaPrimary")}
               <ArrowRight />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="xl">
-            <Link href="/demo">
-              <Play />
-              {t("ctaSecondary")}
             </Link>
           </Button>
         </div>

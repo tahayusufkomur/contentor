@@ -60,9 +60,9 @@ class Command(BaseCommand):
             schema_name=schema_name,
             owner_email="wizard-mockups@example.com",
             provisioning_status="ready",
-            is_demo=True,
+            is_published=True,
         )
-        self.stdout.write(f"Created tenant: {tenant.name} (is_demo=True)")
+        self.stdout.write(f"Created tenant: {tenant.name} (is_published=True)")
 
         domain = f"{slug}.{settings.CONTENTOR_DOMAIN}"
         Domain.objects.create(domain=domain, tenant=tenant, is_primary=True)

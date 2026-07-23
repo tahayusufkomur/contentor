@@ -425,6 +425,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/content-calendar/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description GET /api/v1/admin/content-calendar/?from=&to=&types=live,blog,email */
+    get: operations["v1_admin_content_calendar_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/demo-content/": {
     parameters: {
       query?: never;
@@ -1009,6 +1026,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/auth/students/{id}/grant-access/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Grant a student free enrollment into a course (coach/owner only). */
+    post: operations["v1_auth_students_grant_access_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/auth/users/me/": {
     parameters: {
       query?: never;
@@ -1326,6 +1360,28 @@ export interface paths {
      *     pre_save signal).
      */
     post: operations["v1_billing_platform_checkout_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/billing/platform/entitlements/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description Per-feature entitlement map for the active tenant.
+     *
+     *     Powers the coach-admin "Paid feature" badges — the frontend renders a badge
+     *     for any feature whose value is ``False`` (the plan does not include it).
+     */
+    get: operations["v1_billing_platform_entitlements_retrieve"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -2203,29 +2259,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/demo/enter/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Issue a short-lived JWT for the demo's synthetic student or coach user.
-     *
-     *     Used by the marketing site's /demo/[niche] entry route and by the in-app
-     *     role toggle (student ↔ coach). The endpoint is exempt from
-     *     DemoReadOnlyMiddleware so it can be called on demo tenants.
-     */
-    post: operations["v1_demo_enter_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/dev/emails/latest/": {
     parameters: {
       query?: never;
@@ -2424,7 +2457,7 @@ export interface paths {
     get: operations["v1_email_campaigns_retrieve_2"];
     put?: never;
     post?: never;
-    delete?: never;
+    delete: operations["v1_email_campaigns_destroy"];
     options?: never;
     head?: never;
     patch?: never;
@@ -9551,8 +9584,6 @@ export interface components {
       readonly stripe_charges_enabled?: boolean;
       readonly stripe_payouts_enabled?: boolean;
       readonly provisioning_status?: components["schemas"]["TenantAdminProvisioningStatusEnum"];
-      /** @description Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware. */
-      readonly is_demo?: boolean;
       /** Format: date-time */
       readonly created_at?: string;
     };
@@ -9880,8 +9911,6 @@ export interface components {
       readonly stripe_charges_enabled: boolean;
       readonly stripe_payouts_enabled: boolean;
       readonly provisioning_status: components["schemas"]["TenantAdminProvisioningStatusEnum"];
-      /** @description Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware. */
-      readonly is_demo: boolean;
       /** Format: date-time */
       readonly created_at: string;
     };
@@ -10731,6 +10760,24 @@ export interface operations {
       };
     };
   };
+  v1_admin_content_calendar_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_demo_content_retrieve: {
     parameters: {
       query?: never;
@@ -11485,6 +11532,26 @@ export interface operations {
       };
     };
   };
+  v1_auth_students_grant_access_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_auth_users_me_retrieve: {
     parameters: {
       query?: never;
@@ -11863,6 +11930,24 @@ export interface operations {
     };
   };
   v1_billing_platform_checkout_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_billing_platform_entitlements_retrieve: {
     parameters: {
       query?: never;
       header?: never;
@@ -13184,24 +13269,6 @@ export interface operations {
       };
     };
   };
-  v1_demo_enter_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   v1_dev_emails_latest_retrieve: {
     parameters: {
       query?: never;
@@ -13477,6 +13544,26 @@ export interface operations {
     responses: {
       /** @description No response body */
       200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_campaigns_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
         headers: {
           [name: string]: unknown;
         };

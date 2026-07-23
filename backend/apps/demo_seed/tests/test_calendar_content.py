@@ -1,5 +1,5 @@
 """Demo calendar content: blog posts + email campaigns so /admin/calendar shows
-a realistic mix (live events are already seeded by seed_demo_tenant). Helpers are
+a realistic mix (live events are already seeded by seed_dev_tenants). Helpers are
 idempotent so a backfill can run against an already-seeded demo tenant."""
 
 import pytest

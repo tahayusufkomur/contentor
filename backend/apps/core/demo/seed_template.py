@@ -1,10 +1,10 @@
 """Seed a real (non-demo) tenant from a niche template.
 
-Sibling to `apps.core.management.commands.seed_demo_tenant` — that command
-creates an `is_demo=True` marketing tenant with full students/payments. This
-module is the live-tenant variant: it runs against an already-provisioned
-tenant (owner already created, TenantConfig already exists) and writes
-content as drafts so the coach can review and publish.
+Sibling to `apps.demo_seed.seeding_helpers` — those helpers seed the richer
+dev/demo tenants (full students/payments). This module is the live-tenant
+variant: it runs against an already-provisioned tenant (owner already
+created, TenantConfig already exists) and writes content as drafts so the
+coach can review and publish.
 
 Shared between two callers:
   - the onboarding endpoint (via the Celery task) at signup time
@@ -217,7 +217,7 @@ def _resolve_owner(tenant):
 
 
 # ----------------------------------------------------------------------
-# Course expansion (mirrors seed_demo_tenant._expand_courses, smaller target)
+# Course expansion (mirrors seeding_helpers._expand_courses, smaller target)
 # ----------------------------------------------------------------------
 
 

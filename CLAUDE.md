@@ -25,7 +25,7 @@ make logs              # tail all service logs
 make migrate           # migrate_schemas (all tenants)
 make migrate-shared    # public schema only
 make makemigrations    # generate migration files
-make seed              # seed_plans (plans + public tenant + superusers)
+make seed              # seed_plans (plans + public tenant + superusers) + 3 dev tenants + curated logo catalog
 
 make test              # pytest -v inside django container
 make lint              # pre-commit on all files
@@ -56,7 +56,7 @@ Layout: `config/` (project) + `apps/` (Django apps). Settings split into `base.p
 - `apps.platform_email` — platform-level email campaigns (public schema; superadmin → coaches)
 - `apps.domains` — custom-domain lifecycle for tenants
 - `apps.mailbox` — dual-listed: public-schema rows are the superadmin platform inbox; also in TENANT_APPS for the per-coach mailbox
-- `apps.demo_seed` — no models; demo-tenant seed commands + JSON content (`registry.py` is the import-pure loader)
+- `apps.demo_seed` — no models; shared niche-content library (registry + data JSONs + calendar_content) + seeding helpers for `seed_dev_tenants`
 
 **TENANT_APPS** (per-tenant schema):
 - `apps.tenant_config` — per-tenant settings (theme, branding), logo studio backend, site assistant

@@ -201,18 +201,3 @@ class Command(BaseCommand):
             self.stdout.write(f"Revoked superuser from {removed} user(s) not in CONTENTOR_SUPERUSERS")
 
         self.stdout.write(self.style.SUCCESS("Superusers synced"))
-
-        # Seed demo tenants
-        from django.core.management import call_command
-
-        from apps.demo_seed.registry import list_niches
-
-        niches = list_niches()
-        if niches:
-            self.stdout.write(f"\nSeeding {len(niches)} demo tenants...")
-            for niche in sorted(niches):
-                try:
-                    call_command("seed_demo_tenant", niche=niche, stdout=self.stdout)
-                except Exception as e:
-                    self.stdout.write(self.style.WARNING(f"Failed to seed {niche}: {e}"))
-            self.stdout.write(self.style.SUCCESS("Demo tenants seeded"))

@@ -89,7 +89,6 @@ def recovery_candidates(now=None):
             provisioning_status="pending",
             template_seed_status="pending",
             recovery_email_sent_at__isnull=True,
-            is_demo=False,
             created_at__gte=oldest,
             created_at__lt=idle_cutoff,
         )

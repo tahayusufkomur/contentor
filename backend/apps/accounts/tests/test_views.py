@@ -89,9 +89,9 @@ class TestMagicLinkRequest:
         response = client.post("/api/v1/auth/magic-link/", {}, format="json")
         assert response.status_code == 400, response.content
 
-    @patch("apps.accounts.views.MagicLinkThrottle.allow_request", return_value=True)
-    def test_demo_tenant_returns_demo_redirect(self, _mock_throttle, django_db_blocker):
-        """Demo tenants (slug starts with 'demo-') return a demo_redirect URL."""
+    def test_demo_tenant_returns_demo_redirect_in_debug(self, _mock_throttle, django_db_blocker, settings):
+        """Demo tenants (slug starts with 'demo-') return a demo_redirect URL — but only in DEBUG."""
+        settings.DEBUG = True
         demo_domain = "demo-test.localhost"
         demo_schema = "demo_test"
         with django_db_blocker.unblock():
@@ -121,6 +121,48 @@ class TestMagicLinkRequest:
             data = response.json()
             assert "demo_redirect" in data
             assert "callback?token=" in data["demo_redirect"]
+        finally:
+            with django_db_blocker.unblock():
+                connection.set_schema_to_public()
+                demo_tenant.delete(force_drop=True)
+
+    def test_demo_tenant_uses_email_flow_when_not_debug(self, _mock_throttle, django_db_blocker, settings):
+        """Outside DEBUG, a demo-slugged tenant is not special-cased — it falls through to the
+        normal magic-link email flow (no instant-login token leaked to the response body).
+        """
+        settings.DEBUG = False
+        demo_domain = "demo-test.localhost"
+        demo_schema = "demo_test"
+        with django_db_blocker.unblock():
+            connection.set_schema_to_public()
+            demo_tenant, _ = Tenant.objects.get_or_create(
+                schema_name=demo_schema,
+                defaults={
+                    "name": "Demo Test Tenant",
+                    "slug": "demo-test",
+                    "owner_email": "owner@demotest.com",
+                    "subdomain": "demo-test",
+                },
+            )
+            demo_tenant.create_schema(check_if_exists=True, sync_schema=True)
+            Domain.objects.get_or_create(
+                domain=demo_domain,
+                defaults={"tenant": demo_tenant, "is_primary": True},
+            )
+        try:
+            demo_client = APIClient(HTTP_HOST=demo_domain)
+            # Real send_magic_link runs (not mocked) — EMAIL_SINK_ENABLED=True in test
+            # settings captures it instead of hitting the network, so this exercises the
+            # actual "falls through to normal email flow" code path, not a stub.
+            response = demo_client.post(
+                "/api/v1/auth/magic-link/",
+                {"email": "demo@example.com"},
+                format="json",
+            )
+            assert response.status_code == 200, response.content
+            data = response.json()
+            assert "demo_redirect" not in data
+            assert "detail" in data
         finally:
             with django_db_blocker.unblock():
                 connection.set_schema_to_public()

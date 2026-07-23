@@ -106,7 +106,6 @@ def test_recent_step_activity_excludes_despite_old_signup(tenant):
         {"template_seed_status": "ready"},
         {"template_seed_status": "skipped"},
         {"provisioning_status": "ready"},
-        {"is_demo": True},
     ],
 )
 def test_candidates_exclusions(tenant, overrides):

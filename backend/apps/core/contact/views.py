@@ -69,10 +69,6 @@ def contact_submit(request):
     except Exception:
         logger.debug("Could not load tenant config for contact email", exc_info=True)
 
-    # Demo tenants accept the form but never actually email anyone.
-    if getattr(tenant, "is_demo", False):
-        return Response({"detail": "sent"})
-
     # Contact messages land in the coach's in-app inbox (decision 2026-07-03:
     # the mailbox is the site's contact channel). The personal-email path below
     # remains only as a fallback so leads never drop if storage fails.

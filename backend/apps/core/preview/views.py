@@ -23,7 +23,7 @@ def preview_unlock(request):
     view only confirms the password. Published tenants always succeed.
     """
     tenant = connection.tenant
-    if getattr(tenant, "is_published", False) or getattr(tenant, "is_demo", False):
+    if getattr(tenant, "is_published", False):
         return Response({"detail": "ok"})
     expected = getattr(tenant, "preview_password", "") or ""
     submitted = str(request.data.get("password", ""))

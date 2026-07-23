@@ -51,11 +51,6 @@ class Tenant(TenantMixin):
         ],
         default="pending",
     )
-    is_demo = models.BooleanField(
-        default=False,
-        db_index=True,
-        help_text="Read-only marketing demo. Mutating requests are rejected by DemoReadOnlyMiddleware.",
-    )
     is_published = models.BooleanField(
         default=False,
         help_text="When false, the public site is hidden behind a preview gate until the coach marks it ready.",

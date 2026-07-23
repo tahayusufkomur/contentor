@@ -72,7 +72,6 @@ AUTH_USER_MODEL = "accounts.User"
 MIDDLEWARE = [
     "apps.core.middleware.region.RegionResolverMiddleware",
     "apps.core.middleware.tenant.HeaderAwareTenantMiddleware",
-    "apps.core.middleware.demo_readonly.DemoReadOnlyMiddleware",
     "apps.logbook.context.UserContextMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -377,11 +376,6 @@ CURATED_LOGO_SYNC_DIR = os.environ.get("CURATED_LOGO_SYNC_DIR", "")
 # Same idea for the curated PHOTO catalog (photo_meta.json + images) —
 # seed_curated_photos reads this directory when --dir is not passed.
 CURATED_PHOTO_SYNC_DIR = os.environ.get("CURATED_PHOTO_SYNC_DIR", "")
-
-# Demo tenants (is_demo=True) reject mutating requests and show a read-only banner.
-# Disable locally (dev.py sets this False) to make demo tenants fully interactive
-# for testing. MUST stay True in production so marketing demos can't be edited.
-DEMO_READONLY_ENABLED = _env_bool("DEMO_READONLY_ENABLED", True)
 
 # Days a `past_due` PlatformSubscription stays before the dunning sweep downgrades.
 PAST_DUE_GRACE_DAYS = int(os.environ.get("PAST_DUE_GRACE_DAYS", "7"))

@@ -24,12 +24,12 @@ export default async function globalSetup() {
     throw new Error(`Seeding failed (seed_plans) — check the stack logs (make logs): ${msg}`);
   }
   try {
-    execFileSync("docker", ["compose", "exec", "-T", "django", "python", "manage.py", "seed_all_demos"], {
+    execFileSync("docker", ["compose", "exec", "-T", "django", "python", "manage.py", "seed_dev_tenants"], {
       cwd: REPO_ROOT,
       stdio: "inherit",
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Seeding failed (seed_all_demos) — check the stack logs (make logs): ${msg}`);
+    throw new Error(`Seeding failed (seed_dev_tenants) — check the stack logs (make logs): ${msg}`);
   }
 }

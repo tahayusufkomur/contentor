@@ -1,9 +1,9 @@
 """Demo blog posts + email campaigns for the coach content calendar.
 
-seed_demo_tenant already seeds Live events; these two helpers add the other two
+seed_dev_tenants already seeds Live events; these two helpers add the other two
 calendar lanes so /admin/calendar shows a realistic Live + Blog + Email mix.
-Both are idempotent (get_or_create keyed on title/subject) so the standalone
-``backfill_demo_calendar`` command can safely run against already-seeded demos.
+Both are idempotent (get_or_create keyed on title/subject) so they can safely
+run against an already-seeded tenant.
 """
 
 from datetime import timedelta

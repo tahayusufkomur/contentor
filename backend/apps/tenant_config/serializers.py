@@ -1,6 +1,5 @@
 from uuid import UUID, uuid4
 
-from django.conf import settings
 from django.db import connection
 from rest_framework import serializers
 
@@ -234,22 +233,15 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         if isinstance(templates, list):
             self._sign_tree(templates)
         # Tenant metadata — read directly from the active tenant row so the
-        # frontend knows whether to render the demo banner without a second
-        # round-trip.
+        # frontend has it without a second round-trip.
         tenant = getattr(connection, "tenant", None)
         if tenant is not None:
             slug = tenant.slug or ""
-            data["is_demo"] = bool(getattr(tenant, "is_demo", False))
-            # Whether demo read-only enforcement is active. Off locally so the
-            # frontend can hide the demo banner and allow editing while testing.
-            data["demo_readonly"] = bool(getattr(settings, "DEMO_READONLY_ENABLED", True))
             data["tenant_name"] = tenant.name
             data["tenant_slug"] = slug
-            data["demo_niche"] = slug[len("demo-") :] if slug.startswith("demo-") else ""
-            # Unified niche: prefer the real-tenant template niche, fall back to
-            # the demo niche. Read-only — the builder uses it to seed new blocks
-            # with niche-appropriate example content.
-            data["niche"] = getattr(tenant, "template_niche", "") or data["demo_niche"]
+            # Niche: the real-tenant template niche. Read-only — the builder
+            # uses it to seed new blocks with niche-appropriate example content.
+            data["niche"] = getattr(tenant, "template_niche", "")
             # Publish gate: the customer app hides the site behind a preview
             # gate when it isn't published (owners + valid preview cookie pass).
             data["is_published"] = bool(getattr(tenant, "is_published", True))

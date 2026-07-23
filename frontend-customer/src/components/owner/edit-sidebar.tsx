@@ -460,9 +460,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                 <TenantContext.Provider value={config}>
                   {children}
                 </TenantContext.Provider>
-                {(!config.is_published || config.is_demo) && (
-                  <SetupAssistantBubble />
-                )}
+                {!config.is_published && <SetupAssistantBubble />}
               </div>
             </div>
           </CanvasDndProvider>
