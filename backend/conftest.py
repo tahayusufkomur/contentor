@@ -19,6 +19,7 @@ Individual test files should import the fixtures they need:
 """
 
 import pytest
+from django.conf import settings
 from django.db import connection
 from django_redis import get_redis_connection
 from django_tenants.utils import tenant_context
@@ -50,7 +51,7 @@ from apps.community.models import (
 from apps.community.models import (
     Report as CommunityReport,
 )
-from apps.core.models import Domain, Tenant
+from apps.core.models import Domain, PlatformPlan, Tenant
 from apps.courses.models import Course, Enrollment, Lesson, Module, Progress, Video
 from apps.downloads.models import DownloadFile
 from apps.email_campaigns.models import CampaignRecipient, EmailCampaign
@@ -209,6 +210,48 @@ def _curated_mirror_off(settings):
     the CuratedLogo mirror OFF for every test so suites never write into the
     repo or touch MinIO. Mirror tests re-enable it against tmp_path."""
     settings.CURATED_LOGO_SYNC_DIR = ""
+
+
+_FREE_PLAN_DEFAULTS = {
+    "price_monthly": 0,
+    "transaction_fee_pct": 0,
+    "max_students": 10,
+    "max_storage_gb": 1,
+    "max_streaming_hours": 2,
+    "max_campaign_emails": 100,
+    "stripe_price_id": "",
+    "prices": {},
+    "is_live_enabled": False,
+}
+
+
+@pytest.fixture(autouse=True)
+def _ensure_free_plan(request, django_db_blocker):
+    """Guarantee the canonical "Free" PlatformPlan row exists before every db test.
+
+    `django_db(transaction=True)` tests run as a `TransactionTestCase`, whose
+    teardown flushes the whole public schema — including rows seeded by data
+    migrations, e.g. the "Free" PlatformPlan backfilled by
+    `0005_backfill_free_plan.py`. Nothing recreates it afterward, and
+    `--reuse-db` never reruns migrations on later invocations, so the first
+    such test to run in a session permanently deletes it from that worker's
+    reused test database — surfacing later as an unrelated
+    `PlatformPlan.DoesNotExist` in whatever test happens to need it next (see
+    `apps/core/tests/test_seed_dev_tenants.py`, which resolves it by name via
+    `seed_dev_tenants._resolve_plan`). Re-`get_or_create`ing it before every
+    db test, the same defensive pattern `restore_public` already uses for
+    Tenant/Domain, sidesteps the underlying flush entirely rather than
+    depending on Django's `serialized_rollback` (which collides with
+    already-present ContentType rows on a fresh/reused db and is not safe to
+    enable blindly — see git history on this fixture for the reverted attempt).
+    """
+    if request.node.get_closest_marker("django_db") is None:
+        yield
+        return
+    with django_db_blocker.unblock():
+        free_name = getattr(settings, "BILLING_FREE_PLAN_NAME", "Free")
+        PlatformPlan.objects.get_or_create(name=free_name, defaults=_FREE_PLAN_DEFAULTS)
+    yield
 
 
 # Cleanup targets in dependency order (children before parents).
