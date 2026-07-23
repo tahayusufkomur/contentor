@@ -71,7 +71,12 @@ const SECTIONS: SectionConfig[] = [
     id: "overview",
     label: "Overview",
     items: [
-      { kind: "static", label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      {
+        kind: "static",
+        label: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+      },
     ],
   },
   {
@@ -133,9 +138,19 @@ const SECTIONS: SectionConfig[] = [
     label: "System",
     items: [
       { kind: "model", key: "custom-domains" },
-      { kind: "static", label: "Settings", href: "/admin/settings", icon: Settings },
+      {
+        kind: "static",
+        label: "Settings",
+        href: "/admin/settings",
+        icon: Settings,
+      },
       { kind: "static", label: "Logs", href: "/admin/logs", icon: ScrollText },
-      { kind: "static", label: "Health", href: "/admin/health", icon: Activity },
+      {
+        kind: "static",
+        label: "Health",
+        href: "/admin/health",
+        icon: Activity,
+      },
       {
         kind: "static",
         label: "Go to site",

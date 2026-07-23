@@ -92,19 +92,34 @@ export default function AdminDashboard() {
               New Course
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="gap-1.5 shadow-sm">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="gap-1.5 shadow-sm"
+          >
             <Link href="/admin/live">
               <Video className="h-4 w-4" />
               Live Event
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="gap-1.5 shadow-sm">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="gap-1.5 shadow-sm"
+          >
             <Link href="/admin/email/compose">
               <Mail className="h-4 w-4" />
               Email
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="gap-1.5 shadow-sm">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="gap-1.5 shadow-sm"
+          >
             <Link href="/admin/blog">
               <Newspaper className="h-4 w-4" />
               Blog

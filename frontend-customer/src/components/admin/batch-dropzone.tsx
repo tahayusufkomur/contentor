@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { UploadCloud, File, CheckCircle2, AlertCircle, X, Loader2 } from "lucide-react";
+import {
+  UploadCloud,
+  File,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { clientFetch } from "@/lib/api-client";
@@ -40,18 +47,25 @@ export function BatchDropzone({
       const file = uploadingFile.file;
 
       setFiles((prev) =>
-        prev.map((f) => (f.id === uploadingFile.id ? { ...f, status: "uploading", progress: 5 } : f))
+        prev.map((f) =>
+          f.id === uploadingFile.id
+            ? { ...f, status: "uploading", progress: 5 }
+            : f,
+        ),
       );
 
       try {
-        const { upload_url, s3_key } = await clientFetch<PresignResponse>("/api/v1/upload/presign/", {
-          method: "POST",
-          body: JSON.stringify({
-            filename: file.name,
-            content_type: file.type,
-            category,
-          }),
-        });
+        const { upload_url, s3_key } = await clientFetch<PresignResponse>(
+          "/api/v1/upload/presign/",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              filename: file.name,
+              content_type: file.type,
+              category,
+            }),
+          },
+        );
 
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
@@ -62,22 +76,32 @@ export function BatchDropzone({
             if (event.lengthComputable) {
               const pct = Math.round((event.loaded / event.total) * 100);
               setFiles((prev) =>
-                prev.map((f) => (f.id === uploadingFile.id ? { ...f, progress: pct } : f))
+                prev.map((f) =>
+                  f.id === uploadingFile.id ? { ...f, progress: pct } : f,
+                ),
               );
             }
           };
 
-          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`HTTP ${xhr.status}`)));
+          xhr.onload = () =>
+            xhr.status >= 200 && xhr.status < 300
+              ? resolve()
+              : reject(new Error(`HTTP ${xhr.status}`));
           xhr.onerror = () => reject(new Error("Network upload error"));
           xhr.send(file);
         });
 
         // Complete upload registration in Django DB
-        const endpoint = category === "photo" ? "/api/v1/photos/" : "/api/v1/videos/";
+        const endpoint =
+          category === "photo" ? "/api/v1/photos/" : "/api/v1/videos/";
         const bodyData =
           category === "photo"
             ? { s3_key, title: file.name.replace(/\.[^.]+$/, "") }
-            : { s3_key, title: file.name.replace(/\.[^.]+$/, ""), duration_seconds: 60 };
+            : {
+                s3_key,
+                title: file.name.replace(/\.[^.]+$/, ""),
+                duration_seconds: 60,
+              };
 
         await clientFetch(endpoint, {
           method: "POST",
@@ -85,7 +109,11 @@ export function BatchDropzone({
         });
 
         setFiles((prev) =>
-          prev.map((f) => (f.id === uploadingFile.id ? { ...f, status: "completed", progress: 100 } : f))
+          prev.map((f) =>
+            f.id === uploadingFile.id
+              ? { ...f, status: "completed", progress: 100 }
+              : f,
+          ),
         );
 
         toast.success(`Uploaded ${file.name}`);
@@ -93,13 +121,15 @@ export function BatchDropzone({
       } catch (err: any) {
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === uploadingFile.id ? { ...f, status: "error", error: err?.message || "Failed" } : f
-          )
+            f.id === uploadingFile.id
+              ? { ...f, status: "error", error: err?.message || "Failed" }
+              : f,
+          ),
         );
         toast.error(`Failed to upload ${file.name}`);
       }
     },
-    [category, onUploadComplete]
+    [category, onUploadComplete],
   );
 
   const handleFilesAdded = useCallback(
@@ -114,7 +144,7 @@ export function BatchDropzone({
       setFiles((prev) => [...prev, ...addedList]);
       addedList.forEach((item) => uploadSingleFile(item));
     },
-    [uploadSingleFile]
+    [uploadSingleFile],
   );
 
   useEffect(() => {
@@ -192,8 +222,13 @@ export function BatchDropzone({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-md border-4 border-dashed border-primary animate-in fade-in duration-200 pointer-events-none">
           <div className="bg-card p-8 rounded-2xl shadow-2xl text-center flex flex-col items-center gap-3 border border-primary/30">
             <UploadCloud className="h-16 w-16 text-primary animate-bounce" />
-            <h2 className="text-xl font-bold">Drop your {category === "photo" ? "photos" : "videos"} anywhere to upload!</h2>
-            <p className="text-xs text-muted-foreground">Release files to start batch upload automatically</p>
+            <h2 className="text-xl font-bold">
+              Drop your {category === "photo" ? "photos" : "videos"} anywhere to
+              upload!
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Release files to start batch upload automatically
+            </p>
           </div>
         </div>
       )}
@@ -224,12 +259,14 @@ export function BatchDropzone({
           </div>
           <div>
             <p className="text-sm font-semibold">
-              Drag & Drop multi-file {category === "photo" ? "photos" : "videos"} here, or{" "}
+              Drag & Drop multi-file{" "}
+              {category === "photo" ? "photos" : "videos"} here, or{" "}
               <span className="text-primary underline">browse</span>
             </p>
 
             <p className="text-xs text-muted-foreground mt-1">
-              Supports batch uploading • {category === "photo" ? "PNG, JPG, WebP, GIF" : "MP4, MOV, WebM"}
+              Supports batch uploading •{" "}
+              {category === "photo" ? "PNG, JPG, WebP, GIF" : "MP4, MOV, WebM"}
             </p>
           </div>
         </div>
@@ -252,11 +289,16 @@ export function BatchDropzone({
 
           <div className="space-y-2.5 max-h-48 overflow-y-auto">
             {files.map((item) => (
-              <div key={item.id} className="text-xs space-y-1.5 p-2 rounded-lg border bg-muted/30">
+              <div
+                key={item.id}
+                className="text-xs space-y-1.5 p-2 rounded-lg border bg-muted/30"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 truncate">
                     <File className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <span className="font-medium truncate">{item.file.name}</span>
+                    <span className="font-medium truncate">
+                      {item.file.name}
+                    </span>
                     <span className="text-[10px] text-muted-foreground">
                       ({(item.file.size / (1024 * 1024)).toFixed(1)} MB)
                     </span>
@@ -264,7 +306,9 @@ export function BatchDropzone({
 
                   <div className="flex items-center gap-2 shrink-0">
                     {item.status === "uploading" && (
-                      <span className="font-mono text-[10px] text-primary">{item.progress}%</span>
+                      <span className="font-mono text-[10px] text-primary">
+                        {item.progress}%
+                      </span>
                     )}
                     {item.status === "completed" && (
                       <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-semibold">

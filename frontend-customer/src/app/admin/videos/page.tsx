@@ -38,7 +38,10 @@ import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import { useChunkedUpload } from "@/hooks/use-chunked-upload";
 import { BatchDropzone } from "@/components/admin/batch-dropzone";
-import { LightboxModal, type MediaItemPayload } from "@/components/admin/lightbox-modal";
+import {
+  LightboxModal,
+  type MediaItemPayload,
+} from "@/components/admin/lightbox-modal";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -244,13 +247,20 @@ export default function VideosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Video Asset Library</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Video Asset Library
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Upload, manage, copy CDN links, and embed videos across your platform.
+            Upload, manage, copy CDN links, and embed videos across your
+            platform.
           </p>
         </div>
-        <Button onClick={() => setShowUpload((prev) => !prev)} className="gap-2 shadow-sm">
-          <Plus className="h-4 w-4" /> {showUpload ? "Hide Uploader" : "Batch Upload"}
+        <Button
+          onClick={() => setShowUpload((prev) => !prev)}
+          className="gap-2 shadow-sm"
+        >
+          <Plus className="h-4 w-4" />{" "}
+          {showUpload ? "Hide Uploader" : "Batch Upload"}
         </Button>
       </div>
 
@@ -564,7 +574,9 @@ export default function VideosPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(video.video_signed_url!);
+                          navigator.clipboard.writeText(
+                            video.video_signed_url!,
+                          );
                           toast.success("CDN Video URL copied!");
                         }}
                         className="p-1 hover:text-foreground rounded"

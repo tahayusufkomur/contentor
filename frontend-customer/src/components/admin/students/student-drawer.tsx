@@ -75,11 +75,19 @@ function formatDate(dateStr: string) {
   });
 }
 
-export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "actions" | "activity">("overview");
+export function StudentDrawer({
+  student,
+  onClose,
+  onRefresh,
+}: StudentDrawerProps) {
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "actions" | "activity"
+  >("overview");
   const [grantingAccess, setGrantingAccess] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
-  const [availableCourses, setAvailableCourses] = useState<{ id: number; title: string }[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<
+    { id: number; title: string }[]
+  >([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
 
   // Lock body scroll when drawer is open
@@ -96,9 +104,10 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
   useEffect(() => {
     if (grantingAccess && availableCourses.length === 0) {
       setLoadingCourses(true);
-      clientFetch<{ results?: { id: number; title: string }[] } | { id: number; title: string }[]>(
-        "/api/v1/courses/"
-      )
+      clientFetch<
+        | { results?: { id: number; title: string }[] }
+        | { id: number; title: string }[]
+      >("/api/v1/courses/")
         .then((res) => {
           const items = Array.isArray(res) ? res : res.results || [];
           setAvailableCourses(items);
@@ -171,7 +180,10 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                 <h2 className="text-lg font-bold truncate leading-tight">
                   {student.name || "Unnamed Student"}
                 </h2>
-                <Badge variant="success" className="text-[10px] uppercase font-mono shrink-0">
+                <Badge
+                  variant="success"
+                  className="text-[10px] uppercase font-mono shrink-0"
+                >
                   Active
                 </Badge>
               </div>
@@ -197,7 +209,11 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
 
         {/* Drawer Body Tabs */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as any)}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="overview" className="text-xs">
                 Overview
@@ -218,13 +234,20 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                   <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
                     Subscription Tier
                   </span>
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] uppercase font-mono"
+                  >
                     {subscriptionInfo.status}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-base">{subscriptionInfo.plan_name}</span>
-                  <span className="text-sm font-semibold text-primary">{subscriptionInfo.amount}</span>
+                  <span className="font-bold text-base">
+                    {subscriptionInfo.plan_name}
+                  </span>
+                  <span className="text-sm font-semibold text-primary">
+                    {subscriptionInfo.amount}
+                  </span>
                 </div>
               </div>
 
@@ -239,7 +262,10 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
 
                 <div className="space-y-3">
                   {coursesProgress.map((course) => (
-                    <div key={course.id} className="rounded-lg border p-3.5 space-y-2 bg-card/60">
+                    <div
+                      key={course.id}
+                      className="rounded-lg border p-3.5 space-y-2 bg-card/60"
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <span className="text-xs font-semibold leading-tight line-clamp-1">
                           {course.title}
@@ -259,7 +285,8 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
 
                       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>
-                          {course.completed_lessons} of {course.total_lessons} lessons completed
+                          {course.completed_lessons} of {course.total_lessons}{" "}
+                          lessons completed
                         </span>
                         {course.progress_percent === 100 && (
                           <span className="flex items-center gap-1 text-emerald-600 font-medium">
@@ -283,9 +310,12 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                       <Key className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">Grant Course Access</h4>
+                      <h4 className="text-sm font-semibold">
+                        Grant Course Access
+                      </h4>
                       <p className="text-xs text-muted-foreground">
-                        Enroll this student in a course manually without charging.
+                        Enroll this student in a course manually without
+                        charging.
                       </p>
                     </div>
                   </div>
@@ -306,14 +336,23 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                       <Send className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">Send Direct Message</h4>
+                      <h4 className="text-sm font-semibold">
+                        Send Direct Message
+                      </h4>
                       <p className="text-xs text-muted-foreground">
                         Compose a personal email or in-app message.
                       </p>
                     </div>
                   </div>
-                  <Button asChild size="sm" variant="outline" className="w-full gap-2">
-                    <Link href={`/admin/email/compose?recipient=${encodeURIComponent(student.email)}`}>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="w-full gap-2"
+                  >
+                    <Link
+                      href={`/admin/email/compose?recipient=${encodeURIComponent(student.email)}`}
+                    >
                       <Mail className="h-3.5 w-3.5" />
                       Compose Email Message
                     </Link>
@@ -327,13 +366,20 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                       <CreditCard className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">Payment & Refund History</h4>
+                      <h4 className="text-sm font-semibold">
+                        Payment & Refund History
+                      </h4>
                       <p className="text-xs text-muted-foreground">
                         View transactions, manage invoices, or issue refunds.
                       </p>
                     </div>
                   </div>
-                  <Button asChild size="sm" variant="outline" className="w-full gap-2">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="w-full gap-2"
+                  >
                     <Link href={`/admin/students/${student.id}`}>
                       <CreditCard className="h-3.5 w-3.5" />
                       View Transactions
@@ -351,8 +397,12 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                     <CheckCircle2 className="h-3.5 w-3.5" />
                   </div>
                   <div>
-                    <p className="font-medium">Completed Lesson "Core Stability 2"</p>
-                    <p className="text-[10px] text-muted-foreground">2 hours ago</p>
+                    <p className="font-medium">
+                      Completed Lesson "Core Stability 2"
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      2 hours ago
+                    </p>
                   </div>
                 </div>
 
@@ -361,8 +411,17 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                     <Clock className="h-3.5 w-3.5" />
                   </div>
                   <div>
-                    <p className="font-medium">Logged in via {student.last_display_mode === "pwa" ? "PWA App" : "Web Browser"}</p>
-                    <p className="text-[10px] text-muted-foreground">{student.last_login ? formatDate(student.last_login) : "Recently"}</p>
+                    <p className="font-medium">
+                      Logged in via{" "}
+                      {student.last_display_mode === "pwa"
+                        ? "PWA App"
+                        : "Web Browser"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {student.last_login
+                        ? formatDate(student.last_login)
+                        : "Recently"}
+                    </p>
                   </div>
                 </div>
 
@@ -371,8 +430,12 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
                     <CreditCard className="h-3.5 w-3.5" />
                   </div>
                   <div>
-                    <p className="font-medium">Enrolled in "Pilates Fundamentals"</p>
-                    <p className="text-[10px] text-muted-foreground">{formatDate(student.date_joined)}</p>
+                    <p className="font-medium">
+                      Enrolled in "Pilates Fundamentals"
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {formatDate(student.date_joined)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -402,15 +465,24 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
             >
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="text-sm font-bold">Grant Free Course Access</h3>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setGrantingAccess(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setGrantingAccess(false)}
+                >
                   ✕
                 </Button>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground">Select Course:</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Select Course:
+                </label>
                 {loadingCourses ? (
-                  <div className="text-xs text-muted-foreground">Loading courses...</div>
+                  <div className="text-xs text-muted-foreground">
+                    Loading courses...
+                  </div>
                 ) : (
                   <select
                     className="w-full rounded-lg border bg-background p-2 text-xs font-medium focus:outline-none"
@@ -427,10 +499,18 @@ export function StudentDrawer({ student, onClose, onRefresh }: StudentDrawerProp
               </div>
 
               <div className="flex items-center justify-end gap-2 border-t pt-3">
-                <Button variant="outline" size="sm" onClick={() => setGrantingAccess(false)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setGrantingAccess(false)}
+                >
                   Cancel
                 </Button>
-                <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white" onClick={handleGrantAccess}>
+                <Button
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={handleGrantAccess}
+                >
                   Confirm Grant
                 </Button>
               </div>

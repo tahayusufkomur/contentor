@@ -1,7 +1,13 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, BookOpen, CreditCard, MessageSquare, Sparkles } from "lucide-react";
+import {
+  UserCheck,
+  BookOpen,
+  CreditCard,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
 
 interface ActivityItem {
   id: string;
@@ -63,22 +69,33 @@ export function RecentActivityCard() {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center justify-between">
           <span>Recent Activity</span>
-          <span className="text-xs font-normal text-muted-foreground">Live updates</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            Live updates
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {activities.map((item) => (
-          <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
+          <div
+            key={item.id}
+            className="flex items-start justify-between gap-3 text-sm"
+          >
             <div className="flex items-start gap-3 min-w-0">
               <div className="p-1.5 rounded-md bg-muted shrink-0 mt-0.5">
                 {getIcon(item.type)}
               </div>
               <div className="min-w-0">
-                <p className="font-medium text-xs leading-tight truncate">{item.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
+                <p className="font-medium text-xs leading-tight truncate">
+                  {item.title}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {item.detail}
+                </p>
               </div>
             </div>
-            <span className="text-[10px] text-muted-foreground shrink-0">{item.timestamp}</span>
+            <span className="text-[10px] text-muted-foreground shrink-0">
+              {item.timestamp}
+            </span>
           </div>
         ))}
       </CardContent>

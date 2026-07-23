@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { X, Copy, Check, Code, ExternalLink, Download, FileText, Calendar, HardDrive } from "lucide-react";
+import {
+  X,
+  Copy,
+  Check,
+  Code,
+  ExternalLink,
+  Download,
+  FileText,
+  Calendar,
+  HardDrive,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -89,10 +99,15 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
         <div className="w-full md:w-80 border-t md:border-t-0 md:border-l p-6 space-y-6 flex flex-col justify-between bg-card overflow-y-auto">
           <div className="space-y-4">
             <div>
-              <Badge variant="outline" className="uppercase font-mono text-[10px] mb-2">
+              <Badge
+                variant="outline"
+                className="uppercase font-mono text-[10px] mb-2"
+              >
                 {item.type}
               </Badge>
-              <h3 className="text-lg font-bold leading-tight break-words">{item.title}</h3>
+              <h3 className="text-lg font-bold leading-tight break-words">
+                {item.title}
+              </h3>
             </div>
 
             {/* Metadata Stats */}
@@ -131,7 +146,11 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
                   <ExternalLink className="h-3.5 w-3.5 text-primary" />
                   Copy CDN Link
                 </span>
-                {copiedUrl ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedUrl ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
               </Button>
 
               <Button
@@ -144,13 +163,22 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
                   <Code className="h-3.5 w-3.5 text-purple-600" />
                   Copy HTML Embed Code
                 </span>
-                {copiedEmbed ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedEmbed ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
               </Button>
             </div>
           </div>
 
           <div className="pt-4 border-t">
-            <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={onClose}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs text-muted-foreground"
+              onClick={onClose}
+            >
               Close Preview
             </Button>
           </div>

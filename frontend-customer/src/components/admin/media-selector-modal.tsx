@@ -29,7 +29,7 @@ export function MediaSelectorModal({
   onSelect,
 }: MediaSelectorModalProps) {
   const [activeTab, setActiveTab] = useState<"photo" | "video">(
-    type === "video" ? "video" : "photo"
+    type === "video" ? "video" : "photo",
   );
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,8 @@ export function MediaSelectorModal({
     if (!open) return;
 
     setLoading(true);
-    const endpoint = activeTab === "photo" ? "/api/v1/photos/" : "/api/v1/videos/";
+    const endpoint =
+      activeTab === "photo" ? "/api/v1/photos/" : "/api/v1/videos/";
     const sp = new URLSearchParams();
     if (query) sp.set("search", query);
 
@@ -75,10 +76,16 @@ export function MediaSelectorModal({
           <div>
             <h3 className="text-base font-bold">Select Media Asset</h3>
             <p className="text-xs text-muted-foreground">
-              Choose from your photo or video library to insert into your content.
+              Choose from your photo or video library to insert into your
+              content.
             </p>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onClose}
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
