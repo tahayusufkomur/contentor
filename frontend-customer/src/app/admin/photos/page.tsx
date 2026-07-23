@@ -1,7 +1,15 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Image as ImageIcon, Pencil, Plus, Trash2, Copy, Code, Eye } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Pencil,
+  Plus,
+  Trash2,
+  Copy,
+  Code,
+  Eye,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
@@ -20,7 +28,10 @@ import {
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import { BatchDropzone } from "@/components/admin/batch-dropzone";
-import { LightboxModal, type MediaItemPayload } from "@/components/admin/lightbox-modal";
+import {
+  LightboxModal,
+  type MediaItemPayload,
+} from "@/components/admin/lightbox-modal";
 import type { Photo } from "@/types/photo";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +71,7 @@ export default function PhotosPage() {
     [tagFilter],
   );
 
-  const photoFields: FieldConfig[] = [
+  const photoFields: FieldConfig<Photo>[] = [
     { key: "title", label: "Title", type: "text", required: true },
     { key: "alt_text", label: "Alt Text", type: "text" },
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "photo" },
@@ -112,16 +123,20 @@ export default function PhotosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Photo Asset Library</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Photo Asset Library
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Upload, manage, copy CDN links, and embed photos across your platform.
+            Upload, manage, copy CDN links, and embed photos across your
+            platform.
           </p>
         </div>
         <Button
           onClick={() => setShowDropzone((prev) => !prev)}
           className="gap-2 shadow-sm"
         >
-          <Plus className="h-4 w-4" /> {showDropzone ? "Hide Uploader" : "Batch Upload"}
+          <Plus className="h-4 w-4" />{" "}
+          {showDropzone ? "Hide Uploader" : "Batch Upload"}
         </Button>
       </div>
 
@@ -203,7 +218,11 @@ export default function PhotosPage() {
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button size="sm" variant="secondary" className="h-8 gap-1.5 text-xs shadow-md">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 gap-1.5 text-xs shadow-md"
+                  >
                     <Eye className="h-3.5 w-3.5" /> Lightbox
                   </Button>
                 </div>
@@ -233,7 +252,9 @@ export default function PhotosPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => copyEmbedCode(photo.signed_url!, photo.title)}
+                        onClick={() =>
+                          copyEmbedCode(photo.signed_url!, photo.title)
+                        }
                         className="p-1 hover:text-foreground rounded"
                         title="Copy HTML Embed"
                       >
@@ -305,7 +326,9 @@ export default function PhotosPage() {
                       size="sm"
                       variant="ghost"
                       className="h-8 w-8 p-0"
-                      onClick={() => copyEmbedCode(photo.signed_url!, photo.title)}
+                      onClick={() =>
+                        copyEmbedCode(photo.signed_url!, photo.title)
+                      }
                       title="Copy HTML Embed"
                     >
                       <Code className="h-3.5 w-3.5 text-muted-foreground" />

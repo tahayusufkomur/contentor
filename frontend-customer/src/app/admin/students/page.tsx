@@ -2,7 +2,17 @@
 
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
-import { Users, Mail, Receipt, Smartphone, Globe, UserCheck, ShieldAlert, Sparkles, ChevronRight } from "lucide-react";
+import {
+  Users,
+  Mail,
+  Receipt,
+  Smartphone,
+  Globe,
+  UserCheck,
+  ShieldAlert,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
 import { TableCell } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
@@ -13,7 +23,10 @@ import {
   type FetchPageParams,
   type FetchPageResult,
 } from "@/components/admin/media-browser";
-import { StudentDrawer, type StudentDetail } from "@/components/admin/students/student-drawer";
+import {
+  StudentDrawer,
+  type StudentDetail,
+} from "@/components/admin/students/student-drawer";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +41,7 @@ interface Student {
   last_display_mode?: string;
   last_platform?: string;
   progress_percent?: number;
+  overall_progress?: number;
 }
 
 function getInitials(name: string) {
@@ -56,8 +70,12 @@ const SORT_OPTIONS = [
 
 export default function StudentsPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
-  const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null);
-  const [activeFilterTab, setActiveFilterTab] = useState<"all" | "active" | "at_risk" | "new">("all");
+  const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(
+    null,
+  );
+  const [activeFilterTab, setActiveFilterTab] = useState<
+    "all" | "active" | "at_risk" | "new"
+  >("all");
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Student>> => {
@@ -89,9 +107,12 @@ export default function StudentsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Student CRM & Engagement</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Student CRM & Engagement
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Manage student enrollments, course progress, direct actions, and retention.
+            Manage student enrollments, course progress, direct actions, and
+            retention.
           </p>
         </div>
       </div>
@@ -239,7 +260,9 @@ export default function StudentsPage() {
                   <span className="font-mono text-[11px] font-semibold">
                     {student.progress_percent || 0}%
                   </span>
-                  <span className="text-[10px] text-muted-foreground">overall</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    overall
+                  </span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                   <div

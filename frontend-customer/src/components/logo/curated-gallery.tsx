@@ -1,12 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Loader2, Lock, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { composeCuratedPreview } from "@/lib/logo/curated-preview";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
 import type { LogoRecipe } from "@/types/logo";
 import { LogoRenderer } from "./logo-renderer";
+
+// The Ideas wall shows a short, hand-relevant set — the incoming list arrives
+// already ranked for this coach's brief (niche + description), so the top N are
+// the best matches. We show these rather than the whole catalog.
+const IDEAS_COUNT = 20;
 
 interface CuratedGalleryProps {
   logos: CuratedLogo[];
@@ -35,15 +40,7 @@ export function CuratedGallery({
   onUpgrade,
   generatingFilename,
 }: CuratedGalleryProps) {
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-
-  const tags = useMemo(
-    () => Array.from(new Set(logos.flatMap((l) => l.tags))).sort(),
-    [logos],
-  );
-  const shown = activeTag
-    ? logos.filter((l) => l.tags.includes(activeTag))
-    : logos;
+  const shown = useMemo(() => logos.slice(0, IDEAS_COUNT), [logos]);
 
   // Each card is a COMPLETE logo concept for this coach: the curated mark
   // composed with their brand name + tagline in a varied, tag-biased lockup.
@@ -78,29 +75,7 @@ export function CuratedGallery({
   }
 
   return (
-    <div className="space-y-4 p-6">
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTag(null)}
-            className={`rounded-full border px-3 py-1 text-xs ${activeTag === null ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
-          >
-            All
-          </button>
-          {tags.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => setActiveTag(tag)}
-              className={`rounded-full border px-3 py-1 text-xs capitalize ${activeTag === tag ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      )}
-
+    <div className="p-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((logo, index) => {
           const generating = generatingFilename === logo.filename;

@@ -164,7 +164,9 @@ export function PublishCard() {
   return (
     <Card
       id="publish-card"
-      className={tenant.is_published ? "" : "border-amber-300 bg-amber-50/40"}
+      className={
+        tenant.is_published ? "" : "border-amber-500/40 bg-amber-500/10"
+      }
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
@@ -229,8 +231,8 @@ export function PublishCard() {
               students find and install it.
             </p>
             {!canPublish && (
-              <div className="rounded-md border border-amber-300 bg-amber-50/60 p-3">
-                <p className="mb-2 text-sm font-medium text-amber-900">
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+                <p className="mb-2 text-sm font-medium text-amber-700 dark:text-amber-300">
                   Finish these first to publish:
                 </p>
                 <ul className="space-y-1.5">
@@ -241,7 +243,7 @@ export function PublishCard() {
                       <li key={key}>
                         <Link
                           href={meta.href}
-                          className="flex items-center gap-2 text-sm text-amber-900 underline-offset-2 hover:underline"
+                          className="flex items-center gap-2 text-sm text-amber-700 underline-offset-2 hover:underline dark:text-amber-300"
                         >
                           <Circle className="h-3.5 w-3.5 shrink-0" />
                           {meta.label}

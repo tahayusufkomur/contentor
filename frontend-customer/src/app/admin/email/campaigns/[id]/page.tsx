@@ -13,16 +13,18 @@ import {
 
 export const dynamic = "force-dynamic";
 
+// Semantic status tints that read on both light and dark surfaces: a low-opacity
+// fill (theme-agnostic) plus a foreground that steps lighter under dark/dim.
 const STATUS_COLORS: Record<string, string> = {
-  sending: "bg-blue-100 text-blue-800",
-  sent: "bg-green-100 text-green-800",
-  partial: "bg-yellow-100 text-yellow-800",
-  failed: "bg-red-100 text-red-800",
+  sending: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  sent: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  partial: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  failed: "bg-red-500/15 text-red-700 dark:text-red-300",
 };
 
 const RECIPIENT_STATUS_COLORS: Record<string, string> = {
-  sent: "bg-green-100 text-green-800",
-  failed: "bg-red-100 text-red-800",
+  sent: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  failed: "bg-red-500/15 text-red-700 dark:text-red-300",
 };
 
 export default function CampaignDetailPage() {
