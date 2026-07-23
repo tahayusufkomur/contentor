@@ -110,7 +110,13 @@ function AuthCluster({
 }) {
   return (
     <div className="flex items-center gap-3">
-      {allowDarkMode && <ThemeToggle compact className="shrink-0" />}
+      {allowDarkMode && (
+        <ThemeToggle
+          compact
+          className="shrink-0"
+          modes={["light", "dim", "dark"]}
+        />
+      )}
       {user ? (
         <>
           <Link
@@ -348,7 +354,12 @@ export function PublicHeader({
             )}
           </div>
         )}
-        {allowDarkMode && <ThemeToggle className="justify-start" />}
+        {allowDarkMode && (
+          <ThemeToggle
+            className="justify-start"
+            modes={["light", "dim", "dark"]}
+          />
+        )}
       </nav>
     </div>
   );

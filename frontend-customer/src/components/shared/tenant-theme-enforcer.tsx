@@ -9,7 +9,10 @@ export function TenantThemeEnforcer() {
   const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
-    if (config?.dark_mode_enabled === false && resolvedTheme === "dark") {
+    if (
+      config?.dark_mode_enabled === false &&
+      (resolvedTheme === "dark" || resolvedTheme === "dim")
+    ) {
       setTheme("light");
     }
   }, [config?.dark_mode_enabled, resolvedTheme, setTheme]);

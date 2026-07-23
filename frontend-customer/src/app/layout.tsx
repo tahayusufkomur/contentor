@@ -158,6 +158,7 @@ export default async function RootLayout({
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
+            themes={["light", "dim", "dark"]}
             enableSystem={false}
             forcedTheme={
               config?.dark_mode_enabled === false ? "light" : undefined

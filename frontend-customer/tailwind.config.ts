@@ -2,7 +2,9 @@ import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class",
+  // The `dark:` variant must fire under the soft-dark `dim` theme too, not just
+  // `.dark` — otherwise dark-family utilities render light under Dim.
+  darkMode: ["variant", ["&:is(.dark, .dark *)", "&:is(.dim, .dim *)"]],
   // Include the shared admin-kit package (imported via the `@shared/*` path
   // alias) so its Tailwind classes actually get generated — classes used
   // ONLY there (never coincidentally reused in this app's own src/) were

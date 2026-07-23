@@ -177,7 +177,9 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
       {/* Footer */}
       <div className="border-t p-2 space-y-2">
         <Separator className="mb-2" />
-        {allowDarkMode && <ThemeToggle collapsed={collapsed} />}
+        {allowDarkMode && (
+          <ThemeToggle collapsed={collapsed} modes={["light", "dim", "dark"]} />
+        )}
         {React.Children.map(children, (child) =>
           React.isValidElement(child)
             ? React.cloneElement(child as React.ReactElement<any>, {
