@@ -23,6 +23,8 @@ export interface NavItem {
   /** The section is only PARTLY paid (some sub-features are free) — softens the
    *  Paid badge tooltip to "Contains paid features". */
   partialPaid?: boolean;
+  /** Open in a new tab with an external-link indicator (e.g. "Edit site"). */
+  external?: boolean;
 }
 
 export interface NavSection {
@@ -134,6 +136,8 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
                       <Link
                         key={item.href}
                         href={item.href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noopener noreferrer" : undefined}
                         className={cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                           collapsed && "justify-center px-2",
@@ -147,6 +151,9 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
                         {!collapsed && (
                           <>
                             <span>{item.label}</span>
+                            {item.external && (
+                              <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground/60" />
+                            )}
                             {(item.ai || item.requiresEntitlement) && (
                               <span className="ml-auto flex items-center gap-1">
                                 {item.ai && <AiBadge />}

@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Image, MoonStar, Palette, Save, Type, Wand2 } from "lucide-react";
+import {
+  Image,
+  MoonStar,
+  Navigation,
+  Palette,
+  Save,
+  Type,
+  Wand2,
+} from "lucide-react";
 import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { LogoStudio } from "@/components/logo/logo-studio";
+import { NavbarTab } from "@/components/owner/navbar-tab";
 import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { clientFetch } from "@/lib/api-client";
 import { getThemePalette } from "@/lib/themes";
@@ -315,6 +324,25 @@ export default function DesignSettingsPage() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Navigation className="h-5 w-5" />
+              Navbar
+            </CardTitle>
+            <CardDescription>
+              Layout, links, and buttons for your site&apos;s navigation. The
+              same controls are available while editing your live site.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <NavbarTab
+              config={config}
+              onChange={(patch) => setConfig({ ...config, ...patch })}
+            />
           </CardContent>
         </Card>
       </div>

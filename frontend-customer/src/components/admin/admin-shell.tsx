@@ -21,7 +21,7 @@ import {
   MessagesSquare,
   Newspaper,
   Palette,
-  FileText,
+  Pencil,
   Search,
   Settings,
   Users,
@@ -141,7 +141,12 @@ export function AdminShell({ children, user }: AdminShellProps) {
       id: "website",
       label: t("nav.sections.website"),
       items: [
-        { label: t("nav.items.pages"), href: "/admin/pages", icon: FileText },
+        {
+          label: t("nav.items.editSite"),
+          href: "/?edit=1",
+          icon: Pencil,
+          external: true,
+        },
         {
           label: t("nav.items.design"),
           href: "/admin/design",

@@ -164,6 +164,20 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
     if (saved !== null) setEditMode(saved === "1");
   }, [initialConfig.onboarding_completed]);
 
+  // Deep link from the admin sidebar: /?edit=1 lands the coach straight in
+  // the editor with the panel open, persisting the choice exactly like
+  // toggleEditMode(true). Declared after the localStorage restore above so
+  // it wins on mount. (window.location, NOT useSearchParams — avoids the
+  // Next 14 client-side Suspense bailout, same as /admin/design?studio=1.)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("edit") !== "1") return;
+    setEditMode(true);
+    setOpen(true);
+    try {
+      localStorage.setItem(EDIT_MODE_KEY, "1");
+    } catch {}
+  }, []);
+
   const toggleEditMode = (on: boolean) => {
     if (!on) flushPending();
     setEditMode(on);

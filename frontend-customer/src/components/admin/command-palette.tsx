@@ -14,8 +14,8 @@ import {
   Bell,
   Mail,
   Newspaper,
-  FileText,
   Palette,
+  Pencil,
   ImageIcon,
   Film,
   MessageCircleQuestion,
@@ -31,11 +31,18 @@ import {
 interface CommandItem {
   id: string;
   label: string;
-  category: "Quick Create" | "Products" | "Audience" | "Website & Media" | "Settings";
+  category:
+    | "Quick Create"
+    | "Products"
+    | "Audience"
+    | "Website & Media"
+    | "Settings";
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   description?: string;
   keywords?: string[];
+  /** Open in a new tab instead of router navigation (e.g. "Edit site"). */
+  newTab?: boolean;
 }
 
 export function CommandPalette({
@@ -130,7 +137,14 @@ export function CommandPalette({
         category: "Products",
         href: "/admin/calendar",
         icon: CalendarDays,
-        keywords: ["schedule", "events", "blog", "email", "publishing", "calendar"],
+        keywords: [
+          "schedule",
+          "events",
+          "blog",
+          "email",
+          "publishing",
+          "calendar",
+        ],
       },
       {
         id: "nav-downloads",
@@ -193,12 +207,14 @@ export function CommandPalette({
 
       // Website & Media
       {
-        id: "nav-pages",
-        label: "Storefront Pages",
+        id: "nav-edit-site",
+        label: "Edit site",
         category: "Website & Media",
-        href: "/admin/pages",
-        icon: FileText,
-        keywords: ["site", "landing", "home"],
+        href: "/?edit=1",
+        icon: Pencil,
+        description: "Open the live editor to edit your pages",
+        keywords: ["pages", "site", "landing", "home", "editor", "builder"],
+        newTab: true,
       },
       {
         id: "nav-design",
@@ -267,7 +283,7 @@ export function CommandPalette({
         keywords: ["database", "schema", "admin kit"],
       },
     ],
-    []
+    [],
   );
 
   const filteredItems = useMemo(() => {
@@ -278,7 +294,8 @@ export function CommandPalette({
         item.label.toLowerCase().includes(q) ||
         item.category.toLowerCase().includes(q) ||
         (item.description && item.description.toLowerCase().includes(q)) ||
-        (item.keywords && item.keywords.some((k) => k.toLowerCase().includes(q)))
+        (item.keywords &&
+          item.keywords.some((k) => k.toLowerCase().includes(q))),
     );
   }, [items, query]);
 
@@ -314,17 +331,23 @@ export function CommandPalette({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex((prev) => (prev + 1) % Math.max(1, filteredItems.length));
+        setSelectedIndex(
+          (prev) => (prev + 1) % Math.max(1, filteredItems.length),
+        );
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev === 0 ? Math.max(0, filteredItems.length - 1) : prev - 1
+          prev === 0 ? Math.max(0, filteredItems.length - 1) : prev - 1,
         );
       } else if (e.key === "Enter" && filteredItems[selectedIndex]) {
         e.preventDefault();
         const selected = filteredItems[selectedIndex];
         onOpenChange(false);
-        router.push(selected.href);
+        if (selected.newTab) {
+          window.open(selected.href, "_blank", "noopener,noreferrer");
+        } else {
+          router.push(selected.href);
+        }
       } else if (e.key === "Escape") {
         e.preventDefault();
         onOpenChange(false);
@@ -378,7 +401,11 @@ export function CommandPalette({
                   type="button"
                   onClick={() => {
                     onOpenChange(false);
-                    router.push(item.href);
+                    if (item.newTab) {
+                      window.open(item.href, "_blank", "noopener,noreferrer");
+                    } else {
+                      router.push(item.href);
+                    }
                   }}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm transition-colors ${
@@ -441,10 +468,12 @@ export function CommandPalette({
           <div className="flex items-center gap-3">
             <span>
               <kbd className="font-mono rounded border px-1 bg-muted">↑</kbd>{" "}
-              <kbd className="font-mono rounded border px-1 bg-muted">↓</kbd> to navigate
+              <kbd className="font-mono rounded border px-1 bg-muted">↓</kbd> to
+              navigate
             </span>
             <span>
-              <kbd className="font-mono rounded border px-1 bg-muted">↵</kbd> to select
+              <kbd className="font-mono rounded border px-1 bg-muted">↵</kbd> to
+              select
             </span>
           </div>
           <span>Coach Admin Command Palette</span>
