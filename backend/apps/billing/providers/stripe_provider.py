@@ -10,10 +10,10 @@ overrides take effect.
 
 from __future__ import annotations
 
+import os
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-import os
 import stripe
 from django.conf import settings
 
@@ -157,7 +157,7 @@ def _get_webhook_secret() -> str:
         for env_path in env_paths:
             if os.path.exists(env_path):
                 try:
-                    with open(env_path, "r") as f:
+                    with open(env_path) as f:
                         content = f.read().strip()
                         if content.startswith("whsec_"):
                             return content

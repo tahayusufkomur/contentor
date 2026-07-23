@@ -26,7 +26,7 @@ stripe listen \
       WHSEC="${BASH_REMATCH[1]}"
       echo ""
       echo "[Auto-Sync] Detected Webhook Secret: $WHSEC"
-      
+
       python3 -c "
 import re, os
 path = '$ENV_FILE'

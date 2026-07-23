@@ -4,20 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('email_campaigns', '0002_emailcampaign_recipient_summary_and_more'),
+        ("email_campaigns", "0002_emailcampaign_recipient_summary_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='emailcampaign',
-            name='scheduled_at',
+            model_name="emailcampaign",
+            name="scheduled_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='emailcampaign',
-            name='status',
-            field=models.CharField(choices=[('scheduled', 'Scheduled'), ('sending', 'Sending'), ('sent', 'Sent'), ('partial', 'Partial'), ('failed', 'Failed')], default='sending', max_length=20),
+            model_name="emailcampaign",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("scheduled", "Scheduled"),
+                    ("sending", "Sending"),
+                    ("sent", "Sent"),
+                    ("partial", "Partial"),
+                    ("failed", "Failed"),
+                ],
+                default="sending",
+                max_length=20,
+            ),
         ),
     ]
