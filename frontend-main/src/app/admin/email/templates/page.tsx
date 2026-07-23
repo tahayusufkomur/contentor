@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { TemplateGrid } from "@shared/email/template-grid";
 import {
   deleteTemplate,
@@ -40,7 +41,6 @@ export default function TemplatesPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState("");
   const [previewHtml, setPreviewHtml] = useState("");
-  const [previewLoading, setPreviewLoading] = useState(false);
 
   const fetchPreviews = useCallback(async (tmpls: EmailTemplate[]) => {
     const ids = tmpls.map((t) => t.id).filter(Boolean);
@@ -80,49 +80,39 @@ export default function TemplatesPage() {
       .catch(() => {});
   }, [tab, galleryLoaded, fetchPreviews]);
 
-  const handlePreview = useCallback(
+  const { run: handlePreview, loading: previewLoading } = useAsyncAction(
     async (template: EmailTemplate) => {
       setPreviewOpen(true);
       setPreviewTitle(template.name);
       setPreviewHtml("");
-      setPreviewLoading(true);
 
       if (previewHtmlMap[template.id]) {
         setPreviewHtml(previewHtmlMap[template.id]);
-        setPreviewLoading(false);
         return;
       }
 
-      try {
-        const detail = await getTemplate(template.id);
-        const html =
-          ((detail as Record<string, unknown>).html as string) ||
-          ((detail as Record<string, unknown>).rendered_html as string) ||
-          "";
-        if (html) {
-          setPreviewHtml(html);
-        } else {
-          const result = await previewTemplates([template.id]);
-          setPreviewHtml(result.previews[template.id] || "");
-        }
-      } catch {
-        setPreviewHtml("");
-      } finally {
-        setPreviewLoading(false);
+      const detail = await getTemplate(template.id);
+      const html =
+        ((detail as Record<string, unknown>).html as string) ||
+        ((detail as Record<string, unknown>).rendered_html as string) ||
+        "";
+      if (html) {
+        setPreviewHtml(html);
+      } else {
+        const result = await previewTemplates([template.id]);
+        setPreviewHtml(result.previews[template.id] || "");
       }
     },
-    [previewHtmlMap],
+    { onError: () => setPreviewHtml("") },
   );
 
-  const handleDelete = useCallback(async (template: EmailTemplate) => {
-    if (!window.confirm(`Delete "${template.name}"?`)) return;
-    try {
+  const { run: handleDelete } = useAsyncAction(
+    async (template: EmailTemplate) => {
+      if (!window.confirm(`Delete "${template.name}"?`)) return;
       await deleteTemplate(template.id);
       setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-    } catch {
-      // ignore
-    }
-  }, []);
+    },
+  );
 
   const handleEdit = useCallback(
     (template: EmailTemplate) => {

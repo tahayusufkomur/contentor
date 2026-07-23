@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   EmailBuilderIframe,
   type EmailBuilderIframeHandle,
@@ -65,7 +66,6 @@ export default function ComposePage() {
     type: "all_coaches",
   });
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const syncUrl = useCallback((overrides: Record<string, string>) => {
@@ -208,41 +208,39 @@ export default function ComposePage() {
     setStep("choose");
   }, [hasSaved]);
 
-  async function handleSend() {
-    if (!savedTemplateId) {
-      setError("Please save a template first.");
-      return;
-    }
-    if (!subject.trim()) {
-      setError("Please enter a subject line.");
-      return;
-    }
-    if (
-      recipientFilter.type === "plan" &&
-      recipientFilter.plan_ids.length === 0
-    ) {
-      setError("Please select at least one plan.");
-      return;
-    }
-    if (
-      recipientFilter.type === "tenant" &&
-      recipientFilter.tenant_ids.length === 0
-    ) {
-      setError("Please select at least one workspace.");
-      return;
-    }
-    if (
-      recipientFilter.type === "individual" &&
-      recipientFilter.user_ids.length === 0
-    ) {
-      setError("Please select at least one coach.");
-      return;
-    }
+  const { run: handleSend, loading: sending } = useAsyncAction(
+    async () => {
+      if (!savedTemplateId) {
+        setError("Please save a template first.");
+        return;
+      }
+      if (!subject.trim()) {
+        setError("Please enter a subject line.");
+        return;
+      }
+      if (
+        recipientFilter.type === "plan" &&
+        recipientFilter.plan_ids.length === 0
+      ) {
+        setError("Please select at least one plan.");
+        return;
+      }
+      if (
+        recipientFilter.type === "tenant" &&
+        recipientFilter.tenant_ids.length === 0
+      ) {
+        setError("Please select at least one workspace.");
+        return;
+      }
+      if (
+        recipientFilter.type === "individual" &&
+        recipientFilter.user_ids.length === 0
+      ) {
+        setError("Please select at least one coach.");
+        return;
+      }
 
-    setSending(true);
-    setError(null);
-
-    try {
+      setError(null);
       await sendCampaign({
         template_id: savedTemplateId,
         template_name: savedTemplateName,
@@ -250,12 +248,14 @@ export default function ComposePage() {
         recipient_filter: recipientFilter,
       });
       router.push("/admin/email");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to send campaign.");
-    } finally {
-      setSending(false);
-    }
-  }
+    },
+    {
+      onError: (err) =>
+        setError(
+          err instanceof Error ? err.message : "Failed to send campaign.",
+        ),
+    },
+  );
 
   const stepLabels = [
     { key: "choose", label: "1. Choose Template" },

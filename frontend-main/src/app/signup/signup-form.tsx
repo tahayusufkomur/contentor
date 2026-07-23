@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,25 +40,25 @@ function AuthenticatedSignupForm({
   const t = useTranslations("auth.signup");
   const router = useRouter();
   const [brandName, setBrandName] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
+  const { run: handleSubmit, loading } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
       const { token } = await createPlatformAuthenticated(brandName);
       router.push(`/signup/verify?token=${encodeURIComponent(token)}`);
-    } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? ((err.data?.detail as string | undefined) ?? t("errors.generic"))
-          : t("errors.generic"),
-      );
-      setLoading(false);
-    }
-  }
+    },
+    {
+      onError: (err) => {
+        setError(
+          err instanceof ApiError
+            ? ((err.data?.detail as string | undefined) ?? t("errors.generic"))
+            : t("errors.generic"),
+        );
+      },
+    },
+  );
 
   return (
     <AuthShell
@@ -92,8 +93,9 @@ function AuthenticatedSignupForm({
           size="lg"
           className="w-full"
           loading={loading}
+          loadingText={t("authSubmitting")}
         >
-          {loading ? t("authSubmitting") : t("authSubmit")}
+          {t("authSubmit")}
         </Button>
       </form>
     </AuthShell>
@@ -112,15 +114,13 @@ function AnonymousSignupFlow() {
   const [brandName, setBrandName] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleBrandContinue() {
-    const trimmed = brandName.trim();
-    if (!trimmed) return;
-    setLoading(true);
-    setError(null);
-    try {
+  const { run: handleBrandContinue, loading: brandLoading } = useAsyncAction(
+    async () => {
+      const trimmed = brandName.trim();
+      if (!trimmed) return;
+      setError(null);
       const result = await checkBrandName(trimmed);
       if (!result.available) {
         setError(result.detail ?? t("errors.generic"));
@@ -128,18 +128,14 @@ function AnonymousSignupFlow() {
       }
       setDirection(1);
       setStep("contact");
-    } catch {
-      setError(t("errors.generic"));
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    { onError: () => setError(t("errors.generic")) },
+  );
 
-  async function handleContactSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
+  const { run: handleContactSubmit, loading: contactLoading } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(null);
       const res = await fetch("/api/v1/onboarding/signup/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -152,12 +148,9 @@ function AnonymousSignupFlow() {
         return;
       }
       setStep("email-sent");
-    } catch {
-      setError(t("errors.generic"));
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    { onError: () => setError(t("errors.generic")) },
+  );
 
   if (step === "email-sent") {
     return (
@@ -209,7 +202,7 @@ function AnonymousSignupFlow() {
               variant="brand"
               size="lg"
               className="w-full max-w-[340px]"
-              loading={loading}
+              loading={brandLoading}
               disabled={!brandName.trim()}
               onClick={handleBrandContinue}
             >
@@ -268,9 +261,10 @@ function AnonymousSignupFlow() {
             variant="brand"
             size="lg"
             className="w-full max-w-[340px]"
-            loading={loading}
+            loading={contactLoading}
+            loadingText={t("submitting")}
           >
-            {loading ? t("submitting") : t("submit")}
+            {t("submit")}
           </Button>
           {signInLink}
         </>

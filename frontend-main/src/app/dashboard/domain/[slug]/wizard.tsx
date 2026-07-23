@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { Spinner } from "@/components/ui/spinner";
 import { DomainSearch } from "@/components/domain/domain-search";
 import { RegistrantForm } from "@/components/domain/registrant-form";
 import { ProvisioningStatus } from "@/components/domain/provisioning-status";
@@ -41,7 +42,6 @@ export function DomainWizard({
   const [contact, setContact] = useState<RegistrantContact | null>(null);
   const [live, setLive] = useState<CustomDomainStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [paying, setPaying] = useState(false);
 
   // On mount: if a domain row already exists, jump to provisioning/live.
   useEffect(() => {
@@ -64,27 +64,29 @@ export function DomainWizard({
     };
   }, [slug, host]);
 
-  const startPayment = async (c: RegistrantContact) => {
-    if (!picked) return;
-    setPaying(true);
-    setError(null);
-    try {
+  const { run: startPayment, loading: paying } = useAsyncAction(
+    async (c: RegistrantContact) => {
+      if (!picked) return;
+      setError(null);
       const { checkout_url } = await startCheckout(slug, host, {
         domain: picked.domain,
         contact: c,
         return_path: `/dashboard/domain/${slug}`,
       });
       window.location.href = checkout_url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start checkout");
-      setPaying(false);
-    }
-  };
+    },
+    {
+      onError: (err) =>
+        setError(
+          err instanceof Error ? err.message : "Could not start checkout",
+        ),
+    },
+  );
 
   if (phase === "loading") {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <Spinner />
       </div>
     );
   }
@@ -151,8 +153,8 @@ export function DomainWizard({
         {error && <p className="text-sm text-destructive">{error}</p>}
         {paying && (
           <p className="text-sm text-muted-foreground">
-            <Loader2 className="mr-1 inline h-4 w-4 animate-spin" /> Redirecting
-            to secure payment…
+            <Spinner size="sm" className="mr-1" /> Redirecting to secure
+            payment…
           </p>
         )}
       </div>

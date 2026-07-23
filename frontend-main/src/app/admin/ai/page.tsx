@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bot, GraduationCap, Newspaper, Palette, X } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -193,12 +194,8 @@ function ConversationsSection() {
   const [thread, setThread] = useState<ThreadMessage[]>([]);
   const [status, setStatus] = useState<"ai" | "human">("ai");
   const [agentLabel, setAgentLabel] = useState("");
-  const [threadLoading, setThreadLoading] = useState(false);
   const [threadError, setThreadError] = useState("");
   const [reply, setReply] = useState("");
-  const [sending, setSending] = useState(false);
-  const [takingOver, setTakingOver] = useState(false);
-  const [releasing, setReleasing] = useState(false);
 
   // High-water mark for the open thread's polling `after` param.
   const lastIdRef = useRef(0);
@@ -250,22 +247,22 @@ function ConversationsSection() {
     );
   };
 
-  const openThread = (id: number) => {
-    if (activeId === id) {
-      setActiveId(null);
-      activeRef.current = null;
-      return;
-    }
-    setActiveId(id);
-    activeRef.current = id;
-    setThread([]);
-    setStatus("ai");
-    setAgentLabel("");
-    setThreadError("");
-    lastIdRef.current = 0;
-    setThreadLoading(true);
-    fetchConversationThread(id, 0)
-      .then((payload) => {
+  const { run: openThread, loading: threadLoading } = useAsyncAction(
+    async (id: number) => {
+      if (activeId === id) {
+        setActiveId(null);
+        activeRef.current = null;
+        return;
+      }
+      setActiveId(id);
+      activeRef.current = id;
+      setThread([]);
+      setStatus("ai");
+      setAgentLabel("");
+      setThreadError("");
+      lastIdRef.current = 0;
+      try {
+        const payload = await fetchConversationThread(id, 0);
         if (activeRef.current !== id) return;
         setThread(payload.messages);
         lastIdRef.current = payload.messages.length
@@ -273,14 +270,11 @@ function ConversationsSection() {
           : 0;
         setStatus(payload.status);
         setAgentLabel(payload.agent_label);
-      })
-      .catch((err) => {
-        if (activeRef.current === id) setThreadError(err.message);
-      })
-      .finally(() => {
-        if (activeRef.current === id) setThreadLoading(false);
-      });
-  };
+      } catch (err) {
+        if (activeRef.current === id) setThreadError((err as Error).message);
+      }
+    },
+  );
 
   const closeThread = () => {
     setActiveId(null);
@@ -317,65 +311,62 @@ function ConversationsSection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId]);
 
-  const handleTakeover = async () => {
-    if (activeId === null) return;
-    const forId = activeId;
-    setTakingOver(true);
-    try {
-      const payload = await takeoverConversation(forId);
-      patchRow(forId, {
-        status: payload.status,
-        human_requested: payload.human_requested,
-      });
-      if (activeRef.current === forId) {
-        setThread(payload.messages);
-        lastIdRef.current = payload.messages.length
-          ? payload.messages[payload.messages.length - 1].id
-          : 0;
-        setStatus(payload.status);
-        setAgentLabel(payload.agent_label);
+  const { run: handleTakeover, loading: takingOver } = useAsyncAction(
+    async () => {
+      if (activeId === null) return;
+      const forId = activeId;
+      try {
+        const payload = await takeoverConversation(forId);
+        patchRow(forId, {
+          status: payload.status,
+          human_requested: payload.human_requested,
+        });
+        if (activeRef.current === forId) {
+          setThread(payload.messages);
+          lastIdRef.current = payload.messages.length
+            ? payload.messages[payload.messages.length - 1].id
+            : 0;
+          setStatus(payload.status);
+          setAgentLabel(payload.agent_label);
+        }
+      } catch (err) {
+        if (activeRef.current === forId) {
+          setThreadError((err as Error).message);
+        }
       }
-    } catch (err) {
-      if (activeRef.current === forId) {
-        setThreadError((err as Error).message);
-      }
-    } finally {
-      setTakingOver(false);
-    }
-  };
+    },
+  );
 
-  const handleRelease = async () => {
-    if (activeId === null) return;
-    const forId = activeId;
-    setReleasing(true);
-    try {
-      const payload = await releaseConversation(forId);
-      patchRow(forId, {
-        status: payload.status,
-        human_requested: payload.human_requested,
-      });
-      if (activeRef.current === forId) {
-        setThread(payload.messages);
-        lastIdRef.current = payload.messages.length
-          ? payload.messages[payload.messages.length - 1].id
-          : 0;
-        setStatus(payload.status);
-        setAgentLabel(payload.agent_label);
+  const { run: handleRelease, loading: releasing } = useAsyncAction(
+    async () => {
+      if (activeId === null) return;
+      const forId = activeId;
+      try {
+        const payload = await releaseConversation(forId);
+        patchRow(forId, {
+          status: payload.status,
+          human_requested: payload.human_requested,
+        });
+        if (activeRef.current === forId) {
+          setThread(payload.messages);
+          lastIdRef.current = payload.messages.length
+            ? payload.messages[payload.messages.length - 1].id
+            : 0;
+          setStatus(payload.status);
+          setAgentLabel(payload.agent_label);
+        }
+      } catch (err) {
+        if (activeRef.current === forId) {
+          setThreadError((err as Error).message);
+        }
       }
-    } catch (err) {
-      if (activeRef.current === forId) {
-        setThreadError((err as Error).message);
-      }
-    } finally {
-      setReleasing(false);
-    }
-  };
+    },
+  );
 
-  const handleSend = async () => {
+  const { run: handleSend, loading: sending } = useAsyncAction(async () => {
     const trimmed = reply.trim();
-    if (!trimmed || activeId === null || sending) return;
+    if (!trimmed || activeId === null) return;
     const forId = activeId;
-    setSending(true);
     try {
       const payload = await sendConversationMessage(
         forId,
@@ -396,10 +387,8 @@ function ConversationsSection() {
       if (activeRef.current === forId) {
         setThreadError((err as Error).message);
       }
-    } finally {
-      setSending(false);
     }
-  };
+  });
 
   return (
     <>
@@ -440,7 +429,7 @@ function ConversationsSection() {
                 <button
                   key={row.id}
                   type="button"
-                  onClick={() => openThread(row.id)}
+                  onClick={() => void openThread(row.id)}
                   className={`flex w-full items-start gap-3 p-3 text-left text-sm transition-colors hover:bg-accent/40 ${activeId === row.id ? "bg-accent/40" : ""}`}
                 >
                   <span

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Loader2, CircleAlert, RefreshCw } from "lucide-react";
+import { Check, CircleAlert, RefreshCw } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   getDomainStatus,
   retryProvision,
@@ -33,7 +35,6 @@ export function ProvisioningStatus({
   onLive: (d: CustomDomainStatus) => void;
 }) {
   const [cd, setCd] = useState<CustomDomainStatus | null>(null);
-  const [retrying, setRetrying] = useState(false);
   const [pollKey, setPollKey] = useState(0);
   const onLiveRef = useRef(onLive);
   onLiveRef.current = onLive;
@@ -69,16 +70,11 @@ export function ProvisioningStatus({
   const failed = cd?.provisioning_status === "failed";
   const current = stepIndex(cd?.provisioning_status ?? "registering");
 
-  const retry = async () => {
+  const { run: retry, loading: retrying } = useAsyncAction(async () => {
     if (!cd) return;
-    setRetrying(true);
-    try {
-      await retryProvision(slug, host, cd.id);
-      setPollKey((k) => k + 1);
-    } finally {
-      setRetrying(false);
-    }
-  };
+    await retryProvision(slug, host, cd.id);
+    setPollKey((k) => k + 1);
+  });
 
   return (
     <div className="space-y-4">
@@ -93,7 +89,7 @@ export function ProvisioningStatus({
                 {done ? (
                   <Check className="h-4 w-4 text-primary" />
                 ) : active ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Spinner size="sm" />
                 ) : (
                   <span className="h-1.5 w-1.5 rounded-full bg-foreground/30" />
                 )}
@@ -122,14 +118,10 @@ export function ProvisioningStatus({
               variant="outline"
               className="mt-2"
               onClick={retry}
-              disabled={retrying}
+              loading={retrying}
+              loadingText="Retrying…"
             >
-              {retrying ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}{" "}
-              Retry
+              <RefreshCw className="h-4 w-4" /> Retry
             </Button>
           </div>
         </div>

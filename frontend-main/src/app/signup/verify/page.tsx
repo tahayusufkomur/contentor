@@ -3,14 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  CheckCircle2,
-  Loader2,
-  AlertCircle,
-  Rocket,
-  MailPlus,
-} from "lucide-react";
+import { CheckCircle2, AlertCircle, Rocket, MailPlus } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 import { WizardFlow } from "./wizard/WizardFlow";
@@ -26,7 +22,7 @@ type VerifyState =
   | "expired"
   | "error";
 
-type ResumeState = "idle" | "sending" | "sent" | "closed" | "failed";
+type ResumeState = "idle" | "sent" | "closed" | "failed";
 
 const KNOWN_STAGES = [
   "schema",
@@ -113,10 +109,9 @@ export default function SignupVerifyPage() {
   );
 
   const resumeToken = token ?? wizardToken;
-  const handleResend = useCallback(async () => {
-    if (!resumeToken) return;
-    setResumeState("sending");
-    try {
+  const { run: handleResend, loading: resending } = useAsyncAction(
+    async () => {
+      if (!resumeToken) return;
       await recoverWizard(resumeToken);
       try {
         localStorage.removeItem("contentor_wizard_token");
@@ -124,14 +119,17 @@ export default function SignupVerifyPage() {
         // storage unavailable — nothing to clear
       }
       setResumeState("sent");
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setResumeState("closed");
-        return;
-      }
-      setResumeState("failed");
-    }
-  }, [resumeToken]);
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 409) {
+          setResumeState("closed");
+          return;
+        }
+        setResumeState("failed");
+      },
+    },
+  );
 
   useEffect(() => {
     if (verifiedRef.current) return;
@@ -229,7 +227,7 @@ export default function SignupVerifyPage() {
         subtitle={t("verify.verifyingSubtitle")}
       >
         <StateIcon variant="primary">
-          <Loader2 className="h-6 w-6 animate-spin" />
+          <Spinner />
         </StateIcon>
         <div className="mt-7 flex items-center justify-center">
           <div className="h-1 w-40 overflow-hidden rounded-full bg-foreground/[0.08]">
@@ -266,7 +264,7 @@ export default function SignupVerifyPage() {
           <Rocket className="h-6 w-6" />
         </StateIcon>
         <div className="mt-7 flex items-center justify-center gap-2 text-[14px] text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Spinner size="sm" />
           <span>
             {stage && (KNOWN_STAGES as readonly string[]).includes(stage)
               ? tw(`provisioning.${stage}`)
@@ -357,17 +355,11 @@ export default function SignupVerifyPage() {
           variant="brand"
           size="lg"
           className="mt-7 w-full"
-          onClick={handleResend}
-          disabled={resumeState === "sending"}
+          onClick={() => void handleResend()}
+          loading={resending}
+          loadingText={tw("resume.sending")}
         >
-          {resumeState === "sending" ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{tw("resume.sending")}</span>
-            </>
-          ) : (
-            tw("resume.resend")
-          )}
+          {tw("resume.resend")}
         </Button>
       </AuthShell>
     );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { startCheckout } from "@/lib/api/billing-platform";
 import { ApiError } from "@/types/api";
@@ -36,43 +37,44 @@ export function PricingCta({
 }: PricingCtaProps) {
   const t = useTranslations("pricing");
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleClick() {
-    setError(null);
-    if (!isAuthenticated || isFreePlan || planId == null) {
-      router.push("/signup");
-      return;
-    }
-    setLoading(true);
-    try {
+  const { run: handleClick, loading } = useAsyncAction(
+    async () => {
+      setError(null);
+      if (!isAuthenticated || isFreePlan || planId == null) {
+        router.push("/signup");
+        return;
+      }
       const res = await startCheckout(planId);
       window.location.assign(res.checkout_url);
-    } catch (err) {
-      if (
-        err instanceof ApiError &&
-        (err.data?.error as string | undefined) === "PRICE_NOT_AVAILABLE"
-      ) {
-        setError(t("errors.priceNotAvailable"));
-      } else {
-        setError(t("errors.generic"));
-      }
-      setLoading(false);
-    }
-  }
+    },
+    {
+      onError: (err) => {
+        if (
+          err instanceof ApiError &&
+          (err.data?.error as string | undefined) === "PRICE_NOT_AVAILABLE"
+        ) {
+          setError(t("errors.priceNotAvailable"));
+        } else {
+          setError(t("errors.generic"));
+        }
+      },
+    },
+  );
 
   return (
     <>
       <Button
         type="button"
         onClick={handleClick}
-        disabled={loading}
+        loading={loading}
+        loadingText={t("ctaProcessing")}
         variant={variant}
         size={size}
         className={className}
       >
-        {loading ? t("ctaProcessing") : t("cta")}
+        {t("cta")}
       </Button>
       {error != null && (
         <p className="mt-2 text-sm text-destructive">{error}</p>

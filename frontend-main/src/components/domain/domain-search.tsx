@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Check, Loader2 } from "lucide-react";
+import { Search, Check } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,29 +46,27 @@ export function DomainSearch({
   onPick: (d: DomainResult) => void;
 }) {
   const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<DomainResult[]>([]);
   const [suggestions, setSuggestions] = useState<DomainResult[]>([]);
   const [searched, setSearched] = useState(false);
 
-  const run = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = q.trim();
-    if (!query) return;
-    setLoading(true);
-    setError(null);
-    try {
+  const { run, loading } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const query = q.trim();
+      if (!query) return;
+      setError(null);
       const data = await searchDomains(slug, host, query);
       setResults(data.results);
       setSuggestions(data.suggestions);
       setSearched(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Search failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    {
+      onError: (err) =>
+        setError(err instanceof Error ? err.message : "Search failed"),
+    },
+  );
 
   return (
     <div className="space-y-4">
@@ -78,12 +77,8 @@ export function DomainSearch({
           placeholder="yourbrand.com"
           aria-label="Search for a domain"
         />
-        <Button type="submit" variant="brand" disabled={loading}>
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Search className="h-4 w-4" />
-          )}
+        <Button type="submit" variant="brand" loading={loading}>
+          <Search className="h-4 w-4" />
           Search
         </Button>
       </form>

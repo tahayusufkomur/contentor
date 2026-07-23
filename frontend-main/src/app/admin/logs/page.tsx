@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -72,7 +73,6 @@ export default function AdminLogsPage() {
   const [facets, setFacets] = useState<Record<string, Facet[]>>({});
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [autoRefresh, setAutoRefresh] = useState(false);
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -99,6 +99,14 @@ export default function AdminLogsPage() {
     [],
   );
 
+  // Not converted to useAsyncAction: `load` is triggered from four
+  // independent sources (mount, filter/tab changes via the effect below,
+  // the manual Refresh button, and the 5s auto-refresh interval) that can
+  // fire concurrently, and only the `seqRef`-guarded "latest call wins,
+  // discard stale in-flight responses" pattern below gives correct
+  // behavior for that — useAsyncAction's single in-flight boolean would
+  // instead silently drop a newer call while an older one is still
+  // resolving, which is the wrong tradeoff here.
   const load = useCallback(async () => {
     const seq = ++seqRef.current;
     setError("");
@@ -144,27 +152,27 @@ export default function AdminLogsPage() {
     return () => clearInterval(id);
   }, [autoRefresh, load]);
 
-  const loadMore = async () => {
-    if (!cursor || loadingMore) return;
+  // `loadMore` shares `seqRef` with `load()` below (both intentionally kept
+  // hand-rolled — see that function's comment for why) so a stale page
+  // response can never clobber a newer filter/tab switch that landed while
+  // this fetch was in flight; useAsyncAction's own in-flight guard covers
+  // double-submit (rapid double-clicks) on top of that.
+  const { run: loadMore, loading: loadingMore } = useAsyncAction(async () => {
+    if (!cursor) return;
     const seq = ++seqRef.current;
-    setLoadingMore(true);
     const filters: LogsFilters = { ...params, since: sinceRef.current };
-    try {
-      if (tab === "logs") {
-        const page = await fetchLogs(filters, cursor);
-        if (seq !== seqRef.current) return;
-        setRows((prev) => [...prev, ...page.results]);
-        setCursor(page.next_cursor);
-      } else {
-        const page = await fetchActivity(filters, cursor);
-        if (seq !== seqRef.current) return;
-        setActivity((prev) => [...prev, ...page.results]);
-        setCursor(page.next_cursor);
-      }
-    } finally {
-      setLoadingMore(false);
+    if (tab === "logs") {
+      const page = await fetchLogs(filters, cursor);
+      if (seq !== seqRef.current) return;
+      setRows((prev) => [...prev, ...page.results]);
+      setCursor(page.next_cursor);
+    } else {
+      const page = await fetchActivity(filters, cursor);
+      if (seq !== seqRef.current) return;
+      setActivity((prev) => [...prev, ...page.results]);
+      setCursor(page.next_cursor);
     }
-  };
+  });
 
   const onSearch = (value: string) => {
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
@@ -352,10 +360,11 @@ export default function AdminLogsPage() {
           <Button
             variant="outline"
             size="sm"
-            disabled={loadingMore}
+            loading={loadingMore}
+            loadingText="Loading…"
             onClick={() => void loadMore()}
           >
-            {loadingMore ? "Loading…" : "Load more"}
+            Load more
           </Button>
         </div>
       )}

@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { headers } from "next/headers";
+import { Toaster } from "sonner";
 
 import { HelpBubble } from "@/components/shared/help-bubble";
 import { ThemeProvider } from "@/components/shared/theme-provider";
@@ -70,6 +71,7 @@ export default async function RootLayout({
           >
             {children}
             <HelpBubble />
+            <Toaster position="top-center" richColors />
             <TrackPageView />
           </ThemeProvider>
         </NextIntlClientProvider>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Database, Server, Activity } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,27 +34,18 @@ function HealthSkeleton() {
 export default function HealthPage() {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  function checkHealth() {
-    setLoading(true);
-    setError("");
-    fetch("/api/health/", { credentials: "same-origin" })
-      .then(async (res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setHealth(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Failed to reach health endpoint");
-        setLoading(false);
-      });
-  }
+  const { run: checkHealth, loading } = useAsyncAction(
+    async () => {
+      const res = await fetch("/api/health/", { credentials: "same-origin" });
+      setHealth(await res.json());
+    },
+    { onError: () => setError("Failed to reach health endpoint") },
+  );
 
   useEffect(() => {
-    checkHealth();
+    void checkHealth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const services = health

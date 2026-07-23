@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Loader2, Check } from "lucide-react";
+import { Eye, EyeOff, Check } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Spinner } from "@/components/ui/spinner";
 
 interface PublishControlsProps {
   slug: string;
@@ -30,42 +32,35 @@ export function PublishControls({
   const [published, setPublished] = useState(initialPublished);
   const [hasPassword, setHasPassword] = useState(initialHasPassword);
   const [password, setPassword] = useState("");
-  const [togglingVisibility, setTogglingVisibility] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
   const [savedPassword, setSavedPassword] = useState(false);
   const [error, setError] = useState(false);
 
-  const toggleVisibility = async (next: boolean) => {
-    setTogglingVisibility(true);
-    setError(false);
-    const prev = published;
-    setPublished(next);
-    try {
-      await patchTenant(slug, { is_published: next });
-    } catch {
-      setPublished(prev);
-      setError(true);
-    } finally {
-      setTogglingVisibility(false);
-    }
-  };
+  const { run: toggleVisibility, loading: togglingVisibility } = useAsyncAction(
+    async (next: boolean) => {
+      setError(false);
+      const prev = published;
+      setPublished(next);
+      try {
+        await patchTenant(slug, { is_published: next });
+      } catch {
+        setPublished(prev);
+        setError(true);
+      }
+    },
+  );
 
-  const savePassword = async () => {
-    setSavingPassword(true);
-    setError(false);
-    setSavedPassword(false);
-    try {
+  const { run: savePassword, loading: savingPassword } = useAsyncAction(
+    async () => {
+      setError(false);
+      setSavedPassword(false);
       await patchTenant(slug, { preview_password: password });
       setHasPassword(password.length > 0);
       setPassword("");
       setSavedPassword(true);
       setTimeout(() => setSavedPassword(false), 2000);
-    } catch {
-      setError(true);
-    } finally {
-      setSavingPassword(false);
-    }
-  };
+    },
+    { onError: () => setError(true) },
+  );
 
   return (
     <div className="mt-5 space-y-3 rounded-xl border border-border/60 p-4">
@@ -88,9 +83,7 @@ export function PublishControls({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {togglingVisibility && (
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-          )}
+          {togglingVisibility && <Spinner size="sm" />}
           <Switch
             checked={published}
             onCheckedChange={toggleVisibility}
@@ -123,15 +116,9 @@ export function PublishControls({
               size="sm"
               variant="outline"
               onClick={savePassword}
-              disabled={savingPassword}
+              loading={savingPassword}
             >
-              {savingPassword ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : savedPassword ? (
-                <Check className="h-3.5 w-3.5" />
-              ) : (
-                "Save"
-              )}
+              {savedPassword ? <Check className="h-3.5 w-3.5" /> : "Save"}
             </Button>
           </div>
           <p className="text-[12px] text-muted-foreground">

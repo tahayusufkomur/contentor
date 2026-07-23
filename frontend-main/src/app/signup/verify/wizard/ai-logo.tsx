@@ -15,10 +15,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { Loader2, RefreshCw, Send, Sparkles } from "lucide-react";
+import { RefreshCw, Send, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   LogoRenderer,
   MarkRenderer,
@@ -400,7 +401,7 @@ export function AiLogoDoor({
   if (doorState === "loading") {
     return (
       <div className="flex items-center justify-center rounded-2xl border border-dashed border-foreground/[0.15] px-4 py-6">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <Spinner size="sm" />
       </div>
     );
   }
@@ -454,10 +455,7 @@ export function AiLogoDoor({
           </>
         ) : (
           <>
-            <Loader2
-              className="h-5 w-5 animate-spin"
-              style={{ color: swatch.primary }}
-            />
+            <Spinner />
             <p className="text-[13px] text-muted-foreground">
               {t("upgrade.syncing")}
             </p>
@@ -576,7 +574,7 @@ export function AiLogoDoor({
 
           {turnBusy && (
             <p className="mb-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Spinner size="sm" />
               {t("aiChat.thinking")}
             </p>
           )}

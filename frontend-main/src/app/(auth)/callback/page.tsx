@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 export default function CallbackPage() {
@@ -70,7 +71,7 @@ export default function CallbackPage() {
       subtitle="Signing you in securely…"
     >
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong text-primary">
-        <Loader2 className="h-6 w-6 animate-spin" />
+        <Spinner />
       </div>
     </AuthShell>
   );

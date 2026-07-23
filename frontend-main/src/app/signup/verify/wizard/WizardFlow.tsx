@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   finalizeWizard,
   getDescribeFollowups,
@@ -275,7 +276,7 @@ export function WizardFlow({
         {error ? (
           <p className="text-[14px] text-destructive">{error}</p>
         ) : (
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Spinner />
         )}
       </div>
     );
@@ -456,18 +457,12 @@ export function WizardFlow({
             size="lg"
             className="w-full max-w-[340px]"
             onClick={handleContinue}
-            disabled={busy}
+            loading={busy}
+            loadingText={
+              step.id === "review" ? t("review.creating") : t("common.saving")
+            }
           >
-            {busy ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>
-                  {step.id === "review"
-                    ? t("review.creating")
-                    : t("common.saving")}
-                </span>
-              </>
-            ) : step.id === "review" ? (
+            {step.id === "review" ? (
               t("review.create")
             ) : (
               <>

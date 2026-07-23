@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Globe2, Loader2, Trash2 } from "lucide-react";
+import { Globe2, Trash2 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,20 +23,19 @@ export function DomainManageCard({
   onRemoved: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const remove = async () => {
-    setBusy(true);
-    setError(null);
-    try {
+  const { run: remove, loading: busy } = useAsyncAction(
+    async () => {
+      setError(null);
       await removeDomain(slug, host, domain.id);
       onRemoved();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to remove");
-      setBusy(false);
-    }
-  };
+    },
+    {
+      onError: (err) =>
+        setError(err instanceof Error ? err.message : "Failed to remove"),
+    },
+  );
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-6">
@@ -80,14 +80,10 @@ export function DomainManageCard({
               size="sm"
               variant="destructive"
               onClick={remove}
-              disabled={busy}
+              loading={busy}
+              loadingText="Removing…"
             >
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}{" "}
-              Remove
+              <Trash2 className="h-4 w-4" /> Remove
             </Button>
           </div>
         </div>

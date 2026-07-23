@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,14 +10,12 @@ import { Label } from "@/components/ui/label";
 export function MagicLinkForm() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
+  const { run: handleSubmit, loading } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
       const res = await fetch("/api/v1/auth/magic-link/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -24,17 +23,17 @@ export function MagicLinkForm() {
         credentials: "same-origin",
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         setError(data.detail || "Something went wrong");
         return;
       }
       setSent(true);
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    {
+      // Inline field-adjacent error, not a toast, for this auth form.
+      onError: () => setError("Network error. Please try again."),
+    },
+  );
 
   if (sent) {
     return (
@@ -78,8 +77,9 @@ export function MagicLinkForm() {
         size="lg"
         className="w-full"
         loading={loading}
+        loadingText="Sending…"
       >
-        {loading ? "Sending…" : "Send Magic Link"}
+        Send Magic Link
       </Button>
     </form>
   );
