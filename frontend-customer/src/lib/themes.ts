@@ -466,6 +466,47 @@ const slate: ThemePalette = {
   },
 };
 
+// ─── Dim derivation ───────────────────────────────────────────────────────────
+// "Dim" is a soft-dark middle brightness derived from each theme's dark palette:
+// surface tokens are lifted toward a ~0.22 background while text, accents, and
+// charts stay identical to dark. Only the L channel of surface tokens changes.
+
+const DIM_SURFACE_KEYS = new Set<string>([
+  "background",
+  "card",
+  "popover",
+  "secondary",
+  "muted",
+  "border",
+  "input",
+  "brand-surface",
+]);
+
+const DIM_LIGHTNESS_LIFT = 0.06;
+
+export function deriveDim(
+  dark: Record<string, string>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(dark)) {
+    if (!DIM_SURFACE_KEYS.has(key)) {
+      out[key] = value;
+      continue;
+    }
+    const match = value.match(
+      /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.-]+)\s*\)$/,
+    );
+    if (!match) {
+      out[key] = value; // defensive: leave unparseable values untouched
+      continue;
+    }
+    const lifted = parseFloat(match[1]) + DIM_LIGHTNESS_LIFT;
+    const l = Math.min(1, Math.round(lifted * 1000) / 1000);
+    out[key] = `oklch(${l} ${match[2]} ${match[3]})`;
+  }
+  return out;
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 export const THEMES: ThemePalette[] = [
@@ -506,6 +547,10 @@ export function generateThemeCSS(
     .map(([key, value]) => `  --${key}: ${value};`)
     .join("\n");
 
+  const dimVars = Object.entries(deriveDim(theme.dark))
+    .map(([key, value]) => `  --${key}: ${value};`)
+    .join("\n");
+
   const font = fontFamily
     ? `  --font-sans: '${fontFamily}', system-ui, sans-serif;`
     : "";
@@ -521,6 +566,11 @@ ${font}
 }
 .dark {
 ${darkVars}
+  --cinematic-bg: ${theme.cinematic.dark};
+${font}
+}
+.dim {
+${dimVars}
   --cinematic-bg: ${theme.cinematic.dark};
 ${font}
 }
