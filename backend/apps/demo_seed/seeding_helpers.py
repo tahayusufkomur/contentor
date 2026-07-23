@@ -1300,17 +1300,17 @@ _ASSISTANT_KNOWLEDGE_ENTRIES = [
     ),
     (
         "How do I cancel my subscription?",
-        "Head to Account > Billing and click \"Cancel subscription\". You'll keep "
+        'Head to Account > Billing and click "Cancel subscription". You\'ll keep '
         "access until the end of your current billing period.",
     ),
     (
         "How do I reset my password?",
-        "Use the \"Forgot password\" link on the login page — we'll email you a "
+        'Use the "Forgot password" link on the login page — we\'ll email you a '
         "reset link. Logins are passwordless by default via magic link.",
     ),
     (
         "Where can I find my course materials?",
-        "All your enrolled courses are listed under \"My Courses\" — open any "
+        'All your enrolled courses are listed under "My Courses" — open any '
         "course to see its modules, lessons and downloads.",
     ),
     (
@@ -1437,8 +1437,6 @@ def seed_blog_extras(tenant, *, count=DEFAULT_BLOG_TOPIC_IDEA_COUNT):
         autopilot.generate_time = time(9, 0)
         autopilot.weekday = 0  # Monday
         autopilot.auto_publish = False
-        autopilot.save(
-            update_fields=["is_enabled", "frequency", "generate_time", "weekday", "auto_publish"]
-        )
+        autopilot.save(update_fields=["is_enabled", "frequency", "generate_time", "weekday", "auto_publish"])
 
         return {"ideas": ideas, "autopilot": autopilot}
