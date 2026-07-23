@@ -14,6 +14,13 @@ const nextConfig = {
   output: "standalone",
   experimental: { externalDir: true },
   allowedDevOrigins: [`*.${BASE_DOMAIN}`],
+  // Dev-only: keep compiled routes alive for an hour instead of the default
+  // ~1 minute — panel-to-panel admin navigation was re-triggering webpack
+  // compiles on every revisit (638+ modules, 1.5-2s each) once entries expired.
+  onDemandEntries: {
+    maxInactiveAge: 60 * 60 * 1000,
+    pagesBufferLength: 100,
+  },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**.amazonaws.com" }],
   },

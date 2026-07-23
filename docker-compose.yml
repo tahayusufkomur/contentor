@@ -132,6 +132,9 @@ services:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
       - NEXT_PUBLIC_GETSTREAM_API_KEY=${GETSTREAM_API_KEY}
+      # Dev-server heap: default (~half of container-visible RAM) OOM-crashed
+      # node once enough routes were compiled, wiping the compile cache.
+      - NODE_OPTIONS=--max-old-space-size=3072
     depends_on:
       - django
 
@@ -153,6 +156,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
+      - NODE_OPTIONS=--max-old-space-size=3072
     depends_on:
       - django
 
