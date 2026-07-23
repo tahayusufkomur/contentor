@@ -1,7 +1,10 @@
 import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 
+import sharedPreset from "../packages/shared/tailwind-preset";
+
 const config: Config = {
+  presets: [sharedPreset],
   // The `dark:` variant must fire under the soft-dark `dim` theme too, not just
   // `.dark` — otherwise dark-family utilities render light under Dim.
   darkMode: ["variant", ["&:is(.dark, .dark *)", "&:is(.dim, .dim *)"]],

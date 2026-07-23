@@ -1,7 +1,10 @@
 import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 
+import sharedPreset from "../packages/shared/tailwind-preset";
+
 const config: Config = {
+  presets: [sharedPreset],
   // The `dark:` variant must fire under EVERY dark-family theme — not just `.dark`.
   // `matte` is intentionally excluded (it is a light theme).
   darkMode: [
