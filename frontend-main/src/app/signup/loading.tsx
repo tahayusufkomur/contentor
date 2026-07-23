@@ -1,5 +1,5 @@
-import { PageLoader } from "@/components/ui/page-loader";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function SignupLoading() {
-  return <PageLoader />;
+  return <Spinner size="lg" center />;
 }
