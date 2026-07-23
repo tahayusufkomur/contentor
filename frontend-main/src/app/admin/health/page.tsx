@@ -37,6 +37,7 @@ export default function HealthPage() {
 
   const { run: checkHealth, loading } = useAsyncAction(
     async () => {
+      setError("");
       const res = await fetch("/api/health/", { credentials: "same-origin" });
       setHealth(await res.json());
     },
