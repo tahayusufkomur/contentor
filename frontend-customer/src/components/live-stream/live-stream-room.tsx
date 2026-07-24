@@ -13,6 +13,7 @@ import {
 import { acquireCall, releaseCall } from "@/components/live/call-session";
 import { StreamChat, Channel as ChatChannel } from "stream-chat";
 import { clientFetch } from "@/lib/api-client";
+import { Spinner } from "@/components/ui/spinner";
 import StreamHostView from "./stream-host-view";
 import StreamViewerView from "./stream-viewer-view";
 import StreamChatPanel from "./stream-chat-panel";
@@ -129,7 +130,11 @@ export default function LiveStreamRoom({
     return (
       <div className="flex items-center justify-center h-screen bg-zinc-950">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent mx-auto" />
+          <Spinner
+            size="lg"
+            className="text-white"
+            label="Connecting to live stream"
+          />
           <p className="mt-4 text-zinc-400">Connecting to live stream...</p>
         </div>
       </div>
@@ -156,7 +161,7 @@ export default function LiveStreamRoom({
     return (
       <div className="flex items-center justify-center h-screen bg-zinc-950">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent mx-auto" />
+          <Spinner size="lg" className="text-white" label="Joining stream" />
           <p className="mt-4 text-zinc-400">Joining stream...</p>
         </div>
       </div>

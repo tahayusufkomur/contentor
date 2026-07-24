@@ -42,17 +42,6 @@ const ALLOW = new Set([
   "frontend-customer/src/components/live-stream/stream-host-view.tsx",
   "frontend-customer/src/components/live-stream/stream-viewer-view.tsx",
 
-  // Hand-rolled ring spinners (border-4 border-t-transparent) for Stream.io
-  // connect/join states. Task 10 reviewed and deliberately left these as
-  // "bespoke full-bleed dark video-room chrome": Spinner hardcodes
-  // text-muted-foreground with no per-instance color override, which would
-  // be invisible against these dark full-bleed video-room backgrounds, and
-  // each file already has real, distinguishing error states with retry.
-  "frontend-customer/src/app/live/[id]/live-room-client.tsx",
-  "frontend-customer/src/app/live-stream/[id]/live-stream-client.tsx",
-  "frontend-customer/src/components/live/live-class-room.tsx",
-  "frontend-customer/src/components/live-stream/live-stream-room.tsx",
-
   // Decorative indeterminate progress-bar flourish under the already-present
   // <Spinner/> on the magic-link "verifying" state — not itself a spinner or
   // skeleton, just an ambient gradient animation alongside the real one.

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
 import LiveClassRoom from "@/components/live/live-class-room";
 
 interface LiveClassData {
@@ -56,7 +57,7 @@ export default function LiveRoomClient({
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+          <Spinner size="lg" label="Connecting to live class" />
           <p className="mt-4 text-muted-foreground">
             Connecting to live class...
           </p>
