@@ -1,4 +1,18 @@
 {
   "extends": ["next/core-web-vitals", "prettier"],
-  "plugins": ["@typescript-eslint"]
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "lucide-react",
+            "importNames": ["Loader2"],
+            "message": "Use <Spinner> from @/components/ui/spinner or Button's loading prop instead of a raw Loader2."
+          }
+        ]
+      }
+    ]
+  }
 }

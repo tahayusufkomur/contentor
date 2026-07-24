@@ -50,6 +50,7 @@ make e2e-changed       # only e2e specs affected by the diff (e2e/impact-map.jso
 Layout: `config/` (project) + `apps/` (Django apps). Settings split into `base.py` / `dev.py` / `prod.py`.
 
 **SHARED_APPS** (public schema only):
+
 - `apps.core` — tenants, organizations, middleware (`HeaderAwareTenantMiddleware`, `TenantRateLimitMiddleware`), routers, access service, platform serializers; also hosts the onboarding wizard (`core/onboarding/`), superadmin platform API (`core/platform/`), AI infra (`ai.py`, `assistant.py`), and demo template seeding (`core/demo/`)
 - `apps.accounts` — user model, auth backends (`AdminJWTBackend`, `TenantJWTAuthentication`)
 - `apps.adminkit` — no models; registers API admin sites for both SPAs via `admin_panels.py` autodiscovery
@@ -59,6 +60,7 @@ Layout: `config/` (project) + `apps/` (Django apps). Settings split into `base.p
 - `apps.demo_seed` — no models; shared niche-content library (registry + data JSONs + calendar_content) + seeding helpers for `seed_dev_tenants`
 
 **TENANT_APPS** (per-tenant schema):
+
 - `apps.tenant_config` — per-tenant settings (theme, branding), logo studio backend, site assistant
 - `apps.filters` — reusable filter options attached to content
 - `apps.tags` — tagging for content lists
@@ -161,6 +163,14 @@ Design + plan: `docs/superpowers/specs/2026-06-28-flowmap-service-design.md` and
 - After each implementation stage: run `make dev` and verify before claiming done.
 - Never commit unless explicitly asked.
 - Always verify builds pass before claiming work is done.
+
+## Loading & feedback conventions (both frontends)
+
+- Async buttons: `<Button loading={loading}>` or `loadingText="Saving…"` — never a raw `<Loader2>`/`animate-spin` in app code; standalone spinners use `<Spinner>` (`@/components/ui/spinner`).
+- Wrap async handlers in `useAsyncAction` (`@shared/hooks/use-async-action`): loading state, double-submit guard, default error toast (`onError` to customize).
+- Client-page initial loads: `<PageState loading={...} error={...} skeleton={...}>` with presets from `@/components/ui/skeletons`; server routes get `loading.tsx` built from the same presets.
+- Action outcomes are sonner toasts in BOTH apps; field-level validation stays inline.
+- Motion is CSS-only and `motion-safe:`-gated. `scripts/check-loading-patterns.mjs` (in `make lint`) enforces the spinner/skeleton rules.
 
 ## Home-server deploy
 
