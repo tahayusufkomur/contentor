@@ -97,9 +97,6 @@ export default function StorePage() {
   const [searchInput, setSearchInput] = useState("");
   const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(
-    null,
-  );
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -128,41 +125,6 @@ export default function StorePage() {
       .then(setPlans)
       .catch(() => {});
   }, []);
-
-  const { run: runSubscribe } = useAsyncAction(
-    async (planId: number) => {
-      await clientFetch("/api/v1/billing/subscribe/", {
-        method: "POST",
-        body: JSON.stringify({ plan_id: planId }),
-      });
-      toast.success("Subscribed! You now have access to plan content.");
-      router.refresh();
-      fetchItems();
-    },
-    {
-      onError: (err) => {
-        if (err instanceof ApiError && err.status === 403) {
-          router.push(
-            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
-          );
-          return;
-        }
-        if (err instanceof ApiError && err.status === 400) {
-          toast.info("You're already subscribed to this plan");
-          return;
-        }
-        toast.error(
-          err instanceof Error ? err.message : "Subscription failed.",
-        );
-      },
-    },
-  );
-
-  const handleSubscribe = async (planId: number) => {
-    setSubscribingPlanId(planId);
-    await runSubscribe(planId);
-    setSubscribingPlanId(null);
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,30 +193,14 @@ export default function StorePage() {
           <h2 className="text-xl font-semibold">Subscription Plans</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {plans.map((plan) => (
-              <Card key={plan.id}>
-                <CardHeader>
-                  <CardTitle>{plan.name}</CardTitle>
-                  {plan.description && (
-                    <CardDescription>{plan.description}</CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-2xl font-bold tabular-nums">
-                    {plan.price} {plan.currency}
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {billingIntervalSuffix(plan.billing_interval_months)}
-                    </span>
-                  </p>
-                  <Button
-                    className="w-full gap-2"
-                    loading={subscribingPlanId === plan.id}
-                    onClick={() => handleSubscribe(plan.id)}
-                  >
-                    <Lock className="h-4 w-4" />
-                    Subscribe
-                  </Button>
-                </CardContent>
-              </Card>
+              <StorePlanCard
+                key={plan.id}
+                plan={plan}
+                onSubscribed={() => {
+                  router.refresh();
+                  fetchItems();
+                }}
+              />
             ))}
           </div>
         </div>
@@ -371,6 +317,70 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
             </Button>
           )}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface StorePlanCardProps {
+  plan: SubscriptionPlan;
+  onSubscribed: () => void;
+}
+
+function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
+  const router = useRouter();
+
+  const { run: handleSubscribe, loading: subscribing } = useAsyncAction(
+    async () => {
+      await clientFetch("/api/v1/billing/subscribe/", {
+        method: "POST",
+        body: JSON.stringify({ plan_id: plan.id }),
+      });
+      toast.success("Subscribed! You now have access to plan content.");
+      onSubscribed();
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          router.push(
+            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+          );
+          return;
+        }
+        if (err instanceof ApiError && err.status === 400) {
+          toast.info("You're already subscribed to this plan");
+          return;
+        }
+        toast.error(
+          err instanceof Error ? err.message : "Subscription failed.",
+        );
+      },
+    },
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{plan.name}</CardTitle>
+        {plan.description && (
+          <CardDescription>{plan.description}</CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-2xl font-bold tabular-nums">
+          {plan.price} {plan.currency}
+          <span className="text-sm font-normal text-muted-foreground">
+            {billingIntervalSuffix(plan.billing_interval_months)}
+          </span>
+        </p>
+        <Button
+          className="w-full gap-2"
+          loading={subscribing}
+          onClick={handleSubscribe}
+        >
+          <Lock className="h-4 w-4" />
+          Subscribe
+        </Button>
       </CardContent>
     </Card>
   );

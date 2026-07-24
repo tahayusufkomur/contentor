@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { Play, ShoppingCart, Zap, Package } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api";
 import { addToCart } from "@/lib/cart";
-import type { CourseDetail } from "@/types/course";
+import type { CourseDetail, UnlockPlanOption } from "@/types/course";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -20,9 +19,6 @@ interface EnrollButtonProps {
 
 export function EnrollButton({ course }: EnrollButtonProps) {
   const router = useRouter();
-  const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(
-    null,
-  );
 
   const opts = course.unlock_options;
 
@@ -48,36 +44,6 @@ export function EnrollButton({ course }: EnrollButtonProps) {
   function handleBuyNow() {
     handleAddToCart();
     router.push("/checkout");
-  }
-
-  const { run: runSubscribe } = useAsyncAction(
-    async (planId: number) => {
-      await clientFetch("/api/v1/billing/subscribe/", {
-        method: "POST",
-        body: JSON.stringify({ plan_id: planId }),
-      });
-      toast.success("Subscribed! You now have access.");
-      router.refresh();
-    },
-    {
-      onError: (err) => {
-        if (err instanceof ApiError && err.status === 403) {
-          router.push(
-            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
-          );
-          return;
-        }
-        toast.error(
-          err instanceof Error ? err.message : "Subscription failed.",
-        );
-      },
-    },
-  );
-
-  async function handleSubscribe(planId: number) {
-    setSubscribingPlanId(planId);
-    await runSubscribe(planId);
-    setSubscribingPlanId(null);
   }
 
   // Already enrolled
@@ -191,17 +157,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
               Or subscribe for access
             </p>
             {opts.plans!.map((plan) => (
-              <Button
-                key={plan.id}
-                variant="outline"
-                className="w-full gap-2"
-                loading={subscribingPlanId === plan.id}
-                onClick={() => handleSubscribe(plan.id)}
-              >
-                <Zap className="h-4 w-4" />
-                {plan.name} — {plan.price} {plan.currency}
-                {billingIntervalSuffix(plan.billing_interval_months)}
-              </Button>
+              <PlanSubscribeButton key={plan.id} plan={plan} />
             ))}
             <Button variant="ghost" size="sm" className="w-full" asChild>
               <Link href="/plans">View all plans</Link>
@@ -217,5 +173,46 @@ export function EnrollButton({ course }: EnrollButtonProps) {
         </Button>
       )}
     </div>
+  );
+}
+
+function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
+  const router = useRouter();
+
+  const { run: handleSubscribe, loading: subscribing } = useAsyncAction(
+    async () => {
+      await clientFetch("/api/v1/billing/subscribe/", {
+        method: "POST",
+        body: JSON.stringify({ plan_id: plan.id }),
+      });
+      toast.success("Subscribed! You now have access.");
+      router.refresh();
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          router.push(
+            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+          );
+          return;
+        }
+        toast.error(
+          err instanceof Error ? err.message : "Subscription failed.",
+        );
+      },
+    },
+  );
+
+  return (
+    <Button
+      variant="outline"
+      className="w-full gap-2"
+      loading={subscribing}
+      onClick={handleSubscribe}
+    >
+      <Zap className="h-4 w-4" />
+      {plan.name} — {plan.price} {plan.currency}
+      {billingIntervalSuffix(plan.billing_interval_months)}
+    </Button>
   );
 }

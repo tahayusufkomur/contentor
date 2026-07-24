@@ -58,77 +58,19 @@ export function CommentSection({
     { errorToast: "Couldn't add your comment." },
   );
 
-  const { run: removeOwn } = useAsyncAction(
-    async (comment: CommunityComment) => {
-      await deleteComment(comment.id);
-      setComments((prev) => prev.filter((c) => c.id !== comment.id));
-    },
-    { errorToast: "Couldn't delete the comment." },
-  );
-
   return (
     <div className="space-y-3 border-t pt-3">
       {comments.map((comment) => (
-        <div key={comment.id} className="flex items-start gap-2.5">
-          <Avatar className="h-7 w-7">
-            <AvatarImage src={comment.author.avatar} alt="" />
-            <AvatarFallback>
-              {comment.author.display_name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1 rounded-lg bg-muted/50 px-3 py-2">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="font-medium">{comment.author.display_name}</span>
-              {comment.author.is_coach && (
-                <Badge variant="secondary" className="h-4 px-1 text-[10px]">
-                  Coach
-                </Badge>
-              )}
-              <span className="text-muted-foreground">
-                {timeAgo(comment.created_at)}
-              </span>
-            </div>
-            <div className="mt-0.5 text-sm">
-              <Linkify text={comment.body} />
-            </div>
-            <div className="mt-1.5 flex items-center gap-3">
-              <ReactionBar
-                kind="comments"
-                id={comment.id}
-                count={comment.reaction_count}
-                mine={comment.my_reaction}
-              />
-              {comment.author.id === me.id && (
-                <button
-                  type="button"
-                  className="text-xs text-muted-foreground hover:text-destructive"
-                  onClick={() => void removeOwn(comment)}
-                  aria-label="Delete comment"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {comment.author.id !== me.id && (
-                <button
-                  type="button"
-                  className="text-xs text-muted-foreground hover:text-destructive"
-                  onClick={() => setReportingId(comment.id)}
-                >
-                  Report
-                </button>
-              )}
-              {moderator && comment.author.id !== me.id && (
-                <button
-                  type="button"
-                  className="text-xs text-destructive"
-                  onClick={() => void moderator.removeComment(comment)}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <CommentRow
+          key={comment.id}
+          comment={comment}
+          me={me}
+          moderator={moderator}
+          onDeleted={(id) =>
+            setComments((prev) => prev.filter((c) => c.id !== id))
+          }
+          onReport={setReportingId}
+        />
       ))}
       {hasMore && (
         <Button variant="ghost" size="sm" onClick={() => void load(page + 1)}>
@@ -164,6 +106,91 @@ export function CommentSection({
         kind="comments"
         id={reportingId ?? 0}
       />
+    </div>
+  );
+}
+
+function CommentRow({
+  comment,
+  me,
+  moderator,
+  onDeleted,
+  onReport,
+}: {
+  comment: CommunityComment;
+  me: CommunityMe;
+  moderator: ModeratorHooks | null;
+  onDeleted: (id: number) => void;
+  onReport: (id: number) => void;
+}) {
+  const { run: removeOwn } = useAsyncAction(
+    async () => {
+      await deleteComment(comment.id);
+      onDeleted(comment.id);
+    },
+    { errorToast: "Couldn't delete the comment." },
+  );
+
+  return (
+    <div className="flex items-start gap-2.5">
+      <Avatar className="h-7 w-7">
+        <AvatarImage src={comment.author.avatar} alt="" />
+        <AvatarFallback>
+          {comment.author.display_name.slice(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1 rounded-lg bg-muted/50 px-3 py-2">
+        <div className="flex items-center gap-2 text-xs">
+          <span className="font-medium">{comment.author.display_name}</span>
+          {comment.author.is_coach && (
+            <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+              Coach
+            </Badge>
+          )}
+          <span className="text-muted-foreground">
+            {timeAgo(comment.created_at)}
+          </span>
+        </div>
+        <div className="mt-0.5 text-sm">
+          <Linkify text={comment.body} />
+        </div>
+        <div className="mt-1.5 flex items-center gap-3">
+          <ReactionBar
+            kind="comments"
+            id={comment.id}
+            count={comment.reaction_count}
+            mine={comment.my_reaction}
+          />
+          {comment.author.id === me.id && (
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-destructive"
+              onClick={() => void removeOwn()}
+              aria-label="Delete comment"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {comment.author.id !== me.id && (
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-destructive"
+              onClick={() => onReport(comment.id)}
+            >
+              Report
+            </button>
+          )}
+          {moderator && comment.author.id !== me.id && (
+            <button
+              type="button"
+              className="text-xs text-destructive"
+              onClick={() => void moderator.removeComment(comment)}
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
