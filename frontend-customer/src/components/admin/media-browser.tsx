@@ -423,10 +423,7 @@ function MediaBrowserInner<T>(
               className="gap-1.5"
               loading={actionLoading}
             >
-              {/* asChild buttons can't overlay a spinner on children (see
-                  Button's asChild branch) — the ternary text swap is the
-                  correct pattern here, not the invisible-overlay bug. */}
-              {actionLoading ? "Processing..." : "Actions"}
+              Actions
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>

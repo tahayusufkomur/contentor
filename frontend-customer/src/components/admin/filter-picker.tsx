@@ -158,9 +158,10 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
                 type="button"
                 onClick={() => createOption(g.id)}
                 disabled={creatingOption}
-                className="shrink-0 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
               >
-                {creatingOption ? "Adding…" : "Add"}
+                {creatingOption && <Spinner size="sm" />}
+                Add
               </button>
             </div>
           )}
@@ -190,9 +191,10 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
             type="button"
             onClick={() => createGroup()}
             disabled={creatingGroup}
-            className="shrink-0 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-1 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
           >
-            {creatingGroup ? "Adding…" : "Add"}
+            {creatingGroup && <Spinner size="sm" />}
+            Add
           </button>
         </div>
       ) : (

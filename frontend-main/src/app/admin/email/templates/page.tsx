@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { toast } from "sonner";
+
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { TemplateGrid } from "@shared/email/template-grid";
 import {
@@ -106,13 +108,21 @@ export default function TemplatesPage() {
     { onError: () => setPreviewHtml("") },
   );
 
-  const { run: handleDelete } = useAsyncAction(
-    async (template: EmailTemplate) => {
-      if (!window.confirm(`Delete "${template.name}"?`)) return;
+  // Not a useAsyncAction: TemplateCard (packages/shared, out of scope here)
+  // has no per-row busy prop, and this callback fires once per card in a
+  // .map() — a single shared hook instance would silently drop a delete
+  // click on card B while card A's delete is still in flight (the
+  // documented per-row single-flight gotcha). Deletes stay independent;
+  // only the previously-swallowed error is now surfaced.
+  const handleDelete = useCallback(async (template: EmailTemplate) => {
+    if (!window.confirm(`Delete "${template.name}"?`)) return;
+    try {
       await deleteTemplate(template.id);
       setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-    },
-  );
+    } catch {
+      toast.error("Could not delete template. Please try again.");
+    }
+  }, []);
 
   const handleEdit = useCallback(
     (template: EmailTemplate) => {

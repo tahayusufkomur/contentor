@@ -9,7 +9,8 @@ export interface UseAsyncActionOptions {
   errorToast?: boolean | string;
   successToast?: string;
   onSuccess?: () => void;
-  /** When set, replaces the default error toast entirely. */
+  /** When set, replaces the default error toast entirely — the default
+   *  toast never fires, so `errorToast: false` alongside it is redundant. */
   onError?: (err: unknown) => void;
 }
 

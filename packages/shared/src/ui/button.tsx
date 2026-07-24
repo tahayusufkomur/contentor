@@ -102,6 +102,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             <>
               <span className="absolute inset-0 inline-flex items-center justify-center">
                 <Loader2 className="animate-spin" aria-hidden="true" />
+                <span className="sr-only">Loading</span>
               </span>
               <span
                 aria-hidden="true"

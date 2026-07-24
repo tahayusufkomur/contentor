@@ -10,6 +10,7 @@ import {
 } from "@shared/email/email-builder-iframe";
 import { RecipientSelector } from "@/components/admin/email/recipient-selector";
 import { TemplateGrid } from "@shared/email/template-grid";
+import { Button } from "@/components/ui/button";
 import {
   getTemplate,
   listGallery,
@@ -388,13 +389,15 @@ export default function ComposePage() {
             </div>
           )}
 
-          <button
+          <Button
             onClick={handleSend}
-            disabled={sending}
-            className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            loading={sending}
+            loadingText="Sending..."
+            size="lg"
+            className="w-full"
           >
-            {sending ? "Sending..." : "Send Campaign"}
-          </button>
+            Send Campaign
+          </Button>
         </div>
       )}
     </div>

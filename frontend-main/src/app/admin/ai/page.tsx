@@ -247,34 +247,40 @@ function ConversationsSection() {
     );
   };
 
-  const { run: openThread, loading: threadLoading } = useAsyncAction(
-    async (id: number) => {
-      if (activeId === id) {
-        setActiveId(null);
-        activeRef.current = null;
-        return;
-      }
-      setActiveId(id);
-      activeRef.current = id;
-      setThread([]);
-      setStatus("ai");
-      setAgentLabel("");
-      setThreadError("");
-      lastIdRef.current = 0;
-      try {
-        const payload = await fetchConversationThread(id, 0);
-        if (activeRef.current !== id) return;
-        setThread(payload.messages);
-        lastIdRef.current = payload.messages.length
-          ? payload.messages[payload.messages.length - 1].id
-          : 0;
-        setStatus(payload.status);
-        setAgentLabel(payload.agent_label);
-      } catch (err) {
-        if (activeRef.current === id) setThreadError((err as Error).message);
-      }
-    },
-  );
+  // Plain async function, not useAsyncAction: its single in-flight guard
+  // would silently ignore a click on thread B while thread A is still
+  // loading, making the activeRef staleness checks below unreachable.
+  // Threads must stay independently switchable.
+  const [threadLoading, setThreadLoading] = useState(false);
+  const openThread = async (id: number) => {
+    if (activeId === id) {
+      setActiveId(null);
+      activeRef.current = null;
+      return;
+    }
+    setActiveId(id);
+    activeRef.current = id;
+    setThread([]);
+    setStatus("ai");
+    setAgentLabel("");
+    setThreadError("");
+    lastIdRef.current = 0;
+    setThreadLoading(true);
+    try {
+      const payload = await fetchConversationThread(id, 0);
+      if (activeRef.current !== id) return;
+      setThread(payload.messages);
+      lastIdRef.current = payload.messages.length
+        ? payload.messages[payload.messages.length - 1].id
+        : 0;
+      setStatus(payload.status);
+      setAgentLabel(payload.agent_label);
+    } catch (err) {
+      if (activeRef.current === id) setThreadError((err as Error).message);
+    } finally {
+      if (activeRef.current === id) setThreadLoading(false);
+    }
+  };
 
   const closeThread = () => {
     setActiveId(null);
