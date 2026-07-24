@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, Loader2 } from "lucide-react";
+import { Eye } from "lucide-react";
 
 import { BASE_DOMAIN } from "@/lib/constants";
+import { Spinner } from "@/components/ui/spinner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface ImpersonationState {
   email: string;
@@ -16,7 +18,6 @@ interface ImpersonationState {
 // offers an Exit that ends the impersonated session.
 export function ImpersonationBanner() {
   const [state, setState] = useState<ImpersonationState | null>(null);
-  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     fetch("/api/v1/auth/users/me/", { credentials: "same-origin" })
@@ -33,31 +34,27 @@ export function ImpersonationBanner() {
       .catch(() => undefined);
   }, []);
 
-  if (!state) return null;
-
-  const exit = async () => {
-    setBusy(true);
-    try {
-      const res = await fetch("/api/auth/impersonate/stop", {
-        method: "POST",
-        credentials: "same-origin",
-      });
-      const data = await res.json().catch(() => ({ restored: false }));
-      if (data.restored) {
-        // Coach returns to their own admin.
-        window.location.assign("/admin");
-      } else if (state.scope === "platform") {
-        // Superadmin returns to the platform panel on the apex domain.
-        window.location.assign(
-          `${window.location.protocol}//${BASE_DOMAIN}/admin`,
-        );
-      } else {
-        window.location.assign("/");
-      }
-    } catch {
-      setBusy(false);
+  const { run: exit, loading: busy } = useAsyncAction(async () => {
+    if (!state) return;
+    const res = await fetch("/api/auth/impersonate/stop", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    const data = await res.json().catch(() => ({ restored: false }));
+    if (data.restored) {
+      // Coach returns to their own admin.
+      window.location.assign("/admin");
+    } else if (state.scope === "platform") {
+      // Superadmin returns to the platform panel on the apex domain.
+      window.location.assign(
+        `${window.location.protocol}//${BASE_DOMAIN}/admin`,
+      );
+    } else {
+      window.location.assign("/");
     }
-  };
+  });
+
+  if (!state) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-amber-500/40 bg-amber-500/95 text-amber-950 shadow-lg pb-safe">
@@ -75,7 +72,7 @@ export function ImpersonationBanner() {
           disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-md bg-amber-950/90 px-3 py-1 font-medium text-amber-50 transition-colors hover:bg-amber-950 disabled:opacity-60"
         >
-          {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {busy && <Spinner size="sm" />}
           Exit
         </button>
       </div>

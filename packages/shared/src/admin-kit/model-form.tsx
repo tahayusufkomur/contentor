@@ -6,7 +6,7 @@
 // Slide-over create/edit form generated from a model's field schema.
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 import { AdminKitError, type AdminClient } from "./client";
 import type {
@@ -19,6 +19,8 @@ import type {
 
 import { KitButton } from "./primitives";
 import { FieldInput } from "./widgets";
+import { Spinner } from "../ui/spinner";
+import { useAsyncAction } from "../hooks/use-async-action";
 
 function initialValue(field: FieldSchema, row: Row | null): unknown {
   if (row) {
@@ -71,7 +73,6 @@ export function ModelForm({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
-  const [busy, setBusy] = useState(false);
   const [fkOptions, setFkOptions] = useState<Record<string, ChoiceOption[]>>(
     {},
   );
@@ -93,50 +94,49 @@ export function ModelForm({
     };
   }, [client, modelKey, editable]);
 
-  const submit = async () => {
-    const payload: Record<string, unknown> = {};
-    const clientErrors: Record<string, string> = {};
+  const { run: submit, loading: saving } = useAsyncAction(
+    async () => {
+      const payload: Record<string, unknown> = {};
+      const clientErrors: Record<string, string> = {};
 
-    for (const field of editable) {
-      let value = values[field.name];
-      if (field.type === "json") {
-        const text = String(value ?? "").trim();
-        if (text === "") continue; // omit → server default / unchanged
-        try {
-          value = JSON.parse(text);
-        } catch {
-          clientErrors[field.name] = "Invalid JSON.";
-          continue;
+      for (const field of editable) {
+        let value = values[field.name];
+        if (field.type === "json") {
+          const text = String(value ?? "").trim();
+          if (text === "") continue; // omit → server default / unchanged
+          try {
+            value = JSON.parse(text);
+          } catch {
+            clientErrors[field.name] = "Invalid JSON.";
+            continue;
+          }
         }
+        if (value === "" || value === null) {
+          // Empty FK = explicit clear; empty non-text inputs are omitted so
+          // server defaults apply (PATCH leaves them unchanged).
+          if (field.type === "fk") {
+            payload[field.name] = null;
+            continue;
+          }
+          if (
+            field.type !== "string" &&
+            field.type !== "text" &&
+            field.type !== "email" &&
+            field.type !== "url"
+          ) {
+            continue;
+          }
+        }
+        payload[field.name] = value;
       }
-      if (value === "" || value === null) {
-        // Empty FK = explicit clear; empty non-text inputs are omitted so
-        // server defaults apply (PATCH leaves them unchanged).
-        if (field.type === "fk") {
-          payload[field.name] = null;
-          continue;
-        }
-        if (
-          field.type !== "string" &&
-          field.type !== "text" &&
-          field.type !== "email" &&
-          field.type !== "url"
-        ) {
-          continue;
-        }
+
+      if (Object.keys(clientErrors).length > 0) {
+        setErrors(clientErrors);
+        return;
       }
-      payload[field.name] = value;
-    }
 
-    if (Object.keys(clientErrors).length > 0) {
-      setErrors(clientErrors);
-      return;
-    }
-
-    setBusy(true);
-    setErrors({});
-    setFormError("");
-    try {
+      setErrors({});
+      setFormError("");
       if (isCreate) {
         await client.create(modelKey, payload);
         onSaved(`${meta.label} created.`);
@@ -144,37 +144,44 @@ export function ModelForm({
         await client.update(modelKey, String(row[meta.pk_field]), payload);
         onSaved(`${meta.label} saved.`);
       }
-    } catch (err) {
-      if (err instanceof AdminKitError) {
-        setErrors(err.fieldErrors);
-        setFormError(err.detail);
-      } else {
-        setFormError("Request failed.");
-      }
-      setBusy(false);
-    }
-  };
+    },
+    {
+      errorToast: false,
+      onError: (err) => {
+        if (err instanceof AdminKitError) {
+          setErrors(err.fieldErrors);
+          setFormError(err.detail);
+        } else {
+          setFormError("Request failed.");
+        }
+      },
+    },
+  );
 
-  const remove = async () => {
-    if (!row) return;
-    if (
-      !window.confirm(
-        `Delete this ${meta.label.toLowerCase()}? This cannot be undone.`,
+  const { run: remove, loading: removing } = useAsyncAction(
+    async () => {
+      if (!row) return;
+      if (
+        !window.confirm(
+          `Delete this ${meta.label.toLowerCase()}? This cannot be undone.`,
+        )
       )
-    )
-      return;
-    setBusy(true);
-    setFormError("");
-    try {
+        return;
+      setFormError("");
       await client.destroy(modelKey, String(row[meta.pk_field]));
       onDeleted(`${meta.label} deleted.`);
-    } catch (err) {
-      setFormError(
-        err instanceof AdminKitError ? err.detail : "Delete failed.",
-      );
-      setBusy(false);
-    }
-  };
+    },
+    {
+      errorToast: false,
+      onError: (err) => {
+        setFormError(
+          err instanceof AdminKitError ? err.detail : "Delete failed.",
+        );
+      },
+    },
+  );
+
+  const busy = saving || removing;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -222,7 +229,12 @@ export function ModelForm({
         <div className="flex items-center justify-between border-t px-5 py-4">
           {!isCreate && meta.can_delete ? (
             <KitButton variant="danger" onClick={remove} disabled={busy}>
-              <Trash2 className="h-4 w-4" /> Delete
+              {removing ? (
+                <Spinner size="sm" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}{" "}
+              Delete
             </KitButton>
           ) : (
             <span />
@@ -233,7 +245,7 @@ export function ModelForm({
             </KitButton>
             {(isCreate ? meta.can_create : meta.can_edit) && (
               <KitButton variant="primary" onClick={submit} disabled={busy}>
-                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                {saving && <Spinner size="sm" />}
                 {isCreate ? "Create" : "Save"}
               </KitButton>
             )}

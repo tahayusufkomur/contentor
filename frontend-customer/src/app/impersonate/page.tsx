@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { Spinner } from "@/components/ui/spinner";
+
 export const dynamic = "force-dynamic";
 
 // Landing page for an impersonation hand-off. Redeems the one-time token in
@@ -49,7 +51,7 @@ export default function ImpersonatePage() {
           </>
         ) : (
           <>
-            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+            <Spinner size="lg" />
             <p className="mt-4 text-sm text-muted-foreground">
               Opening session…
             </p>

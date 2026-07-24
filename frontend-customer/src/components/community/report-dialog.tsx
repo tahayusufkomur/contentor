@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { reportTarget, type TargetKind } from "@/lib/community";
 import { REPORT_REASONS, type ReportReason } from "@/types/community";
 import { cn } from "@/lib/utils";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export function ReportDialog({
   open,
@@ -22,23 +23,18 @@ export function ReportDialog({
 }) {
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [detail, setDetail] = useState("");
-  const [busy, setBusy] = useState(false);
 
-  if (!open) return null;
-
-  const submit = async () => {
-    if (!reason) return;
-    setBusy(true);
-    try {
+  const { run: submit, loading: busy } = useAsyncAction(
+    async () => {
+      if (!reason) return;
       await reportTarget(kind, id, reason, detail.trim());
       toast.success("Thanks — a moderator will take a look.");
       onClose();
-    } catch {
-      toast.error("Couldn't send the report.");
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    { errorToast: "Couldn't send the report." },
+  );
+
+  if (!open) return null;
 
   return (
     <ModalPortal>
@@ -86,7 +82,12 @@ export function ReportDialog({
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={submit} disabled={!reason || busy}>
+            <Button
+              onClick={submit}
+              disabled={!reason}
+              loading={busy}
+              loadingText="Reporting…"
+            >
               Report
             </Button>
           </div>

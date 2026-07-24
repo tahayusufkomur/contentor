@@ -6,8 +6,9 @@ import type { ReactNode } from "react";
 import { Search, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { ModalPortal } from "@/components/ui/modal-portal";
+import { Button } from "../ui/button";
+import { ModalPortal } from "../ui/modal-portal";
+import { useAsyncAction } from "../hooks/use-async-action";
 import {
   deleteConversation,
   getConversation,
@@ -15,10 +16,7 @@ import {
   reply,
   updateConversation,
 } from "@/lib/mailbox";
-import type {
-  ConversationDetail,
-  ConversationListItem,
-} from "@/lib/mailbox";
+import type { ConversationDetail, ConversationListItem } from "@/lib/mailbox";
 
 import ComposeCard from "./compose-card";
 import ConversationList from "./conversation-list";
@@ -89,11 +87,8 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
   const [folder, setFolder] = useState<Folder>("inbox");
   const [query, setQuery] = useState("");
   const [thread, setThread] = useState<ConversationDetail | null>(null);
-  const [threadLoading, setThreadLoading] = useState(false);
-  const [replySending, setReplySending] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const replyEditorRef = useRef<MessageEditorHandle>(null);
   // Mirror live state the polling interval reads, so the interval callback
   // stays stable (created once) yet always sees the current thread + send state.
@@ -101,7 +96,6 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
     threadId: null as number | null,
     replySending: false,
   });
-  liveRef.current = { threadId: thread?.id ?? null, replySending };
 
   const loadList = async () => {
     try {
@@ -171,22 +165,17 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
     );
   }, [conversations, folder, query]);
 
-  const openConversation = async (id: number) => {
-    setThreadLoading(true);
-    try {
+  const { run: openConversation, loading: threadLoading } = useAsyncAction(
+    async (id: number) => {
       setThread(await getConversation(id));
       await loadList();
-    } catch {
-      toast.error("Could not load this conversation.");
-    } finally {
-      setThreadLoading(false);
-    }
-  };
+    },
+    { errorToast: "Could not load this conversation." },
+  );
 
-  const sendReply = async (draft: OutgoingDraft) => {
-    if (!thread) return;
-    setReplySending(true);
-    try {
+  const { run: sendReply, loading: replySending } = useAsyncAction(
+    async (draft: OutgoingDraft) => {
+      if (!thread) return;
       await reply(thread.id, {
         text: draft.text,
         html: draft.html,
@@ -195,12 +184,11 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
       replyEditorRef.current?.clear();
       setThread(await getConversation(thread.id));
       toast.success("Reply sent.");
-    } catch {
-      toast.error("Could not send reply. Please try again.");
-    } finally {
-      setReplySending(false);
-    }
-  };
+    },
+    { errorToast: "Could not send reply. Please try again." },
+  );
+
+  liveRef.current = { threadId: thread?.id ?? null, replySending };
 
   const patchConversation = async (
     id: number,
@@ -217,21 +205,17 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
     }
   };
 
-  const doDelete = async () => {
-    if (deletingId === null) return;
-    setDeleteLoading(true);
-    try {
+  const { run: doDelete, loading: deleteLoading } = useAsyncAction(
+    async () => {
+      if (deletingId === null) return;
       await deleteConversation(deletingId);
       toast.success("Conversation deleted.");
       if (thread?.id === deletingId) setThread(null);
       setDeletingId(null);
       await loadList();
-    } catch {
-      toast.error("Could not delete. Please try again.");
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
+    },
+    { errorToast: "Could not delete. Please try again." },
+  );
 
   return (
     <div className="flex h-full flex-col">

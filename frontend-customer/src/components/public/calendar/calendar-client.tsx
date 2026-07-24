@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import { useTenant } from "@/hooks/use-tenant";
@@ -62,6 +63,7 @@ export function CalendarClient({
       setEvents(data);
     } catch {
       // keep existing events on error
+      toast.error("Couldn't load events for this range.");
     } finally {
       setLoading(false);
     }

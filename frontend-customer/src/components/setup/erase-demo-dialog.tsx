@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { Spinner } from "@/components/ui/spinner";
 import { eraseDemoContent, useDemoContent } from "@/lib/setup-assistant";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export function EraseDemoDialog({
   open,
@@ -16,8 +18,19 @@ export function EraseDemoDialog({
 }) {
   const t = useTranslations("admin");
   const demo = useDemoContent();
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+
+  const { run: confirm, loading: busy } = useAsyncAction(
+    async () => {
+      setError(false);
+      const deleted = await eraseDemoContent();
+      if (deleted === null) {
+        throw new Error(t("setup.erase.error"));
+      }
+      onClose();
+    },
+    { errorToast: false, onError: () => setError(true) },
+  );
 
   if (!open || !demo?.present) return null;
 
@@ -35,18 +48,6 @@ export function EraseDemoDialog({
     counts.videos > 0 && t("setup.erase.countVideos", { count: counts.videos }),
     counts.photos > 0 && t("setup.erase.countPhotos", { count: counts.photos }),
   ].filter(Boolean) as string[];
-
-  const confirm = async () => {
-    setBusy(true);
-    setError(false);
-    const deleted = await eraseDemoContent();
-    setBusy(false);
-    if (deleted === null) {
-      setError(true);
-      return;
-    }
-    onClose();
-  };
 
   return (
     <ModalPortal>
@@ -95,7 +96,7 @@ export function EraseDemoDialog({
               disabled={busy}
               className="inline-flex items-center gap-2 rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-60"
             >
-              {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {busy && <Spinner size="sm" />}
               {t("setup.erase.confirm")}
             </button>
           </div>

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface PreviewGateProps {
   brandName?: string;
@@ -12,14 +13,12 @@ interface PreviewGateProps {
 
 export function PreviewGate({ brandName, hasPassword }: PreviewGateProps) {
   const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(false);
-    try {
+  const { run: submit, loading: submitting } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(false);
       const res = await fetch("/api/preview/unlock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -29,13 +28,10 @@ export function PreviewGate({ brandName, hasPassword }: PreviewGateProps) {
         window.location.reload();
         return;
       }
-      setError(true);
-    } catch {
-      setError(true);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+      throw new Error("Incorrect password");
+    },
+    { errorToast: false, onError: () => setError(true) },
+  );
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
@@ -71,9 +67,10 @@ export function PreviewGate({ brandName, hasPassword }: PreviewGateProps) {
             <Button
               type="submit"
               className="w-full gap-2"
-              disabled={submitting || !password}
+              disabled={!password}
+              loading={submitting}
+              loadingText="Checking…"
             >
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Enter site
             </Button>
           </form>

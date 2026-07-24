@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { MoreHorizontal, Pin } from "lucide-react";
-import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { deletePost, updatePost } from "@/lib/community";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type {
   CommunityComment,
   CommunityMe,
@@ -60,25 +60,23 @@ export function PostCard({
   const [showComments, setShowComments] = useState(false);
   const isMine = post.author.id === me.id;
 
-  const saveEdit = async () => {
-    try {
+  const { run: saveEdit, loading: saving } = useAsyncAction(
+    async () => {
       await updatePost(post.id, draft.trim());
       setEditing(false);
       onChanged();
-    } catch {
-      toast.error("Couldn't save the edit.");
-    }
-  };
+    },
+    { errorToast: "Couldn't save the edit." },
+  );
 
-  const removeOwn = async () => {
-    if (!window.confirm("Delete this post? This can't be undone.")) return;
-    try {
+  const { run: removeOwn, loading: removing } = useAsyncAction(
+    async () => {
+      if (!window.confirm("Delete this post? This can't be undone.")) return;
       await deletePost(post.id);
       onChanged();
-    } catch {
-      toast.error("Couldn't delete the post.");
-    }
-  };
+    },
+    { errorToast: "Couldn't delete the post." },
+  );
 
   return (
     <Card data-testid="post-card">
@@ -120,6 +118,7 @@ export function PostCard({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
+                    disabled={removing}
                     onClick={removeOwn}
                   >
                     Delete
@@ -168,7 +167,13 @@ export function PostCard({
               maxLength={10000}
             />
             <div className="flex gap-2">
-              <Button size="sm" onClick={saveEdit} disabled={!draft.trim()}>
+              <Button
+                size="sm"
+                onClick={saveEdit}
+                disabled={!draft.trim()}
+                loading={saving}
+                loadingText="Saving…"
+              >
                 Save
               </Button>
               <Button

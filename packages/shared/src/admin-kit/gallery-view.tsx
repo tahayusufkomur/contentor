@@ -5,17 +5,15 @@
 // Presentational — upload wiring, CRUD and the JSON modal live in ModelPage.
 
 import { useRef, useState } from "react";
-import { ImageIcon, ImagePlus, Inbox, Loader2 } from "lucide-react";
+import { ImageIcon, ImagePlus, Inbox } from "lucide-react";
 
 import type { ImageValue, ModelMeta, Row, RowValue } from "./types";
 
 import { KitButton } from "./primitives";
+import { Spinner } from "../ui/spinner";
 
 function imageOf(value: RowValue | undefined): ImageValue | null {
-  return value &&
-    typeof value === "object" &&
-    "key" in value &&
-    "url" in value
+  return value && typeof value === "object" && "key" in value && "url" in value
     ? (value as ImageValue)
     : null;
 }
@@ -72,7 +70,7 @@ export function GalleryView({
           disabled={uploading}
         >
           {uploading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Spinner size="sm" />
           ) : (
             <ImagePlus className="h-4 w-4" />
           )}

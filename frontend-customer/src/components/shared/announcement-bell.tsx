@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Bell } from "lucide-react";
 
@@ -17,7 +18,7 @@ export default function AnnouncementBell() {
         setItems(r.items);
         setUnread(r.unread_count);
       })
-      .catch(() => {});
+      .catch(() => toast.error("Could not load announcements."));
 
   useEffect(() => {
     load();

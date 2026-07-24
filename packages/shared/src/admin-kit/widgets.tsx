@@ -6,7 +6,7 @@
 // Cell renderers (schema → table cell) and form widgets (schema → input).
 
 import { useRef, useState } from "react";
-import { Check, ImageIcon, Loader2, Minus, Upload } from "lucide-react";
+import { Check, ImageIcon, Minus, Upload } from "lucide-react";
 
 import type {
   ChoiceOption,
@@ -24,6 +24,8 @@ import {
   KitTextarea,
   KitToggle,
 } from "./primitives";
+import { Spinner } from "../ui/spinner";
+import { useAsyncAction } from "../hooks/use-async-action";
 
 function isFkValue(value: RowValue): value is FkValue {
   return (
@@ -123,18 +125,16 @@ function ImageFieldInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState("");
-  const [uploading, setUploading] = useState(false);
 
   const key = typeof value === "string" ? value : "";
   const basename = key ? key.split("/").pop() : "";
 
-  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !field.upload_url) return;
-    setUploading(true);
-    setUploadError("");
-    try {
+  const { run: onFile, loading: uploading } = useAsyncAction(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file || !field.upload_url) return;
+      setUploadError("");
       const body = new FormData();
       body.append("file", file);
       if (field.upload_prefix) body.append("prefix", field.upload_prefix);
@@ -152,12 +152,13 @@ function ImageFieldInput({
       const data = (await res.json()) as { key: string; url: string };
       onChange(data.key);
       setPreview(data.url);
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
+    },
+    {
+      errorToast: false,
+      onError: (err) =>
+        setUploadError(err instanceof Error ? err.message : "Upload failed."),
+    },
+  );
 
   return (
     <div className="space-y-2">
@@ -186,11 +187,7 @@ function ImageFieldInput({
         onClick={() => inputRef.current?.click()}
         disabled={disabled || uploading}
       >
-        {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Upload className="h-4 w-4" />
-        )}
+        {uploading ? <Spinner size="sm" /> : <Upload className="h-4 w-4" />}
         {basename || preview ? "Replace PNG" : "Upload PNG"}
       </KitButton>
       {uploadError && <p className="text-xs text-destructive">{uploadError}</p>}

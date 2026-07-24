@@ -2,32 +2,30 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { clientFetch } from "@/lib/api-client";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 export function ContactBlock({ data }: BlockComponentProps) {
-  const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
   const [website, setWebsite] = useState(""); // honeypot
   const layout = data.layout || "centered";
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const payload = {
-      name: (form.elements.namedItem("name") as HTMLInputElement).value,
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
-      message: (form.elements.namedItem("message") as HTMLTextAreaElement)
-        .value,
-      website, // honeypot — should stay empty
-    };
-    setSubmitting(true);
-    try {
+  const { run: handleSubmit, loading: submitting } = useAsyncAction(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const payload = {
+        name: (form.elements.namedItem("name") as HTMLInputElement).value,
+        email: (form.elements.namedItem("email") as HTMLInputElement).value,
+        message: (form.elements.namedItem("message") as HTMLTextAreaElement)
+          .value,
+        website, // honeypot — should stay empty
+      };
       await clientFetch("/api/v1/contact/", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -35,12 +33,9 @@ export function ContactBlock({ data }: BlockComponentProps) {
       setSent(true);
       toast.success(data.successMessage || "Thanks! We'll be in touch soon.");
       form.reset();
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    },
+    { errorToast: "Something went wrong. Please try again." },
+  );
 
   const header = (align: string) => (
     <>
@@ -103,8 +98,12 @@ export function ContactBlock({ data }: BlockComponentProps) {
         onChange={(e) => setWebsite(e.target.value)}
         className="absolute left-[-9999px] h-0 w-0 opacity-0"
       />
-      <Button type="submit" className="w-full gap-2" disabled={submitting}>
-        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+      <Button
+        type="submit"
+        className="w-full gap-2"
+        loading={submitting}
+        loadingText="Sending…"
+      >
         {data.submitLabel || "Send message"}
       </Button>
     </form>

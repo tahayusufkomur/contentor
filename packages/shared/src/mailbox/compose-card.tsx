@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 
 import { compose } from "@/lib/mailbox";
+import { useAsyncAction } from "../hooks/use-async-action";
 
 import MessageEditor, {
   type MessageEditorHandle,
@@ -21,16 +22,14 @@ export default function ComposeCard({
 }) {
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
-  const [sending, setSending] = useState(false);
   const editorRef = useRef<MessageEditorHandle>(null);
 
-  const send = async (draft: OutgoingDraft) => {
-    if (!to.trim()) {
-      toast.error("Add a recipient first.");
-      return;
-    }
-    setSending(true);
-    try {
+  const { run: send, loading: sending } = useAsyncAction(
+    async (draft: OutgoingDraft) => {
+      if (!to.trim()) {
+        toast.error("Add a recipient first.");
+        return;
+      }
       const res = await compose({
         to: to.trim(),
         subject: subject.trim(),
@@ -40,12 +39,9 @@ export default function ComposeCard({
       });
       toast.success("Message sent.");
       onSent(res.conversation_id);
-    } catch {
-      toast.error("Could not send the message. Please try again.");
-    } finally {
-      setSending(false);
-    }
-  };
+    },
+    { errorToast: "Could not send the message. Please try again." },
+  );
 
   return (
     <div className="fixed bottom-4 right-4 z-[120] flex w-[min(480px,calc(100vw-2rem))] flex-col rounded-xl border bg-background shadow-2xl">

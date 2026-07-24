@@ -13,7 +13,6 @@ import {
   Link2,
   List,
   ListOrdered,
-  Loader2,
   Paperclip,
   Quote,
   Send,
@@ -22,7 +21,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import { uploadAttachment } from "@/lib/mailbox";
 import type { MessageAttachment } from "@/lib/mailbox";
 
@@ -241,7 +241,7 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
             onClick={() => fileInputRef.current?.click()}
           >
             {uploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Spinner size="sm" />
             ) : (
               <Paperclip className="h-4 w-4" />
             )}

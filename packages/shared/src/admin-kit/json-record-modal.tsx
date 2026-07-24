@@ -6,7 +6,7 @@
 // workflow, not a field form.
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, ImageIcon, Loader2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageIcon, X } from "lucide-react";
 
 import type {
   FieldSchema,
@@ -17,6 +17,7 @@ import type {
 } from "./types";
 
 import { KitButton, KitTextarea } from "./primitives";
+import { Spinner } from "../ui/spinner";
 
 export type GalleryTarget =
   | { mode: "create"; image: ImageValue }
@@ -189,7 +190,15 @@ export function JsonRecordModal({
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, onNavigate, prevRow, nextRow, hasMore, onLoadMore, waitingForNext]);
+  }, [
+    onClose,
+    onNavigate,
+    prevRow,
+    nextRow,
+    hasMore,
+    onLoadMore,
+    waitingForNext,
+  ]);
 
   const save = () => {
     const { data, error } = parseRecord(meta, text);
@@ -239,7 +248,11 @@ export function JsonRecordModal({
             disabled={waitingForNext}
             className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60 disabled:opacity-50"
           >
-            {waitingForNext ? <Loader2 className="h-6 w-6 animate-spin" /> : <ChevronRight className="h-6 w-6" />}
+            {waitingForNext ? (
+              <Spinner />
+            ) : (
+              <ChevronRight className="h-6 w-6" />
+            )}
           </button>
         )}
       </div>
@@ -292,7 +305,7 @@ export function JsonRecordModal({
               Cancel
             </KitButton>
             <KitButton variant="primary" onClick={save} disabled={busy}>
-              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+              {busy && <Spinner size="sm" />}
               Save
             </KitButton>
           </div>

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { Spinner } from "@/components/ui/spinner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   AnnouncementListItem,
   deleteAnnouncement,
@@ -21,21 +23,13 @@ export default function AnnouncementHistory({
   const load = () =>
     listAnnouncements()
       .then(setItems)
-      .catch(() => setItems([]));
+      .catch(() => {
+        setItems([]);
+        toast.error("Couldn't load announcements.");
+      });
   useEffect(() => {
     load();
   }, [refreshKey]);
-
-  const remove = async (id: number) => {
-    if (!confirm("Delete this announcement?")) return;
-    try {
-      await deleteAnnouncement(id);
-      toast.success("Deleted");
-      load();
-    } catch {
-      toast.error("Failed to delete");
-    }
-  };
 
   if (items.length === 0)
     return (
@@ -45,38 +39,67 @@ export default function AnnouncementHistory({
   return (
     <div className="divide-y divide-border rounded-xl border border-border">
       {items.map((a) => (
-        <div key={a.id} className="flex items-center gap-3 p-3 text-sm">
-          <div className="flex-1">
-            <Link
-              href={`/admin/notifications/${a.id}`}
-              className="font-medium hover:underline"
-            >
-              {a.title}
-            </Link>
-            <div className="text-xs text-muted-foreground">
-              {a.status === "scheduled" ? (
-                <span>
-                  ⏰ Scheduled ·{" "}
-                  {a.scheduled_at
-                    ? new Date(a.scheduled_at).toLocaleString()
-                    : ""}
-                </span>
-              ) : (
-                <span>
-                  {a.recipient_count} recipients · {a.push_sent_count} push ·{" "}
-                  {a.read_count} read
-                </span>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => remove(a.id)}
-            className="rounded-md px-2 py-1 text-muted-foreground hover:text-destructive"
-          >
-            {a.status === "scheduled" ? "Cancel" : "Delete"}
-          </button>
-        </div>
+        <HistoryRow key={a.id} item={a} onRemoved={load} />
       ))}
+    </div>
+  );
+}
+
+function HistoryRow({
+  item,
+  onRemoved,
+}: {
+  item: AnnouncementListItem;
+  onRemoved: () => void;
+}) {
+  const { run: remove, loading: removing } = useAsyncAction(
+    async () => {
+      if (!confirm("Delete this announcement?")) return;
+      await deleteAnnouncement(item.id);
+      toast.success("Deleted");
+      onRemoved();
+    },
+    { errorToast: "Failed to delete" },
+  );
+
+  return (
+    <div className="flex items-center gap-3 p-3 text-sm">
+      <div className="flex-1">
+        <Link
+          href={`/admin/notifications/${item.id}`}
+          className="font-medium hover:underline"
+        >
+          {item.title}
+        </Link>
+        <div className="text-xs text-muted-foreground">
+          {item.status === "scheduled" ? (
+            <span>
+              ⏰ Scheduled ·{" "}
+              {item.scheduled_at
+                ? new Date(item.scheduled_at).toLocaleString()
+                : ""}
+            </span>
+          ) : (
+            <span>
+              {item.recipient_count} recipients · {item.push_sent_count} push ·{" "}
+              {item.read_count} read
+            </span>
+          )}
+        </div>
+      </div>
+      <button
+        onClick={remove}
+        disabled={removing}
+        className="rounded-md px-2 py-1 text-muted-foreground hover:text-destructive disabled:opacity-50"
+      >
+        {removing ? (
+          <Spinner size="sm" />
+        ) : item.status === "scheduled" ? (
+          "Cancel"
+        ) : (
+          "Delete"
+        )}
+      </button>
     </div>
   );
 }

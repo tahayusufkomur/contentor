@@ -5,12 +5,12 @@ import {
   ArchiveRestore,
   Flag,
   Inbox,
-  Loader2,
   Paperclip,
   Trash2,
 } from "lucide-react";
 
-import { EmptyState } from "@/components/shared/empty-state";
+import { EmptyState } from "../ui/empty-state";
+import { Spinner } from "../ui/spinner";
 import type { ConversationListItem } from "@/lib/mailbox";
 
 import type { Folder } from "./folder-rail";
@@ -80,7 +80,7 @@ export default function ConversationList({
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Spinner size="lg" />
       </div>
     );
   }

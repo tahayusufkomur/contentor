@@ -6,69 +6,74 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { errorMessage } from "@shared/hooks/async-runner";
 
 export function MagicLinkForm() {
   const t = useTranslations("student.auth");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [code, setCode] = useState("");
-  const [codeLoading, setCodeLoading] = useState(false);
   const [codeError, setCodeError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/v1/auth/magic-link/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-        credentials: "same-origin",
-      });
+  const { run: handleSubmit, loading } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
+      let res: Response;
+      try {
+        res = await fetch("/api/v1/auth/magic-link/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+          credentials: "same-origin",
+        });
+      } catch {
+        throw new Error(t("networkError"));
+      }
       const data = await res.json();
       if (!res.ok) {
-        setError(data.detail || t("magicLinkError"));
-        return;
+        throw new Error(data.detail || t("magicLinkError"));
       }
       if (data.demo_redirect) {
         window.location.href = data.demo_redirect;
         return;
       }
       setSent(true);
-    } catch {
-      setError(t("networkError"));
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    {
+      errorToast: false,
+      onError: (err) => setError(errorMessage(err, t("magicLinkError"))),
+    },
+  );
 
-  async function handleCodeSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setCodeLoading(true);
-    setCodeError("");
-    try {
-      const res = await fetch("/api/v1/auth/magic-link/verify-code/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
-        credentials: "same-origin",
-      });
+  const { run: handleCodeSubmit, loading: codeLoading } = useAsyncAction(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setCodeError("");
+      let res: Response;
+      try {
+        res = await fetch("/api/v1/auth/magic-link/verify-code/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code }),
+          credentials: "same-origin",
+        });
+      } catch {
+        throw new Error(t("networkError"));
+      }
       if (!res.ok) {
-        setCodeError(t("codeError"));
-        return;
+        throw new Error(t("codeError"));
       }
       setCode("");
       window.location.href = "/";
-      return;
-    } catch {
-      setCodeError(t("networkError"));
-    } finally {
-      setCodeLoading(false);
-    }
-  }
+    },
+    {
+      errorToast: false,
+      onError: (err) => setCodeError(errorMessage(err, t("codeError"))),
+    },
+  );
 
   if (sent) {
     return (
@@ -96,9 +101,11 @@ export function MagicLinkForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={codeLoading || code.length !== 6}
+            disabled={code.length !== 6}
+            loading={codeLoading}
+            loadingText={t("codeSubmitting")}
           >
-            {codeLoading ? t("codeSubmitting") : t("codeSubmit")}
+            {t("codeSubmit")}
           </Button>
         </form>
       </div>
@@ -119,8 +126,13 @@ export function MagicLinkForm() {
         />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? t("magicLinkSubmitting") : t("magicLinkSubmit")}
+      <Button
+        type="submit"
+        className="w-full"
+        loading={loading}
+        loadingText={t("magicLinkSubmitting")}
+      >
+        {t("magicLinkSubmit")}
       </Button>
     </form>
   );

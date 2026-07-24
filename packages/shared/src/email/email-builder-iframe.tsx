@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { createEmailSession } from "@/lib/email-api";
+import { Spinner } from "../ui/spinner";
 
 const EMAILCRAFT_BASE =
   process.env.NEXT_PUBLIC_EMAILCRAFT_URL || "https://mailcraft.contentor.app";
@@ -289,7 +290,8 @@ export const EmailBuilderIframe = forwardRef<
 
   if (loading) {
     return (
-      <div className="flex h-[600px] items-center justify-center rounded-lg border bg-muted/30">
+      <div className="flex h-[600px] items-center justify-center gap-2 rounded-lg border bg-muted/30">
+        <Spinner size="sm" />
         <p className="text-muted-foreground">Loading email builder...</p>
       </div>
     );

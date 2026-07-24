@@ -39,8 +39,11 @@ export function AutopilotCard({ eligible }: { eligible: boolean }) {
     if (!eligible) return;
     getAutopilot()
       .then(setSettings)
-      .catch(() => setSettings(null));
-  }, [eligible]);
+      .catch(() => {
+        setSettings(null);
+        toast.error(t("blog.errGeneric"));
+      });
+  }, [eligible, t]);
 
   const save = async (patch: Partial<AutopilotSettings>) => {
     if (!settings) return;

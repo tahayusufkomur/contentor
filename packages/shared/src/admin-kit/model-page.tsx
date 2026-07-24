@@ -7,7 +7,7 @@
 // and the slide-over form. Everything renders from the backend metadata.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Search, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 
 import { AdminKitError, createAdminClient } from "./client";
 import type {
@@ -29,6 +29,7 @@ import {
   KitSelect,
   KitSkeletonRows,
 } from "./primitives";
+import { Spinner } from "../ui/spinner";
 
 type FormTarget = { mode: "create" } | { mode: "edit"; row: Row } | null;
 
@@ -114,7 +115,11 @@ function ButtonSelectFilter({
 
   const scrollStrip = (direction: number) => {
     const el = stripRef.current;
-    if (el) el.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: "smooth" });
+    if (el)
+      el.scrollBy({
+        left: direction * el.clientWidth * 0.8,
+        behavior: "smooth",
+      });
   };
 
   // Pull a just-clicked chip to the middle of the strip, so clicking an
@@ -124,7 +129,8 @@ function ButtonSelectFilter({
     if (!el) return;
     const chipBox = chipEl.getBoundingClientRect();
     const stripBox = el.getBoundingClientRect();
-    const delta = chipBox.left + chipBox.width / 2 - (stripBox.left + stripBox.width / 2);
+    const delta =
+      chipBox.left + chipBox.width / 2 - (stripBox.left + stripBox.width / 2);
     el.scrollBy({ left: delta, behavior: "smooth" });
   };
 
@@ -156,7 +162,9 @@ function ButtonSelectFilter({
   if (!isLarge) {
     return (
       <div className="flex flex-wrap items-center gap-1 rounded-md border bg-card p-1 text-sm shadow-sm">
-        <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}:</span>
+        <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          {label}:
+        </span>
         {allButton}
         {options.map(chip)}
       </div>
@@ -166,7 +174,9 @@ function ButtonSelectFilter({
   // Large filters: search box + a horizontally scrollable strip with arrows.
   return (
     <div className="flex items-center gap-1 rounded-md border bg-card p-1 text-sm shadow-sm">
-      <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}:</span>
+      <span className="px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        {label}:
+      </span>
       {allButton}
       <div className="relative flex items-center">
         <Search className="pointer-events-none absolute left-1.5 h-3.5 w-3.5 text-muted-foreground" />
@@ -194,7 +204,9 @@ function ButtonSelectFilter({
         className="flex max-w-[22rem] items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {matches.length === 0 ? (
-          <span className="px-1.5 text-xs whitespace-nowrap text-muted-foreground">No matches</span>
+          <span className="px-1.5 text-xs whitespace-nowrap text-muted-foreground">
+            No matches
+          </span>
         ) : (
           matches.map(chip)
         )}
@@ -212,7 +224,13 @@ function ButtonSelectFilter({
   );
 }
 
-function InfiniteScrollSentinel({ onIntersect, isFetching }: { onIntersect: () => void; isFetching: boolean }) {
+function InfiniteScrollSentinel({
+  onIntersect,
+  isFetching,
+}: {
+  onIntersect: () => void;
+  isFetching: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const onIntersectRef = useRef(onIntersect);
 
@@ -228,17 +246,20 @@ function InfiniteScrollSentinel({ onIntersect, isFetching }: { onIntersect: () =
           onIntersectRef.current();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, [isFetching]);
 
   return (
-    <div ref={ref} className="py-4 text-center text-sm text-muted-foreground flex justify-center">
+    <div
+      ref={ref}
+      className="py-4 text-center text-sm text-muted-foreground flex justify-center"
+    >
       <span className="flex items-center gap-2 min-h-[1.5rem]">
-         {isFetching && <Loader2 className="h-4 w-4 animate-spin" />}
-         {isFetching ? "Loading more..." : ""}
+        {isFetching && <Spinner size="sm" />}
+        {isFetching ? "Loading more..." : ""}
       </span>
     </div>
   );
@@ -549,7 +570,10 @@ export function AdminModelPage({
             </h1>
             {page && (
               <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
-                {page.count} {page.count === 1 ? meta.label.toLowerCase() : meta.label_plural.toLowerCase()}
+                {page.count}{" "}
+                {page.count === 1
+                  ? meta.label.toLowerCase()
+                  : meta.label_plural.toLowerCase()}
               </span>
             )}
           </div>
@@ -604,9 +628,15 @@ export function AdminModelPage({
             );
           }
 
-          const options = filter.type === "boolean"
-            ? [{ label: "Yes", value: "true" }, { label: "No", value: "false" }]
-            : (filter.choices ?? fkFilterOptions[filter.name] ?? []).map((o) => ({ label: o.label, value: String(o.value) }));
+          const options =
+            filter.type === "boolean"
+              ? [
+                  { label: "Yes", value: "true" },
+                  { label: "No", value: "false" },
+                ]
+              : (filter.choices ?? fkFilterOptions[filter.name] ?? []).map(
+                  (o) => ({ label: o.label, value: String(o.value) }),
+                );
 
           return (
             <ButtonSelectFilter
@@ -614,7 +644,11 @@ export function AdminModelPage({
               label={filter.label}
               value={filters[filter.name] ?? ""}
               options={options}
-              allLabel={filter.total_count !== undefined ? `All (${filter.total_count})` : "All"}
+              allLabel={
+                filter.total_count !== undefined
+                  ? `All (${filter.total_count})`
+                  : "All"
+              }
               onChange={(val) => {
                 setFilters((prev) => ({
                   ...prev,
