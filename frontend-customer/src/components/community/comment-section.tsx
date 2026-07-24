@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { Linkify } from "./linkify";
 import { type ModeratorHooks, timeAgo } from "./post-card";
 import { ReactionBar } from "./reaction-bar";
 import { ReportDialog } from "./report-dialog";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export function CommentSection({
   post,
@@ -31,7 +32,6 @@ export function CommentSection({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [draft, setDraft] = useState("");
-  const [busy, setBusy] = useState(false);
   const [reportingId, setReportingId] = useState<number | null>(null);
 
   const load = async (p: number) => {
@@ -48,28 +48,23 @@ export function CommentSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post.id]);
 
-  const submit = async () => {
-    if (!draft.trim()) return;
-    setBusy(true);
-    try {
+  const { run: submit, loading: busy } = useAsyncAction(
+    async () => {
+      if (!draft.trim()) return;
       const comment = await addComment(post.id, draft.trim());
       setComments((prev) => [...prev, comment]);
       setDraft("");
-    } catch {
-      toast.error("Couldn't add your comment.");
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    { errorToast: "Couldn't add your comment." },
+  );
 
-  const removeOwn = async (comment: CommunityComment) => {
-    try {
+  const { run: removeOwn } = useAsyncAction(
+    async (comment: CommunityComment) => {
       await deleteComment(comment.id);
       setComments((prev) => prev.filter((c) => c.id !== comment.id));
-    } catch {
-      toast.error("Couldn't delete the comment.");
-    }
-  };
+    },
+    { errorToast: "Couldn't delete the comment." },
+  );
 
   return (
     <div className="space-y-3 border-t pt-3">
@@ -153,8 +148,13 @@ export function CommentSection({
             }
           }}
         />
-        <Button size="sm" onClick={submit} disabled={busy || !draft.trim()}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reply"}
+        <Button
+          size="sm"
+          onClick={submit}
+          loading={busy}
+          disabled={!draft.trim()}
+        >
+          Reply
         </Button>
       </div>
 

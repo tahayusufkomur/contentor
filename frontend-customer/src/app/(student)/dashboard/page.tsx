@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import { BookOpen, GraduationCap, Play } from "lucide-react";
@@ -14,36 +16,41 @@ import type { Course } from "@/types/course";
 export default function DashboardPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<Course[]>("/api/v1/courses/enrolled/")
-      .then(setCourses)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <Skeleton className="h-44 w-full" />
-              <CardContent className="p-4 space-y-3">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-2 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+      .then((data) => {
+        if (!cancelled) setCourses(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   return (
-    <div className="space-y-6">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <SkeletonCardGrid count={3} />
+        </div>
+      }
+      className="space-y-6"
+    >
       <div className="flex items-center gap-3">
         <GraduationCap className="h-7 w-7 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">My Courses</h1>
@@ -130,6 +137,6 @@ export default function DashboardPage() {
           })}
         </div>
       )}
-    </div>
+    </PageState>
   );
 }

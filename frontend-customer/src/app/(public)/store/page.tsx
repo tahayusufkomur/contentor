@@ -11,7 +11,6 @@ import {
   Tv,
   Tag,
   Lock,
-  Loader2,
   CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +26,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PriceBadge } from "@/components/billing/price-badge";
 import { clientFetch } from "@/lib/api-client";
@@ -34,6 +34,7 @@ import { ApiError } from "@/types/api";
 import { addToCart } from "@/lib/cart";
 import type { StoreItem, SubscriptionPlan } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 type FilterType =
   | "all"
@@ -128,9 +129,8 @@ export default function StorePage() {
       .catch(() => {});
   }, []);
 
-  const handleSubscribe = async (planId: number) => {
-    setSubscribingPlanId(planId);
-    try {
+  const { run: runSubscribe } = useAsyncAction(
+    async (planId: number) => {
       await clientFetch("/api/v1/billing/subscribe/", {
         method: "POST",
         body: JSON.stringify({ plan_id: planId }),
@@ -138,23 +138,30 @@ export default function StorePage() {
       toast.success("Subscribed! You now have access to plan content.");
       router.refresh();
       fetchItems();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        router.push(
-          "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          router.push(
+            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+          );
+          return;
+        }
+        if (err instanceof ApiError && err.status === 400) {
+          toast.info("You're already subscribed to this plan");
+          return;
+        }
+        toast.error(
+          err instanceof Error ? err.message : "Subscription failed.",
         );
-        return;
-      }
-      if (err instanceof ApiError && err.status === 400) {
-        toast.info("You're already subscribed to this plan");
-        return;
-      }
-      const message =
-        err instanceof Error ? err.message : "Subscription failed.";
-      toast.error(message);
-    } finally {
-      setSubscribingPlanId(null);
-    }
+      },
+    },
+  );
+
+  const handleSubscribe = async (planId: number) => {
+    setSubscribingPlanId(planId);
+    await runSubscribe(planId);
+    setSubscribingPlanId(null);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -240,14 +247,10 @@ export default function StorePage() {
                   </p>
                   <Button
                     className="w-full gap-2"
-                    disabled={subscribingPlanId === plan.id}
+                    loading={subscribingPlanId === plan.id}
                     onClick={() => handleSubscribe(plan.id)}
                   >
-                    {subscribingPlanId === plan.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Lock className="h-4 w-4" />
-                    )}
+                    <Lock className="h-4 w-4" />
                     Subscribe
                   </Button>
                 </CardContent>
@@ -258,30 +261,35 @@ export default function StorePage() {
       )}
 
       {/* Grid */}
-      {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <StoreCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon={Tag}
-          title="No items found"
-          description="Try adjusting your search or filter to find what you're looking for."
-        />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {items.map((item) => (
-            <StoreItemCard
-              key={item.id}
-              item={item}
-              adding={addingIds.has(item.id)}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </div>
-      )}
+      <PageState
+        loading={loading}
+        skeleton={
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <StoreCardSkeleton key={i} />
+            ))}
+          </div>
+        }
+      >
+        {items.length === 0 ? (
+          <EmptyState
+            icon={Tag}
+            title="No items found"
+            description="Try adjusting your search or filter to find what you're looking for."
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {items.map((item) => (
+              <StoreItemCard
+                key={item.id}
+                item={item}
+                adding={addingIds.has(item.id)}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+        )}
+      </PageState>
     </div>
   );
 }

@@ -2,9 +2,10 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { clientFetch } from "@/lib/api-client";
 import { clearCart } from "@/lib/cart";
 
@@ -66,7 +67,7 @@ function SuccessInner() {
         <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
           {state === "polling" && (
             <>
-              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+              <Spinner size="lg" label="Confirming your payment" />
               <h1 className="text-xl font-semibold">
                 Confirming your payment…
               </h1>

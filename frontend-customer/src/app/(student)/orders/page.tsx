@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Receipt, ExternalLink, ShoppingBag } from "lucide-react";
+import { Receipt, ExternalLink, ShoppingBag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonList } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 
@@ -50,24 +53,41 @@ function formatDate(iso: string | null) {
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<Order[]>("/api/v1/billing/orders/")
-      .then(setOrders)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+      .then((data) => {
+        if (!cancelled) setOrders(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   return (
-    <div className="space-y-6">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <SkeletonList count={3} />
+        </div>
+      }
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
           Order History
@@ -143,6 +163,6 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageState>
   );
 }

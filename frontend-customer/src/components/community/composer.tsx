@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createPost, uploadCommunityImage } from "@/lib/community";
 import type { CommunityPost } from "@/types/community";
 import { ApiError } from "@/types/api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 const MAX_IMAGES = 4;
 
@@ -19,15 +20,15 @@ export function Composer({
 }) {
   const [body, setBody] = useState("");
   const [images, setImages] = useState<{ key: string; preview: string }[]>([]);
-  const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const addFiles = async (files: FileList) => {
-    const room = MAX_IMAGES - images.length;
-    const picked = Array.from(files).slice(0, room);
-    if (files.length > room) toast.info(`Up to ${MAX_IMAGES} photos per post.`);
-    setBusy(true);
-    try {
+  const { run: addFiles, loading: uploading } = useAsyncAction(
+    async (files: FileList) => {
+      const room = MAX_IMAGES - images.length;
+      const picked = Array.from(files).slice(0, room);
+      if (files.length > room) {
+        toast.info(`Up to ${MAX_IMAGES} photos per post.`);
+      }
       for (const file of picked) {
         const key = await uploadCommunityImage(file);
         setImages((prev) => [
@@ -35,16 +36,12 @@ export function Composer({
           { key, preview: URL.createObjectURL(file) },
         ]);
       }
-    } catch {
-      toast.error("Photo upload failed.");
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    { errorToast: "Photo upload failed." },
+  );
 
-  const submit = async () => {
-    setBusy(true);
-    try {
+  const { run: submit, loading: posting } = useAsyncAction(
+    async () => {
       const post = await createPost({
         body: body.trim(),
         image_keys: images.map((i) => i.key),
@@ -55,18 +52,21 @@ export function Composer({
         toast.info("Your post is waiting for a moderator's approval.");
       }
       onPosted(post);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 429) {
-        toast.error("You're posting too fast — try again in a bit.");
-      } else if (err instanceof ApiError && err.status === 403) {
-        toast.error("You can't post right now.");
-      } else {
-        toast.error("Couldn't publish your post.");
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 429) {
+          toast.error("You're posting too fast — try again in a bit.");
+        } else if (err instanceof ApiError && err.status === 403) {
+          toast.error("You can't post right now.");
+        } else {
+          toast.error("Couldn't publish your post.");
+        }
+      },
+    },
+  );
+
+  const busy = uploading || posting;
 
   return (
     <Card>
@@ -123,8 +123,12 @@ export function Composer({
               e.target.value = "";
             }}
           />
-          <Button onClick={submit} disabled={busy || !body.trim()}>
-            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button
+            onClick={submit}
+            loading={posting}
+            loadingText="Posting…"
+            disabled={busy || !body.trim()}
+          >
             Post
           </Button>
         </div>

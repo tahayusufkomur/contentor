@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { clientFetch } from "@/lib/api-client";
 import { ApiError } from "@/types/api";
 import { getCart, removeFromCart, clearCart } from "@/lib/cart";
 import type { CartItem } from "@/types/billing";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface PaymentInitializeResponse {
   payment_id: number;
@@ -24,7 +25,6 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     setCart(getCart());
@@ -47,10 +47,9 @@ export default function CheckoutPage() {
   // All items on a tenant are priced in the tenant's single charge currency.
   const cartCurrency = cart.find((item) => item.currency)?.currency ?? "";
 
-  const handlePay = async () => {
-    if (cart.length === 0) return;
-    setPaying(true);
-    try {
+  const { run: handlePay, loading: paying } = useAsyncAction(
+    async () => {
+      if (cart.length === 0) return;
       const res = await clientFetch<PaymentInitializeResponse>(
         "/api/v1/billing/payments/initialize/",
         {
@@ -73,22 +72,23 @@ export default function CheckoutPage() {
       clearCart();
       toast.success("Payment successful! Redirecting to dashboard...");
       router.push("/dashboard");
-    } catch (err: unknown) {
-      if (err instanceof ApiError && err.status === 403) {
-        router.push(
-          "/login?toast=You+need+to+log+in+to+purchase&toast_type=info",
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          router.push(
+            "/login?toast=You+need+to+log+in+to+purchase&toast_type=info",
+          );
+          return;
+        }
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Payment failed. Please try again.",
         );
-        return;
-      }
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Payment failed. Please try again.";
-      toast.error(message);
-    } finally {
-      setPaying(false);
-    }
-  };
+      },
+    },
+  );
 
   if (cart.length === 0) {
     return (
@@ -183,19 +183,11 @@ export default function CheckoutPage() {
               <Button
                 className="w-full gap-2"
                 size="lg"
-                disabled={paying}
+                loading={paying}
+                loadingText="Processing…"
                 onClick={handlePay}
               >
-                {paying ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Pay {totalFormatted} {cartCurrency}
-                  </>
-                )}
+                Pay {totalFormatted} {cartCurrency}
               </Button>
             </CardContent>
           </Card>

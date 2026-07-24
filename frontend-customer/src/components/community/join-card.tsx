@@ -1,14 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { updateCommunityMe, uploadCommunityImage } from "@/lib/community";
 import type { CommunityMe } from "@/types/community";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export function JoinCard({
   me,
@@ -20,38 +20,33 @@ export function JoinCard({
   const [name, setName] = useState(me.display_name);
   const [avatarKey, setAvatarKey] = useState(me.avatar_key);
   const [preview, setPreview] = useState(me.avatar);
-  const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const pickPhoto = async (file: File) => {
-    setBusy(true);
-    try {
+  const { run: pickPhoto, loading: uploadingPhoto } = useAsyncAction(
+    async (file: File) => {
       const key = await uploadCommunityImage(file);
       setAvatarKey(key);
       setPreview(URL.createObjectURL(file));
-    } catch {
-      toast.error("Photo upload failed — try a smaller image.");
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    { errorToast: "Photo upload failed — try a smaller image." },
+  );
 
-  const save = async () => {
-    setBusy(true);
-    try {
+  const { run: save, loading: saving } = useAsyncAction(
+    async () => {
       const updated = await updateCommunityMe({
         display_name: name.trim() || me.display_name,
         avatar_key: avatarKey,
       });
       localStorage.setItem("community_joined", "1");
-      toast.success("Welcome to the community!");
       onDone(updated);
-    } catch {
-      toast.error("Couldn't save your profile.");
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    {
+      successToast: "Welcome to the community!",
+      errorToast: "Couldn't save your profile.",
+    },
+  );
+
+  const busy = uploadingPhoto || saving;
 
   return (
     <Card>
@@ -93,8 +88,12 @@ export function JoinCard({
           className="max-w-xs text-center"
           aria-label="Display name"
         />
-        <Button onClick={save} disabled={busy || !name.trim()}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button
+          onClick={save}
+          loading={saving}
+          loadingText="Joining…"
+          disabled={busy || !name.trim()}
+        >
           Join the community
         </Button>
       </CardContent>

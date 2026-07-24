@@ -6,12 +6,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { clientFetch } from "@/lib/api-client";
-import { Play, Loader2, ShoppingCart, Zap, Package } from "lucide-react";
+import { Play, ShoppingCart, Zap, Package } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api";
 import { addToCart } from "@/lib/cart";
 import type { CourseDetail } from "@/types/course";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface EnrollButtonProps {
   course: CourseDetail;
@@ -19,24 +20,18 @@ interface EnrollButtonProps {
 
 export function EnrollButton({ course }: EnrollButtonProps) {
   const router = useRouter();
-  const [enrolling, setEnrolling] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
+  const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(
+    null,
+  );
 
   const opts = course.unlock_options;
 
-  async function handleEnroll() {
-    setEnrolling(true);
-    try {
-      await clientFetch(`/api/v1/courses/${course.slug}/enroll/`, {
-        method: "POST",
-      });
-      router.push(`/learn/${course.slug}`);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setEnrolling(false);
-    }
-  }
+  const { run: handleEnroll, loading: enrolling } = useAsyncAction(async () => {
+    await clientFetch(`/api/v1/courses/${course.slug}/enroll/`, {
+      method: "POST",
+    });
+    router.push(`/learn/${course.slug}`);
+  });
 
   function handleAddToCart() {
     addToCart({
@@ -55,28 +50,34 @@ export function EnrollButton({ course }: EnrollButtonProps) {
     router.push("/checkout");
   }
 
-  async function handleSubscribe(planId: number) {
-    setSubscribing(true);
-    try {
+  const { run: runSubscribe } = useAsyncAction(
+    async (planId: number) => {
       await clientFetch("/api/v1/billing/subscribe/", {
         method: "POST",
         body: JSON.stringify({ plan_id: planId }),
       });
       toast.success("Subscribed! You now have access.");
       router.refresh();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        router.push(
-          "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          router.push(
+            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+          );
+          return;
+        }
+        toast.error(
+          err instanceof Error ? err.message : "Subscription failed.",
         );
-        return;
-      }
-      const message =
-        err instanceof Error ? err.message : "Subscription failed.";
-      toast.error(message);
-    } finally {
-      setSubscribing(false);
-    }
+      },
+    },
+  );
+
+  async function handleSubscribe(planId: number) {
+    setSubscribingPlanId(planId);
+    await runSubscribe(planId);
+    setSubscribingPlanId(null);
   }
 
   // Already enrolled
@@ -98,19 +99,11 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       <Button
         className="w-full gap-2"
         onClick={handleEnroll}
-        disabled={enrolling}
+        loading={enrolling}
+        loadingText="Starting…"
       >
-        {enrolling ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Starting...
-          </>
-        ) : (
-          <>
-            <Play className="h-4 w-4" />
-            Start Learning
-          </>
-        )}
+        <Play className="h-4 w-4" />
+        Start Learning
       </Button>
     );
   }
@@ -121,16 +114,10 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       <Button
         className="w-full gap-2"
         onClick={handleEnroll}
-        disabled={enrolling}
+        loading={enrolling}
+        loadingText="Enrolling…"
       >
-        {enrolling ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Enrolling...
-          </>
-        ) : (
-          "Enroll for Free"
-        )}
+        Enroll for Free
       </Button>
     );
   }
@@ -208,14 +195,10 @@ export function EnrollButton({ course }: EnrollButtonProps) {
                 key={plan.id}
                 variant="outline"
                 className="w-full gap-2"
-                disabled={subscribing}
+                loading={subscribingPlanId === plan.id}
                 onClick={() => handleSubscribe(plan.id)}
               >
-                {subscribing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Zap className="h-4 w-4" />
-                )}
+                <Zap className="h-4 w-4" />
                 {plan.name} — {plan.price} {plan.currency}
                 {billingIntervalSuffix(plan.billing_interval_months)}
               </Button>

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import { ApiError } from "@/types/api";
-import { Loader2, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { toast } from "sonner";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface SubscribeButtonProps {
   planId: number;
@@ -31,17 +31,12 @@ export function SubscribeButton({
   size = "default",
 }: SubscribeButtonProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
-  async function handleSubscribe() {
-    setLoading(true);
-    try {
+  const { run: handleSubscribe, loading } = useAsyncAction(
+    async () => {
       const res = await clientFetch<{ checkout_url?: string }>(
         "/api/v1/billing/subscribe/",
-        {
-          method: "POST",
-          body: JSON.stringify({ plan_id: planId }),
-        },
+        { method: "POST", body: JSON.stringify({ plan_id: planId }) },
       );
       // Real Stripe checkout (mode=subscription): redirect to the hosted page.
       if (res?.checkout_url) {
@@ -51,38 +46,35 @@ export function SubscribeButton({
       // Bypass: subscription is active immediately.
       toast.success(`Subscribed to ${planName}!`);
       router.refresh();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        router.push(
-          "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+    },
+    {
+      onError: (err) => {
+        if (err instanceof ApiError && err.status === 403) {
+          router.push(
+            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+          );
+          return;
+        }
+        if (err instanceof ApiError && err.status === 400) {
+          toast.info("You're already subscribed to this plan");
+          return;
+        }
+        toast.error(
+          err instanceof Error ? err.message : "Subscription failed.",
         );
-        return;
-      }
-      if (err instanceof ApiError && err.status === 400) {
-        toast.info("You're already subscribed to this plan");
-        return;
-      }
-      const message =
-        err instanceof Error ? err.message : "Subscription failed.";
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }
+      },
+    },
+  );
 
   return (
     <Button
       className={className}
       variant={variant}
       size={size}
-      disabled={loading}
+      loading={loading}
       onClick={handleSubscribe}
     >
-      {loading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <Zap className="mr-2 h-4 w-4" />
-      )}
+      <Zap className="mr-2 h-4 w-4" />
       Subscribe — {price} {currency}
       {billingIntervalSuffix(intervalMonths)}
     </Button>

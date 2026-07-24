@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { X, Search } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,13 +62,21 @@ export function ContentPicker({ selected, onChange }: ContentPickerProps) {
   const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
+    let cancelled = false;
     clientFetch<Product[]>("/api/v1/billing/products/")
       .then((data) => {
         // Filter out bundles
-        setProducts(data.filter((p) => p.type !== "bundle"));
+        if (!cancelled) setProducts(data.filter((p) => p.type !== "bundle"));
       })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) toast.error("Failed to load content.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filtered = useMemo(() => {

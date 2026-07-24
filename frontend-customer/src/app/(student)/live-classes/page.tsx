@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import {
@@ -66,40 +68,46 @@ function formatDate(dateStr: string) {
 export default function LiveClassesPage() {
   const [classes, setClasses] = useState<LiveClass[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<LiveClass[]>("/api/v1/live/")
-      .then(setClasses)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .then((data) => {
+        if (!cancelled) setClasses(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const liveNow = classes.filter((c) => c.status === "live");
   const upcoming = classes.filter((c) => c.status === "scheduled");
   const past = classes.filter((c) => c.status === "ended");
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <CardContent className="p-5 space-y-3">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-8 w-24" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <SkeletonCardGrid count={3} withImage={false} />
+        </div>
+      }
+      className="space-y-6"
+    >
       <div className="flex items-center gap-3">
         <Video className="h-7 w-7 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">Live Classes</h1>
@@ -268,6 +276,6 @@ export default function LiveClassesPage() {
           )}
         </>
       )}
-    </div>
+    </PageState>
   );
 }

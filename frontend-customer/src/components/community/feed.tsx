@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
 import { EmptyState } from "@/components/shared/empty-state";
 import { getFeed } from "@/lib/community";
 import type { CommunityMe, CommunityPost } from "@/types/community";
@@ -22,17 +23,30 @@ export function Feed({
   const [welcome, setWelcome] = useState("");
   const [next, setNext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  // loadFirst is also called from Composer/PostCard callbacks after mount,
+  // not just from the mount effect below — guard all of them with one ref.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const loadFirst = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const page = await getFeed();
+      if (!mountedRef.current) return;
       setPinned(page.pinned ?? []);
       setPosts(page.results);
       setWelcome(page.welcome_message ?? "");
       setNext(page.next);
+    } catch (err) {
+      if (mountedRef.current) setError(err);
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, []);
 
@@ -47,18 +61,20 @@ export function Feed({
     setNext(page.next);
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => void loadFirst()}
+      skeleton={
+        <div className="space-y-4">
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      }
+      className="space-y-4"
+    >
       {welcome && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
           {welcome}
@@ -96,6 +112,6 @@ export function Feed({
           Load more
         </Button>
       )}
-    </div>
+    </PageState>
   );
 }

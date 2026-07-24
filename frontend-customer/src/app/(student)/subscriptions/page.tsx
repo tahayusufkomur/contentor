@@ -2,15 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, CalendarClock, XCircle, RefreshCw } from "lucide-react";
+import { CalendarClock, XCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonList } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface MySubscription {
   id: number;
@@ -57,48 +62,57 @@ export default function SubscriptionsPage() {
   const [subs, setSubs] = useState<MySubscription[]>([]);
   const [plans, setPlans] = useState<PlanOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [busyId, setBusyId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
-    try {
-      const [s, p] = await Promise.all([
-        clientFetch<MySubscription[]>("/api/v1/billing/subscriptions/"),
-        clientFetch<PlanOption[]>("/api/v1/billing/plans/"),
-      ]);
-      setSubs(s);
-      setPlans(p);
-    } catch {
-      toast.error("Could not load your subscriptions.");
-    } finally {
-      setLoading(false);
-    }
+    const [s, p] = await Promise.all([
+      clientFetch<MySubscription[]>("/api/v1/billing/subscriptions/"),
+      clientFetch<PlanOption[]>("/api/v1/billing/plans/"),
+    ]);
+    setSubs(s);
+    setPlans(p);
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     if (searchParams.get("sub") === "success") {
       toast.success("Subscription started! It may take a moment to appear.");
     }
-    load();
-  }, [load, searchParams]);
+    setLoading(true);
+    setError(null);
+    load()
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [load, searchParams, reloadKey]);
 
-  async function cancel(sub: MySubscription) {
-    setBusyId(sub.id);
-    try {
+  const { run: runCancel } = useAsyncAction(
+    async (sub: MySubscription) => {
       await clientFetch(`/api/v1/billing/subscriptions/${sub.id}/cancel/`, {
         method: "POST",
       });
       toast.success("Subscription will cancel at the end of the period.");
       await load();
-    } catch {
-      toast.error("Could not cancel. Please try again.");
-    } finally {
-      setBusyId(null);
-    }
+    },
+    { errorToast: "Could not cancel. Please try again." },
+  );
+
+  async function cancel(sub: MySubscription) {
+    setBusyId(sub.id);
+    await runCancel(sub);
+    setBusyId(null);
   }
 
-  async function changePlan(sub: MySubscription, planId: number) {
-    setBusyId(sub.id);
-    try {
+  const { run: runChangePlan } = useAsyncAction(
+    async (sub: MySubscription, planId: number) => {
       await clientFetch(
         `/api/v1/billing/subscriptions/${sub.id}/change-plan/`,
         {
@@ -108,25 +122,31 @@ export default function SubscriptionsPage() {
       );
       toast.success("Plan change scheduled for your next billing cycle.");
       await load();
-    } catch {
-      toast.error("Could not change plan. Please try again.");
-    } finally {
-      setBusyId(null);
-    }
-  }
+    },
+    { errorToast: "Could not change plan. Please try again." },
+  );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+  async function changePlan(sub: MySubscription, planId: number) {
+    setBusyId(sub.id);
+    await runChangePlan(sub, planId);
+    setBusyId(null);
   }
 
   const activeSubs = subs.filter((s) => s.status !== "expired");
 
   return (
-    <div className="space-y-6">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <SkeletonList count={3} />
+        </div>
+      }
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
           My Subscriptions
@@ -190,7 +210,7 @@ export default function SubscriptionsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => cancel(sub)}
-                        disabled={busy}
+                        loading={busy}
                       >
                         <XCircle className="h-4 w-4" /> Cancel
                       </Button>
@@ -220,9 +240,7 @@ export default function SubscriptionsPage() {
                         </select>
                       </div>
                     )}
-                    {busy && (
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    )}
+                    {busy && <Spinner size="sm" />}
                   </div>
                 </CardContent>
               </Card>
@@ -230,6 +248,6 @@ export default function SubscriptionsPage() {
           })}
         </div>
       )}
-    </div>
+    </PageState>
   );
 }
