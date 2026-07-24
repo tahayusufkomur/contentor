@@ -23,13 +23,13 @@ import {
 import { GenerateDialog } from "@/components/admin/blog/generate-dialog";
 import { AutopilotCard } from "@/components/admin/blog/autopilot-card";
 import { PaidFeatureBadge } from "@/components/admin/feature-badges";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export default function BlogListPage() {
   const t = useTranslations("admin");
   const router = useRouter();
   const [posts, setPosts] = useState<BlogPostAdmin[] | null>(null);
   const [status, setStatus] = useState<BlogAiStatus | null>(null);
-  const [creating, setCreating] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
 
   const load = () => {
@@ -45,28 +45,13 @@ export default function BlogListPage() {
     load();
   }, []);
 
-  const handleNewPost = async () => {
-    setCreating(true);
-    try {
+  const { run: handleNewPost, loading: creating } = useAsyncAction(
+    async () => {
       const post = await createPost({ title: t("blog.untitled") });
       router.push(`/admin/blog/${post.id}`);
-    } catch {
-      toast.error(t("blog.errGeneric"));
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm(t("blog.deleteConfirm"))) return;
-    try {
-      await deletePost(id);
-      toast.success("Deleted");
-      load();
-    } catch {
-      toast.error(t("blog.errGeneric"));
-    }
-  };
+    },
+    { errorToast: t("blog.errGeneric") },
+  );
 
   const showUpsell = status?.reason === "upgrade_required";
 
@@ -95,7 +80,7 @@ export default function BlogListPage() {
             <Sparkles className="h-4 w-4" />
             {t("blog.writeWithAi")}
           </Button>
-          <Button onClick={handleNewPost} loading={creating}>
+          <Button onClick={() => void handleNewPost()} loading={creating}>
             {t("blog.newPost")}
           </Button>
         </div>
@@ -150,12 +135,7 @@ export default function BlogListPage() {
                   <span>{new Date(post.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
-              <button
-                onClick={() => handleDelete(post.id)}
-                className="rounded-md px-2 py-1 text-muted-foreground hover:text-destructive"
-              >
-                Delete
-              </button>
+              <DeletePostButton postId={post.id} onDeleted={load} />
             </div>
           ))}
         </div>
@@ -171,5 +151,40 @@ export default function BlogListPage() {
         />
       )}
     </div>
+  );
+}
+
+// Per-row: each post's delete action needs its own in-flight guard so a
+// double-click can't fire two DELETEs and one row's delete doesn't block
+// every other row's button (see DeleteModuleButton in course-form.tsx for
+// the same pattern).
+function DeletePostButton({
+  postId,
+  onDeleted,
+}: {
+  postId: number;
+  onDeleted: () => void;
+}) {
+  const t = useTranslations("admin");
+  const { run: handleDelete, loading } = useAsyncAction(
+    async () => {
+      if (!confirm(t("blog.deleteConfirm"))) return;
+      await deletePost(postId);
+      toast.success("Deleted");
+      onDeleted();
+    },
+    { errorToast: t("blog.errGeneric") },
+  );
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="text-muted-foreground hover:text-destructive"
+      loading={loading}
+      onClick={() => void handleDelete()}
+    >
+      Delete
+    </Button>
   );
 }
