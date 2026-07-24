@@ -19,8 +19,11 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -169,7 +172,6 @@ function MediaBrowserInner<T>(
   );
   const [selectAllMode, setSelectAllMode] = useState(false);
   const [totalCount, setTotalCount] = useState<number | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
   const [fadingIds, setFadingIds] = useState<Set<string | number>>(new Set());
   const offsetRef = useRef(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -287,7 +289,7 @@ function MediaBrowserInner<T>(
         offsetRef.current += res.results.length;
         hasLoadedOnce.current = true;
       } catch {
-        // ignore
+        toast.error("Could not load items. Please try again.");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -382,9 +384,8 @@ function MediaBrowserInner<T>(
 
   // ---- action handler ----
 
-  async function handleAction(action: BulkAction) {
-    setActionLoading(true);
-    try {
+  const { run: handleAction, loading: actionLoading } = useAsyncAction(
+    async (action: BulkAction) => {
       const ids = Array.from(selectedIds);
       // Fade out selected items
       setFadingIds(new Set(ids));
@@ -401,10 +402,8 @@ function MediaBrowserInner<T>(
       await action.onAction(selection);
       clearSelection();
       setFadingIds(new Set());
-    } finally {
-      setActionLoading(false);
-    }
-  }
+    },
+  );
 
   // ---- render ----
 
@@ -422,8 +421,11 @@ function MediaBrowserInner<T>(
               variant="outline"
               size="sm"
               className="gap-1.5"
-              disabled={actionLoading}
+              loading={actionLoading}
             >
+              {/* asChild buttons can't overlay a spinner on children (see
+                  Button's asChild branch) — the ternary text swap is the
+                  correct pattern here, not the invisible-overlay bug. */}
               {actionLoading ? "Processing..." : "Actions"}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
@@ -705,7 +707,7 @@ function MediaBrowserInner<T>(
       <div ref={sentinelRef} className="h-1" />
       {loadingMore && (
         <div className="flex justify-center py-4">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <Spinner size="sm" />
         </div>
       )}
     </div>

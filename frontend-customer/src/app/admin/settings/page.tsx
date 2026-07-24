@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Clock, Globe, Save, Sparkles, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import type { TenantConfig } from "@/types/tenant";
@@ -100,41 +102,51 @@ function DemoContentCard() {
 export default function SettingsPage() {
   const router = useRouter();
   const [config, setConfig] = useState<TenantConfig | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<TenantConfig>("/api/v1/admin/config/")
-      .then(setConfig)
-      .catch(console.error);
-  }, []);
-
-  async function handleSave() {
-    if (!config) return;
-    setSaving(true);
-    try {
-      await clientFetch("/api/v1/admin/config/", {
-        method: "PATCH",
-        body: JSON.stringify({ timezone: config.timezone }),
+      .then((data) => {
+        if (!cancelled) setConfig(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-      router.refresh();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
-  }
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
-  if (!config) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-48 w-full max-w-lg" />
-      </div>
-    );
-  }
+  const { run: handleSave, loading: saving } = useAsyncAction(async () => {
+    if (!config) return;
+    await clientFetch("/api/v1/admin/config/", {
+      method: "PATCH",
+      body: JSON.stringify({ timezone: config.timezone }),
+    });
+    router.refresh();
+  });
 
   return (
-    <div className="space-y-6">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-48 w-full max-w-lg" />
+        </div>
+      }
+      className="space-y-6"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
@@ -142,54 +154,63 @@ export default function SettingsPage() {
             Configure your site&apos;s general settings.
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <Button
+          onClick={handleSave}
+          loading={saving}
+          loadingText="Saving…"
+          className="gap-2"
+        >
           <Save className="h-4 w-4" />
-          {saving ? "Saving..." : "Save Changes"}
+          Save Changes
         </Button>
       </div>
 
-      <div className="max-w-lg">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Timezone
-            </CardTitle>
-            <CardDescription>
-              All event times in the calendar will be displayed in this timezone
-              for your students.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
-              <Select
-                value={config.timezone || "UTC"}
-                onValueChange={(timezone) => setConfig({ ...config, timezone })}
-              >
-                <SelectTrigger id="timezone">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COMMON_TIMEZONES.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
-                      {tz.replace(/_/g, " ")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />
-                Current selection: {config.timezone || "UTC"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {config && (
+        <div className="max-w-lg">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Timezone
+              </CardTitle>
+              <CardDescription>
+                All event times in the calendar will be displayed in this
+                timezone for your students.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="timezone">Timezone</Label>
+                <Select
+                  value={config.timezone || "UTC"}
+                  onValueChange={(timezone) =>
+                    setConfig({ ...config, timezone })
+                  }
+                >
+                  <SelectTrigger id="timezone">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMMON_TIMEZONES.map((tz) => (
+                      <SelectItem key={tz} value={tz}>
+                        {tz.replace(/_/g, " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Clock className="h-3 w-3" />
+                  Current selection: {config.timezone || "UTC"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <DemoContentCard />
 
       <MailboxSettingsSection />
-    </div>
+    </PageState>
   );
 }

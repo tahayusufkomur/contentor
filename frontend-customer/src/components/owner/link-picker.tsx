@@ -7,12 +7,13 @@ import {
   BookOpen,
   CalendarDays,
   Link2,
-  Loader2,
   Search,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { clientFetch } from "@/lib/api-client";
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { Spinner } from "@/components/ui/spinner";
 import type { Course } from "@/types/course";
 import type { CalendarEvent } from "@/types/live";
 
@@ -75,7 +76,10 @@ export function LinkPickerModal({
             })),
           ),
         )
-        .catch(() => setCourses([]))
+        .catch(() => {
+          setCourses([]);
+          toast.error("Could not load courses. Please try again.");
+        })
         .finally(() => setLoading(false));
     }
     if (tab === "events" && events === null) {
@@ -95,7 +99,10 @@ export function LinkPickerModal({
             })),
           ),
         )
-        .catch(() => setEvents([]))
+        .catch(() => {
+          setEvents([]);
+          toast.error("Could not load events. Please try again.");
+        })
         .finally(() => setLoading(false));
     }
   }, [tab, courses, events]);
@@ -207,7 +214,7 @@ export function LinkPickerModal({
               </div>
             ) : loading && list === null ? (
               <div className="flex items-center justify-center py-10 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Spinner />
               </div>
             ) : filtered && filtered.length > 0 ? (
               <div className="space-y-1">

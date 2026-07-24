@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { Spinner } from "@/components/ui/spinner";
 import { Search, Upload, X } from "lucide-react";
 
 export interface PresignResponse {
@@ -99,6 +101,7 @@ export function MediaPickerBase<T>({
       await refresh();
     } catch (err) {
       console.error(err);
+      toast.error("Upload failed. Please try again.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -178,7 +181,7 @@ export function MediaPickerBase<T>({
           <div className={`flex-1 overflow-y-auto ${contentClassName}`}>
             {loading ? (
               <div className="flex justify-center py-10">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <Spinner />
               </div>
             ) : items.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">

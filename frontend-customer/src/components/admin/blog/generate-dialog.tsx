@@ -18,6 +18,7 @@ import {
   listTopics,
   refillTopics,
 } from "@/lib/blog-api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface GenerateDialogProps {
   onClose: () => void;
@@ -30,7 +31,6 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
   const [customTopic, setCustomTopic] = useState("");
   const [instructions, setInstructions] = useState("");
-  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,10 +56,9 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
     dismissTopic(id).catch(() => {});
   };
 
-  const handleGenerate = async () => {
-    if (!selectedTopicId && !customTopic.trim()) return;
-    setGenerating(true);
-    try {
+  const { run: handleGenerate, loading: generating } = useAsyncAction(
+    async () => {
+      if (!selectedTopicId && !customTopic.trim()) return;
       const res = await generatePost({
         topic_id: selectedTopicId ?? undefined,
         custom_topic: selectedTopicId ? undefined : customTopic.trim(),
@@ -76,12 +75,9 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
             ? "blog.errBudget"
             : "blog.errGeneric";
       toast.error(t(errKey));
-    } catch {
-      toast.error(t("blog.errGeneric"));
-    } finally {
-      setGenerating(false);
-    }
-  };
+    },
+    { errorToast: t("blog.errGeneric") },
+  );
 
   return (
     <ModalPortal>

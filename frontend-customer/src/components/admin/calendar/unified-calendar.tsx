@@ -21,6 +21,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonTable } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 import {
   getMonthGridDates,
   getWeekDates,
@@ -99,7 +103,8 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
   );
   const [items, setItems] = useState<UnifiedCalendarItem[]>(initialItems);
   const [loading, setLoading] = useState(initialItems.length === 0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // The [from, to] window (YYYY-MM-DD) covering the visible grid.
   const { fetchFrom, fetchTo } = useMemo(() => {
@@ -114,18 +119,25 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
   }, [currentDate, viewMode]);
 
   // Fetch the coach's real Live + Blog + Email items for the visible window,
-  // refetching whenever the window changes (month/week navigation).
+  // refetching whenever the window changes (month/week navigation). Old items
+  // stay on screen while a background refetch is in flight (small inline
+  // Spinner only) — only the very first load (nothing to show yet) blocks
+  // behind the PageState skeleton below.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError(null);
     listContentCalendar(fetchFrom, fetchTo)
       .then((data) => {
         if (cancelled) return;
         setItems(data);
-        setError(null);
       })
-      .catch(() => {
-        if (!cancelled) setError("Failed to load calendar items.");
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err);
+        toast.error(
+          err instanceof Error ? err.message : "Failed to load calendar items.",
+        );
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -133,7 +145,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
     return () => {
       cancelled = true;
     };
-  }, [fetchFrom, fetchTo]);
+  }, [fetchFrom, fetchTo, reloadKey]);
 
   // Filter items by category
   const filteredItems = useMemo(() => {
@@ -362,109 +374,111 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
         <div className="text-lg font-bold tracking-tight text-foreground">
           {monthLabel}
         </div>
-        {loading && (
-          <span className="text-xs text-muted-foreground animate-pulse">
-            Loading…
-          </span>
+        {/* Background refetch (month/week nav) — the grid below keeps
+            showing the previous window's items while this spins. */}
+        {loading && items.length > 0 && <Spinner size="sm" />}
+      </div>
+
+      <PageState
+        loading={loading && items.length === 0}
+        error={error && items.length === 0 ? error : undefined}
+        onRetry={() => setReloadKey((k) => k + 1)}
+        skeleton={<SkeletonTable rows={5} cols={7} />}
+        className="space-y-6"
+      >
+        {/* Empty status */}
+        {!loading && filteredItems.length === 0 && (
+          <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            No scheduled content in this range. Create a live event, broadcast,
+            or blog post to see it appear here.
+          </div>
         )}
-      </div>
 
-      {/* Load error / empty status */}
-      {error ? (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
-          {error}
-        </div>
-      ) : !loading && filteredItems.length === 0 ? (
-        <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          No scheduled content in this range. Create a live event, broadcast, or
-          blog post to see it appear here.
-        </div>
-      ) : null}
+        {/* Grid View */}
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          {/* Days Header */}
+          <div className="grid grid-cols-7 border-b bg-muted/60 text-center text-xs font-semibold text-muted-foreground py-2.5">
+            {WEEKDAYS.map((day) => (
+              <div key={day}>{day}</div>
+            ))}
+          </div>
 
-      {/* Grid View */}
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-        {/* Days Header */}
-        <div className="grid grid-cols-7 border-b bg-muted/60 text-center text-xs font-semibold text-muted-foreground py-2.5">
-          {WEEKDAYS.map((day) => (
-            <div key={day}>{day}</div>
-          ))}
-        </div>
+          {/* Date Grid */}
+          <div
+            className={`grid grid-cols-7 divide-x divide-y divide-border/60 ${
+              viewMode === "month" ? "auto-rows-[120px]" : "auto-rows-[220px]"
+            }`}
+          >
+            {gridDates.map((date) => {
+              const key = toDateKey(date);
+              const dayEvents = eventsByDateKey[key] || [];
+              const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+              const today = isToday(date);
 
-        {/* Date Grid */}
-        <div
-          className={`grid grid-cols-7 divide-x divide-y divide-border/60 ${
-            viewMode === "month" ? "auto-rows-[120px]" : "auto-rows-[220px]"
-          }`}
-        >
-          {gridDates.map((date) => {
-            const key = toDateKey(date);
-            const dayEvents = eventsByDateKey[key] || [];
-            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-            const today = isToday(date);
-
-            return (
-              <div
-                key={key}
-                className={`p-1.5 flex flex-col transition-colors ${
-                  !isCurrentMonth ? "bg-muted/20 opacity-50" : "bg-card"
-                } ${today ? "bg-primary/5 font-semibold" : ""}`}
-              >
-                {/* Date header inside cell */}
-                <div className="flex items-center justify-between px-1 mb-1">
-                  <span
-                    className={`inline-flex items-center justify-center text-xs h-5 w-5 rounded-full ${
-                      today
-                        ? "bg-primary text-primary-foreground font-bold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {date.getDate()}
-                  </span>
-                  {dayEvents.length > 0 && (
-                    <span className="text-[10px] text-muted-foreground font-mono">
-                      {dayEvents.length} item{dayEvents.length > 1 ? "s" : ""}
+              return (
+                <div
+                  key={key}
+                  className={`p-1.5 flex flex-col transition-colors ${
+                    !isCurrentMonth ? "bg-muted/20 opacity-50" : "bg-card"
+                  } ${today ? "bg-primary/5 font-semibold" : ""}`}
+                >
+                  {/* Date header inside cell */}
+                  <div className="flex items-center justify-between px-1 mb-1">
+                    <span
+                      className={`inline-flex items-center justify-center text-xs h-5 w-5 rounded-full ${
+                        today
+                          ? "bg-primary text-primary-foreground font-bold"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {date.getDate()}
                     </span>
-                  )}
-                </div>
+                    {dayEvents.length > 0 && (
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {dayEvents.length} item{dayEvents.length > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Event Badges List */}
-                <div className="flex-1 overflow-y-auto space-y-1 p-0.5">
-                  {dayEvents.map((item) => {
-                    const style = CATEGORY_STYLES[item.category];
-                    const Icon = style.icon;
-                    const eventTime = new Date(
-                      item.scheduledAt,
-                    ).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    });
+                  {/* Event Badges List */}
+                  <div className="flex-1 overflow-y-auto space-y-1 p-0.5">
+                    {dayEvents.map((item) => {
+                      const style = CATEGORY_STYLES[item.category];
+                      const Icon = style.icon;
+                      const eventTime = new Date(
+                        item.scheduledAt,
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
 
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setSelectedItem(item)}
-                        className={`w-full text-left p-1.5 rounded-md border text-xs transition-all hover:scale-[1.02] ${style.bg} ${style.border} ${style.text}`}
-                      >
-                        <div className="flex items-center gap-1.5 font-medium truncate">
-                          <Icon className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{item.title}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[10px] opacity-80 mt-0.5">
-                          <span>{eventTime}</span>
-                          <span className="uppercase font-mono text-[9px]">
-                            {item.status}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setSelectedItem(item)}
+                          className={`w-full text-left p-1.5 rounded-md border text-xs transition-all hover:scale-[1.02] ${style.bg} ${style.border} ${style.text}`}
+                        >
+                          <div className="flex items-center gap-1.5 font-medium truncate">
+                            <Icon className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{item.title}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] opacity-80 mt-0.5">
+                            <span>{eventTime}</span>
+                            <span className="uppercase font-mono text-[9px]">
+                              {item.status}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </PageState>
 
       {/* Selected Event Detail Modal */}
       {selectedItem && (

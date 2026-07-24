@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
 import { toast } from "sonner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
@@ -68,7 +69,6 @@ const zoomClassFields: FieldConfig<ZoomClass>[] = [
 export function ZoomClassesTab() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showForm, setShowForm] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -104,9 +104,8 @@ export function ZoomClassesTab() {
     setShowForm(true);
   }
 
-  async function handleSave() {
-    setSaving(true);
-    try {
+  const { run: handleSave, loading: creating } = useAsyncAction(
+    async () => {
       const body = JSON.stringify({
         filter_option_ids: filterOptionIds,
         tag_ids: tagIds,
@@ -126,16 +125,12 @@ export function ZoomClassesTab() {
       resetForm();
       setShowForm(false);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to create Zoom class");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to create Zoom class" },
+  );
 
-  async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true);
-    try {
+  const { run: handleInlineUpdate, loading: updating } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
       await clientFetch(`/api/v1/zoom-classes/${editingId}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -160,12 +155,9 @@ export function ZoomClassesTab() {
       toast.success("Zoom class updated");
       setEditingId(null);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to update Zoom class");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to update Zoom class" },
+  );
 
   return (
     <div className="space-y-4">
@@ -249,8 +241,13 @@ export function ZoomClassesTab() {
             <TagInput scope="event" value={tagIds} onChange={setTagIds} />
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={!title.trim() || saving}>
-              {saving ? "Saving..." : "Create"}
+            <Button
+              onClick={handleSave}
+              loading={creating}
+              loadingText="Creating…"
+              disabled={!title.trim()}
+            >
+              Create
             </Button>
             <Button
               variant="ghost"
@@ -368,7 +365,7 @@ export function ZoomClassesTab() {
                   fields={zoomClassFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}
-                  saving={saving}
+                  saving={updating}
                 />
               </TableCell>
             </TableRow>

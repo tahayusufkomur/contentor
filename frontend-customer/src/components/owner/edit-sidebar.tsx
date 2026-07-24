@@ -17,14 +17,15 @@ import {
   Palette,
   Navigation,
   ChevronDown,
-  Loader2,
   Settings,
   LayoutList,
   Pencil,
   Eye,
   ArrowRight,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 import { TenantContext } from "@/hooks/use-tenant";
 import { generateThemeCSS } from "@/lib/themes";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
@@ -89,6 +90,11 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
     });
   };
 
+  // Debounced multi-trigger autosave (fired from the debounce timer below AND
+  // from flushPending() on navigation) — deliberately NOT useAsyncAction: its
+  // single-flight guard would silently drop a flush-on-navigate call that
+  // arrives while an earlier debounced call for older edits is still in
+  // flight, losing the coach's latest changes.
   const persistConfig = useCallback(
     async (nextConfig: TenantConfig) => {
       pendingConfigRef.current = null;
@@ -116,6 +122,9 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
           body: JSON.stringify(payload),
         });
         if (res.ok) router.refresh();
+        else toast.error("Could not save your changes. Please try again.");
+      } catch {
+        toast.error("Could not save your changes. Please try again.");
       } finally {
         setSaving(false);
       }
@@ -264,9 +273,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                   >
                     <div className="flex items-center gap-2">
                       <h2 className="text-sm font-semibold">Edit site</h2>
-                      {saving && (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                      )}
+                      {saving && <Spinner size="sm" label="Saving" />}
                     </div>
                     <div className="flex items-center gap-1">
                       <UndoRedoControls />

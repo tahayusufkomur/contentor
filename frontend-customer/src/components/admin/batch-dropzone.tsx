@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import {
-  UploadCloud,
-  File,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Loader2,
-} from "lucide-react";
+import { UploadCloud, File, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { clientFetch } from "@/lib/api-client";

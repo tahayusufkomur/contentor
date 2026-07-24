@@ -18,6 +18,10 @@ import {
   type EmailTemplate,
   type RecipientFilter,
 } from "@/lib/email-api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { Button } from "@/components/ui/button";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
 
 type Step = "choose" | "design" | "send";
 
@@ -68,7 +72,6 @@ export default function ComposePage() {
     type: "all",
   });
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
   const [scheduledAt, setScheduledAt] = useState("");
@@ -167,23 +170,24 @@ export default function ComposePage() {
   }, [initialTemplateId, setSavedTemplateName]);
 
   // Step 1: Select a template → load its JSON and go to Step 2
-  const handleSelectTemplate = useCallback(async (template: EmailTemplate) => {
-    setCopyingTemplateId(template.id);
-    try {
-      const data = await getTemplate(template.id);
-      if (data.json_data && typeof data.json_data === "object") {
-        setTemplateJson(data.json_data as Record<string, unknown>);
+  const { run: handleSelectTemplate } = useAsyncAction(
+    async (template: EmailTemplate) => {
+      setCopyingTemplateId(template.id);
+      try {
+        const data = await getTemplate(template.id);
+        if (data.json_data && typeof data.json_data === "object") {
+          setTemplateJson(data.json_data as Record<string, unknown>);
+        }
+        setSavedTemplateName(String(data.name || template.name || ""));
+        setSavedTemplateId(template.id);
+        setHasSaved(true);
+        setStep("design");
+      } finally {
+        setCopyingTemplateId(null);
       }
-      setSavedTemplateName(String(data.name || template.name || ""));
-      setSavedTemplateId(template.id);
-      setHasSaved(true);
-      setStep("design");
-    } catch {
-      setError("Failed to load template. Please try again.");
-    } finally {
-      setCopyingTemplateId(null);
-    }
-  }, []);
+    },
+    { onError: () => setError("Failed to load template. Please try again.") },
+  );
 
   // Step 1: Start from scratch → go to Step 2 with no template
   const handleStartFromScratch = useCallback(() => {
@@ -225,8 +229,43 @@ export default function ComposePage() {
     setStep("choose");
   }, [hasSaved]);
 
+  // Step 2: auto-save the template, then continue to Step 3
+  const { run: handleNextToSend, loading: savingBeforeSend } = useAsyncAction(
+    async () => {
+      if (builderRef.current && savedTemplateId) {
+        setError(null);
+        const result = await builderRef.current.requestSave();
+        if (result?.templateId) {
+          setSavedTemplateId(result.templateId);
+        }
+      }
+      setStep("send");
+    },
+  );
+
   // Step 3: Send campaign
-  async function handleSend() {
+  const { run: sendNow, loading: sending } = useAsyncAction(
+    async (scheduledIso?: string) => {
+      await sendCampaign({
+        template_id: savedTemplateId,
+        template_name: savedTemplateName,
+        subject,
+        recipient_filter: recipientFilter,
+        scheduled_at: scheduledIso,
+      });
+      // Scheduled campaigns land on the content calendar; immediate sends go
+      // back to the email dashboard.
+      router.push(scheduledIso ? "/admin/calendar" : "/admin/email");
+    },
+    {
+      onError: (err) =>
+        setError(
+          err instanceof Error ? err.message : "Failed to send campaign.",
+        ),
+    },
+  );
+
+  function handleSend() {
     if (!savedTemplateId) {
       setError("Please save a template first.");
       return;
@@ -264,27 +303,8 @@ export default function ComposePage() {
       scheduledIso = when.toISOString();
     }
 
-    setSending(true);
     setError(null);
-
-    try {
-      await sendCampaign({
-        template_id: savedTemplateId,
-        template_name: savedTemplateName,
-        subject,
-        recipient_filter: recipientFilter,
-        scheduled_at: scheduledIso,
-      });
-      // Scheduled campaigns land on the content calendar; immediate sends go
-      // back to the email dashboard.
-      router.push(scheduledIso ? "/admin/calendar" : "/admin/email");
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to send campaign.";
-      setError(message);
-    } finally {
-      setSending(false);
-    }
+    sendNow(scheduledIso);
   }
 
   const stepLabels = [
@@ -325,11 +345,10 @@ export default function ComposePage() {
       {/* Step 1: Choose Template */}
       {step === "choose" && (
         <div className="space-y-4">
-          {loadingTemplates ? (
-            <p className="text-sm text-muted-foreground">
-              Loading templates...
-            </p>
-          ) : (
+          <PageState
+            loading={loadingTemplates}
+            skeleton={<SkeletonCardGrid count={6} />}
+          >
             <TemplateGrid
               templates={allTemplates}
               previewHtmlMap={previewHtmlMap}
@@ -339,7 +358,7 @@ export default function ComposePage() {
               showStartFromScratch
               onStartFromScratch={handleStartFromScratch}
             />
-          )}
+          </PageState>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
       )}
@@ -363,25 +382,16 @@ export default function ComposePage() {
                 Back to templates
               </button>
             )}
-            <div className="ml-auto">
-              <button
-                onClick={async () => {
-                  // Auto-save the template before going to Send
-                  if (builderRef.current && savedTemplateId) {
-                    setError(null);
-                    const result = await builderRef.current.requestSave();
-                    if (result?.templateId) {
-                      setSavedTemplateId(result.templateId);
-                    }
-                  }
-                  setStep("send");
-                }}
-                disabled={!canGoToSend}
-                className="rounded-md bg-primary px-6 py-2 text-sm text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next: Send
-              </button>
-            </div>
+            <Button
+              onClick={handleNextToSend}
+              loading={savingBeforeSend}
+              loadingText="Saving…"
+              disabled={!canGoToSend}
+              size="lg"
+              className="ml-auto"
+            >
+              Next: Send
+            </Button>
           </div>
           {!canGoToSend && (
             <p className="text-right text-xs text-muted-foreground">
@@ -463,19 +473,15 @@ export default function ComposePage() {
             </div>
           )}
 
-          <button
+          <Button
             onClick={handleSend}
-            disabled={sending}
-            className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            loading={sending}
+            loadingText={scheduleMode === "later" ? "Scheduling…" : "Sending…"}
+            size="lg"
+            className="w-full"
           >
-            {sending
-              ? scheduleMode === "later"
-                ? "Scheduling..."
-                : "Sending..."
-              : scheduleMode === "later"
-                ? "Schedule Campaign"
-                : "Send Campaign"}
-          </button>
+            {scheduleMode === "later" ? "Schedule Campaign" : "Send Campaign"}
+          </Button>
         </div>
       )}
     </div>

@@ -12,8 +12,11 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonForm } from "@/components/ui/skeletons";
 import { CoverPicker } from "@/components/admin/blog/cover-picker";
 import { InlineImages } from "@/components/admin/blog/inline-images";
 import { PostEditor } from "@/components/admin/blog/post-editor";
@@ -32,52 +35,61 @@ export default function BlogEditorPage() {
   const postId = Number(params.id);
 
   const [post, setPost] = useState<BlogPostAdmin | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     getPost(postId)
-      .then(setPost)
+      .then((data) => {
+        if (!cancelled) {
+          setPost(data);
+          setLoading(false);
+        }
+      })
       .catch(() => {
-        toast.error(t("blog.errGeneric"));
-        router.push("/admin/blog");
+        if (!cancelled) {
+          toast.error(t("blog.errGeneric"));
+          router.push("/admin/blog");
+        }
       });
+    return () => {
+      cancelled = true;
+    };
   }, [postId]);
-
-  if (!post) return null;
 
   const patch = (fields: Partial<BlogPostAdmin>) =>
     setPost((prev) => (prev ? { ...prev, ...fields } : prev));
 
-  const save = async (fields: Partial<BlogPostAdmin> = {}) => {
-    setSaving(true);
-    try {
-      const updated = await updatePost(post.id, {
-        title: post.title,
-        excerpt: post.excerpt,
-        meta_description: post.meta_description,
-        tags: post.tags,
-        slug: post.slug,
-        body_html: post.body_html,
-        ...fields,
-      });
-      setPost(updated);
-      toast.success("Saved");
-    } catch {
-      toast.error(t("blog.errGeneric"));
-    } finally {
-      setSaving(false);
-    }
+  const doSave = async (fields: Partial<BlogPostAdmin> = {}) => {
+    if (!post) return;
+    const updated = await updatePost(post.id, {
+      title: post.title,
+      excerpt: post.excerpt,
+      meta_description: post.meta_description,
+      tags: post.tags,
+      slug: post.slug,
+      body_html: post.body_html,
+      ...fields,
+    });
+    setPost(updated);
+    toast.success("Saved");
   };
 
-  const togglePublish = () =>
-    save({ status: post.status === "published" ? "draft" : "published" });
+  const { run: save, loading: saving } = useAsyncAction(() => doSave(), {
+    errorToast: t("blog.errGeneric"),
+  });
 
-  const regenerate = async () => {
-    if (!confirm(t("blog.regenerateConfirm"))) return;
-    setRegenerating(true);
-    try {
+  const { run: togglePublish, loading: publishing } = useAsyncAction(
+    () =>
+      doSave({ status: post?.status === "published" ? "draft" : "published" }),
+    { errorToast: t("blog.errGeneric") },
+  );
+
+  const { run: regenerate, loading: regenerating } = useAsyncAction(
+    async () => {
+      if (!post) return;
+      if (!confirm(t("blog.regenerateConfirm"))) return;
       const res = await generatePost({ custom_topic: post.title });
       if (res.source === "ai" && res.post) {
         const fresh = res.post;
@@ -100,133 +112,146 @@ export default function BlogEditorPage() {
               : "blog.errGeneric";
         toast.error(t(errKey));
       }
-    } catch {
-      toast.error(t("blog.errGeneric"));
-    } finally {
-      setRegenerating(false);
-    }
-  };
+    },
+    { errorToast: t("blog.errGeneric") },
+  );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-6">
-      <CoverPicker post={post} onPatched={patch} />
+    <PageState
+      loading={loading}
+      skeleton={<SkeletonForm fields={6} className="mx-auto max-w-3xl p-6" />}
+      className="mx-auto max-w-3xl space-y-4 p-6"
+    >
+      {post && (
+        <>
+          <CoverPicker post={post} onPatched={patch} />
 
-      <input
-        value={post.title}
-        onChange={(e) => patch({ title: e.target.value })}
-        placeholder={t("blog.untitled")}
-        className="w-full border-none bg-transparent text-3xl font-semibold outline-none placeholder:text-muted-foreground/50"
-      />
+          <input
+            value={post.title}
+            onChange={(e) => patch({ title: e.target.value })}
+            placeholder={t("blog.untitled")}
+            className="w-full border-none bg-transparent text-3xl font-semibold outline-none placeholder:text-muted-foreground/50"
+          />
 
-      <Textarea
-        value={post.excerpt}
-        onChange={(e) => patch({ excerpt: e.target.value })}
-        placeholder={t("blog.editorExcerpt")}
-        rows={2}
-      />
+          <Textarea
+            value={post.excerpt}
+            onChange={(e) => patch({ excerpt: e.target.value })}
+            placeholder={t("blog.editorExcerpt")}
+            rows={2}
+          />
 
-      <input
-        value={post.tags.join(", ")}
-        onChange={(e) =>
-          patch({
-            tags: e.target.value
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
-          })
-        }
-        placeholder={t("blog.editorTags")}
-        className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-      />
+          <input
+            value={post.tags.join(", ")}
+            onChange={(e) =>
+              patch({
+                tags: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder={t("blog.editorTags")}
+            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
 
-      <div>
-        <Textarea
-          value={post.meta_description}
-          onChange={(e) => patch({ meta_description: e.target.value })}
-          placeholder={t("blog.editorMeta")}
-          rows={2}
-        />
-        <p
-          className={`mt-1 text-xs ${
-            post.meta_description.length > 155
-              ? "text-destructive"
-              : "text-muted-foreground"
-          }`}
-        >
-          {post.meta_description.length}/155
-        </p>
-      </div>
-
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((s) => !s)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          {showAdvanced ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-          {t("blog.editorAdvanced")}
-        </button>
-        {showAdvanced && (
-          <div className="mt-2 space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">
-              {t("blog.editorSlug")}
-            </label>
-            <input
-              value={post.slug}
-              onChange={(e) => patch({ slug: e.target.value })}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono"
+          <div>
+            <Textarea
+              value={post.meta_description}
+              onChange={(e) => patch({ meta_description: e.target.value })}
+              placeholder={t("blog.editorMeta")}
+              rows={2}
             />
+            <p
+              className={`mt-1 text-xs ${
+                post.meta_description.length > 155
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {post.meta_description.length}/155
+            </p>
           </div>
-        )}
-      </div>
 
-      <PostEditor
-        value={post.body_html}
-        onChange={(html) => patch({ body_html: html })}
-      />
-
-      <InlineImages post={post} onPatched={patch} />
-
-      <div className="flex items-center justify-between border-t pt-4">
-        <div className="flex items-center gap-2">
-          {post.status === "published" && (
-            <a
-              href={`/blog/${post.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((s) => !s)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
-              {t("blog.viewOnSite")}
-            </a>
-          )}
-          {post.source !== "manual" && (
-            <Button
-              variant="outline"
-              size="sm"
-              loading={regenerating}
-              onClick={regenerate}
-            >
-              <Sparkles className="h-4 w-4" />
-              {t("blog.regenerate")}
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" loading={saving} onClick={() => save()}>
-            {t("blog.editorSave")}
-          </Button>
-          <Button onClick={togglePublish}>
-            {post.status === "published"
-              ? t("blog.editorUnpublish")
-              : t("blog.editorPublish")}
-          </Button>
-        </div>
-      </div>
-    </div>
+              {showAdvanced ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+              {t("blog.editorAdvanced")}
+            </button>
+            {showAdvanced && (
+              <div className="mt-2 space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {t("blog.editorSlug")}
+                </label>
+                <input
+                  value={post.slug}
+                  onChange={(e) => patch({ slug: e.target.value })}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono"
+                />
+              </div>
+            )}
+          </div>
+
+          <PostEditor
+            value={post.body_html}
+            onChange={(html) => patch({ body_html: html })}
+          />
+
+          <InlineImages post={post} onPatched={patch} />
+
+          <div className="flex items-center justify-between border-t pt-4">
+            <div className="flex items-center gap-2">
+              {post.status === "published" && (
+                <a
+                  href={`/blog/${post.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {t("blog.viewOnSite")}
+                </a>
+              )}
+              {post.source !== "manual" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  loading={regenerating}
+                  onClick={regenerate}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {t("blog.regenerate")}
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" loading={saving} onClick={save}>
+                {t("blog.editorSave")}
+              </Button>
+              <Button
+                loading={publishing}
+                loadingText={
+                  post.status === "published"
+                    ? t("blog.editorUnpublish")
+                    : t("blog.editorPublish")
+                }
+                onClick={togglePublish}
+              >
+                {post.status === "published"
+                  ? t("blog.editorUnpublish")
+                  : t("blog.editorPublish")}
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+    </PageState>
   );
 }

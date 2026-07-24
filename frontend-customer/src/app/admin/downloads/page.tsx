@@ -10,6 +10,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,10 +69,8 @@ const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> =
 export default function AdminDownloadsPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showForm, setShowForm] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     title: "",
     pricing_type: "free" as "free" | "paid" | "subscription",
@@ -99,14 +98,13 @@ export default function AdminDownloadsPage() {
     [tagFilter],
   );
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !form.title.trim()) return;
+  const { run: handleFileUpload, loading: uploading } = useAsyncAction(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !form.title.trim()) return;
 
-    setUploading(true);
-    setProgress(0);
+      setProgress(0);
 
-    try {
       const created = await clientFetch<DownloadFile>("/api/v1/downloads/", {
         method: "POST",
         body: JSON.stringify({
@@ -162,13 +160,9 @@ export default function AdminDownloadsPage() {
       setCreateTagIds([]);
       setShowForm(false);
       browserRef.current?.refresh();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to upload file");
-    } finally {
-      setUploading(false);
-    }
-  }
+    },
+    { errorToast: "Failed to upload file" },
+  );
 
   const downloadFields: FieldConfig<DownloadFile>[] = [
     { key: "title", label: "Title", type: "text", required: true },
@@ -192,9 +186,8 @@ export default function AdminDownloadsPage() {
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "download" },
   ];
 
-  async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true);
-    try {
+  const { run: handleInlineUpdate, loading: saving } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
       await clientFetch(`/api/v1/downloads/${editingId}/`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -209,22 +202,9 @@ export default function AdminDownloadsPage() {
       toast.success("Download updated");
       setEditingId(null);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to update download");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete(id: number) {
-    try {
-      await clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" });
-      toast.success("File deleted");
-      browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to delete file");
-    }
-  }
+    },
+    { errorToast: "Failed to update download" },
+  );
 
   return (
     <div className="space-y-6">
@@ -463,33 +443,11 @@ export default function AdminDownloadsPage() {
             </TableCell>
             <TableCell>{formatDate(dl.created_at)}</TableCell>
             <TableCell>
-              <div className="flex items-center gap-1">
-                {dl.file_url && (
-                  <Button asChild size="sm" variant="ghost">
-                    <a
-                      href={dl.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setEditingId(dl.id)}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDelete(dl.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+              <DownloadRowActions
+                download={dl}
+                onEdit={() => setEditingId(dl.id)}
+                onDeleted={() => browserRef.current?.refresh()}
+              />
             </TableCell>
           </>
         )}
@@ -509,6 +467,50 @@ export default function AdminDownloadsPage() {
           ) : null
         }
       />
+    </div>
+  );
+}
+
+function DownloadRowActions({
+  download,
+  onEdit,
+  onDeleted,
+}: {
+  download: DownloadFile;
+  onEdit: () => void;
+  onDeleted: () => void;
+}) {
+  const { run: handleDelete, loading: deleting } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/downloads/${download.id}/`, {
+        method: "DELETE",
+      });
+      toast.success("File deleted");
+      onDeleted();
+    },
+    { errorToast: "Failed to delete file" },
+  );
+
+  return (
+    <div className="flex items-center gap-1">
+      {download.file_url && (
+        <Button asChild size="sm" variant="ghost">
+          <a href={download.file_url} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        </Button>
+      )}
+      <Button size="sm" variant="ghost" onClick={onEdit}>
+        <Pencil className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        size="sm"
+        variant="ghost"
+        loading={deleting}
+        onClick={handleDelete}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
     </div>
   );
 }

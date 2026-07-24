@@ -10,6 +10,7 @@ import {
   Code,
   Eye,
 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
@@ -49,7 +50,6 @@ export default function PhotosPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
-  const [saving, setSaving] = useState(false);
   const [showDropzone, setShowDropzone] = useState(false);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
 
@@ -77,9 +77,8 @@ export default function PhotosPage() {
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "photo" },
   ];
 
-  async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true);
-    try {
+  const { run: handleInlineUpdate, loading: saving } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
       await clientFetch(`/api/v1/photos/${editingId}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -91,22 +90,9 @@ export default function PhotosPage() {
       toast.success("Photo updated");
       setEditingId(null);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to update photo");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete(id: string) {
-    try {
-      await clientFetch(`/api/v1/photos/${id}/`, { method: "DELETE" });
-      toast.success("Photo deleted");
-      browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to delete photo");
-    }
-  }
+    },
+    { errorToast: "Failed to update photo" },
+  );
 
   const copyCdnUrl = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -343,14 +329,10 @@ export default function PhotosPage() {
                 >
                   <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 text-destructive"
-                  onClick={() => handleDelete(photo.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <PhotoDeleteButton
+                  photo={photo}
+                  onDeleted={() => browserRef.current?.refresh()}
+                />
               </div>
             </TableCell>
           </>
@@ -377,5 +359,34 @@ export default function PhotosPage() {
 
       <LightboxModal item={previewItem} onClose={() => setPreviewItem(null)} />
     </div>
+  );
+}
+
+function PhotoDeleteButton({
+  photo,
+  onDeleted,
+}: {
+  photo: Photo;
+  onDeleted: () => void;
+}) {
+  const { run: handleDelete, loading: deleting } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/photos/${photo.id}/`, { method: "DELETE" });
+      toast.success("Photo deleted");
+      onDeleted();
+    },
+    { errorToast: "Failed to delete photo" },
+  );
+
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="h-8 w-8 p-0 text-destructive"
+      loading={deleting}
+      onClick={handleDelete}
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+    </Button>
   );
 }

@@ -6,6 +6,8 @@ import { clientFetch } from "@/lib/api-client";
 import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FilterGroup, FilterOption } from "@/types/course";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { Spinner } from "@/components/ui/spinner";
 
 interface FilterPickerProps {
   /** Selected FilterOption ids for this entity. */
@@ -24,7 +26,6 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
   const [newGroupName, setNewGroupName] = useState("");
   const [creatingFor, setCreatingFor] = useState<number | null>(null);
   const [newOptionName, setNewOptionName] = useState("");
-  const [busy, setBusy] = useState(false);
 
   const fetchGroups = useCallback(async () => {
     try {
@@ -47,11 +48,10 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
     );
   }
 
-  async function createGroup() {
-    const name = newGroupName.trim();
-    if (!name || busy) return;
-    setBusy(true);
-    try {
+  const { run: createGroup, loading: creatingGroup } = useAsyncAction(
+    async () => {
+      const name = newGroupName.trim();
+      if (!name) return;
       const g = await clientFetch<FilterGroup>("/api/v1/filters/groups/", {
         method: "POST",
         body: JSON.stringify({ name, applies_to: scope }),
@@ -60,37 +60,19 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
       setNewGroupName("");
       setAddingGroup(false);
       setCreatingFor(g.id);
-    } catch {
-      // ignore
-    } finally {
-      setBusy(false);
-    }
+    },
+  );
+
+  function handleGroupDeleted(group: FilterGroup) {
+    const removedIds = new Set(group.options.map((o) => o.id));
+    setGroups((gs) => gs.filter((g) => g.id !== group.id));
+    onChange(value.filter((id) => !removedIds.has(id)));
   }
 
-  async function deleteGroup(group: FilterGroup) {
-    if (
-      !window.confirm(
-        `Delete the "${group.name}" filter and all its options? It will be removed from every ${scope}.`,
-      )
-    )
-      return;
-    try {
-      await clientFetch(`/api/v1/filters/groups/${group.id}/`, {
-        method: "DELETE",
-      });
-      const removedIds = new Set(group.options.map((o) => o.id));
-      setGroups((gs) => gs.filter((g) => g.id !== group.id));
-      onChange(value.filter((id) => !removedIds.has(id)));
-    } catch {
-      // ignore
-    }
-  }
-
-  async function createOption(groupId: number) {
-    const name = newOptionName.trim();
-    if (!name || busy) return;
-    setBusy(true);
-    try {
+  const { run: createOption, loading: creatingOption } = useAsyncAction(
+    async (groupId: number) => {
+      const name = newOptionName.trim();
+      if (!name) return;
       const opt = await clientFetch<FilterOption>("/api/v1/filters/options/", {
         method: "POST",
         body: JSON.stringify({ group: groupId, name }),
@@ -103,12 +85,8 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
       onChange([...value, opt.id]);
       setNewOptionName("");
       setCreatingFor(null);
-    } catch {
-      // ignore
-    } finally {
-      setBusy(false);
-    }
-  }
+    },
+  );
 
   return (
     <div className="space-y-2">
@@ -130,14 +108,11 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
               >
                 <Plus className="h-3 w-3" /> Option
               </button>
-              <button
-                type="button"
-                onClick={() => deleteGroup(g)}
-                aria-label={`Delete ${g.name} filter`}
-                className="rounded p-0.5 transition-colors hover:text-destructive"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              <DeleteFilterGroupButton
+                group={g}
+                scope={scope}
+                onDeleted={handleGroupDeleted}
+              />
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -182,10 +157,10 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
               <button
                 type="button"
                 onClick={() => createOption(g.id)}
-                disabled={busy}
+                disabled={creatingOption}
                 className="shrink-0 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
               >
-                Add
+                {creatingOption ? "Adding…" : "Add"}
               </button>
             </div>
           )}
@@ -213,11 +188,11 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
           />
           <button
             type="button"
-            onClick={createGroup}
-            disabled={busy}
+            onClick={() => createGroup()}
+            disabled={creatingGroup}
             className="shrink-0 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
           >
-            Add
+            {creatingGroup ? "Adding…" : "Add"}
           </button>
         </div>
       ) : (
@@ -230,5 +205,47 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
         </button>
       )}
     </div>
+  );
+}
+
+// Own useAsyncAction instance per row so deleting one filter group doesn't
+// share a loading flag with another (see the per-row gotcha in the retrofit brief).
+function DeleteFilterGroupButton({
+  group,
+  scope,
+  onDeleted,
+}: {
+  group: FilterGroup;
+  scope: "course" | "event";
+  onDeleted: (group: FilterGroup) => void;
+}) {
+  const { run: handleDelete, loading } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/filters/groups/${group.id}/`, {
+        method: "DELETE",
+      });
+      onDeleted(group);
+    },
+    { errorToast: "Failed to delete filter" },
+  );
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (
+          window.confirm(
+            `Delete the "${group.name}" filter and all its options? It will be removed from every ${scope}.`,
+          )
+        ) {
+          void handleDelete();
+        }
+      }}
+      disabled={loading}
+      aria-label={`Delete ${group.name} filter`}
+      className="rounded p-0.5 transition-colors hover:text-destructive disabled:opacity-50"
+    >
+      {loading ? <Spinner size="sm" /> : <Trash2 className="h-3.5 w-3.5" />}
+    </button>
   );
 }

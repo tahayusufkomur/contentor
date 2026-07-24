@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { toast } from "sonner";
+
 import { TemplateGrid } from "@shared/email/template-grid";
 import {
   deleteTemplate,
@@ -14,6 +16,10 @@ import {
   type EmailTemplate,
   type GalleryTemplate,
 } from "@/lib/email-api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +42,15 @@ export default function TemplatesPage() {
     {},
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
+  const [loadingGallery, setLoadingGallery] = useState(false);
+  const [galleryError, setGalleryError] = useState<unknown>(null);
 
   // Preview modal state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewTitle, setPreviewTitle] = useState("");
   const [previewHtml, setPreviewHtml] = useState("");
-  const [previewLoading, setPreviewLoading] = useState(false);
 
   const fetchPreviews = useCallback(async (tmpls: EmailTemplate[]) => {
     const ids = tmpls.map((t) => t.id).filter(Boolean);
@@ -60,75 +68,88 @@ export default function TemplatesPage() {
     }
   }, []);
 
-  useEffect(() => {
+  const fetchMine = useCallback(async () => {
     setLoading(true);
-    listTemplates()
-      .then((data) => {
-        const tmpls = asArray(data);
-        setTemplates(tmpls);
-        fetchPreviews(tmpls);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    setError(null);
+    try {
+      const data = await listTemplates();
+      const tmpls = asArray(data);
+      setTemplates(tmpls);
+      fetchPreviews(tmpls);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPreviews]);
+
+  useEffect(() => {
+    fetchMine();
+  }, [fetchMine]);
+
+  const fetchGallery = useCallback(async () => {
+    setLoadingGallery(true);
+    setGalleryError(null);
+    try {
+      const data = await listGallery();
+      // Gallery items are GalleryTemplate (no created_at/updated_at); the grid
+      // + preview path only read id/name, so treat them as EmailTemplate.
+      const g = asArray(data) as unknown as EmailTemplate[];
+      setGallery(g);
+      setGalleryLoaded(true);
+      fetchPreviews(g);
+    } catch (err) {
+      setGalleryError(err);
+    } finally {
+      setLoadingGallery(false);
+    }
   }, [fetchPreviews]);
 
   useEffect(() => {
     if (tab !== "gallery" || galleryLoaded) return;
-    listGallery()
-      .then((data) => {
-        // Gallery items are GalleryTemplate (no created_at/updated_at); the grid
-        // + preview path only read id/name, so treat them as EmailTemplate.
-        const g = asArray(data) as unknown as EmailTemplate[];
-        setGallery(g);
-        setGalleryLoaded(true);
-        fetchPreviews(g);
-      })
-      .catch(() => {});
-  }, [tab, galleryLoaded, fetchPreviews]);
+    fetchGallery();
+  }, [tab, galleryLoaded, fetchGallery]);
 
-  const handlePreview = useCallback(
+  const { run: handlePreview, loading: previewLoading } = useAsyncAction(
     async (template: EmailTemplate) => {
       setPreviewOpen(true);
       setPreviewTitle(template.name);
       setPreviewHtml("");
-      setPreviewLoading(true);
 
       // Try cached preview first
       if (previewHtmlMap[template.id]) {
         setPreviewHtml(previewHtmlMap[template.id]);
-        setPreviewLoading(false);
         return;
       }
 
-      try {
-        const detail = await getTemplate(template.id);
-        const html =
-          ((detail as Record<string, unknown>).html as string) ||
-          ((detail as Record<string, unknown>).rendered_html as string) ||
-          "";
-        if (html) {
-          setPreviewHtml(html);
-        } else {
-          // Try batch preview for this one
-          const result = await previewTemplates([template.id]);
-          setPreviewHtml(result.previews[template.id] || "");
-        }
-      } catch {
-        setPreviewHtml("");
-      } finally {
-        setPreviewLoading(false);
+      const detail = await getTemplate(template.id);
+      const html =
+        ((detail as Record<string, unknown>).html as string) ||
+        ((detail as Record<string, unknown>).rendered_html as string) ||
+        "";
+      if (html) {
+        setPreviewHtml(html);
+      } else {
+        // Try batch preview for this one
+        const result = await previewTemplates([template.id]);
+        setPreviewHtml(result.previews[template.id] || "");
       }
     },
-    [previewHtmlMap],
   );
 
+  // Not a useAsyncAction: TemplateCard (packages/shared, out of scope here)
+  // has no per-row busy prop, and this callback fires once per card in a
+  // .map() — a single shared hook instance would silently drop a delete
+  // click on card B while card A's delete is still in flight (the
+  // documented per-row single-flight gotcha). Deletes stay independent;
+  // only the previously-swallowed error is now surfaced.
   const handleDelete = useCallback(async (template: EmailTemplate) => {
     if (!window.confirm(`Delete "${template.name}"?`)) return;
     try {
       await deleteTemplate(template.id);
       setTemplates((prev) => prev.filter((t) => t.id !== template.id));
     } catch {
-      // ignore
+      toast.error("Could not delete template. Please try again.");
     }
   }, []);
 
@@ -182,9 +203,12 @@ export default function TemplatesPage() {
         </button>
       </div>
 
-      {loading && tab === "mine" ? (
-        <p className="text-sm text-muted-foreground">Loading templates...</p>
-      ) : (
+      <PageState
+        loading={tab === "mine" ? loading : loadingGallery}
+        error={tab === "mine" ? error : galleryError}
+        onRetry={tab === "mine" ? fetchMine : fetchGallery}
+        skeleton={<SkeletonCardGrid count={6} />}
+      >
         <TemplateGrid
           templates={currentTemplates}
           previewHtmlMap={previewHtmlMap}
@@ -193,7 +217,7 @@ export default function TemplatesPage() {
           onDelete={tab === "mine" ? handleDelete : undefined}
           onPreview={handlePreview}
         />
-      )}
+      </PageState>
 
       {/* Preview modal */}
       {previewOpen && (
@@ -210,9 +234,7 @@ export default function TemplatesPage() {
             </div>
             {previewLoading ? (
               <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-sm text-muted-foreground">
-                  Loading preview...
-                </p>
+                <Spinner size="lg" label="Loading preview" />
               </div>
             ) : previewHtml ? (
               <iframe

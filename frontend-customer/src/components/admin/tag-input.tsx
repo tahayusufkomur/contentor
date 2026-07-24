@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Plus, X } from "lucide-react";
 import type { Tag, TagScope } from "@/types/course";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface TagInputProps {
   /** Selected tag ids for this entity. */
@@ -21,7 +22,6 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
   const [tags, setTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   const fetchTags = useCallback(async () => {
     try {
@@ -56,23 +56,18 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
     onChange(value.filter((v) => v !== id));
   }
 
-  async function createTag(name: string) {
-    const trimmed = name.trim();
-    if (!trimmed || busy) return;
-    setBusy(true);
-    try {
+  const { run: createTag, loading: busy } = useAsyncAction(
+    async (name: string) => {
+      const trimmed = name.trim();
+      if (!trimmed) return;
       const tag = await clientFetch<Tag>("/api/v1/tags/", {
         method: "POST",
         body: JSON.stringify({ scope, name: trimmed }),
       });
       setTags((ts) => (ts.some((t) => t.id === tag.id) ? ts : [...ts, tag]));
       select(tag.id);
-    } catch {
-      // ignore
-    } finally {
-      setBusy(false);
-    }
-  }
+    },
+  );
 
   function onEnter() {
     if (exactMatch) select(exactMatch.id);

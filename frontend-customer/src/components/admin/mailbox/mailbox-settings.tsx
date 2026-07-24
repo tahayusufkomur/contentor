@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Mail, Save } from "lucide-react";
 import { toast } from "sonner";
 
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { getSettings, savePlatformAddress, saveSettings } from "@/lib/mailbox";
@@ -33,24 +35,61 @@ const CLAIM_ERRORS: Record<string, string> = {
 
 export function MailboxSettingsSection() {
   const [settings, setSettings] = useState<MailboxSettings | null>(null);
-  const [localPart, setLocalPart] = useState("");
-  const [enabled, setEnabled] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [platformPart, setPlatformPart] = useState("");
-  const [platformError, setPlatformError] = useState<string | null>(null);
-  const [platformSaving, setPlatformSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     getSettings()
       .then((s) => {
-        setSettings(s);
-        setLocalPart(s.local_part || "info");
-        setEnabled(s.enabled);
-        setPlatformPart(s.platform_local_part);
+        if (!cancelled) setSettings(s);
       })
-      .catch(() => toast.error("Could not load mailbox settings."));
-  }, []);
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  return (
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={<Skeleton className="h-48 w-full" />}
+      className="max-w-lg"
+    >
+      {settings && (
+        <MailboxSettingsBody
+          settings={settings}
+          onSettingsChange={setSettings}
+        />
+      )}
+    </PageState>
+  );
+}
+
+function MailboxSettingsBody({
+  settings,
+  onSettingsChange,
+}: {
+  settings: MailboxSettings;
+  onSettingsChange: (settings: MailboxSettings) => void;
+}) {
+  const [localPart, setLocalPart] = useState(settings.local_part || "info");
+  const [enabled, setEnabled] = useState(settings.enabled);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [platformPart, setPlatformPart] = useState(
+    settings.platform_local_part,
+  );
+  const [platformError, setPlatformError] = useState<string | null>(null);
 
   function handlePlatformPartChange(value: string) {
     setPlatformPart(value);
@@ -63,24 +102,24 @@ export function MailboxSettingsSection() {
     }
   }
 
-  async function handleClaimPlatformAddress() {
-    if (!platformPart || platformError || platformSaving) return;
-    setPlatformSaving(true);
-    try {
-      const updated = await savePlatformAddress(platformPart);
-      setSettings(updated);
-      setPlatformPart(updated.platform_local_part);
-      toast.success("Email address saved.");
-    } catch (err) {
-      const detail =
-        err instanceof ApiError ? String(err.data.detail ?? "") : "";
-      setPlatformError(
-        CLAIM_ERRORS[detail] ?? "Could not save. Please try again.",
-      );
-    } finally {
-      setPlatformSaving(false);
-    }
-  }
+  const { run: handleClaimPlatformAddress, loading: platformSaving } =
+    useAsyncAction(
+      async () => {
+        const updated = await savePlatformAddress(platformPart);
+        onSettingsChange(updated);
+        setPlatformPart(updated.platform_local_part);
+        toast.success("Email address saved.");
+      },
+      {
+        onError: (err) => {
+          const detail =
+            err instanceof ApiError ? String(err.data.detail ?? "") : "";
+          setPlatformError(
+            CLAIM_ERRORS[detail] ?? "Could not save. Please try again.",
+          );
+        },
+      },
+    );
 
   function handleLocalPartChange(value: string) {
     setLocalPart(value);
@@ -96,36 +135,20 @@ export function MailboxSettingsSection() {
   }
 
   const isUnchanged =
-    settings !== null &&
-    localPart === settings.local_part &&
-    enabled === settings.enabled;
+    localPart === settings.local_part && enabled === settings.enabled;
 
-  const canSave =
-    !saving && !validationError && localPart.length > 0 && !isUnchanged;
-
-  async function handleSave() {
-    if (!canSave) return;
-    setSaving(true);
-    try {
+  const { run: handleSave, loading: saving } = useAsyncAction(
+    async () => {
       const updated = await saveSettings({ local_part: localPart, enabled });
-      setSettings(updated);
+      onSettingsChange(updated);
       setLocalPart(updated.local_part);
       setEnabled(updated.enabled);
       toast.success("Mailbox settings saved.");
-    } catch {
-      toast.error("Failed to save mailbox settings. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to save mailbox settings. Please try again." },
+  );
 
-  if (!settings) {
-    return (
-      <div className="max-w-lg">
-        <Skeleton className="h-48 w-full" />
-      </div>
-    );
-  }
+  const canSave = !validationError && localPart.length > 0 && !isUnchanged;
 
   // No custom domain, but paid: let them claim `<x>@platform_domain`.
   if (!settings.has_custom_domain && settings.platform_eligible) {
@@ -136,7 +159,7 @@ export function MailboxSettingsSection() {
         : `...@${settings.platform_domain}`;
     const platformUnchanged = platformPart === claimed;
     return (
-      <div className="max-w-lg">
+      <>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -189,17 +212,13 @@ export function MailboxSettingsSection() {
 
             <Button
               onClick={handleClaimPlatformAddress}
-              disabled={
-                platformSaving ||
-                !!platformError ||
-                !platformPart ||
-                platformUnchanged
-              }
+              disabled={!!platformError || !platformPart || platformUnchanged}
               loading={platformSaving}
+              loadingText="Saving…"
               className="gap-2"
             >
               <Save className="h-4 w-4" />
-              {platformSaving ? "Saving..." : "Save address"}
+              Save address
             </Button>
 
             <p className="text-xs text-muted-foreground">
@@ -209,40 +228,38 @@ export function MailboxSettingsSection() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </>
     );
   }
 
   // No custom domain and free plan: send-only, upsell to a paid plan.
   if (!settings.has_custom_domain) {
     return (
-      <div className="max-w-lg">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Mailbox
-            </CardTitle>
-            <CardDescription>
-              Set a custom email address for your coaching space.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-dashed p-4 space-y-2">
-              <p className="text-sm font-medium">
-                You&apos;re currently sending from:
-              </p>
-              <p className="text-sm font-mono text-muted-foreground">
-                {settings.from_email}
-              </p>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Upgrade to a paid plan to get your own email address — students
-              can write to you and their messages land straight in your inbox.
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Mailbox
+          </CardTitle>
+          <CardDescription>
+            Set a custom email address for your coaching space.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-dashed p-4 space-y-2">
+            <p className="text-sm font-medium">
+              You&apos;re currently sending from:
             </p>
-          </CardContent>
-        </Card>
-      </div>
+            <p className="text-sm font-mono text-muted-foreground">
+              {settings.from_email}
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Upgrade to a paid plan to get your own email address — students can
+            write to you and their messages land straight in your inbox.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -253,98 +270,97 @@ export function MailboxSettingsSection() {
       : `...@${settings.domain}`;
 
   return (
-    <div className="max-w-lg">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Mailbox
-          </CardTitle>
-          <CardDescription>
-            Choose your email address and enable your inbox to receive messages
-            from students.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Address picker */}
-          <div className="space-y-2">
-            <Label htmlFor="local-part">Your email address</Label>
-            <div className="flex items-center gap-0">
-              <Input
-                id="local-part"
-                value={localPart}
-                onChange={(e) => handleLocalPartChange(e.target.value)}
-                placeholder="info"
-                className="rounded-r-none border-r-0 flex-1"
-                aria-invalid={!!validationError}
-                aria-describedby={
-                  validationError ? "local-part-error" : "local-part-preview"
-                }
-              />
-              <span className="inline-flex h-10 items-center rounded-r-md border border-l-0 border-input bg-muted px-3 text-sm text-muted-foreground select-none">
-                @{settings.domain}
-              </span>
-            </div>
-            {validationError ? (
-              <p
-                id="local-part-error"
-                className="text-xs text-destructive"
-                role="alert"
-              >
-                {validationError}
-              </p>
-            ) : (
-              <p
-                id="local-part-preview"
-                className="text-xs text-muted-foreground"
-              >
-                Your students will see:{" "}
-                <span className="font-mono font-medium">{previewAddress}</span>
-              </p>
-            )}
-          </div>
-
-          {/* Enable toggle */}
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <Label htmlFor="mailbox-enabled" className="text-sm font-medium">
-                Enable inbox
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                When enabled, students can send messages to your address.
-              </p>
-            </div>
-            <Switch
-              id="mailbox-enabled"
-              checked={enabled}
-              onCheckedChange={setEnabled}
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Mailbox
+        </CardTitle>
+        <CardDescription>
+          Choose your email address and enable your inbox to receive messages
+          from students.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Address picker */}
+        <div className="space-y-2">
+          <Label htmlFor="local-part">Your email address</Label>
+          <div className="flex items-center gap-0">
+            <Input
+              id="local-part"
+              value={localPart}
+              onChange={(e) => handleLocalPartChange(e.target.value)}
+              placeholder="info"
+              className="rounded-r-none border-r-0 flex-1"
+              aria-invalid={!!validationError}
+              aria-describedby={
+                validationError ? "local-part-error" : "local-part-preview"
+              }
             />
+            <span className="inline-flex h-10 items-center rounded-r-md border border-l-0 border-input bg-muted px-3 text-sm text-muted-foreground select-none">
+              @{settings.domain}
+            </span>
           </div>
-
-          {/* Current from_email info */}
-          {settings.can_receive && (
-            <div className="rounded-lg bg-muted/50 px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                Active address:{" "}
-                <span className="font-mono font-medium">
-                  {settings.from_email}
-                </span>
-              </p>
-            </div>
+          {validationError ? (
+            <p
+              id="local-part-error"
+              className="text-xs text-destructive"
+              role="alert"
+            >
+              {validationError}
+            </p>
+          ) : (
+            <p
+              id="local-part-preview"
+              className="text-xs text-muted-foreground"
+            >
+              Your students will see:{" "}
+              <span className="font-mono font-medium">{previewAddress}</span>
+            </p>
           )}
+        </div>
 
-          {/* Save */}
-          <Button
-            onClick={handleSave}
-            disabled={!canSave}
-            loading={saving}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+        {/* Enable toggle */}
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="mailbox-enabled" className="text-sm font-medium">
+              Enable inbox
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              When enabled, students can send messages to your address.
+            </p>
+          </div>
+          <Switch
+            id="mailbox-enabled"
+            checked={enabled}
+            onCheckedChange={setEnabled}
+          />
+        </div>
+
+        {/* Current from_email info */}
+        {settings.can_receive && (
+          <div className="rounded-lg bg-muted/50 px-4 py-3">
+            <p className="text-xs text-muted-foreground">
+              Active address:{" "}
+              <span className="font-mono font-medium">
+                {settings.from_email}
+              </span>
+            </p>
+          </div>
+        )}
+
+        {/* Save */}
+        <Button
+          onClick={handleSave}
+          disabled={!canSave}
+          loading={saving}
+          loadingText="Saving…"
+          className="gap-2"
+        >
+          <Save className="h-4 w-4" />
+          Save Changes
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

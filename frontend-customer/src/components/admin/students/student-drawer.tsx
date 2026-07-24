@@ -22,9 +22,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { clientFetch } from "@/lib/api-client";
 import { toast } from "sonner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export interface StudentDetail {
   id: number;
@@ -90,6 +92,20 @@ export function StudentDrawer({
   >([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
 
+  const { run: handleGrantAccess, loading: granting } = useAsyncAction(
+    async () => {
+      if (!student || !selectedCourseId) return;
+      await clientFetch(`/api/v1/auth/students/${student.id}/grant-access/`, {
+        method: "POST",
+        body: JSON.stringify({ course_id: parseInt(selectedCourseId) }),
+      });
+      toast.success("Course access granted successfully!");
+      setGrantingAccess(false);
+      onRefresh?.();
+    },
+    { errorToast: "Failed to grant course access" },
+  );
+
   // Lock body scroll when drawer is open
   useEffect(() => {
     if (student) {
@@ -113,7 +129,7 @@ export function StudentDrawer({
           setAvailableCourses(items);
           if (items.length > 0) setSelectedCourseId(String(items[0].id));
         })
-        .catch(() => {})
+        .catch(() => toast.error("Could not load courses. Please try again."))
         .finally(() => setLoadingCourses(false));
     }
   }, [grantingAccess, availableCourses.length]);
@@ -142,22 +158,6 @@ export function StudentDrawer({
     plan_name: "Pro Coach Pass",
     status: "active",
     amount: "$49/mo",
-  };
-
-  const handleGrantAccess = async () => {
-    if (!selectedCourseId) return;
-    try {
-      await clientFetch(`/api/v1/auth/students/${student.id}/grant-access/`, {
-        method: "POST",
-        body: JSON.stringify({ course_id: parseInt(selectedCourseId) }),
-      });
-      toast.success("Course access granted successfully!");
-      setGrantingAccess(false);
-      if (onRefresh) onRefresh();
-    } catch {
-      toast.error("Failed to grant course access");
-      setGrantingAccess(false);
-    }
   };
 
   return (
@@ -480,7 +480,8 @@ export function StudentDrawer({
                   Select Course:
                 </label>
                 {loadingCourses ? (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Spinner size="sm" />
                     Loading courses...
                   </div>
                 ) : (
@@ -510,6 +511,8 @@ export function StudentDrawer({
                   size="sm"
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={handleGrantAccess}
+                  loading={granting}
+                  loadingText="Granting…"
                 >
                   Confirm Grant
                 </Button>

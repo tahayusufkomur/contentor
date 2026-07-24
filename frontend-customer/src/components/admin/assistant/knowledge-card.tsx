@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +27,7 @@ import {
   updateKnowledge,
   type KnowledgeEntry,
 } from "@/lib/assistant";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 // Mirrors AssistantKnowledgeEntry.MAX_ENTRIES / MAX_CONTENT_CHARS on the
 // backend (apps/tenant_config/models.py) — enforced here only as a UX
@@ -53,7 +55,6 @@ export function KnowledgeCard({
   const [formOpen, setFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [saving, setSaving] = useState(false);
 
   const load = () =>
     listKnowledge()
@@ -91,19 +92,15 @@ export function KnowledgeCard({
     setContent("");
   };
 
-  const handleCreate = async () => {
-    if (!title.trim() || !content.trim()) return;
-    setSaving(true);
-    try {
+  const { run: handleCreate, loading: saving } = useAsyncAction(
+    async () => {
+      if (!title.trim() || !content.trim()) return;
       await createKnowledge({ title: title.trim(), content: content.trim() });
       closeForm();
       await load();
-    } catch {
-      toast.error(t("assistant.knowledgeSaveFailed"));
-    } finally {
-      setSaving(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.knowledgeSaveFailed") },
+  );
 
   const toggleEnabled = async (entry: KnowledgeEntry) => {
     if (!entries) return;
@@ -206,47 +203,52 @@ export function KnowledgeCard({
           </div>
         )}
 
-        {entries === null ? (
-          <div className="space-y-2">
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-          </div>
-        ) : entries.length === 0 ? (
-          !formOpen && (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              {t("assistant.knowledgeEmpty")}
-            </p>
-          )
-        ) : (
-          <div className="divide-y divide-border rounded-xl border border-border">
-            {entries.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-start gap-3 p-3 text-sm"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium">{entry.title}</div>
-                  <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">
-                    {entry.content}
-                  </p>
-                </div>
-                <Switch
-                  checked={entry.enabled}
-                  onCheckedChange={() => void toggleEnabled(entry)}
-                  aria-label={t("assistant.entryEnabled")}
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleDelete(entry.id)}
-                  aria-label={t("assistant.delete")}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+        <PageState
+          loading={entries === null}
+          skeleton={
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full" />
+              <Skeleton className="h-14 w-full" />
+            </div>
+          }
+        >
+          {entries && entries.length === 0 ? (
+            !formOpen && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                {t("assistant.knowledgeEmpty")}
+              </p>
+            )
+          ) : (
+            <div className="divide-y divide-border rounded-xl border border-border">
+              {entries?.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-start gap-3 p-3 text-sm"
                 >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium">{entry.title}</div>
+                    <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">
+                      {entry.content}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={entry.enabled}
+                    onCheckedChange={() => void toggleEnabled(entry)}
+                    aria-label={t("assistant.entryEnabled")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(entry.id)}
+                    aria-label={t("assistant.delete")}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </PageState>
       </CardContent>
     </Card>
   );

@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Play, Square, Radio, Clock, CheckCircle2 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,10 +71,8 @@ const SORT_OPTIONS = [
 ];
 
 export default function LiveStreamsPage() {
-  const router = useRouter();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [creating, setCreating] = useState(false);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -107,9 +106,8 @@ export default function LiveStreamsPage() {
     setAutoRecording(false);
   }
 
-  async function handleCreate() {
-    setCreating(true);
-    try {
+  const { run: handleCreate, loading: creating } = useAsyncAction(
+    async () => {
       await clientFetch<LiveStream>("/api/v1/live-streams/", {
         method: "POST",
         body: JSON.stringify({
@@ -125,34 +123,9 @@ export default function LiveStreamsPage() {
       resetForm();
       setShowCreate(false);
       browserRef.current?.refresh();
-    } catch {
-      // ignore
-    } finally {
-      setCreating(false);
-    }
-  }
-
-  async function handleStart(id: number) {
-    try {
-      await clientFetch(`/api/v1/live-streams/${id}/start/`, {
-        method: "POST",
-      });
-      router.push(`/live-stream/${id}`);
-    } catch {
-      // ignore
-    }
-  }
-
-  async function handleStop(id: number) {
-    try {
-      await clientFetch(`/api/v1/live-streams/${id}/stop/`, {
-        method: "POST",
-      });
-      browserRef.current?.refresh();
-    } catch {
-      // ignore
-    }
-  }
+    },
+    { errorToast: "Failed to create stream" },
+  );
 
   const selectClasses =
     "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm";
@@ -234,8 +207,13 @@ export default function LiveStreamsPage() {
           </label>
 
           <div className="flex gap-2">
-            <Button onClick={handleCreate} disabled={!title.trim() || creating}>
-              {creating ? "Creating..." : "Create"}
+            <Button
+              onClick={handleCreate}
+              disabled={!title.trim()}
+              loading={creating}
+              loadingText="Creating…"
+            >
+              Create
             </Button>
             <Button
               variant="ghost"
@@ -310,41 +288,82 @@ export default function LiveStreamsPage() {
                 )}
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  {(ls.status === "draft" || ls.status === "scheduled") && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStart(ls.id)}
-                      className="gap-1.5"
-                    >
-                      <Play className="h-3.5 w-3.5" /> Go Live
-                    </Button>
-                  )}
-                  {ls.status === "live" && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => router.push(`/live-stream/${ls.id}`)}
-                      >
-                        Watch
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleStop(ls.id)}
-                        className="gap-1.5"
-                      >
-                        <Square className="h-3.5 w-3.5" /> End
-                      </Button>
-                    </>
-                  )}
-                </div>
+                <LiveStreamRowActions
+                  stream={ls}
+                  onStopped={() => browserRef.current?.refresh()}
+                />
               </TableCell>
             </>
           );
         }}
       />
+    </div>
+  );
+}
+
+function LiveStreamRowActions({
+  stream,
+  onStopped,
+}: {
+  stream: LiveStream;
+  onStopped: () => void;
+}) {
+  const router = useRouter();
+
+  const { run: handleStart, loading: starting } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/live-streams/${stream.id}/start/`, {
+        method: "POST",
+      });
+      router.push(`/live-stream/${stream.id}`);
+    },
+    { errorToast: "Failed to start stream" },
+  );
+
+  const { run: handleStop, loading: stopping } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/live-streams/${stream.id}/stop/`, {
+        method: "POST",
+      });
+      onStopped();
+    },
+    { errorToast: "Failed to end stream" },
+  );
+
+  return (
+    <div className="flex items-center gap-2">
+      {(stream.status === "draft" || stream.status === "scheduled") && (
+        <Button
+          size="sm"
+          onClick={handleStart}
+          loading={starting}
+          loadingText="Starting…"
+          className="gap-1.5"
+        >
+          <Play className="h-3.5 w-3.5" /> Go Live
+        </Button>
+      )}
+      {stream.status === "live" && (
+        <>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push(`/live-stream/${stream.id}`)}
+          >
+            Watch
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleStop}
+            loading={stopping}
+            loadingText="Ending…"
+            className="gap-1.5"
+          >
+            <Square className="h-3.5 w-3.5" /> End
+          </Button>
+        </>
+      )}
     </div>
   );
 }

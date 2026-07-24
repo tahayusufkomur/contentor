@@ -16,6 +16,7 @@ import {
   Copy,
   Code,
 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,7 +104,6 @@ export default function VideosPage() {
   const [description, setDescription] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const upload = useChunkedUpload();
@@ -172,12 +172,17 @@ export default function VideosPage() {
   }
 
   // ---- upload + create ----
+  // Note: the chunked-upload progress/retry/abort orchestration itself lives in
+  // useChunkedUpload() and is left untouched (its own state machine already
+  // surfaces errors inline with a Retry button and shows progress). Only the
+  // initial "create the video record" step below is wrapped, so the Upload
+  // button shows a loading state for that brief window before upload.start()
+  // takes over.
 
-  async function handleStartUpload() {
-    if (!selectedFile || !title.trim()) return;
+  const { run: handleStartUpload, loading: creatingRecord } = useAsyncAction(
+    async () => {
+      if (!selectedFile || !title.trim()) return;
 
-    // Create video record first
-    try {
       const videoData = await clientFetch<VideoItem>(
         "/api/v1/courses/videos/",
         {
@@ -197,10 +202,9 @@ export default function VideosPage() {
           browserRef.current?.refresh();
         },
       });
-    } catch {
-      toast.error("Failed to create video");
-    }
-  }
+    },
+    { errorToast: "Failed to create video" },
+  );
 
   // ---- edit / delete ----
 
@@ -210,9 +214,8 @@ export default function VideosPage() {
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "video" },
   ];
 
-  async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true);
-    try {
+  const { run: handleInlineUpdate, loading: saving } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
       await clientFetch(`/api/v1/courses/videos/${editingId}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -224,22 +227,9 @@ export default function VideosPage() {
       toast.success("Video updated");
       setEditingId(null);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to update video");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete(id: number) {
-    try {
-      await clientFetch(`/api/v1/courses/videos/${id}/`, { method: "DELETE" });
-      toast.success("Video deleted");
-      browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to delete video");
-    }
-  }
+    },
+    { errorToast: "Failed to update video" },
+  );
 
   // ---- render ----
 
@@ -444,6 +434,8 @@ export default function VideosPage() {
                         <Button
                           onClick={handleStartUpload}
                           disabled={!title.trim()}
+                          loading={creatingRecord}
+                          loadingText="Uploading…"
                           className="gap-2"
                         >
                           <Upload className="h-4 w-4" />
@@ -680,14 +672,10 @@ export default function VideosPage() {
                 >
                   <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 text-destructive"
-                  onClick={() => handleDelete(video.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <VideoDeleteButton
+                  video={video}
+                  onDeleted={() => browserRef.current?.refresh()}
+                />
               </div>
             </TableCell>
           </>
@@ -714,5 +702,36 @@ export default function VideosPage() {
 
       <LightboxModal item={previewItem} onClose={() => setPreviewItem(null)} />
     </div>
+  );
+}
+
+function VideoDeleteButton({
+  video,
+  onDeleted,
+}: {
+  video: VideoItem;
+  onDeleted: () => void;
+}) {
+  const { run: handleDelete, loading: deleting } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/courses/videos/${video.id}/`, {
+        method: "DELETE",
+      });
+      toast.success("Video deleted");
+      onDeleted();
+    },
+    { errorToast: "Failed to delete video" },
+  );
+
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="h-8 w-8 p-0 text-destructive"
+      loading={deleting}
+      onClick={handleDelete}
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+    </Button>
   );
 }

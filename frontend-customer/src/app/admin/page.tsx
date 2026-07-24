@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import {
   BookOpen,
@@ -132,9 +133,11 @@ export default function AdminDashboard() {
       <PublishCard />
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
+      <PageState
+        loading={loading}
+        skeleton={
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <Skeleton className="h-4 w-20" />
@@ -145,24 +148,29 @@ export default function AdminDashboard() {
                   <Skeleton className="h-3 w-24" />
                 </CardContent>
               </Card>
-            ))
-          : statCards.map((stat) => (
-              <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </CardTitle>
-                  <stat.icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
             ))}
-      </div>
+          </div>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((stat) => (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">
+                  {stat.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </PageState>
 
       {/* Adoption & Recent Activity Grid */}
       <div className="grid gap-4 lg:grid-cols-2">

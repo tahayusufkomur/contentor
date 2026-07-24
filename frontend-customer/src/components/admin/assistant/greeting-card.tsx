@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 const MAX_SUGGESTIONS = 3;
 
@@ -38,22 +39,16 @@ export function GreetingCard({
     while (padded.length < MAX_SUGGESTIONS) padded.push("");
     return padded.slice(0, MAX_SUGGESTIONS);
   });
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
+  const { run: handleSave, loading: saving } = useAsyncAction(
+    async () => {
       await onSave(
         greeting.trim(),
         suggestions.map((s) => s.trim()).filter(Boolean),
       );
       toast.success(t("assistant.saved"));
-    } catch {
-      toast.error(t("assistant.saveFailed"));
-    } finally {
-      setSaving(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.saveFailed") },
+  );
 
   return (
     <Card>

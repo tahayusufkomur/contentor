@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { listCampaigns, setupEmail, type EmailCampaign } from "@/lib/email-api";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonTable } from "@/components/ui/skeletons";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +36,7 @@ export default function EmailDashboardPage() {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
   const [total, setTotal] = useState(0);
 
   // Filter state
@@ -42,12 +45,14 @@ export default function EmailDashboardPage() {
   const [dateRange, setDateRange] = useState<DateRange>("all");
 
   const fetchCampaigns = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await listCampaigns(100, 0);
       setCampaigns(data.results);
       setTotal(data.count);
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -143,67 +148,74 @@ export default function EmailDashboardPage() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Loading campaigns...</p>
-      ) : filtered.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-muted-foreground">
-            {campaigns.length === 0
-              ? "No campaigns yet."
-              : "No campaigns match your filters."}
-          </p>
-          {campaigns.length === 0 && (
-            <Link
-              href="/admin/email/compose"
-              className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-            >
-              Send your first email
-            </Link>
-          )}
-        </div>
-      ) : (
-        <>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="pb-2 font-medium">Subject</th>
-                <th className="pb-2 font-medium">Status</th>
-                <th className="pb-2 font-medium">Recipients</th>
-                <th className="pb-2 font-medium">Sent</th>
-                <th className="pb-2 font-medium">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => router.push(`/admin/email/campaigns/${c.id}`)}
-                  className="cursor-pointer border-b hover:bg-muted/50"
-                >
-                  <td className="py-3">{c.subject}</td>
-                  <td className="py-3">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || ""}`}
-                    >
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="py-3">{c.recipient_count}</td>
-                  <td className="py-3">
-                    {c.success_count}/{c.recipient_count}
-                  </td>
-                  <td className="py-3">
-                    {new Date(c.created_at).toLocaleDateString()}
-                  </td>
+      <PageState
+        loading={loading}
+        error={error}
+        onRetry={fetchCampaigns}
+        skeleton={<SkeletonTable rows={6} cols={5} />}
+      >
+        {filtered.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-muted-foreground">
+              {campaigns.length === 0
+                ? "No campaigns yet."
+                : "No campaigns match your filters."}
+            </p>
+            {campaigns.length === 0 && (
+              <Link
+                href="/admin/email/compose"
+                className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                Send your first email
+              </Link>
+            )}
+          </div>
+        ) : (
+          <>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground">
+                  <th className="pb-2 font-medium">Subject</th>
+                  <th className="pb-2 font-medium">Status</th>
+                  <th className="pb-2 font-medium">Recipients</th>
+                  <th className="pb-2 font-medium">Sent</th>
+                  <th className="pb-2 font-medium">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="text-xs text-muted-foreground">
-            {filtered.length} of {total} campaign(s).
-          </p>
-        </>
-      )}
+              </thead>
+              <tbody>
+                {filtered.map((c) => (
+                  <tr
+                    key={c.id}
+                    onClick={() =>
+                      router.push(`/admin/email/campaigns/${c.id}`)
+                    }
+                    className="cursor-pointer border-b hover:bg-muted/50"
+                  >
+                    <td className="py-3">{c.subject}</td>
+                    <td className="py-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || ""}`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="py-3">{c.recipient_count}</td>
+                    <td className="py-3">
+                      {c.success_count}/{c.recipient_count}
+                    </td>
+                    <td className="py-3">
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-xs text-muted-foreground">
+              {filtered.length} of {total} campaign(s).
+            </p>
+          </>
+        )}
+      </PageState>
     </div>
   );
 }

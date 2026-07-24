@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, X } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { clientFetch } from "@/lib/api-client";
@@ -86,7 +87,6 @@ export function LogoStudio({
   const [editHistory, setEditHistory] = useState<EditHistory<LogoRecipe>>(() =>
     createHistory(recipe),
   );
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const logoSvgRef = useRef<SVGSVGElement>(null);
   const markSvgRef = useRef<SVGSVGElement>(null);
@@ -117,7 +117,6 @@ export function LogoStudio({
   >(null);
 
   // ── AI refinement (paid-tier feature) ───────────────────────────────────
-  const [refining, setRefining] = useState(false);
   const [refineNotice, setRefineNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -285,11 +284,10 @@ export function LogoStudio({
     setStep("editor");
   }
 
-  async function handleRefine(instruction: string, redrawMark: boolean) {
-    setRefining(true);
-    setRefineNotice(null);
-    const baseRecipe = recipe;
-    try {
+  const { run: handleRefine, loading: refining } = useAsyncAction(
+    async (instruction: string, redrawMark: boolean) => {
+      setRefineNotice(null);
+      const baseRecipe = recipe;
       const resp = await fetchLogoRefine(
         baseRecipe,
         activeElements,
@@ -329,12 +327,13 @@ export function LogoStudio({
       setEditHistory((h) => push(h, applied, null));
       setActiveElements(design.mark.elements ?? null);
       setRefineNotice(design.rationale);
-    } catch {
-      setRefineNotice("Couldn't reach the design studio just now.");
-    } finally {
-      setRefining(false);
-    }
-  }
+    },
+    {
+      // Failure reason shown as a persistent inline notice, not a toast.
+      onError: () =>
+        setRefineNotice("Couldn't reach the design studio just now."),
+    },
+  );
 
   async function handleMarkUpload(file: File) {
     setError(null);
@@ -354,11 +353,10 @@ export function LogoStudio({
     }
   }
 
-  async function handleSave() {
-    if (!logoSvgRef.current || !markSvgRef.current) return;
-    setSaving(true);
-    setError(null);
-    try {
+  const { run: handleSave, loading: saving } = useAsyncAction(
+    async () => {
+      if (!logoSvgRef.current || !markSvgRef.current) return;
+      setError(null);
       const vb = logoViewBox(recipe.layout);
       const fonts: FontSpec[] = [
         {
@@ -412,16 +410,16 @@ export function LogoStudio({
       onSaved(body);
       clearStudioSession();
       onOpenChange(false);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Could not save the logo — you can upload a file instead.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    {
+      onError: (err) =>
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Could not save the logo — you can upload a file instead.",
+        ),
+    },
+  );
 
   /** True when it's safe to replace the editor draft: either it has no real
    * edits (undo history empty), or the coach confirmed the overwrite. */
@@ -614,14 +612,11 @@ export function LogoStudio({
                   {step === "editor" && (
                     <Button
                       onClick={handleSave}
-                      disabled={saving}
+                      loading={saving}
+                      loadingText="Saving…"
                       className="gap-2"
                     >
-                      {saving ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Check className="h-4 w-4" />
-                      )}
+                      <Check className="h-4 w-4" />
                       Use this logo
                     </Button>
                   )}

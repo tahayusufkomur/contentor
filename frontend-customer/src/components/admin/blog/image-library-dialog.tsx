@@ -9,10 +9,11 @@ import { useEffect, useState } from "react";
 
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { PageState } from "@/components/ui/page-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import {
   type CuratedKind,
@@ -20,6 +21,7 @@ import {
   materializeCuratedPhoto,
   searchCuratedPhotos,
 } from "@/lib/curated-photos-api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export interface PickedPhoto {
   id: string;
@@ -59,37 +61,52 @@ export function ImageLibraryDialog({
   const [query, setQuery] = useState("");
   const [curatedItems, setCuratedItems] = useState<CuratedPhoto[]>([]);
   const [myPhotos, setMyPhotos] = useState<TenantPhoto[]>([]);
-  const [busy, setBusy] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
+    setSearching(true);
     if (tab === "library") {
       searchCuratedPhotos({ kind, q: query })
-        .then(setCuratedItems)
-        .catch(() => setCuratedItems([]));
+        .then((data) => {
+          if (!cancelled) setCuratedItems(data);
+        })
+        .catch(() => {
+          if (!cancelled) setCuratedItems([]);
+        })
+        .finally(() => {
+          if (!cancelled) setSearching(false);
+        });
     } else {
       clientFetch<{ results: TenantPhoto[] }>(
         `/api/v1/photos/?search=${encodeURIComponent(query)}`,
       )
-        .then((data) => setMyPhotos(data.results ?? []))
-        .catch(() => setMyPhotos([]));
+        .then((data) => {
+          if (!cancelled) setMyPhotos(data.results ?? []);
+        })
+        .catch(() => {
+          if (!cancelled) setMyPhotos([]);
+        })
+        .finally(() => {
+          if (!cancelled) setSearching(false);
+        });
     }
+    return () => {
+      cancelled = true;
+    };
   }, [open, tab, kind, query]);
 
-  if (!open) return null;
-
-  const pickCurated = async (item: CuratedPhoto) => {
-    setBusy(true);
-    try {
+  const { run: pickCurated, loading: busy } = useAsyncAction(
+    async (item: CuratedPhoto) => {
       const photo = await materializeCuratedPhoto(item.id);
       onSelect({ id: photo.id, url: photo.signed_url, title: photo.title });
       onOpenChange(false);
-    } catch {
-      toast.error(t("blog.errGeneric"));
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+    { errorToast: t("blog.errGeneric") },
+  );
+
+  if (!open) return null;
 
   return (
     <ModalPortal>
@@ -151,57 +168,70 @@ export function ImageLibraryDialog({
               ))}
             </div>
           )}
-          <div className="grid max-h-96 grid-cols-3 gap-3 overflow-y-auto sm:grid-cols-4">
-            {tab === "library" &&
-              curatedItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => pickCurated(item)}
-                  className="group overflow-hidden rounded-md border bg-muted/30 hover:ring-2 hover:ring-ring"
-                  title={item.title}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.image_url}
-                    alt={item.title}
-                    loading="lazy"
-                    className="aspect-video w-full object-cover"
-                  />
-                </button>
-              ))}
-            {tab === "mine" &&
-              myPhotos.map((photo) => (
-                <button
-                  key={photo.id}
-                  type="button"
-                  onClick={() => {
-                    onSelect({
-                      id: photo.id,
-                      url: photo.signed_url,
-                      title: photo.title,
-                    });
-                    onOpenChange(false);
-                  }}
-                  className="group overflow-hidden rounded-md border bg-muted/30 hover:ring-2 hover:ring-ring"
-                  title={photo.title}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.signed_url ?? ""}
-                    alt={photo.title}
-                    loading="lazy"
-                    className="aspect-video w-full object-cover"
-                  />
-                </button>
-              ))}
-            {((tab === "library" && curatedItems.length === 0) ||
-              (tab === "mine" && myPhotos.length === 0)) && (
-              <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
-                {t("blog.libraryEmpty")}
-              </p>
-            )}
+          <div className="max-h-96 overflow-y-auto">
+            <PageState
+              loading={searching}
+              skeleton={
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="aspect-video w-full" />
+                  ))}
+                </div>
+              }
+            >
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {tab === "library" &&
+                  curatedItems.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => pickCurated(item)}
+                      className="group overflow-hidden rounded-md border bg-muted/30 hover:ring-2 hover:ring-ring"
+                      title={item.title}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        loading="lazy"
+                        className="aspect-video w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                {tab === "mine" &&
+                  myPhotos.map((photo) => (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      onClick={() => {
+                        onSelect({
+                          id: photo.id,
+                          url: photo.signed_url,
+                          title: photo.title,
+                        });
+                        onOpenChange(false);
+                      }}
+                      className="group overflow-hidden rounded-md border bg-muted/30 hover:ring-2 hover:ring-ring"
+                      title={photo.title}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.signed_url ?? ""}
+                        alt={photo.title}
+                        loading="lazy"
+                        className="aspect-video w-full object-cover"
+                      />
+                    </button>
+                  ))}
+                {((tab === "library" && curatedItems.length === 0) ||
+                  (tab === "mine" && myPhotos.length === 0)) && (
+                  <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
+                    {t("blog.libraryEmpty")}
+                  </p>
+                )}
+              </div>
+            </PageState>
           </div>
         </div>
       </div>

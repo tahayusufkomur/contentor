@@ -11,6 +11,7 @@ import {
   Type,
   Wand2,
 } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { LogoStudio } from "@/components/logo/logo-studio";
@@ -34,14 +36,29 @@ import type { TenantConfig } from "@/types/tenant";
 export default function DesignSettingsPage() {
   const router = useRouter();
   const [config, setConfig] = useState<TenantConfig | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [studioOpen, setStudioOpen] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<TenantConfig>("/api/v1/admin/config/")
-      .then(setConfig)
-      .catch(console.error);
-  }, []);
+      .then((data) => {
+        if (!cancelled) setConfig(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   // Deep link from the setup assistant: /admin/design?studio=1
   // (window.location in an effect, NOT useSearchParams — avoids the Next 14
@@ -52,51 +69,43 @@ export default function DesignSettingsPage() {
     }
   }, []);
 
-  async function handleSave() {
+  const { run: handleSave, loading: saving } = useAsyncAction(async () => {
     if (!config) return;
-
-    setSaving(true);
-    try {
-      await clientFetch("/api/v1/admin/config/", {
-        method: "PATCH",
-        body: JSON.stringify(config),
-      });
-      router.refresh();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (!config) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardContent className="space-y-4 p-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="space-y-4 p-6">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  const theme = getThemePalette(config.theme);
+    await clientFetch("/api/v1/admin/config/", {
+      method: "PATCH",
+      body: JSON.stringify(config),
+    });
+    router.refresh();
+  });
 
   return (
-    <div className="space-y-6">
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardContent className="space-y-4 p-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="space-y-4 p-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      }
+      className="space-y-6"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Design Settings</h1>
@@ -105,12 +114,44 @@ export default function DesignSettingsPage() {
             mode.
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <Button
+          onClick={handleSave}
+          loading={saving}
+          loadingText="Saving…"
+          className="gap-2"
+        >
           <Save className="h-4 w-4" />
-          {saving ? "Saving..." : "Save Changes"}
+          Save Changes
         </Button>
       </div>
 
+      {config && (
+        <DesignSettingsBody
+          config={config}
+          onConfigChange={setConfig}
+          studioOpen={studioOpen}
+          setStudioOpen={setStudioOpen}
+        />
+      )}
+    </PageState>
+  );
+}
+
+function DesignSettingsBody({
+  config,
+  onConfigChange,
+  studioOpen,
+  setStudioOpen,
+}: {
+  config: TenantConfig;
+  onConfigChange: (config: TenantConfig) => void;
+  studioOpen: boolean;
+  setStudioOpen: (open: boolean) => void;
+}) {
+  const theme = getThemePalette(config.theme);
+
+  return (
+    <>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -127,7 +168,7 @@ export default function DesignSettingsPage() {
                 id="brand_name"
                 value={config.brand_name}
                 onChange={(e) =>
-                  setConfig({ ...config, brand_name: e.target.value })
+                  onConfigChange({ ...config, brand_name: e.target.value })
                 }
               />
             </div>
@@ -155,7 +196,7 @@ export default function DesignSettingsPage() {
                 id="logo_url"
                 value={config.logo_url}
                 onChange={(e) =>
-                  setConfig({ ...config, logo_url: e.target.value })
+                  onConfigChange({ ...config, logo_url: e.target.value })
                 }
                 placeholder="https://..."
               />
@@ -190,7 +231,7 @@ export default function DesignSettingsPage() {
             <ThemeCardGrid
               selectedTheme={config.theme}
               onSelect={(selectedTheme) =>
-                setConfig({ ...config, theme: selectedTheme })
+                onConfigChange({ ...config, theme: selectedTheme })
               }
             />
             <div className="flex items-start justify-between gap-4 rounded-xl border bg-card/70 p-4">
@@ -204,7 +245,7 @@ export default function DesignSettingsPage() {
               <Switch
                 checked={config.dark_mode_enabled}
                 onCheckedChange={(dark_mode_enabled) =>
-                  setConfig({ ...config, dark_mode_enabled })
+                  onConfigChange({ ...config, dark_mode_enabled })
                 }
               />
             </div>
@@ -229,7 +270,7 @@ export default function DesignSettingsPage() {
                 id="font_family"
                 value={config.font_family}
                 onChange={(e) =>
-                  setConfig({ ...config, font_family: e.target.value })
+                  onConfigChange({ ...config, font_family: e.target.value })
                 }
                 placeholder="Inter"
               />
@@ -341,7 +382,7 @@ export default function DesignSettingsPage() {
           <CardContent>
             <NavbarTab
               config={config}
-              onChange={(patch) => setConfig({ ...config, ...patch })}
+              onChange={(patch) => onConfigChange({ ...config, ...patch })}
             />
           </CardContent>
         </Card>
@@ -351,8 +392,8 @@ export default function DesignSettingsPage() {
         open={studioOpen}
         onOpenChange={setStudioOpen}
         config={config}
-        onSaved={(patch) => setConfig({ ...config, ...patch })}
+        onSaved={(patch) => onConfigChange({ ...config, ...patch })}
       />
-    </div>
+    </>
   );
 }

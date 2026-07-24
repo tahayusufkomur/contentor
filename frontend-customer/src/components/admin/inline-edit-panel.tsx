@@ -17,7 +17,6 @@ import { PhotoPicker } from "@/components/admin/photo-picker";
 import { VideoPicker } from "@/components/admin/video-picker";
 import { FilterPicker } from "@/components/admin/filter-picker";
 import { TagInput } from "@/components/admin/tag-input";
-import { Loader2 } from "lucide-react";
 import type { Photo } from "@/types/photo";
 import type { TagScope } from "@/types/course";
 
@@ -269,9 +268,10 @@ export function InlineEditPanel<T extends Record<string, any>>({
         <Button
           size="sm"
           onClick={handleSubmit}
-          disabled={saving || hasEmptyRequired}
+          disabled={hasEmptyRequired}
+          loading={saving}
+          loadingText="Saving…"
         >
-          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save
         </Button>
       </div>

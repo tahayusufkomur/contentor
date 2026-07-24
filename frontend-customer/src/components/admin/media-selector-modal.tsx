@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Image as ImageIcon, Video, X, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
@@ -56,7 +57,10 @@ export function MediaSelectorModal({
         }));
         setItems(mapped);
       })
-      .catch(() => setItems([]))
+      .catch(() => {
+        setItems([]);
+        toast.error("Could not load media. Please try again.");
+      })
       .finally(() => setLoading(false));
   }, [open, activeTab, query]);
 

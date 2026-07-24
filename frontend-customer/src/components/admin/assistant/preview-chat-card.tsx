@@ -5,7 +5,9 @@ import Link from "next/link";
 
 import { ArrowRight, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -73,6 +75,7 @@ export function PreviewChatCard() {
       setMessages(history.slice(0, -1));
       setInput(trimmed);
       setError(true);
+      toast.error(t("assistant.previewError"));
     } finally {
       setBusy(false);
     }
@@ -165,14 +168,15 @@ export function PreviewChatCard() {
               maxLength={2000}
               className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />
-            <button
+            <Button
               type="submit"
-              disabled={busy || !input.trim()}
+              size="icon"
+              loading={busy}
+              disabled={!input.trim()}
               aria-label={t("assistant.previewSend")}
-              className="rounded-md bg-primary p-2 text-primary-foreground transition-opacity disabled:opacity-40"
             >
               <Send className="h-4 w-4" />
-            </button>
+            </Button>
           </form>
         </div>
       </CardContent>

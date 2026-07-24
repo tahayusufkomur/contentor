@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { Loader2, Lock, Sparkles, Wand2 } from "lucide-react";
+import { Lock, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
 import { composeCuratedPreview } from "@/lib/logo/curated-preview";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
 import type { LogoRecipe } from "@/types/logo";
@@ -61,9 +63,9 @@ export function CuratedGallery({
 
   if (loading) {
     return (
-      <p className="p-6 text-sm text-muted-foreground">
-        Loading ready-made logos…
-      </p>
+      <div className="p-6">
+        <SkeletonCardGrid count={6} />
+      </div>
     );
   }
   if (!logos.length) {
@@ -89,7 +91,7 @@ export function CuratedGallery({
                 <LogoRenderer recipe={previews[index]!} width={220} />
                 {generating && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <Spinner />
                     <p className="text-xs font-medium text-primary">
                       Designing your version…
                     </p>

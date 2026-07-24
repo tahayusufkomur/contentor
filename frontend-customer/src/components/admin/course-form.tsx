@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { clientFetch } from "@/lib/api-client";
 import { toast } from "sonner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { PhotoPicker } from "@/components/admin/photo-picker";
 import { VideoPicker } from "@/components/admin/video-picker";
@@ -70,7 +71,6 @@ export function CourseForm({
   const [course, setCourse] = useState<CourseDetail | null>(
     initialCourse ?? null,
   );
-  const [saving, setSaving] = useState(false);
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>(
     initialCourse?.filter_options?.map((o) => o.id) ?? [],
   );
@@ -102,7 +102,6 @@ export function CourseForm({
   // Curriculum state
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [editingLessonId, setEditingLessonId] = useState<number | null>(null);
-  const [lessonSaving, setLessonSaving] = useState(false);
   const [addingLessonForModule, setAddingLessonForModule] = useState<
     number | null
   >(null);
@@ -127,10 +126,9 @@ export function CourseForm({
   }, [slug, onCourseLoaded]);
 
   // --- Save all course fields ---
-  async function handleSave() {
-    if (isCreate) {
-      setSaving(true);
-      try {
+  const { run: handleSave, loading: saving } = useAsyncAction(
+    async () => {
+      if (isCreate) {
         const created = await clientFetch<Course>("/api/v1/courses/", {
           method: "POST",
           body: JSON.stringify({
@@ -156,17 +154,9 @@ export function CourseForm({
         });
         toast.success("Course created");
         router.push(`/admin/courses/${created.slug}`);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to create course");
-      } finally {
-        setSaving(false);
+        return;
       }
-      return;
-    }
-    if (!course) return;
-    setSaving(true);
-    try {
+      if (!course) return;
       await clientFetch(`/api/v1/courses/${slug}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -183,18 +173,18 @@ export function CourseForm({
       });
       toast.success("Course saved");
       await loadCourse();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to save course");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    {
+      errorToast: isCreate
+        ? "Failed to create course"
+        : "Failed to save course",
+    },
+  );
 
   // --- Module CRUD ---
-  async function handleAddModule() {
-    if (!newModuleTitle.trim() || !slug) return;
-    try {
+  const { run: handleAddModule, loading: addingModule } = useAsyncAction(
+    async () => {
+      if (!newModuleTitle.trim() || !slug) return;
       await clientFetch(`/api/v1/courses/${slug}/modules/`, {
         method: "POST",
         body: JSON.stringify({ title: newModuleTitle }),
@@ -202,34 +192,14 @@ export function CourseForm({
       setNewModuleTitle("");
       toast.success("Module added");
       await loadCourse();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to add module");
-    }
-  }
-
-  async function handleDeleteModule(moduleId: number) {
-    if (!slug) return;
-    try {
-      await clientFetch(`/api/v1/courses/${slug}/modules/${moduleId}/`, {
-        method: "DELETE",
-      });
-      toast.success("Module deleted");
-      await loadCourse();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete module");
-    }
-  }
+    },
+    { errorToast: "Failed to add module" },
+  );
 
   // --- Lesson CRUD ---
-  async function handleSaveLesson(
-    lesson: Lesson,
-    values: Record<string, unknown>,
-  ) {
-    if (!slug) return;
-    setLessonSaving(true);
-    try {
+  const { run: handleSaveLesson, loading: savingLessonEdit } = useAsyncAction(
+    async (lesson: Lesson, values: Record<string, unknown>) => {
+      if (!slug) return;
       await clientFetch(`/api/v1/courses/${slug}/lessons/${lesson.id}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -242,59 +212,39 @@ export function CourseForm({
       setEditingLessonId(null);
       toast.success("Lesson saved");
       await loadCourse();
-    } catch {
-      toast.error("Failed to save lesson");
-    } finally {
-      setLessonSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to save lesson" },
+  );
 
-  async function handleCreateLesson(moduleId: number) {
-    if (!slug || !newLesson.title.trim()) return;
-    setLessonSaving(true);
-    try {
-      await clientFetch(
-        `/api/v1/courses/${slug}/modules/${moduleId}/lessons/`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            title: newLesson.title,
-            content_html: newLesson.content_html,
-            is_free_preview: newLesson.is_free_preview,
-            ...(newLesson.video ? { video: newLesson.video } : {}),
-          }),
-        },
-      );
-      setAddingLessonForModule(null);
-      setNewLesson({
-        title: "",
-        content_html: "",
-        is_free_preview: false,
-        video: null,
-        videoPreviewUrl: null,
-      });
-      toast.success("Lesson added");
-      await loadCourse();
-    } catch {
-      toast.error("Failed to add lesson");
-    } finally {
-      setLessonSaving(false);
-    }
-  }
-
-  async function handleDeleteLesson(lessonId: number) {
-    if (!slug) return;
-    try {
-      await clientFetch(`/api/v1/courses/${slug}/lessons/${lessonId}/`, {
-        method: "DELETE",
-      });
-      toast.success("Lesson deleted");
-      await loadCourse();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete lesson");
-    }
-  }
+  const { run: handleCreateLesson, loading: savingLessonCreate } =
+    useAsyncAction(
+      async (moduleId: number) => {
+        if (!slug || !newLesson.title.trim()) return;
+        await clientFetch(
+          `/api/v1/courses/${slug}/modules/${moduleId}/lessons/`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              title: newLesson.title,
+              content_html: newLesson.content_html,
+              is_free_preview: newLesson.is_free_preview,
+              ...(newLesson.video ? { video: newLesson.video } : {}),
+            }),
+          },
+        );
+        setAddingLessonForModule(null);
+        setNewLesson({
+          title: "",
+          content_html: "",
+          is_free_preview: false,
+          video: null,
+          videoPreviewUrl: null,
+        });
+        toast.success("Lesson added");
+        await loadCourse();
+      },
+      { errorToast: "Failed to add lesson" },
+    );
 
   // --- Create-mode local curriculum (no API calls until submit) ---
   function addLocalModule() {
@@ -563,8 +513,12 @@ export function CourseForm({
               <TagInput value={tagIds} onChange={setTagIds} scope="course" />
             </div>
             {!isCreate && (
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
+              <Button
+                onClick={handleSave}
+                loading={saving}
+                loadingText="Saving…"
+              >
+                Save Changes
               </Button>
             )}
           </CardContent>
@@ -756,9 +710,11 @@ export function CourseForm({
 
             <Button
               onClick={handleSave}
-              disabled={saving || !createForm.title.trim()}
+              loading={saving}
+              loadingText="Creating…"
+              disabled={!createForm.title.trim()}
             >
-              {saving ? "Creating..." : "Create Course"}
+              Create Course
             </Button>
           </>
         )}
@@ -787,14 +743,11 @@ export function CourseForm({
                         {mod.lessons.length} lesson
                         {mod.lessons.length !== 1 ? "s" : ""}
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleDeleteModule(mod.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
+                      <DeleteModuleButton
+                        slug={slug}
+                        moduleId={mod.id}
+                        onDeleted={loadCourse}
+                      />
                     </div>
                   </div>
                 </CardHeader>
@@ -854,16 +807,11 @@ export function CourseForm({
                                       <Pencil className="h-4 w-4" />
                                     )}
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={() =>
-                                      handleDeleteLesson(lesson.id)
-                                    }
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                  </Button>
+                                  <DeleteLessonButton
+                                    slug={slug}
+                                    lessonId={lesson.id}
+                                    onDeleted={loadCourse}
+                                  />
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -876,7 +824,7 @@ export function CourseForm({
                                       handleSaveLesson(lesson, values)
                                     }
                                     onCancel={() => setEditingLessonId(null)}
-                                    saving={lessonSaving}
+                                    saving={savingLessonEdit}
                                   />
                                 </TableCell>
                               </TableRow>
@@ -902,7 +850,7 @@ export function CourseForm({
                           videoPreviewUrl: null,
                         });
                       }}
-                      saving={lessonSaving}
+                      saving={savingLessonCreate}
                     />
                   ) : (
                     <Button
@@ -928,7 +876,12 @@ export function CourseForm({
                       if (e.key === "Enter") handleAddModule();
                     }}
                   />
-                  <Button className="gap-2 shrink-0" onClick={handleAddModule}>
+                  <Button
+                    className="gap-2 shrink-0"
+                    onClick={handleAddModule}
+                    loading={addingModule}
+                    loadingText="Adding…"
+                  >
                     <Plus className="h-4 w-4" /> Add Module
                   </Button>
                 </div>
@@ -938,6 +891,77 @@ export function CourseForm({
         )}
       </div>
     </RichEditorProvider>
+  );
+}
+
+// ── Per-row delete actions (own useAsyncAction instances so rows don't
+// share a loading flag — see the per-row gotcha in the retrofit brief) ──
+
+function DeleteModuleButton({
+  slug,
+  moduleId,
+  onDeleted,
+}: {
+  slug: string | undefined;
+  moduleId: number;
+  onDeleted: () => Promise<void>;
+}) {
+  const { run: handleDelete, loading } = useAsyncAction(
+    async () => {
+      if (!slug) return;
+      await clientFetch(`/api/v1/courses/${slug}/modules/${moduleId}/`, {
+        method: "DELETE",
+      });
+      toast.success("Module deleted");
+      await onDeleted();
+    },
+    { errorToast: "Failed to delete module" },
+  );
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7"
+      loading={loading}
+      onClick={() => void handleDelete()}
+    >
+      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+    </Button>
+  );
+}
+
+function DeleteLessonButton({
+  slug,
+  lessonId,
+  onDeleted,
+}: {
+  slug: string | undefined;
+  lessonId: number;
+  onDeleted: () => Promise<void>;
+}) {
+  const { run: handleDelete, loading } = useAsyncAction(
+    async () => {
+      if (!slug) return;
+      await clientFetch(`/api/v1/courses/${slug}/lessons/${lessonId}/`, {
+        method: "DELETE",
+      });
+      toast.success("Lesson deleted");
+      await onDeleted();
+    },
+    { errorToast: "Failed to delete lesson" },
+  );
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7"
+      loading={loading}
+      onClick={() => void handleDelete()}
+    >
+      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+    </Button>
   );
 }
 
@@ -1046,9 +1070,11 @@ function LessonEditPanel({
         <Button
           size="sm"
           onClick={() => onSave(values)}
-          disabled={saving || !values.title.trim()}
+          loading={saving}
+          loadingText="Saving…"
+          disabled={!values.title.trim()}
         >
-          {saving ? "Saving..." : "Save"}
+          Save
         </Button>
       </div>
     </div>
@@ -1132,9 +1158,11 @@ function LessonCreatePanel({
         <Button
           size="sm"
           onClick={onSave}
-          disabled={saving || !newLesson.title.trim()}
+          loading={saving}
+          loadingText={saveLabel === "Save" ? "Saving…" : "Adding…"}
+          disabled={!newLesson.title.trim()}
         >
-          {saving ? "Saving..." : saveLabel}
+          {saveLabel}
         </Button>
       </div>
     </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import { buildBrandKit, darkVariant } from "@/lib/logo/brand-kit";
@@ -54,7 +55,6 @@ export function StudioEditor({
 }: StudioEditorProps) {
   const [selected, setSelected] = useState<ElementKey | null>(null);
   const [dark, setDark] = useState(false);
-  const [kitBuilding, setKitBuilding] = useState(false);
   const [kitNote, setKitNote] = useState<string | null>(null);
   const darkSvgRef = useRef<SVGSVGElement>(null);
   const darkRecipe = darkVariant(recipe);
@@ -63,12 +63,11 @@ export function StudioEditor({
   // group unmounts, so a stale selection would point at nothing.
   if (selected === "tagline" && !recipe.tagline.trim()) setSelected(null);
 
-  async function downloadBrandKit() {
-    if (!logoSvgRef.current || !darkSvgRef.current || !markSvgRef.current)
-      return;
-    setKitBuilding(true);
-    setKitNote(null);
-    try {
+  const { run: downloadBrandKit, loading: kitBuilding } = useAsyncAction(
+    async () => {
+      if (!logoSvgRef.current || !darkSvgRef.current || !markSvgRef.current)
+        return;
+      setKitNote(null);
       const { blob, svgIncluded } = await buildBrandKit({
         lightSvg: logoSvgRef.current,
         darkSvg: darkSvgRef.current,
@@ -88,12 +87,14 @@ export function StudioEditor({
           "Fonts couldn't be fetched, so the kit contains PNGs only (no SVG).",
         );
       }
-    } catch {
-      setKitNote("Could not build the brand kit — please try again.");
-    } finally {
-      setKitBuilding(false);
-    }
-  }
+    },
+    {
+      // The failure reason is shown as a persistent inline note below the
+      // button (not a transient toast) — replaces the default error toast.
+      onError: () =>
+        setKitNote("Could not build the brand kit — please try again."),
+    },
+  );
 
   return (
     <div className="flex min-h-0 flex-1">
@@ -132,14 +133,11 @@ export function StudioEditor({
             variant="outline"
             size="sm"
             className="gap-2"
-            disabled={kitBuilding}
+            loading={kitBuilding}
+            loadingText="Building…"
             onClick={downloadBrandKit}
           >
-            {kitBuilding ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="h-3.5 w-3.5" />
-            )}
+            <Download className="h-3.5 w-3.5" />
             Download brand kit (.zip)
           </Button>
           <p className="text-xs text-muted-foreground">

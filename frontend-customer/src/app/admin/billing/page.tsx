@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PaidFeatureBadge } from "@/components/admin/feature-badges";
+import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import { ChangePlanCard } from "./subscription/ChangePlanCard";
 import { SubscriptionTile } from "./subscription/SubscriptionTile";
@@ -99,69 +100,130 @@ function TableSkeletonRows({
 function ProductsTab() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<Product[]>("/api/v1/billing/products/")
-      .then(setProducts)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   return (
-    <div className="rounded-md border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-muted/50">
-            <th className="px-4 py-3 text-left font-medium">Type</th>
-            <th className="px-4 py-3 text-left font-medium">Title</th>
-            <th className="px-4 py-3 text-left font-medium">Price</th>
-            <th className="px-4 py-3 text-left font-medium">Sales</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <TableSkeletonRows cols={4} />
-          ) : products.length === 0 ? (
-            <tr>
-              <td
-                colSpan={4}
-                className="px-4 py-8 text-center text-muted-foreground"
-              >
-                No products found.
-              </td>
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="rounded-md border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/50">
+                <th className="px-4 py-3 text-left font-medium">Type</th>
+                <th className="px-4 py-3 text-left font-medium">Title</th>
+                <th className="px-4 py-3 text-left font-medium">Price</th>
+                <th className="px-4 py-3 text-left font-medium">Sales</th>
+              </tr>
+            </thead>
+            <tbody>
+              <TableSkeletonRows cols={4} />
+            </tbody>
+          </table>
+        </div>
+      }
+    >
+      <div className="rounded-md border">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b bg-muted/50">
+              <th className="px-4 py-3 text-left font-medium">Type</th>
+              <th className="px-4 py-3 text-left font-medium">Title</th>
+              <th className="px-4 py-3 text-left font-medium">Price</th>
+              <th className="px-4 py-3 text-left font-medium">Sales</th>
             </tr>
-          ) : (
-            products.map((p) => (
-              <tr key={p.id} className="border-b last:border-0">
-                <td className="px-4 py-3">
-                  <ProductTypeBadge type={p.type} />
-                </td>
-                <td className="px-4 py-3 font-medium">{p.title}</td>
-                <td className="px-4 py-3">
-                  {p.price} {p.currency}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {p.sales ?? 0}
+          </thead>
+          <tbody>
+            {products.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-4 py-8 text-center text-muted-foreground"
+                >
+                  No products found.
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              products.map((p) => (
+                <tr key={p.id} className="border-b last:border-0">
+                  <td className="px-4 py-3">
+                    <ProductTypeBadge type={p.type} />
+                  </td>
+                  <td className="px-4 py-3 font-medium">{p.title}</td>
+                  <td className="px-4 py-3">
+                    {p.price} {p.currency}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {p.sales ?? 0}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </PageState>
   );
 }
 
 function BundlesTab() {
   const [bundles, setBundles] = useState<BundleListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
     clientFetch<BundleListItem[]>("/api/v1/billing/bundles/")
-      .then(setBundles)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .then((data) => {
+        if (!cancelled) setBundles(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  const tableHead = (
+    <thead>
+      <tr className="border-b bg-muted/50">
+        <th className="px-4 py-3 text-left font-medium">Name</th>
+        <th className="px-4 py-3 text-left font-medium">Price</th>
+        <th className="px-4 py-3 text-left font-medium">Items</th>
+        <th className="px-4 py-3 text-left font-medium">Status</th>
+        <th className="px-4 py-3 text-left font-medium">Actions</th>
+      </tr>
+    </thead>
+  );
 
   return (
     <div className="space-y-4">
@@ -173,50 +235,154 @@ function BundlesTab() {
           </Link>
         </Button>
       </div>
+      <PageState
+        loading={loading}
+        error={error}
+        onRetry={() => setReloadKey((k) => k + 1)}
+        skeleton={
+          <div className="rounded-md border">
+            <table className="w-full text-sm">
+              {tableHead}
+              <tbody>
+                <TableSkeletonRows cols={5} />
+              </tbody>
+            </table>
+          </div>
+        }
+      >
+        <div className="rounded-md border">
+          <table className="w-full text-sm">
+            {tableHead}
+            <tbody>
+              {bundles.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    <EmptyState
+                      icon={Package}
+                      title="No bundles yet"
+                      description="Create a bundle to group products at a discounted price."
+                      action={{
+                        label: "Create Bundle",
+                        href: "/admin/billing/bundles/new",
+                      }}
+                    />
+                  </td>
+                </tr>
+              ) : (
+                bundles.map((b) => (
+                  <tr key={b.id} className="border-b last:border-0">
+                    <td className="px-4 py-3 font-medium">{b.name}</td>
+                    <td className="px-4 py-3">${b.price}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {b.item_count}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={b.is_active ? "success" : "secondary"}>
+                        {b.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/admin/billing/bundles/${b.id}`}>
+                          Edit
+                        </Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </PageState>
+    </div>
+  );
+}
+
+function PlansTab() {
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    clientFetch<Plan[]>("/api/v1/billing/plans/")
+      .then((data) => {
+        if (!cancelled) setPlans(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  const tableHead = (
+    <thead>
+      <tr className="border-b bg-muted/50">
+        <th className="px-4 py-3 text-left font-medium">Name</th>
+        <th className="px-4 py-3 text-left font-medium">Price</th>
+        <th className="px-4 py-3 text-left font-medium">Status</th>
+        <th className="px-4 py-3 text-left font-medium">Actions</th>
+      </tr>
+    </thead>
+  );
+
+  return (
+    <PageState
+      loading={loading}
+      error={error}
+      onRetry={() => setReloadKey((k) => k + 1)}
+      skeleton={
+        <div className="rounded-md border">
+          <table className="w-full text-sm">
+            {tableHead}
+            <tbody>
+              <TableSkeletonRows cols={4} />
+            </tbody>
+          </table>
+        </div>
+      }
+    >
       <div className="rounded-md border">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">Name</th>
-              <th className="px-4 py-3 text-left font-medium">Price</th>
-              <th className="px-4 py-3 text-left font-medium">Items</th>
-              <th className="px-4 py-3 text-left font-medium">Status</th>
-              <th className="px-4 py-3 text-left font-medium">Actions</th>
-            </tr>
-          </thead>
+          {tableHead}
           <tbody>
-            {loading ? (
-              <TableSkeletonRows cols={5} />
-            ) : bundles.length === 0 ? (
+            {plans.length === 0 ? (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={4}>
                   <EmptyState
-                    icon={Package}
-                    title="No bundles yet"
-                    description="Create a bundle to group products at a discounted price."
-                    action={{
-                      label: "Create Bundle",
-                      href: "/admin/billing/bundles/new",
-                    }}
+                    icon={Settings}
+                    title="No subscription plans"
+                    description="Subscription plans will appear here once created."
                   />
                 </td>
               </tr>
             ) : (
-              bundles.map((b) => (
-                <tr key={b.id} className="border-b last:border-0">
-                  <td className="px-4 py-3 font-medium">{b.name}</td>
-                  <td className="px-4 py-3">${b.price}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {b.item_count}
+              plans.map((p) => (
+                <tr key={p.id} className="border-b last:border-0">
+                  <td className="px-4 py-3 font-medium">{p.name}</td>
+                  <td className="px-4 py-3">
+                    {p.price} {p.currency}
+                    {billingIntervalSuffix(p.billing_interval_months)}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={b.is_active ? "success" : "secondary"}>
-                      {b.is_active ? "Active" : "Inactive"}
+                    <Badge variant={p.is_active ? "success" : "secondary"}>
+                      {p.is_active ? "Active" : "Inactive"}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">
                     <Button asChild variant="ghost" size="sm">
-                      <Link href={`/admin/billing/bundles/${b.id}`}>Edit</Link>
+                      <Link href={`/admin/billing/plans/${p.id}`}>
+                        Manage Access
+                      </Link>
                     </Button>
                   </td>
                 </tr>
@@ -225,71 +391,7 @@ function BundlesTab() {
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
-
-function PlansTab() {
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    clientFetch<Plan[]>("/api/v1/billing/plans/")
-      .then(setPlans)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  return (
-    <div className="rounded-md border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-muted/50">
-            <th className="px-4 py-3 text-left font-medium">Name</th>
-            <th className="px-4 py-3 text-left font-medium">Price</th>
-            <th className="px-4 py-3 text-left font-medium">Status</th>
-            <th className="px-4 py-3 text-left font-medium">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <TableSkeletonRows cols={4} />
-          ) : plans.length === 0 ? (
-            <tr>
-              <td colSpan={4}>
-                <EmptyState
-                  icon={Settings}
-                  title="No subscription plans"
-                  description="Subscription plans will appear here once created."
-                />
-              </td>
-            </tr>
-          ) : (
-            plans.map((p) => (
-              <tr key={p.id} className="border-b last:border-0">
-                <td className="px-4 py-3 font-medium">{p.name}</td>
-                <td className="px-4 py-3">
-                  {p.price} {p.currency}
-                  {billingIntervalSuffix(p.billing_interval_months)}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={p.is_active ? "success" : "secondary"}>
-                    {p.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/admin/billing/plans/${p.id}`}>
-                      Manage Access
-                    </Link>
-                  </Button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    </PageState>
   );
 }
 

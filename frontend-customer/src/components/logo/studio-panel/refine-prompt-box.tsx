@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
 
@@ -63,18 +63,16 @@ export function RefinePromptBox({
               type="button"
               size="sm"
               className="gap-1.5"
-              disabled={refining || !instruction.trim()}
+              disabled={!instruction.trim()}
+              loading={refining}
+              loadingText="Refining…"
               onClick={() => {
                 onRefine(instruction.trim(), redrawMark);
                 setInstruction("");
                 setRedrawMark(false);
               }}
             >
-              {refining ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="h-3.5 w-3.5" />
-              )}
+              <Sparkles className="h-3.5 w-3.5" />
               Refine
             </Button>
             <p className="text-right text-xs text-muted-foreground">

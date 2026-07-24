@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   getConversationThread,
@@ -27,6 +28,7 @@ import {
   type ConversationRow,
   type ThreadMessage,
 } from "@/lib/assistant";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 import { parseAnswer, systemLine } from "./format-answer";
 
@@ -73,7 +75,8 @@ export function ConversationsCard({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const [active, setActive] = useState<number | null>(null);
   const [thread, setThread] = useState<ThreadMessage[]>([]);
@@ -81,9 +84,6 @@ export function ConversationsCard({
   const [agentLabel, setAgentLabel] = useState("");
   const [threadLoading, setThreadLoading] = useState(false);
   const [reply, setReply] = useState("");
-  const [sending, setSending] = useState(false);
-  const [takingOver, setTakingOver] = useState(false);
-  const [releasing, setReleasing] = useState(false);
 
   // High-water mark for the open thread's polling `after` param.
   const lastIdRef = useRef(0);
@@ -103,15 +103,28 @@ export function ConversationsCard({
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
     listConversations(1)
       .then((r) => {
+        if (cancelled) return;
         setRows(r.results);
         setHasMore(r.has_more);
       })
-      .catch(() => toast.error(t("assistant.loadFailed")))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (cancelled) return;
+        setLoadError(err);
+        toast.error(t("assistant.loadFailed"));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reloadKey]);
 
   // Idle list refresh — only while no thread is open, so a coach mid-reply
   // never has the surrounding list rewritten under them.
@@ -131,20 +144,16 @@ export function ConversationsCard({
     return () => clearInterval(iv);
   }, [active]);
 
-  const loadMore = async () => {
-    setLoadingMore(true);
-    try {
+  const { run: loadMore, loading: loadingMore } = useAsyncAction(
+    async () => {
       const next = page + 1;
       const r = await listConversations(next);
       setRows((current) => [...current, ...r.results]);
       setHasMore(r.has_more);
       setPage(next);
-    } catch {
-      toast.error(t("assistant.loadFailed"));
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.loadFailed") },
+  );
 
   const patchRow = (id: number, patch: Partial<ConversationRow>) => {
     setRows((current) =>
@@ -234,11 +243,10 @@ export function ConversationsCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
-  const handleTakeover = async () => {
-    if (active === null) return;
-    const forId = active;
-    setTakingOver(true);
-    try {
+  const { run: handleTakeover, loading: takingOver } = useAsyncAction(
+    async () => {
+      if (active === null) return;
+      const forId = active;
       const payload = await takeoverConversation(forId);
       patchRow(forId, {
         status: payload.status,
@@ -252,18 +260,14 @@ export function ConversationsCard({
         setStatus(payload.status);
         setAgentLabel(payload.agent_label);
       }
-    } catch {
-      toast.error(t("assistant.loadFailed"));
-    } finally {
-      setTakingOver(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.loadFailed") },
+  );
 
-  const handleRelease = async () => {
-    if (active === null) return;
-    const forId = active;
-    setReleasing(true);
-    try {
+  const { run: handleRelease, loading: releasing } = useAsyncAction(
+    async () => {
+      if (active === null) return;
+      const forId = active;
       const payload = await releaseConversation(forId);
       patchRow(forId, {
         status: payload.status,
@@ -277,19 +281,15 @@ export function ConversationsCard({
         setStatus(payload.status);
         setAgentLabel(payload.agent_label);
       }
-    } catch {
-      toast.error(t("assistant.loadFailed"));
-    } finally {
-      setReleasing(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.loadFailed") },
+  );
 
-  const handleSend = async () => {
-    const trimmed = reply.trim();
-    if (!trimmed || active === null || sending) return;
-    const forId = active;
-    setSending(true);
-    try {
+  const { run: handleSend, loading: sending } = useAsyncAction(
+    async () => {
+      const trimmed = reply.trim();
+      if (!trimmed || active === null) return;
+      const forId = active;
       const payload = await sendAgentMessage(forId, trimmed, lastIdRef.current);
       if (activeRef.current === forId) {
         mergeThread(payload.messages);
@@ -301,12 +301,9 @@ export function ConversationsCard({
         human_requested: payload.human_requested,
       });
       setReply("");
-    } catch {
-      toast.error(t("assistant.loadFailed"));
-    } finally {
-      setSending(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.loadFailed") },
+  );
 
   return (
     <Card>
@@ -314,205 +311,215 @@ export function ConversationsCard({
         <CardTitle>{t("assistant.convTitle")}</CardTitle>
         <CardDescription>{t("assistant.convHint")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {loading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-          </div>
-        ) : rows.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            {t("assistant.convEmpty")}
-          </p>
-        ) : (
-          <div className="divide-y divide-border rounded-xl border border-border">
-            {rows.map((row) => {
-              const isActive = active === row.id;
-              return (
-                <div key={row.id}>
-                  <button
-                    type="button"
-                    onClick={() => openThread(row.id)}
-                    className="flex w-full items-start gap-3 p-3 text-left text-sm transition-colors hover:bg-accent/40"
-                  >
-                    <span
-                      className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                        row.status === "human"
-                          ? "bg-primary"
-                          : "bg-muted-foreground/30"
-                      }`}
-                    />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">
-                          {row.user_label || t("assistant.convVisitor")}
-                        </span>
-                        {row.status === "human" && (
-                          <Badge variant="brand">
-                            {t("assistant.convLive")}
-                          </Badge>
-                        )}
-                        {row.human_requested && (
-                          <Badge variant="warning">
-                            {t("assistant.convWantsHuman")}
-                          </Badge>
-                        )}
+      <CardContent>
+        <PageState
+          loading={loading}
+          error={loadError}
+          onRetry={() => setReloadKey((k) => k + 1)}
+          skeleton={
+            <div className="space-y-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          }
+          className="space-y-3"
+        >
+          {rows.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              {t("assistant.convEmpty")}
+            </p>
+          ) : (
+            <div className="divide-y divide-border rounded-xl border border-border">
+              {rows.map((row) => {
+                const isActive = active === row.id;
+                return (
+                  <div key={row.id}>
+                    <button
+                      type="button"
+                      onClick={() => openThread(row.id)}
+                      className="flex w-full items-start gap-3 p-3 text-left text-sm transition-colors hover:bg-accent/40"
+                    >
+                      <span
+                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                          row.status === "human"
+                            ? "bg-primary"
+                            : "bg-muted-foreground/30"
+                        }`}
+                      />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium">
+                            {row.user_label || t("assistant.convVisitor")}
+                          </span>
+                          {row.status === "human" && (
+                            <Badge variant="brand">
+                              {t("assistant.convLive")}
+                            </Badge>
+                          )}
+                          {row.human_requested && (
+                            <Badge variant="warning">
+                              {t("assistant.convWantsHuman")}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {row.last_message}
+                        </p>
                       </div>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {row.last_message}
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right text-xs text-muted-foreground">
-                      <div>{relativeTime(row.updated_at)}</div>
-                      <div>{row.message_count}</div>
-                    </div>
-                  </button>
+                      <div className="shrink-0 text-right text-xs text-muted-foreground">
+                        <div>{relativeTime(row.updated_at)}</div>
+                        <div>{row.message_count}</div>
+                      </div>
+                    </button>
 
-                  {isActive && (
-                    <div className="space-y-3 border-t bg-accent/20 p-3">
-                      {threadLoading ? (
-                        <Skeleton className="h-24 w-full" />
-                      ) : (
-                        <div className="max-h-96 space-y-2 overflow-y-auto rounded-lg border bg-background p-3">
-                          {thread.map((message, index) => {
-                            if (message.role === "system") {
-                              const line = systemLine(
+                    {isActive && (
+                      <div className="space-y-3 border-t bg-accent/20 p-3">
+                        {threadLoading ? (
+                          <Skeleton className="h-24 w-full" />
+                        ) : (
+                          <div className="max-h-96 space-y-2 overflow-y-auto rounded-lg border bg-background p-3">
+                            {thread.map((message, index) => {
+                              if (message.role === "system") {
+                                const line = systemLine(
+                                  message.content,
+                                  (key, values) =>
+                                    t(
+                                      `assistant.${key}`,
+                                      values as Record<string, string>,
+                                    ),
+                                );
+                                if (!line) return null;
+                                return (
+                                  <p
+                                    key={message.id}
+                                    className="text-center text-xs text-muted-foreground"
+                                  >
+                                    {line}
+                                  </p>
+                                );
+                              }
+                              if (message.role === "user") {
+                                return (
+                                  <div
+                                    key={message.id}
+                                    className="flex justify-end"
+                                  >
+                                    <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
+                                      {message.content}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              const { text, links } = parseAnswer(
                                 message.content,
-                                (key, values) =>
-                                  t(
-                                    `assistant.${key}`,
-                                    values as Record<string, string>,
-                                  ),
+                                origin,
                               );
-                              if (!line) return null;
                               return (
-                                <p
-                                  key={message.id}
-                                  className="text-center text-xs text-muted-foreground"
-                                >
-                                  {line}
-                                </p>
-                              );
-                            }
-                            if (message.role === "user") {
-                              return (
-                                <div
-                                  key={message.id}
-                                  className="flex justify-end"
-                                >
-                                  <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-primary-foreground">
-                                    {message.content}
+                                <div key={message.id} className="flex">
+                                  <div className="max-w-[90%] space-y-1.5 rounded-2xl rounded-bl-sm bg-muted px-3 py-2 text-sm">
+                                    {message.role === "agent" && agentLabel && (
+                                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                        {agentLabel}
+                                      </p>
+                                    )}
+                                    <p className="whitespace-pre-wrap">
+                                      {text}
+                                    </p>
+                                    {links.length > 0 && (
+                                      <div className="flex flex-wrap gap-2">
+                                        {links.map(({ label, href }) => (
+                                          <Link
+                                            key={href + label}
+                                            href={href}
+                                            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                                          >
+                                            {label}
+                                            <ArrowRight className="h-3 w-3" />
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {message.role === "assistant" && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          onAddToKnowledge(
+                                            precedingUserMessage(thread, index),
+                                          )
+                                        }
+                                        className="text-xs font-medium text-primary hover:underline"
+                                      >
+                                        {t("assistant.addToKnowledge")}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               );
-                            }
-                            const { text, links } = parseAnswer(
-                              message.content,
-                              origin,
-                            );
-                            return (
-                              <div key={message.id} className="flex">
-                                <div className="max-w-[90%] space-y-1.5 rounded-2xl rounded-bl-sm bg-muted px-3 py-2 text-sm">
-                                  {message.role === "agent" && agentLabel && (
-                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                      {agentLabel}
-                                    </p>
-                                  )}
-                                  <p className="whitespace-pre-wrap">{text}</p>
-                                  {links.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {links.map(({ label, href }) => (
-                                        <Link
-                                          key={href + label}
-                                          href={href}
-                                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                                        >
-                                          {label}
-                                          <ArrowRight className="h-3 w-3" />
-                                        </Link>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {message.role === "assistant" && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        onAddToKnowledge(
-                                          precedingUserMessage(thread, index),
-                                        )
-                                      }
-                                      className="text-xs font-medium text-primary hover:underline"
-                                    >
-                                      {t("assistant.addToKnowledge")}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        {status === "ai" ? (
-                          <Button
-                            size="sm"
-                            onClick={() => void handleTakeover()}
-                            loading={takingOver}
-                          >
-                            {t("assistant.takeOver")}
-                          </Button>
-                        ) : (
-                          <>
-                            <form
-                              className="flex flex-1 items-center gap-2"
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                void handleSend();
-                              }}
-                            >
-                              <Input
-                                value={reply}
-                                onChange={(e) => setReply(e.target.value)}
-                                placeholder={t("assistant.replyPlaceholder")}
-                                maxLength={2000}
-                              />
-                              <Button
-                                type="submit"
-                                size="sm"
-                                loading={sending}
-                                disabled={!reply.trim()}
-                              >
-                                {t("assistant.replySend")}
-                              </Button>
-                            </form>
+                            })}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          {status === "ai" ? (
                             <Button
                               size="sm"
-                              variant="outline"
-                              onClick={() => void handleRelease()}
-                              loading={releasing}
+                              onClick={() => void handleTakeover()}
+                              loading={takingOver}
                             >
-                              {t("assistant.release")}
+                              {t("assistant.takeOver")}
                             </Button>
-                          </>
-                        )}
+                          ) : (
+                            <>
+                              <form
+                                className="flex flex-1 items-center gap-2"
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  void handleSend();
+                                }}
+                              >
+                                <Input
+                                  value={reply}
+                                  onChange={(e) => setReply(e.target.value)}
+                                  placeholder={t("assistant.replyPlaceholder")}
+                                  maxLength={2000}
+                                />
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  loading={sending}
+                                  disabled={!reply.trim()}
+                                >
+                                  {t("assistant.replySend")}
+                                </Button>
+                              </form>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => void handleRelease()}
+                                loading={releasing}
+                              >
+                                {t("assistant.release")}
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {hasMore && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void loadMore()}
-            loading={loadingMore}
-          >
-            {t("assistant.loadMore")}
-          </Button>
-        )}
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {hasMore && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void loadMore()}
+              loading={loadingMore}
+            >
+              {t("assistant.loadMore")}
+            </Button>
+          )}
+        </PageState>
       </CardContent>
     </Card>
   );

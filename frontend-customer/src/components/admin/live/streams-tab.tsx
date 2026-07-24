@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
 import { toast } from "sonner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
@@ -66,10 +67,8 @@ const liveStreamFields: FieldConfig<LiveStream>[] = [
 ];
 
 export function LiveStreamsTab() {
-  const router = useRouter();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showForm, setShowForm] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -105,9 +104,8 @@ export function LiveStreamsTab() {
     setShowForm(true);
   }
 
-  async function handleSave() {
-    setSaving(true);
-    try {
+  const { run: handleSave, loading: creating } = useAsyncAction(
+    async () => {
       const body = JSON.stringify({
         filter_option_ids: filterOptionIds,
         tag_ids: tagIds,
@@ -127,16 +125,12 @@ export function LiveStreamsTab() {
       resetForm();
       setShowForm(false);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to create live stream");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to create live stream" },
+  );
 
-  async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true);
-    try {
+  const { run: handleInlineUpdate, loading: updating } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
       await clientFetch(`/api/v1/live-streams/${editingId}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -160,33 +154,9 @@ export function LiveStreamsTab() {
       toast.success("Live stream updated");
       setEditingId(null);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to update live stream");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleStart(id: number) {
-    try {
-      await clientFetch(`/api/v1/live-streams/${id}/start/`, {
-        method: "POST",
-      });
-      router.push(`/live-stream/${id}`);
-    } catch {
-      toast.error("Failed to start live stream");
-    }
-  }
-
-  async function handleStop(id: number) {
-    try {
-      await clientFetch(`/api/v1/live-streams/${id}/stop/`, { method: "POST" });
-      toast.success("Live stream stopped");
-      browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to stop live stream");
-    }
-  }
+    },
+    { errorToast: "Failed to update live stream" },
+  );
 
   return (
     <div className="space-y-4">
@@ -271,8 +241,13 @@ export function LiveStreamsTab() {
             <TagInput scope="event" value={tagIds} onChange={setTagIds} />
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={!title.trim() || saving}>
-              {saving ? "Saving..." : "Create"}
+            <Button
+              onClick={handleSave}
+              loading={creating}
+              loadingText="Creating…"
+              disabled={!title.trim()}
+            >
+              Create
             </Button>
             <Button
               variant="ghost"
@@ -351,44 +326,11 @@ export function LiveStreamsTab() {
               <PricingBadge pricingType={ls.pricing_type} price={ls.price} />
             </TableCell>
             <TableCell>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setEditingId(ls.id)}
-                  className="gap-1.5"
-                >
-                  <Pencil className="h-3.5 w-3.5" /> Edit
-                </Button>
-                {(ls.status === "draft" || ls.status === "scheduled") && (
-                  <Button
-                    size="sm"
-                    onClick={() => handleStart(ls.id)}
-                    className="gap-1.5"
-                  >
-                    <Play className="h-3.5 w-3.5" /> Go Live
-                  </Button>
-                )}
-                {ls.status === "live" && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => router.push(`/live-stream/${ls.id}`)}
-                    >
-                      Watch
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleStop(ls.id)}
-                      className="gap-1.5"
-                    >
-                      <Square className="h-3.5 w-3.5" /> End
-                    </Button>
-                  </>
-                )}
-              </div>
+              <LiveStreamRowActions
+                liveStream={ls}
+                onEdit={() => setEditingId(ls.id)}
+                onStopped={() => browserRef.current?.refresh()}
+              />
             </TableCell>
           </>
         )}
@@ -408,13 +350,89 @@ export function LiveStreamsTab() {
                   fields={liveStreamFields}
                   onSave={handleInlineUpdate}
                   onCancel={() => setEditingId(null)}
-                  saving={saving}
+                  saving={updating}
                 />
               </TableCell>
             </TableRow>
           ) : null
         }
       />
+    </div>
+  );
+}
+
+// ─── Per-row Start/Stop actions (own useAsyncAction instances so rows
+// don't share a loading flag — see the per-row gotcha in the retrofit brief) ───
+
+function LiveStreamRowActions({
+  liveStream: ls,
+  onEdit,
+  onStopped,
+}: {
+  liveStream: LiveStream;
+  onEdit: () => void;
+  onStopped: () => void;
+}) {
+  const router = useRouter();
+
+  const { run: handleStart, loading: starting } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/live-streams/${ls.id}/start/`, {
+        method: "POST",
+      });
+      router.push(`/live-stream/${ls.id}`);
+    },
+    { errorToast: "Failed to start live stream" },
+  );
+
+  const { run: handleStop, loading: stopping } = useAsyncAction(
+    async () => {
+      await clientFetch(`/api/v1/live-streams/${ls.id}/stop/`, {
+        method: "POST",
+      });
+      toast.success("Live stream stopped");
+      onStopped();
+    },
+    { errorToast: "Failed to stop live stream" },
+  );
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button size="sm" variant="ghost" onClick={onEdit} className="gap-1.5">
+        <Pencil className="h-3.5 w-3.5" /> Edit
+      </Button>
+      {(ls.status === "draft" || ls.status === "scheduled") && (
+        <Button
+          size="sm"
+          onClick={handleStart}
+          loading={starting}
+          loadingText="Starting…"
+          className="gap-1.5"
+        >
+          <Play className="h-3.5 w-3.5" /> Go Live
+        </Button>
+      )}
+      {ls.status === "live" && (
+        <>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push(`/live-stream/${ls.id}`)}
+          >
+            Watch
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleStop}
+            loading={stopping}
+            loadingText="Ending…"
+            className="gap-1.5"
+          >
+            <Square className="h-3.5 w-3.5" /> End
+          </Button>
+        </>
+      )}
     </div>
   );
 }

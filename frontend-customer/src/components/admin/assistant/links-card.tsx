@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -25,6 +26,7 @@ import {
   updateLink,
   type AssistantLinkRow,
 } from "@/lib/assistant";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 // Mirrors AssistantLink.MAX_LINKS on the backend
 // (apps/tenant_config/models.py) — enforced here only as a UX nicety; the
@@ -43,7 +45,6 @@ export function LinksCard() {
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [note, setNote] = useState("");
-  const [saving, setSaving] = useState(false);
 
   const load = () =>
     listLinks()
@@ -74,10 +75,9 @@ export function LinksCard() {
     setNote("");
   };
 
-  const handleCreate = async () => {
-    if (!label.trim() || !url.trim()) return;
-    setSaving(true);
-    try {
+  const { run: handleCreate, loading: saving } = useAsyncAction(
+    async () => {
+      if (!label.trim() || !url.trim()) return;
       await createLink({
         label: label.trim(),
         url: url.trim(),
@@ -85,12 +85,9 @@ export function LinksCard() {
       });
       closeForm();
       await load();
-    } catch {
-      toast.error(t("assistant.knowledgeSaveFailed"));
-    } finally {
-      setSaving(false);
-    }
-  };
+    },
+    { errorToast: t("assistant.knowledgeSaveFailed") },
+  );
 
   const toggleEnabled = async (link: AssistantLinkRow) => {
     if (!links) return;
@@ -191,49 +188,57 @@ export function LinksCard() {
           </div>
         )}
 
-        {links === null ? (
-          <div className="space-y-2">
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-          </div>
-        ) : links.length === 0 ? (
-          !formOpen && (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              {t("assistant.linksEmpty")}
-            </p>
-          )
-        ) : (
-          <div className="divide-y divide-border rounded-xl border border-border">
-            {links.map((link) => (
-              <div key={link.id} className="flex items-start gap-3 p-3 text-sm">
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium">{link.label}</div>
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {link.url}
-                  </p>
-                  {link.note && (
-                    <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">
-                      {link.note}
-                    </p>
-                  )}
-                </div>
-                <Switch
-                  checked={link.enabled}
-                  onCheckedChange={() => void toggleEnabled(link)}
-                  aria-label={t("assistant.entryEnabled")}
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleDelete(link.id)}
-                  aria-label={t("assistant.delete")}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+        <PageState
+          loading={links === null}
+          skeleton={
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full" />
+              <Skeleton className="h-14 w-full" />
+            </div>
+          }
+        >
+          {links && links.length === 0 ? (
+            !formOpen && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                {t("assistant.linksEmpty")}
+              </p>
+            )
+          ) : (
+            <div className="divide-y divide-border rounded-xl border border-border">
+              {links?.map((link) => (
+                <div
+                  key={link.id}
+                  className="flex items-start gap-3 p-3 text-sm"
                 >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium">{link.label}</div>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {link.url}
+                    </p>
+                    {link.note && (
+                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">
+                        {link.note}
+                      </p>
+                    )}
+                  </div>
+                  <Switch
+                    checked={link.enabled}
+                    onCheckedChange={() => void toggleEnabled(link)}
+                    aria-label={t("assistant.entryEnabled")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(link.id)}
+                    aria-label={t("assistant.delete")}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </PageState>
       </CardContent>
     </Card>
   );

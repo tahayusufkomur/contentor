@@ -15,11 +15,13 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import {
   ContentPicker,
   type SelectedItem,
 } from "@/components/billing/content-picker";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface PlanAccess {
   items: Array<{
@@ -51,16 +53,21 @@ export default function PlanAccessPage() {
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
     async function load() {
       try {
         const [planData, accessData] = await Promise.all([
           clientFetch<Plan>(`/api/v1/billing/plans/${id}/`),
           clientFetch<PlanAccess>(`/api/v1/billing/plans/${id}/access/`),
         ]);
+        if (cancelled) return;
         setPlan(planData);
         setSelectedItems(
           (accessData.items ?? []).map((item) => ({
@@ -71,18 +78,22 @@ export default function PlanAccessPage() {
           })),
         );
       } catch (err) {
+        if (cancelled) return;
         console.error(err);
         toast.error("Failed to load plan access data.");
+        setLoadError(err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
-  }, [id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [id, reloadKey]);
 
-  async function handleSave() {
-    setSaving(true);
-    try {
+  const { run: handleSave, loading: saving } = useAsyncAction(
+    async () => {
       await clientFetch(`/api/v1/billing/plans/${id}/access/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -93,13 +104,9 @@ export default function PlanAccessPage() {
         }),
       });
       toast.success("Plan access updated successfully.");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update plan access. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to update plan access. Please try again." },
+  );
 
   return (
     <div className="space-y-6">
@@ -121,34 +128,58 @@ export default function PlanAccessPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Content Access
-          </CardTitle>
-          <CardDescription>
-            Select the courses, downloads, live classes, and live streams
-            included in this subscription plan.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <LoadingSkeleton />
-          ) : (
+      <PageState
+        loading={loading}
+        error={loadError}
+        onRetry={() => setReloadKey((k) => k + 1)}
+        skeleton={
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Content Access
+              </CardTitle>
+              <CardDescription>
+                Select the courses, downloads, live classes, and live streams
+                included in this subscription plan.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LoadingSkeleton />
+            </CardContent>
+          </Card>
+        }
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Content Access
+            </CardTitle>
+            <CardDescription>
+              Select the courses, downloads, live classes, and live streams
+              included in this subscription plan.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <ContentPicker
               selected={selectedItems}
               onChange={setSelectedItems}
             />
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </PageState>
 
       <Separator />
 
       <div className="flex gap-3">
-        <Button onClick={handleSave} disabled={saving || loading}>
-          {saving ? "Saving..." : "Save Access"}
+        <Button
+          onClick={handleSave}
+          loading={saving}
+          loadingText="Saving…"
+          disabled={loading}
+        >
+          Save Access
         </Button>
         <Button variant="outline" asChild>
           <Link href="/admin/billing">Cancel</Link>

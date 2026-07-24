@@ -10,8 +10,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Loader2, RefreshCw, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, RefreshCw, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { deriveAiBannerState } from "@/lib/logo/ai-banner";
 import type { ChatEvent, ChatState } from "@/lib/logo/chat-state";
 import {
@@ -433,8 +434,10 @@ export function StudioChat({
               {busy ? (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">
                   {state.status === "reviewing" ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <Spinner size="sm" />
                   ) : (
+                    // Decorative "AI is thinking" pulse, not a skeleton
+                    // placeholder — intentionally left as animate-pulse.
                     <Sparkles className="h-4 w-4 animate-pulse text-primary" />
                   )}
                   {state.status === "reviewing"
@@ -564,7 +567,8 @@ function DescribeStep({
           type="button"
           size="lg"
           className="gap-2"
-          disabled={busy}
+          loading={busy}
+          loadingText="Designing…"
           onClick={onSubmit}
         >
           <Sparkles className="h-4 w-4" />

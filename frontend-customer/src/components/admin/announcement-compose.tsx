@@ -7,7 +7,6 @@ import {
   FileText,
   Globe,
   Link2,
-  Loader2,
   Mail,
   Megaphone,
   Search,
@@ -19,6 +18,9 @@ import { toast } from "sonner";
 import { LinkPickerModal } from "@/components/owner/link-picker";
 import { useRichEditor } from "@/components/owner/rich-editor";
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   AnnouncementFilters,
   AnnouncementTemplate,
@@ -55,7 +57,6 @@ export default function AnnouncementCompose({
     audience: number;
     push_reachable: number;
   } | null>(null);
-  const [sending, setSending] = useState(false);
 
   // Scheduling
   const [mode, setMode] = useState<"once" | "repeating">("once");
@@ -108,11 +109,11 @@ export default function AnnouncementCompose({
     setEndDate("");
   };
 
-  const saveAsTemplate = async () => {
-    if (!title.trim()) return;
-    const name = window.prompt("Name this template:", title.trim());
-    if (!name) return;
-    try {
+  const { run: saveAsTemplate, loading: savingTemplate } = useAsyncAction(
+    async () => {
+      if (!title.trim()) return;
+      const name = window.prompt("Name this template:", title.trim());
+      if (!name) return;
       await saveTemplate({
         name,
         title: title.trim(),
@@ -121,23 +122,21 @@ export default function AnnouncementCompose({
         link_label: linkLabel,
       });
       toast.success("Template saved");
-    } catch {
-      toast.error("Could not save template");
-    }
-  };
+    },
+    { errorToast: "Could not save template" },
+  );
 
-  const send = async () => {
-    if (!title.trim()) return;
-    if (mode === "repeating" && !startDate) {
-      toast.error("Pick a start date");
-      return;
-    }
-    if (mode === "repeating" && freq === "weekly" && weekday === null) {
-      toast.error("Pick a day of the week");
-      return;
-    }
-    setSending(true);
-    try {
+  const { run: send, loading: sending } = useAsyncAction(
+    async () => {
+      if (!title.trim()) return;
+      if (mode === "repeating" && !startDate) {
+        toast.error("Pick a start date");
+        return;
+      }
+      if (mode === "repeating" && freq === "weekly" && weekday === null) {
+        toast.error("Pick a day of the week");
+        return;
+      }
       if (mode === "repeating") {
         await createRecurring({
           title: title.trim(),
@@ -171,12 +170,9 @@ export default function AnnouncementCompose({
       }
       reset();
       onSent();
-    } catch {
-      toast.error("Failed to send announcement");
-    } finally {
-      setSending(false);
-    }
-  };
+    },
+    { errorToast: "Failed to send announcement" },
+  );
 
   const sendLabel =
     mode === "repeating"
@@ -184,6 +180,12 @@ export default function AnnouncementCompose({
       : scheduledAt
         ? "Schedule"
         : "Send now";
+  const sendingLabel =
+    mode === "repeating"
+      ? "Creating…"
+      : scheduledAt
+        ? "Scheduling…"
+        : "Sending…";
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4">
@@ -196,13 +198,16 @@ export default function AnnouncementCompose({
           <FileText className="h-4 w-4" /> Start from a template
         </button>
         {title.trim() && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={saveAsTemplate}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            loading={savingTemplate}
+            loadingText="Saving…"
+            className="h-auto p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
           >
             Save as template
-          </button>
+          </Button>
         )}
       </div>
 
@@ -489,13 +494,15 @@ export default function AnnouncementCompose({
         )}
       </div>
 
-      <button
+      <Button
         onClick={send}
-        disabled={sending || !title.trim()}
-        className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground disabled:opacity-50"
+        loading={sending}
+        loadingText={sendingLabel}
+        disabled={!title.trim()}
+        className="rounded-lg px-4 py-2 font-medium"
       >
         {sendLabel}
-      </button>
+      </Button>
 
       {linkPickerOpen && (
         <LinkPickerModal
@@ -580,8 +587,8 @@ function TemplatePickerModal({
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             {items === null ? (
-              <div className="flex items-center justify-center py-10 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
+              <div className="flex items-center justify-center py-10">
+                <Spinner />
               </div>
             ) : filtered && filtered.length > 0 ? (
               <div className="space-y-1">

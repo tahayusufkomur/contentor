@@ -22,10 +22,10 @@ import {
   type SelectedItem,
 } from "@/components/billing/content-picker";
 import type { Bundle } from "@/types/billing";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export default function NewBundlePage() {
   const router = useRouter();
-  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -41,14 +41,8 @@ export default function NewBundlePage() {
     return total.toFixed(2);
   }, [selectedItems]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (selectedItems.length === 0) {
-      toast.error("Please select at least one item for the bundle.");
-      return;
-    }
-    setSaving(true);
-    try {
+  const { run: createBundle, loading: saving } = useAsyncAction(
+    async () => {
       await clientFetch<Bundle>("/api/v1/billing/bundles/", {
         method: "POST",
         body: JSON.stringify({
@@ -63,12 +57,17 @@ export default function NewBundlePage() {
       });
       toast.success("Bundle created successfully.");
       router.push("/admin/billing");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to create bundle. Please try again.");
-    } finally {
-      setSaving(false);
+    },
+    { errorToast: "Failed to create bundle. Please try again." },
+  );
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one item for the bundle.");
+      return;
     }
+    createBundle();
   }
 
   return (
@@ -160,8 +159,8 @@ export default function NewBundlePage() {
         <Separator />
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving}>
-            {saving ? "Creating..." : "Create Bundle"}
+          <Button type="submit" loading={saving} loadingText="Creating…">
+            Create Bundle
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href="/admin/billing">Cancel</Link>

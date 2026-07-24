@@ -17,12 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import {
   ContentPicker,
   type SelectedItem,
 } from "@/components/billing/content-picker";
 import type { Bundle } from "@/types/billing";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface Product {
   id: number;
@@ -76,7 +78,8 @@ export default function EditBundlePage() {
   const id = params.id as string;
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -101,11 +104,15 @@ export default function EditBundlePage() {
   }, [selectedItems, initialOriginalPrice]);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
     Promise.all([
       clientFetch<Bundle>(`/api/v1/billing/bundles/${id}/`),
       clientFetch<Product[]>("/api/v1/billing/products/"),
     ])
       .then(([bundle, products]) => {
+        if (cancelled) return;
         const productMap = new Map(
           products.map((p) => [`${p.type}:${p.id}`, p] as const),
         );
@@ -143,20 +150,18 @@ export default function EditBundlePage() {
         }
       })
       .catch((err) => {
-        console.error(err);
-        toast.error("Failed to load bundle.");
+        if (!cancelled) setLoadError(err);
       })
-      .finally(() => setLoading(false));
-  }, [id]);
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, reloadKey]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (selectedItems.length === 0) {
-      toast.error("Please select at least one item for the bundle.");
-      return;
-    }
-    setSaving(true);
-    try {
+  const { run: handleSave, loading: saving } = useAsyncAction(
+    async () => {
       await clientFetch<Bundle>(`/api/v1/billing/bundles/${id}/`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -171,12 +176,17 @@ export default function EditBundlePage() {
       });
       toast.success("Bundle updated successfully.");
       router.push("/admin/billing");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update bundle. Please try again.");
-    } finally {
-      setSaving(false);
+    },
+    { errorToast: "Failed to update bundle. Please try again." },
+  );
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one item for the bundle.");
+      return;
     }
+    handleSave();
   }
 
   return (
@@ -196,17 +206,50 @@ export default function EditBundlePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Bundle Details</CardTitle>
-            <CardDescription>
-              Basic information about your bundle.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <FormSkeleton />
-            ) : (
+        <PageState
+          loading={loading}
+          error={loadError}
+          onRetry={() => setReloadKey((k) => k + 1)}
+          className="space-y-6"
+          skeleton={
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bundle Details</CardTitle>
+                  <CardDescription>
+                    Basic information about your bundle.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormSkeleton />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bundle Items</CardTitle>
+                  <CardDescription>
+                    Select the content to include in this bundle.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-10 w-full" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          }
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>Bundle Details</CardTitle>
+              <CardDescription>
+                Basic information about your bundle.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
@@ -254,38 +297,35 @@ export default function EditBundlePage() {
                   </div>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Bundle Items</CardTitle>
-            <CardDescription>
-              Select the content to include in this bundle.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full" />
-                ))}
-              </div>
-            ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Bundle Items</CardTitle>
+              <CardDescription>
+                Select the content to include in this bundle.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <ContentPicker
                 selected={selectedItems}
                 onChange={setSelectedItems}
               />
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </PageState>
 
         <Separator />
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving || loading}>
-            {saving ? "Saving..." : "Save Changes"}
+          <Button
+            type="submit"
+            loading={saving}
+            loadingText="Saving…"
+            disabled={loading}
+          >
+            Save Changes
           </Button>
           <Button type="button" variant="outline" asChild>
             <Link href="/admin/billing">Cancel</Link>

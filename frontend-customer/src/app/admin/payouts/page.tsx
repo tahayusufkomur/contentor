@@ -15,7 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface ConnectStatus {
   connected: boolean;
@@ -33,17 +35,18 @@ export default function PayoutsPage() {
 
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [acting, setActing] = useState(false);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await clientFetch<ConnectStatus>(
         `/api/v1/billing/connect/status/${justReturned ? "?refresh=1" : ""}`,
       );
       setStatus(data);
-    } catch {
-      setError("Could not load payout status.");
+    } catch (err) {
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -53,35 +56,26 @@ export default function PayoutsPage() {
     load();
   }, [load]);
 
-  async function startOnboarding() {
-    setActing(true);
-    setError("");
-    try {
+  const { run: startOnboarding, loading: onboarding } = useAsyncAction(
+    async () => {
       const { onboarding_url } = await clientFetch<{ onboarding_url: string }>(
         "/api/v1/billing/connect/onboard/",
         { method: "POST" },
       );
       window.location.href = onboarding_url;
-    } catch {
-      setError("Could not start onboarding. Please try again.");
-      setActing(false);
-    }
-  }
+    },
+    { errorToast: "Could not start onboarding. Please try again." },
+  );
 
-  async function openDashboard() {
-    setActing(true);
-    setError("");
-    try {
+  const { run: openDashboard, loading: openingDashboard } = useAsyncAction(
+    async () => {
       const { dashboard_url } = await clientFetch<{ dashboard_url: string }>(
         "/api/v1/billing/connect/dashboard/",
       );
       window.open(dashboard_url, "_blank", "noopener");
-    } catch {
-      setError("Could not open the Stripe dashboard.");
-    } finally {
-      setActing(false);
-    }
-  }
+    },
+    { errorToast: "Could not open the Stripe dashboard." },
+  );
 
   return (
     <div className="space-y-6">
@@ -93,98 +87,104 @@ export default function PayoutsPage() {
         </p>
       </div>
 
-      {error && (
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 px-4 py-3">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
-
-      {loading ? (
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Skeleton className="h-5 w-full" />
-            <Skeleton className="h-9 w-48" />
-          </CardContent>
-        </Card>
-      ) : !status?.is_paid_active ? (
-        <UpgradeGate />
-      ) : (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Wallet className="h-5 w-5 text-muted-foreground" />
-              <CardTitle>Stripe payouts</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {!status.connected ? (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  You haven&apos;t connected a payout account yet. Connect with
-                  Stripe to start accepting payments for your paid content.
-                </p>
-                <Button
-                  onClick={startOnboarding}
-                  disabled={acting}
-                  className="gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  {acting ? "Redirecting…" : "Connect with Stripe"}
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  <StatusRow
-                    ok={status.charges_enabled}
-                    okLabel="Accepting payments"
-                    pendingLabel="Payments not yet enabled"
-                  />
-                  <StatusRow
-                    ok={status.payouts_enabled}
-                    okLabel="Payouts to your bank enabled"
-                    pendingLabel="Payouts not yet enabled"
-                  />
-                </div>
-                <Separator />
-                <div className="flex flex-wrap gap-2">
-                  {status.charges_enabled ? (
-                    <Button
-                      variant="outline"
-                      onClick={openDashboard}
-                      disabled={acting}
-                      className="gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Open Stripe dashboard
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={startOnboarding}
-                      disabled={acting}
-                      className="gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      {acting ? "Redirecting…" : "Continue setup"}
-                    </Button>
-                  )}
-                </div>
-                {!status.charges_enabled && (
-                  <p className="text-xs text-muted-foreground">
-                    Stripe is still reviewing your details. This page updates
-                    automatically once you&apos;re approved.
+      <PageState
+        loading={loading}
+        error={error}
+        onRetry={load}
+        className="space-y-6"
+        skeleton={
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-9 w-48" />
+            </CardContent>
+          </Card>
+        }
+      >
+        {!status?.is_paid_active ? (
+          <UpgradeGate />
+        ) : (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Wallet className="h-5 w-5 text-muted-foreground" />
+                <CardTitle>Stripe payouts</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {!status.connected ? (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    You haven&apos;t connected a payout account yet. Connect
+                    with Stripe to start accepting payments for your paid
+                    content.
                   </p>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                  <Button
+                    onClick={startOnboarding}
+                    loading={onboarding}
+                    loadingText="Redirecting…"
+                    className="gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Connect with Stripe
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    <StatusRow
+                      ok={status.charges_enabled}
+                      okLabel="Accepting payments"
+                      pendingLabel="Payments not yet enabled"
+                    />
+                    <StatusRow
+                      ok={status.payouts_enabled}
+                      okLabel="Payouts to your bank enabled"
+                      pendingLabel="Payouts not yet enabled"
+                    />
+                  </div>
+                  <Separator />
+                  <div className="flex flex-wrap gap-2">
+                    {status.charges_enabled ? (
+                      <Button
+                        variant="outline"
+                        onClick={openDashboard}
+                        loading={openingDashboard}
+                        loadingText="Opening…"
+                        className="gap-2"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open Stripe dashboard
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={startOnboarding}
+                        loading={onboarding}
+                        loadingText="Redirecting…"
+                        className="gap-2"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Continue setup
+                      </Button>
+                    )}
+                  </div>
+                  {!status.charges_enabled && (
+                    <p className="text-xs text-muted-foreground">
+                      Stripe is still reviewing your details. This page updates
+                      automatically once you&apos;re approved.
+                    </p>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-      {!loading && status?.is_paid_active && <EarningsCard />}
+        {status?.is_paid_active && <EarningsCard />}
+      </PageState>
     </div>
   );
 }

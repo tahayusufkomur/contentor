@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { BookOpen, ExternalLink, Pencil, Plus } from "lucide-react";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -62,7 +63,6 @@ const courseFields: FieldConfig<Course>[] = [
 export default function AdminCoursesPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
@@ -98,9 +98,8 @@ export default function AdminCoursesPage() {
     browserRef.current?.refresh();
   }
 
-  async function handleInlineUpdate(values: Record<string, unknown>) {
-    setSaving(true);
-    try {
+  const { run: handleInlineUpdate, loading: saving } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
       await clientFetch(`/api/v1/courses/${editingSlug}/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -116,12 +115,9 @@ export default function AdminCoursesPage() {
       toast.success("Course updated");
       setEditingSlug(null);
       browserRef.current?.refresh();
-    } catch {
-      toast.error("Failed to update course");
-    } finally {
-      setSaving(false);
-    }
-  }
+    },
+    { errorToast: "Failed to update course" },
+  );
 
   return (
     <div className="space-y-6">
