@@ -12,7 +12,14 @@ const BASE_DOMAIN = process.env.NEXT_PUBLIC_BASE_DOMAIN || "localhost";
 
 const nextConfig = {
   output: "standalone",
-  experimental: { externalDir: true },
+  experimental: {
+    externalDir: true,
+    // Next 14.2 defaults `dynamic` to 0, so every revisit refetches the RSC
+    // payload. 30s makes panel-to-panel back-and-forth instant. Safe for
+    // freshness: the router cache holds the payload, not component state, so
+    // client pages still remount and re-clientFetch on arrival.
+    staleTimes: { dynamic: 30, static: 180 },
+  },
   allowedDevOrigins: [`*.${BASE_DOMAIN}`],
   // Dev-only: keep compiled routes alive for an hour instead of the default
   // ~1 minute — panel-to-panel admin navigation was re-triggering webpack
