@@ -15,13 +15,13 @@ import type { User } from "@/types/auth";
 
 function Logo() {
   return (
-    <Link
+    <NavLink
       href="/"
       className="flex items-center select-none"
       aria-label="Contentor"
     >
       <Wordmark className="text-base" />
-    </Link>
+    </NavLink>
   );
 }
 
