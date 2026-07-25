@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { useNavigation } from "@shared/navigation/navigation-provider";
+import { isNavItemActive } from "@shared/navigation/navigation-state";
+import { NavLink } from "@/components/ui/nav-link";
+import { Spinner } from "@/components/ui/spinner";
 
 export interface NavItem {
   label: string;
@@ -34,10 +36,6 @@ interface AppSidebarProps {
 /** Persisted collapse state for the nav groups, keyed by section id. */
 const OPEN_STATE_KEY = "admin-nav-open-sections";
 
-function isItemActive(pathname: string, href: string) {
-  return pathname === href || (href !== "/admin" && pathname.startsWith(href));
-}
-
 export function AppSidebar({
   title,
   sections,
@@ -45,7 +43,7 @@ export function AppSidebar({
   children,
 }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const pathname = usePathname();
+  const { pathname, pendingHref } = useNavigation();
 
   // Default every group open. This matches the server render (localStorage is
   // client-only), so there is no hydration mismatch; persisted collapse state
@@ -70,9 +68,11 @@ export function AppSidebar({
   const activeSectionId = useMemo(
     () =>
       sections.find((section) =>
-        section.items.some((item) => isItemActive(pathname, item.href)),
+        section.items.some((item) =>
+          isNavItemActive({ pathname, pendingHref }, item.href),
+        ),
       )?.id,
-    [pathname, sections],
+    [pathname, pendingHref, sections],
   );
 
   // Always reveal the group that owns the current route.
@@ -159,45 +159,37 @@ export function AppSidebar({
 
               {(collapsed || sectionOpen) && (
                 <div className="space-y-1">
-                  {section.items.map((item) => {
-                    const isActive = isItemActive(pathname, item.href);
-                    const linkClass = cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                      collapsed && "justify-center px-2",
-                      isActive
-                        ? "bg-accent text-accent-foreground font-medium"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                    );
-                    const inner = (
-                      <>
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && (
-                          <span className="truncate">{item.label}</span>
-                        )}
-                      </>
-                    );
-                    return item.external ? (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={linkClass}
-                        title={collapsed ? item.label : undefined}
-                      >
-                        {inner}
-                      </a>
-                    ) : (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={linkClass}
-                        title={collapsed ? item.label : undefined}
-                      >
-                        {inner}
-                      </Link>
-                    );
-                  })}
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      target={item.external ? "_blank" : undefined}
+                      rel={item.external ? "noopener noreferrer" : undefined}
+                      title={collapsed ? item.label : undefined}
+                      className={({ active }) =>
+                        cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                          collapsed && "justify-center px-2",
+                          active
+                            ? "bg-accent text-accent-foreground font-medium"
+                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        )
+                      }
+                    >
+                      {({ pending }) => (
+                        <>
+                          {pending ? (
+                            <Spinner size="sm" className="shrink-0" />
+                          ) : (
+                            <item.icon className="h-4 w-4 shrink-0" />
+                          )}
+                          {!collapsed && (
+                            <span className="truncate">{item.label}</span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  ))}
                 </div>
               )}
 

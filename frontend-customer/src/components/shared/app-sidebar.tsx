@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronLeft, ExternalLink, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/hooks/use-tenant";
@@ -10,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
+import { useNavigation } from "@shared/navigation/navigation-provider";
+import { isNavItemActive } from "@shared/navigation/navigation-state";
+import { NavLink } from "@/components/ui/nav-link";
+import { Spinner } from "@/components/ui/spinner";
 import type { EntitlementKey } from "@/lib/entitlements";
 
 export interface NavItem {
@@ -39,13 +41,9 @@ interface AppSidebarProps {
   children?: React.ReactNode;
 }
 
-function isItemActive(pathname: string, href: string) {
-  return pathname === href || (href !== "/admin" && pathname.startsWith(href));
-}
-
 export function AppSidebar({ title, sections, children }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const pathname = usePathname();
+  const { pathname, pendingHref } = useNavigation();
   const config = useTenant();
   const allowDarkMode = config?.dark_mode_enabled !== false;
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
@@ -55,9 +53,11 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
   const activeSectionId = useMemo(
     () =>
       sections.find((section) =>
-        section.items.some((item) => isItemActive(pathname, item.href)),
+        section.items.some((item) =>
+          isNavItemActive({ pathname, pendingHref }, item.href),
+        ),
       )?.id,
-    [pathname, sections],
+    [pathname, pendingHref, sections],
   );
 
   useEffect(() => {
@@ -81,13 +81,13 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
       {/* Header */}
       <div className="flex h-14 items-center justify-between border-b px-3 gap-2">
         {!collapsed && (
-          <Link
+          <NavLink
             href="/admin"
             className="text-sm font-bold tracking-tight truncate hover:text-primary transition-colors"
             title="Back to Admin Overview"
           >
             {title}
-          </Link>
+          </NavLink>
         )}
         <Button
           variant="ghost"
@@ -129,47 +129,53 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
 
               {(collapsed || sectionOpen) && (
                 <div className="space-y-1">
-                  {section.items.map((item) => {
-                    const isActive = isItemActive(pathname, item.href);
-
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        target={item.external ? "_blank" : undefined}
-                        rel={item.external ? "noopener noreferrer" : undefined}
-                        className={cn(
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.href}
+                      href={item.href}
+                      target={item.external ? "_blank" : undefined}
+                      rel={item.external ? "noopener noreferrer" : undefined}
+                      title={collapsed ? item.label : undefined}
+                      className={({ active }) =>
+                        cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                           collapsed && "justify-center px-2",
-                          isActive
+                          active
                             ? "bg-accent text-accent-foreground font-medium"
                             : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                        )}
-                        title={collapsed ? item.label : undefined}
-                      >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && (
-                          <>
-                            <span>{item.label}</span>
-                            {item.external && (
-                              <ExternalLink className="ml-auto h-3 w-3 text-muted-foreground/60" />
-                            )}
-                            {(item.ai || item.requiresEntitlement) && (
-                              <span className="ml-auto flex items-center gap-1">
-                                {item.ai && <AiBadge />}
-                                {item.requiresEntitlement && (
-                                  <PaidFeatureBadge
-                                    feature={item.requiresEntitlement}
-                                    partial={item.partialPaid}
-                                  />
-                                )}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </Link>
-                    );
-                  })}
+                        )
+                      }
+                    >
+                      {({ pending }) => (
+                        <>
+                          {pending ? (
+                            <Spinner size="sm" className="shrink-0" />
+                          ) : (
+                            <item.icon className="h-4 w-4 shrink-0" />
+                          )}
+                          {!collapsed && (
+                            <>
+                              <span>{item.label}</span>
+                              {item.external && (
+                                <ExternalLink className="text-muted-foreground/60 ml-auto h-3 w-3" />
+                              )}
+                              {(item.ai || item.requiresEntitlement) && (
+                                <span className="ml-auto flex items-center gap-1">
+                                  {item.ai && <AiBadge />}
+                                  {item.requiresEntitlement && (
+                                    <PaidFeatureBadge
+                                      feature={item.requiresEntitlement}
+                                      partial={item.partialPaid}
+                                    />
+                                  )}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  ))}
                 </div>
               )}
 
