@@ -65,6 +65,17 @@ export function NavigationProvider({
     setPendingHref(null);
   }, [pathname]);
 
+  // Query-only navigations (same path, different search params) never change
+  // `pathname`, so the commit effect above never re-runs for them. For that case
+  // the transition's own completion IS a usable signal: there is no new route
+  // segment to stream, so `isPending` tracks the update closely. It is only
+  // cross-segment navigations where `isPending` resolves long before the route
+  // commits — which is why it cannot be the general signal.
+  useEffect(() => {
+    if (isPending || pendingHref === null) return;
+    if (pendingHref.split("?")[0] === pathname) setPendingHref(null);
+  }, [isPending, pendingHref, pathname]);
+
   // Watchdog: if a navigation never commits (aborted, blocked by a route
   // guard, network error), don't strand the pending state forever.
   useEffect(() => {
