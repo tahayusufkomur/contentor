@@ -18,11 +18,17 @@ const preset: Partial<Config> = {
           from: { opacity: "0", transform: "translateY(4px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        "progress-indeterminate": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(300%)" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.8s linear infinite",
         "fade-in": "fade-in 0.2s ease-out both",
         "fade-in-up": "fade-in-up 0.2s ease-out both",
+        "progress-indeterminate":
+          "progress-indeterminate 1.1s ease-in-out infinite",
       },
     },
   },
