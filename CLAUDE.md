@@ -171,6 +171,11 @@ Design + plan: `docs/superpowers/specs/2026-06-28-flowmap-service-design.md` and
 - Client-page initial loads: `<PageState loading={...} error={...} skeleton={...}>` with presets from `@/components/ui/skeletons`; server routes get `loading.tsx` built from the same presets.
 - Action outcomes are sonner toasts in BOTH apps; field-level validation stays inline.
 - Motion is CSS-only and `motion-safe:`-gated. `scripts/check-loading-patterns.mjs` (in `make lint`) enforces the spinner/skeleton rules.
+- Internal navigation uses `<NavLink>` (`@/components/ui/nav-link`), never raw `next/link` — it drives the top progress bar and highlights the target on click rather than on commit. Programmatic navigation uses `useNavigate()` (`@shared/navigation/navigation-provider`), never `router.push`.
+- Every route segment must have a `loading.tsx` at or above it; `scripts/check-loading-patterns.mjs` (in `make lint`) fails otherwise.
+- Refinement loads (search/filter/sort/paginate) wrap results in `<StaleContainer pending>` — rows dim, never blank. A full skeleton is for first load and for switching to a different resource entirely.
+- Overlays that fetch open immediately with a skeleton body; never hold an overlay closed while fetching.
+- `useTransition`'s `isPending` is NOT a usable "navigation in flight" signal in the App Router — `router.push` inside `startTransition` resolves long before the route commits. `NavigationProvider` derives `isNavigating` from a pending href cleared on route commit instead.
 
 ## Home-server deploy
 
