@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export default function CallbackPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
 
@@ -31,7 +32,7 @@ export default function CallbackPage() {
             setError("Authentication failed");
             return;
           }
-          router.push("/");
+          navigate("/");
         })
         .catch(() => setError("Network error"));
       return;
@@ -49,10 +50,10 @@ export default function CallbackPage() {
           setError(data.detail || "Verification failed");
           return;
         }
-        router.push("/");
+        navigate("/");
       })
       .catch(() => setError("Network error"));
-  }, [searchParams, router]);
+  }, [searchParams, navigate]);
 
   if (error) {
     return (

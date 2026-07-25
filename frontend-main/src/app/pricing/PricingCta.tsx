@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { startCheckout } from "@/lib/api/billing-platform";
 import { ApiError } from "@/types/api";
@@ -36,14 +36,14 @@ export function PricingCta({
   className,
 }: PricingCtaProps) {
   const t = useTranslations("pricing");
-  const router = useRouter();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
   const { run: handleClick, loading } = useAsyncAction(
     async () => {
       setError(null);
       if (!isAuthenticated || isFreePlan || planId == null) {
-        router.push("/signup");
+        navigate("/signup");
         return;
       }
       const res = await startCheckout(planId);

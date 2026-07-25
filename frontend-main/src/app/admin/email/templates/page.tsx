@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { toast } from "sonner";
 
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { TemplateGrid } from "@shared/email/template-grid";
 import {
   deleteTemplate,
@@ -30,7 +30,7 @@ function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
 }
 
 export default function TemplatesPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("mine");
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [gallery, setGallery] = useState<EmailTemplate[]>([]);
@@ -126,9 +126,9 @@ export default function TemplatesPage() {
 
   const handleEdit = useCallback(
     (template: EmailTemplate) => {
-      router.push(`/admin/email/compose?template=${template.id}`);
+      navigate(`/admin/email/compose?template=${template.id}`);
     },
-    [router],
+    [navigate],
   );
 
   const currentTemplates = tab === "mine" ? templates : gallery;

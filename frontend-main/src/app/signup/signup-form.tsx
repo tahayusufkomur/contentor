@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,7 +38,7 @@ function AuthenticatedSignupForm({
   authenticatedName: string;
 }) {
   const t = useTranslations("auth.signup");
-  const router = useRouter();
+  const navigate = useNavigate();
   const [brandName, setBrandName] = useState("");
   const [error, setError] = useState("");
 
@@ -47,7 +47,7 @@ function AuthenticatedSignupForm({
       e.preventDefault();
       setError("");
       const { token } = await createPlatformAuthenticated(brandName);
-      router.push(`/signup/verify?token=${encodeURIComponent(token)}`);
+      navigate(`/signup/verify?token=${encodeURIComponent(token)}`);
     },
     {
       onError: (err) => {

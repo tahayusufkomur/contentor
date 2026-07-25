@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
   EmailBuilderIframe,
   type EmailBuilderIframeHandle,
@@ -34,7 +35,7 @@ function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
 }
 
 export default function ComposePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const builderRef = useRef<EmailBuilderIframeHandle>(null);
   const initialTemplateId = searchParams.get("template") || "";
@@ -209,6 +210,11 @@ export default function ComposePage() {
     setStep("choose");
   }, [hasSaved]);
 
+  // `redirecting` keeps the send button's loading state on once the API call
+  // resolves successfully — useAsyncAction clears its own `sending` flag as
+  // soon as the promise settles, but the navigation away from this page is
+  // async, so without this the button would flash idle right before unmount.
+  const [redirecting, setRedirecting] = useState(false);
   const { run: handleSend, loading: sending } = useAsyncAction(
     async () => {
       if (!savedTemplateId) {
@@ -248,7 +254,10 @@ export default function ComposePage() {
         subject,
         recipient_filter: recipientFilter,
       });
-      router.push("/admin/email");
+      // Hold the button in its loading state through the redirect instead of
+      // letting it clear and unmount idle.
+      setRedirecting(true);
+      navigate("/admin/email");
     },
     {
       onError: (err) =>
@@ -391,7 +400,7 @@ export default function ComposePage() {
 
           <Button
             onClick={handleSend}
-            loading={sending}
+            loading={sending || redirecting}
             loadingText="Sending..."
             size="lg"
             className="w-full"

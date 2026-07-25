@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
   listCampaigns,
   setupEmail,
@@ -33,7 +33,7 @@ function isWithinRange(dateStr: string, range: DateRange): boolean {
 }
 
 export default function PlatformEmailDashboardPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -177,7 +177,7 @@ export default function PlatformEmailDashboardPage() {
               {filtered.map((c) => (
                 <tr
                   key={c.id}
-                  onClick={() => router.push(`/admin/email/campaigns/${c.id}`)}
+                  onClick={() => navigate(`/admin/email/campaigns/${c.id}`)}
                   className="cursor-pointer border-b hover:bg-muted/50"
                 >
                   <td className="py-3">{c.subject}</td>
