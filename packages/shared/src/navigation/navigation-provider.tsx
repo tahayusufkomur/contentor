@@ -16,6 +16,7 @@ interface NavigationContextValue {
   pathname: string;
   pendingHref: string | null;
   isPending: boolean;
+  isNavigating: boolean;
   navigate: (href: string) => void;
   prefetch: (href: string) => void;
 }
@@ -55,16 +56,35 @@ export function NavigationProvider({
     [router],
   );
 
-  // Clearing on both signals is what makes a stranded bar impossible: the
-  // transition ending covers normal navigation, and a pathname change covers
-  // browser back/forward and any router.push that bypassed this provider.
+  // Commit is the only reliable end-of-navigation signal in Next 14's App
+  // Router: router.push() inside startTransition does NOT keep isPending true
+  // for the navigation's duration (measured: isPending false ~91ms into a
+  // ~1000ms navigation), so clearing on !isPending ends the window almost
+  // immediately and the progress bar never reaches its show threshold.
   useEffect(() => {
-    if (!isPending) setPendingHref(null);
-  }, [isPending, pathname]);
+    setPendingHref(null);
+  }, [pathname]);
+
+  // Watchdog: if a navigation never commits (aborted, blocked by a route
+  // guard, network error), don't strand the pending state forever.
+  useEffect(() => {
+    if (pendingHref === null) return;
+    const timer = setTimeout(() => setPendingHref(null), 15000);
+    return () => clearTimeout(timer);
+  }, [pendingHref]);
+
+  const isNavigating = pendingHref !== null;
 
   const value = useMemo(
-    () => ({ pathname, pendingHref, isPending, navigate, prefetch }),
-    [pathname, pendingHref, isPending, navigate, prefetch],
+    () => ({
+      pathname,
+      pendingHref,
+      isPending,
+      isNavigating,
+      navigate,
+      prefetch,
+    }),
+    [pathname, pendingHref, isPending, isNavigating, navigate, prefetch],
   );
 
   return (

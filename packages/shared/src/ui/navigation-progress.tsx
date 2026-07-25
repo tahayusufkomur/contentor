@@ -9,7 +9,7 @@ import { useNavigation } from "../navigation/navigation-provider";
 import { ProgressLine } from "./progress-line";
 
 export function NavigationProgress({ delayMs = 150 }: { delayMs?: number }) {
-  const { isPending } = useNavigation();
+  const { isNavigating } = useNavigation();
   const [visible, setVisible] = useState(false);
   const ref = useRef<ProgressController | null>(null);
 
@@ -24,9 +24,9 @@ export function NavigationProgress({ delayMs = 150 }: { delayMs?: number }) {
   useEffect(() => {
     const controller = ref.current;
     if (!controller) return;
-    if (isPending) controller.start();
+    if (isNavigating) controller.start();
     else controller.finish();
-  }, [isPending]);
+  }, [isNavigating]);
 
   useEffect(() => () => ref.current?.dispose(), []);
 
