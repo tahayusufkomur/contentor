@@ -36,7 +36,14 @@ export function NavigationProvider({
 
   const navigate = useCallback(
     (href: string) => {
-      if (href === pathname) return;
+      // usePathname() drops the query string, so comparing against it alone
+      // wrongly swallows a navigation from "/x?tab=a" to "/x" — and because
+      // NavLink has already called preventDefault(), that link would be dead.
+      const current =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : pathname;
+      if (href === current) return;
       // Both updates land in one batched render, so `isPending` is already true
       // by the time the clearing effect below runs.
       setPendingHref(href);
