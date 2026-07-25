@@ -46,6 +46,9 @@ hidden rather than removed. The admin the coach lands in is refocused too:
 9. **AI seeding replaces static demo templates** — the site is populated with
    niche-specific AI content and curated photography so it reads as a complete
    website. Products seed as drafts; no fabricated social proof.
+10. **Free plan gets one lifetime AI blog generation** — a one-off grant, not a
+    monthly allowance, redeemable whenever the coach wants it (most will spend
+    it in the wizard). The plan's `max_ai_blog_posts` stays 0.
 
 ## Open decisions (deliberately deferred)
 
@@ -68,7 +71,7 @@ deleted).
 | 3 | `business.goals` ("what you offer") | unchanged |
 | 4 | `content.course` | AI drafts **three course outlines** from their niche and description; the coach picks one, edits title/price/description, confirms. Cover auto-picked from `CuratedPhoto`. Published on confirm. First-video upload offered but skippable. Choosing beats inventing: less effort than the old design steps, not more. |
 | 5 | `content.event` | **Only when goals include live classes or in-person events, and the plan's `live` entitlement allows it.** Type, title, date; AI suggests a title and a date ~1 week out. |
-| 6 | `content.blog` | **Only when goals include blogging.** AI drafts the post; coach reviews and approves. Free-plan coaches (`max_ai_blog_posts == 0`) see the step only if they opted into blogging, and get a template-based draft rather than an AI generation. |
+| 6 | `content.blog` | **Only when goals include blogging.** AI drafts the post from a topic the coach chooses; they review and approve. Free-plan coaches spend their one lifetime AI grant here (see below) — no template fallback needed. |
 | 7 | `logo` | Kept as today, single screen. |
 | 8 | `launch.reveal` | AI composes the whole site from answers + real content + seeded content. Chat box for refinements (3 free this session). "To get paid" card. Publish button. |
 
@@ -105,6 +108,32 @@ niche and description, combined with the existing curated media libraries.
 saves them. Visitors see a complete site; search engines only index content a
 human has reviewed. This defuses the scaled-content risk of many tenants
 publishing model-generated articles in overlapping niches.
+
+### Blog AI on the free plan
+
+Two distinct things generate blog content, and they must not be confused:
+
+- **Seeding (platform-initiated, never metered).** The 2–3 starter posts above
+  are part of composing a complete site. The platform chooses the topics; no
+  coach quota is touched. Cost is bounded per tenant and tracked through the
+  existing AI usage logging.
+- **The free grant (coach-initiated, one-off).** The coach types their *own*
+  topic and gets a real AI draft — a genuine taste of the paid feature at the
+  moment they most want it.
+
+Implementation: `BlogAiUsage` is keyed `(tenant_schema, month)` and
+`availability()` computes `remaining = limit - used_this_month`
+([`blog/ai.py`](../../../backend/apps/blog/ai.py)), so a monthly plan quota
+cannot express "once". The grant is therefore a per-tenant consumed-flag
+(alongside `setup_progress`) that `availability()` checks: when the plan limit
+is 0 and the grant is unspent, report `remaining: 1` with a distinct reason so
+the UI can label it ("your free AI post"). Spending it sets the flag; it never
+resets, and a plan upgrade simply makes it irrelevant. Charging follows the
+existing rule — committed at first model output, not on completion.
+
+Rejected alternative: setting the free plan's `max_ai_blog_posts` to 1. That
+reads as "one time" but means one *every month* forever, which both dilutes the
+upgrade pull and multiplies the scaled-content risk across free tenants.
 
 **Consequences:** `demo_cleanup` stops being a chore — seeded content is
 niche-appropriate and reusable, so the checklist item softens to "review your
@@ -156,7 +185,10 @@ derive `ai_blog` from *paid plan AND quota > 0* and `live` from
 ([`billing/views/platform.py`](../../../backend/apps/billing/views/platform.py)).
 An unconditional "1 course + 1 event + 1 blog" gate was therefore unsatisfiable
 on the free plan without forcing a hand-written article and a phantom in-person
-event. Real state only, as before — manual ticks never satisfy a blocker.
+event. The one-off free blog grant now makes `first_blog_post` reachable on the
+free plan for coaches who *chose* blogging, but the blocker stays conditional on
+that goal — a coach who never asked to blog is still never gated on it. Real
+state only, as before — manual ticks never satisfy a blocker.
 
 ## Reveal chat + quotas
 
@@ -287,8 +319,10 @@ This replaces the entire acquisition funnel, so it ships behind a **holdout**:
 - **Unit:** wizard machine order/skip logic; publish blockers across every
   goal × entitlement combination (explicitly including the free plan, which
   must be able to publish); quota accounting (window rollover, plan change
-  mid-month, reveal-session grant); lazy-provisioning trigger; cleanup-job
-  selection and the soft-delete window; seeded-vs-own fingerprint separation.
+  mid-month, reveal-session grant); **the free blog grant** — spendable once,
+  never resets across month boundaries, unaffected by upgrade then downgrade,
+  and not consumed by seeding; lazy-provisioning trigger; cleanup-job selection
+  and the soft-delete window; seeded-vs-own fingerprint separation.
 - **E2e:** rework wizard specs for the new step order; reveal chat refinement →
   apply → publish-from-reveal; compose-failure → template fallback; quota
   exhaustion → upgrade prompt + editor link; skipped-steps → checklist pickup;
