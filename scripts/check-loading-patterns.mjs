@@ -2,8 +2,8 @@
 // Guardrail for the loading-state system (see
 // docs/superpowers/specs/2026-07-23-loading-states-design.md): app code must
 // use Spinner/Skeleton primitives, not raw animate-spin / animate-pulse.
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 
 const ROOTS = [
   "frontend-main/src",
@@ -58,6 +58,24 @@ const ALLOW = new Set([
 // flagged as a false positive of Tailwind's built-in `animate-pulse`.
 const PATTERN = /animate-(?:spin|pulse)(?!-)/;
 
+// Navigation must go through useNavigate() (packages/shared/src/navigation)
+// so the top progress bar fires — router.push() bypasses it. Two of the three
+// repo-wide occurrences are just the string "router.push(" inside comments
+// (a JSDoc example and an explanatory note), not real calls; rather than a
+// fragile "skip comment lines" regex, both files are allowlisted below with
+// a trailing comment, matching this file's existing per-path ALLOW
+// convention.
+const PUSH_PATTERN = /\brouter\.push\(/;
+const PUSH_ALLOW = new Set([
+  // The implementation of navigate() itself — the one legitimate router.push()
+  // call site; everything else should call useNavigate().
+  "packages/shared/src/navigation/navigation-provider.tsx",
+
+  // Only a "router.push(" mention inside a doc comment (usage example for
+  // the toast query params), not an actual call.
+  "frontend-customer/src/components/shared/redirect-toast.tsx",
+]);
+
 function* walk(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
@@ -67,15 +85,23 @@ function* walk(dir) {
 }
 
 const violations = [];
+const pushViolations = [];
 for (const root of ROOTS) {
   for (const file of walk(root)) {
     const rel = relative(".", file).replaceAll("\\", "/");
-    if (ALLOW.has(rel)) continue;
     const lines = readFileSync(file, "utf8").split("\n");
-    lines.forEach((line, i) => {
-      if (PATTERN.test(line))
-        violations.push(`${rel}:${i + 1}: ${line.trim()}`);
-    });
+    if (!ALLOW.has(rel)) {
+      lines.forEach((line, i) => {
+        if (PATTERN.test(line))
+          violations.push(`${rel}:${i + 1}: ${line.trim()}`);
+      });
+    }
+    if (!PUSH_ALLOW.has(rel)) {
+      lines.forEach((line, i) => {
+        if (PUSH_PATTERN.test(line))
+          pushViolations.push(`${rel}:${i + 1}: ${line.trim()}`);
+      });
+    }
   }
 }
 
@@ -86,4 +112,49 @@ if (violations.length) {
   for (const v of violations) console.error("  " + v);
   process.exit(1);
 }
+
+if (pushViolations.length) {
+  console.error(
+    "router.push() found (use useNavigate() so the top progress bar fires):",
+  );
+  for (const v of pushViolations) console.error("  " + v);
+  process.exit(1);
+}
+
+// ── Suspense coverage ───────────────────────────────────────────────────────
+// Every route segment must have a loading.tsx at or above it, so no navigation
+// can ever block on a segment with no fallback.
+const APP_ROOTS = ["frontend-main/src/app", "frontend-customer/src/app"];
+
+function hasLoadingAncestor(dir, appRoot) {
+  let cur = resolve(dir);
+  const root = resolve(appRoot);
+  for (;;) {
+    if (existsSync(join(cur, "loading.tsx"))) return true;
+    if (cur === root) return false;
+    const parent = dirname(cur);
+    if (parent === cur) return false;
+    cur = parent;
+  }
+}
+
+const uncovered = [];
+for (const appRoot of APP_ROOTS) {
+  for (const file of walk(appRoot)) {
+    if (!/(^|[\\/])page\.tsx$/.test(file)) continue;
+    const dir = dirname(file);
+    if (!hasLoadingAncestor(dir, appRoot)) {
+      uncovered.push(relative(".", file).replaceAll("\\", "/"));
+    }
+  }
+}
+
+if (uncovered.length) {
+  console.error(
+    "Route segments with no loading.tsx at or above them (navigation there will block with no fallback):",
+  );
+  for (const p of uncovered) console.error("  " + p);
+  process.exit(1);
+}
+
 console.log(`check-loading-patterns: OK (${ROOTS.join(", ")})`);
