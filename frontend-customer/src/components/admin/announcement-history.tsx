@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { Spinner } from "@/components/ui/spinner";
+import { StaleContainer } from "@/components/ui/stale-container";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   AnnouncementListItem,
@@ -19,14 +20,18 @@ export default function AnnouncementHistory({
   refreshKey: number;
 }) {
   const [items, setItems] = useState<AnnouncementListItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const load = () =>
-    listAnnouncements()
+  const load = () => {
+    setLoading(true);
+    return listAnnouncements()
       .then(setItems)
       .catch(() => {
         setItems([]);
         toast.error("Couldn't load announcements.");
-      });
+      })
+      .finally(() => setLoading(false));
+  };
   useEffect(() => {
     load();
   }, [refreshKey]);
@@ -37,11 +42,15 @@ export default function AnnouncementHistory({
     );
 
   return (
-    <div className="divide-y divide-border rounded-xl border border-border">
-      {items.map((a) => (
-        <HistoryRow key={a.id} item={a} onRemoved={load} />
-      ))}
-    </div>
+    // Refetches when a new announcement is sent (refreshKey bump) while this
+    // list is already on screen — dim in place instead of swapping silently.
+    <StaleContainer pending={loading && items.length > 0}>
+      <div className="divide-y divide-border rounded-xl border border-border">
+        {items.map((a) => (
+          <HistoryRow key={a.id} item={a} onRemoved={load} />
+        ))}
+      </div>
+    </StaleContainer>
   );
 }
 
