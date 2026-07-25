@@ -16,6 +16,8 @@ import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { UsageReporter } from "@/components/shared/usage-reporter";
+import { NavigationProvider } from "@shared/navigation/navigation-provider";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { getAuthUser } from "@/lib/auth";
 import { COOKIE_NAME } from "@/lib/constants";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
@@ -165,24 +167,27 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <TenantProvider config={config}>
-              <TenantThemeEnforcer />
-              <TrackPageView />
-              <Toaster position="top-center" richColors />
-              {gated ? (
-                <PreviewGate
-                  brandName={config?.brand_name}
-                  hasPassword={config?.has_preview_password}
-                />
-              ) : (
-                <>
-                  <RedirectToast />
-                  {children}
-                  <InstallPrompt />
-                  <SwUpdateToast />
-                  <PushOptIn />
-                  <UsageReporter authed={hasSession} />
-                </>
-              )}
+              <NavigationProvider>
+                <NavigationProgress />
+                <TenantThemeEnforcer />
+                <TrackPageView />
+                <Toaster position="top-center" richColors />
+                {gated ? (
+                  <PreviewGate
+                    brandName={config?.brand_name}
+                    hasPassword={config?.has_preview_password}
+                  />
+                ) : (
+                  <>
+                    <RedirectToast />
+                    {children}
+                    <InstallPrompt />
+                    <SwUpdateToast />
+                    <PushOptIn />
+                    <UsageReporter authed={hasSession} />
+                  </>
+                )}
+              </NavigationProvider>
             </TenantProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

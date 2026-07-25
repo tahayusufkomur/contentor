@@ -9,6 +9,8 @@ import { Toaster } from "sonner";
 import { HelpBubble } from "@/components/shared/help-bubble";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { resolveHost } from "@/i18n/config";
+import { NavigationProvider } from "@shared/navigation/navigation-provider";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { TrackPageView } from "@shared/tracking/track-page-view";
 import "@/styles/globals.css";
 
@@ -69,10 +71,13 @@ export default async function RootLayout({
             disableTransitionOnChange
             themes={["light", "dim", "dark"]}
           >
-            {children}
-            <HelpBubble />
-            <Toaster position="top-center" richColors />
-            <TrackPageView />
+            <NavigationProvider>
+              <NavigationProgress />
+              {children}
+              <HelpBubble />
+              <Toaster position="top-center" richColors />
+              <TrackPageView />
+            </NavigationProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
