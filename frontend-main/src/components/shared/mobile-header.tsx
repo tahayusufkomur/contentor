@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { NavLink } from "@/components/ui/nav-link";
+import { useNavigation } from "@shared/navigation/navigation-provider";
+import { isNavItemActive } from "@shared/navigation/navigation-state";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,13 +14,9 @@ interface MobileHeaderProps {
   sections: NavSection[];
 }
 
-function isItemActive(pathname: string, href: string) {
-  return pathname === href || (href !== "/admin" && pathname.startsWith(href));
-}
-
 export function MobileHeader({ title, sections }: MobileHeaderProps) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+  const { pathname, pendingHref } = useNavigation();
 
   return (
     <div className="md:hidden">
@@ -37,7 +34,10 @@ export function MobileHeader({ title, sections }: MobileHeaderProps) {
                 {section.label}
               </p>
               {section.items.map((item) => {
-                const isActive = isItemActive(pathname, item.href);
+                const isActive = isNavItemActive(
+                  { pathname, pendingHref },
+                  item.href,
+                );
                 const linkClass = cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                   isActive
@@ -62,14 +62,14 @@ export function MobileHeader({ title, sections }: MobileHeaderProps) {
                     {inner}
                   </a>
                 ) : (
-                  <Link
+                  <NavLink
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={linkClass}
                   >
                     {inner}
-                  </Link>
+                  </NavLink>
                 );
               })}
             </div>

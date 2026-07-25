@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useNavigation } from "@shared/navigation/navigation-provider";
+import { isNavItemActive } from "@shared/navigation/navigation-state";
+import { NavLink } from "@/components/ui/nav-link";
 import {
   ChevronDown,
   ExternalLink,
@@ -24,21 +27,19 @@ interface MobileHeaderProps {
   user?: User | null;
 }
 
-function isItemActive(pathname: string, href: string) {
-  return pathname === href || (href !== "/admin" && pathname.startsWith(href));
-}
-
 export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const pathname = usePathname();
+  const { pathname, pendingHref, navigate } = useNavigation();
   const router = useRouter();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     () =>
       Object.fromEntries(
         sections.map((section) => [
           section.id,
-          section.items.some((item) => isItemActive(pathname, item.href)),
+          section.items.some((item) =>
+            isNavItemActive({ pathname, pendingHref }, item.href),
+          ),
         ]),
       ),
   );
@@ -46,9 +47,11 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
   const activeSectionId = useMemo(
     () =>
       sections.find((section) =>
-        section.items.some((item) => isItemActive(pathname, item.href)),
+        section.items.some((item) =>
+          isNavItemActive({ pathname, pendingHref }, item.href),
+        ),
       )?.id,
-    [pathname, sections],
+    [pathname, pendingHref, sections],
   );
 
   useEffect(() => {
@@ -65,13 +68,13 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
   return (
     <div className="md:hidden">
       <div className="flex h-14 items-center justify-between border-b px-4 gap-2">
-        <Link
+        <NavLink
           href="/admin"
           className="text-sm font-bold tracking-tight hover:text-primary transition-colors truncate"
           title="Back to Admin Overview"
         >
           {title}
-        </Link>
+        </NavLink>
 
         <div className="flex items-center gap-2">
           <Button
@@ -119,37 +122,35 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
 
                 {sectionOpen && (
                   <div className="space-y-1">
-                    {section.items.map((item) => {
-                      const isActive = isItemActive(pathname, item.href);
-
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className={cn(
+                    {section.items.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className={({ active }) =>
+                          cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                            isActive
+                            active
                               ? "bg-accent text-accent-foreground font-medium"
                               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                          )}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                          {(item.ai || item.requiresEntitlement) && (
-                            <span className="ml-auto flex items-center gap-1">
-                              {item.ai && <AiBadge />}
-                              {item.requiresEntitlement && (
-                                <PaidFeatureBadge
-                                  feature={item.requiresEntitlement}
-                                  partial={item.partialPaid}
-                                />
-                              )}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
+                          )
+                        }
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                        {(item.ai || item.requiresEntitlement) && (
+                          <span className="ml-auto flex items-center gap-1">
+                            {item.ai && <AiBadge />}
+                            {item.requiresEntitlement && (
+                              <PaidFeatureBadge
+                                feature={item.requiresEntitlement}
+                                partial={item.partialPaid}
+                              />
+                            )}
+                          </span>
+                        )}
+                      </NavLink>
+                    ))}
                   </div>
                 )}
               </div>
@@ -183,7 +184,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                 onClick={async () => {
                   setSigningOut(true);
                   await fetch("/api/auth/logout", { method: "POST" });
-                  router.push(
+                  navigate(
                     "/login?toast=You've+been+logged+out&toast_type=info",
                   );
                   router.refresh();

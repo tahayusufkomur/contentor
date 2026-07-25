@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { NavLink } from "@/components/ui/nav-link";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -25,6 +27,7 @@ function Logo() {
 
 export function PlatformHeader({ user }: { user?: User | null }) {
   const router = useRouter();
+  const navigate = useNavigate();
   const t = useTranslations("common.nav");
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -39,7 +42,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
   const handleSignOut = async () => {
     setSigningOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
+    navigate("/");
     router.refresh();
   };
 
@@ -56,31 +59,31 @@ export function PlatformHeader({ user }: { user?: User | null }) {
         <Logo />
 
         <nav className="hidden items-center gap-7 md:flex">
-          <Link
+          <NavLink
             href="/#features"
             className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("features")}
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             href="/pricing"
             className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("pricing")}
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             href="/blog"
             className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("blog")}
-          </Link>
+          </NavLink>
           {user && (
-            <Link
+            <NavLink
               href={user.is_superuser ? "/admin" : "/dashboard"}
               className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {user.is_superuser ? t("dashboard") : t("myPlatforms")}
-            </Link>
+            </NavLink>
           )}
         </nav>
 
@@ -130,38 +133,38 @@ export function PlatformHeader({ user }: { user?: User | null }) {
       {mobileOpen && (
         <div className="mx-auto mt-2 max-w-6xl rounded-xl border bg-popover px-6 py-5 shadow-sm md:hidden">
           <nav className="flex flex-col gap-4">
-            <Link
+            <NavLink
               href="/#features"
               className="text-base font-medium text-foreground/80 hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("features")}
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               href="/pricing"
               className="text-base font-medium text-foreground/80 hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("pricing")}
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               href="/blog"
               className="text-base font-medium text-foreground/80 hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("blog")}
-            </Link>
+            </NavLink>
             <div className="h-px bg-border" />
             <ThemeToggle className="justify-start" />
             {user ? (
               <>
-                <Link
+                <NavLink
                   href={user.is_superuser ? "/admin" : "/dashboard"}
                   className="text-base font-medium text-foreground/80"
                   onClick={() => setMobileOpen(false)}
                 >
                   {user.is_superuser ? t("dashboard") : t("myPlatforms")}
-                </Link>
+                </NavLink>
                 <div className="flex items-center gap-2 border-t border-border pt-3">
                   <UserIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">

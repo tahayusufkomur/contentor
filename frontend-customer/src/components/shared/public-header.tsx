@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { NavLink } from "@/components/ui/nav-link";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
@@ -35,7 +37,7 @@ const SIGNED_IN_HIDDEN = new Set(["/about", "/faq"]);
 function Brand({ config }: { config: TenantConfig | null }) {
   const layout = config?.navbar_config?.layout ?? "classic";
   return (
-    <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+    <NavLink href="/" className="flex items-center gap-2 text-lg font-bold">
       {config?.logo_url ? (
         <img
           src={config.logo_url}
@@ -48,7 +50,7 @@ function Brand({ config }: { config: TenantConfig | null }) {
       {showBrandName(config) && (
         <span className="font-display">{config?.brand_name || "Welcome"}</span>
       )}
-    </Link>
+    </NavLink>
   );
 }
 
@@ -64,7 +66,7 @@ function DesktopLinks({
   return (
     <div className={`flex items-center gap-6 ${className}`}>
       {links.map((link) => (
-        <Link
+        <NavLink
           key={link.href}
           href={link.href}
           className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -73,15 +75,15 @@ function DesktopLinks({
           {link.dot && (
             <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-primary" />
           )}
-        </Link>
+        </NavLink>
       ))}
       {showInstall && (
-        <Link
+        <NavLink
           href="/install"
           className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           Install app
-        </Link>
+        </NavLink>
       )}
     </div>
   );
@@ -119,14 +121,14 @@ function AuthCluster({
       )}
       {user ? (
         <>
-          <Link
+          <NavLink
             href={dashboardHref}
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {user.role === "owner" || user.role === "coach"
               ? "Admin"
               : "Dashboard"}
-          </Link>
+          </NavLink>
           <AnnouncementBell />
           {!compact && (
             <span className="text-sm text-muted-foreground">
@@ -190,6 +192,7 @@ export function PublicHeader({
   const config = useTenant();
   const router = useRouter();
   const pathname = usePathname();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -236,7 +239,7 @@ export function PublicHeader({
   const handleSignOut = async () => {
     setSigningOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login?toast=You've+been+logged+out&toast_type=info");
+    navigate("/login?toast=You've+been+logged+out&toast_type=info");
     router.refresh();
   };
 
@@ -278,7 +281,7 @@ export function PublicHeader({
     <div className={menuPanelCls}>
       <nav className="flex flex-col gap-3">
         {fullNavLinks.map((link) => (
-          <Link
+          <NavLink
             key={link.href}
             href={link.href}
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -286,20 +289,20 @@ export function PublicHeader({
           >
             {link.label}
             {link.dot && <span className="h-2 w-2 rounded-full bg-primary" />}
-          </Link>
+          </NavLink>
         ))}
         {showInstall && (
-          <Link
+          <NavLink
             href="/install"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             onClick={() => setMobileOpen(false)}
           >
             Install app
-          </Link>
+          </NavLink>
         )}
         {user ? (
           <>
-            <Link
+            <NavLink
               href={dashboardHref}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               onClick={() => setMobileOpen(false)}
@@ -307,7 +310,7 @@ export function PublicHeader({
               {user.role === "owner" || user.role === "coach"
                 ? "Admin"
                 : "Dashboard"}
-            </Link>
+            </NavLink>
             <Button
               asChild
               size="sm"
