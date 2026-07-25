@@ -13,6 +13,9 @@ element (theme, font, navbar, hero, page layouts, page copy) in one final
 compose. The wizard ends with the finished site on screen, a chat box to refine
 it, a "Get paid" card, and a Publish button. The refinement chat becomes a
 metered paid feature and — in the final phase — replaces the manual site editor.
+The admin the coach lands in is refocused too: 18 nav items consolidate into 7
+job-stage destinations, with Audience and Marketing stage-gated until real
+progress unlocks them.
 
 ## Decisions (settled during brainstorm)
 
@@ -34,6 +37,10 @@ metered paid feature and — in the final phase — replaces the manual site edi
 7. **"Get paid" is a section, not a wizard step** — a card on the reveal
    screen (required when priced content exists, optional otherwise), repeated
    as an admin-checklist milestone if skipped.
+8. **Admin nav: consolidate + stage-gate** — 18 flat items collapse into 7
+   job-stage destinations; Audience and Marketing are locked-with-a-reason
+   until the coach's real state unlocks them (publish / first student).
+   Existing published tenants see everything from day one.
 
 ## Wizard flow (Phase 1)
 
@@ -109,6 +116,50 @@ one-function change.
 - If skipped, the admin checklist shows a **Get paid** milestone with the same
   item until connected.
 
+## Admin focus — navigation redesign
+
+The admin shell (`frontend-customer/src/components/admin/admin-shell.tsx`)
+currently exposes 18 items in 6 sections from day zero. The redesign makes the
+menu mirror the coach's job stages instead of our app modules.
+
+### Target IA (7 destinations)
+
+| Item | Absorbs | Notes |
+|------|---------|-------|
+| **Home** | Dashboard | Leads with the current milestone card ("what to do next"), recent activity below. |
+| **Content** | Courses, Live + Calendar, Downloads | Sub-items; only wizard-goal modules visible initially, "+ more" enables others. |
+| **My Site** | Edit site, Design, Assistant | Single destination; becomes the Site AI surface in Phase 2. |
+| **Audience** | Students, Community, Inbox | Stage-gated (see below). |
+| **Marketing** | Blog, Email, Announcements | Stage-gated. Blog lives here: for a coach it is marketing. |
+| **Money** | Payouts, Billing, Store | Tabbed hub; doubles as the persistent "Get paid" section. |
+| **Settings** | Settings | Also hosts a "browse all features" view. |
+
+Photos/Videos lose top-level status: media is reached from within content
+editors (pickers), the ⌘K command palette, and a "Library" link under Content.
+All existing routes stay unchanged — only nav placement moves, so deep links,
+bookmarks, and e2e habits survive.
+
+### Stage-gating (teasers, not hiding)
+
+- Pre-publish nav shows five items: Home, Content, My Site, Money, Settings.
+- **Audience** and **Marketing** render locked: greyed but clickable — the
+  click explains the unlock ("Publish your site to open Marketing") and links
+  to the relevant milestone. Same Zeigarnik pull as the checklist.
+- Unlock triggers (real state, never manual ticks): site published → Marketing;
+  first student joined → Audience. Unlocks celebrate (one-time highlight dot +
+  toast).
+- Existing tenants: unlock state is computed from live tenant state, so any
+  already-published tenant sees the full nav immediately — no regression.
+- Escape hatches: ⌘K searches every screen regardless of lock state;
+  Settings → "All features" lists everything.
+
+### Sequencing
+
+- Consolidation (18 → 7, media demotion, Money hub) ships with **Phase 1** —
+  the reveal must drop coaches into the focused admin.
+- Stage-gating, lock teasers, and unlock celebrations ship with **Phase 2**,
+  when the admin shell is already being touched for Site AI.
+
 ## Admin checklist after this change
 
 The wizard absorbs the old "site" and "content" achievements. The post-signup
@@ -127,11 +178,13 @@ first `email_campaigns` send, first `billing` payment.)
 
 ## Phasing
 
-- **Phase 1 — new wizard + reveal chat.** Includes early provisioning, publish
-  gate change, quota infra (the reveal already meters free applies), Get-paid
-  card. Manual site editor untouched.
-- **Phase 2 — "Site AI" in the admin.** Same chat, monthly quotas active,
-  entry points in the admin shell and site editor. Manual editor de-emphasized
+- **Phase 1 — new wizard + reveal chat + consolidated nav.** Includes early
+  provisioning, publish gate change, quota infra (the reveal already meters
+  free applies), Get-paid card, and the 18 → 7 nav consolidation. Manual site
+  editor untouched.
+- **Phase 2 — "Site AI" in the admin + stage-gated nav.** Same chat, monthly
+  quotas active, entry points in the admin shell and site editor; nav lock
+  teasers and unlock celebrations land here. Manual editor de-emphasized
   (moved behind an "advanced" affordance in the editor entry).
 - **Phase 3 — retire the manual editor** behind an advanced/legacy flag, only
   after Phase 2 data shows chat covers real editing operations (target: chat
@@ -145,7 +198,9 @@ first `email_campaigns` send, first `billing` payment.)
   selection.
 - **E2e:** rework wizard specs for the new step order; new spec: reveal chat
   refinement → apply → publish-from-reveal; quota exhaustion → upgrade prompt;
-  skipped-steps → admin checklist pickup → publish gate enforcement.
+  skipped-steps → admin checklist pickup → publish gate enforcement; nav
+  consolidation (existing specs' nav selectors, media reachable via Content /
+  ⌘K) and, in Phase 2, lock/unlock transitions per stage.
 - **Compose quality:** extend the existing AI-eval pattern (`90-logo-eval`)
   with a site-compose eval scoring theme/copy coherence against the brief.
 
