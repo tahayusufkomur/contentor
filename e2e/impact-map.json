@@ -53,8 +53,6 @@
     ],
     "src/lib/mailbox.ts": ["07-mailbox"],
     "src/lib/navbar.ts": ["14-navbar-layouts"],
-    "src/components/shared": ["25-navigation-feedback"],
-    "src/components/admin": ["25-navigation-feedback"],
     "src/components/ui/nav-link.tsx": ["25-navigation-feedback"],
     "src/components/ui/navigation-progress.tsx": ["25-navigation-feedback"],
     "src/components/ui/stale-container.tsx": ["25-navigation-feedback"]
