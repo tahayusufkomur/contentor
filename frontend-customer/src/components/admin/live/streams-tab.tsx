@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Play, Square, Radio, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
@@ -373,14 +373,14 @@ function LiveStreamRowActions({
   onEdit: () => void;
   onStopped: () => void;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { run: handleStart, loading: starting } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/live-streams/${ls.id}/start/`, {
         method: "POST",
       });
-      router.push(`/live-stream/${ls.id}`);
+      navigate(`/live-stream/${ls.id}`);
     },
     { errorToast: "Failed to start live stream" },
   );
@@ -417,7 +417,7 @@ function LiveStreamRowActions({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => router.push(`/live-stream/${ls.id}`)}
+            onClick={() => navigate(`/live-stream/${ls.id}`)}
           >
             Watch
           </Button>

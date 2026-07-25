@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { ApiError } from "@/types/api";
 import { getCart, removeFromCart, clearCart } from "@/lib/cart";
 import type { CartItem } from "@/types/billing";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 interface PaymentInitializeResponse {
   payment_id: number;
@@ -22,7 +23,7 @@ interface PaymentInitializeResponse {
 }
 
 export default function CheckoutPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -71,12 +72,12 @@ export default function CheckoutPage() {
       // Bypass (dev/CI): payment already completed server-side.
       clearCart();
       toast.success("Payment successful! Redirecting to dashboard...");
-      router.push("/dashboard");
+      navigate("/dashboard");
     },
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
-          router.push(
+          navigate(
             "/login?toast=You+need+to+log+in+to+purchase&toast_type=info",
           );
           return;

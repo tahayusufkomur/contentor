@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -328,7 +329,7 @@ interface StorePlanCardProps {
 }
 
 function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { run: handleSubscribe, loading: subscribing } = useAsyncAction(
     async () => {
@@ -342,7 +343,7 @@ function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
-          router.push(
+          navigate(
             "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
           );
           return;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import {
 } from "@/components/billing/content-picker";
 import type { Bundle } from "@/types/billing";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 interface Product {
   id: number;
@@ -73,7 +74,7 @@ function FormSkeleton() {
 }
 
 export default function EditBundlePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const params = useParams();
   const id = params.id as string;
 
@@ -175,7 +176,7 @@ export default function EditBundlePage() {
         }),
       });
       toast.success("Bundle updated successfully.");
-      router.push("/admin/billing");
+      navigate("/admin/billing");
     },
     { errorToast: "Failed to update bundle. Please try again." },
   );

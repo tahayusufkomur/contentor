@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { listCampaigns, setupEmail, type EmailCampaign } from "@/lib/email-api";
 import { PageState } from "@/components/ui/page-state";
 import { SkeletonTable } from "@/components/ui/skeletons";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ function isWithinRange(dateStr: string, range: DateRange): boolean {
 }
 
 export default function EmailDashboardPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -187,7 +187,7 @@ export default function EmailDashboardPage() {
                   <tr
                     key={c.id}
                     onClick={() =>
-                      router.push(`/admin/email/campaigns/${c.id}`)
+                      navigate(`/admin/email/campaigns/${c.id}`)
                     }
                     className="cursor-pointer border-b hover:bg-muted/50"
                   >

@@ -12,13 +12,14 @@ import { addToCart } from "@/lib/cart";
 import type { CourseDetail, UnlockPlanOption } from "@/types/course";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 interface EnrollButtonProps {
   course: CourseDetail;
 }
 
 export function EnrollButton({ course }: EnrollButtonProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const opts = course.unlock_options;
 
@@ -26,7 +27,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
     await clientFetch(`/api/v1/courses/${course.slug}/enroll/`, {
       method: "POST",
     });
-    router.push(`/learn/${course.slug}`);
+    navigate(`/learn/${course.slug}`);
   });
 
   function handleAddToCart() {
@@ -43,7 +44,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 
   function handleBuyNow() {
     handleAddToCart();
-    router.push("/checkout");
+    navigate("/checkout");
   }
 
   // Already enrolled
@@ -51,7 +52,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
     return (
       <Button
         className="w-full gap-2"
-        onClick={() => router.push(`/learn/${course.slug}`)}
+        onClick={() => navigate(`/learn/${course.slug}`)}
       >
         <Play className="h-4 w-4" />
         Continue Learning
@@ -178,6 +179,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 
 function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
   const router = useRouter();
+  const navigate = useNavigate();
 
   const { run: handleSubscribe, loading: subscribing } = useAsyncAction(
     async () => {
@@ -191,7 +193,7 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
-          router.push(
+          navigate(
             "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
           );
           return;

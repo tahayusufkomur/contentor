@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { useTranslations } from "next-intl";
 import { BrandTab } from "./brand-tab";
 import { NavbarTab } from "./navbar-tab";
@@ -62,6 +63,7 @@ interface EditSidebarProps {
 
 export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   const router = useRouter();
+  const navigate = useNavigate();
   const pathname = usePathname();
   const activePageKey = pageKeyForPath(pathname);
   // Edit mode is off by default (the owner sees their site like a visitor),
@@ -162,7 +164,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   const goToPage = (route: string) => {
     if (route === pathname) return;
     flushPending();
-    router.push(route);
+    navigate(route);
   };
 
   // Restore the coach's last edit-mode choice after mount (skipped for a coach

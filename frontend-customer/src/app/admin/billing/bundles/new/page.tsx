@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -23,9 +22,10 @@ import {
 } from "@/components/billing/content-picker";
 import type { Bundle } from "@/types/billing";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export default function NewBundlePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -56,7 +56,7 @@ export default function NewBundlePage() {
         }),
       });
       toast.success("Bundle created successfully.");
-      router.push("/admin/billing");
+      navigate("/admin/billing");
     },
     { errorToast: "Failed to create bundle. Please try again." },
   );

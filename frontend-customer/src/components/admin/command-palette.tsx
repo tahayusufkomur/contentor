@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
   Search,
   BookOpen,
@@ -52,7 +52,7 @@ export function CommandPalette({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -346,7 +346,7 @@ export function CommandPalette({
         if (selected.newTab) {
           window.open(selected.href, "_blank", "noopener,noreferrer");
         } else {
-          router.push(selected.href);
+          navigate(selected.href);
         }
       } else if (e.key === "Escape") {
         e.preventDefault();
@@ -356,7 +356,7 @@ export function CommandPalette({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, filteredItems, selectedIndex, router, onOpenChange]);
+  }, [open, filteredItems, selectedIndex, navigate, onOpenChange]);
 
   if (!open) return null;
 
@@ -404,7 +404,7 @@ export function CommandPalette({
                     if (item.newTab) {
                       window.open(item.href, "_blank", "noopener,noreferrer");
                     } else {
-                      router.push(item.href);
+                      navigate(item.href);
                     }
                   }}
                   onMouseEnter={() => setSelectedIndex(idx)}

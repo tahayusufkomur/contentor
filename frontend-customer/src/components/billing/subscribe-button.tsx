@@ -8,6 +8,7 @@ import { Zap } from "lucide-react";
 import { toast } from "sonner";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 interface SubscribeButtonProps {
   planId: number;
@@ -31,6 +32,7 @@ export function SubscribeButton({
   size = "default",
 }: SubscribeButtonProps) {
   const router = useRouter();
+  const navigate = useNavigate();
 
   const { run: handleSubscribe, loading } = useAsyncAction(
     async () => {
@@ -50,7 +52,7 @@ export function SubscribeButton({
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
-          router.push(
+          navigate(
             "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
           );
           return;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, Fragment } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,6 +25,7 @@ import {
 import { clientFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { PhotoPicker } from "@/components/admin/photo-picker";
 import { VideoPicker } from "@/components/admin/video-picker";
@@ -66,7 +66,7 @@ export function CourseForm({
   course: initialCourse,
   onCourseLoaded,
 }: CourseFormProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const isCreate = !initialCourse;
   const [course, setCourse] = useState<CourseDetail | null>(
     initialCourse ?? null,
@@ -153,7 +153,7 @@ export function CourseForm({
           }),
         });
         toast.success("Course created");
-        router.push(`/admin/courses/${created.slug}`);
+        navigate(`/admin/courses/${created.slug}`);
         return;
       }
       if (!course) return;

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 import {
   EmailBuilderIframe,
@@ -36,7 +37,7 @@ function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
 }
 
 export default function ComposePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const builderRef = useRef<EmailBuilderIframeHandle>(null);
   const initialTemplateId = searchParams.get("template") || "";
@@ -244,6 +245,11 @@ export default function ComposePage() {
   );
 
   // Step 3: Send campaign
+  // `redirecting` keeps the send button's loading state on once the API call
+  // resolves successfully — useAsyncAction clears its own `sending` flag as
+  // soon as the promise settles, but the navigation away from this page is
+  // async, so without this the button would flash idle right before unmount.
+  const [redirecting, setRedirecting] = useState(false);
   const { run: sendNow, loading: sending } = useAsyncAction(
     async (scheduledIso?: string) => {
       await sendCampaign({
@@ -254,8 +260,10 @@ export default function ComposePage() {
         scheduled_at: scheduledIso,
       });
       // Scheduled campaigns land on the content calendar; immediate sends go
-      // back to the email dashboard.
-      router.push(scheduledIso ? "/admin/calendar" : "/admin/email");
+      // back to the email dashboard. Hold the button in its loading state
+      // through the redirect instead of letting it clear and unmount idle.
+      setRedirecting(true);
+      navigate(scheduledIso ? "/admin/calendar" : "/admin/email");
     },
     {
       onError: (err) =>
@@ -475,7 +483,7 @@ export default function ComposePage() {
 
           <Button
             onClick={handleSend}
-            loading={sending}
+            loading={sending || redirecting}
             loadingText={scheduleMode === "later" ? "Scheduling…" : "Sending…"}
             size="lg"
             className="w-full"

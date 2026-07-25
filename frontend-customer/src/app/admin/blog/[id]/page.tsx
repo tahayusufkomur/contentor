@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PageState } from "@/components/ui/page-state";
@@ -30,7 +31,7 @@ import {
 
 export default function BlogEditorPage() {
   const t = useTranslations("admin");
-  const router = useRouter();
+  const navigate = useNavigate();
   const params = useParams<{ id: string }>();
   const postId = Number(params.id);
 
@@ -50,7 +51,7 @@ export default function BlogEditorPage() {
       .catch(() => {
         if (!cancelled) {
           toast.error(t("blog.errGeneric"));
-          router.push("/admin/blog");
+          navigate("/admin/blog");
         }
       });
     return () => {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Play, Square, Radio, Clock, CheckCircle2 } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -308,14 +308,14 @@ function LiveStreamRowActions({
   stream: LiveStream;
   onStopped: () => void;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { run: handleStart, loading: starting } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/live-streams/${stream.id}/start/`, {
         method: "POST",
       });
-      router.push(`/live-stream/${stream.id}`);
+      navigate(`/live-stream/${stream.id}`);
     },
     { errorToast: "Failed to start stream" },
   );
@@ -348,7 +348,7 @@ function LiveStreamRowActions({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => router.push(`/live-stream/${stream.id}`)}
+            onClick={() => navigate(`/live-stream/${stream.id}`)}
           >
             Watch
           </Button>

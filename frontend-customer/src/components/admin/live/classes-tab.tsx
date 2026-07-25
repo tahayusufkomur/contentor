@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Play, Square, Video, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
   MediaBrowser,
   type MediaBrowserHandle,
@@ -373,12 +373,12 @@ function LiveClassRowActions({
   onEdit: () => void;
   onStopped: () => void;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { run: handleStart, loading: starting } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/live/${lc.id}/start/`, { method: "POST" });
-      router.push(`/live/${lc.id}`);
+      navigate(`/live/${lc.id}`);
     },
     { errorToast: "Failed to start live class" },
   );
@@ -413,7 +413,7 @@ function LiveClassRowActions({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => router.push(`/live/${lc.id}`)}
+            onClick={() => navigate(`/live/${lc.id}`)}
           >
             Join
           </Button>

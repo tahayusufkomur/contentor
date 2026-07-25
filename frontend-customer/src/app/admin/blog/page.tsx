@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Newspaper, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +23,11 @@ import { GenerateDialog } from "@/components/admin/blog/generate-dialog";
 import { AutopilotCard } from "@/components/admin/blog/autopilot-card";
 import { PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export default function BlogListPage() {
   const t = useTranslations("admin");
-  const router = useRouter();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPostAdmin[] | null>(null);
   const [status, setStatus] = useState<BlogAiStatus | null>(null);
   const [showGenerate, setShowGenerate] = useState(false);
@@ -48,7 +48,7 @@ export default function BlogListPage() {
   const { run: handleNewPost, loading: creating } = useAsyncAction(
     async () => {
       const post = await createPost({ title: t("blog.untitled") });
-      router.push(`/admin/blog/${post.id}`);
+      navigate(`/admin/blog/${post.id}`);
     },
     { errorToast: t("blog.errGeneric") },
   );
@@ -146,7 +146,7 @@ export default function BlogListPage() {
           onClose={() => setShowGenerate(false)}
           onGenerated={(post) => {
             setShowGenerate(false);
-            router.push(`/admin/blog/${post.id}`);
+            navigate(`/admin/blog/${post.id}`);
           }}
         />
       )}

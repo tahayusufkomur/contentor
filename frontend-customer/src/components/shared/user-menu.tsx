@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { ChevronUp, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +16,7 @@ export function UserMenu({
   collapsed?: boolean;
 }) {
   const router = useRouter();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -28,7 +30,7 @@ export function UserMenu({
   async function handleSignOut() {
     setSigningOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login?toast=You've+been+logged+out&toast_type=info");
+    navigate("/login?toast=You've+been+logged+out&toast_type=info");
     router.refresh();
   }
 

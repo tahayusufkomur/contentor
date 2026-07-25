@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export default function CallbackPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
 
@@ -29,7 +30,7 @@ export default function CallbackPage() {
             setError("Authentication failed");
             return;
           }
-          router.push("/?toast=Welcome+back!&toast_type=success");
+          navigate("/?toast=Welcome+back!&toast_type=success");
         })
         .catch(() => setError("Network error"));
       return;
@@ -60,12 +61,12 @@ export default function CallbackPage() {
         const role = data.user?.role;
         const dest =
           next ?? (role === "owner" || role === "coach" ? "/admin" : "/");
-        router.push(
+        navigate(
           `${dest}${dest.includes("?") ? "&" : "?"}toast=Welcome+back!&toast_type=success`,
         );
       })
       .catch(() => setError("Network error"));
-  }, [searchParams, router]);
+  }, [searchParams, navigate]);
 
   if (error) {
     return (

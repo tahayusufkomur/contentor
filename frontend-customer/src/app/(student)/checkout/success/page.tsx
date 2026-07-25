@@ -1,13 +1,14 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { clientFetch } from "@/lib/api-client";
 import { clearCart } from "@/lib/cart";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 interface PaymentStatus {
   payment_id: number;
@@ -20,7 +21,7 @@ const POLL_INTERVAL_MS = 2000;
 const MAX_POLLS = 15;
 
 function SuccessInner() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const searchParams = useSearchParams();
   const paymentId = searchParams.get("payment_id");
   const [state, setState] = useState<"polling" | "done" | "pending">("polling");
@@ -83,7 +84,7 @@ function SuccessInner() {
               <p className="text-sm text-muted-foreground">
                 Your purchase is now unlocked.
               </p>
-              <Button onClick={() => router.push("/dashboard")}>
+              <Button onClick={() => navigate("/dashboard")}>
                 Go to my content
               </Button>
             </>
@@ -98,7 +99,7 @@ function SuccessInner() {
               </p>
               <Button
                 variant="outline"
-                onClick={() => router.push("/dashboard")}
+                onClick={() => navigate("/dashboard")}
               >
                 Go to dashboard
               </Button>
