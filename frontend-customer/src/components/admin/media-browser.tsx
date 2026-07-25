@@ -24,6 +24,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { StaleContainer } from "@/components/ui/stale-container";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -159,6 +160,7 @@ function MediaBrowserInner<T>(
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState("");
   const [ordering, setOrdering] = useState(defaultSort);
@@ -258,9 +260,12 @@ function MediaBrowserInner<T>(
     async (reset: boolean) => {
       if (reset) {
         offsetRef.current = 0;
-        // Only show skeleton loading on the very first load
+        // First load blanks to a skeleton; every later refinement (search,
+        // sort, filter) keeps the current rows and dims them instead.
         if (!hasLoadedOnce.current) {
           setLoading(true);
+        } else {
+          setRefreshing(true);
         }
         clearSelection();
       } else {
@@ -292,6 +297,7 @@ function MediaBrowserInner<T>(
         toast.error("Could not load items. Please try again.");
       } finally {
         setLoading(false);
+        setRefreshing(false);
         setLoadingMore(false);
       }
     },
@@ -607,98 +613,102 @@ function MediaBrowserInner<T>(
       {toolbar}
       {selectionBar}
 
-      {view === "gallery" && galleryEnabled ? (
-        <div className={cn("grid gap-4", CELL_GRID[cellSize])}>
-          {items.map((item, i) => {
-            const id = getItemId?.(item);
-            const isSelected =
-              selectAllMode || (id !== undefined && selectedIds.has(id));
-            const isFading = id !== undefined && fadingIds.has(id);
-            return (
-              <div
-                key={id ?? i}
-                className={cn(
-                  "relative transition-all duration-300",
-                  isFading && "scale-95 opacity-0",
-                )}
-              >
-                {selectable && id !== undefined && (
-                  <div className="absolute left-2 top-2 z-10">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleSelect(id)}
-                      className="h-5 w-5 border-2 bg-background/80 backdrop-blur-sm"
-                    />
-                  </div>
-                )}
+      <StaleContainer pending={refreshing}>
+        {view === "gallery" && galleryEnabled ? (
+          <div className={cn("grid gap-4", CELL_GRID[cellSize])}>
+            {items.map((item, i) => {
+              const id = getItemId?.(item);
+              const isSelected =
+                selectAllMode || (id !== undefined && selectedIds.has(id));
+              const isFading = id !== undefined && fadingIds.has(id);
+              return (
                 <div
-                  className={cn(isSelected && "ring-2 ring-primary rounded-lg")}
+                  key={id ?? i}
+                  className={cn(
+                    "relative transition-all duration-300",
+                    isFading && "scale-95 opacity-0",
+                  )}
                 >
-                  {renderGalleryItem
-                    ? renderGalleryItem(item, isSelected)
-                    : null}
+                  {selectable && id !== undefined && (
+                    <div className="absolute left-2 top-2 z-10">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelect(id)}
+                        className="h-5 w-5 border-2 bg-background/80 backdrop-blur-sm"
+                      />
+                    </div>
+                  )}
+                  <div
+                    className={cn(
+                      isSelected && "ring-2 ring-primary rounded-lg",
+                    )}
+                  >
+                    {renderGalleryItem
+                      ? renderGalleryItem(item, isSelected)
+                      : null}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {selectable && (
-                  <TableHead className="w-10">
-                    <Checkbox
-                      checked={
-                        selectAllMode
-                          ? true
-                          : indeterminate
-                            ? "indeterminate"
-                            : allVisibleSelected
-                      }
-                      onCheckedChange={selectAllVisible}
-                    />
-                  </TableHead>
-                )}
-                {listColumns.map((col) => (
-                  <TableHead key={col.key}>{col.label}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item, i) => {
-                const id = getItemId?.(item);
-                const isSelected =
-                  selectAllMode || (id !== undefined && selectedIds.has(id));
-                const isFading = id !== undefined && fadingIds.has(id);
-                return (
-                  <Fragment key={id ?? i}>
-                    <TableRow
-                      className={cn(
-                        "transition-all duration-300",
-                        isSelected && "bg-muted/50",
-                        isFading && "opacity-0 scale-y-0 h-0",
-                      )}
-                    >
-                      {selectable && id !== undefined && (
-                        <td className="px-4 py-2">
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={() => toggleSelect(id)}
-                          />
-                        </td>
-                      )}
-                      {renderListRow(item)}
-                    </TableRow>
-                    {renderExpandedRow?.(item)}
-                  </Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              );
+            })}
+          </div>
+        ) : (
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {selectable && (
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          selectAllMode
+                            ? true
+                            : indeterminate
+                              ? "indeterminate"
+                              : allVisibleSelected
+                        }
+                        onCheckedChange={selectAllVisible}
+                      />
+                    </TableHead>
+                  )}
+                  {listColumns.map((col) => (
+                    <TableHead key={col.key}>{col.label}</TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item, i) => {
+                  const id = getItemId?.(item);
+                  const isSelected =
+                    selectAllMode || (id !== undefined && selectedIds.has(id));
+                  const isFading = id !== undefined && fadingIds.has(id);
+                  return (
+                    <Fragment key={id ?? i}>
+                      <TableRow
+                        className={cn(
+                          "transition-all duration-300",
+                          isSelected && "bg-muted/50",
+                          isFading && "opacity-0 scale-y-0 h-0",
+                        )}
+                      >
+                        {selectable && id !== undefined && (
+                          <td className="px-4 py-2">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleSelect(id)}
+                            />
+                          </td>
+                        )}
+                        {renderListRow(item)}
+                      </TableRow>
+                      {renderExpandedRow?.(item)}
+                    </Fragment>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </StaleContainer>
 
       {/* sentinel for infinite scroll */}
       <div ref={sentinelRef} className="h-1" />
