@@ -1,10 +1,10 @@
 import { SkeletonPageHeader, SkeletonForm } from "@/components/ui/skeletons";
 
-export default function SettingsLoading() {
+export default function ContactLoading() {
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="container mx-auto space-y-6 px-4 py-12">
       <SkeletonPageHeader />
-      <SkeletonForm fields={2} />
+      <SkeletonForm />
     </div>
   );
 }

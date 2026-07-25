@@ -5,9 +5,9 @@ import {
 
 export default function DashboardLoading() {
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-6 py-28">
+    <div className="container mx-auto space-y-6 px-4 py-8">
       <SkeletonPageHeader />
-      <SkeletonCardGrid withImage={false} />
+      <SkeletonCardGrid />
     </div>
   );
 }
