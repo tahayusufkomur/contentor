@@ -24,6 +24,8 @@ from .wizard import (
     wizard_compose,
     wizard_finalize,
     wizard_provision,
+    wizard_site_edit_apply,
+    wizard_site_edit_preview,
     wizard_state,
 )
 from .wizard_followups import wizard_describe_followups
@@ -49,6 +51,8 @@ urlpatterns = [
     path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
     path("wizard/provision/", wizard_provision, name="wizard-provision"),
     path("wizard/compose/", wizard_compose, name="wizard-compose"),
+    path("wizard/site-edit/preview/", wizard_site_edit_preview, name="wizard-site-edit-preview"),
+    path("wizard/site-edit/apply/", wizard_site_edit_apply, name="wizard-site-edit-apply"),
     path("wizard/content/course-outlines/", wizard_course_outlines, name="wizard-course-outlines"),
     path("wizard/content/course/", wizard_create_course, name="wizard-create-course"),
     path("wizard/content/event/", wizard_create_event, name="wizard-create-event"),

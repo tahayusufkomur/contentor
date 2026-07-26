@@ -6,12 +6,15 @@ Public views MUST keep @authentication_classes([]) (project rule).
 """
 
 import logging
+from decimal import Decimal
 
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, renderer_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from apps.billing.providers import ProviderError, get_provider
+from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
 
 from . import wizard_catalog
 
@@ -20,6 +23,11 @@ logger = logging.getLogger(__name__)
 #: Provisioning states in which the wizard is still being filled in. See the
 #: PATCH guard in wizard_state for why 'provisioned' belongs here.
 WIZARD_OPEN_STATUSES = ("pending", "provisioned")
+
+#: The reveal grants this many free site-edit applies before the Phase-2
+#: monthly plan quota (site_ai.availability) would take over — the magic
+#: moment must never paywall the first experience.
+REVEAL_FREE_APPLIES = 3
 
 
 @api_view(["GET"])
@@ -315,3 +323,66 @@ def wizard_checkout_sync(request):
                 tenant = type(tenant).objects.get(pk=tenant.pk)
                 logger.info("wizard checkout synced slug=%s", tenant.slug)
     return Response(_state_body(tenant))
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@renderer_classes([JSONRenderer, EventStreamRenderer])
+def wizard_site_edit_preview(request):
+    """Stream a proposed site edit for the coach's natural-language
+    instruction. Free — only Apply consumes a reveal allowance. USD is
+    charged on every attempt (kill-switch integrity) regardless of outcome."""
+    from apps.core.onboarding import site_ai
+
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err:
+        return err
+    instruction = (request.data.get("instruction") or "").strip()[:400]
+
+    def frames():
+        yield sse_frame({"type": "phase", "phase": "thinking"})
+        cost = Decimal("0")
+        try:
+            pages, extras, cost = site_ai.preview_edit(tenant, instruction)
+            yield sse_frame({"type": "done", "pages": pages})
+        except Exception:
+            logger.exception("wizard site-edit preview failed slug=%s", tenant.slug)
+            yield sse_frame({"type": "error", "source": "error"})
+        finally:
+            site_ai.record_attempt_cost(tenant.schema_name, cost)
+
+    return stream_response(frames())
+
+
+def _apply_last_preview(tenant, pages):
+    from apps.core.onboarding import site_ai
+
+    site_ai.apply_edit(tenant, pages)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def wizard_site_edit_apply(request):
+    """Persist the last-previewed pages, decrementing the reveal's 3 free
+    applies. 402 (not a hard block — Publish stays available) once spent;
+    the Phase-2 admin Site AI enforces the monthly plan quota separately."""
+    from apps.core.onboarding import site_ai
+
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err:
+        return err
+    state = dict(tenant.wizard_state or {})
+    used = int(state.get("reveal_applies_used", 0))
+    if used >= REVEAL_FREE_APPLIES:
+        return Response({"detail": "reveal_quota_exhausted", "remaining": 0}, status=402)
+
+    _apply_last_preview(tenant, request.data.get("pages") or {})
+    site_ai.record_update(tenant.schema_name)
+
+    state["reveal_applies_used"] = used + 1
+    tenant.wizard_state = state
+    tenant.save(update_fields=["wizard_state"])
+    logger.info("wizard site-edit applied slug=%s remaining=%d", tenant.slug, REVEAL_FREE_APPLIES - (used + 1))
+    return Response({"remaining": REVEAL_FREE_APPLIES - (used + 1)})
