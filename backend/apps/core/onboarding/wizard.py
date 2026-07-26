@@ -368,9 +368,15 @@ def _apply_last_preview(tenant, pages):
 def wizard_site_edit_apply(request):
     """Persist the last-previewed pages, decrementing the reveal's single free
     apply. 402 (not a hard block — Publish stays available) once spent; the
-    admin Site AI panel enforces the monthly plan quota separately."""
-    from apps.core.onboarding import site_ai
+    admin Site AI panel enforces the monthly plan quota separately.
 
+    Deliberately does NOT call site_ai.record_update(): that increments
+    updates_used, the SAME counter site_ai.availability() reads for the paid
+    admin panel's monthly quota. The reveal's one free apply is tracked
+    entirely by wizard_state["reveal_applies_used"] below and must stay
+    outside that meter — otherwise using the reveal's free apply would show
+    up as spent allowance in the coach's own /admin/site-ai panel.
+    """
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err:
         return err
@@ -380,7 +386,6 @@ def wizard_site_edit_apply(request):
         return Response({"detail": "reveal_quota_exhausted", "remaining": 0}, status=402)
 
     _apply_last_preview(tenant, request.data.get("pages") or {})
-    site_ai.record_update(tenant.schema_name)
 
     state["reveal_applies_used"] = used + 1
     tenant.wizard_state = state
