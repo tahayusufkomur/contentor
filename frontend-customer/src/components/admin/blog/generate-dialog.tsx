@@ -1,20 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Sparkles, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
+import { AiDraftPreview, AiProgress } from "@/components/ui/ai-progress";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { isAbortError } from "@/lib/ai-stream";
 import {
   type BlogPostAdmin,
+  type DraftPreview,
+  type GenerateResponse,
   type TopicIdea,
   dismissTopic,
-  generatePost,
+  generatePostStream,
   listTopics,
   refillTopics,
 } from "@/lib/blog-api";
@@ -31,6 +35,9 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
   const [customTopic, setCustomTopic] = useState("");
   const [instructions, setInstructions] = useState("");
+  const [phase, setPhase] = useState<string | null>(null);
+  const [preview, setPreview] = useState<DraftPreview | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,11 +66,33 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
   const { run: handleGenerate, loading: generating } = useAsyncAction(
     async () => {
       if (!selectedTopicId && !customTopic.trim()) return;
-      const res = await generatePost({
-        topic_id: selectedTopicId ?? undefined,
-        custom_topic: selectedTopicId ? undefined : customTopic.trim(),
-        instructions: instructions.trim() || undefined,
-      });
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setPhase(null);
+      setPreview(null);
+      let res: GenerateResponse;
+      try {
+        res = await generatePostStream(
+          {
+            topic_id: selectedTopicId ?? undefined,
+            custom_topic: selectedTopicId ? undefined : customTopic.trim(),
+            instructions: instructions.trim() || undefined,
+          },
+          { onPhase: setPhase, onPreview: setPreview },
+          controller.signal,
+        );
+      } catch (err) {
+        // The coach hit Cancel. The server has already committed the credit
+        // (it does so at the first preview), so this is an outcome to report,
+        // not a failure to retry.
+        if (isAbortError(err)) {
+          toast.info(t("blog.cancelled"));
+          return;
+        }
+        throw err;
+      } finally {
+        abortRef.current = null;
+      }
       if (res.source === "ai" && res.post) {
         onGenerated(res.post);
         return;
@@ -78,6 +107,12 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
     },
     { errorToast: t("blog.errGeneric") },
   );
+
+  const phases = [
+    { key: "preparing", label: t("blog.phasePreparing") },
+    { key: "drafting", label: t("blog.phaseDrafting") },
+    { key: "rendering", label: t("blog.phaseRendering") },
+  ];
 
   return (
     <ModalPortal>
@@ -105,12 +140,19 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
           </div>
 
           {generating ? (
-            <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <Sparkles className="h-6 w-6 animate-pulse text-primary" />
-              <p className="text-sm text-muted-foreground">
-                {t("blog.generating")}
-              </p>
-            </div>
+            <AiProgress
+              phases={phases}
+              currentPhase={phase}
+              onCancel={() => abortRef.current?.abort()}
+              cancelNote={t("blog.cancelKeepsCredit")}
+            >
+              {preview && (
+                <AiDraftPreview
+                  title={preview.title}
+                  headings={preview.headings}
+                />
+              )}
+            </AiProgress>
           ) : (
             <>
               {topics === null ? (

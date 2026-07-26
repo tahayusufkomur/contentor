@@ -7,15 +7,17 @@ from django.core.cache import cache
 from django.db import connection
 from django.db.models import Sum
 from django.http import StreamingHttpResponse
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
 from apps.accounts.models import User
 from apps.billing.models import Payment
 from apps.core import assistant
+from apps.core.ai_sse import EventStreamRenderer, stream_response, wants_stream
 from apps.core.email import send_email
 from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
@@ -210,7 +212,11 @@ def logo_ai_status(request):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
+@renderer_classes([JSONRenderer, EventStreamRenderer])
 def logo_converse(request):
+    """One Design-with-AI turn. With ``Accept: text/event-stream`` the same
+    call streams its progress (designing → illustrating → tracing) instead of
+    blocking silently; the wizard and any other client keep the JSON shape."""
     tenant = connection.tenant
     data = request.data if isinstance(request.data, dict) else {}
     config = TenantConfig.objects.first()
@@ -222,6 +228,8 @@ def logo_converse(request):
         "style_chips": ", ".join(str(c)[:20] for c in (raw_brief.get("style_chips") or [])[:3]),
         "vibe": str(raw_brief.get("vibe") or "")[:200],
     }
+    if wants_stream(request):
+        return stream_response(logo_api.converse_stream(tenant, brief, data))
     return Response(logo_api.converse(tenant, brief, data))
 
 

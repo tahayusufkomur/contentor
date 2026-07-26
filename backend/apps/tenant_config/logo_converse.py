@@ -38,6 +38,7 @@ from .logo_ai import (
 logger = logging.getLogger(__name__)
 
 STAGES = ("icon", "name", "tagline")
+MAX_PREVIEW_CONCEPTS = 6
 
 _SESSION_FRAME = """You are a senior brand-identity designer in a LIVE
 working session with a coach (they sell courses and community under this
@@ -323,26 +324,29 @@ def _pinned_reference_designs(pinned):
     return out
 
 
-def apply_image_marks(result):
-    """Icon-stage post-step (generate -> vectorize): draw each candidate's
-    image_prompt with the image model, trace it, and swap the traced paths
-    into the design. Per-candidate fail-open — any generation/trace/
-    validation failure leaves that candidate on its authored paths; a turn
-    never comes back blank because of the image path. Always strips
-    image_prompt from the payload. Gemini attempt cost is folded into
-    result.cost_usd so the view's existing record_attempt_cost covers image
-    spend under the same budget kill-switch."""
+def apply_image_marks_stream(result):
+    """Generator form of apply_image_marks: yields ("phase", name) at each
+    real step, then exactly one ("result", result).
+
+    Both entry points share this body so the blocking and streamed turns
+    cannot diverge on the fail-open behaviour described below."""
     prompts = [design.pop("image_prompt", "") for design in result.designs]
     if not logo_image.enabled():
-        return result
+        yield ("result", result)
+        return
     indexed = [(i, prompt) for i, prompt in enumerate(prompts) if prompt]
     missing = [i for i, prompt in enumerate(prompts) if not prompt]
     if missing:
         logger.info("logo image marks: candidates %s: no image_prompt from the model — authored paths kept", missing)
     if not indexed:
-        return result
+        yield ("result", result)
+        return
+
+    yield ("phase", "illustrating")
     images, cost = logo_image.generate_mark_images([prompt for _, prompt in indexed])
     result.cost_usd = (result.cost_usd or Decimal("0")) + cost
+
+    yield ("phase", "tracing")
     for (i, _), png in zip(indexed, images, strict=False):
         if not png:
             logger.warning("logo image marks: candidate %d: generation failed — authored paths kept", i)
@@ -359,7 +363,22 @@ def apply_image_marks(result):
             )
         else:
             logger.info("logo image marks: candidate %d: trace rejected — authored paths kept", i)
-    return result
+    yield ("result", result)
+
+
+def apply_image_marks(result):
+    """Icon-stage post-step (generate -> vectorize): draw each candidate's
+    image_prompt with the image model, trace it, and swap the traced paths
+    into the design. Per-candidate fail-open — any generation/trace/
+    validation failure leaves that candidate on its authored paths; a turn
+    never comes back blank because of the image path. Always strips
+    image_prompt from the payload. Gemini attempt cost is folded into
+    result.cost_usd so the view's existing record_attempt_cost covers image
+    spend under the same budget kill-switch."""
+    for kind, value in apply_image_marks_stream(result):
+        if kind == "result":
+            return value
+    return result  # pragma: no cover - the generator always yields a result
 
 
 def _user_content(brief, transcript, pinned, message):
@@ -382,6 +401,41 @@ def _user_content(brief, transcript, pinned, message):
     return "\n\n".join(parts)
 
 
+def _turn_preview(snapshot):
+    """Partial turn dict -> the progress payload the studio chat renders, or
+    None when nothing is showable yet.
+
+    The coach reads `message` (the assistant's reply) and the per-candidate
+    `concept` lines — enough to tell whether the model understood the brief
+    while the far slower image + trace steps are still ahead."""
+    raw = snapshot.get("designs")
+    concepts = (
+        [str(d.get("concept") or "") for d in raw if isinstance(d, dict)][:MAX_PREVIEW_CONCEPTS]
+        if isinstance(raw, list)
+        else []
+    )
+    message = str(snapshot.get("message") or "")[:600]
+    if not message and not concepts:
+        return None
+    return {"message": message, "concepts": concepts}
+
+
+def _finish_turn(stage, parsed, cost, pinned):
+    """Everything after the model call, shared by both turn paths: yields
+    ("phase", name) for the icon stage's image work, then exactly one
+    ("result", TurnResult).
+
+    Deliberately starts AFTER the provider call so the blocking path keeps
+    using core_ai.structured() — routing it through the streaming provider
+    would change the wizard's behaviour (and its cli-provider fallback) for
+    no benefit, since nothing is watching it."""
+    result = _validate_turn(stage, parsed, cost)
+    if stage != "icon":
+        yield ("result", _stamp_pinned_traced_mark(pinned, result))
+        return
+    yield from apply_image_marks_stream(result)
+
+
 def converse_turn(stage, brief, transcript, pinned, message):
     """Pass A: one structured call -> validated TurnResult. Raises
     ConverseError (carrying billed cost) on failure."""
@@ -398,8 +452,46 @@ def converse_turn(stage, brief, transcript, pinned, message):
         )
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
-    result = _validate_turn(stage, parsed, cost)
-    return apply_image_marks(result) if stage == "icon" else _stamp_pinned_traced_mark(pinned, result)
+    for kind, value in _finish_turn(stage, parsed, cost, pinned):
+        if kind == "result":
+            return value
+    raise ConverseError("turn produced no result")  # pragma: no cover
+
+
+def converse_turn_stream(stage, brief, transcript, pinned, message):
+    """Streaming twin of converse_turn. Yields ("phase", name) and
+    ("preview", dict) as the turn forms, then exactly one ("result",
+    TurnResult). Raises ConverseError, like converse_turn.
+
+    The icon stage is the slow one: after the design call it generates a mark
+    image per candidate and vectorizes it, so "designing" is only the first
+    of three real steps the coach waits through."""
+    if stage not in _STAGE_PROMPTS:
+        raise ValueError(f"unknown stage: {stage}")
+    prompt, output_model = _STAGE_PROMPTS[stage]
+    parsed = cost = None
+
+    yield ("phase", "designing")
+    try:
+        for kind, value in core_ai.structured_stream(
+            system=prompt,
+            user=_user_content(brief, transcript, pinned, message),
+            output_model=output_model,
+            model=settings.LOGO_AI_MODEL,
+            max_tokens=6000,
+        ):
+            if kind == "partial":
+                preview = _turn_preview(value)
+                if preview:
+                    yield ("preview", preview)
+            elif kind == "done":
+                parsed, cost, _ = value
+    except core_ai.AiError as exc:
+        raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
+    if parsed is None:
+        raise ConverseError("stream ended without a turn")
+
+    yield from _finish_turn(stage, parsed, cost, pinned)
 
 
 class RefineCritiqueResult:

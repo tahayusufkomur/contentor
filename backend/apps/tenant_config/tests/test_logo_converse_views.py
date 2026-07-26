@@ -1,10 +1,13 @@
 """Design-with-AI conversation endpoints: paid-tier gate, per-tenant monthly
-turn quota, Redis draft cache + vision critique (finish), and the global
-budget kill-switch. The AI passes are always monkeypatched via
-``logo_converse.converse_turn`` / ``critique_turn`` — no real network access.
+turn quota, Redis draft cache + vision critique (finish), the global budget
+kill-switch, and the streamed-progress shape. The AI passes are always
+monkeypatched via ``logo_converse.converse_turn`` / ``converse_turn_stream``
+/ ``critique_turn`` — no real network access.
 """
 
 import base64
+import contextlib
+import json as _json
 from decimal import Decimal
 
 import pytest
@@ -294,3 +297,113 @@ class TestConverseFinish:
         coach_client.post(FINISH_URL, {"token": draft["token"], "images": [DATA_URL]}, format="json")
         row = logo_ai.tenant_usage(paid_tenant.schema_name, month=logo_ai._current_month())
         assert row.turns_used == 1
+
+
+# ── Streamed turns (Accept: text/event-stream) ──────────────────────────────
+# The blocking shape above stays the wizard's contract; these cover the
+# progress stream and when the turn meter commits.
+
+
+def _sse_frames(response):
+    body = b"".join(response.streaming_content).decode()
+    return [_json.loads(line[len("data: ") :]) for line in body.splitlines() if line.startswith("data: ")]
+
+
+def _stream_post(coach_client, payload=None):
+    return coach_client.post(URL, payload or PAYLOAD, format="json", HTTP_ACCEPT="text/event-stream")
+
+
+def _fake_turn_stream(*, previews=(), result=_FAKE_TURN, error=None):
+    def _gen(*args, **kwargs):
+        yield ("phase", "designing")
+        for p in previews:
+            yield ("preview", p)
+        if error is not None:
+            raise error
+        yield ("phase", "illustrating")
+        yield ("phase", "tracing")
+        yield ("result", result)
+
+    return _gen
+
+
+class TestConverseStream:
+    def _anthropic(self, settings):
+        settings.AI_PROVIDER = "anthropic"
+        settings.ANTHROPIC_API_KEY = "k"
+
+    def test_emits_phases_previews_then_done(self, coach_client, paid_tenant, settings, monkeypatch):
+        self._anthropic(settings)
+        previews = [{"message": "Trying a leaf mark", "concepts": ["Minimal leaf"]}]
+        monkeypatch.setattr(logo_converse, "converse_turn_stream", _fake_turn_stream(previews=previews))
+        frames = _sse_frames(_stream_post(coach_client))
+
+        assert [f["type"] for f in frames] == ["phase", "preview", "phase", "phase", "done"]
+        assert [f.get("phase") for f in frames if f["type"] == "phase"] == [
+            "designing",
+            "illustrating",
+            "tracing",
+        ]
+        assert frames[1]["concepts"] == ["Minimal leaf"]
+        done = frames[-1]
+        assert done["source"] == "ai" and done["phase"] == "draft" and done["token"]
+        assert done["designs"] == _FAKE_TURN.designs
+        usage = LogoAiUsage.objects.get(tenant_schema=SHARED_SCHEMA, month=MONTH)
+        assert usage.turns_used == 1 and usage.usd_spent == Decimal("0.02")
+
+    def test_charges_turn_on_first_preview_not_completion(self, coach_client, paid_tenant, settings, monkeypatch):
+        """Abuse guard: on the icon stage the costly image+trace work happens
+        AFTER the preview, so bailing once the concepts look wrong has already
+        spent real money. It must still cost a turn."""
+        self._anthropic(settings)
+
+        def _abandon(*a, **k):
+            yield ("phase", "designing")
+            yield ("preview", {"message": "hm", "concepts": ["Nope"]})
+            raise GeneratorExit
+
+        monkeypatch.setattr(logo_converse, "converse_turn_stream", _abandon)
+        with contextlib.suppress(GeneratorExit):
+            _sse_frames(_stream_post(coach_client))
+
+        assert LogoAiUsage.objects.get(tenant_schema=SHARED_SCHEMA, month=MONTH).turns_used == 1
+
+    def test_failure_before_output_charges_cost_not_turn(self, coach_client, paid_tenant, settings, monkeypatch):
+        self._anthropic(settings)
+        err = logo_converse.ConverseError("provider down", cost_usd=Decimal("0.01"))
+        monkeypatch.setattr(logo_converse, "converse_turn_stream", _fake_turn_stream(error=err))
+        frames = _sse_frames(_stream_post(coach_client))
+
+        assert frames[-1]["type"] == "error" and frames[-1]["source"] == "error"
+        usage = LogoAiUsage.objects.get(tenant_schema=SHARED_SCHEMA, month=MONTH)
+        assert usage.turns_used == 0 and usage.usd_spent == Decimal("0.01")
+
+    def test_gating_streams_a_done_frame(self, coach_client, paid_tenant, settings, monkeypatch):
+        """Guards run before any model call. Unlike blog (which answers plain
+        JSON), the studio chat always reads a stream here, so the gated body
+        rides in a done frame — one shape for the client to handle."""
+        settings.AI_PROVIDER = "anthropic"
+        settings.ANTHROPIC_API_KEY = ""
+        called = []
+        monkeypatch.setattr(logo_converse, "converse_turn_stream", lambda *a, **k: called.append(1) or iter(()))
+        frames = _sse_frames(_stream_post(coach_client))
+
+        assert frames == [
+            {
+                "type": "done",
+                "phase": "final",
+                "message": "",
+                "designs": [],
+                "turns_remaining": 0,
+                "source": "disabled",
+            }
+        ]
+        assert called == []
+
+    def test_sets_no_buffering_headers(self, coach_client, paid_tenant, settings, monkeypatch):
+        self._anthropic(settings)
+        monkeypatch.setattr(logo_converse, "converse_turn_stream", _fake_turn_stream())
+        res = _stream_post(coach_client)
+        assert res["Content-Type"] == "text/event-stream"
+        assert res["X-Accel-Buffering"] == "no" and res["Cache-Control"] == "no-cache"
+        b"".join(res.streaming_content)

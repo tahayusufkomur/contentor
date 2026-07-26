@@ -11,15 +11,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, RefreshCw, Send, Sparkles } from "lucide-react";
+import { AiDraftPreview, AiProgress } from "@/components/ui/ai-progress";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { isAbortError } from "@/lib/ai-stream";
 import { deriveAiBannerState } from "@/lib/logo/ai-banner";
 import type { ChatEvent, ChatState } from "@/lib/logo/chat-state";
 import {
   fetchConverseFinish,
-  fetchConverseTurn,
+  fetchConverseTurnStream,
   type ConverseTurnResponse,
   type LogoAiStatus,
+  type TurnPreview,
 } from "@/lib/logo/converse-api";
 import {
   composeConverseDesign,
@@ -48,6 +51,14 @@ const NOTICES: Record<ConverseTurnResponse["source"], string> = {
   error: "Couldn't design that turn — try again.",
   draft: "",
   ai: "",
+};
+
+// Server phase key -> what the coach sees. Keys come from
+// backend/apps/tenant_config/logo_converse.py (converse_turn_stream).
+const TURN_PHASE_LABELS: Record<string, string> = {
+  designing: "Sketching concepts",
+  illustrating: "Drawing the marks",
+  tracing: "Converting to vectors",
 };
 
 // The coach's Describe-step text becomes the first turn's message; a blank
@@ -197,6 +208,23 @@ export function StudioChat({
 }: StudioChatProps) {
   const [input, setInput] = useState("");
   const [describeInput, setDescribeInput] = useState(seedPrompt ?? "");
+  const [phase, setPhase] = useState<string | null>(null);
+  const [seenPhases, setSeenPhases] = useState<string[]>([]);
+  const [preview, setPreview] = useState<TurnPreview | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Only the icon stage runs the image + trace steps, and even there they're
+  // skipped when image generation is off or the model returned no prompt. So
+  // the rows are built from phases the server actually announced rather than
+  // a fixed list — no step is ever shown that won't happen.
+  const trackPhase = (next: string) => {
+    setPhase(next);
+    setSeenPhases((prev) => (prev.includes(next) ? prev : [...prev, next]));
+  };
+  const turnPhases = seenPhases.map((key) => ({
+    key,
+    label: TURN_PHASE_LABELS[key] ?? key,
+  }));
   const bannerState = deriveAiBannerState({ status });
   const turnsRemaining = status?.turns_remaining ?? 0;
   const step = activeStep(state);
@@ -213,24 +241,36 @@ export function StudioChat({
 
   async function runTurn(text: string) {
     dispatch({ type: "user_message", text });
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setPhase(null);
+    setSeenPhases([]);
+    setPreview(null);
     try {
-      const resp = await fetchConverseTurn({
-        stage: state.stage,
-        brief: {
-          niche: brief.niche,
-          style_chips: brief.styleChips,
-          vibe: brief.vibe ?? "",
+      const resp = await fetchConverseTurnStream(
+        {
+          stage: state.stage,
+          brief: {
+            niche: brief.niche,
+            style_chips: brief.styleChips,
+            vibe: brief.vibe ?? "",
+          },
+          transcript: state.messages.map((m) => ({
+            role: m.role,
+            text: m.text,
+          })),
+          pinned: {
+            mark_elements: state.pinnedIcon?.elements,
+            // Traced (image-derived) paths can't be recompiled from elements —
+            // the backend inherits them verbatim when the elements match.
+            mark_paths: state.pinnedIcon?.paths,
+            lockup: state.pinnedLockup ?? undefined,
+          },
+          message: text,
         },
-        transcript: state.messages.map((m) => ({ role: m.role, text: m.text })),
-        pinned: {
-          mark_elements: state.pinnedIcon?.elements,
-          // Traced (image-derived) paths can't be recompiled from elements —
-          // the backend inherits them verbatim when the elements match.
-          mark_paths: state.pinnedIcon?.paths,
-          lockup: state.pinnedLockup ?? undefined,
-        },
-        message: text,
-      });
+        { onPhase: trackPhase, onPreview: setPreview },
+        controller.signal,
+      );
       onStatusChange(resp.turns_remaining);
       if (resp.source !== "ai") {
         dispatch({ type: "turn_failed", notice: NOTICES[resp.source] });
@@ -273,11 +313,17 @@ export function StudioChat({
           designs: resp.designs,
         });
       }
-    } catch {
+    } catch (err) {
+      // The coach hit Cancel. The turn is already committed server-side (at
+      // the first preview), so say so rather than implying it was free.
       dispatch({
         type: "turn_failed",
-        notice: "Couldn't reach the design studio just now.",
+        notice: isAbortError(err)
+          ? "Cancelled — that used one of your design turns."
+          : "Couldn't reach the design studio just now.",
       });
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -432,18 +478,28 @@ export function StudioChat({
               )}
 
               {busy ? (
-                <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {state.status === "reviewing" ? (
+                state.status === "reviewing" ? (
+                  // Pass B (vision critique) is a separate, short request with
+                  // no server-side steps to report — a plain spinner is honest.
+                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Spinner size="sm" />
-                  ) : (
-                    // Decorative "AI is thinking" pulse, not a skeleton
-                    // placeholder — intentionally left as animate-pulse.
-                    <Sparkles className="h-4 w-4 animate-pulse text-primary" />
-                  )}
-                  {state.status === "reviewing"
-                    ? "Reviewing its own work…"
-                    : "Designing…"}
-                </p>
+                    Reviewing its own work…
+                  </p>
+                ) : (
+                  <AiProgress
+                    phases={turnPhases}
+                    currentPhase={phase}
+                    onCancel={() => abortRef.current?.abort()}
+                    cancelNote="Cancelling still uses 1 turn."
+                  >
+                    {preview && (
+                      <AiDraftPreview
+                        title={preview.message}
+                        headings={preview.concepts}
+                      />
+                    )}
+                  </AiProgress>
+                )
               ) : candidates?.designs.length ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {candidates.designs.map((design, di) => (

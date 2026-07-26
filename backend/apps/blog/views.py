@@ -2,15 +2,19 @@
 
 import logging
 import uuid
+from decimal import Decimal
 
 from django.db import connection
+from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import generics, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
+from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response, wants_stream
 from apps.core.permissions import IsCoachOrOwner
 from apps.media.models import Photo
 
@@ -98,40 +102,31 @@ def blog_ai_status(request):
     return Response(ai.availability(connection.tenant))
 
 
-@api_view(["POST"])
-@permission_classes([IsCoachOrOwner])
-def blog_generate(request):
-    """One gated AI call -> a draft BlogPost. Response always has a body:
-    {post, source, remaining} — source mirrors the Brand Pack reasons."""
-    tenant = connection.tenant
-    status = ai.availability(tenant)
-    if status["reason"]:
-        return Response({"post": None, "source": status["reason"], "remaining": status["remaining"]})
+def _guard_response(wants_stream, payload, status_code=200):
+    """Pre-stream guards answer in plain JSON even for a streaming request —
+    nothing has been generated yet, so there is no stream to frame. The
+    frontend reader checks content-type and handles the JSON shape."""
+    if wants_stream:
+        return JsonResponse(payload, status=status_code)
+    return Response(payload, status=status_code)
 
+
+def _generate_inputs(request):
+    """Shared request parsing -> (topic, topic_obj, instructions, photos).
+    ``topic`` is "" when the caller supplied neither a topic id nor text."""
     data = request.data if isinstance(request.data, dict) else {}
     topic_obj = None
     if data.get("topic_id"):
         topic_obj = BlogTopicIdea.objects.filter(pk=data["topic_id"], status="available").first()
     topic = (topic_obj.title if topic_obj else str(data.get("custom_topic") or ""))[:200]
-    if not topic:
-        return Response({"post": None, "source": "error", "remaining": status["remaining"]}, status=400)
     instructions = str(data.get("instructions") or "")[:500]
     photos = list(Photo.objects.order_by("-created_at")[: ai.MAX_AVAILABLE_PHOTOS])
     photos += curated.curated_candidates(topic, limit=ai.MAX_AVAILABLE_PHOTOS - len(photos))
+    return topic, topic_obj, instructions, photos
 
-    try:
-        result = ai.generate_post(_brief_for_current_tenant(), topic, instructions, photos=photos)
-    except ai.BlogAiError as exc:
-        ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
-        logger.exception("blog generate failed")
-        return Response({"post": None, "source": "error", "remaining": status["remaining"]})
-    except Exception:
-        ai.record_attempt_cost(tenant.schema_name, 0)
-        logger.exception("blog generate: AI call failed")
-        return Response({"post": None, "source": "error", "remaining": status["remaining"]})
 
-    ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
-    ai.record_success(tenant.schema_name)
+def _persist_draft(request, result, topic_obj):
+    """DraftResult -> saved draft BlogPost. Shared by both response shapes."""
     fields = dict(result.fields)
     curated.resolve_curated_photo_ids(fields)
     cover_photo_id = fields.pop("cover_photo_id", "")
@@ -146,6 +141,106 @@ def blog_generate(request):
     )
     if topic_obj:
         BlogTopicIdea.objects.filter(pk=topic_obj.pk).update(status="used")
+    return post
+
+
+def _generate_sse(request, tenant, status, topic, topic_obj, instructions, photos):
+    """SSE frames for one streamed generation: phase → preview* → done.
+
+    Quota is charged the moment the model produces its first output, NOT on
+    completion. Cancelling, closing the tab and losing the connection all
+    land after that instant, so all three consume a slot exactly like a
+    finished post. Charging on completion instead would make "watch the
+    title appear, cancel, retry" a free reroll — and the live preview is
+    precisely what makes that reroll worth doing — so the meter has to
+    commit as soon as the coach has seen anything.
+
+    A provider failure BEFORE any output still charges nothing: the coach saw
+    no draft, so commit() never ran. USD lands in the finally block; a stream
+    aborted mid-flight has no usage object to read and so accrues 0, which is
+    why quota (not budget) is the meter that actually caps abuse here."""
+    committed = False
+    cost = Decimal("0")
+
+    def commit():
+        nonlocal committed
+        if not committed:
+            committed = True
+            ai.record_success(tenant.schema_name)
+
+    try:
+        yield sse_frame({"type": "phase", "phase": "preparing"})
+        for kind, value in ai.generate_post_stream(_brief_for_current_tenant(), topic, instructions, photos=photos):
+            if kind == "phase":
+                yield sse_frame({"type": "phase", "phase": value})
+            elif kind == "preview":
+                commit()
+                yield sse_frame({"type": "preview", **value})
+            elif kind == "result":
+                commit()
+                cost = value.cost_usd
+                post = _persist_draft(request, value, topic_obj)
+                yield sse_frame(
+                    {
+                        "type": "done",
+                        "post": BlogPostAdminSerializer(post).data,
+                        "source": "ai",
+                        "remaining": status["remaining"] - 1,
+                    }
+                )
+    except ai.BlogAiError as exc:
+        cost = exc.cost_usd
+        logger.exception("blog generate (stream) failed")
+        yield sse_frame({"type": "error", "source": "error"})
+    except Exception:
+        logger.exception("blog generate (stream): AI call failed")
+        yield sse_frame({"type": "error", "source": "error"})
+    finally:
+        # Also runs on GeneratorExit (client disconnect), which is the whole
+        # point — an abandoned stream still accrues what it spent.
+        ai.record_attempt_cost(tenant.schema_name, cost)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@renderer_classes([JSONRenderer, EventStreamRenderer])
+def blog_generate(request):
+    """One gated AI call -> a draft BlogPost. Response always has a body:
+    {post, source, remaining} — source mirrors the Brand Pack reasons.
+
+    With ``Accept: text/event-stream`` the same call streams its progress
+    instead (see _generate_sse). Content negotiation rather than a second
+    route keeps the availability guards and quota accounting single-sourced;
+    the autopilot Celery task and existing clients keep the JSON shape."""
+    tenant = connection.tenant
+    streaming = wants_stream(request)
+    status = ai.availability(tenant)
+    if status["reason"]:
+        return _guard_response(streaming, {"post": None, "source": status["reason"], "remaining": status["remaining"]})
+
+    topic, topic_obj, instructions, photos = _generate_inputs(request)
+    if not topic:
+        return _guard_response(
+            streaming, {"post": None, "source": "error", "remaining": status["remaining"]}, status_code=400
+        )
+
+    if streaming:
+        return stream_response(_generate_sse(request, tenant, status, topic, topic_obj, instructions, photos))
+
+    try:
+        result = ai.generate_post(_brief_for_current_tenant(), topic, instructions, photos=photos)
+    except ai.BlogAiError as exc:
+        ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
+        logger.exception("blog generate failed")
+        return Response({"post": None, "source": "error", "remaining": status["remaining"]})
+    except Exception:
+        ai.record_attempt_cost(tenant.schema_name, 0)
+        logger.exception("blog generate: AI call failed")
+        return Response({"post": None, "source": "error", "remaining": status["remaining"]})
+
+    ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
+    ai.record_success(tenant.schema_name)
+    post = _persist_draft(request, result, topic_obj)
     return Response({"post": BlogPostAdminSerializer(post).data, "source": "ai", "remaining": status["remaining"] - 1})
 
 

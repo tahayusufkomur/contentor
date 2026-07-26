@@ -19,6 +19,7 @@ from django.conf import settings
 from django.core.cache import cache
 
 from apps.core import ai as core_ai
+from apps.core.ai_sse import sse_frame
 
 from . import logo_ai
 from . import logo_converse as logo_converse_mod
@@ -80,21 +81,21 @@ def _cache_draft(tenant, kind, stage, result):
     return token
 
 
-def converse(tenant, brief, data):
-    """Pass A of a Design-with-AI turn. Returns a draft + token when the
-    provider supports vision (the client renders and calls finish/), or a
-    final response on the cli provider. Always a non-empty JSON body."""
-    month = logo_ai._current_month()
+def _converse_guards(tenant, data, month):
+    """Shared preflight -> (gated_body, params); exactly one is non-None.
+
+    Runs before any model call so the streaming path can answer a gated turn
+    with plain JSON, exactly like the blocking one."""
     empty = {"phase": "final", "message": "", "designs": [], "turns_remaining": 0}
 
     if not core_ai.available()[0]:
-        return {**empty, "source": "disabled"}
+        return {**empty, "source": "disabled"}, None
     if not tenant.has_paid_platform_plan:
-        return {**empty, "source": "upgrade_required"}
+        return {**empty, "source": "upgrade_required"}, None
 
     stage = data.get("stage")
     if stage not in logo_converse_mod.STAGES:
-        return {**empty, "source": "error"}
+        return {**empty, "source": "error"}, None
     transcript = [m for m in (data.get("transcript") or []) if isinstance(m, dict)][:12]
     pinned = data.get("pinned") if isinstance(data.get("pinned"), dict) else {}
     message = str(data.get("message") or "")[:500]
@@ -102,13 +103,47 @@ def converse(tenant, brief, data):
     usage = logo_ai.tenant_usage(tenant.schema_name, month=month)
     turns_remaining = max(0, settings.LOGO_AI_MONTHLY_TURN_LIMIT - usage.turns_used)
     if turns_remaining <= 0:
-        return {**empty, "source": "quota_exhausted"}
+        return {**empty, "source": "quota_exhausted"}, None
     if logo_ai.global_spend(month=month) >= Decimal(str(settings.LOGO_AI_MONTHLY_BUDGET_USD)):
         logger.warning("logo converse: monthly budget kill-switch tripped (%s)", month)
-        return {**empty, "source": "disabled", "turns_remaining": turns_remaining}
+        return {**empty, "source": "disabled", "turns_remaining": turns_remaining}, None
+
+    return None, {
+        "stage": stage,
+        "transcript": transcript,
+        "pinned": pinned,
+        "message": message,
+        "turns_remaining": turns_remaining,
+        "empty": empty,
+    }
+
+
+def _converse_body(tenant, result, params):
+    body = {
+        "message": result.message,
+        "designs": result.designs,
+        "turns_remaining": params["turns_remaining"] - 1,
+        "source": "ai",
+    }
+    if core_ai.supports_vision():
+        return {**body, "phase": "draft", "token": _cache_draft(tenant, "converse", params["stage"], result)}
+    return {**body, "phase": "final"}
+
+
+def converse(tenant, brief, data):
+    """Pass A of a Design-with-AI turn. Returns a draft + token when the
+    provider supports vision (the client renders and calls finish/), or a
+    final response on the cli provider. Always a non-empty JSON body."""
+    month = logo_ai._current_month()
+    gated, params = _converse_guards(tenant, data, month)
+    if gated is not None:
+        return gated
+    empty, turns_remaining = params["empty"], params["turns_remaining"]
 
     try:
-        result = logo_converse_mod.converse_turn(stage, brief, transcript, pinned, message)
+        result = logo_converse_mod.converse_turn(
+            params["stage"], brief, params["transcript"], params["pinned"], params["message"]
+        )
     except logo_converse_mod.ConverseError as exc:
         logo_ai.record_attempt_cost(tenant.schema_name, exc.cost_usd, month=month)
         logger.exception("logo converse: turn failed")
@@ -120,15 +155,59 @@ def converse(tenant, brief, data):
 
     logo_ai.record_attempt_cost(tenant.schema_name, result.cost_usd, month=month)
     logo_ai.record_successful_turn(tenant.schema_name, month=month)
-    body = {
-        "message": result.message,
-        "designs": result.designs,
-        "turns_remaining": turns_remaining - 1,
-        "source": "ai",
-    }
-    if core_ai.supports_vision():
-        return {**body, "phase": "draft", "token": _cache_draft(tenant, "converse", stage, result)}
-    return {**body, "phase": "final"}
+    return _converse_body(tenant, result, params)
+
+
+def converse_stream(tenant, brief, data):
+    """Streamed Pass A: yields SSE frames (phase → preview* → done) for the
+    same turn `converse` produces.
+
+    Metering matches the blog stream: the turn is committed the moment the
+    model emits its first preview, so cancelling or dropping the connection
+    consumes a turn exactly like a completed one. Without that, watching the
+    concepts appear and bailing would be a free reroll — and on the icon
+    stage the expensive image + trace work happens AFTER the preview, so a
+    cancel there genuinely has cost the platform money."""
+    month = logo_ai._current_month()
+    gated, params = _converse_guards(tenant, data, month)
+    if gated is not None:
+        yield sse_frame({"type": "done", **gated})
+        return
+    empty, turns_remaining = params["empty"], params["turns_remaining"]
+
+    committed = False
+    cost = Decimal("0")
+
+    def commit():
+        nonlocal committed
+        if not committed:
+            committed = True
+            logo_ai.record_successful_turn(tenant.schema_name, month=month)
+
+    try:
+        for kind, value in logo_converse_mod.converse_turn_stream(
+            params["stage"], brief, params["transcript"], params["pinned"], params["message"]
+        ):
+            if kind == "phase":
+                yield sse_frame({"type": "phase", "phase": value})
+            elif kind == "preview":
+                commit()
+                yield sse_frame({"type": "preview", **value})
+            elif kind == "result":
+                commit()
+                cost = value.cost_usd or Decimal("0")
+                yield sse_frame({"type": "done", **_converse_body(tenant, value, params)})
+    except logo_converse_mod.ConverseError as exc:
+        cost = exc.cost_usd or Decimal("0")
+        logger.exception("logo converse (stream): turn failed")
+        yield sse_frame({"type": "error", **empty, "source": "error", "turns_remaining": turns_remaining})
+    except Exception:
+        logger.exception("logo converse (stream): AI call failed")
+        yield sse_frame({"type": "error", **empty, "source": "error", "turns_remaining": turns_remaining})
+    finally:
+        # Also runs on GeneratorExit (client disconnect) so an abandoned turn
+        # still accrues its spend against the budget kill-switch.
+        logo_ai.record_attempt_cost(tenant.schema_name, cost, month=month)
 
 
 def _decode_images(raw):

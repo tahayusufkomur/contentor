@@ -27,6 +27,7 @@ PROMPT_VERSION = 2
 MAX_OUTPUT_TOKENS = 3000
 TOPIC_MAX_OUTPUT_TOKENS = 1200
 MAX_AVAILABLE_PHOTOS = 30
+MAX_PREVIEW_HEADINGS = 12
 
 # ── Output contracts ─────────────────────────────────────────────────────────
 
@@ -199,21 +200,19 @@ class DraftResult:
         self.cost_usd = cost_usd
 
 
-def generate_post(brief, topic, instructions="", photos=()):
-    """ONE model call -> BlogPost-ready field dict. Slug and status are
-    intentionally absent (callers re-derive the slug via models.unique_slug
-    and decide status). Raises BlogAiError on failure."""
-    photo_list = list(photos)
-    valid_ids = {str(p.id) for p in photo_list}
+def _draft_prompt(brief, topic, instructions, photo_list):
     user_prompt = f"{brief}\n\nWrite a blog post about: {topic}"
     if instructions:
         user_prompt += f"\n\nThe coach's extra instructions: {instructions[:500]}"
     photos_block = available_photos_block(photo_list)
     if photos_block:
         user_prompt += f"\n\n{photos_block}"
-    parsed, cost, effective_model = _call_structured(
-        BLOG_STATIC_PROMPT, user_prompt, _BlogDraft, settings.BLOG_AI_MODEL, MAX_OUTPUT_TOKENS
-    )
+    return user_prompt
+
+
+def _draft_fields(parsed, valid_ids, effective_model, cost):
+    """Validated _BlogDraft -> BlogPost-ready field dict. Shared by the
+    blocking and streaming paths so the two cannot drift."""
     body_html = render_body(parsed.sections)
     if not body_html.strip():
         raise BlogAiError("model returned an empty post", cost_usd=cost)
@@ -221,19 +220,86 @@ def generate_post(brief, topic, instructions="", photos=()):
     image_placements = [
         {"heading": s.heading, "photo_id": s.photo_id} for s in parsed.sections if s.photo_id in valid_ids
     ][:2]
-    return DraftResult(
-        {
-            "title": str(parsed.title)[:200],
-            "body_html": body_html,
-            "excerpt": str(parsed.excerpt)[:300],
-            "meta_description": str(parsed.meta_description)[:170],
-            "tags": [str(t).lower()[:30] for t in parsed.tags[:6]],
-            "ai_model": effective_model,
-            "cover_photo_id": cover_photo_id,
-            "image_placements": image_placements,
-        },
-        cost,
+    return {
+        "title": str(parsed.title)[:200],
+        "body_html": body_html,
+        "excerpt": str(parsed.excerpt)[:300],
+        "meta_description": str(parsed.meta_description)[:170],
+        "tags": [str(t).lower()[:30] for t in parsed.tags[:6]],
+        "ai_model": effective_model,
+        "cover_photo_id": cover_photo_id,
+        "image_placements": image_placements,
+    }
+
+
+def _draft_preview(snapshot):
+    """Partial _BlogDraft dict -> the small payload the generate dialog
+    renders while waiting, or None when nothing is showable yet.
+
+    Headings only, never body prose: the point is to show the shape of the
+    post forming (and let the coach bail on a bad title early), not to
+    stream a firehose of markdown the dialog would have to lay out."""
+    raw = snapshot.get("sections")
+    headings = (
+        [str(s.get("heading") or "") for s in raw if isinstance(s, dict)][:MAX_PREVIEW_HEADINGS]
+        if isinstance(raw, list)
+        else []
     )
+    title = str(snapshot.get("title") or "")[:200]
+    if not title and not headings:
+        return None
+    return {"title": title, "excerpt": str(snapshot.get("excerpt") or "")[:300], "headings": headings}
+
+
+def generate_post(brief, topic, instructions="", photos=()):
+    """ONE model call -> BlogPost-ready field dict. Slug and status are
+    intentionally absent (callers re-derive the slug via models.unique_slug
+    and decide status). Raises BlogAiError on failure."""
+    photo_list = list(photos)
+    valid_ids = {str(p.id) for p in photo_list}
+    parsed, cost, effective_model = _call_structured(
+        BLOG_STATIC_PROMPT,
+        _draft_prompt(brief, topic, instructions, photo_list),
+        _BlogDraft,
+        settings.BLOG_AI_MODEL,
+        MAX_OUTPUT_TOKENS,
+    )
+    return DraftResult(_draft_fields(parsed, valid_ids, effective_model, cost), cost)
+
+
+def generate_post_stream(brief, topic, instructions="", photos=()):
+    """Streaming twin of generate_post. Yields ("phase", name) and
+    ("preview", dict) as the draft forms, then exactly one ("result",
+    DraftResult). Raises BlogAiError on failure, like generate_post.
+
+    On the cli provider no previews arrive (that provider cannot stream), so
+    consumers see phases only and fall back to an indeterminate wait."""
+    photo_list = list(photos)
+    valid_ids = {str(p.id) for p in photo_list}
+    parsed = cost = effective_model = None
+
+    yield ("phase", "drafting")
+    try:
+        for kind, value in core_ai.structured_stream(
+            system=BLOG_STATIC_PROMPT,
+            user=_draft_prompt(brief, topic, instructions, photo_list),
+            output_model=_BlogDraft,
+            model=settings.BLOG_AI_MODEL,
+            max_tokens=MAX_OUTPUT_TOKENS,
+        ):
+            if kind == "partial":
+                preview = _draft_preview(value)
+                if preview:
+                    yield ("preview", preview)
+            elif kind == "done":
+                parsed, cost, effective_model = value
+    except core_ai.AiError as exc:
+        raise BlogAiError(str(exc), cost_usd=exc.cost_usd) from exc
+    if parsed is None:
+        raise BlogAiError("stream ended without a draft")
+
+    yield ("phase", "rendering")
+    yield ("result", DraftResult(_draft_fields(parsed, valid_ids, effective_model, cost), cost))
 
 
 def generate_topics(brief, existing_titles=()):

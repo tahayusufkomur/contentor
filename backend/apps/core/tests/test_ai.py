@@ -4,6 +4,7 @@
 import json as _json
 import subprocess as _subprocess
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 from pydantic import BaseModel
@@ -417,3 +418,133 @@ class TestStructuredMessages:
         )
         assert parsed.text == "ok"
         assert captured["messages"] is msgs
+
+
+# ── _partial_json() / structured_stream() ───────────────────────────────────
+# With output_format= the model emits ONE text block of JSON, so the SDK fires
+# TextEvent (never InputJsonEvent) and the snapshot is a raw, usually
+# truncated, JSON *string*. These cover the repair that turns it into a
+# progress payload.
+
+
+class TestPartialJson:
+    @pytest.mark.parametrize(
+        ("fragment", "expected"),
+        [
+            ('{"title": "Why consist', {"title": "Why consist"}),
+            ('{"title": "Done", "slug":', {"title": "Done"}),  # dangling key
+            ('{"title": "A", "tags": ["one", "tw', {"title": "A", "tags": ["one", "tw"]}),
+            ('{"title": "A", "sections": [{"heading": "Intro"}, ', {"title": "A", "sections": [{"heading": "Intro"}]}),
+            ('{"title": "He said \\"hi', {"title": 'He said "hi'}),
+            ('{"title": "trailing\\\\', {"title": "trailing\\"}),
+        ],
+    )
+    def test_repairs_truncated_objects(self, fragment, expected):
+        assert ai._partial_json(fragment) == expected
+
+    @pytest.mark.parametrize("fragment", ["{", "", "not json", "[1, 2]"])
+    def test_unparseable_fragments_yield_empty(self, fragment):
+        assert ai._partial_json(fragment) == {}
+
+
+def _fake_stream_client(monkeypatch, snapshots, final):
+    """Stand in for client.messages.stream(output_format=…): TextEvents
+    carrying accumulated JSON strings, then a parsed final message."""
+
+    class _Event:
+        type = "text"
+
+        def __init__(self, snapshot):
+            self.snapshot = snapshot
+
+    class _Stream:
+        kwargs = {}
+
+        def __iter__(self):
+            return iter([_Event(s) for s in snapshots])
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def get_final_message(self):
+            return final
+
+    class _Messages:
+        def stream(self, **kwargs):
+            _Stream.kwargs = kwargs
+            return _Stream()
+
+    class _Client:
+        messages = _Messages()
+
+    monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
+    return _Stream
+
+
+class TestStructuredStream:
+    def _final(self, parsed=None, usage=None):
+        block = SimpleNamespace(parsed_output=parsed if parsed is not None else _Echo(text="ok"))
+        return SimpleNamespace(content=[block], usage=usage or _Usage(inp=1_000_000))
+
+    def test_yields_partials_then_done(self, settings, monkeypatch):
+        settings.AI_PROVIDER = "anthropic"
+        monkeypatch.setattr(ai, "PARTIAL_MIN_INTERVAL_SECONDS", 0)
+        stream = _fake_stream_client(monkeypatch, ['{"text": "par', '{"text": "partial"}'], self._final())
+        events = list(
+            ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64)
+        )
+        assert events[0] == ("partial", {"text": "par"})
+        assert events[1] == ("partial", {"text": "partial"})
+        kind, (parsed, cost, model) = events[-1]
+        assert kind == "done" and parsed.text == "ok" and model == "claude-sonnet-5"
+        assert cost == Decimal("2")
+        assert stream.kwargs["output_format"] is _Echo
+        assert stream.kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_throttles_partials(self, settings, monkeypatch):
+        """A 3000-token draft fires hundreds of deltas; repairing and shipping
+        every one is wasted work the UI cannot use."""
+        settings.AI_PROVIDER = "anthropic"
+        _fake_stream_client(monkeypatch, ['{"text": "a', '{"text": "ab', '{"text": "abc"}'], self._final())
+        events = list(
+            ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64)
+        )
+        # Default interval (0.4s) is far longer than this loop takes, so only
+        # the first snapshot gets through.
+        assert [k for k, _ in events] == ["partial", "done"]
+
+    def test_missing_parsed_output_raises_with_cost(self, settings, monkeypatch):
+        settings.AI_PROVIDER = "anthropic"
+        final = SimpleNamespace(content=[SimpleNamespace(parsed_output=None)], usage=_Usage(inp=1_000_000))
+        _fake_stream_client(monkeypatch, [], final)
+        with pytest.raises(ai.AiError, match="no parsed output") as exc:
+            list(ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64))
+        assert exc.value.cost_usd == Decimal("2")
+
+    def test_provider_failure_raises_ai_error(self, settings, monkeypatch):
+        settings.AI_PROVIDER = "anthropic"
+
+        class _Client:
+            class messages:  # noqa: N801
+                @staticmethod
+                def stream(**kwargs):
+                    raise RuntimeError("connection reset")
+
+        monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
+        with pytest.raises(ai.AiError, match="anthropic stream failed"):
+            list(ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64))
+
+    def test_cli_provider_yields_done_only(self, settings, monkeypatch):
+        """The cli provider cannot stream, so callers degrade to an
+        indeterminate wait instead of breaking."""
+        _cli_settings(settings)
+        envelope = _json.dumps({"type": "result", "result": '{"text": "ok"}'})
+        monkeypatch.setattr("subprocess.run", lambda *a, **kw: _completed(stdout=envelope))
+        events = list(
+            ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64)
+        )
+        assert [k for k, _ in events] == ["done"]
+        assert events[0][1][0].text == "ok"

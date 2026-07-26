@@ -2,6 +2,8 @@
 transitions, autopilot next_run computation. Auth as a coach/owner user —
 mirrors the fixture pattern in apps/tenant_config/tests/test_logo_ai_views.py."""
 
+import contextlib
+import json
 from decimal import Decimal
 from unittest import mock
 
@@ -271,3 +273,120 @@ def test_admin_placements_validated(coach_client, paid_tenant):
         format="json",
     )
     assert bad.status_code == 400
+
+
+# ── Streamed generation (Accept: text/event-stream) ─────────────────────────
+# The blocking path above stays the contract for the autopilot task; these
+# cover the progress stream and, critically, WHEN the quota meter commits.
+
+
+def _sse_frames(response):
+    """Drain a StreamingHttpResponse into parsed event dicts."""
+    body = b"".join(response.streaming_content).decode()
+    return [json.loads(line[len("data: ") :]) for line in body.splitlines() if line.startswith("data: ")]
+
+
+def _stream_post(coach_client, body):
+    return coach_client.post("/api/v1/admin/blog/generate/", body, format="json", HTTP_ACCEPT="text/event-stream")
+
+
+def _fake_stream(*, previews=(), result=None, error=None):
+    def _gen(*args, **kwargs):
+        yield ("phase", "drafting")
+        for p in previews:
+            yield ("preview", p)
+        if error is not None:
+            raise error
+        yield ("phase", "rendering")
+        yield ("result", result)
+
+    return _gen
+
+
+def test_stream_emits_phases_previews_then_done(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    previews = [{"title": "Morning Habits", "excerpt": "", "headings": ["Intro"]}]
+    with mock.patch.object(ai, "generate_post_stream", _fake_stream(previews=previews, result=_draft_result())):
+        frames = _sse_frames(_stream_post(coach_client, {"custom_topic": "habits"}))
+
+    assert [f["type"] for f in frames] == ["phase", "phase", "preview", "phase", "done"]
+    assert frames[2]["title"] == "Morning Habits" and frames[2]["headings"] == ["Intro"]
+    done = frames[-1]
+    assert done["source"] == "ai" and done["post"]["id"]
+    assert BlogPost.objects.get(pk=done["post"]["id"]).source == "ai"
+    assert ai.tenant_usage(paid_tenant.schema_name).generations_used == 1
+
+
+def test_stream_charges_quota_on_first_preview_not_completion(coach_client, paid_tenant, settings):
+    """The abuse guard: a coach who watches the title land and then bails has
+    still spent a slot, so 'reroll until the title looks good' is not free."""
+    settings.ANTHROPIC_API_KEY = "test-key"
+    previews = [{"title": "Peek", "excerpt": "", "headings": []}]
+
+    def _abandon_after_preview(*args, **kwargs):
+        yield ("phase", "drafting")
+        yield ("preview", previews[0])
+        raise GeneratorExit  # the client hung up mid-stream
+
+    with mock.patch.object(ai, "generate_post_stream", _abandon_after_preview), contextlib.suppress(GeneratorExit):
+        _sse_frames(_stream_post(coach_client, {"custom_topic": "habits"}))
+
+    assert ai.tenant_usage(paid_tenant.schema_name).generations_used == 1
+    assert BlogPost.objects.count() == 0
+
+
+def test_stream_failure_before_any_output_charges_cost_not_quota(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    err = ai.BlogAiError("provider down", cost_usd=Decimal("0.02"))
+    with mock.patch.object(ai, "generate_post_stream", _fake_stream(error=err)):
+        frames = _sse_frames(_stream_post(coach_client, {"custom_topic": "habits"}))
+
+    assert frames[-1] == {"type": "error", "source": "error"}
+    usage = ai.tenant_usage(paid_tenant.schema_name)
+    assert usage.usd_spent == Decimal("0.02") and usage.generations_used == 0
+
+
+def test_stream_gating_stays_plain_json(coach_client, free_tenant):
+    """Guards run before the stream opens, so a blocked coach gets the same
+    JSON body as the non-streaming path — no SSE, nothing to parse."""
+    res = _stream_post(coach_client, {"custom_topic": "habits"})
+    assert res.status_code == 200
+    assert res["Content-Type"] == "application/json"
+    assert json.loads(res.content)["source"] == "upgrade_required"
+
+
+def test_stream_sets_no_buffering_headers(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with mock.patch.object(ai, "generate_post_stream", _fake_stream(result=_draft_result())):
+        res = _stream_post(coach_client, {"custom_topic": "habits"})
+        assert res["Content-Type"] == "text/event-stream"
+        assert res["X-Accel-Buffering"] == "no" and res["Cache-Control"] == "no-cache"
+        b"".join(res.streaming_content)
+
+
+def test_stream_marks_topic_used(coach_client, paid_tenant, settings):
+    settings.ANTHROPIC_API_KEY = "test-key"
+    topic = BlogTopicIdea.objects.create(title="Sleep myths", angle="")
+    with mock.patch.object(ai, "generate_post_stream", _fake_stream(result=_draft_result())):
+        _sse_frames(_stream_post(coach_client, {"topic_id": topic.id}))
+    topic.refresh_from_db()
+    assert topic.status == "used"
+
+
+def test_stream_done_frame_serializes_uuid_fields(coach_client, paid_tenant, settings):
+    """Regression: the done frame ships serializer output, which carries the
+    cover photo's UUID. Plain json.dumps refuses UUIDs, so a post WITH a cover
+    used to fail mid-stream after a successful 45s generation (caught against
+    the live dev stack, not by the earlier tests — their fixture had no
+    cover)."""
+    from apps.media.models import Photo
+
+    settings.ANTHROPIC_API_KEY = "test-key"
+    photo = Photo.objects.create(s3_key="k.png", title="Cover")
+    result = _draft_result(cover_photo_id=str(photo.id))
+    with mock.patch.object(ai, "generate_post_stream", _fake_stream(result=result)):
+        frames = _sse_frames(_stream_post(coach_client, {"custom_topic": "habits"}))
+
+    done = frames[-1]
+    assert done["type"] == "done"
+    assert done["post"]["cover_photo"] is not None

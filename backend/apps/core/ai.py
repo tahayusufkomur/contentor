@@ -20,9 +20,11 @@ fragment the Anthropic cache per tenant).
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
+import time
 from decimal import Decimal
 
 from django.conf import settings
@@ -198,6 +200,114 @@ def _cli_structured(system, user, output_model, model):
         except (ValueError, ValidationError) as exc:
             last_error = exc
     raise AiError(f"claude CLI output did not match schema: {last_error}") from last_error
+
+
+# ── streamed structured output (progress UI for the long calls) ─────────────
+# structured() blocks for the whole generation — 45s+ for a blog draft — which
+# reads as a hang. structured_stream() is the same call with the intermediate
+# state exposed so the UI can show the artifact forming.
+#
+# With output_format= the model emits ONE text block containing JSON (not a
+# tool_use block), so the SDK fires TextEvent — never InputJsonEvent — and the
+# snapshot is the accumulated JSON *string*, not a parsed object. Partials are
+# therefore repaired-and-parsed here (_partial_json). The final value never
+# comes from that repair: it is the provider's own validated parse.
+
+# Repairing + re-parsing a growing document on every delta is wasted work at
+# 60fps, and the UI cannot use it that fast either.
+PARTIAL_MIN_INTERVAL_SECONDS = 0.4
+
+# A truncated object often ends mid-key (`…, "slug":`), which no amount of
+# bracket-closing makes parseable — drop the dangling pair instead.
+_DANGLING_KEY_RE = re.compile(r',?\s*"(?:[^"\\]|\\.)*"\s*:\s*$')
+
+
+def _partial_json(text):
+    """Best-effort parse of a truncated JSON object -> dict (``{}`` when the
+    fragment is not yet parseable). Closes an open string, drops a dangling
+    key or trailing comma, then closes open containers.
+
+    Progress display only. The authoritative value is the provider's parse."""
+    text = text.strip()
+    if not text.startswith("{"):
+        return {}
+    stack = []
+    in_string = False
+    escaped = False
+    for ch in text:
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == "{":
+            stack.append("}")
+        elif ch == "[":
+            stack.append("]")
+        elif ch in "}]" and stack:
+            stack.pop()
+    # A trailing backslash is the start of an escape whose payload has not
+    # arrived — it would make the closing quote below escape itself.
+    body = text[:-1] if escaped else text
+    if in_string:
+        body += '"'
+    body = _DANGLING_KEY_RE.sub("", body.rstrip()).rstrip().rstrip(",")
+    try:
+        return json.loads(body + "".join(reversed(stack)))
+    except ValueError:
+        return {}
+
+
+def structured_stream(*, system, user, output_model, model, max_tokens):
+    """Streaming twin of structured(). Yields ("partial", dict) as the output
+    forms, then exactly one ("done", (parsed, cost_usd, effective_model)).
+    Raises AiError on provider or schema failure, like structured().
+
+    The cli provider cannot stream (blocking subprocess), so it yields no
+    partials and goes straight to ("done", …) — callers degrade to an
+    indeterminate wait rather than breaking."""
+    if settings.AI_PROVIDER == "cli":
+        yield ("done", _cli_structured(system, user, output_model, model))
+        return
+    yield from _anthropic_structured_stream(system, user, output_model, model, max_tokens)
+
+
+def _anthropic_structured_stream(system, user, output_model, model, max_tokens):
+    client = _anthropic_client()
+    last_emit = 0.0
+    try:
+        with client.messages.stream(
+            model=model,
+            max_tokens=max_tokens,
+            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+            messages=[{"role": "user", "content": user}],
+            output_format=output_model,
+        ) as stream:
+            for event in stream:
+                if event.type != "text":
+                    continue
+                now = time.monotonic()
+                if now - last_emit < PARTIAL_MIN_INTERVAL_SECONDS:
+                    continue
+                last_emit = now
+                snapshot = _partial_json(event.snapshot)
+                if snapshot:
+                    yield ("partial", snapshot)
+            final = stream.get_final_message()
+    except Exception as exc:
+        # Mid-stream failures carry no usage object, so nothing billable is
+        # estimable here — same as the non-streaming path.
+        raise AiError(f"anthropic stream failed: {exc}") from exc
+    cost = estimate_cost(final.usage, model)
+    parsed = next((b.parsed_output for b in final.content if getattr(b, "parsed_output", None) is not None), None)
+    if parsed is None:
+        raise AiError("anthropic stream returned no parsed output", cost_usd=cost)
+    yield ("done", (parsed, cost, model))
 
 
 def supports_vision():

@@ -1,5 +1,6 @@
 // Thin client for the coach blog endpoints (backend/apps/blog). Mirrors
 // brand-pack-api.ts conventions.
+import { type AiStreamHandlers, streamAi } from "@/lib/ai-stream";
 import { clientFetch } from "@/lib/api-client";
 
 export interface ImagePlacement {
@@ -96,6 +97,32 @@ export const generatePost = (body: {
     method: "POST",
     body: JSON.stringify(body),
   });
+/** What the draft looks like so far, mid-generation. Headings only — the
+ * dialog shows the post taking shape, not the prose. */
+export interface DraftPreview {
+  title: string;
+  excerpt: string;
+  headings: string[];
+}
+
+/** Streaming twin of generatePost: same terminal payload, but reports the
+ * draft forming so a 45s wait doesn't read as a hang.
+ *
+ * NOTE: cancelling via `signal` still consumes a generation credit — the
+ * server commits the quota as soon as the first preview lands, so watching
+ * the title and rerolling isn't free. Tell the coach before they cancel. */
+export const generatePostStream = (
+  body: { topic_id?: number; custom_topic?: string; instructions?: string },
+  handlers: AiStreamHandlers<DraftPreview>,
+  signal?: AbortSignal,
+) =>
+  streamAi<GenerateResponse, DraftPreview>(
+    `${BASE}/generate/`,
+    body,
+    handlers,
+    signal,
+  );
+
 export const listTopics = () => clientFetch<TopicIdea[]>(`${BASE}/topics/`);
 export const refillTopics = () =>
   clientFetch<{ topics: TopicIdea[]; source: string }>(`${BASE}/topics/`, {
