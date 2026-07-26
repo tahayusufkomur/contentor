@@ -5,7 +5,8 @@
       "look": "Your look",
       "pages": "Your pages",
       "logo": "Your logo",
-      "launch": "Launch"
+      "launch": "Launch",
+      "content": "Your content"
     },
     "common": {
       "back": "Back",
@@ -16,17 +17,31 @@
       "saving": "Saving…",
       "showAll": "Show all",
       "preview": "Preview",
-      "errors": { "generic": "Something went wrong. Please try again." }
+      "errors": {
+        "generic": "Something went wrong. Please try again."
+      }
     },
     "niche": {
       "heading": "What do you teach?",
       "subhead": "We'll shape your platform around it."
     },
     "niches": {
-      "yoga": { "label": "Yoga", "tagline": "Flows, breathwork, balance" },
-      "pilates": { "label": "Pilates", "tagline": "Core, control, posture" },
-      "fitness": { "label": "Fitness", "tagline": "Strength and conditioning" },
-      "pole_dance": { "label": "Pole Dance", "tagline": "Power meets grace" },
+      "yoga": {
+        "label": "Yoga",
+        "tagline": "Flows, breathwork, balance"
+      },
+      "pilates": {
+        "label": "Pilates",
+        "tagline": "Core, control, posture"
+      },
+      "fitness": {
+        "label": "Fitness",
+        "tagline": "Strength and conditioning"
+      },
+      "pole_dance": {
+        "label": "Pole Dance",
+        "tagline": "Power meets grace"
+      },
       "belly_dance": {
         "label": "Belly Dance",
         "tagline": "Rhythm and expression"
@@ -35,8 +50,14 @@
         "label": "Face Yoga",
         "tagline": "Natural facial fitness"
       },
-      "makeup": { "label": "Makeup", "tagline": "Techniques and artistry" },
-      "general": { "label": "Something else", "tagline": "Your own thing" }
+      "makeup": {
+        "label": "Makeup",
+        "tagline": "Techniques and artistry"
+      },
+      "general": {
+        "label": "Something else",
+        "tagline": "Your own thing"
+      }
     },
     "describe": {
       "heading": "Describe what you do",
@@ -63,6 +84,22 @@
         "send_announcements": "Send announcements & updates"
       }
     },
+    "content": {
+      "provisioning": "Setting up your studio…",
+      "provisioningHint": "This takes a few seconds. Your content will be saved here.",
+      "courseTitle": "Create your first course",
+      "coursePrompt": "Pick a starting point — you can edit everything later.",
+      "courseEmpty": "We couldn't suggest courses right now. You can add one later.",
+      "eventTitle": "Schedule your first event",
+      "eventPrompt": "Give students something to show up for.",
+      "blogTitle": "Publish your first post",
+      "blogPrompt": "A short welcome post helps people find you.",
+      "skip": "I'll do this later",
+      "titleLabel": "Title",
+      "priceLabel": "Price",
+      "dateLabel": "Date and time",
+      "free": "Free"
+    },
     "theme": {
       "heading": "Pick your colors",
       "subhead": "Chosen for your niche — you can change this anytime."
@@ -80,11 +117,26 @@
       "subhead": "How your brand name and headings will read."
     },
     "fonts": {
-      "inter": { "label": "Inter", "vibe": "Clean & modern" },
-      "geist": { "label": "Geist", "vibe": "Sharp & technical" },
-      "poppins": { "label": "Poppins", "vibe": "Bold & geometric" },
-      "nunito": { "label": "Nunito", "vibe": "Friendly & soft" },
-      "dm_sans": { "label": "DM Sans", "vibe": "Neutral & versatile" },
+      "inter": {
+        "label": "Inter",
+        "vibe": "Clean & modern"
+      },
+      "geist": {
+        "label": "Geist",
+        "vibe": "Sharp & technical"
+      },
+      "poppins": {
+        "label": "Poppins",
+        "vibe": "Bold & geometric"
+      },
+      "nunito": {
+        "label": "Nunito",
+        "vibe": "Friendly & soft"
+      },
+      "dm_sans": {
+        "label": "DM Sans",
+        "vibe": "Neutral & versatile"
+      },
       "playfair": {
         "label": "Playfair Display",
         "vibe": "Elegant & editorial"
@@ -93,7 +145,10 @@
         "label": "Merriweather",
         "vibe": "Trustworthy & readable"
       },
-      "lora": { "label": "Lora", "vibe": "Warm & literary" }
+      "lora": {
+        "label": "Lora",
+        "vibe": "Warm & literary"
+      }
     },
     "navbar": {
       "heading": "Pick your menu style",
@@ -115,8 +170,14 @@
         "label": "Image-led",
         "desc": "Full-width photo with your headline"
       },
-      "split": { "label": "Split", "desc": "Headline beside a photo" },
-      "minimal": { "label": "Minimal", "desc": "Just your words, no photo" }
+      "split": {
+        "label": "Split",
+        "desc": "Headline beside a photo"
+      },
+      "minimal": {
+        "label": "Minimal",
+        "desc": "Just your words, no photo"
+      }
     },
     "pages": {
       "subhead": "Two looks — pick the one that feels right.",
@@ -182,7 +243,11 @@
       "pick": "Pick this",
       "useThis": "Use this logo",
       "change": "Design a different one",
-      "stages": { "icon": "Mark", "name": "Lockup", "tagline": "Tagline" },
+      "stages": {
+        "icon": "Mark",
+        "name": "Lockup",
+        "tagline": "Tagline"
+      },
       "thinking": "Designing…",
       "quota": "Monthly design limit reached — you can continue in the Logo Studio after launch."
     },
@@ -224,6 +289,19 @@
       "closedCta": "Go to login",
       "failed": "We couldn't send a link for this signup. Please start again.",
       "startOver": "Start over"
+    },
+    "revealChat": {
+      "title": "Want anything different?",
+      "placeholder": "Tell me what you'd like to change…",
+      "preview": "Preview",
+      "thinking": "Thinking…",
+      "readyHint": "Ready to apply your change.",
+      "apply": "Apply",
+      "applying": "Applying…",
+      "discard": "Discard",
+      "remaining": "Free refinements left: {count}",
+      "exhausted": "You've used your free refinements for now — you can still publish anytime.",
+      "error": "Something went wrong. Please try again."
     }
   }
 }

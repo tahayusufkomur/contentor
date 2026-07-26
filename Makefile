@@ -108,8 +108,9 @@ test-app: ## Run one backend app's tests: make test-app APP=billing
 test-changed: ## Run only tests affected by the git diff (BASE=<ref> to widen, PLAN=1 to preview)
 	python3 scripts/select_tests.py --mode backend $(if $(BASE),--base $(BASE),) $(if $(PLAN),--plan,)
 
-test-frontend: ## Run frontend-customer unit tests (vitest)
+test-frontend: ## Run both frontends' unit tests (vitest)
 	cd frontend-customer && npx vitest run
+	cd frontend-main && npx vitest run
 
 typecheck: ## Typecheck both Next.js apps (tsc --noEmit; covers packages/shared via imports)
 	# Runs inside the containers: packages/shared has no node_modules ancestor

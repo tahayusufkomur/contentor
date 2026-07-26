@@ -16,6 +16,7 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.meta_description || post.excerpt,
+    robots: post.noindex ? { index: false, follow: true } : undefined,
     openGraph: {
       title: post.title,
       description: post.meta_description || post.excerpt,

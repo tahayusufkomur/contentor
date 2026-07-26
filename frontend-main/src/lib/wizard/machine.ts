@@ -10,7 +10,18 @@ export const CHAPTERS = [
   "logo",
   "launch",
 ] as const;
-export type ChapterId = (typeof CHAPTERS)[number];
+
+/** Chapters of the content-first (holdout "treatment") flow. The classic
+ * flow's CHAPTERS is untouched; "content" is added to the shared ChapterId
+ * union so both builders emit the same StepDef shape. */
+export const CONTENT_CHAPTERS = [
+  "business",
+  "content",
+  "logo",
+  "launch",
+] as const;
+
+export type ChapterId = (typeof CHAPTERS)[number] | "content";
 
 export interface StepDef {
   id: string; // e.g. "business.niche", "pages.home", "review"
@@ -59,6 +70,41 @@ export function buildSteps(
   return steps;
 }
 
+const EVENT_GOALS = ["run_live_classes", "in_person_events"];
+
+/** Content-first variant: the coach creates real content during signup instead
+ * of answering design questions. Deliberately shares nothing with buildSteps —
+ * the classic flow must keep working byte-for-byte during the holdout. */
+export function buildContentSteps(
+  catalog: WizardCatalog,
+  answers: WizardAnswers,
+): StepDef[] {
+  void catalog; // symmetry with buildSteps; content steps need no catalog yet
+  const goals = answers.goals ?? [];
+  const steps: StepDef[] = [
+    { id: "business.niche", chapter: "business" },
+    { id: "business.describe", chapter: "business" },
+  ];
+  if ((answers.description_followups?.items?.length ?? 0) > 0) {
+    steps.push({ id: "business.followups", chapter: "business" });
+  }
+  steps.push(
+    { id: "business.goals", chapter: "business" },
+    { id: "content.course", chapter: "content" },
+  );
+  if (goals.some((g) => EVENT_GOALS.includes(g))) {
+    steps.push({ id: "content.event", chapter: "content" });
+  }
+  if (goals.includes("write_blog")) {
+    steps.push({ id: "content.blog", chapter: "content" });
+  }
+  steps.push(
+    { id: "logo", chapter: "logo" },
+    { id: "review", chapter: "launch" },
+  );
+  return steps;
+}
+
 export function stepIndex(steps: StepDef[], id: string): number {
   const idx = steps.findIndex((s) => s.id === id);
   return idx === -1 ? 0 : idx;
@@ -100,6 +146,12 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
       return Boolean(answers.navbar_layout);
     case "look.hero":
       return Boolean(answers.hero_style);
+    case "content.course":
+      return answers.course_created === true;
+    case "content.event":
+      return answers.event_created === true;
+    case "content.blog":
+      return answers.blog_created === true;
     case "logo":
       return Boolean(answers.logo);
     case "review":

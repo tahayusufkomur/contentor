@@ -46,6 +46,7 @@ class Tenant(TenantMixin):
         choices=[
             ("pending", "Pending"),
             ("provisioning", "Provisioning"),
+            ("provisioned", "Schema ready (site not yet composed)"),
             ("ready", "Ready"),
             ("failed", "Failed"),
         ],
@@ -91,6 +92,16 @@ class Tenant(TenantMixin):
             "Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py)."
         ),
     )
+    wizard_bucket = models.CharField(
+        max_length=16,
+        blank=True,
+        default="",
+        help_text=(
+            "A/B holdout bucket ('control' | 'treatment'), assigned once at "
+            "email-verify and never changed. Empty on tenants created before "
+            "the holdout. See apps.core.onboarding.experiments."
+        ),
+    )
     free_blog_grant_used = models.BooleanField(
         default=False,
         help_text="The free plan's one-off AI blog generation has been spent. Lifetime, never reset.",
@@ -102,6 +113,15 @@ class Tenant(TenantMixin):
             "Last wizard drop-off recovery email. NULL = never nudged; the "
             "hourly beat task sends at most one per tenant (filters on NULL), "
             "the manual recover endpoint re-stamps on every re-send."
+        ),
+    )
+    abandon_warned_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "When the final 'your signup will be deleted' warning was sent. "
+            "NULL = not yet warned. Stage 2 of cleanup deletes the tenant "
+            "WIZARD_ABANDON_DELETE_GRACE_DAYS after this timestamp."
         ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -176,6 +196,10 @@ class PlatformPlan(models.Model):
     # Student site-assistant questions included per calendar month; 0 = the
     # assistant is not in the plan (feature is paid-tier only).
     max_student_bot_questions = models.PositiveIntegerField(default=0)
+    # AI site-edit "applies" (Site AI / reveal chat) included per calendar
+    # month (0 = feature not in plan). The reveal itself grants 3 free
+    # applies regardless of this limit (wizard_state counter, not this meter).
+    max_site_ai_updates = models.PositiveIntegerField(default=0)
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     # Multi-currency prices. Shape:
     #   {"USD": {"amount_cents": 1900, "stripe_price_id": "price_..."},
@@ -475,6 +499,29 @@ class OnboardingAiUsage(models.Model):
 
     def __str__(self):
         return f"{self.tenant_schema} {self.month}: {self.composes_used} composes / ${self.usd_spent}"
+
+
+class SiteAiUpdateUsage(models.Model):
+    """Monthly per-tenant accounting for AI site-edit applies (the reveal chat
+    and the Phase-2 admin Site AI). Same contract as BlogAiUsage: DB-backed,
+    usd_spent accrues on every attempt, updates_used only on a successful
+    apply."""
+
+    tenant_schema = models.CharField(max_length=63)
+    month = models.CharField(max_length=7)  # "YYYY-MM"
+    updates_used = models.PositiveIntegerField(default=0)
+    usd_spent = models.DecimalField(max_digits=8, decimal_places=4, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [
+            models.UniqueConstraint(fields=["tenant_schema", "month"], name="uniq_site_ai_usage_tenant_month"),
+        ]
+
+    def __str__(self):
+        return f"{self.tenant_schema} {self.month}: {self.updates_used} updates / ${self.usd_spent}"
 
 
 class PlatformBlogPost(models.Model):

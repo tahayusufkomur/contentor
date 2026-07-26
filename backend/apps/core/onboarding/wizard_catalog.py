@@ -236,6 +236,12 @@ def validate_answers(partial: dict) -> list[str]:
                         errors.append("logo.export_keys must live under wizard/")
             elif recipe is not None:
                 errors.append("logo.recipe is only allowed for ai mode")
+        elif key in ("course_created", "event_created", "blog_created"):
+            # Content-first flow (holdout "treatment"): the coach created that
+            # item during the wizard. Absent = not created; skipping never sets
+            # the flag, so the publish gate still surfaces the gap.
+            if not isinstance(value, bool):
+                errors.append(f"{key} must be a boolean")
         else:
             errors.append(f"unknown answer key '{key}'")
     return errors

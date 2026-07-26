@@ -23,6 +23,9 @@ interface WizardShellProps {
   /** Page-layout steps need room for full-size mockups; list steps read
    * better narrow. The column morphs between the two. */
   wide?: boolean;
+  /** Chapter rail contents. The content-first flow has a different set
+   * (business → content → logo → launch), so it passes CONTENT_CHAPTERS. */
+  chapters?: readonly ChapterId[];
 }
 
 export function WizardShell({
@@ -38,6 +41,7 @@ export function WizardShell({
   footer,
   children,
   wide,
+  chapters = CHAPTERS,
 }: WizardShellProps) {
   const t = useTranslations("wizard");
 
@@ -72,7 +76,7 @@ export function WizardShell({
             </button>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                {CHAPTERS.map((c) => (
+                {chapters.map((c) => (
                   <span
                     key={c}
                     className={`transition-colors duration-500 ${c === chapter ? "text-foreground" : ""}`}

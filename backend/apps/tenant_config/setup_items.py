@@ -100,7 +100,6 @@ def publish_blockers(config, tenant) -> list[str]:
     never satisfy a hard publish requirement.
 
       - ``look``            — a logo/brand is set
-      - ``demo_cleanup``    — demo content removed (only if the tenant was seeded)
       - ``first_course``    — at least one own PUBLISHED course, or own download
       - ``first_event``     — an own live/onsite event, only if the coach's wizard
                               goals ask for one AND their plan entitles them to it
@@ -111,20 +110,26 @@ def publish_blockers(config, tenant) -> list[str]:
     gated on a content type they did not choose, nor on one their plan cannot
     create (the free plan has ``is_live_enabled`` False), which would leave the
     gate permanently unsatisfiable.
+
+    ``demo_cleanup`` is deliberately NOT a blocker (see the AI-seeding plan):
+    seeded content is niche-appropriate AI/starter content the coach may
+    reasonably ship as-is, and registering it as ``SeededObject`` rows must
+    never gate going live. It remains a non-blocking checklist nudge in
+    ``compute_setup_state``.
     """
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
 
     progress = config.setup_progress or {}
     seeded = _seeded_by_label()
-    seeded_rows_exist = any(seeded.values())
-    was_seeded = seeded_rows_exist or getattr(tenant, "template_seed_status", "") == "ready"
 
     blockers = []
     if not (bool(progress.get("look_edited")) or bool(config.logo_id or config.logo_url)):
         blockers.append("look")
-    if was_seeded and seeded_rows_exist:
-        blockers.append("demo_cleanup")
+    # demo_cleanup is NO LONGER a publish blocker: seeded content is now
+    # niche-appropriate AI/starter content (see the AI-seeding plan), which
+    # must never block going live. It remains a non-blocking checklist nudge
+    # ("review your starter content") in compute_setup_state.
     has_own_product = _has_own(
         Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
     ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))

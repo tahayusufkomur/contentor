@@ -31,16 +31,20 @@ def _blog_brief(brief: CoachBrief) -> str:
     )
 
 
-def generate_starter_draft(brief: CoachBrief, tenant_schema: str) -> dict:
+def generate_starter_draft(brief: CoachBrief, tenant_schema: str, *, topic: str | None = None) -> dict:
     """LLM step — safe for provision_tenant's worker thread (public-schema
     reads only). Returns BlogPost-ready fields with curated:<pk> photo ids
     still unresolved. Raises on any provider failure; spend is recorded
-    either way against the onboarding budget."""
+    either way against the onboarding budget.
+
+    ``topic`` defaults to the original single-post welcome topic; callers
+    seeding several posts (the AI-seeding "complete site" pass) pass their
+    own per-index topic instead."""
     from apps.blog import ai as blog_ai
     from apps.core.onboarding import ai_compose
 
     language = "Turkish" if brief.locale == "tr" else "English"
-    topic = f"Welcome to {brief.brand_name or 'my studio'}: what I offer and how to start"
+    topic = topic or f"Welcome to {brief.brand_name or 'my studio'}: what I offer and how to start"
     instructions = (
         f"Write in {language}. This is the coach's very first post, introducing themselves and their "
         f"{brief.niche} practice to brand-new students. In the coach's own words: {brief.description[:300]}"

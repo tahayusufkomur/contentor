@@ -1,5 +1,11 @@
 from django.urls import path
 
+from .content import (
+    wizard_course_outlines,
+    wizard_create_blog,
+    wizard_create_course,
+    wizard_create_event,
+)
 from .recovery import wizard_recover
 from .views import (
     check_brand_name,
@@ -11,7 +17,17 @@ from .views import (
     seed_from_template,
     skip_template,
 )
-from .wizard import wizard_catalog_view, wizard_checkout, wizard_checkout_sync, wizard_finalize, wizard_state
+from .wizard import (
+    wizard_catalog_view,
+    wizard_checkout,
+    wizard_checkout_sync,
+    wizard_compose,
+    wizard_finalize,
+    wizard_provision,
+    wizard_site_edit_apply,
+    wizard_site_edit_preview,
+    wizard_state,
+)
 from .wizard_followups import wizard_describe_followups
 from .wizard_logo import (
     wizard_logo_converse,
@@ -33,6 +49,14 @@ urlpatterns = [
     path("wizard/catalog/", wizard_catalog_view, name="wizard-catalog"),
     path("wizard/state/", wizard_state, name="wizard-state"),
     path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
+    path("wizard/provision/", wizard_provision, name="wizard-provision"),
+    path("wizard/compose/", wizard_compose, name="wizard-compose"),
+    path("wizard/site-edit/preview/", wizard_site_edit_preview, name="wizard-site-edit-preview"),
+    path("wizard/site-edit/apply/", wizard_site_edit_apply, name="wizard-site-edit-apply"),
+    path("wizard/content/course-outlines/", wizard_course_outlines, name="wizard-course-outlines"),
+    path("wizard/content/course/", wizard_create_course, name="wizard-create-course"),
+    path("wizard/content/event/", wizard_create_event, name="wizard-create-event"),
+    path("wizard/content/blog/", wizard_create_blog, name="wizard-create-blog"),
     path("wizard/describe-followups/", wizard_describe_followups, name="wizard-describe-followups"),
     path("wizard/checkout/", wizard_checkout, name="wizard-checkout"),
     path("wizard/checkout/sync/", wizard_checkout_sync, name="wizard-checkout-sync"),

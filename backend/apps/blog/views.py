@@ -84,7 +84,9 @@ class BlogPostAdminViewSet(viewsets.ModelViewSet):
             published_at = timezone.now()
         elif new_status == "draft":
             published_at = None
-        serializer.save(published_at=published_at)
+        # A human reviewed and saved this post -> allow indexing, even if it
+        # arrived as a seeded AI draft.
+        serializer.save(published_at=published_at, noindex=False)
 
 
 def _brief_for_current_tenant():

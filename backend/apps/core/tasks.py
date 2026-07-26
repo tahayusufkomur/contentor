@@ -170,26 +170,36 @@ def _run_ai_step(label, tenant, fn, timeout_seconds):
     return result, "ok"
 
 
+def _gather_content_items(tenant):
+    """Course/download items for the compose brief, read in the caller's
+    tenant_context. Includes PUBLISHED courses — the content-first wizard makes
+    the coach's first course published, and it must feed the composed site.
+    (Classic tenants have only draft demo courses here, so widening the filter
+    is a no-op for them.)"""
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+
+    course_items = tuple(
+        {"id": c.pk, "title": c.title, "description": (c.description or "")[:300]}
+        for c in Course.objects.order_by("id")[:8]
+    )
+    download_items = tuple(
+        {"id": d.pk, "title": d.title, "description": ""} for d in DownloadFile.objects.order_by("id")[:8]
+    )
+    return course_items, download_items
+
+
 def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
     """AI copy pass. Returns (pages, extras, status); falls back to the static
-    pages (extras None) on skip/failure. Draft content is gathered HERE, in
-    the caller's tenant_context — the worker thread's fresh connection lands on
+    pages (extras None) on skip/failure. Content is gathered HERE, in the
+    caller's tenant_context — the worker thread's fresh connection lands on
     the public schema and could not read the tenant's courses/downloads."""
     from apps.core.onboarding import ai_compose
 
     if not ai_compose.compose_available():
         return pages, None, "skipped"
 
-    from apps.courses.models import Course
-    from apps.downloads.models import DownloadFile
-
-    course_items = tuple(
-        {"id": c.pk, "title": c.title, "description": (c.description or "")[:300]}
-        for c in Course.objects.filter(is_published=False).order_by("id")[:8]
-    )
-    download_items = tuple(
-        {"id": d.pk, "title": d.title, "description": ""} for d in DownloadFile.objects.order_by("id")[:8]
-    )
+    course_items, download_items = _gather_content_items(tenant)
 
     def run():
         return ai_compose.compose_pages(
@@ -284,6 +294,71 @@ def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
     return "ok"
 
 
+def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale):
+    """Create the tenant schema, the owner user (public + tenant schema), and a
+    default TenantConfig — and stop. Idempotent: every step reuses existing rows.
+
+    Does NOT seed niche content or AI-compose pages: those are deferred so this
+    can run early (when the coach reaches the wizard content step) to give them
+    a real schema to write content into. On success leaves
+    provisioning_status='provisioned'. Callers that want the full site
+    (provision_tenant) continue from there to seed + compose + 'ready'.
+    """
+    # Create owner in main (public) schema if they don't exist yet.
+    # If they do exist (e.g. they already own a tenant in another region),
+    # do NOT mutate their User.region — it tracks first-signup origin only.
+    # Cross-region isolation is enforced at the Tenant level via JWT claims.
+    from apps.accounts.models import User
+
+    tenant.provisioning_status = "provisioning"
+    tenant.save(update_fields=["provisioning_status"])
+    _set_provisioning_stage(tenant, "schema")
+
+    tenant.create_schema(check_if_exists=True, verbosity=0)
+
+    region = tenant.region or "global"
+    # Email is unique per-region: same email may have separate rows in
+    # different regions, so the lookup key must include region.
+    User.objects.get_or_create(
+        email=owner_email,
+        region=region,
+        defaults={
+            "name": owner_name,
+            "role": "coach",
+            "preferred_locale": preferred_locale,
+            "accessible_regions": [],
+        },
+    )
+
+    # Create owner + config in the tenant schema. Both steps are guarded so
+    # a retry after partial progress reuses what exists instead of creating
+    # a duplicate TenantConfig / crashing on the duplicate owner.
+    _set_provisioning_stage(tenant, "config")
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        if not TenantConfig.objects.exists():
+            _create_default_config(tenant, preferred_locale)
+
+        # Tenant schemas are isolated, but we still stamp region for
+        # consistency with the public row and so JWT issuance has the
+        # right value.
+        User.objects.get_or_create(
+            email=owner_email,
+            region=region,
+            defaults={
+                "name": owner_name,
+                "role": "owner",
+                "is_staff": True,
+                "preferred_locale": preferred_locale,
+                "accessible_regions": [],
+            },
+        )
+
+    tenant.provisioning_status = "provisioned"
+    tenant.save(update_fields=["provisioning_status"])
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
 def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
     """Provision the tenant schema, owner, and config.
@@ -300,58 +375,12 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
 
     tenant = Tenant.objects.get(id=tenant_id)
     try:
-        tenant.provisioning_status = "provisioning"
-        tenant.save(update_fields=["provisioning_status"])
-        _set_provisioning_stage(tenant, "schema")
-
-        tenant.create_schema(check_if_exists=True, verbosity=0)
-
-        # Create owner in main (public) schema if they don't exist yet.
-        # If they do exist (e.g. they already own a tenant in another region),
-        # do NOT mutate their User.region — it tracks first-signup origin only.
-        # Cross-region isolation is enforced at the Tenant level via JWT claims.
-        from apps.accounts.models import User
         from apps.core.constants import REGION_DEFAULT_LOCALE
 
         region = tenant.region or "global"
         preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
-        # Email is unique per-region: same email may have separate rows in
-        # different regions, so the lookup key must include region.
-        User.objects.get_or_create(
-            email=owner_email,
-            region=region,
-            defaults={
-                "name": owner_name,
-                "role": "coach",
-                "preferred_locale": preferred_locale,
-                "accessible_regions": [],
-            },
-        )
 
-        # Create owner + config in the tenant schema. Both steps are guarded so
-        # a retry after partial progress reuses what exists instead of creating
-        # a duplicate TenantConfig / crashing on the duplicate owner.
-        _set_provisioning_stage(tenant, "config")
-        with tenant_context(tenant):
-            from apps.tenant_config.models import TenantConfig
-
-            if not TenantConfig.objects.exists():
-                _create_default_config(tenant, preferred_locale)
-
-            # Tenant schemas are isolated, but we still stamp region for
-            # consistency with the public row and so JWT issuance has the
-            # right value.
-            User.objects.get_or_create(
-                email=owner_email,
-                region=region,
-                defaults={
-                    "name": owner_name,
-                    "role": "owner",
-                    "is_staff": True,
-                    "preferred_locale": preferred_locale,
-                    "accessible_regions": [],
-                },
-            )
+        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
 
         _set_provisioning_stage(tenant, "seed")
         if niche and tenant.template_seed_status != "ready":
@@ -379,6 +408,69 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         tenant.provisioning_status = "failed"
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Tenant provisioning failed for %s", tenant.slug)
+        raise self.retry(exc=exc) from exc
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def provision_wizard_schema(self, tenant_id, owner_email, owner_name):
+    """Early, content-step provisioning: schema + owner + config only, no seed
+    or compose. Enqueued when the coach reaches the wizard's content step so
+    they have a real schema to write their first course/event/post into."""
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(id=tenant_id)
+    if tenant.provisioning_status not in ("pending", "failed"):
+        return  # already provisioning/provisioned/ready — nothing to do
+    try:
+        region = tenant.region or "global"
+        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
+    except Exception as exc:
+        tenant.provisioning_status = "failed"
+        tenant.save(update_fields=["provisioning_status"])
+        logger.exception("Wizard schema provisioning failed for %s", tenant.slug)
+        raise self.retry(exc=exc) from exc
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def compose_wizard_site(self, tenant_id):
+    """Compose the site for an already-provisioned content-first tenant from
+    its real content + wizard answers, then mark ready. Fail-soft: an AI
+    failure inside _apply_wizard_answers falls back to deterministic pages and
+    still reaches 'ready'. Only an unexpected error retries."""
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(id=tenant_id)
+    if tenant.provisioning_status == "ready":
+        return
+    if tenant.provisioning_status != "provisioned":
+        return  # schema not ready yet; the frontend gates compose on 'provisioned'
+    try:
+        region = tenant.region or "global"
+        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        answers = (tenant.wizard_state or {}).get("answers") or {}
+        _apply_wizard_answers(tenant, answers, preferred_locale)
+
+        try:
+            from apps.core.onboarding import ai_curate, seeding_content
+
+            brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+            with tenant_context(tenant):
+                seeding_content.seed_starter_posts(tenant, brief)
+                seeding_content.seed_draft_products(tenant, brief)
+        except Exception:  # noqa: BLE001 — seeding is best-effort, never fails the reveal
+            logger.exception("reveal seeding failed for %s", tenant.slug)
+
+        _set_provisioning_stage(tenant, "finalizing")
+        tenant.provisioning_status = "ready"
+        tenant.save(update_fields=["provisioning_status"])
+        logger.info("Tenant %s composed at reveal", tenant.slug)
+    except Exception as exc:
+        tenant.provisioning_status = "failed"
+        tenant.save(update_fields=["provisioning_status"])
+        logger.exception("compose_wizard_site failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
 
 
@@ -466,6 +558,30 @@ def purge_ai_transcripts():
 
     convos, _ = AiConversation.objects.filter(updated_at__lt=cutoff).delete()
     logger.info("purge_ai_transcripts: deleted %s conversations", convos)
+
+
+@shared_task
+def cleanup_abandoned_signups():
+    """Reclaim abandoned signups. Stage 1 warns idle tenants; stage 2 drops the
+    schema + row of tenants whose warning grace has elapsed. Destructive — the
+    selection guards live in recovery.find_abandoned_tenants."""
+    from apps.core.onboarding.recovery import find_abandoned_tenants, send_abandon_warning
+
+    to_warn, to_delete = find_abandoned_tenants()
+    for tenant in to_warn:
+        try:
+            send_abandon_warning(tenant)
+        except Exception:  # noqa: BLE001 — one bad send must not stop the batch
+            logger.exception("abandon warning failed for %s", tenant.slug)
+    deleted = 0
+    for tenant in to_delete:
+        slug = tenant.slug
+        try:
+            tenant.delete(force_drop=True)  # drops schema iff it exists, then row
+            deleted += 1
+        except Exception:  # noqa: BLE001
+            logger.exception("abandoned-tenant delete failed for %s", slug)
+    logger.info("cleanup_abandoned_signups: warned=%d deleted=%d", len(to_warn), deleted)
 
 
 @shared_task

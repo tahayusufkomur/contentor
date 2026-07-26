@@ -57,6 +57,35 @@ _COPY = {
     },
 }
 
+# Final "we are about to delete this signup" nudge. Same resume link as the
+# recovery email — only the framing differs. TR: needs native review.
+_ABANDON_COPY = {
+    "en": {
+        "subject": "Your unfinished setup will be removed — {brand}",
+        "heading": "Still want to build {brand}?",
+        "intro": (
+            "You started setting up <strong>{brand}</strong> but never finished. "
+            "We'll remove this unfinished signup in {grace} days to free it up. "
+            "Click below to pick up exactly where you left off — nothing is lost yet."
+        ),
+        "button": "Resume my setup",
+        "expires": "This link is valid for {days} days.",
+        "copy_label": "Or copy:",
+    },
+    "tr": {
+        "subject": "Tamamlanmamış kurulumunuz silinecek — {brand}",
+        "heading": "{brand} platformunu hâlâ kurmak istiyor musunuz?",
+        "intro": (
+            "<strong>{brand}</strong> platformunu kurmaya başlamıştınız ama tamamlamadınız. "
+            "Tamamlanmamış bu kaydı {grace} gün içinde sileceğiz. "
+            "Kaldığınız yerden devam etmek için aşağıya tıklayın — henüz hiçbir şey kaybolmadı."
+        ),
+        "button": "Kuruluma devam et",
+        "expires": "Bu bağlantı {days} gün geçerlidir.",
+        "copy_label": "Veya kopyalayın:",
+    },
+}
+
 
 def _last_activity(tenant):
     """Most recent wizard step save, falling back to signup time."""
@@ -96,6 +125,92 @@ def recovery_candidates(now=None):
         .order_by("created_at")
     )
     return [t for t in prefiltered if _last_activity(t) < idle_cutoff]
+
+
+def find_abandoned_tenants(now=None):
+    """Two-stage abandoned-signup selection.
+
+    Returns (to_warn, to_delete):
+      * to_warn   — idle >= WIZARD_ABANDON_WARN_DAYS, not yet warned.
+      * to_delete — warned >= WIZARD_ABANDON_DELETE_GRACE_DAYS ago.
+
+    Only ever considers reclaimable tenants: not the public row, not published,
+    and provisioning_status in {pending, provisioned, failed} (never 'ready' or
+    in-flight 'provisioning'). Idleness uses _last_activity (max wizard step
+    timestamp, else created_at).
+    """
+    from apps.core.models import Tenant
+
+    now = now or timezone.now()
+    warn_cutoff = now - timedelta(days=settings.WIZARD_ABANDON_WARN_DAYS)
+    grace_cutoff = now - timedelta(days=settings.WIZARD_ABANDON_DELETE_GRACE_DAYS)
+
+    reclaimable = Tenant.objects.exclude(schema_name="public").filter(
+        is_published=False,
+        provisioning_status__in=("pending", "provisioned", "failed"),
+    )
+
+    to_warn = [t for t in reclaimable.filter(abandon_warned_at__isnull=True) if _last_activity(t) < warn_cutoff]
+    to_delete = [t for t in reclaimable.filter(abandon_warned_at__isnull=False) if t.abandon_warned_at < grace_cutoff]
+    return to_warn, to_delete
+
+
+def send_abandon_warning(tenant, now=None) -> bool:
+    """Final 'about to be deleted' nudge with a resume link.
+
+    Stamps abandon_warned_at only on a successful send, so a provider failure
+    is retried by the next beat run — and, because stage 2 keys off that
+    timestamp, a tenant is never deleted without having been warned first.
+    """
+    from apps.accounts.models import User
+    from apps.accounts.tokens import create_wizard_token
+    from apps.core.email import send_email
+
+    # Same guard as send_recovery_email: a superadmin rename would mint a link
+    # that resolves to nothing. Refuse rather than send a dead link — the
+    # tenant stays unwarned, and therefore undeletable.
+    if slugify(tenant.name)[:63] != tenant.slug:
+        logger.warning("abandon warning: name/slug drift for %s, skipping", tenant.slug)
+        return False
+
+    region = tenant.region or "global"
+    user = User.objects.filter(email=tenant.owner_email, region=region).first()
+    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.name, region=region)
+
+    base = settings.CONTENTOR_DOMAIN
+    host = f"tr.{base}" if region == "tr" else base
+    link = f"{settings.SITE_SCHEME}://{host}/signup/verify?token={token}"
+
+    strings = _ABANDON_COPY["tr" if region == "tr" else "en"]
+    brand = tenant.name
+    days = settings.WIZARD_TOKEN_EXPIRY_DAYS
+    grace = settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
+    sent = send_email(
+        to=tenant.owner_email,
+        subject=strings["subject"].format(brand=brand),
+        html=f"""
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+            <h2 style="color: #1a1a2e;">{strings["heading"].format(brand=brand)}</h2>
+            <p style="color: #444;">{strings["intro"].format(brand=brand, grace=grace)}</p>
+            <a href="{link}"
+               style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
+                      border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
+                {strings["button"]}
+            </a>
+            <p style="color: #888; font-size: 13px;">{strings["expires"].format(days=days)}</p>
+            <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
+                {strings["copy_label"]} <span style="word-break: break-all;">{link}</span>
+            </p>
+        </div>
+        """,
+    )
+    if sent:
+        tenant.abandon_warned_at = now or timezone.now()
+        tenant.save(update_fields=["abandon_warned_at"])
+        logger.info("abandon warning sent slug=%s", tenant.slug)
+    else:
+        logger.error("abandon warning FAILED slug=%s (link withheld from logs)", tenant.slug)
+    return sent
 
 
 def send_recovery_email(tenant) -> bool:

@@ -12,6 +12,7 @@ from apps.core.throttling import BrandNameCheckThrottle
 from ..models import Domain, Tenant
 from ..serializers import CreatorSignupSerializer
 from ..tasks import provision_tenant
+from .experiments import assign_wizard_bucket
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +227,9 @@ def creator_signup_verify(request):
         provisioning_status="pending",
         region=region,
         billing_currency=REGION_DEFAULT_CURRENCY.get(region, "USD"),
+        # Assigned here and only here: the resume branch above must leave a
+        # returning coach's bucket untouched. email:region is the stable key.
+        wizard_bucket=assign_wizard_bucket(f"{email}:{region}"),
     )
     Domain.objects.create(
         domain=tenant_fqdn,

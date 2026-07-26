@@ -5,7 +5,8 @@
       "look": "Görünümün",
       "pages": "Sayfaların",
       "logo": "Logon",
-      "launch": "Yayına al"
+      "launch": "Yayına al",
+      "content": "İçeriğin"
     },
     "common": {
       "back": "Geri",
@@ -16,21 +17,47 @@
       "saving": "Kaydediliyor…",
       "showAll": "Tümünü göster",
       "preview": "Önizleme",
-      "errors": { "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin." }
+      "errors": {
+        "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+      }
     },
     "niche": {
       "heading": "Ne öğretiyorsun?",
       "subhead": "Platformunu buna göre şekillendireceğiz."
     },
     "niches": {
-      "yoga": { "label": "Yoga", "tagline": "Akışlar, nefes, denge" },
-      "pilates": { "label": "Pilates", "tagline": "Merkez, kontrol, duruş" },
-      "fitness": { "label": "Fitness", "tagline": "Güç ve kondisyon" },
-      "pole_dance": { "label": "Pole Dance", "tagline": "Güç ve zarafet" },
-      "belly_dance": { "label": "Oryantal Dans", "tagline": "Ritim ve ifade" },
-      "face_yoga": { "label": "Yüz Yogası", "tagline": "Doğal yüz egzersizi" },
-      "makeup": { "label": "Makyaj", "tagline": "Teknik ve sanat" },
-      "general": { "label": "Başka bir şey", "tagline": "Kendi alanın" }
+      "yoga": {
+        "label": "Yoga",
+        "tagline": "Akışlar, nefes, denge"
+      },
+      "pilates": {
+        "label": "Pilates",
+        "tagline": "Merkez, kontrol, duruş"
+      },
+      "fitness": {
+        "label": "Fitness",
+        "tagline": "Güç ve kondisyon"
+      },
+      "pole_dance": {
+        "label": "Pole Dance",
+        "tagline": "Güç ve zarafet"
+      },
+      "belly_dance": {
+        "label": "Oryantal Dans",
+        "tagline": "Ritim ve ifade"
+      },
+      "face_yoga": {
+        "label": "Yüz Yogası",
+        "tagline": "Doğal yüz egzersizi"
+      },
+      "makeup": {
+        "label": "Makyaj",
+        "tagline": "Teknik ve sanat"
+      },
+      "general": {
+        "label": "Başka bir şey",
+        "tagline": "Kendi alanın"
+      }
     },
     "describe": {
       "heading": "Ne yaptığını anlat",
@@ -57,6 +84,22 @@
         "send_announcements": "Duyuru ve güncelleme gönder"
       }
     },
+    "content": {
+      "provisioning": "Stüdyon hazırlanıyor…",
+      "provisioningHint": "Bu birkaç saniye sürer. İçeriğin burada saklanacak.",
+      "courseTitle": "İlk kursunu oluştur",
+      "coursePrompt": "Bir başlangıç noktası seç — her şeyi sonra düzenleyebilirsin.",
+      "courseEmpty": "Şu anda kurs önerisi sunamadık. Daha sonra ekleyebilirsin.",
+      "eventTitle": "İlk etkinliğini planla",
+      "eventPrompt": "Öğrencilerine katılmak için bir sebep ver.",
+      "blogTitle": "İlk yazını yayınla",
+      "blogPrompt": "Kısa bir tanıtım yazısı seni bulmalarına yardımcı olur.",
+      "skip": "Bunu sonra yapacağım",
+      "titleLabel": "Başlık",
+      "priceLabel": "Fiyat",
+      "dateLabel": "Tarih ve saat",
+      "free": "Ücretsiz"
+    },
     "theme": {
       "heading": "Renklerini seç",
       "subhead": "Alanına göre önerildi — istediğin zaman değiştirebilirsin."
@@ -74,11 +117,26 @@
       "subhead": "Marka adın ve başlıkların böyle görünecek."
     },
     "fonts": {
-      "inter": { "label": "Inter", "vibe": "Sade ve modern" },
-      "geist": { "label": "Geist", "vibe": "Keskin ve teknik" },
-      "poppins": { "label": "Poppins", "vibe": "Belirgin ve geometrik" },
-      "nunito": { "label": "Nunito", "vibe": "Samimi ve yumuşak" },
-      "dm_sans": { "label": "DM Sans", "vibe": "Nötr ve çok yönlü" },
+      "inter": {
+        "label": "Inter",
+        "vibe": "Sade ve modern"
+      },
+      "geist": {
+        "label": "Geist",
+        "vibe": "Keskin ve teknik"
+      },
+      "poppins": {
+        "label": "Poppins",
+        "vibe": "Belirgin ve geometrik"
+      },
+      "nunito": {
+        "label": "Nunito",
+        "vibe": "Samimi ve yumuşak"
+      },
+      "dm_sans": {
+        "label": "DM Sans",
+        "vibe": "Nötr ve çok yönlü"
+      },
       "playfair": {
         "label": "Playfair Display",
         "vibe": "Zarif ve dergi tadında"
@@ -87,7 +145,10 @@
         "label": "Merriweather",
         "vibe": "Güvenilir ve okunaklı"
       },
-      "lora": { "label": "Lora", "vibe": "Sıcak ve edebi" }
+      "lora": {
+        "label": "Lora",
+        "vibe": "Sıcak ve edebi"
+      }
     },
     "navbar": {
       "heading": "Menü stilini seç",
@@ -113,7 +174,10 @@
         "label": "İkiye bölünmüş",
         "desc": "Başlık fotoğrafın yanında"
       },
-      "minimal": { "label": "Minimal", "desc": "Sadece sözlerin, fotoğrafsız" }
+      "minimal": {
+        "label": "Minimal",
+        "desc": "Sadece sözlerin, fotoğrafsız"
+      }
     },
     "pages": {
       "subhead": "İki görünüm — sana uyanı seç.",
@@ -153,7 +217,10 @@
         "title": "Yazı logo",
         "desc": "Marka adın, özenle dizilmiş"
       },
-      "curated": { "title": "Hazır logo", "desc": "Galeriden bir amblem seç" },
+      "curated": {
+        "title": "Hazır logo",
+        "desc": "Galeriden bir amblem seç"
+      },
       "ai": {
         "title": "Yapay zekâ ile tasarla",
         "desc": "Sohbetle özel logo tasarla",
@@ -176,7 +243,11 @@
       "pick": "Bunu seç",
       "useThis": "Bu logoyu kullan",
       "change": "Farklı bir tane tasarla",
-      "stages": { "icon": "Amblem", "name": "Yerleşim", "tagline": "Slogan" },
+      "stages": {
+        "icon": "Amblem",
+        "name": "Yerleşim",
+        "tagline": "Slogan"
+      },
       "thinking": "Tasarlanıyor…",
       "quota": "Aylık tasarım limitine ulaşıldı — yayından sonra Logo Stüdyosu'nda devam edebilirsin."
     },
@@ -218,6 +289,19 @@
       "closedCta": "Girişe git",
       "failed": "Bu kayıt için bağlantı gönderemedik. Lütfen yeniden başlayın.",
       "startOver": "Baştan başla"
+    },
+    "revealChat": {
+      "title": "Farklı bir şey mi istiyorsun?",
+      "placeholder": "Neyi değiştirmek istediğini yaz…",
+      "preview": "Önizle",
+      "thinking": "Düşünüyor…",
+      "readyHint": "Değişikliğin uygulanmaya hazır.",
+      "apply": "Uygula",
+      "applying": "Uygulanıyor…",
+      "discard": "Vazgeç",
+      "remaining": "Kalan ücretsiz düzenleme: {count}",
+      "exhausted": "Şimdilik ücretsiz düzenlemelerini kullandın — istediğin zaman yayınlayabilirsin.",
+      "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
     }
   }
 }
