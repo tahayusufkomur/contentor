@@ -63,6 +63,63 @@ export function finalizeWizard(
   });
 }
 
+export interface CourseOutline {
+  title: string;
+  description: string;
+  suggested_price: number;
+}
+
+/**
+ * Provision the tenant schema early (content-step entry). Idempotent: only a
+ * 'pending' tenant enqueues; any other state just reports its current status,
+ * so this doubles as the poll.
+ */
+export function provisionWizard(token: string): Promise<{ status: string }> {
+  return request("/api/v1/onboarding/wizard/provision/", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export function getCourseOutlines(
+  token: string,
+): Promise<{ outlines: CourseOutline[] }> {
+  return request("/api/v1/onboarding/wizard/content/course-outlines/", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export function createWizardCourse(
+  token: string,
+  body: { title: string; description?: string; price?: number },
+): Promise<{ id: number; slug: string }> {
+  return request("/api/v1/onboarding/wizard/content/course/", {
+    method: "POST",
+    body: JSON.stringify({ token, ...body }),
+  });
+}
+
+export function createWizardEvent(
+  token: string,
+  body: { kind: "live" | "onsite"; title: string; scheduled_at?: string },
+): Promise<{ id: number }> {
+  return request("/api/v1/onboarding/wizard/content/event/", {
+    method: "POST",
+    body: JSON.stringify({ token, ...body }),
+  });
+}
+
+export function createWizardBlog(
+  token: string,
+  body: { title: string; body_html?: string; status?: "draft" | "published" },
+): Promise<{ id: number; slug: string }> {
+  return request("/api/v1/onboarding/wizard/content/blog/", {
+    method: "POST",
+    body: JSON.stringify({ token, ...body }),
+  });
+}
+
 /**
  * Compose-at-reveal for the content-first flow: the tenant is already
  * provisioned and holds the coach's real content, so the reveal only needs the
