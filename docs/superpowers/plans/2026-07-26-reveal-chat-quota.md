@@ -1,5 +1,7 @@
 # Reveal Chat + Site-AI Quota Implementation Plan
 
+**STATUS: COMPLETE** — implemented on branch feat/lazy-provisioning-foundation (2026-07-26).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let a coach refine their freshly-composed site in natural language at the reveal ("make it warmer", "darker theme") — the first generation and 3 refinements free — with the metering infrastructure that Phase 2's admin "Site AI" will enforce monthly.
@@ -54,7 +56,7 @@ The spec makes the reveal interactive: instead of a variant picker, the coach te
 
 **Interfaces:** `SiteAiUpdateUsage(tenant_schema, month, updates_used, usd_spent)`; `PlatformPlan.max_site_ai_updates`. In `site_ai.py`: `current_month()`, `tenant_usage(schema, month)`, `record_attempt_cost(schema, usd)`, `record_update(schema)`, `plan_limit(tenant)`, `availability(tenant) -> {enabled, remaining, limit, reason}` — mirroring `blog/ai.py`.
 
-- [ ] **Step 1: Write the failing accounting test**
+- [x] **Step 1: Write the failing accounting test**
 
 Create `backend/apps/core/tests/test_site_ai.py`:
 
@@ -93,9 +95,9 @@ def test_record_update_increments_only_the_counter():
     assert row.updates_used == 1 and row.usd_spent == Decimal("0.02")
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL (model + module missing).
+- [x] **Step 2: Run to verify failure** — FAIL (model + module missing).
 
-- [ ] **Step 3: Add the model + plan field**
+- [x] **Step 3: Add the model + plan field**
 
 In `apps/core/models.py`, mirror `BlogAiUsage` (models.py:436):
 
@@ -129,11 +131,11 @@ docker compose exec django python manage.py makemigrations core --name site_ai_u
 docker compose exec django python manage.py migrate_schemas --shared
 ```
 
-- [ ] **Step 4: Seed the plan limits**
+- [x] **Step 4: Seed the plan limits**
 
 In `seed_plans.py`, add to each plan dict: free `"max_site_ai_updates": 0`, starter `3`, pro `5`.
 
-- [ ] **Step 5: Implement the accounting half of `site_ai.py`**
+- [x] **Step 5: Implement the accounting half of `site_ai.py`**
 
 Create `backend/apps/core/onboarding/site_ai.py` (copy `blog/ai.py:321-406` structure, swapping model + counter name):
 
@@ -192,7 +194,7 @@ def availability(tenant, month=None):
     return {"enabled": remaining > 0, "remaining": remaining, "limit": limit, "reason": reason}
 ```
 
-- [ ] **Step 6: Run + commit**
+- [x] **Step 6: Run + commit**
 
 Run: `docker compose exec django pytest apps/core/tests/test_site_ai.py -v` → PASS.
 
@@ -209,7 +211,7 @@ git commit -m "feat(site-ai): monthly site-edit metering model + accounting"
 
 **Interfaces:** `preview_edit(tenant, instruction) -> (pages, extras, cost)` — recompose the current pages with the coach's instruction, returning proposed pages **without** saving. `apply_edit(tenant, pages, extras) -> None` — persist the proposed pages onto `TenantConfig`. Both run in `tenant_context`.
 
-- [ ] **Step 1: Write the failing test (engine, AI mocked)**
+- [x] **Step 1: Write the failing test (engine, AI mocked)**
 
 ```python
 from unittest import mock
@@ -250,9 +252,9 @@ def test_apply_edit_persists_pages(restore_public):
         _drop("site_ai_apply")
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL.
+- [x] **Step 2: Run to verify failure** — FAIL.
 
-- [ ] **Step 3: Implement the engine**
+- [x] **Step 3: Implement the engine**
 
 Add to `site_ai.py` (reuse `ai_compose.compose_pages`, feeding the instruction via its `followups` brief input so the trust boundary and caps apply unchanged):
 
@@ -298,7 +300,7 @@ def apply_edit(tenant, pages, extras=None):
 
 (Confirm `compose_pages` accepts being called without `courses`/`downloads` (they default to `()` per `ai_compose.py:244`). If `record_spend` is internal to `compose_pages`, cost is already accounted; the SSE layer in Task 3 records the apply/attempt via `site_ai.record_*`. Confirm the extras-applier name `_apply_compose_extras` used by `tasks._apply_wizard_answers` and reuse it verbatim, or drop extras handling for the reveal MVP.)
 
-- [ ] **Step 4: Run + commit**
+- [x] **Step 4: Run + commit**
 
 Run: `docker compose exec django pytest apps/core/tests/test_site_ai.py -k apply_edit -v` → PASS.
 
@@ -317,7 +319,7 @@ git commit -m "feat(site-ai): recompose-with-instruction preview/apply engine"
 - `POST /api/v1/onboarding/wizard/site-edit/preview/` (SSE) — streams phase/preview frames of the proposed edit; free.
 - `POST /api/v1/onboarding/wizard/site-edit/apply/` — persists the last proposed pages, decrements the reveal free counter (`wizard_state["reveal_applies_used"]`, cap `REVEAL_FREE_APPLIES = 3`), returns `{remaining}`; 402 when exhausted.
 
-- [ ] **Step 1: Write the failing apply-counter test**
+- [x] **Step 1: Write the failing apply-counter test**
 
 ```python
 def test_reveal_apply_decrements_free_counter(restore_public, client):
@@ -341,9 +343,9 @@ def test_reveal_apply_decrements_free_counter(restore_public, client):
 
 (Add a `client` = `APIClient()` fixture.)
 
-- [ ] **Step 2: Run to verify failure** — FAIL (routes 404).
+- [x] **Step 2: Run to verify failure** — FAIL (routes 404).
 
-- [ ] **Step 3: Implement the endpoints**
+- [x] **Step 3: Implement the endpoints**
 
 In `wizard.py` (mirror `_generate_sse`'s commit-on-output for preview cost accrual, and the free counter for apply):
 
@@ -413,7 +415,7 @@ Routes in `urls.py`:
     path("wizard/site-edit/apply/", wizard.wizard_site_edit_apply, name="wizard-site-edit-apply"),
 ```
 
-- [ ] **Step 4: Run + commit**
+- [x] **Step 4: Run + commit**
 
 Run: `docker compose exec django pytest apps/core/tests/test_site_ai.py -v` → PASS.
 
@@ -430,7 +432,7 @@ git commit -m "feat(reveal): site-edit chat endpoints with 3 free applies"
 
 **Interfaces:** `previewSiteEdit(token, instruction, handlers)` (SSE via a fetch reader mirroring `frontend-customer/src/lib/ai-stream.ts`), `applySiteEdit(token, pages) -> {remaining}`; `RevealChat` component rendering the input, streamed preview state, Apply button, and remaining-applies hint.
 
-- [ ] **Step 1: Add the client calls**
+- [x] **Step 1: Add the client calls**
 
 In `lib/wizard/api.ts`:
 
@@ -448,13 +450,13 @@ export function applySiteEdit(
 
 For the streamed preview, add a small reader modeled on `frontend-customer/src/lib/ai-stream.ts:51` (that file is in the customer app; port the minimal SSE-reader loop into `frontend-main`, or add a shared helper). It POSTs `{token, instruction}` with `Accept: text/event-stream`, dispatches `phase`/`done` frames, returns the `done` payload `{pages}`.
 
-- [ ] **Step 2: Build the component**
+- [x] **Step 2: Build the component**
 
 Create `reveal-chat.tsx`: an input ("Want anything different? Tell me…"), a submit that streams a preview (showing "thinking…"), a preview state holding the proposed `pages`, an **Apply** button that calls `applySiteEdit` and shows `remaining` ("2 free refinements left"), and an exhausted state (upgrade hint, no wall). Follow the loading conventions (`<Spinner>`, `<Button loading>`).
 
 Wire `<RevealChat token={token} />` into the reveal/ready screen (`frontend-main/src/app/signup/verify/page.tsx` ready state, or the review step) so it appears next to the Publish button.
 
-- [ ] **Step 3: Typecheck + commit**
+- [x] **Step 3: Typecheck + commit**
 
 Run: `make typecheck` → PASS.
 
@@ -467,11 +469,11 @@ git commit -m "feat(reveal): natural-language site-refinement chat UI"
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/core/tests/test_site_ai.py -n auto` passes.
-- [ ] `make typecheck` + `make lint` pass.
-- [ ] Manual: at a dev reveal, an instruction streams a preview; Apply persists it and decrements "free refinements"; the 4th Apply returns 402 and shows the upgrade hint (never blocks Publish).
-- [ ] Manual: `SiteAiUpdateUsage` rows accrue `usd_spent` on every preview attempt and `updates_used` only on Apply.
-- [ ] Manual: an edit never writes a non-whitelisted field (the compose trust boundary holds).
+- [x] `docker compose exec django pytest apps/core/tests/test_site_ai.py -n auto` passes.
+- [x] `make typecheck` + `make lint` pass.
+- [x] Manual: at a dev reveal, an instruction streams a preview; Apply persists it and decrements "free refinements"; the 4th Apply returns 402 and shows the upgrade hint (never blocks Publish).
+- [x] Manual: `SiteAiUpdateUsage` rows accrue `usd_spent` on every preview attempt and `updates_used` only on Apply.
+- [x] Manual: an edit never writes a non-whitelisted field (the compose trust boundary holds).
 
 ## Where this sits in the plan set
 
