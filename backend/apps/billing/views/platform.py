@@ -223,6 +223,7 @@ def _compute_entitlements(tenant) -> dict:
 
       - ``ai_blog`` / ``student_bot`` — a paid plan AND a non-zero monthly quota
         (matches ``blog.ai.availability`` / ``tenant_config.student_bot``).
+      - ``site_ai`` — a paid plan AND a non-zero monthly site-edit quota.
       - ``logo_studio`` / ``platform_mailbox`` — ``has_paid_platform_plan``.
       - ``live`` — the live subscription plan's ``is_live_enabled`` flag.
       - ``payouts`` / ``selling`` — ``monetization.is_paid_active`` (paid plan +
@@ -241,6 +242,7 @@ def _compute_entitlements(tenant) -> dict:
     return {
         "live": bool(plan and plan.is_live_enabled),
         "ai_blog": bool(paid and plan and plan.max_ai_blog_posts > 0),
+        "site_ai": bool(paid and plan and plan.max_site_ai_updates > 0),
         "student_bot": bool(paid and plan and plan.max_student_bot_questions > 0),
         "logo_studio": paid,
         "platform_mailbox": paid,

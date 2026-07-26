@@ -10,6 +10,7 @@ import { isFeatureLocked, type Entitlements } from "@/lib/entitlements";
 const ALL_FALSE: Entitlements = {
   live: false,
   ai_blog: false,
+  site_ai: false,
   student_bot: false,
   logo_studio: false,
   payouts: false,

@@ -66,6 +66,23 @@ def test_record_update_increments_only_the_counter():
     assert row.updates_used == 1 and row.usd_spent == Decimal("0.02")
 
 
+def test_availability_reason_is_upgrade_required_when_plan_has_no_quota():
+    """limit == 0 means the plan never included Site AI — the coach should be
+    asked to upgrade, not told they ran out."""
+    a = site_ai.availability(_tenant(0, paid=False))
+    assert a["limit"] == 0
+    assert a["remaining"] == 0
+    assert a["enabled"] is False
+    assert a["reason"] == "upgrade_required"
+
+
+def test_availability_reason_is_quota_exhausted_only_after_spending_a_real_quota():
+    SiteAiUpdateUsage.objects.create(tenant_schema=SCHEMA, month=site_ai.current_month(), updates_used=3)
+    a = site_ai.availability(_tenant(3))
+    assert a["remaining"] == 0
+    assert a["reason"] == "quota_exhausted"
+
+
 # ── Site-edit engine (preview + apply) ──────────────────────────────────────
 
 

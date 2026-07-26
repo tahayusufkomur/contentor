@@ -47,13 +47,23 @@ def plan_limit(tenant):
 
 
 def availability(tenant, month=None):
-    """The Phase-2 admin Site AI's monthly-quota gate. The reveal's single free
-    apply is a separate counter (wizard_state["reveal_applies_used"]) and
-    does not consult this function."""
+    """The admin Site AI's monthly-quota gate. The reveal's free applies are a
+    separate counter (wizard_state["reveal_applies_used"]) and do not consult
+    this function.
+
+    Reason precedence mirrors apps/blog/ai.py: a plan with no allowance at all
+    reads as `upgrade_required` (ask them to upgrade), while a plan whose
+    allowance is spent reads as `quota_exhausted` (ask them to wait or upgrade).
+    """
     limit = plan_limit(tenant)
     used = tenant_usage(tenant.schema_name, month=month).updates_used
     remaining = max(0, limit - used)
-    reason = None if remaining > 0 else "quota_exhausted"
+    if limit <= 0:
+        reason = "upgrade_required"
+    elif remaining <= 0:
+        reason = "quota_exhausted"
+    else:
+        reason = None
     return {"enabled": remaining > 0, "remaining": remaining, "limit": limit, "reason": reason}
 
 

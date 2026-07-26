@@ -12,6 +12,7 @@
 export type EntitlementKey =
   | "live"
   | "ai_blog"
+  | "site_ai"
   | "student_bot"
   | "logo_studio"
   | "payouts"

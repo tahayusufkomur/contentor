@@ -24,6 +24,7 @@ pytestmark = pytest.mark.django_db
 FEATURE_KEYS = {
     "live",
     "ai_blog",
+    "site_ai",
     "student_bot",
     "logo_studio",
     "payouts",
@@ -46,7 +47,23 @@ def full_paid_plan(restore_public):
             "max_campaign_emails": 5000,
             "max_ai_blog_posts": 30,
             "max_student_bot_questions": 1500,
+            "max_site_ai_updates": 5,
             "is_live_enabled": True,
+        },
+    )
+    return plan
+
+
+@pytest.fixture()
+def site_ai_plan(restore_public):
+    """A paid plan that includes Site AI (max_site_ai_updates=3) — mirrors
+    live_only_plan's shape but for the site_ai quota specifically."""
+    plan, _ = PlatformPlan.objects.update_or_create(
+        name="entitlements-site-ai",
+        defaults={
+            "price_monthly": 19,
+            "transaction_fee_pct": 8,
+            "max_site_ai_updates": 3,
         },
     )
     return plan
@@ -151,6 +168,18 @@ def test_entitlements_reflect_per_feature_plan_flags(restore_public, live_only_p
     assert body["platform_mailbox"] is True
     # Selling (products/bundles/plans) shares the payouts gate.
     assert body["selling"] is True
+
+
+def test_entitlements_include_site_ai_when_the_plan_has_updates(restore_public, site_ai_plan):
+    """site_ai follows the ai_blog pattern: paid plan AND a non-zero quota."""
+    tenant = restore_public
+    coach = _make_owner("siteai-owner@entitlements.test")
+    _activate(tenant, site_ai_plan, coach)
+
+    response = _client(coach).get("/api/v1/billing/platform/entitlements/")
+
+    assert response.status_code == 200, response.content
+    assert response.json()["site_ai"] is True
 
 
 def test_entitlements_requires_coach_role(restore_public):
