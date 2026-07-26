@@ -75,7 +75,7 @@ Seven destinations. Groups are collapsible (as today); flat entries are bare top
 - Consumes: `NavSection`, `NavItem` from `@/components/shared/app-sidebar`.
 - Produces: `buildAdminNav(t: (key: string) => string): NavSection[]` — the canonical admin IA. Each `NavSection` has a stable `id`; groups carry `items`; flat sections set `flat: true` and carry exactly one item. Later tasks (and Phase 2) import this instead of hand-building nav.
 
-- [ ] **Step 1: Add the `flat` flag to the `NavSection` type**
+- [x] **Step 1: Add the `flat` flag to the `NavSection` type**
 
 In `frontend-customer/src/components/shared/app-sidebar.tsx`, extend the interface (this is the only change to this file in Task 1):
 
@@ -91,7 +91,7 @@ export interface NavSection {
 }
 ```
 
-- [ ] **Step 2: Write the failing structural tests**
+- [x] **Step 2: Write the failing structural tests**
 
 Create `frontend-customer/src/lib/__tests__/admin-nav.test.ts`. Assertions key on stable `href`/`id`/`flat` values, never on translated label strings, so an identity translator is enough:
 
@@ -213,7 +213,7 @@ describe("buildAdminNav — information architecture", () => {
 });
 ```
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Vitest runs on the host (this is what `make test-frontend` does — `cd frontend-customer && npx vitest run`):
 
@@ -221,7 +221,7 @@ Run: `cd frontend-customer && npx vitest run src/lib/__tests__/admin-nav.test.ts
 
 Expected: FAIL — `buildAdminNav` does not exist (module not found).
 
-- [ ] **Step 4: Implement the nav module**
+- [x] **Step 4: Implement the nav module**
 
 Create `frontend-customer/src/lib/admin-nav.ts`:
 
@@ -366,13 +366,13 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
 }
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `cd frontend-customer && npx vitest run src/lib/__tests__/admin-nav.test.ts`
 
 Expected: PASS — all structural tests green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add frontend-customer/src/lib/admin-nav.ts frontend-customer/src/lib/__tests__/admin-nav.test.ts frontend-customer/src/components/shared/app-sidebar.tsx
@@ -392,7 +392,7 @@ git commit -m "feat(admin-nav): extract pure 7-destination nav module with tests
 - Consumes: `buildAdminNav(t)` from Task 1; the `flat` flag on `NavSection`.
 - Produces: a sidebar and mobile drawer that render `flat` sections as a single bare `NavLink`. No new exports.
 
-- [ ] **Step 1: Render flat sections in `AppSidebar`**
+- [x] **Step 1: Render flat sections in `AppSidebar`**
 
 In `frontend-customer/src/components/shared/app-sidebar.tsx`, inside `sections.map((section, index) => { ... })`, add a flat branch at the very top of the callback body, before `const sectionOpen = ...`:
 
@@ -433,7 +433,7 @@ In `frontend-customer/src/components/shared/app-sidebar.tsx`, inside `sections.m
 
 This reuses the exact link styling of a normal item, so a flat destination is visually a nav row, not a group. The existing group-rendering code below stays unchanged and handles the five collapsible sections.
 
-- [ ] **Step 2: Render flat sections in `MobileHeader`**
+- [x] **Step 2: Render flat sections in `MobileHeader`**
 
 Open `frontend-customer/src/components/shared/mobile-header.tsx`. Inside its `sections.map((section) => { ... })` (around line 104), add the same guard at the top of the callback, adapted to the drawer's link styling. First read the file's existing item-link JSX (the block under `section.items.map`) and mirror its `className`/close-on-click handler exactly:
 
@@ -475,7 +475,7 @@ Open `frontend-customer/src/components/shared/mobile-header.tsx`. Inside its `se
 
 Note: `mobile-header.tsx` closes its drawer on navigation with `onClick={() => setOpen(false)}` (confirmed on its existing item links) — reuse that exact handler. `NavLink` and `cn` are already imported in this file; **`Spinner` is not — add `import { Spinner } from "@/components/ui/spinner";`**. Copy the existing item link's `className` verbatim from the `section.items.map` block just below, rather than retyping it.
 
-- [ ] **Step 3: Wire `admin-shell.tsx` to the module**
+- [x] **Step 3: Wire `admin-shell.tsx` to the module**
 
 In `frontend-customer/src/components/admin/admin-shell.tsx`:
 
@@ -488,13 +488,13 @@ In `frontend-customer/src/components/admin/admin-shell.tsx`:
 
 3. Remove the now-unused lucide icon imports and the `NavSection` type import from this file — the module owns them now. Keep any icons still used elsewhere in `admin-shell.tsx` (e.g. `Search`, `Globe`, `ExternalLink` in the header bar). Let `make typecheck` tell you which imports are now unused.
 
-- [ ] **Step 4: Typecheck**
+- [x] **Step 4: Typecheck**
 
 Run: `make typecheck`
 
 Expected: PASS for both apps. Fix any "declared but never used" import errors in `admin-shell.tsx` by deleting those icon imports.
 
-- [ ] **Step 5: Verify the nav renders and navigation feedback still works**
+- [x] **Step 5: Verify the nav renders and navigation feedback still works**
 
 The dev stack must be up (`make dev`). Run the navigation-feedback e2e, which clicks the `Calendar` and `Students` sidebar links and asserts active-state/loading behavior:
 
@@ -502,7 +502,7 @@ Run: `make e2e-spec SPEC=25-navigation-feedback`
 
 Expected: PASS. If the links aren't found, confirm (a) their labels still render exactly `Calendar`/`Students` (Task 3 owns the i18n values — if it hasn't run yet the keys render as raw keys and this fails; run Task 3 first or verify against raw keys), and (b) the Content and Audience groups default to open (they do — `openSections` initializes every section to `true` in `app-sidebar.tsx`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add frontend-customer/src/components/shared/app-sidebar.tsx frontend-customer/src/components/shared/mobile-header.tsx frontend-customer/src/components/admin/admin-shell.tsx
@@ -521,7 +521,7 @@ git commit -m "feat(admin-nav): render flat sections and source the shell from b
 - Consumes: the `t("nav.*")` keys referenced by `buildAdminNav`.
 - Produces: resolved section and item labels in both locales.
 
-- [ ] **Step 1: Update the English `nav` block**
+- [x] **Step 1: Update the English `nav` block**
 
 In `frontend-customer/messages/en/admin.json`, replace the `nav.sections` object and add the new item keys so `nav` reads:
 
@@ -561,7 +561,7 @@ In `frontend-customer/messages/en/admin.json`, replace the `nav.sections` object
 
 Notes: the old section keys (`overview`, `products`, `website`, `media`, `operations`) are removed — only `buildAdminNav` read them, and it no longer does. `home` and `library` are the new keys. `videos` is retained (the command palette and any other consumer may reference it) even though the sidebar no longer shows it. `calendar` stays exactly `"Calendar"` and `students` exactly `"Students"` — the e2e invariant.
 
-- [ ] **Step 2: Update the Turkish `nav` block**
+- [x] **Step 2: Update the Turkish `nav` block**
 
 In `frontend-customer/messages/tr/admin.json`, apply the identical key set with Turkish values:
 
@@ -601,13 +601,13 @@ In `frontend-customer/messages/tr/admin.json`, apply the identical key set with 
 
 Keep whatever existing Turkish values the retained keys already had if they differ from the above — do not regress an established translation. The values shown are fallbacks for keys that are new (`home`, `library`, and the five section labels).
 
-- [ ] **Step 3: Verify no stale key references remain**
+- [x] **Step 3: Verify no stale key references remain**
 
 Run: `grep -rn "nav.sections.overview\|nav.sections.products\|nav.sections.website\|nav.sections.media\|nav.sections.operations" frontend-customer/src`
 
 Expected: no output. If anything prints, it is a consumer of a removed key — update it to the new IA before continuing.
 
-- [ ] **Step 4: Confirm the two locales have identical nav key sets**
+- [x] **Step 4: Confirm the two locales have identical nav key sets**
 
 Run:
 
@@ -623,13 +623,13 @@ console.log(diff.length?diff.join('\n'):'OK: locales in sync');
 
 Expected: `OK: locales in sync`.
 
-- [ ] **Step 5: Verify labels render (re-run the nav e2e)**
+- [x] **Step 5: Verify labels render (re-run the nav e2e)**
 
 Run: `make e2e-spec SPEC=25-navigation-feedback`
 
 Expected: PASS — `Calendar` and `Students` links resolve with their real labels now.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add frontend-customer/messages/en/admin.json frontend-customer/messages/tr/admin.json
@@ -647,7 +647,7 @@ git commit -m "i18n(admin-nav): label the seven job-stage destinations (en, tr)"
 
 **Interfaces:** none produced; this task reconciles everything downstream of the nav and proves the suite is green.
 
-- [ ] **Step 1: Fix the stale comment in the community spec**
+- [x] **Step 1: Fix the stale comment in the community spec**
 
 The selector in `e2e/specs/15-community.spec.ts` (`getByRole("button", { name: "Settings", exact: true })`) still works — Settings is now a **flat link**, not a `role=button` section header, so the community "Settings" tab is again the only button by that name. But the comment above it references a "Settings & Finance" section header that no longer exists. Replace that comment block with:
 
@@ -660,13 +660,13 @@ The selector in `e2e/specs/15-community.spec.ts` (`getByRole("button", { name: "
 
 Do not change the selector itself.
 
-- [ ] **Step 2: Run the community spec to confirm the selector still resolves**
+- [x] **Step 2: Run the community spec to confirm the selector still resolves**
 
 Run: `make e2e-spec SPEC=15-community`
 
 Expected: PASS. If it strict-mode-fails on the Settings button, a section header is still rendering as a button named "Settings" — re-check that the Settings section has `flat: true` in `admin-nav.ts` (Task 1) and that `AppSidebar` renders flat sections without the header `<button>` (Task 2).
 
-- [ ] **Step 3: Reconcile the help knowledge base**
+- [x] **Step 3: Reconcile the help knowledge base**
 
 The help bot's route table in `help_kb.md` is keyed by `/admin/*` routes, which have not moved, so it stays valid. Only *sidebar-location phrasing* can go stale. Scan for it:
 
@@ -676,11 +676,11 @@ grep -rniE "sidebar|left menu|left-hand|under (the )?(products|audience|website|
 
 For each hit that tells a coach to find something "under the <old-section> section", rewrite it to the new destination (e.g. "under **Money**" for payouts/billing/store, "under **Content**" for courses/live/calendar/downloads/library, "under **Marketing**" for blog/email/announcements, "under **Audience**" for students/community/inbox, "under **My Site**" for edit-site/design/assistant). If the grep returns nothing, the KB needs no change — note that and move on.
 
-- [ ] **Step 4: (Optional) align command-palette categories with the new IA**
+- [x] **Step 4: (Optional) align command-palette categories with the new IA**
 
 Not required — the palette is a flat searchable list and already covers every route. If you want it to *read* consistently, you may relabel its `category` union (`"Products" | "Audience" | "Website & Media" | "Settings"`) toward `"Content" | "My Site" | "Audience" | "Marketing" | "Money" | "Settings"` and re-bucket items. Purely cosmetic; skip if time-boxed. If skipped, leave a one-line code comment noting the palette categories predate the nav IA.
 
-- [ ] **Step 4b: Confirm the Setup Assistant catalog needs no change**
+- [x] **Step 4b: Confirm the Setup Assistant catalog needs no change**
 
 `frontend-customer/src/components/setup/catalog.ts` maps setup items to `/admin/*` deep links. None of those routes moved, so it is unaffected. Confirm with:
 
@@ -690,11 +690,11 @@ grep -c "href" frontend-customer/src/components/setup/catalog.ts
 
 Sanity-check that every `href` there still resolves (they are the same routes the sidebar links to). No edit expected.
 
-- [ ] **Step 5: Note the flowmap screen keys**
+- [x] **Step 5: Note the flowmap screen keys**
 
 Flowmap screen keys are `customer|/admin/*` and are route-based, so they survive unchanged (no routes moved). No DB edit is needed; `flowmap.db` is gitignored and rebuilt. If flowmap has been run locally, `make flowmap-register ARGS=--screens-only` will refresh screenshots to show the new sidebar, but this is not required for the plan.
 
-- [ ] **Step 6: Full frontend verification**
+- [x] **Step 6: Full frontend verification**
 
 Run each and confirm PASS:
 
@@ -708,13 +708,13 @@ make e2e-spec SPEC=01-signup-onboarding
 
 `01-signup-onboarding` exercises the coach's first landing in the admin after the wizard; it must still find its way around the consolidated nav. If it references an old section label, update the spec to the new destination and re-run.
 
-- [ ] **Step 7: Lint**
+- [x] **Step 7: Lint**
 
 Run: `make lint`
 
 Expected: PASS with zero warnings (this includes `scripts/check-loading-patterns.mjs` and the e2e selector self-test). Fix anything it flags.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add e2e/specs/15-community.spec.ts backend/apps/tenant_config/help_kb.md
@@ -725,13 +725,13 @@ git commit -m "chore(admin-nav): reconcile e2e comment and help KB with the 7-de
 
 ## Verification before calling this plan done
 
-- [ ] `make test-frontend` passes, including `src/lib/__tests__/admin-nav.test.ts`.
-- [ ] `make typecheck` passes for both apps with no unused-import errors.
-- [ ] `make e2e-spec SPEC=25-navigation-feedback`, `SPEC=15-community`, and `SPEC=01-signup-onboarding` all pass.
-- [ ] `make lint` passes with zero warnings.
-- [ ] Manual smoke on a dev tenant admin: the sidebar shows exactly seven destinations — **Home**, **Content**, **My Site**, **Audience**, **Marketing**, **Money**, **Settings**. Home and Settings are single rows; the other five expand/collapse. Photos/Videos are absent from the top level; Library appears under Content and opens `/admin/photos`. Payouts, Billing, and Store all sit under Money.
-- [ ] ⌘K still finds Videos, Photos, and every other page (command palette untouched).
-- [ ] Mobile drawer (narrow viewport) shows the same seven destinations with Home/Settings as flat links.
+- [x] `make test-frontend` passes, including `src/lib/__tests__/admin-nav.test.ts`.
+- [x] `make typecheck` passes for both apps with no unused-import errors.
+- [x] `make e2e-spec SPEC=25-navigation-feedback`, `SPEC=15-community`, and `SPEC=01-signup-onboarding` all pass.
+- [x] `make lint` passes with zero warnings.
+- [x] Manual smoke on a dev tenant admin: the sidebar shows exactly seven destinations — **Home**, **Content**, **My Site**, **Audience**, **Marketing**, **Money**, **Settings**. Home and Settings are single rows; the other five expand/collapse. Photos/Videos are absent from the top level; Library appears under Content and opens `/admin/photos`. Payouts, Billing, and Store all sit under Money.
+- [x] ⌘K still finds Videos, Photos, and every other page (command palette untouched).
+- [x] Mobile drawer (narrow viewport) shows the same seven destinations with Home/Settings as flat links.
 
 ## What comes next (the rest of Phase 1)
 
