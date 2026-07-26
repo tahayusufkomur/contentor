@@ -284,6 +284,71 @@ def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
     return "ok"
 
 
+def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale):
+    """Create the tenant schema, the owner user (public + tenant schema), and a
+    default TenantConfig — and stop. Idempotent: every step reuses existing rows.
+
+    Does NOT seed niche content or AI-compose pages: those are deferred so this
+    can run early (when the coach reaches the wizard content step) to give them
+    a real schema to write content into. On success leaves
+    provisioning_status='provisioned'. Callers that want the full site
+    (provision_tenant) continue from there to seed + compose + 'ready'.
+    """
+    # Create owner in main (public) schema if they don't exist yet.
+    # If they do exist (e.g. they already own a tenant in another region),
+    # do NOT mutate their User.region — it tracks first-signup origin only.
+    # Cross-region isolation is enforced at the Tenant level via JWT claims.
+    from apps.accounts.models import User
+
+    tenant.provisioning_status = "provisioning"
+    tenant.save(update_fields=["provisioning_status"])
+    _set_provisioning_stage(tenant, "schema")
+
+    tenant.create_schema(check_if_exists=True, verbosity=0)
+
+    region = tenant.region or "global"
+    # Email is unique per-region: same email may have separate rows in
+    # different regions, so the lookup key must include region.
+    User.objects.get_or_create(
+        email=owner_email,
+        region=region,
+        defaults={
+            "name": owner_name,
+            "role": "coach",
+            "preferred_locale": preferred_locale,
+            "accessible_regions": [],
+        },
+    )
+
+    # Create owner + config in the tenant schema. Both steps are guarded so
+    # a retry after partial progress reuses what exists instead of creating
+    # a duplicate TenantConfig / crashing on the duplicate owner.
+    _set_provisioning_stage(tenant, "config")
+    with tenant_context(tenant):
+        from apps.tenant_config.models import TenantConfig
+
+        if not TenantConfig.objects.exists():
+            _create_default_config(tenant, preferred_locale)
+
+        # Tenant schemas are isolated, but we still stamp region for
+        # consistency with the public row and so JWT issuance has the
+        # right value.
+        User.objects.get_or_create(
+            email=owner_email,
+            region=region,
+            defaults={
+                "name": owner_name,
+                "role": "owner",
+                "is_staff": True,
+                "preferred_locale": preferred_locale,
+                "accessible_regions": [],
+            },
+        )
+
+    tenant.provisioning_status = "provisioned"
+    tenant.save(update_fields=["provisioning_status"])
+
+
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
 def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
     """Provision the tenant schema, owner, and config.
@@ -300,58 +365,12 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
 
     tenant = Tenant.objects.get(id=tenant_id)
     try:
-        tenant.provisioning_status = "provisioning"
-        tenant.save(update_fields=["provisioning_status"])
-        _set_provisioning_stage(tenant, "schema")
-
-        tenant.create_schema(check_if_exists=True, verbosity=0)
-
-        # Create owner in main (public) schema if they don't exist yet.
-        # If they do exist (e.g. they already own a tenant in another region),
-        # do NOT mutate their User.region — it tracks first-signup origin only.
-        # Cross-region isolation is enforced at the Tenant level via JWT claims.
-        from apps.accounts.models import User
         from apps.core.constants import REGION_DEFAULT_LOCALE
 
         region = tenant.region or "global"
         preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
-        # Email is unique per-region: same email may have separate rows in
-        # different regions, so the lookup key must include region.
-        User.objects.get_or_create(
-            email=owner_email,
-            region=region,
-            defaults={
-                "name": owner_name,
-                "role": "coach",
-                "preferred_locale": preferred_locale,
-                "accessible_regions": [],
-            },
-        )
 
-        # Create owner + config in the tenant schema. Both steps are guarded so
-        # a retry after partial progress reuses what exists instead of creating
-        # a duplicate TenantConfig / crashing on the duplicate owner.
-        _set_provisioning_stage(tenant, "config")
-        with tenant_context(tenant):
-            from apps.tenant_config.models import TenantConfig
-
-            if not TenantConfig.objects.exists():
-                _create_default_config(tenant, preferred_locale)
-
-            # Tenant schemas are isolated, but we still stamp region for
-            # consistency with the public row and so JWT issuance has the
-            # right value.
-            User.objects.get_or_create(
-                email=owner_email,
-                region=region,
-                defaults={
-                    "name": owner_name,
-                    "role": "owner",
-                    "is_staff": True,
-                    "preferred_locale": preferred_locale,
-                    "accessible_regions": [],
-                },
-            )
+        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
 
         _set_provisioning_stage(tenant, "seed")
         if niche and tenant.template_seed_status != "ready":

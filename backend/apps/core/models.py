@@ -46,6 +46,7 @@ class Tenant(TenantMixin):
         choices=[
             ("pending", "Pending"),
             ("provisioning", "Provisioning"),
+            ("provisioned", "Schema ready (site not yet composed)"),
             ("ready", "Ready"),
             ("failed", "Failed"),
         ],
@@ -102,6 +103,15 @@ class Tenant(TenantMixin):
             "Last wizard drop-off recovery email. NULL = never nudged; the "
             "hourly beat task sends at most one per tenant (filters on NULL), "
             "the manual recover endpoint re-stamps on every re-send."
+        ),
+    )
+    abandon_warned_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=(
+            "When the final 'your signup will be deleted' warning was sent. "
+            "NULL = not yet warned. Stage 2 of cleanup deletes the tenant "
+            "WIZARD_ABANDON_DELETE_GRACE_DAYS after this timestamp."
         ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
