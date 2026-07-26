@@ -265,6 +265,11 @@ export interface paths {
     /**
      * @description One gated AI call -> a draft BlogPost. Response always has a body:
      *     {post, source, remaining} — source mirrors the Brand Pack reasons.
+     *
+     *     With ``Accept: text/event-stream`` the same call streams its progress
+     *     instead (see _generate_sse). Content negotiation rather than a second
+     *     route keeps the availability guards and quota accounting single-sourced;
+     *     the autopilot Celery task and existing clients keep the JSON shape.
      */
     post: operations["v1_admin_blog_generate_create"];
     delete?: never;
@@ -386,6 +391,11 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /**
+     * @description One Design-with-AI turn. With ``Accept: text/event-stream`` the same
+     *     call streams its progress (designing → illustrating → tracing) instead of
+     *     blocking silently; the wizard and any other client keep the JSON shape.
+     */
     post: operations["v1_admin_config_logo_converse_create"];
     delete?: never;
     options?: never;
@@ -3511,6 +3521,105 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/onboarding/wizard/compose/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Trigger compose-at-reveal for the content-first flow. Only a provisioned
+     *     tenant composes; the frontend polls onboarding/status until 'ready'.
+     */
+    post: operations["v1_onboarding_wizard_compose_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/content/blog/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description The coach's first post, from fields they provide (default draft; only
+     *     'published' satisfies the publish gate). Mirrors
+     *     BlogPostAdminViewSet.perform_create — server-derived slug, published_at
+     *     stamped on publish — because we bypass the viewset.
+     */
+    post: operations["v1_onboarding_wizard_content_blog_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/content/course/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description The coach's first course. Published on create: the publish gate counts
+     *     only published courses, so a draft here would gate them out of going live.
+     */
+    post: operations["v1_onboarding_wizard_content_course_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/content/course-outlines/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_onboarding_wizard_content_course_outlines_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/content/event/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description The coach's first event: kind='live' -> LiveClass, 'onsite' -> OnsiteEvent.
+     *     Both models carry an instructor FK and both list views save it from the
+     *     request user (apps/live/views.py), so both get the owner here.
+     */
+    post: operations["v1_onboarding_wizard_content_event_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/onboarding/wizard/describe-followups/": {
     parameters: {
       query?: never;
@@ -3632,6 +3741,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/onboarding/wizard/provision/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Enqueue early schema provisioning for the token's tenant. Idempotent:
+     *     only 'pending' tenants enqueue; any other state just reports its status.
+     *     The frontend polls the existing provisioning-status view until 'provisioned'
+     *     before showing the content step.
+     */
+    post: operations["v1_onboarding_wizard_provision_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/onboarding/wizard/recover/": {
     parameters: {
       query?: never;
@@ -3649,6 +3780,48 @@ export interface paths {
      *     goes to tenant.owner_email; the caller never chooses the address.
      */
     post: operations["v1_onboarding_wizard_recover_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/site-edit/apply/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Persist the last-previewed pages, decrementing the reveal's 3 free
+     *     applies. 402 (not a hard block — Publish stays available) once spent;
+     *     the Phase-2 admin Site AI enforces the monthly plan quota separately.
+     */
+    post: operations["v1_onboarding_wizard_site_edit_apply_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/site-edit/preview/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Stream a proposed site edit for the coach's natural-language
+     *     instruction. Free — only Apply consumes a reveal allowance. USD is
+     *     charged on every attempt (kill-switch integrity) regardless of outcome.
+     */
+    post: operations["v1_onboarding_wizard_site_edit_preview_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -8573,6 +8746,8 @@ export interface components {
       body_html?: string;
       status?: components["schemas"]["Status68aEnum"];
       readonly source: components["schemas"]["BlogPostAdminSourceEnum"];
+      /** @description Seeded AI drafts start noindex; cleared when a human edits the post. */
+      noindex?: boolean;
       readonly ai_model: string;
       /** Format: date-time */
       readonly published_at: string | null;
@@ -8598,6 +8773,8 @@ export interface components {
       title: string;
       excerpt?: string;
       meta_description?: string;
+      /** @description Seeded AI drafts start noindex; cleared when a human edits the post. */
+      noindex?: boolean;
       tags?: unknown;
       readonly body_html: string;
       /** Format: date-time */
@@ -9276,6 +9453,8 @@ export interface components {
       body_html?: string;
       status?: components["schemas"]["Status68aEnum"];
       readonly source?: components["schemas"]["BlogPostAdminSourceEnum"];
+      /** @description Seeded AI drafts start noindex; cleared when a human edits the post. */
+      noindex?: boolean;
       readonly ai_model?: string;
       /** Format: date-time */
       readonly published_at?: string | null;
@@ -9917,6 +10096,7 @@ export interface components {
     /**
      * @description * `pending` - Pending
      *     * `provisioning` - Provisioning
+     *     * `provisioned` - Schema ready (site not yet composed)
      *     * `ready` - Ready
      *     * `failed` - Failed
      * @enum {string}
@@ -9924,6 +10104,7 @@ export interface components {
     TenantAdminProvisioningStatusEnum:
       | "pending"
       | "provisioning"
+      | "provisioned"
       | "ready"
       | "failed";
     TenantConfig: {
@@ -10401,7 +10582,9 @@ export interface operations {
   };
   v1_admin_blog_generate_create: {
     parameters: {
-      query?: never;
+      query?: {
+        format?: "json" | "txt";
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -10708,7 +10891,9 @@ export interface operations {
   };
   v1_admin_config_logo_converse_create: {
     parameters: {
-      query?: never;
+      query?: {
+        format?: "json" | "txt";
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -15023,6 +15208,96 @@ export interface operations {
       };
     };
   };
+  v1_onboarding_wizard_compose_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_content_blog_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_content_course_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_content_course_outlines_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_content_event_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_onboarding_wizard_describe_followups_create: {
     parameters: {
       query?: never;
@@ -15149,9 +15424,65 @@ export interface operations {
       };
     };
   };
+  v1_onboarding_wizard_provision_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_onboarding_wizard_recover_create: {
     parameters: {
       query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_site_edit_apply_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_site_edit_preview_create: {
+    parameters: {
+      query?: {
+        format?: "json" | "txt";
+      };
       header?: never;
       path?: never;
       cookie?: never;
