@@ -13,7 +13,10 @@ import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import { CommandPalette } from "@/components/admin/command-palette";
-import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
+import {
+  EntitlementsProvider,
+  useEntitlements,
+} from "@/components/admin/entitlements-provider";
 import { useTenant } from "@/hooks/use-tenant";
 import { buildAdminNav } from "@/lib/admin-nav";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
@@ -26,6 +29,24 @@ interface AdminShellProps {
 }
 
 export function AdminShell({ children, user }: AdminShellProps) {
+  return (
+    <EntitlementsProvider>
+      <AdminShellContent user={user}>{children}</AdminShellContent>
+    </EntitlementsProvider>
+  );
+}
+
+/**
+ * The shell's actual content, split out from `AdminShell` so it renders
+ * INSIDE `EntitlementsProvider` rather than being the component that mounts
+ * it. `useContext` resolves by walking UP the fiber tree from where it's
+ * called — a component that returns a Provider as part of its own JSX is an
+ * ANCESTOR of that provider, not a descendant, so calling `useEntitlements()`
+ * in `AdminShell` itself would only ever see the context's default
+ * (`entitlements: null`), never the fetched value. `hasSiteAi` needs the real
+ * value, so the call has to live one level below the provider.
+ */
+function AdminShellContent({ children, user }: AdminShellProps) {
   const t = useTranslations("admin");
   const [cmdOpen, setCmdOpen] = useState(false);
 
@@ -42,7 +63,13 @@ export function AdminShell({ children, user }: AdminShellProps) {
 
   const status = useSetupStatus();
   const config = useTenant();
-  const [contentExpanded, setContentExpanded] = useState(false);
+  const { entitlements } = useEntitlements();
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+
+  // Confirmed-true only. useIsLocked() fails OPEN (false while entitlements
+  // load), which would briefly hide the manual editor from a free coach — the
+  // one thing this must never do. So read the value explicitly.
+  const hasSiteAi = entitlements?.site_ai === true;
 
   // The site is live only when the checklist's `publish` item is AUTO-derived
   // (compute_setup_state sets source="auto" from tenant.is_published). A coach
@@ -61,9 +88,17 @@ export function AdminShell({ children, user }: AdminShellProps) {
     return gateAdminNav(sections, {
       published,
       enabledModules: config?.enabled_modules ?? [],
-      contentExpanded,
+      hasSiteAi,
+      expandedSections,
     });
-  }, [t, stateReady, published, config?.enabled_modules, contentExpanded]);
+  }, [
+    t,
+    stateReady,
+    published,
+    config?.enabled_modules,
+    hasSiteAi,
+    expandedSections,
+  ]);
 
   // One-time flourish when Marketing opens. Stored in localStorage rather than
   // setup_progress: the setup PATCH endpoint whitelists only `dismissed` and
@@ -84,57 +119,63 @@ export function AdminShell({ children, user }: AdminShellProps) {
   }, [stateReady, published, t]);
 
   return (
-    <EntitlementsProvider>
-      <div className="flex h-screen">
-        <AppSidebar
+    <div className="flex h-screen">
+      <AppSidebar
+        title={t("title")}
+        sections={navSections}
+        onExpandSection={(sectionId) =>
+          setExpandedSections((prev) =>
+            prev.includes(sectionId) ? prev : [...prev, sectionId],
+          )
+        }
+      >
+        {user && <UserMenu user={user} />}
+      </AppSidebar>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <MobileHeader
           title={t("title")}
           sections={navSections}
-          onExpandSection={() => setContentExpanded(true)}
-        >
-          {user && <UserMenu user={user} />}
-        </AppSidebar>
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <MobileHeader
-            title={t("title")}
-            sections={navSections}
-            user={user}
-            onExpandSection={() => setContentExpanded(true)}
-          />
+          user={user}
+          onExpandSection={(sectionId) =>
+            setExpandedSections((prev) =>
+              prev.includes(sectionId) ? prev : [...prev, sectionId],
+            )
+          }
+        />
 
-          {/* Top Header Bar with Global Cmd+K Search & View Site */}
-          <div className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4">
-            <button
-              type="button"
-              onClick={() => setCmdOpen(true)}
-              className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full max-w-sm"
-            >
-              <Search className="h-3.5 w-3.5" />
-              <span className="truncate">Search commands or pages...</span>
-              <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 font-mono text-[10px] bg-background border px-1.5 py-0.5 rounded shadow-sm text-foreground/80">
-                ⌘K
-              </kbd>
-            </button>
+        {/* Top Header Bar with Global Cmd+K Search & View Site */}
+        <div className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => setCmdOpen(true)}
+            className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full max-w-sm"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span className="truncate">Search commands or pages...</span>
+            <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 font-mono text-[10px] bg-background border px-1.5 py-0.5 rounded shadow-sm text-foreground/80">
+              ⌘K
+            </kbd>
+          </button>
 
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs font-medium shrink-0 shadow-sm"
-            >
-              <Link href="/" target="_blank" rel="noopener noreferrer">
-                <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>View Site</span>
-                <ExternalLink className="h-3 w-3 text-muted-foreground/60" />
-              </Link>
-            </Button>
-          </div>
-
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs font-medium shrink-0 shadow-sm"
+          >
+            <Link href="/" target="_blank" rel="noopener noreferrer">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>View Site</span>
+              <ExternalLink className="h-3 w-3 text-muted-foreground/60" />
+            </Link>
+          </Button>
         </div>
-        <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
-        <SetupAssistantBubble />
-        <ImpersonationBanner />
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
-    </EntitlementsProvider>
+      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+      <SetupAssistantBubble />
+      <ImpersonationBanner />
+    </div>
   );
 }
