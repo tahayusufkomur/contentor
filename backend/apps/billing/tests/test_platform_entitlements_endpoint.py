@@ -162,6 +162,11 @@ def test_entitlements_reflect_per_feature_plan_flags(restore_public, live_only_p
     assert body["live"] is True
     assert body["ai_blog"] is False
     assert body["student_bot"] is False
+    # site_ai follows the same "paid AND quota>0" pattern — live_only_plan
+    # never sets max_site_ai_updates, so it defaults to 0. A regression that
+    # collapsed the gate to "paid alone" (the logo_studio pattern) would pass
+    # every other assertion here and go undetected without this one.
+    assert body["site_ai"] is False
     # Anything gated purely on "has a paid plan" is unlocked.
     assert body["logo_studio"] is True
     assert body["payouts"] is True
