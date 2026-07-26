@@ -49,6 +49,7 @@ urlpatterns = [
     path("api/v1/admin/", include("apps.tenant_config.urls")),
     path("api/v1/admin/", include("apps.notifications.admin_urls")),
     path("api/v1/admin/", include("apps.usage.admin_urls")),
+    path("api/v1/admin/site-ai/", include("apps.core.site_ai_admin_urls")),
     # Coach-only unified content calendar (live + blog + email) for /admin/calendar.
     path("api/v1/admin/content-calendar/", include("apps.live.urls_content_calendar")),
     path("api/v1/blog/", include("apps.blog.urls")),
