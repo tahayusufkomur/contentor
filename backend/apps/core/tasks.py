@@ -510,6 +510,30 @@ def purge_ai_transcripts():
 
 
 @shared_task
+def cleanup_abandoned_signups():
+    """Reclaim abandoned signups. Stage 1 warns idle tenants; stage 2 drops the
+    schema + row of tenants whose warning grace has elapsed. Destructive — the
+    selection guards live in recovery.find_abandoned_tenants."""
+    from apps.core.onboarding.recovery import find_abandoned_tenants, send_abandon_warning
+
+    to_warn, to_delete = find_abandoned_tenants()
+    for tenant in to_warn:
+        try:
+            send_abandon_warning(tenant)
+        except Exception:  # noqa: BLE001 — one bad send must not stop the batch
+            logger.exception("abandon warning failed for %s", tenant.slug)
+    deleted = 0
+    for tenant in to_delete:
+        slug = tenant.slug
+        try:
+            tenant.delete(force_drop=True)  # drops schema iff it exists, then row
+            deleted += 1
+        except Exception:  # noqa: BLE001
+            logger.exception("abandoned-tenant delete failed for %s", slug)
+    logger.info("cleanup_abandoned_signups: warned=%d deleted=%d", len(to_warn), deleted)
+
+
+@shared_task
 def send_wizard_recovery_emails():
     """Hourly beat: one nudge to coaches who abandoned the signup wizard."""
     from apps.core.onboarding import recovery

@@ -83,15 +83,15 @@ def _row_tenant(schema, **kw):
     mocked). region='global' so the wizard token's slugify(brand_name) + region
     resolve back to this row."""
     connection.set_schema_to_public()
-    defaults = dict(
-        schema_name=schema,
-        name=schema.replace("_", "-"),
-        slug=schema.replace("_", "-"),
-        subdomain=schema.replace("_", "-"),
-        owner_email=f"{schema}@example.com",
-        region="global",
-        provisioning_status="pending",
-    )
+    defaults = {
+        "schema_name": schema,
+        "name": schema.replace("_", "-"),
+        "slug": schema.replace("_", "-"),
+        "subdomain": schema.replace("_", "-"),
+        "owner_email": f"{schema}@example.com",
+        "region": "global",
+        "provisioning_status": "pending",
+    }
     defaults.update(kw)
     return Tenant.objects.create(**defaults)
 
@@ -102,9 +102,7 @@ def _wizard_token(tenant):
     # already-slug tenant.slug as brand_name slugifies to itself, so it resolves.
     from apps.accounts.tokens import create_wizard_token
 
-    return create_wizard_token(
-        tenant.owner_email, tenant.name, tenant.slug, region=tenant.region or "global"
-    )
+    return create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region=tenant.region or "global")
 
 
 # The view imports the task function-locally to dodge an import cycle (the

@@ -38,6 +38,10 @@ app.conf.beat_schedule = {
         "task": "apps.core.tasks.send_wizard_recovery_emails",
         "schedule": crontab(minute="25"),
     },
+    "cleanup-abandoned-signups": {
+        "task": "apps.core.tasks.cleanup_abandoned_signups",
+        "schedule": crontab(hour="4", minute="40"),
+    },
     "logbook-archive": {
         "task": "apps.logbook.tasks.archive_logbook_days",
         "schedule": crontab(hour="3", minute="40"),
