@@ -68,6 +68,7 @@ def test_apply_is_refused_when_no_allowance_remains(client):
             return_value={"enabled": False, "remaining": 0, "limit": 0, "reason": "upgrade_required"},
         ),
         mock.patch("apps.core.site_ai_admin.site_ai.apply_edit") as apply_edit,
+        mock.patch("apps.core.site_ai_admin.site_ai.record_update") as record_update,
     ):
         resp = client.post(
             "/api/v1/admin/site-ai/apply/",
@@ -77,6 +78,7 @@ def test_apply_is_refused_when_no_allowance_remains(client):
     assert resp.status_code == 402
     assert resp.json()["reason"] == "upgrade_required"
     apply_edit.assert_not_called()  # nothing is persisted when refused
+    record_update.assert_not_called()  # and no credit is spent either
 
 
 def test_endpoints_reject_anonymous_callers(tenant_ctx):
