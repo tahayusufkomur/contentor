@@ -240,16 +240,19 @@ def test_publish_blockers_payouts_only_when_paid_content(coach, config):
         assert _blockers(config, connection.tenant) == {"payouts"}
 
 
-def test_publish_blockers_demo_must_be_removed(client, coach, config):
-    """Unremoved demo blocks publish, and setup-status exposes the gate."""
+def test_publish_blockers_ignore_unremoved_demo(client, coach, config):
+    """Unremoved demo/seeded content no longer blocks publish (AI-seeding
+    plan): demo_cleanup is a non-blocking checklist nudge only now. look/
+    first_course still block independently here since this tenant has
+    neither a logo nor a published course of its own."""
     from django.db import connection
 
     demo = Course.objects.create(title="D", slug="d-pub", instructor=coach)
     register_seeded([demo], niche="general")
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
-        assert _blockers(config, connection.tenant) >= {"look", "demo_cleanup", "first_course"}
+        assert _blockers(config, connection.tenant) == {"look", "first_course"}
         body = client.get("/api/v1/admin/setup-status/").json()
-    assert set(body["publish_blockers"]) >= {"look", "demo_cleanup", "first_course"}
+    assert set(body["publish_blockers"]) == {"look", "first_course"}
     assert body["has_paid_content"] is False
     demo.delete()
 

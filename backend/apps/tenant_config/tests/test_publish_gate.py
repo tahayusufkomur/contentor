@@ -108,3 +108,17 @@ def test_manual_tick_never_satisfies_a_blocker(config):
     config.save()
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=True):
         assert "first_course" in publish_blockers(config, _tenant())
+
+
+def test_seeded_content_does_not_block_publishing(config, coach):
+    """Seeded AI starter content registers SeededObject rows; that must NOT
+    reintroduce a demo_cleanup publish blocker (Plan 4 — AI seeding)."""
+    from apps.blog.models import BlogPost
+    from apps.tenant_config.seeding import register_seeded
+
+    _published_course(coach)  # satisfies first_course
+    seeded = BlogPost.objects.create(title="Seeded", slug="seeded", status="draft", source="ai", noindex=True)
+    register_seeded([seeded], niche="general")
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=True):
+        blockers = publish_blockers(config, _tenant(goals=["sell_courses"]))
+    assert "demo_cleanup" not in blockers

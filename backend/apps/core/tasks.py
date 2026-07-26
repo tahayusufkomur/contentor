@@ -453,6 +453,16 @@ def compose_wizard_site(self, tenant_id):
         answers = (tenant.wizard_state or {}).get("answers") or {}
         _apply_wizard_answers(tenant, answers, preferred_locale)
 
+        try:
+            from apps.core.onboarding import ai_curate, seeding_content
+
+            brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+            with tenant_context(tenant):
+                seeding_content.seed_starter_posts(tenant, brief)
+                seeding_content.seed_draft_products(tenant, brief)
+        except Exception:  # noqa: BLE001 — seeding is best-effort, never fails the reveal
+            logger.exception("reveal seeding failed for %s", tenant.slug)
+
         _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
