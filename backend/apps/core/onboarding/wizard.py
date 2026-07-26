@@ -17,6 +17,10 @@ from . import wizard_catalog
 
 logger = logging.getLogger(__name__)
 
+#: Provisioning states in which the wizard is still being filled in. See the
+#: PATCH guard in wizard_state for why 'provisioned' belongs here.
+WIZARD_OPEN_STATUSES = ("pending", "provisioned")
+
 
 @api_view(["GET"])
 @authentication_classes([])
@@ -82,7 +86,15 @@ def wizard_state(request):
         return err
 
     if request.method == "PATCH":
-        if tenant.provisioning_status != "pending" or tenant.template_seed_status in ("seeding", "ready", "skipped"):
+        # 'provisioned' is mid-wizard for the content-first flow: the schema is
+        # created early (at the content step) so the coach can write a real
+        # course/event/post, but the wizard is still running and must keep
+        # saving answers. 'provisioning'/'ready'/'failed' really are closed.
+        if tenant.provisioning_status not in WIZARD_OPEN_STATUSES or tenant.template_seed_status in (
+            "seeding",
+            "ready",
+            "skipped",
+        ):
             return Response({"detail": "wizard_closed"}, status=409)
 
         answers_in = request.data.get("answers") or {}

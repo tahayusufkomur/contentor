@@ -170,3 +170,71 @@ def test_report_never_counts_the_public_row_and_survives_an_empty_bucket():
     for bucket in WIZARD_BUCKETS:
         assert report[bucket]["signups"] == 0
         assert report[bucket]["publish_rate"] == 0.0
+
+
+# ── the content flow keeps editing after early provisioning ──────────────────
+
+
+@pytest.mark.django_db(transaction=True)
+def test_wizard_state_patch_still_works_after_early_provisioning():
+    """The content-first flow provisions the schema mid-wizard (status
+    'provisioned') and must keep saving answers afterwards. Closing the wizard
+    on any non-'pending' status would 409 every save from the course step on."""
+    from apps.accounts.tokens import create_wizard_token
+
+    api = APIClient()
+    connection.set_schema_to_public()
+    Tenant.objects.filter(slug="patch-after-prov").delete()
+    tenant = Tenant.objects.create(
+        schema_name="patch_after_prov",
+        name="patch-after-prov",
+        slug="patch-after-prov",
+        subdomain="patch-after-prov",
+        owner_email="patch-after-prov@example.com",
+        region="global",
+        provisioning_status="provisioned",  # early provisioning already ran
+    )
+    token = create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region="global")
+    try:
+        resp = api.patch(
+            "/api/v1/onboarding/wizard/state/",
+            {"token": token, "answers": {"course_created": True}, "current_step": "content.event"},
+            format="json",
+        )
+        assert resp.status_code == 200, resp.content
+        tenant.refresh_from_db()
+        assert (tenant.wizard_state or {}).get("answers", {}).get("course_created") is True
+    finally:
+        connection.set_schema_to_public()
+        Tenant.objects.filter(pk=tenant.pk).delete()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_wizard_state_patch_is_still_closed_once_provisioning_or_ready():
+    """The classic in-flight and finished states must stay closed — those are
+    real 'the wizard is over' signals."""
+    from apps.accounts.tokens import create_wizard_token
+
+    api = APIClient()
+    connection.set_schema_to_public()
+    tenant = Tenant.objects.create(
+        schema_name="patch_closed",
+        name="patch-closed",
+        slug="patch-closed",
+        subdomain="patch-closed",
+        owner_email="patch-closed@example.com",
+        region="global",
+    )
+    token = create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region="global")
+    try:
+        for status in ("provisioning", "ready"):
+            Tenant.objects.filter(pk=tenant.pk).update(provisioning_status=status)
+            resp = api.patch(
+                "/api/v1/onboarding/wizard/state/",
+                {"token": token, "answers": {"niche": "yoga"}, "current_step": "business.describe"},
+                format="json",
+            )
+            assert resp.status_code == 409, f"{status} should close the wizard: {resp.content}"
+    finally:
+        connection.set_schema_to_public()
+        Tenant.objects.filter(pk=tenant.pk).delete()

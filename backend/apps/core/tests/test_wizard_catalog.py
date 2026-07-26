@@ -164,3 +164,14 @@ def test_description_followups_invalid_shapes():
     assert wc.validate_answers({"description_followups": {"for": "x", "items": [{}, {}, {}]}})  # > 2 items
     assert wc.validate_answers({"description_followups": {"for": "x", "items": [{"q": "q" * 201, "a": ""}]}})
     assert wc.validate_answers({"description_followups": {"for": "x", "items": [{"q": "q", "a": "a" * 501}]}})
+
+
+def test_content_flow_flags_are_valid_booleans():
+    """The content-first wizard PATCHes these; unknown keys are rejected, so
+    they must be declared or the whole save 400s."""
+    assert wc.validate_answers({"course_created": True, "event_created": True, "blog_created": True}) == []
+
+
+def test_content_flow_flags_reject_non_booleans():
+    assert wc.validate_answers({"course_created": "yes"}) != []
+    assert wc.validate_answers({"blog_created": 1}) != []
