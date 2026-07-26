@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .content import wizard_course_outlines, wizard_create_course
+from .content import wizard_course_outlines, wizard_create_course, wizard_create_event
 from .recovery import wizard_recover
 from .views import (
     check_brand_name,
@@ -44,6 +44,7 @@ urlpatterns = [
     path("wizard/provision/", wizard_provision, name="wizard-provision"),
     path("wizard/content/course-outlines/", wizard_course_outlines, name="wizard-course-outlines"),
     path("wizard/content/course/", wizard_create_course, name="wizard-create-course"),
+    path("wizard/content/event/", wizard_create_event, name="wizard-create-event"),
     path("wizard/describe-followups/", wizard_describe_followups, name="wizard-describe-followups"),
     path("wizard/checkout/", wizard_checkout, name="wizard-checkout"),
     path("wizard/checkout/sync/", wizard_checkout_sync, name="wizard-checkout-sync"),

@@ -3,10 +3,12 @@ wizard-token auth (no coach JWT exists yet). Real-schema harness: provision the
 tenant with Plan 3a's schema step, assert inside tenant_context, drop in
 finally."""
 
+from datetime import timedelta
 from unittest import mock
 
 import pytest
 from django.db import connection
+from django.utils import timezone
 from django_tenants.utils import tenant_context
 from rest_framework.test import APIClient
 
@@ -190,6 +192,70 @@ def test_created_course_counts_as_the_coachs_own_content(client, restore_public)
             assert _has_own(Course, [], queryset=Course.objects.filter(is_published=True)) is True
     finally:
         _drop("wc_own")
+
+
+def test_create_live_event(client, restore_public):
+    t = _provisioned_tenant("wc_event")
+    try:
+        when = (timezone.now() + timedelta(days=7)).isoformat()
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/event/",
+            {"token": _token(t), "kind": "live", "title": "Kickoff Class", "scheduled_at": when},
+            format="json",
+        )
+        assert resp.status_code == 201, resp.content
+        with tenant_context(t):
+            from apps.live.models import LiveClass
+
+            event = LiveClass.objects.get(pk=resp.json()["id"])
+            assert event.title == "Kickoff Class"
+            assert event.instructor.role == "owner"
+            # _ScheduledOnCreateMixin: a dated event must not stay an invisible draft.
+            assert event.status == "scheduled"
+    finally:
+        _drop("wc_event")
+
+
+def test_create_onsite_event(client, restore_public):
+    """The onsite branch takes a different serializer but the same owner FK —
+    apps/live/views.py's onsite_event_list_create also saves instructor=user."""
+    t = _provisioned_tenant("wc_onsite")
+    try:
+        when = (timezone.now() + timedelta(days=10)).isoformat()
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/event/",
+            {
+                "token": _token(t),
+                "kind": "onsite",
+                "title": "Studio Open Day",
+                "location": "Kadıköy Studio",
+                "scheduled_at": when,
+            },
+            format="json",
+        )
+        assert resp.status_code == 201, resp.content
+        with tenant_context(t):
+            from apps.live.models import OnsiteEvent
+
+            event = OnsiteEvent.objects.get(pk=resp.json()["id"])
+            assert event.location == "Kadıköy Studio"
+            assert event.instructor.role == "owner"
+            assert event.status == "scheduled"
+    finally:
+        _drop("wc_onsite")
+
+
+def test_create_event_requires_title(client, restore_public):
+    t = _provisioned_tenant("wc_noevent")
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/event/",
+            {"token": _token(t), "kind": "live"},
+            format="json",
+        )
+        assert resp.status_code == 400
+    finally:
+        _drop("wc_noevent")
 
 
 def test_create_course_requires_title(client, restore_public):

@@ -80,6 +80,27 @@ def wizard_create_course(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+def wizard_create_event(request):
+    """The coach's first event: kind='live' -> LiveClass, 'onsite' -> OnsiteEvent.
+    Both models carry an instructor FK and both list views save it from the
+    request user (apps/live/views.py), so both get the owner here."""
+    from apps.live.serializers import LiveClassCreateSerializer, OnsiteEventCreateSerializer
+
+    tenant, owner, err = _wizard_content_setup(request)
+    if err:
+        return err
+    kind = request.data.get("kind", "live")
+    serializer_class = OnsiteEventCreateSerializer if kind == "onsite" else LiveClassCreateSerializer
+    with tenant_context(tenant):
+        serializer = serializer_class(data=_content_payload(request, drop=("token", "kind")))
+        serializer.is_valid(raise_exception=True)
+        event = serializer.save(instructor=owner)
+        return Response({"id": event.id, "kind": kind}, status=201)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def wizard_course_outlines(request):
     from .course_outlines import generate_course_outlines
 
