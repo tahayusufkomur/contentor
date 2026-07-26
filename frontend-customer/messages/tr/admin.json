@@ -37,6 +37,13 @@
       "billing": "Faturalandırma",
       "store": "Mağaza",
       "payouts": "Ödemeler"
+    },
+    "locked": {
+      "marketing": "Pazarlama'yı açmak için sitenizi yayınlayın"
+    },
+    "more": "+{count} tane daha",
+    "unlocked": {
+      "marketing": "🎉 Siteniz yayında — Pazarlama artık açık"
     }
   },
   "assistant": {

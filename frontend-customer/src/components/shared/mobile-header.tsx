@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { isNavItemActive } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";
@@ -10,6 +11,7 @@ import {
   ChevronDown,
   ExternalLink,
   Globe,
+  Lock,
   LogOut,
   Menu,
   X,
@@ -25,9 +27,17 @@ interface MobileHeaderProps {
   title: string;
   sections: NavSection[];
   user?: User | null;
+  /** Called when the coach opens a section's "+ More" disclosure. */
+  onExpandSection?: (sectionId: string) => void;
 }
 
-export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
+export function MobileHeader({
+  title,
+  sections,
+  user,
+  onExpandSection,
+}: MobileHeaderProps) {
+  const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const { pathname, pendingHref, navigate } = useNavigation();
@@ -126,6 +136,26 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
               );
             }
 
+            if (section.locked) {
+              return (
+                <div key={section.id} className="space-y-1">
+                  <div className="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">
+                    <span>{section.label}</span>
+                    <Lock className="h-3 w-3" />
+                  </div>
+                  <NavLink
+                    href={section.locked.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground/60 transition-colors hover:bg-accent/40 hover:text-muted-foreground"
+                  >
+                    <span className="text-xs">
+                      {t(section.locked.reasonKey)}
+                    </span>
+                  </NavLink>
+                </div>
+              );
+            }
+
             const sectionOpen = openSections[section.id] ?? false;
 
             return (
@@ -175,6 +205,15 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                         )}
                       </NavLink>
                     ))}
+                    {(section.hiddenCount ?? 0) > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => onExpandSection?.(section.id)}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                      >
+                        {t("nav.more", { count: section.hiddenCount ?? 0 })}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
