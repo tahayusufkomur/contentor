@@ -24,10 +24,11 @@ logger = logging.getLogger(__name__)
 #: PATCH guard in wizard_state for why 'provisioned' belongs here.
 WIZARD_OPEN_STATUSES = ("pending", "provisioned")
 
-#: The reveal grants this many free site-edit applies before the Phase-2
-#: monthly plan quota (site_ai.availability) would take over — the magic
-#: moment must never paywall the first experience.
-REVEAL_FREE_APPLIES = 3
+# One free AI refinement at the reveal (Phase 2 decision 4). The auto-generated
+# design itself is always free; this budgets follow-up chat edits. The ongoing
+# monthly allowance lives on the plan (max_site_ai_updates) and is enforced by
+# the admin Site AI panel, not here.
+REVEAL_FREE_APPLIES = 1
 
 
 @api_view(["GET"])
@@ -365,9 +366,9 @@ def _apply_last_preview(tenant, pages):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def wizard_site_edit_apply(request):
-    """Persist the last-previewed pages, decrementing the reveal's 3 free
-    applies. 402 (not a hard block — Publish stays available) once spent;
-    the Phase-2 admin Site AI enforces the monthly plan quota separately."""
+    """Persist the last-previewed pages, decrementing the reveal's single free
+    apply. 402 (not a hard block — Publish stays available) once spent; the
+    admin Site AI panel enforces the monthly plan quota separately."""
     from apps.core.onboarding import site_ai
 
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)

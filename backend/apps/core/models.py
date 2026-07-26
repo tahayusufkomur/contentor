@@ -197,8 +197,8 @@ class PlatformPlan(models.Model):
     # assistant is not in the plan (feature is paid-tier only).
     max_student_bot_questions = models.PositiveIntegerField(default=0)
     # AI site-edit "applies" (Site AI / reveal chat) included per calendar
-    # month (0 = feature not in plan). The reveal itself grants 3 free
-    # applies regardless of this limit (wizard_state counter, not this meter).
+    # month (0 = feature not in plan). The reveal itself grants one free
+    # apply regardless of this limit (wizard_state counter, not this meter).
     max_site_ai_updates = models.PositiveIntegerField(default=0)
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     # Multi-currency prices. Shape:

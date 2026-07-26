@@ -300,7 +300,7 @@
       "applying": "Applying…",
       "discard": "Discard",
       "remaining": "Free refinements left: {count}",
-      "exhausted": "You've used your free refinements for now — you can still publish anytime.",
+      "exhausted": "That was your free refinement — you can still publish anytime, and unlock more with a paid plan.",
       "error": "Something went wrong. Please try again."
     }
   }

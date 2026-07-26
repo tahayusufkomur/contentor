@@ -47,9 +47,9 @@ def plan_limit(tenant):
 
 
 def availability(tenant, month=None):
-    """The Phase-2 admin Site AI's monthly-quota gate. The reveal's 3 free
-    applies are a separate counter (wizard_state["reveal_applies_used"]) and
-    do not consult this function."""
+    """The Phase-2 admin Site AI's monthly-quota gate. The reveal's single free
+    apply is a separate counter (wizard_state["reveal_applies_used"]) and
+    does not consult this function."""
     limit = plan_limit(tenant)
     used = tenant_usage(tenant.schema_name, month=month).updates_used
     remaining = max(0, limit - used)
