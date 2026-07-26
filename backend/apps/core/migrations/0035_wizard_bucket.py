@@ -4,15 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0034_lazy_provisioning'),
+        ("core", "0034_lazy_provisioning"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenant',
-            name='wizard_bucket',
-            field=models.CharField(blank=True, default='', help_text="A/B holdout bucket ('control' | 'treatment'), assigned once at email-verify and never changed. Empty on tenants created before the holdout. See apps.core.onboarding.experiments.", max_length=16),
+            model_name="tenant",
+            name="wizard_bucket",
+            field=models.CharField(
+                blank=True,
+                default="",
+                help_text="A/B holdout bucket ('control' | 'treatment'), assigned once at email-verify and never changed. Empty on tenants created before the holdout. See apps.core.onboarding.experiments.",
+                max_length=16,
+            ),
         ),
     ]
