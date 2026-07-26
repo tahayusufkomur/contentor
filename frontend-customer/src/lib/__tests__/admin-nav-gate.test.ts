@@ -28,7 +28,9 @@ describe("gateAdminNav — Marketing lock", () => {
   });
 
   it("unlocks Marketing once published", () => {
-    expect(section(base({ published: true }), "marketing")?.locked).toBeUndefined();
+    expect(
+      section(base({ published: true }), "marketing")?.locked,
+    ).toBeUndefined();
   });
 
   it("never locks Audience, Money, My Site, Home or Settings", () => {
@@ -96,7 +98,13 @@ describe("gateAdminNav — no regression for established tenants", () => {
   it("a published tenant with every module sees an ungated nav", () => {
     const state = base({
       published: true,
-      enabledModules: ["courses", "live", "downloads", "campaigns", "community"],
+      enabledModules: [
+        "courses",
+        "live",
+        "downloads",
+        "campaigns",
+        "community",
+      ],
       contentExpanded: false,
     });
     expect(section(state, "marketing")?.locked).toBeUndefined();
