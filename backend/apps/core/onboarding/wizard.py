@@ -63,6 +63,7 @@ def _state_body(tenant) -> dict:
         "status": tenant.provisioning_status,
         "template_status": tenant.template_seed_status,
         "has_paid_platform_plan": tenant.has_paid_platform_plan,
+        "wizard_bucket": tenant.wizard_bucket,
         "state": tenant.wizard_state or {},
     }
 

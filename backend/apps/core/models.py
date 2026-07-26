@@ -92,6 +92,16 @@ class Tenant(TenantMixin):
             "Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py)."
         ),
     )
+    wizard_bucket = models.CharField(
+        max_length=16,
+        blank=True,
+        default="",
+        help_text=(
+            "A/B holdout bucket ('control' | 'treatment'), assigned once at "
+            "email-verify and never changed. Empty on tenants created before "
+            "the holdout. See apps.core.onboarding.experiments."
+        ),
+    )
     free_blog_grant_used = models.BooleanField(
         default=False,
         help_text="The free plan's one-off AI blog generation has been spent. Lifetime, never reset.",
