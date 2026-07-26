@@ -73,6 +73,12 @@ export default function AdminSiteAiPage() {
           { onPhase: setPhase },
           controller.signal,
         );
+        if (!res.pages) {
+          // The backend's pre-stream budget/provider guard answered instead
+          // of generating a preview (see site_ai_admin.py's site_ai_preview).
+          toast.error(t("siteAi.error"));
+          return;
+        }
         setPreview(res.pages);
       } catch (err) {
         if (isAbortError(err)) return; // the coach cancelled; nothing to report
