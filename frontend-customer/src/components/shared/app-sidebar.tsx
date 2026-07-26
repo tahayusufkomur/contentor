@@ -37,6 +37,12 @@ export interface NavSection {
    *  Used for single-page destinations like Home and Settings. A flat section
    *  must contain exactly one item; that item is rendered directly. */
   flat?: boolean;
+  /** Stage-gated: greyed but still clickable. `reasonKey` is an i18n key
+   *  explaining what unlocks it; `href` points at the milestone that does. */
+  locked?: { reasonKey: string; href: string };
+  /** Progressive disclosure: this many items are hidden behind a "+ More"
+   *  row. Zero/undefined means everything is shown. */
+  hiddenCount?: number;
 }
 
 interface AppSidebarProps {
