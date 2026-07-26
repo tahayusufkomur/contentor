@@ -103,7 +103,11 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       id: "audience",
       label: t("nav.sections.audience"),
       items: [
-        { label: t("nav.items.students"), href: "/admin/students", icon: Users },
+        {
+          label: t("nav.items.students"),
+          href: "/admin/students",
+          icon: Users,
+        },
         {
           label: t("nav.items.communityFeed"),
           href: "/admin/community",

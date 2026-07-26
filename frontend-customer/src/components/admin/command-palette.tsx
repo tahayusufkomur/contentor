@@ -31,6 +31,9 @@ import {
 interface CommandItem {
   id: string;
   label: string;
+  // These categories predate the sidebar's seven-destination IA (see
+  // lib/admin-nav.ts) — the palette is a flat searchable list of every route,
+  // so its buckets are cosmetic and deliberately left unaligned for now.
   category:
     | "Quick Create"
     | "Products"
