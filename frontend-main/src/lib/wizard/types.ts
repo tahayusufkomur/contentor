@@ -43,6 +43,12 @@ export interface WizardAnswers {
   hero_style?: string;
   page_layouts?: Record<string, string>;
   logo?: WizardLogoAnswer;
+  /** Content-first flow: set once the coach creates each item. Absent means
+   * "not created" — skipping deliberately leaves it unset so the publish gate
+   * and the admin checklist still surface the gap. */
+  course_created?: boolean;
+  event_created?: boolean;
+  blog_created?: boolean;
 }
 
 export interface WizardState {
@@ -60,6 +66,9 @@ export interface WizardStateResponse {
   status: string;
   template_status: string;
   has_paid_platform_plan: boolean;
+  /** A/B holdout bucket: "treatment" -> content-first flow, anything else
+   * (including "" on tenants created before the holdout) -> classic. */
+  wizard_bucket?: string;
   state: WizardState;
 }
 
