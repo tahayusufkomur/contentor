@@ -10,19 +10,18 @@
   },
   "nav": {
     "sections": {
-      "overview": "Overview",
-      "products": "Products & Teaching",
-      "audience": "Audience & Marketing",
-      "website": "Website",
-      "media": "Media",
-      "operations": "Settings & Finance"
+      "content": "Content",
+      "mySite": "My Site",
+      "audience": "Audience",
+      "marketing": "Marketing",
+      "money": "Money"
     },
     "items": {
+      "home": "Home",
       "communityFeed": "Community",
-      "dashboard": "Dashboard",
       "courses": "Courses",
       "calendar": "Calendar",
-      "photos": "Photos",
+      "library": "Library",
       "videos": "Videos",
       "downloads": "Downloads",
       "liveEvents": "Live Events",

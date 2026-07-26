@@ -82,10 +82,10 @@ test("community: enable → post → pin → report → remove → ban", async (
   const coachPage = await coach.newPage();
 
   await coachPage.goto(`${TENANT}/admin/community`);
-  // Exact match: the admin sidebar now has a "Settings & Finance" section
-  // header (also a <button>), so a loose /settings/i regex strict-mode-violates
-  // against it. Only the community tab is named exactly "Settings" (the
-  // sidebar's own "Settings" entry is a <Link>, not matched by role=button).
+  // The community tab named exactly "Settings" is now the only role=button by
+  // that name: the admin sidebar renders Settings as a flat <Link> (a bare
+  // top-level destination), and the five collapsible section headers are named
+  // Content / My Site / Audience / Marketing / Money — none of them "Settings".
   await coachPage
     .getByRole("button", { name: "Settings", exact: true })
     .click();

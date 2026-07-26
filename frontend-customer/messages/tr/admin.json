@@ -10,19 +10,18 @@
   },
   "nav": {
     "sections": {
-      "overview": "Genel Bakış",
-      "products": "Ürünler ve Eğitim",
-      "audience": "Kitle ve Pazarlama",
-      "website": "Web Sitesi",
-      "media": "Medya",
-      "operations": "Ayarlar ve Finans"
+      "content": "İçerik",
+      "mySite": "Sitem",
+      "audience": "Kitle",
+      "marketing": "Pazarlama",
+      "money": "Gelir"
     },
     "items": {
+      "home": "Ana Sayfa",
       "communityFeed": "Topluluk",
-      "dashboard": "Panel",
       "courses": "Kurslar",
       "calendar": "Takvim",
-      "photos": "Fotoğraflar",
+      "library": "Kitaplık",
       "videos": "Videolar",
       "downloads": "İndirilenler",
       "liveEvents": "Canlı Etkinlikler",

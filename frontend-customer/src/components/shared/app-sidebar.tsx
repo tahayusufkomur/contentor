@@ -33,6 +33,10 @@ export interface NavSection {
   id: string;
   label: string;
   items: NavItem[];
+  /** Render as a single bare top-level link (no collapsible group header).
+   *  Used for single-page destinations like Home and Settings. A flat section
+   *  must contain exactly one item; that item is rendered directly. */
+  flat?: boolean;
 }
 
 interface AppSidebarProps {
@@ -107,6 +111,39 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">
         {sections.map((section, index) => {
+          if (section.flat) {
+            const item = section.items[0];
+            return (
+              <NavLink
+                key={section.id}
+                href={item.href}
+                target={item.external ? "_blank" : undefined}
+                rel={item.external ? "noopener noreferrer" : undefined}
+                title={collapsed ? item.label : undefined}
+                className={({ active }) =>
+                  cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                    collapsed && "justify-center px-2",
+                    active
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )
+                }
+              >
+                {({ pending }) => (
+                  <>
+                    {pending ? (
+                      <Spinner size="sm" className="shrink-0" />
+                    ) : (
+                      <item.icon className="h-4 w-4 shrink-0" />
+                    )}
+                    {!collapsed && <span>{item.label}</span>}
+                  </>
+                )}
+              </NavLink>
+            );
+          }
+
           const sectionOpen = openSections[section.id] ?? true;
 
           return (
