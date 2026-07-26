@@ -50,6 +50,9 @@ export interface NavSection {
   /** Progressive disclosure: this many items are hidden behind a "+ More"
    *  row. Zero/undefined means everything is shown. */
   hiddenCount?: number;
+  /** i18n key for the disclosure row's label. Defaults to "nav.more"
+   *  ("+ N more"); My Site uses "nav.advancedEditing" instead. */
+  moreLabelKey?: string;
 }
 
 interface AppSidebarProps {
@@ -266,7 +269,9 @@ export function AppSidebar({
                       onClick={() => onExpandSection?.(section.id)}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
-                      {t("nav.more", { count: section.hiddenCount ?? 0 })}
+                      {t(section.moreLabelKey ?? "nav.more", {
+                        count: section.hiddenCount ?? 0,
+                      })}
                     </button>
                   )}
                 </div>

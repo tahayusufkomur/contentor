@@ -8,7 +8,8 @@ const t = (key: string) => key; // identity translator: assert structure, not co
 const base = (over: Partial<NavGateState> = {}): NavGateState => ({
   published: false,
   enabledModules: ["analytics", "billing", "courses", "pages"],
-  contentExpanded: false,
+  expandedSections: [],
+  hasSiteAi: false,
   ...over,
 });
 
@@ -74,7 +75,7 @@ describe("gateAdminNav — Content progressive disclosure", () => {
   });
 
   it("reveals everything when expanded, and reports nothing hidden", () => {
-    const state = base({ contentExpanded: true });
+    const state = base({ expandedSections: ["content"] });
     expect(hrefs(state, "content")).toEqual([
       "/admin/courses",
       "/admin/live",
@@ -105,7 +106,6 @@ describe("gateAdminNav — no regression for established tenants", () => {
         "campaigns",
         "community",
       ],
-      contentExpanded: false,
     });
     expect(section(state, "marketing")?.locked).toBeUndefined();
     expect(section(state, "content")?.hiddenCount).toBe(1); // only Library
@@ -121,5 +121,41 @@ describe("gateAdminNav — no regression for established tenants", () => {
       "money",
       "settings",
     ]);
+  });
+});
+
+describe("gateAdminNav — My Site editor de-emphasis", () => {
+  it("keeps the manual editor prominent for a coach without AI", () => {
+    const mySite = section(base({ hasSiteAi: false }), "mySite");
+    expect(mySite?.items.map((i) => i.href)).toEqual([
+      "/admin/site-ai",
+      "/?edit=1",
+      "/?edit=1&section=brand",
+      "/admin/assistant",
+    ]);
+    expect(mySite?.hiddenCount ?? 0).toBe(0);
+  });
+
+  it("tucks Edit site and Design behind Advanced editing when the coach has AI", () => {
+    const mySite = section(base({ hasSiteAi: true }), "mySite");
+    expect(mySite?.items.map((i) => i.href)).toEqual([
+      "/admin/site-ai",
+      "/admin/assistant",
+    ]);
+    expect(mySite?.hiddenCount).toBe(2);
+    expect(mySite?.moreLabelKey).toBe("nav.advancedEditing");
+  });
+
+  it("reveals the manual editor when Advanced editing is expanded", () => {
+    const mySite = section(
+      base({ hasSiteAi: true, expandedSections: ["mySite"] }),
+      "mySite",
+    );
+    expect(mySite?.items.map((i) => i.href)).toContain("/?edit=1");
+    expect(mySite?.hiddenCount).toBe(0);
+  });
+
+  it("uses the default + More label for Content", () => {
+    expect(section(base(), "content")?.moreLabelKey).toBeUndefined();
   });
 });

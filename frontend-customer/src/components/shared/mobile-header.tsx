@@ -211,7 +211,9 @@ export function MobileHeader({
                         onClick={() => onExpandSection?.(section.id)}
                         className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                       >
-                        {t("nav.more", { count: section.hiddenCount ?? 0 })}
+                        {t(section.moreLabelKey ?? "nav.more", {
+                          count: section.hiddenCount ?? 0,
+                        })}
                       </button>
                     )}
                   </div>
