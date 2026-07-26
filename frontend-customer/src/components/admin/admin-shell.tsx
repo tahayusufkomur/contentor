@@ -44,11 +44,13 @@ export function AdminShell({ children, user }: AdminShellProps) {
   const config = useTenant();
   const [contentExpanded, setContentExpanded] = useState(false);
 
-  // The site is live when the checklist's `publish` item is done — that item is
-  // computed from tenant.is_published, never from a manual tick.
-  const published = Boolean(
-    status?.items.find((item) => item.key === "publish")?.done,
-  );
+  // The site is live only when the checklist's `publish` item is AUTO-derived
+  // (compute_setup_state sets source="auto" from tenant.is_published). A coach
+  // can manually tick `publish` in the Setup Assistant, which sets done=true
+  // with source="manual" — that must never unlock Marketing or fire the
+  // celebration, per this plan's "never gate on manual ticks" constraint.
+  const published =
+    status?.items.find((item) => item.key === "publish")?.source === "auto";
   // Fail open: until BOTH signals have loaded, render the nav ungated so an
   // established coach never sees a flash of locks they already cleared.
   const stateReady = status !== null && config !== null;
