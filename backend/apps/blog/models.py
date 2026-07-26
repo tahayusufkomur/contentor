@@ -33,6 +33,10 @@ class BlogPost(models.Model):
     image_placements = models.JSONField(default=list, blank=True)
     status = models.CharField(max_length=12, choices=STATUS, default="draft")
     source = models.CharField(max_length=12, choices=SOURCE, default="manual")
+    noindex = models.BooleanField(
+        default=False,
+        help_text="Seeded AI drafts start noindex; cleared when a human edits the post.",
+    )
     ai_model = models.CharField(max_length=60, blank=True, default="")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

@@ -9,6 +9,7 @@ export interface BlogPostPublic {
   excerpt: string;
   tags: string[];
   meta_description?: string;
+  noindex?: boolean;
   body_html?: string;
   published_at: string;
   cover_photo_url?: string | null;
