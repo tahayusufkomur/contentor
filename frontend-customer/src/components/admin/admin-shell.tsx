@@ -104,9 +104,20 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   // setup_progress: the setup PATCH endpoint whitelists only `dismissed` and
   // `item`, and a cosmetic toast does not justify a backend field. Trade-off:
   // a coach may see it once per device.
+  //
+  // Must fire ONLY on a genuine false→true transition witnessed within this
+  // session, never merely "published is true on the render where stateReady
+  // first became true" — otherwise every already-published coach gets a
+  // "you're live!" celebration on their next page load after this shipped.
+  // prevPublished starts at null ("unknown"), so the render that first
+  // resolves stateReady only records the baseline and never fires itself.
   const celebrated = useRef(false);
+  const prevPublished = useRef<boolean | null>(null);
   useEffect(() => {
-    if (!stateReady || !published || celebrated.current) return;
+    if (!stateReady) return;
+    const wasPublished = prevPublished.current;
+    prevPublished.current = published;
+    if (celebrated.current || wasPublished !== false || !published) return;
     celebrated.current = true;
     const key = "contentor_marketing_unlock_seen";
     try {
