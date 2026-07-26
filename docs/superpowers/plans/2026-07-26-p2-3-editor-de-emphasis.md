@@ -170,8 +170,10 @@ export function gateAdminNav(
       if (expanded.has("content")) return { ...section, hiddenCount: 0 };
       const visible = section.items.filter((item) => {
         if (DISCLOSURE_ONLY_HREFS.has(item.href)) return false;
-        const module = MODULE_FOR_HREF[item.href];
-        return module ? state.enabledModules.includes(module) : true;
+        // NOT `module`: Next's @next/next/no-assign-module-variable rule makes
+        // a local named `module` a hard lint error.
+        const moduleId = MODULE_FOR_HREF[item.href];
+        return moduleId ? state.enabledModules.includes(moduleId) : true;
       });
       return {
         ...section,
