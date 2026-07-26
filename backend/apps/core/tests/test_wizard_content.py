@@ -1,0 +1,151 @@
+"""Wizard content endpoints write real rows into the tenant schema under
+wizard-token auth (no coach JWT exists yet). Real-schema harness: provision the
+tenant with Plan 3a's schema step, assert inside tenant_context, drop in
+finally."""
+
+from unittest import mock
+
+import pytest
+from django.db import connection
+from django_tenants.utils import tenant_context
+from rest_framework.test import APIClient
+
+from apps.accounts.tokens import create_wizard_token
+from apps.core.models import Tenant
+from apps.core.tasks import provision_tenant_schema
+
+pytestmark = pytest.mark.django_db(transaction=True)
+
+
+@pytest.fixture()
+def client():
+    return APIClient()
+
+
+def _tenant_row(schema):
+    """Public-schema row only. slug == subdomain == the hyphenated schema so
+    slugify(brand_name) in _resolve_tenant_from_wizard_token resolves back."""
+    connection.set_schema_to_public()
+    slug = schema.replace("_", "-")
+    return Tenant.objects.create(
+        schema_name=schema,
+        name=slug,
+        slug=slug,
+        subdomain=slug,
+        owner_email=f"{slug}@example.com",
+        region="global",
+    )
+
+
+def _provisioned_tenant(schema):
+    t = _tenant_row(schema)
+    provision_tenant_schema(t, t.owner_email, "Owner", "en")  # status -> provisioned
+    connection.set_schema_to_public()
+    return t
+
+
+def _drop(schema):
+    connection.set_schema_to_public()
+    with connection.cursor() as cur:
+        cur.execute(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE')
+    Tenant.objects.filter(schema_name=schema).delete()
+    connection.set_schema_to_public()
+
+
+def _token(t):
+    return create_wizard_token(t.owner_email, t.name, t.slug, region=t.region or "global")
+
+
+def test_course_outlines_returns_options(client, restore_public):
+    t = _provisioned_tenant("wc_outlines")
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/course-outlines/",
+            {"token": _token(t)},
+            format="json",
+        )
+        assert resp.status_code == 200, resp.content
+        outlines = resp.json()["outlines"]
+        assert 1 <= len(outlines) <= 3
+        assert "title" in outlines[0]
+        assert "description" in outlines[0]
+        assert "suggested_price" in outlines[0]
+    finally:
+        _drop("wc_outlines")
+
+
+def test_content_endpoint_rejects_unprovisioned_tenant(client, restore_public):
+    t = _tenant_row("wc_pending")  # still 'pending', no schema
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/course-outlines/",
+            {"token": _token(t)},
+            format="json",
+        )
+        assert resp.status_code == 409
+        assert resp.json()["detail"] == "provisioning"
+    finally:
+        connection.set_schema_to_public()
+        Tenant.objects.filter(pk=t.pk).delete()
+
+
+def test_course_outlines_uses_the_model_when_ai_is_available(client, restore_public):
+    """The AI branch: without this the suite only ever exercises the fallback
+    (the test env has no provider configured)."""
+    from apps.core.onboarding.course_outlines import _Outline, _Outlines
+
+    parsed = _Outlines(
+        outlines=[
+            _Outline(title="Sourdough in 7 Days", description="Bake your first loaf.", suggested_price=39),
+            _Outline(title="Crumb Mastery", description="Open crumb, every time.", suggested_price=89),
+        ]
+    )
+    t = _provisioned_tenant("wc_ai")
+    try:
+        with (
+            mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+            mock.patch("apps.core.ai.structured", return_value=(parsed, 0.02, "m")) as structured,
+            mock.patch("apps.core.onboarding.ai_compose.record_spend") as record_spend,
+        ):
+            resp = client.post(
+                "/api/v1/onboarding/wizard/content/course-outlines/",
+                {"token": _token(t)},
+                format="json",
+            )
+        assert resp.status_code == 200, resp.content
+        assert [o["title"] for o in resp.json()["outlines"]] == ["Sourdough in 7 Days", "Crumb Mastery"]
+        structured.assert_called_once()
+        record_spend.assert_called_once_with(t.schema_name, 0.02)
+    finally:
+        _drop("wc_ai")
+
+
+def test_course_outlines_falls_back_when_the_model_errors(client, restore_public):
+    from apps.core.ai import AiError
+
+    t = _provisioned_tenant("wc_aifail")
+    try:
+        with (
+            mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+            mock.patch("apps.core.ai.structured", side_effect=AiError("boom", cost_usd=0.01)),
+            mock.patch("apps.core.onboarding.ai_compose.record_spend") as record_spend,
+        ):
+            resp = client.post(
+                "/api/v1/onboarding/wizard/content/course-outlines/",
+                {"token": _token(t)},
+                format="json",
+            )
+        assert resp.status_code == 200, resp.content  # fail-soft, never a 500
+        assert len(resp.json()["outlines"]) == 3
+        record_spend.assert_called_once_with(t.schema_name, 0.01)  # billed attempt still accrues
+    finally:
+        _drop("wc_aifail")
+
+
+def test_content_endpoint_rejects_a_bad_token(client, restore_public):
+    resp = client.post(
+        "/api/v1/onboarding/wizard/content/course-outlines/",
+        {"token": "not-a-token"},
+        format="json",
+    )
+    assert resp.status_code == 400
