@@ -401,6 +401,28 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         raise self.retry(exc=exc) from exc
 
 
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def provision_wizard_schema(self, tenant_id, owner_email, owner_name):
+    """Early, content-step provisioning: schema + owner + config only, no seed
+    or compose. Enqueued when the coach reaches the wizard's content step so
+    they have a real schema to write their first course/event/post into."""
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(id=tenant_id)
+    if tenant.provisioning_status not in ("pending", "failed"):
+        return  # already provisioning/provisioned/ready — nothing to do
+    try:
+        region = tenant.region or "global"
+        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
+    except Exception as exc:
+        tenant.provisioning_status = "failed"
+        tenant.save(update_fields=["provisioning_status"])
+        logger.exception("Wizard schema provisioning failed for %s", tenant.slug)
+        raise self.retry(exc=exc) from exc
+
+
 AI_STARTER_POST_TIMEOUT_SECONDS = 90
 
 

@@ -166,6 +166,24 @@ def wizard_finalize(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+def wizard_provision(request):
+    """Enqueue early schema provisioning for the token's tenant. Idempotent:
+    only 'pending' tenants enqueue; any other state just reports its status.
+    The frontend polls the existing provisioning-status view until 'provisioned'
+    before showing the content step."""
+    from ..tasks import provision_wizard_schema
+
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err:
+        return err
+    if tenant.provisioning_status == "pending":
+        provision_wizard_schema.delay(tenant.id, tenant.owner_email, tenant.name)
+    return Response({"status": tenant.provisioning_status})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def wizard_checkout(request):
     """Contextual upgrade inside the wizard: Stripe Checkout for a platform
     plan BEFORE provisioning. The tenant row already exists, so the standard

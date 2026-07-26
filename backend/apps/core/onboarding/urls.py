@@ -11,7 +11,14 @@ from .views import (
     seed_from_template,
     skip_template,
 )
-from .wizard import wizard_catalog_view, wizard_checkout, wizard_checkout_sync, wizard_finalize, wizard_state
+from .wizard import (
+    wizard_catalog_view,
+    wizard_checkout,
+    wizard_checkout_sync,
+    wizard_finalize,
+    wizard_provision,
+    wizard_state,
+)
 from .wizard_followups import wizard_describe_followups
 from .wizard_logo import (
     wizard_logo_converse,
@@ -33,6 +40,7 @@ urlpatterns = [
     path("wizard/catalog/", wizard_catalog_view, name="wizard-catalog"),
     path("wizard/state/", wizard_state, name="wizard-state"),
     path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
+    path("wizard/provision/", wizard_provision, name="wizard-provision"),
     path("wizard/describe-followups/", wizard_describe_followups, name="wizard-describe-followups"),
     path("wizard/checkout/", wizard_checkout, name="wizard-checkout"),
     path("wizard/checkout/sync/", wizard_checkout_sync, name="wizard-checkout-sync"),
