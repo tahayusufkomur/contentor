@@ -46,3 +46,12 @@ export const studentContext = (b: Browser): Promise<BrowserContext> =>
   roleContext(b, "student", TENANT_HOST, "demo-yoga");
 export const superadminContext = (b: Browser): Promise<BrowserContext> =>
   roleContext(b, "superadmin", "localhost");
+
+// Coach context for a tenant other than the default demo-yoga — e.g. a
+// fixture pinned to a specific publish/module state. `host` is the tenant's
+// dev subdomain (`${slug}.localhost` for the `global` region).
+export const coachContextForTenant = (
+  b: Browser,
+  slug: string,
+  host: string,
+): Promise<BrowserContext> => roleContext(b, "coach", host, slug);

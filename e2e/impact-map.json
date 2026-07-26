@@ -118,6 +118,18 @@
     ],
     "src/components/ui/stale-container.tsx": [
       "25-navigation-feedback"
+    ],
+    "src/lib/admin-nav.ts": [
+      "27-nav-stage-gating"
+    ],
+    "src/lib/admin-nav-gate.ts": [
+      "27-nav-stage-gating"
+    ],
+    "src/components/shared/app-sidebar.tsx": [
+      "27-nav-stage-gating"
+    ],
+    "src/components/admin/admin-shell.tsx": [
+      "27-nav-stage-gating"
     ]
   },
   "frontend-main": [
