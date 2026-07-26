@@ -1,6 +1,13 @@
 # Lazy Tenant Provisioning Foundation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **STATUS: COMPLETE** — implemented on branch `feat/lazy-provisioning-foundation`
+> 2026-07-26 (commits `84b1bc7`, `a6d81c8`, `208c3ee`). `pytest apps/core -n auto`
+> 545 passed on a fresh DB, `make lint` clean, both manual verification checks
+> confirmed against the dev database. Deviations from the plan as written are
+> recorded at the bottom under "Execution notes".
+> **Not yet deployed** — carries migration `core.0034_lazy_provisioning`.
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Make it possible to provision a tenant's Postgres schema *early* — when a coach reaches the wizard's content step — instead of only at wizard-end, and add the orphan-cleanup cron that early provisioning makes necessary. This is the backend foundation the content-first wizard (Plan 3b/3c) builds on; it ships no user-visible change on its own.
 
@@ -61,7 +68,7 @@ The onboarding spec ([docs/superpowers/specs/2026-07-26-ai-first-onboarding-desi
 - Produces: `provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale) -> None` — idempotent; creates schema + public/tenant owner user + default `TenantConfig`; leaves `provisioning_status="provisioned"`. Does NOT seed or compose. Reused by `provision_tenant` (Task 1) and `provision_wizard_schema` (Task 2).
 - `Tenant.provisioning_status` gains the value `"provisioned"` (schema+owner+config exist; site not yet composed).
 
-- [ ] **Step 1: Add the `provisioned` status and the abandon-warning field**
+- [x] **Step 1: Add the `provisioned` status and the abandon-warning field**
 
 In `backend/apps/core/models.py`, extend the `provisioning_status` choices (add one line) so the block reads:
 
@@ -93,7 +100,7 @@ Then, next to `recovery_email_sent_at`, add:
     )
 ```
 
-- [ ] **Step 2: Generate and apply the migration**
+- [x] **Step 2: Generate and apply the migration**
 
 ```bash
 docker compose exec django python manage.py makemigrations core --name lazy_provisioning
@@ -102,7 +109,7 @@ docker compose exec django python manage.py migrate_schemas --shared
 
 Expected: an `AlterField` (status choices) + `AddField` (`abandon_warned_at`) on `core.tenant`; migrate reports OK. (Choice changes still generate a migration in Django; apply it.)
 
-- [ ] **Step 3: Write the failing extraction test**
+- [x] **Step 3: Write the failing extraction test**
 
 Create `backend/apps/core/tests/test_lazy_provisioning.py`. Mirror the **real-schema** pattern of the existing `test_provision_tenant.py` (create a real Tenant, run the function against an actual schema, assert inside `tenant_context`, drop the schema in `finally`) — do NOT mock `create_schema`/`tenant_context`, because the function queries tenant-only models (`TenantConfig`, `User`) that don't exist in the public schema, so a mocked context would error on a missing relation:
 
@@ -179,13 +186,13 @@ def test_schema_step_is_idempotent(restore_public):
         _drop(schema)
 ```
 
-- [ ] **Step 4: Run the test to verify it fails**
+- [x] **Step 4: Run the test to verify it fails**
 
 Run: `docker compose exec django pytest apps/core/tests/test_lazy_provisioning.py -k schema_step -v`
 
 Expected: FAIL — `provision_tenant_schema` does not exist yet (`AttributeError`).
 
-- [ ] **Step 5: Extract the function**
+- [x] **Step 5: Extract the function**
 
 In `backend/apps/core/tasks.py`, add `provision_tenant_schema` above `provision_tenant`. Move the schema+owner+config body (current lines 303-354) into it, ending at the new `provisioned` status:
 
@@ -242,7 +249,7 @@ def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale):
     tenant.save(update_fields=["provisioning_status"])
 ```
 
-- [ ] **Step 6: Refactor `provision_tenant` to call the extracted step**
+- [x] **Step 6: Refactor `provision_tenant` to call the extracted step**
 
 Replace the body of `provision_tenant` (the `try:` block, lines 302-376) so it delegates the schema step and keeps the seed+compose+ready tail unchanged:
 
@@ -287,19 +294,19 @@ Replace the body of `provision_tenant` (the `try:` block, lines 302-376) so it d
 
 Note: `seed_template_into_tenant` is imported locally inside the branch, matching the existing style (the test patches `tasks.seed_template_into_tenant`; add a module-level `from apps.core.demo.seed_template import seed_template_into_tenant` is NOT wanted — keep the local import, and in the test the patch target `tasks.seed_template_into_tenant` resolves the name the branch binds. If the local import makes the patch miss, patch `apps.core.demo.seed_template.seed_template_into_tenant` instead; the test file notes this).
 
-- [ ] **Step 7: Run the extraction tests**
+- [x] **Step 7: Run the extraction tests**
 
 Run: `docker compose exec django pytest apps/core/tests/test_lazy_provisioning.py -k schema_step -v`
 
 Expected: PASS, 2 tests.
 
-- [ ] **Step 8: Verify the existing provisioning flow is unchanged**
+- [x] **Step 8: Verify the existing provisioning flow is unchanged**
 
 Run: `docker compose exec django pytest apps/core -n auto -k "provision or onboard or wizard"`
 
 Expected: PASS. The refactor is behavior-preserving; any failure here means the extraction changed the wizard-end path. If `seed_template_into_tenant`/`_apply_wizard_answers` patch targets in existing tests break, it is because the import moved — restore the exact import location, don't weaken the test.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add backend/apps/core/models.py backend/apps/core/migrations backend/apps/core/tasks.py backend/apps/core/tests/test_lazy_provisioning.py
@@ -320,7 +327,7 @@ git commit -m "refactor(onboarding): extract idempotent provision_tenant_schema 
 - Consumes: `provision_tenant_schema` (Task 1); the wizard-token auth pattern already used by `wizard_state`/`wizard_finalize`.
 - Produces: `POST /api/v1/onboarding/wizard/provision/` → `{status: "<provisioning_status>"}`. Idempotent: enqueues `provision_wizard_schema` only when `provisioning_status == "pending"`; otherwise returns the current status. `provision_wizard_schema(tenant_id, owner_email, owner_name)` Celery task calls `provision_tenant_schema` and leaves status `provisioned`.
 
-- [ ] **Step 1: Write the failing endpoint tests**
+- [x] **Step 1: Write the failing endpoint tests**
 
 These tests mock the Celery task, so the tenant needs only a public-schema **row** (no schema) — add a lightweight row factory and an APIClient. First hoist two imports to the **top** of `test_lazy_provisioning.py` with the existing imports (ruff's E402 fails `make lint` on mid-file imports):
 
@@ -398,13 +405,13 @@ def test_provision_endpoint_is_idempotent_when_already_provisioned(client):
         Tenant.objects.filter(pk=tenant.pk).delete()
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_lazy_provisioning.py -k provision_endpoint -v`
 
 Expected: FAIL — route 404 / `provision_wizard_schema` missing.
 
-- [ ] **Step 3: Add the Celery task**
+- [x] **Step 3: Add the Celery task**
 
 In `backend/apps/core/tasks.py`, below `provision_tenant`:
 
@@ -431,7 +438,7 @@ def provision_wizard_schema(self, tenant_id, owner_email, owner_name):
         raise self.retry(exc=exc) from exc
 ```
 
-- [ ] **Step 4: Add the view**
+- [x] **Step 4: Add the view**
 
 In `backend/apps/core/onboarding/wizard.py`, mirror `wizard_state`'s decode/lookup. Add near the other views:
 
@@ -456,7 +463,7 @@ def wizard_provision(request):
     return Response({"status": tenant.provisioning_status})
 ```
 
-- [ ] **Step 5: Route it**
+- [x] **Step 5: Route it**
 
 In `backend/apps/core/onboarding/urls.py`, add alongside the other `wizard/` routes:
 
@@ -464,13 +471,13 @@ In `backend/apps/core/onboarding/urls.py`, add alongside the other `wizard/` rou
     path("wizard/provision/", wizard.wizard_provision, name="wizard-provision"),
 ```
 
-- [ ] **Step 6: Run the endpoint tests**
+- [x] **Step 6: Run the endpoint tests**
 
 Run: `docker compose exec django pytest apps/core/tests/test_lazy_provisioning.py -v`
 
 Expected: PASS (all extraction + endpoint tests).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add backend/apps/core/tasks.py backend/apps/core/onboarding/wizard.py backend/apps/core/onboarding/urls.py backend/apps/core/tests/test_lazy_provisioning.py
@@ -492,7 +499,7 @@ git commit -m "feat(onboarding): on-demand wizard schema provisioning endpoint"
 - Consumes: `Tenant.abandon_warned_at` (Task 1); the recovery-email send pattern in `recovery.py:101-154`; `_last_activity(tenant)` (`recovery.py:61-72`).
 - Produces: `find_abandoned_tenants(now) -> (to_warn: QuerySet, to_delete: list[Tenant])`; `cleanup_abandoned_signups()` Celery task running both stages.
 
-- [ ] **Step 1: Add the settings**
+- [x] **Step 1: Add the settings**
 
 In `backend/config/settings/base.py`, after the existing wizard settings (line 217):
 
@@ -501,7 +508,7 @@ WIZARD_ABANDON_WARN_DAYS = 14  # signup idle this long → final "about to delet
 WIZARD_ABANDON_DELETE_GRACE_DAYS = 7  # after the warning, wait this long, then drop schema + row
 ```
 
-- [ ] **Step 2: Write the failing selector + safety tests**
+- [x] **Step 2: Write the failing selector + safety tests**
 
 Create `backend/apps/core/tests/test_abandoned_cleanup.py`. These do NOT create real schemas — `tenant.delete(force_drop=True)` is guarded by `schema_exists`, so a schemaless row deletes cleanly, which is exactly the abandoned-at-pending case:
 
@@ -634,13 +641,13 @@ def test_provisioned_but_abandoned_tenant_with_schema_is_deletable():
     assert not Tenant.objects.filter(pk=t.pk).exists()
 ```
 
-- [ ] **Step 3: Run to verify failure**
+- [x] **Step 3: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_abandoned_cleanup.py -v`
 
 Expected: FAIL — `find_abandoned_tenants` does not exist.
 
-- [ ] **Step 4: Implement the selector**
+- [x] **Step 4: Implement the selector**
 
 In `backend/apps/core/onboarding/recovery.py`, add (reusing `_last_activity`):
 
@@ -687,13 +694,13 @@ def find_abandoned_tenants(now=None):
 
 `timedelta` is already imported in `recovery.py` (it uses it for the recovery window); if not, add `from datetime import timedelta`.
 
-- [ ] **Step 5: Run selector tests**
+- [x] **Step 5: Run selector tests**
 
 Run: `docker compose exec django pytest apps/core/tests/test_abandoned_cleanup.py -v`
 
 Expected: PASS. (`find_abandoned_tenants` returns lists; the `in list(to_warn)` assertions work whether it returns a list or queryset.)
 
-- [ ] **Step 6: Add the warning helper**
+- [x] **Step 6: Add the warning helper**
 
 In `recovery.py`, add a thin final-warning sender modeled on `send_recovery_email` (`recovery.py:101-154`) — read that function and reuse its token minting and EN/TR body pattern, changing the copy to "your unfinished signup will be removed in N days; click to resume." Stamp `abandon_warned_at` only on successful send:
 
@@ -710,7 +717,7 @@ def send_abandon_warning(tenant, now=None):
 
 Fill the body by copying `send_recovery_email`'s link-building and send call verbatim; only the email subject/body strings differ. Do not invent a new mail transport.
 
-- [ ] **Step 7: Add the Celery task and beat entry**
+- [x] **Step 7: Add the Celery task and beat entry**
 
 In `backend/apps/core/tasks.py`:
 
@@ -748,7 +755,7 @@ In `backend/config/celery.py`, add a beat entry (daily, off-peak, away from the 
     },
 ```
 
-- [ ] **Step 8: Test the task end-to-end**
+- [x] **Step 8: Test the task end-to-end**
 
 Add to `test_abandoned_cleanup.py`:
 
@@ -778,7 +785,7 @@ Run: `docker compose exec django pytest apps/core/tests/test_abandoned_cleanup.p
 
 Expected: PASS (all selector + safety + task tests).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add backend/config/settings/base.py backend/apps/core/onboarding/recovery.py backend/apps/core/tasks.py backend/config/celery.py backend/apps/core/tests/test_abandoned_cleanup.py
@@ -789,11 +796,53 @@ git commit -m "feat(onboarding): two-stage cleanup cron for abandoned lazily-pro
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/core -n auto` passes (extraction, endpoint, cleanup, and every pre-existing provisioning test).
-- [ ] `make lint` passes with zero warnings.
-- [ ] Manual check in `make shell`: on a fresh `pending` tenant, `provision_tenant_schema(t, t.owner_email, t.name, "en")` leaves `provisioning_status == "provisioned"`, a schema exists (`from django_tenants.utils import schema_exists; schema_exists(t.schema_name) is True`), and `TenantConfig` exists inside `tenant_context(t)` — with no niche seed and no composed pages.
-- [ ] Manual check: `find_abandoned_tenants()` on the dev DB returns `([], [])` (no real signups are abandoned), and never includes the `public` row.
-- [ ] The existing wizard-end flow still yields a fully composed, `ready` tenant (run one real signup through `make dev` if practical, or trust the green `provision_tenant` tests).
+- [x] `docker compose exec django pytest apps/core -n auto` passes (extraction, endpoint, cleanup, and every pre-existing provisioning test).
+- [x] `make lint` passes with zero warnings.
+- [x] Manual check in `make shell`: on a fresh `pending` tenant, `provision_tenant_schema(t, t.owner_email, t.name, "en")` leaves `provisioning_status == "provisioned"`, a schema exists (`from django_tenants.utils import schema_exists; schema_exists(t.schema_name) is True`), and `TenantConfig` exists inside `tenant_context(t)` — with no niche seed and no composed pages.
+- [x] Manual check: `find_abandoned_tenants()` on the dev DB returns `([], [])` (no real signups are abandoned), and never includes the `public` row.
+- [x] The existing wizard-end flow still yields a fully composed, `ready` tenant (run one real signup through `make dev` if practical, or trust the green `provision_tenant` tests).
+
+## Execution notes (2026-07-26)
+
+Where reality differed from the plan as written. Plan 3b/3c build on this — read before starting them.
+
+1. **Task 2's view and its test contradicted each other.** The plan's `wizard_provision`
+   imports the task function-locally (`from ..tasks import provision_wizard_schema`),
+   so the task is *not* an attribute of `wizard.py` — but the plan's test patched
+   `apps.core.onboarding.wizard.provision_wizard_schema`, which raises
+   `AttributeError`. Kept the view exactly as planned (function-local imports are the
+   house style here to dodge cycles; `apps/core/CLAUDE.md` warns against "cleaning
+   them up") and moved the patch to the source module —
+   `apps.core.tasks.provision_wizard_schema.delay`, mirroring how
+   `test_wizard_finalize.py:53` patches `provision_tenant`. Later sub-plans should
+   patch onboarding tasks at `apps.core.tasks.*`, never on the view module.
+2. **`test_public_tenant_is_never_touched` was a permanent no-op as written.** It
+   did `pytest.skip` when no `public` Tenant row exists — and the test DB never has
+   one (`conftest.py` only creates the shared tenant). That left the single most
+   dangerous guard untested, contradicting the plan's own "every one of these is an
+   independent test". The test now creates a `public` row wearing the exact
+   abandoned profile (idle, unpublished, pending, past grace) and tears it down in
+   `finally`. Verified it has teeth by removing `exclude(schema_name="public")` and
+   watching it fail — the row landed in `to_delete`.
+3. **`find_abandoned_tenants` reuses the module-level `timezone`/`settings`/
+   `timedelta`** already imported in `recovery.py`, instead of the plan's
+   function-local re-imports — matching `recovery_candidates` right above it, which
+   imports only `Tenant` locally.
+4. **`send_abandon_warning` carries the name/slug drift guard** copied from
+   `send_recovery_email`. This is fail-safe by design: on drift it returns False
+   without stamping `abandon_warned_at`, so the tenant is never warned and therefore
+   never deleted. Added `_ABANDON_COPY` (EN/TR); **TR needs native review**.
+5. **Ruff C408** rejected the plan's `defaults = dict(...)` in both new test files;
+   rewritten as dict literals.
+6. **Test-DB hygiene, worth knowing:** iterating on these `transaction=True` tests
+   with the default `--reuse-db` reliably dirties the DB and produces a block of
+   ~22 `test_seed_dev_tenants` failures. Confirmed *not* caused by these files — the
+   full suite passes 545/545 with `--create-db`, and the seed tests pass alongside
+   both new files. Use `--create-db` when running the core suite after touching this
+   area.
+7. **Process:** executed on a normal feature branch rather than a git worktree,
+   because the dev stack's containers bind-mount the primary working directory —
+   tests in a worktree would not be visible to `docker compose exec django pytest`.
 
 ## What comes next (the rest of Plan 3)
 
