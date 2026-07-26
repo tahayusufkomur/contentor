@@ -37,6 +37,9 @@ def test_distinct_seeds_can_differ():
 
 
 # ── persistence + exposure ───────────────────────────────────────────────────
+#
+# These commit real public-schema rows (transaction=True), so every test cleans
+# up its own tenants in a finally block.
 
 
 def _row(schema="bucket_expose"):
@@ -110,3 +113,60 @@ def test_reverify_does_not_rebucket_a_returning_coach():
     finally:
         connection.set_schema_to_public()
         Tenant.objects.filter(slug=slug, region="global").delete()
+
+
+# ── funnel report ────────────────────────────────────────────────────────────
+
+
+def _report(**kwargs):
+    """Run the command with --json and parse it. Scoped to the rows a test made
+    by passing --since-days, since the dev/test DB may hold other tenants."""
+    import json
+    from io import StringIO
+
+    from django.core.management import call_command
+
+    out = StringIO()
+    call_command("wizard_holdout_report", "--json", stdout=out, **kwargs)
+    return json.loads(out.getvalue())
+
+
+@pytest.mark.django_db(transaction=True)
+def test_report_counts_publish_rate_per_bucket():
+    made = []
+    connection.set_schema_to_public()
+    try:
+        before = _report()
+        for i in range(4):
+            made.append(
+                Tenant.objects.create(
+                    schema_name=f"rep_{i}",
+                    name=f"rep-{i}",
+                    slug=f"rep-{i}",
+                    subdomain=f"rep-{i}",
+                    owner_email=f"rep{i}@example.com",
+                    region="global",
+                    wizard_bucket="treatment" if i < 2 else "control",
+                    is_published=(i == 0),  # one treatment tenant published
+                )
+            )
+        after = _report()
+        assert after["treatment"]["signups"] - before["treatment"]["signups"] == 2
+        assert after["treatment"]["published"] - before["treatment"]["published"] == 1
+        assert after["control"]["signups"] - before["control"]["signups"] == 2
+        assert after["control"]["published"] - before["control"]["published"] == 0
+        assert 0.0 <= after["treatment"]["publish_rate"] <= 1.0
+    finally:
+        connection.set_schema_to_public()
+        for t in made:
+            Tenant.objects.filter(pk=t.pk).delete()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_report_never_counts_the_public_row_and_survives_an_empty_bucket():
+    """Zero signups must not divide by zero, and the platform's own public row
+    is not a signup."""
+    report = _report(since_days=0)  # window excludes everything
+    for bucket in WIZARD_BUCKETS:
+        assert report[bucket]["signups"] == 0
+        assert report[bucket]["publish_rate"] == 0.0
