@@ -92,6 +92,7 @@ class Command(BaseCommand):
                 "max_campaign_emails": 100,
                 "max_ai_blog_posts": 0,
                 "max_student_bot_questions": 0,
+                "max_site_ai_updates": 0,
                 "is_live_enabled": False,
                 "prices": {},
             },
@@ -105,6 +106,7 @@ class Command(BaseCommand):
                 "max_campaign_emails": 1000,
                 "max_ai_blog_posts": 5,
                 "max_student_bot_questions": 300,
+                "max_site_ai_updates": 3,
                 "is_live_enabled": True,
                 "prices": {
                     "USD": {
@@ -127,6 +129,7 @@ class Command(BaseCommand):
                 "max_campaign_emails": 5000,
                 "max_ai_blog_posts": 30,
                 "max_student_bot_questions": 1500,
+                "max_site_ai_updates": 5,
                 "is_live_enabled": True,
                 "prices": {
                     "USD": {
