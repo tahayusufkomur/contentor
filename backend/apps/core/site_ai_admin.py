@@ -15,12 +15,13 @@ import logging
 from decimal import Decimal
 
 from django.db import connection
+from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.onboarding import site_ai
+from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,24 @@ def site_ai_status(request):
 @renderer_classes([JSONRenderer, EventStreamRenderer])
 def site_ai_preview(request):
     """Stream a proposed edit. FREE — previewing never consumes an allowance;
-    only Apply does. USD still accrues on every attempt (kill-switch)."""
+    only Apply does. USD still accrues on every attempt (kill-switch).
+
+    Gated on the platform-wide onboarding AI budget (ai_compose.compose_available:
+    ONBOARDING_AI_ENABLED, provider availability, global spend < budget) BEFORE
+    opening the stream. Deliberately no per-coach rate limit here — a free
+    coach can preview on repeat (they can never Apply), and
+    TenantRateLimitMiddleware exempts the tenant's own coach anyway — so the
+    budget check is what stops that loop from burning the SAME budget every
+    new signup's AI reveal draws from.
+    """
+    if not ai_compose.compose_available():
+        # Pre-stream guard, same convention as apps/blog/views.py's
+        # _guard_response: answer plain JSON — bypassing DRF's renderer
+        # negotiation with JsonResponse, exactly like that guard does for a
+        # streaming request — since streamAi() content-type-sniffs and
+        # returns a JSON body as-is instead of parsing it as SSE frames.
+        return JsonResponse({"pages": None, "source": "unavailable"})
+
     tenant = connection.tenant
     data = request.data if isinstance(request.data, dict) else {}
     instruction = str(data.get("instruction") or "").strip()[:INSTRUCTION_MAX_LEN]

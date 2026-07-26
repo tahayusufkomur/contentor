@@ -4,7 +4,7 @@ engine reuses ai_compose so the model can only touch whitelisted fields."""
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from django.db.models import F, Sum
+from django.db.models import F
 from django_tenants.utils import tenant_context
 
 from apps.core.models import SiteAiUpdateUsage
@@ -17,11 +17,6 @@ def current_month():
 def tenant_usage(tenant_schema, month=None):
     row, _ = SiteAiUpdateUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month or current_month())
     return row
-
-
-def global_spend(month=None):
-    total = SiteAiUpdateUsage.objects.filter(month=month or current_month()).aggregate(t=Sum("usd_spent"))["t"]
-    return total or Decimal("0")
 
 
 def record_attempt_cost(tenant_schema, usd, month=None):
