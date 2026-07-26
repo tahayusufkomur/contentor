@@ -1,6 +1,8 @@
 # Content-First Wizard (Frontend) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**STATUS: COMPLETE** — implemented on branch `feat/lazy-provisioning-foundation` (2026-07-26).
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add the content-first wizard flow (Business → Content → Logo → Launch) as a variant selected by the holdout bucket, so `treatment` coaches create a real course/event/blog during signup while `control` coaches keep today's design-questionnaire wizard.
 
@@ -57,7 +59,7 @@ Plan 3a made the tenant schema provisionable early; Plan 3c gave the wizard endp
 **Interfaces:**
 - Produces: `buildContentSteps(catalog, answers) -> StepDef[]` with chapters `business → content → logo → launch`. Step ids: `business.niche`, `business.describe`, (`business.followups`), `business.goals`, `content.course`, (`content.event` iff goals include `run_live_classes`/`in_person_events`), (`content.blog` iff goals include `write_blog`), `logo`, `review`. `answered` returns true for a content step once its `*_created` flag is set OR it was explicitly skipped.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `frontend-main/src/lib/wizard/__tests__/machine-content.test.ts`:
 
@@ -108,12 +110,12 @@ describe("buildContentSteps", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `cd frontend-main && npx vitest run src/lib/wizard/__tests__/machine-content.test.ts`
 Expected: FAIL — `buildContentSteps` not exported.
 
-- [ ] **Step 3: Implement `buildContentSteps` + answers flags**
+- [x] **Step 3: Implement `buildContentSteps` + answers flags**
 
 In `types.ts`, extend `WizardAnswers`:
 
@@ -174,11 +176,11 @@ Then extend `answered` with content cases (near the existing switch):
       return answers.blog_created === true;
 ```
 
-- [ ] **Step 4: Run to verify pass**
+- [x] **Step 4: Run to verify pass**
 
 Run: `cd frontend-main && npx vitest run src/lib/wizard/__tests__/machine-content.test.ts` → PASS (5 tests).
 
-- [ ] **Step 5: Typecheck + commit**
+- [x] **Step 5: Typecheck + commit**
 
 Run: `make typecheck` → PASS.
 
@@ -197,7 +199,7 @@ git commit -m "feat(wizard): content-first step builder"
 **Interfaces:**
 - Produces: `provisionWizard(token) -> {status}`, `getCourseOutlines(token) -> {outlines: Outline[]}`, `createWizardCourse(token, body)`, `createWizardEvent(token, body)`, `createWizardBlog(token, body)` — all POST, token-in-body, via the existing `request<T>()` helper.
 
-- [ ] **Step 1: Add the client functions**
+- [x] **Step 1: Add the client functions**
 
 Append to `lib/wizard/api.ts` (mirroring the existing `finalizeWizard` shape):
 
@@ -255,7 +257,7 @@ export function createWizardBlog(
 }
 ```
 
-- [ ] **Step 2: Typecheck + commit**
+- [x] **Step 2: Typecheck + commit**
 
 Run: `make typecheck` → PASS.
 
@@ -275,7 +277,7 @@ git commit -m "feat(wizard): content-creation API client"
 **Interfaces:**
 - Produces: `ProvisioningGate` (renders children once `status==="provisioned"`, else a "setting up" state, calling `provisionWizard` on mount and polling), `CourseStep`, `EventStep`, `BlogStep` — each takes `{ token, answers, onDone(patch), onSkip }` and renders its mini-form.
 
-- [ ] **Step 1: Add wizard copy**
+- [x] **Step 1: Add wizard copy**
 
 In `frontend-main/messages/en/wizard.json`, under the `wizard` object, add a `content` block (and mirror in `tr/wizard.json` with Turkish):
 
@@ -294,7 +296,7 @@ In `frontend-main/messages/en/wizard.json`, under the `wizard` object, add a `co
     }
 ```
 
-- [ ] **Step 2: Implement the components**
+- [x] **Step 2: Implement the components**
 
 Create `frontend-main/src/app/signup/verify/wizard/content-steps.tsx`. This is UI following the wizard's existing step-component conventions (read `steps.tsx` for the `SlideHeader`/button idioms and copy them). Key behaviors, all present in this file:
 
@@ -492,7 +494,7 @@ export function BlogStep({ token, onDone, onSkip }: StepProps) {
 
 (These are intentionally minimal forms — the wizard's visual polish lives in `steps.tsx`'s shared `SlideHeader`/`OptionCard`; wrap these in those wrappers to match. Confirm `common.continue` exists in the wizard messages; the classic steps use it.)
 
-- [ ] **Step 3: Typecheck + commit**
+- [x] **Step 3: Typecheck + commit**
 
 Run: `make typecheck` → PASS.
 
@@ -512,7 +514,7 @@ git commit -m "feat(wizard): content step components (course/event/blog) + provi
 **Interfaces:**
 - Consumes: `buildContentSteps` (Task 1), content components (Task 3), `wizard_bucket` from the state response (Plan 3e).
 
-- [ ] **Step 1: Tolerate the content flags in `validate_answers`**
+- [x] **Step 1: Tolerate the content flags in `validate_answers`**
 
 In `backend/apps/core/onboarding/wizard_catalog.py`, in `validate_answers`, add accepted boolean keys so the flags don't get rejected. Read the existing `if key == ... elif ...` chain and add:
 
@@ -524,7 +526,7 @@ In `backend/apps/core/onboarding/wizard_catalog.py`, in `validate_answers`, add 
 
 (If the chain silently ignores unknown keys rather than erroring, still add this branch so the flags are explicitly valid and documented.)
 
-- [ ] **Step 2: Branch the flow in `WizardFlow.tsx`**
+- [x] **Step 2: Branch the flow in `WizardFlow.tsx`**
 
 Read the state response where the wizard reads `state`/bucket (the `readWizardState` result). Select the builder:
 
@@ -539,7 +541,7 @@ const steps = useMemo(
 
 Import `buildContentSteps` alongside `buildSteps`. Thread `bucket` from the `readWizardState` response into the component (it is on the state body as `wizard_bucket`).
 
-- [ ] **Step 3: Render content steps + provision on chapter entry**
+- [x] **Step 3: Render content steps + provision on chapter entry**
 
 In the `switch (step.id)` add cases, wrapping content steps in `ProvisioningGate` so the schema exists before the form writes:
 
@@ -577,12 +579,12 @@ Where `commitContent`/`skipContent` persist the answer flag and advance, modeled
 
 (`ProvisioningGate` calls `wizard/provision/` on mount, so entering the first content step provisions the schema; subsequent content steps find it already `provisioned` and render immediately.)
 
-- [ ] **Step 4: Typecheck + verify classic flow unaffected**
+- [x] **Step 4: Typecheck + verify classic flow unaffected**
 
 Run: `make typecheck` → PASS.
 Run: `make e2e-spec SPEC=01-signup-onboarding` → PASS. This spec exercises today's wizard; since seeded dev tenants and existing signups have an empty/`control` bucket, it must still take the classic path unchanged. If it fails because the bucket is undefined, confirm Step 2 treats missing/empty bucket as classic.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend-main/src/app/signup/verify/wizard/WizardFlow.tsx backend/apps/core/onboarding/wizard_catalog.py
@@ -599,7 +601,7 @@ git commit -m "feat(wizard): select content-first flow by holdout bucket"
 
 **Interfaces:** none; proves the full treatment flow against the running stack (Plans 3a+3c+3e must be deployed to dev).
 
-- [ ] **Step 1: Write the spec**
+- [x] **Step 1: Write the spec**
 
 The holdout makes the flow non-deterministic per email, so the spec must land in `treatment`. Two options — pick the one that fits the e2e harness:
   (a) Seed a signup whose `email:region` hashes to `treatment` (compute the hash offline and hard-code that email), or
@@ -612,16 +614,16 @@ Write the spec mirroring `e2e/specs/01-signup-onboarding.spec.ts`'s structure (s
 - after choosing an outline and continuing, no error toast appears,
 - the wizard reaches the review/reveal step.
 
-- [ ] **Step 2: Map the spec**
+- [x] **Step 2: Map the spec**
 
 Add an entry to `e2e/impact-map.json` for `26-content-first-wizard.spec.ts` covering the onboarding wizard areas (mirror `01-signup-onboarding`'s mapping). The `make lint` selector self-test fails if a spec has no map entry.
 
-- [ ] **Step 3: Run**
+- [x] **Step 3: Run**
 
 Run: `make e2e-spec SPEC=26-content-first-wizard`
 Expected: PASS against the dev stack with Plans 3a/3c/3e deployed.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add e2e/specs/26-content-first-wizard.spec.ts e2e/impact-map.json
@@ -632,11 +634,68 @@ git commit -m "test(wizard): e2e content-first treatment flow"
 
 ## Verification before calling this plan done
 
-- [ ] `cd frontend-main && npx vitest run` passes, including the content machine test.
-- [ ] `make typecheck` passes.
-- [ ] `make e2e-spec SPEC=01-signup-onboarding` (classic/control) and `SPEC=26-content-first-wizard` (treatment) both pass.
-- [ ] `make lint` passes (includes the e2e impact-map self-test).
-- [ ] Manual: a `control`-bucket signup shows today's Theme/Font/Navbar/Hero/Pages steps; a `treatment`-bucket signup shows Course/Event/Blog steps and provisions its schema on entering the Content chapter.
+- [x] `cd frontend-main && npx vitest run` passes, including the content machine test.
+- [x] `make typecheck` passes.
+- [x] `make e2e-spec SPEC=01-signup-onboarding` (classic/control) and `SPEC=26-content-first-wizard` (treatment) both pass.
+- [x] `make lint` passes (includes the e2e impact-map self-test).
+- [x] Manual: a `control`-bucket signup shows today's Theme/Font/Navbar/Hero/Pages steps; a `treatment`-bucket signup shows Course/Event/Blog steps and provisions its schema on entering the Content chapter.
+
+## Execution notes (2026-07-26)
+
+Four things were **blocking** and are not in the plan. The content flow could
+not have worked without them:
+
+1. **`wizard_state` PATCH closed the wizard on any non-`pending` status.** The
+   content flow provisions the schema mid-wizard, so from the course step
+   onward every save would have returned `409 wizard_closed` and the frontend
+   would have bounced the coach to the reveal. `provisioned` is now an open
+   state (`WIZARD_OPEN_STATUSES`); `provisioning`/`ready`/`failed` stay closed.
+   Two tests pin both halves.
+2. **The `WizardFlow` load gate had the same bug** — `res.status !== "pending"`
+   ejected a treatment coach resuming after early provisioning.
+3. **`WizardShell` hard-coded the classic chapter rail**, so the content flow
+   displayed "Your look / Your pages" with no chapter ever highlighted. The
+   rail is now a prop (`chapters`), defaulting to the classic set.
+4. **Both a footer and an in-step Continue rendered on content steps.** The
+   shell adds its own Continue unless the step opts out; content steps carry
+   theirs (it POSTs before advancing) plus a Skip link. Added `stepOwnsAdvance`
+   alongside the existing `autoAdvance`.
+
+Other deviations:
+
+5. **`frontend-main` had no test harness at all** — no vitest dep, no config,
+   no test script — while the plan's Task 1 deliverable is a vitest test and
+   its verification says `cd frontend-main && npx vitest run`. Added one
+   mirroring `frontend-customer/vitest.config.ts`, extended `make test-frontend`
+   to run both apps, and rebuilt the `nextjs-main` image so the container's
+   node_modules carries vitest (tsc runs in-container and would otherwise fail
+   to resolve the test's `vitest` import).
+6. **The holdout made three existing e2e specs flaky by construction.** The
+   bucket is a pure function of the signup email, and `01-signup-onboarding`,
+   `19-wizard-recovery` and `23-wizard-ai-logo` all use timestamped emails — so
+   roughly half of all runs would have dropped them into the content flow and
+   failed. `e2e/helpers/holdout.ts` mirrors the backend hash so a spec can pick
+   an email in the bucket it means to exercise; all three are pinned to
+   `control`, and spec 26 to `treatment`. Deliberately no wire-level bucket
+   override (that would be a production surface) — the plan's option (a).
+7. **"Finish rest for me" is hidden in the content flow**: it fills in design
+   answers that flow never asks for.
+8. **The review step calls `composeWizard`**, closing the step Plan 3d deferred.
+9. **Dev-stack gotcha, not a code change:** `celery-worker` had been running
+   since before Plan 3a and rejected `provision_wizard_schema` as an
+   unregistered task, so the provisioning gate spun forever. Celery does not
+   hot-reload task registration — `docker compose restart celery-worker
+   celery-beat` after adding a task.
+10. **TR copy needs a native review.**
+
+**Verification results:** `make test-frontend` 447 + 6 passed; `make typecheck`
+exit 0; `make lint` exit 0 (includes the e2e impact-map self-test, now 29
+specs); `make e2e-spec SPEC=26-content-first-wizard` 2 passed on the first
+attempt; `SPEC=01-signup-onboarding` 3 passed; `SPEC=19-wizard-recovery` 2
+passed. Manual: the dev DB now holds a `treatment` tenant that went through the
+content flow to `provisioned` with a real published course, and three `control`
+tenants that took the classic flow to `ready`; `wizard_holdout_report` shows
+both buckets.
 
 ## Where this sits in Plan 3
 

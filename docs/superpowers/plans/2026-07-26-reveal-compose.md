@@ -1,6 +1,6 @@
 # Reveal + Compose Fallback Implementation Plan
 
-**STATUS: BACKEND COMPLETE / Task 3 Step 2 DEFERRED to Plan 3b** — branch `feat/lazy-provisioning-foundation` (2026-07-26).
+**STATUS: COMPLETE** — the deferred Task 3 Step 2 landed with Plan 3b — branch `feat/lazy-provisioning-foundation` (2026-07-26).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
@@ -297,7 +297,7 @@ export function composeWizard(token: string): Promise<{ status: string }> {
 }
 ```
 
-- [ ] **Step 2: Route the content-flow reveal through compose**
+- [x] **Step 2: Route the content-flow reveal through compose**
 
 In `WizardFlow.tsx`, where the review step's Continue currently calls `finalizeWizard(token)` then `onProvisioning(slug)` (WizardFlow.tsx:197-207), branch on the flow:
 
@@ -313,7 +313,7 @@ In `WizardFlow.tsx`, where the review step's Continue currently calls `finalizeW
 
 For the content flow the tenant is already provisioned, so `composeWizard` returns immediately and the existing `onProvisioning` → status-poll reveal screen (`verify/page.tsx`) handles the wait to `ready` exactly as it does for classic. (`slugFromState` is the slug already known from `readWizardState`; the content-flow compose response doesn't echo a slug.)
 
-- [ ] **Step 3: Typecheck + commit**
+- [x] **Step 3: Typecheck + commit**
 
 Run: `make typecheck` → PASS.
 
@@ -334,7 +334,12 @@ git commit -m "feat(wizard): content-flow reveal composes the real-content site"
 
 ## Execution notes (2026-07-26)
 
-**What is NOT done, and why.** Task 3 Step 2 wires `WizardFlow.tsx` to call
+**Update (later the same day): Task 3 Step 2 is now DONE** — it landed with
+Plan 3b, which introduced `isContentFlow`. The review step calls
+`composeWizard` for the content flow and `finalizeWizard` for classic.
+Original note follows.
+
+**What was NOT done at the time, and why.** Task 3 Step 2 wires `WizardFlow.tsx` to call
 `composeWizard` when `isContentFlow` is true. `isContentFlow` does not exist —
 grep for it across `frontend-main/src` returns nothing. It is introduced by
 Plan 3b, which owns both flows and the bucket-driven selection between them.
