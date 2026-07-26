@@ -398,7 +398,7 @@ export function StudentDrawer({
                   </div>
                   <div>
                     <p className="font-medium">
-                      Completed Lesson "Core Stability 2"
+                      Completed Lesson “Core Stability 2”
                     </p>
                     <p className="text-[10px] text-muted-foreground">
                       2 hours ago
@@ -431,7 +431,7 @@ export function StudentDrawer({
                   </div>
                   <div>
                     <p className="font-medium">
-                      Enrolled in "Pilates Fundamentals"
+                      Enrolled in “Pilates Fundamentals”
                     </p>
                     <p className="text-[10px] text-muted-foreground">
                       {formatDate(student.date_joined)}

@@ -24,7 +24,10 @@ describe("createTtlPromiseCache", () => {
     const cache = createTtlPromiseCache<string>({ ttlMs: 1000 });
     let resolve!: (v: string) => void;
     const fetcher = vi.fn(
-      () => new Promise<string>((r) => { resolve = r; }),
+      () =>
+        new Promise<string>((r) => {
+          resolve = r;
+        }),
     );
 
     const a = cache.get("k", fetcher);
@@ -76,7 +79,10 @@ describe("createTtlPromiseCache", () => {
   });
 
   it("evicts the oldest entry beyond maxEntries", async () => {
-    const cache = createTtlPromiseCache<string>({ ttlMs: 10_000, maxEntries: 2 });
+    const cache = createTtlPromiseCache<string>({
+      ttlMs: 10_000,
+      maxEntries: 2,
+    });
     const fetcher = vi.fn(async () => "user");
 
     await cache.get("a", fetcher);

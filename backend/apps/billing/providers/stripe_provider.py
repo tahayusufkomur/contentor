@@ -166,6 +166,6 @@ def _get_webhook_secret() -> str:
                                 val = line.split("=", 1)[1].strip().strip('"').strip("'")
                                 if val:
                                     return val
-                except Exception:
+                except Exception:  # noqa: S110 - best-effort dev-only secret refresh; fall through to the configured value
                     pass
     return secret
