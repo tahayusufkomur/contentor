@@ -219,7 +219,7 @@ def test_publish_blockers_cleared_when_ready(coach, config):
 
     config.logo_url = "https://s3.example.com/logo.png"
     config.save(update_fields=["logo_url"])
-    Course.objects.create(title="Real", slug="real-course-pub", instructor=coach)
+    Course.objects.create(title="Real", slug="real-course-pub", instructor=coach, is_published=True)
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=True):
         assert _blockers(config, connection.tenant) == set()
 
@@ -231,7 +231,7 @@ def test_publish_blockers_payouts_only_when_paid_content(coach, config):
 
     config.logo_url = "https://s3.example.com/logo.png"
     config.save(update_fields=["logo_url"])
-    Course.objects.create(title="Free", slug="free-pub", instructor=coach, price=0)
+    Course.objects.create(title="Free", slug="free-pub", instructor=coach, price=0, is_published=True)
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
         assert _blockers(config, connection.tenant) == set()
 
