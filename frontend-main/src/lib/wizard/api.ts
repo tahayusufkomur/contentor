@@ -63,6 +63,19 @@ export function finalizeWizard(
   });
 }
 
+/**
+ * Compose-at-reveal for the content-first flow: the tenant is already
+ * provisioned and holds the coach's real content, so the reveal only needs the
+ * compose step. Returns immediately; the caller polls onboarding/status until
+ * "ready", exactly as the classic flow does after finalize.
+ */
+export function composeWizard(token: string): Promise<{ status: string }> {
+  return request("/api/v1/onboarding/wizard/compose/", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
 export function getDescribeFollowups(
   token: string,
   description: string,

@@ -185,6 +185,22 @@ def wizard_provision(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+def wizard_compose(request):
+    """Trigger compose-at-reveal for the content-first flow. Only a provisioned
+    tenant composes; the frontend polls onboarding/status until 'ready'."""
+    from ..tasks import compose_wizard_site
+
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err:
+        return err
+    if tenant.provisioning_status == "provisioned":
+        compose_wizard_site.delay(tenant.id)
+    return Response({"status": tenant.provisioning_status})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def wizard_checkout(request):
     """Contextual upgrade inside the wizard: Stripe Checkout for a platform
     plan BEFORE provisioning. The tenant row already exists, so the standard

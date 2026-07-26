@@ -6,6 +6,7 @@ from datetime import timedelta
 from unittest import mock
 
 import pytest
+from django.db import connection
 from django.utils import timezone
 
 from apps.core import tasks
@@ -23,6 +24,9 @@ def _isolate_ab_tenants():
     reclaims any schema a mid-test failure leaked."""
 
     def _purge():
+        # Force public: an earlier test in this xdist worker may have left the
+        # connection on another schema, and Tenant rows live only in public.
+        connection.set_schema_to_public()
         for t in Tenant.objects.filter(schema_name__startswith="ab_"):
             t.delete(force_drop=True)
 
@@ -32,6 +36,7 @@ def _isolate_ab_tenants():
 
 
 def _tenant(**kw):
+    connection.set_schema_to_public()
     n = kw.pop("n", "ab")
     defaults = {
         "schema_name": f"ab_{n}",
