@@ -47,6 +47,17 @@ export default function AdminSiteAiPage() {
     void load();
   }, [load]);
 
+  // Silent resync after a mutation: refreshes enabled/reason/remaining without
+  // touching `loading`, so PageState never blanks the page back to a skeleton
+  // (CLAUDE.md: full skeletons are first-load only).
+  const refreshStatus = useCallback(async () => {
+    try {
+      setStatus(await fetchSiteAiStatus());
+    } catch {
+      // Keep the optimistic values on a failed resync — the Apply succeeded.
+    }
+  }, []);
+
   // Previewing is always allowed — even with no allowance left, so the coach
   // can see what AI would do before deciding to upgrade.
   const { run: handlePreview, loading: previewing } = useAsyncAction(
@@ -79,9 +90,11 @@ export default function AdminSiteAiPage() {
       const res = await applySiteEdit(preview);
       setPreview(null);
       setInstruction("");
-      setStatus((prev) => (prev ? { ...prev, remaining: res.remaining } : prev));
+      setStatus((prev) =>
+        prev ? { ...prev, remaining: res.remaining } : prev,
+      );
       toast.success(t("siteAi.applied"));
-      void load();
+      void refreshStatus();
     },
     { errorToast: t("siteAi.error") },
   );
@@ -90,11 +103,20 @@ export default function AdminSiteAiPage() {
   const exhausted = status?.reason === "quota_exhausted";
 
   return (
-    <PageState loading={loading} error={error} skeleton={<SkeletonForm />} onRetry={load}>
+    <PageState
+      loading={loading}
+      error={error}
+      skeleton={<SkeletonForm />}
+      onRetry={load}
+    >
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("siteAi.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("siteAi.subtitle")}</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("siteAi.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("siteAi.subtitle")}
+          </p>
         </div>
 
         {(upsell || exhausted) && (
