@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ExternalLink, Globe, Search } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/shared/app-sidebar";
@@ -13,7 +14,10 @@ import { UserMenu } from "@/components/shared/user-menu";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import { CommandPalette } from "@/components/admin/command-palette";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
+import { useTenant } from "@/hooks/use-tenant";
 import { buildAdminNav } from "@/lib/admin-nav";
+import { gateAdminNav } from "@/lib/admin-nav-gate";
+import { useSetupStatus } from "@/lib/setup-assistant";
 import type { User } from "@/types/auth";
 
 interface AdminShellProps {
@@ -36,16 +40,64 @@ export function AdminShell({ children, user }: AdminShellProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const navSections = buildAdminNav(t);
+  const status = useSetupStatus();
+  const config = useTenant();
+  const [contentExpanded, setContentExpanded] = useState(false);
+
+  // The site is live when the checklist's `publish` item is done — that item is
+  // computed from tenant.is_published, never from a manual tick.
+  const published = Boolean(
+    status?.items.find((item) => item.key === "publish")?.done,
+  );
+  // Fail open: until BOTH signals have loaded, render the nav ungated so an
+  // established coach never sees a flash of locks they already cleared.
+  const stateReady = status !== null && config !== null;
+
+  const navSections = useMemo(() => {
+    const sections = buildAdminNav(t);
+    if (!stateReady) return sections;
+    return gateAdminNav(sections, {
+      published,
+      enabledModules: config?.enabled_modules ?? [],
+      contentExpanded,
+    });
+  }, [t, stateReady, published, config?.enabled_modules, contentExpanded]);
+
+  // One-time flourish when Marketing opens. Stored in localStorage rather than
+  // setup_progress: the setup PATCH endpoint whitelists only `dismissed` and
+  // `item`, and a cosmetic toast does not justify a backend field. Trade-off:
+  // a coach may see it once per device.
+  const celebrated = useRef(false);
+  useEffect(() => {
+    if (!stateReady || !published || celebrated.current) return;
+    celebrated.current = true;
+    const key = "contentor_marketing_unlock_seen";
+    try {
+      if (window.localStorage.getItem(key)) return;
+      window.localStorage.setItem(key, "1");
+    } catch {
+      return; // private mode / storage disabled → skip the flourish entirely
+    }
+    toast.success(t("nav.unlocked.marketing"));
+  }, [stateReady, published, t]);
 
   return (
     <EntitlementsProvider>
       <div className="flex h-screen">
-        <AppSidebar title={t("title")} sections={navSections}>
+        <AppSidebar
+          title={t("title")}
+          sections={navSections}
+          onExpandSection={() => setContentExpanded(true)}
+        >
           {user && <UserMenu user={user} />}
         </AppSidebar>
         <div className="flex flex-1 flex-col overflow-hidden">
-          <MobileHeader title={t("title")} sections={navSections} user={user} />
+          <MobileHeader
+            title={t("title")}
+            sections={navSections}
+            user={user}
+            onExpandSection={() => setContentExpanded(true)}
+          />
 
           {/* Top Header Bar with Global Cmd+K Search & View Site */}
           <div className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4">
