@@ -97,8 +97,11 @@ test(
     // LiveClassRoom fetches the token via POST → renders StreamVideoProvider
     // → CallJoiner tries to join (will fail offline). We only need to confirm
     // the page rendered without a blank screen or 500 error page.
-    const spinner = page.locator("text=Connecting to live class");
-    const joiningCall = page.locator("text=Joining call");
+    // Match the visible paragraph copy (trailing "…") so we don't also match
+    // the Spinner's sr-only label (e.g. <span class="sr-only">Joining call</span>),
+    // which would trip Playwright strict mode with two "Joining call" nodes.
+    const spinner = page.locator("text=Connecting to live class...");
+    const joiningCall = page.locator("text=Joining call...");
     const failedConnect = page.locator("text=Failed to connect");
     const classEnded = page.locator("text=Class Ended");
 
