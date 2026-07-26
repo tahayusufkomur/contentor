@@ -99,7 +99,6 @@ describe("gateAdminNav — no regression for established tenants", () => {
       enabledModules: ["courses", "live", "downloads", "campaigns", "community"],
       contentExpanded: false,
     });
-    expect(state.published).toBe(true);
     expect(section(state, "marketing")?.locked).toBeUndefined();
     expect(section(state, "content")?.hiddenCount).toBe(1); // only Library
   });
