@@ -64,3 +64,34 @@ def seed_starter_posts(tenant, brief, *, count=2) -> int:
         register_seeded([post], niche=tenant.template_niche or "general")
         made += 1
     return made
+
+
+def _outlines_for(brief, tenant_schema):
+    from apps.core.onboarding.course_outlines import generate_course_outlines
+
+    return generate_course_outlines(brief, tenant_schema)
+
+
+def seed_draft_products(tenant, brief, *, count=3) -> int:
+    """Up to `count` draft (is_published=False) Courses from AI outlines,
+    registered seeded. generate_course_outlines is itself fail-soft (a
+    deterministic fallback when AI is unavailable), so this never needs its
+    own AI-availability gate. Must run inside the caller's tenant_context."""
+    from apps.accounts.models import User
+    from apps.courses.models import Course
+
+    owner = User.objects.filter(role="owner").order_by("id").first()
+    if owner is None:
+        return 0
+    made = 0
+    for o in _outlines_for(brief, tenant.schema_name)[:count]:
+        course = Course.objects.create(
+            title=o["title"],
+            description=o.get("description", ""),
+            price=o.get("suggested_price", 0),
+            instructor=owner,
+            is_published=False,
+        )
+        register_seeded([course], niche=tenant.template_niche or "general")
+        made += 1
+    return made

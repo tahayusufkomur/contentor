@@ -61,3 +61,23 @@ def test_seeds_noindex_draft_posts(restore_public):
             assert all(p.noindex and p.status == "draft" and p.source == "ai" for p in posts)
     finally:
         _drop("seedc_posts")
+
+
+def test_seeds_draft_courses(restore_public):
+    from apps.core.onboarding import seeding_content
+
+    t = _tenant("seedc_prod")
+    outlines = [
+        {"title": "Draft A", "description": "d", "suggested_price": 0},
+        {"title": "Draft B", "description": "d", "suggested_price": 49},
+    ]
+    try:
+        with mock.patch.object(seeding_content, "_outlines_for", return_value=outlines), tenant_context(t):
+            n = seeding_content.seed_draft_products(t, brief=None)
+            from apps.courses.models import Course
+
+            courses = list(Course.objects.all())
+            assert n == 2
+            assert all(c.is_published is False for c in courses)
+    finally:
+        _drop("seedc_prod")
