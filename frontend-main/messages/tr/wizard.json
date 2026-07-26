@@ -289,6 +289,19 @@
       "closedCta": "Girişe git",
       "failed": "Bu kayıt için bağlantı gönderemedik. Lütfen yeniden başlayın.",
       "startOver": "Baştan başla"
+    },
+    "revealChat": {
+      "title": "Farklı bir şey mi istiyorsun?",
+      "placeholder": "Neyi değiştirmek istediğini yaz…",
+      "preview": "Önizle",
+      "thinking": "Düşünüyor…",
+      "readyHint": "Değişikliğin uygulanmaya hazır.",
+      "apply": "Uygula",
+      "applying": "Uygulanıyor…",
+      "discard": "Vazgeç",
+      "remaining": "Kalan ücretsiz düzenleme: {count}",
+      "exhausted": "Şimdilik ücretsiz düzenlemelerini kullandın — istediğin zaman yayınlayabilirsin.",
+      "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
     }
   }
 }

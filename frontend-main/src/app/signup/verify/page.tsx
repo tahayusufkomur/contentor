@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
 
 import { WizardFlow } from "./wizard/WizardFlow";
+import { RevealChat } from "./wizard/reveal-chat";
 import { requestHandoff } from "@/lib/api/onboarding";
 import { recoverWizard } from "@/lib/wizard/api";
 import { ApiError } from "@/types/api";
@@ -291,6 +292,7 @@ export default function SignupVerifyPage() {
             {t("verify.openCta", { domain })}
           </a>
         </Button>
+        {resumeToken && <RevealChat token={resumeToken} />}
       </AuthShell>
     );
   }

@@ -289,6 +289,19 @@
       "closedCta": "Go to login",
       "failed": "We couldn't send a link for this signup. Please start again.",
       "startOver": "Start over"
+    },
+    "revealChat": {
+      "title": "Want anything different?",
+      "placeholder": "Tell me what you'd like to change…",
+      "preview": "Preview",
+      "thinking": "Thinking…",
+      "readyHint": "Ready to apply your change.",
+      "apply": "Apply",
+      "applying": "Applying…",
+      "discard": "Discard",
+      "remaining": "Free refinements left: {count}",
+      "exhausted": "You've used your free refinements for now — you can still publish anytime.",
+      "error": "Something went wrong. Please try again."
     }
   }
 }
