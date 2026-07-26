@@ -28,6 +28,10 @@ export function Feed({
   // not just from the mount effect below — guard all of them with one ref.
   const mountedRef = useRef(true);
   useEffect(() => {
+    // Reset on every (re)mount: React 18 StrictMode (dev) runs mount → cleanup
+    // → mount, and without this the cleanup's `false` would stick, permanently
+    // guarding out setLoading(false) and freezing the feed on its skeleton.
+    mountedRef.current = true;
     return () => {
       mountedRef.current = false;
     };
