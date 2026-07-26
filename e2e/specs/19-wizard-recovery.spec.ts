@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { latestEmail, firstLink } from "../helpers/email";
 import { manage } from "../helpers/compose";
+import { bucketedEmail } from "../helpers/holdout";
 import en from "../../frontend-main/messages/en/auth.json";
 import wizardMessages from "../../frontend-main/messages/en/wizard.json";
 
@@ -40,7 +41,8 @@ test.beforeAll(() => {
 
 test("recovery email resumes the wizard where the coach left off", async ({ page }) => {
   test.setTimeout(120_000);
-  const email = `e2e-recovery-${stamp}@example.com`;
+  // Classic-flow assertions below; pin the bucket so the flow is deterministic.
+  const email = bucketedEmail(`e2e-recovery-${stamp}-`, "control");
   await signupThroughVerify(page, `E2E Recovery ${stamp}`, email);
 
   // Advance one step so there's real progress to resume to.

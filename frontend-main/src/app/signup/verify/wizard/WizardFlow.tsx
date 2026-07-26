@@ -348,6 +348,9 @@ export function WizardFlow({
     step.chapter === "look" ||
     step.chapter === "pages" ||
     step.id === "business.niche";
+  // Content steps carry their own Continue (it POSTs a real course/event/post
+  // before advancing) plus a Skip link, so the shell must not add a second one.
+  const stepOwnsAdvance = autoAdvance || step.chapter === "content";
 
   let body: React.ReactNode;
   switch (step.id) {
@@ -546,7 +549,7 @@ export function WizardFlow({
         step.id === "look.hero"
       }
       footer={
-        autoAdvance ? null : (
+        stepOwnsAdvance ? null : (
           <Button
             type="button"
             variant="brand"

@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { latestEmail, firstLink } from "../helpers/email";
 import { manage } from "../helpers/compose";
+import { bucketedEmail } from "../helpers/holdout";
 import en from "../../frontend-main/messages/en/auth.json";
 import wizardMessages from "../../frontend-main/messages/en/wizard.json";
 
@@ -72,7 +73,7 @@ test.beforeAll(() => {
 
 test("coach walks the full wizard and the tenant provisions", async ({ page }) => {
   test.setTimeout(300_000);
-  await signupThroughVerify(page, `E2E Studio ${stamp}a`, `e2e-coach-${stamp}a@example.com`);
+  await signupThroughVerify(page, `E2E Studio ${stamp}a`, bucketedEmail(`e2e-coach-${stamp}a-`, "control"));
 
   // Chapter 1 — business
   // Accessible name is "<label> <tagline>" (e.g. "Yoga Flows, breathwork, balance"); a bare
@@ -115,7 +116,7 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
 
 test("auto-advance cards disable while a pick is saving", async ({ page }) => {
   test.setTimeout(120_000);
-  await signupThroughVerify(page, `E2E Studio ${stamp}c`, `e2e-coach-${stamp}c@example.com`);
+  await signupThroughVerify(page, `E2E Studio ${stamp}c`, bucketedEmail(`e2e-coach-${stamp}c-`, "control"));
 
   await page
     .getByRole("button", { name: `${W.niches.yoga.label} ${W.niches.yoga.tagline}`, exact: true })
@@ -144,7 +145,7 @@ test("auto-advance cards disable while a pick is saving", async ({ page }) => {
 
 test("finish-the-rest-for-me fast path provisions", async ({ page }) => {
   test.setTimeout(300_000);
-  await signupThroughVerify(page, `E2E Studio ${stamp}b`, `e2e-coach-${stamp}b@example.com`);
+  await signupThroughVerify(page, `E2E Studio ${stamp}b`, bucketedEmail(`e2e-coach-${stamp}b-`, "control"));
 
   await page.getByRole("button", { name: W.niches.general.label }).click({ timeout: 20_000 }); // niche (auto-advances)
   await clickContinue(page); // describe
