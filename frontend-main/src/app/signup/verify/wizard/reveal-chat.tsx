@@ -11,11 +11,7 @@ import { Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import {
-  applySiteEdit,
-  isAbortError,
-  previewSiteEdit,
-} from "@/lib/wizard/api";
+import { applySiteEdit, isAbortError, previewSiteEdit } from "@/lib/wizard/api";
 
 // Mirrors apps/core/onboarding/wizard.py's REVEAL_FREE_APPLIES — there is no
 // dedicated "how many do I have left" endpoint, so this is the assumed count
