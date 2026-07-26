@@ -1,6 +1,8 @@
 # Wizard A/B Holdout Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**STATUS: COMPLETE** — implemented on branch `feat/lazy-provisioning-foundation` (2026-07-26).
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Give every new signup a stable, deterministic `control` / `treatment` bucket so the content-first wizard (Plan 3b–3d) can ship to half of new coaches while the other half stays on today's wizard, and provide a report command that compares verify→publish conversion between the two.
 
@@ -45,7 +47,7 @@ The onboarding spec's "Rollout and measurement" section requires the content-fir
 **Interfaces:**
 - Produces: `assign_wizard_bucket(seed: str) -> str` returning `WIZARD_BUCKET_CONTROL` (`"control"`) or `WIZARD_BUCKET_TREATMENT` (`"treatment"`), plus module constants `WIZARD_BUCKETS = ("control", "treatment")`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `backend/apps/core/tests/test_wizard_holdout.py`:
 
@@ -83,13 +85,13 @@ def test_distinct_seeds_can_differ():
     assert buckets == set(WIZARD_BUCKETS)  # both buckets appear
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -v`
 
 Expected: FAIL — module `experiments` does not exist.
 
-- [ ] **Step 3: Implement the primitive**
+- [x] **Step 3: Implement the primitive**
 
 Create `backend/apps/core/onboarding/experiments.py`:
 
@@ -115,13 +117,13 @@ def assign_wizard_bucket(seed: str) -> str:
     return WIZARD_BUCKET_TREATMENT if digest[-1] & 1 else WIZARD_BUCKET_CONTROL
 ```
 
-- [ ] **Step 4: Run to verify pass**
+- [x] **Step 4: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -v`
 
 Expected: PASS, 4 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/apps/core/onboarding/experiments.py backend/apps/core/tests/test_wizard_holdout.py
@@ -143,7 +145,7 @@ git commit -m "feat(onboarding): deterministic wizard holdout bucketing primitiv
 - Consumes: `assign_wizard_bucket` (Task 1).
 - Produces: `Tenant.wizard_bucket` (`""` until assigned, else a value in `WIZARD_BUCKETS`); `_state_body(tenant)` now includes `"wizard_bucket": tenant.wizard_bucket`.
 
-- [ ] **Step 1: Add the field**
+- [x] **Step 1: Add the field**
 
 In `backend/apps/core/models.py`, on `Tenant`, near `wizard_state`:
 
@@ -160,7 +162,7 @@ In `backend/apps/core/models.py`, on `Tenant`, near `wizard_state`:
     )
 ```
 
-- [ ] **Step 2: Generate and apply the migration**
+- [x] **Step 2: Generate and apply the migration**
 
 ```bash
 docker compose exec django python manage.py makemigrations core --name wizard_bucket
@@ -169,7 +171,7 @@ docker compose exec django python manage.py migrate_schemas --shared
 
 Expected: one `AddField` on `core.tenant`; migrate OK.
 
-- [ ] **Step 3: Write the failing assignment + exposure tests**
+- [x] **Step 3: Write the failing assignment + exposure tests**
 
 Append to `test_wizard_holdout.py`:
 
@@ -231,13 +233,13 @@ def test_verify_assigns_a_bucket_on_fresh_create(client):
 
 Add a `client` fixture (`APIClient`) at the top if not already present. Confirm the exact `create_signup_token` signature first (`apps/accounts/tokens.py`) — it is `create_signup_token(email, name, brand_name, region)`; `slugify(brand_name)` must equal the tenant slug the verify view creates.
 
-- [ ] **Step 4: Run to verify failure**
+- [x] **Step 4: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -k "state_body or verify_assigns" -v`
 
 Expected: FAIL — `_state_body` has no `wizard_bucket` key; the fresh tenant's bucket is `""`.
 
-- [ ] **Step 5: Assign at fresh create**
+- [x] **Step 5: Assign at fresh create**
 
 In `backend/apps/core/onboarding/views.py`, in the fresh-create branch (line 220), add the import at the top of the module and set the field on create:
 
@@ -261,7 +263,7 @@ from apps.core.onboarding.experiments import assign_wizard_bucket
 
 Seed with `email:region` (email is unique per region, so this is the stable per-tenant key). Do NOT touch the resume branch above (line 210-216) — a returning coach keeps their original bucket.
 
-- [ ] **Step 6: Expose in `_state_body`**
+- [x] **Step 6: Expose in `_state_body`**
 
 In `backend/apps/core/onboarding/wizard.py`:
 
@@ -277,13 +279,13 @@ def _state_body(tenant) -> dict:
     }
 ```
 
-- [ ] **Step 7: Run to verify pass**
+- [x] **Step 7: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add backend/apps/core/models.py backend/apps/core/migrations backend/apps/core/onboarding/views.py backend/apps/core/onboarding/wizard.py backend/apps/core/tests/test_wizard_holdout.py
@@ -301,7 +303,7 @@ git commit -m "feat(onboarding): assign and expose the wizard holdout bucket"
 **Interfaces:**
 - Produces: `python manage.py wizard_holdout_report [--since-days N]` printing, per bucket, the count of signups and how many reached `is_published=True`, with the publish rate. A `--json` flag emits the same as machine-readable JSON for dashboards.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `test_wizard_holdout.py`:
 
@@ -339,13 +341,13 @@ def test_report_counts_publish_rate_per_bucket():
             Tenant.objects.filter(pk=t.pk).delete()
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -k report -v`
 
 Expected: FAIL — unknown command `wizard_holdout_report`.
 
-- [ ] **Step 3: Implement the command**
+- [x] **Step 3: Implement the command**
 
 Model on an existing command's structure (e.g. `backend/apps/core/management/commands/decommission_demo_tenants.py`). Create `backend/apps/core/management/commands/wizard_holdout_report.py`:
 
@@ -398,13 +400,13 @@ class Command(BaseCommand):
             )
 ```
 
-- [ ] **Step 4: Run to verify pass**
+- [x] **Step 4: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -v`
 
 Expected: PASS (all holdout tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/apps/core/management/commands/wizard_holdout_report.py backend/apps/core/tests/test_wizard_holdout.py
@@ -415,10 +417,41 @@ git commit -m "feat(onboarding): wizard holdout funnel report command"
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -n auto` passes.
-- [ ] `make lint` passes with zero warnings.
-- [ ] Manual: `docker compose exec django python manage.py wizard_holdout_report` prints both buckets without error against the dev DB.
-- [ ] Manual: two `creator_signup_verify` calls with different emails both produce a tenant whose `wizard_bucket` is non-empty, and re-verifying the same email does not change the bucket.
+- [x] `docker compose exec django pytest apps/core/tests/test_wizard_holdout.py -n auto` passes.
+- [x] `make lint` passes with zero warnings.
+- [x] Manual: `docker compose exec django python manage.py wizard_holdout_report` prints both buckets without error against the dev DB.
+- [x] Manual: two `creator_signup_verify` calls with different emails both produce a tenant whose `wizard_bucket` is non-empty, and re-verifying the same email does not change the bucket.
+
+## Execution notes (2026-07-26)
+
+Deviations from the plan as written, and why:
+
+1. **Added `test_reverify_does_not_rebucket_a_returning_coach`.** The plan's
+   headline constraint ("assigned exactly once, never changes") had no test —
+   only the fresh-create path was covered. The new test verifies, forces the
+   *opposite* bucket, re-verifies, and asserts the resume branch (200, not 201)
+   left it alone. Without this the constraint was an assertion in prose only.
+2. **The report test measures a delta, not an absolute.** The plan's version
+   asserted `signups >= 2`, which passes even if the command counted every
+   tenant in the DB. It now snapshots the report before and after creating the
+   four rows and asserts the difference is exactly 2/1/2/0, so a broken filter
+   fails the test.
+3. **Added `test_report_never_counts_the_public_row_and_survives_an_empty_bucket`**
+   — the zero-signup branch (`publish_rate` divide) was otherwise unexercised.
+4. **`--since-days 0` is the empty-window handle** used by that test; the
+   command needed no change to support it.
+5. **Separate style commit for the migration.** `makemigrations` emits single
+   quotes and an unwrapped `CharField(...)`; pre-commit's ruff-format rewrites
+   both, so `make lint` failed on first run. Committed the reformat on its own
+   so the migration's content is visibly unchanged.
+
+**Verification results:** `test_wizard_holdout.py` 9 passed (serial and
+`-n auto`); full `apps/core` 567 passed on a clean DB; `make lint` exit 0.
+Manual: `manage.py wizard_holdout_report` prints both buckets against the dev DB
+without error (0/0 — every existing dev tenant predates the field, bucket `""`).
+Manual: two real `/signup/verify/` calls returned 201 with buckets `control` and
+`treatment` respectively; re-verifying the first returned 200 (resume branch)
+with the bucket unchanged.
 
 ## How Plan 3b consumes this
 
