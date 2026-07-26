@@ -32,7 +32,10 @@ export function gateAdminNav(
     if (section.id === "marketing" && !state.published) {
       return {
         ...section,
-        locked: { reasonKey: "nav.locked.marketing", href: "/admin#publish-card" },
+        locked: {
+          reasonKey: "nav.locked.marketing",
+          href: "/admin#publish-card",
+        },
       };
     }
     if (section.id === "content") {
@@ -41,8 +44,8 @@ export function gateAdminNav(
       }
       const visible = section.items.filter((item) => {
         if (DISCLOSURE_ONLY_HREFS.has(item.href)) return false;
-        const module = MODULE_FOR_HREF[item.href];
-        return module ? state.enabledModules.includes(module) : true;
+        const moduleId = MODULE_FOR_HREF[item.href];
+        return moduleId ? state.enabledModules.includes(moduleId) : true;
       });
       return {
         ...section,
