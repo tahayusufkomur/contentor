@@ -170,26 +170,36 @@ def _run_ai_step(label, tenant, fn, timeout_seconds):
     return result, "ok"
 
 
+def _gather_content_items(tenant):
+    """Course/download items for the compose brief, read in the caller's
+    tenant_context. Includes PUBLISHED courses — the content-first wizard makes
+    the coach's first course published, and it must feed the composed site.
+    (Classic tenants have only draft demo courses here, so widening the filter
+    is a no-op for them.)"""
+    from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
+
+    course_items = tuple(
+        {"id": c.pk, "title": c.title, "description": (c.description or "")[:300]}
+        for c in Course.objects.order_by("id")[:8]
+    )
+    download_items = tuple(
+        {"id": d.pk, "title": d.title, "description": ""} for d in DownloadFile.objects.order_by("id")[:8]
+    )
+    return course_items, download_items
+
+
 def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
     """AI copy pass. Returns (pages, extras, status); falls back to the static
-    pages (extras None) on skip/failure. Draft content is gathered HERE, in
-    the caller's tenant_context — the worker thread's fresh connection lands on
+    pages (extras None) on skip/failure. Content is gathered HERE, in the
+    caller's tenant_context — the worker thread's fresh connection lands on
     the public schema and could not read the tenant's courses/downloads."""
     from apps.core.onboarding import ai_compose
 
     if not ai_compose.compose_available():
         return pages, None, "skipped"
 
-    from apps.courses.models import Course
-    from apps.downloads.models import DownloadFile
-
-    course_items = tuple(
-        {"id": c.pk, "title": c.title, "description": (c.description or "")[:300]}
-        for c in Course.objects.filter(is_published=False).order_by("id")[:8]
-    )
-    download_items = tuple(
-        {"id": d.pk, "title": d.title, "description": ""} for d in DownloadFile.objects.order_by("id")[:8]
-    )
+    course_items, download_items = _gather_content_items(tenant)
 
     def run():
         return ai_compose.compose_pages(
@@ -420,6 +430,37 @@ def provision_wizard_schema(self, tenant_id, owner_email, owner_name):
         tenant.provisioning_status = "failed"
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Wizard schema provisioning failed for %s", tenant.slug)
+        raise self.retry(exc=exc) from exc
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def compose_wizard_site(self, tenant_id):
+    """Compose the site for an already-provisioned content-first tenant from
+    its real content + wizard answers, then mark ready. Fail-soft: an AI
+    failure inside _apply_wizard_answers falls back to deterministic pages and
+    still reaches 'ready'. Only an unexpected error retries."""
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(id=tenant_id)
+    if tenant.provisioning_status == "ready":
+        return
+    if tenant.provisioning_status != "provisioned":
+        return  # schema not ready yet; the frontend gates compose on 'provisioned'
+    try:
+        region = tenant.region or "global"
+        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        answers = (tenant.wizard_state or {}).get("answers") or {}
+        _apply_wizard_answers(tenant, answers, preferred_locale)
+
+        _set_provisioning_stage(tenant, "finalizing")
+        tenant.provisioning_status = "ready"
+        tenant.save(update_fields=["provisioning_status"])
+        logger.info("Tenant %s composed at reveal", tenant.slug)
+    except Exception as exc:
+        tenant.provisioning_status = "failed"
+        tenant.save(update_fields=["provisioning_status"])
+        logger.exception("compose_wizard_site failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
 
 
