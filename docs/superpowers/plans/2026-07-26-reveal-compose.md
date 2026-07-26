@@ -1,6 +1,8 @@
 # Reveal + Compose Fallback Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**STATUS: BACKEND COMPLETE / Task 3 Step 2 DEFERRED to Plan 3b** — branch `feat/lazy-provisioning-foundation` (2026-07-26).
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** At the end of the content-first wizard, compose the coach's site from their real content and answers, reaching a `ready` reveal — and never strand a coach if the AI step fails (deterministic pages always stand).
 
@@ -55,7 +57,7 @@ In the classic flow, "Create my platform" runs one big `provision_tenant` (schem
 **Interfaces:**
 - Produces: `_gather_content_items(tenant) -> (course_items, download_items)` — tuples of `{id, title, description}`, including **published** courses. `_compose_pages_with_ai` calls it instead of the inline draft-only query.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `backend/apps/core/tests/test_reveal_compose.py` (real-schema harness as in Plan 3a):
 
@@ -108,12 +110,12 @@ def test_gather_includes_published_courses(restore_public):
         _drop("reveal_pub")
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_reveal_compose.py -k gather -v`
 Expected: FAIL — `_gather_content_items` does not exist.
 
-- [ ] **Step 3: Extract and widen the gather**
+- [x] **Step 3: Extract and widen the gather**
 
 In `backend/apps/core/tasks.py`, replace the inline `course_items`/`download_items` queries inside `_compose_pages_with_ai` (lines 183-192) with a call to a new module function:
 
@@ -146,15 +148,15 @@ And in `_compose_pages_with_ai`, replace the two inline comprehensions with:
 
 (Leave the rest of `_compose_pages_with_ai` — the `compose_available()` guard, the `run()` closure, `_run_ai_step` — unchanged.)
 
-- [ ] **Step 4: Run to verify pass**
+- [x] **Step 4: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_reveal_compose.py -k gather -v` → PASS.
 
-- [ ] **Step 5: Confirm classic compose still works**
+- [x] **Step 5: Confirm classic compose still works**
 
 Run: `docker compose exec django pytest apps/core -n auto -k "compose or provision"` → PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/apps/core/tasks.py backend/apps/core/tests/test_reveal_compose.py
@@ -173,7 +175,7 @@ git commit -m "fix(onboarding): include the coach's published content in the com
 **Interfaces:**
 - Produces: `compose_wizard_site(tenant_id)` Celery task — composes an already-`provisioned` tenant and sets `ready`; `POST /api/v1/onboarding/wizard/compose/` → `{status}`, enqueues it.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 from unittest import mock
@@ -193,11 +195,11 @@ def test_compose_wizard_site_reaches_ready_even_if_ai_unavailable(restore_public
         _drop("reveal_ready")
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL (no `compose_wizard_site`).
+- [x] **Step 2: Run to verify failure** — FAIL (no `compose_wizard_site`).
 
 Run: `docker compose exec django pytest apps/core/tests/test_reveal_compose.py -k reaches_ready -v`
 
-- [ ] **Step 3: Implement the task**
+- [x] **Step 3: Implement the task**
 
 In `backend/apps/core/tasks.py`:
 
@@ -232,7 +234,7 @@ def compose_wizard_site(self, tenant_id):
         raise self.retry(exc=exc) from exc
 ```
 
-- [ ] **Step 4: Add the trigger view + route**
+- [x] **Step 4: Add the trigger view + route**
 
 In `backend/apps/core/onboarding/wizard.py`:
 
@@ -259,11 +261,11 @@ In `urls.py`:
     path("wizard/compose/", wizard.wizard_compose, name="wizard-compose"),
 ```
 
-- [ ] **Step 5: Run to verify pass**
+- [x] **Step 5: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_reveal_compose.py -v` → PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/apps/core/tasks.py backend/apps/core/onboarding/wizard.py backend/apps/core/onboarding/urls.py backend/apps/core/tests/test_reveal_compose.py
@@ -282,7 +284,7 @@ git commit -m "feat(onboarding): compose-at-reveal task + trigger for the conten
 - Consumes: `wizard/compose/` (Task 2); the existing status-poll reveal (`verify/page.tsx`).
 - Produces: `composeWizard(token) -> {status}`; the content flow's review step calls compose instead of `finalizeWizard`.
 
-- [ ] **Step 1: Add the client call**
+- [x] **Step 1: Add the client call**
 
 In `frontend-main/src/lib/wizard/api.ts`:
 
@@ -324,11 +326,61 @@ git commit -m "feat(wizard): content-flow reveal composes the real-content site"
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/core/tests/test_reveal_compose.py -n auto` passes.
-- [ ] `docker compose exec django pytest apps/core -n auto -k "compose or provision"` passes (classic unaffected).
-- [ ] `make typecheck` + `make lint` pass.
-- [ ] Manual: a provisioned dev tenant with one published course, hit `wizard/compose/`, polls to `ready`, and its composed home page references the real course title.
-- [ ] Manual: with AI disabled (`ONBOARDING_AI_ENABLED=false`), compose still reaches `ready` with deterministic pages — no coach is ever stranded.
+- [x] `docker compose exec django pytest apps/core/tests/test_reveal_compose.py -n auto` passes.
+- [x] `docker compose exec django pytest apps/core -n auto -k "compose or provision"` passes (classic unaffected).
+- [x] `make typecheck` + `make lint` pass.
+- [ ] Manual: a provisioned dev tenant with one published course, hit `wizard/compose/`, polls to `ready`, and its composed home page references the real course title. *(Partially: reached `ready` and the gather returned the real course title. The AI-composed page text is not observable in dev — no onboarding AI provider/budget configured.)*
+- [x] Manual: with AI disabled (`ONBOARDING_AI_ENABLED=false`), compose still reaches `ready` with deterministic pages — no coach is ever stranded.
+
+## Execution notes (2026-07-26)
+
+**What is NOT done, and why.** Task 3 Step 2 wires `WizardFlow.tsx` to call
+`composeWizard` when `isContentFlow` is true. `isContentFlow` does not exist —
+grep for it across `frontend-main/src` returns nothing. It is introduced by
+Plan 3b, which owns both flows and the bucket-driven selection between them.
+Writing it here would mean inventing 3b's flow predicate in 3b's file, so the
+branch is deferred to 3b. Everything it depends on is in place: the endpoint,
+the task, and the `composeWizard` client function (Step 1) are all landed and
+tested. **Plan 3b must not forget to make its review step call `composeWizard`
+instead of `finalizeWizard`.**
+
+Deviations in the parts that were implemented:
+
+1. **Three tests added beyond the plan's one.** The plan tested only "reaches
+   ready with AI off". Added: the task no-ops on a `pending` tenant (which has
+   no schema — composing it would raise and mark it `failed`), the task is
+   idempotent once `ready` (asserted by patching `_apply_wizard_answers` and
+   proving it is not called again), and the endpoint enqueues only for a
+   `provisioned` tenant.
+2. **`test_gather_still_includes_draft_courses`** pins the plan's own claim that
+   widening the filter is a no-op for classic tenants — otherwise the change
+   could silently have dropped drafts.
+3. **Mutation-verified.** The implementation was written before the tests could
+   be run (a full-suite run was holding the test DBs), so `_gather_content_items`
+   was reverted to `filter(is_published=False)` to confirm
+   `test_gather_includes_published_courses` actually fails (`assert 'Real Course'
+   in []`), then restored.
+4. **Fixed a real ordering bug in Plan 3a's `test_abandoned_cleanup.py`.** Its
+   helpers assumed the connection was already on the public schema; scheduled
+   after a test that left it on `shared_test`, they died with
+   "Can't create tenant outside the public schema". Both the autouse purge and
+   `_tenant()` now force public. This surfaced only under
+   `-n auto -k "compose or provision"`.
+5. **Stale docstring corrected** — `_compose_pages_with_ai` said "Draft content
+   is gathered HERE"; it is no longer draft-only.
+
+**Verification results:** `test_reveal_compose.py` 6 passed (serial and
+`-n auto`); `apps/core -n auto -k "compose or provision"` 68 passed;
+`make typecheck` exit 0; `make lint` exit 0. Manual against the dev stack: schema
+step -> `provisioned`; the Plan 3c course endpoint created a real published
+course; `_gather_content_items` returned `['Marathon Base Building']` (the real
+course now feeds the brief); `POST wizard/compose/` -> 200; with
+`compose_available()` forced False the task reached `ready` with all six
+deterministic pages present and a non-empty home. **Not verified:** that an
+*AI-composed* home page quotes the course title — dev has no onboarding AI
+budget/provider configured (`compose_available()` is False there), so only the
+fallback path is observable locally. The gather feeding the title is verified,
+which is the part this plan changed.
 
 ## Where this sits in Plan 3
 
