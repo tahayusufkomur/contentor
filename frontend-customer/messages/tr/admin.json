@@ -30,6 +30,7 @@
       "students": "Öğrenciler",
       "notifications": "Duyuru gönder",
       "inbox": "Gelen Kutusu",
+      "siteAi": "Site Yapay Zekâsı",
       "editSite": "Siteyi düzenle",
       "design": "Tasarım",
       "assistant": "Site asistanı",
@@ -45,6 +46,26 @@
     "unlocked": {
       "marketing": "🎉 Siteniz yayında — Pazarlama artık açık"
     }
+  },
+  "siteAi": {
+    "title": "Site Yapay Zekâsı",
+    "subtitle": "Bir değişiklik anlatın, sitenizi yeniden tasarlayayım.",
+    "placeholder": "örn. ana sayfayı daha sıcak yap ve girişi kısalt",
+    "preview": "Değişikliği önizle",
+    "thinking": "Düşünüyor…",
+    "ready": "Önerilen değişiklik hazır.",
+    "apply": "Uygula",
+    "applying": "Uygulanıyor…",
+    "discard": "Vazgeç",
+    "applied": "Siteniz güncellendi",
+    "remaining": "Bu ay kalan yapay zekâ düzenlemesi: {count}/{limit}",
+    "upgradeTitle": "Yapay zekâ ile düzenleme ücretli bir özellik",
+    "upgradeBody": "Tek bir cümleyle sitenizi yeniden tasarlatmak için yükseltin. Sitenizi her zaman ücretsiz olarak elle düzenleyebilirsiniz.",
+    "exhaustedTitle": "Bu ayki yapay zekâ düzenlemelerinizi kullandınız",
+    "exhaustedBody": "Hakkınız gelecek ay yenilenir. Elle düzenlemeye ücretsiz devam edebilirsiniz.",
+    "upgradeCta": "Planları gör",
+    "manualCta": "Bunun yerine elle düzenle",
+    "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
   },
   "assistant": {
     "title": "Site asistanı",

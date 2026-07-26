@@ -30,6 +30,7 @@
       "students": "Students",
       "notifications": "Send announcement",
       "inbox": "Inbox",
+      "siteAi": "Site AI",
       "editSite": "Edit site",
       "design": "Design",
       "assistant": "Site assistant",
@@ -45,6 +46,26 @@
     "unlocked": {
       "marketing": "🎉 Your site is live — Marketing is now open"
     }
+  },
+  "siteAi": {
+    "title": "Site AI",
+    "subtitle": "Describe a change and I'll redesign your site.",
+    "placeholder": "e.g. make the homepage warmer and shorten the intro",
+    "preview": "Preview change",
+    "thinking": "Thinking…",
+    "ready": "Here's the proposed change.",
+    "apply": "Apply",
+    "applying": "Applying…",
+    "discard": "Discard",
+    "applied": "Your site has been updated",
+    "remaining": "{count} of {limit} AI edits left this month",
+    "upgradeTitle": "AI editing is a paid feature",
+    "upgradeBody": "Upgrade to let AI redesign your site from a sentence. You can always edit your site manually for free.",
+    "exhaustedTitle": "You've used this month's AI edits",
+    "exhaustedBody": "Your allowance resets next month. You can keep editing manually for free.",
+    "upgradeCta": "See plans",
+    "manualCta": "Edit manually instead",
+    "error": "Something went wrong. Please try again."
   },
   "assistant": {
     "title": "Site assistant",
