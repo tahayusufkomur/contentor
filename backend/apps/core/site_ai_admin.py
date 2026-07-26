@@ -99,7 +99,14 @@ def site_ai_apply(request):
         )
 
     data = request.data if isinstance(request.data, dict) else {}
-    site_ai.apply_edit(tenant, data.get("pages") or {})
+    pages = data.get("pages")
+    if not isinstance(pages, dict) or not pages:
+        # Refuse a malformed/empty payload before it ever reaches apply_edit
+        # (which does cfg.pages = pages verbatim) and before a credit is
+        # spent — an empty dict would otherwise blank every page of a live
+        # published site for the cost of one allowance unit.
+        return Response({"detail": "pages_required"}, status=400)
+    site_ai.apply_edit(tenant, pages)
     site_ai.record_update(tenant.schema_name)
     remaining = max(0, status["remaining"] - 1)
     logger.info("admin site-edit applied schema=%s remaining=%d", tenant.schema_name, remaining)
