@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0032_remove_tenant_is_demo'),
+        ("core", "0032_remove_tenant_is_demo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenant',
-            name='free_blog_grant_used',
-            field=models.BooleanField(default=False, help_text="The free plan's one-off AI blog generation has been spent. Lifetime, never reset."),
+            model_name="tenant",
+            name="free_blog_grant_used",
+            field=models.BooleanField(
+                default=False,
+                help_text="The free plan's one-off AI blog generation has been spent. Lifetime, never reset.",
+            ),
         ),
     ]
