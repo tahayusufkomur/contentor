@@ -1,6 +1,8 @@
 # Wizard Content-Creation APIs Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**STATUS: COMPLETE** — implemented on branch `feat/lazy-provisioning-foundation` (2026-07-26).
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Give the content-first wizard the backend it writes into: onboarding endpoints that create a real course, event, and blog post in the tenant schema from wizard-token auth, plus an AI endpoint that drafts three course outlines to choose from.
 
@@ -59,7 +61,7 @@ Plan 3a made the tenant schema exist early (`provisioning_status="provisioned"`)
 **Interfaces:**
 - Produces: `_wizard_content_setup(request) -> (tenant, owner, err)` — resolves the wizard token, enforces `provisioned`/`ready`, and returns the tenant + its owner `User` (or an error `Response`). `generate_course_outlines(brief, tenant_schema) -> list[dict]` returning up to 3 `{title, description, suggested_price}` dicts (AI, with a deterministic fallback). `POST /api/v1/onboarding/wizard/content/course-outlines/`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `backend/apps/core/tests/test_wizard_content.py`. Reuse the real-schema harness from Plan 3a's `test_lazy_provisioning.py` (create tenant, `provision_tenant_schema`, drop in `finally`):
 
@@ -143,13 +145,13 @@ def test_content_endpoint_rejects_unprovisioned_tenant(client, restore_public):
         Tenant.objects.filter(pk=t.pk).delete()
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_content.py -v`
 
 Expected: FAIL — routes 404.
 
-- [ ] **Step 3: Implement the outline generator**
+- [x] **Step 3: Implement the outline generator**
 
 Create `backend/apps/core/onboarding/course_outlines.py`:
 
@@ -222,7 +224,7 @@ def generate_course_outlines(brief, tenant_schema) -> list[dict]:
 
 (Import `settings` normally at the top — `from django.conf import settings` — and use `model=settings.ONBOARDING_AI_MODEL`; the inline `__import__` above is only to keep this snippet self-contained. Match the real import style of neighboring onboarding modules.)
 
-- [ ] **Step 4: Implement the shared helper + endpoint**
+- [x] **Step 4: Implement the shared helper + endpoint**
 
 Create `backend/apps/core/onboarding/content.py`:
 
@@ -279,7 +281,7 @@ def wizard_course_outlines(request):
 
 (Confirm `ai_curate.CoachBrief.from_tenant(tenant, locale=...)` — the starter-post path uses exactly this to build a brief; copy its call. If the locale argument differs, mirror `_seed_starter_post`'s usage.)
 
-- [ ] **Step 5: Route it**
+- [x] **Step 5: Route it**
 
 In `backend/apps/core/onboarding/urls.py`, import `content` and add:
 
@@ -287,13 +289,13 @@ In `backend/apps/core/onboarding/urls.py`, import `content` and add:
     path("wizard/content/course-outlines/", content.wizard_course_outlines, name="wizard-course-outlines"),
 ```
 
-- [ ] **Step 6: Run to verify pass**
+- [x] **Step 6: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_content.py -v`
 
 Expected: PASS (2 tests). The outline test passes via the deterministic fallback when AI isn't configured in the test env — that is the intended fail-soft behavior.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add backend/apps/core/onboarding/content.py backend/apps/core/onboarding/course_outlines.py backend/apps/core/onboarding/urls.py backend/apps/core/tests/test_wizard_content.py
@@ -313,7 +315,7 @@ git commit -m "feat(onboarding): wizard content plumbing + AI course-outline end
 - Consumes: `_wizard_content_setup`.
 - Produces: `POST /api/v1/onboarding/wizard/content/course/` `{token, title, description?, price?}` → `{id, slug}`; creates a published `Course` owned by the tenant owner.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `test_wizard_content.py`:
 
@@ -351,13 +353,13 @@ def test_create_course_requires_title(client, restore_public):
         _drop("wc_notitle")
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_content.py -k create_course -v`
 
 Expected: FAIL — route 404.
 
-- [ ] **Step 3: Implement the endpoint**
+- [x] **Step 3: Implement the endpoint**
 
 In `content.py`, add (reusing the existing course serializer for validation, and the model's own slug generation):
 
@@ -380,19 +382,19 @@ def wizard_create_course(request):
         return Response({"id": course.id, "slug": course.slug}, status=201)
 ```
 
-- [ ] **Step 4: Route it**
+- [x] **Step 4: Route it**
 
 ```python
     path("wizard/content/course/", content.wizard_create_course, name="wizard-create-course"),
 ```
 
-- [ ] **Step 5: Run to verify pass**
+- [x] **Step 5: Run to verify pass**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_content.py -k create_course -v`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/apps/core/onboarding/content.py backend/apps/core/onboarding/urls.py backend/apps/core/tests/test_wizard_content.py
@@ -410,7 +412,7 @@ git commit -m "feat(onboarding): wizard first-course create endpoint"
 **Interfaces:**
 - Produces: `POST /api/v1/onboarding/wizard/content/event/` `{token, kind: "live"|"onsite", title, scheduled_at?, ...}` → `{id}`; creates a `LiveClass` (kind `live`) or `OnsiteEvent` (kind `onsite`) owned by the owner.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_create_live_event(client, restore_public):
@@ -434,12 +436,12 @@ def test_create_live_event(client, restore_public):
         _drop("wc_event")
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_content.py -k create_live_event -v`
 Expected: FAIL (404).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `content.py`:
 
@@ -465,7 +467,7 @@ def wizard_create_event(request):
 
 (Confirm whether `OnsiteEvent` has an `instructor`/organizer FK — `LiveClass` sets `instructor=request.user` in its view (`apps/live/views.py:56`); if `OnsiteEvent`'s create view also injects a user field, pass `owner` the same way. Read `onsite_event_list_create` and mirror its `serializer.save(...)` arguments exactly.)
 
-- [ ] **Step 4: Route + run + commit**
+- [x] **Step 4: Route + run + commit**
 
 ```python
     path("wizard/content/event/", content.wizard_create_event, name="wizard-create-event"),
@@ -489,7 +491,7 @@ git commit -m "feat(onboarding): wizard first-event create endpoint"
 **Interfaces:**
 - Produces: `POST /api/v1/onboarding/wizard/content/blog/` `{token, title, body_html?, status?}` → `{id, slug}`; creates a `BlogPost` (default `draft`, or `published` when `status=="published"`) owned by the owner. AI drafting of the body is the coach-initiated free-grant flow and is out of scope here — this endpoint persists a post from provided fields (the frontend may pre-fill the body from the outline/AI in a later plan).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_create_blog_post_published(client, restore_public):
@@ -511,11 +513,11 @@ def test_create_blog_post_published(client, restore_public):
         _drop("wc_blog")
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL (404).
+- [x] **Step 2: Run to verify failure** — FAIL (404).
 
 Run: `docker compose exec django pytest apps/core/tests/test_wizard_content.py -k create_blog -v`
 
-- [ ] **Step 3: Implement** (reuse `BlogPostAdminSerializer`; it derives the slug and sets `published_at` on publish in `perform_create` — but since we bypass the viewset, set `published_at` explicitly on publish, matching `BlogPostAdminViewSet.perform_create`):
+- [x] **Step 3: Implement** (reuse `BlogPostAdminSerializer`; it derives the slug and sets `published_at` on publish in `perform_create` — but since we bypass the viewset, set `published_at` explicitly on publish, matching `BlogPostAdminViewSet.perform_create`):
 
 ```python
 @api_view(["POST"])
@@ -553,7 +555,7 @@ def wizard_create_blog(request):
 
 (Confirm `unique_slug` is importable from `apps.blog.models` — it is defined there at `models.py:11`.)
 
-- [ ] **Step 4: Route + run + commit**
+- [x] **Step 4: Route + run + commit**
 
 ```python
     path("wizard/content/blog/", content.wizard_create_blog, name="wizard-create-blog"),
@@ -570,10 +572,52 @@ git commit -m "feat(onboarding): wizard first-blog-post create endpoint"
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/core/tests/test_wizard_content.py -n auto` passes.
-- [ ] `make lint` passes.
-- [ ] Manual: with a provisioned dev tenant + a valid wizard token, POSTing to each `wizard/content/*` route creates the row in the tenant schema owned by the owner user, and the created course/event/post satisfies the publish gate's `_has_own` check (i.e. it is NOT registered as seeded).
-- [ ] Manual: hitting any content route on a still-`pending` tenant returns 409 `provisioning`.
+- [x] `docker compose exec django pytest apps/core/tests/test_wizard_content.py -n auto` passes.
+- [x] `make lint` passes.
+- [x] Manual: with a provisioned dev tenant + a valid wizard token, POSTing to each `wizard/content/*` route creates the row in the tenant schema owned by the owner user, and the created course/event/post satisfies the publish gate's `_has_own` check (i.e. it is NOT registered as seeded).
+- [x] Manual: hitting any content route on a still-`pending` tenant returns 409 `provisioning`.
+
+## Execution notes (2026-07-26)
+
+Deviations from the plan as written, and why:
+
+1. **`OnsiteEvent` also takes `instructor`.** The plan hedged (`serializer.save()`
+   for onsite). Verified: `onsite_event_list_create` (`apps/live/views.py`) saves
+   `instructor=request.user` exactly like the live path, and `OnsiteEvent.instructor`
+   is a required FK. Both branches therefore save `instructor=owner`; a test covers
+   each.
+2. **The blog endpoint uses `serializer.save(...)`, not `BlogPost.objects.create(...)`.**
+   Mirrors `BlogPostAdminViewSet.perform_create` verbatim (server-derived
+   `unique_slug`, `published_at` only on publish). The plan's hand-rolled create
+   duplicated the field list and silently dropped `cover_photo` / `image_placements`.
+3. **AI branch coverage added.** The plan's two Task-1 tests both pass through the
+   deterministic fallback, because the test env has no provider configured — the
+   `core_ai.structured` path would have shipped untested. Added
+   `test_course_outlines_uses_the_model_when_ai_is_available` and
+   `test_course_outlines_falls_back_when_the_model_errors` (the latter also asserts
+   a billed-but-failed attempt still accrues via `record_spend`).
+4. **Fallback outlines are locale-aware.** `_FALLBACK_COPY` has `en` + `tr` variants
+   keyed off `CoachBrief.locale` (derived from `REGION_DEFAULT_LOCALE`), so a Turkish
+   coach isn't handed English course titles. **The TR strings need a native review.**
+5. **`_owner()` takes no argument.** The plan's `_owner(tenant)` never used `tenant`;
+   it must be called inside `tenant_context` regardless.
+6. **Extra guard tests** beyond the plan: bad token → 400, blog default → draft,
+   event requires title, and `test_created_course_counts_as_the_coachs_own_content`
+   which asserts the publish gate's `_has_own` actually sees wizard-created content
+   (the "do not `register_seeded`" constraint, tested rather than assumed).
+7. **`test_seed_dev_tenants.py` flakiness is pre-existing.** Parallel runs of
+   `apps/core` intermittently fail 17–21 of that file's tests with
+   `duplicate key ... accounts_user_email_region_unique`. Reproduced with this
+   plan's test file *excluded*, and the identical command also returned
+   `545 passed` on a run where the DB was genuinely recreated. Serial
+   `--create-db` on that file: 24 passed.
+
+**Verification results:** `test_wizard_content.py` 13 passed (serial and `-n auto`);
+`make lint` exit 0; both manual checks green against the live dev stack — pending
+tenant → `409 provisioning`; provisioned tenant → outlines 200 (3 fallback options),
+course/event/blog all 201, rows owned by the `owner` user, course `is_published=True`,
+event `scheduled`, post `published` with `published_at` set, `SeededObject` count 0,
+and `_has_own` True for course, event and blog.
 
 ## Where this sits in Plan 3
 
