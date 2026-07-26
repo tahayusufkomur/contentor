@@ -9,7 +9,7 @@ from unittest import mock
 import pytest
 
 from apps.blog import ai
-from apps.core.models import BlogAiUsage, PlatformPlan
+from apps.core.models import BlogAiUsage, PlatformPlan, Tenant
 
 pytestmark = pytest.mark.django_db
 
@@ -152,18 +152,54 @@ def test_generate_post_caps_inline_placements_at_two(settings):
     assert len(result.fields["image_placements"]) == 2
 
 
-def _tenant(plan_limit, paid=True):
+def _tenant(plan_limit, paid=True, grant_used=False):
     plan = PlatformPlan.objects.create(
-        name=f"p{plan_limit}-{paid}", price_monthly=1, transaction_fee_pct=1, max_ai_blog_posts=plan_limit
+        name=f"p{plan_limit}-{paid}-{grant_used}",
+        price_monthly=1,
+        transaction_fee_pct=1,
+        max_ai_blog_posts=plan_limit,
     )
     subscription = SimpleNamespace(plan=plan)
-    return SimpleNamespace(schema_name=SCHEMA, platform_subscription=subscription, has_paid_platform_plan=paid)
+    return SimpleNamespace(
+        schema_name=SCHEMA,
+        platform_subscription=subscription,
+        has_paid_platform_plan=paid,
+        free_blog_grant_used=grant_used,
+    )
 
 
-def test_availability_upgrade_required_for_free(settings):
+def test_availability_free_grant_makes_free_plan_eligible(settings):
     settings.ANTHROPIC_API_KEY = "k"
     status = ai.availability(_tenant(0, paid=False))
-    assert status["eligible"] is False and status["reason"] == "upgrade_required"
+    assert status["eligible"] is True
+    assert status["free_grant"] is True
+    assert status["remaining"] == 1
+    assert status["reason"] is None
+
+
+def test_availability_upgrade_required_once_grant_is_spent(settings):
+    settings.ANTHROPIC_API_KEY = "k"
+    status = ai.availability(_tenant(0, paid=False, grant_used=True))
+    assert status["eligible"] is False
+    assert status["free_grant"] is False
+    assert status["reason"] == "upgrade_required"
+
+
+def test_free_grant_ignores_the_monthly_window(settings):
+    """The grant is a lifetime allowance — a new month must not restore it."""
+    settings.ANTHROPIC_API_KEY = "k"
+    BlogAiUsage.objects.create(tenant_schema=SCHEMA, month="2020-01", generations_used=1)
+    status = ai.availability(_tenant(0, paid=False, grant_used=True), month="2020-02")
+    assert status["remaining"] == 0
+    assert status["reason"] == "upgrade_required"
+
+
+def test_paid_plan_is_unaffected_by_the_grant(settings):
+    settings.ANTHROPIC_API_KEY = "k"
+    status = ai.availability(_tenant(5))
+    assert status["free_grant"] is False
+    assert status["remaining"] == 5
+    assert status["reason"] is None
 
 
 def test_availability_quota_exhausted(settings):
@@ -188,3 +224,59 @@ def test_record_attempt_and_success_two_tier():
     ai.record_success(SCHEMA, month=MONTH)
     row.refresh_from_db()
     assert row.generations_used == 1
+
+
+def _tenant_row(schema):
+    """A public-schema Tenant row. name/slug/owner_email/subdomain are all
+    required; plan is left null because plan_limit is mocked in these tests."""
+    return Tenant.objects.create(
+        schema_name=schema,
+        name="Grant Test",
+        slug=schema.replace("_", "-"),
+        owner_email="grant@example.com",
+        subdomain=schema.replace("_", "-"),
+    )
+
+
+def test_consume_free_grant_marks_the_tenant_and_is_idempotent(db):
+    tenant = _tenant_row("grant_free_tenant")
+
+    with mock.patch.object(ai, "plan_limit", return_value=0):
+        ai.consume_free_grant(tenant)
+        ai.consume_free_grant(tenant)
+
+    tenant.refresh_from_db()
+    assert tenant.free_blog_grant_used is True
+
+
+def test_consume_free_grant_is_a_noop_for_paid_plans(db):
+    tenant = _tenant_row("grant_paid_tenant")
+
+    with mock.patch.object(ai, "plan_limit", return_value=5):
+        ai.consume_free_grant(tenant)
+
+    tenant.refresh_from_db()
+    assert tenant.free_blog_grant_used is False
+
+
+def test_spent_grant_survives_upgrade_then_downgrade(db):
+    """The flag is lifetime state, not plan state — going paid and back to free
+    must not hand out a second free generation."""
+    tenant = _tenant_row("grant_cycle_tenant")
+
+    with mock.patch.object(ai, "plan_limit", return_value=0):
+        ai.consume_free_grant(tenant)
+    with mock.patch.object(ai, "plan_limit", return_value=5):
+        ai.consume_free_grant(tenant)  # upgraded: no-op
+    tenant.refresh_from_db()
+
+    with mock.patch.object(ai, "plan_limit", return_value=0):
+        status = ai.availability(
+            SimpleNamespace(
+                schema_name=SCHEMA,
+                has_paid_platform_plan=False,
+                free_blog_grant_used=tenant.free_blog_grant_used,
+            )
+        )
+    assert status["free_grant"] is False
+    assert status["reason"] == "upgrade_required"

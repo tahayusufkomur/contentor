@@ -350,6 +350,18 @@ def record_success(tenant_schema, month=None):
     BlogAiUsage.objects.filter(pk=row.pk).update(generations_used=F("generations_used") + 1)
 
 
+def consume_free_grant(tenant):
+    """Spend the free plan's one-off generation. Idempotent, and a no-op on any
+    plan that has a real quota. The conditional UPDATE makes concurrent
+    generations race-safe: only the first one flips the flag."""
+    from apps.core.models import Tenant
+
+    if plan_limit(tenant) > 0 or getattr(tenant, "free_blog_grant_used", False):
+        return
+    Tenant.objects.filter(pk=tenant.pk, free_blog_grant_used=False).update(free_blog_grant_used=True)
+    tenant.free_blog_grant_used = True
+
+
 def _provider_configured():
     return core_ai.available()[0]
 
@@ -369,12 +381,17 @@ def plan_limit(tenant):
 
 def availability(tenant, month=None):
     """The single gate every generation path checks. Shape mirrors the Brand
-    Pack status endpoint so the frontend upsell pattern transfers."""
+    Pack status endpoint so the frontend upsell pattern transfers.
+
+    Free-plan tenants carry a one-off lifetime grant: the plan quota is monthly
+    (BlogAiUsage is keyed by month), so "one time, ever" cannot be expressed as
+    a limit and lives on Tenant.free_blog_grant_used instead."""
     month = month or current_month()
     limit = plan_limit(tenant)
-    eligible = tenant.has_paid_platform_plan and limit > 0
+    free_grant = limit <= 0 and not getattr(tenant, "free_blog_grant_used", False)
+    eligible = (tenant.has_paid_platform_plan and limit > 0) or free_grant
     used = tenant_usage(tenant.schema_name, month=month).generations_used
-    remaining = max(0, limit - used)
+    remaining = 1 if free_grant else max(0, limit - used)
     budget_ok = global_spend(month=month) < Decimal(str(settings.BLOG_AI_MONTHLY_BUDGET_USD))
     enabled = _provider_configured() and budget_ok
     if not eligible:
@@ -387,4 +404,11 @@ def availability(tenant, month=None):
         reason = "quota_exhausted"
     else:
         reason = None
-    return {"enabled": enabled, "eligible": eligible, "remaining": remaining, "limit": limit, "reason": reason}
+    return {
+        "enabled": enabled,
+        "eligible": eligible,
+        "remaining": remaining,
+        "limit": limit,
+        "reason": reason,
+        "free_grant": free_grant,
+    }

@@ -19,6 +19,7 @@ ALL_ITEM_KEYS = frozenset(
     + [
         "look",
         "first_course",
+        "first_event",
         "demo_cleanup",
         "payouts",
         "publish",
@@ -32,6 +33,25 @@ ALL_ITEM_KEYS = frozenset(
     ]
 )
 
+EVENT_GOALS = frozenset({"run_live_classes", "in_person_events"})
+BLOG_GOAL = "write_blog"
+
+
+def _wizard_goals(tenant) -> list[str]:
+    """Goals the coach declared in the signup wizard. `wizard_state` survives
+    provisioning untouched, so this is readable for the tenant's whole life."""
+    state = getattr(tenant, "wizard_state", None) or {}
+    return ((state.get("answers") or {}).get("goals")) or []
+
+
+def _live_entitled(tenant) -> bool:
+    """The plan's `is_live_enabled` flag — the same source
+    apps/billing/views/platform.py uses for the `live` entitlement. Django's
+    reverse-one-to-one raises a DoesNotExist that also subclasses
+    AttributeError, so getattr with a default covers 'no subscription'."""
+    plan = getattr(getattr(tenant, "platform_subscription", None), "plan", None)
+    return bool(plan and plan.is_live_enabled)
+
 
 def _seeded_by_label():
     grouped = defaultdict(list)
@@ -40,13 +60,18 @@ def _seeded_by_label():
     return grouped
 
 
-def _has_own(model, rows) -> bool:
+def _has_own(model, rows, *, queryset=None) -> bool:
     """A non-demo object exists: anything outside the registry, or a
-    registered object whose content no longer matches its seed fingerprint."""
-    if model.objects.exclude(pk__in=[row.object_id for row in rows]).exists():
+    registered object whose content no longer matches its seed fingerprint.
+
+    ``queryset`` narrows what counts — the publish gate passes a published-only
+    queryset so a draft never unlocks going live."""
+    qs = model.objects.all() if queryset is None else queryset
+    seeded_ids = [row.object_id for row in rows]
+    if qs.exclude(pk__in=seeded_ids).exists():
         return True
     for row in rows:  # bounded by seed volume (small)
-        obj = model.objects.filter(pk=row.object_id).first()
+        obj = qs.filter(pk=row.object_id).first()
         if obj is not None and fingerprint_for(obj) != row.fingerprint:
             return True
     return False
@@ -74,10 +99,18 @@ def publish_blockers(config, tenant) -> list[str]:
     the checklist, this reads REAL state only — manual "mark done" overrides
     never satisfy a hard publish requirement.
 
-      - ``look``         — a logo/brand is set
-      - ``demo_cleanup`` — demo content removed (only if the tenant was seeded)
-      - ``first_course`` — at least one own course or download exists
-      - ``payouts``      — Connect onboarding done, only if paid content exists
+      - ``look``            — a logo/brand is set
+      - ``demo_cleanup``    — demo content removed (only if the tenant was seeded)
+      - ``first_course``    — at least one own PUBLISHED course, or own download
+      - ``first_event``     — an own live/onsite event, only if the coach's wizard
+                              goals ask for one AND their plan entitles them to it
+      - ``first_blog_post`` — an own published post, only if the goals ask for one
+      - ``payouts``         — Connect onboarding done, only if paid content exists
+
+    Content blockers are goal- AND entitlement-conditional: a coach is never
+    gated on a content type they did not choose, nor on one their plan cannot
+    create (the free plan has ``is_live_enabled`` False), which would leave the
+    gate permanently unsatisfiable.
     """
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
@@ -92,11 +125,33 @@ def publish_blockers(config, tenant) -> list[str]:
         blockers.append("look")
     if was_seeded and seeded_rows_exist:
         blockers.append("demo_cleanup")
-    has_own_product = _has_own(Course, seeded.get("courses.course", [])) or _has_own(
-        DownloadFile, seeded.get("downloads.downloadfile", [])
-    )
+    has_own_product = _has_own(
+        Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
+    ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
     if not has_own_product:
         blockers.append("first_course")
+
+    goals = _wizard_goals(tenant)
+    if EVENT_GOALS.intersection(goals) and _live_entitled(tenant):
+        from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
+
+        live_pairs = (
+            (LiveClass, "live.liveclass"),
+            (LiveStream, "live.livestream"),
+            (ZoomClass, "live.zoomclass"),
+            (OnsiteEvent, "live.onsiteevent"),
+        )
+        if not any(_has_own(model, seeded.get(label, [])) for model, label in live_pairs):
+            blockers.append("first_event")
+
+    if BLOG_GOAL in goals:
+        from apps.blog.models import BlogPost
+
+        if not _has_own(
+            BlogPost, seeded.get("blog.blogpost", []), queryset=BlogPost.objects.filter(status="published")
+        ):
+            blockers.append("first_blog_post")
+
     if _has_paid_content(seeded) and not can_monetize(tenant):
         blockers.append("payouts")
     return blockers

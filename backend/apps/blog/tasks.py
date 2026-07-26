@@ -121,6 +121,7 @@ def _generate_for_current_tenant(tenant):
 
     ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
     ai.record_success(tenant.schema_name)
+    ai.consume_free_grant(tenant)
     publish = rule.auto_publish
     fields = dict(result.fields)
     curated.resolve_curated_photo_ids(fields)

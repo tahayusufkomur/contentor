@@ -1,7 +1,4 @@
-import {
-  SkeletonPageHeader,
-  SkeletonTable,
-} from "@/components/ui/skeletons";
+import { SkeletonPageHeader, SkeletonTable } from "@/components/ui/skeletons";
 
 export default function AdminLoading() {
   return (
