@@ -7,22 +7,32 @@
 //     row, which reveals them on click.
 //   - Once published, Marketing's items render as normal nav links.
 //
-// Two tenants, not one transitioning: `elvins-pole` (unpublished — an ad hoc
-// coach signup used for this feature's manual verification) proves the
-// locked/collapsed state; `demo-yoga` (published — the canonical seeded
-// tenant every other e2e spec already assumes is live) proves the unlocked
-// state. Flipping either tenant's publish flag mid-test was considered and
-// rejected:
-//   - `elvins-pole` doesn't satisfy the backend's publish_blockers (no
-//     course/download yet — confirmed live: its "Publish your app" card
-//     lists "Create your first course or download" as unmet), so a real
-//     PATCH would 400.
-//   - `demo-yoga` is the default tenant `coachContext` and most other specs
-//     assume is published; mutating it here — even with a restore-after —
-//     risks leaving shared dev state dirty for the rest of the suite if this
-//     spec fails mid-run.
-// Both tenants' states were confirmed live via `manage.py issue_login_token`
-// + a manual admin visit before writing the assertions below.
+// Both tests drive the same tenant, `demo-yoga` (published, canonical seed —
+// the one tenant every e2e spec can already assume exists and is reachable).
+// There is no reproducible *unpublished* seeded tenant — seed_dev_tenants.py
+// creates every dev tenant with is_published=True — so the locked case is
+// produced by intercepting demo-yoga's own /api/v1/admin/setup-status/
+// response rather than depending on a tenant's real DB state:
+//
+//   - It's seed-independent: a fresh `make dev-reset && make seed` can never
+//     break this test the way pinning it to an ad hoc, non-seeded tenant
+//     would (that was this spec's first draft — see git history — and it
+//     depended on a hand-created tenant that isn't part of the reproducible
+//     fixture set).
+//   - It's a more precise regression guard. admin-shell.tsx derives
+//     `published` from the `publish` item's `source === "auto"`, NOT its
+//     `done` flag — specifically so a coach manually ticking `publish` in the
+//     Setup Assistant (source: "manual") can never fake their way past the
+//     gate (compute_setup_state in setup_items.py: `source = "auto" if auto
+//     else ("manual" if manual.get(key) is True else None)`). The stub below
+//     forges exactly that forgeable signal (done: true, source: "manual")
+//     and asserts Marketing stays locked anyway — a real unpublished tenant
+//     (done: false) can't exercise this distinction at all, since both
+//     `done` and `source` would be falsy/auto together.
+//
+// The real, non-stubbed `source: "auto"` unlock path still gets a genuine
+// end-to-end check in the second test below, against demo-yoga's real,
+// seeded is_published=True state — nothing here is stubbed for that one.
 //
 // Selector note: the admin dashboard (app/admin/page.tsx) has its own
 // unrelated "Blog" quick-action link in <main>, always present regardless of
@@ -35,22 +45,31 @@
 // opened), and the "Blog" match is prefix-anchored rather than exact.
 
 import { test, expect } from "@playwright/test";
-import { coachContext, coachContextForTenant, TENANT } from "../helpers/auth";
+import { coachContext, TENANT } from "../helpers/auth";
 
-const UNPUBLISHED_TENANT_SLUG = "elvins-pole";
-const UNPUBLISHED_HOST = "elvins-pole.localhost";
-const UNPUBLISHED_TENANT = `http://${UNPUBLISHED_HOST}`;
-
-test("an unpublished tenant sees Marketing locked (reachable, not a dead end) and Content collapsed behind + N more", async ({
+test("a manually-ticked (non-auto) publish signal still leaves Marketing locked and Content collapsed behind + N more", async ({
   browser,
 }) => {
-  const coach = await coachContextForTenant(
-    browser,
-    UNPUBLISHED_TENANT_SLUG,
-    UNPUBLISHED_HOST,
-  );
+  const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
-  await page.goto(`${UNPUBLISHED_TENANT}/admin`);
+
+  // Forge a MANUAL tick on the `publish` item: done stays true, but source
+  // becomes "manual" instead of the real "auto". Fetch the real response
+  // first so the rest of the payload shape (progress, blockers, every other
+  // item) stays honest — only `publish` is touched.
+  await page.route("**/api/v1/admin/setup-status/", async (route) => {
+    const res = await route.fetch();
+    const body = await res.json();
+    for (const item of body.items ?? []) {
+      if (item.key === "publish") {
+        item.done = true;
+        item.source = "manual";
+      }
+    }
+    await route.fulfill({ response: res, json: body });
+  });
+
+  await page.goto(`${TENANT}/admin`);
 
   const nav = page.getByRole("navigation");
 
@@ -62,7 +81,7 @@ test("an unpublished tenant sees Marketing locked (reachable, not a dead end) an
   await expect(explainer).toBeVisible();
   await expect(explainer).toHaveAttribute("href", "/admin#publish-card");
 
-  // Content hides at least one item behind "+ N more" (elvins-pole has the
+  // Content hides at least one item behind "+ N more" (demo-yoga has the
   // `live` and `downloads` modules enabled, so only the always-disclosure-only
   // Library item is hidden — hence "+ 1 more").
   const moreButton = nav.getByRole("button", { name: /\+ \d+ more/i });
