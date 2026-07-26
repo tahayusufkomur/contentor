@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('blog', '0002_blogpost_cover_photo_blogpost_image_placements'),
+        ("blog", "0002_blogpost_cover_photo_blogpost_image_placements"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='blogpost',
-            name='noindex',
-            field=models.BooleanField(default=False, help_text='Seeded AI drafts start noindex; cleared when a human edits the post.'),
+            model_name="blogpost",
+            name="noindex",
+            field=models.BooleanField(
+                default=False, help_text="Seeded AI drafts start noindex; cleared when a human edits the post."
+            ),
         ),
     ]
