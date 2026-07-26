@@ -1,5 +1,7 @@
 # AI Seeding (Complete Site) Implementation Plan
 
+**STATUS: COMPLETE** — implemented on branch feat/lazy-provisioning-foundation (2026-07-26).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the content-first reveal show a *complete* website — the coach's real content plus a few AI-generated, niche-appropriate starter blog posts (noindex until reviewed) and draft product outlines — instead of a near-empty shell, without fabricating social proof and without blocking publishing on cleanup.
@@ -61,7 +63,7 @@ The spec ("AI seeding — a complete website") wants the reveal to read as a rea
 
 **Interfaces:** `BlogPost.noindex: bool` (default False). Public serializer exposes it read-only; admin `perform_update` sets it False on save.
 
-- [ ] **Step 1: Write the failing backend test**
+- [x] **Step 1: Write the failing backend test**
 
 Create `backend/apps/blog/tests/test_noindex.py` (tenant-context test; model on `apps/blog/tests/test_admin_api.py`'s fixtures):
 
@@ -90,11 +92,11 @@ def test_coach_edit_clears_noindex(client_coach):
     assert p.noindex is False
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL (`noindex` unknown field).
+- [x] **Step 2: Run to verify failure** — FAIL (`noindex` unknown field).
 
 Run: `docker compose exec django pytest apps/blog/tests/test_noindex.py -v`
 
-- [ ] **Step 3: Add the field + migration**
+- [x] **Step 3: Add the field + migration**
 
 `apps/blog/models.py`, on `BlogPost`:
 
@@ -110,7 +112,7 @@ docker compose exec django python manage.py makemigrations blog --name blogpost_
 docker compose exec django python manage.py migrate_schemas
 ```
 
-- [ ] **Step 4: Expose + clear on edit**
+- [x] **Step 4: Expose + clear on edit**
 
 In `apps/blog/serializers.py`: add `"noindex"` to `BlogPostAdminSerializer` fields (writable) and to the public serializer's read fields.
 
@@ -123,7 +125,7 @@ In `apps/blog/views.py` `perform_update` (line 79), clear noindex on any coach s
 
 (If `perform_update` already sets fields, add `noindex=False` to its `save(...)` kwargs.)
 
-- [ ] **Step 5: Public metadata honors noindex**
+- [x] **Step 5: Public metadata honors noindex**
 
 In `frontend-customer/src/app/(public)/blog/[slug]/page.tsx` `generateMetadata`, add to the returned metadata:
 
@@ -133,7 +135,7 @@ In `frontend-customer/src/app/(public)/blog/[slug]/page.tsx` `generateMetadata`,
 
 Add `noindex?: boolean` to the blog post type the page consumes (`src/types/blog.ts` or wherever `post` is typed), and ensure the public blog API serializer returns it (Step 4).
 
-- [ ] **Step 6: Run + typecheck + commit**
+- [x] **Step 6: Run + typecheck + commit**
 
 Run: `docker compose exec django pytest apps/blog/tests/test_noindex.py -v` → PASS.
 Run: `make typecheck` → PASS.
@@ -151,7 +153,7 @@ git commit -m "feat(blog): noindex flag for seeded AI posts, cleared on human ed
 
 **Interfaces:** `seed_starter_posts(tenant, brief, *, count=2) -> int` — generates up to `count` AI draft posts (`noindex=True`, `source="ai"`, registered seeded), returns how many were created. Fail-soft (returns fewer on AI failure).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `backend/apps/core/tests/test_seeding_content.py` (real-schema harness from Plan 3a; AI mocked to avoid a live call):
 
@@ -202,9 +204,9 @@ def test_seeds_noindex_draft_posts(restore_public):
         _drop("seedc_posts")
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL (module missing).
+- [x] **Step 2: Run to verify failure** — FAIL (module missing).
 
-- [ ] **Step 3: Implement the seeder**
+- [x] **Step 3: Implement the seeder**
 
 Create `backend/apps/core/onboarding/seeding_content.py`. Reuse the existing starter-post AI (`starter_post.generate_starter_draft`) but drop its skip-if-any-post guard (the coach may already have their own post) and force `noindex=True`, and vary the topic per index:
 
@@ -268,7 +270,7 @@ def seed_starter_posts(tenant, brief, *, count=2) -> int:
 
 (Confirm `starter_post.generate_starter_draft` accepts a `topic` kwarg — the existing call hardcodes a welcome topic (`starter_post.py:34`). If it does not, add an optional `topic=None` parameter defaulting to the current welcome topic; that is a small, backward-compatible change to `starter_post.py`. Confirm the `apps.blog.curated` import path for `resolve_curated_photo_ids`.)
 
-- [ ] **Step 4: Run + commit**
+- [x] **Step 4: Run + commit**
 
 Run: `docker compose exec django pytest apps/core/tests/test_seeding_content.py -k posts -v` → PASS.
 
@@ -285,7 +287,7 @@ git commit -m "feat(onboarding): seed noindex AI starter blog posts"
 
 **Interfaces:** `seed_draft_products(tenant, brief, *, count=3) -> int` — creates up to `count` **draft** (`is_published=False`) `Course` rows from AI outlines, registered seeded. Fail-soft.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_seeds_draft_courses(restore_public):
@@ -307,9 +309,9 @@ def test_seeds_draft_courses(restore_public):
         _drop("seedc_prod")
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL.
+- [x] **Step 2: Run to verify failure** — FAIL.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Add to `seeding_content.py` (reusing Plan 3c's outline generator and the owner lookup):
 
@@ -338,7 +340,7 @@ def seed_draft_products(tenant, brief, *, count=3) -> int:
     return made
 ```
 
-- [ ] **Step 4: Run + commit**
+- [x] **Step 4: Run + commit**
 
 Run: `docker compose exec django pytest apps/core/tests/test_seeding_content.py -v` → PASS.
 
@@ -355,7 +357,7 @@ git commit -m "feat(onboarding): seed draft course outlines for a complete site"
 
 **Interfaces:** `compose_wizard_site` also seeds starter posts + draft products (fail-soft). `publish_blockers` no longer returns `demo_cleanup`.
 
-- [ ] **Step 1: Write the failing publish-gate test**
+- [x] **Step 1: Write the failing publish-gate test**
 
 Add to `backend/apps/tenant_config/tests/test_publish_gate.py`:
 
@@ -375,11 +377,11 @@ def test_seeded_content_does_not_block_publishing(config):
     assert "demo_cleanup" not in blockers
 ```
 
-- [ ] **Step 2: Run to verify failure** — FAIL (`demo_cleanup` present).
+- [x] **Step 2: Run to verify failure** — FAIL (`demo_cleanup` present).
 
 Run: `docker compose exec django pytest apps/tenant_config/tests/test_publish_gate.py -k seeded_content -v`
 
-- [ ] **Step 3: Drop the blocker (keep the nudge)**
+- [x] **Step 3: Drop the blocker (keep the nudge)**
 
 In `backend/apps/tenant_config/setup_items.py` `publish_blockers`, remove the `demo_cleanup` append:
 
@@ -392,7 +394,7 @@ In `backend/apps/tenant_config/setup_items.py` `publish_blockers`, remove the `d
 
 Delete the `if was_seeded and seeded_rows_exist: blockers.append("demo_cleanup")` lines. Leave `compute_setup_state`'s `demo_cleanup` checklist item as-is (it is already optional/non-blocking there) — optionally relabel its i18n copy to "Review your starter content".
 
-- [ ] **Step 4: Wire the seeders into compose_wizard_site**
+- [x] **Step 4: Wire the seeders into compose_wizard_site**
 
 In `backend/apps/core/tasks.py` `compose_wizard_site` (Plan 3d), after `_apply_wizard_answers(...)` and before setting `ready`:
 
@@ -408,7 +410,7 @@ In `backend/apps/core/tasks.py` `compose_wizard_site` (Plan 3d), after `_apply_w
             logger.exception("reveal seeding failed for %s", tenant.slug)
 ```
 
-- [ ] **Step 5: Run + commit**
+- [x] **Step 5: Run + commit**
 
 Run: `docker compose exec django pytest apps/tenant_config/tests/test_publish_gate.py apps/core/tests/test_reveal_compose.py -n auto` → PASS.
 
@@ -421,11 +423,11 @@ git commit -m "feat(onboarding): seed a complete site at reveal; drop demo_clean
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/blog apps/core apps/tenant_config -n auto` passes.
-- [ ] `make typecheck` + `make lint` pass.
-- [ ] Manual: after `compose_wizard_site` on a dev content-first tenant, the blog index shows 2 extra draft posts (noindex), the admin course list shows draft outlines, and `publish_blockers` does not contain `demo_cleanup`.
-- [ ] Manual: opening + saving a seeded post in the admin flips its `noindex` to false; its public page then omits the `noindex` robots tag.
-- [ ] Manual: seeding with AI disabled creates zero seeded items and the reveal still reaches `ready`.
+- [x] `docker compose exec django pytest apps/blog apps/core apps/tenant_config -n auto` passes.
+- [x] `make typecheck` + `make lint` pass.
+- [x] Manual: after `compose_wizard_site` on a dev content-first tenant, the blog index shows 2 extra draft posts (noindex), the admin course list shows draft outlines, and `publish_blockers` does not contain `demo_cleanup`.
+- [x] Manual: opening + saving a seeded post in the admin flips its `noindex` to false; its public page then omits the `noindex` robots tag.
+- [x] Manual: seeding with AI disabled creates zero seeded items and the reveal still reaches `ready`.
 
 ## Where this sits in the plan set
 
