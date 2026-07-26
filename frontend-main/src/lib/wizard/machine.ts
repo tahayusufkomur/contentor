@@ -98,7 +98,10 @@ export function buildContentSteps(
   if (goals.includes("write_blog")) {
     steps.push({ id: "content.blog", chapter: "content" });
   }
-  steps.push({ id: "logo", chapter: "logo" }, { id: "review", chapter: "launch" });
+  steps.push(
+    { id: "logo", chapter: "logo" },
+    { id: "review", chapter: "launch" },
+  );
   return steps;
 }
 

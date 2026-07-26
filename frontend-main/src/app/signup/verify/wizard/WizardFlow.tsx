@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  composeWizard,
   finalizeWizard,
   getDescribeFollowups,
   getWizardCatalog,
@@ -15,6 +16,9 @@ import {
   readWizardState,
 } from "@/lib/wizard/api";
 import {
+  CHAPTERS,
+  CONTENT_CHAPTERS,
+  buildContentSteps,
   buildSteps,
   finishRestAnswers,
   firstUnansweredStep,
@@ -42,6 +46,12 @@ import {
   ThemeStep,
 } from "./steps";
 import { LogoStep, ReviewStep } from "./logo-review-steps";
+import {
+  BlogStep,
+  CourseStep,
+  EventStep,
+  ProvisioningGate,
+} from "./content-steps";
 
 function brandFromToken(token: string): string {
   try {
@@ -77,6 +87,10 @@ export function WizardFlow({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAllThemes, setShowAllThemes] = useState(false);
+  const [bucket, setBucket] = useState("");
+  // The content flow's compose response carries no slug (the tenant already
+  // exists), so keep the one readWizardState gave us for the reveal handoff.
+  const [slug, setSlug] = useState("");
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -84,17 +98,26 @@ export function WizardFlow({
     loadedRef.current = true;
     Promise.all([getWizardCatalog(), readWizardState(token)])
       .then(([cat, res]) => {
+        // "provisioned" is mid-wizard for the content flow (the schema is made
+        // early so content steps can write); only the classic terminal states
+        // mean the wizard is over. Mirrors WIZARD_OPEN_STATUSES on the server.
         if (
-          res.status !== "pending" ||
+          !["pending", "provisioned"].includes(res.status) ||
           ["seeding", "ready", "skipped"].includes(res.template_status)
         ) {
           onProvisioning(res.slug);
           return;
         }
         const loaded = res.state.answers ?? {};
+        const loadedBucket = res.wizard_bucket ?? "";
         setCatalog(cat);
         setAnswers(loaded);
-        const steps = buildSteps(cat, loaded);
+        setBucket(loadedBucket);
+        setSlug(res.slug);
+        const steps =
+          loadedBucket === "treatment"
+            ? buildContentSteps(cat, loaded)
+            : buildSteps(cat, loaded);
         const wanted = res.state.current_step;
         setStepId(
           wanted && steps.some((s) => s.id === wanted)
@@ -113,9 +136,17 @@ export function WizardFlow({
       });
   }, [token, onProvisioning, onTokenExpired, t]);
 
+  // The holdout picks the flow. Empty bucket (tenants created before the
+  // experiment) falls through to the classic wizard — never crash on missing.
+  const isContentFlow = bucket === "treatment";
   const steps = useMemo(
-    () => (catalog ? buildSteps(catalog, answers) : []),
-    [catalog, answers],
+    () =>
+      catalog
+        ? isContentFlow
+          ? buildContentSteps(catalog, answers)
+          : buildSteps(catalog, answers)
+        : [],
+    [isContentFlow, catalog, answers],
   );
   const step = steps.find((s) => s.id === stepId) ?? steps[0];
 
@@ -192,14 +223,40 @@ export function WizardFlow({
     [commit, steps, step, busy],
   );
 
+  // Content steps own their own save (they POST a real course/event/post),
+  // so they only need the flag persisted and the wizard advanced. Skipping
+  // advances with no flag: the publish gate and admin checklist catch the gap.
+  const advanceContent = useCallback(
+    (patch: Partial<WizardAnswers>) => {
+      if (!step || busy) return;
+      const next = nextStep(steps, step.id);
+      setDirection(1);
+      void commit(patch, next?.id ?? "review");
+    },
+    [commit, steps, step, busy],
+  );
+  const commitContent = useCallback(
+    (patch: Partial<WizardAnswers>) => advanceContent(patch),
+    [advanceContent],
+  );
+  const skipContent = useCallback(() => advanceContent({}), [advanceContent]);
+
   const handleContinue = async () => {
     if (!catalog || !step || busy) return;
     if (step.id === "review") {
       setBusy(true);
       setError(null);
       try {
-        const res = await finalizeWizard(token);
-        onProvisioning(res.slug);
+        // Content flow: the schema and the coach's real content already exist,
+        // so the reveal only needs the compose step (Plan 3d). Classic runs the
+        // full provision_tenant pipeline via finalize.
+        if (isContentFlow) {
+          await composeWizard(token);
+          onProvisioning(slug || undefined);
+        } else {
+          const res = await finalizeWizard(token);
+          onProvisioning(res.slug);
+        }
       } catch {
         setBusy(false);
         setError(t("common.errors.generic"));
@@ -381,6 +438,42 @@ export function WizardFlow({
         />
       );
       break;
+    case "content.course":
+      body = (
+        <ProvisioningGate token={token}>
+          <CourseStep
+            token={token}
+            answers={answers}
+            onDone={commitContent}
+            onSkip={skipContent}
+          />
+        </ProvisioningGate>
+      );
+      break;
+    case "content.event":
+      body = (
+        <ProvisioningGate token={token}>
+          <EventStep
+            token={token}
+            answers={answers}
+            onDone={commitContent}
+            onSkip={skipContent}
+          />
+        </ProvisioningGate>
+      );
+      break;
+    case "content.blog":
+      body = (
+        <ProvisioningGate token={token}>
+          <BlogStep
+            token={token}
+            answers={answers}
+            onDone={commitContent}
+            onSkip={skipContent}
+          />
+        </ProvisioningGate>
+      );
+      break;
     case "logo":
       body = (
         <LogoStep
@@ -436,12 +529,15 @@ export function WizardFlow({
   return (
     <WizardShell
       chapter={step.chapter}
+      chapters={isContentFlow ? CONTENT_CHAPTERS : CHAPTERS}
       stepId={step.id}
       direction={direction}
       progress={progressPct(steps, step.id)}
       canBack={Boolean(prevStep(steps, step.id))}
       onBack={handleBack}
-      showFinishRest={step.chapter !== "business" && step.id !== "review"}
+      showFinishRest={
+        !isContentFlow && step.chapter !== "business" && step.id !== "review"
+      }
       onFinishRest={handleFinishRest}
       error={error}
       wide={

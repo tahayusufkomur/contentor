@@ -4,7 +4,8 @@ import { buildContentSteps } from "@/lib/wizard/machine";
 import type { WizardAnswers, WizardCatalog } from "@/lib/wizard/types";
 
 const catalog = { page_layouts: {} } as unknown as WizardCatalog;
-const ids = (a: WizardAnswers) => buildContentSteps(catalog, a).map((s) => s.id);
+const ids = (a: WizardAnswers) =>
+  buildContentSteps(catalog, a).map((s) => s.id);
 
 describe("buildContentSteps", () => {
   it("always includes niche, describe, goals, course, logo, review", () => {
