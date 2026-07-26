@@ -186,9 +186,7 @@ export default function EmailDashboardPage() {
                 {filtered.map((c) => (
                   <tr
                     key={c.id}
-                    onClick={() =>
-                      navigate(`/admin/email/campaigns/${c.id}`)
-                    }
+                    onClick={() => navigate(`/admin/email/campaigns/${c.id}`)}
                     className="cursor-pointer border-b hover:bg-muted/50"
                   >
                     <td className="py-3">{c.subject}</td>

@@ -97,10 +97,7 @@ function SuccessInner() {
                 Your payment is processing. Your content will unlock
                 automatically — check your dashboard in a minute.
               </p>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/dashboard")}
-              >
+              <Button variant="outline" onClick={() => navigate("/dashboard")}>
                 Go to dashboard
               </Button>
             </>

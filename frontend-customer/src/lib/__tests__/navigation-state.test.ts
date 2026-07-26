@@ -11,7 +11,9 @@ describe("defaultActiveMatch", () => {
   });
 
   it("matches a nested child on a segment boundary", () => {
-    expect(defaultActiveMatch("/admin/students/7", "/admin/students")).toBe(true);
+    expect(defaultActiveMatch("/admin/students/7", "/admin/students")).toBe(
+      true,
+    );
   });
 
   it("does not treat /admin as a prefix of everything", () => {
@@ -22,8 +24,12 @@ describe("defaultActiveMatch", () => {
   it("does not match a sibling that merely shares a string prefix", () => {
     // Regression: both /admin/live and /admin/live-streams are nav items, and
     // the old `pathname.startsWith(href)` highlighted both at once.
-    expect(defaultActiveMatch("/admin/live-streams", "/admin/live")).toBe(false);
-    expect(defaultActiveMatch("/admin/live-streams", "/admin/live-streams")).toBe(true);
+    expect(defaultActiveMatch("/admin/live-streams", "/admin/live")).toBe(
+      false,
+    );
+    expect(
+      defaultActiveMatch("/admin/live-streams", "/admin/live-streams"),
+    ).toBe(true);
   });
 });
 
@@ -35,7 +41,10 @@ describe("isNavItemActive", () => {
   });
 
   it("lets a pending href win over the committed pathname", () => {
-    const state = { pathname: "/admin/calendar", pendingHref: "/admin/students" };
+    const state = {
+      pathname: "/admin/calendar",
+      pendingHref: "/admin/students",
+    };
     expect(isNavItemActive(state, "/admin/students")).toBe(true);
     expect(isNavItemActive(state, "/admin/calendar")).toBe(false);
   });
@@ -53,7 +62,11 @@ describe("createProgressController", () => {
   function setup(delayMs = 150) {
     const onShow = vi.fn();
     const onHide = vi.fn();
-    return { onShow, onHide, c: createProgressController({ delayMs, onShow, onHide }) };
+    return {
+      onShow,
+      onHide,
+      c: createProgressController({ delayMs, onShow, onHide }),
+    };
   }
 
   it("stays hidden when the navigation finishes inside the delay window", () => {
