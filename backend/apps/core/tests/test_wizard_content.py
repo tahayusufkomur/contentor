@@ -258,6 +258,47 @@ def test_create_event_requires_title(client, restore_public):
         _drop("wc_noevent")
 
 
+def test_create_blog_post_published(client, restore_public):
+    t = _provisioned_tenant("wc_blog")
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/blog/",
+            {"token": _token(t), "title": "Welcome", "body_html": "<p>Hi</p>", "status": "published"},
+            format="json",
+        )
+        assert resp.status_code == 201, resp.content
+        with tenant_context(t):
+            from apps.blog.models import BlogPost
+
+            post = BlogPost.objects.get(pk=resp.json()["id"])
+            assert post.status == "published"
+            assert post.published_at is not None
+            assert post.slug == resp.json()["slug"]
+            assert post.created_by.role == "owner"
+            assert post.source == "manual"
+    finally:
+        _drop("wc_blog")
+
+
+def test_create_blog_post_defaults_to_draft(client, restore_public):
+    t = _provisioned_tenant("wc_blogdraft")
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/blog/",
+            {"token": _token(t), "title": "Later", "body_html": "<p>Soon</p>"},
+            format="json",
+        )
+        assert resp.status_code == 201, resp.content
+        with tenant_context(t):
+            from apps.blog.models import BlogPost
+
+            post = BlogPost.objects.get(pk=resp.json()["id"])
+            assert post.status == "draft"
+            assert post.published_at is None
+    finally:
+        _drop("wc_blogdraft")
+
+
 def test_create_course_requires_title(client, restore_public):
     t = _provisioned_tenant("wc_notitle")
     try:

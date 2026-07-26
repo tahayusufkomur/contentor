@@ -101,6 +101,34 @@ def wizard_create_event(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+def wizard_create_blog(request):
+    """The coach's first post, from fields they provide (default draft; only
+    'published' satisfies the publish gate). Mirrors
+    BlogPostAdminViewSet.perform_create — server-derived slug, published_at
+    stamped on publish — because we bypass the viewset."""
+    from django.utils import timezone
+
+    from apps.blog.models import unique_slug
+    from apps.blog.serializers import BlogPostAdminSerializer
+
+    tenant, owner, err = _wizard_content_setup(request)
+    if err:
+        return err
+    with tenant_context(tenant):
+        serializer = BlogPostAdminSerializer(data=_content_payload(request))
+        serializer.is_valid(raise_exception=True)
+        published = serializer.validated_data.get("status") == "published"
+        post = serializer.save(
+            created_by=owner,
+            slug=unique_slug(serializer.validated_data.get("title", "")),
+            published_at=timezone.now() if published else None,
+        )
+        return Response({"id": post.id, "slug": post.slug}, status=201)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def wizard_course_outlines(request):
     from .course_outlines import generate_course_outlines
 
