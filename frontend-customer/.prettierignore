@@ -1,0 +1,5 @@
+# Generated data files — written by the curated-logo pipeline
+# (backend seed_curated_logos + apps/core/signals.py) as 4-space JSON by
+# Python. Not prettier-managed; formatting it would just be undone on the next
+# seed run and break `make lint` (pre-commit --all-files) again.
+public/logos/logo_meta.json

@@ -69,3 +69,7 @@ test-results/
 e2e/screenshots/
 docs/screenshot-map/*
 !docs/screenshot-map/index.html
+
+# Local tool caches (tokensave MCP server, Playwright MCP traces)
+.tokensave/
+.playwright-mcp/
