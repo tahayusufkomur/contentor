@@ -152,18 +152,54 @@ def test_generate_post_caps_inline_placements_at_two(settings):
     assert len(result.fields["image_placements"]) == 2
 
 
-def _tenant(plan_limit, paid=True):
+def _tenant(plan_limit, paid=True, grant_used=False):
     plan = PlatformPlan.objects.create(
-        name=f"p{plan_limit}-{paid}", price_monthly=1, transaction_fee_pct=1, max_ai_blog_posts=plan_limit
+        name=f"p{plan_limit}-{paid}-{grant_used}",
+        price_monthly=1,
+        transaction_fee_pct=1,
+        max_ai_blog_posts=plan_limit,
     )
     subscription = SimpleNamespace(plan=plan)
-    return SimpleNamespace(schema_name=SCHEMA, platform_subscription=subscription, has_paid_platform_plan=paid)
+    return SimpleNamespace(
+        schema_name=SCHEMA,
+        platform_subscription=subscription,
+        has_paid_platform_plan=paid,
+        free_blog_grant_used=grant_used,
+    )
 
 
-def test_availability_upgrade_required_for_free(settings):
+def test_availability_free_grant_makes_free_plan_eligible(settings):
     settings.ANTHROPIC_API_KEY = "k"
     status = ai.availability(_tenant(0, paid=False))
-    assert status["eligible"] is False and status["reason"] == "upgrade_required"
+    assert status["eligible"] is True
+    assert status["free_grant"] is True
+    assert status["remaining"] == 1
+    assert status["reason"] is None
+
+
+def test_availability_upgrade_required_once_grant_is_spent(settings):
+    settings.ANTHROPIC_API_KEY = "k"
+    status = ai.availability(_tenant(0, paid=False, grant_used=True))
+    assert status["eligible"] is False
+    assert status["free_grant"] is False
+    assert status["reason"] == "upgrade_required"
+
+
+def test_free_grant_ignores_the_monthly_window(settings):
+    """The grant is a lifetime allowance — a new month must not restore it."""
+    settings.ANTHROPIC_API_KEY = "k"
+    BlogAiUsage.objects.create(tenant_schema=SCHEMA, month="2020-01", generations_used=1)
+    status = ai.availability(_tenant(0, paid=False, grant_used=True), month="2020-02")
+    assert status["remaining"] == 0
+    assert status["reason"] == "upgrade_required"
+
+
+def test_paid_plan_is_unaffected_by_the_grant(settings):
+    settings.ANTHROPIC_API_KEY = "k"
+    status = ai.availability(_tenant(5))
+    assert status["free_grant"] is False
+    assert status["remaining"] == 5
+    assert status["reason"] is None
 
 
 def test_availability_quota_exhausted(settings):

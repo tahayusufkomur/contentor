@@ -369,12 +369,17 @@ def plan_limit(tenant):
 
 def availability(tenant, month=None):
     """The single gate every generation path checks. Shape mirrors the Brand
-    Pack status endpoint so the frontend upsell pattern transfers."""
+    Pack status endpoint so the frontend upsell pattern transfers.
+
+    Free-plan tenants carry a one-off lifetime grant: the plan quota is monthly
+    (BlogAiUsage is keyed by month), so "one time, ever" cannot be expressed as
+    a limit and lives on Tenant.free_blog_grant_used instead."""
     month = month or current_month()
     limit = plan_limit(tenant)
-    eligible = tenant.has_paid_platform_plan and limit > 0
+    free_grant = limit <= 0 and not getattr(tenant, "free_blog_grant_used", False)
+    eligible = (tenant.has_paid_platform_plan and limit > 0) or free_grant
     used = tenant_usage(tenant.schema_name, month=month).generations_used
-    remaining = max(0, limit - used)
+    remaining = 1 if free_grant else max(0, limit - used)
     budget_ok = global_spend(month=month) < Decimal(str(settings.BLOG_AI_MONTHLY_BUDGET_USD))
     enabled = _provider_configured() and budget_ok
     if not eligible:
@@ -387,4 +392,11 @@ def availability(tenant, month=None):
         reason = "quota_exhausted"
     else:
         reason = None
-    return {"enabled": enabled, "eligible": eligible, "remaining": remaining, "limit": limit, "reason": reason}
+    return {
+        "enabled": enabled,
+        "eligible": eligible,
+        "remaining": remaining,
+        "limit": limit,
+        "reason": reason,
+        "free_grant": free_grant,
+    }

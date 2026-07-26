@@ -91,6 +91,10 @@ class Tenant(TenantMixin):
             "Shape/versioning owned by apps.core.onboarding (wizard.py/compose.py)."
         ),
     )
+    free_blog_grant_used = models.BooleanField(
+        default=False,
+        help_text="The free plan's one-off AI blog generation has been spent. Lifetime, never reset.",
+    )
     recovery_email_sent_at = models.DateTimeField(
         null=True,
         blank=True,
