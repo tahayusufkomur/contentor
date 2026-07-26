@@ -102,6 +102,30 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
       {open && (
         <nav className="border-b bg-card p-2 space-y-1">
           {sections.map((section) => {
+            if (section.flat) {
+              const item = section.items[0];
+              return (
+                <NavLink
+                  key={section.id}
+                  href={item.href}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noopener noreferrer" : undefined}
+                  onClick={() => setOpen(false)}
+                  className={({ active }) =>
+                    cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      active
+                        ? "bg-accent text-accent-foreground font-medium"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    )
+                  }
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            }
+
             const sectionOpen = openSections[section.id] ?? false;
 
             return (

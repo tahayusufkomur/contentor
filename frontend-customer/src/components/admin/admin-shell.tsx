@@ -3,31 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import {
-  Bell,
-  BookOpen,
-  Calendar,
-  CreditCard,
-  Store,
-  Download,
-  ExternalLink,
-  Film,
-  Globe,
-  Image as ImageIcon,
-  Inbox,
-  LayoutDashboard,
-  Mail,
-  MessageCircleQuestion,
-  MessagesSquare,
-  Newspaper,
-  Palette,
-  Pencil,
-  Search,
-  Settings,
-  Users,
-  Video,
-  Wallet,
-} from "lucide-react";
+import { ExternalLink, Globe, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/shared/app-sidebar";
@@ -37,7 +13,7 @@ import { UserMenu } from "@/components/shared/user-menu";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import { CommandPalette } from "@/components/admin/command-palette";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
-import type { NavSection } from "@/components/shared/app-sidebar";
+import { buildAdminNav } from "@/lib/admin-nav";
 import type { User } from "@/types/auth";
 
 interface AdminShellProps {
@@ -60,157 +36,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const navSections: NavSection[] = [
-    {
-      id: "overview",
-      label: t("nav.sections.overview"),
-      items: [
-        {
-          label: t("nav.items.dashboard"),
-          href: "/admin",
-          icon: LayoutDashboard,
-        },
-      ],
-    },
-    {
-      id: "products",
-      label: t("nav.sections.products"),
-      items: [
-        {
-          label: t("nav.items.courses"),
-          href: "/admin/courses",
-          icon: BookOpen,
-        },
-        {
-          label: t("nav.items.liveEvents"),
-          href: "/admin/live",
-          icon: Video,
-          requiresEntitlement: "live",
-          partialPaid: true,
-        },
-        {
-          label: t("nav.items.calendar"),
-          href: "/admin/calendar",
-          icon: Calendar,
-        },
-        {
-          label: t("nav.items.downloads"),
-          href: "/admin/downloads",
-          icon: Download,
-        },
-      ],
-    },
-    {
-      id: "audience",
-      label: t("nav.sections.audience"),
-      items: [
-        {
-          label: t("nav.items.students"),
-          href: "/admin/students",
-          icon: Users,
-        },
-        {
-          label: t("nav.items.communityFeed"),
-          href: "/admin/community",
-          icon: MessagesSquare,
-        },
-        {
-          label: t("nav.items.inbox"),
-          href: "/admin/inbox",
-          icon: Inbox,
-          requiresEntitlement: "platform_mailbox",
-          partialPaid: true,
-        },
-        {
-          label: t("nav.items.notifications"),
-          href: "/admin/notifications",
-          icon: Bell,
-        },
-        { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
-        {
-          label: t("nav.items.blog"),
-          href: "/admin/blog",
-          icon: Newspaper,
-          ai: true,
-          requiresEntitlement: "ai_blog",
-          partialPaid: true,
-        },
-      ],
-    },
-    {
-      id: "website",
-      label: t("nav.sections.website"),
-      items: [
-        {
-          label: t("nav.items.editSite"),
-          href: "/?edit=1",
-          icon: Pencil,
-          external: true,
-        },
-        {
-          // Design settings live in the site editor's Site → Brand section —
-          // there is no standalone /admin/design page any more.
-          label: t("nav.items.design"),
-          href: "/?edit=1&section=brand",
-          icon: Palette,
-          external: true,
-          ai: true,
-          requiresEntitlement: "logo_studio",
-          partialPaid: true,
-        },
-        {
-          label: t("nav.items.assistant"),
-          href: "/admin/assistant",
-          icon: MessageCircleQuestion,
-          ai: true,
-          requiresEntitlement: "student_bot",
-        },
-      ],
-    },
-    {
-      id: "media",
-      label: t("nav.sections.media"),
-      items: [
-        {
-          label: t("nav.items.photos"),
-          href: "/admin/photos",
-          icon: ImageIcon,
-        },
-        { label: t("nav.items.videos"), href: "/admin/videos", icon: Film },
-      ],
-    },
-    {
-      id: "operations",
-      label: t("nav.sections.operations"),
-      items: [
-        {
-          label: t("nav.items.payouts"),
-          href: "/admin/payouts",
-          icon: Wallet,
-          requiresEntitlement: "payouts",
-        },
-        {
-          // Coach's own subscription to Contentor (payment to us).
-          label: t("nav.items.billing"),
-          href: "/admin/billing",
-          icon: CreditCard,
-        },
-        {
-          // Selling to students — products, bundles, subscription plans.
-          // Deep-links into the billing page's product tabs; paid-plan gated.
-          label: t("nav.items.store"),
-          href: "/admin/billing?tab=products",
-          icon: Store,
-          requiresEntitlement: "selling",
-        },
-        {
-          label: t("nav.items.settings"),
-          href: "/admin/settings",
-          icon: Settings,
-        },
-      ],
-    },
-  ];
+  const navSections = buildAdminNav(t);
 
   return (
     <EntitlementsProvider>
