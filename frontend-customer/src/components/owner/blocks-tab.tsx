@@ -54,7 +54,11 @@ export function BlocksTab({
     setConfirmingId(null);
   };
   const add = (type: string) => {
-    store.insertBlock(pageKey, newBlock(type, store.niche));
+    const block = newBlock(type, store.niche);
+    store.insertBlock(pageKey, block);
+    // insertBlock already selects the new block; ask for the reveal too so the
+    // canvas scrolls to it (it lands at the end of a page that may be long).
+    store.selectBlock(block.id, { reveal: true });
     setAdding(false);
   };
 
@@ -125,7 +129,9 @@ export function BlocksTab({
               </div>
               <button
                 type="button"
-                onClick={() => store.selectBlock(open ? null : block.id)}
+                onClick={() =>
+                  store.selectBlock(open ? null : block.id, { reveal: true })
+                }
                 className="flex flex-1 items-center gap-2 text-left"
               >
                 {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
@@ -156,7 +162,9 @@ export function BlocksTab({
               </button>
               <button
                 type="button"
-                onClick={() => store.selectBlock(open ? null : block.id)}
+                onClick={() =>
+                  store.selectBlock(open ? null : block.id, { reveal: true })
+                }
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ChevronDown

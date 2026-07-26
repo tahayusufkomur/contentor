@@ -127,13 +127,13 @@ What: replacing `yourname.contentor.app` with your own domain (e.g. `www.yournam
 
 ## Website / page builder + Design & branding
 
-Two separate admin areas:
+One place: Edit site. It opens your real site with an editor panel on the left, with two tabs — **Pages** (the content of the page you're on) and **Site** (Brand and Navbar, which apply everywhere). Changes save automatically.
 
-**Pages** (site content): your site has six pages — Home, About, Programs (courses), Pricing, FAQ, and Contact. Open Pages, pick a page, and edit it in the live editor: add, reorder, and edit content blocks in the left panel while seeing your real site. Changes save automatically. (The Pricing page shows on your site under "Plans".)
+**Pages** (site content): your site has six pages — Home, About, Programs (courses), Pricing, FAQ, and Contact. Pick a page at the top of the Pages tab, then add, reorder, and edit its content blocks while seeing your real site. Selecting a block scrolls the site to it. (The Pricing page shows on your site under "Plans".)
 
-**Design** (look & feel):
+**Site → Brand** (look & feel):
 - **Theme**: choose one of six color themes — Ocean, Ember, Forest, Sunset, Violet, Slate — plus a dark-mode toggle and a font choice.
-- **Logo**: set your logo, or open the **Logo Studio** from the Design page to create one visually.
+- **Logo**: upload your logo, or open the **Logo Studio** from the Brand section to create one visually.
 - **AI Brand Pack**: inside the Logo Studio, paid plans can generate an AI-assisted brand pack (logo directions/branding). Free plans see an upgrade prompt; generation has a usage allowance.
 - Your choices apply to your whole site and to branded emails.
 
@@ -165,8 +165,8 @@ Open Settings for:
 A checklist ("Get your studio live") shown in the admin until your site is fully set up. Groups and items:
 
 **Your site**
-- *Home / About / Programs / Pricing / FAQ / Contact page*: open each page in the builder (via the checklist row or Pages) and make it yours. An item completes once you've edited that page.
-- *Pick your look*: open Design, choose colors/font and set a logo (the checklist opens the Logo Studio directly). Completes when a logo is set or the look has been edited.
+- *Home / About / Programs / Pricing / FAQ / Contact page*: open each page in the builder (via the checklist row or Edit site) and make it yours. An item completes once you've edited that page.
+- *Pick your look*: open Edit site → Site → Brand, choose colors/font and set a logo (the checklist opens the Logo Studio directly). Completes when a logo is set or the look has been edited.
 
 **Your content**
 - *Create your first course*: create a course (or a download) of your own — the seeded examples don't count.
@@ -241,6 +241,6 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 | /admin/billing | Billing | Coach's own plan/upgrade, payments list, subscription plans, bundles |
 | /admin/billing/bundles/new | New bundle | Creating a bundle |
 | /admin/payouts | Payouts | Connecting Stripe, payout status, earnings |
-| /admin/pages | Pages | Editing the six site pages in the builder |
-| /admin/design | Design | Theme, font, dark mode, logo, Logo Studio, AI Brand Pack |
+| /?edit=1 | Edit site | Editing the six site pages in the builder |
+| /?edit=1&section=brand | Design | Theme, font, dark mode, logo, Logo Studio, AI Brand Pack |
 | /admin/settings | Settings | Language/timezone, mailbox address, remove demo content |

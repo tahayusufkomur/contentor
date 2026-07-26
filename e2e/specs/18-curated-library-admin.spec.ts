@@ -67,7 +67,7 @@ test("superadmin adds a curated logo via the gallery; coach sees it", async ({
   // --- coach: the new logo appears in the Ideas gallery ------------------
   const coach = await coachContext(browser);
   const coachPage = await coach.newPage();
-  await coachPage.goto(`${TENANT}/admin/design?studio=1`);
+  await coachPage.goto(`${TENANT}/?edit=1&studio=1`);
   const dialog = coachPage.getByRole("dialog");
   const briefHeading = dialog.getByText("Tell us about your brand");
   if (!(await briefHeading.isVisible())) {

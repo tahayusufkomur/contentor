@@ -148,6 +148,16 @@ export function SetupAssistantPanel({
         </button>
       );
     }
+    if (entry.hardNav) {
+      // A full page load, not a client-side push: the target reads its query
+      // params on mount, and this panel also renders inside the site editor —
+      // where a same-path query change would never remount it.
+      return (
+        <a href={entry.href ?? "/admin"} onClick={onClose} className={rowClass}>
+          {body}
+        </a>
+      );
+    }
     return (
       <Link
         href={entry.href ?? "/admin"}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,30 @@ export function SortableBlockShell({
   });
   const selected = store.selectedBlockId === block.id;
   const disabled = block.enabled === false;
+
+  // Centre this block in the viewport when the sidebar asks for it (see
+  // `revealBlockId` in editor-store). The sortable's own ref is a setter, so
+  // keep our own handle on the node and feed both.
+  const nodeRef = useRef<HTMLDivElement | null>(null);
+  const setRefs = useCallback(
+    (el: HTMLDivElement | null) => {
+      nodeRef.current = el;
+      setNodeRef(el);
+    },
+    [setNodeRef],
+  );
+  const { revealBlockId, revealSeq } = store;
+  useEffect(() => {
+    if (revealBlockId !== block.id || !nodeRef.current) return;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    nodeRef.current.scrollIntoView({
+      block: "center",
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, [revealBlockId, revealSeq, block.id]);
+
   const richEditor = useRichEditor();
   const editable = {
     onTextChange: (field: string, value: string) =>
@@ -61,7 +86,7 @@ export function SortableBlockShell({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={setRefs}
       style={style}
       className={cn(
         "group/block relative",

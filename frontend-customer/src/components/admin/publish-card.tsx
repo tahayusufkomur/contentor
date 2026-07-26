@@ -24,7 +24,7 @@ import { ApiError } from "@/types/api";
 // Copy + deep link for each mandatory publish requirement (decision
 // 2026-07-05). Keys mirror the backend `publish_blockers` output.
 const PUBLISH_BLOCKER_META: Record<string, { label: string; href: string }> = {
-  look: { label: "Add your logo", href: "/admin/design" },
+  look: { label: "Add your logo", href: "/?edit=1&studio=1" },
   demo_cleanup: {
     label: "Remove the demo content",
     href: "/admin/courses",

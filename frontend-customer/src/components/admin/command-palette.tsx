@@ -220,9 +220,11 @@ export function CommandPalette({
         id: "nav-design",
         label: "Theme & Design",
         category: "Website & Media",
-        href: "/admin/design",
+        href: "/?edit=1&section=brand",
         icon: Palette,
-        keywords: ["branding", "colors", "logo"],
+        description: "Brand, theme, fonts and logo — in the live editor",
+        keywords: ["branding", "colors", "logo", "theme", "font"],
+        newTab: true,
       },
       {
         id: "nav-photos",

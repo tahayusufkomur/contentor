@@ -148,9 +148,12 @@ export function AdminShell({ children, user }: AdminShellProps) {
           external: true,
         },
         {
+          // Design settings live in the site editor's Site → Brand section —
+          // there is no standalone /admin/design page any more.
           label: t("nav.items.design"),
-          href: "/admin/design",
+          href: "/?edit=1&section=brand",
           icon: Palette,
+          external: true,
           ai: true,
           requiresEntitlement: "logo_studio",
           partialPaid: true,

@@ -37,7 +37,7 @@ test.describe("logo eval wall", () => {
 
       // Login as the seeded coach + open the studio — reuses the exact
       // navigation + heading assertion 15-logo-studio.spec.ts uses.
-      await page.goto(`${TENANT}/admin/design?studio=1`);
+      await page.goto(`${TENANT}/?edit=1&studio=1`);
       await expect(
         page.getByRole("heading", { name: "Logo Studio" }),
       ).toBeVisible();

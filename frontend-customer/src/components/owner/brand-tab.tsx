@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Wand2 } from "lucide-react";
 import { ThemeCardGrid } from "@/components/shared/theme-card-grid";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { LogoUploader } from "@/components/owner/logo-uploader";
 import { LogoStudio } from "@/components/logo/logo-studio";
 import type { TenantConfig } from "@/types/tenant";
@@ -25,11 +25,17 @@ const FONTS = [
 interface BrandTabProps {
   config: TenantConfig;
   onChange: (patch: Partial<TenantConfig>) => void;
+  /** Logo Studio open state — owned by EditSidebar so `?studio=1` can open it. */
+  studioOpen: boolean;
+  onStudioOpenChange: (open: boolean) => void;
 }
 
-export function BrandTab({ config, onChange }: BrandTabProps) {
-  const [studioOpen, setStudioOpen] = useState(false);
-
+export function BrandTab({
+  config,
+  onChange,
+  studioOpen,
+  onStudioOpenChange,
+}: BrandTabProps) {
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
@@ -43,13 +49,17 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label>Logo</Label>
+        <div className="flex items-center gap-2">
+          <Label>Logo</Label>
+          <AiBadge />
+          <PaidFeatureBadge feature="logo_studio" />
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             size="sm"
             className="gap-1.5"
-            onClick={() => setStudioOpen(true)}
+            onClick={() => onStudioOpenChange(true)}
           >
             <Wand2 className="h-3.5 w-3.5" />
             {config.logo_recipe && Object.keys(config.logo_recipe).length
@@ -63,7 +73,7 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
         />
         <LogoStudio
           open={studioOpen}
-          onOpenChange={setStudioOpen}
+          onOpenChange={onStudioOpenChange}
           config={config}
           onSaved={(patch) => onChange(patch)}
         />
@@ -100,7 +110,7 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label>Font family</Label>
+        <Label htmlFor="font-family">Font family</Label>
         <div className="flex flex-wrap gap-2">
           {FONTS.map((font) => (
             <button
@@ -113,6 +123,24 @@ export function BrandTab({ config, onChange }: BrandTabProps) {
             </button>
           ))}
         </div>
+        <Input
+          id="font-family"
+          value={config.font_family}
+          onChange={(e) => onChange({ font_family: e.target.value })}
+          placeholder="Inter"
+        />
+        <p className="text-xs text-muted-foreground">
+          Any Google Fonts family name works — type one to go beyond the
+          presets.
+        </p>
+        {config.font_family && (
+          <p
+            className="rounded-md border bg-muted/30 p-3 text-sm"
+            style={{ fontFamily: config.font_family }}
+          >
+            The quick brown fox jumps over the lazy dog.
+          </p>
+        )}
       </div>
     </div>
   );

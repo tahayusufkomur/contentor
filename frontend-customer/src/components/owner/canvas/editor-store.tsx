@@ -34,6 +34,14 @@ interface EditorState {
   future: PagesConfig[];
   selectedBlockId: string | null;
   hoveredBlockId: string | null;
+  // "Reveal" = scroll this block into view on the canvas. Set only by selections
+  // that came from the sidebar (where the block may well be off-screen); a click
+  // on the canvas itself already has the block in view, so it never reveals.
+  // `revealSeq` bumps on every request so asking twice for the SAME block still
+  // re-centers it, and pairing it with an id keeps a later canvas-click
+  // selection from re-firing the previous request's scroll.
+  revealBlockId: string | null;
+  revealSeq: number;
   // Coalescing: consecutive edits to the same block+field within a short window
   // fold into one undo step (so typing isn't undone character-by-character).
   lastEditKey?: string;
@@ -56,7 +64,7 @@ type Action =
     }
   | { type: "setEnabled"; pageKey: PageKey; id: string; enabled: boolean }
   | { type: "applyTemplate"; pageKey: PageKey; blocks: Block[] }
-  | { type: "select"; id: string | null }
+  | { type: "select"; id: string | null; reveal?: boolean }
   | { type: "hover"; id: string | null }
   | { type: "undo" }
   | { type: "redo" };
@@ -176,10 +184,16 @@ function reducer(state: EditorState, action: Action): EditorState {
         selectedBlockId: null,
       };
     }
-    case "select":
-      return state.selectedBlockId === action.id
-        ? state
-        : { ...state, selectedBlockId: action.id };
+    case "select": {
+      const reveal = action.reveal === true && action.id !== null;
+      if (state.selectedBlockId === action.id && !reveal) return state;
+      return {
+        ...state,
+        selectedBlockId: action.id,
+        revealBlockId: reveal ? action.id : state.revealBlockId,
+        revealSeq: reveal ? state.revealSeq + 1 : state.revealSeq,
+      };
+    }
     case "hover":
       return state.hoveredBlockId === action.id
         ? state
@@ -222,7 +236,9 @@ export interface EditorStore extends EditorState {
   updateBlock(pageKey: PageKey, id: string, patch: Partial<Block>): void;
   setBlockEnabled(pageKey: PageKey, id: string, enabled: boolean): void;
   applyTemplate(pageKey: PageKey, blocks: Block[]): void;
-  selectBlock(id: string | null): void;
+  /** Select a block. Pass `{ reveal: true }` when the selection came from the
+   *  sidebar, so the canvas scrolls the block into view. */
+  selectBlock(id: string | null, opts?: { reveal?: boolean }): void;
   hoverBlock(id: string | null): void;
   undo(): void;
   redo(): void;
@@ -264,6 +280,8 @@ export function EditorStoreProvider({
     future: [],
     selectedBlockId: null,
     hoveredBlockId: null,
+    revealBlockId: null,
+    revealSeq: 0,
   }));
 
   // Notify the parent (→ debounced autosave) whenever page content changes,
@@ -320,7 +338,8 @@ export function EditorStoreProvider({
         dispatch({ type: "setEnabled", pageKey, id, enabled }),
       applyTemplate: (pageKey, blocks) =>
         dispatch({ type: "applyTemplate", pageKey, blocks }),
-      selectBlock: (id) => dispatch({ type: "select", id }),
+      selectBlock: (id, opts) =>
+        dispatch({ type: "select", id, reveal: opts?.reveal }),
       hoverBlock: (id) => dispatch({ type: "hover", id }),
       undo: () => dispatch({ type: "undo" }),
       redo: () => dispatch({ type: "redo" }),

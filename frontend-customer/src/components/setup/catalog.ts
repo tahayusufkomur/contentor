@@ -24,6 +24,9 @@ export interface CatalogEntry {
   /** Deep link the row navigates to; null rows trigger `action` instead. */
   href: string | null;
   action?: "erase" | "copy-link";
+  /** Force a full page load — for `href`s whose query params are only read on
+   *  mount (the site editor's `?studio=1`). */
+  hardNav?: boolean;
 }
 
 export const SETUP_GROUP_ORDER = [
@@ -42,7 +45,7 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   page_pricing: { icon: Tag, href: "/plans" },
   page_faq: { icon: FileQuestion, href: "/faq" },
   page_contact: { icon: Phone, href: "/contact" },
-  look: { icon: Paintbrush, href: "/admin/design?studio=1" },
+  look: { icon: Paintbrush, href: "/?edit=1&studio=1", hardNav: true },
   first_course: { icon: BookOpen, href: "/admin/courses/new" },
   demo_cleanup: { icon: Trash2, href: null, action: "erase" },
   payouts: { icon: Wallet, href: "/admin/payouts" },
