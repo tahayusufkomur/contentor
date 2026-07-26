@@ -9,7 +9,7 @@ from unittest import mock
 import pytest
 
 from apps.blog import ai
-from apps.core.models import BlogAiUsage, PlatformPlan
+from apps.core.models import BlogAiUsage, PlatformPlan, Tenant
 
 pytestmark = pytest.mark.django_db
 
@@ -224,3 +224,59 @@ def test_record_attempt_and_success_two_tier():
     ai.record_success(SCHEMA, month=MONTH)
     row.refresh_from_db()
     assert row.generations_used == 1
+
+
+def _tenant_row(schema):
+    """A public-schema Tenant row. name/slug/owner_email/subdomain are all
+    required; plan is left null because plan_limit is mocked in these tests."""
+    return Tenant.objects.create(
+        schema_name=schema,
+        name="Grant Test",
+        slug=schema.replace("_", "-"),
+        owner_email="grant@example.com",
+        subdomain=schema.replace("_", "-"),
+    )
+
+
+def test_consume_free_grant_marks_the_tenant_and_is_idempotent(db):
+    tenant = _tenant_row("grant_free_tenant")
+
+    with mock.patch.object(ai, "plan_limit", return_value=0):
+        ai.consume_free_grant(tenant)
+        ai.consume_free_grant(tenant)
+
+    tenant.refresh_from_db()
+    assert tenant.free_blog_grant_used is True
+
+
+def test_consume_free_grant_is_a_noop_for_paid_plans(db):
+    tenant = _tenant_row("grant_paid_tenant")
+
+    with mock.patch.object(ai, "plan_limit", return_value=5):
+        ai.consume_free_grant(tenant)
+
+    tenant.refresh_from_db()
+    assert tenant.free_blog_grant_used is False
+
+
+def test_spent_grant_survives_upgrade_then_downgrade(db):
+    """The flag is lifetime state, not plan state — going paid and back to free
+    must not hand out a second free generation."""
+    tenant = _tenant_row("grant_cycle_tenant")
+
+    with mock.patch.object(ai, "plan_limit", return_value=0):
+        ai.consume_free_grant(tenant)
+    with mock.patch.object(ai, "plan_limit", return_value=5):
+        ai.consume_free_grant(tenant)  # upgraded: no-op
+    tenant.refresh_from_db()
+
+    with mock.patch.object(ai, "plan_limit", return_value=0):
+        status = ai.availability(
+            SimpleNamespace(
+                schema_name=SCHEMA,
+                has_paid_platform_plan=False,
+                free_blog_grant_used=tenant.free_blog_grant_used,
+            )
+        )
+    assert status["free_grant"] is False
+    assert status["reason"] == "upgrade_required"

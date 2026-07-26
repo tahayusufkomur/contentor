@@ -97,10 +97,34 @@ def _draft_result(cover_photo_id="", image_placements=None):
     )
 
 
-def test_generate_upgrade_required_for_free_tenant(coach_client, free_tenant):
+def _spend_free_grant(tenant):
+    """Put a free tenant past its one-off lifetime AI generation, which is the
+    only state in which the free plan is actually gated."""
+    tenant.free_blog_grant_used = True
+    tenant.save(update_fields=["free_blog_grant_used"])
+    return tenant
+
+
+def test_generate_upgrade_required_once_free_grant_is_spent(coach_client, free_tenant):
+    _spend_free_grant(free_tenant)
     res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
     assert res.status_code == 200
     assert res.data["post"] is None and res.data["source"] == "upgrade_required"
+
+
+def test_generate_spends_the_free_grant_on_a_free_tenant(coach_client, free_tenant, settings):
+    """The free plan gets exactly one generation, ever: the first call succeeds
+    and burns the grant, the second is gated."""
+    settings.ANTHROPIC_API_KEY = "test-key"
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result()):
+        first = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    assert first.data["source"] == "ai"
+    free_tenant.refresh_from_db()
+    assert free_tenant.free_blog_grant_used is True
+
+    with mock.patch.object(ai, "generate_post", return_value=_draft_result()):
+        second = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "sleep"}, format="json")
+    assert second.data["post"] is None and second.data["source"] == "upgrade_required"
 
 
 def test_generate_creates_draft_and_consumes_credit(coach_client, paid_tenant, settings):
@@ -349,6 +373,7 @@ def test_stream_failure_before_any_output_charges_cost_not_quota(coach_client, p
 def test_stream_gating_stays_plain_json(coach_client, free_tenant):
     """Guards run before the stream opens, so a blocked coach gets the same
     JSON body as the non-streaming path — no SSE, nothing to parse."""
+    _spend_free_grant(free_tenant)
     res = _stream_post(coach_client, {"custom_topic": "habits"})
     assert res.status_code == 200
     assert res["Content-Type"] == "application/json"

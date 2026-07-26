@@ -350,6 +350,18 @@ def record_success(tenant_schema, month=None):
     BlogAiUsage.objects.filter(pk=row.pk).update(generations_used=F("generations_used") + 1)
 
 
+def consume_free_grant(tenant):
+    """Spend the free plan's one-off generation. Idempotent, and a no-op on any
+    plan that has a real quota. The conditional UPDATE makes concurrent
+    generations race-safe: only the first one flips the flag."""
+    from apps.core.models import Tenant
+
+    if plan_limit(tenant) > 0 or getattr(tenant, "free_blog_grant_used", False):
+        return
+    Tenant.objects.filter(pk=tenant.pk, free_blog_grant_used=False).update(free_blog_grant_used=True)
+    tenant.free_blog_grant_used = True
+
+
 def _provider_configured():
     return core_ai.available()[0]
 

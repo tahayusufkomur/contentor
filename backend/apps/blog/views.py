@@ -167,6 +167,7 @@ def _generate_sse(request, tenant, status, topic, topic_obj, instructions, photo
         if not committed:
             committed = True
             ai.record_success(tenant.schema_name)
+            ai.consume_free_grant(tenant)
 
     try:
         yield sse_frame({"type": "phase", "phase": "preparing"})
@@ -240,6 +241,7 @@ def blog_generate(request):
 
     ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
     ai.record_success(tenant.schema_name)
+    ai.consume_free_grant(tenant)
     post = _persist_draft(request, result, topic_obj)
     return Response({"post": BlogPostAdminSerializer(post).data, "source": "ai", "remaining": status["remaining"] - 1})
 
