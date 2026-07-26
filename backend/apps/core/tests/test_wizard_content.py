@@ -149,3 +149,57 @@ def test_content_endpoint_rejects_a_bad_token(client, restore_public):
         format="json",
     )
     assert resp.status_code == 400
+
+
+def test_create_course_writes_a_published_owned_course(client, restore_public):
+    t = _provisioned_tenant("wc_course")
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/course/",
+            {"token": _token(t), "title": "My First Course", "price": 49, "pricing_type": "paid"},
+            format="json",
+        )
+        assert resp.status_code == 201, resp.content
+        with tenant_context(t):
+            from apps.courses.models import Course
+
+            course = Course.objects.get(pk=resp.json()["id"])
+            assert course.title == "My First Course"
+            assert course.is_published is True  # the publish gate counts published courses only
+            assert course.instructor.role == "owner"
+            assert course.slug == resp.json()["slug"]
+    finally:
+        _drop("wc_course")
+
+
+def test_created_course_counts_as_the_coachs_own_content(client, restore_public):
+    """The publish gate's _has_own ignores rows registered as seeded. Content
+    the coach makes in the wizard must NOT be registered, or finishing signup
+    would leave them unable to publish."""
+    t = _provisioned_tenant("wc_own")
+    try:
+        client.post(
+            "/api/v1/onboarding/wizard/content/course/",
+            {"token": _token(t), "title": "Owned Course"},
+            format="json",
+        )
+        with tenant_context(t):
+            from apps.courses.models import Course
+            from apps.tenant_config.setup_items import _has_own
+
+            assert _has_own(Course, [], queryset=Course.objects.filter(is_published=True)) is True
+    finally:
+        _drop("wc_own")
+
+
+def test_create_course_requires_title(client, restore_public):
+    t = _provisioned_tenant("wc_notitle")
+    try:
+        resp = client.post(
+            "/api/v1/onboarding/wizard/content/course/",
+            {"token": _token(t)},
+            format="json",
+        )
+        assert resp.status_code == 400
+    finally:
+        _drop("wc_notitle")

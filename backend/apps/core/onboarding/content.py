@@ -62,6 +62,24 @@ def _content_payload(request, *, drop=("token",)):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+def wizard_create_course(request):
+    """The coach's first course. Published on create: the publish gate counts
+    only published courses, so a draft here would gate them out of going live."""
+    from apps.courses.serializers import CourseCreateUpdateSerializer
+
+    tenant, owner, err = _wizard_content_setup(request)
+    if err:
+        return err
+    with tenant_context(tenant):
+        serializer = CourseCreateUpdateSerializer(data=_content_payload(request))
+        serializer.is_valid(raise_exception=True)
+        course = serializer.save(instructor=owner, is_published=True)
+        return Response({"id": course.id, "slug": course.slug}, status=201)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def wizard_course_outlines(request):
     from .course_outlines import generate_course_outlines
 
