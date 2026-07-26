@@ -33,6 +33,10 @@ export interface NavSection {
   id: string;
   label: string;
   items: NavItem[];
+  /** Render as a single bare top-level link (no collapsible group header).
+   *  Used for single-page destinations like Home and Settings. A flat section
+   *  must contain exactly one item; that item is rendered directly. */
+  flat?: boolean;
 }
 
 interface AppSidebarProps {
