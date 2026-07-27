@@ -66,6 +66,7 @@ describe("buildAdminNav — information architecture", () => {
       "/admin/calendar",
       "/admin/downloads",
       "/admin/photos",
+      "/admin/site-ai",
       "/admin/assistant",
       "/admin/students",
       "/admin/community",
@@ -104,6 +105,12 @@ describe("buildAdminNav — information architecture", () => {
     expect(badgeFor("/admin/inbox")?.requiresEntitlement).toBe(
       "platform_mailbox",
     );
+    expect(badgeFor("/admin/site-ai")?.requiresEntitlement).toBe("site_ai");
+  });
+
+  it("puts Site AI first in My Site — it's the primary way to change the site", () => {
+    const mySite = sectionById("mySite");
+    expect(mySite?.items[0]?.href).toBe("/admin/site-ai");
   });
 
   it("marks the external site-editor links", () => {

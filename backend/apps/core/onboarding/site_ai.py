@@ -4,7 +4,7 @@ engine reuses ai_compose so the model can only touch whitelisted fields."""
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from django.db.models import F, Sum
+from django.db.models import F
 from django_tenants.utils import tenant_context
 
 from apps.core.models import SiteAiUpdateUsage
@@ -17,11 +17,6 @@ def current_month():
 def tenant_usage(tenant_schema, month=None):
     row, _ = SiteAiUpdateUsage.objects.get_or_create(tenant_schema=tenant_schema, month=month or current_month())
     return row
-
-
-def global_spend(month=None):
-    total = SiteAiUpdateUsage.objects.filter(month=month or current_month()).aggregate(t=Sum("usd_spent"))["t"]
-    return total or Decimal("0")
 
 
 def record_attempt_cost(tenant_schema, usd, month=None):
@@ -47,13 +42,23 @@ def plan_limit(tenant):
 
 
 def availability(tenant, month=None):
-    """The Phase-2 admin Site AI's monthly-quota gate. The reveal's 3 free
-    applies are a separate counter (wizard_state["reveal_applies_used"]) and
-    do not consult this function."""
+    """The admin Site AI's monthly-quota gate. The reveal's free applies are a
+    separate counter (wizard_state["reveal_applies_used"]) and do not consult
+    this function.
+
+    Reason precedence mirrors apps/blog/ai.py: a plan with no allowance at all
+    reads as `upgrade_required` (ask them to upgrade), while a plan whose
+    allowance is spent reads as `quota_exhausted` (ask them to wait or upgrade).
+    """
     limit = plan_limit(tenant)
     used = tenant_usage(tenant.schema_name, month=month).updates_used
     remaining = max(0, limit - used)
-    reason = None if remaining > 0 else "quota_exhausted"
+    if limit <= 0:
+        reason = "upgrade_required"
+    elif remaining <= 0:
+        reason = "quota_exhausted"
+    else:
+        reason = None
     return {"enabled": remaining > 0, "remaining": remaining, "limit": limit, "reason": reason}
 
 

@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronLeft, ExternalLink, Globe } from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ExternalLink,
+  Globe,
+  Lock,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/hooks/use-tenant";
 import { Button } from "@/components/ui/button";
@@ -37,15 +44,32 @@ export interface NavSection {
    *  Used for single-page destinations like Home and Settings. A flat section
    *  must contain exactly one item; that item is rendered directly. */
   flat?: boolean;
+  /** Stage-gated: greyed but still clickable. `reasonKey` is an i18n key
+   *  explaining what unlocks it; `href` points at the milestone that does. */
+  locked?: { reasonKey: string; href: string };
+  /** Progressive disclosure: this many items are hidden behind a "+ More"
+   *  row. Zero/undefined means everything is shown. */
+  hiddenCount?: number;
+  /** i18n key for the disclosure row's label. Defaults to "nav.more"
+   *  ("+ N more"); My Site uses "nav.advancedEditing" instead. */
+  moreLabelKey?: string;
 }
 
 interface AppSidebarProps {
   title: string;
   sections: NavSection[];
   children?: React.ReactNode;
+  /** Called when the coach opens a section's "+ More" disclosure. */
+  onExpandSection?: (sectionId: string) => void;
 }
 
-export function AppSidebar({ title, sections, children }: AppSidebarProps) {
+export function AppSidebar({
+  title,
+  sections,
+  children,
+  onExpandSection,
+}: AppSidebarProps) {
+  const t = useTranslations("admin");
   const [collapsed, setCollapsed] = useState(false);
   const { pathname, pendingHref } = useNavigation();
   const config = useTenant();
@@ -144,6 +168,32 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
             );
           }
 
+          if (section.locked) {
+            return (
+              <div key={section.id} className="space-y-1">
+                {!collapsed && (
+                  <div className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">
+                    <span>{section.label}</span>
+                    <Lock className="h-3 w-3" />
+                  </div>
+                )}
+                <NavLink
+                  href={section.locked.href}
+                  title={t(section.locked.reasonKey)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground/60 transition-colors hover:bg-accent/40 hover:text-muted-foreground"
+                >
+                  {collapsed ? (
+                    <Lock className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <span className="text-xs">
+                      {t(section.locked.reasonKey)}
+                    </span>
+                  )}
+                </NavLink>
+              </div>
+            );
+          }
+
           const sectionOpen = openSections[section.id] ?? true;
 
           return (
@@ -213,6 +263,17 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
                       )}
                     </NavLink>
                   ))}
+                  {!collapsed && (section.hiddenCount ?? 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onExpandSection?.(section.id)}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {t(section.moreLabelKey ?? "nav.more", {
+                        count: section.hiddenCount ?? 0,
+                      })}
+                    </button>
+                  )}
                 </div>
               )}
 

@@ -66,6 +66,23 @@ def test_record_update_increments_only_the_counter():
     assert row.updates_used == 1 and row.usd_spent == Decimal("0.02")
 
 
+def test_availability_reason_is_upgrade_required_when_plan_has_no_quota():
+    """limit == 0 means the plan never included Site AI — the coach should be
+    asked to upgrade, not told they ran out."""
+    a = site_ai.availability(_tenant(0, paid=False))
+    assert a["limit"] == 0
+    assert a["remaining"] == 0
+    assert a["enabled"] is False
+    assert a["reason"] == "upgrade_required"
+
+
+def test_availability_reason_is_quota_exhausted_only_after_spending_a_real_quota():
+    SiteAiUpdateUsage.objects.create(tenant_schema=SCHEMA, month=site_ai.current_month(), updates_used=3)
+    a = site_ai.availability(_tenant(3))
+    assert a["remaining"] == 0
+    assert a["reason"] == "quota_exhausted"
+
+
 # ── Site-edit engine (preview + apply) ──────────────────────────────────────
 
 
@@ -106,31 +123,33 @@ def test_preview_edit_threads_the_instruction_as_a_followup_pair(restore_public)
 # ── Reveal chat endpoints (preview SSE + apply with free counter) ──────────
 
 
-def test_reveal_apply_decrements_free_counter(restore_public, client):
+def test_reveal_apply_allows_exactly_one_free_apply(restore_public, client):
+    """One free refinement at the reveal (Phase 2 decision 4): the first apply
+    succeeds and reports 0 left; the second is a soft 402 that never blocks
+    Publish."""
     from apps.accounts.tokens import create_wizard_token
 
-    t = _prov("site_ai_reveal")
-    token = create_wizard_token(t.owner_email, t.name, t.slug, region=t.region or "global")
+    t = _prov("site_ai_reveal_one")
     try:
-        with mock.patch("apps.core.onboarding.wizard._apply_last_preview") as apply_fn:
-            for expected_remaining in (2, 1, 0):
-                r = client.post(
-                    "/api/v1/onboarding/wizard/site-edit/apply/",
-                    {"token": token, "pages": {"home": {"blocks": []}}},
-                    format="json",
-                )
-                assert r.status_code == 200
-                assert r.json()["remaining"] == expected_remaining
-            assert apply_fn.call_count == 3
-            r = client.post(
+        token = create_wizard_token(t.owner_email, t.name, t.slug, region=t.region)
+        with mock.patch("apps.core.onboarding.wizard._apply_last_preview"):
+            first = client.post(
                 "/api/v1/onboarding/wizard/site-edit/apply/",
                 {"token": token, "pages": {"home": {"blocks": []}}},
                 format="json",
             )
-            assert r.status_code == 402
-            assert apply_fn.call_count == 3  # the 4th call never reaches apply
+            assert first.status_code == 200, first.content
+            assert first.json()["remaining"] == 0
+
+            second = client.post(
+                "/api/v1/onboarding/wizard/site-edit/apply/",
+                {"token": token, "pages": {"home": {"blocks": []}}},
+                format="json",
+            )
+            assert second.status_code == 402
+            assert second.json()["remaining"] == 0
     finally:
-        _drop("site_ai_reveal")
+        _drop("site_ai_reveal_one")
 
 
 def _sse_frames(response):

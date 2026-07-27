@@ -715,6 +715,65 @@ export interface paths {
     patch: operations["v1_admin_setup_status_partial_update"];
     trace?: never;
   };
+  "/api/v1/admin/site-ai/apply/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Persist a previewed edit, spending one monthly allowance unit.
+     *
+     *     402 when there is nothing left — a soft refusal, not a wall: the coach can
+     *     still edit manually for free on every plan.
+     */
+    post: operations["v1_admin_site_ai_apply_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/site-ai/preview/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Stream a proposed edit. FREE — previewing never consumes an allowance;
+     *     only Apply does. USD still accrues on every attempt (kill-switch).
+     */
+    post: operations["v1_admin_site_ai_preview_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/site-ai/status/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Remaining monthly site-edit allowance for this tenant. */
+    get: operations["v1_admin_site_ai_status_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/stats/": {
     parameters: {
       query?: never;
@@ -3796,9 +3855,9 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * @description Persist the last-previewed pages, decrementing the reveal's 3 free
-     *     applies. 402 (not a hard block — Publish stays available) once spent;
-     *     the Phase-2 admin Site AI enforces the monthly plan quota separately.
+     * @description Persist the last-previewed pages, decrementing the reveal's single free
+     *     apply. 402 (not a hard block — Publish stays available) once spent; the
+     *     admin Site AI panel enforces the monthly plan quota separately.
      */
     post: operations["v1_onboarding_wizard_site_edit_apply_create"];
     delete?: never;
@@ -11374,6 +11433,62 @@ export interface operations {
     };
   };
   v1_admin_setup_status_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_site_ai_apply_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_site_ai_preview_create: {
+    parameters: {
+      query?: {
+        format?: "json" | "txt";
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_site_ai_status_retrieve: {
     parameters: {
       query?: never;
       header?: never;

@@ -14,6 +14,7 @@ import {
   Palette,
   Pencil,
   Settings,
+  Sparkles,
   Store,
   Users,
   Video,
@@ -73,6 +74,14 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       id: "mySite",
       label: t("nav.sections.mySite"),
       items: [
+        {
+          label: t("nav.items.siteAi"),
+          href: "/admin/site-ai",
+          icon: Sparkles,
+          ai: true,
+          requiresEntitlement: "site_ai",
+          partialPaid: true,
+        },
         {
           label: t("nav.items.editSite"),
           href: "/?edit=1",

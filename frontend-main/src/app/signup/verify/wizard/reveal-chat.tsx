@@ -4,7 +4,7 @@
 // theme". A site edit is a re-compose with an instruction, so this just talks
 // to the backend's ai_compose trust boundary (site_ai.preview_edit/apply_edit)
 // — Preview streams a proposed change (free), Apply persists it and spends
-// one of the reveal's 3 free applies. Running out never blocks Publish, it
+// the reveal's single free apply. Running out never blocks Publish, it
 // only stops further chat refinements until the Phase-2 paid quota applies.
 import { useCallback, useState } from "react";
 import { Send } from "lucide-react";
@@ -14,9 +14,9 @@ import { Button } from "@/components/ui/button";
 import { applySiteEdit, isAbortError, previewSiteEdit } from "@/lib/wizard/api";
 
 // Mirrors apps/core/onboarding/wizard.py's REVEAL_FREE_APPLIES — there is no
-// dedicated "how many do I have left" endpoint, so this is the assumed count
-// until the first Apply response reports the server's real number.
-const REVEAL_FREE_APPLIES = 3;
+// shared source between the Django app and this bundle, so the two must be
+// changed together; a mismatch shows a wrong "left" count until the first apply.
+const REVEAL_FREE_APPLIES = 1;
 
 type Phase = "idle" | "thinking" | "ready" | "applying";
 

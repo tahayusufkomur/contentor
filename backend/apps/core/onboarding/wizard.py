@@ -24,10 +24,11 @@ logger = logging.getLogger(__name__)
 #: PATCH guard in wizard_state for why 'provisioned' belongs here.
 WIZARD_OPEN_STATUSES = ("pending", "provisioned")
 
-#: The reveal grants this many free site-edit applies before the Phase-2
-#: monthly plan quota (site_ai.availability) would take over — the magic
-#: moment must never paywall the first experience.
-REVEAL_FREE_APPLIES = 3
+# One free AI refinement at the reveal (Phase 2 decision 4). The auto-generated
+# design itself is always free; this budgets follow-up chat edits. The ongoing
+# monthly allowance lives on the plan (max_site_ai_updates) and is enforced by
+# the admin Site AI panel, not here.
+REVEAL_FREE_APPLIES = 1
 
 
 @api_view(["GET"])
@@ -365,11 +366,17 @@ def _apply_last_preview(tenant, pages):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def wizard_site_edit_apply(request):
-    """Persist the last-previewed pages, decrementing the reveal's 3 free
-    applies. 402 (not a hard block — Publish stays available) once spent;
-    the Phase-2 admin Site AI enforces the monthly plan quota separately."""
-    from apps.core.onboarding import site_ai
+    """Persist the last-previewed pages, decrementing the reveal's single free
+    apply. 402 (not a hard block — Publish stays available) once spent; the
+    admin Site AI panel enforces the monthly plan quota separately.
 
+    Deliberately does NOT call site_ai.record_update(): that increments
+    updates_used, the SAME counter site_ai.availability() reads for the paid
+    admin panel's monthly quota. The reveal's one free apply is tracked
+    entirely by wizard_state["reveal_applies_used"] below and must stay
+    outside that meter — otherwise using the reveal's free apply would show
+    up as spent allowance in the coach's own /admin/site-ai panel.
+    """
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err:
         return err
@@ -379,7 +386,6 @@ def wizard_site_edit_apply(request):
         return Response({"detail": "reveal_quota_exhausted", "remaining": 0}, status=402)
 
     _apply_last_preview(tenant, request.data.get("pages") or {})
-    site_ai.record_update(tenant.schema_name)
 
     state["reveal_applies_used"] = used + 1
     tenant.wizard_state = state

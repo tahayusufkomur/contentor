@@ -300,7 +300,7 @@
       "applying": "Uygulanıyor…",
       "discard": "Vazgeç",
       "remaining": "Kalan ücretsiz düzenleme: {count}",
-      "exhausted": "Şimdilik ücretsiz düzenlemelerini kullandın — istediğin zaman yayınlayabilirsin.",
+      "exhausted": "Bu ücretsiz düzenlemendi — istediğin zaman yayınlayabilirsin; daha fazlası için ücretli plana geçebilirsin.",
       "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
     }
   }
