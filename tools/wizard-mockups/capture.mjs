@@ -90,8 +90,7 @@ function nichesFromArgv() {
   return picked.length ? picked : NICHES;
 }
 
-/** Downscale + encode via an in-page canvas (no native image dependency —
- * same approach as tools/flowmap/crawler/thumbnail.js). */
+/** Downscale + encode via an in-page canvas (no native image dependency). */
 async function downscale(page, pngBuffer, targetWidth) {
   const b64 = pngBuffer.toString("base64");
   const dataUrl = await page.evaluate(
@@ -159,7 +158,7 @@ async function main() {
           "Restart it (`docker compose up -d nextjs-customer`), let it come up, then retry.",
       );
     }
-    // Hide Next.js's dev-only overlay, same as tools/flowmap/crawler/capture.js.
+    // Hide Next.js's dev-only overlay so it never appears in screenshots.
     await page.addStyleTag({ content: "nextjs-portal{display:none !important}" }).catch(() => {});
     // Second net: <img> elements that attempted a load and got nothing
     // (complete && naturalWidth 0) — catches failures the response listener

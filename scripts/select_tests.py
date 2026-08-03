@@ -421,7 +421,7 @@ _CASES = [
     ),
     (
         "ignored paths -> nothing",
-        ["docs/PRODUCT.md", "community-429-error-state.png", "Makefile", "tools/flowmap/server.js"],
+        ["docs/PRODUCT.md", "community-429-error-state.png", "Makefile", "tools/wizard-mockups/capture.mjs"],
         dict(backend_kind="none", vitest_kind="none", e2e_kind="none"),
     ),
     (
