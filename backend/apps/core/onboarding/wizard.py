@@ -191,15 +191,29 @@ def wizard_finalize(request):
 def wizard_provision(request):
     """Enqueue early schema provisioning for the token's tenant. Idempotent:
     only 'pending' tenants enqueue; any other state just reports its status.
-    The frontend polls the existing provisioning-status view until 'provisioned'
-    before showing the content step."""
+    The frontend polls this same view every 1.5s until 'provisioned', so the
+    'pending' guard must flip synchronously here — the task is the only other
+    thing that changes provisioning_status, and it may not start running for
+    several polls (worker backlog, slow migration), which used to re-enqueue a
+    duplicate on every intervening tick. select_for_update closes the window
+    between two near-simultaneous polls too."""
+    from django.db import transaction
+
     from ..tasks import provision_wizard_schema
 
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err:
         return err
     if tenant.provisioning_status == "pending":
-        provision_wizard_schema.delay(tenant.id, tenant.owner_email, tenant.name)
+        with transaction.atomic():
+            locked = type(tenant).objects.select_for_update().get(pk=tenant.pk)
+            won_race = locked.provisioning_status == "pending"
+            if won_race:
+                locked.provisioning_status = "provisioning"
+                locked.save(update_fields=["provisioning_status"])
+        tenant.provisioning_status = locked.provisioning_status
+        if won_race:
+            provision_wizard_schema.delay(tenant.id, tenant.owner_email, tenant.name)
     return Response({"status": tenant.provisioning_status})
 
 

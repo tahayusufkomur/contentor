@@ -11,7 +11,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.core.models import Tenant
-from apps.core.tasks import provision_tenant_schema
+from apps.core.tasks import provision_tenant_schema, provision_wizard_schema
 from apps.tenant_config.models import TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -139,5 +139,45 @@ def test_provision_endpoint_is_idempotent_when_already_provisioned(client):
         assert resp.status_code == 200
         assert resp.json()["status"] == "provisioned"
         delay.assert_not_called()
+    finally:
+        Tenant.objects.filter(pk=tenant.pk).delete()
+
+
+def test_wizard_schema_task_runs_when_endpoint_already_marked_provisioning(restore_public):
+    """The endpoint now flips 'pending' -> 'provisioning' synchronously before
+    enqueueing (closing the double-poll race). The task's own guard must accept
+    that handoff state, or the task would see 'provisioning' and no-op forever."""
+    schema = "prov_task_handoff"
+    tenant = _make_tenant(schema)
+    tenant.provisioning_status = "provisioning"
+    tenant.save(update_fields=["provisioning_status"])
+    try:
+        provision_wizard_schema(tenant.id, tenant.owner_email, tenant.name)
+
+        tenant.refresh_from_db()
+        assert tenant.provisioning_status == "provisioned"
+        with tenant_context(tenant):
+            assert TenantConfig.objects.count() == 1
+    finally:
+        _drop(schema)
+
+
+def test_provision_endpoint_does_not_double_enqueue_while_task_is_in_flight(client):
+    """The Celery task is the only thing that used to flip provisioning_status
+    away from 'pending', so every poll tick landing before the task starts
+    (worker busy, queue backlog) re-enqueued a duplicate. The endpoint must
+    close that window itself, synchronously, on the first call."""
+    tenant = _row_tenant("prov_ep3", provisioning_status="pending")
+    try:
+        with mock.patch(_TASK_DELAY) as delay:
+            token = _wizard_token(tenant)
+            for _ in range(5):
+                resp = client.post(
+                    "/api/v1/onboarding/wizard/provision/",
+                    {"token": token},
+                    format="json",
+                )
+                assert resp.status_code == 200
+        delay.assert_called_once_with(tenant.id, tenant.owner_email, tenant.name)
     finally:
         Tenant.objects.filter(pk=tenant.pk).delete()

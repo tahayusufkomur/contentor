@@ -420,8 +420,11 @@ def provision_wizard_schema(self, tenant_id, owner_email, owner_name):
     from apps.core.models import Tenant
 
     tenant = Tenant.objects.get(id=tenant_id)
-    if tenant.provisioning_status not in ("pending", "failed"):
-        return  # already provisioning/provisioned/ready — nothing to do
+    # 'provisioning' is the handoff state the endpoint sets synchronously
+    # before enqueueing (closing the double-poll race) — the task must still
+    # run from it, or every call would see its own handoff state and no-op.
+    if tenant.provisioning_status not in ("pending", "provisioning", "failed"):
+        return  # already provisioned/ready — nothing to do
     try:
         region = tenant.region or "global"
         preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
