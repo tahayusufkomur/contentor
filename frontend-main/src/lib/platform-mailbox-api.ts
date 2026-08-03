@@ -1,29 +1,11 @@
 // Superadmin platform inbox API client, base `/api/v1/platform/mailbox`.
 // Mirrors the coach mailbox client but drops settings; auth rides the
-// same-origin admin cookie (like platform-email-api).
+// same-origin admin cookie (shared api-client). Attachment upload uses
+// clientFetch directly — FormData must set its own multipart boundary.
+
+import { clientFetch, jsonFetch } from "./api-client";
 
 const BASE = "/api/v1/platform/mailbox";
-
-async function clientFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...options,
-    credentials: "same-origin",
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => null);
-    const detail = (data && data.detail) || `Request failed (${res.status})`;
-    throw new Error(Array.isArray(detail) ? detail.join(" ") : String(detail));
-  }
-  if (res.status === 204) return undefined as T;
-  return res.json();
-}
-
-function jsonFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  return clientFetch<T>(path, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-  });
-}
 
 export interface MessageAttachment {
   id: number;

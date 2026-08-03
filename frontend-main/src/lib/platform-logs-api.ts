@@ -1,14 +1,7 @@
-// Superadmin log/activity viewer client — same-origin cookie auth like
-// platform-email-api.ts.
+// Superadmin log/activity viewer client — same-origin cookie auth via the
+// shared api-client.
 
-async function clientFetch<T>(path: string): Promise<T> {
-  const res = await fetch(path, { credentials: "same-origin" });
-  if (!res.ok) {
-    const data = await res.json().catch(() => null);
-    throw new Error((data && data.detail) || `Request failed (${res.status})`);
-  }
-  return res.json();
-}
+import { clientFetch } from "./api-client";
 
 export interface LogRow {
   id: number;

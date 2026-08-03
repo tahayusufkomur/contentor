@@ -1,5 +1,7 @@
 // Superadmin platform blog API client, base `/api/v1/platform/blog`. Auth
-// rides the same-origin admin cookie (mirrors platform-email-api.ts).
+// rides the same-origin admin cookie (shared api-client).
+
+import { jsonFetch } from "./api-client";
 
 export interface PlatformBlogPostAdmin {
   id: number;
@@ -19,30 +21,16 @@ export interface GenerateResponse {
   source: "ai" | "budget" | "error";
 }
 
-async function clientFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    credentials: "same-origin",
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => null);
-    const detail = (data && data.detail) || `Request failed (${res.status})`;
-    throw new Error(String(detail));
-  }
-  return res.json();
-}
-
 const BASE = "/api/v1/platform/blog";
 
 export const listPlatformPosts = () =>
-  clientFetch<{ results: PlatformBlogPostAdmin[] }>(`${BASE}/posts/`);
+  jsonFetch<{ results: PlatformBlogPostAdmin[] }>(`${BASE}/posts/`);
 
 export const generatePlatformPost = (body: {
   topic: string;
   instructions?: string;
 }) =>
-  clientFetch<GenerateResponse>(`${BASE}/generate/`, {
+  jsonFetch<GenerateResponse>(`${BASE}/generate/`, {
     method: "POST",
     body: JSON.stringify(body),
   });

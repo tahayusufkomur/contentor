@@ -1,23 +1,8 @@
 // Platform email API client (superadmin → coaches), base `/api/v1/platform/email`.
 // Mirrors frontend-customer's coach email-api, but recipients are coaches and
-// auth rides the same-origin admin cookie (like the admin-kit client).
+// auth rides the same-origin admin cookie (shared api-client).
 
-async function clientFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    credentials: "same-origin",
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => null);
-    const detail =
-      (data && (data.detail || data.recipient_filter || data.subject)) ||
-      `Request failed (${res.status})`;
-    throw new Error(Array.isArray(detail) ? detail.join(" ") : String(detail));
-  }
-  if (res.status === 204) return undefined as T;
-  return res.json();
-}
+import { jsonFetch } from "./api-client";
 
 export interface EmailSession {
   session_token: string;
@@ -95,40 +80,40 @@ export interface PaginatedResponse<T> {
 const BASE = "/api/v1/platform/email";
 
 export async function createEmailSession(): Promise<EmailSession> {
-  return clientFetch<EmailSession>(`${BASE}/session/`, { method: "POST" });
+  return jsonFetch<EmailSession>(`${BASE}/session/`, { method: "POST" });
 }
 
 export async function setupEmail(): Promise<EmailSetupResponse> {
-  return clientFetch<EmailSetupResponse>(`${BASE}/setup/`, { method: "POST" });
+  return jsonFetch<EmailSetupResponse>(`${BASE}/setup/`, { method: "POST" });
 }
 
 export async function listTemplates(): Promise<
   EmailTemplate[] | { results: EmailTemplate[] }
 > {
-  return clientFetch<EmailTemplate[] | { results: EmailTemplate[] }>(
+  return jsonFetch<EmailTemplate[] | { results: EmailTemplate[] }>(
     `${BASE}/templates/`,
   );
 }
 
 export async function getTemplate(id: string): Promise<EmailTemplate> {
-  return clientFetch<EmailTemplate>(`${BASE}/templates/${id}/`);
+  return jsonFetch<EmailTemplate>(`${BASE}/templates/${id}/`);
 }
 
 export async function deleteTemplate(id: string): Promise<void> {
-  return clientFetch<void>(`${BASE}/templates/${id}/`, { method: "DELETE" });
+  return jsonFetch<void>(`${BASE}/templates/${id}/`, { method: "DELETE" });
 }
 
 export async function listGallery(
   category?: string,
 ): Promise<GalleryTemplate[] | { results: GalleryTemplate[] }> {
   const suffix = category ? `?category=${encodeURIComponent(category)}` : "";
-  return clientFetch<GalleryTemplate[] | { results: GalleryTemplate[] }>(
+  return jsonFetch<GalleryTemplate[] | { results: GalleryTemplate[] }>(
     `${BASE}/gallery/${suffix}`,
   );
 }
 
 export async function getRecipientOptions(): Promise<RecipientOptions> {
-  return clientFetch<RecipientOptions>(`${BASE}/recipient-options/`);
+  return jsonFetch<RecipientOptions>(`${BASE}/recipient-options/`);
 }
 
 export async function sendCampaign(data: {
@@ -137,7 +122,7 @@ export async function sendCampaign(data: {
   subject: string;
   recipient_filter: RecipientFilter;
 }): Promise<EmailCampaign> {
-  return clientFetch<EmailCampaign>(`${BASE}/send/`, {
+  return jsonFetch<EmailCampaign>(`${BASE}/send/`, {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -147,19 +132,19 @@ export async function listCampaigns(
   limit = 20,
   offset = 0,
 ): Promise<PaginatedResponse<EmailCampaign>> {
-  return clientFetch<PaginatedResponse<EmailCampaign>>(
+  return jsonFetch<PaginatedResponse<EmailCampaign>>(
     `${BASE}/campaigns/?limit=${limit}&offset=${offset}`,
   );
 }
 
 export async function getCampaign(id: number): Promise<EmailCampaign> {
-  return clientFetch<EmailCampaign>(`${BASE}/campaigns/${id}/`);
+  return jsonFetch<EmailCampaign>(`${BASE}/campaigns/${id}/`);
 }
 
 export async function copyTemplate(
   sourceTemplateId: string,
 ): Promise<{ id: string; name: string }> {
-  return clientFetch<{ id: string; name: string }>(`${BASE}/templates/copy/`, {
+  return jsonFetch<{ id: string; name: string }>(`${BASE}/templates/copy/`, {
     method: "POST",
     body: JSON.stringify({ source_template_id: sourceTemplateId }),
   });
@@ -169,7 +154,7 @@ export async function previewTemplates(templateIds: string[]): Promise<{
   previews: Record<string, string>;
   errors: Record<string, string>;
 }> {
-  return clientFetch<{
+  return jsonFetch<{
     previews: Record<string, string>;
     errors: Record<string, string>;
   }>(`${BASE}/templates/preview/`, {
@@ -181,7 +166,7 @@ export async function previewTemplates(templateIds: string[]): Promise<{
 export async function listCampaignRecipients(
   campaignId: number,
 ): Promise<{ results: CampaignRecipientEntry[] }> {
-  return clientFetch<{ results: CampaignRecipientEntry[] }>(
+  return jsonFetch<{ results: CampaignRecipientEntry[] }>(
     `${BASE}/campaigns/${campaignId}/recipients/`,
   );
 }
