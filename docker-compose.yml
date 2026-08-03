@@ -89,7 +89,12 @@ services:
     # generation ~60s; 300 killed workers mid-retry (CRITICAL WORKER TIMEOUT
     # on logo-converse, seen 2026-07-12). Dev-only: Caddy doesn't cap proxy
     # response time locally.
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --reload --graceful-timeout 30 --timeout 600
+    # gthread 2x8 mirrors prod: with plain sync workers, 2 concurrent blocking
+    # requests (one open SSE stream + one AI turn) occupy BOTH workers and
+    # freeze the whole dev stack — same self-DoS the prod compose documents.
+    command: >
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --worker-class gthread
+      --threads 8 --reload --graceful-timeout 30 --timeout 600
     environment:
       CURATED_LOGO_SYNC_DIR: /app/logo_sync
       CURATED_PHOTO_SYNC_DIR: /app/photo_sync
@@ -193,47 +198,6 @@ services:
     depends_on:
       django:
         condition: service_healthy
-
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./monitoring/prometheus:/etc/prometheus
-    ports:
-      - "9090:9090"
-    profiles:
-      - monitoring
-
-  grafana:
-    image: grafana/grafana:latest
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-    ports:
-      - "3001:3000"
-    profiles:
-      - monitoring
-
-  loki:
-    image: grafana/loki:latest
-    volumes:
-      - ./monitoring/loki:/etc/loki
-    command: -config.file=/etc/loki/loki-config.yml
-    ports:
-      - "3100:3100"
-    profiles:
-      - monitoring
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    ports:
-      - "8081:8080"
-    profiles:
-      - monitoring
 
 volumes:
   postgres_data:
