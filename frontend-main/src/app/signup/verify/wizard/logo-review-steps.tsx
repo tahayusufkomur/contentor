@@ -10,6 +10,9 @@ import {
   briefKeywords,
   rankCuratedLogos,
 } from "@shared/logo/curated-rank";
+import { Skeleton } from "@shared/ui/skeleton";
+import { Spinner } from "@shared/ui/spinner";
+import { StaleContainer } from "@shared/ui/stale-container";
 
 import { getCuratedLogos, readWizardState } from "@/lib/wizard/api";
 import type {
@@ -54,19 +57,47 @@ export function LogoStep({
 }) {
   const t = useTranslations("wizard");
   const [items, setItems] = useState<CuratedLogoItem[]>([]);
+  // Distinguishes "still fetching" from "fetch failed" from "gallery is
+  // genuinely empty" — all three used to look identical (an absent section),
+  // so a fast-moving coach never learned the gallery existed.
+  const [galleryState, setGalleryState] = useState<
+    "loading" | "ready" | "failed"
+  >("loading");
   useEffect(() => {
     getCuratedLogos()
-      .then(setItems)
-      .catch(() => setItems([]));
+      .then((res) => {
+        setItems(res);
+        setGalleryState("ready");
+      })
+      .catch(() => {
+        setItems([]);
+        setGalleryState("failed");
+      });
   }, []);
 
+  // Server-side AI rank computed while the coach walked the look/pages
+  // chapters; absent (task still running / AI off) -> keyword rank only.
+  // Tracked separately from the value because it REORDERS an already-visible
+  // grid: the coach needs a "still improving" signal, not a blank.
   const [aiRank, setAiRank] = useState<number[] | undefined>(undefined);
+  const [rankPending, setRankPending] = useState(true);
   useEffect(() => {
-    // Server-side AI rank computed while the coach walked the look/pages
-    // chapters; absent (task still running / AI off) -> keyword rank only.
+    let cancelled = false;
     readWizardState(token)
-      .then((res) => setAiRank(res.state.curated_logo_rank))
-      .catch(() => setAiRank(undefined));
+      .then((res) => {
+        if (cancelled) return;
+        setAiRank(res.state.curated_logo_rank);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAiRank(undefined);
+      })
+      .finally(() => {
+        if (!cancelled) setRankPending(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   // Marks matching the coach's niche and their own description first (same
@@ -114,40 +145,81 @@ export function LogoStep({
           </span>
         </OptionCard>
 
-        {ranked.length > 0 && (
+        {/* Rendered unless the gallery is known-empty: the heading claims its
+         * space up front so arriving logos don't shove the AI door down the
+         * page, and so the coach knows a gallery is coming. */}
+        {galleryState !== "ready" || ranked.length > 0 ? (
           <div>
-            <p className="mb-2 mt-2 text-[12.5px] font-semibold text-muted-foreground">
-              {t("logo.curated.title")} — {t("logo.curated.desc")}
+            <p
+              // The label swaps as each load lands (loading -> ranking ->
+              // settled), so announce it politely rather than silently.
+              aria-live="polite"
+              className="mb-2 mt-2 flex items-center gap-1.5 text-[12.5px] font-semibold text-muted-foreground"
+            >
+              {galleryState === "failed" ? (
+                t("logo.curated.failed")
+              ) : (
+                <>
+                  {t("logo.curated.title")} —{" "}
+                  {galleryState === "loading"
+                    ? t("logo.curated.loading")
+                    : rankPending
+                      ? t("logo.curated.ranking")
+                      : t("logo.curated.desc")}
+                  {/* Decorative: the adjacent text already states the status,
+                   * so an sr-only label here would announce it twice. The
+                   * aria-live below is what actually narrates the change. */}
+                  {(galleryState === "loading" || rankPending) && (
+                    <Spinner size="sm" label="" aria-hidden="true" />
+                  )}
+                </>
+              )}
             </p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {ranked.slice(0, 12).map((item) => (
-                <OptionCard
-                  key={item.id}
-                  selected={mode === "curated" && value?.curated_id === item.id}
-                  onSelect={() =>
-                    onChange({ mode: "curated", curated_id: item.id })
-                  }
-                  title={item.title}
-                >
-                  <span className="flex items-center gap-2 rounded-lg bg-white p-2">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="h-10 w-10 object-contain"
-                    />
-                    <span
-                      className="truncate text-[12px] font-semibold"
-                      style={{ color: s.ink, fontFamily: stack }}
+            {galleryState === "loading" ? (
+              // First load: skeleton grid at the real card size, so the 12
+              // marks land in place instead of reflowing the step.
+              <div className="grid grid-cols-2 gap-2.5" aria-hidden="true">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-[104px] rounded-2xl" />
+                ))}
+              </div>
+            ) : (
+              // Re-rank is a refinement load: cards dim and go inert, never
+              // blank, so a half-made choice stays on screen.
+              <StaleContainer pending={rankPending} showLine={false}>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {ranked.slice(0, 12).map((item) => (
+                    <OptionCard
+                      key={item.id}
+                      selected={
+                        mode === "curated" && value?.curated_id === item.id
+                      }
+                      onSelect={() =>
+                        onChange({ mode: "curated", curated_id: item.id })
+                      }
+                      title={item.title}
                     >
-                      {brand}
-                    </span>
-                  </span>
-                </OptionCard>
-              ))}
-            </div>
+                      <span className="flex items-center gap-2 rounded-lg bg-white p-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="h-10 w-10 object-contain"
+                        />
+                        <span
+                          className="truncate text-[12px] font-semibold"
+                          style={{ color: s.ink, fontFamily: stack }}
+                        >
+                          {brand}
+                        </span>
+                      </span>
+                    </OptionCard>
+                  ))}
+                </div>
+              </StaleContainer>
+            )}
           </div>
-        )}
+        ) : null}
 
         <AiLogoDoor
           token={token}

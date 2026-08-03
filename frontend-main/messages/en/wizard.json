@@ -219,7 +219,10 @@
       },
       "curated": {
         "title": "Ready-made",
-        "desc": "Pick a mark from our gallery"
+        "desc": "Pick a mark from our gallery",
+        "loading": "Loading our gallery…",
+        "ranking": "Finding your best matches…",
+        "failed": "Couldn't load the ready-made gallery."
       },
       "ai": {
         "title": "Create with AI",

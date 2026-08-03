@@ -219,7 +219,10 @@
       },
       "curated": {
         "title": "Hazır logo",
-        "desc": "Galeriden bir amblem seç"
+        "desc": "Galeriden bir amblem seç",
+        "loading": "Galerimiz yükleniyor…",
+        "ranking": "Sana en uygun olanlar bulunuyor…",
+        "failed": "Hazır logo galerisi yüklenemedi."
       },
       "ai": {
         "title": "Yapay zekâ ile tasarla",
