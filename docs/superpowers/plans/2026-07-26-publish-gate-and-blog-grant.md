@@ -1,5 +1,11 @@
 # Publish Gate + Free Blog Grant Implementation Plan
 
+> **STATUS: COMPLETE** — implemented and merged to `main` 2026-07-26 (merge `3d7ef80`;
+> feature commits `97088f2`, `9d27211`, `d3852e4`). Full backend suite 1683 passed,
+> `make lint` clean, both manual verification checks confirmed against the dev database.
+> Deviations from the plan as written are recorded at the bottom under "Execution notes".
+> **Not yet deployed** — carries migration `core.0033_free_blog_grant`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the publish gate goal- and entitlement-conditional so free-plan coaches can actually publish, and give the free plan a one-off lifetime AI blog generation.
@@ -50,7 +56,7 @@ The spec ([docs/superpowers/specs/2026-07-26-ai-first-onboarding-design.md](../s
 - Consumes: existing `_has_own(model, rows)`, `_seeded_by_label()`, `can_monetize(tenant)`, `_has_paid_content(seeded)`.
 - Produces: `publish_blockers(config, tenant) -> list[str]` — may now return `"first_event"` and `"first_blog_post"` in addition to the existing `"look"`, `"demo_cleanup"`, `"first_course"`, `"payouts"`. Helpers `_wizard_goals(tenant) -> list[str]` and `_live_entitled(tenant) -> bool` become available to later tasks.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `backend/apps/tenant_config/tests/test_publish_gate.py`:
 
@@ -151,13 +157,13 @@ def test_manual_tick_never_satisfies_a_blocker(config):
         assert "first_course" in publish_blockers(config, _tenant())
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `docker compose exec django pytest apps/tenant_config/tests/test_publish_gate.py -v`
 
 Expected: FAIL. `test_no_event_or_blog_blocker_when_goals_do_not_ask` and the two "does not satisfy" tests fail because published filtering and the new blockers don't exist yet (the unpublished-course test fails with `first_course` absent from the list).
 
-- [ ] **Step 3: Add the goal and entitlement helpers**
+- [x] **Step 3: Add the goal and entitlement helpers**
 
 In `backend/apps/tenant_config/setup_items.py`, add below the `CORE_PAGE_KEYS` constant:
 
@@ -184,7 +190,7 @@ def _live_entitled(tenant) -> bool:
 
 Also add `"first_event"` and `"first_blog_post"` to `ALL_ITEM_KEYS` (the list already contains `"first_blog_post"`; add only `"first_event"`).
 
-- [ ] **Step 4: Let `_has_own` narrow by queryset**
+- [x] **Step 4: Let `_has_own` narrow by queryset**
 
 Replace the existing `_has_own` in the same file with:
 
@@ -206,7 +212,7 @@ def _has_own(model, rows, *, queryset=None) -> bool:
     return False
 ```
 
-- [ ] **Step 5: Apply the conditional blockers**
+- [x] **Step 5: Apply the conditional blockers**
 
 In `publish_blockers`, replace the `has_own_product` block and everything after it with:
 
@@ -243,19 +249,19 @@ In `publish_blockers`, replace the `has_own_product` block and everything after 
     return blockers
 ```
 
-- [ ] **Step 6: Run the tests to verify they pass**
+- [x] **Step 6: Run the tests to verify they pass**
 
 Run: `docker compose exec django pytest apps/tenant_config/tests/test_publish_gate.py -v`
 
 Expected: PASS, 7 tests.
 
-- [ ] **Step 7: Run the surrounding suite for regressions**
+- [x] **Step 7: Run the surrounding suite for regressions**
 
 Run: `docker compose exec django pytest apps/tenant_config -n auto`
 
 Expected: PASS. `test_setup_status.py` exercises the same module; if a failure mentions `first_course` and an unpublished course, a fixture there creates a draft course and must be updated to `is_published=True` — that is a correct consequence of Step 5, not a bug.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add backend/apps/tenant_config/setup_items.py backend/apps/tenant_config/tests/test_publish_gate.py
@@ -276,7 +282,7 @@ git commit -m "feat(onboarding): make publish blockers goal- and entitlement-con
 - Consumes: `plan_limit(tenant) -> int`, `tenant_usage(schema, month)`, `global_spend(month)`.
 - Produces: `Tenant.free_blog_grant_used: bool` (default `False`), and `availability(tenant, month=None)` now returns the additional key `free_grant: bool`. When `free_grant` is `True`, `eligible` is `True` and `remaining` is `1` regardless of plan quota.
 
-- [ ] **Step 1: Add the model field**
+- [x] **Step 1: Add the model field**
 
 In `backend/apps/core/models.py`, on the `Tenant` model, next to the other per-tenant flags:
 
@@ -287,7 +293,7 @@ In `backend/apps/core/models.py`, on the `Tenant` model, next to the other per-t
     )
 ```
 
-- [ ] **Step 2: Generate and apply the migration**
+- [x] **Step 2: Generate and apply the migration**
 
 ```bash
 docker compose exec django python manage.py makemigrations core --name free_blog_grant
@@ -296,7 +302,7 @@ docker compose exec django python manage.py migrate_schemas --shared
 
 Expected: one `AddField` migration on `core.tenant`; migrate reports OK.
 
-- [ ] **Step 3: Write the failing tests**
+- [x] **Step 3: Write the failing tests**
 
 In `backend/apps/blog/tests/test_ai.py`, replace the existing `_tenant` helper with the version below (it gains a `grant_used` parameter) and **replace** `test_availability_upgrade_required_for_free` with the two tests that follow it. That existing test asserts the behavior this task intentionally changes, so leaving it in place would be asserting the bug.
 
@@ -351,13 +357,13 @@ def test_paid_plan_is_unaffected_by_the_grant(settings):
     assert status["reason"] is None
 ```
 
-- [ ] **Step 4: Run the tests to verify they fail**
+- [x] **Step 4: Run the tests to verify they fail**
 
 Run: `docker compose exec django pytest apps/blog/tests/test_ai.py -k "grant or availability" -v`
 
 Expected: FAIL with `KeyError: 'free_grant'`.
 
-- [ ] **Step 5: Honor the grant in `availability()`**
+- [x] **Step 5: Honor the grant in `availability()`**
 
 Replace the body of `availability` in `backend/apps/blog/ai.py` with:
 
@@ -397,13 +403,13 @@ def availability(tenant, month=None):
     }
 ```
 
-- [ ] **Step 6: Run the tests to verify they pass**
+- [x] **Step 6: Run the tests to verify they pass**
 
 Run: `docker compose exec django pytest apps/blog/tests/test_ai.py -v`
 
 Expected: PASS. If `test_availability_quota_exhausted` or `test_availability_budget_kill_switch` fail, check that `_tenant` still defaults `grant_used=False` and those tests still pass `plan_limit=5` (a paid limit, so `free_grant` is False and their behavior is unchanged).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add backend/apps/core/models.py backend/apps/core/migrations backend/apps/blog/ai.py backend/apps/blog/tests/test_ai.py
@@ -423,7 +429,7 @@ git commit -m "feat(blog): give the free plan a one-off lifetime AI generation g
 - Consumes: `plan_limit(tenant)`, `Tenant.free_blog_grant_used` from Task 2.
 - Produces: `consume_free_grant(tenant) -> None` — idempotent; a no-op for paid plans and for an already-spent grant.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `backend/apps/blog/tests/test_ai.py`. These need a real `Tenant` row because the function writes to the database. `Tenant` sets `auto_create_schema = False`, so creating one does **not** provision a Postgres schema — it is just a row. Use dummy schema names, not `SCHEMA`, whose row already exists; `schema_name`, `slug` and `subdomain` are all unique.
 
@@ -486,13 +492,13 @@ def test_spent_grant_survives_upgrade_then_downgrade(db):
 
 Add `from apps.core.models import Tenant` to the test file's imports if it is not already there.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `docker compose exec django pytest apps/blog/tests/test_ai.py -k "consume_free_grant or upgrade_then_downgrade" -v`
 
 Expected: FAIL with `AttributeError: module 'apps.blog.ai' has no attribute 'consume_free_grant'`.
 
-- [ ] **Step 3: Implement `consume_free_grant`**
+- [x] **Step 3: Implement `consume_free_grant`**
 
 In `backend/apps/blog/ai.py`, directly below `record_success`:
 
@@ -509,13 +515,13 @@ def consume_free_grant(tenant):
     tenant.free_blog_grant_used = True
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `docker compose exec django pytest apps/blog/tests/test_ai.py -k "consume_free_grant or upgrade_then_downgrade" -v`
 
 Expected: PASS, 3 tests.
 
-- [ ] **Step 5: Wire it into every success path**
+- [x] **Step 5: Wire it into every success path**
 
 Find the call sites:
 
@@ -536,19 +542,19 @@ At each site the tenant object is already in scope (the SSE generator uses `tena
 
 Apply the same two-line pairing at every other `record_success` call site the grep reports, including the autopilot Celery task if it appears. Charging follows the existing rule — committed at first model output, never on completion.
 
-- [ ] **Step 6: Verify the whole blog suite**
+- [x] **Step 6: Verify the whole blog suite**
 
 Run: `docker compose exec django pytest apps/blog -n auto`
 
 Expected: PASS.
 
-- [ ] **Step 7: Verify nothing else regressed**
+- [x] **Step 7: Verify nothing else regressed**
 
 Run: `docker compose exec django pytest apps/blog apps/tenant_config apps/core -n auto`
 
 Expected: PASS. A block of `test_seed_dev_tenants` failures means a dirty reused test DB — rerun that command with `--create-db`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add backend/apps/blog/ai.py backend/apps/blog/views.py backend/apps/blog/tests/test_ai.py
@@ -559,10 +565,10 @@ git commit -m "feat(blog): spend the free grant when a generation succeeds"
 
 ## Verification before calling this plan done
 
-- [ ] `docker compose exec django pytest apps/blog apps/tenant_config apps/core -n auto` passes.
-- [ ] `make lint` passes with zero warnings.
-- [ ] Manual check in `make shell`: a free tenant with `free_blog_grant_used=False` returns `free_grant: True, remaining: 1` from `apps.blog.ai.availability(tenant)`; after `consume_free_grant(tenant)` it returns `eligible: False, reason: "upgrade_required"`.
-- [ ] A free-plan tenant whose goals are `["sell_courses"]` and who has one published course returns `[]` from `publish_blockers` — i.e. **a free coach can publish**.
+- [x] `docker compose exec django pytest apps/blog apps/tenant_config apps/core -n auto` passes.
+- [x] `make lint` passes with zero warnings.
+- [x] Manual check in `make shell`: a free tenant with `free_blog_grant_used=False` returns `free_grant: True, remaining: 1` from `apps.blog.ai.availability(tenant)`; after `consume_free_grant(tenant)` it returns `eligible: False, reason: "upgrade_required"`.
+- [x] A free-plan tenant whose goals are `["sell_courses"]` and who has one published course returns `[]` from `publish_blockers` — i.e. **a free coach can publish**.
 
 ## What comes next (the rest of Phase 1)
 
@@ -577,3 +583,36 @@ Phase 1 of the spec is five independent subsystems. This is plan 1 of 5; each la
 | **5. Reveal chat + `site_ai_updates` quota** | Chat surface, preview/apply, metering | Plan 3 |
 
 Plans 1 and 2 can run in parallel — they share no files.
+
+---
+
+## Execution notes (2026-07-26)
+
+Where reality differed from the plan as written. Plan 3 builds on this — read before starting it.
+
+1. **`_published_course()` in the Task 1 test file was incomplete.** `Course.instructor` is a
+   required FK and `slug` is needed, so the test file gained a `coach` fixture mirroring
+   `test_setup_status.py`. Any later test creating a `Course` needs the same.
+2. **Two admin-API tests needed updating that the plan didn't list.**
+   `test_admin_api.py::test_generate_upgrade_required_for_free_tenant` (renamed to
+   `..._once_free_grant_is_spent`) and `test_stream_gating_stays_plain_json` both asserted the
+   old free-tenant gating. They now spend the grant first — the only state where the free plan
+   is genuinely gated. Added `test_generate_spends_the_free_grant_on_a_free_tenant` as
+   end-to-end coverage that the first free generation succeeds and the second is refused.
+3. **Task 1 Step 7's predicted regression was real**, exactly as described: two fixtures in
+   `test_setup_status.py` created draft courses and now need `is_published=True`.
+4. **`consume_free_grant` is wired at three sites**, not two: the SSE `commit()` closure and the
+   JSON path in `views.py`, plus the autopilot Celery task in `tasks.py`. A free coach who
+   enables autopilot burns the grant on its first run — consistent with "one, ever".
+5. **Known follow-up, not fixed here (frontend, owned by plans 2-5):** the blog admin page
+   renders `blog.creditsLeft` with `remaining: 1, limit: 0` for a free coach ("1 of 0 credits
+   left"), because `eligible` is now true while `limit` stays 0. The additive `free_grant`
+   boolean exists precisely so the UI can special-case this; doing so means i18n copy in both
+   locales. `BlogAiStatus` in `frontend-customer/src/lib/blog-api.ts` does not yet declare
+   `free_grant`.
+6. **No git worktree was used.** The Docker dev stack bind-mounts the primary working directory
+   and every verification runs `docker compose exec django`, so a worktree would be invisible to
+   the container. Later plans in this series should assume the same.
+7. **Test-DB flakiness confirmed twice.** A block of `test_seed_dev_tenants` failures under
+   `-n auto` is dirty-reused-DB or cross-worker interference, not a real break — it cleared on
+   `--create-db`, and `main` produced its own unrelated teardown errors in the same area.
