@@ -36,8 +36,19 @@ const SIGNED_IN_HIDDEN = new Set(["/about", "/faq"]);
 
 function Brand({ config }: { config: TenantConfig | null }) {
   const layout = config?.navbar_config?.layout ?? "classic";
+  // Curated marks carry no wordmark, so the header pairs them with the brand
+  // name; "stacked" puts the name under the mark (two-line lockup). Chosen in
+  // the signup wizard's logo step, editable later in the navbar admin tab.
+  const stacked = config?.navbar_config?.logo_layout === "stacked";
   return (
-    <NavLink href="/" className="flex items-center gap-2 text-lg font-bold">
+    <NavLink
+      href="/"
+      className={`flex text-lg font-bold ${
+        stacked
+          ? "flex-col items-start gap-0.5 leading-tight"
+          : "items-center gap-2"
+      }`}
+    >
       {config?.logo_url ? (
         <img
           src={config.logo_url}
@@ -48,7 +59,9 @@ function Brand({ config }: { config: TenantConfig | null }) {
         <BookOpen className="h-5 w-5 text-primary" />
       )}
       {showBrandName(config) && (
-        <span className="font-display">{config?.brand_name || "Welcome"}</span>
+        <span className={`font-display ${stacked ? "text-sm" : ""}`}>
+          {config?.brand_name || "Welcome"}
+        </span>
       )}
     </NavLink>
   );

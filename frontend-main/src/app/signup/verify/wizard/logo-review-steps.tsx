@@ -17,6 +17,7 @@ import { StaleContainer } from "@shared/ui/stale-container";
 import { getCuratedLogos, readWizardState } from "@/lib/wizard/api";
 import type {
   CuratedLogoItem,
+  CuratedLogoLayout,
   WizardAnswers,
   WizardCatalog,
   WizardLogoAnswer,
@@ -31,6 +32,56 @@ import {
   itemVariants,
   listVariants,
 } from "./steps";
+
+/** Curated marks shown per page in the wizard's Ready-made grid. */
+const PAGE_SIZE = 12;
+
+/** Lockups a curated mark can be paired with. `name_only` is deliberately
+ * absent: hiding the mark you just picked is what the Wordmark door already
+ * does, so offering it here would be a second route to the same result. */
+const CURATED_LAYOUTS = ["horizontal", "stacked"] as const;
+
+/** Mark + brand name in the coach's chosen arrangement. Shared by the gallery
+ * cards and the lockup picker so both previews can never drift apart, and it
+ * mirrors the public header's Brand component (which reads the same
+ * navbar_config.logo_layout the wizard persists). */
+function LogoLockup({
+  imageUrl,
+  alt,
+  brand,
+  layout,
+  ink,
+  fontStack,
+  size = "sm",
+}: {
+  imageUrl: string;
+  alt: string;
+  brand: string;
+  layout: CuratedLogoLayout;
+  ink: string;
+  fontStack: string;
+  size?: "sm" | "lg";
+}) {
+  const stacked = layout === "stacked";
+  const img = size === "lg" ? "h-12 w-12" : "h-10 w-10";
+  const text = size === "lg" ? "text-[14px]" : "text-[12px]";
+  return (
+    <span
+      className={`flex rounded-lg bg-white p-2 ${
+        stacked ? "flex-col items-center gap-1" : "items-center gap-2"
+      }`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
+      <img src={imageUrl} alt={alt} className={`${img} object-contain`} />
+      <span
+        className={`max-w-full truncate font-semibold ${text}`}
+        style={{ color: ink, fontFamily: fontStack }}
+      >
+        {brand}
+      </span>
+    </span>
+  );
+}
 
 export function LogoStep({
   token,
@@ -126,6 +177,32 @@ export function LogoStep({
   const stack = FONT_STACKS[font ?? "Inter"] ?? FONT_STACKS.Inter;
   const mode = value?.mode ?? "wordmark";
 
+  // "Show more" pages deeper into the SAME ranked list rather than
+  // reshuffling: with ~780 marks there is a long tail of still-relevant
+  // options, and randomising would throw away the niche ranking that put
+  // the good matches on page 1.
+  const [page, setPage] = useState(0);
+  // A new rank arriving (or the coach changing niche upstream) re-sorts the
+  // list under the current page, so page 2 would no longer mean what it did.
+  useEffect(() => setPage(0), [ranked.length, aiRank]);
+
+  const visible = useMemo(() => {
+    const slice = ranked.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+    // Keep the coach's pick on screen after paging away from it — a selection
+    // that scrolls out of view reads as though the app dropped the choice.
+    if (mode !== "curated" || value?.curated_id == null) return slice;
+    if (slice.some((item) => item.id === value.curated_id)) return slice;
+    const picked = ranked.find((item) => item.id === value.curated_id);
+    return picked ? [picked, ...slice.slice(0, PAGE_SIZE - 1)] : slice;
+  }, [ranked, page, mode, value?.curated_id]);
+
+  const hasMore = (page + 1) * PAGE_SIZE < ranked.length;
+
+  const selectedItem =
+    mode === "curated" && value?.curated_id != null
+      ? ranked.find((item) => item.id === value.curated_id)
+      : undefined;
+
   return (
     <div>
       <SlideHeader heading={t("logo.heading")} subhead={t("logo.subhead")} />
@@ -188,34 +265,79 @@ export function LogoStep({
               // blank, so a half-made choice stays on screen.
               <StaleContainer pending={rankPending} showLine={false}>
                 <div className="grid grid-cols-2 gap-2.5">
-                  {ranked.slice(0, 12).map((item) => (
+                  {visible.map((item) => (
                     <OptionCard
                       key={item.id}
                       selected={
                         mode === "curated" && value?.curated_id === item.id
                       }
                       onSelect={() =>
-                        onChange({ mode: "curated", curated_id: item.id })
+                        onChange({
+                          mode: "curated",
+                          curated_id: item.id,
+                          // Keep the coach's lockup choice when they switch
+                          // marks; default only on a first pick.
+                          layout: value?.layout ?? "horizontal",
+                        })
                       }
                       title={item.title}
                     >
-                      <span className="flex items-center gap-2 rounded-lg bg-white p-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
-                        <img
-                          src={item.image_url}
-                          alt={item.title}
-                          className="h-10 w-10 object-contain"
-                        />
-                        <span
-                          className="truncate text-[12px] font-semibold"
-                          style={{ color: s.ink, fontFamily: stack }}
-                        >
-                          {brand}
-                        </span>
-                      </span>
+                      <LogoLockup
+                        imageUrl={item.image_url}
+                        alt={item.title}
+                        brand={brand}
+                        layout={value?.layout ?? "horizontal"}
+                        ink={s.ink}
+                        fontStack={stack}
+                      />
                     </OptionCard>
                   ))}
                 </div>
+                {hasMore && (
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => p + 1)}
+                    className="mt-2.5 w-full rounded-xl border border-foreground/[0.08] bg-foreground/[0.02] px-3 py-2 text-[12.5px] font-semibold text-muted-foreground transition-colors hover:border-foreground/20 hover:bg-foreground/[0.04] hover:text-foreground"
+                  >
+                    {t("logo.curated.showMore")}
+                  </button>
+                )}
+
+                {/* Only meaningful once a mark is chosen — there is nothing to
+                 * arrange until then, so it stays out of the way. */}
+                {mode === "curated" && selectedItem && (
+                  <div className="mt-3">
+                    <p className="mb-2 text-[12.5px] font-semibold text-muted-foreground">
+                      {t("logo.curated.layout.title")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {CURATED_LAYOUTS.map((id) => (
+                        <OptionCard
+                          key={id}
+                          selected={(value?.layout ?? "horizontal") === id}
+                          onSelect={() =>
+                            onChange({
+                              mode: "curated",
+                              curated_id: selectedItem.id,
+                              layout: id,
+                            })
+                          }
+                          title={t(`logo.curated.layout.${id}`)}
+                        >
+                          <LogoLockup
+                            imageUrl={selectedItem.image_url}
+                            alt={selectedItem.title}
+                            brand={brand}
+                            layout={id}
+                            ink={s.ink}
+                            fontStack={stack}
+                            size="lg"
+                          />
+                        </OptionCard>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </StaleContainer>
             )}
           </div>

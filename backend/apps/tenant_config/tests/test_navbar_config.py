@@ -141,3 +141,16 @@ class TestNavbarLogoControls:
     def test_show_brand_name_defaults_false_and_coerces(self):
         assert _validate({})["show_brand_name"] is False
         assert _validate({"show_brand_name": 1})["show_brand_name"] is True
+
+    def test_logo_layout_defaults_to_horizontal(self):
+        # Every tenant provisioned before the wizard's lockup step has no
+        # logo_layout — they must keep rendering the original side-by-side.
+        assert _validate({})["logo_layout"] == "horizontal"
+
+    def test_logo_layout_accepts_presets(self):
+        for layout in ("horizontal", "stacked"):
+            assert _validate({"logo_layout": layout})["logo_layout"] == layout
+
+    def test_logo_layout_rejects_unknown(self):
+        with pytest.raises(serializers.ValidationError):
+            _validate({"logo_layout": "diagonal"})

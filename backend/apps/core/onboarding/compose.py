@@ -403,4 +403,11 @@ def apply_wizard_logo(config, answers, tenant) -> None:
     config.logo_url = ""
     navbar = dict(config.navbar_config or {})
     navbar["show_brand_name"] = True
+    # The mark carries no wordmark of its own, so the header pairs it with the
+    # brand name; logo_layout is which arrangement the coach picked in the
+    # wizard. Unknown/absent falls back to the historical horizontal lockup.
+    from apps.core.onboarding.wizard_catalog import CURATED_LOGO_LAYOUTS
+
+    layout = logo.get("layout")
+    navbar["logo_layout"] = layout if layout in CURATED_LOGO_LAYOUTS else "horizontal"
     config.navbar_config = navbar

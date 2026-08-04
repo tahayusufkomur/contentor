@@ -27,6 +27,9 @@ export interface NavbarConfig {
   /** Show the brand-name text even when a logo image exists (default false —
    * saved studio logos already contain the wordmark). */
   show_brand_name?: boolean;
+  /** Mark-and-name arrangement when both render: "horizontal" (name beside the
+   * mark) or "stacked" (name under it). Missing renders as "horizontal". */
+  logo_layout?: "horizontal" | "stacked";
 }
 
 export interface LandingHero {

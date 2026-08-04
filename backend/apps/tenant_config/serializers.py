@@ -25,6 +25,11 @@ _UNSAFE_URL_PREFIXES = ("javascript:", "vbscript:")
 # Navbar layout presets the public header can render.
 _NAVBAR_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
 
+# How the header pairs a mark with the brand name. Set by the signup wizard's
+# curated-logo step (core.onboarding.wizard_catalog.CURATED_LOGO_LAYOUTS) and
+# editable afterwards in the navbar admin tab.
+_LOGO_LAYOUTS = {"horizontal", "stacked"}
+
 # Logo Studio recipe validation (schema v2 with v1 upgrade) lives in
 # logo_recipe.py; validate_logo_recipe below delegates to it.
 
@@ -99,6 +104,10 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("logo_size must be one of: lg, md, sm, xl.")
         cleaned["logo_size"] = logo_size
         cleaned["show_brand_name"] = bool(cleaned.get("show_brand_name", False))
+        logo_layout = cleaned.get("logo_layout") or "horizontal"
+        if logo_layout not in _LOGO_LAYOUTS:
+            raise serializers.ValidationError("logo_layout must be one of: " + ", ".join(sorted(_LOGO_LAYOUTS)) + ".")
+        cleaned["logo_layout"] = logo_layout
         return cleaned
 
     def validate_pages(self, value):

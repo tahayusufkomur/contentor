@@ -22,9 +22,16 @@ export interface DescriptionFollowups {
   items: { q: string; a: string }[];
 }
 
+/** How a curated mark is paired with the brand name. Mirrors the
+ * `navbar_config.logo_layout` the public header reads; a subset of the Logo
+ * Studio's RecipeLayout (the AI path composes its own lockup). */
+export type CuratedLogoLayout = "horizontal" | "stacked";
+
 export interface WizardLogoAnswer {
   mode: "wordmark" | "curated" | "ai";
   curated_id: number | null;
+  /** "curated" mode only: mark-and-name arrangement. Absent = horizontal. */
+  layout?: CuratedLogoLayout;
   /** "ai" mode only: the composed recipe (LogoRenderer input, same shape
    * the Logo Studio produces) and the S3 keys the client-rendered PNGs were
    * staged under by wizardLogoUpload — applied at provisioning time. */

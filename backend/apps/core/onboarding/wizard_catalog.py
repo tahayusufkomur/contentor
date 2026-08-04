@@ -74,6 +74,12 @@ HERO_STYLES = ("centered", "split", "minimal")  # == hero block "layout" enum
 
 LOGO_MODES = ("wordmark", "curated", "ai")
 
+# How a curated mark pairs with the brand name in the public header. Kept in
+# sync with navbar_config.logo_layout (tenant_config.serializers) and the
+# frontend's CuratedLogoLayout. "name_only" is intentionally not offered — the
+# wordmark mode already covers "no mark".
+CURATED_LOGO_LAYOUTS = ("horizontal", "stacked")
+
 # Per-page layout options. "blocks" is the block-TYPE sequence the layout
 # seeds (compose.py builds the actual block dicts); the frontend draws its
 # thumbnail skeletons from the same sequence. First option = recommended.
@@ -217,6 +223,9 @@ def validate_answers(partial: dict) -> list[str]:
                 errors.append("logo.curated_id must be an integer for curated mode")
             if value.get("curated_id") is not None and not isinstance(value.get("curated_id"), int):
                 errors.append("logo.curated_id must be an integer or null")
+            layout = value.get("layout")
+            if layout is not None and layout not in CURATED_LOGO_LAYOUTS:
+                errors.append("logo.layout must be one of: " + ", ".join(CURATED_LOGO_LAYOUTS))
             recipe = value.get("recipe")
             if mode == "ai":
                 if not isinstance(recipe, dict):
@@ -260,6 +269,7 @@ def catalog_payload() -> dict:
         "navbar_layouts": list(NAVBAR_LAYOUTS),
         "hero_styles": list(HERO_STYLES),
         "logo_modes": list(LOGO_MODES),
+        "curated_logo_layouts": list(CURATED_LOGO_LAYOUTS),
         "page_layouts": {
             page: [{"id": o["id"], "blocks": list(o["blocks"])} for o in options]
             for page, options in PAGE_LAYOUTS.items()

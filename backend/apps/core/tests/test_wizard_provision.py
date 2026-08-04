@@ -164,6 +164,41 @@ def test_curated_logo_applied_at_provision(cleanup):
             assert config.logo is not None
             assert config.logo.s3_key == "platform/curated-logos/lotus.png"
             assert config.navbar_config["show_brand_name"] is True
+            # No layout answered -> the original side-by-side lockup.
+            assert config.navbar_config["logo_layout"] == "horizontal"
+    finally:
+        conn.set_schema_to_public()
+        curated.delete()
+
+
+@pytest.mark.parametrize("layout,expected", [("stacked", "stacked"), ("diagonal", "horizontal")])
+def test_curated_logo_layout_reaches_navbar_config(cleanup, layout, expected):
+    """The wizard's lockup choice must land in navbar_config.logo_layout — that
+    key is what the public header reads to stack the name under the mark. An
+    unknown value falls back rather than reaching the header."""
+    from django.db import connection as conn
+
+    from apps.core.models import CuratedLogo
+
+    conn.set_schema_to_public()
+    curated = CuratedLogo.objects.create(
+        title="Lotus",
+        prompt="a lotus",
+        tags="yoga",
+        image_key="platform/curated-logos/lotus.png",
+        enabled=True,
+    )
+    slug = f"prov-lockup-{expected}"
+    cleanup.append(slug)
+    answers = {**WIZARD_ANSWERS, "logo": {"mode": "curated", "curated_id": curated.id, "layout": layout}}
+    try:
+        tenant = _provision(_make_tenant(slug, answers))
+        with tenant_context(tenant):
+            from apps.tenant_config.models import TenantConfig
+
+            config = TenantConfig.objects.first()
+            assert config.navbar_config["logo_layout"] == expected
+            assert config.navbar_config["show_brand_name"] is True
     finally:
         conn.set_schema_to_public()
         curated.delete()

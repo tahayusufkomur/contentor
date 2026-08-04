@@ -78,6 +78,23 @@ def test_catalog_endpoint_serves_payload():
     assert "yoga" in data["niches"]
     assert len(data["page_layouts"]["home"]) == 3
     assert data["recommended"]["logo"]["mode"] == "wordmark"
+    assert data["curated_logo_layouts"] == ["horizontal", "stacked"]
+
+
+@pytest.mark.parametrize("layout", ["horizontal", "stacked"])
+def test_validate_answers_accepts_curated_logo_layouts(layout):
+    assert wc.validate_answers({"logo": {"mode": "curated", "curated_id": 1, "layout": layout}}) == []
+
+
+def test_validate_answers_omitted_layout_is_valid():
+    # Absent layout is the pre-lockup shape and means horizontal; the wizard
+    # only sends it once the coach picks a mark.
+    assert wc.validate_answers({"logo": {"mode": "curated", "curated_id": 1}}) == []
+
+
+def test_validate_answers_rejects_unknown_curated_logo_layout():
+    errors = wc.validate_answers({"logo": {"mode": "curated", "curated_id": 1, "layout": "diagonal"}})
+    assert any("logo.layout" in e for e in errors)
 
 
 # NOTE: recipes below are full v2 shapes (mark/badge/colors all present with

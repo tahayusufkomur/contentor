@@ -222,7 +222,13 @@
         "desc": "Pick a mark from our gallery",
         "loading": "Loading our gallery…",
         "ranking": "Finding your best matches…",
-        "failed": "Couldn't load the ready-made gallery."
+        "failed": "Couldn't load the ready-made gallery.",
+        "showMore": "Show more logos",
+        "layout": {
+          "title": "How should it sit with your name?",
+          "horizontal": "Side by side",
+          "stacked": "Stacked"
+        }
       },
       "ai": {
         "title": "Create with AI",

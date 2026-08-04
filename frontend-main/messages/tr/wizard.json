@@ -222,7 +222,13 @@
         "desc": "Galeriden bir amblem seç",
         "loading": "Galerimiz yükleniyor…",
         "ranking": "Sana en uygun olanlar bulunuyor…",
-        "failed": "Hazır logo galerisi yüklenemedi."
+        "failed": "Hazır logo galerisi yüklenemedi.",
+        "showMore": "Daha fazla logo göster",
+        "layout": {
+          "title": "Adınla nasıl dursun?",
+          "horizontal": "Yan yana",
+          "stacked": "Alt alta"
+        }
       },
       "ai": {
         "title": "Yapay zekâ ile tasarla",
