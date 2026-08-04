@@ -37,21 +37,28 @@ def _int_or_none(value, max_value):
     return int(value) if isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= max_value else None
 
 
+def _text(value, max_len):
+    # json.loads decodes \u0000 escapes in the activity payload into real
+    # NULs, which Postgres text columns reject — same batch-poisoning
+    # DataError as the int/ip guards above.
+    return str(value or "").replace("\x00", "")[:max_len]
+
+
 def _request_event(parsed):
     a = parsed.activity
     return RequestEvent(
         ts=parsed.ts,
-        kind=str(a.get("kind") or RequestEvent.KIND_API)[:10],
-        tenant=str(a.get("tenant") or "")[:63],
-        user_label=str(a.get("user") or "")[:254],
+        kind=_text(a.get("kind") or RequestEvent.KIND_API, 10),
+        tenant=_text(a.get("tenant"), 63),
+        user_label=_text(a.get("user"), 254),
         ip=_ip_or_none(a.get("ip")),
-        session_id=str(a.get("session_id") or "")[:36],
-        method=str(a.get("method") or "")[:8],
-        path=str(a.get("path") or "")[:512],
+        session_id=_text(a.get("session_id"), 36),
+        method=_text(a.get("method"), 8),
+        path=_text(a.get("path"), 512),
         status=_int_or_none(a.get("status"), 32767),
         duration_ms=_int_or_none(a.get("duration_ms"), 2_147_483_647),
-        referrer=str(a.get("referrer") or "")[:512],
-        user_agent=str(a.get("user_agent") or "")[:256],
+        referrer=_text(a.get("referrer"), 512),
+        user_agent=_text(a.get("user_agent"), 256),
         line_hash=line_digest(parsed.message),
     )
 

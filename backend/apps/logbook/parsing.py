@@ -129,7 +129,10 @@ def _parse_app_line(message: str) -> tuple[str, str, str, str, str, dict | None]
 
 
 def parse_event(raw: dict) -> ParsedEvent | None:
-    message = (raw.get("message") or "").rstrip()
+    # Postgres text columns reject NUL (0x00) — e.g. Django logging a /%00
+    # request path — and one poisoned line would DataError the whole
+    # bulk_create batch, which Vector then retries forever.
+    message = (raw.get("message") or "").replace("\x00", "").rstrip()
     if not message.strip():
         return None
     container = service_from_container(raw.get("container_name") or "")

@@ -125,6 +125,35 @@ def test_activity_hostile_values_coerced_not_500():
 
 
 @override_settings(LOGS_INGEST_TOKEN=TOKEN)
+def test_nul_bytes_in_message_stripped_not_500():
+    # Postgres text columns reject NUL (0x00). A scanner requesting /%00 makes
+    # Django log a line with a raw NUL — that single line must not DataError
+    # the whole batch (Vector would retry the poisoned batch forever).
+    events = [
+        _event("2026-07-19T12:00:07+0000 ERROR   apps.blog [tenant=-] bad \x00 byte"),
+        _event("2026-07-19T12:00:08+0000 ERROR   apps.blog [tenant=-] clean sibling"),
+    ]
+    resp = _post(events)
+    assert resp.status_code == 200
+    assert resp.json() == {"accepted": 2, "logs": 2, "activity": 0}
+    assert LogEntry.objects.filter(message="bad  byte").exists()
+    assert LogEntry.objects.filter(message="clean sibling").exists()
+
+
+@override_settings(LOGS_INGEST_TOKEN=TOKEN)
+def test_nul_bytes_in_activity_payload_stripped_not_500():
+    # json.dumps escapes NUL as \u0000, which json.loads decodes back into a
+    # real NUL inside RequestEvent text fields — same poison-batch failure.
+    payload = {"kind": "api", "path": "/p\x00wn/", "user_agent": "sc\x00anner", "status": 404}
+    line = f"2026-07-19T12:00:09+0000 INFO    {ACTIVITY_LOGGER} [tenant=-] [user=-] " + json.dumps(payload)
+    resp = _post([_event(line)])
+    assert resp.status_code == 200
+    assert resp.json() == {"accepted": 1, "logs": 0, "activity": 1}
+    ev = RequestEvent.objects.get()
+    assert ev.path == "/pwn/" and ev.user_agent == "scanner" and ev.status == 404
+
+
+@override_settings(LOGS_INGEST_TOKEN=TOKEN)
 def test_oversized_batch_rejected():
     events = [_event(f"line {i}") for i in range(501)]
     assert _post(events).status_code == 413
