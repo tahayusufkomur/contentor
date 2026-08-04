@@ -87,8 +87,9 @@ def _pages_digest(tenant):
         cfg = TenantConfig.objects.first()
         pages = (cfg.pages if cfg else None) or {}
     lines = []
-    for page, blocks_ in pages.items():
-        if not isinstance(blocks_, list):
+    for page, page_value in pages.items():
+        blocks_ = blocks.page_blocks(page_value)
+        if blocks_ is None:
             continue
         items = ", ".join(
             f"{b.get('id')}({b.get('type')}: {str(b.get('heading', ''))[:40]})" for b in blocks_ if isinstance(b, dict)

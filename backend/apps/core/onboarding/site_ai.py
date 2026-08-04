@@ -132,10 +132,14 @@ def diff_pages(old_pages, new_pages):
     boundary can't add or remove blocks, so an unmatched id is noise. A
     changed non-string field (e.g. faq `items`) yields old/new of None: it
     reads as "updated" in the panel rather than a text diff."""
+    from apps.core.copilot.blocks import page_blocks
+
     changes = []
-    for page_key, new_blocks in (new_pages or {}).items():
-        old_by_id = {b.get("id"): b for b in (old_pages or {}).get(page_key) or [] if isinstance(b, dict)}
-        for block in new_blocks if isinstance(new_blocks, list) else []:
+    for page_key, new_page in (new_pages or {}).items():
+        new_blocks = page_blocks(new_page) or []
+        old_blocks = page_blocks((old_pages or {}).get(page_key)) or []
+        old_by_id = {b.get("id"): b for b in old_blocks if isinstance(b, dict)}
+        for block in new_blocks:
             if not isinstance(block, dict):
                 continue
             old = old_by_id.get(block.get("id"))

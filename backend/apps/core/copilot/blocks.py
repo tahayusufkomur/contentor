@@ -46,9 +46,20 @@ def build_block(block_type, fields):
     return block
 
 
+def page_blocks(page_value):
+    """The canonical pages shape wraps each page's blocks: {"blocks": [...]}
+    (see ai_compose._apply). Legacy/fixture bare lists are tolerated.
+    Returns the blocks list, or None when the value is neither shape."""
+    if isinstance(page_value, dict) and isinstance(page_value.get("blocks"), list):
+        return page_value["blocks"]
+    if isinstance(page_value, list):
+        return page_value
+    return None
+
+
 def _page_blocks(pages, page):
-    blocks_ = (pages or {}).get(page)
-    if not isinstance(blocks_, list):
+    blocks_ = page_blocks((pages or {}).get(page))
+    if blocks_ is None:
         raise BlockOpError(f"unknown page: {page}")
     return blocks_
 

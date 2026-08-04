@@ -71,7 +71,7 @@ def test_execute_add_block_mutates_pages(client):
     from apps.tenant_config.models import TenantConfig
 
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
-    cfg.pages = {"home": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
     cfg.save(update_fields=["pages"])
     token = copilot_tokens.stash_action(
         "shared_test",
@@ -85,7 +85,7 @@ def test_execute_add_block_mutates_pages(client):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
     cfg.refresh_from_db()
-    assert [b["id"] for b in cfg.pages["home"]] == ["blk_hero", "blk_new1234"]
+    assert [b["id"] for b in cfg.pages["home"]["blocks"]] == ["blk_hero", "blk_new1234"]
 
 
 def test_execute_edit_pages_applies_and_reports_changes(client):
