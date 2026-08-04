@@ -14,7 +14,7 @@ User-facing name: **"Your AI assistant"** (EN) / **"Yapay zekâ asistanınız"**
 
 1. **Surface:** floating bubble on *every* page of the tenant site, coach-only — not confined to `/?edit=1` edit mode or the admin SPA.
 2. **Selection:** *anything visible* is clickable. Selections that map to a builder block carry the block id; anything else carries a best-effort description and the AI negotiates ("that's a course card — I can retitle the course, want that?").
-3. **Conversation:** the model asks clarifying questions only when genuinely unsure, max 2 asks per request, then it must act (answer or propose).
+3. **Conversation:** the model asks clarifying questions only when genuinely unsure. **No hard ask-cap this iteration** — steering is prompt-level ("prefer acting once intent is clear"). If it over-asks in practice, a superadmin-configurable cap is the Phase 3 knob (adminkit-registered platform setting).
 4. **Metering: none for the coach.** No quota checks, no upsell states, no credits. The platform-global monthly USD kill-switch stays as a silent wallet backstop; when tripped the widget says the assistant is resting — never "upgrade". `PlatformPlan.max_site_ai_updates` stays in the schema but nothing consumes it (revisit later).
 5. **Old panel:** `/admin/site-ai` becomes a one-button launcher that deep-links to the tenant site with the widget open (`/?copilot=1`). Its form/quota UI and the `site_ai_admin` preview/apply endpoints are retired.
 
@@ -24,7 +24,7 @@ Per coach message the model returns a **structured union** (pydantic-validated v
 
 ```
 { kind: "answer", text }                      — conversational reply
-{ kind: "ask",    text }                      — clarifying question (≤2 per request, then must act)
+{ kind: "ask",    text }                      — clarifying question (uncapped; prompt steers toward acting)
 { kind: "actions", note?, actions: [Action] } — one or more typed proposals
 ```
 
@@ -85,7 +85,7 @@ Public block wrappers get stamped with `data-block-id` (small renderer change in
 
 ## Testing
 
-- **Backend:** pytest per concern — union parsing/validation, ask-cap enforcement, action token sign/verify/single-use, each executor (block add/remove/move as pure-function tests; edit_pages threading; course/event creation against real serializers), kill-switch refusal.
+- **Backend:** pytest per concern — union parsing/validation, action token sign/verify/single-use, each executor (block add/remove/move as pure-function tests; edit_pages threading; course/event creation against real serializers), kill-switch refusal.
 - **Frontend:** lib-level tests for selection payload building and transcript reduction (repo convention: lib-only, no React harness).
 - **e2e:** one spec driving the widget with a stubbed SSE conversation: open → select → ask-turn → action card → confirm → result. Plus the launcher deep link.
 
@@ -93,4 +93,4 @@ Public block wrappers get stamped with `data-block-id` (small renderer change in
 
 1. **Phase 1 — copilot core + design powers:** package, converse/execute, widget, selection overlay, `edit_pages` + `add_block`/`remove_block`/`move_block`, panel→launcher, retire old endpoints. Independently shippable; delivers the original ask.
 2. **Phase 2 — content powers:** `create_course`, `create_event`, `create_blog_post` (draft-only creates).
-3. **Phase 3 — chrome + knowledge:** `edit_theme`/`edit_navbar`, ground answers in the platform KB (fold in Ask Contentor's knowledge for "how do I get paid?"-class questions).
+3. **Phase 3 — chrome + knowledge:** `edit_theme`/`edit_navbar`, ground answers in the platform KB (fold in Ask Contentor's knowledge for "how do I get paid?"-class questions), and a superadmin-configurable ask-cap platform setting (adminkit) if the uncapped conversation over-asks in practice.
