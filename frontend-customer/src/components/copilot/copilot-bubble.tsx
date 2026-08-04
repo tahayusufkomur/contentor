@@ -43,7 +43,10 @@ export function CopilotBubble() {
     async () => {
       const message = input.trim();
       if (!message) return;
-      const withCoach: ChatEntry[] = [...entries, { role: "coach", text: message }];
+      const withCoach: ChatEntry[] = [
+        ...entries,
+        { role: "coach", text: message },
+      ];
       setEntries(withCoach);
       setInput("");
       const controller = new AbortController();
@@ -81,19 +84,34 @@ export function CopilotBubble() {
 
   return (
     <>
-      {selecting && <SelectionOverlay onSelect={addSelection} onExit={() => setSelecting(false)} />}
+      {selecting && (
+        <SelectionOverlay
+          onSelect={addSelection}
+          onExit={() => setSelecting(false)}
+        />
+      )}
       <div
         data-copilot-ui
         className="fixed bottom-5 right-5 z-[60] flex h-[min(34rem,80vh)] w-[min(24rem,calc(100vw-2.5rem))] flex-col rounded-xl border bg-background shadow-xl"
       >
         <div className="flex items-center justify-between border-b p-3">
           <p className="text-sm font-semibold">{t("title")}</p>
-          <Button size="sm" variant="ghost" onClick={() => setOpen(false)} aria-label={t("close")}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setOpen(false)}
+            aria-label={t("close")}
+          >
             <X className="size-4" aria-hidden />
           </Button>
         </div>
-        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-3 text-sm">
-          {entries.length === 0 && <p className="text-muted-foreground">{t("empty")}</p>}
+        <div
+          ref={scrollRef}
+          className="flex-1 space-y-3 overflow-y-auto p-3 text-sm"
+        >
+          {entries.length === 0 && (
+            <p className="text-muted-foreground">{t("empty")}</p>
+          )}
           {entries.map((e, i) => (
             <div key={i}>
               <div
@@ -105,7 +123,9 @@ export function CopilotBubble() {
               >
                 {e.text === "__unavailable__" ? t("resting") : e.text}
               </div>
-              {e.cards?.map((card, j) => <ActionCard key={`${i}-${j}`} card={card} />)}
+              {e.cards?.map((card, j) => (
+                <ActionCard key={`${i}-${j}`} card={card} />
+              ))}
             </div>
           ))}
           {sending && <p className="text-muted-foreground">{t("thinking")}</p>}
@@ -117,7 +137,9 @@ export function CopilotBubble() {
                 key={i}
                 type="button"
                 className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground"
-                onClick={() => setSelections((prev) => prev.filter((_, j) => j !== i))}
+                onClick={() =>
+                  setSelections((prev) => prev.filter((_, j) => j !== i))
+                }
                 title={t("removeSelection")}
               >
                 {s.block_id ?? s.tag}: {s.text.slice(0, 24)} ✕
@@ -126,7 +148,11 @@ export function CopilotBubble() {
           </div>
         )}
         <div className="flex gap-2 border-t p-3">
-          <Button size="sm" variant={selecting ? "brand" : "outline"} onClick={() => setSelecting((v) => !v)}>
+          <Button
+            size="sm"
+            variant={selecting ? "brand" : "outline"}
+            onClick={() => setSelecting((v) => !v)}
+          >
             {t("select")}
           </Button>
           <input
@@ -141,7 +167,12 @@ export function CopilotBubble() {
             placeholder={t("placeholder")}
             className="flex-1 rounded-lg border bg-background px-2 text-sm"
           />
-          <Button size="sm" onClick={send} loading={sending} loadingText={t("sending")}>
+          <Button
+            size="sm"
+            onClick={send}
+            loading={sending}
+            loadingText={t("sending")}
+          >
             {t("send")}
           </Button>
         </div>

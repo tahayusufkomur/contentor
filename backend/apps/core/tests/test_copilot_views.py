@@ -19,7 +19,11 @@ HOST = "shared-test.localhost"
 @pytest.fixture()
 def coach(tenant_ctx):
     return User.objects.create_user(
-        email="copilot-coach@x.com", name="Coach", password="x", role="owner", is_staff=True  # noqa: S106
+        email="copilot-coach@x.com",
+        name="Coach",
+        password="x",
+        role="owner",
+        is_staff=True,  # noqa: S106
     )
 
 
@@ -38,7 +42,9 @@ def _frames(resp):
 def test_converse_streams_phase_then_done_and_records_spend(client):
     with (
         mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
-        mock.patch("apps.core.copilot.views.engine.run_turn", return_value=({"kind": "answer", "text": "hi"}, Decimal("0.02"))),
+        mock.patch(
+            "apps.core.copilot.views.engine.run_turn", return_value=({"kind": "answer", "text": "hi"}, Decimal("0.02"))
+        ),
         mock.patch("apps.core.copilot.views.ai_compose.record_spend") as spend,
     ):
         resp = client.post(
@@ -69,7 +75,12 @@ def test_execute_add_block_mutates_pages(client):
     cfg.save(update_fields=["pages"])
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "add_block", "page": "home", "block": {"id": "blk_new1234", "type": "cta", "enabled": True, "heading": "Join"}, "after_block_id": "blk_hero"},
+        {
+            "kind": "add_block",
+            "page": "home",
+            "block": {"id": "blk_new1234", "type": "cta", "enabled": True, "heading": "Join"},
+            "after_block_id": "blk_hero",
+        },
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content

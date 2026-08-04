@@ -6,16 +6,18 @@ The system prompt is a module constant — byte-identical across tenants
 (prompt-cache rule). Everything tenant-specific rides in the user turn."""
 
 import json
-from decimal import Decimal
+import logging
+from typing import Annotated, Literal
 
 from django.conf import settings
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
-from typing import Annotated, Literal, Union
 
 from apps.core import ai as core_ai
 from apps.core.copilot import blocks, tokens
 from apps.core.onboarding import site_ai
+
+logger = logging.getLogger(__name__)
 
 MAX_TRANSCRIPT = 20
 MAX_SELECTIONS = 5
@@ -65,7 +67,7 @@ class MoveBlockAction(BaseModel):
 
 
 CopilotAction = Annotated[
-    Union[EditPagesAction, AddBlockAction, RemoveBlockAction, MoveBlockAction],
+    EditPagesAction | AddBlockAction | RemoveBlockAction | MoveBlockAction,
     Field(discriminator="kind"),
 ]
 
@@ -89,9 +91,7 @@ def _pages_digest(tenant):
         if not isinstance(blocks_, list):
             continue
         items = ", ".join(
-            f"{b.get('id')}({b.get('type')}: {str(b.get('heading', ''))[:40]})"
-            for b in blocks_
-            if isinstance(b, dict)
+            f"{b.get('id')}({b.get('type')}: {str(b.get('heading', ''))[:40]})" for b in blocks_ if isinstance(b, dict)
         )
         lines.append(f"{page}: {items}")
     return "\n".join(lines) or "(no pages yet)"
@@ -128,7 +128,9 @@ def _card(tenant, action):
             "title": action.instruction[:120],
             "detail": f"{len(changes)} field(s) change",
             "changes": changes,
-            "token": tokens.stash_action(schema, {"kind": "edit_pages", "pages": pages, "extras": extras, "changes_count": len(changes)}),
+            "token": tokens.stash_action(
+                schema, {"kind": "edit_pages", "pages": pages, "extras": extras, "changes_count": len(changes)}
+            ),
         }
     if isinstance(action, AddBlockAction):
         block = blocks.build_block(action.block_type, action.fields)
@@ -137,7 +139,10 @@ def _card(tenant, action):
             "kind": "add_block",
             "title": f"Add {action.block_type} to {action.page}",
             "detail": detail[:500],
-            "token": tokens.stash_action(schema, {"kind": "add_block", "page": action.page, "block": block, "after_block_id": action.after_block_id}),
+            "token": tokens.stash_action(
+                schema,
+                {"kind": "add_block", "page": action.page, "block": block, "after_block_id": action.after_block_id},
+            ),
         }
     if isinstance(action, RemoveBlockAction):
         return {
@@ -169,6 +174,7 @@ def run_turn(tenant, transcript, selections, message):
         try:
             cards.append(_card(tenant, action))
         except Exception:  # invalid page/block id, compose failure — drop this card
+            logger.info("copilot: dropped unusable action %s", getattr(action, "kind", "?"), exc_info=True)
             continue
     if not cards:
         text = parsed.text or "I couldn't turn that into a change I can make — could you rephrase?"

@@ -3,7 +3,9 @@ import { buildSelectionPayload } from "@/lib/copilot/selection";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
 import type { ChatEntry } from "@/lib/copilot/types";
 
-const el = (over: Partial<Parameters<typeof buildSelectionPayload>[0]> = {}) => ({
+const el = (
+  over: Partial<Parameters<typeof buildSelectionPayload>[0]> = {},
+) => ({
   tagName: "H2",
   textContent: "  Find your inner strength  ",
   closest: () => ({ getAttribute: () => "blk_hero" }),
@@ -25,7 +27,11 @@ describe("buildSelectionPayload", () => {
 
   it("handles non-block elements and clamps long text", () => {
     const p = buildSelectionPayload(
-      el({ closest: () => null, textContent: "x".repeat(500), parentElement: null }),
+      el({
+        closest: () => null,
+        textContent: "x".repeat(500),
+        parentElement: null,
+      }),
       "/",
     );
     expect(p.block_id).toBeNull();
@@ -41,18 +47,25 @@ describe("chat state", () => {
     const next = reduceChat(entries, {
       kind: "actions",
       text: "plan",
-      actions: [{ kind: "add_block", title: "Add cta to home", detail: "", token: "t" }],
+      actions: [
+        { kind: "add_block", title: "Add cta to home", detail: "", token: "t" },
+      ],
     });
     expect(next).toHaveLength(2);
     expect(next[1].cards?.[0].token).toBe("t");
   });
 
   it("marks unavailable turns", () => {
-    expect(reduceChat(entries, { kind: "unavailable" })[1].text).toBe("__unavailable__");
+    expect(reduceChat(entries, { kind: "unavailable" })[1].text).toBe(
+      "__unavailable__",
+    );
   });
 
   it("toTranscript strips cards and caps at 20", () => {
-    const many: ChatEntry[] = Array.from({ length: 30 }, (_, i) => ({ role: "coach", text: `m${i}` }));
+    const many: ChatEntry[] = Array.from({ length: 30 }, (_, i) => ({
+      role: "coach",
+      text: `m${i}`,
+    }));
     const t = toTranscript(many);
     expect(t).toHaveLength(20);
     expect(t[19]).toEqual({ role: "coach", text: "m29" });

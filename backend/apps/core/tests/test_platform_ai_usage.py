@@ -12,11 +12,11 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.blog.ai import current_month
+from apps.core.models import AiTranscript, BlogAiUsage, HelpBotUsage, LogoAiUsage, StudentBotUsage
 
 # The rollup window must match AiTranscript.created_at (auto-now) — a frozen
 # month string rots at the first calendar rollover (ratings came back 0).
 MONTH = current_month()
-from apps.core.models import AiTranscript, BlogAiUsage, HelpBotUsage, LogoAiUsage, StudentBotUsage
 
 SHARED_DOMAIN = "shared-test.localhost"
 pytestmark = pytest.mark.django_db
@@ -105,9 +105,7 @@ def test_kill_switch_flag_at_exact_cap_boundary(superuser, restore_public, setti
 
 def test_top_tenants_sorted_desc_and_limited_to_ten(superuser, restore_public):
     for i in range(12):
-        HelpBotUsage.objects.create(
-            tenant_schema=f"t{i}", month=MONTH, questions=1, usd_spent=Decimal(f"{i + 1}.00")
-        )
+        HelpBotUsage.objects.create(tenant_schema=f"t{i}", month=MONTH, questions=1, usd_spent=Decimal(f"{i + 1}.00"))
     resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": MONTH})
     top = resp.json()["top_tenants"]
     assert len(top) == 10
