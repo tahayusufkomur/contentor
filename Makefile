@@ -157,6 +157,9 @@ wiki: ## Refresh the GitNexus graph, regenerate the architecture wiki (increment
 
 wiki-sync: ## Mirror the generated wiki (.gitnexus/wiki/) into docs/wiki/ without regenerating
 	rsync -a --delete --exclude='*.json' --exclude='*.html' .gitnexus/wiki/ docs/wiki/
+	@# The generator omits final newlines; pre-commit's end-of-file-fixer adds
+	@# them back — normalize here or every refresh ping-pongs a 93-file EOL diff.
+	@find docs/wiki -name '*.md' | while read -r f; do [ -n "$$(tail -c1 "$$f")" ] && printf '\n' >> "$$f"; done; true
 
 # ============================================================================
 # Stripe
