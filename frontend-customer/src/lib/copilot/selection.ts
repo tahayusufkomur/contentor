@@ -4,14 +4,19 @@ import type { SelectionPayload } from "./types";
 export interface SelectableElement {
   tagName: string;
   textContent: string | null;
-  closest: (selector: string) => { getAttribute(name: string): string | null } | null;
+  closest: (
+    selector: string,
+  ) => { getAttribute(name: string): string | null } | null;
   parentElement: { textContent: string | null } | null;
 }
 
 const TEXT_MAX = 200;
 const CONTEXT_MAX = 120;
 
-export function buildSelectionPayload(el: SelectableElement, path: string): SelectionPayload {
+export function buildSelectionPayload(
+  el: SelectableElement,
+  path: string,
+): SelectionPayload {
   const host = el.closest("[data-block-id]");
   return {
     path,
