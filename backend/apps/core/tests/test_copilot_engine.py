@@ -47,6 +47,7 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
     with (
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(
             engine.site_ai,
             "diff_current",
@@ -65,7 +66,10 @@ def test_add_block_card_carries_the_built_block():
         text="",
         actions=[{"kind": "add_block", "page": "home", "block_type": "cta", "fields": {"heading": "Join us"}}],
     )
-    with mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")):
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+    ):
         payload, _ = engine.run_turn(TENANT, [], [], "add a call to action")
     (card,) = payload["actions"]
     assert card["kind"] == "add_block" and "Join us" in card["detail"]
@@ -77,7 +81,10 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
         text="",
         actions=[{"kind": "add_block", "page": "home", "block_type": "testimonials", "fields": {}}],
     )
-    with mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")):
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+    ):
         payload, _ = engine.run_turn(TENANT, [], [], "add testimonials")
     assert payload["kind"] == "answer"  # nothing proposable survived
 
@@ -87,6 +94,7 @@ def test_failed_model_call_still_reports_cost():
 
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=AiError("boom", cost_usd=Decimal("0.004"))),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         pytest.raises(AiError),
     ):
         engine.run_turn(TENANT, [], [], "hi")
