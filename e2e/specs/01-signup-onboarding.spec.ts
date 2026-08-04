@@ -108,8 +108,13 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
   await expect(page.getByText(W.upgrade.title)).toBeVisible();
   await clickContinue(page);
 
-  // Chapter 5 — review + create
-  await expect(page.getByText(W.review.heading)).toBeVisible();
+  // Chapter 5 — domain (free signup → paid-gated upsell; keep the free
+  // address, which records the choice and advances).
+  await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: W.domain.keepFree }).click();
+
+  // Chapter 6 — review + create
+  await expect(page.getByText(W.review.heading)).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: W.review.create }).click();
   await waitForReady(page);
 });
@@ -154,9 +159,11 @@ test("finish-the-rest-for-me fast path provisions", async ({ page }) => {
   // On the first look step, bail out via the escape hatch.
   await page.getByRole("button", { name: W.common.finishRest }).click();
 
-  // Lands on the logo step; continue to review and create.
+  // Lands on the logo step; skip the domain upsell, then review and create.
   await expect(page.getByText(W.logo.heading)).toBeVisible({ timeout: 10_000 });
   await clickContinue(page);
+  await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: W.domain.keepFree }).click();
   await page.getByRole("button", { name: W.review.create }).click();
   await waitForReady(page);
 });

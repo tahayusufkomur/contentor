@@ -88,10 +88,13 @@ test("treatment coach creates a real course during signup", async ({ page }) => 
   await page.getByRole("button", { name: new RegExp(W.content.free) }).first().click();
   await clickStepContinue(page, W.content.courseTitle);
 
-  // Chapter 3 — logo, then review. Reaching the logo step proves the course
-  // POST succeeded: the step only advances after createWizardCourse resolves.
+  // Chapter 3 — logo, then the domain upsell (skipped), then review. Reaching
+  // the logo step proves the course POST succeeded: the step only advances
+  // after createWizardCourse resolves.
   await expect(page.getByText(W.logo.wordmark.title)).toBeVisible({ timeout: 60_000 });
   await clickFooterContinue(page);
+  await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: W.domain.keepFree }).click();
   await expect(page.getByText(W.review.heading)).toBeVisible({ timeout: 30_000 });
 });
 

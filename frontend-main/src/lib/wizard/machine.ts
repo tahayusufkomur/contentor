@@ -66,6 +66,7 @@ export function buildSteps(
     steps.push({ id: `pages.${page}`, chapter: "pages" });
   }
   steps.push({ id: "logo", chapter: "logo" });
+  steps.push({ id: "domain", chapter: "launch" });
   steps.push({ id: "review", chapter: "launch" });
   return steps;
 }
@@ -100,6 +101,7 @@ export function buildContentSteps(
   }
   steps.push(
     { id: "logo", chapter: "logo" },
+    { id: "domain", chapter: "launch" },
     { id: "review", chapter: "launch" },
   );
   return steps;
@@ -154,6 +156,8 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
       return answers.blog_created === true;
     case "logo":
       return Boolean(answers.logo);
+    case "domain":
+      return Boolean(answers.custom_domain);
     case "review":
       return false;
     default: {

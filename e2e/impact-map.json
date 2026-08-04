@@ -11,7 +11,11 @@
     "courses": [
       "02-courses"
     ],
-    "domains": "none",
+    "domains": [
+   "01-signup-onboarding",
+   "26-content-first-wizard",
+   "27-wizard-domain-purchase"
+  ],
     "downloads": [
       "12-downloads"
     ],
@@ -147,7 +151,8 @@
     "22-assistant-takeover",
     "23-wizard-ai-logo",
     "24-admin-logs",
-    "26-content-first-wizard"
+    "26-content-first-wizard",
+    "27-wizard-domain-purchase"
   ],
   "manual": [
     "90-logo-eval"

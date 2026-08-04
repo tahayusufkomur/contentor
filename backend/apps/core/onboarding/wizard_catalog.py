@@ -74,6 +74,11 @@ HERO_STYLES = ("centered", "split", "minimal")  # == hero block "layout" enum
 
 LOGO_MODES = ("wordmark", "curated", "ai")
 
+#: Launch-chapter domain step: what the coach decided about a custom domain.
+#: "purchased" records the in-wizard buy; "skipped"/"later" both keep the free
+#: subdomain (the distinction feeds future dashboard nudges).
+CUSTOM_DOMAIN_CHOICES = ("purchased", "skipped", "later")
+
 # Per-page layout options. "blocks" is the block-TYPE sequence the layout
 # seeds (compose.py builds the actual block dicts); the frontend draws its
 # thumbnail skeletons from the same sequence. First option = recommended.
@@ -236,6 +241,17 @@ def validate_answers(partial: dict) -> list[str]:
                         errors.append("logo.export_keys must live under wizard/")
             elif recipe is not None:
                 errors.append("logo.recipe is only allowed for ai mode")
+        elif key == "custom_domain":
+            domain = value.get("domain") if isinstance(value, dict) else None
+            if (
+                not isinstance(value, dict)
+                or value.get("choice") not in CUSTOM_DOMAIN_CHOICES
+                or set(value) - {"choice", "domain"}
+                or (domain is not None and (not isinstance(domain, str) or not (0 < len(domain) <= 255)))
+            ):
+                errors.append(
+                    "custom_domain must be {choice, domain?} with choice one of: " + ", ".join(CUSTOM_DOMAIN_CHOICES)
+                )
         elif key in ("course_created", "event_created", "blog_created"):
             # Content-first flow (holdout "treatment"): the coach created that
             # item during the wizard. Absent = not created; skipping never sets

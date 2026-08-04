@@ -8,13 +8,14 @@ const ids = (a: WizardAnswers) =>
   buildContentSteps(catalog, a).map((s) => s.id);
 
 describe("buildContentSteps", () => {
-  it("always includes niche, describe, goals, course, logo, review", () => {
+  it("always includes niche, describe, goals, course, logo, domain, review", () => {
     expect(ids({ goals: [] })).toEqual([
       "business.niche",
       "business.describe",
       "business.goals",
       "content.course",
       "logo",
+      "domain",
       "review",
     ]);
   });
@@ -54,7 +55,14 @@ describe("buildContentSteps", () => {
       "content.event",
       "content.blog",
       "logo",
+      "domain",
       "review",
     ]);
+  });
+
+  it("places the domain step between logo and review in both flows", () => {
+    const content = ids({ goals: [] });
+    expect(content.indexOf("domain")).toBe(content.indexOf("logo") + 1);
+    expect(content.indexOf("review")).toBe(content.indexOf("domain") + 1);
   });
 });

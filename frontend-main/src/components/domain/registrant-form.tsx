@@ -77,19 +77,59 @@ function splitName(full: string): { first: string; last: string } {
   return { first: parts[0], last: parts.slice(1).join(" ") };
 }
 
+/** Every user-facing string in the form. The dashboard renders the English
+ * defaults; the localized onboarding wizard passes translated overrides. */
+export interface RegistrantFormLabels {
+  intro: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  phone: string;
+  email: string;
+  back: string;
+  fillRequired: string;
+  invalidPhone: string;
+}
+
+const DEFAULT_LABELS: RegistrantFormLabels = {
+  intro:
+    "Domain registrars require the owner's contact details to register a domain. We only use them for the registration.",
+  firstName: "First name",
+  lastName: "Last name",
+  company: "Company (optional)",
+  address: "Street address",
+  city: "City",
+  state: "State / region",
+  zip: "Postal code",
+  country: "Country",
+  phone: "Phone number",
+  email: "Email",
+  back: "Back",
+  fillRequired: "Please fill in all required fields.",
+  invalidPhone: "Please enter a valid phone number.",
+};
+
 export function RegistrantForm({
   defaultEmail,
   defaultName,
   onSubmit,
   onBack,
   submitLabel,
+  labels,
 }: {
   defaultEmail: string;
   defaultName: string;
   onSubmit: (c: RegistrantContact) => void;
   onBack: () => void;
   submitLabel: string;
+  labels?: Partial<RegistrantFormLabels>;
 }) {
+  const L = { ...DEFAULT_LABELS, ...labels };
   const seed = splitName(defaultName || "");
   const [firstName, setFirstName] = useState(seed.first);
   const [lastName, setLastName] = useState(seed.last);
@@ -115,11 +155,11 @@ export function RegistrantForm({
     setError(null);
     const phoneDigits = phone.replace(/\D/g, "");
     if (!firstName || !lastName || !address1 || !city || !zip || !email) {
-      setError("Please fill in all required fields.");
+      setError(L.fillRequired);
       return;
     }
     if (phoneDigits.length < 4) {
-      setError("Please enter a valid phone number.");
+      setError(L.invalidPhone);
       return;
     }
     onSubmit({
@@ -141,14 +181,11 @@ export function RegistrantForm({
   const field = "space-y-1.5";
   return (
     <form onSubmit={submit} className="space-y-4">
-      <p className="text-xs text-muted-foreground">
-        Domain registrars require the owner&apos;s contact details to register a
-        domain. We only use them for the registration.
-      </p>
+      <p className="text-xs text-muted-foreground">{L.intro}</p>
 
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
-          <Label htmlFor="fn">First name *</Label>
+          <Label htmlFor="fn">{L.firstName} *</Label>
           <Input
             id="fn"
             value={firstName}
@@ -156,7 +193,7 @@ export function RegistrantForm({
           />
         </div>
         <div className={field}>
-          <Label htmlFor="ln">Last name *</Label>
+          <Label htmlFor="ln">{L.lastName} *</Label>
           <Input
             id="ln"
             value={lastName}
@@ -166,7 +203,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="org">Company (optional)</Label>
+        <Label htmlFor="org">{L.company}</Label>
         <Input
           id="org"
           value={organization}
@@ -175,7 +212,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="addr">Street address *</Label>
+        <Label htmlFor="addr">{L.address} *</Label>
         <Input
           id="addr"
           value={address1}
@@ -185,7 +222,7 @@ export function RegistrantForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
-          <Label htmlFor="city">City *</Label>
+          <Label htmlFor="city">{L.city} *</Label>
           <Input
             id="city"
             value={city}
@@ -193,7 +230,7 @@ export function RegistrantForm({
           />
         </div>
         <div className={field}>
-          <Label htmlFor="state">State / region</Label>
+          <Label htmlFor="state">{L.state}</Label>
           <Input
             id="state"
             value={stateRegion}
@@ -204,7 +241,7 @@ export function RegistrantForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
-          <Label htmlFor="zip">Postal code *</Label>
+          <Label htmlFor="zip">{L.zip} *</Label>
           <Input
             id="zip"
             value={zip}
@@ -212,7 +249,7 @@ export function RegistrantForm({
           />
         </div>
         <div className={field}>
-          <Label htmlFor="country">Country *</Label>
+          <Label htmlFor="country">{L.country} *</Label>
           <select
             id="country"
             value={country}
@@ -229,7 +266,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="phone">Phone number *</Label>
+        <Label htmlFor="phone">{L.phone} *</Label>
         <div className="flex gap-2">
           <select
             aria-label="Country dialing code"
@@ -256,7 +293,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="email">Email *</Label>
+        <Label htmlFor="email">{L.email} *</Label>
         <Input
           id="email"
           type="email"
@@ -269,7 +306,7 @@ export function RegistrantForm({
 
       <div className="flex justify-between gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {L.back}
         </Button>
         <Button type="submit" variant="brand">
           {submitLabel}
