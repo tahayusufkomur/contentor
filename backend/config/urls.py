@@ -41,6 +41,9 @@ urlpatterns = [
     ),
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/onboarding/", include("apps.core.onboarding.urls")),
+    # Wizard-token domain endpoints live in apps.domains (domain logic stays
+    # with its app) but mount under the onboarding wizard namespace.
+    path("api/v1/onboarding/wizard/domain/", include("apps.domains.wizard_urls")),
     path("api/v1/contact/", include("apps.core.contact.urls")),
     path("api/v1/help/", include("apps.core.help.urls")),
     path("api/v1/ai/", include("apps.core.assistant_urls")),

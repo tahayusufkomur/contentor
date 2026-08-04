@@ -57,6 +57,26 @@ def other_user(restore_public):
     return User.objects.create_user(email="someone-else@x.com", password="pw12345!", role="coach")  # noqa: S106
 
 
+@pytest.fixture()
+def paid_plan(restore_public, owner):
+    """Checkout is gated on the TARGET tenant's has_paid_platform_plan."""
+    from django_tenants.utils import schema_context
+
+    from apps.core.models import PlatformPlan, PlatformSubscription
+
+    tenant = restore_public
+    plan, _ = PlatformPlan.objects.get_or_create(
+        name="Starter",
+        defaults={"price_monthly": 19, "transaction_fee_pct": 8},
+    )
+    sub = PlatformSubscription.objects.create(tenant=tenant, user=owner, plan=plan, status="active", provider="bypass")
+    yield plan
+    # Delete under the tenant schema so the cascade into tenant-only
+    # billing_payment can resolve its table.
+    with schema_context(tenant.schema_name):
+        PlatformSubscription.objects.filter(pk=sub.pk).delete()
+
+
 def _client(user=None):
     client = APIClient(HTTP_HOST=PUBLIC_DOMAIN)
     if user is not None:
@@ -109,7 +129,7 @@ def test_account_search_appends_tld_for_bare_keyword(public_host, owner, setting
     assert "gorkemhanci.com" in domains
 
 
-def test_account_checkout_creates_domain_for_owner(public_host, owner, settings):
+def test_account_checkout_creates_domain_for_owner(public_host, owner, paid_plan, settings):
     from apps.domains.models import CustomDomain
 
     settings.DOMAINS_BYPASS_ENABLED = True

@@ -52,6 +52,7 @@ import {
   EventStep,
   ProvisioningGate,
 } from "./content-steps";
+import { DomainStep } from "./domain-step";
 
 function brandFromToken(token: string): string {
   try {
@@ -350,7 +351,9 @@ export function WizardFlow({
     step.id === "business.niche";
   // Content steps carry their own Continue (it POSTs a real course/event/post
   // before advancing) plus a Skip link, so the shell must not add a second one.
-  const stepOwnsAdvance = autoAdvance || step.chapter === "content";
+  // The domain step owns its advance the same way (buy / skip / later).
+  const stepOwnsAdvance =
+    autoAdvance || step.chapter === "content" || step.id === "domain";
 
   let body: React.ReactNode;
   switch (step.id) {
@@ -490,6 +493,17 @@ export function WizardFlow({
           onChange={(logo) => draft({ logo })}
           initialUpgraded={initialUpgraded}
           checkoutSessionId={checkoutSessionId}
+        />
+      );
+      break;
+    case "domain":
+      body = (
+        <DomainStep
+          token={token}
+          brand={brand}
+          value={answers.custom_domain}
+          onDone={commitContent}
+          disabled={busy}
         />
       );
       break;

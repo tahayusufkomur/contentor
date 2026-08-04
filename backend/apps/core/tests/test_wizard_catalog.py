@@ -192,3 +192,17 @@ def test_content_flow_flags_are_valid_booleans():
 def test_content_flow_flags_reject_non_booleans():
     assert wc.validate_answers({"course_created": "yes"}) != []
     assert wc.validate_answers({"blog_created": 1}) != []
+
+
+def test_custom_domain_choices_are_valid():
+    assert wc.validate_answers({"custom_domain": {"choice": "skipped"}}) == []
+    assert wc.validate_answers({"custom_domain": {"choice": "later"}}) == []
+    assert wc.validate_answers({"custom_domain": {"choice": "purchased", "domain": "coach.com"}}) == []
+
+
+def test_custom_domain_rejects_invalid_shapes():
+    assert wc.validate_answers({"custom_domain": "skipped"})  # not a dict
+    assert wc.validate_answers({"custom_domain": {"choice": "maybe"}})  # unknown choice
+    assert wc.validate_answers({"custom_domain": {"choice": "skipped", "extra": 1}})  # stray key
+    assert wc.validate_answers({"custom_domain": {"choice": "purchased", "domain": ""}})  # empty domain
+    assert wc.validate_answers({"custom_domain": {"choice": "purchased", "domain": "x" * 256}})  # too long

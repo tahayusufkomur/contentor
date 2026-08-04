@@ -110,19 +110,36 @@ def _search_response(tenant, q: str | None) -> Response:
     )
 
 
-def _checkout_response(tenant, user, data) -> Response:
+def _checkout_response(
+    tenant, user, data, *, success_url: str | None = None, cancel_url: str | None = None
+) -> Response:
+    # Custom domains are a paid-tier perk. The wizard and the dashboard both
+    # funnel through here, so the gate holds no matter which surface asks.
+    if not tenant.has_paid_platform_plan:
+        return Response(
+            {"error": "PLAN_REQUIRED", "detail": "Custom domains require a paid plan."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     domain = (data.get("domain") or "").strip().lower()
     if not domain:
         return Response(
             {"error": "DOMAIN_REQUIRED", "detail": "domain is required."}, status=status.HTTP_400_BAD_REQUEST
         )
 
-    return_path = _safe_return_path(data.get("return_path"))
-    if return_path is None:
-        return Response(
-            {"error": "BAD_RETURN_PATH", "detail": "return_path must be a relative path."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+    # Callers that must return somewhere other than the apex (the wizard runs
+    # on the request's own host, e.g. the tr. locale) pass explicit URLs;
+    # everyone else supplies a return_path resolved against the apex.
+    if success_url is None or cancel_url is None:
+        return_path = _safe_return_path(data.get("return_path"))
+        if return_path is None:
+            return Response(
+                {"error": "BAD_RETURN_PATH", "detail": "return_path must be a relative path."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        apex = _apex_origin()
+        success_url = f"{apex}{return_path}"
+        cancel_url = f"{apex}{return_path}?canceled=1"
 
     reg = get_registrar()
     try:
@@ -152,12 +169,9 @@ def _checkout_response(tenant, user, data) -> Response:
         )
         DomainSubscription.objects.create(tenant=tenant, custom_domain=cd, status="incomplete")
 
-    apex = _apex_origin()
-    success = f"{apex}{return_path}"
-    cancel = f"{apex}{return_path}?canceled=1"
     try:
         session = create_domain_checkout(
-            tenant=tenant, user=user, custom_domain=cd, success_url=success, cancel_url=cancel
+            tenant=tenant, user=user, custom_domain=cd, success_url=success_url, cancel_url=cancel_url
         )
     except ProviderError as exc:
         cd.delete()  # roll back the orphaned domain (cascades to DomainSubscription)

@@ -56,6 +56,13 @@ export interface WizardAnswers {
   course_created?: boolean;
   event_created?: boolean;
   blog_created?: boolean;
+  /** Launch chapter's domain step. "purchased" records the in-wizard buy;
+   * "skipped"/"later" both keep the free subdomain (the distinction feeds
+   * future dashboard nudges). Absent = step not reached yet. */
+  custom_domain?: {
+    choice: "purchased" | "skipped" | "later";
+    domain?: string;
+  };
 }
 
 export interface WizardState {
