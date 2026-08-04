@@ -33,8 +33,20 @@ import {
   listVariants,
 } from "./steps";
 
-/** Curated marks shown per page in the wizard's Ready-made grid. */
-const PAGE_SIZE = 12;
+/** Curated marks per page. 20 fills both grid shapes evenly — 2 cols x 10 rows
+ * on narrow screens, 4 x 5 from `sm` up. */
+const PAGE_SIZE = 20;
+
+/** Gallery grid. The wizard is a narrow centered column, so 4 columns only
+ * from `sm`; below that the cards would be too tight to read the mark.
+ *
+ * items-start + the 2-line title clamp keep the rows even: grid rows stretch
+ * to their tallest card, and curated titles ("Minimalist Yoga Logo Abstract
+ * Circles") wrap to three lines in a 4-up card, which made whole rows grow.
+ * Scoped to the gallery — OptionCard's title is shared by every wizard step. */
+const GALLERY_GRID =
+  "grid grid-cols-2 items-start gap-2.5 sm:grid-cols-4 " +
+  "[&_button>span>span:first-child]:line-clamp-2";
 
 /** Lockups a curated mark can be paired with. `name_only` is deliberately
  * absent: hiding the mark you just picked is what the Wordmark door already
@@ -63,16 +75,25 @@ function LogoLockup({
   size?: "sm" | "lg";
 }) {
   const stacked = layout === "stacked";
-  const img = size === "lg" ? "h-12 w-12" : "h-10 w-10";
-  const text = size === "lg" ? "text-[14px]" : "text-[12px]";
+  // Gallery cards are half as wide once the grid goes 4-up, so the mark and
+  // the name step down at `sm` to keep the lockup legible. The picker (lg) is
+  // always 2-up, so it keeps its full size.
+  const img = size === "lg" ? "h-12 w-12" : "h-10 w-10 sm:h-8 sm:w-8";
+  const text = size === "lg" ? "text-[14px]" : "text-[12px] sm:text-[11px]";
   return (
     <span
       className={`flex rounded-lg bg-white p-2 ${
-        stacked ? "flex-col items-center gap-1" : "items-center gap-2"
+        stacked
+          ? "flex-col items-center gap-1"
+          : "items-center gap-2 sm:gap-1.5"
       }`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- presigned, short-lived URL */}
-      <img src={imageUrl} alt={alt} className={`${img} object-contain`} />
+      <img
+        src={imageUrl}
+        alt={alt}
+        className={`${img} shrink-0 object-contain`}
+      />
       <span
         className={`max-w-full truncate font-semibold ${text}`}
         style={{ color: ink, fontFamily: fontStack }}
@@ -255,8 +276,10 @@ export function LogoStep({
             {galleryState === "loading" ? (
               // First load: skeleton grid at the real card size, so the 12
               // marks land in place instead of reflowing the step.
-              <div className="grid grid-cols-2 gap-2.5" aria-hidden="true">
-                {Array.from({ length: 4 }).map((_, i) => (
+              <div className={GALLERY_GRID} aria-hidden="true">
+                {/* 8 tiles fill two rows of the 4-up grid and four of the 2-up
+                 * one — enough to claim the space without faking a full page. */}
+                {Array.from({ length: 8 }).map((_, i) => (
                   <Skeleton key={i} className="h-[104px] rounded-2xl" />
                 ))}
               </div>
@@ -264,7 +287,7 @@ export function LogoStep({
               // Re-rank is a refinement load: cards dim and go inert, never
               // blank, so a half-made choice stays on screen.
               <StaleContainer pending={rankPending} showLine={false}>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className={GALLERY_GRID}>
                   {visible.map((item) => (
                     <OptionCard
                       key={item.id}
