@@ -317,6 +317,9 @@ BLOG_AI_TOPIC_MODEL = os.environ.get("BLOG_AI_TOPIC_MODEL", "claude-haiku-4-5")
 # Global monthly USD kill-switch across ALL blog AI (attempts included).
 BLOG_AI_MONTHLY_BUDGET_USD = float(os.environ.get("BLOG_AI_MONTHLY_BUDGET_USD", "30"))
 
+# --- Coach copilot conversation engine (apps.core.copilot.engine; provider from AI_PROVIDER) ---
+COPILOT_MODEL = os.environ.get("COPILOT_MODEL", "claude-sonnet-5")
+
 # --- Onboarding wizard page compose (apps.core.onboarding.ai_compose;
 # provider from AI_PROVIDER). Free for all signups -> its own off-switch so
 # dev/e2e stacks (AI_PROVIDER=cli) can provision deterministically.
