@@ -23,7 +23,9 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 HOST = "shared-test.localhost"
 SHARED_SCHEMA = "shared_test"
-MONTH = "2026-07"
+# Mirror the engine's own month key (logo_ai._current_month) — a hardcoded
+# month broke all usage assertions at the first calendar rollover.
+MONTH = logo_ai._current_month()
 
 URL = "/api/v1/admin/config/logo-converse/"
 FINISH_URL = URL + "finish/"

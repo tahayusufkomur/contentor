@@ -11,6 +11,11 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.blog.ai import current_month
+
+# The rollup window must match AiTranscript.created_at (auto-now) — a frozen
+# month string rots at the first calendar rollover (ratings came back 0).
+MONTH = current_month()
 from apps.core.models import AiTranscript, BlogAiUsage, HelpBotUsage, LogoAiUsage, StudentBotUsage
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -42,11 +47,11 @@ def _client(user=None):
 
 def test_rollup_aggregates_all_features(superuser, restore_public, settings):
     settings.HELP_BOT_GLOBAL_MONTHLY_USD = 50
-    HelpBotUsage.objects.create(tenant_schema="a", month="2026-07", questions=2, usd_spent=Decimal("0.2"))
-    HelpBotUsage.objects.create(tenant_schema="__marketing__", month="2026-07", questions=1, usd_spent=Decimal("0.1"))
-    StudentBotUsage.objects.create(tenant_schema="a", month="2026-07", questions=3, usd_spent=Decimal("0.03"))
-    BlogAiUsage.objects.create(tenant_schema="a", month="2026-07", generations_used=1, usd_spent=Decimal("0.05"))
-    LogoAiUsage.objects.create(tenant_schema="a", month="2026-07", packs_used=1, usd_spent=Decimal("0.08"))
+    HelpBotUsage.objects.create(tenant_schema="a", month=MONTH, questions=2, usd_spent=Decimal("0.2"))
+    HelpBotUsage.objects.create(tenant_schema="__marketing__", month=MONTH, questions=1, usd_spent=Decimal("0.1"))
+    StudentBotUsage.objects.create(tenant_schema="a", month=MONTH, questions=3, usd_spent=Decimal("0.03"))
+    BlogAiUsage.objects.create(tenant_schema="a", month=MONTH, generations_used=1, usd_spent=Decimal("0.05"))
+    LogoAiUsage.objects.create(tenant_schema="a", month=MONTH, packs_used=1, usd_spent=Decimal("0.08"))
     AiTranscript.objects.create(
         feature="help_bot",
         audience="coach",
@@ -58,10 +63,10 @@ def test_rollup_aggregates_all_features(superuser, restore_public, settings):
         rating="up",
     )
 
-    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": "2026-07"})
+    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": MONTH})
     assert resp.status_code == 200, resp.content
     data = resp.json()
-    assert data["month"] == "2026-07"
+    assert data["month"] == MONTH
 
     by_key = {f["key"]: f for f in data["features"]}
     assert by_key["help_bot"]["count"] == 3 and by_key["help_bot"]["usd_spent"] == "0.3000"
@@ -76,24 +81,24 @@ def test_rollup_aggregates_all_features(superuser, restore_public, settings):
 
 def test_kill_switch_flag(superuser, restore_public, settings):
     settings.STUDENT_BOT_GLOBAL_MONTHLY_USD = 1
-    StudentBotUsage.objects.create(tenant_schema="a", month="2026-07", usd_spent=Decimal("2"))
-    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": "2026-07"})
+    StudentBotUsage.objects.create(tenant_schema="a", month=MONTH, usd_spent=Decimal("2"))
+    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": MONTH})
     student = next(f for f in resp.json()["features"] if f["key"] == "student_bot")
     assert student["kill_switch_tripped"] is True
 
 
 def test_kill_switch_flag_not_tripped_below_cap(superuser, restore_public, settings):
     settings.BLOG_AI_MONTHLY_BUDGET_USD = 30
-    BlogAiUsage.objects.create(tenant_schema="a", month="2026-07", usd_spent=Decimal("29.9999"))
-    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": "2026-07"})
+    BlogAiUsage.objects.create(tenant_schema="a", month=MONTH, usd_spent=Decimal("29.9999"))
+    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": MONTH})
     blog = next(f for f in resp.json()["features"] if f["key"] == "blog_ai")
     assert blog["kill_switch_tripped"] is False
 
 
 def test_kill_switch_flag_at_exact_cap_boundary(superuser, restore_public, settings):
     settings.LOGO_AI_MONTHLY_BUDGET_USD = 5
-    LogoAiUsage.objects.create(tenant_schema="a", month="2026-07", usd_spent=Decimal("5.00"))
-    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": "2026-07"})
+    LogoAiUsage.objects.create(tenant_schema="a", month=MONTH, usd_spent=Decimal("5.00"))
+    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": MONTH})
     brand_pack = next(f for f in resp.json()["features"] if f["key"] == "brand_pack")
     assert brand_pack["kill_switch_tripped"] is True
 
@@ -101,9 +106,9 @@ def test_kill_switch_flag_at_exact_cap_boundary(superuser, restore_public, setti
 def test_top_tenants_sorted_desc_and_limited_to_ten(superuser, restore_public):
     for i in range(12):
         HelpBotUsage.objects.create(
-            tenant_schema=f"t{i}", month="2026-07", questions=1, usd_spent=Decimal(f"{i + 1}.00")
+            tenant_schema=f"t{i}", month=MONTH, questions=1, usd_spent=Decimal(f"{i + 1}.00")
         )
-    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": "2026-07"})
+    resp = _client(superuser).get("/api/v1/platform/ai-usage/", {"month": MONTH})
     top = resp.json()["top_tenants"]
     assert len(top) == 10
     amounts = [Decimal(t["usd_spent"]) for t in top]
