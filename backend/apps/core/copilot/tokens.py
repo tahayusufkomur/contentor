@@ -44,5 +44,6 @@ def take_action(token, tenant_schema):
     action = cache.get(key)
     if action is None:
         raise ActionTokenError("action expired or already executed")
-    cache.delete(key)
+    if not cache.delete(key):
+        raise ActionTokenError("action expired or already executed")
     return action

@@ -1,6 +1,8 @@
 """Single-use signed action tokens: the guardrail that makes 'the AI can do
 everything' safe — execute can't be forged, replayed, or fired cross-tenant."""
 
+from unittest import mock
+
 import pytest
 
 from apps.core.copilot import tokens
@@ -36,3 +38,12 @@ def test_garbage_and_wrong_purpose_are_refused():
 
     with pytest.raises(tokens.ActionTokenError):
         tokens.take_action(create_magic_link_token("a@b.c", "demo_yoga", "demo-yoga"), "demo_yoga")
+
+
+def test_concurrent_claim_loses_when_delete_misses():
+    """Two racers can both read the payload; only the one whose delete
+    actually removes the key may execute (single-use under concurrency)."""
+    t = tokens.stash_action("demo_yoga", ACTION)
+    with mock.patch("apps.core.copilot.tokens.cache.delete", return_value=False):
+        with pytest.raises(tokens.ActionTokenError):
+            tokens.take_action(t, "demo_yoga")
