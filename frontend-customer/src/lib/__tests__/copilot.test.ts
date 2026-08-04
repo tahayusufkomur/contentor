@@ -70,4 +70,17 @@ describe("chat state", () => {
     expect(t).toHaveLength(20);
     expect(t[19]).toEqual({ role: "coach", text: "m29" });
   });
+
+  it("toTranscript excludes the unavailable marker entry", () => {
+    const withMarker: ChatEntry[] = [
+      { role: "coach", text: "hi" },
+      { role: "assistant", text: "__unavailable__" },
+      { role: "coach", text: "still there?" },
+    ];
+    const t = toTranscript(withMarker);
+    expect(t).toEqual([
+      { role: "coach", text: "hi" },
+      { role: "coach", text: "still there?" },
+    ]);
+  });
 });

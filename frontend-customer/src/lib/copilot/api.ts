@@ -1,5 +1,5 @@
-// Mirrors lib/site-ai-api.ts's split: streaming turn via streamAi, plain
-// mutation via clientFetch.
+// Two call shapes: the conversational turn streams via streamAi (SSE), the
+// confirmed-action mutation is a plain request via clientFetch.
 import { clientFetch } from "@/lib/api-client";
 import { streamAi, type AiStreamHandlers } from "@/lib/ai-stream";
 import type { CopilotDone, SelectionPayload } from "./types";

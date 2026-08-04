@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,27 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { executeCopilotAction } from "@/lib/copilot/api";
 import type { ActionCard as ActionCardData } from "@/lib/copilot/types";
 
+const PAGE_NAME_KEYS = new Set([
+  "home",
+  "about",
+  "courses",
+  "pricing",
+  "faq",
+  "contact",
+]);
+const FIELD_NAME_KEYS = new Set([
+  "heading",
+  "subheading",
+  "body",
+  "ctaText",
+  "buttonText",
+  "intro",
+  "items",
+]);
+
 export function ActionCard({ card }: { card: ActionCardData }) {
   const t = useTranslations("student.copilot");
+  const router = useRouter();
   const [state, setState] = useState<"proposed" | "done" | "dismissed">(
     "proposed",
   );
@@ -18,6 +38,7 @@ export function ActionCard({ card }: { card: ActionCardData }) {
     async () => {
       await executeCopilotAction(card.token);
       setState("done");
+      router.refresh();
       toast.success(t("applied"));
     },
     { errorToast: t("error") },
@@ -38,7 +59,11 @@ export function ActionCard({ card }: { card: ActionCardData }) {
           {card.changes.map((c, i) => (
             <li key={i}>
               <p className="text-xs font-medium text-muted-foreground">
-                {c.page} › {c.field}
+                {PAGE_NAME_KEYS.has(c.page) ? t(`pageNames.${c.page}`) : c.page}{" "}
+                ›{" "}
+                {FIELD_NAME_KEYS.has(c.field)
+                  ? t(`fieldNames.${c.field}`)
+                  : c.field}
               </p>
               {c.old !== null && c.new !== null ? (
                 <>

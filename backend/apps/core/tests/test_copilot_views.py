@@ -60,6 +60,55 @@ def test_converse_streams_phase_then_done_and_records_spend(client):
     spend.assert_called_once_with("shared_test", Decimal("0.02"))
 
 
+def test_converse_records_billed_cost_on_ai_error(client):
+    from apps.core import ai as core_ai
+
+    with (
+        mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
+        mock.patch(
+            "apps.core.copilot.views.engine.run_turn",
+            side_effect=core_ai.AiError("provider exploded", cost_usd=Decimal("0.004")),
+        ),
+        mock.patch("apps.core.copilot.views.ai_compose.record_spend") as spend,
+    ):
+        resp = client.post(
+            "/api/v1/admin/copilot/converse/",
+            {"message": "hello", "transcript": [], "selections": []},
+            format="json",
+            HTTP_ACCEPT="text/event-stream",
+        )
+        assert resp.status_code == 200
+        frames = _frames(resp)
+    assert frames[-1] == {"type": "error"}
+    spend.assert_called_once_with("shared_test", Decimal("0.004"))
+
+
+def test_converse_caps_and_sanitizes_selections(client):
+    oversized = [
+        {"path": "/pricing", "block_id": "blk_hero", "tag": "h2", "text": "x" * 10_000, "context": "ctx", "evil": "x"}
+    ] * 7
+    with (
+        mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
+        mock.patch(
+            "apps.core.copilot.views.engine.run_turn", return_value=({"kind": "answer", "text": "hi"}, Decimal("0"))
+        ) as run_turn,
+        mock.patch("apps.core.copilot.views.ai_compose.record_spend"),
+    ):
+        resp = client.post(
+            "/api/v1/admin/copilot/converse/",
+            {"message": "hello", "transcript": [], "selections": oversized},
+            format="json",
+            HTTP_ACCEPT="text/event-stream",
+        )
+        assert resp.status_code == 200
+        _frames(resp)
+    run_turn.assert_called_once()
+    sent_selections = run_turn.call_args[0][2]
+    assert len(sent_selections) <= 5
+    assert len(sent_selections[0]["text"]) == 200
+    assert "evil" not in sent_selections[0]
+
+
 def test_converse_refuses_plain_json_when_kill_switch_tripped(client):
     with mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=False):
         resp = client.post("/api/v1/admin/copilot/converse/", {"message": "hi"}, format="json")

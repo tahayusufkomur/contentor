@@ -73,6 +73,23 @@
     "updated": "Updated",
     "removeSelection": "Remove selection",
     "resting": "The assistant is resting right now — please try again a bit later.",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "pageNames": {
+      "home": "Home",
+      "about": "About",
+      "courses": "Courses",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "contact": "Contact"
+    },
+    "fieldNames": {
+      "heading": "Heading",
+      "subheading": "Subheading",
+      "body": "Text",
+      "ctaText": "Button text",
+      "buttonText": "Button text",
+      "intro": "Intro",
+      "items": "Questions"
+    }
   }
 }

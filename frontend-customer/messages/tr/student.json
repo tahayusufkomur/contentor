@@ -73,6 +73,23 @@
     "updated": "Güncellendi",
     "removeSelection": "Seçimi kaldır",
     "resting": "Asistan şu anda dinleniyor — lütfen biraz sonra tekrar deneyin.",
-    "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+    "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "pageNames": {
+      "home": "Ana sayfa",
+      "about": "Hakkında",
+      "courses": "Kurslar",
+      "pricing": "Fiyatlandırma",
+      "faq": "SSS",
+      "contact": "İletişim"
+    },
+    "fieldNames": {
+      "heading": "Başlık",
+      "subheading": "Alt başlık",
+      "body": "Metin",
+      "ctaText": "Buton metni",
+      "buttonText": "Buton metni",
+      "intro": "Giriş metni",
+      "items": "Sorular"
+    }
   }
 }
