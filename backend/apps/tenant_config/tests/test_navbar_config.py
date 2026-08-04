@@ -125,6 +125,27 @@ def test_navbar_edit_does_not_flip_pages_edited(client, config):
     assert config.setup_progress.get("pages_edited", []) == []
 
 
+def test_logo_layout_persists_through_admin_patch(client, config):
+    """The navbar admin tab's "Logo and name" control PATCHes here. navbar_config
+    is a strict allowlist rebuilt key-by-key, so an unlisted key would be dropped
+    silently rather than rejected — this guards that regression."""
+    resp = _patch_navbar(
+        client,
+        {"links": [], "cta": None, "show_login": True, "logo_layout": "stacked"},
+    )
+    assert resp.status_code == 200, resp.content
+    assert _nav(config)["logo_layout"] == "stacked"
+
+
+def test_invalid_logo_layout_rejected_by_admin_patch(client, config):
+    resp = _patch_navbar(
+        client,
+        {"links": [], "cta": None, "show_login": True, "logo_layout": "diagonal"},
+    )
+    assert resp.status_code == 400
+    assert "logo_layout" in str(resp.content)
+
+
 class TestNavbarLogoControls:
     def test_logo_size_defaults_to_md(self):
         cleaned = _validate({"links": []})

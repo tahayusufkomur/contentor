@@ -263,6 +263,38 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
         </div>
       )}
 
+      {/* Only meaningful when BOTH the mark and the name render — with one of
+       * them hidden there is nothing to arrange. Coaches set this in the signup
+       * wizard's logo step; this is where they change their mind later. */}
+      {config.logo_url && navbar.show_brand_name === true && (
+        <div className="space-y-1.5">
+          <Label>Logo and name</Label>
+          <div className="flex gap-1.5">
+            {(
+              [
+                { id: "horizontal", label: "Side by side" },
+                { id: "stacked", label: "Stacked" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                aria-pressed={(navbar.logo_layout ?? "horizontal") === opt.id}
+                onClick={() => emit({ logo_layout: opt.id })}
+                className={cn(
+                  "rounded-md border px-3 py-1.5 text-sm",
+                  (navbar.logo_layout ?? "horizontal") === opt.id
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:border-foreground",
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Transparent over hero (not applicable to the floating pill) */}
       {layout !== "pill" && (
         <div className="flex items-center justify-between rounded-lg border p-4">
