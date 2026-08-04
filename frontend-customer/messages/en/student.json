@@ -54,5 +54,25 @@
     "assistantResumed": "The assistant is back",
     "humanModeNotice": "You're chatting with {name}",
     "sessionLimit": "You've reached today's chat limit. Come back tomorrow or use the contact page."
+  },
+  "copilot": {
+    "bubble": "Your AI assistant",
+    "title": "Your AI assistant",
+    "empty": "Ask me anything about your site — or select something on the page and tell me what to change.",
+    "placeholder": "e.g. make this section warmer",
+    "select": "Select",
+    "send": "Send",
+    "sending": "Sending…",
+    "thinking": "Thinking…",
+    "close": "Close",
+    "confirm": "Apply",
+    "applying": "Applying…",
+    "dismiss": "Dismiss",
+    "applied": "Done — your site has been updated",
+    "appliedShort": "Applied",
+    "updated": "Updated",
+    "removeSelection": "Remove selection",
+    "resting": "The assistant is resting right now — please try again a bit later.",
+    "error": "Something went wrong. Please try again."
   }
 }

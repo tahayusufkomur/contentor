@@ -54,5 +54,25 @@
     "assistantResumed": "Asistan geri döndü",
     "humanModeNotice": "{name} ile sohbet ediyorsunuz",
     "sessionLimit": "Bugünkü sohbet sınırına ulaştınız. Yarın tekrar deneyin veya iletişim sayfasını kullanın."
+  },
+  "copilot": {
+    "bubble": "Yapay zekâ asistanınız",
+    "title": "Yapay zekâ asistanınız",
+    "empty": "Siteniz hakkında istediğinizi sorun — ya da sayfada bir öğe seçip ne değişmesini istediğinizi söyleyin.",
+    "placeholder": "örn. bu bölümü daha sıcak yap",
+    "select": "Seç",
+    "send": "Gönder",
+    "sending": "Gönderiliyor…",
+    "thinking": "Düşünüyor…",
+    "close": "Kapat",
+    "confirm": "Uygula",
+    "applying": "Uygulanıyor…",
+    "dismiss": "Vazgeç",
+    "applied": "Tamam — siteniz güncellendi",
+    "appliedShort": "Uygulandı",
+    "updated": "Güncellendi",
+    "removeSelection": "Seçimi kaldır",
+    "resting": "Asistan şu anda dinleniyor — lütfen biraz sonra tekrar deneyin.",
+    "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
   }
 }

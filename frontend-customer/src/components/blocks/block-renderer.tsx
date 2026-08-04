@@ -21,9 +21,14 @@ export function BlockRenderer({
     ? dynamicData?.[def.dynamicDataKey]
     : undefined;
   const el = <Comp data={block} dynamicData={slice} editable={editable} />;
-  // Apply an optional per-block style override as a wrapper that overrides the
-  // block's own <section> (no wrapper when there's no override → public DOM is
-  // byte-identical to before).
+  // Wrap every block in a div carrying data-block-id and an optional
+  // per-block style override — data-block-id makes every rendered block
+  // resolvable by the copilot's click-to-select overlay (selection.ts
+  // closest("[data-block-id]")).
   const styleClasses = blockStyleClasses(block);
-  return styleClasses ? <div className={styleClasses}>{el}</div> : el;
+  return (
+    <div data-block-id={block.id} className={styleClasses || undefined}>
+      {el}
+    </div>
+  );
 }

@@ -5,6 +5,7 @@ import { fetchPublishedPosts } from "@/lib/blog-public";
 import { PublicHeader } from "@/components/shared/public-header";
 import { EditSidebar } from "@/components/owner/edit-sidebar";
 import { SiteAssistantBubble } from "@/components/assistant/site-assistant-bubble";
+import { CopilotBubble } from "@/components/copilot/copilot-bubble";
 import type { SubscriptionPlan } from "@/types/billing";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,7 @@ export default async function PublicLayout({
       />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
       {!isAdmin && <SiteAssistantBubble />}
+      {isAdmin && <CopilotBubble />}
     </>
   );
 
