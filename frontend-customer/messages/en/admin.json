@@ -50,42 +50,8 @@
   },
   "siteAi": {
     "title": "Site AI",
-    "subtitle": "Describe a change and I'll redesign your site.",
-    "placeholder": "e.g. make the homepage warmer and shorten the intro",
-    "preview": "Preview change",
-    "thinking": "Thinking…",
-    "ready": "Here's the proposed change.",
-    "apply": "Apply",
-    "applying": "Applying…",
-    "discard": "Discard",
-    "applied": "Your site has been updated",
-    "remaining": "{count} of {limit} AI edits left this month",
-    "upgradeTitle": "AI editing is a paid feature",
-    "upgradeBody": "Upgrade to let AI redesign your site from a sentence. You can always edit your site manually for free.",
-    "exhaustedTitle": "You've used this month's AI edits",
-    "exhaustedBody": "Your allowance resets next month. You can keep editing manually for free.",
-    "upgradeCta": "See plans",
-    "manualCta": "Edit manually instead",
-    "error": "Something went wrong. Please try again.",
-    "updated": "Updated",
-    "noChanges": "The AI didn't change any page text this time — try a more specific instruction.",
-    "pageNames": {
-      "home": "Home",
-      "about": "About",
-      "courses": "Courses",
-      "pricing": "Pricing",
-      "faq": "FAQ",
-      "contact": "Contact"
-    },
-    "fieldNames": {
-      "heading": "Heading",
-      "subheading": "Subheading",
-      "body": "Text",
-      "ctaText": "Button text",
-      "buttonText": "Button text",
-      "intro": "Intro",
-      "items": "Questions"
-    }
+    "subtitle": "Your AI assistant now lives on your site — open any page and tell it what to change, or click an element to hand it over.",
+    "launch": "Open my site with the assistant"
   },
   "assistant": {
     "title": "Site assistant",

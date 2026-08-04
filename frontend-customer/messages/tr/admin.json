@@ -50,42 +50,8 @@
   },
   "siteAi": {
     "title": "Site Yapay Zekâsı",
-    "subtitle": "Bir değişiklik anlatın, sitenizi yeniden tasarlayayım.",
-    "placeholder": "örn. ana sayfayı daha sıcak yap ve girişi kısalt",
-    "preview": "Değişikliği önizle",
-    "thinking": "Düşünüyor…",
-    "ready": "Önerilen değişiklik hazır.",
-    "apply": "Uygula",
-    "applying": "Uygulanıyor…",
-    "discard": "Vazgeç",
-    "applied": "Siteniz güncellendi",
-    "remaining": "Bu ay kalan yapay zekâ düzenlemesi: {count}/{limit}",
-    "upgradeTitle": "Yapay zekâ ile düzenleme ücretli bir özellik",
-    "upgradeBody": "Tek bir cümleyle sitenizi yeniden tasarlatmak için yükseltin. Sitenizi her zaman ücretsiz olarak elle düzenleyebilirsiniz.",
-    "exhaustedTitle": "Bu ayki yapay zekâ düzenlemelerinizi kullandınız",
-    "exhaustedBody": "Hakkınız gelecek ay yenilenir. Elle düzenlemeye ücretsiz devam edebilirsiniz.",
-    "upgradeCta": "Planları gör",
-    "manualCta": "Bunun yerine elle düzenle",
-    "error": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
-    "updated": "Güncellendi",
-    "noChanges": "Yapay zekâ bu sefer sayfa metinlerinde bir değişiklik yapmadı — daha belirgin bir talimat deneyin.",
-    "pageNames": {
-      "home": "Ana sayfa",
-      "about": "Hakkında",
-      "courses": "Kurslar",
-      "pricing": "Fiyatlandırma",
-      "faq": "SSS",
-      "contact": "İletişim"
-    },
-    "fieldNames": {
-      "heading": "Başlık",
-      "subheading": "Alt başlık",
-      "body": "Metin",
-      "ctaText": "Buton metni",
-      "buttonText": "Buton metni",
-      "intro": "Giriş metni",
-      "items": "Sorular"
-    }
+    "subtitle": "Yapay zekâ asistanınız artık sitenizin üzerinde — herhangi bir sayfayı açıp ne değişmesini istediğinizi söyleyin ya da bir öğeye tıklayıp ona verin.",
+    "launch": "Sitemi asistanla aç"
   },
   "assistant": {
     "title": "Site asistanı",

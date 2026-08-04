@@ -114,12 +114,6 @@
     "src/lib/navbar.ts": [
       "14-navbar-layouts"
     ],
-    "src/app/admin/site-ai": [
-      "28-admin-site-ai"
-    ],
-    "src/lib/site-ai-api.ts": [
-      "28-admin-site-ai"
-    ],
     "src/components/ui/nav-link.tsx": [
       "25-navigation-feedback"
     ],
@@ -140,6 +134,15 @@
     ],
     "src/components/admin/admin-shell.tsx": [
       "27-nav-stage-gating"
+    ],
+    "src/components/copilot": [
+      "29-copilot"
+    ],
+    "src/lib/copilot": [
+      "29-copilot"
+    ],
+    "src/app/admin/site-ai": [
+      "29-copilot"
     ]
   },
   "frontend-main": [
