@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,6 @@ import { SelectionOverlay } from "./selection-overlay";
  * coach; the backend re-verifies on every call. `?copilot=1` opens it. */
 export function CopilotBubble() {
   const t = useTranslations("student.copilot");
-  const params = useSearchParams();
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [input, setInput] = useState("");
@@ -27,8 +25,11 @@ export function CopilotBubble() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // window.location, NOT useSearchParams — avoids the Next 14 client-side
+    // Suspense bailout (same pattern as owner/edit-sidebar.tsx).
+    const params = new URLSearchParams(window.location.search);
     if (params.get("copilot") === "1") setOpen(true);
-  }, [params]);
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
