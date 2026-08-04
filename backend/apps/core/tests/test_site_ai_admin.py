@@ -93,3 +93,41 @@ def test_endpoints_reject_anonymous_callers(tenant_ctx):
     anon = APIClient(HTTP_HOST=HOST)
     assert anon.get("/api/v1/admin/site-ai/status/").status_code in (401, 403)
     assert anon.post("/api/v1/admin/site-ai/apply/", {}, format="json").status_code in (401, 403)
+
+
+def test_preview_done_frame_carries_a_change_summary(client, tenant_ctx):
+    """The done frame includes field-level `changes` (diffed against the
+    tenant's CURRENT pages) so the panel can show before → after rows
+    instead of asking for a blind Apply."""
+    import json
+    from decimal import Decimal
+
+    from apps.tenant_config.models import TenantConfig
+
+    old = {"home": [{"id": "blk_hero", "type": "hero", "heading": "Old headline"}]}
+    new = {"home": [{"id": "blk_hero", "type": "hero", "heading": "New headline"}]}
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = old
+    cfg.save(update_fields=["pages"])
+
+    with (
+        mock.patch("apps.core.site_ai_admin.ai_compose.compose_available", return_value=True),
+        mock.patch(
+            "apps.core.site_ai_admin.site_ai.preview_edit",
+            return_value=(new, {}, Decimal("0")),
+        ),
+    ):
+        resp = client.post(
+            "/api/v1/admin/site-ai/preview/",
+            {"instruction": "warmer"},
+            format="json",
+            HTTP_ACCEPT="text/event-stream",
+        )
+        assert resp.status_code == 200
+        body = b"".join(resp.streaming_content).decode()
+    frames = [json.loads(line[len("data: ") :]) for line in body.splitlines() if line.startswith("data: ")]
+    assert frames[-1]["type"] == "done"
+    assert frames[-1]["pages"] == new
+    assert frames[-1]["changes"] == [
+        {"page": "home", "block_type": "hero", "field": "heading", "old": "Old headline", "new": "New headline"}
+    ]

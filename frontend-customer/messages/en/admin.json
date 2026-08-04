@@ -66,7 +66,26 @@
     "exhaustedBody": "Your allowance resets next month. You can keep editing manually for free.",
     "upgradeCta": "See plans",
     "manualCta": "Edit manually instead",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "updated": "Updated",
+    "noChanges": "The AI didn't change any page text this time — try a more specific instruction.",
+    "pageNames": {
+      "home": "Home",
+      "about": "About",
+      "courses": "Courses",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "contact": "Contact"
+    },
+    "fieldNames": {
+      "heading": "Heading",
+      "subheading": "Subheading",
+      "body": "Text",
+      "ctaText": "Button text",
+      "buttonText": "Button text",
+      "intro": "Intro",
+      "items": "Questions"
+    }
   },
   "assistant": {
     "title": "Site assistant",

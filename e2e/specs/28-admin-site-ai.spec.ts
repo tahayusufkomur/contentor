@@ -43,7 +43,9 @@ async function stubPreview(page: Page) {
       contentType: "text/event-stream",
       body:
         'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","pages":{"home":{"blocks":[]}}}\n\n',
+        'data: {"type":"done","pages":{"home":{"blocks":[]}},' +
+        '"changes":[{"page":"home","block_type":"hero","field":"heading",' +
+        '"old":"Find your inner strength","new":"Welcome home"}]}\n\n',
     });
   });
 }
@@ -88,6 +90,11 @@ test("a paid coach previews an edit, applies it, and the allowance decrements", 
   await page.getByRole("button", { name: "Preview change" }).click();
 
   await expect(page.getByText("Here's the proposed change.")).toBeVisible();
+  // The change summary renders before → after rows from the done frame's
+  // `changes` — the coach reviews what changed, not a blind Apply.
+  await expect(page.getByText("Home › Heading")).toBeVisible();
+  await expect(page.getByText("Find your inner strength")).toBeVisible();
+  await expect(page.getByText("Welcome home")).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Discard", exact: true }),
   ).toBeVisible();

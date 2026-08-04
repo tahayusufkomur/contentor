@@ -14,11 +14,23 @@ export interface SiteAiStatus {
   reason: "upgrade_required" | "quota_exhausted" | null;
 }
 
+/** One field-level edit in the proposed tree, diffed server-side against the
+ * current pages (site_ai.diff_pages). `old`/`new` are null for non-string
+ * fields (e.g. faq items) — render those as a bare "updated" marker. */
+export interface SiteAiChange {
+  page: string;
+  block_type: string;
+  field: string;
+  old: string | null;
+  new: string | null;
+}
+
 /** The proposed page tree the preview stream resolves with. `null` when the
  * backend's pre-stream guard refused (e.g. the onboarding AI budget/provider
  * is unavailable) — see site_ai_admin.py's site_ai_preview. */
 export interface SiteEditPreview {
   pages: Record<string, unknown> | null;
+  changes?: SiteAiChange[];
 }
 
 export const fetchSiteAiStatus = () =>

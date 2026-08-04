@@ -68,7 +68,10 @@ def site_ai_preview(request):
         cost = Decimal("0")
         try:
             pages, _extras, cost = site_ai.preview_edit(tenant, instruction)
-            yield sse_frame({"type": "done", "pages": pages})
+            # Diff BEFORE emitting: the coach reviews before → after rows
+            # instead of blind-applying an opaque tree.
+            changes = site_ai.diff_current(tenant, pages)
+            yield sse_frame({"type": "done", "pages": pages, "changes": changes})
         except Exception:
             logger.exception("admin site-edit preview failed schema=%s", tenant.schema_name)
             yield sse_frame({"type": "error", "source": "error"})

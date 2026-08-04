@@ -124,3 +124,47 @@ def apply_edit(tenant, pages, extras=None):
             cfg.meta_description = extras["meta_description"]
             update_fields.append("meta_description")
         cfg.save(update_fields=update_fields)
+
+
+def diff_pages(old_pages, new_pages):
+    """Field-level change list between two page trees, for the admin panel's
+    preview summary. Only id-matched blocks are compared — the compose trust
+    boundary can't add or remove blocks, so an unmatched id is noise. A
+    changed non-string field (e.g. faq `items`) yields old/new of None: it
+    reads as "updated" in the panel rather than a text diff."""
+    changes = []
+    for page_key, new_blocks in (new_pages or {}).items():
+        old_by_id = {b.get("id"): b for b in (old_pages or {}).get(page_key) or [] if isinstance(b, dict)}
+        for block in new_blocks if isinstance(new_blocks, list) else []:
+            if not isinstance(block, dict):
+                continue
+            old = old_by_id.get(block.get("id"))
+            if not isinstance(old, dict):
+                continue
+            for field, new_val in block.items():
+                if field in ("id", "type"):
+                    continue
+                old_val = old.get(field)
+                if old_val == new_val:
+                    continue
+                is_text = isinstance(old_val, str) and isinstance(new_val, str)
+                changes.append(
+                    {
+                        "page": page_key,
+                        "block_type": block.get("type") or old.get("type") or "",
+                        "field": field,
+                        "old": old_val if is_text else None,
+                        "new": new_val if is_text else None,
+                    }
+                )
+    return changes
+
+
+def diff_current(tenant, new_pages):
+    """diff_pages against the tenant's CURRENT TenantConfig.pages.
+    Establishes its own tenant_context; a missing config diffs as empty."""
+    from apps.tenant_config.models import TenantConfig
+
+    with tenant_context(tenant):
+        cfg = TenantConfig.objects.first()
+        return diff_pages(cfg.pages if cfg else None, new_pages)

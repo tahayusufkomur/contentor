@@ -187,3 +187,38 @@ def test_reveal_preview_streams_and_charges_the_attempt(restore_public, client):
         assert site_ai.tenant_usage(t.schema_name).usd_spent == Decimal("0.01")
     finally:
         _drop("site_ai_preview_ep")
+
+
+# ── diff_pages: the admin panel's change summary ────────────────────────────
+
+
+def test_diff_pages_reports_changed_text_fields_with_old_and_new():
+    old = {
+        "home": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Find strength", "subheading": "Yoga"}]
+    }
+    new = {
+        "home": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Welcome home", "subheading": "Yoga"}]
+    }
+    assert site_ai.diff_pages(old, new) == [
+        {"page": "home", "block_type": "hero", "field": "heading", "old": "Find strength", "new": "Welcome home"}
+    ]
+
+
+def test_diff_pages_non_string_changes_surface_without_a_text_diff():
+    """faq `items` (a list) still shows up as a change row, just without
+    old/new text — the panel renders it as a bare "updated" marker."""
+    old = {"faq": [{"id": "blk_faq", "type": "faq", "items": [{"q": "a?", "a": "b"}]}]}
+    new = {"faq": [{"id": "blk_faq", "type": "faq", "items": [{"q": "a?", "a": "c"}]}]}
+    assert site_ai.diff_pages(old, new) == [
+        {"page": "faq", "block_type": "faq", "field": "items", "old": None, "new": None}
+    ]
+
+
+def test_diff_pages_ignores_unmatched_blocks_and_identical_trees():
+    pages = {"home": [{"id": "blk_hero", "type": "hero", "heading": "Hi"}]}
+    assert site_ai.diff_pages(pages, pages) == []
+    # Blocks the old tree doesn't know are skipped — the compose trust
+    # boundary can't invent blocks, so an unmatched id is noise, not a diff.
+    assert site_ai.diff_pages({"home": []}, pages) == []
+    assert site_ai.diff_pages({}, pages) == []
+    assert site_ai.diff_pages(None, None) == []
