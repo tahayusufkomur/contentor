@@ -145,7 +145,19 @@ def _execute(tenant, user, action):
         elif kind == "remove_block":
             pages = blocks.remove_block(pages, action["page"], action["block_id"])
         elif kind == "move_block":
-            pages = blocks.move_block(pages, action["page"], action["block_id"], action.get("after_block_id"))
+            pages = blocks.move_block(
+                pages,
+                action["page"],
+                action["block_id"],
+                action.get("after_block_id"),
+                to_page=action.get("to_page"),
+            )
+        elif kind == "edit_block_fields":
+            pages, _ = blocks.edit_block_fields(pages, action["page"], action["block_id"], action.get("fields") or {})
+        elif kind == "toggle_block":
+            pages = blocks.set_block_enabled(pages, action["page"], action["block_id"], action["enabled"])
+        elif kind == "duplicate_block":
+            pages, _ = blocks.duplicate_block(pages, action["page"], action["block_id"])
         else:
             raise blocks.BlockOpError(f"unknown action: {kind}")
         cfg.pages = pages

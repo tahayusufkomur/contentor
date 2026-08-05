@@ -137,6 +137,102 @@ def test_execute_add_block_mutates_pages(client):
     assert [b["id"] for b in cfg.pages["home"]["blocks"]] == ["blk_hero", "blk_new1234"]
 
 
+def test_execute_edit_block_fields_writes_cleaned_field(client):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "edit_block_fields", "page": "home", "block_id": "blk_hero", "fields": {"heading": "Fresh"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert cfg.pages["home"]["blocks"][0]["heading"] == "Fresh"
+
+
+def test_execute_toggle_and_duplicate_block(client):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {
+        "home": {
+            "blocks": [
+                {"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"},
+                {"id": "blk_intro", "type": "richText", "enabled": True, "body": "Intro"},
+            ]
+        }
+    }
+    cfg.save(update_fields=["pages"])
+
+    token = copilot_tokens.stash_action(
+        "shared_test", {"kind": "toggle_block", "page": "home", "block_id": "blk_hero", "enabled": False}
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert cfg.pages["home"]["blocks"][0]["enabled"] is False
+
+    token = copilot_tokens.stash_action(
+        "shared_test", {"kind": "duplicate_block", "page": "home", "block_id": "blk_hero"}
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert len(cfg.pages["home"]["blocks"]) == 3  # hero + copy + intro
+
+
+def test_execute_move_block_to_page(client):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {
+        "home": {
+            "blocks": [
+                {"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"},
+                {"id": "blk_intro", "type": "richText", "enabled": True, "body": "Intro"},
+            ]
+        },
+        "about": {"blocks": []},
+    }
+    cfg.save(update_fields=["pages"])
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {
+            "kind": "move_block",
+            "page": "home",
+            "block_id": "blk_hero",
+            "after_block_id": None,
+            "to_page": "about",
+        },
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert cfg.pages["about"]["blocks"][0]["id"] == "blk_hero"
+    assert [b["id"] for b in cfg.pages["home"]["blocks"]] == ["blk_intro"]
+
+
+def test_execute_edit_navbar_links_and_show_login(client, coach):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {
+            "kind": "edit_navbar",
+            "updates": {"links": [{"label": "Courses", "href": "/courses"}], "show_login": False},
+        },
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert cfg.navbar_config["links"] == [{"label": "Courses", "href": "/courses"}]
+    assert cfg.navbar_config["show_login"] is False
+
+
 def test_execute_edit_pages_applies_and_reports_changes(client):
     token = copilot_tokens.stash_action(
         "shared_test", {"kind": "edit_pages", "pages": {"home": []}, "extras": {}, "changes_count": 3}
