@@ -67,7 +67,11 @@ type Action =
   | { type: "select"; id: string | null; reveal?: boolean }
   | { type: "hover"; id: string | null }
   | { type: "undo" }
-  | { type: "redo" };
+  | { type: "redo" }
+  // Server-side pages changed outside the editor (copilot apply) — replace
+  // the tree. Undoable via commit(), so an unsaved local tweak is one
+  // Cmd+Z away rather than destroyed.
+  | { type: "sync"; pages: PagesConfig };
 
 function blocksOf(pages: PagesConfig, pageKey: PageKey): Block[] {
   return pages[pageKey]?.blocks ?? [];
@@ -218,6 +222,9 @@ function reducer(state: EditorState, action: Action): EditorState {
         future: state.future.slice(1),
       };
     }
+    case "sync": {
+      return commit(state, action.pages);
+    }
     default:
       return state;
   }
@@ -264,6 +271,11 @@ export function useOptionalEditorStore(): EditorStore | null {
 interface EditorStoreProviderProps {
   initialPages: PagesConfig | undefined;
   onPagesChange: (pages: PagesConfig) => void;
+  /** Fresh server pages to sync into the store (seq bumps per sync request).
+   *  Used after out-of-editor writes (copilot apply) — the store is the
+   *  source of truth while editing, so new server state must be pushed in
+   *  explicitly; `initialPages` is only read at mount. */
+  serverPages?: { pages: PagesConfig; seq: number };
   niche?: string;
   children: React.ReactNode;
 }
@@ -271,6 +283,7 @@ interface EditorStoreProviderProps {
 export function EditorStoreProvider({
   initialPages,
   onPagesChange,
+  serverPages,
   niche = "",
   children,
 }: EditorStoreProviderProps) {
@@ -286,16 +299,31 @@ export function EditorStoreProvider({
 
   // Notify the parent (→ debounced autosave) whenever page content changes,
   // skipping the initial mount so loading the editor never triggers a save.
+  // A server sync is skipped too: it re-states what the server already has,
+  // and echoing it back would clobber-race a concurrent save.
   const onPagesChangeRef = useRef(onPagesChange);
   onPagesChangeRef.current = onPagesChange;
   const mounted = useRef(false);
+  const skipNextSave = useRef(false);
   useEffect(() => {
     if (!mounted.current) {
       mounted.current = true;
       return;
     }
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
     onPagesChangeRef.current(state.pages);
   }, [state.pages]);
+
+  const syncedSeq = useRef(0);
+  useEffect(() => {
+    if (!serverPages || serverPages.seq === syncedSeq.current) return;
+    syncedSeq.current = serverPages.seq;
+    skipNextSave.current = true;
+    dispatch({ type: "sync", pages: serverPages.pages });
+  }, [serverPages]);
 
   // The tenant's photo library, fetched once, used to auto-fill freshly added
   // image blocks (hero / image+text / gallery / testimonials) with random

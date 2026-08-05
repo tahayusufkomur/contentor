@@ -9,6 +9,7 @@ import { NavLink } from "@/components/ui/nav-link";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { executeCopilotAction } from "@/lib/copilot/api";
 import { isCreateKind } from "@/lib/copilot/state";
+import { announceSiteUpdated } from "@/lib/site-events";
 import type {
   ActionCard as ActionCardData,
   ExecuteResult,
@@ -45,6 +46,9 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       const res = await executeCopilotAction(card.token);
       setResult(res.result);
       setState("done");
+      // Coaches see the live editor canvas, which renders from the editor
+      // store, not server props — announce so it re-syncs in place.
+      announceSiteUpdated();
       router.refresh();
       toast.success(t(isCreateKind(card.kind) ? "created" : "applied"));
     },
@@ -58,6 +62,14 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       data-copilot-ui
     >
       <p className="font-medium">{card.title}</p>
+      {card.image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={card.image_url}
+          alt={card.title}
+          className="mt-2 h-28 w-full rounded-md border object-cover"
+        />
+      )}
       {card.detail && (
         <p className="mt-1 text-muted-foreground">{card.detail}</p>
       )}

@@ -111,5 +111,6 @@ describe("isCreateKind", () => {
     expect(isCreateKind("add_block")).toBe(false);
     expect(isCreateKind("edit_theme")).toBe(false);
     expect(isCreateKind("edit_navbar")).toBe(false);
+    expect(isCreateKind("set_block_image")).toBe(false);
   });
 });

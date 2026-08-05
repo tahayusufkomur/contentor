@@ -23,13 +23,15 @@ export type ActionKind =
   | "create_event"
   | "create_blog_post"
   | "edit_theme"
-  | "edit_navbar";
+  | "edit_navbar"
+  | "set_block_image";
 
 export interface ActionCard {
   kind: ActionKind;
   title: string;
   detail: string;
   changes?: DiffRow[];
+  image_url?: string;
   token: string;
 }
 

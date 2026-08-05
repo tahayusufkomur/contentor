@@ -18,7 +18,7 @@ from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.copilot import blocks, chrome, content, tokens
+from apps.core.copilot import blocks, chrome, content, photos, tokens
 from apps.core.onboarding import site_ai
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,11 @@ SYSTEM_PROMPT = (
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
+    "- set_block_image: put a photo from the platform's curated library on "
+    "a hero or imageText block (block_id from the digest, plus a short "
+    "description of the photo you want, e.g. 'calm sunlit yoga studio, "
+    "warm tones'); propose it again with a different description if the "
+    "coach wants another style\n"
     "Use block ids and page keys exactly as given in the digest. If the "
     "coach's selection is something you cannot change, say so honestly in "
     "an answer and suggest what you CAN do."
@@ -126,6 +131,13 @@ class EditNavbarAction(BaseModel):
     cta_href: str | None = None
 
 
+class SetBlockImageAction(BaseModel):
+    kind: Literal["set_block_image"]
+    page: str
+    block_id: str
+    description: str = ""
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -135,7 +147,8 @@ CopilotAction = Annotated[
     | CreateEventAction
     | CreateBlogPostAction
     | EditThemeAction
-    | EditNavbarAction,
+    | EditNavbarAction
+    | SetBlockImageAction,
     Field(discriminator="kind"),
 ]
 
@@ -178,6 +191,29 @@ def _chrome_digest(tenant):
     cta = nav.get("cta") or {}
     cta_part = f"'{cta.get('text')}' -> {cta.get('href')}" if cta.get("text") else "none"
     return f"Theme: {cfg.theme}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
+
+
+def _block_for_image(tenant, page, block_id):
+    """Resolve a block's image field and the s3_key of its current photo
+    (so the pick can exclude it — "try another" must not return the same
+    shot). Raises photos.PhotoOpError for unknown/unsupported blocks."""
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    with tenant_context(tenant):
+        cfg = TenantConfig.objects.first()
+        blocks_ = blocks.page_blocks(((cfg.pages if cfg else None) or {}).get(page))
+        if blocks_ is None:
+            raise photos.PhotoOpError(f"unknown page: {page}")
+        block = next((b for b in blocks_ if isinstance(b, dict) and b.get("id") == block_id), None)
+        if block is None:
+            raise photos.PhotoOpError(f"no block {block_id} on {page}")
+        field = photos.image_field_for(block.get("type"))
+        current_id = (block.get(field) or {}).get("photo_id") if isinstance(block.get(field), dict) else None
+        exclude_key = None
+        if current_id:
+            exclude_key = Photo.objects.filter(pk=current_id).values_list("s3_key", flat=True).first()
+    return field, exclude_key
 
 
 def _user_turn(tenant, transcript, selections, message):
@@ -241,6 +277,26 @@ def _card(tenant, action):
             "title": f"Move {action.block_id} on {action.page}",
             "detail": "to the top" if action.after_block_id is None else f"after {action.after_block_id}",
             "token": tokens.stash_action(schema, action.model_dump()),
+        }
+    if isinstance(action, SetBlockImageAction):
+        field, exclude_key = _block_for_image(tenant, action.page, action.block_id)
+        answers = (tenant.wizard_state or {}).get("answers") or {}
+        row = photos.pick_photo(action.description, answers.get("niche"), field=field, exclude_s3_key=exclude_key)
+        return {
+            "kind": "set_block_image",
+            "title": f"Use the photo '{row.title}'",
+            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "image_url": photos.preview_url(row),
+            "token": tokens.stash_action(
+                schema,
+                {
+                    "kind": "set_block_image",
+                    "page": action.page,
+                    "block_id": action.block_id,
+                    "field": field,
+                    "curated_photo_id": row.pk,
+                },
+            ),
         }
     if isinstance(action, EditThemeAction):
         theme = chrome.clean_theme(action.theme)
@@ -390,13 +446,23 @@ def run_turn(tenant, transcript, selections, message):
     if parsed.kind in ("answer", "ask"):
         return {"kind": parsed.kind, "text": parsed.text}, cost
     cards = []
+    drop_reason = None
     for action in parsed.actions:
         try:
             cards.append(_card(tenant, action))
+        except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError, photos.PhotoOpError) as exc:
+            # User-safe refusal — keep the first reason for the fallback answer.
+            logger.info("copilot: dropped unusable action %s", getattr(action, "kind", "?"), exc_info=True)
+            drop_reason = drop_reason or str(exc)
         except Exception:  # invalid page/block id, compose failure — drop this card
             logger.info("copilot: dropped unusable action %s", getattr(action, "kind", "?"), exc_info=True)
             continue
     if not cards:
-        text = parsed.text or "I couldn't turn that into a change I can make — could you rephrase?"
+        # Never echo parsed.text here: the model narrates the actions it
+        # proposed ("Added a photo…"), and with every card dropped that
+        # narration claims changes that never happened.
+        text = "I couldn't turn that into a change I can make — could you rephrase?"
+        if drop_reason:
+            text = f"I couldn't make that change: {drop_reason}. Nothing on your site was changed."
         return {"kind": "answer", "text": text}, cost
     return {"kind": "actions", "text": parsed.text, "actions": cards}, cost

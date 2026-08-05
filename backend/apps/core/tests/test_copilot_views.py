@@ -281,3 +281,62 @@ def test_execute_edit_theme_invalid_stashed_id_returns_400(client, coach):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "theme must be one of" in resp.json()["detail"]
+
+
+def test_execute_set_block_image_materializes_photo_and_busts_cache(client, coach):
+    from django.core.cache import cache
+
+    from apps.core.models import CuratedPhoto
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    row = CuratedPhoto.objects.create(
+        title="Sunlit yoga studio",
+        tags="yoga, studio",
+        kind="hero",
+        image_key="platform/curated-photos/sun.jpg",
+    )
+    cfg = TenantConfig.objects.first()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {
+            "kind": "set_block_image",
+            "page": "home",
+            "block_id": "blk_hero",
+            "field": "bgImage",
+            "curated_photo_id": row.pk,
+        },
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {"kind": "set_block_image", "page": "home"}
+    photo = Photo.objects.get(s3_key="platform/curated-photos/sun.jpg")
+    cfg.refresh_from_db()
+    block = cfg.pages["home"]["blocks"][0]
+    assert block["bgImage"] == {"url": None, "photo_id": str(photo.pk)}
+    assert block["heading"] == "Hi"
+    assert cache.get("tenant:shared_test:config") is None
+
+
+def test_execute_set_block_image_gone_catalog_row_returns_400(client, coach):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True}]}}
+    cfg.save(update_fields=["pages"])
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {
+            "kind": "set_block_image",
+            "page": "home",
+            "block_id": "blk_hero",
+            "field": "bgImage",
+            "curated_photo_id": 999999,
+        },
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "no longer available" in resp.json()["detail"]

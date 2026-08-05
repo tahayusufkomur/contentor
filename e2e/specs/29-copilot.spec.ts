@@ -141,3 +141,49 @@ test("a KB-grounded answer renders admin links as buttons, not raw paths", async
   await expect(page.getByText("[Payouts]")).toHaveCount(0);
   await page.close();
 });
+
+test("a set-block-image card shows the photo preview and applies", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/event-stream",
+      body:
+        'data: {"type":"phase","phase":"thinking"}\n\n' +
+        'data: {"type":"done","kind":"actions","text":"Here is a photo that fits.",' +
+        '"actions":[{"kind":"set_block_image","title":"Use the photo \'Sunlit yoga studio\'",' +
+        '"detail":"Ask for a different style anytime — nothing changes until you apply.",' +
+        '"image_url":"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",' +
+        '"token":"e2e-photo-token"}]}\n\n',
+    });
+  });
+  let executed = false;
+  await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
+    executed = true;
+    await route.fulfill({ json: { result: { kind: "set_block_image", page: "home" } } });
+  });
+  // The coach's canvas renders from the editor store, not server props — on
+  // apply the sidebar re-pulls config and syncs the store so the page
+  // repaints in place. Serve a marker heading from the refetch to prove the
+  // element updated without any page reload.
+  await page.route("**/api/admin/config", async (route) => {
+    if (route.request().method() !== "GET") return route.fallback();
+    const res = await route.fetch();
+    const json = await res.json();
+    json.pages.home.blocks[0].heading = "COPILOT SYNCED HERO";
+    await route.fulfill({ json });
+  });
+  await page.goto(`${TENANT}/?copilot=1`);
+  await expect(page.getByText("Your AI assistant").first()).toBeVisible();
+  await page.getByPlaceholder("e.g. make this section warmer").fill("add a hero section photo");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(page.getByText("Use the photo 'Sunlit yoga studio'")).toBeVisible();
+  await expect(page.getByRole("img", { name: "Use the photo 'Sunlit yoga studio'" })).toBeVisible();
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await expect(page.getByText("Applied", { exact: true })).toBeVisible();
+  expect(executed).toBe(true);
+  await expect(page.getByText("COPILOT SYNCED HERO")).toBeVisible();
+  await page.close();
+});

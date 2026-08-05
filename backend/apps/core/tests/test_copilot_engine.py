@@ -402,3 +402,77 @@ def test_under_cap_ask_passes_through():
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # 1 prior ask < cap of 2
+
+
+def test_set_block_image_card_stashes_pick_and_carries_preview():
+    from apps.core.copilot import photos as copilot_photos
+    from apps.core.copilot import tokens as copilot_tokens
+
+    row = SimpleNamespace(pk=7, title="Sunlit yoga studio", image_key="platform/curated-photos/sun.jpg")
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {"kind": "set_block_image", "page": "home", "block_id": "blk_hero", "description": "calm sunlit studio"}
+        ],
+    )
+    with (
+        mock.patch.object(engine, "_block_for_image", return_value=("bgImage", None)) as block_lookup,
+        mock.patch.object(copilot_photos, "pick_photo", return_value=row) as pick,
+        mock.patch.object(copilot_photos, "preview_url", return_value="https://cdn.example/sun.jpg"),
+    ):
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "set_block_image"
+    assert "Sunlit yoga studio" in card["title"]
+    assert card["image_url"] == "https://cdn.example/sun.jpg"
+    block_lookup.assert_called_once_with(TENANT, "home", "blk_hero")
+    assert pick.call_args.kwargs["field"] == "bgImage"
+    assert pick.call_args.kwargs["exclude_s3_key"] is None
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {
+        "kind": "set_block_image",
+        "page": "home",
+        "block_id": "blk_hero",
+        "field": "bgImage",
+        "curated_photo_id": 7,
+    }
+
+
+def test_set_block_image_unknown_block_dropped_with_fallback():
+    from apps.core.copilot import photos as copilot_photos
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "set_block_image", "page": "home", "block_id": "blk_nope", "description": "x"}],
+    )
+    with mock.patch.object(
+        engine, "_block_for_image", side_effect=copilot_photos.PhotoOpError("no block blk_nope on home")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"  # bad block id dropped, fallback answer
+
+
+def test_all_cards_dropped_never_echoes_success_claiming_text():
+    from apps.core.copilot import photos as copilot_photos
+
+    parsed = _turn(
+        kind="actions",
+        text="Added a calming yoga-studio photo to your homepage hero!",
+        actions=[{"kind": "set_block_image", "page": "home", "block_id": "blk_hero", "description": "calm"}],
+    )
+    with (
+        mock.patch.object(engine, "_block_for_image", return_value=("bgImage", None)),
+        mock.patch.object(
+            copilot_photos,
+            "pick_photo",
+            side_effect=copilot_photos.PhotoOpError("no photos are available in the library yet"),
+        ),
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    # The model's narration claims success for actions that were dropped —
+    # it must never reach the coach.
+    assert "Added a calming" not in payload["text"]
+    assert "no photos are available in the library yet" in payload["text"]

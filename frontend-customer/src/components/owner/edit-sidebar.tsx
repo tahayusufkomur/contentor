@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { SITE_UPDATED_EVENT } from "@/lib/site-events";
 import { Spinner } from "@/components/ui/spinner";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import { TenantContext } from "@/hooks/use-tenant";
@@ -84,6 +85,31 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   const [saving, setSaving] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingConfigRef = useRef<TenantConfig | null>(null);
+  // Server-side config changes made outside this editor (copilot apply):
+  // re-pull config and push the fresh pages into the editor store, so the
+  // canvas repaints in place — no reload, editor + chat state survive.
+  const [serverSync, setServerSync] = useState<{
+    pages: NonNullable<TenantConfig["pages"]>;
+    seq: number;
+  }>();
+  useEffect(() => {
+    const onSiteUpdated = async () => {
+      try {
+        const res = await fetch("/api/admin/config");
+        if (!res.ok) return;
+        const fresh: TenantConfig = await res.json();
+        setConfig(fresh);
+        setServerSync((prev) => ({
+          pages: fresh.pages ?? {},
+          seq: (prev?.seq ?? 0) + 1,
+        }));
+      } catch {
+        // Stale canvas until the next reload — same as before this listener.
+      }
+    };
+    window.addEventListener(SITE_UPDATED_EVENT, onSiteUpdated);
+    return () => window.removeEventListener(SITE_UPDATED_EVENT, onSiteUpdated);
+  }, []);
 
   const toggleSection = (id: SiteSection) => {
     setExpanded((prev) => {
@@ -265,6 +291,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       <EditorStoreProvider
         initialPages={config.pages}
         onPagesChange={(pages) => handleChange({ pages })}
+        serverPages={serverSync}
         niche={config.niche}
       >
         <RichEditorProvider>

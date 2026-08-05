@@ -16,7 +16,7 @@ from rest_framework.response import Response
 
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.copilot import blocks, chrome, content, engine, tokens
+from apps.core.copilot import blocks, chrome, content, engine, photos, tokens
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
@@ -113,6 +113,28 @@ def _execute(tenant, user, action):
         # Public pages read theme/navbar through the cached config object.
         cache.delete(f"tenant:{tenant.schema_name}:config")
         return result
+    if kind == "set_block_image":
+        from django_tenants.utils import schema_context
+
+        from apps.core.curated_photos.materialize import materialize_curated_photo
+        from apps.core.models import CuratedPhoto
+
+        with schema_context("public"):
+            row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
+        if row is None:
+            raise photos.PhotoOpError("that photo is no longer available")
+        with tenant_context(tenant):
+            cfg = TenantConfig.objects.first()
+            if cfg is None:
+                raise photos.PhotoOpError("site is not set up yet")
+            photo = materialize_curated_photo(row)
+            cfg.pages = photos.apply_block_image(
+                cfg.pages or {}, action["page"], action["block_id"], action["field"], photo.pk
+            )
+            cfg.save(update_fields=["pages"])
+        # Public pages read blocks through the cached config object too.
+        cache.delete(f"tenant:{tenant.schema_name}:config")
+        return {"kind": kind, "page": action["page"]}
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:
@@ -142,7 +164,7 @@ def copilot_execute(request):
         return Response({"detail": "invalid_token"}, status=403)
     try:
         result = _execute(tenant, request.user, action)
-    except (blocks.BlockOpError, content.ContentOpError, chrome.ChromeOpError) as exc:
+    except (blocks.BlockOpError, content.ContentOpError, chrome.ChromeOpError, photos.PhotoOpError) as exc:
         return Response({"detail": str(exc)}, status=400)
     logger.info("copilot executed %s schema=%s", action.get("kind"), tenant.schema_name)
     return Response({"result": result})
