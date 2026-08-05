@@ -278,6 +278,7 @@ def test_platform_site_requires_superuser(superuser, coach):
         "logo-ai-usage",
         "onboarding-ai-usage",
         "ai-ip-blocks",
+        "copilot-settings",
     }
 
 
