@@ -16,10 +16,24 @@ class ContentOpError(Exception):
     """User-safe message describing why a create was refused."""
 
 
+_GENERIC_INVALID_MESSAGE = "Some details were invalid — could you rephrase?"
+
+
 def _fail(errors):
-    field, messages = next(iter(errors.items()))
-    first = messages[0] if isinstance(messages, list) and messages else messages
-    raise ContentOpError(f"{field}: {first}")
+    path = []
+    current = errors
+    # Nested DRF errors (e.g. a course's `modules` list) are dicts/lists of
+    # dicts all the way down; walk into the first leaf so the raised message
+    # is a real sentence, never a Python dict/list repr shown to a coach.
+    for _ in range(5):
+        if not isinstance(current, dict) or not current:
+            break
+        field, messages = next(iter(current.items()))
+        path.append(str(field))
+        current = messages[0] if isinstance(messages, list) and messages else messages
+    if not isinstance(current, str):
+        raise ContentOpError(_GENERIC_INVALID_MESSAGE)
+    raise ContentOpError(f"{'.'.join(path)}: {current}" if path else current)
 
 
 def create_course(user, params):

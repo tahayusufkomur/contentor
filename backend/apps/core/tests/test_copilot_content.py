@@ -57,6 +57,22 @@ def test_create_course_invalid_input_raises_user_safe_error(coach):
         content.create_course(coach, {"title": ""})
 
 
+def test_create_course_nested_module_error_is_clean_not_repr(coach):
+    """Regression: a nested `modules` validation error must not leak a raw
+    Python dict/list repr into the coach-facing ContentOpError message."""
+    with pytest.raises(content.ContentOpError) as exc_info:
+        content.create_course(
+            coach,
+            {
+                "title": "Yoga",
+                "modules": [{"title": "", "lessons": []}],
+            },
+        )
+    message = str(exc_info.value)
+    assert "{'" not in message
+    assert "['" not in message
+
+
 def test_create_event_live_lands_scheduled(coach):
     from apps.live.models import LiveClass
 

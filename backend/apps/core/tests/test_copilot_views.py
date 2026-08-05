@@ -194,6 +194,29 @@ def test_execute_create_event_lands_scheduled(client, coach):
     assert LiveClass.objects.get(id=resp.json()["result"]["id"]).status == "scheduled"
 
 
+def test_execute_create_event_onsite_dispatches_onsite_serializer(client, coach):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.live.models import OnsiteEvent
+
+    when = (timezone.now() + timedelta(days=5)).isoformat()
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {
+            "kind": "create_event",
+            "event_kind": "onsite",
+            "params": {"title": "Retreat", "location": "Studio Mitte", "scheduled_at": when},
+        },
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    event = OnsiteEvent.objects.get(id=resp.json()["result"]["id"])
+    assert event.location == "Studio Mitte"
+    assert event.status == "scheduled"
+
+
 def test_execute_create_blog_post_draft(client, coach):
     from apps.blog.models import BlogPost
 
