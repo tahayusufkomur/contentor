@@ -1,8 +1,10 @@
 """Pure block operations behind the copilot's add/remove/move actions.
 
-Addable types and writable fields are ai_compose's WRITABLE_FIELDS — the same
-trust boundary the edit engine uses (so no testimonials: fabricated social
-proof stays impossible). All functions are dict-in/dict-out and never mutate
+BLOCK_SCHEMA below is this module's own write surface: it mirrors the
+frontend block registry's field set and select values, and is the trust
+boundary for what the copilot may add or edit. testimonials is deliberately
+absent so fabricated social proof stays impossible; gallery/logos/video wait
+on image/URL handling. All functions are dict-in/dict-out and never mutate
 their inputs; DB writes happen in the execute view."""
 
 from copy import deepcopy
@@ -115,6 +117,13 @@ def clean_field(block_type, field, value):
     if kind == "link":
         return clean_link(value)
     if kind == "bool":
+        if isinstance(value, str):
+            v = value.strip().lower()
+            if v == "true":
+                return True
+            if v == "false":
+                return False
+            raise BlockOpError(f"{field} must be true or false")
         return bool(value)
     _, item_caps, max_items = spec
     return [

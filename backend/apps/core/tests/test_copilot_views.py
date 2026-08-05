@@ -333,6 +333,24 @@ def test_execute_create_validation_failure_returns_400_detail(client):
     assert "title" in resp.json()["detail"]
 
 
+def test_execute_edit_block_fields_busts_cache(client):
+    from django.core.cache import cache
+
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "edit_block_fields", "page": "home", "block_id": "blk_hero", "fields": {"heading": "Fresh"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert cache.get("tenant:shared_test:config") is None
+
+
 def test_execute_edit_theme_writes_theme_flips_look_edited_and_busts_cache(client, coach):
     from django.core.cache import cache
 

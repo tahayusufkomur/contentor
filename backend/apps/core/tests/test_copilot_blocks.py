@@ -88,6 +88,10 @@ def test_clean_field_select_link_and_bool():
     with pytest.raises(blocks.BlockOpError):
         blocks.clean_field("hero", "ctaHref", "javascript:alert(1)")
     assert blocks.clean_field("banner", "dismissible", 1) is True
+    assert blocks.clean_field("banner", "dismissible", "false") is False
+    assert blocks.clean_field("banner", "dismissible", "True") is True
+    with pytest.raises(blocks.BlockOpError):
+        blocks.clean_field("banner", "dismissible", "maybe")
     with pytest.raises(blocks.BlockOpError):
         blocks.clean_field("hero", "nope", "x")
 

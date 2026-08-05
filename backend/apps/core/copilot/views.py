@@ -162,6 +162,8 @@ def _execute(tenant, user, action):
             raise blocks.BlockOpError(f"unknown action: {kind}")
         cfg.pages = pages
         cfg.save(update_fields=["pages"])
+    # Public pages read blocks through the cached config object too.
+    cache.delete(f"tenant:{tenant.schema_name}:config")
     return {"kind": kind, "page": action.get("page")}
 
 
