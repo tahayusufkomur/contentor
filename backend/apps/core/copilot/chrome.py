@@ -44,10 +44,17 @@ def merge_navbar(current, updates):
 
     merged = dict(current or {})
     merged.update(updates)
+    known = set(merged)
     try:
-        return TenantConfigSerializer().validate_navbar_config(merged)
+        cleaned = TenantConfigSerializer().validate_navbar_config(merged)
     except drf_serializers.ValidationError as exc:
         detail = exc.detail
         if isinstance(detail, list) and detail:
             detail = detail[0]
         raise ChromeOpError(str(detail)) from exc
+    # validate_navbar_config materializes defaults for absent keys (e.g.
+    # cta=None, show_login=True) as defence-in-depth for the admin PATCH
+    # path. The copilot merge must preserve "field was never set" rather
+    # than silently writing those defaults in, so drop any key that wasn't
+    # present in current/updates before validation.
+    return {k: v for k, v in cleaned.items() if k in known}

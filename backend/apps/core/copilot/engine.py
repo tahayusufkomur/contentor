@@ -366,9 +366,14 @@ def _asks_so_far(transcript):
 
 
 def run_turn(tenant, transcript, selections, message):
+    # Bound the transcript once, up front, to the same trailing window
+    # _user_turn applies — the ask-cap count and the model's actual visible
+    # context must agree on the same bounded view, or a stale "ask" outside
+    # the model's window can spuriously trip the cap.
+    windowed_transcript = [e for e in list(transcript) if isinstance(e, dict)][-MAX_TRANSCRIPT:]
     cap = _ask_cap()
-    capped = cap > 0 and _asks_so_far(transcript) >= cap
-    user = _user_turn(tenant, transcript, selections, message)
+    capped = cap > 0 and _asks_so_far(windowed_transcript) >= cap
+    user = _user_turn(tenant, windowed_transcript, selections, message)
     if capped:
         user += CAP_STEER
     parsed, cost, _model = core_ai.structured(

@@ -54,3 +54,16 @@ def test_merge_navbar_cleans_cta_href_and_caps_text():
 def test_merge_navbar_invalid_layout_raises_user_safe_error():
     with pytest.raises(chrome.ChromeOpError):
         chrome.merge_navbar({}, {"layout": "floating"})
+
+
+def test_merge_navbar_does_not_materialize_defaults_for_absent_keys():
+    current = {"layout": "classic", "links": [{"label": "Courses", "href": "/courses"}]}
+    merged = chrome.merge_navbar(current, {"layout": "pill"})
+    assert merged["layout"] == "pill"
+    assert merged["links"] == [{"label": "Courses", "href": "/courses"}]
+    # cta/logo_size were never present in current or updates — the validator
+    # would normally default them in (cta=None, logo_size="md"), but the
+    # merge must not invent keys that weren't there before.
+    assert "cta" not in merged
+    assert "logo_size" not in merged
+    assert "show_login" not in merged

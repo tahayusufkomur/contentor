@@ -348,6 +348,40 @@ def test_cap_zero_leaves_asks_uncapped():
     assert "Do not ask another clarifying question" not in captured["user"]
 
 
+def test_ask_outside_transcript_window_does_not_trip_cap():
+    """An 'ask' entry older than MAX_TRANSCRIPT turns is outside the window
+    the model actually sees this turn — it must not count toward the cap,
+    or the coach gets steered based on history the model has no visibility
+    into (see engine._asks_so_far / _user_turn window drift)."""
+    from decimal import Decimal
+
+    from apps.core.models import CopilotSettings
+
+    s = CopilotSettings.load()
+    s.max_asks_per_conversation = 1
+    s.save()
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="ask", text="Which page do you mean?"), Decimal("0.01"), "m"
+
+    # One real "ask" turn, then enough filler turns to push it outside the
+    # trailing MAX_TRANSCRIPT window _user_turn/_asks_so_far now share.
+    old_ask = [{"role": "assistant", "text": "Old question?", "kind": "ask"}]
+    filler = [{"role": "coach", "text": f"filler {i}"} for i in range(engine.MAX_TRANSCRIPT)]
+    transcript = old_ask + filler
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+    ):
+        payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
+    assert payload["kind"] == "ask"  # old ask is outside the window, so cap doesn't trip
+    assert "Do not ask another clarifying question" not in captured["user"]
+    assert "Old question?" not in captured["user"]  # confirms it's actually outside the window
+
+
 def test_under_cap_ask_passes_through():
     from decimal import Decimal
 
