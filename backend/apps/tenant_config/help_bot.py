@@ -127,13 +127,22 @@ def platform_notes(audience):
 
 
 @lru_cache(maxsize=8)
+def _knowledge_cached(audience, fingerprint):
+    return KB_PATH.read_text(encoding="utf-8") + platform_notes(audience)
+
+
+def knowledge_text(audience="coach") -> str:
+    """Repo KB + DB addenda, persona-free — for consumers (the coach
+    copilot) that ground answers in platform knowledge without the chat
+    persona. Byte-stable between addenda edits (fingerprint keys the
+    cache), so callers can embed it in their own cached prompts."""
+    fingerprint, _ = _addenda_state(audience)
+    return _knowledge_cached(audience, fingerprint)
+
+
+@lru_cache(maxsize=8)
 def _system_prompt_cached(audience, fingerprint):
-    return (
-        _PERSONAS[audience]
-        + "\n\n# KNOWLEDGE BASE\n\n"
-        + KB_PATH.read_text(encoding="utf-8")
-        + platform_notes(audience)
-    )
+    return _PERSONAS[audience] + "\n\n# KNOWLEDGE BASE\n\n" + _knowledge_cached(audience, fingerprint)
 
 
 def system_prompt(audience="coach") -> str:

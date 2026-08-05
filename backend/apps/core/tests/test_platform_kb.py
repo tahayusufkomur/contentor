@@ -82,3 +82,15 @@ def test_student_bot_gets_student_notes(tenant, config):
     # prompt is that prose, not the pack's opening tag. rindex() finds the
     # real opening tag (the last occurrence) — the notes must precede that.
     assert prompt.index("Never discuss other coaches.") < prompt.rindex("<site_knowledge>")
+
+
+def test_knowledge_text_is_persona_free_and_includes_kb_plus_addenda():
+    PlatformKbEntry.objects.create(title="Fees", content="KB-EXTRACT-MARKER fee note", audience="coach")
+    text = help_bot.knowledge_text("coach")
+    assert "KB-EXTRACT-MARKER fee note" in text
+    assert "# PLATFORM NOTES" in text
+    assert help_bot._PERSONAS["coach"] not in text  # persona stays out
+
+
+def test_knowledge_text_is_byte_stable_between_edits():
+    assert help_bot.knowledge_text("coach") is help_bot.knowledge_text("coach")

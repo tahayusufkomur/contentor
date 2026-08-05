@@ -24,8 +24,10 @@ def kb_file(tmp_path, monkeypatch):
     path = tmp_path / "help_kb.md"
     path.write_text("## Payouts\nConnect Stripe under Payouts.\n\n## ROUTES\n| /admin/payouts | Payouts |")
     monkeypatch.setattr(help_bot, "KB_PATH", path)
+    help_bot._knowledge_cached.cache_clear()
     help_bot._system_prompt_cached.cache_clear()
     yield path
+    help_bot._knowledge_cached.cache_clear()
     help_bot._system_prompt_cached.cache_clear()
 
 
