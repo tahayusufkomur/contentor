@@ -119,3 +119,25 @@ test("an edit-theme card confirms and applies", async ({ browser }) => {
   expect(executed).toBe(true);
   await page.close();
 });
+
+test("a KB-grounded answer renders admin links as buttons, not raw paths", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/event-stream",
+      body:
+        'data: {"type":"phase","phase":"thinking"}\n\n' +
+        'data: {"type":"done","kind":"answer","text":"You get paid through Stripe payouts. [Payouts](/admin/payouts)"}\n\n',
+    });
+  });
+  await page.goto(`${TENANT}/?copilot=1`);
+  await page.getByPlaceholder("e.g. make this section warmer").fill("how do I get paid?");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(page.getByText("You get paid through Stripe payouts.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Payouts" })).toHaveAttribute("href", /\/admin\/payouts/);
+  await expect(page.getByText("[Payouts]")).toHaveCount(0);
+  await page.close();
+});

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
+import { parseAnswer } from "@/components/admin/assistant/format-answer";
 import { isAbortError } from "@/lib/ai-stream";
 import { converseCopilot } from "@/lib/copilot/api";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
@@ -11,6 +13,33 @@ import type { ChatEntry, SelectionPayload } from "@/lib/copilot/types";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ActionCard } from "./action-card";
 import { SelectionOverlay } from "./selection-overlay";
+
+/** Assistant text with the markdown-lite link contract: `[label](/path)`
+ * links are stripped from the prose and rendered as tappable chips, so a
+ * coach never sees a raw path (same contract as help-chat's AnswerBody). */
+function AssistantText({ text }: { text: string }) {
+  const origin =
+    typeof window === "undefined" ? "http://localhost" : window.location.origin;
+  const { text: prose, links } = parseAnswer(text, origin);
+  return (
+    <>
+      {prose}
+      {links.length > 0 && (
+        <span className="mt-2 flex flex-wrap gap-1">
+          {links.map((l) => (
+            <NavLink
+              key={l.href}
+              href={l.href}
+              className="rounded-full border px-2 py-0.5 text-xs font-medium text-primary"
+            >
+              {l.label}
+            </NavLink>
+          ))}
+        </span>
+      )}
+    </>
+  );
+}
 
 /** The coach's floating AI assistant. Mounted (public layout) only for the
  * coach; the backend re-verifies on every call. `?copilot=1` opens it. */
@@ -122,7 +151,13 @@ export function CopilotBubble() {
                     : "mr-8 rounded-lg bg-muted p-2"
                 }
               >
-                {e.text === "__unavailable__" ? t("resting") : e.text}
+                {e.text === "__unavailable__" ? (
+                  t("resting")
+                ) : e.role === "assistant" ? (
+                  <AssistantText text={e.text} />
+                ) : (
+                  e.text
+                )}
               </div>
               {e.cards?.map((card, j) => (
                 <ActionCard key={`${i}-${j}`} card={card} />
