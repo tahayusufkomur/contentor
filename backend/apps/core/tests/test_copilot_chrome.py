@@ -67,3 +67,20 @@ def test_merge_navbar_does_not_materialize_defaults_for_absent_keys():
     assert "cta" not in merged
     assert "logo_size" not in merged
     assert "show_login" not in merged
+
+
+def test_clean_links_validates_via_serializer_allowlist():
+    cleaned = chrome.clean_links([
+        {"label": "Courses", "href": "/courses"},
+        {"label": "Evil", "href": "javascript:alert(1)"},  # href blanked -> dropped
+    ])
+    assert cleaned == [{"label": "Courses", "href": "/courses"}]
+
+
+def test_clean_links_rejects_bad_shapes():
+    with pytest.raises(chrome.ChromeOpError):
+        chrome.clean_links("not-a-list")
+    with pytest.raises(chrome.ChromeOpError):
+        chrome.clean_links([{"label": "x", "href": "/a"}] * 21)
+    with pytest.raises(chrome.ChromeOpError):
+        chrome.clean_links([{"label": "", "href": ""}])

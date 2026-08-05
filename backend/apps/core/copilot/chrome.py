@@ -58,3 +58,25 @@ def merge_navbar(current, updates):
     # than silently writing those defaults in, so drop any key that wasn't
     # present in current/updates before validation.
     return {k: v for k, v in cleaned.items() if k in known}
+
+
+def clean_links(links):
+    from rest_framework import serializers as drf_serializers
+
+    from apps.tenant_config.serializers import TenantConfigSerializer
+
+    if not isinstance(links, list):
+        raise ChromeOpError("navbar links must be a list")
+    if len(links) > 20:
+        raise ChromeOpError("navbar supports up to 20 links")
+    try:
+        cleaned = TenantConfigSerializer().validate_navbar_config({"links": links})
+    except drf_serializers.ValidationError as exc:
+        detail = exc.detail
+        if isinstance(detail, list) and detail:
+            detail = detail[0]
+        raise ChromeOpError(str(detail)) from exc
+    out = [link for link in cleaned["links"] if link["label"] and link["href"]]
+    if not out:
+        raise ChromeOpError("every navbar link needs a label and a safe link")
+    return out
