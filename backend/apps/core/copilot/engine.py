@@ -7,14 +7,16 @@ The system prompt is a module constant — byte-identical across tenants
 
 import json
 import logging
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 
 from django.conf import settings
+from django.utils import timezone
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.copilot import blocks, tokens
+from apps.core.copilot import blocks, content, tokens
 from apps.core.onboarding import site_ai
 
 logger = logging.getLogger(__name__)
@@ -34,6 +36,15 @@ SYSTEM_PROMPT = (
     "courseGrid, upcomingEvents, storeProducts, pricingPlans, cta, faq, "
     "contact) to a page, with initial field content\n"
     "- remove_block / move_block: by block id from the page digest\n"
+    "- create_course: create a DRAFT course (title, description, price, "
+    "modules each with lesson titles); the coach reviews and publishes it "
+    "from their admin\n"
+    "- create_event: schedule a live class (event_kind=live) or an "
+    "in-person event (event_kind=onsite, include location), with a future "
+    "ISO 8601 scheduled_at — it becomes visible to students once the coach "
+    "confirms the card\n"
+    "- create_blog_post: create a DRAFT blog post (title, one-sentence "
+    "summary, full body_html using simple tags: h2, h3, p, ul, li, strong)\n"
     "Use block ids and page keys exactly as given in the digest. If the "
     "coach's selection is something you cannot change, say so honestly in "
     "an answer and suggest what you CAN do."
@@ -66,8 +77,44 @@ class MoveBlockAction(BaseModel):
     after_block_id: str | None = None
 
 
+class CourseModuleOutline(BaseModel):
+    title: str
+    lessons: list[str] = Field(default_factory=list)
+
+
+class CreateCourseAction(BaseModel):
+    kind: Literal["create_course"]
+    title: str
+    description: str = ""
+    price: float = 0
+    modules: list[CourseModuleOutline] = Field(default_factory=list)
+
+
+class CreateEventAction(BaseModel):
+    kind: Literal["create_event"]
+    event_kind: Literal["live", "onsite"] = "live"
+    title: str
+    description: str = ""
+    scheduled_at: datetime
+    location: str = ""
+    price: float = 0
+
+
+class CreateBlogPostAction(BaseModel):
+    kind: Literal["create_blog_post"]
+    title: str
+    summary: str = ""
+    body_html: str = ""
+
+
 CopilotAction = Annotated[
-    EditPagesAction | AddBlockAction | RemoveBlockAction | MoveBlockAction,
+    EditPagesAction
+    | AddBlockAction
+    | RemoveBlockAction
+    | MoveBlockAction
+    | CreateCourseAction
+    | CreateEventAction
+    | CreateBlogPostAction,
     Field(discriminator="kind"),
 ]
 
@@ -152,11 +199,66 @@ def _card(tenant, action):
             "detail": "",
             "token": tokens.stash_action(schema, action.model_dump()),
         }
+    if isinstance(action, MoveBlockAction):
+        return {
+            "kind": "move_block",
+            "title": f"Move {action.block_id} on {action.page}",
+            "detail": "to the top" if action.after_block_id is None else f"after {action.after_block_id}",
+            "token": tokens.stash_action(schema, action.model_dump()),
+        }
+    if isinstance(action, CreateCourseAction):
+        price = max(action.price, 0)
+        params = {
+            "title": action.title[:200],
+            "description": action.description,
+            "price": f"{price:.2f}",
+            "pricing_type": "paid" if price > 0 else "free",
+            "modules": [
+                {"title": m.title[:200], "lessons": [{"title": t[:200]} for t in m.lessons]}
+                for m in action.modules
+            ],
+        }
+        lesson_count = sum(len(m.lessons) for m in action.modules)
+        price_label = "free" if price == 0 else params["price"]
+        return {
+            "kind": "create_course",
+            "title": f"Create draft course: {action.title[:120]}",
+            "detail": f"{len(action.modules)} module(s), {lesson_count} lesson(s) — {price_label}",
+            "token": tokens.stash_action(schema, {"kind": "create_course", "params": params}),
+        }
+    if isinstance(action, CreateEventAction):
+        when = action.scheduled_at if action.scheduled_at.tzinfo else action.scheduled_at.replace(tzinfo=UTC)
+        if when <= timezone.now():
+            raise content.ContentOpError("event date must be in the future")
+        price = max(action.price, 0)
+        params = {
+            "title": action.title[:200],
+            "description": action.description,
+            "price": f"{price:.2f}",
+            "pricing_type": "paid" if price > 0 else "free",
+            "scheduled_at": when.isoformat(),
+        }
+        if action.event_kind == "onsite":
+            params["location"] = action.location[:500]
+        label = "onsite event" if action.event_kind == "onsite" else "live class"
+        return {
+            "kind": "create_event",
+            "title": f"Schedule {label}: {action.title[:120]}",
+            "detail": f"{when:%b %d, %Y %H:%M} — visible to students once confirmed",
+            "token": tokens.stash_action(
+                schema, {"kind": "create_event", "event_kind": action.event_kind, "params": params}
+            ),
+        }
+    params = {
+        "title": action.title[:200],
+        "excerpt": action.summary[:300],
+        "body_html": action.body_html,
+    }
     return {
-        "kind": "move_block",
-        "title": f"Move {action.block_id} on {action.page}",
-        "detail": "to the top" if action.after_block_id is None else f"after {action.after_block_id}",
-        "token": tokens.stash_action(schema, action.model_dump()),
+        "kind": "create_blog_post",
+        "title": f"Draft blog post: {action.title[:120]}",
+        "detail": action.summary[:500] or "Draft for your review",
+        "token": tokens.stash_action(schema, {"kind": "create_blog_post", "params": params}),
     }
 
 

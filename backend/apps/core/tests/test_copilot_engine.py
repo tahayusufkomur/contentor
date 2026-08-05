@@ -98,3 +98,110 @@ def test_failed_model_call_still_reports_cost():
         pytest.raises(AiError),
     ):
         engine.run_turn(TENANT, [], [], "hi")
+
+
+def test_create_course_action_becomes_card_with_stashed_params():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "create_course",
+                "title": "Yoga Foundations",
+                "description": "Start here.",
+                "price": 49,
+                "modules": [{"title": "Basics", "lessons": ["Breathing", "Posture"]}],
+            }
+        ],
+    )
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+    ):
+        payload, _ = engine.run_turn(TENANT, [], [], "create my first course")
+    (card,) = payload["actions"]
+    assert card["kind"] == "create_course"
+    assert "Yoga Foundations" in card["title"]
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["params"]["pricing_type"] == "paid"
+    assert stashed["params"]["price"] == "49.00"
+    assert stashed["params"]["modules"][0]["lessons"] == [{"title": "Breathing"}, {"title": "Posture"}]
+    assert "is_published" not in stashed["params"]
+
+
+def test_create_event_card_requires_future_date():
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "create_event",
+                "event_kind": "live",
+                "title": "Morning flow",
+                "scheduled_at": "2020-01-01T09:00:00Z",
+            }
+        ],
+    )
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+    ):
+        payload, _ = engine.run_turn(TENANT, [], [], "schedule a class")
+    assert payload["kind"] == "answer"  # past-date proposal dropped, fallback answer
+
+
+def test_create_event_onsite_card_stashes_location_and_kind():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "create_event",
+                "event_kind": "onsite",
+                "title": "Berlin retreat",
+                "location": "Studio Mitte",
+                "scheduled_at": "2030-06-01T10:00:00Z",
+            }
+        ],
+    )
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+    ):
+        payload, _ = engine.run_turn(TENANT, [], [], "plan a retreat")
+    (card,) = payload["actions"]
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["event_kind"] == "onsite"
+    assert stashed["params"]["location"] == "Studio Mitte"
+    assert stashed["params"]["scheduled_at"].startswith("2030-06-01")
+
+
+def test_create_blog_post_card_maps_summary_to_excerpt():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "create_blog_post",
+                "title": "5 stretches",
+                "summary": "A five-minute routine.",
+                "body_html": "<p>Go.</p>",
+            }
+        ],
+    )
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+    ):
+        payload, _ = engine.run_turn(TENANT, [], [], "write a blog post")
+    (card,) = payload["actions"]
+    assert card["kind"] == "create_blog_post"
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["params"]["excerpt"] == "A five-minute routine."
+    assert "status" not in stashed["params"]
