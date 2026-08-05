@@ -16,7 +16,7 @@ from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.copilot import blocks, content, tokens
+from apps.core.copilot import blocks, chrome, content, tokens
 from apps.core.onboarding import site_ai
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,11 @@ SYSTEM_PROMPT = (
     "confirms the card\n"
     "- create_blog_post: create a DRAFT blog post (title, one-sentence "
     "summary, full body_html using simple tags: h2, h3, p, ul, li, strong)\n"
+    "- edit_theme: switch the site's color theme; theme must be one of: "
+    "ocean, ember, forest, sunset, violet, slate\n"
+    "- edit_navbar: change the navbar layout (one of: classic, centered, "
+    "split, minimal, pill) and/or its call-to-action button (cta_text plus "
+    "cta_href, an internal path like /courses); include only what changes\n"
     "Use block ids and page keys exactly as given in the digest. If the "
     "coach's selection is something you cannot change, say so honestly in "
     "an answer and suggest what you CAN do."
@@ -107,6 +112,18 @@ class CreateBlogPostAction(BaseModel):
     body_html: str = ""
 
 
+class EditThemeAction(BaseModel):
+    kind: Literal["edit_theme"]
+    theme: str
+
+
+class EditNavbarAction(BaseModel):
+    kind: Literal["edit_navbar"]
+    layout: str | None = None
+    cta_text: str | None = None
+    cta_href: str | None = None
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -114,7 +131,9 @@ CopilotAction = Annotated[
     | MoveBlockAction
     | CreateCourseAction
     | CreateEventAction
-    | CreateBlogPostAction,
+    | CreateBlogPostAction
+    | EditThemeAction
+    | EditNavbarAction,
     Field(discriminator="kind"),
 ]
 
@@ -145,12 +164,27 @@ def _pages_digest(tenant):
     return "\n".join(lines) or "(no pages yet)"
 
 
+def _chrome_digest(tenant):
+    """One-line current theme/navbar state for the user turn."""
+    from apps.tenant_config.models import TenantConfig
+
+    with tenant_context(tenant):
+        cfg = TenantConfig.objects.first()
+    if cfg is None:
+        return "Theme: ocean; Navbar: layout=classic, cta=none"
+    nav = cfg.navbar_config or {}
+    cta = nav.get("cta") or {}
+    cta_part = f"'{cta.get('text')}' -> {cta.get('href')}" if cta.get("text") else "none"
+    return f"Theme: {cfg.theme}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
+
+
 def _user_turn(tenant, transcript, selections, message):
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
         f"Brand: {tenant.name}",
         f"Niche: {answers.get('niche') or 'general'}",
         "Current pages:\n" + _pages_digest(tenant),
+        _chrome_digest(tenant),
     ]
     if selections:
         parts.append(
@@ -205,6 +239,33 @@ def _card(tenant, action):
             "title": f"Move {action.block_id} on {action.page}",
             "detail": "to the top" if action.after_block_id is None else f"after {action.after_block_id}",
             "token": tokens.stash_action(schema, action.model_dump()),
+        }
+    if isinstance(action, EditThemeAction):
+        theme = chrome.clean_theme(action.theme)
+        return {
+            "kind": "edit_theme",
+            "title": f"Switch theme to {chrome.theme_label(theme)}",
+            "detail": "Colors change across the whole site — you can switch back anytime.",
+            "token": tokens.stash_action(schema, {"kind": "edit_theme", "theme": theme}),
+        }
+    if isinstance(action, EditNavbarAction):
+        updates = {}
+        if action.layout is not None:
+            updates["layout"] = chrome.clean_layout(action.layout)
+        if action.cta_text:
+            updates["cta"] = {"text": action.cta_text[:80], "href": str(action.cta_href or "/courses")[:300]}
+        if not updates:
+            raise chrome.ChromeOpError("nothing to change on the navbar")
+        parts = []
+        if "layout" in updates:
+            parts.append(f"layout: {updates['layout']}")
+        if "cta" in updates:
+            parts.append(f"button: '{updates['cta']['text']}' → {updates['cta']['href']}")
+        return {
+            "kind": "edit_navbar",
+            "title": "Update the navbar",
+            "detail": ", ".join(parts),
+            "token": tokens.stash_action(schema, {"kind": "edit_navbar", "updates": updates}),
         }
     if isinstance(action, CreateCourseAction):
         price = max(action.price, 0)

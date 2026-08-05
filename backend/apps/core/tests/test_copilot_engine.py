@@ -22,6 +22,7 @@ def _run(parsed):
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(
             engine.site_ai,
@@ -48,6 +49,7 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(
             engine.site_ai,
             "diff_current",
@@ -69,6 +71,7 @@ def test_add_block_card_carries_the_built_block():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add a call to action")
     (card,) = payload["actions"]
@@ -84,6 +87,7 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add testimonials")
     assert payload["kind"] == "answer"  # nothing proposable survived
@@ -95,6 +99,7 @@ def test_failed_model_call_still_reports_cost():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=AiError("boom", cost_usd=Decimal("0.004"))),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         pytest.raises(AiError),
     ):
         engine.run_turn(TENANT, [], [], "hi")
@@ -119,6 +124,7 @@ def test_create_course_action_becomes_card_with_stashed_params():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "create my first course")
     (card,) = payload["actions"]
@@ -147,6 +153,7 @@ def test_create_event_card_requires_future_date():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "schedule a class")
     assert payload["kind"] == "answer"  # past-date proposal dropped, fallback answer
@@ -171,6 +178,7 @@ def test_create_event_onsite_card_stashes_location_and_kind():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "plan a retreat")
     (card,) = payload["actions"]
@@ -198,6 +206,7 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "write a blog post")
     (card,) = payload["actions"]
@@ -205,3 +214,63 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
     assert stashed["params"]["excerpt"] == "A five-minute routine."
     assert "status" not in stashed["params"]
+
+
+def test_edit_theme_card_stashes_normalized_theme():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(kind="actions", text="", actions=[{"kind": "edit_theme", "theme": "Forest"}])
+    payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "edit_theme"
+    assert "Forest" in card["title"]
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {"kind": "edit_theme", "theme": "forest"}
+
+
+def test_edit_theme_unknown_id_dropped_with_fallback():
+    parsed = _turn(kind="actions", text="", actions=[{"kind": "edit_theme", "theme": "midnight"}])
+    payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"  # unknown theme dropped, fallback answer
+
+
+def test_edit_navbar_card_carries_layout_and_cta():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_navbar", "layout": "pill", "cta_text": "Join now", "cta_href": "/plans"}],
+    )
+    payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "edit_navbar"
+    assert "pill" in card["detail"] and "Join now" in card["detail"]
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {
+        "kind": "edit_navbar",
+        "updates": {"layout": "pill", "cta": {"text": "Join now", "href": "/plans"}},
+    }
+
+
+def test_edit_navbar_without_changes_dropped():
+    parsed = _turn(kind="actions", text="", actions=[{"kind": "edit_navbar"}])
+    payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"  # nothing to change, dropped
+
+
+def test_user_turn_includes_chrome_digest():
+    from decimal import Decimal
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="answer", text="hi"), Decimal("0.01"), "m"
+
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+    ):
+        engine.run_turn(TENANT, [], [], "hello")
+    assert "Theme: ocean" in captured["user"]
