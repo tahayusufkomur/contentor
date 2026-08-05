@@ -28,3 +28,13 @@ export function toTranscript(
     .slice(-TRANSCRIPT_MAX)
     .map((e) => ({ role: e.role, text: e.text }));
 }
+
+const CREATE_KINDS = new Set([
+  "create_course",
+  "create_event",
+  "create_blog_post",
+]);
+
+/** Distinguishes content-creation actions (new draft, gets a "view" link)
+ * from site-edit actions (existing page content updated in place). */
+export const isCreateKind = (kind: string) => CREATE_KINDS.has(kind);

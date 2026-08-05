@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { executeCopilotAction } from "@/lib/copilot/api";
-import type { ActionCard as ActionCardData } from "@/lib/copilot/types";
+import { isCreateKind } from "@/lib/copilot/state";
+import type {
+  ActionCard as ActionCardData,
+  ExecuteResult,
+} from "@/lib/copilot/types";
 
 const PAGE_NAME_KEYS = new Set([
   "home",
@@ -33,13 +38,15 @@ export function ActionCard({ card }: { card: ActionCardData }) {
   const [state, setState] = useState<"proposed" | "done" | "dismissed">(
     "proposed",
   );
+  const [result, setResult] = useState<ExecuteResult | null>(null);
 
   const { run: confirm, loading } = useAsyncAction(
     async () => {
-      await executeCopilotAction(card.token);
+      const res = await executeCopilotAction(card.token);
+      setResult(res.result);
       setState("done");
       router.refresh();
-      toast.success(t("applied"));
+      toast.success(t(isCreateKind(card.kind) ? "created" : "applied"));
     },
     { errorToast: t("error") },
   );
@@ -81,7 +88,12 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       )}
       {state === "done" ? (
         <p className="mt-2 text-xs font-medium text-primary">
-          {t("appliedShort")}
+          {t(isCreateKind(card.kind) ? "createdShort" : "appliedShort")}
+          {result?.url ? (
+            <NavLink href={result.url} className="ml-2 underline">
+              {t("view")}
+            </NavLink>
+          ) : null}
         </p>
       ) : (
         <div className="mt-3 flex gap-2">

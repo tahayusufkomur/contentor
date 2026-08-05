@@ -2,7 +2,7 @@
 // confirmed-action mutation is a plain request via clientFetch.
 import { clientFetch } from "@/lib/api-client";
 import { streamAi, type AiStreamHandlers } from "@/lib/ai-stream";
-import type { CopilotDone, SelectionPayload } from "./types";
+import type { CopilotDone, ExecuteResult, SelectionPayload } from "./types";
 
 const BASE = "/api/v1/admin/copilot";
 
@@ -17,9 +17,7 @@ export const converseCopilot = (
 ) => streamAi<CopilotDone, never>(`${BASE}/converse/`, body, handlers, signal);
 
 export const executeCopilotAction = (token: string) =>
-  clientFetch<{
-    result: { kind: string; changes_count?: number; page?: string };
-  }>(`${BASE}/execute/`, {
+  clientFetch<{ result: ExecuteResult }>(`${BASE}/execute/`, {
     method: "POST",
     body: JSON.stringify({ token }),
   });

@@ -14,12 +14,30 @@ export interface DiffRow {
   new: string | null;
 }
 
+export type ActionKind =
+  | "edit_pages"
+  | "add_block"
+  | "remove_block"
+  | "move_block"
+  | "create_course"
+  | "create_event"
+  | "create_blog_post";
+
 export interface ActionCard {
-  kind: "edit_pages" | "add_block" | "remove_block" | "move_block";
+  kind: ActionKind;
   title: string;
   detail: string;
   changes?: DiffRow[];
   token: string;
+}
+
+export interface ExecuteResult {
+  kind: string;
+  changes_count?: number;
+  page?: string;
+  id?: number;
+  title?: string;
+  url?: string;
 }
 
 export interface CopilotDone {

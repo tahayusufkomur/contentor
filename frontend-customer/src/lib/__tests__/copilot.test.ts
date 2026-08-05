@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildSelectionPayload } from "@/lib/copilot/selection";
-import { reduceChat, toTranscript } from "@/lib/copilot/state";
+import { isCreateKind, reduceChat, toTranscript } from "@/lib/copilot/state";
 import type { ChatEntry } from "@/lib/copilot/types";
 
 const el = (
@@ -82,5 +82,15 @@ describe("chat state", () => {
       { role: "coach", text: "hi" },
       { role: "coach", text: "still there?" },
     ]);
+  });
+});
+
+describe("isCreateKind", () => {
+  it("separates content creates from site edits", () => {
+    expect(isCreateKind("create_course")).toBe(true);
+    expect(isCreateKind("create_event")).toBe(true);
+    expect(isCreateKind("create_blog_post")).toBe(true);
+    expect(isCreateKind("edit_pages")).toBe(false);
+    expect(isCreateKind("add_block")).toBe(false);
   });
 });
