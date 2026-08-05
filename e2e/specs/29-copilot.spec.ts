@@ -142,6 +142,40 @@ test("a KB-grounded answer renders admin links as buttons, not raw paths", async
   await page.close();
 });
 
+test("edit_block_fields card shows diff rows and confirms", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/event-stream",
+      body:
+        'data: {"type":"phase","phase":"thinking"}\n\n' +
+        'data: {"type":"done","kind":"actions","text":"Updating the hero.",' +
+        '"actions":[{"kind":"edit_block_fields","title":"Update the hero on home",' +
+        '"detail":"1 field(s) change",' +
+        '"changes":[{"page":"home","block_type":"hero","field":"ctaHref","old":"/courses","new":"/pricing"}],' +
+        '"token":"e2e-fields-token"}]}\n\n',
+    });
+  });
+  let executed = false;
+  await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
+    executed = true;
+    await route.fulfill({ json: { result: { kind: "edit_block_fields", page: "home" } } });
+  });
+  await page.goto(`${TENANT}/?copilot=1`);
+  await expect(page.getByText("Your AI assistant").first()).toBeVisible();
+  await page.getByPlaceholder("e.g. make this section warmer").fill("change the hero button link");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(page.getByText("Update the hero on home")).toBeVisible();
+  await expect(page.getByText("/pricing")).toBeVisible();
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await expect(page.getByText("Applied", { exact: true })).toBeVisible();
+  expect(executed).toBe(true);
+  await page.close();
+});
+
 test("a set-block-image card shows the photo preview and applies", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();

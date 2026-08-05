@@ -92,7 +92,21 @@
       "ctaText": "Buton metni",
       "buttonText": "Buton metni",
       "intro": "Giriş metni",
-      "items": "Sorular"
+      "items": "Sorular",
+      "ctaHref": "Buton bağlantısı",
+      "buttonHref": "Buton bağlantısı",
+      "secondaryButtonText": "İkinci buton metni",
+      "secondaryButtonHref": "İkinci buton bağlantısı",
+      "layout": "Yerleşim",
+      "headingLevel": "Başlık boyutu",
+      "imagePosition": "Görsel konumu",
+      "overlay": "Görsel gölgesi",
+      "overlayStrength": "Gölge şiddeti",
+      "text": "Metin",
+      "linkText": "Bağlantı metni",
+      "linkHref": "Bağlantı",
+      "submitLabel": "Gönder butonu",
+      "successMessage": "Başarı mesajı"
     }
   }
 }

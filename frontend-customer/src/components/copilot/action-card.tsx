@@ -31,6 +31,20 @@ const FIELD_NAME_KEYS = new Set([
   "buttonText",
   "intro",
   "items",
+  "ctaHref",
+  "buttonHref",
+  "secondaryButtonText",
+  "secondaryButtonHref",
+  "layout",
+  "headingLevel",
+  "imagePosition",
+  "overlay",
+  "overlayStrength",
+  "text",
+  "linkText",
+  "linkHref",
+  "submitLabel",
+  "successMessage",
 ]);
 
 export function ActionCard({ card }: { card: ActionCardData }) {

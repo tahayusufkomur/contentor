@@ -92,7 +92,21 @@
       "ctaText": "Button text",
       "buttonText": "Button text",
       "intro": "Intro",
-      "items": "Questions"
+      "items": "Questions",
+      "ctaHref": "Button link",
+      "buttonHref": "Button link",
+      "secondaryButtonText": "Second button text",
+      "secondaryButtonHref": "Second button link",
+      "layout": "Layout",
+      "headingLevel": "Heading size",
+      "imagePosition": "Image position",
+      "overlay": "Image shade",
+      "overlayStrength": "Shade strength",
+      "text": "Text",
+      "linkText": "Link text",
+      "linkHref": "Link",
+      "submitLabel": "Submit button",
+      "successMessage": "Success message"
     }
   }
 }
