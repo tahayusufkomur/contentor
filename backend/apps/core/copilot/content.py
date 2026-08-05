@@ -61,5 +61,7 @@ def create_blog_post(user, params):
         published_at=None,
         source="ai",
         ai_model=settings.COPILOT_MODEL,
+        status="draft",
+        noindex=False,
     )
     return {"kind": "create_blog_post", "id": post.id, "title": post.title, "url": f"/admin/blog/{post.id}"}

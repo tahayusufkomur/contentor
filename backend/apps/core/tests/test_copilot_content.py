@@ -111,3 +111,21 @@ def test_create_blog_post_draft_sanitized_and_stamped_ai(coach):
 def test_create_blog_post_requires_title(coach):
     with pytest.raises(content.ContentOpError):
         content.create_blog_post(coach, {"excerpt": "no title"})
+
+
+def test_create_blog_post_forces_draft_regardless_of_caller_params(coach):
+    """Regression: server must always win over caller-supplied status/noindex."""
+    from apps.blog.models import BlogPost
+
+    result = content.create_blog_post(
+        coach,
+        {
+            "title": "Caller tried to publish",
+            "excerpt": "Sneaky attempt.",
+            "status": "published",
+            "noindex": True,
+        },
+    )
+    post = BlogPost.objects.get(id=result["id"])
+    assert post.status == "draft"  # Server forced draft
+    assert post.noindex is False  # Server forced noindex=False
