@@ -56,10 +56,7 @@ def _coach_user(payload, tenant):
 
 def _current(tenant) -> Response:
     cd = (
-        CustomDomain.objects.filter(tenant=tenant)
-        .exclude(provisioning_status="lapsed")
-        .order_by("-created_at")
-        .first()
+        CustomDomain.objects.filter(tenant=tenant).exclude(provisioning_status="lapsed").order_by("-created_at").first()
     )
     return Response({"custom_domain": CustomDomainSerializer(cd).data if cd else None})
 

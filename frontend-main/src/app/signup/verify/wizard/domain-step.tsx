@@ -143,7 +143,8 @@ export function DomainStep({
     resolvedRef.current = true;
     const sessionId = params.get("session_id");
     const upgraded = params.get("upgraded") === "1";
-    const bypassId = params.get("bypass") === "1" && params.get("custom_domain_id");
+    const bypassId =
+      params.get("bypass") === "1" && params.get("custom_domain_id");
     const canceled = params.get("domain_canceled") === "1";
 
     const finishDomainSync = (res: {
@@ -447,7 +448,10 @@ export function DomainStep({
 
   return (
     <div className="mx-auto max-w-[440px]">
-      <SlideHeader heading={t("domain.heading")} subhead={t("domain.subhead")} />
+      <SlideHeader
+        heading={t("domain.heading")}
+        subhead={t("domain.subhead")}
+      />
       <form
         className="mt-6 flex gap-2"
         onSubmit={(e) => {
