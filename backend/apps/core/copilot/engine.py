@@ -36,7 +36,7 @@ SYSTEM_PROMPT = (
     "- edit_pages: rewrite existing page copy from an instruction\n"
     "- add_block: add a new section (types: hero, richText, imageText, "
     "courseGrid, upcomingEvents, storeProducts, pricingPlans, cta, faq, "
-    "contact) to a page, with initial field content\n"
+    "contact, stats, banner) to a page, with initial field content\n"
     "- remove_block / move_block: by block id from the page digest\n"
     "- create_course: create a DRAFT course (title, description, price, "
     "modules each with lesson titles); the coach reviews and publishes it "
@@ -57,10 +57,43 @@ SYSTEM_PROMPT = (
     "description of the photo you want, e.g. 'calm sunlit yoga studio, "
     "warm tones'); propose it again with a different description if the "
     "coach wants another style\n"
+    "- edit_block_fields: change specific fields on one existing block "
+    "(page + block_id from the digest, fields per the block field guide "
+    "below) — prefer this over edit_pages for single-block changes\n"
+    "- toggle_block: hide (enabled=false) or show (enabled=true) a block "
+    "without deleting it — prefer this over remove_block when the coach "
+    "says 'hide' or might want it back\n"
+    "- duplicate_block: copy a block in place\n"
+    "- move_block also accepts to_page to move a block to another page\n"
+    "- edit_navbar additionally accepts links (full replacement list of "
+    "{label, href}) and show_login / show_install booleans\n"
     "Use block ids and page keys exactly as given in the digest. If the "
     "coach's selection is something you cannot change, say so honestly in "
     "an answer and suggest what you CAN do."
 )
+
+
+def _field_guide():
+    lines = ["Block field guide (add_block and edit_block_fields):"]
+    for btype, schema in blocks.BLOCK_SCHEMA.items():
+        parts = []
+        for field, spec in schema.items():
+            if spec[0] == "select":
+                parts.append(f"{field}({'|'.join(spec[1])})")
+            elif spec[0] == "link":
+                parts.append(f"{field}(link)")
+            elif spec[0] == "bool":
+                parts.append(f"{field}(true/false)")
+            elif spec[0] == "items":
+                parts.append(f"items({{{'/'.join(spec[1])}}} max {spec[2]})")
+            else:
+                parts.append(field)
+        lines.append(f"{btype}: {', '.join(parts)}")
+    lines.append("Links are site paths like /courses (or full https URLs).")
+    return "\n".join(lines)
+
+
+SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + _field_guide()
 
 
 class EditPagesAction(BaseModel):
@@ -87,6 +120,32 @@ class MoveBlockAction(BaseModel):
     page: str
     block_id: str
     after_block_id: str | None = None
+    to_page: str | None = None
+
+
+class EditBlockFieldsAction(BaseModel):
+    kind: Literal["edit_block_fields"]
+    page: str
+    block_id: str
+    fields: dict = Field(default_factory=dict)
+
+
+class ToggleBlockAction(BaseModel):
+    kind: Literal["toggle_block"]
+    page: str
+    block_id: str
+    enabled: bool
+
+
+class DuplicateBlockAction(BaseModel):
+    kind: Literal["duplicate_block"]
+    page: str
+    block_id: str
+
+
+class NavLinkItem(BaseModel):
+    label: str
+    href: str
 
 
 class CourseModuleOutline(BaseModel):
@@ -129,6 +188,9 @@ class EditNavbarAction(BaseModel):
     layout: str | None = None
     cta_text: str | None = None
     cta_href: str | None = None
+    links: list[NavLinkItem] | None = None
+    show_login: bool | None = None
+    show_install: bool | None = None
 
 
 class SetBlockImageAction(BaseModel):
@@ -148,7 +210,10 @@ CopilotAction = Annotated[
     | CreateBlogPostAction
     | EditThemeAction
     | EditNavbarAction
-    | SetBlockImageAction,
+    | SetBlockImageAction
+    | EditBlockFieldsAction
+    | ToggleBlockAction
+    | DuplicateBlockAction,
     Field(discriminator="kind"),
 ]
 
@@ -159,23 +224,35 @@ class CopilotTurn(BaseModel):
     actions: list[CopilotAction] = Field(default_factory=list)
 
 
-def _pages_digest(tenant):
-    """Bounded snapshot of the current pages tree for the user turn:
-    page key, block ids/types, first 40 chars of each heading."""
+def _tenant_pages(tenant):
     from apps.tenant_config.models import TenantConfig
 
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
-        pages = (cfg.pages if cfg else None) or {}
+        return (cfg.pages if cfg else None) or {}
+
+
+def _pages_digest(tenant):
+    """Bounded snapshot for the user turn: per page, each block's id, type,
+    hidden flag, and current writable-field values (truncated) so the model
+    can propose precise edit_block_fields changes."""
     lines = []
-    for page, page_value in pages.items():
+    for page, page_value in _tenant_pages(tenant).items():
         blocks_ = blocks.page_blocks(page_value)
         if blocks_ is None:
             continue
-        items = ", ".join(
-            f"{b.get('id')}({b.get('type')}: {str(b.get('heading', ''))[:40]})" for b in blocks_ if isinstance(b, dict)
-        )
-        lines.append(f"{page}: {items}")
+        lines.append(f"page={page}")
+        for b in blocks_:
+            if not isinstance(b, dict):
+                continue
+            schema = blocks.BLOCK_SCHEMA.get(b.get("type"), {})
+            flags = "" if b.get("enabled", True) else " [hidden]"
+            vals = " ".join(
+                f"{f}={len(b.get(f) or [])} item(s)" if isinstance(b.get(f), list) else f'{f}="{str(b.get(f))[:60]}"'
+                for f in schema
+                if b.get(f) not in (None, "")
+            )
+            lines.append(f"  {b.get('id')} {b.get('type')}{flags} {vals}".rstrip())
     return "\n".join(lines) or "(no pages yet)"
 
 
@@ -198,20 +275,18 @@ def _block_for_image(tenant, page, block_id):
     (so the pick can exclude it — "try another" must not return the same
     shot). Raises photos.PhotoOpError for unknown/unsupported blocks."""
     from apps.media.models import Photo
-    from apps.tenant_config.models import TenantConfig
 
-    with tenant_context(tenant):
-        cfg = TenantConfig.objects.first()
-        blocks_ = blocks.page_blocks(((cfg.pages if cfg else None) or {}).get(page))
-        if blocks_ is None:
-            raise photos.PhotoOpError(f"unknown page: {page}")
-        block = next((b for b in blocks_ if isinstance(b, dict) and b.get("id") == block_id), None)
-        if block is None:
-            raise photos.PhotoOpError(f"no block {block_id} on {page}")
-        field = photos.image_field_for(block.get("type"))
-        current_id = (block.get(field) or {}).get("photo_id") if isinstance(block.get(field), dict) else None
-        exclude_key = None
-        if current_id:
+    blocks_ = blocks.page_blocks(_tenant_pages(tenant).get(page))
+    if blocks_ is None:
+        raise photos.PhotoOpError(f"unknown page: {page}")
+    block = next((b for b in blocks_ if isinstance(b, dict) and b.get("id") == block_id), None)
+    if block is None:
+        raise photos.PhotoOpError(f"no block {block_id} on {page}")
+    field = photos.image_field_for(block.get("type"))
+    current_id = (block.get(field) or {}).get("photo_id") if isinstance(block.get(field), dict) else None
+    exclude_key = None
+    if current_id:
+        with tenant_context(tenant):
             exclude_key = Photo.objects.filter(pk=current_id).values_list("s3_key", flat=True).first()
     return field, exclude_key
 
@@ -272,10 +347,52 @@ def _card(tenant, action):
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, MoveBlockAction):
+        detail = "to the top" if action.after_block_id is None else f"after {action.after_block_id}"
+        if action.to_page:
+            detail = f"to {action.to_page} ({detail})"
         return {
             "kind": "move_block",
             "title": f"Move {action.block_id} on {action.page}",
-            "detail": "to the top" if action.after_block_id is None else f"after {action.after_block_id}",
+            "detail": detail,
+            "token": tokens.stash_action(schema, action.model_dump()),
+        }
+    if isinstance(action, EditBlockFieldsAction):
+        pages_snapshot = _tenant_pages(tenant)
+        _, changes = blocks.edit_block_fields(pages_snapshot, action.page, action.block_id, action.fields)
+        page_blocks_ = blocks.page_blocks(pages_snapshot.get(action.page)) or []
+        block = next((b for b in page_blocks_ if isinstance(b, dict) and b.get("id") == action.block_id), {})
+        rows = [
+            {
+                "page": action.page,
+                "block_type": block.get("type", ""),
+                "field": c["field"],
+                "old": c["old"],
+                "new": c["new"],
+            }
+            for c in changes
+        ]
+        return {
+            "kind": "edit_block_fields",
+            "title": f"Update the {block.get('type', 'block')} on {action.page}",
+            "detail": f"{len(rows)} field(s) change",
+            "changes": rows,
+            "token": tokens.stash_action(schema, action.model_dump()),
+        }
+    if isinstance(action, ToggleBlockAction):
+        blocks.set_block_enabled(_tenant_pages(tenant), action.page, action.block_id, action.enabled)
+        verb = "Show" if action.enabled else "Hide"
+        return {
+            "kind": "toggle_block",
+            "title": f"{verb} {action.block_id} on {action.page}",
+            "detail": "The section stays saved — flip it back anytime.",
+            "token": tokens.stash_action(schema, action.model_dump()),
+        }
+    if isinstance(action, DuplicateBlockAction):
+        blocks.duplicate_block(_tenant_pages(tenant), action.page, action.block_id)
+        return {
+            "kind": "duplicate_block",
+            "title": f"Duplicate {action.block_id} on {action.page}",
+            "detail": "The copy lands right below the original.",
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, SetBlockImageAction):
@@ -312,6 +429,12 @@ def _card(tenant, action):
             updates["layout"] = chrome.clean_layout(action.layout)
         if action.cta_text:
             updates["cta"] = {"text": action.cta_text[:80], "href": str(action.cta_href or "/courses")[:300]}
+        if action.links is not None:
+            updates["links"] = chrome.clean_links([item.model_dump() for item in action.links])
+        if action.show_login is not None:
+            updates["show_login"] = action.show_login
+        if action.show_install is not None:
+            updates["show_install"] = action.show_install
         if not updates:
             raise chrome.ChromeOpError("nothing to change on the navbar")
         parts = []
@@ -319,6 +442,12 @@ def _card(tenant, action):
             parts.append(f"layout: {updates['layout']}")
         if "cta" in updates:
             parts.append(f"button: '{updates['cta']['text']}' → {updates['cta']['href']}")
+        if "links" in updates:
+            parts.append("links: " + ", ".join(f"'{link['label']}'" for link in updates["links"]))
+        if "show_login" in updates:
+            parts.append(f"login button {'shown' if updates['show_login'] else 'hidden'}")
+        if "show_install" in updates:
+            parts.append(f"install button {'shown' if updates['show_install'] else 'hidden'}")
         return {
             "kind": "edit_navbar",
             "title": "Update the navbar",

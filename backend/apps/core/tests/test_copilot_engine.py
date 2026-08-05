@@ -7,11 +7,25 @@ from unittest import mock
 
 import pytest
 
-from apps.core.copilot import engine
+from apps.core.copilot import blocks, engine
 
 pytestmark = pytest.mark.django_db
 
 TENANT = SimpleNamespace(schema_name="demo_yoga", name="Demo Yoga", wizard_state={"answers": {"niche": "yoga"}})
+
+
+@pytest.fixture()
+def tenant_with_pages(tenant_ctx):
+    """A real tenant (real schema, so _tenant_pages' tenant_context switch
+    actually resolves) with one TenantConfig.pages block to validate
+    field-edit/toggle/duplicate cards against."""
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Test Brand")
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    tenant_ctx.wizard_state = {"answers": {"niche": "yoga"}}
+    return tenant_ctx
 
 
 def _turn(**kw):
@@ -476,3 +490,48 @@ def test_all_cards_dropped_never_echoes_success_claiming_text():
     # it must never reach the coach.
     assert "Added a calming" not in payload["text"]
     assert "no photos are available in the library yet" in payload["text"]
+
+
+def test_system_prompt_contains_field_guide_and_new_actions():
+    assert "edit_block_fields" in engine.SYSTEM_PROMPT
+    assert "toggle_block" in engine.SYSTEM_PROMPT
+    assert "duplicate_block" in engine.SYSTEM_PROMPT
+    assert "stats" in engine.SYSTEM_PROMPT and "banner" in engine.SYSTEM_PROMPT
+    assert "overlay(none|dark|light)" in engine.SYSTEM_PROMPT  # generated FIELD GUIDE
+
+
+def test_edit_block_fields_card_carries_diff_rows(tenant_with_pages):
+    action = engine.EditBlockFieldsAction(
+        kind="edit_block_fields",
+        page="home",
+        block_id="blk_hero",
+        fields={"heading": "New headline"},
+    )
+    card = engine._card(tenant_with_pages, action)
+    assert card["kind"] == "edit_block_fields"
+    assert card["changes"][0]["field"] == "heading"
+    assert card["changes"][0]["new"] == "New headline"
+    assert card["token"]
+
+
+def test_toggle_and_duplicate_cards_validate_against_current_pages(tenant_with_pages):
+    toggle = engine.ToggleBlockAction(kind="toggle_block", page="home", block_id="blk_hero", enabled=False)
+    assert engine._card(tenant_with_pages, toggle)["kind"] == "toggle_block"
+    dup = engine.DuplicateBlockAction(kind="duplicate_block", page="home", block_id="blk_missing")
+    with pytest.raises(blocks.BlockOpError):
+        engine._card(tenant_with_pages, dup)
+
+
+def test_navbar_card_with_links_and_flags(tenant_with_pages):
+    action = engine.EditNavbarAction(
+        kind="edit_navbar",
+        links=[engine.NavLinkItem(label="Courses", href="/courses")],
+        show_login=False,
+    )
+    card = engine._card(tenant_with_pages, action)
+    assert "Courses" in card["detail"] and "login" in card["detail"].lower()
+
+
+def test_pages_digest_lists_field_values_and_hidden_flag(tenant_with_pages):
+    digest = engine._pages_digest(tenant_with_pages)
+    assert 'heading="Hi"' in digest  # current values now visible to the model
