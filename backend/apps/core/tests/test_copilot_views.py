@@ -159,3 +159,56 @@ def test_endpoints_reject_anonymous_callers(tenant_ctx):
     anon = APIClient(HTTP_HOST=HOST)
     assert anon.post("/api/v1/admin/copilot/converse/", {}, format="json").status_code in (401, 403)
     assert anon.post("/api/v1/admin/copilot/execute/", {}, format="json").status_code in (401, 403)
+
+
+def test_execute_create_course_creates_draft_and_returns_url(client, coach):
+    from apps.courses.models import Course
+
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "create_course", "params": {"title": "Yoga 101", "price": "0.00", "pricing_type": "free"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    result = resp.json()["result"]
+    course = Course.objects.get(id=result["id"])
+    assert course.is_published is False
+    assert course.instructor == coach
+    assert result["url"] == f"/admin/courses/{course.slug}"
+
+
+def test_execute_create_event_lands_scheduled(client, coach):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.live.models import LiveClass
+
+    when = (timezone.now() + timedelta(days=3)).isoformat()
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "create_event", "event_kind": "live", "params": {"title": "Flow", "scheduled_at": when}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert LiveClass.objects.get(id=resp.json()["result"]["id"]).status == "scheduled"
+
+
+def test_execute_create_blog_post_draft(client, coach):
+    from apps.blog.models import BlogPost
+
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "create_blog_post", "params": {"title": "Hello", "excerpt": "hi", "body_html": "<p>x</p>"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    post = BlogPost.objects.get(id=resp.json()["result"]["id"])
+    assert post.status == "draft" and post.created_by == coach
+
+
+def test_execute_create_validation_failure_returns_400_detail(client):
+    token = copilot_tokens.stash_action("shared_test", {"kind": "create_course", "params": {"title": ""}})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "title" in resp.json()["detail"]

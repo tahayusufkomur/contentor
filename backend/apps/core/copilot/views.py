@@ -15,7 +15,7 @@ from rest_framework.response import Response
 
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.copilot import blocks, engine, tokens
+from apps.core.copilot import blocks, content, engine, tokens
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
@@ -70,13 +70,24 @@ def copilot_converse(request):
     return stream_response(frames())
 
 
-def _execute(tenant, action):
+_CREATORS = {
+    "create_course": lambda user, action: content.create_course(user, action["params"]),
+    "create_event": lambda user, action: content.create_event(user, action["event_kind"], action["params"]),
+    "create_blog_post": lambda user, action: content.create_blog_post(user, action["params"]),
+}
+
+
+def _execute(tenant, user, action):
     from apps.tenant_config.models import TenantConfig
 
     kind = action.get("kind")
     if kind == "edit_pages":
         site_ai.apply_edit(tenant, action["pages"], extras=action.get("extras"))
         return {"kind": kind, "changes_count": action.get("changes_count", 0)}
+    creator = _CREATORS.get(kind)
+    if creator is not None:
+        with tenant_context(tenant):
+            return creator(user, action)
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:
@@ -105,8 +116,8 @@ def copilot_execute(request):
     except ActionTokenError:
         return Response({"detail": "invalid_token"}, status=403)
     try:
-        result = _execute(tenant, action)
-    except blocks.BlockOpError as exc:
+        result = _execute(tenant, request.user, action)
+    except (blocks.BlockOpError, content.ContentOpError) as exc:
         return Response({"detail": str(exc)}, status=400)
     logger.info("copilot executed %s schema=%s", action.get("kind"), tenant.schema_name)
     return Response({"result": result})
