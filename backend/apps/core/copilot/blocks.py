@@ -186,3 +186,31 @@ def move_block(pages, page, block_id, after_block_id):
     else:
         blocks_.insert(_index_of(blocks_, after_block_id, page) + 1, moving)
     return new_pages
+
+
+def _preview(value):
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return f"{len(value)} item(s)"
+    return str(value)[:200]
+
+
+def edit_block_fields(pages, page, block_id, fields):
+    """Surgical field writes on one block. Returns (new_pages, changes);
+    changes carry display previews for the confirm card's diff rows."""
+    if not fields:
+        raise BlockOpError("no fields to change")
+    new_pages = deepcopy(pages)
+    blocks_ = _page_blocks(new_pages, page)
+    block = blocks_[_index_of(blocks_, block_id, page)]
+    changes = []
+    for field, value in fields.items():
+        cleaned = clean_field(block.get("type"), field, value)
+        if block.get(field) == cleaned:
+            continue
+        changes.append({"field": field, "old": _preview(block.get(field)), "new": _preview(cleaned)})
+        block[field] = cleaned
+    if not changes:
+        raise BlockOpError("those fields already have those values")
+    return new_pages, changes

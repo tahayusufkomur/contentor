@@ -103,3 +103,29 @@ def test_build_block_stats_and_banner_addable():
 def test_build_block_accepts_presentation_fields():
     b = blocks.build_block("hero", {"heading": "Hi", "ctaHref": "/courses", "overlay": "light"})
     assert b["ctaHref"] == "/courses" and b["overlay"] == "light"
+
+
+def test_edit_block_fields_changes_and_previews():
+    new_pages, changes = blocks.edit_block_fields(
+        PAGES, "home", "blk_hero", {"heading": "Welcome!", "ctaHref": "/pricing"}
+    )
+    hero = new_pages["home"]["blocks"][0]
+    assert hero["heading"] == "Welcome!" and hero["ctaHref"] == "/pricing"
+    assert {c["field"] for c in changes} == {"heading", "ctaHref"}
+    assert next(c for c in changes if c["field"] == "heading") == {
+        "field": "heading",
+        "old": "Hi",
+        "new": "Welcome!",
+    }
+    assert PAGES["home"]["blocks"][0]["heading"] == "Hi"  # input not mutated
+
+
+def test_edit_block_fields_rejects_noop_empty_and_bad_values():
+    with pytest.raises(blocks.BlockOpError):
+        blocks.edit_block_fields(PAGES, "home", "blk_hero", {})
+    with pytest.raises(blocks.BlockOpError):
+        blocks.edit_block_fields(PAGES, "home", "blk_hero", {"heading": "Hi"})  # already that value
+    with pytest.raises(blocks.BlockOpError):
+        blocks.edit_block_fields(PAGES, "home", "blk_hero", {"layout": "diagonal"})
+    with pytest.raises(blocks.BlockOpError):
+        blocks.edit_block_fields(PAGES, "home", "blk_missing", {"heading": "x"})
