@@ -235,3 +235,49 @@ def test_execute_create_validation_failure_returns_400_detail(client):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "title" in resp.json()["detail"]
+
+
+def test_execute_edit_theme_writes_theme_flips_look_edited_and_busts_cache(client, coach):
+    from django.core.cache import cache
+
+    from apps.tenant_config.models import TenantConfig
+
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "forest"})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {"kind": "edit_theme", "theme": "forest"}
+    cfg = TenantConfig.objects.first()
+    assert cfg.theme == "forest"
+    assert cfg.setup_progress.get("look_edited") is True
+    assert cache.get("tenant:shared_test:config") is None
+
+
+def test_execute_edit_navbar_merges_and_preserves_links(client, coach):
+    from django.core.cache import cache
+
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"layout": "classic", "links": [{"label": "Courses", "href": "/courses"}]}
+    cfg.save(update_fields=["navbar_config"])
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "edit_navbar", "updates": {"layout": "pill", "cta": {"text": "Join now", "href": "/plans"}}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert cfg.navbar_config["layout"] == "pill"
+    assert cfg.navbar_config["cta"] == {"text": "Join now", "href": "/plans"}
+    assert cfg.navbar_config["links"] == [{"label": "Courses", "href": "/courses"}]
+    assert cache.get("tenant:shared_test:config") is None
+
+
+def test_execute_edit_theme_invalid_stashed_id_returns_400(client, coach):
+    # Defense in depth: even a stashed payload is re-validated at execute time.
+    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "midnight"})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "theme must be one of" in resp.json()["detail"]

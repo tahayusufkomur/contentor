@@ -6,6 +6,7 @@ call's USD still lands in the onboarding meter (kill-switch integrity)."""
 import logging
 from decimal import Decimal
 
+from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 from django_tenants.utils import tenant_context
@@ -15,7 +16,7 @@ from rest_framework.response import Response
 
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.copilot import blocks, content, engine, tokens
+from apps.core.copilot import blocks, chrome, content, engine, tokens
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
@@ -88,6 +89,30 @@ def _execute(tenant, user, action):
     if creator is not None:
         with tenant_context(tenant):
             return creator(user, action)
+    if kind in ("edit_theme", "edit_navbar"):
+        with tenant_context(tenant):
+            cfg = TenantConfig.objects.first()
+            if cfg is None:
+                raise chrome.ChromeOpError("site is not set up yet")
+            if kind == "edit_theme":
+                theme = chrome.clean_theme(action.get("theme"))
+                cfg.theme = theme
+                fields = ["theme"]
+                # Setup Assistant parity with TenantConfigView.perform_update.
+                progress = dict(cfg.setup_progress or {})
+                if not progress.get("look_edited"):
+                    progress["look_edited"] = True
+                    cfg.setup_progress = progress
+                    fields.append("setup_progress")
+                cfg.save(update_fields=fields)
+                result = {"kind": kind, "theme": theme}
+            else:
+                cfg.navbar_config = chrome.merge_navbar(cfg.navbar_config or {}, action.get("updates") or {})
+                cfg.save(update_fields=["navbar_config"])
+                result = {"kind": kind}
+        # Public pages read theme/navbar through the cached config object.
+        cache.delete(f"tenant:{tenant.schema_name}:config")
+        return result
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:
@@ -117,7 +142,7 @@ def copilot_execute(request):
         return Response({"detail": "invalid_token"}, status=403)
     try:
         result = _execute(tenant, request.user, action)
-    except (blocks.BlockOpError, content.ContentOpError) as exc:
+    except (blocks.BlockOpError, content.ContentOpError, chrome.ChromeOpError) as exc:
         return Response({"detail": str(exc)}, status=400)
     logger.info("copilot executed %s schema=%s", action.get("kind"), tenant.schema_name)
     return Response({"result": result})
