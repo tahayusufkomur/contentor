@@ -78,3 +78,28 @@ def test_page_blocks_normalizer():
     assert blocks.page_blocks("garbage") is None
     assert blocks.page_blocks(None) is None
     assert blocks.page_blocks(123) is None
+
+
+def test_clean_field_select_link_and_bool():
+    assert blocks.clean_field("hero", "layout", "split") == "split"
+    with pytest.raises(blocks.BlockOpError):
+        blocks.clean_field("hero", "layout", "diagonal")
+    assert blocks.clean_field("hero", "ctaHref", "/pricing") == "/pricing"
+    with pytest.raises(blocks.BlockOpError):
+        blocks.clean_field("hero", "ctaHref", "javascript:alert(1)")
+    assert blocks.clean_field("banner", "dismissible", 1) is True
+    with pytest.raises(blocks.BlockOpError):
+        blocks.clean_field("hero", "nope", "x")
+
+
+def test_build_block_stats_and_banner_addable():
+    stats = blocks.build_block("stats", {"layout": "band", "items": [{"value": "500+", "label": "Students"}] * 20})
+    assert stats["layout"] == "band" and len(stats["items"]) == 8
+    assert stats["items"][0] == {"value": "500+", "label": "Students"}
+    banner = blocks.build_block("banner", {"text": "Sale!", "linkHref": "/pricing", "dismissible": True})
+    assert banner["text"] == "Sale!" and banner["dismissible"] is True
+
+
+def test_build_block_accepts_presentation_fields():
+    b = blocks.build_block("hero", {"heading": "Hi", "ctaHref": "/courses", "overlay": "light"})
+    assert b["ctaHref"] == "/courses" and b["overlay"] == "light"

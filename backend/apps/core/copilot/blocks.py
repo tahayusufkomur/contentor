@@ -8,7 +8,7 @@ their inputs; DB writes happen in the execute view."""
 from copy import deepcopy
 from uuid import uuid4
 
-from apps.core.onboarding.ai_compose import FIELD_CAPS, MAX_FAQ_ITEMS, WRITABLE_FIELDS
+from apps.core.onboarding.ai_compose import MAX_FAQ_ITEMS
 from apps.tenant_config.defaults import sanitize_rich_text
 
 
@@ -20,29 +20,118 @@ def mint_block_id() -> str:
     return f"blk_{uuid4().hex[:8]}"
 
 
-def _clamp(value, field):
-    return str(value)[: FIELD_CAPS.get(field, 200)]
+_UNSAFE_URL_PREFIXES = ("javascript:", "data:", "vbscript:")
+_H = ("text", 120)
+MAX_STATS_ITEMS = 8
+
+# Mirrors frontend-customer/src/lib/blocks/registry.tsx (selects verbatim).
+# testimonials is deliberately absent; gallery/logos/video wait on image/URL
+# handling (Phase 8 file intake).
+BLOCK_SCHEMA = {
+    "hero": {
+        "layout": ("select", ("centered", "split", "minimal")),
+        "heading": _H,
+        "subheading": ("text", 200),
+        "ctaText": ("text", 40),
+        "ctaHref": ("link",),
+        "overlay": ("select", ("none", "dark", "light")),
+        "overlayStrength": ("select", ("light", "medium", "strong")),
+    },
+    "richText": {
+        "layout": ("select", ("standard", "centered", "wide")),
+        "heading": _H,
+        "headingLevel": ("select", ("h1", "h2", "h3", "h4")),
+        "body": ("rich", 2000),
+    },
+    "imageText": {
+        "layout": ("select", ("split", "stacked", "card")),
+        "heading": _H,
+        "headingLevel": ("select", ("h1", "h2", "h3", "h4")),
+        "body": ("rich", 2000),
+        "imagePosition": ("select", ("right", "left")),
+    },
+    "cta": {
+        "layout": ("select", ("centered", "banner", "split")),
+        "heading": _H,
+        "buttonText": ("text", 40),
+        "buttonHref": ("link",),
+        "secondaryButtonText": ("text", 40),
+        "secondaryButtonHref": ("link",),
+    },
+    "faq": {
+        "layout": ("select", ("accordion", "open", "columns")),
+        "heading": _H,
+        "items": ("items", {"q": 150, "a": 500}, MAX_FAQ_ITEMS),
+    },
+    "contact": {
+        "layout": ("select", ("centered", "split", "card")),
+        "heading": _H,
+        "intro": ("text", 200),
+        "submitLabel": ("text", 40),
+        "successMessage": ("text", 200),
+    },
+    "courseGrid": {"layout": ("select", ("standard", "centered")), "heading": _H},
+    "pricingPlans": {"layout": ("select", ("cards", "compact")), "heading": _H, "subheading": ("text", 200)},
+    "upcomingEvents": {"layout": ("select", ("grid", "list")), "heading": _H},
+    "storeProducts": {"layout": ("select", ("grid", "list")), "heading": _H},
+    "stats": {
+        "layout": ("select", ("cards", "plain", "band")),
+        "heading": _H,
+        "items": ("items", {"value": 40, "label": 80}, MAX_STATS_ITEMS),
+    },
+    "banner": {
+        "layout": ("select", ("bar", "full", "soft")),
+        "text": ("text", 150),
+        "linkText": ("text", 40),
+        "linkHref": ("link",),
+        "dismissible": ("bool",),
+    },
+}
+
+
+def clean_link(value):
+    """Same semantics as tenant_config's _clean_nav_href, but refusing (not
+    blanking) unsafe schemes so the coach gets an honest card-drop reason."""
+    href = str(value or "").strip()
+    if href.lower().startswith(_UNSAFE_URL_PREFIXES):
+        raise BlockOpError("links must be site paths like /courses or https:// URLs")
+    return href[:300]
+
+
+def clean_field(block_type, field, value):
+    spec = (BLOCK_SCHEMA.get(block_type) or {}).get(field)
+    if spec is None:
+        raise BlockOpError(f"{block_type} has no editable field '{field}'")
+    kind = spec[0]
+    if kind == "text":
+        return str(value)[: spec[1]]
+    if kind == "rich":
+        return sanitize_rich_text(str(value)[: spec[1]])
+    if kind == "select":
+        v = str(value).strip()
+        if v not in spec[1]:
+            raise BlockOpError(f"{field} must be one of: " + ", ".join(spec[1]))
+        return v
+    if kind == "link":
+        return clean_link(value)
+    if kind == "bool":
+        return bool(value)
+    _, item_caps, max_items = spec
+    return [
+        {k: str(it.get(k, ""))[:cap] for k, cap in item_caps.items()}
+        for it in list(value or [])[:max_items]
+        if isinstance(it, dict)
+    ]
 
 
 def build_block(block_type, fields):
-    writable = WRITABLE_FIELDS.get(block_type)
-    if writable is None:
+    schema = BLOCK_SCHEMA.get(block_type)
+    if schema is None:
         raise BlockOpError(f"unknown block type: {block_type}")
     block = {"id": mint_block_id(), "type": block_type, "enabled": True}
-    for field in writable:
-        if field not in (fields or {}):
-            continue
-        value = fields[field]
-        if field == "items":
-            block["items"] = [
-                {"q": _clamp(it.get("q", ""), "q"), "a": _clamp(it.get("a", ""), "a")}
-                for it in list(value or [])[:MAX_FAQ_ITEMS]
-                if isinstance(it, dict)
-            ]
-        elif field == "body":
-            block["body"] = sanitize_rich_text(_clamp(value, "body"))
-        else:
-            block[field] = _clamp(value, field)
+    for field, value in (fields or {}).items():
+        if field in schema:
+            block[field] = clean_field(block_type, field, value)
     return block
 
 
