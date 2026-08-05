@@ -277,8 +277,7 @@ def _card(tenant, action):
             "price": f"{price:.2f}",
             "pricing_type": "paid" if price > 0 else "free",
             "modules": [
-                {"title": m.title[:200], "lessons": [{"title": t[:200]} for t in m.lessons]}
-                for m in action.modules
+                {"title": m.title[:200], "lessons": [{"title": t[:200]} for t in m.lessons]} for m in action.modules
             ],
         }
         lesson_count = sum(len(m.lessons) for m in action.modules)
@@ -346,14 +345,43 @@ def _system():
     return SYSTEM_PROMPT + _KB_HEADER + help_bot.knowledge_text("coach")
 
 
+CAP_STEER = (
+    "\n\n(Do not ask another clarifying question this conversation — act on "
+    "your best interpretation or answer directly.)"
+)
+
+
+def _ask_cap():
+    """Superadmin knob (CopilotSettings): max clarifying questions per
+    conversation. 0 = uncapped."""
+    from apps.core.models import CopilotSettings
+
+    return CopilotSettings.load().max_asks_per_conversation
+
+
+def _asks_so_far(transcript):
+    return sum(
+        1 for e in list(transcript) if isinstance(e, dict) and e.get("role") != "coach" and e.get("kind") == "ask"
+    )
+
+
 def run_turn(tenant, transcript, selections, message):
+    cap = _ask_cap()
+    capped = cap > 0 and _asks_so_far(transcript) >= cap
+    user = _user_turn(tenant, transcript, selections, message)
+    if capped:
+        user += CAP_STEER
     parsed, cost, _model = core_ai.structured(
         system=_system(),
-        user=_user_turn(tenant, transcript, selections, message),
+        user=user,
         output_model=CopilotTurn,
         model=settings.COPILOT_MODEL,
         max_tokens=4000,
     )
+    if parsed.kind == "ask" and capped:
+        # Hard cap: the question still reads fine as a statement-of-need,
+        # but without the quick-reply ask affordance it ends the loop.
+        return {"kind": "answer", "text": parsed.text}, cost
     if parsed.kind in ("answer", "ask"):
         return {"kind": parsed.kind, "text": parsed.text}, cost
     cards = []

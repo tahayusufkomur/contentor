@@ -9,7 +9,7 @@ const BASE = "/api/v1/admin/copilot";
 export const converseCopilot = (
   body: {
     message: string;
-    transcript: { role: string; text: string }[];
+    transcript: { role: string; text: string; kind?: string }[];
     selections: SelectionPayload[];
   },
   handlers: AiStreamHandlers<never>,

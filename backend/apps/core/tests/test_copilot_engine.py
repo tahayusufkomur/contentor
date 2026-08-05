@@ -261,6 +261,7 @@ def test_edit_navbar_without_changes_dropped():
 
 def test_user_turn_includes_chrome_digest():
     from decimal import Decimal
+
     captured = {}
 
     def fake_structured(**kw):
@@ -297,3 +298,73 @@ def test_system_prompt_carries_platform_knowledge_and_addenda():
     assert captured["system"].startswith(engine.SYSTEM_PROMPT)
     assert "# PLATFORM KNOWLEDGE" in captured["system"]
     assert "COPILOT-KB-MARKER fee note" in captured["system"]
+
+
+def test_ask_over_cap_is_steered_and_coerced_to_answer():
+    from decimal import Decimal
+
+    from apps.core.models import CopilotSettings
+
+    s = CopilotSettings.load()
+    s.max_asks_per_conversation = 1
+    s.save()
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="ask", text="Which page do you mean?"), Decimal("0.01"), "m"
+
+    transcript = [
+        {"role": "coach", "text": "improve my site"},
+        {"role": "assistant", "text": "What look do you want?", "kind": "ask"},
+    ]
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+    ):
+        payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
+    assert payload == {"kind": "answer", "text": "Which page do you mean?"}
+    assert "Do not ask another clarifying question" in captured["user"]
+
+
+def test_cap_zero_leaves_asks_uncapped():
+    from decimal import Decimal
+
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="ask", text="Which page?"), Decimal("0.01"), "m"
+
+    transcript = [{"role": "assistant", "text": "Earlier question?", "kind": "ask"}]
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+    ):
+        payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
+    assert payload["kind"] == "ask"  # default cap 0 = today's behavior
+    assert "Do not ask another clarifying question" not in captured["user"]
+
+
+def test_under_cap_ask_passes_through():
+    from decimal import Decimal
+
+    from apps.core.models import CopilotSettings
+
+    s = CopilotSettings.load()
+    s.max_asks_per_conversation = 2
+    s.save()
+
+    def fake_structured(**kw):
+        return _turn(kind="ask", text="Which page?"), Decimal("0.01"), "m"
+
+    transcript = [{"role": "assistant", "text": "Earlier question?", "kind": "ask"}]
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+    ):
+        payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
+    assert payload["kind"] == "ask"  # 1 prior ask < cap of 2

@@ -83,6 +83,23 @@ describe("chat state", () => {
       { role: "coach", text: "still there?" },
     ]);
   });
+
+  it("preserves the assistant turn kind for the ask-cap", () => {
+    const entries = reduceChat([], { kind: "ask", text: "Which page?" });
+    expect(entries[0].kind).toBe("ask");
+    expect(toTranscript(entries)[0]).toEqual({
+      role: "assistant",
+      text: "Which page?",
+      kind: "ask",
+    });
+  });
+
+  it("omits kind for entries that never had one", () => {
+    expect(toTranscript([{ role: "coach", text: "hi" }])[0]).toEqual({
+      role: "coach",
+      text: "hi",
+    });
+  });
 });
 
 describe("isCreateKind", () => {

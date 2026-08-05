@@ -14,7 +14,12 @@ export function reduceChat(
   }
   return [
     ...entries,
-    { role: "assistant", text: done.text ?? "", cards: done.actions },
+    {
+      role: "assistant",
+      text: done.text ?? "",
+      cards: done.actions,
+      kind: done.kind,
+    },
   ];
 }
 
@@ -22,11 +27,15 @@ export function reduceChat(
  * The unavailable-turn marker is UI-only and must never reach the model. */
 export function toTranscript(
   entries: ChatEntry[],
-): { role: string; text: string }[] {
+): { role: string; text: string; kind?: string }[] {
   return entries
     .filter((e) => e.text !== UNAVAILABLE_MARKER)
     .slice(-TRANSCRIPT_MAX)
-    .map((e) => ({ role: e.role, text: e.text }));
+    .map((e) =>
+      e.kind
+        ? { role: e.role, text: e.text, kind: e.kind }
+        : { role: e.role, text: e.text },
+    );
 }
 
 const CREATE_KINDS = new Set([

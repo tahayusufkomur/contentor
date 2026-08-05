@@ -52,4 +52,5 @@ export interface ChatEntry {
   role: "coach" | "assistant";
   text: string;
   cards?: ActionCard[];
+  kind?: CopilotDone["kind"];
 }
