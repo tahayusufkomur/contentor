@@ -2,8 +2,10 @@
 returning answer | ask | actions. Actions become confirmable cards backed by
 single-use tokens; nothing here writes to the DB.
 
-The system prompt is a module constant — byte-identical across tenants
-(prompt-cache rule). Everything tenant-specific rides in the user turn."""
+The system prompt is byte-identical across tenants (prompt-cache rule):
+SYSTEM_PROMPT is a module constant and the appended platform KB is
+platform-level, fingerprint-cached in help_bot — bytes only change when a
+superadmin edits KB addenda. Everything tenant-specific rides in the user turn."""
 
 import json
 import logging
@@ -323,9 +325,30 @@ def _card(tenant, action):
     }
 
 
+_KB_HEADER = (
+    "\n\n# PLATFORM KNOWLEDGE\n"
+    "Contentor platform facts (plans, payouts, features) for questions like "
+    "'how do I get paid?'. Ground platform answers in this section only — "
+    "never invent plan numbers or fees. When pointing the coach somewhere, "
+    "use ONLY paths from the ROUTES table below, formatted as a markdown "
+    "link like [Payouts](/admin/payouts). If the knowledge does not cover "
+    "the question, say so and point to support@contentor.app.\n\n"
+)
+
+
+def _system():
+    """SYSTEM_PROMPT + platform KB. Still byte-identical across tenants —
+    the KB is platform-level and help_bot's fingerprint cache keeps the
+    string stable between addenda edits, so the prompt-cache prefix stays
+    warm."""
+    from apps.tenant_config import help_bot
+
+    return SYSTEM_PROMPT + _KB_HEADER + help_bot.knowledge_text("coach")
+
+
 def run_turn(tenant, transcript, selections, message):
     parsed, cost, _model = core_ai.structured(
-        system=SYSTEM_PROMPT,
+        system=_system(),
         user=_user_turn(tenant, transcript, selections, message),
         output_model=CopilotTurn,
         model=settings.COPILOT_MODEL,

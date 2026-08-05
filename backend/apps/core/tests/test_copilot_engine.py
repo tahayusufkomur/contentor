@@ -274,3 +274,26 @@ def test_user_turn_includes_chrome_digest():
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Theme: ocean" in captured["user"]
+
+
+def test_system_prompt_carries_platform_knowledge_and_addenda():
+    from decimal import Decimal
+
+    from apps.core.models import PlatformKbEntry
+
+    PlatformKbEntry.objects.create(title="Fees", content="COPILOT-KB-MARKER fee note", audience="coach")
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="answer", text="hi"), Decimal("0.01"), "m"
+
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+    ):
+        engine.run_turn(TENANT, [], [], "how do I get paid?")
+    assert captured["system"].startswith(engine.SYSTEM_PROMPT)
+    assert "# PLATFORM KNOWLEDGE" in captured["system"]
+    assert "COPILOT-KB-MARKER fee note" in captured["system"]
