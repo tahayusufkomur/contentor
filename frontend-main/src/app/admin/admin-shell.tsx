@@ -107,6 +107,7 @@ const SECTIONS: SectionConfig[] = [
       { kind: "static", label: "AI Overview", href: "/admin/ai", icon: Bot },
       { kind: "model", key: "ai-transcripts", label: "AI Transcripts" },
       { kind: "model", key: "ai-ip-blocks", label: "AI IP Blocks" },
+      { kind: "model", key: "copilot-settings", label: "Copilot Settings" },
     ],
   },
   {

@@ -11,6 +11,7 @@ from .models import (
     AiIpBlock,
     AiTranscript,
     BlogAiUsage,
+    CopilotSettings,
     CuratedLogo,
     CuratedPhoto,
     HelpBotUsage,
@@ -354,6 +355,19 @@ class PlatformKbEntryAdmin(ModelAdmin):
     list_filters = ("audience", "enabled")
     ordering = ("position", "id")
     fields = ("audience", "title", "content", "enabled", "position")
+
+
+@platform_site.register(CopilotSettings)
+class CopilotSettingsAdmin(ModelAdmin):
+    label = "Copilot Settings"
+    label_plural = "Copilot Settings"
+    key = "copilot-settings"
+    icon = "bot"
+    description = "Platform-wide knobs for the coach copilot (ask-cap steering)."
+    list_display = ("max_asks_per_conversation", "updated_at")
+    fields = ("max_asks_per_conversation",)
+    can_create = False
+    can_delete = False
 
 
 @platform_site.register(CuratedLogo)

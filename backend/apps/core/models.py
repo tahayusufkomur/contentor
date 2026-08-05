@@ -639,6 +639,35 @@ class PlatformKbEntry(models.Model):
         return f"{self.audience}: {self.title}"
 
 
+class CopilotSettings(models.Model):
+    """Superadmin-tunable copilot knobs (single row, pk=1) — adminkit panel
+    "copilot-settings". The ask-cap is the Phase 3 steering knob: clarifying
+    questions allowed per conversation before the engine forces an
+    answer/action. 0 = uncapped (prompt-level steering only)."""
+
+    max_asks_per_conversation = models.PositiveIntegerField(
+        default=0,
+        help_text=(
+            "Clarifying questions the copilot may ask in one conversation "
+            "before it must act or answer. 0 = no cap."
+        ),
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        verbose_name = "Copilot settings"
+        verbose_name_plural = "Copilot settings"
+
+    def __str__(self):
+        return "Copilot settings"
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class CuratedLogo(models.Model):
     """Superadmin-managed ready-made Logo Studio illustrations (Phase 2 of the
     curated library). Public schema; the PNG lives in object storage under
