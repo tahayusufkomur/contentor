@@ -648,8 +648,7 @@ class CopilotSettings(models.Model):
     max_asks_per_conversation = models.PositiveIntegerField(
         default=0,
         help_text=(
-            "Clarifying questions the copilot may ask in one conversation "
-            "before it must act or answer. 0 = no cap."
+            "Clarifying questions the copilot may ask in one conversation " "before it must act or answer. 0 = no cap."
         ),
     )
     updated_at = models.DateTimeField(auto_now=True)

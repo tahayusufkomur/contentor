@@ -8,22 +8,27 @@ def _create_singleton(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0036_site_ai_usage'),
+        ("core", "0036_site_ai_usage"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CopilotSettings',
+            name="CopilotSettings",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('max_asks_per_conversation', models.PositiveIntegerField(default=0, help_text='Clarifying questions the copilot may ask in one conversation before it must act or answer. 0 = no cap.')),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "max_asks_per_conversation",
+                    models.PositiveIntegerField(
+                        default=0,
+                        help_text="Clarifying questions the copilot may ask in one conversation before it must act or answer. 0 = no cap.",
+                    ),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Copilot settings',
-                'verbose_name_plural': 'Copilot settings',
+                "verbose_name": "Copilot settings",
+                "verbose_name_plural": "Copilot settings",
             },
         ),
         migrations.RunPython(_create_singleton, migrations.RunPython.noop),

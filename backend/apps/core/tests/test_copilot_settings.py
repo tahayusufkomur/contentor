@@ -40,9 +40,7 @@ def test_superadmin_can_read_and_update_the_cap(superuser):
     client = make_client(superuser)
     resp = client.get("/api/v1/platform-admin/copilot-settings/1/")
     assert resp.status_code == 200, resp.content
-    resp = client.patch(
-        "/api/v1/platform-admin/copilot-settings/1/", {"max_asks_per_conversation": 3}, format="json"
-    )
+    resp = client.patch("/api/v1/platform-admin/copilot-settings/1/", {"max_asks_per_conversation": 3}, format="json")
     assert resp.status_code == 200, resp.content
     assert CopilotSettings.load().max_asks_per_conversation == 3
 

@@ -77,9 +77,7 @@ def test_create_event_live_lands_scheduled(coach):
     from apps.live.models import LiveClass
 
     when = timezone.now() + timedelta(days=7)
-    result = content.create_event(
-        coach, "live", {"title": "Morning flow", "scheduled_at": when.isoformat()}
-    )
+    result = content.create_event(coach, "live", {"title": "Morning flow", "scheduled_at": when.isoformat()})
     event = LiveClass.objects.get(id=result["id"])
     assert event.status == "scheduled"  # _ScheduledOnCreateMixin, same as the admin path
     assert event.instructor == coach

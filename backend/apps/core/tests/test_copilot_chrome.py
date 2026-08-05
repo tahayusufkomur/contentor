@@ -70,10 +70,12 @@ def test_merge_navbar_does_not_materialize_defaults_for_absent_keys():
 
 
 def test_clean_links_validates_via_serializer_allowlist():
-    cleaned = chrome.clean_links([
-        {"label": "Courses", "href": "/courses"},
-        {"label": "Evil", "href": "javascript:alert(1)"},  # href blanked -> dropped
-    ])
+    cleaned = chrome.clean_links(
+        [
+            {"label": "Courses", "href": "/courses"},
+            {"label": "Evil", "href": "javascript:alert(1)"},  # href blanked -> dropped
+        ]
+    )
     assert cleaned == [{"label": "Courses", "href": "/courses"}]
 
 
