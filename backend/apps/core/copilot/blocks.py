@@ -177,15 +177,37 @@ def remove_block(pages, page, block_id):
     return new_pages
 
 
-def move_block(pages, page, block_id, after_block_id):
+def move_block(pages, page, block_id, after_block_id, to_page=None):
+    new_pages = deepcopy(pages)
+    source = _page_blocks(new_pages, page)
+    target_page = to_page or page
+    target = _page_blocks(new_pages, target_page)  # validate target BEFORE popping
+    moving = source.pop(_index_of(source, block_id, page))
+    if after_block_id is None:
+        target.insert(0, moving)
+    else:
+        target.insert(_index_of(target, after_block_id, target_page) + 1, moving)
+    return new_pages
+
+
+def set_block_enabled(pages, page, block_id, enabled):
     new_pages = deepcopy(pages)
     blocks_ = _page_blocks(new_pages, page)
-    moving = blocks_.pop(_index_of(blocks_, block_id, page))
-    if after_block_id is None:
-        blocks_.insert(0, moving)
-    else:
-        blocks_.insert(_index_of(blocks_, after_block_id, page) + 1, moving)
+    block = blocks_[_index_of(blocks_, block_id, page)]
+    if bool(block.get("enabled", True)) == bool(enabled):
+        raise BlockOpError(f"{block_id} is already {'visible' if enabled else 'hidden'}")
+    block["enabled"] = bool(enabled)
     return new_pages
+
+
+def duplicate_block(pages, page, block_id):
+    new_pages = deepcopy(pages)
+    blocks_ = _page_blocks(new_pages, page)
+    i = _index_of(blocks_, block_id, page)
+    copy_ = deepcopy(blocks_[i])
+    copy_["id"] = mint_block_id()
+    blocks_.insert(i + 1, copy_)
+    return new_pages, copy_["id"]
 
 
 def _preview(value):

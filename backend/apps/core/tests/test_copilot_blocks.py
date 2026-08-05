@@ -129,3 +129,28 @@ def test_edit_block_fields_rejects_noop_empty_and_bad_values():
         blocks.edit_block_fields(PAGES, "home", "blk_hero", {"layout": "diagonal"})
     with pytest.raises(blocks.BlockOpError):
         blocks.edit_block_fields(PAGES, "home", "blk_missing", {"heading": "x"})
+
+
+def test_set_block_enabled_toggles_and_rejects_noop():
+    hidden = blocks.set_block_enabled(PAGES, "home", "blk_hero", False)
+    assert hidden["home"]["blocks"][0]["enabled"] is False
+    with pytest.raises(blocks.BlockOpError):
+        blocks.set_block_enabled(PAGES, "home", "blk_hero", True)  # already visible
+
+
+def test_duplicate_block_inserts_copy_with_fresh_id():
+    new_pages, new_id = blocks.duplicate_block(PAGES, "home", "blk_hero")
+    ids = [b["id"] for b in new_pages["home"]["blocks"]]
+    assert ids == ["blk_hero", new_id, "blk_intro"] and new_id != "blk_hero"
+    assert new_pages["home"]["blocks"][1]["heading"] == "Hi"
+
+
+def test_move_block_across_pages():
+    pages = {"home": {"blocks": [dict(HERO)]}, "about": {"blocks": [dict(INTRO)]}}
+    moved = blocks.move_block(pages, "home", "blk_hero", None, to_page="about")
+    assert [b["id"] for b in moved["home"]["blocks"]] == []
+    assert [b["id"] for b in moved["about"]["blocks"]] == ["blk_hero", "blk_intro"]
+    after = blocks.move_block(pages, "home", "blk_hero", "blk_intro", to_page="about")
+    assert [b["id"] for b in after["about"]["blocks"]] == ["blk_intro", "blk_hero"]
+    with pytest.raises(blocks.BlockOpError):
+        blocks.move_block(pages, "home", "blk_hero", None, to_page="nope")
