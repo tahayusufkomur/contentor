@@ -92,5 +92,7 @@ describe("isCreateKind", () => {
     expect(isCreateKind("create_blog_post")).toBe(true);
     expect(isCreateKind("edit_pages")).toBe(false);
     expect(isCreateKind("add_block")).toBe(false);
+    expect(isCreateKind("edit_theme")).toBe(false);
+    expect(isCreateKind("edit_navbar")).toBe(false);
   });
 });

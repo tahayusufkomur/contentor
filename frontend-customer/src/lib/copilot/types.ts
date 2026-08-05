@@ -21,7 +21,9 @@ export type ActionKind =
   | "move_block"
   | "create_course"
   | "create_event"
-  | "create_blog_post";
+  | "create_blog_post"
+  | "edit_theme"
+  | "edit_navbar";
 
 export interface ActionCard {
   kind: ActionKind;
