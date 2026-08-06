@@ -47,7 +47,7 @@ def _clean_attachments(tenant, raw):
 
     if not isinstance(raw, list):
         return []
-    ids = [str(item) for item in raw[:MAX_ATTACHED_PHOTOS] if isinstance(item, (str, int))]
+    ids = [str(item) for item in raw[:MAX_ATTACHED_PHOTOS] if isinstance(item, str | int)]
     if not ids:
         return []
     with tenant_context(tenant):

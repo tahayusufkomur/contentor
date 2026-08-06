@@ -1330,9 +1330,7 @@ def test_set_block_image_card_with_attached_photo(tenant_ctx):
     cfg.pages = {"home": {"blocks": [{"id": "blk_1", "type": "hero", "enabled": True}]}}
     cfg.save(update_fields=["pages"])
 
-    action = engine.SetBlockImageAction(
-        kind="set_block_image", page="home", block_id="blk_1", photo_id=str(photo.pk)
-    )
+    action = engine.SetBlockImageAction(kind="set_block_image", page="home", block_id="blk_1", photo_id=str(photo.pk))
     card = engine._card(tenant, action)
     assert card["kind"] == "set_block_image"
     assert "your photo" in card["title"].lower()
@@ -1355,7 +1353,9 @@ def test_set_block_image_card_with_unknown_attached_photo_drops(tenant_ctx):
     cfg.save(update_fields=["pages"])
 
     action = engine.SetBlockImageAction(
-        kind="set_block_image", page="home", block_id="blk_1",
+        kind="set_block_image",
+        page="home",
+        block_id="blk_1",
         photo_id="00000000-0000-0000-0000-000000000000",
     )
     with _pytest.raises(photos.PhotoOpError, match="not in your library"):

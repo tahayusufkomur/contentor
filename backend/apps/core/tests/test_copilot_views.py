@@ -928,10 +928,11 @@ def test_chats_create_list_get_roundtrip(client):
 def test_chats_patch_entries_caps_and_sanitizes(client):
     created = client.post("/api/v1/admin/copilot/chats/", {}, format="json")
     chat_id = created.json()["id"]
-    junk_entries = (
-        [{"role": "coach", "text": f"m{i}"} for i in range(40)]
-        + [{"role": "hacker", "text": "drop"}, "not-a-dict", {"role": "assistant", "text": 12}]
-    )
+    junk_entries = [{"role": "coach", "text": f"m{i}"} for i in range(40)] + [
+        {"role": "hacker", "text": "drop"},
+        "not-a-dict",
+        {"role": "assistant", "text": 12},
+    ]
     patched = client.patch(f"/api/v1/admin/copilot/chats/{chat_id}/", {"entries": junk_entries}, format="json")
     assert patched.status_code == 200
     entries = patched.json()["entries"]
@@ -975,8 +976,12 @@ def test_converse_passes_verified_attachments_to_run_turn(client):
     ):
         resp = client.post(
             "/api/v1/admin/copilot/converse/",
-            {"message": "use this", "transcript": [], "selections": [],
-             "attached_photos": [str(photo.pk), "00000000-0000-0000-0000-000000000000"]},
+            {
+                "message": "use this",
+                "transcript": [],
+                "selections": [],
+                "attached_photos": [str(photo.pk), "00000000-0000-0000-0000-000000000000"],
+            },
             format="json",
             HTTP_ACCEPT="text/event-stream",
         )
@@ -1009,8 +1014,7 @@ def test_execute_set_course_cover_with_missing_tenant_photo_400(client):
     course = Course.objects.create(title="C2", instructor=coach_user, price=0, pricing_type="free")
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "set_course_cover", "course_id": course.pk,
-         "tenant_photo_id": "00000000-0000-0000-0000-000000000000"},
+        {"kind": "set_course_cover", "course_id": course.pk, "tenant_photo_id": "00000000-0000-0000-0000-000000000000"},
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
