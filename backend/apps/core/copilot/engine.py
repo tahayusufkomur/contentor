@@ -122,6 +122,16 @@ def _field_guide():
 
 SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + _field_guide()
 
+STATS_SETUP_STEER = (
+    "The user turn includes a Stats line (answer number questions from it — "
+    "never invent figures) and a Setup line. When the coach asks what to do "
+    "next, use the open setup items: explain the top one or two in plain "
+    "words and, where one maps to an action you have (logo, photos, events, "
+    "blog), propose that card directly."
+)
+
+SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + STATS_SETUP_STEER
+
 
 class EditPagesAction(BaseModel):
     kind: Literal["edit_pages"]
@@ -492,6 +502,51 @@ def _posts_digest(tenant):
     return "\n".join(lines)
 
 
+def _stats_digest(tenant):
+    """Read-only numbers the copilot may answer with — model counts only."""
+    from datetime import timedelta
+
+    from django.contrib.auth import get_user_model
+
+    from apps.blog.models import BlogPost
+    from apps.courses.models import Course
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    with tenant_context(tenant):
+        user_model = get_user_model()
+        students = user_model.objects.filter(role="student").count()
+        new_week = user_model.objects.filter(
+            role="student", date_joined__gte=timezone.now() - timedelta(days=7)
+        ).count()
+        published = Course.objects.filter(is_published=True).count()
+        drafts = Course.objects.filter(is_published=False).count()
+        upcoming = (
+            LiveClass.objects.filter(scheduled_at__gte=timezone.now()).count()
+            + OnsiteEvent.objects.filter(scheduled_at__gte=timezone.now()).count()
+        )
+        posts_live = BlogPost.objects.filter(status="published").count()
+    return (
+        f"Stats: students: {students} ({new_week} new this week); "
+        f"published courses: {published} ({drafts} draft); "
+        f"upcoming events: {upcoming}; published posts: {posts_live}"
+    )
+
+
+def _setup_digest(tenant):
+    """Open onboarding-checklist items for the user turn — lets the copilot
+    answer 'what should I do next?' from real state, never invented steps."""
+    from apps.tenant_config.models import TenantConfig
+    from apps.tenant_config.setup_items import compute_setup_state
+
+    with tenant_context(tenant):
+        cfg = TenantConfig.objects.first()
+        if cfg is None:
+            return "Setup still open: site"
+        state = compute_setup_state(cfg, tenant)
+    open_items = [str(i.get("key", "")) for i in state.get("items", []) if not i.get("done")]
+    return ("Setup still open: " + ", ".join(open_items)) if open_items else "Setup: all done"
+
+
 def _user_turn(tenant, transcript, selections, message):
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
@@ -502,6 +557,8 @@ def _user_turn(tenant, transcript, selections, message):
         _courses_digest(tenant),
         _events_digest(tenant),
         _posts_digest(tenant),
+        _stats_digest(tenant),
+        _setup_digest(tenant),
     ]
     if selections:
         parts.append(

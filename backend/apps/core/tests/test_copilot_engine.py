@@ -42,6 +42,8 @@ def _run(parsed):
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(
             engine.site_ai,
@@ -72,6 +74,8 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
         mock.patch.object(
             engine.site_ai,
             "diff_current",
@@ -97,6 +101,8 @@ def test_add_block_card_carries_the_built_block():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add a call to action")
     (card,) = payload["actions"]
@@ -116,6 +122,8 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add testimonials")
     assert payload["kind"] == "answer"  # nothing proposable survived
@@ -131,6 +139,8 @@ def test_failed_model_call_still_reports_cost():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
         pytest.raises(AiError),
     ):
         engine.run_turn(TENANT, [], [], "hi")
@@ -159,6 +169,8 @@ def test_create_course_action_becomes_card_with_stashed_params():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "create my first course")
     (card,) = payload["actions"]
@@ -191,6 +203,8 @@ def test_create_event_card_requires_future_date():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "schedule a class")
     assert payload["kind"] == "answer"  # past-date proposal dropped, fallback answer
@@ -219,6 +233,8 @@ def test_create_event_onsite_card_stashes_location_and_kind():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "plan a retreat")
     (card,) = payload["actions"]
@@ -250,6 +266,8 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "write a blog post")
     (card,) = payload["actions"]
@@ -286,6 +304,8 @@ def test_draft_announcement_card_maps_params_and_states_inert_detail():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "tell students about the new timetable")
     (card,) = payload["actions"]
@@ -355,6 +375,8 @@ def test_user_turn_includes_chrome_digest():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Theme: ocean" in captured["user"]
@@ -379,6 +401,8 @@ def test_system_prompt_carries_platform_knowledge_and_addenda():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         engine.run_turn(TENANT, [], [], "how do I get paid?")
     assert captured["system"].startswith(engine.SYSTEM_PROMPT)
@@ -411,6 +435,8 @@ def test_ask_over_cap_is_steered_and_coerced_to_answer():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
     assert payload == {"kind": "answer", "text": "Which page do you mean?"}
@@ -434,6 +460,8 @@ def test_cap_zero_leaves_asks_uncapped():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # default cap 0 = today's behavior
@@ -470,6 +498,8 @@ def test_ask_outside_transcript_window_does_not_trip_cap():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
     assert payload["kind"] == "ask"  # old ask is outside the window, so cap doesn't trip
@@ -497,6 +527,8 @@ def test_under_cap_ask_passes_through():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # 1 prior ask < cap of 2
@@ -794,6 +826,8 @@ def test_user_turn_includes_courses_digest():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Courses: (none yet)" in captured["user"]
@@ -907,6 +941,8 @@ def test_user_turn_includes_events_and_posts_digests():
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Upcoming events: (none scheduled)" in captured["user"]
@@ -1213,3 +1249,56 @@ def test_system_prompt_lists_edit_seo():
 def test_system_prompt_steers_bulk_and_recurring_bundles():
     assert "propose them as one set of cards in a single turn" in engine.SYSTEM_PROMPT
     assert "max 12 cards" in engine.SYSTEM_PROMPT
+
+
+def test_stats_digest_counts(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.courses.models import Course
+
+    instructor = User.objects.create_user(
+        email="stats-digest@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    Course.objects.create(title="C", instructor=instructor, price=0, pricing_type="free", is_published=True)
+    User.objects.create_user(email="stats-student@x.com", name="Student", password="x")  # noqa: S106
+    digest = engine._stats_digest(tenant_with_pages)
+    assert "published courses: 1" in digest
+    assert "students:" in digest
+    assert "students: 1" in digest
+
+
+def test_setup_digest_lists_open_items(tenant_with_pages):
+    digest = engine._setup_digest(tenant_with_pages)
+    assert digest.startswith("Setup still open:") or digest == "Setup: all done"
+
+
+def test_setup_digest_no_config_reports_site_open(tenant_ctx):
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.all().delete()
+    digest = engine._setup_digest(tenant_ctx)
+    assert digest == "Setup still open: site"
+
+
+def test_user_turn_includes_stats_and_setup():
+    with (
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 3 (1 new this week)"),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup still open: look, first_course"),
+    ):
+        turn = engine._user_turn(TENANT, [], [], "hi")
+    assert "students:" in turn
+    assert "Setup" in turn
+
+
+def test_system_prompt_steers_stats_and_setup():
+    assert "Stats line" in engine.SYSTEM_PROMPT
+    assert "Setup line" in engine.SYSTEM_PROMPT
+    assert "never invent figures" in engine.SYSTEM_PROMPT
