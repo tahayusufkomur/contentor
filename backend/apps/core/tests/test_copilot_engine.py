@@ -1,6 +1,7 @@
 """run_turn: model union in, executable proposal cards out. The model is
 always mocked — these tests pin the post-processing contract."""
 
+from datetime import timedelta
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest import mock
@@ -816,3 +817,71 @@ def test_edit_course_no_fields_dropped_with_reason():
 
 def test_system_prompt_lists_edit_course():
     assert "edit_course" in engine.SYSTEM_PROMPT
+
+
+def test_edit_event_card_resolves_title_and_stashes_params():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    new_when = timezone.now() + timedelta(days=10)
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "edit_event",
+                "event_id": 3,
+                "event_kind": "live",
+                "scheduled_at": new_when.isoformat(),
+            }
+        ],
+    )
+    with mock.patch.object(engine, "_event_title", return_value="Sunrise Flow") as event_lookup:
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "edit_event"
+    assert "Sunrise Flow" in card["title"]
+    assert f"{new_when:%b %d, %Y %H:%M}" in card["detail"]
+    event_lookup.assert_called_once_with(TENANT, "live", 3)
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["kind"] == "edit_event"
+    assert stashed["event_id"] == 3
+    assert stashed["event_kind"] == "live"
+    assert stashed["params"]["scheduled_at"] == new_when.isoformat()
+
+
+def test_edit_event_card_unknown_id_dropped_with_reason():
+    from apps.core.copilot import content as copilot_content
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_event", "event_id": 999999, "event_kind": "live", "title": "X"}],
+    )
+    with mock.patch.object(
+        engine, "_event_title", side_effect=copilot_content.ContentOpError("no event with id 999999")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "no event with id 999999" in payload["text"]
+
+
+def test_edit_event_card_rejects_past_date():
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "edit_event",
+                "event_id": 3,
+                "event_kind": "live",
+                "scheduled_at": "2020-01-01T09:00:00Z",
+            }
+        ],
+    )
+    with mock.patch.object(engine, "_event_title", return_value="Sunrise Flow"):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"  # past-date proposal dropped, fallback answer
+
+
+def test_system_prompt_lists_edit_event():
+    assert "edit_event" in engine.SYSTEM_PROMPT

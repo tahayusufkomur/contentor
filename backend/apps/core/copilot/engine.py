@@ -44,6 +44,8 @@ SYSTEM_PROMPT = (
     "- edit_course: update an existing course's title, description, or "
     "price (course_id from the course list); modules cannot be changed "
     "here\n"
+    "- edit_event: reschedule or update an upcoming event (event_id + kind "
+    "from the events list); date must be in the future\n"
     "- create_event: schedule a live class (event_kind=live) or an "
     "in-person event (event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
@@ -221,6 +223,17 @@ class EditCourseAction(BaseModel):
     price: float | None = None
 
 
+class EditEventAction(BaseModel):
+    kind: Literal["edit_event"]
+    event_id: int
+    event_kind: Literal["live", "onsite"] = "live"
+    title: str | None = None
+    description: str | None = None
+    scheduled_at: datetime | None = None
+    location: str | None = None
+    price: float | None = None
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -234,6 +247,7 @@ CopilotAction = Annotated[
     | SetBlockImageAction
     | SetCourseCoverAction
     | EditCourseAction
+    | EditEventAction
     | EditBlockFieldsAction
     | ToggleBlockAction
     | DuplicateBlockAction,
@@ -326,6 +340,20 @@ def _course_for_cover(tenant, course_id):
             raise photos.PhotoOpError(f"no course with id {course_id}")
         exclude_key = course.thumbnail.s3_key if course.thumbnail_id and course.thumbnail else None
         return course.title, exclude_key
+
+
+def _event_title(tenant, event_kind, event_id):
+    """Resolve an event's title for the card — coaches only see ids in the
+    events digest, and `f"Update event {id}"` isn't a usable card title.
+    Raises content.ContentOpError for an unknown id."""
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    model = OnsiteEvent if event_kind == "onsite" else LiveClass
+    with tenant_context(tenant):
+        title = model.objects.filter(pk=event_id).values_list("title", flat=True).first()
+    if title is None:
+        raise content.ContentOpError(f"no event with id {event_id}")
+    return title
 
 
 MAX_DIGEST_COURSES = 30
@@ -566,6 +594,51 @@ def _card(tenant, action):
                         )
                         if v is not None
                     },
+                },
+            ),
+        }
+    if isinstance(action, EditEventAction):
+        event_title = _event_title(tenant, action.event_kind, action.event_id)  # raises ContentOpError on unknown id
+        when = None
+        if action.scheduled_at is not None:
+            when = action.scheduled_at if action.scheduled_at.tzinfo else action.scheduled_at.replace(tzinfo=UTC)
+            if when <= timezone.now():
+                raise content.ContentOpError("event date must be in the future")
+        parts = [
+            p
+            for p in (
+                f"title → '{action.title[:60]}'" if action.title else None,
+                "new description" if action.description else None,
+                f"when → {when:%b %d, %Y %H:%M}" if when is not None else None,
+                f"location → '{action.location[:80]}'" if action.location else None,
+                f"price → {max(action.price, 0):.2f}" if action.price is not None else None,
+            )
+            if p
+        ]
+        if not parts:
+            raise content.ContentOpError("nothing to change on the event")
+        params = {
+            k: v
+            for k, v in (
+                ("title", action.title),
+                ("description", action.description),
+                ("scheduled_at", when.isoformat() if when is not None else None),
+                ("location", action.location),
+                ("price", action.price),
+            )
+            if v is not None
+        }
+        return {
+            "kind": "edit_event",
+            "title": f"Update event: {event_title[:100]}",
+            "detail": ", ".join(parts),
+            "token": tokens.stash_action(
+                schema,
+                {
+                    "kind": "edit_event",
+                    "event_id": action.event_id,
+                    "event_kind": action.event_kind,
+                    "params": params,
                 },
             ),
         }

@@ -171,3 +171,89 @@ def test_edit_course_no_changes_raises(coach):
     course = Course.objects.create(title="Same", instructor=coach, price=0, pricing_type="free")
     with pytest.raises(content.ContentOpError):
         content.edit_course(course.pk, {"title": "Same"})
+
+
+def test_edit_event_reschedules_live_class(coach):
+    from apps.live.models import LiveClass
+
+    event = LiveClass.objects.create(
+        title="Yoga",
+        instructor=coach,
+        price=0,
+        pricing_type="free",
+        scheduled_at=timezone.now() + timedelta(days=2),
+    )
+    new_when = (timezone.now() + timedelta(days=5)).isoformat()
+    result = content.edit_event(event.pk, "live", {"scheduled_at": new_when})
+    event.refresh_from_db()
+    assert event.scheduled_at.isoformat() == new_when
+    assert result["changes"][0]["field"] == "scheduled_at"
+    assert result["kind"] == "edit_event"
+    assert result["url"] == "/admin/live"
+
+
+def test_edit_event_rejects_past_date(coach):
+    from apps.live.models import LiveClass
+
+    event = LiveClass.objects.create(
+        title="Yoga",
+        instructor=coach,
+        price=0,
+        pricing_type="free",
+        scheduled_at=timezone.now() + timedelta(days=2),
+    )
+    past = (timezone.now() - timedelta(days=1)).isoformat()
+    with pytest.raises(content.ContentOpError):
+        content.edit_event(event.pk, "live", {"scheduled_at": past})
+
+
+def test_edit_event_onsite_location(coach):
+    from apps.live.models import OnsiteEvent
+
+    event = OnsiteEvent.objects.create(
+        title="Retreat",
+        instructor=coach,
+        price=0,
+        pricing_type="free",
+        location="Berlin",
+        scheduled_at=timezone.now() + timedelta(days=9),
+    )
+    content.edit_event(event.pk, "onsite", {"location": "Hamburg"})
+    event.refresh_from_db()
+    assert event.location == "Hamburg"
+
+
+def test_edit_event_unknown_id_raises(coach):
+    with pytest.raises(content.ContentOpError):
+        content.edit_event(99999, "live", {"title": "X"})
+
+
+def test_edit_event_no_changes_raises(coach):
+    from apps.live.models import LiveClass
+
+    event = LiveClass.objects.create(
+        title="Yoga",
+        instructor=coach,
+        price=0,
+        pricing_type="free",
+        scheduled_at=timezone.now() + timedelta(days=2),
+    )
+    with pytest.raises(content.ContentOpError):
+        content.edit_event(event.pk, "live", {"title": "Yoga"})
+
+
+def test_edit_event_price_updates_pricing_type(coach):
+    from apps.live.models import LiveClass
+
+    event = LiveClass.objects.create(
+        title="Yoga",
+        instructor=coach,
+        price=0,
+        pricing_type="free",
+        scheduled_at=timezone.now() + timedelta(days=2),
+    )
+    result = content.edit_event(event.pk, "live", {"price": 29})
+    event.refresh_from_db()
+    assert str(event.price) == "29.00"
+    assert event.pricing_type == "paid"
+    assert result["kind"] == "edit_event"

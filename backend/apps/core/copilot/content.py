@@ -100,6 +100,56 @@ def edit_course(course_id, params):
     }
 
 
+def edit_event(event_id, event_kind, params):
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    model = OnsiteEvent if event_kind == "onsite" else LiveClass
+    event = model.objects.filter(pk=event_id).first()
+    if event is None:
+        raise ContentOpError(f"no {event_kind} event with id {event_id}")
+    changes = []
+
+    def _set(field, new):
+        old = getattr(event, field)
+        if str(old) == str(new):
+            return
+        changes.append({"field": field, "old": str(old)[:200], "new": str(new)[:200]})
+        setattr(event, field, new)
+
+    if params.get("title"):
+        _set("title", str(params["title"])[:200])
+    if params.get("description"):
+        _set("description", str(params["description"]))
+    if params.get("scheduled_at"):
+        when = parse_datetime(str(params["scheduled_at"]))
+        if when is None:
+            raise ContentOpError("could not read the new date")
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.get_current_timezone())
+        if when <= timezone.now():
+            raise ContentOpError("event date must be in the future")
+        _set("scheduled_at", when)
+    if params.get("price") is not None:
+        price = max(float(params["price"]), 0)
+        _set("price", f"{price:.2f}")
+        _set("pricing_type", "paid" if price > 0 else "free")
+    if event_kind == "onsite" and params.get("location"):
+        _set("location", str(params["location"])[:500])
+    if not changes:
+        raise ContentOpError("nothing to change on the event")
+    event.save(update_fields=[c["field"] for c in changes])
+    return {
+        "kind": "edit_event",
+        "id": event.id,
+        "title": event.title,
+        "url": "/admin/live",
+        "changes": changes,
+    }
+
+
 def create_blog_post(user, params):
     from apps.blog.models import unique_slug
     from apps.blog.serializers import BlogPostAdminSerializer
