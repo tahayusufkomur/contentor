@@ -162,16 +162,22 @@ test("saved logo: brand name hidden by default, toggle reveals it, size XL sizes
 
     // Same DOM-click workaround as the layout picker above — the accordion's
     // expand animation confuses Playwright's actionability check.
-    const brandNameAutosave = edit.waitForResponse(
-      (resp) =>
-        resp.url().includes("/api/admin/config") &&
-        resp.request().method() === "PATCH" &&
-        resp.ok(),
-      { timeout: 15_000 },
-    );
     await showBrandNameSwitch.scrollIntoViewIfNeeded();
     await showBrandNameSwitch.evaluate((el) => (el as HTMLElement).click());
-    await brandNameAutosave;
+    // The autosave is debounced (edit-sidebar DEBOUNCE_MS) and other config
+    // PATCHes fire around it, so waiting for "a PATCH response" is a race —
+    // poll the persisted config until the toggle has actually landed.
+    await expect
+      .poll(
+        async () => {
+          const resp = await coach.request.get(
+            `${TENANT}/api/v1/admin/config/`,
+          );
+          return (await resp.json()).navbar_config?.show_brand_name === true;
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true);
 
     await page.goto(`${TENANT}/`);
     await expect(page.locator("header .font-display")).toHaveCount(1, {
@@ -181,16 +187,19 @@ test("saved logo: brand name hidden by default, toggle reveals it, size XL sizes
     // Logo size XL -> h-12 on the header logo (lib/navbar.ts logoSizeClass).
     const xlBtn = edit.getByRole("button", { name: "xl", exact: true });
     await expect(xlBtn).toBeVisible({ timeout: 5_000 });
-    const sizeAutosave = edit.waitForResponse(
-      (resp) =>
-        resp.url().includes("/api/admin/config") &&
-        resp.request().method() === "PATCH" &&
-        resp.ok(),
-      { timeout: 15_000 },
-    );
     await xlBtn.scrollIntoViewIfNeeded();
     await xlBtn.evaluate((el) => (el as HTMLElement).click());
-    await sizeAutosave;
+    await expect
+      .poll(
+        async () => {
+          const resp = await coach.request.get(
+            `${TENANT}/api/v1/admin/config/`,
+          );
+          return (await resp.json()).navbar_config?.logo_size;
+        },
+        { timeout: 15_000 },
+      )
+      .toBe("xl");
     await edit.close();
 
     await page.goto(`${TENANT}/`);
