@@ -41,6 +41,9 @@ SYSTEM_PROMPT = (
     "- create_course: create a DRAFT course (title, description, price, "
     "modules each with lesson titles); the coach reviews and publishes it "
     "from their admin\n"
+    "- edit_course: update an existing course's title, description, or "
+    "price (course_id from the course list); modules cannot be changed "
+    "here\n"
     "- create_event: schedule a live class (event_kind=live) or an "
     "in-person event (event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
@@ -210,6 +213,14 @@ class SetCourseCoverAction(BaseModel):
     description: str = ""
 
 
+class EditCourseAction(BaseModel):
+    kind: Literal["edit_course"]
+    course_id: int
+    title: str | None = None
+    description: str | None = None
+    price: float | None = None
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -222,6 +233,7 @@ CopilotAction = Annotated[
     | EditNavbarAction
     | SetBlockImageAction
     | SetCourseCoverAction
+    | EditCourseAction
     | EditBlockFieldsAction
     | ToggleBlockAction
     | DuplicateBlockAction,
@@ -521,6 +533,40 @@ def _card(tenant, action):
             "token": tokens.stash_action(
                 schema,
                 {"kind": "set_course_cover", "course_id": action.course_id, "curated_photo_id": row.pk},
+            ),
+        }
+    if isinstance(action, EditCourseAction):
+        course_title, _ = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
+        parts = [
+            p
+            for p in (
+                f"title → '{action.title[:60]}'" if action.title else None,
+                "new description" if action.description else None,
+                f"price → {max(action.price, 0):.2f}" if action.price is not None else None,
+            )
+            if p
+        ]
+        if not parts:
+            raise content.ContentOpError("nothing to change on the course")
+        return {
+            "kind": "edit_course",
+            "title": f"Update course: {course_title[:100]}",
+            "detail": ", ".join(parts),
+            "token": tokens.stash_action(
+                schema,
+                {
+                    "kind": "edit_course",
+                    "course_id": action.course_id,
+                    "params": {
+                        k: v
+                        for k, v in (
+                            ("title", action.title),
+                            ("description", action.description),
+                            ("price", action.price),
+                        )
+                        if v is not None
+                    },
+                },
             ),
         }
     if isinstance(action, EditThemeAction):

@@ -143,3 +143,31 @@ def test_create_blog_post_forces_draft_regardless_of_caller_params(coach):
     post = BlogPost.objects.get(id=result["id"])
     assert post.status == "draft"  # Server forced draft
     assert post.noindex is False  # Server forced noindex=False
+
+
+def test_edit_course_updates_fields(coach):
+    from apps.courses.models import Course
+
+    course = Course.objects.create(title="Old", instructor=coach, price=0, pricing_type="free", is_published=False)
+    result = content.edit_course(course.pk, {"title": "New title", "price": 49})
+    course.refresh_from_db()
+    assert course.title == "New title"
+    assert str(course.price) == "49.00"
+    assert course.pricing_type == "paid"
+    assert {"field": "title", "old": "Old", "new": "New title"} in result["changes"]
+    assert result["kind"] == "edit_course"
+    assert result["id"] == course.id
+    assert result["url"] == f"/admin/courses/{course.slug}"
+
+
+def test_edit_course_unknown_id_raises(coach):
+    with pytest.raises(content.ContentOpError):
+        content.edit_course(99999, {"title": "X"})
+
+
+def test_edit_course_no_changes_raises(coach):
+    from apps.courses.models import Course
+
+    course = Course.objects.create(title="Same", instructor=coach, price=0, pricing_type="free")
+    with pytest.raises(content.ContentOpError):
+        content.edit_course(course.pk, {"title": "Same"})

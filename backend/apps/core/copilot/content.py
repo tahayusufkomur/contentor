@@ -62,6 +62,44 @@ def create_event(user, event_kind, params):
     return {"kind": "create_event", "id": event.id, "title": event.title, "url": "/admin/live"}
 
 
+_COURSE_EDIT_FIELDS = ("title", "description", "price")
+
+
+def edit_course(course_id, params):
+    from apps.courses.models import Course
+    from apps.courses.serializers import CourseCreateUpdateSerializer
+
+    course = Course.objects.filter(pk=course_id).first()
+    if course is None:
+        raise ContentOpError(f"no course with id {course_id}")
+    data = {k: v for k, v in params.items() if k in _COURSE_EDIT_FIELDS and v is not None}
+    if "price" in data:
+        price = max(float(data["price"]), 0)
+        data["price"] = f"{price:.2f}"
+        data["pricing_type"] = "paid" if price > 0 else "free"
+    if not data:
+        raise ContentOpError("nothing to change on the course")
+    old = {k: str(getattr(course, k)) for k in data}
+    serializer = CourseCreateUpdateSerializer(instance=course, data=data, partial=True)
+    if not serializer.is_valid():
+        _fail(serializer.errors)
+    course = serializer.save()
+    changes = [
+        {"field": k, "old": old[k][:200], "new": str(getattr(course, k))[:200]}
+        for k in data
+        if old[k] != str(getattr(course, k))
+    ]
+    if not changes:
+        raise ContentOpError("those fields already have those values")
+    return {
+        "kind": "edit_course",
+        "id": course.id,
+        "title": course.title,
+        "url": f"/admin/courses/{course.slug}",
+        "changes": changes,
+    }
+
+
 def create_blog_post(user, params):
     from apps.blog.models import unique_slug
     from apps.blog.serializers import BlogPostAdminSerializer

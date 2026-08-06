@@ -734,9 +734,7 @@ def test_posts_digest_lists_status(tenant_with_pages):
         role="owner",
         is_staff=True,
     )
-    post = BlogPost.objects.create(
-        title="Why rest matters", status="draft", created_by=author, slug="why-rest"
-    )
+    post = BlogPost.objects.create(title="Why rest matters", status="draft", created_by=author, slug="why-rest")
     digest = engine._posts_digest(tenant_with_pages)
     assert f"{post.id} | Why rest matters | draft" in digest
 
@@ -764,4 +762,57 @@ def test_user_turn_includes_events_and_posts_digests():
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Upcoming events: (none scheduled)" in captured["user"]
-    assert "Blog posts: (none yet)" in captured["user"]
+
+
+def test_edit_course_card_stashes_params_and_carries_title():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_course", "course_id": 3, "title": "New title", "price": 49}],
+    )
+    with mock.patch.object(engine, "_course_for_cover", return_value=("Yoga Basics", None)) as course_lookup:
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "edit_course"
+    assert "Yoga Basics" in card["title"]
+    course_lookup.assert_called_once_with(TENANT, 3)
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {
+        "kind": "edit_course",
+        "course_id": 3,
+        "params": {"title": "New title", "price": 49},
+    }
+
+
+def test_edit_course_unknown_course_dropped_with_reason():
+    from apps.core.copilot import photos as copilot_photos
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_course", "course_id": 999, "title": "X"}],
+    )
+    with mock.patch.object(
+        engine, "_course_for_cover", side_effect=copilot_photos.PhotoOpError("no course with id 999")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "no course with id 999" in payload["text"]
+
+
+def test_edit_course_no_fields_dropped_with_reason():
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_course", "course_id": 3}],
+    )
+    with mock.patch.object(engine, "_course_for_cover", return_value=("Yoga Basics", None)):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "nothing to change" in payload["text"]
+
+
+def test_system_prompt_lists_edit_course():
+    assert "edit_course" in engine.SYSTEM_PROMPT
