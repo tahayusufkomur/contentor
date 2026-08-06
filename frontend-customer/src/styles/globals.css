@@ -176,3 +176,14 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* TipTap placeholder for the copilot composer (the extension only sets
+   data-placeholder; the ::before is ours). Tokens are full oklch colors —
+   use var(--token) directly, never hsl(var(--token)). */
+.copilot-composer p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

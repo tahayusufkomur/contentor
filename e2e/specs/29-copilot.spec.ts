@@ -10,6 +10,29 @@
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
 
+// The drawer boots from the server-side chats API; stubbed tests mock it to
+// empty so every test starts on a fresh thread regardless of prior runs.
+async function mockEmptyChats(page: import("@playwright/test").Page) {
+  await page.route("**/api/v1/admin/copilot/chats/**", async (route) => {
+    const method = route.request().method();
+    if (method === "GET") return route.fulfill({ json: { chats: [] } });
+    if (method === "POST")
+      return route.fulfill({
+        status: 201,
+        json: { id: 999, title: "e2e", updated_at: new Date().toISOString(), entries: [] },
+      });
+    return route.fulfill({ json: { id: 999, title: "e2e", updated_at: new Date().toISOString(), entries: [] } });
+  });
+  await page.route("**/api/v1/admin/copilot/chats/", async (route) => {
+    const method = route.request().method();
+    if (method === "GET") return route.fulfill({ json: { chats: [] } });
+    return route.fulfill({
+      status: 201,
+      json: { id: 999, title: "e2e", updated_at: new Date().toISOString(), entries: [] },
+    });
+  });
+}
+
 test("coach opens the copilot, gets an action card, and confirms it", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
@@ -31,12 +54,13 @@ test("coach opens the copilot, gets an action card, and confirms it", async ({ b
     await route.fulfill({ json: { result: { kind: "add_block", page: "home" } } });
   });
 
+  await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
 
   // Deep link opens the panel.
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
 
-  await page.getByPlaceholder("e.g. make this section warmer").fill("add a call to action");
+  await page.getByTestId("copilot-input").fill("add a call to action");
   await page.getByRole("button", { name: "Send", exact: true }).click();
 
   await expect(page.getByText("Here is my plan.")).toBeVisible();
@@ -77,9 +101,10 @@ test("a create-course card confirms and links to the new draft", async ({ browse
       json: { result: { kind: "create_course", id: 1, title: "Yoga 101", url: "/admin/courses/yoga-101" } },
     });
   });
+  await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
-  await page.getByPlaceholder("e.g. make this section warmer").fill("create my first course");
+  await page.getByTestId("copilot-input").fill("create my first course");
   await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(page.getByText("Create draft course: Yoga 101")).toBeVisible();
   await page.getByRole("button", { name: "Apply", exact: true }).click();
@@ -109,9 +134,10 @@ test("an edit-theme card confirms and applies", async ({ browser }) => {
     executed = true;
     await route.fulfill({ json: { result: { kind: "edit_theme", theme: "forest" } } });
   });
+  await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
-  await page.getByPlaceholder("e.g. make this section warmer").fill("make my site feel calmer");
+  await page.getByTestId("copilot-input").fill("make my site feel calmer");
   await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(page.getByText("Switch theme to Forest")).toBeVisible();
   await page.getByRole("button", { name: "Apply", exact: true }).click();
@@ -133,8 +159,9 @@ test("a KB-grounded answer renders admin links as buttons, not raw paths", async
         'data: {"type":"done","kind":"answer","text":"You get paid through Stripe payouts. [Payouts](/admin/payouts)"}\n\n',
     });
   });
+  await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
-  await page.getByPlaceholder("e.g. make this section warmer").fill("how do I get paid?");
+  await page.getByTestId("copilot-input").fill("how do I get paid?");
   await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(page.getByText("You get paid through Stripe payouts.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Payouts" })).toHaveAttribute("href", /\/admin\/payouts/);
@@ -164,9 +191,10 @@ test("edit_block_fields card shows diff rows and confirms", async ({ browser }) 
     executed = true;
     await route.fulfill({ json: { result: { kind: "edit_block_fields", page: "home" } } });
   });
+  await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
-  await page.getByPlaceholder("e.g. make this section warmer").fill("change the hero button link");
+  await page.getByTestId("copilot-input").fill("change the hero button link");
   await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(page.getByText("Update the hero on home")).toBeVisible();
   await expect(page.getByText("/pricing")).toBeVisible();
@@ -209,9 +237,10 @@ test("a set-block-image card shows the photo preview and applies", async ({ brow
     json.pages.home.blocks[0].heading = "COPILOT SYNCED HERO";
     await route.fulfill({ json });
   });
+  await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
-  await page.getByPlaceholder("e.g. make this section warmer").fill("add a hero section photo");
+  await page.getByTestId("copilot-input").fill("add a hero section photo");
   await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(page.getByText("Use the photo 'Sunlit yoga studio'")).toBeVisible();
   await expect(page.getByRole("img", { name: "Use the photo 'Sunlit yoga studio'" })).toBeVisible();
@@ -222,9 +251,15 @@ test("a set-block-image card shows the photo preview and applies", async ({ brow
   await page.close();
 });
 
-test("chat history survives a reload; New chat clears it", async ({ browser }) => {
+test("chats persist server-side: reload resumes, New chat starts fresh, the list reopens old threads", async ({
+  browser,
+}) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
+  // Unique per run: the real chats backend accumulates threads across runs,
+  // and boot resumes the most recent one — assertions must not collide with
+  // residue from an earlier execution.
+  const marker = `remember this ${Date.now()}`;
 
   await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
     await route.fulfill({
@@ -236,17 +271,33 @@ test("chat history survives a reload; New chat clears it", async ({ browser }) =
     });
   });
   await page.goto(`${TENANT}/?copilot=1`);
-  await page.getByPlaceholder("e.g. make this section warmer").fill("remember this");
+  await expect(page.getByText("Your AI assistant").first()).toBeVisible();
+  // A fresh thread regardless of what boot resumed.
+  await page.getByRole("button", { name: "New chat" }).click();
+  await page.getByTestId("copilot-input").fill(marker);
+  // The server save is best-effort fire-and-forget after the turn — wait for
+  // it before reloading, or the reload races the POST and the turn is lost.
+  const saved = page.waitForResponse(
+    (r) =>
+      r.url().includes("/api/v1/admin/copilot/chats/") &&
+      r.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "Send", exact: true }).click();
-  await expect(page.getByText("Persisted answer.")).toBeVisible();
+  await expect(page.getByText("Persisted answer.").first()).toBeVisible();
+  await saved;
 
-  await page.reload(); // ?copilot=1 sticks, so the panel reopens itself
-  await expect(page.getByText("Persisted answer.")).toBeVisible();
-  await expect(page.getByText("remember this")).toBeVisible();
+  // Reload: ?copilot=1 sticks, boot resumes the most recent server chat.
+  await page.reload();
+  await expect(page.getByText("Persisted answer.").first()).toBeVisible();
+  await expect(page.getByText(marker).first()).toBeVisible();
 
+  // New chat empties the view but keeps the old thread on the server…
   await page.getByRole("button", { name: "New chat" }).click();
   await expect(page.getByText("Persisted answer.")).toHaveCount(0);
-  await page.reload();
-  await expect(page.getByText("Persisted answer.")).toHaveCount(0);
+
+  // …and the chats list reopens it (title derives from the first message).
+  await page.getByRole("button", { name: "Chats" }).click();
+  await page.getByRole("button", { name: new RegExp(marker) }).click();
+  await expect(page.getByText("Persisted answer.").first()).toBeVisible();
   await page.close();
 });

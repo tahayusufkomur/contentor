@@ -2,17 +2,37 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Sparkles, SquarePen, X } from "lucide-react";
+import {
+  ChevronLeft,
+  MessageSquare,
+  Sparkles,
+  SquarePen,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 import { parseAnswer } from "@/components/admin/assistant/format-answer";
 import { isAbortError } from "@/lib/ai-stream";
-import { converseCopilot } from "@/lib/copilot/api";
+import {
+  converseCopilot,
+  createCopilotChat,
+  deleteCopilotChat,
+  fetchCopilotChat,
+  fetchCopilotChats,
+  patchCopilotChatEntries,
+} from "@/lib/copilot/api";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
-import { clearEntries, loadEntries, saveEntries } from "@/lib/copilot/storage";
-import type { ChatEntry, SelectionPayload } from "@/lib/copilot/types";
+import { persistableEntries, takeLegacyEntries } from "@/lib/copilot/storage";
+import type {
+  AttachedPhoto,
+  ChatEntry,
+  CopilotChatRow,
+  SelectionPayload,
+} from "@/lib/copilot/types";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ActionCard, ApplyAllBar, CardBundleProvider } from "./action-card";
+import { CopilotComposer } from "./composer";
 import { SelectionOverlay } from "./selection-overlay";
 
 /** Assistant text with the markdown-lite link contract: `[label](/path)`
@@ -42,74 +62,173 @@ function AssistantText({ text }: { text: string }) {
   );
 }
 
-/** The coach's floating AI assistant. Mounted (public layout) only for the
- * coach; the backend re-verifies on every call. `?copilot=1` opens it. */
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d`;
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/** The coach's AI side panel. Mounted (public layout) only for the coach;
+ * the backend re-verifies on every call. `?copilot=1` opens it. Chats live
+ * server-side (CopilotChat); the old localStorage transcript is imported as
+ * the first chat on first open. */
 export function CopilotBubble() {
   const t = useTranslations("student.copilot");
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"chat" | "list">("chat");
+  const [booted, setBooted] = useState(false);
+  const [chats, setChats] = useState<CopilotChatRow[]>([]);
+  const [chatId, setChatId] = useState<number | null>(null);
   const [entries, setEntries] = useState<ChatEntry[]>([]);
-  const [input, setInput] = useState("");
   const [selections, setSelections] = useState<SelectionPayload[]>([]);
+  const [attached, setAttached] = useState<AttachedPhoto[]>([]);
   const [selecting, setSelecting] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  // Persistence hydrates in an effect (localStorage is unavailable during
-  // SSR). `hydrated` must be STATE, not a ref: a ref flips mid-effects-pass,
-  // letting the save effect run with its stale initial-[] closure and wipe
-  // the stored chat before StrictMode's second mount pass re-reads it. As
-  // state, the save effect can't observe hydrated=true until the re-render
-  // that also carries the loaded entries.
-  const [hydrated, setHydrated] = useState(false);
+  const chatIdRef = useRef<number | null>(null);
+  chatIdRef.current = chatId;
 
   useEffect(() => {
     // window.location, NOT useSearchParams — avoids the Next 14 client-side
     // Suspense bailout (same pattern as owner/edit-sidebar.tsx).
     const params = new URLSearchParams(window.location.search);
     if (params.get("copilot") === "1") setOpen(true);
-    setEntries(loadEntries());
-    setHydrated(true);
   }, []);
 
+  // Boot on first open, not at mount: no chat API traffic for coaches who
+  // never touch the copilot on this page view.
   useEffect(() => {
-    if (hydrated) saveEntries(entries);
-  }, [hydrated, entries]);
+    if (!open || booted) return;
+    setBooted(true);
+    void (async () => {
+      try {
+        const legacy = takeLegacyEntries();
+        if (legacy.length > 0) await createCopilotChat(legacy);
+        const { chats: rows } = await fetchCopilotChats();
+        setChats(rows);
+        if (rows.length > 0) {
+          const detail = await fetchCopilotChat(rows[0].id);
+          setChatId(detail.id);
+          setEntries(detail.entries);
+        }
+      } catch {
+        // Server chats unavailable — the drawer still works as a fresh chat.
+      }
+    })();
+  }, [open, booted]);
+
+  /** Best-effort server save; a failed save never breaks the live chat. */
+  const persist = useCallback((next: ChatEntry[]) => {
+    void (async () => {
+      try {
+        const persistable = persistableEntries(next);
+        if (chatIdRef.current !== null) {
+          const row = await patchCopilotChatEntries(
+            chatIdRef.current,
+            persistable,
+          );
+          setChats((prev) => [row, ...prev.filter((c) => c.id !== row.id)]);
+        } else if (persistable.length > 0) {
+          const row = await createCopilotChat(persistable);
+          setChatId(row.id);
+          setChats((prev) => [row, ...prev]);
+        }
+      } catch {
+        // Offline or expired session — keep chatting, retry on next turn.
+      }
+    })();
+  }, []);
 
   const newChat = useCallback(() => {
     abortRef.current?.abort();
+    setChatId(null);
     setEntries([]);
     setSelections([]);
-    clearEntries();
+    setAttached([]);
+    setView("chat");
   }, []);
+
+  const openChat = useCallback(async (id: number) => {
+    abortRef.current?.abort();
+    const detail = await fetchCopilotChat(id);
+    setChatId(detail.id);
+    setEntries(detail.entries);
+    setSelections([]);
+    setAttached([]);
+    setView("chat");
+  }, []);
+
+  const { run: openChatSafe } = useAsyncAction(openChat, {
+    errorToast: t("error"),
+  });
+
+  const showList = useCallback(async () => {
+    setView("list");
+    try {
+      const { chats: rows } = await fetchCopilotChats();
+      setChats(rows);
+    } catch {
+      // Stale local list still renders.
+    }
+  }, []);
+
+  const { run: removeChat } = useAsyncAction(
+    async (id: number) => {
+      await deleteCopilotChat(id);
+      setChats((prev) => prev.filter((c) => c.id !== id));
+      if (chatIdRef.current === id) {
+        setChatId(null);
+        setEntries([]);
+      }
+    },
+    { errorToast: t("error") },
+  );
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [entries]);
+  }, [entries, view]);
 
   const addSelection = useCallback((p: SelectionPayload) => {
     setSelections((prev) => [...prev, p].slice(-5));
     setOpen(true);
+    setView("chat");
   }, []);
 
   const { run: send, loading: sending } = useAsyncAction(
-    async () => {
-      const message = input.trim();
-      if (!message) return;
+    async (message: string) => {
+      if (!message && attached.length === 0) return;
       const withCoach: ChatEntry[] = [
         ...entries,
-        { role: "coach", text: message },
+        { role: "coach", text: message || t("attachedOnly") },
       ];
       setEntries(withCoach);
-      setInput("");
       const controller = new AbortController();
       abortRef.current = controller;
       try {
         const done = await converseCopilot(
-          { message, transcript: toTranscript(entries), selections },
+          {
+            message: message || t("attachedOnly"),
+            transcript: toTranscript(entries),
+            selections,
+            attached_photos: attached.map((p) => p.id),
+          },
           { onPhase: () => {} },
           controller.signal,
         );
-        setEntries(reduceChat(withCoach, done));
+        const next = reduceChat(withCoach, done);
+        setEntries(next);
         setSelections([]);
+        setAttached([]);
+        persist(next);
       } catch (err) {
         if (isAbortError(err)) return;
         throw err;
@@ -143,22 +262,40 @@ export function CopilotBubble() {
       )}
       <div
         data-copilot-ui
-        className="fixed bottom-5 right-5 z-[60] flex h-[min(34rem,80vh)] w-[min(24rem,calc(100vw-2.5rem))] flex-col rounded-xl border bg-background shadow-xl"
+        className="fixed inset-y-0 right-0 z-[60] flex w-[min(26rem,100vw)] flex-col border-l bg-background shadow-xl motion-safe:animate-in motion-safe:slide-in-from-right motion-safe:duration-200"
       >
         <div className="flex items-center justify-between border-b p-3">
-          <p className="text-sm font-semibold">{t("title")}</p>
-          <span className="flex items-center gap-1">
-            {entries.length > 0 && (
+          <span className="flex min-w-0 items-center gap-1">
+            {view === "chat" ? (
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={newChat}
-                aria-label={t("newChat")}
-                title={t("newChat")}
+                onClick={showList}
+                aria-label={t("chats")}
+                title={t("chats")}
               >
-                <SquarePen className="size-4" aria-hidden />
+                <ChevronLeft className="size-4" aria-hidden />
+                <MessageSquare className="size-4" aria-hidden />
               </Button>
+            ) : (
+              <p className="px-1 text-sm font-semibold">{t("chats")}</p>
             )}
+            {view === "chat" && (
+              <p className="truncate text-sm font-semibold">
+                {chats.find((c) => c.id === chatId)?.title || t("title")}
+              </p>
+            )}
+          </span>
+          <span className="flex shrink-0 items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={newChat}
+              aria-label={t("newChat")}
+              title={t("newChat")}
+            >
+              <SquarePen className="size-4" aria-hidden />
+            </Button>
             <Button
               size="sm"
               variant="ghost"
@@ -169,92 +306,126 @@ export function CopilotBubble() {
             </Button>
           </span>
         </div>
-        <div
-          ref={scrollRef}
-          className="flex-1 space-y-3 overflow-y-auto p-3 text-sm"
-        >
-          {entries.length === 0 && (
-            <p className="text-muted-foreground">{t("empty")}</p>
-          )}
-          {entries.map((e, i) => (
-            <div key={i}>
+
+        {view === "list" ? (
+          <div className="flex-1 overflow-y-auto p-2">
+            {chats.length === 0 && (
+              <p className="p-2 text-sm text-muted-foreground">
+                {t("noChats")}
+              </p>
+            )}
+            {chats.map((c) => (
               <div
-                className={
-                  e.role === "coach"
-                    ? "ml-8 rounded-lg bg-primary/10 p-2"
-                    : "mr-8 rounded-lg bg-muted p-2"
-                }
+                key={c.id}
+                className={`group flex items-center gap-2 rounded-lg p-2 hover:bg-accent ${
+                  c.id === chatId ? "bg-accent/60" : ""
+                }`}
               >
-                {e.text === "__unavailable__" ? (
-                  t("resting")
-                ) : e.role === "assistant" ? (
-                  <AssistantText text={e.text} />
-                ) : (
-                  e.text
-                )}
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 flex-col text-left"
+                  onClick={() => openChatSafe(c.id)}
+                >
+                  <span className="truncate text-sm">
+                    {c.title || t("untitledChat")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {relativeTime(c.updated_at)}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={t("deleteChat")}
+                  title={t("deleteChat")}
+                  className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus:opacity-100 group-hover:opacity-100"
+                  onClick={() => removeChat(c.id)}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
               </div>
-              {e.cards && e.cards.length > 0 && (
-                <CardBundleProvider>
-                  {e.cards.map((card, j) => (
-                    <ActionCard key={`${i}-${j}`} card={card} />
-                  ))}
-                  {e.cards.length > 1 && (
-                    <div className="mt-2">
-                      <ApplyAllBar />
-                    </div>
-                  )}
-                </CardBundleProvider>
-              )}
-            </div>
-          ))}
-          {sending && <p className="text-muted-foreground">{t("thinking")}</p>}
-        </div>
-        {selections.length > 0 && (
-          <div className="flex flex-wrap gap-1 border-t p-2">
-            {selections.map((s, i) => (
-              <button
-                key={i}
-                type="button"
-                className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground"
-                onClick={() =>
-                  setSelections((prev) => prev.filter((_, j) => j !== i))
-                }
-                title={t("removeSelection")}
-              >
-                {s.block_id ?? s.tag}: {s.text.slice(0, 24)} ✕
-              </button>
             ))}
           </div>
-        )}
-        <div className="flex gap-2 border-t p-3">
-          <Button
-            size="sm"
-            variant={selecting ? "brand" : "outline"}
-            onClick={() => setSelecting((v) => !v)}
-          >
-            {t("select")}
-          </Button>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
+        ) : (
+          <>
+            <div
+              ref={scrollRef}
+              className="flex-1 space-y-3 overflow-y-auto p-3 text-sm"
+            >
+              {entries.length === 0 && (
+                <p className="text-muted-foreground">{t("empty")}</p>
+              )}
+              {entries.map((e, i) => (
+                <div key={i}>
+                  <div
+                    className={
+                      e.role === "coach"
+                        ? "ml-8 whitespace-pre-wrap rounded-lg bg-primary/10 p-2"
+                        : "mr-8 rounded-lg bg-muted p-2"
+                    }
+                  >
+                    {e.text === "__unavailable__" ? (
+                      t("resting")
+                    ) : e.role === "assistant" ? (
+                      <AssistantText text={e.text} />
+                    ) : (
+                      e.text
+                    )}
+                  </div>
+                  {e.cards && e.cards.length > 0 && (
+                    <CardBundleProvider>
+                      {e.cards.map((card, j) => (
+                        <ActionCard key={`${i}-${j}`} card={card} />
+                      ))}
+                      {e.cards.length > 1 && (
+                        <div className="mt-2">
+                          <ApplyAllBar />
+                        </div>
+                      )}
+                    </CardBundleProvider>
+                  )}
+                </div>
+              ))}
+              {sending && (
+                <p className="text-muted-foreground">{t("thinking")}</p>
+              )}
+            </div>
+            {selections.length > 0 && (
+              <div className="flex flex-wrap gap-1 border-t p-2">
+                {selections.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground"
+                    onClick={() =>
+                      setSelections((prev) => prev.filter((_, j) => j !== i))
+                    }
+                    title={t("removeSelection")}
+                  >
+                    {s.block_id ?? s.tag}: {s.text.slice(0, 24)} ✕
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-2 px-3 pt-2">
+              <Button
+                size="sm"
+                variant={selecting ? "brand" : "outline"}
+                onClick={() => setSelecting((v) => !v)}
+              >
+                {t("select")}
+              </Button>
+            </div>
+            <CopilotComposer
+              onSend={send}
+              sending={sending}
+              attached={attached}
+              onAttach={(p) => setAttached((prev) => [...prev, p])}
+              onRemoveAttachment={(id) =>
+                setAttached((prev) => prev.filter((p) => p.id !== id))
               }
-            }}
-            placeholder={t("placeholder")}
-            className="flex-1 rounded-lg border bg-background px-2 text-sm"
-          />
-          <Button
-            size="sm"
-            onClick={send}
-            loading={sending}
-            loadingText={t("sending")}
-          >
-            {t("send")}
-          </Button>
-        </div>
+            />
+          </>
+        )}
       </div>
     </>
   );

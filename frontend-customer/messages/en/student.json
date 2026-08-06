@@ -115,6 +115,15 @@
       "linkHref": "Link",
       "submitLabel": "Submit button",
       "successMessage": "Success message"
-    }
+    },
+    "chats": "Chats",
+    "noChats": "No chats yet — start one below.",
+    "untitledChat": "New chat",
+    "deleteChat": "Delete chat",
+    "attach": "Attach a photo",
+    "removeAttachment": "Remove photo",
+    "attachTooLarge": "That photo is too large (max 10 MB).",
+    "attachFailed": "Couldn't upload the photo. Please try again.",
+    "attachedOnly": "(sent a photo)"
   }
 }

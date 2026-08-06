@@ -72,3 +72,21 @@ export interface CopilotAuditEntry {
   summary: string;
   created_at: string;
 }
+
+export interface CopilotChatRow {
+  id: number;
+  title: string;
+  updated_at: string;
+}
+
+export interface CopilotChatDetail extends CopilotChatRow {
+  entries: ChatEntry[];
+}
+
+/** A photo the coach attached to the composer, already uploaded to their
+ * media library — the id travels with the next converse call. */
+export interface AttachedPhoto {
+  id: string;
+  title: string;
+  signed_url: string;
+}

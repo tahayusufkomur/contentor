@@ -115,6 +115,15 @@
       "linkHref": "Bağlantı",
       "submitLabel": "Gönder butonu",
       "successMessage": "Başarı mesajı"
-    }
+    },
+    "chats": "Sohbetler",
+    "noChats": "Henüz sohbet yok — aşağıdan başlayın.",
+    "untitledChat": "Yeni sohbet",
+    "deleteChat": "Sohbeti sil",
+    "attach": "Fotoğraf ekle",
+    "removeAttachment": "Fotoğrafı kaldır",
+    "attachTooLarge": "Bu fotoğraf çok büyük (en fazla 10 MB).",
+    "attachFailed": "Fotoğraf yüklenemedi. Lütfen tekrar deneyin.",
+    "attachedOnly": "(bir fotoğraf gönderdi)"
   }
 }

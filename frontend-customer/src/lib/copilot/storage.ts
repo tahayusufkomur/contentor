@@ -54,3 +54,12 @@ export function clearEntries(): void {
     // Same: never let storage break the widget.
   }
 }
+
+/** One-time migration to server-side chats: hand over whatever the old
+ * localStorage transcript held and clear it, so the pre-drawer history
+ * becomes the coach's first server chat instead of silently vanishing. */
+export function takeLegacyEntries(): ChatEntry[] {
+  const entries = loadEntries();
+  if (entries.length > 0) clearEntries();
+  return entries;
+}
