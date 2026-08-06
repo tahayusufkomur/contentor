@@ -51,7 +51,9 @@
   "siteAi": {
     "title": "Site AI",
     "subtitle": "Your AI assistant now lives on your site — open any page and tell it what to change, or click an element to hand it over.",
-    "launch": "Open my site with the assistant"
+    "launch": "Open my site with the assistant",
+    "recentChanges": "Recent changes",
+    "noChangesYet": "No changes yet — everything your assistant applies will show up here."
   },
   "assistant": {
     "title": "Site assistant",

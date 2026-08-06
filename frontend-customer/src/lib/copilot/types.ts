@@ -60,3 +60,10 @@ export interface ChatEntry {
   cards?: ActionCard[];
   kind?: CopilotDone["kind"];
 }
+
+export interface CopilotAuditEntry {
+  id: number;
+  kind: string;
+  summary: string;
+  created_at: string;
+}

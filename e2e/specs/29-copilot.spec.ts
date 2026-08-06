@@ -221,3 +221,32 @@ test("a set-block-image card shows the photo preview and applies", async ({ brow
   await expect(page.getByText("COPILOT SYNCED HERO")).toBeVisible();
   await page.close();
 });
+
+test("chat history survives a reload; New chat clears it", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "text/event-stream",
+      body:
+        'data: {"type":"phase","phase":"thinking"}\n\n' +
+        'data: {"type":"done","kind":"answer","text":"Persisted answer."}\n\n',
+    });
+  });
+  await page.goto(`${TENANT}/?copilot=1`);
+  await page.getByPlaceholder("e.g. make this section warmer").fill("remember this");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await expect(page.getByText("Persisted answer.")).toBeVisible();
+
+  await page.reload(); // ?copilot=1 sticks, so the panel reopens itself
+  await expect(page.getByText("Persisted answer.")).toBeVisible();
+  await expect(page.getByText("remember this")).toBeVisible();
+
+  await page.getByRole("button", { name: "New chat" }).click();
+  await expect(page.getByText("Persisted answer.")).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText("Persisted answer.")).toHaveCount(0);
+  await page.close();
+});

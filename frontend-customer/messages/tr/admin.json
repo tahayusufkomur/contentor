@@ -51,7 +51,9 @@
   "siteAi": {
     "title": "Site Yapay Zekâsı",
     "subtitle": "Yapay zekâ asistanınız artık sitenizin üzerinde — herhangi bir sayfayı açıp ne değişmesini istediğinizi söyleyin ya da bir öğeye tıklayıp ona verin.",
-    "launch": "Sitemi asistanla aç"
+    "launch": "Sitemi asistanla aç",
+    "recentChanges": "Son değişiklikler",
+    "noChangesYet": "Henüz değişiklik yok — asistanınızın uyguladığı her şey burada görünecek."
   },
   "assistant": {
     "title": "Site asistanı",

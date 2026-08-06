@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles, SquarePen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 import { parseAnswer } from "@/components/admin/assistant/format-answer";
 import { isAbortError } from "@/lib/ai-stream";
 import { converseCopilot } from "@/lib/copilot/api";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
+import { clearEntries, loadEntries, saveEntries } from "@/lib/copilot/storage";
 import type { ChatEntry, SelectionPayload } from "@/lib/copilot/types";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ActionCard } from "./action-card";
@@ -52,12 +53,32 @@ export function CopilotBubble() {
   const [selecting, setSelecting] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Persistence hydrates in an effect (localStorage is unavailable during
+  // SSR). `hydrated` must be STATE, not a ref: a ref flips mid-effects-pass,
+  // letting the save effect run with its stale initial-[] closure and wipe
+  // the stored chat before StrictMode's second mount pass re-reads it. As
+  // state, the save effect can't observe hydrated=true until the re-render
+  // that also carries the loaded entries.
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     // window.location, NOT useSearchParams — avoids the Next 14 client-side
     // Suspense bailout (same pattern as owner/edit-sidebar.tsx).
     const params = new URLSearchParams(window.location.search);
     if (params.get("copilot") === "1") setOpen(true);
+    setEntries(loadEntries());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated) saveEntries(entries);
+  }, [hydrated, entries]);
+
+  const newChat = useCallback(() => {
+    abortRef.current?.abort();
+    setEntries([]);
+    setSelections([]);
+    clearEntries();
   }, []);
 
   useEffect(() => {
@@ -126,14 +147,27 @@ export function CopilotBubble() {
       >
         <div className="flex items-center justify-between border-b p-3">
           <p className="text-sm font-semibold">{t("title")}</p>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setOpen(false)}
-            aria-label={t("close")}
-          >
-            <X className="size-4" aria-hidden />
-          </Button>
+          <span className="flex items-center gap-1">
+            {entries.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={newChat}
+                aria-label={t("newChat")}
+                title={t("newChat")}
+              >
+                <SquarePen className="size-4" aria-hidden />
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setOpen(false)}
+              aria-label={t("close")}
+            >
+              <X className="size-4" aria-hidden />
+            </Button>
+          </span>
         </div>
         <div
           ref={scrollRef}

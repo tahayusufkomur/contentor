@@ -501,3 +501,57 @@ def test_execute_set_course_cover_gone_course_returns_400(client, coach):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "no longer exists" in resp.json()["detail"]
+
+
+def test_execute_records_audit_row(client, coach):
+    from apps.tenant_config.models import CopilotAudit, TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "edit_block_fields", "page": "home", "block_id": "blk_hero", "fields": {"heading": "New"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    row = CopilotAudit.objects.latest("created_at")
+    assert row.kind == "edit_block_fields"
+    assert row.summary == "Edited 1 field(s) on blk_hero (home)"
+    assert row.payload["fields"] == {"heading": "New"}
+    assert row.actor_id == coach.pk
+
+
+def test_audit_write_failure_never_fails_the_execute(client, coach, monkeypatch):
+    from unittest import mock
+
+    from apps.core.copilot import views as copilot_views
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "toggle_block", "page": "home", "block_id": "blk_hero", "enabled": False},
+    )
+    with mock.patch.object(copilot_views, "_audit_summary", side_effect=RuntimeError("boom")):
+        resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    cfg.refresh_from_db()
+    assert cfg.pages["home"]["blocks"][0]["enabled"] is False
+
+
+def test_audit_feed_returns_entries_newest_first(client, coach):
+    from apps.tenant_config.models import CopilotAudit
+
+    CopilotAudit.objects.create(kind="edit_theme", summary="Switched theme to forest")
+    CopilotAudit.objects.create(kind="add_block", summary="Added a faq section to home")
+    resp = client.get("/api/v1/admin/copilot/audit/")
+    assert resp.status_code == 200
+    entries = resp.json()["entries"]
+    assert [e["summary"] for e in entries[:2]] == [
+        "Added a faq section to home",
+        "Switched theme to forest",
+    ]
+    assert entries[0]["kind"] == "add_block" and "created_at" in entries[0]

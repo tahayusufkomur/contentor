@@ -188,6 +188,62 @@ def _execute(tenant, user, action):
     return {"kind": kind, "page": action.get("page")}
 
 
+def _audit_summary(action, result):
+    """One human-readable line per executed action for the audit feed.
+    English like every other backend-generated card string (TR pass is a
+    queued fast-follow across all of them)."""
+    kind = action.get("kind", "")
+    page = action.get("page") or ""
+    block = action.get("block_id") or ""
+    title = (result or {}).get("title") or ""
+    if kind == "edit_pages":
+        return f"Rewrote page copy ({(result or {}).get('changes_count', 0)} field(s))"
+    if kind == "add_block":
+        return f"Added a {(action.get('block') or {}).get('type', 'section')} section to {page}"
+    if kind == "remove_block":
+        return f"Removed {block} from {page}"
+    if kind == "move_block":
+        to_page = action.get("to_page")
+        return f"Moved {block} to {to_page}" if to_page else f"Reordered {block} on {page}"
+    if kind == "edit_block_fields":
+        return f"Edited {len(action.get('fields') or {})} field(s) on {block} ({page})"
+    if kind == "toggle_block":
+        return f"{'Showed' if action.get('enabled') else 'Hid'} {block} on {page}"
+    if kind == "duplicate_block":
+        return f"Duplicated {block} on {page}"
+    if kind == "edit_theme":
+        return f"Switched theme to {action.get('theme')}"
+    if kind == "edit_navbar":
+        return "Updated the navbar"
+    if kind == "set_block_image":
+        return f"Set a new photo on {block} ({page})"
+    if kind == "set_course_cover":
+        return f"Set the cover photo for '{title}'" if title else "Set a course cover photo"
+    if kind in ("create_course", "create_event", "create_blog_post"):
+        noun = {"create_course": "course", "create_event": "event", "create_blog_post": "blog post"}[kind]
+        return f"Created draft {noun} '{title}'" if title else f"Created a draft {noun}"
+    return kind
+
+
+def _record_audit(tenant, user, action, result):
+    """Append one row to the tenant's 'what changed' trail. Best-effort:
+    the change itself already happened — an audit failure must never turn
+    a successful execute into an error for the coach."""
+    from apps.tenant_config.models import CopilotAudit
+
+    try:
+        with tenant_context(tenant):
+            CopilotAudit.objects.create(
+                kind=str(action.get("kind") or "")[:40],
+                summary=_audit_summary(action, result)[:300],
+                payload=action,
+                result=result if isinstance(result, dict) else {},
+                actor=user if getattr(user, "pk", None) else None,
+            )
+    except Exception:
+        logger.exception("copilot audit write failed schema=%s", tenant.schema_name)
+
+
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def copilot_execute(request):
@@ -202,4 +258,20 @@ def copilot_execute(request):
     except (blocks.BlockOpError, content.ContentOpError, chrome.ChromeOpError, photos.PhotoOpError) as exc:
         return Response({"detail": str(exc)}, status=400)
     logger.info("copilot executed %s schema=%s", action.get("kind"), tenant.schema_name)
+    _record_audit(tenant, request.user, action, result)
     return Response({"result": result})
+
+
+AUDIT_FEED_LIMIT = 50
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def copilot_audit(request):
+    """Newest-first feed of executed copilot actions for /admin/site-ai."""
+    from apps.tenant_config.models import CopilotAudit
+
+    tenant = connection.tenant
+    with tenant_context(tenant):
+        entries = list(CopilotAudit.objects.values("id", "kind", "summary", "created_at")[:AUDIT_FEED_LIMIT])
+    return Response({"entries": entries})

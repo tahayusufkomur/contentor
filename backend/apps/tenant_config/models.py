@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from apps.core.constants import LOCALE_CHOICES, LOCALE_EN
@@ -153,3 +154,33 @@ class AssistantLink(models.Model):
 
     def __str__(self):
         return self.label
+
+
+class CopilotAudit(models.Model):
+    """One executed copilot action — the coach's "what changed" trail.
+
+    Append-only: written by the copilot execute view after a confirmed
+    action succeeds, read by the /admin/site-ai "Recent changes" feed.
+    ``payload`` is the executed action token's content, ``result`` the
+    executor's return value — enough to reconstruct any change later.
+    """
+
+    kind = models.CharField(max_length=40)
+    summary = models.CharField(max_length=300, blank=True, default="")
+    payload = models.JSONField(default=dict, blank=True)
+    result = models.JSONField(default=dict, blank=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="copilot_audits",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.kind}: {self.summary}"
