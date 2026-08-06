@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 import pytest
+from django.utils import timezone
 
 from apps.core.copilot import blocks, engine
 
@@ -38,6 +39,8 @@ def _run(parsed):
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(
             engine.site_ai,
@@ -66,6 +69,8 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(
             engine.site_ai,
             "diff_current",
@@ -89,6 +94,8 @@ def test_add_block_card_carries_the_built_block():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add a call to action")
     (card,) = payload["actions"]
@@ -106,6 +113,8 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add testimonials")
     assert payload["kind"] == "answer"  # nothing proposable survived
@@ -119,6 +128,8 @@ def test_failed_model_call_still_reports_cost():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         pytest.raises(AiError),
     ):
         engine.run_turn(TENANT, [], [], "hi")
@@ -145,6 +156,8 @@ def test_create_course_action_becomes_card_with_stashed_params():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "create my first course")
     (card,) = payload["actions"]
@@ -175,6 +188,8 @@ def test_create_event_card_requires_future_date():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "schedule a class")
     assert payload["kind"] == "answer"  # past-date proposal dropped, fallback answer
@@ -201,6 +216,8 @@ def test_create_event_onsite_card_stashes_location_and_kind():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "plan a retreat")
     (card,) = payload["actions"]
@@ -230,6 +247,8 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "write a blog post")
     (card,) = payload["actions"]
@@ -296,6 +315,8 @@ def test_user_turn_includes_chrome_digest():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Theme: ocean" in captured["user"]
@@ -318,6 +339,8 @@ def test_system_prompt_carries_platform_knowledge_and_addenda():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         engine.run_turn(TENANT, [], [], "how do I get paid?")
     assert captured["system"].startswith(engine.SYSTEM_PROMPT)
@@ -348,6 +371,8 @@ def test_ask_over_cap_is_steered_and_coerced_to_answer():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
     assert payload == {"kind": "answer", "text": "Which page do you mean?"}
@@ -369,6 +394,8 @@ def test_cap_zero_leaves_asks_uncapped():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # default cap 0 = today's behavior
@@ -403,6 +430,8 @@ def test_ask_outside_transcript_window_does_not_trip_cap():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
     assert payload["kind"] == "ask"  # old ask is outside the window, so cap doesn't trip
@@ -428,6 +457,8 @@ def test_under_cap_ask_passes_through():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # 1 prior ask < cap of 2
@@ -613,6 +644,8 @@ def test_user_turn_includes_courses_digest():
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Courses: (none yet)" in captured["user"]
@@ -651,3 +684,84 @@ def test_course_for_cover_resolves_title_and_missing_course(tenant_with_pages):
     assert title == "Yoga Basics" and exclude_key is None
     with pytest.raises(copilot_photos.PhotoOpError):
         engine._course_for_cover(tenant_with_pages, 999999)
+
+
+def test_events_digest_lists_upcoming_live_and_onsite(tenant_with_pages):
+    from datetime import timedelta
+
+    from apps.accounts.models import User
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    instructor = User.objects.create_user(
+        email="events-digest@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    live = LiveClass.objects.create(
+        title="Morning Flow",
+        instructor=instructor,
+        price=0,
+        pricing_type="free",
+        scheduled_at=timezone.now() + timedelta(days=3),
+    )
+    onsite = OnsiteEvent.objects.create(
+        title="Retreat",
+        instructor=instructor,
+        price=50,
+        pricing_type="paid",
+        location="Berlin",
+        scheduled_at=timezone.now() + timedelta(days=10),
+    )
+    digest = engine._events_digest(tenant_with_pages)
+    assert f"{live.id} | live | Morning Flow" in digest
+    assert f"{onsite.id} | onsite | Retreat" in digest
+
+
+def test_events_digest_empty(tenant_with_pages):
+    assert "(none scheduled)" in engine._events_digest(tenant_with_pages)
+
+
+def test_posts_digest_lists_status(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.blog.models import BlogPost
+
+    author = User.objects.create_user(
+        email="posts-digest@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    post = BlogPost.objects.create(
+        title="Why rest matters", status="draft", created_by=author, slug="why-rest"
+    )
+    digest = engine._posts_digest(tenant_with_pages)
+    assert f"{post.id} | Why rest matters | draft" in digest
+
+
+def test_posts_digest_empty(tenant_with_pages):
+    assert "(none yet)" in engine._posts_digest(tenant_with_pages)
+
+
+def test_user_turn_includes_events_and_posts_digests():
+    from decimal import Decimal
+
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="answer", text="hi"), Decimal("0.01"), "m"
+
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+    ):
+        engine.run_turn(TENANT, [], [], "hello")
+    assert "Upcoming events: (none scheduled)" in captured["user"]
+    assert "Blog posts: (none yet)" in captured["user"]

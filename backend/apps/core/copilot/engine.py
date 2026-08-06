@@ -340,6 +340,46 @@ def _courses_digest(tenant):
     return "\n".join(lines)
 
 
+MAX_DIGEST_EVENTS = 20
+MAX_DIGEST_POSTS = 20
+
+
+def _events_digest(tenant):
+    """Upcoming events for the user turn: what edit_event proposals key off."""
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    with tenant_context(tenant):
+        now = timezone.now()
+        rows = [
+            ("live", e)
+            for e in LiveClass.objects.filter(scheduled_at__gte=now).order_by("scheduled_at")[:MAX_DIGEST_EVENTS]
+        ] + [
+            ("onsite", e)
+            for e in OnsiteEvent.objects.filter(scheduled_at__gte=now).order_by("scheduled_at")[:MAX_DIGEST_EVENTS]
+        ]
+    if not rows:
+        return "Upcoming events: (none scheduled)"
+    rows.sort(key=lambda r: r[1].scheduled_at)
+    lines = ["Upcoming events (id | kind | title | when | price):"]
+    for kind, e in rows[:MAX_DIGEST_EVENTS]:
+        lines.append(f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price}")
+    return "\n".join(lines)
+
+
+def _posts_digest(tenant):
+    """Blog inventory for the user turn: what edit/publish proposals key off."""
+    from apps.blog.models import BlogPost
+
+    with tenant_context(tenant):
+        rows = list(BlogPost.objects.order_by("-created_at").values("id", "title", "status")[:MAX_DIGEST_POSTS])
+    if not rows:
+        return "Blog posts: (none yet)"
+    lines = ["Blog posts (id | title | status):"]
+    for r in rows:
+        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {r['status']}")
+    return "\n".join(lines)
+
+
 def _user_turn(tenant, transcript, selections, message):
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
@@ -348,6 +388,8 @@ def _user_turn(tenant, transcript, selections, message):
         "Current pages:\n" + _pages_digest(tenant),
         _chrome_digest(tenant),
         _courses_digest(tenant),
+        _events_digest(tenant),
+        _posts_digest(tenant),
     ]
     if selections:
         parts.append(
