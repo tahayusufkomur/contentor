@@ -1133,6 +1133,15 @@ def test_system_prompt_instructs_direct_link_answers():
     assert "never invent or guess" in engine.SYSTEM_PROMPT
     assert "offer BOTH the admin link and the site link" in engine.SYSTEM_PROMPT
     assert "not published yet" in engine.SYSTEM_PROMPT
+    # Regression: an earlier wording put "Open in admin:"/"Open on your
+    # site:" as prose OUTSIDE the markdown link, with the item's title as
+    # the label INSIDE both links — parseAnswer only renders what's inside
+    # the brackets as the clickable chip, so both chips read identically
+    # ("Open Pole Practice", "Open Pole Practice") with nothing to tell them
+    # apart. The distinguishing words must live inside the label itself.
+    assert "INSIDE the link label" in engine.SYSTEM_PROMPT
+    assert "in Admin]" in engine.SYSTEM_PROMPT
+    assert "on your Site]" in engine.SYSTEM_PROMPT
 
 
 def test_edit_blog_post_card_resolves_title_and_stashes_params():

@@ -117,14 +117,15 @@ SYSTEM_PROMPT = (
     "an answer and suggest what you CAN do.\n"
     "When asked for a direct link to a specific course, event, or blog post, "
     "offer BOTH the admin link and the site link from that digest, each as "
-    "its own markdown link so the coach can pick — label them by what they "
-    "open, e.g. 'Open in admin: [Open Pole Practice](/admin/live?tab=classes"
-    "&event=42&kind=live) · Open on your site: [Open Pole Practice]"
+    "its own markdown link — put what it opens INSIDE the link label "
+    "itself (never as surrounding prose the two links would otherwise look "
+    "identical), e.g. '[Open Pole Practice in Admin](/admin/live?tab="
+    "classes&event=42&kind=live) · [Open Pole Practice on your Site]"
     "(/calendar/live_class/42)'; if the coach only asks for one of the two, "
     "give just that one; when a course/post's site link says '(not "
     "published yet)', give only the admin link and say it isn't live yet "
-    "instead of offering a broken site link — copy every link exactly as "
-    "given in the digest, never invent or guess one."
+    "instead of offering a broken site link — copy every link's URL "
+    "exactly as given in the digest, never invent or guess one."
 )
 
 
