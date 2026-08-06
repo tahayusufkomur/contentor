@@ -939,3 +939,98 @@ def test_edit_blog_post_no_fields_dropped_with_reason():
 
 def test_system_prompt_lists_edit_blog_post():
     assert "edit_blog_post" in engine.SYSTEM_PROMPT
+
+
+def test_publish_course_card_resolves_title_and_stashes_id(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.core.copilot import tokens as copilot_tokens
+    from apps.courses.models import Course
+
+    instructor = User.objects.create_user(
+        email="publish-course@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    course = Course.objects.create(
+        title="Yoga Basics", instructor=instructor, price=0, pricing_type="free", is_published=False
+    )
+    action = engine.PublishCourseAction(kind="publish_course", course_id=course.pk)
+    card = engine._card(tenant_with_pages, action)
+    assert card["kind"] == "publish_course"
+    assert "Yoga Basics" in card["title"]
+    assert card["detail"] == "Goes live for students the moment you confirm."
+    stashed = copilot_tokens.take_action(card["token"], tenant_with_pages.schema_name)
+    assert stashed == {"kind": "publish_course", "course_id": course.pk}
+
+
+def test_publish_course_already_published_dropped_with_reason(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.core.copilot import content as copilot_content
+    from apps.courses.models import Course
+
+    instructor = User.objects.create_user(
+        email="publish-course-2@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    course = Course.objects.create(
+        title="Yoga Basics", instructor=instructor, price=0, pricing_type="free", is_published=True
+    )
+    action = engine.PublishCourseAction(kind="publish_course", course_id=course.pk)
+    with pytest.raises(copilot_content.ContentOpError, match="already published"):
+        engine._card(tenant_with_pages, action)
+
+
+def test_publish_blog_post_card_resolves_title_and_stashes_id(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.blog.models import BlogPost
+    from apps.core.copilot import tokens as copilot_tokens
+
+    author = User.objects.create_user(
+        email="publish-post@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    post = BlogPost.objects.create(title="5 stretches", status="draft", created_by=author, slug="5-stretches")
+    action = engine.PublishBlogPostAction(kind="publish_blog_post", post_id=post.pk)
+    card = engine._card(tenant_with_pages, action)
+    assert card["kind"] == "publish_blog_post"
+    assert "5 stretches" in card["title"]
+    assert card["detail"] == "Goes live for students the moment you confirm."
+    stashed = copilot_tokens.take_action(card["token"], tenant_with_pages.schema_name)
+    assert stashed == {"kind": "publish_blog_post", "post_id": post.pk}
+
+
+def test_publish_blog_post_already_published_dropped_with_reason(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.blog.models import BlogPost
+    from apps.core.copilot import content as copilot_content
+
+    author = User.objects.create_user(
+        email="publish-post-2@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    post = BlogPost.objects.create(
+        title="5 stretches",
+        status="published",
+        created_by=author,
+        slug="5-stretches-2",
+        published_at=timezone.now(),
+    )
+    action = engine.PublishBlogPostAction(kind="publish_blog_post", post_id=post.pk)
+    with pytest.raises(copilot_content.ContentOpError, match="already published"):
+        engine._card(tenant_with_pages, action)
+
+
+def test_system_prompt_lists_publish_course_and_blog_post():
+    assert "publish_course" in engine.SYSTEM_PROMPT
+    assert "publish_blog_post" in engine.SYSTEM_PROMPT

@@ -48,6 +48,9 @@ SYSTEM_PROMPT = (
     "from the events list); date must be in the future\n"
     "- edit_blog_post: update an existing post's title, summary, or body "
     "(post_id from the blog list)\n"
+    "- publish_course / publish_blog_post: make a draft live (id from the "
+    "lists); ONLY propose this when the coach asks to publish or confirms "
+    "the draft is ready\n"
     "- create_event: schedule a live class (event_kind=live) or an "
     "in-person event (event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
@@ -244,6 +247,16 @@ class EditBlogPostAction(BaseModel):
     body_html: str | None = None
 
 
+class PublishCourseAction(BaseModel):
+    kind: Literal["publish_course"]
+    course_id: int
+
+
+class PublishBlogPostAction(BaseModel):
+    kind: Literal["publish_blog_post"]
+    post_id: int
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -259,6 +272,8 @@ CopilotAction = Annotated[
     | EditCourseAction
     | EditEventAction
     | EditBlogPostAction
+    | PublishCourseAction
+    | PublishBlogPostAction
     | EditBlockFieldsAction
     | ToggleBlockAction
     | DuplicateBlockAction,
@@ -699,6 +714,34 @@ def _card(tenant, action):
                     },
                 },
             ),
+        }
+    if isinstance(action, PublishCourseAction):
+        course_title, _ = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
+        with tenant_context(tenant):
+            from apps.courses.models import Course
+
+            is_published = Course.objects.filter(pk=action.course_id).values_list("is_published", flat=True).first()
+        if is_published:
+            raise content.ContentOpError("that course is already published")
+        return {
+            "kind": "publish_course",
+            "title": f"Publish course: {course_title[:100]}",
+            "detail": "Goes live for students the moment you confirm.",
+            "token": tokens.stash_action(schema, {"kind": "publish_course", "course_id": action.course_id}),
+        }
+    if isinstance(action, PublishBlogPostAction):
+        post_title = _post_title(tenant, action.post_id)  # raises ContentOpError on unknown id
+        with tenant_context(tenant):
+            from apps.blog.models import BlogPost
+
+            status = BlogPost.objects.filter(pk=action.post_id).values_list("status", flat=True).first()
+        if status == "published":
+            raise content.ContentOpError("that post is already published")
+        return {
+            "kind": "publish_blog_post",
+            "title": f"Publish post: {post_title[:100]}",
+            "detail": "Goes live for students the moment you confirm.",
+            "token": tokens.stash_action(schema, {"kind": "publish_blog_post", "post_id": action.post_id}),
         }
     if isinstance(action, EditThemeAction):
         theme = chrome.clean_theme(action.theme)

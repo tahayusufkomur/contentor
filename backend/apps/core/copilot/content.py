@@ -190,6 +190,35 @@ def edit_blog_post(post_id, params):
     }
 
 
+def publish_course(course_id):
+    from apps.courses.models import Course
+
+    course = Course.objects.filter(pk=course_id).first()
+    if course is None:
+        raise ContentOpError(f"no course with id {course_id}")
+    if course.is_published:
+        raise ContentOpError("that course is already published")
+    course.is_published = True
+    course.save(update_fields=["is_published"])
+    return {"kind": "publish_course", "id": course.id, "title": course.title, "url": f"/admin/courses/{course.slug}"}
+
+
+def publish_blog_post(post_id):
+    from django.utils import timezone
+
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.filter(pk=post_id).first()
+    if post is None:
+        raise ContentOpError(f"no blog post with id {post_id}")
+    if post.status == "published":
+        raise ContentOpError("that post is already published")
+    post.status = "published"
+    post.published_at = timezone.now()
+    post.save(update_fields=["status", "published_at"])
+    return {"kind": "publish_blog_post", "id": post.id, "title": post.title, "url": f"/blog/{post.slug}"}
+
+
 def create_blog_post(user, params):
     from apps.blog.models import unique_slug
     from apps.blog.serializers import BlogPostAdminSerializer

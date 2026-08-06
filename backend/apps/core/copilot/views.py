@@ -78,6 +78,8 @@ _CREATORS = {
     "edit_course": lambda user, action: content.edit_course(action["course_id"], action["params"]),
     "edit_event": lambda user, action: content.edit_event(action["event_id"], action["event_kind"], action["params"]),
     "edit_blog_post": lambda user, action: content.edit_blog_post(action["post_id"], action["params"]),
+    "publish_course": lambda user, action: content.publish_course(action["course_id"]),
+    "publish_blog_post": lambda user, action: content.publish_blog_post(action["post_id"]),
 }
 
 
@@ -228,6 +230,10 @@ def _audit_summary(action, result):
         return f"Updated event '{title}'" if title else "Updated an event"
     if kind == "edit_blog_post":
         return f"Updated blog post '{title}'" if title else "Updated a blog post"
+    if kind == "publish_course":
+        return f"Published course '{title}'" if title else "Published a course"
+    if kind == "publish_blog_post":
+        return f"Published blog post '{title}'" if title else "Published a blog post"
     if kind in ("create_course", "create_event", "create_blog_post"):
         noun = {"create_course": "course", "create_event": "event", "create_blog_post": "blog post"}[kind]
         return f"Created draft {noun} '{title}'" if title else f"Created a draft {noun}"

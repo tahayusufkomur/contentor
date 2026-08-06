@@ -302,3 +302,56 @@ def test_edit_event_price_updates_pricing_type(coach):
     assert str(event.price) == "29.00"
     assert event.pricing_type == "paid"
     assert result["kind"] == "edit_event"
+
+
+def test_publish_course_flips_flag(coach):
+    from apps.courses.models import Course
+
+    course = Course.objects.create(title="C", instructor=coach, price=0, pricing_type="free", is_published=False)
+    result = content.publish_course(course.pk)
+    course.refresh_from_db()
+    assert course.is_published is True
+    assert result["kind"] == "publish_course"
+    assert result["id"] == course.id
+    assert result["url"] == f"/admin/courses/{course.slug}"
+
+
+def test_publish_course_already_published_raises(coach):
+    from apps.courses.models import Course
+
+    course = Course.objects.create(title="C", instructor=coach, price=0, pricing_type="free", is_published=True)
+    with pytest.raises(content.ContentOpError):
+        content.publish_course(course.pk)
+
+
+def test_publish_course_unknown_id_raises(coach):
+    with pytest.raises(content.ContentOpError):
+        content.publish_course(999999)
+
+
+def test_publish_blog_post_sets_status_and_date(coach):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title="P", status="draft", created_by=coach, slug="p")
+    result = content.publish_blog_post(post.pk)
+    post.refresh_from_db()
+    assert post.status == "published"
+    assert post.published_at is not None
+    assert result["kind"] == "publish_blog_post"
+    assert result["id"] == post.id
+    assert result["url"] == f"/blog/{post.slug}"
+
+
+def test_publish_blog_post_already_published_raises(coach):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(
+        title="P", status="published", created_by=coach, slug="p2", published_at=timezone.now()
+    )
+    with pytest.raises(content.ContentOpError):
+        content.publish_blog_post(post.pk)
+
+
+def test_publish_blog_post_unknown_id_raises(coach):
+    with pytest.raises(content.ContentOpError):
+        content.publish_blog_post(999999)
