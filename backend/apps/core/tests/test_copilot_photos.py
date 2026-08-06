@@ -84,3 +84,61 @@ def test_apply_block_image_sets_field_and_preserves_rest():
 def test_apply_block_image_unknown_block_raises_user_safe_error():
     with pytest.raises(photos.PhotoOpError, match="blk_missing"):
         photos.apply_block_image({"home": {"blocks": []}}, "home", "blk_missing", "bgImage", "x")
+
+
+# ── set_logo (logos.py) ─────────────────────────────────────────────────────
+
+from apps.core.copilot import logos  # noqa: E402
+from apps.core.models import CuratedLogo  # noqa: E402
+
+
+def _logo_row(title, tags, image_key=None, enabled=True):
+    return CuratedLogo.objects.create(
+        title=title,
+        tags=tags,
+        image_key=image_key or f"platform/curated-logos/{title.lower().replace(' ', '-')}.png",
+        enabled=enabled,
+    )
+
+
+def test_pick_logo_matches_description():
+    CuratedLogo.objects.create(
+        title="Lotus mark", tags="yoga,calm,flower", image_key="platform/curated-logos/lotus.png", enabled=True
+    )
+    CuratedLogo.objects.create(
+        title="Barbell mark", tags="gym,strength", image_key="platform/curated-logos/barbell.png", enabled=True
+    )
+    row = logos.pick_logo("a calm lotus flower", "yoga")
+    assert row.title == "Lotus mark"
+
+
+def test_pick_logo_excludes_current():
+    CuratedLogo.objects.create(title="Only", tags="yoga", image_key="platform/curated-logos/only.png", enabled=True)
+    with pytest.raises(logos.LogoOpError):
+        logos.pick_logo("anything", "yoga", exclude_s3_key="platform/curated-logos/only.png")
+
+
+def test_pick_logo_ignores_disabled_and_non_platform_keys():
+    _logo_row("Disabled", "yoga", enabled=False)
+    _logo_row("Outside prefix", "yoga", image_key="tenants/evil.png")
+    with pytest.raises(logos.LogoOpError):
+        logos.pick_logo("yoga", "yoga")
+
+
+def test_pick_logo_no_rows_raises():
+    with pytest.raises(logos.LogoOpError):
+        logos.pick_logo("anything", "yoga")
+
+
+def test_materialize_curated_logo_creates_tenant_photo(tenant_ctx):
+    from apps.core.curated_logos.materialize import materialize_curated_logo
+    from apps.media.models import Photo
+
+    row = CuratedLogo.objects.create(title="Mark", image_key="platform/curated-logos/mark.png", enabled=True)
+    photo = materialize_curated_logo(row)
+    again = materialize_curated_logo(row)
+    assert photo.s3_key == row.image_key
+    assert photo.pk == again.pk  # dedup by s3_key
+    assert Photo.objects.filter(s3_key=row.image_key).count() == 1
+    assert photo.width is None and photo.height is None
+    assert photo.alt_text == "Mark"

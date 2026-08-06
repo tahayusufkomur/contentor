@@ -18,7 +18,7 @@ from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.copilot import blocks, chrome, content, photos, tokens
+from apps.core.copilot import blocks, chrome, content, logos, photos, tokens
 from apps.core.onboarding import site_ai
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,9 @@ SYSTEM_PROMPT = (
     "(course_id from the course list in the user turn, plus a short "
     "description of the shot); when the coach asks about several courses, "
     "propose one card per course that needs a cover\n"
+    "- set_logo: put a ready-made logo from the platform library on the "
+    "site (describe the style you want); propose again with a different "
+    "description for another style\n"
     "- edit_block_fields: change specific fields on one existing block "
     "(page + block_id from the digest, fields per the block field guide "
     "below) — prefer this over edit_pages for single-block changes\n"
@@ -220,6 +223,11 @@ class SetCourseCoverAction(BaseModel):
     description: str = ""
 
 
+class SetLogoAction(BaseModel):
+    kind: Literal["set_logo"]
+    description: str = ""
+
+
 class EditCourseAction(BaseModel):
     kind: Literal["edit_course"]
     course_id: int
@@ -269,6 +277,7 @@ CopilotAction = Annotated[
     | EditNavbarAction
     | SetBlockImageAction
     | SetCourseCoverAction
+    | SetLogoAction
     | EditCourseAction
     | EditEventAction
     | EditBlogPostAction
@@ -602,6 +611,16 @@ def _card(tenant, action):
                 {"kind": "set_course_cover", "course_id": action.course_id, "curated_photo_id": row.pk},
             ),
         }
+    if isinstance(action, SetLogoAction):
+        answers = (tenant.wizard_state or {}).get("answers") or {}
+        row = logos.pick_logo(action.description, answers.get("niche"))
+        return {
+            "kind": "set_logo",
+            "title": f"Use the logo '{row.title}'",
+            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "image_url": logos.preview_url(row),
+            "token": tokens.stash_action(schema, {"kind": "set_logo", "curated_logo_id": row.pk}),
+        }
     if isinstance(action, EditCourseAction):
         course_title, _ = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
         parts = [
@@ -907,7 +926,13 @@ def run_turn(tenant, transcript, selections, message):
     for action in parsed.actions:
         try:
             cards.append(_card(tenant, action))
-        except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError, photos.PhotoOpError) as exc:
+        except (
+            blocks.BlockOpError,
+            chrome.ChromeOpError,
+            content.ContentOpError,
+            photos.PhotoOpError,
+            logos.LogoOpError,
+        ) as exc:
             # User-safe refusal — keep the first reason for the fallback answer.
             logger.info("copilot: dropped unusable action %s", getattr(action, "kind", "?"), exc_info=True)
             drop_reason = drop_reason or str(exc)

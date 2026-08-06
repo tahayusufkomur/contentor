@@ -503,6 +503,38 @@ def test_execute_set_course_cover_gone_course_returns_400(client, coach):
     assert "no longer exists" in resp.json()["detail"]
 
 
+def test_execute_set_logo_materializes_photo_flips_look_edited_and_busts_cache(client, coach):
+    from django.core.cache import cache
+
+    from apps.core.models import CuratedLogo
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    row = CuratedLogo.objects.create(
+        title="Lotus mark",
+        tags="yoga, calm",
+        image_key="platform/curated-logos/lotus.png",
+    )
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    token = copilot_tokens.stash_action("shared_test", {"kind": "set_logo", "curated_logo_id": row.pk})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {"kind": "set_logo"}
+    photo = Photo.objects.get(s3_key="platform/curated-logos/lotus.png")
+    cfg = TenantConfig.objects.first()
+    assert cfg.logo_id == photo.pk
+    assert cfg.logo_url == ""
+    assert cfg.setup_progress.get("look_edited") is True
+    assert cache.get("tenant:shared_test:config") is None
+
+
+def test_execute_set_logo_gone_catalog_row_returns_400(client, coach):
+    token = copilot_tokens.stash_action("shared_test", {"kind": "set_logo", "curated_logo_id": 999999})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "no longer available" in resp.json()["detail"]
+
+
 def test_execute_records_audit_row(client, coach):
     from apps.tenant_config.models import CopilotAudit, TenantConfig
 

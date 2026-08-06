@@ -631,6 +631,51 @@ def test_set_course_cover_unknown_course_dropped_with_reason():
     assert "no course with id 999" in payload["text"]
 
 
+def test_system_prompt_lists_set_logo():
+    assert "set_logo" in engine.SYSTEM_PROMPT
+
+
+def test_set_logo_card_stashes_pick_and_carries_preview():
+    from apps.core.copilot import logos as copilot_logos
+    from apps.core.copilot import tokens as copilot_tokens
+
+    row = SimpleNamespace(pk=11, title="Lotus mark", image_key="platform/curated-logos/lotus.png")
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "set_logo", "description": "a calm lotus flower"}],
+    )
+    with (
+        mock.patch.object(copilot_logos, "pick_logo", return_value=row) as pick,
+        mock.patch.object(copilot_logos, "preview_url", return_value="https://cdn.example/lotus.png"),
+    ):
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "set_logo"
+    assert "Lotus mark" in card["title"]
+    assert card["image_url"] == "https://cdn.example/lotus.png"
+    assert pick.call_args.args[0] == "a calm lotus flower"
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {"kind": "set_logo", "curated_logo_id": 11}
+
+
+def test_set_logo_no_logos_dropped_with_fallback():
+    from apps.core.copilot import logos as copilot_logos
+
+    parsed = _turn(
+        kind="actions",
+        text="Set a fresh new logo for you!",
+        actions=[{"kind": "set_logo", "description": "x"}],
+    )
+    with mock.patch.object(
+        copilot_logos, "pick_logo", side_effect=copilot_logos.LogoOpError("no logos are available in the library yet")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "Set a fresh new logo" not in payload["text"]
+    assert "no logos are available in the library yet" in payload["text"]
+
+
 def test_user_turn_includes_courses_digest():
     from decimal import Decimal
 

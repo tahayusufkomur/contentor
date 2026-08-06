@@ -16,7 +16,7 @@ from rest_framework.response import Response
 
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.copilot import blocks, chrome, content, engine, photos, tokens
+from apps.core.copilot import blocks, chrome, content, engine, logos, photos, tokens
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
@@ -161,6 +161,30 @@ def _execute(tenant, user, action):
         # Course cards read from the courses API, not the cached config —
         # no cache-bust needed here.
         return {"kind": kind, "id": course.id, "title": course.title, "url": f"/admin/courses/{course.slug}"}
+    if kind == "set_logo":
+        from django_tenants.utils import schema_context
+
+        from apps.core.curated_logos.materialize import materialize_curated_logo
+        from apps.core.models import CuratedLogo
+
+        with schema_context("public"):
+            row = CuratedLogo.objects.filter(pk=action.get("curated_logo_id"), enabled=True).first()
+        if row is None:
+            raise logos.LogoOpError("that logo is no longer available")
+        with tenant_context(tenant):
+            cfg = TenantConfig.objects.first()
+            if cfg is None:
+                raise logos.LogoOpError("site is not set up yet")
+            cfg.logo = materialize_curated_logo(row)
+            cfg.logo_url = ""
+            # Setup Assistant parity: a logo counts as "look edited".
+            progress = dict(cfg.setup_progress or {})
+            if not progress.get("look_edited"):
+                progress["look_edited"] = True
+                cfg.setup_progress = progress
+            cfg.save(update_fields=["logo", "logo_url", "setup_progress"])
+        cache.delete(f"tenant:{tenant.schema_name}:config")
+        return {"kind": kind}
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:
@@ -224,6 +248,8 @@ def _audit_summary(action, result):
         return f"Set a new photo on {block} ({page})"
     if kind == "set_course_cover":
         return f"Set the cover photo for '{title}'" if title else "Set a course cover photo"
+    if kind == "set_logo":
+        return "Set a new logo"
     if kind == "edit_course":
         return f"Updated course '{title}'" if title else "Updated a course"
     if kind == "edit_event":
@@ -270,7 +296,13 @@ def copilot_execute(request):
         return Response({"detail": "invalid_token"}, status=403)
     try:
         result = _execute(tenant, request.user, action)
-    except (blocks.BlockOpError, content.ContentOpError, chrome.ChromeOpError, photos.PhotoOpError) as exc:
+    except (
+        blocks.BlockOpError,
+        content.ContentOpError,
+        chrome.ChromeOpError,
+        photos.PhotoOpError,
+        logos.LogoOpError,
+    ) as exc:
         return Response({"detail": str(exc)}, status=400)
     logger.info("copilot executed %s schema=%s", action.get("kind"), tenant.schema_name)
     _record_audit(tenant, request.user, action, result)
