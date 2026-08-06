@@ -259,6 +259,43 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
     assert "status" not in stashed["params"]
 
 
+def test_system_prompt_lists_draft_announcement():
+    assert "draft_announcement" in engine.SYSTEM_PROMPT
+    assert "you can never send anything yourself" in engine.SYSTEM_PROMPT
+
+
+def test_draft_announcement_card_maps_params_and_states_inert_detail():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "draft_announcement",
+                "title": "New timetable",
+                "body_html": "<p>From Monday…</p>",
+                "link": "/courses",
+            }
+        ],
+    )
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+    ):
+        payload, _ = engine.run_turn(TENANT, [], [], "tell students about the new timetable")
+    (card,) = payload["actions"]
+    assert card["kind"] == "draft_announcement"
+    assert card["detail"] == "Saved as a draft — review and send it from Announcements. Nothing is sent now."
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["params"]["title"] == "New timetable"
+    assert stashed["params"]["link"] == "/courses"
+
+
 def test_edit_theme_card_stashes_normalized_theme():
     from apps.core.copilot import tokens as copilot_tokens
 

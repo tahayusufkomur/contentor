@@ -42,6 +42,7 @@ const CREATE_KINDS = new Set([
   "create_course",
   "create_event",
   "create_blog_post",
+  "draft_announcement",
 ]);
 
 /** Distinguishes content-creation actions (new draft, gets a "view" link)

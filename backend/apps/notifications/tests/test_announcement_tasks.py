@@ -103,6 +103,22 @@ def test_dispatch_announcements_skips_unprovisioned_tenant(unprovisioned_tenant,
     log_mock.assert_not_called()
 
 
+def test_draft_announcements_never_picked_up_by_send_tasks(coach):
+    """Safety invariant: the copilot's draft_announcement action can only
+    ever create status='draft' rows. dispatch_due_announcements (and the
+    fanout_announcement atomic claim) select on status='scheduled' only —
+    a draft, however old its scheduled_at, must never match that query."""
+    Announcement.objects.create(
+        title="Draft",
+        body="x",
+        created_by=coach,
+        status="draft",
+        scheduled_at=timezone.now() - timedelta(minutes=1),
+    )
+    due = Announcement.objects.filter(status="scheduled", scheduled_at__lte=timezone.now())
+    assert due.count() == 0
+
+
 def test_dispatch_recurrences_skips_unprovisioned_tenant(unprovisioned_tenant):
     """Same guard for the recurrence fan-out — must skip cleanly, not log an
     error for a tenant that was never actually provisioned."""

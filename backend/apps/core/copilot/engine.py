@@ -57,6 +57,9 @@ SYSTEM_PROMPT = (
     "confirms the card\n"
     "- create_blog_post: create a DRAFT blog post (title, one-sentence "
     "summary, full body_html using simple tags: h2, h3, p, ul, li, strong)\n"
+    "- draft_announcement: write an announcement to students as a DRAFT the "
+    "coach reviews and sends from their admin (title, body_html with simple "
+    "tags, optional internal link); you can never send anything yourself\n"
     "- edit_theme: switch the site's color theme; theme must be one of: "
     "ocean, ember, forest, sunset, violet, slate\n"
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
@@ -202,6 +205,13 @@ class CreateBlogPostAction(BaseModel):
     body_html: str = ""
 
 
+class DraftAnnouncementAction(BaseModel):
+    kind: Literal["draft_announcement"]
+    title: str
+    body_html: str = ""
+    link: str = ""
+
+
 class EditThemeAction(BaseModel):
     kind: Literal["edit_theme"]
     theme: str
@@ -285,6 +295,7 @@ CopilotAction = Annotated[
     | CreateCourseAction
     | CreateEventAction
     | CreateBlogPostAction
+    | DraftAnnouncementAction
     | EditThemeAction
     | EditNavbarAction
     | EditSeoAction
@@ -878,6 +889,18 @@ def _card(tenant, action):
             "token": tokens.stash_action(
                 schema, {"kind": "create_event", "event_kind": action.event_kind, "params": params}
             ),
+        }
+    if isinstance(action, DraftAnnouncementAction):
+        params = {
+            "title": action.title[:200],
+            "body_html": action.body_html,
+            "link": action.link[:500],
+        }
+        return {
+            "kind": "draft_announcement",
+            "title": f"Draft announcement: {action.title[:120]}",
+            "detail": "Saved as a draft — review and send it from Announcements. Nothing is sent now.",
+            "token": tokens.stash_action(schema, {"kind": "draft_announcement", "params": params}),
         }
     params = {
         "title": action.title[:200],

@@ -219,6 +219,32 @@ def publish_blog_post(post_id):
     return {"kind": "publish_blog_post", "id": post.id, "title": post.title, "url": f"/blog/{post.slug}"}
 
 
+def create_announcement_draft(user, params):
+    """Always lands as status='draft' — the send tasks in
+    apps.notifications.tasks select on status='scheduled' only, so a draft
+    can never be picked up and sent. The coach reviews and sends it
+    themselves from /admin/announcements; the copilot never sends."""
+    from apps.notifications.models import Announcement
+    from apps.tenant_config.defaults import sanitize_rich_text
+
+    title = str(params.get("title") or "").strip()[:200]
+    if not title:
+        raise ContentOpError("the announcement needs a title")
+    row = Announcement.objects.create(
+        title=title,
+        body=sanitize_rich_text(str(params.get("body_html") or "")),
+        link=str(params.get("link") or "")[:500],
+        status="draft",
+        created_by=user if getattr(user, "pk", None) else None,
+    )
+    return {
+        "kind": "draft_announcement",
+        "id": row.id,
+        "title": row.title,
+        "url": "/admin/announcements",
+    }
+
+
 def create_blog_post(user, params):
     from apps.blog.models import unique_slug
     from apps.blog.serializers import BlogPostAdminSerializer

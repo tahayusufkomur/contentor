@@ -81,7 +81,9 @@ function HistoryRow({
           {item.title}
         </Link>
         <div className="text-xs text-muted-foreground">
-          {item.status === "scheduled" ? (
+          {item.status === "draft" ? (
+            <span>📝 Draft · not sent yet</span>
+          ) : item.status === "scheduled" ? (
             <span>
               ⏰ Scheduled ·{" "}
               {item.scheduled_at

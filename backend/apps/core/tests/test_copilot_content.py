@@ -145,6 +145,29 @@ def test_create_blog_post_forces_draft_regardless_of_caller_params(coach):
     assert post.noindex is False  # Server forced noindex=False
 
 
+def test_create_announcement_draft_lands_as_draft_and_sanitized(coach):
+    from apps.notifications.models import Announcement
+
+    result = content.create_announcement_draft(
+        coach,
+        {
+            "title": "New timetable",
+            "body_html": "<p>From Monday…</p><script>x</script>",
+            "link": "/courses",
+        },
+    )
+    row = Announcement.objects.get(pk=result["id"])
+    assert row.status == "draft"
+    assert "<script>" not in row.body
+    assert result["url"] == "/admin/announcements"
+    assert result["kind"] == "draft_announcement"
+
+
+def test_create_announcement_draft_requires_title(coach):
+    with pytest.raises(content.ContentOpError):
+        content.create_announcement_draft(coach, {"body_html": "<p>no title</p>"})
+
+
 def test_edit_course_updates_fields(coach):
     from apps.courses.models import Course
 

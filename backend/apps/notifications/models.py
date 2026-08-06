@@ -32,7 +32,7 @@ class LiveReminderLog(models.Model):
 
 
 class Announcement(models.Model):
-    STATUS_CHOICES = [("scheduled", "Scheduled"), ("sent", "Sent")]
+    STATUS_CHOICES = [("draft", "Draft"), ("scheduled", "Scheduled"), ("sent", "Sent")]
 
     title = models.CharField(max_length=200)
     body = models.TextField(blank=True, default="")  # sanitized HTML
