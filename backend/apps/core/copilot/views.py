@@ -184,7 +184,15 @@ def _execute(tenant, user, action):
         # Course cards read from the courses API, not the cached config —
         # no cache-bust needed here.
         result = {"kind": kind, "id": course.id, "title": course.title, "url": f"/admin/courses/{course.slug}"}
-        inverse = {"kind": "restore_course_cover", "course_id": course.pk, "thumbnail_id": old_thumbnail_id}
+        # Photo pks are UUIDs — CopilotAudit.inverse is a JSONField, and a raw
+        # UUID object isn't JSON-serializable (json.dumps raises TypeError).
+        # _record_audit's except is best-effort and swallows that, so the
+        # audit row (and undo) would silently never be written. Stringify.
+        inverse = {
+            "kind": "restore_course_cover",
+            "course_id": course.pk,
+            "thumbnail_id": str(old_thumbnail_id) if old_thumbnail_id else None,
+        }
         return result, inverse
     if kind == "set_logo":
         from django_tenants.utils import schema_context
@@ -211,7 +219,13 @@ def _execute(tenant, user, action):
                 cfg.setup_progress = progress
             cfg.save(update_fields=["logo", "logo_url", "setup_progress"])
         cache.delete(f"tenant:{tenant.schema_name}:config")
-        inverse = {"kind": "restore_logo", "logo_id": old_logo_id, "logo_url": old_logo_url}
+        # Same UUID-into-JSONField hazard as restore_course_cover above —
+        # stringify the Photo pk so the audit row actually gets written.
+        inverse = {
+            "kind": "restore_logo",
+            "logo_id": str(old_logo_id) if old_logo_id else None,
+            "logo_url": old_logo_url,
+        }
         return {"kind": kind}, inverse
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()

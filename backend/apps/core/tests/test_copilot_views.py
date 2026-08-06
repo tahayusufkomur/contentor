@@ -519,6 +519,48 @@ def test_execute_set_course_cover_gone_course_returns_400(client, coach):
     assert "no longer exists" in resp.json()["detail"]
 
 
+def test_execute_set_course_cover_with_prior_thumbnail_records_audit_and_undo_restores_it(client, coach):
+    """Regression for Finding 6: course.thumbnail_id is a Photo UUID pk.
+    Before the fix, capturing it raw into the inverse dict broke JSON
+    serialization on audit write — the execute still returned 200 but
+    _record_audit's best-effort except silently swallowed the failure,
+    so NO audit row (and therefore no undo) was ever created for this case."""
+    from apps.core.curated_photos.materialize import materialize_curated_photo
+    from apps.core.models import CuratedPhoto
+    from apps.courses.models import Course
+    from apps.media.models import Photo
+    from apps.tenant_config.models import CopilotAudit
+
+    old_row = CuratedPhoto.objects.create(
+        title="Old cover", tags="yoga", kind="hero", image_key="platform/curated-photos/prior-cover.jpg"
+    )
+    old_thumbnail = materialize_curated_photo(old_row)
+    course = Course.objects.create(title="Yoga Basics", instructor=coach, thumbnail=old_thumbnail)
+
+    new_row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow", tags="yoga, flow", kind="hero", image_key="platform/curated-photos/new-cover.jpg"
+    )
+    token = copilot_tokens.stash_action(
+        "shared_test", {"kind": "set_course_cover", "course_id": course.pk, "curated_photo_id": new_row.pk}
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    audit_id = resp.json()["audit_id"]
+    assert audit_id is not None  # the audit row must exist at all
+
+    row = CopilotAudit.objects.get(pk=audit_id)
+    assert row.inverse["kind"] == "restore_course_cover"
+    assert row.inverse["thumbnail_id"] == str(old_thumbnail.pk)
+    assert isinstance(row.inverse["thumbnail_id"], str)
+
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
+    assert undo.status_code == 200, undo.content
+    course.refresh_from_db()
+    assert course.thumbnail_id == old_thumbnail.pk
+    new_thumbnail = Photo.objects.get(s3_key="platform/curated-photos/new-cover.jpg")
+    assert course.thumbnail_id != new_thumbnail.pk
+
+
 def test_execute_set_logo_materializes_photo_flips_look_edited_and_busts_cache(client, coach):
     from django.core.cache import cache
 
@@ -549,6 +591,47 @@ def test_execute_set_logo_gone_catalog_row_returns_400(client, coach):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "no longer available" in resp.json()["detail"]
+
+
+def test_execute_set_logo_with_prior_logo_records_audit_and_undo_restores_it(client, coach):
+    """Regression for Finding 6: cfg.logo_id is a Photo UUID pk — same
+    silent audit-loss hazard as set_course_cover above, for restore_logo."""
+    from apps.core.curated_logos.materialize import materialize_curated_logo
+    from apps.core.models import CuratedLogo
+    from apps.media.models import Photo
+    from apps.tenant_config.models import CopilotAudit, TenantConfig
+
+    old_row = CuratedLogo.objects.create(
+        title="Old mark", tags="yoga", image_key="platform/curated-logos/prior-mark.png"
+    )
+    old_logo = materialize_curated_logo(old_row)
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.logo = old_logo
+    cfg.logo_url = "https://old.example.com/logo.png"
+    cfg.save(update_fields=["logo", "logo_url"])
+
+    new_row = CuratedLogo.objects.create(
+        title="Lotus mark", tags="yoga, calm", image_key="platform/curated-logos/new-mark.png"
+    )
+    token = copilot_tokens.stash_action("shared_test", {"kind": "set_logo", "curated_logo_id": new_row.pk})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    audit_id = resp.json()["audit_id"]
+    assert audit_id is not None  # the audit row must exist at all
+
+    row = CopilotAudit.objects.get(pk=audit_id)
+    assert row.inverse["kind"] == "restore_logo"
+    assert row.inverse["logo_id"] == str(old_logo.pk)
+    assert isinstance(row.inverse["logo_id"], str)
+    assert row.inverse["logo_url"] == "https://old.example.com/logo.png"
+
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
+    assert undo.status_code == 200, undo.content
+    cfg.refresh_from_db()
+    assert cfg.logo_id == old_logo.pk
+    assert cfg.logo_url == "https://old.example.com/logo.png"
+    new_logo = Photo.objects.get(s3_key="platform/curated-logos/new-mark.png")
+    assert cfg.logo_id != new_logo.pk
 
 
 def test_execute_records_audit_row(client, coach):
