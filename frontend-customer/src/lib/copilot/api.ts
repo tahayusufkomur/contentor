@@ -5,7 +5,7 @@ import { streamAi, type AiStreamHandlers } from "@/lib/ai-stream";
 import type {
   CopilotAuditEntry,
   CopilotDone,
-  ExecuteResult,
+  ExecuteResponse,
   SelectionPayload,
 } from "./types";
 
@@ -22,9 +22,15 @@ export const converseCopilot = (
 ) => streamAi<CopilotDone, never>(`${BASE}/converse/`, body, handlers, signal);
 
 export const executeCopilotAction = (token: string) =>
-  clientFetch<{ result: ExecuteResult }>(`${BASE}/execute/`, {
+  clientFetch<ExecuteResponse>(`${BASE}/execute/`, {
     method: "POST",
     body: JSON.stringify({ token }),
+  });
+
+export const undoCopilotAction = (auditId: number) =>
+  clientFetch<{ undone: string }>(`${BASE}/undo/`, {
+    method: "POST",
+    body: JSON.stringify({ audit_id: auditId }),
   });
 
 export const fetchCopilotAudit = () =>

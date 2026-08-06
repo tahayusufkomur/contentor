@@ -661,3 +661,90 @@ def test_audit_feed_returns_entries_newest_first(client, coach):
         "Switched theme to forest",
     ]
     assert entries[0]["kind"] == "add_block" and "created_at" in entries[0]
+
+
+# --- undo -------------------------------------------------------------
+
+
+def _toggle_token(enabled):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": not enabled, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    return copilot_tokens.stash_action(
+        "shared_test", {"kind": "toggle_block", "page": "home", "block_id": "blk_hero", "enabled": enabled}
+    )
+
+
+def _theme_token(theme):
+    return copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": theme})
+
+
+def _execute_token(client, token):
+    return client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+
+
+def _current_pages():
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    return cfg.pages
+
+
+def _latest_audit():
+    from apps.tenant_config.models import CopilotAudit
+
+    return CopilotAudit.objects.latest("created_at")
+
+
+def test_undo_restores_pages_snapshot(client, coach):
+    token = _toggle_token(enabled=False)
+    before = _current_pages()
+    res = _execute_token(client, token)
+    assert res.status_code == 200, res.content
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+    assert undo.status_code == 200, undo.content
+    assert undo.json() == {"undone": "toggle_block"}
+    assert _current_pages() == before
+    assert _latest_audit().undone_at is not None
+
+
+def test_undo_rejects_non_latest(client, coach):
+    first = _execute_token(client, _toggle_token(enabled=False))
+    _execute_token(client, _theme_token("ember"))
+    res = client.post("/api/v1/admin/copilot/undo/", {"audit_id": first.json()["audit_id"]}, format="json")
+    assert res.status_code == 400
+
+
+def test_undo_twice_rejected(client, coach):
+    res = _execute_token(client, _theme_token("ember"))
+    client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+    again = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+    assert again.status_code == 400
+
+
+def test_undo_unknown_id_returns_404(client, coach):
+    res = client.post("/api/v1/admin/copilot/undo/", {"audit_id": 999999}, format="json")
+    assert res.status_code == 404
+
+
+def test_undo_not_undoable_kind_returns_400(client, coach):
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "create_course", "params": {"title": "Yoga 101", "price": "0.00", "pricing_type": "free"}},
+    )
+    res = _execute_token(client, token)
+    assert res.status_code == 200, res.content
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+    assert undo.status_code == 400
+
+
+def test_undo_busts_cache(client, coach):
+    from django.core.cache import cache
+
+    res = _execute_token(client, _theme_token("ember"))
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+    assert undo.status_code == 200, undo.content
+    assert cache.get("tenant:shared_test:config") is None

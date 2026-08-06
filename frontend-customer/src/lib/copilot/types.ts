@@ -48,6 +48,11 @@ export interface ExecuteResult {
   url?: string;
 }
 
+export interface ExecuteResponse {
+  result: ExecuteResult;
+  audit_id: number | null;
+}
+
 export interface CopilotDone {
   kind: "answer" | "ask" | "actions" | "unavailable";
   text?: string;

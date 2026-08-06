@@ -49,6 +49,20 @@ const CREATE_KINDS = new Set([
  * from site-edit actions (existing page content updated in place). */
 export const isCreateKind = (kind: string) => CREATE_KINDS.has(kind);
 
+const NOT_UNDOABLE_KINDS = new Set([
+  ...CREATE_KINDS,
+  "edit_course",
+  "edit_event",
+  "edit_blog_post",
+  "publish_course",
+  "publish_blog_post",
+]);
+
+/** Server-side, these kinds record an empty inverse ({}) — undo would always
+ * 400. Gate the Undo affordance on this client-side so we never show a
+ * button that's guaranteed to fail. */
+export const isUndoableKind = (kind: string) => !NOT_UNDOABLE_KINDS.has(kind);
+
 /** Sequentially run card confirms; stop at the first failure so a broken
  * mid-bundle action never leaves later actions silently un-applied. */
 export async function runBundle(

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildSelectionPayload } from "@/lib/copilot/selection";
 import {
   isCreateKind,
+  isUndoableKind,
   reduceChat,
   runBundle,
   toTranscript,
@@ -117,6 +118,36 @@ describe("isCreateKind", () => {
     expect(isCreateKind("edit_theme")).toBe(false);
     expect(isCreateKind("edit_navbar")).toBe(false);
     expect(isCreateKind("set_block_image")).toBe(false);
+  });
+});
+
+describe("isUndoableKind", () => {
+  it("allows undo for site/chrome edit kinds", () => {
+    expect(isUndoableKind("edit_pages")).toBe(true);
+    expect(isUndoableKind("add_block")).toBe(true);
+    expect(isUndoableKind("remove_block")).toBe(true);
+    expect(isUndoableKind("move_block")).toBe(true);
+    expect(isUndoableKind("edit_block_fields")).toBe(true);
+    expect(isUndoableKind("toggle_block")).toBe(true);
+    expect(isUndoableKind("duplicate_block")).toBe(true);
+    expect(isUndoableKind("edit_theme")).toBe(true);
+    expect(isUndoableKind("edit_navbar")).toBe(true);
+    expect(isUndoableKind("edit_seo")).toBe(true);
+    expect(isUndoableKind("set_block_image")).toBe(true);
+    expect(isUndoableKind("set_course_cover")).toBe(true);
+    expect(isUndoableKind("set_logo")).toBe(true);
+  });
+
+  it("disallows undo for create/edit/publish/draft kinds (empty inverse server-side)", () => {
+    expect(isUndoableKind("create_course")).toBe(false);
+    expect(isUndoableKind("create_event")).toBe(false);
+    expect(isUndoableKind("create_blog_post")).toBe(false);
+    expect(isUndoableKind("edit_course")).toBe(false);
+    expect(isUndoableKind("edit_event")).toBe(false);
+    expect(isUndoableKind("edit_blog_post")).toBe(false);
+    expect(isUndoableKind("publish_course")).toBe(false);
+    expect(isUndoableKind("publish_blog_post")).toBe(false);
+    expect(isUndoableKind("draft_announcement")).toBe(false);
   });
 });
 

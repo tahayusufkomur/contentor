@@ -15,8 +15,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { executeCopilotAction } from "@/lib/copilot/api";
-import { isCreateKind, runBundle } from "@/lib/copilot/state";
+import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
+import { isCreateKind, isUndoableKind, runBundle } from "@/lib/copilot/state";
 import { announceSiteUpdated } from "@/lib/site-events";
 import type {
   ActionCard as ActionCardData,
@@ -80,11 +80,13 @@ export function ActionCard({ card }: { card: ActionCardData }) {
     "proposed",
   );
   const [result, setResult] = useState<ExecuteResult | null>(null);
+  const [auditId, setAuditId] = useState<number | null>(null);
 
   const { run: confirm, loading } = useAsyncAction(
     async () => {
       const res = await executeCopilotAction(card.token);
       setResult(res.result);
+      setAuditId(res.audit_id);
       setState("done");
       // Coaches see the live editor canvas, which renders from the editor
       // store, not server props — announce so it re-syncs in place.
@@ -93,6 +95,18 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       toast.success(t(isCreateKind(card.kind) ? "created" : "applied"));
     },
     { errorToast: t("error") },
+  );
+
+  const { run: undo, loading: undoing } = useAsyncAction(
+    async () => {
+      if (auditId == null) return;
+      await undoCopilotAction(auditId);
+      announceSiteUpdated();
+      router.refresh();
+      toast.success(t("undone"));
+      setState("dismissed");
+    },
+    { errorToast: t("undoStale") },
   );
 
   useEffect(() => {
@@ -152,14 +166,27 @@ export function ActionCard({ card }: { card: ActionCardData }) {
         </ul>
       )}
       {state === "done" ? (
-        <p className="mt-2 text-xs font-medium text-primary">
-          {t(isCreateKind(card.kind) ? "createdShort" : "appliedShort")}
-          {result?.url ? (
-            <NavLink href={result.url} className="ml-2 underline">
-              {t("view")}
-            </NavLink>
-          ) : null}
-        </p>
+        <div className="mt-2 flex items-center gap-2">
+          <p className="text-xs font-medium text-primary">
+            {t(isCreateKind(card.kind) ? "createdShort" : "appliedShort")}
+            {result?.url ? (
+              <NavLink href={result.url} className="ml-2 underline">
+                {t("view")}
+              </NavLink>
+            ) : null}
+          </p>
+          {auditId != null && isUndoableKind(card.kind) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={undo}
+              loading={undoing}
+              loadingText={t("undoing")}
+            >
+              {t("undo")}
+            </Button>
+          )}
+        </div>
       ) : (
         <div className="mt-3 flex gap-2">
           <Button

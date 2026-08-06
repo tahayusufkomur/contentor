@@ -359,3 +359,75 @@ def copilot_audit(request):
     with tenant_context(tenant):
         entries = list(CopilotAudit.objects.values("id", "kind", "summary", "created_at")[:AUDIT_FEED_LIMIT])
     return Response({"entries": entries})
+
+
+def _apply_inverse(tenant, inverse):
+    from apps.tenant_config.models import TenantConfig
+
+    kind = inverse.get("kind")
+    with tenant_context(tenant):
+        if kind == "restore_course_cover":
+            from apps.courses.models import Course
+
+            course = Course.objects.filter(pk=inverse.get("course_id")).first()
+            if course is None:
+                raise blocks.BlockOpError("that course no longer exists")
+            course.thumbnail_id = inverse.get("thumbnail_id")
+            course.save(update_fields=["thumbnail"])
+            return
+        cfg = TenantConfig.objects.first()
+        if cfg is None:
+            raise blocks.BlockOpError("site is not set up yet")
+        if kind == "restore_pages":
+            cfg.pages = inverse.get("pages") or {}
+            cfg.save(update_fields=["pages"])
+        elif kind == "edit_theme":
+            cfg.theme = chrome.clean_theme(inverse.get("theme"))
+            cfg.save(update_fields=["theme"])
+        elif kind == "restore_navbar":
+            cfg.navbar_config = inverse.get("navbar_config") or {}
+            cfg.save(update_fields=["navbar_config"])
+        elif kind == "restore_logo":
+            cfg.logo_id = inverse.get("logo_id")
+            cfg.logo_url = inverse.get("logo_url") or ""
+            cfg.save(update_fields=["logo", "logo_url"])
+        elif kind == "edit_seo":
+            cfg.meta_description = str(inverse.get("meta_description") or "")
+            cfg.save(update_fields=["meta_description"])
+        else:
+            raise blocks.BlockOpError("that change cannot be undone")
+    cache.delete(f"tenant:{tenant.schema_name}:config")
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def copilot_undo(request):
+    from django.utils import timezone
+
+    from apps.tenant_config.models import CopilotAudit
+
+    tenant = connection.tenant
+    audit_id = (request.data or {}).get("audit_id")
+    with tenant_context(tenant):
+        latest = (
+            CopilotAudit.objects.filter(undone_at__isnull=True)
+            .exclude(inverse={})
+            .order_by("-created_at", "-id")
+            .first()
+        )
+        entry = CopilotAudit.objects.filter(pk=audit_id).first()
+    if entry is None:
+        return Response({"detail": "not_found"}, status=404)
+    if entry.undone_at is not None or not entry.inverse:
+        return Response({"detail": "not_undoable"}, status=400)
+    if latest is None or latest.pk != entry.pk:
+        return Response({"detail": "only the latest change can be undone"}, status=400)
+    try:
+        _apply_inverse(tenant, entry.inverse)
+    except (blocks.BlockOpError, chrome.ChromeOpError) as exc:
+        return Response({"detail": str(exc)}, status=400)
+    with tenant_context(tenant):
+        entry.undone_at = timezone.now()
+        entry.save(update_fields=["undone_at"])
+    logger.info("copilot undid %s schema=%s", entry.kind, tenant.schema_name)
+    return Response({"undone": entry.kind})
