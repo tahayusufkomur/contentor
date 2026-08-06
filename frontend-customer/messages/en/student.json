@@ -70,6 +70,7 @@
     "applying": "Applying…",
     "applyAll": "Apply all",
     "appliedAll": "Applied {count} changes",
+    "appliedPartial": "Applied {done} of {total} changes — one failed",
     "dismiss": "Dismiss",
     "applied": "Done — your site has been updated",
     "appliedShort": "Applied",

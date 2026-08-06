@@ -748,3 +748,72 @@ def test_undo_busts_cache(client, coach):
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     assert undo.status_code == 200, undo.content
     assert cache.get("tenant:shared_test:config") is None
+
+
+def test_undo_non_integer_audit_id_returns_404(client, coach):
+    res = client.post("/api/v1/admin/copilot/undo/", {"audit_id": "abc"}, format="json")
+    assert res.status_code == 404
+    assert res.json() == {"detail": "not_found"}
+
+
+def test_undo_restore_logo_gone_photo_returns_400_and_stays_undone(client, coach):
+    from apps.core.curated_logos.materialize import materialize_curated_logo
+    from apps.core.models import CuratedLogo
+    from apps.tenant_config.models import CopilotAudit
+
+    # Inverse payloads persist through a JSONField, so a Photo FK id round-
+    # trips as a string (as it would from a real execute→undo cycle) — build
+    # the audit row directly rather than through /execute/, which sidesteps
+    # an unrelated pre-existing bug (raw UUID objects aren't JSON-
+    # serializable) in how `_execute` currently constructs restore_logo's
+    # inverse; that bug is out of scope here. This isolates exactly what's
+    # under test: `_apply_inverse` must existence-check before assigning a
+    # non-null logo_id.
+    row = CuratedLogo.objects.create(
+        title="Lotus mark", tags="yoga, calm", image_key="platform/curated-logos/lotus-undo.png"
+    )
+    photo = materialize_curated_logo(row)
+    audit = CopilotAudit.objects.create(
+        kind="set_logo",
+        summary="Set a new logo",
+        payload={"kind": "set_logo", "curated_logo_id": row.pk},
+        result={"kind": "set_logo"},
+        inverse={"kind": "restore_logo", "logo_id": str(photo.pk), "logo_url": ""},
+    )
+    photo.delete()
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit.pk}, format="json")
+    assert undo.status_code == 400
+    assert "no longer exists" in undo.json()["detail"]
+    audit.refresh_from_db()
+    assert audit.undone_at is None
+
+
+def test_undo_restore_course_cover_gone_photo_returns_400_and_stays_undone(client, coach):
+    from apps.core.curated_photos.materialize import materialize_curated_photo
+    from apps.core.models import CuratedPhoto
+    from apps.courses.models import Course
+    from apps.tenant_config.models import CopilotAudit
+
+    # Same rationale as the restore_logo test above: build the audit row
+    # directly (with the Photo id stored as str, as it would round-trip
+    # through the JSONField on a real execute) to isolate `_apply_inverse`'s
+    # existence check from the unrelated pre-existing raw-UUID JSON
+    # serialization bug in `_execute`'s inverse construction.
+    row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow", tags="yoga, flow", kind="hero", image_key="platform/curated-photos/mat-undo.jpg"
+    )
+    photo = materialize_curated_photo(row)
+    course = Course.objects.create(title="Yoga Basics", instructor=coach, thumbnail=photo)
+    audit = CopilotAudit.objects.create(
+        kind="set_course_cover",
+        summary="Set the cover photo for 'Yoga Basics'",
+        payload={"kind": "set_course_cover", "course_id": course.pk, "curated_photo_id": row.pk},
+        result={"kind": "set_course_cover", "id": course.pk, "title": "Yoga Basics", "url": "/admin/courses/x"},
+        inverse={"kind": "restore_course_cover", "course_id": course.pk, "thumbnail_id": str(photo.pk)},
+    )
+    photo.delete()
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit.pk}, format="json")
+    assert undo.status_code == 400
+    assert "no longer exists" in undo.json()["detail"]
+    audit.refresh_from_db()
+    assert audit.undone_at is None

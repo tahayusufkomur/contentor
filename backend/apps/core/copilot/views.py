@@ -361,6 +361,16 @@ def copilot_audit(request):
     return Response({"entries": entries})
 
 
+def _photo_exists(pk):
+    """Existence-check a Photo in the tenant schema before restoring a
+    logo/thumbnail FK to it — both FKs are SET_NULL, so if the row was
+    deleted between apply and undo, a blind assign+save raises IntegrityError
+    (raw 500). Null ids restore as null without needing this check."""
+    from apps.media.models import Photo
+
+    return Photo.objects.filter(pk=pk).exists()
+
+
 def _apply_inverse(tenant, inverse):
     from apps.tenant_config.models import TenantConfig
 
@@ -372,7 +382,10 @@ def _apply_inverse(tenant, inverse):
             course = Course.objects.filter(pk=inverse.get("course_id")).first()
             if course is None:
                 raise blocks.BlockOpError("that course no longer exists")
-            course.thumbnail_id = inverse.get("thumbnail_id")
+            thumbnail_id = inverse.get("thumbnail_id")
+            if thumbnail_id is not None and not _photo_exists(thumbnail_id):
+                raise blocks.BlockOpError("that photo no longer exists")
+            course.thumbnail_id = thumbnail_id
             course.save(update_fields=["thumbnail"])
             return
         cfg = TenantConfig.objects.first()
@@ -388,7 +401,10 @@ def _apply_inverse(tenant, inverse):
             cfg.navbar_config = inverse.get("navbar_config") or {}
             cfg.save(update_fields=["navbar_config"])
         elif kind == "restore_logo":
-            cfg.logo_id = inverse.get("logo_id")
+            logo_id = inverse.get("logo_id")
+            if logo_id is not None and not _photo_exists(logo_id):
+                raise blocks.BlockOpError("that photo no longer exists")
+            cfg.logo_id = logo_id
             cfg.logo_url = inverse.get("logo_url") or ""
             cfg.save(update_fields=["logo", "logo_url"])
         elif kind == "edit_seo":
@@ -407,7 +423,10 @@ def copilot_undo(request):
     from apps.tenant_config.models import CopilotAudit
 
     tenant = connection.tenant
-    audit_id = (request.data or {}).get("audit_id")
+    try:
+        audit_id = int((request.data or {}).get("audit_id"))
+    except (TypeError, ValueError):
+        return Response({"detail": "not_found"}, status=404)
     with tenant_context(tenant):
         latest = (
             CopilotAudit.objects.filter(undone_at__isnull=True)

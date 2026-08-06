@@ -70,6 +70,7 @@
     "applying": "Uygulanıyor…",
     "applyAll": "Tümünü uygula",
     "appliedAll": "{count} değişiklik uygulandı",
+    "appliedPartial": "{total} değişiklikten {done} tanesi uygulandı — biri başarısız oldu",
     "dismiss": "Vazgeç",
     "applied": "Tamam — siteniz güncellendi",
     "appliedShort": "Uygulandı",

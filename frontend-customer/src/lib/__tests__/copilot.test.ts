@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createAsyncRunner } from "@shared/hooks/async-runner";
 import { buildSelectionPayload } from "@/lib/copilot/selection";
 import {
   isCreateKind,
@@ -173,5 +174,58 @@ describe("runBundle", () => {
     const result = await runBundle([ok("a"), ok("b")]);
     expect(calls).toEqual(["a", "b"]);
     expect(result).toEqual({ done: 2, failed: false });
+  });
+
+  // Integration seam: what gets registered into the bundle registry MUST be
+  // able to reject, or runBundle's stop-on-failure branch is dead code in
+  // real wiring. `useAsyncAction`'s `run` (createAsyncRunner) swallows every
+  // error — it only ever invokes onError, never re-throws — so registering
+  // that (the OLD, buggy wiring) makes a failing mid-bundle action look
+  // identical to a successful one from runBundle's point of view: the loop
+  // never sees a rejection, so it walks through every remaining action
+  // (contract violation) and reports failed:false (false "Applied N
+  // changes" toast). Registering the raw throwing body (the fix) restores
+  // stop-on-failure. These two cases pin exactly that distinction.
+  it("over swallowing async-runner wrappers (OLD wiring): does not stop, reports success", async () => {
+    const calls: string[] = [];
+    const makeSwallowingConfirm = (id: string, shouldThrow: boolean) => {
+      let loading = false;
+      const run = createAsyncRunner(
+        async () => {
+          calls.push(id);
+          if (shouldThrow) throw new Error("nope");
+        },
+        { setLoading: (v) => (loading = v) },
+      );
+      void loading;
+      return run;
+    };
+    const confirms = [
+      makeSwallowingConfirm("a", false),
+      makeSwallowingConfirm("b", true), // fails, but the wrapper swallows it
+      makeSwallowingConfirm("c", false),
+    ];
+    const result = await runBundle(confirms);
+    // Every action ran, including "c" after "b" failed — proves the bundle
+    // did NOT stop, which is exactly the contract violation Finding 1 flags.
+    expect(calls).toEqual(["a", "b", "c"]);
+    expect(result).toEqual({ done: 3, failed: false });
+  });
+
+  it("over raw throwing confirms (the fix): stops at the first failure", async () => {
+    const calls: string[] = [];
+    const makeRawConfirm = (id: string, shouldThrow: boolean) => async () => {
+      calls.push(id);
+      if (shouldThrow) throw new Error("nope");
+    };
+    const confirms = [
+      makeRawConfirm("a", false),
+      makeRawConfirm("b", true),
+      makeRawConfirm("c", false),
+    ];
+    const result = await runBundle(confirms);
+    // "c" never ran — the bundle stopped as soon as "b" rejected.
+    expect(calls).toEqual(["a", "b"]);
+    expect(result).toEqual({ done: 1, failed: true });
   });
 });
