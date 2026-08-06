@@ -45,10 +45,7 @@ SYSTEM_PROMPT = (
     "price (course_id from the course list); modules cannot be changed "
     "here\n"
     "- edit_event: reschedule or update an upcoming event (event_id + kind "
-    "from the events list); date must be in the future; there is no "
-    "individual page per event — if asked for a direct link, say so plainly "
-    "and point to /admin/live (Live Events admin), where they can open it "
-    "from the list; don't hedge or apologize about it\n"
+    "from the events list); date must be in the future\n"
     "- edit_blog_post: update an existing post's title, summary, or body "
     "(post_id from the blog list)\n"
     "- publish_course / publish_blog_post: make a draft live (id from the "
@@ -117,7 +114,12 @@ SYSTEM_PROMPT = (
     "single turn; the coach can apply them all at once.\n"
     "Use block ids and page keys exactly as given in the digest. If the "
     "coach's selection is something you cannot change, say so honestly in "
-    "an answer and suggest what you CAN do."
+    "an answer and suggest what you CAN do.\n"
+    "When asked for a direct link to a specific course, event, or blog post, "
+    "answer with it directly using the 'admin link' column from that "
+    "digest, as a markdown link with the item's own title as the label "
+    "(e.g. '[Open Pole Practice](/admin/live?tab=classes&event=42&kind=live)') "
+    "— copy the link exactly as given, never invent or guess one."
 )
 
 
@@ -501,22 +503,25 @@ MAX_DIGEST_COURSES = 30
 
 def _courses_digest(tenant):
     """Bounded course inventory for the user turn: id, title, cover state,
-    published state — what set_course_cover proposals key off."""
+    published state, admin link — what set_course_cover proposals key off,
+    and what the model quotes back verbatim when asked for a direct link."""
     from apps.courses.models import Course
 
     with tenant_context(tenant):
         rows = list(
             Course.objects.order_by("order", "-created_at").values(
-                "id", "title", "is_published", "thumbnail_id", "thumbnail_url"
+                "id", "title", "is_published", "thumbnail_id", "thumbnail_url", "slug"
             )[:MAX_DIGEST_COURSES]
         )
     if not rows:
         return "Courses: (none yet)"
-    lines = ["Courses (id | title | cover | status):"]
+    lines = ["Courses (id | title | cover | status | admin link):"]
     for r in rows:
         cover = "has cover" if (r["thumbnail_id"] or r["thumbnail_url"]) else "NO COVER"
         status = "published" if r["is_published"] else "draft"
-        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status}")
+        lines.append(
+            f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status} | /admin/courses/{r['slug']}"
+        )
     return "\n".join(lines)
 
 
@@ -524,8 +529,17 @@ MAX_DIGEST_EVENTS = 20
 MAX_DIGEST_POSTS = 20
 
 
+def _event_admin_link(kind, event_id):
+    """Deep link into the Live Events admin: opens the right tab and that
+    event's edit panel directly (see useDeepLinkedItem on the frontend) —
+    what the model quotes back verbatim when asked for a direct link."""
+    tab = "onsite" if kind == "onsite" else "classes"
+    return f"/admin/live?tab={tab}&event={event_id}&kind={kind}"
+
+
 def _events_digest(tenant):
-    """Upcoming events for the user turn: what edit_event proposals key off."""
+    """Upcoming events for the user turn: what edit_event proposals key off,
+    and what the model quotes back verbatim when asked for a direct link."""
     from apps.live.models import LiveClass, OnsiteEvent
 
     with tenant_context(tenant):
@@ -540,23 +554,25 @@ def _events_digest(tenant):
     if not rows:
         return "Upcoming events: (none scheduled)"
     rows.sort(key=lambda r: r[1].scheduled_at)
-    lines = ["Upcoming events (id | kind | title | when | price):"]
+    lines = ["Upcoming events (id | kind | title | when | price | admin link):"]
     for kind, e in rows[:MAX_DIGEST_EVENTS]:
-        lines.append(f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price}")
+        link = _event_admin_link(kind, e.id)
+        lines.append(f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price} | {link}")
     return "\n".join(lines)
 
 
 def _posts_digest(tenant):
-    """Blog inventory for the user turn: what edit/publish proposals key off."""
+    """Blog inventory for the user turn: what edit/publish proposals key off,
+    and what the model quotes back verbatim when asked for a direct link."""
     from apps.blog.models import BlogPost
 
     with tenant_context(tenant):
         rows = list(BlogPost.objects.order_by("-created_at").values("id", "title", "status")[:MAX_DIGEST_POSTS])
     if not rows:
         return "Blog posts: (none yet)"
-    lines = ["Blog posts (id | title | status):"]
+    lines = ["Blog posts (id | title | status | admin link):"]
     for r in rows:
-        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {r['status']}")
+        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {r['status']} | /admin/blog/{r['id']}")
     return "\n".join(lines)
 
 

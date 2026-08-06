@@ -32,6 +32,7 @@ import {
   fetchAdminListPage,
   formatDate,
   toLocalDatetimeValue,
+  useDeepLinkedItem,
 } from "./shared";
 
 // ─── Onsite Events Tab ─────────────────────────────────────────────
@@ -83,6 +84,43 @@ export function OnsiteEventsTab() {
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([]);
   const [tagIds, setTagIds] = useState<number[]>([]);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+
+  // Deep link (?tab=onsite&event=<id>): open one specific event's edit
+  // panel directly, independent of MediaBrowser's current page/filters.
+  const deepLinked = useDeepLinkedItem<OnsiteEvent>(
+    "onsite",
+    (id) => `/api/v1/onsite-events/${id}/`,
+  );
+  const { run: saveDeepLinked, loading: savingDeepLinked } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
+      if (!deepLinked.item) return;
+      await clientFetch(`/api/v1/onsite-events/${deepLinked.item.id}/`, {
+        method: "PUT",
+        body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
+          tag_ids: values.tag_ids ?? [],
+          title: values.title,
+          description: values.description,
+          location: values.location,
+          address: values.address,
+          pricing_type: values.pricing_type,
+          ...(values.scheduled_at
+            ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() }
+            : {}),
+          ...(values.max_capacity
+            ? { max_capacity: parseInt(values.max_capacity as string) }
+            : {}),
+          ...(values.pricing_type === "paid" && values.price
+            ? { price: parseFloat(values.price as string) }
+            : {}),
+        }),
+      });
+      toast.success("Event updated");
+      deepLinked.clear();
+      browserRef.current?.refresh();
+    },
+    { errorToast: "Failed to update event" },
+  );
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<OnsiteEvent>> => {
@@ -292,6 +330,35 @@ export function OnsiteEventsTab() {
             </Button>
           </div>
         </div>
+      )}
+
+      {deepLinked.item && (
+        <div className="rounded-lg border bg-card">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <h2 className="text-sm font-semibold">
+              Editing: {deepLinked.item.title}
+            </h2>
+          </div>
+          <InlineEditPanel
+            item={{
+              ...deepLinked.item,
+              scheduled_at: toLocalDatetimeValue(deepLinked.item.scheduled_at),
+              filter_option_ids: (deepLinked.item.filter_options ?? []).map(
+                (o) => o.id,
+              ),
+              tag_ids: (deepLinked.item.tags ?? []).map((t) => t.id),
+            }}
+            fields={onsiteEventFields}
+            onSave={saveDeepLinked}
+            onCancel={deepLinked.clear}
+            saving={savingDeepLinked}
+          />
+        </div>
+      )}
+      {deepLinked.requestedId && !deepLinked.item && !deepLinked.loading && (
+        <p className="text-sm text-muted-foreground">
+          That event couldn&apos;t be found — it may have been deleted.
+        </p>
       )}
 
       <MediaBrowser<OnsiteEvent>

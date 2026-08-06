@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Clock, Radio, CheckCircle2 } from "lucide-react";
 import { clientFetch } from "@/lib/api-client";
 import type {
@@ -162,4 +163,60 @@ export function toLocalDatetimeValue(iso: string | null): string {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Live Events kinds, matching the tab keys the container page reads/writes
+ * in ?tab= and the copilot's deep links use in ?kind=. */
+export type LiveEventKind = "classes" | "streams" | "zoom" | "onsite";
+
+/** Direct-link support: a copilot answer or a shared URL can point at
+ * /admin/live?tab=<kind>&event=<id> to open one specific item's edit panel —
+ * without going through MediaBrowser's list, which may have that item on a
+ * later page or hidden by an active filter. Reads the URL once on mount
+ * (same window.location.search convention as the copilot drawer, avoiding
+ * useSearchParams' Suspense bailout) and fetches the item directly from its
+ * detail endpoint. Returns null (not loading, nothing to show) when this
+ * tab isn't the one named in ?tab=, or there's no ?event= at all. */
+export function useDeepLinkedItem<T extends LiveItem>(
+  kind: LiveEventKind,
+  detailPath: (id: string) => string,
+) {
+  const [item, setItem] = useState<T | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [requestedId, setRequestedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") !== kind) return;
+    const id = params.get("event");
+    if (!id) return;
+    setRequestedId(id);
+    setLoading(true);
+    let cancelled = false;
+    (async () => {
+      try {
+        const found = await clientFetch<T>(detailPath(id));
+        if (!cancelled) setItem(found);
+      } catch {
+        // Deleted/wrong id — the tab just shows its normal list, no crash.
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind]);
+
+  const clear = () => {
+    setItem(null);
+    setRequestedId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("event");
+    url.searchParams.delete("kind");
+    window.history.replaceState(null, "", url.pathname + url.search);
+  };
+
+  return { item, loading, requestedId, clear, setItem };
 }

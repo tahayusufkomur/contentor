@@ -847,9 +847,10 @@ def test_courses_digest_flags_missing_covers(tenant_with_pages):
         role="owner",
         is_staff=True,
     )
-    Course.objects.create(title="Yoga Basics", instructor=instructor)
+    course = Course.objects.create(title="Yoga Basics", instructor=instructor)
     digest = engine._courses_digest(tenant_with_pages)
     assert "Yoga Basics" in digest and "NO COVER" in digest and "draft" in digest
+    assert f"/admin/courses/{course.slug}" in digest
 
 
 def test_course_for_cover_resolves_title_and_missing_course(tenant_with_pages):
@@ -902,6 +903,15 @@ def test_events_digest_lists_upcoming_live_and_onsite(tenant_with_pages):
     digest = engine._events_digest(tenant_with_pages)
     assert f"{live.id} | live | Morning Flow" in digest
     assert f"{onsite.id} | onsite | Retreat" in digest
+    # Regression: the coach asking for a direct link had nothing to answer
+    # with — the digest must carry a real deep link per event.
+    assert f"/admin/live?tab=classes&event={live.id}&kind=live" in digest
+    assert f"/admin/live?tab=onsite&event={onsite.id}&kind=onsite" in digest
+
+
+def test_event_admin_link_maps_kind_to_tab():
+    assert engine._event_admin_link("live", 7) == "/admin/live?tab=classes&event=7&kind=live"
+    assert engine._event_admin_link("onsite", 9) == "/admin/live?tab=onsite&event=9&kind=onsite"
 
 
 def test_events_digest_empty(tenant_with_pages):
@@ -922,6 +932,7 @@ def test_posts_digest_lists_status(tenant_with_pages):
     post = BlogPost.objects.create(title="Why rest matters", status="draft", created_by=author, slug="why-rest")
     digest = engine._posts_digest(tenant_with_pages)
     assert f"{post.id} | Why rest matters | draft" in digest
+    assert f"/admin/blog/{post.id}" in digest
 
 
 def test_posts_digest_empty(tenant_with_pages):
@@ -1071,6 +1082,11 @@ def test_edit_event_card_rejects_past_date():
 
 def test_system_prompt_lists_edit_event():
     assert "edit_event" in engine.SYSTEM_PROMPT
+
+
+def test_system_prompt_instructs_direct_link_answers():
+    assert "admin link" in engine.SYSTEM_PROMPT
+    assert "never invent or guess" in engine.SYSTEM_PROMPT
 
 
 def test_edit_blog_post_card_resolves_title_and_stashes_params():

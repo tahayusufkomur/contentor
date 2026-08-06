@@ -59,7 +59,13 @@ def create_event(user, event_kind, params):
     if not serializer.is_valid():
         _fail(serializer.errors)
     event = serializer.save(instructor=user)
-    return {"kind": "create_event", "id": event.id, "title": event.title, "url": "/admin/live"}
+    tab = "onsite" if event_kind == "onsite" else "classes"
+    return {
+        "kind": "create_event",
+        "id": event.id,
+        "title": event.title,
+        "url": f"/admin/live?tab={tab}&event={event.id}&kind={event_kind}",
+    }
 
 
 _COURSE_EDIT_FIELDS = ("title", "description", "price")
@@ -141,11 +147,12 @@ def edit_event(event_id, event_kind, params):
     if not changes:
         raise ContentOpError("nothing to change on the event")
     event.save(update_fields=[c["field"] for c in changes])
+    tab = "onsite" if event_kind == "onsite" else "classes"
     return {
         "kind": "edit_event",
         "id": event.id,
         "title": event.title,
-        "url": "/admin/live",
+        "url": f"/admin/live?tab={tab}&event={event.id}&kind={event_kind}",
         "changes": changes,
     }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,29 @@ import { ZoomClassesTab } from "@/components/admin/live/zoom-tab";
 import { OnsiteEventsTab } from "@/components/admin/live/onsite-tab";
 import { useIsLocked } from "@/components/admin/entitlements-provider";
 import { PaidFeatureBadge } from "@/components/admin/feature-badges";
+import type { LiveEventKind } from "@/components/admin/live/shared";
+
+const VALID_TABS = new Set<LiveEventKind>([
+  "classes",
+  "streams",
+  "zoom",
+  "onsite",
+]);
 
 export default function LiveEventsPage() {
   const liveLocked = useIsLocked("live");
+  // A copilot deep link (or a shared URL) can open a specific tab via
+  // ?tab=; each tab component separately reads ?event= to open one item.
+  // window.location.search, not useSearchParams — same Suspense-bailout
+  // dodge the copilot drawer uses.
+  const [tab, setTab] = useState<LiveEventKind>("classes");
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    if (requested && VALID_TABS.has(requested as LiveEventKind)) {
+      setTab(requested as LiveEventKind);
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
@@ -34,7 +55,7 @@ export default function LiveEventsPage() {
         </div>
       )}
 
-      <Tabs defaultValue="classes">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as LiveEventKind)}>
         <TabsList>
           <TabsTrigger value="classes">
             Live Classes

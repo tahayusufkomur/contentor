@@ -32,6 +32,7 @@ import {
   fetchAdminListPage,
   formatDate,
   toLocalDatetimeValue,
+  useDeepLinkedItem,
 } from "./shared";
 
 // ─── Zoom Classes Tab ──────────────────────────────────────────────
@@ -79,6 +80,39 @@ export function ZoomClassesTab() {
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([]);
   const [tagIds, setTagIds] = useState<number[]>([]);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+
+  // Deep link (?tab=zoom&event=<id>): open one specific Zoom class's edit
+  // panel directly, independent of MediaBrowser's current page/filters.
+  const deepLinked = useDeepLinkedItem<ZoomClass>(
+    "zoom",
+    (id) => `/api/v1/zoom-classes/${id}/`,
+  );
+  const { run: saveDeepLinked, loading: savingDeepLinked } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
+      if (!deepLinked.item) return;
+      await clientFetch(`/api/v1/zoom-classes/${deepLinked.item.id}/`, {
+        method: "PUT",
+        body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
+          tag_ids: values.tag_ids ?? [],
+          title: values.title,
+          description: values.description,
+          zoom_link: values.zoom_link,
+          pricing_type: values.pricing_type,
+          ...(values.scheduled_at
+            ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() }
+            : {}),
+          ...(values.pricing_type === "paid" && values.price
+            ? { price: parseFloat(values.price as string) }
+            : {}),
+        }),
+      });
+      toast.success("Zoom class updated");
+      deepLinked.clear();
+      browserRef.current?.refresh();
+    },
+    { errorToast: "Failed to update Zoom class" },
+  );
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<ZoomClass>> => {
@@ -260,6 +294,35 @@ export function ZoomClassesTab() {
             </Button>
           </div>
         </div>
+      )}
+
+      {deepLinked.item && (
+        <div className="rounded-lg border bg-card">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <h2 className="text-sm font-semibold">
+              Editing: {deepLinked.item.title}
+            </h2>
+          </div>
+          <InlineEditPanel
+            item={{
+              ...deepLinked.item,
+              scheduled_at: toLocalDatetimeValue(deepLinked.item.scheduled_at),
+              filter_option_ids: (deepLinked.item.filter_options ?? []).map(
+                (o) => o.id,
+              ),
+              tag_ids: (deepLinked.item.tags ?? []).map((t) => t.id),
+            }}
+            fields={zoomClassFields}
+            onSave={saveDeepLinked}
+            onCancel={deepLinked.clear}
+            saving={savingDeepLinked}
+          />
+        </div>
+      )}
+      {deepLinked.requestedId && !deepLinked.item && !deepLinked.loading && (
+        <p className="text-sm text-muted-foreground">
+          That Zoom class couldn&apos;t be found — it may have been deleted.
+        </p>
       )}
 
       <MediaBrowser<ZoomClass>

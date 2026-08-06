@@ -33,6 +33,7 @@ import {
   fetchAdminListPage,
   formatDate,
   toLocalDatetimeValue,
+  useDeepLinkedItem,
 } from "./shared";
 
 // ─── Live Classes Tab ──────────────────────────────────────────────
@@ -79,6 +80,35 @@ export function LiveClassesTab() {
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>([]);
   const [tagIds, setTagIds] = useState<number[]>([]);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+
+  // Deep link (?tab=classes&event=<id>): open one specific class's edit
+  // panel directly, independent of MediaBrowser's current page/filters.
+  const deepLinked = useDeepLinkedItem<LiveClass>("classes", (id) => `/api/v1/live/${id}/`);
+  const { run: saveDeepLinked, loading: savingDeepLinked } = useAsyncAction(
+    async (values: Record<string, unknown>) => {
+      if (!deepLinked.item) return;
+      await clientFetch(`/api/v1/live/${deepLinked.item.id}/`, {
+        method: "PUT",
+        body: JSON.stringify({
+          filter_option_ids: values.filter_option_ids ?? [],
+          tag_ids: values.tag_ids ?? [],
+          title: values.title,
+          description: values.description,
+          pricing_type: values.pricing_type,
+          ...(values.scheduled_at
+            ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() }
+            : {}),
+          ...(values.pricing_type === "paid" && values.price
+            ? { price: parseFloat(values.price as string) }
+            : {}),
+        }),
+      });
+      toast.success("Live class updated");
+      deepLinked.clear();
+      browserRef.current?.refresh();
+    },
+    { errorToast: "Failed to update live class" },
+  );
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<LiveClass>> => {
@@ -260,6 +290,35 @@ export function LiveClassesTab() {
             </Button>
           </div>
         </div>
+      )}
+
+      {deepLinked.item && (
+        <div className="rounded-lg border bg-card">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <h2 className="text-sm font-semibold">
+              Editing: {deepLinked.item.title}
+            </h2>
+          </div>
+          <InlineEditPanel
+            item={{
+              ...deepLinked.item,
+              scheduled_at: toLocalDatetimeValue(deepLinked.item.scheduled_at),
+              filter_option_ids: (deepLinked.item.filter_options ?? []).map(
+                (o) => o.id,
+              ),
+              tag_ids: (deepLinked.item.tags ?? []).map((t) => t.id),
+            }}
+            fields={liveClassFields}
+            onSave={saveDeepLinked}
+            onCancel={deepLinked.clear}
+            saving={savingDeepLinked}
+          />
+        </div>
+      )}
+      {deepLinked.requestedId && !deepLinked.item && !deepLinked.loading && (
+        <p className="text-sm text-muted-foreground">
+          That live class couldn&apos;t be found — it may have been deleted.
+        </p>
       )}
 
       <MediaBrowser<LiveClass>

@@ -372,7 +372,7 @@ def test_execute_edit_navbar_merges_and_preserves_links(client, coach):
 
     from apps.tenant_config.models import TenantConfig
 
-    cfg = TenantConfig.objects.first()
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     cfg.navbar_config = {"layout": "classic", "links": [{"label": "Courses", "href": "/courses"}]}
     cfg.save(update_fields=["navbar_config"])
     cache.set("tenant:shared_test:config", "sentinel", timeout=300)
@@ -391,6 +391,9 @@ def test_execute_edit_navbar_merges_and_preserves_links(client, coach):
 
 def test_execute_edit_theme_invalid_stashed_id_returns_400(client, coach):
     # Defense in depth: even a stashed payload is re-validated at execute time.
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "midnight"})
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400

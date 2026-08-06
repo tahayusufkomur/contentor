@@ -81,7 +81,7 @@ def test_create_event_live_lands_scheduled(coach):
     event = LiveClass.objects.get(id=result["id"])
     assert event.status == "scheduled"  # _ScheduledOnCreateMixin, same as the admin path
     assert event.instructor == coach
-    assert result["url"] == "/admin/live"
+    assert result["url"] == f"/admin/live?tab=classes&event={event.id}&kind=live"
 
 
 def test_create_event_onsite_carries_location(coach):
@@ -96,6 +96,7 @@ def test_create_event_onsite_carries_location(coach):
     event = OnsiteEvent.objects.get(id=result["id"])
     assert event.status == "scheduled"
     assert event.location == "Studio Mitte"
+    assert result["url"] == f"/admin/live?tab=onsite&event={event.id}&kind=onsite"
 
 
 def test_create_blog_post_draft_sanitized_and_stamped_ai(coach):
@@ -212,7 +213,7 @@ def test_edit_event_reschedules_live_class(coach):
     assert event.scheduled_at.isoformat() == new_when
     assert result["changes"][0]["field"] == "scheduled_at"
     assert result["kind"] == "edit_event"
-    assert result["url"] == "/admin/live"
+    assert result["url"] == f"/admin/live?tab=classes&event={event.id}&kind=live"
 
 
 def test_edit_event_rejects_past_date(coach):
@@ -241,9 +242,10 @@ def test_edit_event_onsite_location(coach):
         location="Berlin",
         scheduled_at=timezone.now() + timedelta(days=9),
     )
-    content.edit_event(event.pk, "onsite", {"location": "Hamburg"})
+    result = content.edit_event(event.pk, "onsite", {"location": "Hamburg"})
     event.refresh_from_db()
     assert event.location == "Hamburg"
+    assert result["url"] == f"/admin/live?tab=onsite&event={event.id}&kind=onsite"
 
 
 def test_edit_event_unknown_id_raises(coach):
