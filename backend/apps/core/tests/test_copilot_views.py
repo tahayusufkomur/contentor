@@ -570,6 +570,64 @@ def test_execute_records_audit_row(client, coach):
     assert row.actor_id == coach.pk
 
 
+def test_execute_pages_action_records_pages_inverse(client, coach):
+    from apps.tenant_config.models import CopilotAudit, TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
+    cfg.save(update_fields=["pages"])
+    before = cfg.pages
+    token = copilot_tokens.stash_action(
+        "shared_test", {"kind": "toggle_block", "page": "home", "block_id": "blk_hero", "enabled": False}
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    row = CopilotAudit.objects.latest("created_at")
+    assert row.inverse["kind"] == "restore_pages"
+    assert row.inverse["pages"] == before
+
+
+def test_execute_theme_action_records_old_theme(client, coach):
+    from apps.tenant_config.models import CopilotAudit, TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.theme = "ocean"
+    cfg.save(update_fields=["theme"])
+    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "ember"})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    row = CopilotAudit.objects.latest("created_at")
+    assert row.inverse == {"kind": "edit_theme", "theme": "ocean"}
+
+
+def test_create_course_has_empty_inverse(client, coach):
+    from apps.tenant_config.models import CopilotAudit
+
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "create_course", "params": {"title": "Yoga 101", "price": "0.00", "pricing_type": "free"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    row = CopilotAudit.objects.latest("created_at")
+    assert row.inverse == {}
+
+
+def test_execute_response_carries_audit_id(client, coach):
+    from apps.tenant_config.models import CopilotAudit
+
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "create_course", "params": {"title": "Yoga 101", "price": "0.00", "pricing_type": "free"}},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    body = resp.json()
+    assert "audit_id" in body
+    row = CopilotAudit.objects.latest("created_at")
+    assert body["audit_id"] == row.id
+
+
 def test_audit_write_failure_never_fails_the_execute(client, coach, monkeypatch):
     from unittest import mock
 

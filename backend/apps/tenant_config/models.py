@@ -169,6 +169,8 @@ class CopilotAudit(models.Model):
     summary = models.CharField(max_length=300, blank=True, default="")
     payload = models.JSONField(default=dict, blank=True)
     result = models.JSONField(default=dict, blank=True)
+    inverse = models.JSONField(default=dict, blank=True)  # empty = not undoable
+    undone_at = models.DateTimeField(null=True, blank=True)
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

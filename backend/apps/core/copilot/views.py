@@ -85,22 +85,29 @@ _CREATORS = {
 
 
 def _execute(tenant, user, action):
+    from copy import deepcopy
+
     from apps.tenant_config.models import TenantConfig
 
     kind = action.get("kind")
     if kind == "edit_pages":
+        with tenant_context(tenant):
+            cfg = TenantConfig.objects.first()
+            pages_before = deepcopy(cfg.pages or {}) if cfg is not None else {}
         site_ai.apply_edit(tenant, action["pages"], extras=action.get("extras"))
-        return {"kind": kind, "changes_count": action.get("changes_count", 0)}
+        result = {"kind": kind, "changes_count": action.get("changes_count", 0)}
+        return result, {"kind": "restore_pages", "pages": pages_before}
     creator = _CREATORS.get(kind)
     if creator is not None:
         with tenant_context(tenant):
-            return creator(user, action)
+            return creator(user, action), {}
     if kind in ("edit_theme", "edit_navbar"):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise chrome.ChromeOpError("site is not set up yet")
             if kind == "edit_theme":
+                old_theme = cfg.theme
                 theme = chrome.clean_theme(action.get("theme"))
                 cfg.theme = theme
                 fields = ["theme"]
@@ -112,22 +119,26 @@ def _execute(tenant, user, action):
                     fields.append("setup_progress")
                 cfg.save(update_fields=fields)
                 result = {"kind": kind, "theme": theme}
+                inverse = {"kind": "edit_theme", "theme": old_theme}
             else:
+                navbar_before = dict(cfg.navbar_config or {})
                 cfg.navbar_config = chrome.merge_navbar(cfg.navbar_config or {}, action.get("updates") or {})
                 cfg.save(update_fields=["navbar_config"])
                 result = {"kind": kind}
+                inverse = {"kind": "restore_navbar", "navbar_config": navbar_before}
         # Public pages read theme/navbar through the cached config object.
         cache.delete(f"tenant:{tenant.schema_name}:config")
-        return result
+        return result, inverse
     if kind == "edit_seo":
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise chrome.ChromeOpError("site is not set up yet")
+            old_meta_description = cfg.meta_description
             cfg.meta_description = chrome.clean_meta_description(action.get("meta_description"))
             cfg.save(update_fields=["meta_description"])
         cache.delete(f"tenant:{tenant.schema_name}:config")
-        return {"kind": kind}
+        return {"kind": kind}, {"kind": "edit_seo", "meta_description": old_meta_description}
     if kind == "set_block_image":
         from django_tenants.utils import schema_context
 
@@ -142,6 +153,7 @@ def _execute(tenant, user, action):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise photos.PhotoOpError("site is not set up yet")
+            pages_before = deepcopy(cfg.pages or {})
             photo = materialize_curated_photo(row)
             cfg.pages = photos.apply_block_image(
                 cfg.pages or {}, action["page"], action["block_id"], action["field"], photo.pk
@@ -149,7 +161,7 @@ def _execute(tenant, user, action):
             cfg.save(update_fields=["pages"])
         # Public pages read blocks through the cached config object too.
         cache.delete(f"tenant:{tenant.schema_name}:config")
-        return {"kind": kind, "page": action["page"]}
+        return {"kind": kind, "page": action["page"]}, {"kind": "restore_pages", "pages": pages_before}
     if kind == "set_course_cover":
         from django_tenants.utils import schema_context
 
@@ -166,11 +178,14 @@ def _execute(tenant, user, action):
             course = Course.objects.filter(pk=action.get("course_id")).first()
             if course is None:
                 raise photos.PhotoOpError("that course no longer exists")
+            old_thumbnail_id = course.thumbnail_id
             course.thumbnail = materialize_curated_photo(row)
             course.save(update_fields=["thumbnail"])
         # Course cards read from the courses API, not the cached config —
         # no cache-bust needed here.
-        return {"kind": kind, "id": course.id, "title": course.title, "url": f"/admin/courses/{course.slug}"}
+        result = {"kind": kind, "id": course.id, "title": course.title, "url": f"/admin/courses/{course.slug}"}
+        inverse = {"kind": "restore_course_cover", "course_id": course.pk, "thumbnail_id": old_thumbnail_id}
+        return result, inverse
     if kind == "set_logo":
         from django_tenants.utils import schema_context
 
@@ -185,6 +200,8 @@ def _execute(tenant, user, action):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise logos.LogoOpError("site is not set up yet")
+            old_logo_id = cfg.logo_id
+            old_logo_url = cfg.logo_url
             cfg.logo = materialize_curated_logo(row)
             cfg.logo_url = ""
             # Setup Assistant parity: a logo counts as "look edited".
@@ -194,12 +211,14 @@ def _execute(tenant, user, action):
                 cfg.setup_progress = progress
             cfg.save(update_fields=["logo", "logo_url", "setup_progress"])
         cache.delete(f"tenant:{tenant.schema_name}:config")
-        return {"kind": kind}
+        inverse = {"kind": "restore_logo", "logo_id": old_logo_id, "logo_url": old_logo_url}
+        return {"kind": kind}, inverse
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:
             raise blocks.BlockOpError("site is not set up yet")
         pages = cfg.pages or {}
+        pages_before = deepcopy(pages)
         if kind == "add_block":
             pages = blocks.add_block(pages, action["page"], action["block"], action.get("after_block_id"))
         elif kind == "remove_block":
@@ -224,7 +243,7 @@ def _execute(tenant, user, action):
         cfg.save(update_fields=["pages"])
     # Public pages read blocks through the cached config object too.
     cache.delete(f"tenant:{tenant.schema_name}:config")
-    return {"kind": kind, "page": action.get("page")}
+    return {"kind": kind, "page": action.get("page")}, {"kind": "restore_pages", "pages": pages_before}
 
 
 def _audit_summary(action, result):
@@ -280,23 +299,27 @@ def _audit_summary(action, result):
     return kind
 
 
-def _record_audit(tenant, user, action, result):
+def _record_audit(tenant, user, action, result, inverse):
     """Append one row to the tenant's 'what changed' trail. Best-effort:
     the change itself already happened — an audit failure must never turn
-    a successful execute into an error for the coach."""
+    a successful execute into an error for the coach. Returns the created
+    row's id, or None on failure."""
     from apps.tenant_config.models import CopilotAudit
 
     try:
         with tenant_context(tenant):
-            CopilotAudit.objects.create(
+            row = CopilotAudit.objects.create(
                 kind=str(action.get("kind") or "")[:40],
                 summary=_audit_summary(action, result)[:300],
                 payload=action,
                 result=result if isinstance(result, dict) else {},
+                inverse=inverse if isinstance(inverse, dict) else {},
                 actor=user if getattr(user, "pk", None) else None,
             )
+            return row.id
     except Exception:
         logger.exception("copilot audit write failed schema=%s", tenant.schema_name)
+        return None
 
 
 @api_view(["POST"])
@@ -309,7 +332,7 @@ def copilot_execute(request):
     except ActionTokenError:
         return Response({"detail": "invalid_token"}, status=403)
     try:
-        result = _execute(tenant, request.user, action)
+        result, inverse = _execute(tenant, request.user, action)
     except (
         blocks.BlockOpError,
         content.ContentOpError,
@@ -319,8 +342,8 @@ def copilot_execute(request):
     ) as exc:
         return Response({"detail": str(exc)}, status=400)
     logger.info("copilot executed %s schema=%s", action.get("kind"), tenant.schema_name)
-    _record_audit(tenant, request.user, action, result)
-    return Response({"result": result})
+    audit_id = _record_audit(tenant, request.user, action, result, inverse)
+    return Response({"result": result, "audit_id": audit_id})
 
 
 AUDIT_FEED_LIMIT = 50
