@@ -64,6 +64,13 @@ def preview_url(row):
     return generate_presigned_download_url(row.image_key, expiry=86400)
 
 
+def tenant_photo_url(photo):
+    """Presigned preview for a coach-attached tenant media.Photo (24h)."""
+    from apps.core.storage import generate_presigned_download_url
+
+    return generate_presigned_download_url(photo.s3_key, expiry=86400)
+
+
 def apply_block_image(pages, page, block_id, field, photo_pk):
     """New pages dict with the block's image field pointing at the tenant
     Photo. The serializer re-signs the URL from photo_id on every read, so

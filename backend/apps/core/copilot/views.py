@@ -24,6 +24,7 @@ from apps.core.permissions import IsCoachOrOwner
 logger = logging.getLogger(__name__)
 
 MESSAGE_MAX_LEN = 2000
+MAX_ATTACHED_PHOTOS = 3
 
 SELECTION_CAPS = {"path": 200, "block_id": 40, "tag": 40, "text": 200, "context": 120}
 
@@ -35,6 +36,23 @@ def _clean_selections(raw):
             continue
         cleaned.append({k: str(item.get(k) or "")[:cap] for k, cap in SELECTION_CAPS.items()})
     return cleaned
+
+
+def _clean_attachments(tenant, raw):
+    """Coach-attached photo ids from the composer → verified tenant Photo
+    rows for the user turn. Unknown ids are dropped silently (the upload
+    already succeeded or the coach never saw a chip); the model only ever
+    hears about photos that really exist in this tenant's library."""
+    from apps.media.models import Photo
+
+    if not isinstance(raw, list):
+        return []
+    ids = [str(item) for item in raw[:MAX_ATTACHED_PHOTOS] if isinstance(item, (str, int))]
+    if not ids:
+        return []
+    with tenant_context(tenant):
+        rows = list(Photo.objects.filter(pk__in=ids).values("id", "title"))
+    return [{"id": str(r["id"]), "title": r["title"]} for r in rows]
 
 
 @api_view(["POST"])
@@ -51,12 +69,13 @@ def copilot_converse(request):
     message = str(data.get("message") or "").strip()[:MESSAGE_MAX_LEN]
     transcript = data.get("transcript") if isinstance(data.get("transcript"), list) else []
     selections = _clean_selections(data.get("selections") if isinstance(data.get("selections"), list) else [])
+    attachments = _clean_attachments(tenant, data.get("attached_photos"))
 
     def frames():
         yield sse_frame({"type": "phase", "phase": "thinking"})
         cost = Decimal("0")
         try:
-            payload, cost = engine.run_turn(tenant, transcript, selections, message)
+            payload, cost = engine.run_turn(tenant, transcript, selections, message, attachments)
             yield sse_frame({"type": "done", **payload})
         except core_ai.AiError as exc:
             cost = getattr(exc, "cost_usd", None) or Decimal("0")
@@ -145,16 +164,26 @@ def _execute(tenant, user, action):
         from apps.core.curated_photos.materialize import materialize_curated_photo
         from apps.core.models import CuratedPhoto
 
-        with schema_context("public"):
-            row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
-        if row is None:
-            raise photos.PhotoOpError("that photo is no longer available")
+        row = None
+        if not action.get("tenant_photo_id"):
+            with schema_context("public"):
+                row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
+            if row is None:
+                raise photos.PhotoOpError("that photo is no longer available")
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise photos.PhotoOpError("site is not set up yet")
             pages_before = deepcopy(cfg.pages or {})
-            photo = materialize_curated_photo(row)
+            if action.get("tenant_photo_id"):
+                # Coach-attached photo: already a tenant media.Photo row.
+                from apps.media.models import Photo
+
+                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
+                if photo is None:
+                    raise photos.PhotoOpError("that attached photo is not in your library")
+            else:
+                photo = materialize_curated_photo(row)
             cfg.pages = photos.apply_block_image(
                 cfg.pages or {}, action["page"], action["block_id"], action["field"], photo.pk
             )
@@ -168,10 +197,12 @@ def _execute(tenant, user, action):
         from apps.core.curated_photos.materialize import materialize_curated_photo
         from apps.core.models import CuratedPhoto
 
-        with schema_context("public"):
-            row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
-        if row is None:
-            raise photos.PhotoOpError("that photo is no longer available")
+        row = None
+        if not action.get("tenant_photo_id"):
+            with schema_context("public"):
+                row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
+            if row is None:
+                raise photos.PhotoOpError("that photo is no longer available")
         with tenant_context(tenant):
             from apps.courses.models import Course
 
@@ -179,7 +210,15 @@ def _execute(tenant, user, action):
             if course is None:
                 raise photos.PhotoOpError("that course no longer exists")
             old_thumbnail_id = course.thumbnail_id
-            course.thumbnail = materialize_curated_photo(row)
+            if action.get("tenant_photo_id"):
+                from apps.media.models import Photo
+
+                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
+                if photo is None:
+                    raise photos.PhotoOpError("that attached photo is not in your library")
+                course.thumbnail = photo
+            else:
+                course.thumbnail = materialize_curated_photo(row)
             course.save(update_fields=["thumbnail"])
         # Course cards read from the courses API, not the cached config —
         # no cache-bust needed here.
@@ -464,3 +503,107 @@ def copilot_undo(request):
         entry.save(update_fields=["undone_at"])
     logger.info("copilot undid %s schema=%s", entry.kind, tenant.schema_name)
     return Response({"undone": entry.kind})
+
+
+# ── chats: server-side conversation threads for the drawer UI ────────────────
+
+MAX_CHAT_ENTRIES = 30
+MAX_CHATS = 50
+CHAT_ENTRY_TEXT_MAX = 4000
+CHAT_TITLE_MAX = 120
+
+
+def _clean_chat_entries(raw):
+    """Server-side guard on the persisted transcript: same shape the widget
+    stored in localStorage — {"role", "text", "kind"?} — capped to the
+    trailing MAX_CHAT_ENTRIES with bounded strings. Anything else is dropped
+    silently; the chat still works, it just doesn't keep junk."""
+    if not isinstance(raw, list):
+        return []
+    cleaned = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        role = item.get("role")
+        if role not in ("coach", "assistant"):
+            continue
+        entry = {"role": role, "text": str(item.get("text") or "")[:CHAT_ENTRY_TEXT_MAX]}
+        if isinstance(item.get("kind"), str) and item["kind"]:
+            entry["kind"] = item["kind"][:20]
+        cleaned.append(entry)
+    return cleaned[-MAX_CHAT_ENTRIES:]
+
+
+def _chat_row(chat):
+    return {"id": chat.id, "title": chat.title, "updated_at": chat.updated_at}
+
+
+def _derive_title(entries):
+    """First coach line, trimmed — the drawer list needs a human label and
+    non-technical coaches won't name chats themselves."""
+    for entry in entries:
+        if entry.get("role") == "coach" and entry.get("text", "").strip():
+            return " ".join(entry["text"].split())[:CHAT_TITLE_MAX]
+    return ""
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def copilot_chats(request):
+    """List recent chats / create one (optionally seeded with entries — the
+    one-time localStorage import path). Creation prunes beyond MAX_CHATS so
+    the table can't grow unbounded."""
+    from apps.tenant_config.models import CopilotChat
+
+    tenant = connection.tenant
+    if request.method == "GET":
+        with tenant_context(tenant):
+            rows = [_chat_row(c) for c in CopilotChat.objects.all()[:MAX_CHATS]]
+        return Response({"chats": rows})
+
+    data = request.data if isinstance(request.data, dict) else {}
+    entries = _clean_chat_entries(data.get("entries"))
+    title = str(data.get("title") or "").strip()[:CHAT_TITLE_MAX] or _derive_title(entries)
+    with tenant_context(tenant):
+        chat = CopilotChat.objects.create(
+            title=title,
+            entries=entries,
+            actor=request.user if getattr(request.user, "pk", None) else None,
+        )
+        stale = CopilotChat.objects.values_list("id", flat=True)[MAX_CHATS:]
+        if stale:
+            CopilotChat.objects.filter(id__in=list(stale)).delete()
+    return Response({**_chat_row(chat), "entries": chat.entries}, status=201)
+
+
+@api_view(["GET", "PATCH", "DELETE"])
+@permission_classes([IsCoachOrOwner])
+def copilot_chat_detail(request, chat_id):
+    from apps.tenant_config.models import CopilotChat
+
+    tenant = connection.tenant
+    with tenant_context(tenant):
+        chat = CopilotChat.objects.filter(pk=chat_id).first()
+        if chat is None:
+            return Response({"detail": "not_found"}, status=404)
+        if request.method == "GET":
+            return Response({**_chat_row(chat), "entries": chat.entries})
+        if request.method == "DELETE":
+            chat.delete()
+            return Response(status=204)
+        data = request.data if isinstance(request.data, dict) else {}
+        fields = []
+        if "entries" in data:
+            chat.entries = _clean_chat_entries(data.get("entries"))
+            fields.append("entries")
+            if not chat.title:
+                chat.title = _derive_title(chat.entries)
+                fields.append("title")
+        if isinstance(data.get("title"), str) and data["title"].strip():
+            chat.title = data["title"].strip()[:CHAT_TITLE_MAX]
+            if "title" not in fields:
+                fields.append("title")
+        if not fields:
+            return Response({"detail": "nothing to update"}, status=400)
+        chat.save(update_fields=[*fields, "updated_at"])
+        return Response({**_chat_row(chat), "entries": chat.entries})

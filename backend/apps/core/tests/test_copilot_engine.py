@@ -1302,3 +1302,61 @@ def test_system_prompt_steers_stats_and_setup():
     assert "Stats line" in engine.SYSTEM_PROMPT
     assert "Setup line" in engine.SYSTEM_PROMPT
     assert "never invent figures" in engine.SYSTEM_PROMPT
+
+
+# ── attached photos: user-turn context + photo_id card path ──────────────────
+
+
+def test_user_turn_lists_attached_photos(tenant_ctx):
+    from apps.core.copilot import engine
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    turn = engine._user_turn(tenant, [], [], "use this photo", [{"id": "abc-123", "title": "My studio"}])
+    assert "photo_id=abc-123" in turn
+    assert "My studio" in turn
+    assert "attached these photos" in turn
+
+
+def test_set_block_image_card_with_attached_photo(tenant_ctx):
+    from apps.core.copilot import engine, tokens
+    from apps.core.models import Tenant
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    photo = Photo.objects.create(s3_key="uploads/mine.png", title="Mine")
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_1", "type": "hero", "enabled": True}]}}
+    cfg.save(update_fields=["pages"])
+
+    action = engine.SetBlockImageAction(
+        kind="set_block_image", page="home", block_id="blk_1", photo_id=str(photo.pk)
+    )
+    card = engine._card(tenant, action)
+    assert card["kind"] == "set_block_image"
+    assert "your photo" in card["title"].lower()
+    stashed = tokens.take_action(card["token"], "shared_test")
+    assert stashed["tenant_photo_id"] == str(photo.pk)
+    assert stashed["field"] == "bgImage"
+    assert "curated_photo_id" not in stashed
+
+
+def test_set_block_image_card_with_unknown_attached_photo_drops(tenant_ctx):
+    import pytest as _pytest
+
+    from apps.core.copilot import engine, photos
+    from apps.core.models import Tenant
+    from apps.tenant_config.models import TenantConfig
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_1", "type": "hero", "enabled": True}]}}
+    cfg.save(update_fields=["pages"])
+
+    action = engine.SetBlockImageAction(
+        kind="set_block_image", page="home", block_id="blk_1",
+        photo_id="00000000-0000-0000-0000-000000000000",
+    )
+    with _pytest.raises(photos.PhotoOpError, match="not in your library"):
+        engine._card(tenant, action)

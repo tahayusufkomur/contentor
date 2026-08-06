@@ -156,6 +156,34 @@ class AssistantLink(models.Model):
         return self.label
 
 
+class CopilotChat(models.Model):
+    """One copilot conversation thread — the server-side home of the coach's
+    chat history (drawer "Recent chats" list). ``entries`` is the persistable
+    transcript shape the frontend already used in localStorage: a list of
+    {"role": "coach"|"assistant", "text": str, "kind"?: str} dicts, action
+    cards stripped (their single-use tokens die on reload). The converse
+    endpoint stays stateless; the client PATCHes entries after each turn."""
+
+    title = models.CharField(max_length=120, blank=True, default="")
+    entries = models.JSONField(default=list, blank=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="copilot_chats",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return self.title or f"Chat {self.pk}"
+
+
 class CopilotAudit(models.Model):
     """One executed copilot action — the coach's "what changed" trail.
 

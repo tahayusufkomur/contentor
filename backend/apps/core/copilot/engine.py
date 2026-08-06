@@ -80,6 +80,11 @@ SYSTEM_PROMPT = (
     "- set_logo: put a ready-made logo from the platform library on the "
     "site (describe the style you want); propose again with a different "
     "description for another style\n"
+    "- when the user turn lists photos the coach ATTACHED, prefer them: "
+    "pass the attached photo_id to set_block_image or set_course_cover "
+    "(leave description empty) instead of describing a library pick; if "
+    "the coach attached a photo but the target is unclear, ask where they "
+    "want it\n"
     "- edit_block_fields: change specific fields on one existing block "
     "(page + block_id from the digest, fields per the block field guide "
     "below) — prefer this over edit_pages for single-block changes\n"
@@ -247,12 +252,14 @@ class SetBlockImageAction(BaseModel):
     page: str
     block_id: str
     description: str = ""
+    photo_id: str | None = None  # a photo the coach attached to their message
 
 
 class SetCourseCoverAction(BaseModel):
     kind: Literal["set_course_cover"]
     course_id: int
     description: str = ""
+    photo_id: str | None = None  # a photo the coach attached to their message
 
 
 class SetLogoAction(BaseModel):
@@ -374,6 +381,19 @@ def _chrome_digest(tenant):
     cta = nav.get("cta") or {}
     cta_part = f"'{cta.get('text')}' -> {cta.get('href')}" if cta.get("text") else "none"
     return f"Theme: {cfg.theme}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
+
+
+def _tenant_photo(tenant, photo_id):
+    """Resolve a coach-attached photo to its tenant media.Photo row. Raises
+    photos.PhotoOpError when the id is unknown — a hallucinated photo_id must
+    drop the card with an honest reason, never place the wrong image."""
+    from apps.media.models import Photo
+
+    with tenant_context(tenant):
+        photo = Photo.objects.filter(pk=photo_id).first()
+    if photo is None:
+        raise photos.PhotoOpError("that attached photo is not in your library")
+    return photo
 
 
 def _block_for_image(tenant, page, block_id):
@@ -547,7 +567,7 @@ def _setup_digest(tenant):
     return ("Setup still open: " + ", ".join(open_items)) if open_items else "Setup: all done"
 
 
-def _user_turn(tenant, transcript, selections, message):
+def _user_turn(tenant, transcript, selections, message, attachments=None):
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
         f"Brand: {tenant.name}",
@@ -564,6 +584,13 @@ def _user_turn(tenant, transcript, selections, message):
         parts.append(
             "The coach clicked these elements as context:\n"
             + json.dumps(list(selections)[:MAX_SELECTIONS], ensure_ascii=False)
+        )
+    if attachments:
+        lines = [f"  photo_id={a['id']} title='{str(a.get('title') or 'untitled')[:60]}'" for a in attachments]
+        parts.append(
+            "The coach attached these photos from their device (already in "
+            "their media library). To place one, pass its photo_id to "
+            "set_block_image or set_course_cover:\n" + "\n".join(lines)
         )
     for entry in list(transcript)[-MAX_TRANSCRIPT:]:
         role = "Coach" if entry.get("role") == "coach" else "Assistant"
@@ -658,6 +685,24 @@ def _card(tenant, action):
         }
     if isinstance(action, SetBlockImageAction):
         field, exclude_key = _block_for_image(tenant, action.page, action.block_id)
+        if action.photo_id:
+            photo = _tenant_photo(tenant, action.photo_id)
+            return {
+                "kind": "set_block_image",
+                "title": f"Use your photo '{photo.title or 'untitled'}'",
+                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "image_url": photos.tenant_photo_url(photo),
+                "token": tokens.stash_action(
+                    schema,
+                    {
+                        "kind": "set_block_image",
+                        "page": action.page,
+                        "block_id": action.block_id,
+                        "field": field,
+                        "tenant_photo_id": str(photo.pk),
+                    },
+                ),
+            }
         answers = (tenant.wizard_state or {}).get("answers") or {}
         row = photos.pick_photo(action.description, answers.get("niche"), field=field, exclude_s3_key=exclude_key)
         return {
@@ -678,6 +723,18 @@ def _card(tenant, action):
         }
     if isinstance(action, SetCourseCoverAction):
         course_title, exclude_key = _course_for_cover(tenant, action.course_id)
+        if action.photo_id:
+            photo = _tenant_photo(tenant, action.photo_id)
+            return {
+                "kind": "set_course_cover",
+                "title": f"Cover for '{course_title[:80]}': your photo '{photo.title or 'untitled'}'",
+                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "image_url": photos.tenant_photo_url(photo),
+                "token": tokens.stash_action(
+                    schema,
+                    {"kind": "set_course_cover", "course_id": action.course_id, "tenant_photo_id": str(photo.pk)},
+                ),
+            }
         answers = (tenant.wizard_state or {}).get("answers") or {}
         row = photos.pick_photo(
             action.description, answers.get("niche"), field="courseCover", exclude_s3_key=exclude_key
@@ -1013,7 +1070,7 @@ def _asks_so_far(transcript):
     )
 
 
-def run_turn(tenant, transcript, selections, message):
+def run_turn(tenant, transcript, selections, message, attachments=None):
     # Bound the transcript once, up front, to the same trailing window
     # _user_turn applies — the ask-cap count and the model's actual visible
     # context must agree on the same bounded view, or a stale "ask" outside
@@ -1021,7 +1078,7 @@ def run_turn(tenant, transcript, selections, message):
     windowed_transcript = [e for e in list(transcript) if isinstance(e, dict)][-MAX_TRANSCRIPT:]
     cap = _ask_cap()
     capped = cap > 0 and _asks_so_far(windowed_transcript) >= cap
-    user = _user_turn(tenant, windowed_transcript, selections, message)
+    user = _user_turn(tenant, windowed_transcript, selections, message, attachments)
     if capped:
         user += CAP_STEER
     parsed, cost, _model = core_ai.structured(
