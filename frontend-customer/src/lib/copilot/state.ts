@@ -47,3 +47,20 @@ const CREATE_KINDS = new Set([
 /** Distinguishes content-creation actions (new draft, gets a "view" link)
  * from site-edit actions (existing page content updated in place). */
 export const isCreateKind = (kind: string) => CREATE_KINDS.has(kind);
+
+/** Sequentially run card confirms; stop at the first failure so a broken
+ * mid-bundle action never leaves later actions silently un-applied. */
+export async function runBundle(
+  confirms: (() => Promise<void>)[],
+): Promise<{ done: number; failed: boolean }> {
+  let done = 0;
+  for (const confirm of confirms) {
+    try {
+      await confirm();
+      done += 1;
+    } catch {
+      return { done, failed: true };
+    }
+  }
+  return { done, failed: false };
+}

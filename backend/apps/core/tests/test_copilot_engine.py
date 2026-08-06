@@ -1171,3 +1171,8 @@ def test_edit_seo_card_shows_old_new_and_stashes_text(tenant_with_pages):
 
 def test_system_prompt_lists_edit_seo():
     assert "edit_seo" in engine.SYSTEM_PROMPT
+
+
+def test_system_prompt_steers_bulk_and_recurring_bundles():
+    assert "propose them as one set of cards in a single turn" in engine.SYSTEM_PROMPT
+    assert "max 12 cards" in engine.SYSTEM_PROMPT

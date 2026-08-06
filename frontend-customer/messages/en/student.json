@@ -68,6 +68,8 @@
     "newChat": "New chat",
     "confirm": "Apply",
     "applying": "Applying…",
+    "applyAll": "Apply all",
+    "appliedAll": "Applied {count} changes",
     "dismiss": "Dismiss",
     "applied": "Done — your site has been updated",
     "appliedShort": "Applied",

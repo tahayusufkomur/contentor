@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { buildSelectionPayload } from "@/lib/copilot/selection";
-import { isCreateKind, reduceChat, toTranscript } from "@/lib/copilot/state";
+import {
+  isCreateKind,
+  reduceChat,
+  runBundle,
+  toTranscript,
+} from "@/lib/copilot/state";
 import type { ChatEntry } from "@/lib/copilot/types";
 
 const el = (
@@ -112,5 +117,30 @@ describe("isCreateKind", () => {
     expect(isCreateKind("edit_theme")).toBe(false);
     expect(isCreateKind("edit_navbar")).toBe(false);
     expect(isCreateKind("set_block_image")).toBe(false);
+  });
+});
+
+describe("runBundle", () => {
+  it("runs confirms in order and stops on failure", async () => {
+    const calls: string[] = [];
+    const ok = (id: string) => async () => {
+      calls.push(id);
+    };
+    const fail = async () => {
+      throw new Error("nope");
+    };
+    const result = await runBundle([ok("a"), ok("b"), fail, ok("d")]);
+    expect(calls).toEqual(["a", "b"]);
+    expect(result).toEqual({ done: 2, failed: true });
+  });
+
+  it("reports done count with no failures", async () => {
+    const calls: string[] = [];
+    const ok = (id: string) => async () => {
+      calls.push(id);
+    };
+    const result = await runBundle([ok("a"), ok("b")]);
+    expect(calls).toEqual(["a", "b"]);
+    expect(result).toEqual({ done: 2, failed: false });
   });
 });

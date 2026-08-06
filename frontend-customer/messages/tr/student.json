@@ -68,6 +68,8 @@
     "newChat": "Yeni sohbet",
     "confirm": "Uygula",
     "applying": "Uygulanıyor…",
+    "applyAll": "Tümünü uygula",
+    "appliedAll": "{count} değişiklik uygulandı",
     "dismiss": "Vazgeç",
     "applied": "Tamam — siteniz güncellendi",
     "appliedShort": "Uygulandı",

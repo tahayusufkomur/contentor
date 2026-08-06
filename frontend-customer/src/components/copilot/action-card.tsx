@@ -1,6 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -8,12 +16,28 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { executeCopilotAction } from "@/lib/copilot/api";
-import { isCreateKind } from "@/lib/copilot/state";
+import { isCreateKind, runBundle } from "@/lib/copilot/state";
 import { announceSiteUpdated } from "@/lib/site-events";
 import type {
   ActionCard as ActionCardData,
   ExecuteResult,
 } from "@/lib/copilot/types";
+
+/** Registry of proposed cards' confirm functions for a single assistant
+ * turn, keyed by a per-mount token — lets `ApplyAllBar` run every card's
+ * own confirm (same audit trail, same success/error toast) without the
+ * cards knowing about each other. */
+type BundleRegistry = React.MutableRefObject<Map<string, () => Promise<void>>>;
+const CardBundleContext = createContext<BundleRegistry | null>(null);
+
+export function CardBundleProvider({ children }: { children: ReactNode }) {
+  const registry = useRef<Map<string, () => Promise<void>>>(new Map());
+  return (
+    <CardBundleContext.Provider value={registry}>
+      {children}
+    </CardBundleContext.Provider>
+  );
+}
 
 const PAGE_NAME_KEYS = new Set([
   "home",
@@ -50,6 +74,8 @@ const FIELD_NAME_KEYS = new Set([
 export function ActionCard({ card }: { card: ActionCardData }) {
   const t = useTranslations("student.copilot");
   const router = useRouter();
+  const bundle = useContext(CardBundleContext);
+  const token = useId();
   const [state, setState] = useState<"proposed" | "done" | "dismissed">(
     "proposed",
   );
@@ -68,6 +94,19 @@ export function ActionCard({ card }: { card: ActionCardData }) {
     },
     { errorToast: t("error") },
   );
+
+  useEffect(() => {
+    if (!bundle) return;
+    if (state === "proposed") {
+      bundle.current.set(token, confirm);
+    } else {
+      bundle.current.delete(token);
+    }
+    return () => {
+      bundle.current.delete(token);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bundle, token, state]);
 
   if (state === "dismissed") return null;
   return (
@@ -142,5 +181,31 @@ export function ActionCard({ card }: { card: ActionCardData }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** Applies every still-proposed card in the current bundle sequentially.
+ * Each card's own `confirm` already flips its state to "done" and fires its
+ * own error toast on failure — this bar only reports the aggregate success
+ * count and stops the run at the first failure. */
+export function ApplyAllBar() {
+  const t = useTranslations("student.copilot");
+  const bundle = useContext(CardBundleContext);
+  const { run, loading } = useAsyncAction(async () => {
+    const confirms = bundle ? [...bundle.current.values()] : [];
+    if (confirms.length < 2) return;
+    const { done, failed } = await runBundle(confirms);
+    if (!failed) toast.success(t("appliedAll", { count: done }));
+  });
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={run}
+      loading={loading}
+      loadingText={t("applying")}
+    >
+      {t("applyAll")}
+    </Button>
   );
 }

@@ -12,7 +12,7 @@ import { reduceChat, toTranscript } from "@/lib/copilot/state";
 import { clearEntries, loadEntries, saveEntries } from "@/lib/copilot/storage";
 import type { ChatEntry, SelectionPayload } from "@/lib/copilot/types";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { ActionCard } from "./action-card";
+import { ActionCard, ApplyAllBar, CardBundleProvider } from "./action-card";
 import { SelectionOverlay } from "./selection-overlay";
 
 /** Assistant text with the markdown-lite link contract: `[label](/path)`
@@ -193,9 +193,18 @@ export function CopilotBubble() {
                   e.text
                 )}
               </div>
-              {e.cards?.map((card, j) => (
-                <ActionCard key={`${i}-${j}`} card={card} />
-              ))}
+              {e.cards && e.cards.length > 0 && (
+                <CardBundleProvider>
+                  {e.cards.map((card, j) => (
+                    <ActionCard key={`${i}-${j}`} card={card} />
+                  ))}
+                  {e.cards.length > 1 && (
+                    <div className="mt-2">
+                      <ApplyAllBar />
+                    </div>
+                  )}
+                </CardBundleProvider>
+              )}
             </div>
           ))}
           {sending && <p className="text-muted-foreground">{t("thinking")}</p>}
