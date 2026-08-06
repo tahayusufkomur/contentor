@@ -45,14 +45,16 @@ export function isSameOriginPath(href: string, origin: string): boolean {
 }
 
 /** Parses the markdown-lite answer contract: extracts `[label](/path)`
- * links as `{label, href}` pairs (dropped from the inline text, same as
- * `AnswerBody`) and strips `**bold**` markers, leaving plain text plus a
- * list of links for the caller to render as actual `<Link>`/`<a>` elements.
+ * links as `{label, href}` pairs and strips `**bold**` markers, leaving
+ * plain text plus a list of links for the caller to render as actual
+ * `<Link>`/`<a>` elements. The label stays in the inline text as a plain
+ * word — models link mid-sentence ("open [Courses](/admin/courses), then…"),
+ * and removing the whole link left a grammatical hole ("open , then…").
  * Every extracted href is validated against `origin` via `isSameOriginPath`
  * before being included in `links` — an href that resolves off-origin
- * (e.g. `//evil.com` or the backslash-bypass `/\evil.com`) is dropped
- * entirely, so it can never be rendered as a navigable element. Its
- * markdown is still stripped from `text`, same as any other matched link. */
+ * (e.g. `//evil.com` or the backslash-bypass `/\evil.com`) is dropped from
+ * `links` entirely, so it can never be rendered as a navigable element; its
+ * label still replaces the markdown in `text` as harmless plain prose. */
 export function parseAnswer(content: string, origin: string): ParsedAnswer {
   const links: AnswerLink[] = [];
   const text = content
@@ -60,7 +62,7 @@ export function parseAnswer(content: string, origin: string): ParsedAnswer {
       if (isSameOriginPath(href, origin)) {
         links.push({ label, href });
       }
-      return "";
+      return label;
     })
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .trim();

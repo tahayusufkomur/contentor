@@ -135,6 +135,27 @@ def _execute(tenant, user, action):
         # Public pages read blocks through the cached config object too.
         cache.delete(f"tenant:{tenant.schema_name}:config")
         return {"kind": kind, "page": action["page"]}
+    if kind == "set_course_cover":
+        from django_tenants.utils import schema_context
+
+        from apps.core.curated_photos.materialize import materialize_curated_photo
+        from apps.core.models import CuratedPhoto
+
+        with schema_context("public"):
+            row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
+        if row is None:
+            raise photos.PhotoOpError("that photo is no longer available")
+        with tenant_context(tenant):
+            from apps.courses.models import Course
+
+            course = Course.objects.filter(pk=action.get("course_id")).first()
+            if course is None:
+                raise photos.PhotoOpError("that course no longer exists")
+            course.thumbnail = materialize_curated_photo(row)
+            course.save(update_fields=["thumbnail"])
+        # Course cards read from the courses API, not the cached config —
+        # no cache-bust needed here.
+        return {"kind": kind, "id": course.id, "title": course.title, "url": f"/admin/courses/{course.slug}"}
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:

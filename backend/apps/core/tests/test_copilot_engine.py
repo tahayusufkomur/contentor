@@ -37,6 +37,7 @@ def _run(parsed):
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(
             engine.site_ai,
@@ -64,6 +65,7 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(
             engine.site_ai,
             "diff_current",
@@ -86,6 +88,7 @@ def test_add_block_card_carries_the_built_block():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add a call to action")
     (card,) = payload["actions"]
@@ -102,6 +105,7 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "add testimonials")
     assert payload["kind"] == "answer"  # nothing proposable survived
@@ -114,6 +118,7 @@ def test_failed_model_call_still_reports_cost():
         mock.patch.object(engine.core_ai, "structured", side_effect=AiError("boom", cost_usd=Decimal("0.004"))),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         pytest.raises(AiError),
     ):
         engine.run_turn(TENANT, [], [], "hi")
@@ -139,6 +144,7 @@ def test_create_course_action_becomes_card_with_stashed_params():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "create my first course")
     (card,) = payload["actions"]
@@ -168,6 +174,7 @@ def test_create_event_card_requires_future_date():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "schedule a class")
     assert payload["kind"] == "answer"  # past-date proposal dropped, fallback answer
@@ -193,6 +200,7 @@ def test_create_event_onsite_card_stashes_location_and_kind():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "plan a retreat")
     (card,) = payload["actions"]
@@ -221,6 +229,7 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, [], [], "write a blog post")
     (card,) = payload["actions"]
@@ -286,6 +295,7 @@ def test_user_turn_includes_chrome_digest():
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
     assert "Theme: ocean" in captured["user"]
@@ -307,6 +317,7 @@ def test_system_prompt_carries_platform_knowledge_and_addenda():
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         engine.run_turn(TENANT, [], [], "how do I get paid?")
     assert captured["system"].startswith(engine.SYSTEM_PROMPT)
@@ -336,6 +347,7 @@ def test_ask_over_cap_is_steered_and_coerced_to_answer():
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
     assert payload == {"kind": "answer", "text": "Which page do you mean?"}
@@ -356,6 +368,7 @@ def test_cap_zero_leaves_asks_uncapped():
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # default cap 0 = today's behavior
@@ -389,6 +402,7 @@ def test_ask_outside_transcript_window_does_not_trip_cap():
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
     assert payload["kind"] == "ask"  # old ask is outside the window, so cap doesn't trip
@@ -413,6 +427,7 @@ def test_under_cap_ask_passes_through():
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
         mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "hi")
     assert payload["kind"] == "ask"  # 1 prior ask < cap of 2
@@ -535,3 +550,104 @@ def test_navbar_card_with_links_and_flags(tenant_with_pages):
 def test_pages_digest_lists_field_values_and_hidden_flag(tenant_with_pages):
     digest = engine._pages_digest(tenant_with_pages)
     assert 'heading="Hi"' in digest  # current values now visible to the model
+
+
+def test_system_prompt_lists_set_course_cover():
+    assert "set_course_cover" in engine.SYSTEM_PROMPT
+
+
+def test_set_course_cover_card_stashes_pick_and_carries_preview():
+    from apps.core.copilot import photos as copilot_photos
+    from apps.core.copilot import tokens as copilot_tokens
+
+    row = SimpleNamespace(pk=9, title="Golden-hour mat flow", image_key="platform/curated-photos/mat.jpg")
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "set_course_cover", "course_id": 3, "description": "energetic morning flow"}],
+    )
+    with (
+        mock.patch.object(engine, "_course_for_cover", return_value=("Yoga Basics", None)) as course_lookup,
+        mock.patch.object(copilot_photos, "pick_photo", return_value=row) as pick,
+        mock.patch.object(copilot_photos, "preview_url", return_value="https://cdn.example/mat.jpg"),
+    ):
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "set_course_cover"
+    assert "Yoga Basics" in card["title"] and "Golden-hour mat flow" in card["title"]
+    assert card["image_url"] == "https://cdn.example/mat.jpg"
+    course_lookup.assert_called_once_with(TENANT, 3)
+    assert pick.call_args.kwargs["field"] == "courseCover"
+    assert pick.call_args.kwargs["exclude_s3_key"] is None
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {"kind": "set_course_cover", "course_id": 3, "curated_photo_id": 9}
+
+
+def test_set_course_cover_unknown_course_dropped_with_reason():
+    from apps.core.copilot import photos as copilot_photos
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "set_course_cover", "course_id": 999, "description": "x"}],
+    )
+    with mock.patch.object(
+        engine, "_course_for_cover", side_effect=copilot_photos.PhotoOpError("no course with id 999")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "no course with id 999" in payload["text"]
+
+
+def test_user_turn_includes_courses_digest():
+    from decimal import Decimal
+
+    captured = {}
+
+    def fake_structured(**kw):
+        captured.update(kw)
+        return _turn(kind="answer", text="hi"), Decimal("0.01"), "m"
+
+    with (
+        mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+    ):
+        engine.run_turn(TENANT, [], [], "hello")
+    assert "Courses: (none yet)" in captured["user"]
+
+
+def test_courses_digest_flags_missing_covers(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.courses.models import Course
+
+    instructor = User.objects.create_user(
+        email="cover-digest@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    Course.objects.create(title="Yoga Basics", instructor=instructor)
+    digest = engine._courses_digest(tenant_with_pages)
+    assert "Yoga Basics" in digest and "NO COVER" in digest and "draft" in digest
+
+
+def test_course_for_cover_resolves_title_and_missing_course(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.core.copilot import photos as copilot_photos
+    from apps.courses.models import Course
+
+    instructor = User.objects.create_user(
+        email="cover-lookup@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    course = Course.objects.create(title="Yoga Basics", instructor=instructor)
+    title, exclude_key = engine._course_for_cover(tenant_with_pages, course.pk)
+    assert title == "Yoga Basics" and exclude_key is None
+    with pytest.raises(copilot_photos.PhotoOpError):
+        engine._course_for_cover(tenant_with_pages, 999999)

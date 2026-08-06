@@ -16,8 +16,9 @@ IMAGE_FIELDS = {"hero": "bgImage", "imageText": "image"}
 
 # Catalog kinds offered per field, mirroring onboarding's ai_photos split:
 # hero backgrounds only from mood-setting hero shots; inline images may also
-# use stock.
-FIELD_KINDS = {"bgImage": ("hero",), "image": ("hero", "stock")}
+# use stock. "courseCover" is the pseudo-field set_course_cover picks with —
+# course thumbnails read well from either kind.
+FIELD_KINDS = {"bgImage": ("hero",), "image": ("hero", "stock"), "courseCover": ("hero", "stock")}
 
 SHORTLIST_LIMIT = 30
 

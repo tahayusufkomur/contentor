@@ -8,13 +8,28 @@ import {
 const ORIGIN = "https://coach.contentor.app";
 
 describe("parseAnswer", () => {
-  it("extracts a same-site link and strips it from the text", () => {
+  it("extracts a same-site link and keeps its label in the text", () => {
     const { text, links } = parseAnswer(
       "See the FAQ [here](/faq) for details.",
       ORIGIN,
     );
-    expect(text).toBe("See the FAQ  for details.");
+    expect(text).toBe("See the FAQ here for details.");
     expect(links).toEqual([{ label: "here", href: "/faq" }]);
+  });
+
+  it("keeps mid-sentence link labels readable (regression: 'open , click')", () => {
+    const { text, links } = parseAnswer(
+      "To fix them: open [Courses](/admin/courses), click into each course.",
+      ORIGIN,
+    );
+    expect(text).toBe("To fix them: open Courses, click into each course.");
+    expect(links).toEqual([{ label: "Courses", href: "/admin/courses" }]);
+  });
+
+  it("replaces an off-origin matched link with its label as plain text, no chip", () => {
+    const { text, links } = parseAnswer("[a](/\\evil.com) is dropped.", ORIGIN);
+    expect(links).toEqual([]);
+    expect(text).toBe("a is dropped.");
   });
 
   it("strips bold markers", () => {

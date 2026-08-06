@@ -57,6 +57,10 @@ SYSTEM_PROMPT = (
     "description of the photo you want, e.g. 'calm sunlit yoga studio, "
     "warm tones'); propose it again with a different description if the "
     "coach wants another style\n"
+    "- set_course_cover: put a curated photo on a course's cover "
+    "(course_id from the course list in the user turn, plus a short "
+    "description of the shot); when the coach asks about several courses, "
+    "propose one card per course that needs a cover\n"
     "- edit_block_fields: change specific fields on one existing block "
     "(page + block_id from the digest, fields per the block field guide "
     "below) — prefer this over edit_pages for single-block changes\n"
@@ -200,6 +204,12 @@ class SetBlockImageAction(BaseModel):
     description: str = ""
 
 
+class SetCourseCoverAction(BaseModel):
+    kind: Literal["set_course_cover"]
+    course_id: int
+    description: str = ""
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -211,6 +221,7 @@ CopilotAction = Annotated[
     | EditThemeAction
     | EditNavbarAction
     | SetBlockImageAction
+    | SetCourseCoverAction
     | EditBlockFieldsAction
     | ToggleBlockAction
     | DuplicateBlockAction,
@@ -291,6 +302,44 @@ def _block_for_image(tenant, page, block_id):
     return field, exclude_key
 
 
+def _course_for_cover(tenant, course_id):
+    """Resolve a course's title and the s3_key of its current cover photo
+    (so the pick can exclude it — "try another" must not return the same
+    shot). Raises photos.PhotoOpError for an unknown course."""
+    from apps.courses.models import Course
+
+    with tenant_context(tenant):
+        course = Course.objects.filter(pk=course_id).select_related("thumbnail").first()
+        if course is None:
+            raise photos.PhotoOpError(f"no course with id {course_id}")
+        exclude_key = course.thumbnail.s3_key if course.thumbnail_id and course.thumbnail else None
+        return course.title, exclude_key
+
+
+MAX_DIGEST_COURSES = 30
+
+
+def _courses_digest(tenant):
+    """Bounded course inventory for the user turn: id, title, cover state,
+    published state — what set_course_cover proposals key off."""
+    from apps.courses.models import Course
+
+    with tenant_context(tenant):
+        rows = list(
+            Course.objects.order_by("order", "-created_at").values(
+                "id", "title", "is_published", "thumbnail_id", "thumbnail_url"
+            )[:MAX_DIGEST_COURSES]
+        )
+    if not rows:
+        return "Courses: (none yet)"
+    lines = ["Courses (id | title | cover | status):"]
+    for r in rows:
+        cover = "has cover" if (r["thumbnail_id"] or r["thumbnail_url"]) else "NO COVER"
+        status = "published" if r["is_published"] else "draft"
+        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status}")
+    return "\n".join(lines)
+
+
 def _user_turn(tenant, transcript, selections, message):
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
@@ -298,6 +347,7 @@ def _user_turn(tenant, transcript, selections, message):
         f"Niche: {answers.get('niche') or 'general'}",
         "Current pages:\n" + _pages_digest(tenant),
         _chrome_digest(tenant),
+        _courses_digest(tenant),
     ]
     if selections:
         parts.append(
@@ -413,6 +463,22 @@ def _card(tenant, action):
                     "field": field,
                     "curated_photo_id": row.pk,
                 },
+            ),
+        }
+    if isinstance(action, SetCourseCoverAction):
+        course_title, exclude_key = _course_for_cover(tenant, action.course_id)
+        answers = (tenant.wizard_state or {}).get("answers") or {}
+        row = photos.pick_photo(
+            action.description, answers.get("niche"), field="courseCover", exclude_s3_key=exclude_key
+        )
+        return {
+            "kind": "set_course_cover",
+            "title": f"Cover for '{course_title[:80]}': the photo '{row.title}'",
+            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "image_url": photos.preview_url(row),
+            "token": tokens.stash_action(
+                schema,
+                {"kind": "set_course_cover", "course_id": action.course_id, "curated_photo_id": row.pk},
             ),
         }
     if isinstance(action, EditThemeAction):

@@ -27,7 +27,8 @@ export type ActionKind =
   | "create_blog_post"
   | "edit_theme"
   | "edit_navbar"
-  | "set_block_image";
+  | "set_block_image"
+  | "set_course_cover";
 
 export interface ActionCard {
   kind: ActionKind;

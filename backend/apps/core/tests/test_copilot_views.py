@@ -454,3 +454,50 @@ def test_execute_set_block_image_gone_catalog_row_returns_400(client, coach):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "no longer available" in resp.json()["detail"]
+
+
+def test_execute_set_course_cover_materializes_photo_and_sets_thumbnail(client, coach):
+    from apps.core.models import CuratedPhoto
+    from apps.courses.models import Course
+    from apps.media.models import Photo
+
+    row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow",
+        tags="yoga, flow",
+        kind="hero",
+        image_key="platform/curated-photos/mat.jpg",
+    )
+    course = Course.objects.create(title="Yoga Basics", instructor=coach)
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_course_cover", "course_id": course.pk, "curated_photo_id": row.pk},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {
+        "kind": "set_course_cover",
+        "id": course.pk,
+        "title": "Yoga Basics",
+        "url": f"/admin/courses/{course.slug}",
+    }
+    course.refresh_from_db()
+    photo = Photo.objects.get(s3_key="platform/curated-photos/mat.jpg")
+    assert course.thumbnail_id == photo.pk
+
+
+def test_execute_set_course_cover_gone_course_returns_400(client, coach):
+    from apps.core.models import CuratedPhoto
+
+    row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow",
+        tags="yoga",
+        kind="hero",
+        image_key="platform/curated-photos/mat2.jpg",
+    )
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_course_cover", "course_id": 999999, "curated_photo_id": row.pk},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "no longer exists" in resp.json()["detail"]
