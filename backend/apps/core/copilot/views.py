@@ -118,6 +118,15 @@ def _execute(tenant, user, action):
         # Public pages read theme/navbar through the cached config object.
         cache.delete(f"tenant:{tenant.schema_name}:config")
         return result
+    if kind == "edit_seo":
+        with tenant_context(tenant):
+            cfg = TenantConfig.objects.first()
+            if cfg is None:
+                raise chrome.ChromeOpError("site is not set up yet")
+            cfg.meta_description = chrome.clean_meta_description(action.get("meta_description"))
+            cfg.save(update_fields=["meta_description"])
+        cache.delete(f"tenant:{tenant.schema_name}:config")
+        return {"kind": kind}
     if kind == "set_block_image":
         from django_tenants.utils import schema_context
 
@@ -244,6 +253,8 @@ def _audit_summary(action, result):
         return f"Switched theme to {action.get('theme')}"
     if kind == "edit_navbar":
         return "Updated the navbar"
+    if kind == "edit_seo":
+        return "Updated the search description"
     if kind == "set_block_image":
         return f"Set a new photo on {block} ({page})"
     if kind == "set_course_cover":

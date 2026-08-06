@@ -397,6 +397,22 @@ def test_execute_edit_theme_invalid_stashed_id_returns_400(client, coach):
     assert "theme must be one of" in resp.json()["detail"]
 
 
+def test_execute_edit_seo_writes_meta_description_and_busts_cache(client, coach):
+    from django.core.cache import cache
+
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_seo", "meta_description": "Better Google text"})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {"kind": "edit_seo"}
+    cfg.refresh_from_db()
+    assert cfg.meta_description == "Better Google text"
+    assert cache.get("tenant:shared_test:config") is None
+
+
 def test_execute_set_block_image_materializes_photo_and_busts_cache(client, coach):
     from django.core.cache import cache
 

@@ -86,3 +86,13 @@ def test_clean_links_rejects_bad_shapes():
         chrome.clean_links([{"label": "x", "href": "/a"}] * 21)
     with pytest.raises(chrome.ChromeOpError):
         chrome.clean_links([{"label": "", "href": ""}])
+
+
+def test_clean_meta_description_caps_and_strips():
+    assert chrome.clean_meta_description("  hello  ") == "hello"
+    assert len(chrome.clean_meta_description("x" * 500)) == 300
+
+
+def test_clean_meta_description_empty_raises():
+    with pytest.raises(chrome.ChromeOpError):
+        chrome.clean_meta_description("   ")

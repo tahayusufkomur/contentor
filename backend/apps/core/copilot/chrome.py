@@ -80,3 +80,10 @@ def clean_links(links):
     if not out:
         raise ChromeOpError("every navbar link needs a label and a safe link")
     return out
+
+
+def clean_meta_description(value):
+    text = " ".join(str(value or "").split())
+    if not text:
+        raise ChromeOpError("the description cannot be empty")
+    return text[:300]

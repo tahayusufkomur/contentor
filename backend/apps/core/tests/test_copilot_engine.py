@@ -1144,3 +1144,30 @@ def test_publish_blog_post_already_published_dropped_with_reason(tenant_with_pag
 def test_system_prompt_lists_publish_course_and_blog_post():
     assert "publish_course" in engine.SYSTEM_PROMPT
     assert "publish_blog_post" in engine.SYSTEM_PROMPT
+
+
+def test_edit_seo_card_shows_old_new_and_stashes_text(tenant_with_pages):
+    from apps.core.copilot import tokens as copilot_tokens
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    cfg.meta_description = "Old description"
+    cfg.save(update_fields=["meta_description"])
+    action = engine.EditSeoAction(kind="edit_seo", meta_description="New search description for Google")
+    card = engine._card(tenant_with_pages, action)
+    assert card["kind"] == "edit_seo"
+    assert card["title"] == "Update the site's search description"
+    assert card["detail"] == "This is the text Google shows under your site name."
+    assert len(card["changes"]) == 1
+    change = card["changes"][0]
+    assert change["page"] == "site"
+    assert change["field"] == "meta_description"
+    assert change["old"] == "Old description"
+    assert change["new"] == "New search description for Google"
+    assert card["token"]
+    stashed = copilot_tokens.take_action(card["token"], tenant_with_pages.schema_name)
+    assert stashed == {"kind": "edit_seo", "meta_description": "New search description for Google"}
+
+
+def test_system_prompt_lists_edit_seo():
+    assert "edit_seo" in engine.SYSTEM_PROMPT

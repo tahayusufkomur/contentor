@@ -62,6 +62,9 @@ SYSTEM_PROMPT = (
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
+    "- edit_seo: rewrite the site's meta description (the snippet search "
+    "engines show); write it yourself from the site's content when the coach "
+    "asks for 'better Google text'\n"
     "- set_block_image: put a photo from the platform's curated library on "
     "a hero or imageText block (block_id from the digest, plus a short "
     "description of the photo you want, e.g. 'calm sunlit yoga studio, "
@@ -210,6 +213,11 @@ class EditNavbarAction(BaseModel):
     show_install: bool | None = None
 
 
+class EditSeoAction(BaseModel):
+    kind: Literal["edit_seo"]
+    meta_description: str
+
+
 class SetBlockImageAction(BaseModel):
     kind: Literal["set_block_image"]
     page: str
@@ -275,6 +283,7 @@ CopilotAction = Annotated[
     | CreateBlogPostAction
     | EditThemeAction
     | EditNavbarAction
+    | EditSeoAction
     | SetBlockImageAction
     | SetCourseCoverAction
     | SetLogoAction
@@ -801,6 +810,28 @@ def _card(tenant, action):
             "title": "Update the navbar",
             "detail": ", ".join(parts),
             "token": tokens.stash_action(schema, {"kind": "edit_navbar", "updates": updates}),
+        }
+    if isinstance(action, EditSeoAction):
+        text = chrome.clean_meta_description(action.meta_description)
+        from apps.tenant_config.models import TenantConfig
+
+        with tenant_context(tenant):
+            cfg = TenantConfig.objects.first()
+        old = (cfg.meta_description if cfg else "") or ""
+        return {
+            "kind": "edit_seo",
+            "title": "Update the site's search description",
+            "detail": "This is the text Google shows under your site name.",
+            "changes": [
+                {
+                    "page": "site",
+                    "block_type": "",
+                    "field": "meta_description",
+                    "old": old[:200] or None,
+                    "new": text[:200],
+                }
+            ],
+            "token": tokens.stash_action(schema, {"kind": "edit_seo", "meta_description": text}),
         }
     if isinstance(action, CreateCourseAction):
         price = max(action.price, 0)
