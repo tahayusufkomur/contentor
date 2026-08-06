@@ -7,6 +7,7 @@ import AnnouncementHistory from "@/components/admin/announcement-history";
 import AnnouncementRecurringList from "@/components/admin/announcement-recurring-list";
 import AnnouncementTemplatesList from "@/components/admin/announcement-templates-list";
 import { RichEditorProvider } from "@/components/owner/rich-editor";
+import { ComposePrefill } from "@/lib/announcements";
 
 type Tab = "history" | "recurring" | "templates";
 
@@ -19,13 +20,24 @@ const TABS: { id: Tab; label: string }[] = [
 export default function NotificationsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [tab, setTab] = useState<Tab>("history");
+  const [reviewDraft, setReviewDraft] = useState<{
+    id: number;
+    prefill: ComposePrefill;
+  } | null>(null);
   const bump = () => setRefreshKey((k) => k + 1);
 
   return (
     <RichEditorProvider>
       <div className="mx-auto max-w-2xl space-y-6 p-4">
         <h1 className="text-lg font-semibold">Announcements</h1>
-        <AnnouncementCompose onSent={bump} />
+        <AnnouncementCompose
+          onSent={bump}
+          reviewDraft={reviewDraft}
+          onDraftReviewed={() => {
+            setReviewDraft(null);
+            bump();
+          }}
+        />
 
         <div className="inline-flex rounded-lg border border-border p-0.5 text-sm">
           {TABS.map((t) => (
@@ -40,7 +52,12 @@ export default function NotificationsPage() {
           ))}
         </div>
 
-        {tab === "history" && <AnnouncementHistory refreshKey={refreshKey} />}
+        {tab === "history" && (
+          <AnnouncementHistory
+            refreshKey={refreshKey}
+            onReviewDraft={setReviewDraft}
+          />
+        )}
         {tab === "recurring" && (
           <AnnouncementRecurringList refreshKey={refreshKey} />
         )}

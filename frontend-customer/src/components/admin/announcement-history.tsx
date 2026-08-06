@@ -5,19 +5,27 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { StaleContainer } from "@/components/ui/stale-container";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   AnnouncementListItem,
+  ComposePrefill,
   deleteAnnouncement,
+  draftToComposePrefill,
+  getAnnouncement,
   listAnnouncements,
 } from "@/lib/announcements";
 
 export default function AnnouncementHistory({
   refreshKey,
+  onReviewDraft,
 }: {
   refreshKey: number;
+  /** A draft's "Review & send" was clicked — hands the full draft content
+   * up so the page can load it into AnnouncementCompose as a template. */
+  onReviewDraft?: (draft: { id: number; prefill: ComposePrefill }) => void;
 }) {
   const [items, setItems] = useState<AnnouncementListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +55,12 @@ export default function AnnouncementHistory({
     <StaleContainer pending={loading && items.length > 0}>
       <div className="divide-y divide-border rounded-xl border border-border">
         {items.map((a) => (
-          <HistoryRow key={a.id} item={a} onRemoved={load} />
+          <HistoryRow
+            key={a.id}
+            item={a}
+            onRemoved={load}
+            onReviewDraft={onReviewDraft}
+          />
         ))}
       </div>
     </StaleContainer>
@@ -57,9 +70,11 @@ export default function AnnouncementHistory({
 function HistoryRow({
   item,
   onRemoved,
+  onReviewDraft,
 }: {
   item: AnnouncementListItem;
   onRemoved: () => void;
+  onReviewDraft?: (draft: { id: number; prefill: ComposePrefill }) => void;
 }) {
   const { run: remove, loading: removing } = useAsyncAction(
     async () => {
@@ -69,6 +84,14 @@ function HistoryRow({
       onRemoved();
     },
     { errorToast: "Failed to delete" },
+  );
+
+  const { run: review, loading: reviewing } = useAsyncAction(
+    async () => {
+      const draft = await getAnnouncement(item.id);
+      onReviewDraft?.({ id: draft.id, prefill: draftToComposePrefill(draft) });
+    },
+    { errorToast: "Couldn't load the draft" },
   );
 
   return (
@@ -98,6 +121,18 @@ function HistoryRow({
           )}
         </div>
       </div>
+      {item.status === "draft" && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={review}
+          loading={reviewing}
+          loadingText="Loading…"
+        >
+          Review & send
+        </Button>
+      )}
       <button
         onClick={remove}
         disabled={removing}

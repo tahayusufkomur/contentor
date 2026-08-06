@@ -75,6 +75,24 @@ export interface RecurringAnnouncement {
   is_active: boolean;
 }
 
+/** Fields AnnouncementCompose needs to prefill from a draft it's reviewing.
+ * "Draft as template": the compose form is seeded from the draft's content,
+ * but the draft row itself is never edited or status-transitioned — see
+ * draftReviewSubmitted() below. */
+export interface ComposePrefill {
+  title: string;
+  body: string;
+  link: string;
+}
+
+export const draftToComposePrefill = (
+  draft: AnnouncementDetail,
+): ComposePrefill => ({
+  title: draft.title,
+  body: draft.body,
+  link: draft.link || "",
+});
+
 export const previewAudience = (filters: AnnouncementFilters) =>
   clientFetch<{ audience: number; push_reachable: number }>(
     `${BASE}/preview/`,

@@ -24,9 +24,11 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   AnnouncementFilters,
   AnnouncementTemplate,
+  ComposePrefill,
   Frequency,
   createAnnouncement,
   createRecurring,
+  deleteAnnouncement,
   listTemplates,
   previewAudience,
   saveTemplate,
@@ -41,8 +43,16 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function AnnouncementCompose({
   onSent,
+  reviewDraft,
+  onDraftReviewed,
 }: {
   onSent: () => void;
+  /** A draft the coach picked "Review & send" on — prefills the form as a
+   * one-off template. The draft row itself is never edited: on successful
+   * send/schedule below, it's deleted (see draftId branch in `send`), never
+   * PATCHed or status-transitioned. */
+  reviewDraft?: { id: number; prefill: ComposePrefill } | null;
+  onDraftReviewed?: () => void;
 }) {
   const editor = useRichEditor();
   const [title, setTitle] = useState("");
@@ -78,6 +88,19 @@ export default function AnnouncementCompose({
       cancelled = true;
     };
   }, [filters]);
+
+  // "Review & send" a draft: seed the form as a one-off template, keyed on
+  // the draft id so switching to a different draft re-prefills.
+  useEffect(() => {
+    if (!reviewDraft) return;
+    setTitle(reviewDraft.prefill.title);
+    setBody(reviewDraft.prefill.body);
+    setLink(reviewDraft.prefill.link);
+    setLinkLabel(reviewDraft.prefill.link);
+    setMode("once");
+    setScheduledAt("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the draft id, not the whole object
+  }, [reviewDraft?.id]);
 
   const togglePlatform = (p: "ios" | "android" | "desktop") =>
     setFilters((f) => {
@@ -168,6 +191,20 @@ export default function AnnouncementCompose({
           scheduledAt ? "Announcement scheduled" : "Announcement sent",
         );
       }
+      if (reviewDraft) {
+        // The draft was only ever a template for the announcement just
+        // created above — clean it up so it doesn't linger as a duplicate.
+        // Best-effort: the real announcement already exists, so a delete
+        // failure here must not read as the send itself having failed.
+        try {
+          await deleteAnnouncement(reviewDraft.id);
+        } catch {
+          toast.error(
+            "Sent, but couldn't remove the draft it was reviewed from.",
+          );
+        }
+        onDraftReviewed?.();
+      }
       reset();
       onSent();
     },
@@ -189,6 +226,21 @@ export default function AnnouncementCompose({
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4">
+      {reviewDraft && (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-sm text-foreground">
+          <span>Reviewing draft — nothing sends until you confirm below.</span>
+          <button
+            type="button"
+            onClick={() => {
+              onDraftReviewed?.();
+              reset();
+            }}
+            className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <div className="flex justify-between">
         <button
           type="button"
