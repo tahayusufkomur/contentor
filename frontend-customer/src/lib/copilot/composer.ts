@@ -34,7 +34,9 @@ function blockText(node: TipTapNode): string {
       .map((item) => {
         // listItem content is paragraphs (possibly nested lists — flattened).
         const inner = (item.content ?? []).map(blockText).filter(Boolean);
-        return inner.map((line, i) => (i === 0 ? `- ${line}` : `  ${line}`)).join("\n");
+        return inner
+          .map((line, i) => (i === 0 ? `- ${line}` : `  ${line}`))
+          .join("\n");
       })
       .join("\n");
   }

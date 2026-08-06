@@ -25,13 +25,19 @@ describe("docToMessage", () => {
             {
               type: "listItem",
               content: [
-                { type: "paragraph", content: [{ type: "text", text: "the hero" }] },
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "the hero" }],
+                },
               ],
             },
             {
               type: "listItem",
               content: [
-                { type: "paragraph", content: [{ type: "text", text: "the footer" }] },
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "the footer" }],
+                },
               ],
             },
           ],
@@ -60,7 +66,9 @@ describe("docToMessage", () => {
   });
 
   it("returns empty string for an empty doc", () => {
-    expect(docToMessage({ type: "doc", content: [{ type: "paragraph" }] })).toBe("");
+    expect(
+      docToMessage({ type: "doc", content: [{ type: "paragraph" }] }),
+    ).toBe("");
   });
 
   it("keeps hard breaks inside a paragraph", () => {

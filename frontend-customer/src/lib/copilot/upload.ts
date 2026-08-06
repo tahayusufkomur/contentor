@@ -23,14 +23,17 @@ interface PhotoResponse {
 export async function uploadCopilotPhoto(file: File): Promise<AttachedPhoto> {
   if (!file.type.startsWith("image/")) throw new Error("not an image");
   if (file.size > MAX_ATTACH_BYTES) throw new Error("file too large");
-  const presign = await clientFetch<PresignResponse>("/api/v1/upload/presign/", {
-    method: "POST",
-    body: JSON.stringify({
-      filename: file.name,
-      content_type: file.type,
-      category: "photo",
-    }),
-  });
+  const presign = await clientFetch<PresignResponse>(
+    "/api/v1/upload/presign/",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        filename: file.name,
+        content_type: file.type,
+        category: "photo",
+      }),
+    },
+  );
   const put = await fetch(presign.upload_url, {
     method: "PUT",
     headers: presign.headers,
