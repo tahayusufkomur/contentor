@@ -60,7 +60,7 @@ export default async function CourseDetailPage({
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {/* Thumbnail */}
-          {course.thumbnail_url ? (
+          {course.thumbnail_signed_url || course.thumbnail_url ? (
             <div className="overflow-hidden rounded-xl">
               <img
                 src={course.thumbnail_signed_url || course.thumbnail_url}

@@ -12,7 +12,9 @@ export const PERSIST_MAX = 30;
 export function persistableEntries(entries: ChatEntry[]): ChatEntry[] {
   return entries
     .slice(-PERSIST_MAX)
-    .map(({ role, text, kind }) => (kind ? { role, text, kind } : { role, text }));
+    .map(({ role, text, kind }) =>
+      kind ? { role, text, kind } : { role, text },
+    );
 }
 
 function isEntry(e: unknown): e is ChatEntry {
@@ -36,7 +38,10 @@ export function loadEntries(): ChatEntry[] {
 
 export function saveEntries(entries: ChatEntry[]): void {
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(persistableEntries(entries)));
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify(persistableEntries(entries)),
+    );
   } catch {
     // Storage full or blocked — the chat still works, it just won't persist.
   }

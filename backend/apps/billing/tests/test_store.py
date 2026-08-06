@@ -172,3 +172,31 @@ class TestProductsList:
         client = make_client(student)
         response = client.get("/api/v1/billing/products/")
         assert response.status_code == 403, response.content
+
+
+@pytest.mark.django_db(transaction=True)
+class TestStoreThumbnails:
+    def test_photo_fk_cover_beats_legacy_thumbnail_url(self, paid_course, student):
+        """Covers set via the Photo FK (admin upload, copilot set_course_cover)
+        must reach the store's single thumbnail_url field as a signed URL —
+        the legacy raw-URL field alone used to shadow them into blankness."""
+        from apps.media.models import Photo
+
+        photo = Photo.objects.create(s3_key="platform/curated-photos/cover.jpg")
+        paid_course.thumbnail = photo
+        paid_course.thumbnail_url = ""
+        paid_course.save(update_fields=["thumbnail", "thumbnail_url"])
+
+        client = make_client(student)
+        response = client.get("/api/v1/billing/store/")
+        assert response.status_code == 200, response.content
+        item = next(i for i in response.json() if i["type"] == "course")
+        assert "cover.jpg" in item["thumbnail_url"]
+
+    def test_legacy_thumbnail_url_still_serves_when_no_fk(self, paid_course, student):
+        paid_course.thumbnail_url = "https://cdn.example/legacy.jpg"
+        paid_course.save(update_fields=["thumbnail_url"])
+        client = make_client(student)
+        response = client.get("/api/v1/billing/store/")
+        item = next(i for i in response.json() if i["type"] == "course")
+        assert item["thumbnail_url"] == "https://cdn.example/legacy.jpg"

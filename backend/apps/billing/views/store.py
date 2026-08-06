@@ -12,9 +12,20 @@ from apps.billing.serializers.store import StoreItemSerializer
 from apps.core.access import AccessInfo, ContentAccessService
 from apps.core.currency import tenant_charge_currency
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream
+
+
+def _thumbnail_url(obj):
+    """Prefer the Photo FK (admin uploads, copilot set_course_cover) over the
+    legacy raw-URL field — the same precedence the course serializer's
+    thumbnail_signed_url applies, collapsed into the store's single field."""
+    thumbnail = getattr(obj, "thumbnail", None)
+    if thumbnail is not None and thumbnail.s3_key:
+        return generate_presigned_download_url(thumbnail.s3_key)
+    return sign_if_s3_key(getattr(obj, "thumbnail_url", "") or "") or ""
 
 
 def _unauthenticated_access_info(price, currency=""):
@@ -46,7 +57,7 @@ def _collect_store_items():
     currency = tenant_charge_currency()
 
     # Courses: paid + published
-    for course in Course.objects.filter(pricing_type="paid", is_published=True):
+    for course in Course.objects.filter(pricing_type="paid", is_published=True).select_related("thumbnail"):
         items.append(
             {
                 "id": course.pk,
@@ -55,7 +66,7 @@ def _collect_store_items():
                 "type": "course",
                 "price": course.price,
                 "currency": currency,
-                "thumbnail_url": course.thumbnail_url or "",
+                "thumbnail_url": _thumbnail_url(course),
                 "is_active": course.is_published,
                 "item_count": 0,
                 "original_price": None,
@@ -82,7 +93,7 @@ def _collect_store_items():
         )
 
     # LiveClasses: paid
-    for lc in LiveClass.objects.filter(pricing_type="paid"):
+    for lc in LiveClass.objects.filter(pricing_type="paid").select_related("thumbnail"):
         items.append(
             {
                 "id": lc.pk,
@@ -91,7 +102,7 @@ def _collect_store_items():
                 "type": "live_class",
                 "price": lc.price,
                 "currency": currency,
-                "thumbnail_url": lc.thumbnail_url or "",
+                "thumbnail_url": _thumbnail_url(lc),
                 "is_active": True,
                 "item_count": 0,
                 "original_price": None,
@@ -100,7 +111,7 @@ def _collect_store_items():
         )
 
     # LiveStreams: paid
-    for ls in LiveStream.objects.filter(pricing_type="paid"):
+    for ls in LiveStream.objects.filter(pricing_type="paid").select_related("thumbnail"):
         items.append(
             {
                 "id": ls.pk,
@@ -109,7 +120,7 @@ def _collect_store_items():
                 "type": "live_stream",
                 "price": ls.price,
                 "currency": currency,
-                "thumbnail_url": ls.thumbnail_url or "",
+                "thumbnail_url": _thumbnail_url(ls),
                 "is_active": True,
                 "item_count": 0,
                 "original_price": None,
@@ -127,7 +138,7 @@ def _collect_store_items():
                 "type": "bundle",
                 "price": bundle.price,
                 "currency": bundle.currency,
-                "thumbnail_url": bundle.thumbnail_url or "",
+                "thumbnail_url": _thumbnail_url(bundle),
                 "is_active": bundle.is_active,
                 "item_count": bundle.items.count(),
                 "original_price": _bundle_original_price(bundle),

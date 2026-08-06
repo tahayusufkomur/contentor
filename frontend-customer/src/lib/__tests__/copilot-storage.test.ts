@@ -42,7 +42,11 @@ describe("persistableEntries", () => {
       cards: [{ kind: "add_block", title: "t", detail: "", token: "x" }],
     });
     const [kept] = persistableEntries([withCard]);
-    expect(kept).toEqual({ role: "assistant", text: "message 1", kind: "actions" });
+    expect(kept).toEqual({
+      role: "assistant",
+      text: "message 1",
+      kind: "actions",
+    });
     expect("cards" in kept).toBe(false);
   });
 });

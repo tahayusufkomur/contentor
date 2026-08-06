@@ -83,7 +83,7 @@ export default function DashboardPage() {
                 key={course.id}
                 className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5"
               >
-                {course.thumbnail_url ? (
+                {course.thumbnail_signed_url || course.thumbnail_url ? (
                   <div className="relative overflow-hidden">
                     <img
                       src={course.thumbnail_signed_url || course.thumbnail_url}

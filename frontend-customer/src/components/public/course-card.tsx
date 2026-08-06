@@ -29,9 +29,13 @@ export function CourseCard({
   showPrice = true,
   showMeta = true,
 }: CourseCardProps) {
-  const thumb = course.thumbnail_url ? (
+  // Covers set via the Photo FK (admin upload, copilot set_course_cover)
+  // arrive as thumbnail_signed_url with the legacy thumbnail_url empty —
+  // the gate must accept either source, like the admin list does.
+  const thumbSrc = course.thumbnail_signed_url || course.thumbnail_url;
+  const thumb = thumbSrc ? (
     <img
-      src={course.thumbnail_signed_url || course.thumbnail_url}
+      src={thumbSrc}
       alt={course.title}
       className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105"
     />
