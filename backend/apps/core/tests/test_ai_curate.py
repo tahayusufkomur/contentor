@@ -43,6 +43,28 @@ def test_brief_from_tenant_defaults_on_empty_state():
     assert brief.followups == ()
 
 
+def test_brief_with_turn_style_layers_onto_real_description():
+    tenant = _tenant({"niche": "yoga", "description": "Vinyasa for busy professionals"})
+    brief = ai_curate.brief_with_turn_style(tenant, "calm sunlit studio, warm tones")
+    assert brief.niche == "yoga"  # tenant's real profile survives
+    assert brief.description == "Vinyasa for busy professionals calm sunlit studio, warm tones"
+
+
+def test_brief_with_turn_style_no_turn_text_keeps_tenant_brief_only():
+    """Regression guard: an empty/whitespace per-turn description must not
+    blank out the tenant's own onboarding description — the bug this whole
+    function exists to fix was the per-turn text being the ONLY signal."""
+    tenant = _tenant({"niche": "yoga", "description": "Vinyasa for busy professionals"})
+    brief = ai_curate.brief_with_turn_style(tenant, "   ")
+    assert brief.description == "Vinyasa for busy professionals"
+
+
+def test_brief_with_turn_style_empty_tenant_description_uses_turn_text_alone():
+    tenant = _tenant({"niche": "yoga", "description": ""})
+    brief = ai_curate.brief_with_turn_style(tenant, "calm sunlit studio")
+    assert brief.description == "calm sunlit studio"
+
+
 def test_brief_block_contains_coach_words_and_language():
     brief = ai_curate.CoachBrief(
         niche="yoga", description="Calm vinyasa", followups=(("Who?", "Beginners"),), locale="tr", brand_name="Glow"

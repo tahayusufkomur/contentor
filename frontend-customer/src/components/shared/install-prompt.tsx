@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import { useTranslations } from "next-intl";
@@ -22,6 +22,7 @@ export function InstallPrompt() {
   );
   const [showIosHint, setShowIosHint] = useState(false);
   const [hidden, setHidden] = useState(true);
+  const bannerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (localStorage.getItem(DISMISS_KEY)) return;
@@ -44,6 +45,29 @@ export function InstallPrompt() {
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
+
+  // Publish how much of the viewport bottom the banner occupies so other
+  // floating UI (the copilot launcher) can lift itself above it. Cleared
+  // whenever the banner unmounts or hides.
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const update = () =>
+      root.style.setProperty(
+        "--install-banner-clearance",
+        `${Math.ceil(window.innerHeight - el.getBoundingClientRect().top)}px`,
+      );
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+      root.style.removeProperty("--install-banner-clearance");
+    };
+  }, [hidden, deferred, showIosHint]);
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
@@ -70,6 +94,7 @@ export function InstallPrompt() {
 
   return (
     <div
+      ref={bannerRef}
       className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm text-foreground shadow-lg"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
       role="dialog"

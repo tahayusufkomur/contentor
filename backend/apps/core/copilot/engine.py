@@ -45,7 +45,10 @@ SYSTEM_PROMPT = (
     "price (course_id from the course list); modules cannot be changed "
     "here\n"
     "- edit_event: reschedule or update an upcoming event (event_id + kind "
-    "from the events list); date must be in the future\n"
+    "from the events list); date must be in the future; there is no "
+    "individual page per event — if asked for a direct link, say so plainly "
+    "and point to /admin/live (Live Events admin), where they can open it "
+    "from the list; don't hedge or apologize about it\n"
     "- edit_blog_post: update an existing post's title, summary, or body "
     "(post_id from the blog list)\n"
     "- publish_course / publish_blog_post: make a draft live (id from the "
@@ -77,15 +80,27 @@ SYSTEM_PROMPT = (
     "(course_id from the course list in the user turn, plus a short "
     "description of the shot); when the coach asks about several courses, "
     "propose one card per course that needs a cover\n"
-    "- set_logo: put a ready-made logo from the platform library on the "
-    "site (describe the style you want); propose again with a different "
-    "description for another style\n"
+    "- set_logo: put a logo on the site — a ready-made one from the "
+    "platform library (describe the style you want; propose again with a "
+    "different description for another style) or a photo the coach "
+    "attached (pass its photo_id, leave description empty)\n"
     "- when the user turn lists photos the coach ATTACHED, prefer them: "
-    "pass the attached photo_id to set_block_image or set_course_cover "
-    "(leave description empty) instead of describing a library pick, or to "
-    "create_blog_post / edit_blog_post to make it the post's cover image; "
-    "if the coach attached a photo but the target is unclear, ask where "
-    "they want it\n"
+    "pass the attached photo_id to set_block_image, set_course_cover or "
+    "set_logo (leave description empty) instead of describing a library "
+    "pick, or to create_blog_post / edit_blog_post to make it the post's "
+    "cover image; photo_ids from [attached ...] notes in earlier coach "
+    "turns stay valid — reuse them when the coach refers back to a photo "
+    "they already attached (each note says what the photo shows); if the "
+    "coach sent photos with no request at all, react in one warm sentence "
+    "to what each photo shows and ask where they want it (logo, a page "
+    "section, a course cover, a blog cover) — or propose a placement card "
+    "when one placement is the obvious fit; when an attached photo has no "
+    "'shows:' note, also ask the coach what the photo shows\n"
+    "- note_photo: save a short description of what a coach's photo shows "
+    "(photo_id + description) onto their media library — propose it when "
+    "the coach tells you what an attached photo is (bundle it with the "
+    "placement card when they also said where it goes); saved notes are "
+    "how their photos are found again later\n"
     "- edit_block_fields: change specific fields on one existing block "
     "(page + block_id from the digest, fields per the block field guide "
     "below) — prefer this over edit_pages for single-block changes\n"
@@ -267,6 +282,13 @@ class SetCourseCoverAction(BaseModel):
 class SetLogoAction(BaseModel):
     kind: Literal["set_logo"]
     description: str = ""
+    photo_id: str | None = None  # a photo the coach attached to their message
+
+
+class NotePhotoAction(BaseModel):
+    kind: Literal["note_photo"]
+    photo_id: str
+    description: str
 
 
 class EditCourseAction(BaseModel):
@@ -322,6 +344,7 @@ CopilotAction = Annotated[
     | SetBlockImageAction
     | SetCourseCoverAction
     | SetLogoAction
+    | NotePhotoAction
     | EditCourseAction
     | EditEventAction
     | EditBlogPostAction
@@ -350,10 +373,15 @@ def _tenant_pages(tenant):
 
 def _pages_digest(tenant):
     """Bounded snapshot for the user turn: per page, each block's id, type,
-    hidden flag, and current writable-field values (truncated) so the model
-    can propose precise edit_block_fields changes."""
+    hidden flag, current writable-field values (truncated), and — for hero/
+    imageText blocks — what photo (if any) is set, so "what photo is on the
+    About block?" has an answer instead of the model seeing nothing (the
+    image dict isn't in BLOCK_SCHEMA, so the field loop below never touches
+    it on its own)."""
+    pages = _tenant_pages(tenant)
+    captions = photos.image_captions(tenant, pages)
     lines = []
-    for page, page_value in _tenant_pages(tenant).items():
+    for page, page_value in pages.items():
         blocks_ = blocks.page_blocks(page_value)
         if blocks_ is None:
             continue
@@ -368,6 +396,13 @@ def _pages_digest(tenant):
                 for f in schema
                 if b.get(f) not in (None, "")
             )
+            image_field = photos.IMAGE_FIELDS.get(b.get("type"))
+            image_value = b.get(image_field) if image_field else None
+            if isinstance(image_value, dict) and image_value.get("photo_id"):
+                caption = captions.get(str(image_value["photo_id"]), "photo")
+                vals = f'{vals} {image_field}=photo("{caption}")'.strip()
+            elif image_field:
+                vals = f"{vals} {image_field}=(none set)".strip()
             lines.append(f"  {b.get('id')} {b.get('type')}{flags} {vals}".rstrip())
     return "\n".join(lines) or "(no pages yet)"
 
@@ -589,11 +624,16 @@ def _user_turn(tenant, transcript, selections, message, attachments=None):
             + json.dumps(list(selections)[:MAX_SELECTIONS], ensure_ascii=False)
         )
     if attachments:
-        lines = [f"  photo_id={a['id']} title='{str(a.get('title') or 'untitled')[:60]}'" for a in attachments]
+        lines = []
+        for a in attachments:
+            line = f"  photo_id={a['id']} title='{str(a.get('title') or 'untitled')[:60]}'"
+            if a.get("desc"):
+                line += f" shows: {str(a['desc'])[:200]}"
+            lines.append(line)
         parts.append(
             "The coach attached these photos from their device (already in "
             "their media library). To place one, pass its photo_id to "
-            "set_block_image or set_course_cover:\n" + "\n".join(lines)
+            "set_block_image, set_course_cover or set_logo:\n" + "\n".join(lines)
         )
     for entry in list(transcript)[-MAX_TRANSCRIPT:]:
         role = "Coach" if entry.get("role") == "coach" else "Assistant"
@@ -706,12 +746,13 @@ def _card(tenant, action):
                     },
                 ),
             }
-        answers = (tenant.wizard_state or {}).get("answers") or {}
-        row = photos.pick_photo(action.description, answers.get("niche"), field=field, exclude_s3_key=exclude_key)
+        row = photos.pick_photo(action.description, tenant, field=field, exclude_s3_key=exclude_key)
         return {
             "kind": "set_block_image",
             "title": f"Use the photo '{row.title}'",
             "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            # Curated pick → the widget plays its brief photo-reveal.
+            "reveal": True,
             "image_url": photos.preview_url(row),
             "token": tokens.stash_action(
                 schema,
@@ -738,28 +779,50 @@ def _card(tenant, action):
                     {"kind": "set_course_cover", "course_id": action.course_id, "tenant_photo_id": str(photo.pk)},
                 ),
             }
-        answers = (tenant.wizard_state or {}).get("answers") or {}
-        row = photos.pick_photo(
-            action.description, answers.get("niche"), field="courseCover", exclude_s3_key=exclude_key
-        )
+        row = photos.pick_photo(action.description, tenant, field="courseCover", exclude_s3_key=exclude_key)
         return {
             "kind": "set_course_cover",
             "title": f"Cover for '{course_title[:80]}': the photo '{row.title}'",
             "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "reveal": True,
             "image_url": photos.preview_url(row),
             "token": tokens.stash_action(
                 schema,
                 {"kind": "set_course_cover", "course_id": action.course_id, "curated_photo_id": row.pk},
             ),
         }
+    if isinstance(action, NotePhotoAction):
+        description = " ".join(str(action.description or "").split())[:300]
+        if not description:
+            raise photos.PhotoOpError("the photo note is empty")
+        photo = _tenant_photo(tenant, action.photo_id)
+        return {
+            "kind": "note_photo",
+            "title": f"Remember this photo as: {description[:100]}",
+            "detail": "Saved to your media library so it can be found again later.",
+            "image_url": photos.tenant_photo_url(photo),
+            "token": tokens.stash_action(
+                schema,
+                {"kind": "note_photo", "tenant_photo_id": str(photo.pk), "description": description},
+            ),
+        }
     if isinstance(action, SetLogoAction):
-        answers = (tenant.wizard_state or {}).get("answers") or {}
+        if action.photo_id:
+            photo = _tenant_photo(tenant, action.photo_id)
+            return {
+                "kind": "set_logo",
+                "title": f"Use your photo '{photo.title or 'untitled'}' as the logo",
+                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "image_url": photos.tenant_photo_url(photo),
+                "token": tokens.stash_action(schema, {"kind": "set_logo", "tenant_photo_id": str(photo.pk)}),
+            }
         exclude_key = logos.current_logo_key(tenant)
-        row = logos.pick_logo(action.description, answers.get("niche"), exclude_s3_key=exclude_key)
+        row = logos.pick_logo(action.description, tenant, exclude_s3_key=exclude_key)
         return {
             "kind": "set_logo",
             "title": f"Use the logo '{row.title}'",
             "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "reveal": True,
             "image_url": logos.preview_url(row),
             "token": tokens.stash_action(schema, {"kind": "set_logo", "curated_logo_id": row.pk}),
         }

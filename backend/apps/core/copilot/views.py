@@ -51,8 +51,8 @@ def _clean_attachments(tenant, raw):
     if not ids:
         return []
     with tenant_context(tenant):
-        rows = list(Photo.objects.filter(pk__in=ids).values("id", "title"))
-    return [{"id": str(r["id"]), "title": r["title"]} for r in rows]
+        rows = list(Photo.objects.filter(pk__in=ids).values("id", "title", "alt_text"))
+    return [{"id": str(r["id"]), "title": r["title"], "desc": r["alt_text"]} for r in rows]
 
 
 @api_view(["POST"])
@@ -88,6 +88,34 @@ def copilot_converse(request):
             ai_compose.record_spend(tenant.schema_name, cost)
 
     return stream_response(frames())
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def copilot_photo_describe(request):
+    """Vision caption for a just-uploaded attachment: what does the photo
+    show? Saved to Photo.alt_text so the copilot (and media search) can
+    refer to it later. Best-effort — always 200 with a possibly-empty
+    description; an upload must never fail on a describe hiccup."""
+    tenant = connection.tenant
+    data = request.data if isinstance(request.data, dict) else {}
+    photo_id = str(data.get("photo_id") or "")
+    if not photo_id or not ai_compose.compose_available():
+        return Response({"description": ""})
+    from apps.media.models import Photo
+
+    cost = Decimal("0")
+    description = ""
+    try:
+        with tenant_context(tenant):
+            photo = Photo.objects.filter(pk=photo_id).first()
+            if photo is not None:
+                description, cost = photos.describe_tenant_photo(photo)
+    except Exception:
+        logger.exception("copilot describe failed schema=%s", tenant.schema_name)
+    finally:
+        ai_compose.record_spend(tenant.schema_name, cost)
+    return Response({"description": description})
 
 
 _CREATORS = {
@@ -233,23 +261,52 @@ def _execute(tenant, user, action):
             "thumbnail_id": str(old_thumbnail_id) if old_thumbnail_id else None,
         }
         return result, inverse
+    if kind == "note_photo":
+        from apps.media.models import Photo
+
+        with tenant_context(tenant):
+            photo = Photo.objects.filter(pk=action.get("tenant_photo_id")).first()
+            if photo is None:
+                raise photos.PhotoOpError("that photo is not in your library")
+            old_alt_text = photo.alt_text
+            photo.alt_text = str(action.get("description") or "")[:300]
+            photo.save(update_fields=["alt_text"])
+        # UUID pk → stringify for the JSONField inverse (same hazard as
+        # restore_course_cover above).
+        inverse = {
+            "kind": "restore_photo_note",
+            "tenant_photo_id": str(photo.pk),
+            "alt_text": old_alt_text,
+        }
+        return {"kind": kind}, inverse
     if kind == "set_logo":
         from django_tenants.utils import schema_context
 
         from apps.core.curated_logos.materialize import materialize_curated_logo
         from apps.core.models import CuratedLogo
 
-        with schema_context("public"):
-            row = CuratedLogo.objects.filter(pk=action.get("curated_logo_id"), enabled=True).first()
-        if row is None:
-            raise logos.LogoOpError("that logo is no longer available")
+        row = None
+        if not action.get("tenant_photo_id"):
+            with schema_context("public"):
+                row = CuratedLogo.objects.filter(pk=action.get("curated_logo_id"), enabled=True).first()
+            if row is None:
+                raise logos.LogoOpError("that logo is no longer available")
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise logos.LogoOpError("site is not set up yet")
             old_logo_id = cfg.logo_id
             old_logo_url = cfg.logo_url
-            cfg.logo = materialize_curated_logo(row)
+            if action.get("tenant_photo_id"):
+                # Coach-attached photo: already a tenant media.Photo row.
+                from apps.media.models import Photo
+
+                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
+                if photo is None:
+                    raise photos.PhotoOpError("that attached photo is not in your library")
+                cfg.logo = photo
+            else:
+                cfg.logo = materialize_curated_logo(row)
             cfg.logo_url = ""
             # Setup Assistant parity: a logo counts as "look edited".
             progress = dict(cfg.setup_progress or {})
@@ -429,6 +486,15 @@ def _apply_inverse(tenant, inverse):
 
     kind = inverse.get("kind")
     with tenant_context(tenant):
+        if kind == "restore_photo_note":
+            from apps.media.models import Photo
+
+            photo = Photo.objects.filter(pk=inverse.get("tenant_photo_id")).first()
+            if photo is None:
+                raise blocks.BlockOpError("that photo no longer exists")
+            photo.alt_text = str(inverse.get("alt_text") or "")
+            photo.save(update_fields=["alt_text"])
+            return
         if kind == "restore_course_cover":
             from apps.courses.models import Course
 
@@ -515,9 +581,9 @@ CHAT_TITLE_MAX = 120
 
 def _clean_chat_entries(raw):
     """Server-side guard on the persisted transcript: same shape the widget
-    stored in localStorage — {"role", "text", "kind"?} — capped to the
-    trailing MAX_CHAT_ENTRIES with bounded strings. Anything else is dropped
-    silently; the chat still works, it just doesn't keep junk."""
+    stored in localStorage — {"role", "text", "kind"?, "attached"?} — capped
+    to the trailing MAX_CHAT_ENTRIES with bounded strings. Anything else is
+    dropped silently; the chat still works, it just doesn't keep junk."""
     if not isinstance(raw, list):
         return []
     cleaned = []
@@ -530,6 +596,22 @@ def _clean_chat_entries(raw):
         entry = {"role": role, "text": str(item.get("text") or "")[:CHAT_ENTRY_TEXT_MAX]}
         if isinstance(item.get("kind"), str) and item["kind"]:
             entry["kind"] = item["kind"][:20]
+        attached = item.get("attached")
+        if isinstance(attached, list):
+            kept = [
+                {
+                    "id": str(a["id"])[:64],
+                    "title": str(a.get("title") or "")[:120],
+                    **({"desc": str(a["desc"])[:300]} if a.get("desc") else {}),
+                    # Presigned thumbnail for the chat bubble; the widget
+                    # degrades to a title chip once it expires.
+                    **({"signed_url": str(a["signed_url"])[:2000]} if a.get("signed_url") else {}),
+                }
+                for a in attached[:MAX_ATTACHED_PHOTOS]
+                if isinstance(a, dict) and a.get("id")
+            ]
+            if kept:
+                entry["attached"] = kept
         cleaned.append(entry)
     return cleaned[-MAX_CHAT_ENTRIES:]
 

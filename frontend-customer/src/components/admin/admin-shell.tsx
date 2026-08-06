@@ -18,6 +18,7 @@ import {
   useEntitlements,
 } from "@/components/admin/entitlements-provider";
 import { useTenant } from "@/hooks/use-tenant";
+import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 import { buildAdminNav } from "@/lib/admin-nav";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
 import { useSetupStatus } from "@/lib/setup-assistant";
@@ -49,6 +50,9 @@ export function AdminShell({ children, user }: AdminShellProps) {
 function AdminShellContent({ children, user }: AdminShellProps) {
   const t = useTranslations("admin");
   const [cmdOpen, setCmdOpen] = useState(false);
+  // Floating UI (copilot drawer) starts below the header bars via this.
+  const topbarRef = useRef<HTMLDivElement | null>(null);
+  usePublishTopnavClearance(topbarRef);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -154,8 +158,13 @@ function AdminShellContent({ children, user }: AdminShellProps) {
           }
         />
 
-        {/* Top Header Bar with Global Cmd+K Search & View Site */}
-        <div className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4">
+        {/* Top Header Bar with Global Cmd+K Search & View Site. The ref sits
+            below MobileHeader in flow, so the published clearance covers
+            both bars — the copilot drawer starts beneath them. */}
+        <div
+          ref={topbarRef}
+          className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4"
+        >
           <button
             type="button"
             onClick={() => setCmdOpen(true)}

@@ -124,6 +124,7 @@
     "removeAttachment": "Fotoğrafı kaldır",
     "attachTooLarge": "Bu fotoğraf çok büyük (en fazla 10 MB).",
     "attachFailed": "Fotoğraf yüklenemedi. Lütfen tekrar deneyin.",
-    "attachedOnly": "(bir fotoğraf gönderdi)"
+    "attachedOnly": "(bir fotoğraf gönderdi)",
+    "creatingPhoto": "Fotoğrafınız oluşturuluyor…"
   }
 }

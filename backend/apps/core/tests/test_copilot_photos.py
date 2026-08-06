@@ -4,6 +4,8 @@ description — no extra AI call); a block's current photo is traced back to
 its curated source by s3_key so a re-pick can exclude it. DB writes happen
 in the execute view, not here."""
 
+from types import SimpleNamespace
+
 import pytest
 
 from apps.core.copilot import photos
@@ -22,6 +24,15 @@ def _row(title, tags, kind="hero", image_key=None, enabled=True):
     )
 
 
+def _tenant(niche="yoga", description="", name=""):
+    """CoachBrief.from_tenant only reads .wizard_state and .name — a stand-in
+    is enough, no tenant schema needed for these pure-pick tests."""
+    return SimpleNamespace(
+        wizard_state={"answers": {"niche": niche, "description": description}},
+        name=name,
+    )
+
+
 def test_image_field_for_maps_supported_block_types():
     assert photos.image_field_for("hero") == "bgImage"
     assert photos.image_field_for("imageText") == "image"
@@ -35,14 +46,37 @@ def test_image_field_for_rejects_unsupported_type():
 def test_pick_photo_prefers_description_overlap():
     _row("City skyline", "city, urban, skyline")
     match = _row("Sunlit yoga studio", "yoga, studio, calm, warm")
-    picked = photos.pick_photo("calm sunlit yoga studio", "yoga", field="bgImage")
+    picked = photos.pick_photo("calm sunlit yoga studio", _tenant(), field="bgImage")
+    assert picked.pk == match.pk
+
+
+def test_pick_photo_uses_tenant_niche_even_with_no_turn_description():
+    """Regression: the model's per-turn description used to be the ONLY
+    signal — an empty/generic one degraded the pick to catalog position
+    order regardless of the coach's real niche. The tenant's saved niche
+    must still steer the pick with no per-turn text at all."""
+    _row("Gym Strength Session", "fitness, gym, strength, workout")
+    match = _row("Studio Yoga Flow", "yoga, studio, flexibility, calm")
+    picked = photos.pick_photo("", _tenant(niche="yoga"), field="bgImage")
+    assert picked.pk == match.pk
+
+
+def test_pick_photo_uses_tenant_onboarding_description_not_just_niche():
+    """The coach's own onboarding words ('in their own words') must count
+    even when the niche string alone doesn't share vocabulary with the
+    catalog's tags."""
+    _row("Gym Strength Session", "fitness, gym, strength, workout")
+    match = _row("Sunrise Meditation", "yoga, meditation, mindfulness, calm")
+    picked = photos.pick_photo(
+        "", _tenant(niche="pole_dance_instructor", description="I teach mindful meditation flows"), field="bgImage"
+    )
     assert picked.pk == match.pk
 
 
 def test_pick_photo_excludes_current_photo_key():
     first = _row("Sunlit yoga studio", "yoga, studio, calm")
     second = _row("Yoga mat close-up", "yoga, mat, floor", kind="stock")
-    picked = photos.pick_photo("yoga", "yoga", field="image", exclude_s3_key=first.image_key)
+    picked = photos.pick_photo("yoga", _tenant(), field="image", exclude_s3_key=first.image_key)
     assert picked.pk == second.pk
 
 
@@ -50,13 +84,13 @@ def test_pick_photo_ignores_disabled_and_non_platform_keys():
     _row("Disabled", "yoga", enabled=False)
     _row("Outside prefix", "yoga", image_key="tenants/evil.jpg")
     with pytest.raises(photos.PhotoOpError):
-        photos.pick_photo("yoga", "yoga", field="bgImage")
+        photos.pick_photo("yoga", _tenant(), field="bgImage")
 
 
 def test_pick_photo_hero_field_only_offers_hero_kind():
     _row("Yoga icon", "yoga", kind="icon")
     with pytest.raises(photos.PhotoOpError):
-        photos.pick_photo("yoga", "yoga", field="bgImage")
+        photos.pick_photo("yoga", _tenant(), field="bgImage")
 
 
 def test_apply_block_image_sets_field_and_preserves_rest():
@@ -108,26 +142,37 @@ def test_pick_logo_matches_description():
     CuratedLogo.objects.create(
         title="Barbell mark", tags="gym,strength", image_key="platform/curated-logos/barbell.png", enabled=True
     )
-    row = logos.pick_logo("a calm lotus flower", "yoga")
+    row = logos.pick_logo("a calm lotus flower", _tenant())
+    assert row.title == "Lotus mark"
+
+
+def test_pick_logo_uses_tenant_niche_even_with_no_turn_description():
+    CuratedLogo.objects.create(
+        title="Barbell mark", tags="gym,strength", image_key="platform/curated-logos/barbell.png", enabled=True
+    )
+    CuratedLogo.objects.create(
+        title="Lotus mark", tags="yoga,calm,flower", image_key="platform/curated-logos/lotus.png", enabled=True
+    )
+    row = logos.pick_logo("", _tenant(niche="yoga"))
     assert row.title == "Lotus mark"
 
 
 def test_pick_logo_excludes_current():
     CuratedLogo.objects.create(title="Only", tags="yoga", image_key="platform/curated-logos/only.png", enabled=True)
     with pytest.raises(logos.LogoOpError):
-        logos.pick_logo("anything", "yoga", exclude_s3_key="platform/curated-logos/only.png")
+        logos.pick_logo("anything", _tenant(), exclude_s3_key="platform/curated-logos/only.png")
 
 
 def test_pick_logo_ignores_disabled_and_non_platform_keys():
     _logo_row("Disabled", "yoga", enabled=False)
     _logo_row("Outside prefix", "yoga", image_key="tenants/evil.png")
     with pytest.raises(logos.LogoOpError):
-        logos.pick_logo("yoga", "yoga")
+        logos.pick_logo("yoga", _tenant())
 
 
 def test_pick_logo_no_rows_raises():
     with pytest.raises(logos.LogoOpError):
-        logos.pick_logo("anything", "yoga")
+        logos.pick_logo("anything", _tenant())
 
 
 def test_materialize_curated_logo_creates_tenant_photo(tenant_ctx):
@@ -142,3 +187,76 @@ def test_materialize_curated_logo_creates_tenant_photo(tenant_ctx):
     assert Photo.objects.filter(s3_key=row.image_key).count() == 1
     assert photo.width is None and photo.height is None
     assert photo.alt_text == "Mark"
+
+
+# ── describe_tenant_photo: vision caption onto alt_text ──────────────────────
+
+
+def _png_bytes():
+    import io
+
+    from PIL import Image
+
+    buf = io.BytesIO()
+    Image.new("RGB", (8, 8), "white").save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def test_describe_tenant_photo_saves_alt_text(tenant_ctx, monkeypatch):
+    import io
+    from decimal import Decimal
+    from types import SimpleNamespace
+    from unittest import mock
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/ballet.png", title="IMG_1234")
+    monkeypatch.setattr("apps.core.ai.supports_vision", lambda: True)
+    fake_client = mock.Mock()
+    fake_client.get_object.return_value = {"Body": io.BytesIO(_png_bytes())}
+    monkeypatch.setattr("apps.core.storage.get_s3_client", lambda external=False: fake_client)
+    monkeypatch.setattr(
+        "apps.core.ai.structured_messages",
+        lambda **kw: (
+            SimpleNamespace(description="Silhouette of a ballet dancer, warm backlight", keywords=["ballet"]),
+            Decimal("0.001"),
+            "m",
+        ),
+    )
+
+    desc, cost = photos.describe_tenant_photo(photo)
+    assert desc == "Silhouette of a ballet dancer, warm backlight"
+    assert cost == Decimal("0.001")
+    photo.refresh_from_db()
+    assert photo.alt_text == desc
+
+
+def test_describe_tenant_photo_skips_without_vision(tenant_ctx, monkeypatch):
+    from decimal import Decimal
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/ballet.png", title="IMG_1234")
+    monkeypatch.setattr("apps.core.ai.supports_vision", lambda: False)
+
+    def _boom(**kw):
+        raise AssertionError("vision call must not happen on the cli provider")
+
+    monkeypatch.setattr("apps.core.ai.structured_messages", _boom)
+    assert photos.describe_tenant_photo(photo) == ("", Decimal("0"))
+    photo.refresh_from_db()
+    assert photo.alt_text == ""
+
+
+def test_describe_tenant_photo_unreadable_bytes_is_best_effort(tenant_ctx, monkeypatch):
+    from decimal import Decimal
+    from unittest import mock
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/broken.png", title="B")
+    monkeypatch.setattr("apps.core.ai.supports_vision", lambda: True)
+    fake_client = mock.Mock()
+    fake_client.get_object.side_effect = RuntimeError("no such key")
+    monkeypatch.setattr("apps.core.storage.get_s3_client", lambda external=False: fake_client)
+    assert photos.describe_tenant_photo(photo) == ("", Decimal("0"))

@@ -107,6 +107,28 @@ describe("chat state", () => {
       text: "hi",
     });
   });
+
+  it("folds attached photos into the text so later turns can reuse the ids", () => {
+    const t = toTranscript([
+      {
+        role: "coach",
+        text: "here is my photo",
+        attached: [
+          {
+            id: "abc-123",
+            title: "My mark",
+            desc: "a ballet dancer",
+            // UI-only — must never leak into the model transcript.
+            signed_url: "https://s3.example/thumb.png?sig=x",
+          },
+          { id: "def-456", title: "" },
+        ],
+      },
+    ]);
+    expect(t[0].text).toBe(
+      "here is my photo\n[attached photos: photo_id=abc-123 'My mark' — a ballet dancer, photo_id=def-456 'untitled']",
+    );
+  });
 });
 
 describe("isCreateKind", () => {

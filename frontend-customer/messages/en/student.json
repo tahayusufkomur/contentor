@@ -124,6 +124,7 @@
     "removeAttachment": "Remove photo",
     "attachTooLarge": "That photo is too large (max 10 MB).",
     "attachFailed": "Couldn't upload the photo. Please try again.",
-    "attachedOnly": "(sent a photo)"
+    "attachedOnly": "(sent a photo)",
+    "creatingPhoto": "Creating your photo…"
   }
 }

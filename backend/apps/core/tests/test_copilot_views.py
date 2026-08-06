@@ -426,7 +426,7 @@ def test_execute_set_block_image_materializes_photo_and_busts_cache(client, coac
         kind="hero",
         image_key="platform/curated-photos/sun.jpg",
     )
-    cfg = TenantConfig.objects.first()
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
     cfg.save(update_fields=["pages"])
     cache.set("tenant:shared_test:config", "sentinel", timeout=300)
@@ -454,7 +454,7 @@ def test_execute_set_block_image_materializes_photo_and_busts_cache(client, coac
 def test_execute_set_block_image_gone_catalog_row_returns_400(client, coach):
     from apps.tenant_config.models import TenantConfig
 
-    cfg = TenantConfig.objects.first()
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True}]}}
     cfg.save(update_fields=["pages"])
     token = copilot_tokens.stash_action(
@@ -568,6 +568,7 @@ def test_execute_set_logo_materializes_photo_flips_look_edited_and_busts_cache(c
     from apps.media.models import Photo
     from apps.tenant_config.models import TenantConfig
 
+    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     row = CuratedLogo.objects.create(
         title="Lotus mark",
         tags="yoga, calm",
@@ -591,6 +592,35 @@ def test_execute_set_logo_gone_catalog_row_returns_400(client, coach):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "no longer available" in resp.json()["detail"]
+
+
+def test_execute_set_logo_with_attached_photo_uses_tenant_photo(client, coach):
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    photo = Photo.objects.create(s3_key="uploads/my-mark.png", title="My mark")
+    token = copilot_tokens.stash_action("shared_test", {"kind": "set_logo", "tenant_photo_id": str(photo.pk)})
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {"kind": "set_logo"}
+    cfg = TenantConfig.objects.first()
+    assert cfg.logo_id == photo.pk
+    assert cfg.logo_url == ""
+    assert cfg.setup_progress.get("look_edited") is True
+
+
+def test_execute_set_logo_with_unknown_attached_photo_returns_400(client, coach):
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_logo", "tenant_photo_id": "00000000-0000-0000-0000-000000000000"},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "not in your library" in resp.json()["detail"]
 
 
 def test_execute_set_logo_with_prior_logo_records_audit_and_undo_restores_it(client, coach):
@@ -637,7 +667,7 @@ def test_execute_set_logo_with_prior_logo_records_audit_and_undo_restores_it(cli
 def test_execute_records_audit_row(client, coach):
     from apps.tenant_config.models import CopilotAudit, TenantConfig
 
-    cfg = TenantConfig.objects.first()
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
     cfg.save(update_fields=["pages"])
     token = copilot_tokens.stash_action(
@@ -717,7 +747,7 @@ def test_audit_write_failure_never_fails_the_execute(client, coach, monkeypatch)
     from apps.core.copilot import views as copilot_views
     from apps.tenant_config.models import TenantConfig
 
-    cfg = TenantConfig.objects.first()
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
     cfg.save(update_fields=["pages"])
     token = copilot_tokens.stash_action(
@@ -761,6 +791,11 @@ def _toggle_token(enabled):
 
 
 def _theme_token(theme):
+    from apps.tenant_config.models import TenantConfig
+
+    # Order-independence under xdist: edit_theme's execute 400s without a
+    # TenantConfig row, and no fixture guarantees one exists.
+    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     return copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": theme})
 
 
@@ -944,6 +979,46 @@ def test_chats_patch_entries_caps_and_sanitizes(client):
     assert patched.json()["title"] == "m11"
 
 
+def test_chats_entries_keep_attached_photos(client):
+    """The attached-photo note must survive the round trip — follow-up turns
+    ("use it as the logo") rebuild the transcript from persisted entries."""
+    created = client.post(
+        "/api/v1/admin/copilot/chats/",
+        {
+            "entries": [
+                {
+                    "role": "coach",
+                    "text": "here is my photo",
+                    "attached": [
+                        {
+                            "id": "abc-123",
+                            "title": "My mark",
+                            "desc": "a ballet dancer",
+                            "signed_url": "https://s3.example/thumb.png?sig=x",
+                        },
+                        {"id": 42, "title": None},  # missing/odd fields are coerced
+                        {"no_id": True},  # dropped: no id
+                    ],
+                },
+                {"role": "assistant", "text": "Where should it go?", "attached": "junk"},
+            ]
+        },
+        format="json",
+    )
+    assert created.status_code == 201
+    entries = created.json()["entries"]
+    assert entries[0]["attached"] == [
+        {
+            "id": "abc-123",
+            "title": "My mark",
+            "desc": "a ballet dancer",
+            "signed_url": "https://s3.example/thumb.png?sig=x",
+        },
+        {"id": "42", "title": ""},
+    ]
+    assert "attached" not in entries[1]
+
+
 def test_chats_delete_and_missing_404(client):
     created = client.post("/api/v1/admin/copilot/chats/", {}, format="json")
     chat_id = created.json()["id"]
@@ -966,7 +1041,7 @@ def test_chats_create_prunes_beyond_cap(client):
 def test_converse_passes_verified_attachments_to_run_turn(client):
     from apps.media.models import Photo
 
-    photo = Photo.objects.create(s3_key="uploads/p.png", title="My studio")
+    photo = Photo.objects.create(s3_key="uploads/p.png", title="My studio", alt_text="sunlit yoga studio")
     with (
         mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
         mock.patch(
@@ -987,7 +1062,86 @@ def test_converse_passes_verified_attachments_to_run_turn(client):
         )
         _frames(resp)  # the stream is lazy — consume it so run_turn executes
     attachments = run.call_args.args[4]
-    assert attachments == [{"id": str(photo.pk), "title": "My studio"}]
+    assert attachments == [{"id": str(photo.pk), "title": "My studio", "desc": "sunlit yoga studio"}]
+
+
+def test_execute_note_photo_saves_alt_text_and_undo_restores(client, coach):
+    from apps.media.models import Photo
+    from apps.tenant_config.models import CopilotAudit
+
+    photo = Photo.objects.create(s3_key="uploads/ballet.png", title="IMG_1234", alt_text="old note")
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "note_photo", "tenant_photo_id": str(photo.pk), "description": "silhouette of a ballet dancer"},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    photo.refresh_from_db()
+    assert photo.alt_text == "silhouette of a ballet dancer"
+
+    audit_id = resp.json()["audit_id"]
+    row = CopilotAudit.objects.get(pk=audit_id)
+    assert row.inverse == {
+        "kind": "restore_photo_note",
+        "tenant_photo_id": str(photo.pk),
+        "alt_text": "old note",
+    }
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
+    assert undo.status_code == 200, undo.content
+    photo.refresh_from_db()
+    assert photo.alt_text == "old note"
+
+
+def test_execute_note_photo_unknown_photo_returns_400(client, coach):
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {
+            "kind": "note_photo",
+            "tenant_photo_id": "00000000-0000-0000-0000-000000000000",
+            "description": "a dancer",
+        },
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "not in your library" in resp.json()["detail"]
+
+
+def test_photo_describe_returns_description_and_records_spend(client):
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/b.png", title="B")
+    with (
+        mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
+        mock.patch(
+            "apps.core.copilot.views.photos.describe_tenant_photo",
+            return_value=("a ballet dancer silhouette", Decimal("0.001")),
+        ),
+        mock.patch("apps.core.copilot.views.ai_compose.record_spend") as spend,
+    ):
+        resp = client.post(
+            "/api/v1/admin/copilot/photos/describe/", {"photo_id": str(photo.pk)}, format="json"
+        )
+    assert resp.status_code == 200
+    assert resp.json() == {"description": "a ballet dancer silhouette"}
+    spend.assert_called_once_with("shared_test", Decimal("0.001"))
+
+
+def test_photo_describe_unavailable_or_unknown_photo_is_empty(client):
+    with mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=False):
+        resp = client.post("/api/v1/admin/copilot/photos/describe/", {"photo_id": "x"}, format="json")
+    assert resp.status_code == 200
+    assert resp.json() == {"description": ""}
+    with (
+        mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.copilot.views.ai_compose.record_spend"),
+    ):
+        resp = client.post(
+            "/api/v1/admin/copilot/photos/describe/",
+            {"photo_id": "00000000-0000-0000-0000-000000000000"},
+            format="json",
+        )
+    assert resp.status_code == 200
+    assert resp.json() == {"description": ""}
 
 
 def test_execute_set_course_cover_with_tenant_photo(client):

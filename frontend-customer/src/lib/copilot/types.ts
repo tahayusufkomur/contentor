@@ -36,6 +36,9 @@ export interface ActionCard {
   detail: string;
   changes?: DiffRow[];
   image_url?: string;
+  /** Curated photo/logo picks arrive flagged — the card plays a brief
+   * "creating your photo" reveal before showing the image. */
+  reveal?: boolean;
   token: string;
 }
 
@@ -64,6 +67,12 @@ export interface ChatEntry {
   text: string;
   cards?: ActionCard[];
   kind?: CopilotDone["kind"];
+  /** Photos the coach attached to this message — kept in the transcript so
+   * follow-up turns ("use it as the logo") can still reference the ids.
+   * desc = the vision caption, so the model knows what each photo shows.
+   * signed_url = presigned thumbnail for the chat bubble (24h; the chip
+   * falls back to title-only once it expires). Never sent to the model. */
+  attached?: { id: string; title: string; desc?: string; signed_url?: string }[];
 }
 
 export interface CopilotAuditEntry {
@@ -84,9 +93,11 @@ export interface CopilotChatDetail extends CopilotChatRow {
 }
 
 /** A photo the coach attached to the composer, already uploaded to their
- * media library — the id travels with the next converse call. */
+ * media library — the id travels with the next converse call. desc is the
+ * vision caption (may be empty when no vision provider is available). */
 export interface AttachedPhoto {
   id: string;
   title: string;
   signed_url: string;
+  desc: string;
 }

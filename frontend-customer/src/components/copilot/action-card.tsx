@@ -11,9 +11,11 @@ import {
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
 import { isCreateKind, isUndoableKind, runBundle } from "@/lib/copilot/state";
@@ -48,6 +50,56 @@ export function CardBundleProvider({ children }: { children: ReactNode }) {
     <CardBundleContext.Provider value={registry.current}>
       {children}
     </CardBundleContext.Provider>
+  );
+}
+
+/** Preview image for photo/logo cards. Curated picks arrive flagged
+ * `reveal`: the card holds a shimmering "Creating your photo…" state for a
+ * beat, then blur-reveals the image. The pick itself is instant — the pause
+ * is presentation. The coach's own attached photos never get this (their
+ * photo appearing out of a "generating" state would read as nonsense). */
+function CardPhoto({ card }: { card: ActionCardData }) {
+  const t = useTranslations("student.copilot");
+  const [held, setHeld] = useState(Boolean(card.reveal));
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    if (!held) return;
+    const timer = setTimeout(() => setHeld(false), 2400);
+    return () => clearTimeout(timer);
+  }, [held]);
+  if (!card.reveal) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={card.image_url}
+        alt={card.title}
+        className="mt-2 h-28 w-full rounded-md border object-cover"
+      />
+    );
+  }
+  const showing = !held && loaded;
+  return (
+    <div className="relative mt-2 h-28 w-full overflow-hidden rounded-md border">
+      {!showing && (
+        <div className="absolute inset-0 z-10">
+          <Skeleton className="absolute inset-0 rounded-none" />
+          <span className="absolute inset-0 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <Sparkles className="size-3.5" aria-hidden />
+            {t("creatingPhoto")}
+          </span>
+        </div>
+      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={card.image_url}
+        alt={card.title}
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
+        className={`h-full w-full object-cover transition-[filter,opacity] duration-700 motion-reduce:transition-none ${
+          showing ? "opacity-100 blur-0" : "opacity-0 blur-lg"
+        }`}
+      />
+    </div>
   );
 }
 
@@ -166,14 +218,7 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       data-copilot-ui
     >
       <p className="font-medium">{card.title}</p>
-      {card.image_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={card.image_url}
-          alt={card.title}
-          className="mt-2 h-28 w-full rounded-md border object-cover"
-        />
-      )}
+      {card.image_url && <CardPhoto card={card} />}
       {card.detail && (
         <p className="mt-1 text-muted-foreground">{card.detail}</p>
       )}

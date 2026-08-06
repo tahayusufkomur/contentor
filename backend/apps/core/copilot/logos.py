@@ -10,11 +10,16 @@ class LogoOpError(Exception):
 SHORTLIST_LIMIT = 30
 
 
-def pick_logo(description, niche, *, exclude_s3_key=None):
+def pick_logo(description, tenant, *, exclude_s3_key=None):
+    """Best-matching enabled CuratedLogo for the coach's real profile (niche,
+    onboarding description) plus the model's per-turn style description. See
+    photos.pick_photo's docstring for why the brief comes from the tenant,
+    not from niche + the model's text alone (same bug, same fix, logo
+    sibling)."""
     from django_tenants.utils import schema_context
 
     from apps.core.models import CuratedLogo
-    from apps.core.onboarding.ai_curate import CoachBrief, shortlist
+    from apps.core.onboarding.ai_curate import brief_with_turn_style, shortlist
 
     with schema_context("public"):
         rows = [
@@ -24,7 +29,7 @@ def pick_logo(description, niche, *, exclude_s3_key=None):
         ]
     if not rows:
         raise LogoOpError("no logos are available in the library yet")
-    brief = CoachBrief(niche=str(niche or "general"), description=str(description or ""))
+    brief = brief_with_turn_style(tenant, description)
     return shortlist(rows, brief, limit=SHORTLIST_LIMIT)[0]
 
 

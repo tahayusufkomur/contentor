@@ -9,6 +9,7 @@ Spec: docs/superpowers/specs/2026-07-19-ai-touch-onboarding-design.md
 
 from __future__ import annotations
 
+import dataclasses
 import re
 from dataclasses import dataclass
 
@@ -80,6 +81,21 @@ def brief_tokens(brief: CoachBrief) -> set[str]:
     parts = [brief.niche.replace("_", " "), brief.description]
     parts += [f"{q} {a}" for q, a in brief.followups]
     return tokens(" ".join(parts))
+
+
+def brief_with_turn_style(tenant, turn_description: str) -> CoachBrief:
+    """CoachBrief.from_tenant plus the model's per-turn style text ("calm
+    sunlit studio, warm tones") layered onto description — used by the
+    copilot's photo/logo picks so scoring sees the coach's real niche and
+    onboarding description AND whatever style the current turn asked for,
+    instead of only the model's invented text (which shares no vocabulary
+    with the catalog for a niche that isn't itself in the catalog's tags,
+    silently degrading the pick to catalog position order)."""
+    brief = CoachBrief.from_tenant(tenant)
+    turn_description = str(turn_description or "").strip()
+    if not turn_description:
+        return brief
+    return dataclasses.replace(brief, description=f"{brief.description} {turn_description}".strip())
 
 
 def shortlist(rows, brief: CoachBrief, *, limit: int = 40) -> list:

@@ -51,6 +51,29 @@ describe("persistableEntries", () => {
     });
     expect("cards" in kept).toBe(false);
   });
+
+  it("keeps attached photos so follow-up turns can still reference them", () => {
+    const withAttached = entry(1, {
+      role: "coach",
+      attached: [
+        {
+          id: "abc-123",
+          title: "My mark",
+          desc: "a ballet dancer",
+          signed_url: "https://s3.example/thumb.png?sig=x",
+        },
+      ],
+    });
+    const [kept] = persistableEntries([withAttached]);
+    expect(kept.attached).toEqual([
+      {
+        id: "abc-123",
+        title: "My mark",
+        desc: "a ballet dancer",
+        signed_url: "https://s3.example/thumb.png?sig=x",
+      },
+    ]);
+  });
 });
 
 describe("saveEntries / loadEntries / clearEntries", () => {

@@ -16,6 +16,22 @@ interface PhotoResponse {
   signed_url: string | null;
 }
 
+/** Best-effort vision caption ("silhouette of a ballet dancer at a barre").
+ * The backend stores it on the Photo row; we carry it into the chat so the
+ * assistant can react to — and later retrieve — the photo by content. An
+ * empty string (no vision provider, call failed) is a valid answer. */
+async function describePhoto(photoId: string): Promise<string> {
+  try {
+    const { description } = await clientFetch<{ description: string }>(
+      "/api/v1/admin/copilot/photos/describe/",
+      { method: "POST", body: JSON.stringify({ photo_id: photoId }) },
+    );
+    return description ?? "";
+  } catch {
+    return "";
+  }
+}
+
 /** Same three-step flow the admin media library uses: presign → PUT to
  * object storage → register the Photo row. Returns what the composer chip
  * and the converse call need. Throws on non-image or oversize files so the
@@ -53,5 +69,6 @@ export async function uploadCopilotPhoto(file: File): Promise<AttachedPhoto> {
     id: photo.id,
     title: photo.title,
     signed_url: photo.signed_url ?? "",
+    desc: await describePhoto(photo.id),
   };
 }

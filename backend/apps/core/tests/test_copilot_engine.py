@@ -556,6 +556,7 @@ def test_set_block_image_card_stashes_pick_and_carries_preview():
     assert card["kind"] == "set_block_image"
     assert "Sunlit yoga studio" in card["title"]
     assert card["image_url"] == "https://cdn.example/sun.jpg"
+    assert card["reveal"] is True  # curated pick → widget plays its reveal
     block_lookup.assert_called_once_with(TENANT, "home", "blk_hero")
     assert pick.call_args.kwargs["field"] == "bgImage"
     assert pick.call_args.kwargs["exclude_s3_key"] is None
@@ -677,6 +678,7 @@ def test_set_course_cover_card_stashes_pick_and_carries_preview():
     assert card["kind"] == "set_course_cover"
     assert "Yoga Basics" in card["title"] and "Golden-hour mat flow" in card["title"]
     assert card["image_url"] == "https://cdn.example/mat.jpg"
+    assert card["reveal"] is True
     course_lookup.assert_called_once_with(TENANT, 3)
     assert pick.call_args.kwargs["field"] == "courseCover"
     assert pick.call_args.kwargs["exclude_s3_key"] is None
@@ -724,6 +726,7 @@ def test_set_logo_card_stashes_pick_and_carries_preview():
     assert card["kind"] == "set_logo"
     assert "Lotus mark" in card["title"]
     assert card["image_url"] == "https://cdn.example/lotus.png"
+    assert card["reveal"] is True
     current_key.assert_called_once_with(TENANT)
     assert pick.call_args.args[0] == "a calm lotus flower"
     assert pick.call_args.kwargs["exclude_s3_key"] is None
@@ -1334,6 +1337,7 @@ def test_set_block_image_card_with_attached_photo(tenant_ctx):
     card = engine._card(tenant, action)
     assert card["kind"] == "set_block_image"
     assert "your photo" in card["title"].lower()
+    assert "reveal" not in card  # their own photo must never look "generated"
     stashed = tokens.take_action(card["token"], "shared_test")
     assert stashed["tenant_photo_id"] == str(photo.pk)
     assert stashed["field"] == "bgImage"
@@ -1377,3 +1381,159 @@ def test_create_blog_post_card_with_attached_photo(tenant_ctx):
     assert card["image_url"]
     stashed = tokens.take_action(card["token"], "shared_test")
     assert stashed["params"]["cover_photo"] == str(photo.pk)
+
+
+def test_set_logo_card_with_attached_photo(tenant_ctx):
+    from apps.core.copilot import engine, tokens
+    from apps.core.models import Tenant
+    from apps.media.models import Photo
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    photo = Photo.objects.create(s3_key="uploads/my-mark.png", title="My mark")
+    action = engine.SetLogoAction(kind="set_logo", photo_id=str(photo.pk))
+    card = engine._card(tenant, action)
+    assert card["kind"] == "set_logo"
+    assert "your photo" in card["title"].lower()
+    assert card["image_url"]
+    stashed = tokens.take_action(card["token"], "shared_test")
+    assert stashed == {"kind": "set_logo", "tenant_photo_id": str(photo.pk)}
+
+
+def test_set_logo_card_with_unknown_attached_photo_drops(tenant_ctx):
+    import pytest as _pytest
+
+    from apps.core.copilot import engine, photos
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    action = engine.SetLogoAction(kind="set_logo", photo_id="00000000-0000-0000-0000-000000000000")
+    with _pytest.raises(photos.PhotoOpError, match="not in your library"):
+        engine._card(tenant, action)
+
+
+def test_user_turn_includes_attachment_descriptions(tenant_ctx):
+    from apps.core.copilot import engine
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    turn = engine._user_turn(
+        tenant,
+        [],
+        [],
+        "here you go",
+        [{"id": "abc-123", "title": "IMG_1234", "desc": "silhouette of a ballet dancer"}],
+    )
+    assert "photo_id=abc-123" in turn
+    assert "shows: silhouette of a ballet dancer" in turn
+
+
+def test_note_photo_card_stashes_description(tenant_ctx):
+    from apps.core.copilot import engine, tokens
+    from apps.core.models import Tenant
+    from apps.media.models import Photo
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    photo = Photo.objects.create(s3_key="uploads/ballet.png", title="IMG_1234")
+    action = engine.NotePhotoAction(
+        kind="note_photo", photo_id=str(photo.pk), description="  silhouette of a  ballet dancer "
+    )
+    card = engine._card(tenant, action)
+    assert card["kind"] == "note_photo"
+    assert "silhouette of a ballet dancer" in card["title"]
+    assert card["image_url"]
+    stashed = tokens.take_action(card["token"], "shared_test")
+    assert stashed == {
+        "kind": "note_photo",
+        "tenant_photo_id": str(photo.pk),
+        "description": "silhouette of a ballet dancer",
+    }
+
+
+def test_note_photo_card_empty_description_drops(tenant_ctx):
+    import pytest as _pytest
+
+    from apps.core.copilot import engine, photos
+    from apps.core.models import Tenant
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    action = engine.NotePhotoAction(kind="note_photo", photo_id="whatever", description="   ")
+    with _pytest.raises(photos.PhotoOpError, match="empty"):
+        engine._card(tenant, action)
+
+
+# ── pages digest: photo visibility on hero/imageText blocks ──────────────────
+
+
+def test_pages_digest_surfaces_photo_caption_for_hero_block(tenant_ctx):
+    """Regression: hero.bgImage/imageText.image aren't in BLOCK_SCHEMA, so the
+    generic field loop never touched them — a coach asking 'what photo is on
+    the About block?' got a digest with no trace of the photo at all."""
+    from apps.core.copilot import engine
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    photo = Photo.objects.create(s3_key="uploads/ballet.png", alt_text="silhouette of a ballet dancer")
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {
+        "home": {
+            "blocks": [
+                {
+                    "id": "blk_hero",
+                    "type": "hero",
+                    "enabled": True,
+                    "heading": "Hi",
+                    "bgImage": {"url": None, "photo_id": str(photo.pk)},
+                }
+            ]
+        }
+    }
+    cfg.save(update_fields=["pages"])
+    digest = engine._pages_digest(tenant_ctx)
+    assert 'bgImage=photo("silhouette of a ballet dancer")' in digest
+
+
+def test_pages_digest_reports_no_photo_set(tenant_ctx):
+    from apps.core.copilot import engine
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {
+        "home": {
+            "blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "bgImage": {"url": None, "photo_id": None}}]
+        }
+    }
+    cfg.save(update_fields=["pages"])
+    digest = engine._pages_digest(tenant_ctx)
+    assert "bgImage=(none set)" in digest
+
+
+def test_pages_digest_falls_back_to_title_then_generic_word(tenant_ctx):
+    from apps.core.copilot import engine
+    from apps.media.models import Photo
+    from apps.tenant_config.models import TenantConfig
+
+    titled = Photo.objects.create(s3_key="uploads/a.png", title="Studio shot")
+    untitled = Photo.objects.create(s3_key="uploads/b.png")
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.pages = {
+        "home": {
+            "blocks": [
+                {
+                    "id": "blk_hero",
+                    "type": "hero",
+                    "enabled": True,
+                    "bgImage": {"url": None, "photo_id": str(titled.pk)},
+                },
+                {
+                    "id": "blk_about",
+                    "type": "imageText",
+                    "enabled": True,
+                    "image": {"url": None, "photo_id": str(untitled.pk)},
+                },
+            ]
+        }
+    }
+    cfg.save(update_fields=["pages"])
+    digest = engine._pages_digest(tenant_ctx)
+    assert 'bgImage=photo("Studio shot")' in digest
+    assert 'image=photo("photo")' in digest

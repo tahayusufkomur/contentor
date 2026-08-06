@@ -63,12 +63,14 @@ export function CopilotComposer({
   });
 
   const send = useCallback(() => {
-    if (!editor || sending) return;
+    // uploading blocks send: a message fired mid-upload would travel
+    // WITHOUT the photo still on its way to the library.
+    if (!editor || sending || uploading) return;
     const message = docToMessage(editor.getJSON() as TipTapNode);
     if (!message && attached.length === 0) return;
     editor.commands.clearContent();
     onSend(message);
-  }, [editor, sending, attached.length, onSend]);
+  }, [editor, sending, uploading, attached.length, onSend]);
 
   const uploadFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -82,17 +84,30 @@ export function CopilotComposer({
         return;
       }
       setUploading(true);
+      let uploaded = 0;
       try {
         for (const file of images) {
           onAttach(await uploadCopilotPhoto(file));
+          uploaded += 1;
         }
       } catch {
         toast.error(t("attachFailed"));
       } finally {
         setUploading(false);
       }
+      // Photo landed with nothing typed → let the assistant react right
+      // away (say what it sees, ask where the photo should go). When the
+      // coach is mid-sentence, stay quiet — they'll send it themselves.
+      if (
+        uploaded > 0 &&
+        !sending &&
+        editor &&
+        !docToMessage(editor.getJSON() as TipTapNode)
+      ) {
+        onSend("");
+      }
     },
-    [attached.length, onAttach, t],
+    [attached.length, onAttach, editor, sending, onSend, t],
   );
 
   if (!editor) return null;
@@ -174,6 +189,7 @@ export function CopilotComposer({
             onClick={send}
             loading={sending}
             loadingText={t("sending")}
+            disabled={uploading}
             data-testid="copilot-send"
           >
             {t("send")}

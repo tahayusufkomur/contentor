@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NavLink } from "@/components/ui/nav-link";
@@ -17,6 +17,7 @@ import type {
 } from "@/types/tenant";
 import AnnouncementBell from "@/components/shared/announcement-bell";
 import { logoSizeClass, showBrandName } from "@/lib/navbar";
+import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 
 const VALID_LAYOUTS: ReadonlySet<string> = new Set([
   "classic",
@@ -209,6 +210,9 @@ export function PublicHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // Floating UI (copilot drawer) starts below the navbar via this clearance.
+  const headerRef = useRef<HTMLElement | null>(null);
+  usePublishTopnavClearance(headerRef);
 
   const navbar = config?.navbar_config;
   const layout: NavbarLayout =
@@ -385,6 +389,7 @@ export function PublicHeader({
     return (
       <>
         <header
+          ref={headerRef}
           data-nav-layout="pill"
           className="fixed inset-x-0 top-3 z-50 px-4 pt-safe pointer-events-none"
         >
@@ -418,6 +423,7 @@ export function PublicHeader({
 
   return (
     <header
+      ref={headerRef}
       data-nav-layout={layout}
       className={`${shellCls} transition-colors duration-200`}
     >

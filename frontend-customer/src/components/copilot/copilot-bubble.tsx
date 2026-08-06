@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   ChevronLeft,
+  ImagePlus,
   MessageSquare,
   Sparkles,
   SquarePen,
@@ -68,6 +69,73 @@ function AssistantText({ text }: { text: string }) {
   );
 }
 
+/** One attached-photo chip in a coach bubble. Click toggles between the
+ * small thumbnail and a large inline preview ("which photo was that?").
+ * Degrades to an icon-and-title chip when the 24h presigned URL has
+ * expired or the entry predates thumbnails. */
+function AttachedPhotoChip({
+  photo,
+  fallbackLabel,
+}: {
+  photo: { id: string; title: string; desc?: string; signed_url?: string };
+  fallbackLabel: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [broken, setBroken] = useState(false);
+  const label = photo.title || fallbackLabel;
+  if (!photo.signed_url || broken) {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-lg border bg-background p-1 pr-2 text-xs text-muted-foreground"
+        title={photo.desc || label}
+      >
+        <ImagePlus className="size-3" aria-hidden />
+        {label}
+      </span>
+    );
+  }
+  if (expanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setExpanded(false)}
+        aria-expanded="true"
+        title={photo.desc || label}
+        className="block w-full rounded-lg border bg-background p-1 text-left"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photo.signed_url}
+          alt={photo.desc || label}
+          className="max-h-64 w-full rounded-md object-contain"
+          onError={() => setBroken(true)}
+        />
+        <span className="mt-1 block truncate px-1 text-xs text-muted-foreground">
+          {photo.desc || label}
+        </span>
+      </button>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setExpanded(true)}
+      aria-expanded="false"
+      title={photo.desc || label}
+      className="inline-flex items-center gap-1.5 rounded-lg border bg-background p-1 pr-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photo.signed_url}
+        alt={photo.desc || label}
+        className="size-10 rounded-md object-cover"
+        onError={() => setBroken(true)}
+      />
+      {label}
+    </button>
+  );
+}
+
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
@@ -101,6 +169,18 @@ export function CopilotBubble() {
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [selections, setSelections] = useState<SelectionPayload[]>([]);
   const [attached, setAttached] = useState<AttachedPhoto[]>([]);
+  // send() can fire in the same tick as the last attach (the post-upload
+  // auto-reaction) — before React re-renders, closures still see the old
+  // list. The ref is the source of truth; state only drives rendering.
+  const attachedRef = useRef<AttachedPhoto[]>([]);
+  const updateAttached = useCallback(
+    (next: AttachedPhoto[] | ((prev: AttachedPhoto[]) => AttachedPhoto[])) => {
+      attachedRef.current =
+        typeof next === "function" ? next(attachedRef.current) : next;
+      setAttached(attachedRef.current);
+    },
+    [],
+  );
   const [selecting, setSelecting] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -211,20 +291,23 @@ export function CopilotBubble() {
     setChatId(null);
     setEntries([]);
     setSelections([]);
-    setAttached([]);
+    updateAttached([]);
     setView("chat");
-  }, []);
+  }, [updateAttached]);
 
-  const openChat = useCallback(async (id: number) => {
-    bootStaleRef.current = true;
-    abortRef.current?.abort();
-    const detail = await fetchCopilotChat(id);
-    setChatId(detail.id);
-    setEntries(detail.entries);
-    setSelections([]);
-    setAttached([]);
-    setView("chat");
-  }, []);
+  const openChat = useCallback(
+    async (id: number) => {
+      bootStaleRef.current = true;
+      abortRef.current?.abort();
+      const detail = await fetchCopilotChat(id);
+      setChatId(detail.id);
+      setEntries(detail.entries);
+      setSelections([]);
+      updateAttached([]);
+      setView("chat");
+    },
+    [updateAttached],
+  );
 
   const { run: openChatSafe } = useAsyncAction(openChat, {
     errorToast: t("error"),
@@ -264,10 +347,24 @@ export function CopilotBubble() {
 
   const { run: send, loading: sending } = useAsyncAction(
     async (message: string) => {
-      if (!message && attached.length === 0) return;
+      const attachedNow = attachedRef.current;
+      if (!message && attachedNow.length === 0) return;
       const withCoach: ChatEntry[] = [
         ...entries,
-        { role: "coach", text: message || t("attachedOnly") },
+        {
+          role: "coach",
+          text: message || t("attachedOnly"),
+          ...(attachedNow.length > 0
+            ? {
+                attached: attachedNow.map((p) => ({
+                  id: p.id,
+                  title: p.title,
+                  ...(p.desc ? { desc: p.desc } : {}),
+                  ...(p.signed_url ? { signed_url: p.signed_url } : {}),
+                })),
+              }
+            : {}),
+        },
       ];
       setEntries(withCoach);
       const controller = new AbortController();
@@ -278,7 +375,7 @@ export function CopilotBubble() {
             message: message || t("attachedOnly"),
             transcript: toTranscript(entries),
             selections,
-            attached_photos: attached.map((p) => p.id),
+            attached_photos: attachedNow.map((p) => p.id),
           },
           { onPhase: () => {} },
           controller.signal,
@@ -286,7 +383,7 @@ export function CopilotBubble() {
         const next = reduceChat(withCoach, done);
         setEntries(next);
         setSelections([]);
-        setAttached([]);
+        updateAttached([]);
         persist(next);
       } catch (err) {
         if (isAbortError(err)) return;
@@ -302,7 +399,10 @@ export function CopilotBubble() {
     return (
       <Button
         data-copilot-ui
-        className="fixed bottom-5 right-5 z-[60] gap-2 rounded-full shadow-lg"
+        className="fixed right-5 z-[60] gap-2 rounded-full shadow-lg"
+        // Sits at bottom-5 normally; the PWA install banner publishes its
+        // occupied height so the launcher rides above it instead of on it.
+        style={{ bottom: "calc(var(--install-banner-clearance, 12px) + 8px)" }}
         onClick={() => setOpen(true)}
       >
         <Sparkles className="size-4" aria-hidden />
@@ -321,7 +421,14 @@ export function CopilotBubble() {
       )}
       <div
         data-copilot-ui
-        className="fixed inset-y-0 right-0 z-[60] flex w-[min(26rem,100vw)] flex-col border-l bg-background shadow-xl motion-safe:animate-in motion-safe:slide-in-from-right motion-safe:duration-200"
+        className="fixed right-0 z-[60] flex w-[min(26rem,100vw)] flex-col border-l bg-background shadow-xl motion-safe:animate-in motion-safe:slide-in-from-right motion-safe:duration-200"
+        // The drawer fits between the site/admin chrome: navbar publishes
+        // --topnav-clearance, the PWA install banner publishes
+        // --install-banner-clearance. Page content is untouched.
+        style={{
+          top: "var(--topnav-clearance, 0px)",
+          bottom: "var(--install-banner-clearance, 0px)",
+        }}
       >
         <div className="flex items-center justify-between border-b p-3">
           <span className="flex min-w-0 items-center gap-1">
@@ -429,6 +536,17 @@ export function CopilotBubble() {
                     ) : (
                       e.text
                     )}
+                    {e.attached && e.attached.length > 0 && (
+                      <span className="mt-1 flex flex-wrap gap-1.5">
+                        {e.attached.map((p) => (
+                          <AttachedPhotoChip
+                            key={p.id}
+                            photo={p}
+                            fallbackLabel={t("attachedOnly")}
+                          />
+                        ))}
+                      </span>
+                    )}
                   </div>
                   {e.cards && e.cards.length > 0 && (
                     <CardBundleProvider>
@@ -480,9 +598,9 @@ export function CopilotBubble() {
               onSend={send}
               sending={sending}
               attached={attached}
-              onAttach={(p) => setAttached((prev) => [...prev, p])}
+              onAttach={(p) => updateAttached((prev) => [...prev, p])}
               onRemoveAttachment={(id) =>
-                setAttached((prev) => prev.filter((p) => p.id !== id))
+                updateAttached((prev) => prev.filter((p) => p.id !== id))
               }
             />
           </>

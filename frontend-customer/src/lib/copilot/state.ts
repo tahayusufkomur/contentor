@@ -24,18 +24,29 @@ export function reduceChat(
 }
 
 /** The stateless-server contract: transcript travels with each request.
- * The unavailable-turn marker is UI-only and must never reach the model. */
+ * The unavailable-turn marker is UI-only and must never reach the model.
+ * Attached photos are folded into the text as an [attached ...] note so the
+ * model can still use their photo_ids on follow-up turns. */
 export function toTranscript(
   entries: ChatEntry[],
 ): { role: string; text: string; kind?: string }[] {
   return entries
     .filter((e) => e.text !== UNAVAILABLE_MARKER)
     .slice(-TRANSCRIPT_MAX)
-    .map((e) =>
-      e.kind
-        ? { role: e.role, text: e.text, kind: e.kind }
-        : { role: e.role, text: e.text },
-    );
+    .map((e) => {
+      const note = e.attached?.length
+        ? `\n[attached photos: ${e.attached
+            .map(
+              (p) =>
+                `photo_id=${p.id} '${p.title || "untitled"}'${p.desc ? ` — ${p.desc}` : ""}`,
+            )
+            .join(", ")}]`
+        : "";
+      const text = e.text + note;
+      return e.kind
+        ? { role: e.role, text, kind: e.kind }
+        : { role: e.role, text };
+    });
 }
 
 const CREATE_KINDS = new Set([

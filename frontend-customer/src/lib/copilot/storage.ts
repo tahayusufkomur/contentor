@@ -10,11 +10,12 @@ export const PERSIST_MAX = 30;
  * are dropped — their Confirm buttons hold single-use short-TTL tokens that
  * would 403 after a reload, and a dead Apply button reads as a bug. */
 export function persistableEntries(entries: ChatEntry[]): ChatEntry[] {
-  return entries
-    .slice(-PERSIST_MAX)
-    .map(({ role, text, kind }) =>
-      kind ? { role, text, kind } : { role, text },
-    );
+  return entries.slice(-PERSIST_MAX).map(({ role, text, kind, attached }) => ({
+    role,
+    text,
+    ...(kind ? { kind } : {}),
+    ...(attached?.length ? { attached } : {}),
+  }));
 }
 
 function isEntry(e: unknown): e is ChatEntry {
