@@ -63,3 +63,38 @@ export function takeLegacyEntries(): ChatEntry[] {
   if (entries.length > 0) clearEntries();
   return entries;
 }
+
+/** Drawer UI state that survives navigation (site ↔ admin cross layouts, so
+ * the component remounts): whether the coach left the panel open, and which
+ * chat they were in. Chat CONTENT lives server-side; this is just position. */
+const UI_KEY = "copilot:ui:v1";
+
+export interface CopilotUiState {
+  open: boolean;
+  chatId: number | null;
+}
+
+export function loadUiState(): CopilotUiState {
+  try {
+    const raw = window.localStorage.getItem(UI_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (typeof parsed !== "object" || parsed === null) {
+      return { open: false, chatId: null };
+    }
+    const state = parsed as Record<string, unknown>;
+    return {
+      open: state.open === true,
+      chatId: typeof state.chatId === "number" ? state.chatId : null,
+    };
+  } catch {
+    return { open: false, chatId: null };
+  }
+}
+
+export function saveUiState(state: CopilotUiState): void {
+  try {
+    window.localStorage.setItem(UI_KEY, JSON.stringify(state));
+  } catch {
+    // Never let storage break the widget.
+  }
+}

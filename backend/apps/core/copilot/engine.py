@@ -82,9 +82,10 @@ SYSTEM_PROMPT = (
     "description for another style\n"
     "- when the user turn lists photos the coach ATTACHED, prefer them: "
     "pass the attached photo_id to set_block_image or set_course_cover "
-    "(leave description empty) instead of describing a library pick; if "
-    "the coach attached a photo but the target is unclear, ask where they "
-    "want it\n"
+    "(leave description empty) instead of describing a library pick, or to "
+    "create_blog_post / edit_blog_post to make it the post's cover image; "
+    "if the coach attached a photo but the target is unclear, ask where "
+    "they want it\n"
     "- edit_block_fields: change specific fields on one existing block "
     "(page + block_id from the digest, fields per the block field guide "
     "below) — prefer this over edit_pages for single-block changes\n"
@@ -218,6 +219,7 @@ class CreateBlogPostAction(BaseModel):
     title: str
     summary: str = ""
     body_html: str = ""
+    photo_id: str | None = None  # attached photo → the post's cover image
 
 
 class DraftAnnouncementAction(BaseModel):
@@ -292,6 +294,7 @@ class EditBlogPostAction(BaseModel):
     title: str | None = None
     summary: str | None = None
     body_html: str | None = None
+    photo_id: str | None = None  # attached photo → the post's cover image
 
 
 class PublishCourseAction(BaseModel):
@@ -847,32 +850,35 @@ def _card(tenant, action):
                 f"title → '{action.title[:60]}'" if action.title else None,
                 f"summary → '{action.summary[:80]}'" if action.summary else None,
                 "new body" if action.body_html else None,
+                "your photo as the cover" if action.photo_id else None,
             )
             if p
         ]
         if not parts:
             raise content.ContentOpError("nothing to change on the post")
-        return {
+        params = {
+            k: v
+            for k, v in (
+                ("title", action.title),
+                ("summary", action.summary),
+                ("body_html", action.body_html),
+            )
+            if v is not None
+        }
+        card = {
             "kind": "edit_blog_post",
             "title": f"Update post: {post_title[:100]}",
             "detail": ", ".join(parts),
-            "token": tokens.stash_action(
-                schema,
-                {
-                    "kind": "edit_blog_post",
-                    "post_id": action.post_id,
-                    "params": {
-                        k: v
-                        for k, v in (
-                            ("title", action.title),
-                            ("summary", action.summary),
-                            ("body_html", action.body_html),
-                        )
-                        if v is not None
-                    },
-                },
-            ),
         }
+        if action.photo_id:
+            photo = _tenant_photo(tenant, action.photo_id)
+            params["cover_photo"] = str(photo.pk)
+            card["image_url"] = photos.tenant_photo_url(photo)
+        card["token"] = tokens.stash_action(
+            schema,
+            {"kind": "edit_blog_post", "post_id": action.post_id, "params": params},
+        )
+        return card
     if isinstance(action, PublishCourseAction):
         course_title, _ = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
         with tenant_context(tenant):
@@ -1021,12 +1027,18 @@ def _card(tenant, action):
         "excerpt": action.summary[:300],
         "body_html": action.body_html,
     }
-    return {
+    card = {
         "kind": "create_blog_post",
         "title": f"Draft blog post: {action.title[:120]}",
         "detail": action.summary[:500] or "Draft for your review",
-        "token": tokens.stash_action(schema, {"kind": "create_blog_post", "params": params}),
     }
+    if action.photo_id:
+        photo = _tenant_photo(tenant, action.photo_id)
+        params["cover_photo"] = str(photo.pk)
+        card["detail"] = f"{card['detail']} — with your photo as the cover"
+        card["image_url"] = photos.tenant_photo_url(photo)
+    card["token"] = tokens.stash_action(schema, {"kind": "create_blog_post", "params": params})
+    return card
 
 
 _KB_HEADER = (

@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   clearEntries,
   loadEntries,
+  loadUiState,
   PERSIST_MAX,
   persistableEntries,
   saveEntries,
+  saveUiState,
 } from "@/lib/copilot/storage";
 import type { ChatEntry } from "@/lib/copilot/types";
 
@@ -95,5 +97,20 @@ describe("saveEntries / loadEntries / clearEntries", () => {
     expect(loadEntries()).toEqual([]);
     expect(() => saveEntries([entry(0)])).not.toThrow();
     expect(() => clearEntries()).not.toThrow();
+  });
+});
+
+describe("ui state", () => {
+  it("defaults to closed with no stored chat", () => {
+    stubStorage();
+    expect(loadUiState()).toEqual({ open: false, chatId: null });
+  });
+
+  it("round-trips open + chatId and drops junk", () => {
+    const store = stubStorage();
+    saveUiState({ open: true, chatId: 42 });
+    expect(loadUiState()).toEqual({ open: true, chatId: 42 });
+    store.set("copilot:ui:v1", '{"open":"yes","chatId":"x"}');
+    expect(loadUiState()).toEqual({ open: false, chatId: null });
   });
 });

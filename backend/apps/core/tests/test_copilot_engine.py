@@ -1360,3 +1360,20 @@ def test_set_block_image_card_with_unknown_attached_photo_drops(tenant_ctx):
     )
     with _pytest.raises(photos.PhotoOpError, match="not in your library"):
         engine._card(tenant, action)
+
+
+def test_create_blog_post_card_with_attached_photo(tenant_ctx):
+    from apps.core.copilot import engine, tokens
+    from apps.core.models import Tenant
+    from apps.media.models import Photo
+
+    tenant = Tenant.objects.get(schema_name="shared_test")
+    photo = Photo.objects.create(s3_key="uploads/blogcover.png", title="Blog cover")
+    action = engine.CreateBlogPostAction(
+        kind="create_blog_post", title="My post", summary="s", body_html="<p>b</p>", photo_id=str(photo.pk)
+    )
+    card = engine._card(tenant, action)
+    assert "cover" in card["detail"]
+    assert card["image_url"]
+    stashed = tokens.take_action(card["token"], "shared_test")
+    assert stashed["params"]["cover_photo"] == str(photo.pk)

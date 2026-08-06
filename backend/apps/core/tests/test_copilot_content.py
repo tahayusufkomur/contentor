@@ -378,3 +378,28 @@ def test_publish_blog_post_already_published_raises(coach):
 def test_publish_blog_post_unknown_id_raises(coach):
     with pytest.raises(content.ContentOpError):
         content.publish_blog_post(999999)
+
+
+def test_create_blog_post_with_cover_photo(tenant_ctx, coach):
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/cover.jpg", title="Cover")
+    result = content.create_blog_post(
+        coach, {"title": "With cover", "excerpt": "", "body_html": "<p>x</p>", "cover_photo": str(photo.pk)}
+    )
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.get(pk=result["id"])
+    assert post.cover_photo_id == photo.pk
+
+
+def test_edit_blog_post_sets_cover_photo(tenant_ctx, coach):
+    from apps.blog.models import BlogPost
+    from apps.media.models import Photo
+
+    post = BlogPost.objects.create(title="P", status="draft", created_by=coach, slug="p-cover")
+    photo = Photo.objects.create(s3_key="uploads/newcover.jpg", title="New cover")
+    result = content.edit_blog_post(post.pk, {"cover_photo": str(photo.pk)})
+    post.refresh_from_db()
+    assert post.cover_photo_id == photo.pk
+    assert any(c["field"] == "cover_photo" for c in result["changes"])

@@ -22,8 +22,14 @@ import {
   fetchCopilotChats,
   patchCopilotChatEntries,
 } from "@/lib/copilot/api";
+import { usePathname } from "next/navigation";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
-import { persistableEntries, takeLegacyEntries } from "@/lib/copilot/storage";
+import {
+  loadUiState,
+  persistableEntries,
+  saveUiState,
+  takeLegacyEntries,
+} from "@/lib/copilot/storage";
 import type {
   AttachedPhoto,
   ChatEntry,
@@ -83,6 +89,10 @@ function relativeTime(iso: string): string {
  * the first chat on first open. */
 export function CopilotBubble() {
   const t = useTranslations("student.copilot");
+  const pathname = usePathname();
+  // Element-picking only makes sense on the live site the coach can see —
+  // in /admin the drawer still works, minus the Select affordance.
+  const onSite = !pathname?.startsWith("/admin");
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"chat" | "list">("chat");
   const [booted, setBooted] = useState(false);
@@ -101,11 +111,22 @@ export function CopilotBubble() {
     // window.location, NOT useSearchParams — avoids the Next 14 client-side
     // Suspense bailout (same pattern as owner/edit-sidebar.tsx).
     const params = new URLSearchParams(window.location.search);
-    if (params.get("copilot") === "1") setOpen(true);
+    // The drawer reopens where the coach left it — crossing site ↔ admin
+    // remounts this component under the other layout, so position rides
+    // localStorage, content rides the server.
+    if (params.get("copilot") === "1" || loadUiState().open) setOpen(true);
   }, []);
 
+  // Remember open/collapsed + active chat across navigations.
+  useEffect(() => {
+    saveUiState({ open, chatId });
+  }, [open, chatId]);
+
   // Boot on first open, not at mount: no chat API traffic for coaches who
-  // never touch the copilot on this page view.
+  // never touch the copilot on this page view. If the coach acts before the
+  // fetches land (clicks New chat / opens a thread), boot must NOT apply its
+  // late result over their choice — bootStaleRef guards the clobber.
+  const bootStaleRef = useRef(false);
   useEffect(() => {
     if (!open || booted) return;
     setBooted(true);
@@ -115,10 +136,16 @@ export function CopilotBubble() {
         if (legacy.length > 0) await createCopilotChat(legacy);
         const { chats: rows } = await fetchCopilotChats();
         setChats(rows);
-        if (rows.length > 0) {
-          const detail = await fetchCopilotChat(rows[0].id);
-          setChatId(detail.id);
-          setEntries(detail.entries);
+        const storedId = loadUiState().chatId;
+        const target =
+          rows.find((c) => c.id === storedId) ??
+          (rows.length > 0 ? rows[0] : null);
+        if (target && !bootStaleRef.current) {
+          const detail = await fetchCopilotChat(target.id);
+          if (!bootStaleRef.current) {
+            setChatId(detail.id);
+            setEntries(detail.entries);
+          }
         }
       } catch {
         // Server chats unavailable — the drawer still works as a fresh chat.
@@ -126,8 +153,36 @@ export function CopilotBubble() {
     })();
   }, [open, booted]);
 
+  // A hard unload (tab close, full navigation) can race the fire-and-forget
+  // save — flush any unsaved turn with a keepalive request that outlives the
+  // page. PATCH-only: a create here would race persist()'s own POST and
+  // duplicate the thread; an existing chat's PATCH is idempotent. (The one
+  // uncovered edge — closing the tab mid-first-turn of a brand-new chat —
+  // loses that single turn, which beats duplicate chats.)
+  const entriesRef = useRef<ChatEntry[]>([]);
+  entriesRef.current = entries;
+  const dirtyRef = useRef(false);
+  useEffect(() => {
+    const flush = () => {
+      if (!dirtyRef.current || chatIdRef.current === null) return;
+      const persistable = persistableEntries(entriesRef.current);
+      if (persistable.length === 0) return;
+      void fetch(`/api/v1/admin/copilot/chats/${chatIdRef.current}/`, {
+        method: "PATCH",
+        keepalive: true,
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entries: persistable }),
+      });
+      dirtyRef.current = false;
+    };
+    window.addEventListener("pagehide", flush);
+    return () => window.removeEventListener("pagehide", flush);
+  }, []);
+
   /** Best-effort server save; a failed save never breaks the live chat. */
   const persist = useCallback((next: ChatEntry[]) => {
+    dirtyRef.current = true;
     void (async () => {
       try {
         const persistable = persistableEntries(next);
@@ -142,13 +197,16 @@ export function CopilotBubble() {
           setChatId(row.id);
           setChats((prev) => [row, ...prev]);
         }
+        dirtyRef.current = false;
       } catch {
-        // Offline or expired session — keep chatting, retry on next turn.
+        // Offline or expired session — keep chatting; the pagehide flush or
+        // the next turn's save retries.
       }
     })();
   }, []);
 
   const newChat = useCallback(() => {
+    bootStaleRef.current = true;
     abortRef.current?.abort();
     setChatId(null);
     setEntries([]);
@@ -158,6 +216,7 @@ export function CopilotBubble() {
   }, []);
 
   const openChat = useCallback(async (id: number) => {
+    bootStaleRef.current = true;
     abortRef.current?.abort();
     const detail = await fetchCopilotChat(id);
     setChatId(detail.id);
@@ -254,7 +313,7 @@ export function CopilotBubble() {
 
   return (
     <>
-      {selecting && (
+      {selecting && onSite && (
         <SelectionOverlay
           onSelect={addSelection}
           onExit={() => setSelecting(false)}
@@ -406,15 +465,17 @@ export function CopilotBubble() {
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-2 px-3 pt-2">
-              <Button
-                size="sm"
-                variant={selecting ? "brand" : "outline"}
-                onClick={() => setSelecting((v) => !v)}
-              >
-                {t("select")}
-              </Button>
-            </div>
+            {onSite && (
+              <div className="flex items-center gap-2 px-3 pt-2">
+                <Button
+                  size="sm"
+                  variant={selecting ? "brand" : "outline"}
+                  onClick={() => setSelecting((v) => !v)}
+                >
+                  {t("select")}
+                </Button>
+              </div>
+            )}
             <CopilotComposer
               onSend={send}
               sending={sending}

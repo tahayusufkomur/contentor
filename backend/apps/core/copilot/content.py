@@ -167,6 +167,8 @@ def edit_blog_post(post_id, params):
         data["excerpt"] = str(params["summary"])[:300]
     if params.get("body_html"):
         data["body_html"] = str(params["body_html"])
+    if params.get("cover_photo"):
+        data["cover_photo"] = params["cover_photo"]
     if not data:
         raise ContentOpError("nothing to change on the post")
     old = {k: str(getattr(post, k)) for k in data}

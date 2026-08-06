@@ -301,3 +301,40 @@ test("chats persist server-side: reload resumes, New chat starts fresh, the list
   await expect(page.getByText("Persisted answer.").first()).toBeVisible();
   await page.close();
 });
+
+test("the copilot rides along into /admin: stays open, keeps the chat, hides Select", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+
+  // Hermetic chats: one server thread the drawer should reopen everywhere.
+  const row = { id: 7, title: "carry me", updated_at: new Date().toISOString() };
+  await page.route("**/api/v1/admin/copilot/chats/", async (route) => {
+    if (route.request().method() === "GET")
+      return route.fulfill({ json: { chats: [row] } });
+    return route.fulfill({ status: 201, json: { ...row, entries: [] } });
+  });
+  await page.route("**/api/v1/admin/copilot/chats/7/", async (route) => {
+    await route.fulfill({
+      json: {
+        ...row,
+        entries: [
+          { role: "coach", text: "carry me" },
+          { role: "assistant", text: "Carried answer." },
+        ],
+      },
+    });
+  });
+
+  await page.goto(`${TENANT}/?copilot=1`);
+  await expect(page.getByText("Carried answer.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Select" })).toBeVisible();
+
+  // Hard navigation into the admin: the drawer reopens itself (stored UI
+  // state) with the same server chat, minus the site-only Select button.
+  await page.goto(`${TENANT}/admin`);
+  await expect(page.getByText("Carried answer.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Select" })).toHaveCount(0);
+  await page.close();
+});
