@@ -116,10 +116,15 @@ SYSTEM_PROMPT = (
     "coach's selection is something you cannot change, say so honestly in "
     "an answer and suggest what you CAN do.\n"
     "When asked for a direct link to a specific course, event, or blog post, "
-    "answer with it directly using the 'admin link' column from that "
-    "digest, as a markdown link with the item's own title as the label "
-    "(e.g. '[Open Pole Practice](/admin/live?tab=classes&event=42&kind=live)') "
-    "— copy the link exactly as given, never invent or guess one."
+    "offer BOTH the admin link and the site link from that digest, each as "
+    "its own markdown link so the coach can pick — label them by what they "
+    "open, e.g. 'Open in admin: [Open Pole Practice](/admin/live?tab=classes"
+    "&event=42&kind=live) · Open on your site: [Open Pole Practice]"
+    "(/calendar/live_class/42)'; if the coach only asks for one of the two, "
+    "give just that one; when a course/post's site link says '(not "
+    "published yet)', give only the admin link and say it isn't live yet "
+    "instead of offering a broken site link — copy every link exactly as "
+    "given in the digest, never invent or guess one."
 )
 
 
@@ -503,8 +508,10 @@ MAX_DIGEST_COURSES = 30
 
 def _courses_digest(tenant):
     """Bounded course inventory for the user turn: id, title, cover state,
-    published state, admin link — what set_course_cover proposals key off,
-    and what the model quotes back verbatim when asked for a direct link."""
+    published state, admin link, site link — what set_course_cover proposals
+    key off, and what the model quotes back verbatim when asked for a direct
+    link. The site link only actually resolves once published — unpublished
+    is noted so the model doesn't hand the coach a page nobody can see."""
     from apps.courses.models import Course
 
     with tenant_context(tenant):
@@ -515,12 +522,13 @@ def _courses_digest(tenant):
         )
     if not rows:
         return "Courses: (none yet)"
-    lines = ["Courses (id | title | cover | status | admin link):"]
+    lines = ["Courses (id | title | cover | status | admin link | site link):"]
     for r in rows:
         cover = "has cover" if (r["thumbnail_id"] or r["thumbnail_url"]) else "NO COVER"
         status = "published" if r["is_published"] else "draft"
+        site_link = f"/courses/{r['slug']}" if r["is_published"] else "(not published yet)"
         lines.append(
-            f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status} | /admin/courses/{r['slug']}"
+            f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status} | /admin/courses/{r['slug']} | {site_link}"
         )
     return "\n".join(lines)
 
@@ -535,6 +543,19 @@ def _event_admin_link(kind, event_id):
     what the model quotes back verbatim when asked for a direct link."""
     tab = "onsite" if kind == "onsite" else "classes"
     return f"/admin/live?tab={tab}&event={event_id}&kind={kind}"
+
+
+# The public calendar route (`apps.live.views.MODEL_MAP`) uses a different
+# vocabulary than the copilot's own event_kind — translate here so the two
+# link builders both key off the one event_kind the digest already carries.
+_EVENT_SITE_TYPE = {"live": "live_class", "onsite": "onsite_event"}
+
+
+def _event_site_link(kind, event_id):
+    """Public calendar detail page for the event — unlike courses/posts this
+    has no publish gate (calendar_event_detail has no status filter), so it
+    always resolves once the event exists."""
+    return f"/calendar/{_EVENT_SITE_TYPE.get(kind, 'live_class')}/{event_id}"
 
 
 def _events_digest(tenant):
@@ -554,25 +575,36 @@ def _events_digest(tenant):
     if not rows:
         return "Upcoming events: (none scheduled)"
     rows.sort(key=lambda r: r[1].scheduled_at)
-    lines = ["Upcoming events (id | kind | title | when | price | admin link):"]
+    lines = ["Upcoming events (id | kind | title | when | price | admin link | site link):"]
     for kind, e in rows[:MAX_DIGEST_EVENTS]:
-        link = _event_admin_link(kind, e.id)
-        lines.append(f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price} | {link}")
+        admin_link = _event_admin_link(kind, e.id)
+        site_link = _event_site_link(kind, e.id)
+        lines.append(
+            f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price} "
+            f"| {admin_link} | {site_link}"
+        )
     return "\n".join(lines)
 
 
 def _posts_digest(tenant):
     """Blog inventory for the user turn: what edit/publish proposals key off,
-    and what the model quotes back verbatim when asked for a direct link."""
+    and what the model quotes back verbatim when asked for a direct link.
+    The site link only actually resolves once published — same reasoning as
+    the courses digest."""
     from apps.blog.models import BlogPost
 
     with tenant_context(tenant):
-        rows = list(BlogPost.objects.order_by("-created_at").values("id", "title", "status")[:MAX_DIGEST_POSTS])
+        rows = list(
+            BlogPost.objects.order_by("-created_at").values("id", "title", "status", "slug")[:MAX_DIGEST_POSTS]
+        )
     if not rows:
         return "Blog posts: (none yet)"
-    lines = ["Blog posts (id | title | status | admin link):"]
+    lines = ["Blog posts (id | title | status | admin link | site link):"]
     for r in rows:
-        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {r['status']} | /admin/blog/{r['id']}")
+        site_link = f"/blog/{r['slug']}" if r["status"] == "published" else "(not published yet)"
+        lines.append(
+            f"  {r['id']} | {str(r['title'])[:60]} | {r['status']} | /admin/blog/{r['id']} | {site_link}"
+        )
     return "\n".join(lines)
 
 

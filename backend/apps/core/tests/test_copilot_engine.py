@@ -851,6 +851,24 @@ def test_courses_digest_flags_missing_covers(tenant_with_pages):
     digest = engine._courses_digest(tenant_with_pages)
     assert "Yoga Basics" in digest and "NO COVER" in digest and "draft" in digest
     assert f"/admin/courses/{course.slug}" in digest
+    # Unpublished: no working site page — the model must not offer one.
+    assert "(not published yet)" in digest
+
+
+def test_courses_digest_published_carries_site_link(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.courses.models import Course
+
+    instructor = User.objects.create_user(
+        email="cover-digest-pub@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    course = Course.objects.create(title="Yoga Basics", instructor=instructor, is_published=True)
+    digest = engine._courses_digest(tenant_with_pages)
+    assert f"/courses/{course.slug}" in digest
 
 
 def test_course_for_cover_resolves_title_and_missing_course(tenant_with_pages):
@@ -904,14 +922,22 @@ def test_events_digest_lists_upcoming_live_and_onsite(tenant_with_pages):
     assert f"{live.id} | live | Morning Flow" in digest
     assert f"{onsite.id} | onsite | Retreat" in digest
     # Regression: the coach asking for a direct link had nothing to answer
-    # with — the digest must carry a real deep link per event.
+    # with — the digest must carry a real deep link per event, both admin
+    # and public-site (events have no publish gate, unlike courses/posts).
     assert f"/admin/live?tab=classes&event={live.id}&kind=live" in digest
     assert f"/admin/live?tab=onsite&event={onsite.id}&kind=onsite" in digest
+    assert f"/calendar/live_class/{live.id}" in digest
+    assert f"/calendar/onsite_event/{onsite.id}" in digest
 
 
 def test_event_admin_link_maps_kind_to_tab():
     assert engine._event_admin_link("live", 7) == "/admin/live?tab=classes&event=7&kind=live"
     assert engine._event_admin_link("onsite", 9) == "/admin/live?tab=onsite&event=9&kind=onsite"
+
+
+def test_event_site_link_maps_kind_to_calendar_type():
+    assert engine._event_site_link("live", 7) == "/calendar/live_class/7"
+    assert engine._event_site_link("onsite", 9) == "/calendar/onsite_event/9"
 
 
 def test_events_digest_empty(tenant_with_pages):
@@ -933,6 +959,24 @@ def test_posts_digest_lists_status(tenant_with_pages):
     digest = engine._posts_digest(tenant_with_pages)
     assert f"{post.id} | Why rest matters | draft" in digest
     assert f"/admin/blog/{post.id}" in digest
+    # Draft: no working site page — the model must not offer one.
+    assert "(not published yet)" in digest
+
+
+def test_posts_digest_published_carries_site_link(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.blog.models import BlogPost
+
+    author = User.objects.create_user(
+        email="posts-digest-pub@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    BlogPost.objects.create(title="Why rest matters", status="published", created_by=author, slug="why-rest-pub")
+    digest = engine._posts_digest(tenant_with_pages)
+    assert "/blog/why-rest-pub" in digest
 
 
 def test_posts_digest_empty(tenant_with_pages):
@@ -1087,6 +1131,8 @@ def test_system_prompt_lists_edit_event():
 def test_system_prompt_instructs_direct_link_answers():
     assert "admin link" in engine.SYSTEM_PROMPT
     assert "never invent or guess" in engine.SYSTEM_PROMPT
+    assert "offer BOTH the admin link and the site link" in engine.SYSTEM_PROMPT
+    assert "not published yet" in engine.SYSTEM_PROMPT
 
 
 def test_edit_blog_post_card_resolves_title_and_stashes_params():
