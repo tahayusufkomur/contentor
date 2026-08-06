@@ -155,10 +155,16 @@ def _cli_structured(system, user, output_model, model):
         "\n\nRespond with ONLY a JSON object (no prose, no code fences) matching this JSON schema:\n"
         + json.dumps(output_model.model_json_schema())
     )
+    # The system-prompt note alone is not enough: chatty inputs (a greeting to
+    # the copilot) reliably pull the model into prose, and the identical retry
+    # fails the same way (observed 2026-08-06, 2/2 prose without this line,
+    # 2/2 valid JSON with it). The user-turn reminder is the last thing the
+    # model reads, so it survives long system prompts.
+    user_note = "\n\n(Reply with ONLY the JSON object matching the schema — no prose.)"
     cmd = [
         settings.AI_CLI_BIN,
         "-p",
-        user,
+        user + user_note,
         "--model",
         _cli_model_alias(model),
         "--system-prompt",

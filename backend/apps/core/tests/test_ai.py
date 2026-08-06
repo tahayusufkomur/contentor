@@ -172,6 +172,26 @@ def test_structured_cli_retries_once_on_bad_json(settings, monkeypatch):
     assert len(calls) == 2
 
 
+def test_structured_cli_user_prompt_carries_json_reminder(settings, monkeypatch):
+    """The schema note in the system prompt alone is not enough: on chatty
+    inputs the model answers in prose and the identical retry fails the same
+    way (observed live 2026-08-06, copilot greeting → 100% prose). A short
+    JSON-only reminder at the end of the USER prompt flips those cases back
+    to valid JSON."""
+    _cli_settings(settings)
+    captured = {}
+
+    def fake_run(cmd, **kw):
+        captured["cmd"] = cmd
+        return _completed(stdout=_json.dumps({"result": '{"title": "hi"}'}))
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    ai.structured(system="s", user="hey there", output_model=_Out, model="m", max_tokens=100)
+    user_arg = captured["cmd"][captured["cmd"].index("-p") + 1]
+    assert user_arg.startswith("hey there")
+    assert user_arg.endswith("(Reply with ONLY the JSON object matching the schema — no prose.)")
+
+
 def test_structured_cli_raises_after_second_bad_json(settings, monkeypatch):
     _cli_settings(settings)
     calls = []
