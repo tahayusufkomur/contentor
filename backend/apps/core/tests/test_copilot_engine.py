@@ -646,6 +646,7 @@ def test_set_logo_card_stashes_pick_and_carries_preview():
         actions=[{"kind": "set_logo", "description": "a calm lotus flower"}],
     )
     with (
+        mock.patch.object(copilot_logos, "current_logo_key", return_value=None) as current_key,
         mock.patch.object(copilot_logos, "pick_logo", return_value=row) as pick,
         mock.patch.object(copilot_logos, "preview_url", return_value="https://cdn.example/lotus.png"),
     ):
@@ -654,7 +655,9 @@ def test_set_logo_card_stashes_pick_and_carries_preview():
     assert card["kind"] == "set_logo"
     assert "Lotus mark" in card["title"]
     assert card["image_url"] == "https://cdn.example/lotus.png"
+    current_key.assert_called_once_with(TENANT)
     assert pick.call_args.args[0] == "a calm lotus flower"
+    assert pick.call_args.kwargs["exclude_s3_key"] is None
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
     assert stashed == {"kind": "set_logo", "curated_logo_id": 11}
 
@@ -667,13 +670,75 @@ def test_set_logo_no_logos_dropped_with_fallback():
         text="Set a fresh new logo for you!",
         actions=[{"kind": "set_logo", "description": "x"}],
     )
-    with mock.patch.object(
-        copilot_logos, "pick_logo", side_effect=copilot_logos.LogoOpError("no logos are available in the library yet")
+    with (
+        mock.patch.object(copilot_logos, "current_logo_key", return_value=None),
+        mock.patch.object(
+            copilot_logos,
+            "pick_logo",
+            side_effect=copilot_logos.LogoOpError("no logos are available in the library yet"),
+        ),
     ):
         payload, _ = _run(parsed)
     assert payload["kind"] == "answer"
     assert "Set a fresh new logo" not in payload["text"]
     assert "no logos are available in the library yet" in payload["text"]
+
+
+def test_set_logo_card_excludes_current_logo_and_picks_a_different_row(tenant_with_pages):
+    """End-to-end (real pick_logo, not mocked): the tenant's current logo
+    (materialized from catalog row A) must never be re-proposed — a
+    "different style" ask has to actually change something."""
+    from django_tenants.utils import schema_context
+
+    from apps.core.copilot import logos as copilot_logos
+    from apps.core.curated_logos.materialize import materialize_curated_logo
+    from apps.core.models import CuratedLogo
+    from apps.tenant_config.models import TenantConfig
+
+    with schema_context("public"):
+        row_a = CuratedLogo.objects.create(
+            title="Lotus mark", tags="yoga,calm", image_key="platform/curated-logos/lotus.png", enabled=True
+        )
+        row_b = CuratedLogo.objects.create(
+            title="Mountain mark", tags="yoga,calm", image_key="platform/curated-logos/mountain.png", enabled=True
+        )
+    photo_a = materialize_curated_logo(row_a)
+    cfg = TenantConfig.objects.first()
+    cfg.logo = photo_a
+    cfg.save(update_fields=["logo"])
+    tenant_with_pages.wizard_state = {"answers": {"niche": "yoga"}}
+
+    action = engine.SetLogoAction(kind="set_logo", description="a calm mark")
+    with mock.patch.object(copilot_logos, "preview_url", return_value="https://cdn.example/x.png"):
+        card = engine._card(tenant_with_pages, action)
+    stashed_id = engine.tokens.take_action(card["token"], tenant_with_pages.schema_name)["curated_logo_id"]
+    assert stashed_id == row_b.pk
+
+
+def test_set_logo_card_current_logo_only_option_drops_with_no_logos_error(tenant_with_pages):
+    """Same setup but the catalog has ONLY the tenant's current logo — the
+    exclusion must leave nothing to pick, raising LogoOpError (dropped card,
+    fallback answer), not silently re-offering the same logo."""
+    from django_tenants.utils import schema_context
+
+    from apps.core.copilot import logos as copilot_logos
+    from apps.core.curated_logos.materialize import materialize_curated_logo
+    from apps.core.models import CuratedLogo
+    from apps.tenant_config.models import TenantConfig
+
+    with schema_context("public"):
+        row_a = CuratedLogo.objects.create(
+            title="Only", tags="yoga", image_key="platform/curated-logos/only.png", enabled=True
+        )
+    photo_a = materialize_curated_logo(row_a)
+    cfg = TenantConfig.objects.first()
+    cfg.logo = photo_a
+    cfg.save(update_fields=["logo"])
+    tenant_with_pages.wizard_state = {"answers": {"niche": "yoga"}}
+
+    action = engine.SetLogoAction(kind="set_logo", description="anything")
+    with pytest.raises(copilot_logos.LogoOpError):
+        engine._card(tenant_with_pages, action)
 
 
 def test_user_turn_includes_courses_digest():

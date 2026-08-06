@@ -613,7 +613,8 @@ def _card(tenant, action):
         }
     if isinstance(action, SetLogoAction):
         answers = (tenant.wizard_state or {}).get("answers") or {}
-        row = logos.pick_logo(action.description, answers.get("niche"))
+        exclude_key = logos.current_logo_key(tenant)
+        row = logos.pick_logo(action.description, answers.get("niche"), exclude_s3_key=exclude_key)
         return {
             "kind": "set_logo",
             "title": f"Use the logo '{row.title}'",
