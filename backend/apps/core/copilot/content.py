@@ -150,6 +150,46 @@ def edit_event(event_id, event_kind, params):
     }
 
 
+_POST_EDIT_MAP = {"title": "title", "summary": "excerpt", "body_html": "body_html"}
+
+
+def edit_blog_post(post_id, params):
+    from apps.blog.models import BlogPost
+    from apps.blog.serializers import BlogPostAdminSerializer
+
+    post = BlogPost.objects.filter(pk=post_id).first()
+    if post is None:
+        raise ContentOpError(f"no blog post with id {post_id}")
+    data = {}
+    if params.get("title"):
+        data["title"] = str(params["title"])[:200]
+    if params.get("summary"):
+        data["excerpt"] = str(params["summary"])[:300]
+    if params.get("body_html"):
+        data["body_html"] = str(params["body_html"])
+    if not data:
+        raise ContentOpError("nothing to change on the post")
+    old = {k: str(getattr(post, k)) for k in data}
+    serializer = BlogPostAdminSerializer(instance=post, data=data, partial=True)
+    if not serializer.is_valid():
+        _fail(serializer.errors)
+    post = serializer.save()
+    changes = [
+        {"field": k, "old": old[k][:200], "new": str(getattr(post, k))[:200]}
+        for k in data
+        if old[k] != str(getattr(post, k))
+    ]
+    if not changes:
+        raise ContentOpError("those fields already have those values")
+    return {
+        "kind": "edit_blog_post",
+        "id": post.id,
+        "title": post.title,
+        "url": f"/admin/blog/{post.id}",
+        "changes": changes,
+    }
+
+
 def create_blog_post(user, params):
     from apps.blog.models import unique_slug
     from apps.blog.serializers import BlogPostAdminSerializer

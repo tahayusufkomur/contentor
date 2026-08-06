@@ -46,6 +46,8 @@ SYSTEM_PROMPT = (
     "here\n"
     "- edit_event: reschedule or update an upcoming event (event_id + kind "
     "from the events list); date must be in the future\n"
+    "- edit_blog_post: update an existing post's title, summary, or body "
+    "(post_id from the blog list)\n"
     "- create_event: schedule a live class (event_kind=live) or an "
     "in-person event (event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
@@ -234,6 +236,14 @@ class EditEventAction(BaseModel):
     price: float | None = None
 
 
+class EditBlogPostAction(BaseModel):
+    kind: Literal["edit_blog_post"]
+    post_id: int
+    title: str | None = None
+    summary: str | None = None
+    body_html: str | None = None
+
+
 CopilotAction = Annotated[
     EditPagesAction
     | AddBlockAction
@@ -248,6 +258,7 @@ CopilotAction = Annotated[
     | SetCourseCoverAction
     | EditCourseAction
     | EditEventAction
+    | EditBlogPostAction
     | EditBlockFieldsAction
     | ToggleBlockAction
     | DuplicateBlockAction,
@@ -353,6 +364,19 @@ def _event_title(tenant, event_kind, event_id):
         title = model.objects.filter(pk=event_id).values_list("title", flat=True).first()
     if title is None:
         raise content.ContentOpError(f"no event with id {event_id}")
+    return title
+
+
+def _post_title(tenant, post_id):
+    """Resolve a blog post's title for the card — coaches only see ids in
+    the blog digest, and `f"Update post {id}"` isn't a usable card title.
+    Raises content.ContentOpError for an unknown id."""
+    from apps.blog.models import BlogPost
+
+    with tenant_context(tenant):
+        title = BlogPost.objects.filter(pk=post_id).values_list("title", flat=True).first()
+    if title is None:
+        raise content.ContentOpError(f"no blog post with id {post_id}")
     return title
 
 
@@ -639,6 +663,40 @@ def _card(tenant, action):
                     "event_id": action.event_id,
                     "event_kind": action.event_kind,
                     "params": params,
+                },
+            ),
+        }
+    if isinstance(action, EditBlogPostAction):
+        post_title = _post_title(tenant, action.post_id)  # raises ContentOpError on unknown id
+        parts = [
+            p
+            for p in (
+                f"title → '{action.title[:60]}'" if action.title else None,
+                f"summary → '{action.summary[:80]}'" if action.summary else None,
+                "new body" if action.body_html else None,
+            )
+            if p
+        ]
+        if not parts:
+            raise content.ContentOpError("nothing to change on the post")
+        return {
+            "kind": "edit_blog_post",
+            "title": f"Update post: {post_title[:100]}",
+            "detail": ", ".join(parts),
+            "token": tokens.stash_action(
+                schema,
+                {
+                    "kind": "edit_blog_post",
+                    "post_id": action.post_id,
+                    "params": {
+                        k: v
+                        for k, v in (
+                            ("title", action.title),
+                            ("summary", action.summary),
+                            ("body_html", action.body_html),
+                        )
+                        if v is not None
+                    },
                 },
             ),
         }

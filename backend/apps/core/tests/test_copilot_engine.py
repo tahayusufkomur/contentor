@@ -885,3 +885,57 @@ def test_edit_event_card_rejects_past_date():
 
 def test_system_prompt_lists_edit_event():
     assert "edit_event" in engine.SYSTEM_PROMPT
+
+
+def test_edit_blog_post_card_resolves_title_and_stashes_params():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_blog_post", "post_id": 7, "title": "New title", "summary": "Shorter."}],
+    )
+    with mock.patch.object(engine, "_post_title", return_value="5 stretches") as post_lookup:
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "edit_blog_post"
+    assert "5 stretches" in card["title"]
+    post_lookup.assert_called_once_with(TENANT, 7)
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {
+        "kind": "edit_blog_post",
+        "post_id": 7,
+        "params": {"title": "New title", "summary": "Shorter."},
+    }
+
+
+def test_edit_blog_post_unknown_post_dropped_with_reason():
+    from apps.core.copilot import content as copilot_content
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_blog_post", "post_id": 4242, "title": "X"}],
+    )
+    with mock.patch.object(
+        engine, "_post_title", side_effect=copilot_content.ContentOpError("no blog post with id 4242")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "no blog post with id 4242" in payload["text"]
+
+
+def test_edit_blog_post_no_fields_dropped_with_reason():
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "edit_blog_post", "post_id": 7}],
+    )
+    with mock.patch.object(engine, "_post_title", return_value="5 stretches"):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "nothing to change" in payload["text"]
+
+
+def test_system_prompt_lists_edit_blog_post():
+    assert "edit_blog_post" in engine.SYSTEM_PROMPT

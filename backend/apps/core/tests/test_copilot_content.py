@@ -242,6 +242,51 @@ def test_edit_event_no_changes_raises(coach):
         content.edit_event(event.pk, "live", {"title": "Yoga"})
 
 
+def test_edit_blog_post_updates_and_sanitizes(coach):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title="Old", status="draft", created_by=coach, slug="old")
+    result = content.edit_blog_post(post.pk, {"title": "Newer", "body_html": "<p>ok</p><script>x()</script>"})
+    post.refresh_from_db()
+    assert post.title == "Newer"
+    assert "<script>" not in post.body_html
+    assert any(c["field"] == "title" for c in result["changes"])
+    assert result["kind"] == "edit_blog_post"
+    assert result["id"] == post.id
+    assert result["url"] == f"/admin/blog/{post.id}"
+
+
+def test_edit_blog_post_maps_summary_to_excerpt(coach):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title="Old", status="draft", created_by=coach, slug="old2")
+    result = content.edit_blog_post(post.pk, {"summary": "A new one-liner."})
+    post.refresh_from_db()
+    assert post.excerpt == "A new one-liner."
+    assert {"field": "excerpt", "old": "", "new": "A new one-liner."} in result["changes"]
+
+
+def test_edit_blog_post_unknown_raises(coach):
+    with pytest.raises(content.ContentOpError):
+        content.edit_blog_post(4242, {"title": "X"})
+
+
+def test_edit_blog_post_no_changes_raises(coach):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title="Same", status="draft", created_by=coach, slug="same")
+    with pytest.raises(content.ContentOpError):
+        content.edit_blog_post(post.pk, {"title": "Same"})
+
+
+def test_edit_blog_post_empty_params_raises(coach):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title="Whatever", status="draft", created_by=coach, slug="whatever")
+    with pytest.raises(content.ContentOpError):
+        content.edit_blog_post(post.pk, {})
+
+
 def test_edit_event_price_updates_pricing_type(coach):
     from apps.live.models import LiveClass
 
