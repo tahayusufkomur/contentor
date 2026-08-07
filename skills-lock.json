@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "gemini-watermark-remover": {
+      "source": "GargantuaX/gemini-watermark-remover",
+      "sourceType": "github",
+      "skillPath": "skills/gemini-watermark-remover/SKILL.md",
+      "computedHash": "eadf2024808ca2f098b91e2856f789e9e2b9f58fc9cbb3a1c30bd5c9cd36db9e"
+    }
+  }
+}
