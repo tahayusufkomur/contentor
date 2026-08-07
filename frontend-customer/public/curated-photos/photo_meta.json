@@ -3758,5 +3758,1773 @@
     "tags": "food, market, produce, fresh",
     "kind": "hero",
     "alt_text": "person selecting fresh produce at a farmers market"
+  },
+  {
+    "title": "Rooftop Yoga at Golden Hour",
+    "filename": "hero_yoga_rooftop_yoga_at_golden.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a woman holding a yoga pose on a city rooftop terrace at golden hour, skyline in the background, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, rooftop, golden hour, city, calm",
+    "kind": "hero",
+    "alt_text": "person in a yoga pose on a rooftop terrace at golden hour"
+  },
+  {
+    "title": "Lotus Position Close-Up",
+    "filename": "stock_yoga_lotus_position_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of crossed legs in lotus position on a yoga mat, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, lotus position, mat, calm, practice",
+    "kind": "stock",
+    "alt_text": "close-up of legs crossed in lotus position on a yoga mat"
+  },
+  {
+    "title": "Forest Yoga Retreat",
+    "filename": "hero_yoga_forest_yoga_retreat.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small group practicing yoga on mats in a sunlit forest clearing, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, forest, retreat, outdoor, nature",
+    "kind": "hero",
+    "alt_text": "small group practicing yoga in a sunlit forest clearing"
+  },
+  {
+    "title": "Yin Yoga Restorative Pose",
+    "filename": "hero_yoga_yin_yoga_restorative_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person in a deep restorative yin yoga pose supported by bolsters in a quiet studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, yin yoga, restorative, calm, studio",
+    "kind": "hero",
+    "alt_text": "person in a restorative yin yoga pose supported by bolsters"
+  },
+  {
+    "title": "Partner Yoga Duo",
+    "filename": "hero_yoga_partner_yoga_duo.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two people balancing together in a partner yoga pose in a bright studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, partner yoga, balance, studio, community",
+    "kind": "hero",
+    "alt_text": "two people balancing together in a partner yoga pose"
+  },
+  {
+    "title": "Yoga Wheel Backbend",
+    "filename": "hero_yoga_yoga_wheel_backbend.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person using a yoga wheel to deepen a backbend in a sunlit studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga wheel, backbend, flexibility, studio",
+    "kind": "hero",
+    "alt_text": "person using a yoga wheel to deepen a backbend stretch"
+  },
+  {
+    "title": "Aerial Yoga Silks",
+    "filename": "hero_yoga_aerial_yoga_silks.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person suspended in a hammock doing aerial yoga in a studio with silk fabric, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, aerial yoga, silks, studio, flexibility",
+    "kind": "hero",
+    "alt_text": "person suspended in fabric silks practicing aerial yoga"
+  },
+  {
+    "title": "Kids Yoga Class",
+    "filename": "hero_yoga_kids_yoga_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small group of children practicing simple yoga poses on colorful mats, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, kids, class, playful, wellness",
+    "kind": "hero",
+    "alt_text": "children practicing simple yoga poses on colorful mats"
+  },
+  {
+    "title": "Chair Yoga for Seniors",
+    "filename": "hero_yoga_chair_yoga_for_seniors.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an older adult practicing gentle chair yoga stretches in a bright room, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, seniors, chair yoga, gentle, wellness",
+    "kind": "hero",
+    "alt_text": "older adult practicing gentle chair yoga stretches"
+  },
+  {
+    "title": "Hot Yoga Studio Sweat",
+    "filename": "hero_yoga_hot_yoga_studio_sweat.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person mid-flow in a heated yoga studio, visible sweat and intense focus, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, hot yoga, studio, intensity, strength",
+    "kind": "hero",
+    "alt_text": "person practicing an intense flow in a heated yoga studio"
+  },
+  {
+    "title": "Desert Yoga Sunset",
+    "filename": "hero_yoga_desert_yoga_sunset.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person in a yoga pose on a sand dune at sunset, warm desert light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, desert, sunset, outdoor, calm",
+    "kind": "hero",
+    "alt_text": "person in a yoga pose on a sand dune at sunset"
+  },
+  {
+    "title": "Yoga Block Alignment",
+    "filename": "stock_yoga_yoga_block_alignment.jpg",
+    "prompt": "Ultra-realistic photograph: a yoga block being used to support a hand in a standing pose, close crop, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga block, alignment, studio, props",
+    "kind": "stock",
+    "alt_text": "yoga block supporting a hand in a standing pose"
+  },
+  {
+    "title": "Belly Dance Studio Rehearsal",
+    "filename": "hero_belly_dance_belly_dance_studio_rehearsal.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer rehearsing a hip movement combination in a mirrored studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, studio, rehearsal, practice, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer rehearsing a hip movement in a mirrored studio"
+  },
+  {
+    "title": "Belly Dance Veil Flow",
+    "filename": "hero_belly_dance_belly_dance_veil_flow.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer flowing a silk veil overhead mid-movement, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, veil, flow, costume, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer flowing a silk veil overhead mid-movement"
+  },
+  {
+    "title": "Belly Dance Stage Performance",
+    "filename": "hero_belly_dance_belly_dance_stage_performance.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer performing on stage under warm spotlighting, audience silhouettes in foreground, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, stage, performance, spotlight, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer performing on stage under warm spotlighting"
+  },
+  {
+    "title": "Belly Dance Coin Belt Shimmy",
+    "filename": "hero_belly_dance_belly_dance_coin_belt.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a belly dancer mid-shimmy, coin belt in motion, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, coin belt, shimmy, movement, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer mid-shimmy with a coin belt in motion"
+  },
+  {
+    "title": "Belly Dance Duo Practice",
+    "filename": "hero_belly_dance_belly_dance_duo_practice.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two belly dancers practicing a synchronized combination in a studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, duo, practice, studio, dance",
+    "kind": "hero",
+    "alt_text": "two belly dancers practicing a synchronized combination"
+  },
+  {
+    "title": "Belly Dance Candlelit Studio",
+    "filename": "hero_belly_dance_belly_dance_candlelit_studio.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer posing in a warmly lit studio surrounded by candles, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, candlelit, studio, ambiance, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer posing in a warmly candlelit studio"
+  },
+  {
+    "title": "Belly Dance Zill Finger Cymbals",
+    "filename": "hero_belly_dance_belly_dance_zill_finger.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer playing zill finger cymbals mid-pose, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, zills, finger cymbals, instrument, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer playing zill finger cymbals mid-pose"
+  },
+  {
+    "title": "Face Yoga Morning Routine",
+    "filename": "hero_face_yoga_face_yoga_morning_routine.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a woman doing a face yoga exercise in front of a bathroom mirror in soft morning light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, morning routine, mirror, skincare, wellness",
+    "kind": "hero",
+    "alt_text": "woman doing a face yoga exercise in front of a bathroom mirror"
+  },
+  {
+    "title": "Face Yoga Cheek Lift Exercise",
+    "filename": "hero_face_yoga_face_yoga_cheek_lift.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a person performing a cheek-lifting face yoga exercise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, cheek lift, exercise, technique, wellness",
+    "kind": "hero",
+    "alt_text": "person performing a cheek-lifting face yoga exercise"
+  },
+  {
+    "title": "Face Yoga Mirror Session",
+    "filename": "hero_face_yoga_face_yoga_mirror_session.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person practicing face yoga exercises while looking into a round mirror, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, mirror, session, practice, skincare",
+    "kind": "hero",
+    "alt_text": "person practicing face yoga exercises in a round mirror"
+  },
+  {
+    "title": "Face Yoga Jawline Exercise",
+    "filename": "hero_face_yoga_face_yoga_jawline_exercise.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a person performing a jawline-toning face yoga exercise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, jawline, exercise, toning, wellness",
+    "kind": "hero",
+    "alt_text": "person performing a jawline-toning face yoga exercise"
+  },
+  {
+    "title": "Face Yoga Eye Area Exercise",
+    "filename": "hero_face_yoga_face_yoga_eye_area.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a person gently pressing around the eye area during a face yoga exercise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, eye area, exercise, technique, wellness",
+    "kind": "hero",
+    "alt_text": "person gently pressing around the eye area during a face yoga exercise"
+  },
+  {
+    "title": "Face Yoga Facial Massage",
+    "filename": "hero_face_yoga_face_yoga_facial_massage.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person performing a self facial massage with upward strokes, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, facial massage, self-care, skincare, wellness",
+    "kind": "hero",
+    "alt_text": "person performing a self facial massage with upward strokes"
+  },
+  {
+    "title": "Belly Dance Backbend Pose",
+    "filename": "hero_belly_dance_belly_dance_backbend_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer holding a graceful backbend pose, costume fabric flowing, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, backbend, pose, flexibility, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer holding a graceful backbend pose"
+  },
+  {
+    "title": "Belly Dance Beginner Lesson",
+    "filename": "hero_belly_dance_belly_dance_beginner_lesson.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an instructor guiding a beginner student through a basic hip movement, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, lesson, beginner, instructor, dance",
+    "kind": "hero",
+    "alt_text": "instructor guiding a beginner student through a hip movement"
+  },
+  {
+    "title": "Belly Dance Costume Fitting",
+    "filename": "hero_belly_dance_belly_dance_costume_fitting.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer being fitted into an ornate beaded costume backstage, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, costume, fitting, backstage, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer being fitted into an ornate beaded costume"
+  },
+  {
+    "title": "Belly Dance Fan Veil",
+    "filename": "hero_belly_dance_belly_dance_fan_veil.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer holding two fan veils open in a dramatic pose, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, fan veil, pose, costume, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer holding two fan veils open in a dramatic pose"
+  },
+  {
+    "title": "Belly Dance Floorwork",
+    "filename": "hero_belly_dance_belly_dance_floorwork.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer performing a graceful floorwork pose on a studio floor, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, floorwork, pose, studio, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer performing a graceful floorwork pose"
+  },
+  {
+    "title": "Belly Dance Group Class",
+    "filename": "hero_belly_dance_belly_dance_group_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small group of students practicing belly dance choreography in a studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, class, group, studio, dance",
+    "kind": "hero",
+    "alt_text": "small group of students practicing belly dance choreography"
+  },
+  {
+    "title": "Belly Dance Silk Costume Detail",
+    "filename": "hero_belly_dance_belly_dance_silk_costume.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a close mid-shot of an ornate belly dance costume with sequins and coins, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, costume, detail, sequins, dance",
+    "kind": "hero",
+    "alt_text": "close view of an ornate belly dance costume with sequins"
+  },
+  {
+    "title": "Belly Dance Solo Performance",
+    "filename": "hero_belly_dance_belly_dance_solo_performance.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer mid-performance in a flowing costume with a coin hip scarf, warm stage light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, performance, costume, stage, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer mid-performance in a flowing costume with a coin hip scarf"
+  },
+  {
+    "title": "Belly Dance Sword Balance",
+    "filename": "hero_belly_dance_belly_dance_sword_balance.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer balancing a sword on her head during a performance, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, sword, balance, performance, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer balancing a sword on her head during a performance"
+  },
+  {
+    "title": "Belly Dance Theater Spotlight",
+    "filename": "hero_belly_dance_belly_dance_theater_spotlight.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer frozen mid-pose under a single theater spotlight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, theater, spotlight, performance, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer frozen mid-pose under a single theater spotlight"
+  },
+  {
+    "title": "Belly Dance Undulation Pose",
+    "filename": "hero_belly_dance_belly_dance_undulation_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a belly dancer mid-undulation movement, arms raised gracefully, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, undulation, pose, movement, dance",
+    "kind": "hero",
+    "alt_text": "belly dancer mid-undulation movement with arms raised"
+  },
+  {
+    "title": "Face Yoga Before Mirror Practice",
+    "filename": "hero_face_yoga_face_yoga_before_mirror.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person practicing a facial exercise routine in front of a vanity mirror, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, mirror, practice, vanity, routine",
+    "kind": "hero",
+    "alt_text": "person practicing a facial exercise routine in front of a mirror"
+  },
+  {
+    "title": "Face Yoga Breathing Exercise",
+    "filename": "hero_face_yoga_face_yoga_breathing_exercise.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a person with closed eyes doing a calming breathing exercise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, breathing, exercise, calm, wellness",
+    "kind": "hero",
+    "alt_text": "person with closed eyes doing a calming breathing exercise"
+  },
+  {
+    "title": "Face Yoga Evening Routine",
+    "filename": "hero_face_yoga_face_yoga_evening_routine.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person practicing face yoga exercises by warm lamp light in the evening, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, evening routine, calm, skincare, wellness",
+    "kind": "hero",
+    "alt_text": "person practicing face yoga exercises by warm lamp light"
+  },
+  {
+    "title": "Face Yoga Forehead Smoothing",
+    "filename": "hero_face_yoga_face_yoga_forehead_smoothing.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a person performing a forehead-smoothing face yoga exercise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, forehead, smoothing, exercise, wellness",
+    "kind": "hero",
+    "alt_text": "person performing a forehead-smoothing face yoga exercise"
+  },
+  {
+    "title": "Face Yoga Group Class",
+    "filename": "hero_face_yoga_face_yoga_group_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small group practicing face yoga exercises together in a bright studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, group, class, studio, wellness",
+    "kind": "hero",
+    "alt_text": "small group practicing face yoga exercises together"
+  },
+  {
+    "title": "Face Yoga Gua Sha Routine",
+    "filename": "hero_face_yoga_face_yoga_gua_sha.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person using a gua sha stone along the jawline in a skincare routine, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, gua sha, routine, skincare, tool",
+    "kind": "hero",
+    "alt_text": "person using a gua sha stone along the jawline"
+  },
+  {
+    "title": "Face Yoga Ice Roller Routine",
+    "filename": "hero_face_yoga_face_yoga_ice_roller.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person using an ice roller across their cheek in a skincare routine, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, ice roller, routine, skincare, tool",
+    "kind": "hero",
+    "alt_text": "person using an ice roller across their cheek"
+  },
+  {
+    "title": "Face Yoga Instructor Demonstration",
+    "filename": "hero_face_yoga_face_yoga_instructor_demonstration.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a face yoga instructor demonstrating an exercise to a client in a bright studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, instructor, demonstration, coaching, studio",
+    "kind": "hero",
+    "alt_text": "face yoga instructor demonstrating an exercise to a client"
+  },
+  {
+    "title": "Face Yoga Neck Stretch",
+    "filename": "hero_face_yoga_face_yoga_neck_stretch.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person gently stretching their neck during a face yoga routine, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, neck stretch, exercise, technique, wellness",
+    "kind": "hero",
+    "alt_text": "person gently stretching their neck during a face yoga routine"
+  },
+  {
+    "title": "Face Yoga Outdoor Session",
+    "filename": "hero_face_yoga_face_yoga_outdoor_session.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person practicing a face yoga exercise outdoors in natural morning light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, outdoor, session, natural light, wellness",
+    "kind": "hero",
+    "alt_text": "person practicing a face yoga exercise outdoors"
+  },
+  {
+    "title": "Face Yoga Relaxation Pose",
+    "filename": "hero_face_yoga_face_yoga_relaxation_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person lying back with a relaxed expression after a face yoga session, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, relaxation, calm, self-care, wellness",
+    "kind": "hero",
+    "alt_text": "person lying back with a relaxed expression after a session"
+  },
+  {
+    "title": "Face Yoga Skincare Prep",
+    "filename": "hero_face_yoga_face_yoga_skincare_prep.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person applying a light facial oil before starting a face yoga routine, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, skincare, prep, routine, self-care",
+    "kind": "hero",
+    "alt_text": "person applying facial oil before a face yoga routine"
+  },
+  {
+    "title": "Face Yoga Smile Exercise",
+    "filename": "hero_face_yoga_face_yoga_smile_exercise.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: close mid-shot of a person performing an exaggerated smile face yoga exercise, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, smile exercise, technique, expression, wellness",
+    "kind": "hero",
+    "alt_text": "person performing an exaggerated smile face yoga exercise"
+  },
+  {
+    "title": "Face Yoga Video Call Class",
+    "filename": "hero_face_yoga_face_yoga_video_call.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a person following an online face yoga class on a laptop at home, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, video call, online class, home, wellness",
+    "kind": "hero",
+    "alt_text": "person following an online face yoga class on a laptop"
+  },
+  {
+    "title": "Pole Dance Aerial Split",
+    "filename": "hero_pole_dance_pole_dance_aerial_split.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer holding an aerial split pose high on the pole, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, aerial split, strength, flexibility, studio",
+    "kind": "hero",
+    "alt_text": "pole dancer holding an aerial split pose high on the pole"
+  },
+  {
+    "title": "Pole Dance Beginner Lesson",
+    "filename": "hero_pole_dance_pole_dance_beginner_lesson.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: an instructor guiding a beginner through a basic pole spin, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, lesson, beginner, instructor, studio",
+    "kind": "hero",
+    "alt_text": "instructor guiding a beginner through a basic pole spin"
+  },
+  {
+    "title": "Pole Dance Ceiling Hang",
+    "filename": "hero_pole_dance_pole_dance_ceiling_hang.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer hanging gracefully near the top of the pole under studio lights, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, ceiling, hang, strength, studio",
+    "kind": "hero",
+    "alt_text": "pole dancer hanging gracefully near the top of the pole"
+  },
+  {
+    "title": "Pole Dance Choreography Practice",
+    "filename": "hero_pole_dance_pole_dance_choreography_practice.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer rehearsing a floor-to-pole choreography sequence, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, choreography, practice, studio, dance",
+    "kind": "hero",
+    "alt_text": "pole dancer rehearsing a floor-to-pole choreography sequence"
+  },
+  {
+    "title": "Pole Dance Climb Sequence",
+    "filename": "hero_pole_dance_pole_dance_climb_sequence.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer mid-climb up the pole, strong grip and controlled form, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, climb, strength, studio, technique",
+    "kind": "hero",
+    "alt_text": "pole dancer mid-climb up the pole with controlled form"
+  },
+  {
+    "title": "Pole Dance Competition Stage",
+    "filename": "hero_pole_dance_pole_dance_competition_stage.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer performing a dramatic pose on a lit competition stage, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, competition, stage, performance, dance",
+    "kind": "hero",
+    "alt_text": "pole dancer performing a dramatic pose on a competition stage"
+  },
+  {
+    "title": "Pole Dance Cool-Down Stretch",
+    "filename": "hero_pole_dance_pole_dance_cool_down.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer cooling down with a floor stretch after a session, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, cool-down, stretch, studio, recovery",
+    "kind": "hero",
+    "alt_text": "pole dancer cooling down with a floor stretch after a session"
+  },
+  {
+    "title": "Pole Dance Duo Practice",
+    "filename": "hero_pole_dance_pole_dance_duo_practice.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: two pole dancers practicing complementary poses on adjacent poles, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, duo, practice, studio, dance",
+    "kind": "hero",
+    "alt_text": "two pole dancers practicing complementary poses"
+  },
+  {
+    "title": "Pole Dance Evening Studio Light",
+    "filename": "hero_pole_dance_pole_dance_evening_studio.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer posing in a studio lit with warm evening light, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, studio, evening, ambiance, dance",
+    "kind": "hero",
+    "alt_text": "pole dancer posing in a studio lit with warm evening light"
+  },
+  {
+    "title": "Pole Dance Fitness Class",
+    "filename": "hero_pole_dance_pole_dance_fitness_class.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a small group pole fitness class practicing spins together in a studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, fitness, class, group, studio",
+    "kind": "hero",
+    "alt_text": "small group pole fitness class practicing spins together"
+  },
+  {
+    "title": "Pole Dance Flexibility Pose",
+    "filename": "hero_pole_dance_pole_dance_flexibility_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer showing a deep flexibility pose beside the pole, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, flexibility, pose, strength, studio",
+    "kind": "hero",
+    "alt_text": "pole dancer showing a deep flexibility pose beside the pole"
+  },
+  {
+    "title": "Pole Dance Grip Chalk Moment",
+    "filename": "hero_pole_dance_pole_dance_grip_chalk.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer chalking her hands before a climb, close mid-shot, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, grip chalk, preparation, studio, detail",
+    "kind": "hero",
+    "alt_text": "pole dancer chalking her hands before a climb"
+  },
+  {
+    "title": "Pole Dance Inverted Pose",
+    "filename": "hero_pole_dance_pole_dance_inverted_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer holding an inverted pose upside down on the pole, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, inverted, pose, strength, studio",
+    "kind": "hero",
+    "alt_text": "pole dancer holding an inverted pose upside down on the pole"
+  },
+  {
+    "title": "Pole Dance Shoulder Mount",
+    "filename": "hero_pole_dance_pole_dance_shoulder_mount.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer holding a shoulder mount pose with strong control, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, shoulder mount, strength, technique, studio",
+    "kind": "hero",
+    "alt_text": "pole dancer holding a shoulder mount pose with strong control"
+  },
+  {
+    "title": "Pole Dance Silhouette",
+    "filename": "hero_pole_dance_pole_dance_silhouette.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a silhouette of a pole dancer against a dramatic studio backlight, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, silhouette, studio, dramatic, dance",
+    "kind": "hero",
+    "alt_text": "silhouette of a pole dancer against a dramatic backlight"
+  },
+  {
+    "title": "Pole Dance Spin Motion Blur",
+    "filename": "hero_pole_dance_pole_dance_spin_motion.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer captured mid-spin around the pole with graceful motion blur, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, spin, motion, studio, dance",
+    "kind": "hero",
+    "alt_text": "pole dancer captured mid-spin around the pole"
+  },
+  {
+    "title": "Pole Dance Strength Pose",
+    "filename": "hero_pole_dance_pole_dance_strength_pose.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer holding a demanding strength pose mid-air on the pole, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, strength, pose, studio, fitness",
+    "kind": "hero",
+    "alt_text": "pole dancer holding a demanding strength pose mid-air"
+  },
+  {
+    "title": "Pole Dance Studio Mirror",
+    "filename": "hero_pole_dance_pole_dance_studio_mirror.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer's reflection captured mid-pose in a studio mirror wall, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, studio, mirror, reflection, practice",
+    "kind": "hero",
+    "alt_text": "pole dancer's reflection captured mid-pose in a mirror"
+  },
+  {
+    "title": "Pole Dance Warm-Up Stretch",
+    "filename": "hero_pole_dance_pole_dance_warm_up.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer stretching on the studio floor before a session, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, warm-up, stretch, studio, practice",
+    "kind": "hero",
+    "alt_text": "pole dancer stretching on the studio floor before a session"
+  },
+  {
+    "title": "Bare Feet on Studio Floor",
+    "filename": "stock_belly_dance_bare_feet_on_studio.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of bare feet mid-step on a polished studio dance floor, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, feet, studio, floor, practice",
+    "kind": "stock",
+    "alt_text": "close-up of bare feet mid-step on a studio dance floor"
+  },
+  {
+    "title": "Belly Dance Costume Detail",
+    "filename": "stock_belly_dance_belly_dance_costume_detail.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of embroidered fabric and beadwork on a belly dance costume, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, costume, embroidery, detail, fabric",
+    "kind": "stock",
+    "alt_text": "close-up of embroidered fabric on a belly dance costume"
+  },
+  {
+    "title": "Belly Dance Jewelry Flatlay",
+    "filename": "stock_belly_dance_belly_dance_jewelry_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph: a flatlay of belly dance jewelry: bangles, headpiece, and coin necklace, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, jewelry, flatlay, costume, accessories",
+    "kind": "stock",
+    "alt_text": "flatlay of belly dance jewelry: bangles and coin necklace"
+  },
+  {
+    "title": "Hand Gesture Close-Up",
+    "filename": "stock_belly_dance_hand_gesture_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of an expressive hand gesture typical of belly dance choreography, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, hand gesture, technique, dance, detail",
+    "kind": "stock",
+    "alt_text": "close-up of an expressive hand gesture in belly dance"
+  },
+  {
+    "title": "Hip Scarf Coins Close-Up",
+    "filename": "stock_belly_dance_hip_scarf_coins_close.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of coins on a belly dance hip scarf catching the light, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, hip scarf, coins, costume, detail",
+    "kind": "stock",
+    "alt_text": "close-up of coins on a belly dance hip scarf"
+  },
+  {
+    "title": "Practice Skirt Twirl",
+    "filename": "stock_belly_dance_practice_skirt_twirl.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a flowing practice skirt mid-twirl in a studio, candid action composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, skirt, twirl, practice, studio",
+    "kind": "stock",
+    "alt_text": "close-up of a flowing practice skirt mid-twirl"
+  },
+  {
+    "title": "Zill Cymbals Flatlay",
+    "filename": "stock_belly_dance_zill_cymbals_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph: a flatlay of a pair of zill finger cymbals on a patterned fabric, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, zills, cymbals, flatlay, instrument",
+    "kind": "stock",
+    "alt_text": "flatlay of a pair of zill finger cymbals on patterned fabric"
+  },
+  {
+    "title": "Cold Water Face Splash",
+    "filename": "stock_face_yoga_cold_water_face_splash.jpg",
+    "prompt": "Ultra-realistic photograph: a candid close-up of water droplets on a face after a cold splash, candid close composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, cold water, splash, routine, skincare",
+    "kind": "stock",
+    "alt_text": "close-up of water droplets on a face after a cold splash"
+  },
+  {
+    "title": "Eye Exercise Close-Up",
+    "filename": "stock_face_yoga_eye_exercise_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of an eye mid-exercise, gentle finger pressure at the corner, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, eye exercise, technique, detail, skincare",
+    "kind": "stock",
+    "alt_text": "close-up of an eye mid-exercise with gentle finger pressure"
+  },
+  {
+    "title": "Face Massage Close-Up",
+    "filename": "stock_face_yoga_face_massage_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of fingertips massaging along a jawline, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, massage, jawline, technique, skincare",
+    "kind": "stock",
+    "alt_text": "close-up of fingertips massaging along a jawline"
+  },
+  {
+    "title": "Face Yoga App on Phone",
+    "filename": "stock_face_yoga_face_yoga_app_on.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a face yoga exercise app open on a smartphone screen, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, app, phone, technology, routine",
+    "kind": "stock",
+    "alt_text": "close-up of a face yoga app open on a smartphone screen"
+  },
+  {
+    "title": "Face Yoga Hand Position Close-Up",
+    "filename": "stock_face_yoga_face_yoga_hand_position.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of fingers positioned correctly for a face yoga exercise, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, hand position, technique, detail, exercise",
+    "kind": "stock",
+    "alt_text": "close-up of fingers positioned correctly for a face yoga exercise"
+  },
+  {
+    "title": "Facial Massage Oil Bottle",
+    "filename": "stock_face_yoga_facial_massage_oil_bottle.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of an amber facial massage oil bottle with a dropper, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, facial oil, bottle, skincare, detail",
+    "kind": "stock",
+    "alt_text": "close-up of an amber facial massage oil bottle with a dropper"
+  },
+  {
+    "title": "Gua Sha Tool Close-Up",
+    "filename": "stock_face_yoga_gua_sha_tool_close.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a rose quartz gua sha tool on a marble surface, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, gua sha, tool, skincare, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a rose quartz gua sha tool on a marble surface"
+  },
+  {
+    "title": "Ice Roller Close-Up",
+    "filename": "stock_face_yoga_ice_roller_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of an ice roller resting on a cool marble surface, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, ice roller, tool, detail, skincare",
+    "kind": "stock",
+    "alt_text": "close-up of an ice roller resting on a marble surface"
+  },
+  {
+    "title": "Mirror Practice Close-Up",
+    "filename": "stock_face_yoga_mirror_practice_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a person's reflection mid-exercise in a round mirror, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, mirror, practice, reflection, exercise",
+    "kind": "stock",
+    "alt_text": "close-up of a person's reflection mid-exercise in a mirror"
+  },
+  {
+    "title": "Skin Texture Close-Up",
+    "filename": "stock_face_yoga_skin_texture_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: an extreme close-up of smooth, healthy skin texture with soft light, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, skin, texture, detail, skincare",
+    "kind": "stock",
+    "alt_text": "extreme close-up of smooth, healthy skin texture"
+  },
+  {
+    "title": "Skincare Products Flatlay",
+    "filename": "stock_face_yoga_skincare_products_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph: a flatlay of minimal skincare bottles and a small towel, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, skincare, flatlay, products, routine",
+    "kind": "stock",
+    "alt_text": "flatlay of minimal skincare bottles and a small towel"
+  },
+  {
+    "title": "Smile Exercise Close-Up",
+    "filename": "stock_face_yoga_smile_exercise_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of an exaggerated smile mid-exercise, cheeks lifted, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, smile, exercise, technique, expression",
+    "kind": "stock",
+    "alt_text": "close-up of an exaggerated smile mid-exercise"
+  },
+  {
+    "title": "Hands Gripping Pole Close-Up",
+    "filename": "stock_pole_dance_hands_gripping_pole_close.jpg",
+    "prompt": "Ultra-realistic photograph: extreme close-up of hands gripping a chrome dance pole, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, hands, grip, pole, detail",
+    "kind": "stock",
+    "alt_text": "extreme close-up of hands gripping a chrome dance pole"
+  },
+  {
+    "title": "Pole Dance Class Schedule Board",
+    "filename": "stock_pole_dance_pole_dance_class_schedule.jpg",
+    "prompt": "Ultra-realistic photograph: a studio class schedule board listing pole dance session times, wide ambient composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, schedule, studio, class, board",
+    "kind": "stock",
+    "alt_text": "a studio schedule board listing pole dance session times"
+  },
+  {
+    "title": "Pole Dance Confidence Pose",
+    "filename": "stock_pole_dance_pole_dance_confidence_pose.jpg",
+    "prompt": "Ultra-realistic photograph: a close mid-shot of a dancer smiling confidently beside the pole, candid close composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, confidence, pose, studio, expression",
+    "kind": "stock",
+    "alt_text": "dancer smiling confidently beside the pole"
+  },
+  {
+    "title": "Pole Dance Costume Detail",
+    "filename": "stock_pole_dance_pole_dance_costume_detail.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a sparkly pole dance costume detail on a rack, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, costume, detail, sparkle, studio",
+    "kind": "stock",
+    "alt_text": "close-up of a sparkly pole dance costume on a rack"
+  },
+  {
+    "title": "Pole Dance Grip Aid Flatlay",
+    "filename": "stock_pole_dance_pole_dance_grip_aid.jpg",
+    "prompt": "Ultra-realistic photograph: a flatlay of grip aid products used before a pole session, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, grip aid, flatlay, props, practice",
+    "kind": "stock",
+    "alt_text": "flatlay of grip aid products used before a pole session"
+  },
+  {
+    "title": "Pole Dance Mirror Reflection",
+    "filename": "stock_pole_dance_pole_dance_mirror_reflection.jpg",
+    "prompt": "Ultra-realistic photograph: a pole dancer's silhouette reflected faintly in a studio mirror, candid close composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, mirror, reflection, studio, practice",
+    "kind": "stock",
+    "alt_text": "pole dancer's silhouette reflected faintly in a studio mirror"
+  },
+  {
+    "title": "Pole Dance Shoes Detail",
+    "filename": "stock_pole_dance_pole_dance_shoes_detail.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of platform pole dance shoes on a studio floor, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, shoes, platform, detail, studio",
+    "kind": "stock",
+    "alt_text": "close-up of platform pole dance shoes on a studio floor"
+  },
+  {
+    "title": "Pole Dance Stretch Band",
+    "filename": "stock_pole_dance_pole_dance_stretch_band.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a stretch band being used for a flexibility warm-up, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, stretch band, flexibility, warm-up, props",
+    "kind": "stock",
+    "alt_text": "close-up of a stretch band used for a flexibility warm-up"
+  },
+  {
+    "title": "Pole Dance Studio Entrance",
+    "filename": "stock_pole_dance_pole_dance_studio_entrance.jpg",
+    "prompt": "Ultra-realistic photograph: a welcoming pole studio entrance with soft signage and plants, wide ambient composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, studio, entrance, ambiance, welcoming",
+    "kind": "stock",
+    "alt_text": "a welcoming pole studio entrance with soft signage and plants"
+  },
+  {
+    "title": "Pole Dance Studio Floor",
+    "filename": "stock_pole_dance_pole_dance_studio_floor.jpg",
+    "prompt": "Ultra-realistic photograph: a wide shot of an empty pole studio floor with crash mats visible, wide ambient composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, studio, floor, ambiance, equipment",
+    "kind": "stock",
+    "alt_text": "a wide shot of an empty pole studio floor with crash mats"
+  },
+  {
+    "title": "Pole Dance Warm-Up Circle",
+    "filename": "stock_pole_dance_pole_dance_warm_up.jpg",
+    "prompt": "Ultra-realistic photograph: a small group sitting in a circle stretching before a pole class, candid wide composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, warm-up, circle, group, studio",
+    "kind": "stock",
+    "alt_text": "small group sitting in a circle stretching before class"
+  },
+  {
+    "title": "Pole Dance Water Bottle and Towel",
+    "filename": "stock_pole_dance_pole_dance_water_bottle.jpg",
+    "prompt": "Ultra-realistic photograph: a water bottle and towel resting on the studio floor beside the pole, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, water bottle, towel, studio, routine",
+    "kind": "stock",
+    "alt_text": "a water bottle and towel resting beside the pole"
+  },
+  {
+    "title": "Pole Grip Chalk Close-Up",
+    "filename": "stock_pole_dance_pole_grip_chalk_close.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of chalked hands gripping a dance pole, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, chalk, grip, hands, detail",
+    "kind": "stock",
+    "alt_text": "close-up of chalked hands gripping a dance pole"
+  },
+  {
+    "title": "Courtyard at Golden Hour",
+    "filename": "hero_belly_dance_courtyard_golden_hour.jpg",
+    "prompt": "A full-body photograph of a female belly dancer performing in a sunlit Mediterranean courtyard, arms framed overhead and skirt caught mid-turn. Turquoise beaded costume and a sheer skirt, dark hair braided with a flower. Warm stone walls behind, low golden-hour sun raking across her and casting a long shadow. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, belly dance, courtyard, golden hour, outdoor, performance",
+    "kind": "hero",
+    "alt_text": "female belly dancer performing in a sunlit stone courtyard"
+  },
+  {
+    "title": "Coin Hip Scarf Shimmy",
+    "filename": "hero_belly_dance_hip_scarf_shimmy.jpg",
+    "prompt": "A full-body studio photograph of a female belly dancer mid-shimmy, a gold coin hip scarf blurring with the movement of her hips while her upper body stays poised. Deep red beaded bra and a flowing chiffon skirt, long dark hair loose. Warm amber background with focused directional side lighting catching every coin. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, belly dance, hip scarf, shimmy, movement, performance",
+    "kind": "hero",
+    "alt_text": "female belly dancer mid-shimmy in a gold coin hip scarf"
+  },
+  {
+    "title": "Pad Work",
+    "filename": "hero_fitness_fitness_boxing_pads_woman.jpg",
+    "prompt": "A woman throwing a cross into a coach's focus pads, sweat and intensity, boxing gym. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, boxing, pads, women, intensity",
+    "kind": "hero",
+    "alt_text": "woman throwing a punch into a coach's focus pads"
+  },
+  {
+    "title": "Deadlift Set",
+    "filename": "hero_fitness_fitness_deadlift_man.jpg",
+    "prompt": "A man mid-deadlift in a gym, bar bending slightly, focused expression and strong form, moody gym lighting. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, deadlift, strength, gym, men",
+    "kind": "hero",
+    "alt_text": "man performing a deadlift in a gym"
+  },
+  {
+    "title": "Group HIIT",
+    "filename": "hero_fitness_fitness_group_hiit_mixed.jpg",
+    "prompt": "A mixed group of men and women mid-burpee in a HIIT class, energetic and sweaty, industrial gym. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, hiit, group, class, energy",
+    "kind": "hero",
+    "alt_text": "mixed group in a high intensity fitness class"
+  },
+  {
+    "title": "Kettlebell Swing",
+    "filename": "hero_fitness_fitness_kettlebell_woman.jpg",
+    "prompt": "A woman performing a kettlebell swing in a bright functional gym, hair mid-motion, powerful posture. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, kettlebell, strength, gym, women",
+    "kind": "hero",
+    "alt_text": "woman performing a kettlebell swing"
+  },
+  {
+    "title": "Training At Sixty",
+    "filename": "hero_fitness_fitness_older_man_training.jpg",
+    "prompt": "An older man doing a dumbbell press with good form, trainer spotting him, bright welcoming gym. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, seniors, men, training, inclusive",
+    "kind": "hero",
+    "alt_text": "older man doing a dumbbell press with a trainer spotting"
+  },
+  {
+    "title": "Morning Run",
+    "filename": "hero_fitness_fitness_outdoor_run_pair.jpg",
+    "prompt": "A man and a woman running together on a park path at sunrise, breath visible in cool air. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, running, outdoor, sunrise, cardio",
+    "kind": "hero",
+    "alt_text": "two runners on a park path at sunrise"
+  },
+  {
+    "title": "Coaching A Client",
+    "filename": "hero_fitness_fitness_pt_coaching_client.jpg",
+    "prompt": "A male personal trainer coaching a female client through a squat, correcting her stance, gym floor behind them. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, personal trainer, coaching, gym, technique",
+    "kind": "hero",
+    "alt_text": "trainer coaching a client through a squat"
+  },
+  {
+    "title": "Pull-Up Strength",
+    "filename": "hero_fitness_fitness_pullup_woman.jpg",
+    "prompt": "A woman at the top of a pull-up on a bar, back muscles engaged, chalk on her hands. 16:9 editorial composition. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, pull up, strength, women, gym",
+    "kind": "hero",
+    "alt_text": "woman at the top of a pull-up"
+  },
+  {
+    "title": "Artist Blending Foundation",
+    "filename": "hero_makeup_makeup_artist_at_work.jpg",
+    "prompt": "A professional makeup artist, a woman, blending foundation on a seated female client's cheek with a brush in a bright studio, both faces visible and focused. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, artist, client, studio, professional",
+    "kind": "hero",
+    "alt_text": "female makeup artist blending foundation on a client's cheek"
+  },
+  {
+    "title": "Backstage Touch-Up",
+    "filename": "hero_makeup_makeup_backstage_rush.jpg",
+    "prompt": "A female makeup artist doing a fast touch-up on a model backstage before a show, warm bulb lighting, energetic atmosphere. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, backstage, touch up, fashion, professional",
+    "kind": "hero",
+    "alt_text": "makeup artist touching up a model backstage"
+  },
+  {
+    "title": "Bold Editorial Look",
+    "filename": "hero_makeup_makeup_bold_editorial_look.jpg",
+    "prompt": "A close portrait of a woman wearing a bold editorial makeup look with graphic eyeliner and glossy lips, against a coloured seamless backdrop, studio strobe lighting. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, editorial, bold, portrait, creative",
+    "kind": "hero",
+    "alt_text": "woman wearing a bold editorial makeup look"
+  },
+  {
+    "title": "Bridal Makeup Morning",
+    "filename": "hero_makeup_makeup_bridal_prep.jpg",
+    "prompt": "A female makeup artist finishing a bride's soft glam look in a sunlit room, the bride smiling in a white robe. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, bridal, glam, morning, celebration",
+    "kind": "hero",
+    "alt_text": "makeup artist finishing a bride's look in a sunlit room"
+  },
+  {
+    "title": "Shade Consultation",
+    "filename": "hero_makeup_makeup_client_consultation.jpg",
+    "prompt": "A female makeup artist holding foundation shade swatches against a female client's jawline, both concentrating, bright studio. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, consultation, shades, client, professional",
+    "kind": "hero",
+    "alt_text": "artist matching foundation shades against a client's jawline"
+  },
+  {
+    "title": "Makeup Masterclass",
+    "filename": "hero_makeup_makeup_masterclass_group.jpg",
+    "prompt": "A female instructor demonstrating a technique to a small group of women seated at lit vanity mirrors in a studio. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, masterclass, teaching, group, studio",
+    "kind": "hero",
+    "alt_text": "instructor demonstrating makeup technique to a group of women"
+  },
+  {
+    "title": "Makeup For Mature Skin",
+    "filename": "hero_makeup_makeup_mature_skin_client.jpg",
+    "prompt": "A female makeup artist applying makeup to an older woman with silver hair, both smiling warmly, soft natural light. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, mature skin, inclusive, client, warmth",
+    "kind": "hero",
+    "alt_text": "makeup artist applying makeup to an older woman"
+  },
+  {
+    "title": "Natural Glow Portrait",
+    "filename": "hero_makeup_makeup_natural_glow_portrait.jpg",
+    "prompt": "A soft daylight portrait of a woman with dewy natural makeup, freckles visible, looking calmly at the camera by a window. 16:9 editorial composition. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, natural, glow, portrait, daylight",
+    "kind": "hero",
+    "alt_text": "woman with dewy natural makeup by a window"
+  },
+  {
+    "title": "Cadillac Stretch",
+    "filename": "hero_pilates_pilates_cadillac_stretch.jpg",
+    "prompt": "A woman performing a supported stretch on a pilates cadillac trapeze table in a minimal studio, morning light. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, cadillac, stretch, equipment, studio",
+    "kind": "hero",
+    "alt_text": "woman stretching on a pilates cadillac trapeze table"
+  },
+  {
+    "title": "Mat Class",
+    "filename": "hero_pilates_pilates_mat_class_group.jpg",
+    "prompt": "A small group of women on mats in a sunlit pilates studio holding a hundred position, female instructor walking the room. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, mat class, group, studio, core",
+    "kind": "hero",
+    "alt_text": "group of women in a pilates mat class"
+  },
+  {
+    "title": "Prenatal Pilates",
+    "filename": "hero_pilates_pilates_prenatal_session.jpg",
+    "prompt": "A pregnant woman doing a gentle side-lying pilates exercise on a mat, female instructor supporting her, warm calm studio. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, prenatal, gentle, instructor, wellness",
+    "kind": "hero",
+    "alt_text": "pregnant woman doing gentle pilates with an instructor"
+  },
+  {
+    "title": "Private Correction",
+    "filename": "hero_pilates_pilates_private_correction.jpg",
+    "prompt": "A female pilates instructor correcting a client's spinal alignment during a seated stretch, both concentrating. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, instructor, alignment, private, technique",
+    "kind": "hero",
+    "alt_text": "instructor correcting a client's spinal alignment"
+  },
+  {
+    "title": "Reformer Session",
+    "filename": "hero_pilates_pilates_reformer_session.jpg",
+    "prompt": "A woman working through a footwork sequence on a pilates reformer in a bright airy studio, instructor's hand guiding her ankle. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, reformer, instructor, studio, technique",
+    "kind": "hero",
+    "alt_text": "woman on a pilates reformer guided by an instructor"
+  },
+  {
+    "title": "Pilates For Seniors",
+    "filename": "hero_pilates_pilates_senior_class.jpg",
+    "prompt": "An older woman doing a seated pilates exercise with a female instructor kneeling beside her, warm encouraging atmosphere. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, seniors, gentle, instructor, inclusive",
+    "kind": "hero",
+    "alt_text": "older woman doing seated pilates with an instructor"
+  },
+  {
+    "title": "Full Studio Class",
+    "filename": "hero_pilates_pilates_studio_wide.jpg",
+    "prompt": "A wide view of a pilates studio with several women on reformers mid-class, female instructor at the front. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, studio, class, reformers, community",
+    "kind": "hero",
+    "alt_text": "pilates studio with several women on reformers"
+  },
+  {
+    "title": "Wunda Chair Work",
+    "filename": "hero_pilates_pilates_wunda_chair.jpg",
+    "prompt": "A woman pressing through a wunda chair exercise, strong controlled form, bright studio with plants. 16:9 editorial composition. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, wunda chair, strength, control, studio",
+    "kind": "hero",
+    "alt_text": "woman working on a pilates wunda chair"
+  },
+  {
+    "title": "Backlit Superman Hold",
+    "filename": "hero_pole_dance_backlit_superman_rim.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer in a superman hold, body horizontal to the floor gripping a chrome pole. Minimal black athletic two-piece, hair tied back. Deep charcoal background with strong rim backlighting that outlines her silhouette and separates her from the darkness, a faint haze in the air catching the light. Dramatic, athletic, editorial. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, superman, backlit, dramatic, athletic",
+    "kind": "hero",
+    "alt_text": "backlit pole dancer holding a horizontal superman position"
+  },
+  {
+    "title": "Barefoot Ground Flow",
+    "filename": "hero_pole_dance_barefoot_flow_sage.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer barefoot in a low flowing transition beside a chrome pole, one hand on the floor and hips lifting. Sage green seamless two-piece, hair in a loose bun. Soft sage background with gentle even light and a light matte floor. Organic, graceful, contemporary studio aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, floor flow, barefoot, sage, grace",
+    "kind": "hero",
+    "alt_text": "barefoot pole dancer in a low flowing transition beside a pole"
+  },
+  {
+    "title": "Monochrome Shoulder Mount",
+    "filename": "hero_pole_dance_bw_shoulder_mount_grain.jpg",
+    "prompt": "A high-resolution black and white studio photograph of a female pole dancer entering a shoulder mount, legs rising into a V above her. Black two-piece, hair in a low bun. Light grey background, soft directional light with fine film grain. Timeless, athletic, minimalist. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, shoulder mount, black and white, grain, athletic",
+    "kind": "hero",
+    "alt_text": "black and white photo of a pole dancer entering a shoulder mount"
+  },
+  {
+    "title": "Monochrome Vertical Split",
+    "filename": "hero_pole_dance_bw_vertical_split_profile.jpg",
+    "prompt": "A high-resolution black and white studio photograph of a female pole dancer seen in profile, executing a perfect vertical split on a black pole, one leg extended straight up along the pole and the other straight down. Black two-piece pole outfit, hair in a sleek low bun, gaze upward. Plain light grey studio wall creating a clean silhouette, soft directional light defining the contours of her muscles. Minimalist aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, vertical split, black and white, minimalist, strength",
+    "kind": "hero",
+    "alt_text": "black and white profile of a pole dancer in a vertical split"
+  },
+  {
+    "title": "Rhinestone Layback Arch",
+    "filename": "hero_pole_dance_chrome_layback_rhinestone.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer holding a dramatic layback on a chrome pole, torso arched back and one leg extended long. She wears a high-necked, long-sleeved nude leotard entirely covered in clear rhinestones; long blonde hair cascades toward the floor. Plain black background, focused directional side lighting raking across her muscles and catching the sparkle of the embellishments. Polished dark wood floor reflects the base of the pole. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, layback, rhinestone, studio, artistry",
+    "kind": "hero",
+    "alt_text": "pole dancer in a rhinestone leotard holding a layback on a chrome pole"
+  },
+  {
+    "title": "Cream Seated Portrait",
+    "filename": "hero_pole_dance_cream_seated_pole_portrait.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer seated on the floor leaning against a chrome pole, knees drawn up and looking calmly at the camera. Soft nude ribbed two-piece, hair loose over one shoulder. Warm cream background, soft even lighting, gentle shadow. Calm, confident, approachable studio portrait. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, portrait, seated, cream, confidence",
+    "kind": "hero",
+    "alt_text": "pole dancer seated on the floor leaning against a pole"
+  },
+  {
+    "title": "Floorwork in Warm Light",
+    "filename": "hero_pole_dance_floorwork_terracotta_glow.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer in a seated floorwork pose at the base of a chrome pole, one arm reaching up the pole and her back arched. Bronze metallic two-piece and black platform heels, hair loose and tousled. Warm terracotta background lit with soft golden directional light, long shadow across a matte floor. Sensual but tasteful, artistic studio aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, floorwork, terracotta, warm light, artistry",
+    "kind": "hero",
+    "alt_text": "pole dancer in a seated floorwork pose at the base of a pole"
+  },
+  {
+    "title": "Grey Studio Extension",
+    "filename": "hero_pole_dance_grey_extended_leg_line.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer standing tall against a chrome pole with one leg extended in a high developpe, creating a long clean line. Grey seamless two-piece, hair in a low bun. Light grey studio wall, soft directional light from the side. Elegant, balletic, minimalist studio aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, developpe, line, elegant, minimalist",
+    "kind": "hero",
+    "alt_text": "pole dancer with one leg extended in a high developpe beside a pole"
+  },
+  {
+    "title": "Handspring Power",
+    "filename": "hero_pole_dance_handspring_charcoal_hard.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer mid-handspring entry, arms locked and legs lifting away from a chrome pole. Black strappy two-piece, hair in a high ponytail mid-motion. Charcoal seamless background with hard directional light from one side casting a crisp shadow, emphasising raw strength. Sharp, powerful, editorial. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, handspring, power, strength, editorial",
+    "kind": "hero",
+    "alt_text": "pole dancer executing a handspring on a chrome pole"
+  },
+  {
+    "title": "Neon Rim Silhouette",
+    "filename": "hero_pole_dance_neon_rim_magenta.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer in a dramatic inverted pose, lit only by a magenta rim light that traces her silhouette against near-black. Simple dark two-piece, hair loose. Deep black background, faint atmospheric haze. Bold, modern, editorial. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, inverted, neon, silhouette, editorial",
+    "kind": "hero",
+    "alt_text": "pole dancer inverted, outlined by a magenta rim light"
+  },
+  {
+    "title": "Pole Dance Studio Session",
+    "filename": "hero_pole_dance_pole_dance_studio_session.jpg",
+    "prompt": "Ultra-realistic photograph, 16:9 editorial stock photo: a pole dancer mid-pose gripping a vertical pole in a bright studio, shot on a full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and textures, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, studio, pose, fitness, dance",
+    "kind": "hero",
+    "alt_text": "pole dancer mid-pose gripping a vertical pole in a studio"
+  },
+  {
+    "title": "Rhinestone Spin Motion",
+    "filename": "hero_pole_dance_rhinestone_spin_blur.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer mid-spin on a chrome pole, hair and fabric trailing with graceful motion blur while her face stays sharp. Champagne rhinestone leotard scattering points of light. Plain black background, focused directional lighting, polished dark floor reflecting the movement. Dynamic and glamorous. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, spin, motion, rhinestone, glamour",
+    "kind": "hero",
+    "alt_text": "pole dancer mid-spin with motion blur trailing behind her"
+  },
+  {
+    "title": "Scorpio on Teal",
+    "filename": "hero_pole_dance_scorpio_deep_teal.jpg",
+    "prompt": "A professional studio photograph of a female pole dancer in a scorpio pose, one knee hooked on a chrome pole with her back arched and head reaching toward her foot. Emerald metallic two-piece, long dark hair loose. Solid deep teal background, soft even lighting with a gentle highlight along her spine. Full-body, clean and focused, studio portrait aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, scorpio, flexibility, teal, artistry",
+    "kind": "hero",
+    "alt_text": "pole dancer in a scorpio pose with an arched back on a chrome pole"
+  },
+  {
+    "title": "Split Grip Extension",
+    "filename": "hero_pole_dance_split_grip_plum.jpg",
+    "prompt": "A full-body studio photograph of a female pole dancer in a split grip hold, one arm pressing and one pulling on a chrome pole with her legs in a wide split. Plum velvet two-piece, hair in a sleek bun. Muted plum background, soft even studio lighting revealing the velvet nap and her muscle tone. Full-body, studio portrait aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, split grip, velvet, plum, strength",
+    "kind": "hero",
+    "alt_text": "pole dancer in a split grip hold with legs in a wide split"
+  },
+  {
+    "title": "Velvet Ayesha on Rose",
+    "filename": "hero_pole_dance_velvet_ayesha_dusty_rose.jpg",
+    "prompt": "A professional studio photograph of a female pole dancer holding an ayesha, body extended horizontally away from a chrome pole with hips above her shoulders. She wears a dark blue velvet two-piece set and black platform heels with clear ankle straps, hair in a sleek low bun. Solid matte dusty rose pink background, soft even studio lighting bringing out the velvet texture and her muscle definition. Full-body shot, studio portrait aesthetic. 16:9 editorial composition. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, ayesha, velvet, strength, studio portrait",
+    "kind": "hero",
+    "alt_text": "pole dancer in a velvet set holding an ayesha on a chrome pole"
+  },
+  {
+    "title": "Ankle Bells Mid-Step",
+    "filename": "stock_belly_dance_ankle_bells_feet.jpg",
+    "prompt": "A close-up photograph of a female belly dancer's bare feet and ankles wearing small brass ankle bells, mid-step on a warm wooden studio floor, skirt hem swirling above. Glamorous editorial styling: ornate beaded costume, kohl-lined eyes, confident sensual presence. Warm directional light. Aspirational magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "belly dance, ankle bells, feet, movement, detail",
+    "kind": "stock",
+    "alt_text": "dancer's bare feet wearing brass ankle bells mid-step"
+  },
+  {
+    "title": "Stretching At The Barre",
+    "filename": "stock_belly_dance_barre_stretch.jpg",
+    "prompt": "A medium photograph of a female belly dancer stretching at a wooden studio barre, one leg extended and her back long, coin belt at her hips. Bright studio with soft window light, warm wood floor. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, barre, stretch, rehearsal, training, studio",
+    "kind": "stock",
+    "alt_text": "belly dancer stretching at a wooden studio barre"
+  },
+  {
+    "title": "Beaded Costume Detail",
+    "filename": "stock_belly_dance_beaded_costume_hands.jpg",
+    "prompt": "A close-up photograph of a female belly dancer's hands resting against the intricate beadwork and coins of the costume she is wearing, her torso filling the frame. Glamorous editorial styling: ornate beaded costume, kohl-lined eyes, confident sensual presence. Warm directional light. Aspirational magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "belly dance, costume, beadwork, hands, texture",
+    "kind": "stock",
+    "alt_text": "dancer's hands resting against her beaded costume"
+  },
+  {
+    "title": "Costume Rack Backstage",
+    "filename": "stock_belly_dance_costume_rack_backstage.jpg",
+    "prompt": "Ultra-realistic photograph: a rack of colorful belly dance costumes backstage before a show, wide ambient composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, costume, backstage, rack, performance",
+    "kind": "stock",
+    "alt_text": "a rack of colorful belly dance costumes backstage"
+  },
+  {
+    "title": "Finger Cymbal Close-Up",
+    "filename": "stock_belly_dance_finger_cymbal_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of fingers positioned to play a zill finger cymbal, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, finger cymbal, zill, detail, instrument",
+    "kind": "stock",
+    "alt_text": "close-up of fingers positioned to play a finger cymbal"
+  },
+  {
+    "title": "Hip Movement Close-Up",
+    "filename": "stock_belly_dance_hip_movement_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: a close mid-shot capturing a hip movement mid-motion, costume fringe in motion, candid action composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, hip movement, motion, costume, dance",
+    "kind": "stock",
+    "alt_text": "close shot capturing a hip movement mid-motion"
+  },
+  {
+    "title": "Lining Her Eyes",
+    "filename": "stock_belly_dance_kohl_at_mirror.jpg",
+    "prompt": "A close-up photograph of a female belly dancer applying dark kohl eyeliner at a backstage mirror before a performance, gold earrings catching the bulb light. Warm tungsten lighting, shallow depth of field. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, makeup, backstage, preparation, portrait, detail",
+    "kind": "stock",
+    "alt_text": "belly dancer applying kohl eyeliner at a backstage mirror"
+  },
+  {
+    "title": "Checking The Hip Line",
+    "filename": "stock_belly_dance_mirror_hip_check.jpg",
+    "prompt": "A medium photograph of a female belly dancer watching her own hip movement in a studio mirror, hands framing her waist, her reflection sharp and her back to camera. Warm studio tones, soft even lighting. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, mirror, technique, practice, reflection, studio",
+    "kind": "stock",
+    "alt_text": "belly dancer watching her hip movement in a studio mirror"
+  },
+  {
+    "title": "Notes After Class",
+    "filename": "stock_belly_dance_notes_after_class.jpg",
+    "prompt": "A medium photograph of a female belly dancer sitting cross-legged on a studio floor writing in a notebook after class, still in her practice costume and coin belt. Soft window light, warm wood floor, shallow depth of field. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, notes, reflection, practice, portrait, studio",
+    "kind": "stock",
+    "alt_text": "belly dancer writing in a notebook after class"
+  },
+  {
+    "title": "Slipping On Dance Shoes",
+    "filename": "stock_belly_dance_slipping_on_shoes.jpg",
+    "prompt": "A close-up photograph of a female belly dancer seated on a studio bench slipping on a soft leather dance shoe, her hands and ankles filling the frame, coin belt and beaded costume visible above. Glamorous editorial styling: ornate beaded costume, kohl-lined eyes, confident sensual presence. Warm directional light. Aspirational magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "belly dance, shoes, preparation, hands, detail",
+    "kind": "stock",
+    "alt_text": "belly dancer slipping on a soft leather dance shoe"
+  },
+  {
+    "title": "Stage Makeup Application",
+    "filename": "stock_belly_dance_stage_makeup_application.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of dramatic stage makeup being applied around the eyes, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, makeup, stage, backstage, detail",
+    "kind": "stock",
+    "alt_text": "close-up of dramatic stage makeup being applied"
+  },
+  {
+    "title": "Silk Veil Trailing",
+    "filename": "stock_belly_dance_veil_trail_hands.jpg",
+    "prompt": "A close-up photograph of a female belly dancer's raised arms and hands trailing a length of flowing orange silk veil across the frame, her face soft behind the fabric. Dark background, warm directional light glowing through the silk. Shot on a high-resolution DSLR, sharp focus, professional photography, no text, no watermark, no logos.",
+    "tags": "belly dance, veil, silk, arms, movement, detail",
+    "kind": "stock",
+    "alt_text": "dancer's arms trailing a flowing orange silk veil"
+  },
+  {
+    "title": "Warm-Up Stretch Close-Up",
+    "filename": "stock_belly_dance_warm_up_stretch_close.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a dancer stretching her arms overhead before class, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "belly dance, warm-up, stretch, practice, studio",
+    "kind": "stock",
+    "alt_text": "close-up of a dancer stretching her arms overhead"
+  },
+  {
+    "title": "Cheek Muscle Exercise Close-Up",
+    "filename": "stock_face_yoga_cheek_muscle_exercise_close.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a cheek puffed out during a face yoga muscle exercise, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, cheek, muscle, exercise, technique",
+    "kind": "stock",
+    "alt_text": "close-up of a cheek puffed out during a face yoga exercise"
+  },
+  {
+    "title": "Class Notes",
+    "filename": "stock_face_yoga_class_notes.jpg",
+    "prompt": "Ultra-realistic photograph: a face yoga class outline and exercise notes on a studio desk, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, class notes, routine, studio, reference",
+    "kind": "stock",
+    "alt_text": "a face yoga class outline and exercise notes on a desk"
+  },
+  {
+    "title": "Face Yoga Journal",
+    "filename": "stock_face_yoga_face_yoga_journal.jpg",
+    "prompt": "Ultra-realistic photograph: a wellness journal open to a face yoga tracking page with a pen, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, journal, tracking, routine, wellness",
+    "kind": "stock",
+    "alt_text": "a wellness journal open to a face yoga tracking page"
+  },
+  {
+    "title": "Face Yoga Timer on Phone",
+    "filename": "stock_face_yoga_face_yoga_timer_on.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a phone timer counting down during a face yoga exercise, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, timer, phone, routine, technology",
+    "kind": "stock",
+    "alt_text": "close-up of a phone timer counting down during an exercise"
+  },
+  {
+    "title": "Facial Exercise Chart Flatlay",
+    "filename": "stock_face_yoga_facial_exercise_chart_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph: a flatlay of a printed facial exercise chart and pen on a desk, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, chart, flatlay, reference, routine",
+    "kind": "stock",
+    "alt_text": "flatlay of a printed facial exercise chart and pen"
+  },
+  {
+    "title": "Jade Roller Flatlay",
+    "filename": "stock_face_yoga_jade_roller_flatlay.jpg",
+    "prompt": "Ultra-realistic photograph: a flatlay of a jade facial roller beside a small skincare bottle, flatlay composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, jade roller, flatlay, skincare, tool",
+    "kind": "stock",
+    "alt_text": "flatlay of a jade facial roller beside a skincare bottle"
+  },
+  {
+    "title": "Jawline Exercise Close-Up",
+    "filename": "stock_face_yoga_jawline_exercise_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a jaw mid-clench during a jawline toning exercise, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, jawline, exercise, technique, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a jaw mid-clench during a toning exercise"
+  },
+  {
+    "title": "Neck Stretch Close-Up",
+    "filename": "stock_face_yoga_neck_stretch_close_up.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a neck stretched gently to the side during a face yoga routine, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "face yoga, neck, stretch, technique, wellness",
+    "kind": "stock",
+    "alt_text": "close-up of a neck stretched gently during a face yoga routine"
+  },
+  {
+    "title": "Chalked Grip",
+    "filename": "stock_fitness_fitness_chalk_hands_close.jpg",
+    "prompt": "A close-up of a lifter's chalked hands gripping a barbell knurling before a set. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, chalk, grip, hands, detail",
+    "kind": "stock",
+    "alt_text": "close-up of chalked hands gripping a barbell"
+  },
+  {
+    "title": "Lacing Up",
+    "filename": "stock_fitness_fitness_lacing_trainers.jpg",
+    "prompt": "A close-up of a woman lacing her training shoes on a gym bench, focused hands. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, shoes, preparation, hands, detail",
+    "kind": "stock",
+    "alt_text": "woman lacing her training shoes on a bench"
+  },
+  {
+    "title": "Effort",
+    "filename": "stock_fitness_fitness_shoulder_sweat_close.jpg",
+    "prompt": "A close-up of a man's shoulder and neck with sweat after a heavy set, muscle definition visible. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, sweat, effort, muscle, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a sweating shoulder after a heavy set"
+  },
+  {
+    "title": "Squat Depth",
+    "filename": "stock_fitness_fitness_squat_form_close.jpg",
+    "prompt": "A close-up side view of a woman's legs at the bottom of a barbell squat, quads engaged. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, squat, form, legs, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a woman at the bottom of a barbell squat"
+  },
+  {
+    "title": "Water Break",
+    "filename": "stock_fitness_fitness_water_break_portrait.jpg",
+    "prompt": "A medium portrait of a man catching his breath and drinking water mid-session, gym softly behind. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, rest, hydration, portrait, gym",
+    "kind": "stock",
+    "alt_text": "man drinking water during a training session"
+  },
+  {
+    "title": "Wrapping Wrists",
+    "filename": "stock_fitness_fitness_wrapping_wrists.jpg",
+    "prompt": "A close-up of a woman wrapping her wrists before training, hands and tape in focus. Athletic aspirational styling: fitted performance kit, visible muscle definition and effort, confident powerful posture. Contrasty directional gym lighting. Premium sports-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "fitness, fitness, wraps, preparation, hands, detail",
+    "kind": "stock",
+    "alt_text": "woman wrapping her wrists before training"
+  },
+  {
+    "title": "Shaping The Brow",
+    "filename": "stock_makeup_makeup_brow_shaping.jpg",
+    "prompt": "A close-up of a female artist brushing and shaping a client's eyebrow with a spoolie, precise work. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, brows, shaping, close up, professional",
+    "kind": "stock",
+    "alt_text": "artist shaping a client's eyebrow with a spoolie"
+  },
+  {
+    "title": "Brush On Cheek",
+    "filename": "stock_makeup_makeup_brush_on_cheek_close.jpg",
+    "prompt": "An extreme close-up of a makeup brush sweeping blush across a woman's cheekbone, skin texture and powder visible. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, brush, blush, close up, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a brush sweeping blush across a cheekbone"
+  },
+  {
+    "title": "Brushes Between Takes",
+    "filename": "stock_makeup_makeup_brushes_in_use.jpg",
+    "prompt": "A medium shot of a female artist's hands fanning her brush set on a work surface while a client waits softly out of focus. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, brushes, tools, professional, studio",
+    "kind": "stock",
+    "alt_text": "artist fanning out her makeup brush set beside a client"
+  },
+  {
+    "title": "Drawing The Wing",
+    "filename": "stock_makeup_makeup_eyeliner_hand_close.jpg",
+    "prompt": "A close-up of a woman's steady hand drawing a winged eyeliner flick on her own eyelid, eye open and focused. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, eyeliner, technique, close up, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a woman drawing winged eyeliner on her eyelid"
+  },
+  {
+    "title": "Applying Lipstick",
+    "filename": "stock_makeup_makeup_lipstick_application.jpg",
+    "prompt": "A close-up of a woman applying a red lipstick to her lips, precise and deliberate, soft window light. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, lipstick, application, close up, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a woman applying red lipstick"
+  },
+  {
+    "title": "Mascara Coat",
+    "filename": "stock_makeup_makeup_mascara_close.jpg",
+    "prompt": "An extreme close-up of a woman applying mascara, lashes and wand in sharp focus. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, mascara, lashes, close up, detail",
+    "kind": "stock",
+    "alt_text": "extreme close-up of a woman applying mascara"
+  },
+  {
+    "title": "Palette In Hand",
+    "filename": "stock_makeup_makeup_palette_in_hand.jpg",
+    "prompt": "A close-up of a female artist's hand holding an eyeshadow palette and loading a brush, colours visible. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, palette, eyeshadow, hands, detail",
+    "kind": "stock",
+    "alt_text": "artist's hand loading a brush from an eyeshadow palette"
+  },
+  {
+    "title": "Setting The Base",
+    "filename": "stock_makeup_makeup_setting_powder_puff.jpg",
+    "prompt": "A close-up of a woman pressing setting powder onto her T-zone with a puff, soft daylight. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, setting powder, technique, close up, detail",
+    "kind": "stock",
+    "alt_text": "woman pressing setting powder onto her face with a puff"
+  },
+  {
+    "title": "Prepping The Skin",
+    "filename": "stock_makeup_makeup_skin_prep_close.jpg",
+    "prompt": "A close-up of a woman patting moisturiser into her face before makeup, fresh clean skin, bright bathroom light. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, skin prep, skincare, close up, routine",
+    "kind": "stock",
+    "alt_text": "woman patting moisturiser into her skin before makeup"
+  },
+  {
+    "title": "At The Vanity",
+    "filename": "stock_makeup_makeup_vanity_mirror_seated.jpg",
+    "prompt": "A medium shot of a woman seated at a bulb-lit vanity mirror mid-routine, reflection visible, warm tungsten light. Glamorous editorial beauty styling: flawless luminous skin, sultry confident gaze, polished hair, elegant jewellery. Moody directional beauty lighting with soft falloff. Aspirational high-end magazine aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "makeup, makeup, vanity, routine, mirror, portrait",
+    "kind": "stock",
+    "alt_text": "woman seated at a bulb-lit vanity mirror doing her makeup"
+  },
+  {
+    "title": "Feet On The Bar",
+    "filename": "stock_pilates_pilates_barefoot_on_reformer.jpg",
+    "prompt": "A close-up of a woman's bare feet pressing against a reformer footbar, arches lifted. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, feet, reformer, footbar, detail",
+    "kind": "stock",
+    "alt_text": "bare feet pressing against a reformer footbar"
+  },
+  {
+    "title": "Breath Focus",
+    "filename": "stock_pilates_pilates_breath_focus_close.jpg",
+    "prompt": "A close-up of a woman's face and ribcage mid-exhale during a pilates exercise, calm concentration. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, breath, focus, close up, calm",
+    "kind": "stock",
+    "alt_text": "close-up of a woman breathing during a pilates exercise"
+  },
+  {
+    "title": "Core Engagement",
+    "filename": "stock_pilates_pilates_core_engage_close.jpg",
+    "prompt": "A close-up of a woman's engaged abdominal muscles during a pilates curl, hands behind her head. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, core, abdominals, close up, strength",
+    "kind": "stock",
+    "alt_text": "close-up of engaged abdominals during a pilates curl"
+  },
+  {
+    "title": "Foot In The Strap",
+    "filename": "stock_pilates_pilates_foot_in_strap.jpg",
+    "prompt": "A close-up of a woman's foot placed in a reformer strap, ankle and calf in sharp focus. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, reformer, strap, foot, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a foot placed in a reformer strap"
+  },
+  {
+    "title": "Hands-On Cue",
+    "filename": "stock_pilates_pilates_hands_on_correction.jpg",
+    "prompt": "A close-up of a female instructor's hands cueing a client's ribcage during an exercise. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, instructor, cue, hands, technique",
+    "kind": "stock",
+    "alt_text": "instructor's hands cueing a client's ribcage"
+  },
+  {
+    "title": "Instructor Demonstrating",
+    "filename": "stock_pilates_pilates_instructor_demo_close.jpg",
+    "prompt": "A close-up of a female instructor demonstrating a precise hand position to a client, both hands in frame. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, instructor, demonstration, hands, teaching",
+    "kind": "stock",
+    "alt_text": "instructor demonstrating a hand position to a client"
+  },
+  {
+    "title": "Magic Circle",
+    "filename": "stock_pilates_pilates_magic_circle_squeeze.jpg",
+    "prompt": "A close-up of a woman squeezing a pilates magic circle between her thighs, muscles engaged. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, magic circle, props, legs, strength",
+    "kind": "stock",
+    "alt_text": "woman squeezing a pilates magic circle between her thighs"
+  },
+  {
+    "title": "Band Pull",
+    "filename": "stock_pilates_pilates_resistance_band_pull.jpg",
+    "prompt": "A close-up of a woman's arms drawing a resistance band wide, shoulders engaged. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, resistance band, arms, strength, detail",
+    "kind": "stock",
+    "alt_text": "woman drawing a resistance band wide with both arms"
+  },
+  {
+    "title": "Spine Articulation",
+    "filename": "stock_pilates_pilates_spine_articulation.jpg",
+    "prompt": "A medium side view of a woman rolling through a spinal articulation on a mat, vertebra by vertebra. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, spine, articulation, control, mat",
+    "kind": "stock",
+    "alt_text": "woman rolling through a spinal articulation on a mat"
+  },
+  {
+    "title": "After Class",
+    "filename": "stock_pilates_pilates_towel_after_class.jpg",
+    "prompt": "A medium shot of a woman wiping her neck with a towel and smiling after a pilates class, studio behind her. Elegant aspirational styling: sleek form-fitting activewear in a flattering neutral palette, long toned lines, confident poised posture. Soft directional light sculpting the body. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "pilates, pilates, after class, rest, portrait, studio",
+    "kind": "stock",
+    "alt_text": "woman wiping her neck with a towel after pilates class"
+  },
+  {
+    "title": "Ankle Wrap Detail",
+    "filename": "stock_pole_dance_ankle_wrap_close.jpg",
+    "prompt": "Close-up of a dancer wrapping supportive tape around her ankle before training, seated on a studio floor. Warm soft light, shallow depth of field. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, tape, preparation, injury care, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a dancer taping her ankle before training"
+  },
+  {
+    "title": "Applying Grip Aid",
+    "filename": "stock_pole_dance_applying_grip_aid.jpg",
+    "prompt": "A close-up studio photograph of a female pole dancer rubbing liquid grip aid between her palms, chrome pole soft behind her. Warm directional light, shallow depth of field, dark background. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, grip aid, hands, preparation, detail, studio",
+    "kind": "stock",
+    "alt_text": "female dancer rubbing grip aid between her palms"
+  },
+  {
+    "title": "Braided Hair Detail",
+    "filename": "stock_pole_dance_braided_hair_nape_close.jpg",
+    "prompt": "Close-up from behind of a dancer's sleek braided low bun at the nape of her neck, shoulders bare. Light grey background, soft directional light. Minimalist portrait detail. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, hair, portrait, minimalist, detail",
+    "kind": "stock",
+    "alt_text": "close-up of a sleek braided low bun at the nape of the neck"
+  },
+  {
+    "title": "Stepping To The Pole",
+    "filename": "stock_pole_dance_feet_at_pole_base.jpg",
+    "prompt": "A close-up studio photograph of a female pole dancer's bare feet and ankles stepping onto the chrome base plate of a pole on a polished dark wood floor. Moody directional light, shallow depth of field. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, feet, pole base, studio, detail, preparation",
+    "kind": "stock",
+    "alt_text": "a dancer's bare feet stepping onto the base plate of a pole"
+  },
+  {
+    "title": "Hand Grip Torque",
+    "filename": "stock_pole_dance_hand_grip_torque_close.jpg",
+    "prompt": "Close-up of a dancer's hands gripping a chrome pole in a split grip, forearm tendons and chalk dust visible. Black background, hard directional side light. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, grip, hands, strength, detail",
+    "kind": "stock",
+    "alt_text": "close-up of hands gripping a chrome pole in a split grip"
+  },
+  {
+    "title": "Pulling On Knee Pads",
+    "filename": "stock_pole_dance_knee_pads_pulling_on.jpg",
+    "prompt": "A close-up studio photograph of a female pole dancer seated on the studio floor pulling a black knee pad up over her knee, hands and legs filling the frame. Dark polished floor, soft directional light, shallow depth of field. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, knee pads, preparation, gear, detail, studio",
+    "kind": "stock",
+    "alt_text": "female dancer pulling a knee pad over her knee"
+  },
+  {
+    "title": "Checking Her Line",
+    "filename": "stock_pole_dance_mirror_line_check.jpg",
+    "prompt": "A medium studio photograph of a female pole dancer studying her own posture in a studio mirror wall, her reflection sharp and her back to camera. Black two-piece, hair in a bun, muted tones, soft even lighting. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, mirror, reflection, technique, portrait, studio",
+    "kind": "stock",
+    "alt_text": "female dancer checking her posture in a studio mirror"
+  },
+  {
+    "title": "Packing The Bag",
+    "filename": "stock_pole_dance_packing_dance_bag.jpg",
+    "prompt": "A medium studio photograph of a female pole dancer crouched over her open dance bag packing away her platform heels and knee pads at the end of a session. Dark studio floor, soft directional light. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, dance bag, gear, routine, portrait, studio",
+    "kind": "stock",
+    "alt_text": "female dancer packing heels into her dance bag"
+  },
+  {
+    "title": "Pole Cleaning Routine",
+    "filename": "stock_pole_dance_pole_cleaning_routine.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of a hand wiping down a dance pole with a cloth before class, candid close composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, cleaning, routine, studio, maintenance",
+    "kind": "stock",
+    "alt_text": "close-up of a hand wiping down a dance pole before class"
+  },
+  {
+    "title": "Pole Dance Ankle Detail",
+    "filename": "stock_pole_dance_pole_dance_ankle_detail.jpg",
+    "prompt": "Ultra-realistic photograph: close-up of an ankle and foot pointed mid-pose on the pole, close-up composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, ankle, pose, detail, technique",
+    "kind": "stock",
+    "alt_text": "close-up of an ankle and foot pointed mid-pose"
+  },
+  {
+    "title": "Pole Dance Group Warm-Up",
+    "filename": "stock_pole_dance_pole_dance_group_warm.jpg",
+    "prompt": "Ultra-realistic photograph: a small class doing a group warm-up stretch on the studio floor, candid wide composition, shot on a full-frame DSLR, natural light, shallow depth of field, high detail, premium magazine quality, no text, no watermark, no logos.",
+    "tags": "pole dance, group, warm-up, class, studio",
+    "kind": "stock",
+    "alt_text": "small class doing a group warm-up stretch on the floor"
+  },
+  {
+    "title": "Resting On The Mat",
+    "filename": "stock_pole_dance_resting_on_crash_mat.jpg",
+    "prompt": "A medium studio photograph of a female pole dancer sitting on a thick crash mat at the base of a chrome pole, arms resting on her knees, taking a break. Dark studio, soft directional light. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, crash mat, rest, portrait, studio, training",
+    "kind": "stock",
+    "alt_text": "female dancer resting on a crash mat at the base of a pole"
+  },
+  {
+    "title": "Rhinestone Leotard Macro",
+    "filename": "stock_pole_dance_rhinestone_fabric_macro.jpg",
+    "prompt": "Extreme close-up of clear rhinestones hand-set across a nude stretch leotard, each stone catching a point of studio light. Black background, focused directional lighting, shallow depth of field. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, rhinestone, costume, macro, detail",
+    "kind": "stock",
+    "alt_text": "close-up of rhinestones set across a nude leotard"
+  },
+  {
+    "title": "Shoulder Muscle Definition",
+    "filename": "stock_pole_dance_shoulder_definition_bw.jpg",
+    "prompt": "Black and white close-up of a dancer's shoulder and upper back muscles engaged mid-hold, skin texture and definition visible. Light grey background, soft directional light. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, muscle, black and white, strength, detail",
+    "kind": "stock",
+    "alt_text": "black and white close-up of engaged shoulder and back muscles"
+  },
+  {
+    "title": "Silhouette Hand Release",
+    "filename": "stock_pole_dance_silhouette_hand_release.jpg",
+    "prompt": "Close-up silhouette of a dancer's hand releasing a chrome pole against a bright backlit window, fingers extended. High contrast, minimal, artistic. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, hand, silhouette, backlit, artistic",
+    "kind": "stock",
+    "alt_text": "silhouetted hand releasing a chrome pole against backlight"
+  },
+  {
+    "title": "Sweat and Focus Portrait",
+    "filename": "stock_pole_dance_sweat_focus_portrait.jpg",
+    "prompt": "Tight portrait of a female pole dancer catching her breath after a set, damp hair at her temples and a focused expression. Dark background, soft directional light. Honest, athletic, editorial. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, portrait, effort, athletic, editorial",
+    "kind": "stock",
+    "alt_text": "tight portrait of a pole dancer catching her breath after a set"
+  },
+  {
+    "title": "Adjusting Velvet Top",
+    "filename": "stock_pole_dance_velvet_costume_adjust.jpg",
+    "prompt": "A medium studio photograph of a female pole dancer adjusting the strap of her deep blue velvet top before a set, looking down at her hands. Hair in a sleek low bun, muted plum background, soft even lighting bringing out the velvet nap. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, velvet, costume, preparation, portrait, studio",
+    "kind": "stock",
+    "alt_text": "female dancer adjusting the strap of her velvet top"
+  },
+  {
+    "title": "Wiping The Pole",
+    "filename": "stock_pole_dance_wiping_the_pole.jpg",
+    "prompt": "A medium studio photograph of a female pole dancer wiping a chrome pole clean with a microfibre cloth between sets, focused expression. Dark background, soft directional light. Shot on a high-resolution DSLR, sharp focus, professional studio photography, no text, no watermark, no logos.",
+    "tags": "pole dance, pole cleaning, routine, preparation, portrait, studio",
+    "kind": "stock",
+    "alt_text": "female dancer wiping a chrome pole clean with a cloth"
+  },
+  {
+    "title": "Grounded Feet",
+    "filename": "stock_yoga_yoga_bare_feet_standing.jpg",
+    "prompt": "A close-up of a woman's bare feet grounded on a textured mat in mountain pose, ankles and calves in frame. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, feet, grounding, mat, practice",
+    "kind": "stock",
+    "alt_text": "woman's bare feet grounded on a yoga mat"
+  },
+  {
+    "title": "Restorative Support",
+    "filename": "stock_yoga_yoga_blanket_restorative.jpg",
+    "prompt": "A medium shot of a woman lying in a supported restorative pose over bolsters and blankets, deeply relaxed. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, restorative, bolster, relaxation, calm",
+    "kind": "stock",
+    "alt_text": "woman in a supported restorative yoga pose"
+  },
+  {
+    "title": "Breath Awareness",
+    "filename": "stock_yoga_yoga_breath_close_woman.jpg",
+    "prompt": "A close-up of a woman's face and chest mid-inhale in a seated breathing practice, eyes closed and calm. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, breath, pranayama, calm, close up",
+    "kind": "stock",
+    "alt_text": "close-up of a woman breathing in a seated practice"
+  },
+  {
+    "title": "Hands On Cork",
+    "filename": "stock_yoga_yoga_cork_mat_hands.jpg",
+    "prompt": "A close-up of a woman's hands pressing into a cork yoga mat in downward dog, fingers spread. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, hands, cork mat, downward dog, detail",
+    "kind": "stock",
+    "alt_text": "woman's hands pressing into a cork yoga mat"
+  },
+  {
+    "title": "Setting The Space",
+    "filename": "stock_yoga_yoga_diffuser_studio_woman.jpg",
+    "prompt": "A medium shot of a female yoga teacher setting up an essential oil diffuser in a calm studio before class. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, teacher, studio, calm, preparation",
+    "kind": "stock",
+    "alt_text": "yoga teacher setting up a diffuser before class"
+  },
+  {
+    "title": "Journalling After Practice",
+    "filename": "stock_yoga_yoga_journal_after_practice.jpg",
+    "prompt": "A medium shot of a woman writing in a journal with a cup of tea beside her mat after practice, calm morning light. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, journal, reflection, calm, routine",
+    "kind": "stock",
+    "alt_text": "woman writing in a journal after yoga practice"
+  },
+  {
+    "title": "Stacking The Mats",
+    "filename": "stock_yoga_yoga_mats_stacked_teacher.jpg",
+    "prompt": "A medium shot of a female teacher stacking rolled yoga mats against a studio wall after class. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, mats, studio, teacher, routine",
+    "kind": "stock",
+    "alt_text": "teacher stacking rolled yoga mats after class"
+  },
+  {
+    "title": "Seated On The Cushion",
+    "filename": "stock_yoga_yoga_meditation_cushion_seated.jpg",
+    "prompt": "A medium shot of a woman seated cross-legged on a meditation cushion in a sunlit corner, eyes closed. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, meditation, seated, calm, mindfulness",
+    "kind": "stock",
+    "alt_text": "woman seated cross-legged on a meditation cushion"
+  },
+  {
+    "title": "Rolling The Mat",
+    "filename": "stock_yoga_yoga_rolling_her_mat.jpg",
+    "prompt": "A medium shot of a woman rolling up her yoga mat at the end of class, studio softly behind her. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, mat, routine, studio, practice",
+    "kind": "stock",
+    "alt_text": "woman rolling up her yoga mat after class"
+  },
+  {
+    "title": "Playing The Sound Bowl",
+    "filename": "stock_yoga_yoga_sound_bowl_played.jpg",
+    "prompt": "A close-up of a woman's hands circling a mallet around a singing bowl during a sound meditation. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, sound bowl, meditation, hands, ritual",
+    "kind": "stock",
+    "alt_text": "woman playing a singing bowl during meditation"
+  },
+  {
+    "title": "Strap-Assisted Stretch",
+    "filename": "stock_yoga_yoga_strap_stretch_woman.jpg",
+    "prompt": "A close-up of a woman's foot hooked in a yoga strap during a seated forward fold, hands drawing the strap. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, strap, stretch, props, flexibility",
+    "kind": "stock",
+    "alt_text": "woman using a yoga strap in a seated stretch"
+  },
+  {
+    "title": "Gentle Adjustment",
+    "filename": "stock_yoga_yoga_teacher_adjust_student.jpg",
+    "prompt": "A medium shot of a female yoga teacher giving a gentle shoulder adjustment to a student in a seated twist. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, teacher, adjustment, student, technique",
+    "kind": "stock",
+    "alt_text": "yoga teacher adjusting a student in a seated twist"
+  },
+  {
+    "title": "Tree Pose At The Window",
+    "filename": "stock_yoga_yoga_tree_pose_silhouette_woman.jpg",
+    "prompt": "A woman balancing in tree pose silhouetted against a bright studio window, calm and steady. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, tree pose, balance, silhouette, calm",
+    "kind": "stock",
+    "alt_text": "woman balancing in tree pose against a bright window"
+  },
+  {
+    "title": "Between Poses",
+    "filename": "stock_yoga_yoga_water_bottle_break.jpg",
+    "prompt": "A medium shot of a woman sipping water on her mat between poses, warm studio light. Elegant aspirational styling: form-fitting activewear in a warm neutral palette, long graceful lines, serene confident presence. Soft golden directional light. Premium wellness-brand aesthetic. Shot on a high-resolution DSLR, sharp focus, natural light, premium editorial quality, no text, no watermark, no logos.",
+    "tags": "yoga, yoga, rest, hydration, studio, practice",
+    "kind": "stock",
+    "alt_text": "woman sipping water on her yoga mat"
   }
 ]
