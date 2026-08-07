@@ -564,6 +564,114 @@ def test_execute_set_course_cover_with_prior_thumbnail_records_audit_and_undo_re
     assert course.thumbnail_id != new_thumbnail.pk
 
 
+def _upcoming_event(coach, *, onsite=False, thumbnail=None, title="Morning Flow"):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    fields = {
+        "title": title,
+        "instructor": coach,
+        "price": 0,
+        "pricing_type": "free",
+        "scheduled_at": timezone.now() + timedelta(days=3),
+        "thumbnail": thumbnail,
+    }
+    if onsite:
+        return OnsiteEvent.objects.create(location="Berlin", **fields)
+    return LiveClass.objects.create(**fields)
+
+
+def test_execute_set_event_cover_materializes_photo_and_sets_thumbnail(client, coach):
+    from apps.core.models import CuratedPhoto
+    from apps.media.models import Photo
+
+    row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow",
+        tags="yoga, flow",
+        kind="hero",
+        image_key="platform/curated-photos/event-mat.jpg",
+    )
+    event = _upcoming_event(coach)
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "live", "curated_photo_id": row.pk},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"] == {
+        "kind": "set_event_cover",
+        "id": event.pk,
+        "title": "Morning Flow",
+        "url": f"/admin/live?tab=classes&event={event.pk}&kind=live",
+    }
+    event.refresh_from_db()
+    photo = Photo.objects.get(s3_key="platform/curated-photos/event-mat.jpg")
+    assert event.thumbnail_id == photo.pk
+
+
+def test_execute_set_event_cover_gone_event_returns_400(client, coach):
+    from apps.core.models import CuratedPhoto
+
+    row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow",
+        tags="yoga",
+        kind="hero",
+        image_key="platform/curated-photos/event-mat2.jpg",
+    )
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_event_cover", "event_id": 999999, "event_kind": "live", "curated_photo_id": row.pk},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert "no longer exists" in resp.json()["detail"]
+
+
+def test_execute_set_event_cover_with_prior_thumbnail_records_audit_and_undo_restores_it(client, coach):
+    """Same UUID-into-JSONField hazard as the course-cover case above: the
+    Photo pk must land in the inverse as a string or the audit row (and undo)
+    silently never gets written. Uses an onsite event so the kind→model
+    dispatch is covered on both execute and undo."""
+    from apps.core.curated_photos.materialize import materialize_curated_photo
+    from apps.core.models import CuratedPhoto
+    from apps.media.models import Photo
+    from apps.tenant_config.models import CopilotAudit
+
+    old_row = CuratedPhoto.objects.create(
+        title="Old cover", tags="yoga", kind="hero", image_key="platform/curated-photos/event-prior.jpg"
+    )
+    old_thumbnail = materialize_curated_photo(old_row)
+    event = _upcoming_event(coach, onsite=True, thumbnail=old_thumbnail, title="Berlin Retreat")
+
+    new_row = CuratedPhoto.objects.create(
+        title="Golden-hour mat flow", tags="yoga, flow", kind="hero", image_key="platform/curated-photos/event-new.jpg"
+    )
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "onsite", "curated_photo_id": new_row.pk},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    audit_id = resp.json()["audit_id"]
+    assert audit_id is not None  # the audit row must exist at all
+
+    row = CopilotAudit.objects.get(pk=audit_id)
+    assert row.inverse["kind"] == "restore_event_cover"
+    assert row.inverse["event_kind"] == "onsite"
+    assert row.inverse["thumbnail_id"] == str(old_thumbnail.pk)
+    assert isinstance(row.inverse["thumbnail_id"], str)
+
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
+    assert undo.status_code == 200, undo.content
+    event.refresh_from_db()
+    assert event.thumbnail_id == old_thumbnail.pk
+    new_thumbnail = Photo.objects.get(s3_key="platform/curated-photos/event-new.jpg")
+    assert event.thumbnail_id != new_thumbnail.pk
+
+
 def test_execute_set_logo_materializes_photo_flips_look_edited_and_busts_cache(client, coach):
     from django.core.cache import cache
 
@@ -1121,9 +1229,7 @@ def test_photo_describe_returns_description_and_records_spend(client):
         ),
         mock.patch("apps.core.copilot.views.ai_compose.record_spend") as spend,
     ):
-        resp = client.post(
-            "/api/v1/admin/copilot/photos/describe/", {"photo_id": str(photo.pk)}, format="json"
-        )
+        resp = client.post("/api/v1/admin/copilot/photos/describe/", {"photo_id": str(photo.pk)}, format="json")
     assert resp.status_code == 200
     assert resp.json() == {"description": "a ballet dancer silhouette"}
     spend.assert_called_once_with("shared_test", Decimal("0.001"))
@@ -1162,6 +1268,22 @@ def test_execute_set_course_cover_with_tenant_photo(client):
     assert resp.status_code == 200
     course.refresh_from_db()
     assert course.thumbnail_id == photo.pk
+
+
+def test_execute_set_event_cover_with_tenant_photo(client):
+    from apps.media.models import Photo
+
+    coach_user = User.objects.get(email="copilot-coach@x.com")
+    event = _upcoming_event(coach_user, title="E")
+    photo = Photo.objects.create(s3_key="uploads/mine-event.jpg", title="Mine")
+    token = copilot_tokens.stash_action(
+        "shared_test",
+        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "live", "tenant_photo_id": str(photo.pk)},
+    )
+    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
+    assert resp.status_code == 200
+    event.refresh_from_db()
+    assert event.thumbnail_id == photo.pk
 
 
 def test_execute_set_course_cover_with_missing_tenant_photo_400(client):

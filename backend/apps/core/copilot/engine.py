@@ -77,20 +77,26 @@ SYSTEM_PROMPT = (
     "(course_id from the course list in the user turn, plus a short "
     "description of the shot); when the coach asks about several courses, "
     "propose one card per course that needs a cover\n"
+    "- set_event_cover: put a curated photo on an upcoming event's cover "
+    "(event_id + event_kind from the events list in the user turn, plus a "
+    "short description of the shot); when the coach asks about several "
+    "events, propose one card per event that needs a cover\n"
     "- set_logo: put a logo on the site — a ready-made one from the "
     "platform library (describe the style you want; propose again with a "
     "different description for another style) or a photo the coach "
     "attached (pass its photo_id, leave description empty)\n"
     "- when the user turn lists photos the coach ATTACHED, prefer them: "
-    "pass the attached photo_id to set_block_image, set_course_cover or "
-    "set_logo (leave description empty) instead of describing a library "
+    "pass the attached photo_id to set_block_image, set_course_cover, "
+    "set_event_cover or set_logo (leave description empty) instead of "
+    "describing a library "
     "pick, or to create_blog_post / edit_blog_post to make it the post's "
     "cover image; photo_ids from [attached ...] notes in earlier coach "
     "turns stay valid — reuse them when the coach refers back to a photo "
     "they already attached (each note says what the photo shows); if the "
     "coach sent photos with no request at all, react in one warm sentence "
     "to what each photo shows and ask where they want it (logo, a page "
-    "section, a course cover, a blog cover) — or propose a placement card "
+    "section, a course cover, an event cover, a blog cover) — or propose a "
+    "placement card "
     "when one placement is the obvious fit; when an attached photo has no "
     "'shows:' note, also ask the coach what the photo shows\n"
     "- note_photo: save a short description of what a coach's photo shows "
@@ -108,8 +114,8 @@ SYSTEM_PROMPT = (
     "- move_block also accepts to_page to move a block to another page\n"
     "- edit_navbar additionally accepts links (full replacement list of "
     "{label, href}) and show_login / show_install booleans\n"
-    "When several changes belong together (covers for every course missing "
-    "one, a weekly class for the next N weeks — max 12 cards, or a "
+    "When several changes belong together (covers for every course or "
+    "event missing one, a weekly class for the next N weeks — max 12 cards, or a "
     "multi-section page refresh), propose them as one set of cards in a "
     "single turn; the coach can apply them all at once.\n"
     "Use block ids and page keys exactly as given in the digest. If the "
@@ -287,6 +293,14 @@ class SetCourseCoverAction(BaseModel):
     photo_id: str | None = None  # a photo the coach attached to their message
 
 
+class SetEventCoverAction(BaseModel):
+    kind: Literal["set_event_cover"]
+    event_id: int
+    event_kind: Literal["live", "onsite"] = "live"
+    description: str = ""
+    photo_id: str | None = None  # a photo the coach attached to their message
+
+
 class SetLogoAction(BaseModel):
     kind: Literal["set_logo"]
     description: str = ""
@@ -351,6 +365,7 @@ CopilotAction = Annotated[
     | EditSeoAction
     | SetBlockImageAction
     | SetCourseCoverAction
+    | SetEventCoverAction
     | SetLogoAction
     | NotePhotoAction
     | EditCourseAction
@@ -477,6 +492,21 @@ def _course_for_cover(tenant, course_id):
         return course.title, exclude_key
 
 
+def _event_for_cover(tenant, event_kind, event_id):
+    """Resolve an event's title and the s3_key of its current cover photo
+    (so the pick can exclude it — "try another" must not return the same
+    shot). Raises photos.PhotoOpError for an unknown event."""
+    from apps.live.models import LiveClass, OnsiteEvent
+
+    model = OnsiteEvent if event_kind == "onsite" else LiveClass
+    with tenant_context(tenant):
+        event = model.objects.filter(pk=event_id).select_related("thumbnail").first()
+        if event is None:
+            raise photos.PhotoOpError(f"no {event_kind} event with id {event_id}")
+        exclude_key = event.thumbnail.s3_key if event.thumbnail_id and event.thumbnail else None
+        return event.title, exclude_key
+
+
 def _event_title(tenant, event_kind, event_id):
     """Resolve an event's title for the card — coaches only see ids in the
     events digest, and `f"Update event {id}"` isn't a usable card title.
@@ -560,8 +590,9 @@ def _event_site_link(kind, event_id):
 
 
 def _events_digest(tenant):
-    """Upcoming events for the user turn: what edit_event proposals key off,
-    and what the model quotes back verbatim when asked for a direct link."""
+    """Upcoming events for the user turn: what edit_event and set_event_cover
+    proposals key off, and what the model quotes back verbatim when asked
+    for a direct link."""
     from apps.live.models import LiveClass, OnsiteEvent
 
     with tenant_context(tenant):
@@ -576,13 +607,14 @@ def _events_digest(tenant):
     if not rows:
         return "Upcoming events: (none scheduled)"
     rows.sort(key=lambda r: r[1].scheduled_at)
-    lines = ["Upcoming events (id | kind | title | when | price | admin link | site link):"]
+    lines = ["Upcoming events (id | kind | title | when | price | cover | admin link | site link):"]
     for kind, e in rows[:MAX_DIGEST_EVENTS]:
         admin_link = _event_admin_link(kind, e.id)
         site_link = _event_site_link(kind, e.id)
+        cover = "has cover" if (e.thumbnail_id or e.thumbnail_url) else "NO COVER"
         lines.append(
             f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price} "
-            f"| {admin_link} | {site_link}"
+            f"| {cover} | {admin_link} | {site_link}"
         )
     return "\n".join(lines)
 
@@ -595,17 +627,13 @@ def _posts_digest(tenant):
     from apps.blog.models import BlogPost
 
     with tenant_context(tenant):
-        rows = list(
-            BlogPost.objects.order_by("-created_at").values("id", "title", "status", "slug")[:MAX_DIGEST_POSTS]
-        )
+        rows = list(BlogPost.objects.order_by("-created_at").values("id", "title", "status", "slug")[:MAX_DIGEST_POSTS])
     if not rows:
         return "Blog posts: (none yet)"
     lines = ["Blog posts (id | title | status | admin link | site link):"]
     for r in rows:
         site_link = f"/blog/{r['slug']}" if r["status"] == "published" else "(not published yet)"
-        lines.append(
-            f"  {r['id']} | {str(r['title'])[:60]} | {r['status']} | /admin/blog/{r['id']} | {site_link}"
-        )
+        lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {r['status']} | /admin/blog/{r['id']} | {site_link}")
     return "\n".join(lines)
 
 
@@ -838,6 +866,42 @@ def _card(tenant, action):
             "token": tokens.stash_action(
                 schema,
                 {"kind": "set_course_cover", "course_id": action.course_id, "curated_photo_id": row.pk},
+            ),
+        }
+    if isinstance(action, SetEventCoverAction):
+        event_title, exclude_key = _event_for_cover(tenant, action.event_kind, action.event_id)
+        if action.photo_id:
+            photo = _tenant_photo(tenant, action.photo_id)
+            return {
+                "kind": "set_event_cover",
+                "title": f"Cover for '{event_title[:80]}': your photo '{photo.title or 'untitled'}'",
+                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "image_url": photos.tenant_photo_url(photo),
+                "token": tokens.stash_action(
+                    schema,
+                    {
+                        "kind": "set_event_cover",
+                        "event_id": action.event_id,
+                        "event_kind": action.event_kind,
+                        "tenant_photo_id": str(photo.pk),
+                    },
+                ),
+            }
+        row = photos.pick_photo(action.description, tenant, field="eventCover", exclude_s3_key=exclude_key)
+        return {
+            "kind": "set_event_cover",
+            "title": f"Cover for '{event_title[:80]}': the photo '{row.title}'",
+            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "reveal": True,
+            "image_url": photos.preview_url(row),
+            "token": tokens.stash_action(
+                schema,
+                {
+                    "kind": "set_event_cover",
+                    "event_id": action.event_id,
+                    "event_kind": action.event_kind,
+                    "curated_photo_id": row.pk,
+                },
             ),
         }
     if isinstance(action, NotePhotoAction):

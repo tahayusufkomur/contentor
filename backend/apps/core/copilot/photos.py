@@ -45,9 +45,14 @@ def image_captions(tenant, pages):
 
 # Catalog kinds offered per field, mirroring onboarding's ai_photos split:
 # hero backgrounds only from mood-setting hero shots; inline images may also
-# use stock. "courseCover" is the pseudo-field set_course_cover picks with —
-# course thumbnails read well from either kind.
-FIELD_KINDS = {"bgImage": ("hero",), "image": ("hero", "stock"), "courseCover": ("hero", "stock")}
+# use stock. "courseCover"/"eventCover" are the pseudo-fields the cover
+# actions pick with — thumbnails read well from either kind.
+FIELD_KINDS = {
+    "bgImage": ("hero",),
+    "image": ("hero", "stock"),
+    "courseCover": ("hero", "stock"),
+    "eventCover": ("hero", "stock"),
+}
 
 SHORTLIST_LIMIT = 30
 

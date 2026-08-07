@@ -702,6 +702,54 @@ def test_set_course_cover_unknown_course_dropped_with_reason():
     assert "no course with id 999" in payload["text"]
 
 
+def test_system_prompt_lists_set_event_cover():
+    assert "set_event_cover" in engine.SYSTEM_PROMPT
+
+
+def test_set_event_cover_card_stashes_pick_and_carries_preview():
+    from apps.core.copilot import photos as copilot_photos
+    from apps.core.copilot import tokens as copilot_tokens
+
+    row = SimpleNamespace(pk=9, title="Golden-hour mat flow", image_key="platform/curated-photos/mat.jpg")
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "set_event_cover", "event_id": 3, "event_kind": "onsite", "description": "sunny retreat"}],
+    )
+    with (
+        mock.patch.object(engine, "_event_for_cover", return_value=("Berlin Retreat", None)) as event_lookup,
+        mock.patch.object(copilot_photos, "pick_photo", return_value=row) as pick,
+        mock.patch.object(copilot_photos, "preview_url", return_value="https://cdn.example/mat.jpg"),
+    ):
+        payload, _ = _run(parsed)
+    (card,) = payload["actions"]
+    assert card["kind"] == "set_event_cover"
+    assert "Berlin Retreat" in card["title"] and "Golden-hour mat flow" in card["title"]
+    assert card["image_url"] == "https://cdn.example/mat.jpg"
+    assert card["reveal"] is True
+    event_lookup.assert_called_once_with(TENANT, "onsite", 3)
+    assert pick.call_args.kwargs["field"] == "eventCover"
+    assert pick.call_args.kwargs["exclude_s3_key"] is None
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed == {"kind": "set_event_cover", "event_id": 3, "event_kind": "onsite", "curated_photo_id": 9}
+
+
+def test_set_event_cover_unknown_event_dropped_with_reason():
+    from apps.core.copilot import photos as copilot_photos
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "set_event_cover", "event_id": 999, "description": "x"}],
+    )
+    with mock.patch.object(
+        engine, "_event_for_cover", side_effect=copilot_photos.PhotoOpError("no live event with id 999")
+    ):
+        payload, _ = _run(parsed)
+    assert payload["kind"] == "answer"
+    assert "no live event with id 999" in payload["text"]
+
+
 def test_system_prompt_lists_set_logo():
     assert "set_logo" in engine.SYSTEM_PROMPT
 
@@ -921,6 +969,9 @@ def test_events_digest_lists_upcoming_live_and_onsite(tenant_with_pages):
     digest = engine._events_digest(tenant_with_pages)
     assert f"{live.id} | live | Morning Flow" in digest
     assert f"{onsite.id} | onsite | Retreat" in digest
+    # Cover state feeds set_event_cover: "covers for all events" needs to
+    # know which events are missing one.
+    assert "NO COVER" in digest
     # Regression: the coach asking for a direct link had nothing to answer
     # with — the digest must carry a real deep link per event, both admin
     # and public-site (events have no publish gate, unlike courses/posts).

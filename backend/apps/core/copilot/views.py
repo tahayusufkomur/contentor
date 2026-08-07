@@ -261,6 +261,55 @@ def _execute(tenant, user, action):
             "thumbnail_id": str(old_thumbnail_id) if old_thumbnail_id else None,
         }
         return result, inverse
+    if kind == "set_event_cover":
+        from django_tenants.utils import schema_context
+
+        from apps.core.curated_photos.materialize import materialize_curated_photo
+        from apps.core.models import CuratedPhoto
+
+        row = None
+        if not action.get("tenant_photo_id"):
+            with schema_context("public"):
+                row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
+            if row is None:
+                raise photos.PhotoOpError("that photo is no longer available")
+        event_kind = "onsite" if action.get("event_kind") == "onsite" else "live"
+        with tenant_context(tenant):
+            from apps.live.models import LiveClass, OnsiteEvent
+
+            model = OnsiteEvent if event_kind == "onsite" else LiveClass
+            event = model.objects.filter(pk=action.get("event_id")).first()
+            if event is None:
+                raise photos.PhotoOpError("that event no longer exists")
+            old_thumbnail_id = event.thumbnail_id
+            if action.get("tenant_photo_id"):
+                from apps.media.models import Photo
+
+                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
+                if photo is None:
+                    raise photos.PhotoOpError("that attached photo is not in your library")
+                event.thumbnail = photo
+            else:
+                event.thumbnail = materialize_curated_photo(row)
+            event.save(update_fields=["thumbnail"])
+        # Event cards read from the live API, not the cached config —
+        # no cache-bust needed here.
+        tab = "onsite" if event_kind == "onsite" else "classes"
+        result = {
+            "kind": kind,
+            "id": event.id,
+            "title": event.title,
+            "url": f"/admin/live?tab={tab}&event={event.id}&kind={event_kind}",
+        }
+        # Same UUID-into-JSONField hazard as restore_course_cover above —
+        # stringify the Photo pk so the audit row actually gets written.
+        inverse = {
+            "kind": "restore_event_cover",
+            "event_id": event.pk,
+            "event_kind": event_kind,
+            "thumbnail_id": str(old_thumbnail_id) if old_thumbnail_id else None,
+        }
+        return result, inverse
     if kind == "note_photo":
         from apps.media.models import Photo
 
@@ -389,6 +438,8 @@ def _audit_summary(action, result):
         return f"Set a new photo on {block} ({page})"
     if kind == "set_course_cover":
         return f"Set the cover photo for '{title}'" if title else "Set a course cover photo"
+    if kind == "set_event_cover":
+        return f"Set the cover photo for event '{title}'" if title else "Set an event cover photo"
     if kind == "set_logo":
         return "Set a new logo"
     if kind == "edit_course":
@@ -506,6 +557,19 @@ def _apply_inverse(tenant, inverse):
                 raise blocks.BlockOpError("that photo no longer exists")
             course.thumbnail_id = thumbnail_id
             course.save(update_fields=["thumbnail"])
+            return
+        if kind == "restore_event_cover":
+            from apps.live.models import LiveClass, OnsiteEvent
+
+            model = OnsiteEvent if inverse.get("event_kind") == "onsite" else LiveClass
+            event = model.objects.filter(pk=inverse.get("event_id")).first()
+            if event is None:
+                raise blocks.BlockOpError("that event no longer exists")
+            thumbnail_id = inverse.get("thumbnail_id")
+            if thumbnail_id is not None and not _photo_exists(thumbnail_id):
+                raise blocks.BlockOpError("that photo no longer exists")
+            event.thumbnail_id = thumbnail_id
+            event.save(update_fields=["thumbnail"])
             return
         cfg = TenantConfig.objects.first()
         if cfg is None:
