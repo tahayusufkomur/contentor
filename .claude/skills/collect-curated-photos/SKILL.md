@@ -69,6 +69,33 @@ Steps 2+3 as single batched calls ≈ 90-120s/item/agent. The REAL cap is accoun
 (~100-150 imgs/day across both accounts, soft) — parallelism just reaches it sooner. The
 orchestrator should md5-dedupe at the end and regenerate any misses serially (fresh-tab loop).
 
+## Watermark removal (mandatory for browser-generated images)
+
+Gemini's **web app** bakes a translucent 4-point sparkle into the bottom-right corner of every
+image it renders — it survives "Download full-sized image". The **backend API** path does not do
+this, so API-generated images need no removal step. Naive fixes fail: cropping shifts the 16:9
+framing (the mark sits inset from the true corner) and `cv2.inpaint` leaves a smeared starburst
+on textured backgrounds. The fix is to **algebraically reverse the alpha blend**, which recovers
+the exact underlying pixels instead of hallucinating them.
+
+Use the `gemini-watermark-remover` skill — run its batch wrapper on the raw PNGs **before** the
+JPEG conversion below (full-res removal is cleanest, and it is the last moment the pixels are
+lossless):
+
+```bash
+node ../gemini-watermark-remover/scripts/clean-images.mjs <raw-png-dir> --backup /tmp/wm-backup
+```
+
+It auto-detects the mark's position and scale per image, so both render sizes (Görkem/Pro
+2752×1536 and TAHA 1376×768) work with no calibration, and so do already-downscaled 1600px
+JPEGs. Verified clean at 3× zoom on photographic content. See that skill for the confidence
+gate, the bulk-clean recipe for the existing catalog, and the logo caveat.
+
+`scripts/dewatermark.py` + `alpha_template.npy` in this skill dir are the **superseded** first
+implementation — same math, but hardcoded to a `(w-241, h-241)` offset calibrated only for
+2752×1536 renders, so it silently misses every other size. Prefer the skill above; keep this
+only as a reference for how the alpha template was derived.
+
 ## Ingest (per batch)
 
 Photographic kinds (hero/stock): convert PNG downloads to **JPEG, max 1600px wide, quality 85**

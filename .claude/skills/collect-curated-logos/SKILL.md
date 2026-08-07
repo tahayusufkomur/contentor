@@ -31,6 +31,23 @@ Tags: niche keywords first, then style words from: `minimal, bold, elegant, calm
 
 **Pinterest references:** pin images don't paint in background-tab screenshots but are in the DOM — extract `{pinId: {img, alt}}` from `a[href*="/pin/"] img`, `curl` the `i.pinimg.com/736x/...` URLs, view locally. References only — regenerate, never republish pins.
 
+## Watermark removal (path B only — and gate it)
+
+Path A (backend API) images are clean. Path B (browser) bakes a translucent sparkle into the
+bottom-right corner, which on a white logo canvas is faint but real. **Do not bulk-run the
+remover over the logo catalog**: on flat vector art its detector false-positives on high-contrast
+graphic edges and punches a visible light blotch into solid shapes (measured: a clean mark scored
+0.288 and was damaged; genuine watermarks score 0.93-0.97). Use the gated wrapper, which only
+accepts an edit above 0.5, and eyeball the diff afterwards:
+
+```bash
+node ../gemini-watermark-remover/scripts/clean-images.mjs <new-logo-dir> --dry-run   # inspect first
+node ../gemini-watermark-remover/scripts/clean-images.mjs <new-logo-dir> --backup /tmp/logo-backup
+```
+
+A sparkle faint enough to score below the gate is also faint enough that the seeder's white-strip
+removes it — leaving it alone is the safe outcome, not a miss.
+
 ## Ingest (per batch)
 
 ```bash
