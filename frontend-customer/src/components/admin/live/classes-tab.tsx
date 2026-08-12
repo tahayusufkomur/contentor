@@ -83,7 +83,10 @@ export function LiveClassesTab() {
 
   // Deep link (?tab=classes&event=<id>): open one specific class's edit
   // panel directly, independent of MediaBrowser's current page/filters.
-  const deepLinked = useDeepLinkedItem<LiveClass>("classes", (id) => `/api/v1/live/${id}/`);
+  const deepLinked = useDeepLinkedItem<LiveClass>(
+    "classes",
+    (id) => `/api/v1/live/${id}/`,
+  );
   const { run: saveDeepLinked, loading: savingDeepLinked } = useAsyncAction(
     async (values: Record<string, unknown>) => {
       if (!deepLinked.item) return;
@@ -96,7 +99,11 @@ export function LiveClassesTab() {
           description: values.description,
           pricing_type: values.pricing_type,
           ...(values.scheduled_at
-            ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() }
+            ? {
+                scheduled_at: new Date(
+                  values.scheduled_at as string,
+                ).toISOString(),
+              }
             : {}),
           ...(values.pricing_type === "paid" && values.price
             ? { price: parseFloat(values.price as string) }

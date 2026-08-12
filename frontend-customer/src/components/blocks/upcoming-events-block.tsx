@@ -39,6 +39,7 @@ export function UpcomingEventsBlock({
           events={events}
           layout={layout}
           filterGroupIds={filterGroupIds}
+          showCovers={data.showCovers !== false}
         />
       </div>
     </section>

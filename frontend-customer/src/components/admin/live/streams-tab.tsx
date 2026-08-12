@@ -99,7 +99,11 @@ export function LiveStreamsTab() {
           description: values.description,
           pricing_type: values.pricing_type,
           ...(values.scheduled_at
-            ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() }
+            ? {
+                scheduled_at: new Date(
+                  values.scheduled_at as string,
+                ).toISOString(),
+              }
             : {}),
           ...(values.pricing_type === "paid" && values.price
             ? { price: parseFloat(values.price as string) }

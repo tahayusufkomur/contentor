@@ -57,7 +57,7 @@ class _ScheduledOnCreateMixin:
         return super().create(validated_data)
 
 
-def _get_thumbnail_signed_url(obj):
+def get_thumbnail_signed_url(obj):
     if obj.thumbnail_id and obj.thumbnail and obj.thumbnail.s3_key:
         return generate_presigned_download_url(obj.thumbnail.s3_key)
     return sign_if_s3_key(obj.thumbnail_url)
@@ -110,7 +110,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
         ]
 
     def get_thumbnail_signed_url(self, obj):
-        return _get_thumbnail_signed_url(obj)
+        return get_thumbnail_signed_url(obj)
 
     def get_recording_signed_url(self, obj):
         s3_key = None
@@ -228,7 +228,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
         ]
 
     def get_thumbnail_signed_url(self, obj):
-        return _get_thumbnail_signed_url(obj)
+        return get_thumbnail_signed_url(obj)
 
     def get_recording_signed_url(self, obj):
         s3_key = None

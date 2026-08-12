@@ -27,12 +27,14 @@ interface EventsCatalogClientProps {
   events: CalendarEvent[];
   layout: string;
   filterGroupIds: number[];
+  showCovers?: boolean;
 }
 
 export function EventsCatalogClient({
   events,
   layout,
   filterGroupIds,
+  showCovers = true,
 }: EventsCatalogClientProps) {
   const locale = useLocale();
   const tz = useTenant()?.timezone || "UTC";
@@ -67,6 +69,13 @@ export function EventsCatalogClient({
               >
                 <Card className="transition-all hover:shadow-md">
                   <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
+                    {showCovers && event.thumbnail_signed_url && (
+                      <img
+                        src={event.thumbnail_signed_url}
+                        alt=""
+                        className="h-12 w-12 rounded-md object-cover"
+                      />
+                    )}
                     <Badge variant="secondary" className="text-xs">
                       {TYPE_LABELS[event.type] ?? event.type}
                     </Badge>
@@ -104,6 +113,13 @@ export function EventsCatalogClient({
               href={`/calendar/${event.type}/${event.id}`}
             >
               <Card className="group h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                {showCovers && event.thumbnail_signed_url && (
+                  <img
+                    src={event.thumbnail_signed_url}
+                    alt=""
+                    className="h-36 w-full object-cover"
+                  />
+                )}
                 <CardContent className="space-y-3 p-5">
                   <Badge variant="secondary" className="text-xs">
                     {TYPE_LABELS[event.type] ?? event.type}

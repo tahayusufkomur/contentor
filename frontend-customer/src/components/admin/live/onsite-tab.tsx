@@ -105,7 +105,11 @@ export function OnsiteEventsTab() {
           address: values.address,
           pricing_type: values.pricing_type,
           ...(values.scheduled_at
-            ? { scheduled_at: new Date(values.scheduled_at as string).toISOString() }
+            ? {
+                scheduled_at: new Date(
+                  values.scheduled_at as string,
+                ).toISOString(),
+              }
             : {}),
           ...(values.max_capacity
             ? { max_capacity: parseInt(values.max_capacity as string) }

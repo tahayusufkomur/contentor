@@ -549,6 +549,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       layout: "grid",
       heading: "Upcoming events",
       limit: 6,
+      showCovers: true,
       filterGroups: [],
     },
     fields: [
@@ -558,6 +559,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       ]),
       { key: "heading", label: "Heading", type: "text" },
       { key: "limit", label: "Max events", type: "number" },
+      { key: "showCovers", label: "Show cover photos", type: "toggle" },
       {
         key: "filterGroups",
         label: "Filter facets",

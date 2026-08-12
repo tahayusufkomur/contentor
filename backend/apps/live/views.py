@@ -27,6 +27,7 @@ from .serializers import (
     OnsiteEventSerializer,
     ZoomClassCreateSerializer,
     ZoomClassSerializer,
+    get_thumbnail_signed_url,
 )
 
 logger = logging.getLogger(__name__)
@@ -440,8 +441,6 @@ def _to_calendar_event(obj, event_type, thumbnail_url=None):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def calendar_events(request):
-    from apps.core.storage import sign_if_s3_key
-
     date_from = request.query_params.get("from")
     date_to = request.query_params.get("to")
     types_param = request.query_params.get("types", "")
@@ -457,35 +456,49 @@ def calendar_events(request):
 
     if want_live_class:
         qs = _apply_date_range(
-            LiveClass.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to
-        )
-        for obj in qs:
-            thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
-            events.append(_to_calendar_event(obj, "live_class", thumb))
-
-        qs = _apply_date_range(
-            ZoomClass.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to
-        )
-        for obj in qs:
-            thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
-            events.append(_to_calendar_event(obj, "zoom_class", thumb))
-
-    if want_live_stream:
-        qs = _apply_date_range(
-            LiveStream.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"), date_from, date_to
-        )
-        for obj in qs:
-            thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
-            events.append(_to_calendar_event(obj, "live_stream", thumb))
-
-    if want_onsite:
-        qs = _apply_date_range(
-            OnsiteEvent.objects.filter(scheduled_at__isnull=False).prefetch_related("filter_options"),
+            LiveClass.objects.filter(scheduled_at__isnull=False)
+            .select_related("thumbnail")
+            .prefetch_related("filter_options"),
             date_from,
             date_to,
         )
         for obj in qs:
-            thumb = sign_if_s3_key(obj.thumbnail_url) if obj.thumbnail_url else None
+            thumb = get_thumbnail_signed_url(obj)
+            events.append(_to_calendar_event(obj, "live_class", thumb))
+
+        qs = _apply_date_range(
+            ZoomClass.objects.filter(scheduled_at__isnull=False)
+            .select_related("thumbnail")
+            .prefetch_related("filter_options"),
+            date_from,
+            date_to,
+        )
+        for obj in qs:
+            thumb = get_thumbnail_signed_url(obj)
+            events.append(_to_calendar_event(obj, "zoom_class", thumb))
+
+    if want_live_stream:
+        qs = _apply_date_range(
+            LiveStream.objects.filter(scheduled_at__isnull=False)
+            .select_related("thumbnail")
+            .prefetch_related("filter_options"),
+            date_from,
+            date_to,
+        )
+        for obj in qs:
+            thumb = get_thumbnail_signed_url(obj)
+            events.append(_to_calendar_event(obj, "live_stream", thumb))
+
+    if want_onsite:
+        qs = _apply_date_range(
+            OnsiteEvent.objects.filter(scheduled_at__isnull=False)
+            .select_related("thumbnail")
+            .prefetch_related("filter_options"),
+            date_from,
+            date_to,
+        )
+        for obj in qs:
+            thumb = get_thumbnail_signed_url(obj)
             events.append(_to_calendar_event(obj, "onsite_event", thumb))
 
     events.sort(key=lambda e: e["scheduled_at"])
@@ -504,8 +517,6 @@ MODEL_MAP = {
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def calendar_event_detail(request, event_type, pk):
-    from apps.core.storage import sign_if_s3_key
-
     # For the URL, live_class covers both LiveClass and ZoomClass
     model = MODEL_MAP.get(event_type)
     if not model:
@@ -518,9 +529,7 @@ def calendar_event_detail(request, event_type, pk):
     if event_type == "zoom_class":
         cal_type = "live_class"
 
-    thumb = None
-    if hasattr(obj, "thumbnail_url") and obj.thumbnail_url:
-        thumb = sign_if_s3_key(obj.thumbnail_url)
+    thumb = get_thumbnail_signed_url(obj)
 
     event = _to_calendar_event(obj, cal_type, thumb)
 
