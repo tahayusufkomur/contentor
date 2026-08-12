@@ -84,6 +84,12 @@ EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
 if EMAIL_SINK_ENABLED:  # noqa: F405
     raise ImproperlyConfigured("EMAIL_SINK_ENABLED must be false in production")
 
+# The curated photo catalog lives in another service in production; the fixture
+# catalog would silently hand every coach the same eight demo photos.
+CURATED_IMAGE_API_FAKE = _env_bool("CURATED_IMAGE_API_FAKE", False)
+if CURATED_IMAGE_API_FAKE:
+    raise ImproperlyConfigured("CURATED_IMAGE_API_FAKE must be false in production")
+
 # The CLI provider is local-dev only: it runs on the developer's Claude
 # subscription, the prod image has no `claude` binary (INSTALL_CLAUDE_CLI is
 # dev-only), and its $0 cost reporting would blind the USD kill-switches.

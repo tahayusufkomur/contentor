@@ -1,6 +1,11 @@
-"""Idempotent seeding of the curated photo catalog (photo_meta.json + images)
-into CuratedPhoto rows + platform object storage. Mirrors seed_curated_logos —
-but unlike logo_meta.json, photo_meta.json IS committed to git.
+"""Idempotent seeding of the curated DECORATIVE catalog (photo_meta.json +
+images) into CuratedPhoto rows + platform object storage. Mirrors
+seed_curated_logos — but unlike logo_meta.json, photo_meta.json IS committed to
+git.
+
+Photography moved to the curated-image-api service (spec:
+docs/superpowers/specs/2026-08-09-curated-images-offload-design.md), so entries
+with the retired `hero`/`stock` kinds are skipped as unknown kinds.
 
 Dev: run against the bind-mounted repo catalog (CURATED_PHOTO_SYNC_DIR). Prod
 (no mount): pass an explicit --dir via a one-off bind mount, e.g.

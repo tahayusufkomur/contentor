@@ -83,6 +83,18 @@ def brief_tokens(brief: CoachBrief) -> set[str]:
     return tokens(" ".join(parts))
 
 
+def brief_query(brief: CoachBrief, extra: str = "") -> str:
+    """The coach's own words as a plain-language query for the remote curated
+    photo catalog. The catalog ranks lexically across titles, tags, descriptions
+    and generation prompts, so the useful signal is the coach's subject
+    vocabulary — niche, their description, their follow-up answers — not the
+    prompt scaffolding that goes to an LLM (see brief_block for that)."""
+    parts = [brief.niche.replace("_", " "), brief.description]
+    parts += [answer for _question, answer in brief.followups]
+    parts.append(extra)
+    return " ".join(part.strip() for part in parts if part and part.strip())[:2000]
+
+
 def brief_with_turn_style(tenant, turn_description: str) -> CoachBrief:
     """CoachBrief.from_tenant plus the model's per-turn style text ("calm
     sunlit studio, warm tones") layered onto description — used by the

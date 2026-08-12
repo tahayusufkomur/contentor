@@ -280,27 +280,23 @@ def test_ai_compose_skipped_when_unavailable_and_idempotent(cleanup, monkeypatch
 
 
 def test_provision_applies_ai_photo_picks(cleanup, monkeypatch):
-    """AI-picked curated photos land in pages + course thumbnails; status recorded."""
-    from apps.core.models import CuratedPhoto
+    """AI-picked curated photos are cached into the tenant's own storage and land
+    in pages + course thumbnails; status recorded."""
+    from apps.core.curated_images import client as curated_client
+    from apps.core.curated_images.cache import tenant_key_for
     from apps.core.onboarding import ai_compose, ai_photos
 
     connection.set_schema_to_public()
-    hero_row = CuratedPhoto.objects.create(
-        title="Yoga Sunrise",
-        tags="yoga, calm",
-        kind="hero",
-        image_key="platform/curated-photos/test-hero.jpg",
-        position=1,
-    )
+    hero_image = curated_client.search(collection=curated_client.HERO_COLLECTION).results[0]
 
     def fake_pick(brief, slots, *, tenant_schema):
         # Deterministic stand-in for the LLM: hero + first course slot.
         picks = {}
         for slot in slots:
             if slot.name == "hero":
-                picks["hero"] = hero_row
+                picks["hero"] = hero_image
             elif slot.name.startswith("course:") and "course" not in {k.split(":")[0] for k in picks}:
-                picks[slot.name] = hero_row
+                picks[slot.name] = hero_image
         return picks
 
     monkeypatch.setattr(ai_photos, "pick_photos", fake_pick)
@@ -324,12 +320,11 @@ def test_provision_applies_ai_photo_picks(cleanup, monkeypatch):
 
             config = TenantConfig.objects.first()
             hero_block = config.pages["home"]["blocks"][0]
-            photo = Photo.objects.get(s3_key="platform/curated-photos/test-hero.jpg")
+            photo = Photo.objects.get(s3_key=tenant_key_for(hero_image.asset_id))
             assert hero_block["bgImage"]["photo_id"] == str(photo.pk)
             assert Course.objects.filter(thumbnail=photo).exists()
     finally:
         connection.set_schema_to_public()
-        hero_row.delete()
 
 
 def test_provision_applies_compose_extras(cleanup, monkeypatch):

@@ -1,4 +1,7 @@
-"""Unit tests for curated-photo slot picking (LLM mocked)."""
+"""Unit tests for curated-photo slot picking (LLM mocked).
+
+Candidates come from the remote curated catalog, which the conftest keeps in
+offline fixture mode."""
 
 from types import SimpleNamespace
 
@@ -53,16 +56,19 @@ def test_event_groups_distinct_by_model_and_title():
     ]
 
 
-def _seed_catalog():
-    from apps.core.models import CuratedPhoto
+def _pools(brief):
+    """(hero candidates, content candidates) exactly as pick_photos numbers them
+    for this brief, so a test can name the image behind candidate N."""
+    from apps.core.curated_images import client as curated_client
+    from apps.core.onboarding.ai_curate import brief_query
 
-    hero = CuratedPhoto.objects.create(
-        title="Yoga Sunrise", tags="yoga, calm", kind="hero", image_key="platform/curated-photos/h1.jpg", position=1
+    query = brief_query(brief)
+    return (
+        curated_client.search_or_browse(
+            query, collection=curated_client.HERO_COLLECTION, per_page=ai_photos.CANDIDATES_PER_GROUP
+        ).results,
+        curated_client.search_or_browse(query, per_page=ai_photos.CANDIDATES_PER_GROUP).results,
     )
-    stock = CuratedPhoto.objects.create(
-        title="Mat Closeup", tags="yoga, mat", kind="stock", image_key="platform/curated-photos/s1.jpg", position=2
-    )
-    return hero, stock
 
 
 def _fake_structured(picks):
@@ -73,8 +79,9 @@ def _fake_structured(picks):
     return fake
 
 
-def test_pick_photos_validates_ids_and_groups(monkeypatch):
-    hero, stock = _seed_catalog()
+def test_pick_photos_validates_candidates_and_slots(monkeypatch):
+    brief = CoachBrief(niche="yoga")
+    hero_pool, _content_pool = _pools(brief)
     slots = [
         ai_photos.Slot("hero", "Homepage hero", "hero"),
         ai_photos.Slot("course:1", 'Thumbnail for "Morning Flow"', "content"),
@@ -84,23 +91,63 @@ def test_pick_photos_validates_ids_and_groups(monkeypatch):
         "structured",
         _fake_structured(
             [
-                {"slot": "hero", "photo_id": hero.pk},
-                {"slot": "course:1", "photo_id": 999999},  # hallucinated -> dropped
-                {"slot": "nonsense", "photo_id": stock.pk},  # unknown slot -> dropped
+                {"slot": "hero", "candidate": 1},
+                {"slot": "course:1", "candidate": 999},  # off the list -> dropped
+                {"slot": "nonsense", "candidate": 1},  # unknown slot -> dropped
             ]
         ),
     )
-    picks = ai_photos.pick_photos(CoachBrief(niche="yoga"), slots, tenant_schema="glow")
+    picks = ai_photos.pick_photos(brief, slots, tenant_schema="glow")
     assert set(picks) == {"hero"}
-    assert picks["hero"].pk == hero.pk
+    assert picks["hero"].asset_id == hero_pool[0].asset_id
 
 
-def test_pick_photos_hero_slot_rejects_stock_kind(monkeypatch):
-    hero, stock = _seed_catalog()
-    slots = [ai_photos.Slot("hero", "Homepage hero", "hero")]
-    monkeypatch.setattr(ai_photos.core_ai, "structured", _fake_structured([{"slot": "hero", "photo_id": stock.pk}]))
-    picks = ai_photos.pick_photos(CoachBrief(niche="yoga"), slots, tenant_schema="glow")
-    assert picks == {}
+def test_pick_photos_numbers_candidates_per_group(monkeypatch):
+    """Candidate numbers are per list. A number that exists in the content list
+    but runs off the end of the (shorter) hero list must be dropped for a hero
+    slot and honoured for a content slot — a hero background may not quietly come
+    from the wider pool."""
+    brief = CoachBrief(niche="yoga")
+    hero_pool, content_pool = _pools(brief)
+    beyond_heroes = len(hero_pool) + 1
+    assert beyond_heroes <= len(content_pool)  # otherwise this proves nothing
+    slots = [
+        ai_photos.Slot("hero", "Homepage hero", "hero"),
+        ai_photos.Slot("about", "About image", "content"),
+    ]
+    monkeypatch.setattr(
+        ai_photos.core_ai,
+        "structured",
+        _fake_structured([{"slot": "hero", "candidate": beyond_heroes}, {"slot": "about", "candidate": beyond_heroes}]),
+    )
+    picks = ai_photos.pick_photos(brief, slots, tenant_schema="glow")
+    assert "hero" not in picks
+    assert picks["about"].asset_id == content_pool[beyond_heroes - 1].asset_id
+
+
+def test_pick_photos_catalog_outage_raises_curate_error(monkeypatch):
+    from apps.core.curated_images import client as curated_client
+
+    def down(*args, **kwargs):
+        raise curated_client.CuratedImageError("the photo library is unavailable right now")
+
+    monkeypatch.setattr(curated_client, "search", down)
+    with pytest.raises(ai_photos.CurateError):
+        ai_photos.pick_photos(CoachBrief(niche="yoga"), [ai_photos.Slot("hero", "x", "hero")], tenant_schema="glow")
+
+
+def test_pick_photos_still_has_candidates_for_a_niche_the_catalog_cannot_match(monkeypatch):
+    """A pole-dance coach's own words filter the catalog to zero rows. The
+    wizard must still place photos — an empty pool means it silently finishes
+    with a photo-less site."""
+    from apps.core.curated_images import client as curated_client
+    from apps.core.onboarding.ai_curate import brief_query
+
+    brief = CoachBrief(niche="pole_dance", description="aerial hoop choreography")
+    assert not curated_client.search(brief_query(brief), collection=curated_client.HERO_COLLECTION).results
+    monkeypatch.setattr(ai_photos.core_ai, "structured", _fake_structured([{"slot": "hero", "candidate": 1}]))
+    picks = ai_photos.pick_photos(brief, [ai_photos.Slot("hero", "Homepage hero", "hero")], tenant_schema="glow")
+    assert picks["hero"].asset_id
 
 
 def test_pick_photos_no_slots_no_call(monkeypatch):
@@ -112,7 +159,6 @@ def test_pick_photos_no_slots_no_call(monkeypatch):
 
 
 def test_pick_photos_provider_error_raises_curate_error(monkeypatch):
-    _seed_catalog()
     from apps.core import ai as core_ai
 
     def fail(**kwargs):

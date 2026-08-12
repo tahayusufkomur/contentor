@@ -37,6 +37,7 @@ def test_prod_settings_accepts_bypass_disabled(monkeypatch):
     # Ensure dev-only fakes are off so prod guardrails don't fire.
     monkeypatch.setenv("LIVE_FAKE_ENABLED", "false")
     monkeypatch.setenv("EMAIL_SINK_ENABLED", "false")
+    monkeypatch.setenv("CURATED_IMAGE_API_FAKE", "false")
     # A fresh settings-module import reads AI_PROVIDER straight from
     # os.environ (bypassing the Django settings layer entirely), so it can
     # leak in the developer's local AI_PROVIDER=cli — neutralize it.

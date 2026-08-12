@@ -1,0 +1,132 @@
+[
+  {
+    "asset_id": "20c0ea65-ca11-5486-bc5e-4da06b3ee05e",
+    "file": "hero_fitness_gym_workout.webp",
+    "title": "Gym Strength Session",
+    "description": "person training with dumbbells in a bright modern gym",
+    "tags": [
+      "fitness",
+      "gym",
+      "strength",
+      "workout",
+      "training",
+      "wellness"
+    ],
+    "collection": "coach-heroes",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "af60fac7-ecd0-5789-a1ef-ed7087111dcf",
+    "file": "hero_yoga_studio_pose.webp",
+    "title": "Studio Yoga Flow",
+    "description": "woman in a yoga pose in a serene studio",
+    "tags": [
+      "yoga",
+      "studio",
+      "flexibility",
+      "balance",
+      "calm",
+      "wellness"
+    ],
+    "collection": "coach-heroes",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "83cc616d-57ed-554d-8b73-85eb1cf7b458",
+    "file": "hero_business_laptop_desk.webp",
+    "title": "Modern Workspace",
+    "description": "tidy modern desk with laptop and coffee",
+    "tags": [
+      "business",
+      "workspace",
+      "laptop",
+      "entrepreneur",
+      "productivity"
+    ],
+    "collection": "coach-heroes",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "3f7ab450-66d7-50d7-8b75-e6c62fdcf120",
+    "file": "hero_cooking_meal_prep.webp",
+    "title": "Healthy Meal Prep",
+    "description": "colorful healthy meal prep containers",
+    "tags": [
+      "cooking",
+      "nutrition",
+      "meal prep",
+      "healthy",
+      "food"
+    ],
+    "collection": "coach-heroes",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "e152824f-e949-5c89-92a9-565a230c2893",
+    "file": "hero_mindset_journaling.webp",
+    "title": "Morning Journaling",
+    "description": "person journaling by a window with coffee",
+    "tags": [
+      "mindset",
+      "journaling",
+      "habits",
+      "personal development",
+      "calm"
+    ],
+    "collection": "coach-heroes",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "68510c99-fd42-51c4-bc66-6d4cf3fd3062",
+    "file": "stock_fitness_morning_run.webp",
+    "title": "Morning Run",
+    "description": "Runner on a misty road at sunrise seen from behind",
+    "tags": [
+      "fitness",
+      "running",
+      "cardio",
+      "morning",
+      "motivation"
+    ],
+    "collection": "coach-stock",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "b8a2647a-cb83-5be0-9ca9-644ac0845e2a",
+    "file": "stock_cooking_pasta_toss.webp",
+    "title": "Pasta in the Pan",
+    "description": "Chef tossing fresh pasta in a flaming steel pan",
+    "tags": [
+      "cooking",
+      "chef",
+      "pasta",
+      "kitchen",
+      "culinary"
+    ],
+    "collection": "coach-stock",
+    "width": 640,
+    "height": 357
+  },
+  {
+    "asset_id": "6df841f4-13e3-52c1-ae19-2ccb6ab552c8",
+    "file": "stock_fitness_yoga_balance.webp",
+    "title": "Yoga Balance",
+    "description": "Woman holding tree pose on a wooden deck overlooking green hills",
+    "tags": [
+      "yoga",
+      "balance",
+      "wellness",
+      "mindset",
+      "calm"
+    ],
+    "collection": "coach-stock",
+    "width": 516,
+    "height": 640
+  }
+]

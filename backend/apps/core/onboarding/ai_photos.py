@@ -1,29 +1,36 @@
 """Curated-photo picks for a freshly provisioned tenant.
 
 Slots (hero bg, about image, course thumbnails, live-event covers) are matched
-against a token-overlap shortlist of the CuratedPhoto catalog; ONE structured
-call assigns photos to slots. The LLM step is pure + public-schema-only so it
-can run inside provision_tenant's capped worker thread; apply_photo_picks does
-the tenant-schema writes and runs in the main thread.
-Spec: docs/superpowers/specs/2026-07-19-ai-touch-onboarding-design.md
+against candidates from the remote curated catalog (curated-image-api): the
+coach's own words are the search query, and ONE structured call assigns
+candidates to slots. The LLM step touches no tenant schema, so it can run inside
+provision_tenant's capped worker thread; apply_photo_picks does the tenant-schema
+writes — including caching each chosen image into tenant storage — and runs in
+the main thread.
+Specs: docs/superpowers/specs/2026-07-19-ai-touch-onboarding-design.md,
+docs/superpowers/specs/2026-08-09-curated-images-offload-design.md
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from django.conf import settings
-from django_tenants.utils import schema_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.models import CuratedPhoto
+from apps.core.curated_images import client as curated_client
 from apps.core.onboarding import ai_compose
-from apps.core.onboarding.ai_curate import CoachBrief, brief_block, shortlist
+from apps.core.onboarding.ai_curate import CoachBrief, brief_block, brief_query
 
-HERO_KINDS = ("hero",)
-CONTENT_KINDS = ("hero", "stock")
-SHORTLIST_LIMIT = 30
+if TYPE_CHECKING:
+    from apps.core.curated_images.client import RemoteImage
+
+logger = logging.getLogger(__name__)
+
+CANDIDATES_PER_GROUP = 24
 MAX_SLOTS = 16
 MAX_OUTPUT_TOKENS = 1000
 
@@ -41,7 +48,7 @@ class Slot:
 
 class _Pick(BaseModel):
     slot: str
-    photo_id: int
+    candidate: int  # the number the photo was listed under, not a catalog id
 
 
 class _Picks(BaseModel):
@@ -51,8 +58,9 @@ class _Picks(BaseModel):
 # Static system prompt: byte-identical across tenants (prompt caching).
 SYSTEM_PROMPT = """You choose photographs for a solo coach's brand-new website.
 
-You receive the coach's brief, a list of image slots, and two candidate photo
-lists (hero and content). Assign the best-fitting photo to each slot.
+You receive the coach's brief, a list of image slots, and two numbered candidate
+photo lists (hero and content). Assign the best-fitting photo to each slot by its
+candidate number.
 
 Hard rules:
 - For each slot, pick ONLY from the candidate list its slot description names.
@@ -90,25 +98,42 @@ def event_groups(events) -> list[tuple[str, str, list]]:
     return [(m, t, rows) for (m, t), rows in groups.items()]
 
 
-def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> dict[str, CuratedPhoto]:
-    """One structured call -> {slot_name: CuratedPhoto row}. Model-returned
-    ids are validated against the shortlist AND the slot's kind group;
-    anything else is dropped. Raises CurateError on provider failure."""
+def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> dict[str, RemoteImage]:
+    """One structured call -> {slot_name: RemoteImage}. Candidates come from two
+    catalog searches (wide hero shots, and anything for content slots) against
+    the coach's own words. Model-returned candidate numbers are validated against
+    the list its slot was allowed to use; anything else is dropped. Raises
+    CurateError on provider or catalog failure."""
     if not slots:
         return {}
-    with schema_context("public"):
-        rows = list(CuratedPhoto.objects.filter(enabled=True).order_by("position", "id"))
-    hero_pool = shortlist([r for r in rows if r.kind in HERO_KINDS], brief, limit=SHORTLIST_LIMIT)
-    content_pool = shortlist([r for r in rows if r.kind in CONTENT_KINDS], brief, limit=SHORTLIST_LIMIT)
+    query = brief_query(brief)
+    try:
+        # search_or_browse, not search: the catalog's query filters, so a coach
+        # whose niche it has no words for would otherwise finish the wizard with
+        # a photo-less site rather than generic-but-real imagery.
+        hero_pool = curated_client.search_or_browse(
+            query, collection=curated_client.HERO_COLLECTION, per_page=CANDIDATES_PER_GROUP
+        ).results
+        content_pool = curated_client.search_or_browse(query, per_page=CANDIDATES_PER_GROUP).results
+    except curated_client.CuratedImageError as exc:
+        raise CurateError(str(exc)) from exc
     if not hero_pool and not content_pool:
         return {}
+
+    # Candidates are numbered per group rather than identified by catalog UUID:
+    # a coach's whole slot list then costs a few tokens, and the model cannot
+    # invent an id that happens to exist.
+    numbered = {
+        "hero": dict(enumerate(hero_pool, start=1)),
+        "content": dict(enumerate(content_pool, start=1)),
+    }
 
     lines = [brief_block(brief), "", "<slots>"]
     lines += [f"{s.name}: {s.label}" for s in slots]
     lines.append("</slots>")
-    for group_name, pool in (("hero", hero_pool), ("content", content_pool)):
+    for group_name, pool in numbered.items():
         lines.append(f"<{group_name}_photos>")
-        lines += [f'{r.pk}: "{r.title}" tags: {r.tags}' for r in pool]
+        lines += [f'{number}: "{image.title}" tags: {", ".join(image.tags)}' for number, image in pool.items()]
         lines.append(f"</{group_name}_photos>")
 
     try:
@@ -124,28 +149,33 @@ def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> 
         raise CurateError(str(exc)) from exc
     ai_compose.record_spend(tenant_schema, float(cost or 0))
 
-    allowed = {"hero": {r.pk for r in hero_pool}, "content": {r.pk for r in content_pool}}
-    by_id = {r.pk: r for r in hero_pool + content_pool}
     slot_group = {s.name: s.group for s in slots}
-    out: dict[str, CuratedPhoto] = {}
+    out: dict[str, RemoteImage] = {}
     for pick in parsed.picks:
         group = slot_group.get(pick.slot)
-        if group and pick.photo_id in allowed[group] and pick.slot not in out:
-            out[pick.slot] = by_id[pick.photo_id]
+        if group and pick.slot not in out and pick.candidate in numbered[group]:
+            out[pick.slot] = numbered[group][pick.candidate]
     return out
 
 
-def apply_photo_picks(picks: dict[str, CuratedPhoto], *, pages: dict, courses, events, niche: str) -> None:
-    """Materialize picked rows into tenant Photos and write them into the
-    pages dict (in place) / course thumbnails / event covers. Must run inside
-    the tenant context (creates media.Photo rows)."""
-    from apps.core.curated_photos.materialize import materialize_curated_photo
+def apply_photo_picks(picks: dict[str, RemoteImage], *, pages: dict, courses, events, niche: str) -> None:
+    """Cache the picked catalog images into this tenant's storage and write them
+    into the pages dict (in place) / course thumbnails / event covers. Must run
+    inside the tenant context (creates media.Photo rows).
+
+    One image that cannot be cached costs that slot only — a brand-new site with
+    five photos out of six beats a provisioning run that failed outright."""
+    from apps.core.curated_images.cache import cache_remote_image
     from apps.tenant_config.seeding import refresh_seeded_fingerprints, register_seeded
 
     created = []
 
-    def photo_for(row):
-        photo = materialize_curated_photo(row)
+    def photo_for(image):
+        try:
+            photo = cache_remote_image(image)
+        except curated_client.CuratedImageError as exc:
+            logger.warning("onboarding could not cache curated image %s: %s", image.asset_id, exc)
+            return None
         created.append(photo)
         return photo
 
@@ -153,8 +183,10 @@ def apply_photo_picks(picks: dict[str, CuratedPhoto], *, pages: dict, courses, e
     groups = {f"event:{m}:{t}": rows for m, t, rows in event_groups(events)}
     touched = []
 
-    for slot_name, row in picks.items():
-        photo = photo_for(row)
+    for slot_name, image in picks.items():
+        photo = photo_for(image)
+        if photo is None:
+            continue
         if slot_name == "hero":
             for page in pages.values():
                 for block in page.get("blocks", []):

@@ -416,19 +416,24 @@ def test_execute_edit_seo_writes_meta_description_and_busts_cache(client, coach)
     assert cache.get("tenant:shared_test:config") is None
 
 
+def _catalog_asset(index=0):
+    """(asset_id, cached tenant key) for a fixture-catalog image. Executing a
+    curated card now COPIES the image into tenant storage under a key derived
+    from the asset id, instead of referencing a shared platform object."""
+    from apps.core.curated_images import fake
+    from apps.core.curated_images.cache import tenant_key_for
+
+    asset_id = fake.entries()[index]["asset_id"]
+    return asset_id, tenant_key_for(asset_id)
+
+
 def test_execute_set_block_image_materializes_photo_and_busts_cache(client, coach):
     from django.core.cache import cache
 
-    from apps.core.models import CuratedPhoto
     from apps.media.models import Photo
     from apps.tenant_config.models import TenantConfig
 
-    row = CuratedPhoto.objects.create(
-        title="Sunlit yoga studio",
-        tags="yoga, studio",
-        kind="hero",
-        image_key="platform/curated-photos/sun.jpg",
-    )
+    asset_id, cached_key = _catalog_asset()
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "Hi"}]}}
     cfg.save(update_fields=["pages"])
@@ -440,13 +445,13 @@ def test_execute_set_block_image_materializes_photo_and_busts_cache(client, coac
             "page": "home",
             "block_id": "blk_hero",
             "field": "bgImage",
-            "curated_photo_id": row.pk,
+            "curated_asset_id": asset_id,
         },
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
     assert resp.json()["result"] == {"kind": "set_block_image", "page": "home"}
-    photo = Photo.objects.get(s3_key="platform/curated-photos/sun.jpg")
+    photo = Photo.objects.get(s3_key=cached_key)
     cfg.refresh_from_db()
     block = cfg.pages["home"]["blocks"][0]
     assert block["bgImage"] == {"url": None, "photo_id": str(photo.pk)}
@@ -467,7 +472,7 @@ def test_execute_set_block_image_gone_catalog_row_returns_400(client, coach):
             "page": "home",
             "block_id": "blk_hero",
             "field": "bgImage",
-            "curated_photo_id": 999999,
+            "curated_asset_id": "11111111-2222-3333-4444-555555555555",
         },
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
@@ -476,20 +481,14 @@ def test_execute_set_block_image_gone_catalog_row_returns_400(client, coach):
 
 
 def test_execute_set_course_cover_materializes_photo_and_sets_thumbnail(client, coach):
-    from apps.core.models import CuratedPhoto
     from apps.courses.models import Course
     from apps.media.models import Photo
 
-    row = CuratedPhoto.objects.create(
-        title="Golden-hour mat flow",
-        tags="yoga, flow",
-        kind="hero",
-        image_key="platform/curated-photos/mat.jpg",
-    )
+    asset_id, cached_key = _catalog_asset()
     course = Course.objects.create(title="Yoga Basics", instructor=coach)
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "set_course_cover", "course_id": course.pk, "curated_photo_id": row.pk},
+        {"kind": "set_course_cover", "course_id": course.pk, "curated_asset_id": asset_id},
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
@@ -500,22 +499,15 @@ def test_execute_set_course_cover_materializes_photo_and_sets_thumbnail(client, 
         "url": f"/admin/courses/{course.slug}",
     }
     course.refresh_from_db()
-    photo = Photo.objects.get(s3_key="platform/curated-photos/mat.jpg")
+    photo = Photo.objects.get(s3_key=cached_key)
     assert course.thumbnail_id == photo.pk
 
 
 def test_execute_set_course_cover_gone_course_returns_400(client, coach):
-    from apps.core.models import CuratedPhoto
-
-    row = CuratedPhoto.objects.create(
-        title="Golden-hour mat flow",
-        tags="yoga",
-        kind="hero",
-        image_key="platform/curated-photos/mat2.jpg",
-    )
+    asset_id, _cached_key = _catalog_asset()
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "set_course_cover", "course_id": 999999, "curated_photo_id": row.pk},
+        {"kind": "set_course_cover", "course_id": 999999, "curated_asset_id": asset_id},
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
@@ -528,23 +520,19 @@ def test_execute_set_course_cover_with_prior_thumbnail_records_audit_and_undo_re
     serialization on audit write — the execute still returned 200 but
     _record_audit's best-effort except silently swallowed the failure,
     so NO audit row (and therefore no undo) was ever created for this case."""
-    from apps.core.curated_photos.materialize import materialize_curated_photo
-    from apps.core.models import CuratedPhoto
+    from apps.core.curated_images.cache import cache_remote_image
+    from apps.core.curated_images.client import get as get_catalog_image
     from apps.courses.models import Course
     from apps.media.models import Photo
     from apps.tenant_config.models import CopilotAudit
 
-    old_row = CuratedPhoto.objects.create(
-        title="Old cover", tags="yoga", kind="hero", image_key="platform/curated-photos/prior-cover.jpg"
-    )
-    old_thumbnail = materialize_curated_photo(old_row)
+    prior_asset_id, _prior_key = _catalog_asset(1)
+    old_thumbnail = cache_remote_image(get_catalog_image(prior_asset_id))
     course = Course.objects.create(title="Yoga Basics", instructor=coach, thumbnail=old_thumbnail)
 
-    new_row = CuratedPhoto.objects.create(
-        title="Golden-hour mat flow", tags="yoga, flow", kind="hero", image_key="platform/curated-photos/new-cover.jpg"
-    )
+    new_asset_id, new_cached_key = _catalog_asset(0)
     token = copilot_tokens.stash_action(
-        "shared_test", {"kind": "set_course_cover", "course_id": course.pk, "curated_photo_id": new_row.pk}
+        "shared_test", {"kind": "set_course_cover", "course_id": course.pk, "curated_asset_id": new_asset_id}
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
@@ -560,7 +548,7 @@ def test_execute_set_course_cover_with_prior_thumbnail_records_audit_and_undo_re
     assert undo.status_code == 200, undo.content
     course.refresh_from_db()
     assert course.thumbnail_id == old_thumbnail.pk
-    new_thumbnail = Photo.objects.get(s3_key="platform/curated-photos/new-cover.jpg")
+    new_thumbnail = Photo.objects.get(s3_key=new_cached_key)
     assert course.thumbnail_id != new_thumbnail.pk
 
 
@@ -585,19 +573,13 @@ def _upcoming_event(coach, *, onsite=False, thumbnail=None, title="Morning Flow"
 
 
 def test_execute_set_event_cover_materializes_photo_and_sets_thumbnail(client, coach):
-    from apps.core.models import CuratedPhoto
     from apps.media.models import Photo
 
-    row = CuratedPhoto.objects.create(
-        title="Golden-hour mat flow",
-        tags="yoga, flow",
-        kind="hero",
-        image_key="platform/curated-photos/event-mat.jpg",
-    )
+    asset_id, cached_key = _catalog_asset()
     event = _upcoming_event(coach)
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "live", "curated_photo_id": row.pk},
+        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "live", "curated_asset_id": asset_id},
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
@@ -608,22 +590,15 @@ def test_execute_set_event_cover_materializes_photo_and_sets_thumbnail(client, c
         "url": f"/admin/live?tab=classes&event={event.pk}&kind=live",
     }
     event.refresh_from_db()
-    photo = Photo.objects.get(s3_key="platform/curated-photos/event-mat.jpg")
+    photo = Photo.objects.get(s3_key=cached_key)
     assert event.thumbnail_id == photo.pk
 
 
 def test_execute_set_event_cover_gone_event_returns_400(client, coach):
-    from apps.core.models import CuratedPhoto
-
-    row = CuratedPhoto.objects.create(
-        title="Golden-hour mat flow",
-        tags="yoga",
-        kind="hero",
-        image_key="platform/curated-photos/event-mat2.jpg",
-    )
+    asset_id, _cached_key = _catalog_asset()
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "set_event_cover", "event_id": 999999, "event_kind": "live", "curated_photo_id": row.pk},
+        {"kind": "set_event_cover", "event_id": 999999, "event_kind": "live", "curated_asset_id": asset_id},
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
@@ -635,23 +610,19 @@ def test_execute_set_event_cover_with_prior_thumbnail_records_audit_and_undo_res
     Photo pk must land in the inverse as a string or the audit row (and undo)
     silently never gets written. Uses an onsite event so the kind→model
     dispatch is covered on both execute and undo."""
-    from apps.core.curated_photos.materialize import materialize_curated_photo
-    from apps.core.models import CuratedPhoto
+    from apps.core.curated_images.cache import cache_remote_image
+    from apps.core.curated_images.client import get as get_catalog_image
     from apps.media.models import Photo
     from apps.tenant_config.models import CopilotAudit
 
-    old_row = CuratedPhoto.objects.create(
-        title="Old cover", tags="yoga", kind="hero", image_key="platform/curated-photos/event-prior.jpg"
-    )
-    old_thumbnail = materialize_curated_photo(old_row)
+    prior_asset_id, _prior_key = _catalog_asset(1)
+    old_thumbnail = cache_remote_image(get_catalog_image(prior_asset_id))
     event = _upcoming_event(coach, onsite=True, thumbnail=old_thumbnail, title="Berlin Retreat")
 
-    new_row = CuratedPhoto.objects.create(
-        title="Golden-hour mat flow", tags="yoga, flow", kind="hero", image_key="platform/curated-photos/event-new.jpg"
-    )
+    new_asset_id, new_cached_key = _catalog_asset(0)
     token = copilot_tokens.stash_action(
         "shared_test",
-        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "onsite", "curated_photo_id": new_row.pk},
+        {"kind": "set_event_cover", "event_id": event.pk, "event_kind": "onsite", "curated_asset_id": new_asset_id},
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
@@ -668,7 +639,7 @@ def test_execute_set_event_cover_with_prior_thumbnail_records_audit_and_undo_res
     assert undo.status_code == 200, undo.content
     event.refresh_from_db()
     assert event.thumbnail_id == old_thumbnail.pk
-    new_thumbnail = Photo.objects.get(s3_key="platform/curated-photos/event-new.jpg")
+    new_thumbnail = Photo.objects.get(s3_key=new_cached_key)
     assert event.thumbnail_id != new_thumbnail.pk
 
 

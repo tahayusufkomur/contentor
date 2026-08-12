@@ -187,31 +187,14 @@ def _execute(tenant, user, action):
         cache.delete(f"tenant:{tenant.schema_name}:config")
         return {"kind": kind}, {"kind": "edit_seo", "meta_description": old_meta_description}
     if kind == "set_block_image":
-        from django_tenants.utils import schema_context
-
-        from apps.core.curated_photos.materialize import materialize_curated_photo
-        from apps.core.models import CuratedPhoto
-
-        row = None
-        if not action.get("tenant_photo_id"):
-            with schema_context("public"):
-                row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
-            if row is None:
-                raise photos.PhotoOpError("that photo is no longer available")
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise photos.PhotoOpError("site is not set up yet")
             pages_before = deepcopy(cfg.pages or {})
-            if action.get("tenant_photo_id"):
-                # Coach-attached photo: already a tenant media.Photo row.
-                from apps.media.models import Photo
-
-                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
-                if photo is None:
-                    raise photos.PhotoOpError("that attached photo is not in your library")
-            else:
-                photo = materialize_curated_photo(row)
+            # Either the coach's attached photo or the catalog asset, cached into
+            # this tenant's storage on the way through.
+            photo = photos.photo_for_action(action)
             cfg.pages = photos.apply_block_image(
                 cfg.pages or {}, action["page"], action["block_id"], action["field"], photo.pk
             )
@@ -220,17 +203,6 @@ def _execute(tenant, user, action):
         cache.delete(f"tenant:{tenant.schema_name}:config")
         return {"kind": kind, "page": action["page"]}, {"kind": "restore_pages", "pages": pages_before}
     if kind == "set_course_cover":
-        from django_tenants.utils import schema_context
-
-        from apps.core.curated_photos.materialize import materialize_curated_photo
-        from apps.core.models import CuratedPhoto
-
-        row = None
-        if not action.get("tenant_photo_id"):
-            with schema_context("public"):
-                row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
-            if row is None:
-                raise photos.PhotoOpError("that photo is no longer available")
         with tenant_context(tenant):
             from apps.courses.models import Course
 
@@ -238,15 +210,7 @@ def _execute(tenant, user, action):
             if course is None:
                 raise photos.PhotoOpError("that course no longer exists")
             old_thumbnail_id = course.thumbnail_id
-            if action.get("tenant_photo_id"):
-                from apps.media.models import Photo
-
-                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
-                if photo is None:
-                    raise photos.PhotoOpError("that attached photo is not in your library")
-                course.thumbnail = photo
-            else:
-                course.thumbnail = materialize_curated_photo(row)
+            course.thumbnail = photos.photo_for_action(action)
             course.save(update_fields=["thumbnail"])
         # Course cards read from the courses API, not the cached config —
         # no cache-bust needed here.
@@ -262,17 +226,6 @@ def _execute(tenant, user, action):
         }
         return result, inverse
     if kind == "set_event_cover":
-        from django_tenants.utils import schema_context
-
-        from apps.core.curated_photos.materialize import materialize_curated_photo
-        from apps.core.models import CuratedPhoto
-
-        row = None
-        if not action.get("tenant_photo_id"):
-            with schema_context("public"):
-                row = CuratedPhoto.objects.filter(pk=action.get("curated_photo_id"), enabled=True).first()
-            if row is None:
-                raise photos.PhotoOpError("that photo is no longer available")
         event_kind = "onsite" if action.get("event_kind") == "onsite" else "live"
         with tenant_context(tenant):
             from apps.live.models import LiveClass, OnsiteEvent
@@ -282,15 +235,7 @@ def _execute(tenant, user, action):
             if event is None:
                 raise photos.PhotoOpError("that event no longer exists")
             old_thumbnail_id = event.thumbnail_id
-            if action.get("tenant_photo_id"):
-                from apps.media.models import Photo
-
-                photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
-                if photo is None:
-                    raise photos.PhotoOpError("that attached photo is not in your library")
-                event.thumbnail = photo
-            else:
-                event.thumbnail = materialize_curated_photo(row)
+            event.thumbnail = photos.photo_for_action(action)
             event.save(update_fields=["thumbnail"])
         # Event cards read from the live API, not the cached config —
         # no cache-bust needed here.

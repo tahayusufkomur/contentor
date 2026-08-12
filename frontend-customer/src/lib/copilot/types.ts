@@ -72,7 +72,12 @@ export interface ChatEntry {
    * desc = the vision caption, so the model knows what each photo shows.
    * signed_url = presigned thumbnail for the chat bubble (24h; the chip
    * falls back to title-only once it expires). Never sent to the model. */
-  attached?: { id: string; title: string; desc?: string; signed_url?: string }[];
+  attached?: {
+    id: string;
+    title: string;
+    desc?: string;
+    signed_url?: string;
+  }[];
 }
 
 export interface CopilotAuditEntry {

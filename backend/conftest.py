@@ -212,6 +212,26 @@ def _curated_mirror_off(settings):
     settings.CURATED_LOGO_SYNC_DIR = ""
 
 
+@pytest.fixture(autouse=True)
+def curated_image_uploads(settings, monkeypatch):
+    """Keep the remote curated catalog offline for every test.
+
+    Fake mode forces the committed fixture catalog, so no suite can reach the
+    curated-image-api service even when the dev container exports a real URL and
+    key. Copy-on-use still runs its full path — download, key derivation, Photo
+    row — with only the S3 PUT captured here; yields {key: bytes} so a test can
+    assert what would have been stored.
+    """
+    settings.CURATED_IMAGE_API_FAKE = True
+    stored: dict[str, bytes] = {}
+
+    def _capture(key, fileobj, content_type):
+        stored[key] = fileobj.read()
+
+    monkeypatch.setattr("apps.core.platform.uploads._store_object", _capture)
+    return stored
+
+
 _FREE_PLAN_DEFAULTS = {
     "price_monthly": 0,
     "transaction_fee_pct": 0,

@@ -2,61 +2,102 @@
 
 # Contentor
 
-Contentor is a multi-tenant SaaS platform for content creators ("coaches"). A coach signs up, gets their own subdomain (`yourname.contentor.app` — or a [custom domain](custom-domains.md) they buy through us), and sells courses, downloads, live sessions, and email campaigns to their students. What makes the product unusual is how much of a coach's site is *authored by the system*: the [onboarding wizard](onboarding-wizard-site-ai.md) provisions a tenant and composes an entire AI-written site from little more than a brand name, and the [Logo Studio](logo-studio-brand-identity.md) generates the brand mark itself — a versioned JSON recipe, never an uploaded bitmap.
+Contentor is a multi-tenant SaaS where content creators — we call them **coaches** — get their own branded site to sell courses, downloads, live sessions, and email campaigns to their **students**. A coach signs up on the marketing site, answers a few questions, and within a minute has a provisioned tenant at `theirbrand.contentor.app` with an AI-composed site, an AI-designed logo, seeded demo content, and Stripe checkout wired up. Later they can point a real domain at it.
 
-Three audiences use the platform: **coaches** (our paying customers, who run their tenant), **students** (end users inside a tenant), and **superadmins** (us, via the [platform console](superadmin-platform-console.md)).
+Tenant isolation is **PostgreSQL schema-per-tenant** via `django-tenants`. There is one Django deployment, one database, and N schemas — plus a `public` schema that holds coaches, plans, subscriptions, and everything the platform owner sees.
 
-## Architecture in one look
-
-The stack is Django 5.1 + DRF + Postgres 17 + Redis/Celery behind two independent Next.js 14 apps, all fronted by Caddy:
+## The 10-second picture
 
 ```mermaid
-graph TD
-    B[Browser] --> C[Caddy]
-    C -->|"apex + tr. locale"| FM[frontend-main<br/>marketing · signup · superadmin]
-    C -->|"tenant subdomains (catch-all)"| FC[frontend-customer<br/>tenant sites · student portal · coach admin]
-    C -->|"/api/*"| D[Django API<br/>backend/apps]
-    FM --> SH[packages/shared<br/>UI + hooks]
-    FC --> SH
-    FM -.->|X-Tenant-Domain| D
-    FC -.->|X-Tenant-Domain| D
-    D --> PG[(Postgres 17<br/>schema per tenant)]
-    D --> CW[Celery workers + Redis]
+graph TB
+    Caddy[Caddy<br/>host-based routing]
+    Main[frontend-main<br/>marketing · signup · superadmin]
+    Customer[frontend-customer<br/>every tenant site + portal]
+    Shared[packages/shared<br/>UI · nav · async hooks]
+    API[Django REST API<br/>/api/v1/]
+    Core[apps/core<br/>tenancy · AI · storage · email]
+    Features[Feature apps<br/>courses · live · community · blog · billing]
+    DB[(Postgres<br/>public + N tenant schemas)]
+    Celery[Celery + Redis<br/>async work]
+
+    Caddy --> Main
+    Caddy --> Customer
+    Caddy --> API
+    Main --> Shared
+    Customer --> Shared
+    Main --> API
+    Customer --> API
+    API --> Core
+    Core --> Features
+    Features --> DB
+    Features --> Celery
 ```
 
-The two ideas to internalize before touching anything:
+Two Next.js 14 apps, one Django API, one database. Caddy decides which frontend a request reaches purely from the `Host` header: the apex (`contentor.app`) and locale apex (`tr.contentor.app`) go to [frontend-main](marketing-site-app-frontend-main.md); **every other host** — all tenant subdomains and custom domains — goes to [frontend-customer](student-portal-app-frontend-customer.md). `/api/*` and `/static/*` bypass Next entirely and hit Django.
 
-**1. Tenancy is schema-per-tenant, resolved per request.** Every request passes through the [core platform](core-platform-multi-tenancy.md) middleware chain, which answers three questions in order: which region/locale, which PostgreSQL schema, and which user. Django apps are split into `SHARED_APPS` (public schema: coaches, plans, domains, curated assets) and `TENANT_APPS` (per-tenant schema: courses, community, students-as-users). One deploy of `frontend-customer` serves *every* coach's site — nothing tenant-specific is baked in at build time; identity comes from the `Host` header. The classic trap: Next.js server-side `fetch()` to Django must send an `X-Tenant-Domain` header, because Node's undici silently drops a custom `Host`.
+## How a request finds its tenant
 
-**2. Both frontends stand on one shared layer.** The [Shared UI Library](shared-ui-library.md) (`packages/shared`) is the single source of truth for primitives, navigation feedback, and async-action handling — it's the most-depended-on module in the frontend graph, consumed by nearly every feature surface in both apps. When you build UI, you build on it; the loading/feedback conventions it encodes are lint-enforced.
+This is the one mechanic worth internalizing before touching anything. [Core Platform & Multi-Tenancy](core-platform-multi-tenancy-apps.md) answers three questions in middleware before feature code runs: which region/locale, which PostgreSQL schema, and who is the user. Schema resolution comes from the hostname — or, for server-side calls from Next.js, from an `X-Tenant-Domain` header, because Node's undici silently drops a custom `Host` and you'd land in the public schema without noticing.
 
-## Backend
+Identity is JWT-only, no server sessions. [Authentication & Accounts](authentication-accounts.md) is unusual: it's a shared app whose `User` table exists in *every* schema — coaches and superadmins live in `public`, students and staff live in their tenant's schema. Magic links, emailed codes, and Google OAuth all converge on the same token issuance. Public endpoints must set `@authentication_classes([])`; `AllowAny` alone won't do it, since `TenantJWTAuthentication` is the default.
 
-Feature apps live in `backend/apps/`, each with its own wiki page. [Authentication & Accounts](authentication-accounts.md) owns identity — JWT-only (no server sessions), with magic links, emailed codes, and Google OAuth; its `User` table exists in *every* schema, holding coaches publicly and students per-tenant. [Billing & Payments](billing-payments.md) runs two independent money flows through one Stripe webhook: coaches paying Contentor for their subscription, and students paying coaches via connected accounts with a platform fee.
+## What a coach gets
 
-Tenant content is spread across [Courses, Downloads & Media](courses-downloads-media-library.md), [Live Events & Calendar](live-events-calendar.md) (live classes, streams, Zoom, and onsite events sharing one calendar shape), [Community](community.md) (the in-tenant social feed), and the [Blog engine](blog-ai-content.md), which powers both coach blogs and our own platform blog with AI-drafted posts. Communication splits across [Email Campaigns](email-campaigns.md) (bulk sends, rendered by the external MailCraft service and fanned out via Celery) and [Mailbox & Notifications](mailbox-notifications.md) (threaded coach↔student email plus Web Push announcements).
+The [Onboarding Wizard & Site AI](onboarding-wizard-site-ai.md) is the widest end-to-end path in the codebase: brand name → niche questions → tenant provisioning → AI-composed page tree → AI-written copy → a generated logo. It reaches across both frontends, a dedicated Django package, and a shared pure resolver. The site it produces is owned afterwards by [Tenant Config & Site Builder](tenant-config-site-builder.md), which holds the theme, navigation, page block tree, and the "are you ready to publish?" checklist.
 
-Two framework-level modules keep the rest small: the [Admin Kit](admin-kit-framework.md) turns one Python declaration per model into a full CRUD API *and* the JSON metadata a generic React renderer uses to build the admin UI — no hand-written TypeScript per model. And the [AI infrastructure](ai-infrastructure-assistants.md) funnels every Claude call through one provider layer with SSE framing and cost governance, feeding three chat surfaces across the frontends. [Observability](observability-usage-analytics.md) ships every container's logs into an in-app logbook — that *is* the monitoring stack.
+The logo is never a bitmap. [Logo Studio & Brand Identity](logo-studio-brand-identity.md) stores a versioned `LogoRecipe` JSON; the SVG preview, dark variant, brand-kit zip, and exported PNGs are all pure functions of it, rasterized once in the browser at export time.
 
-## Frontends
+From there the coach fills the site: [Courses, Downloads & Media Library](courses-downloads-media-library.md) for on-demand content and access gating, [Live Events & Calendar](live-events-calendar.md) for live classes, streams, Zoom sessions, and onsite events (four types, one shape, differing only in delivery and what secret a student receives), [Community](community.md) for the in-tenant social feed, and [Blog & AI Content](blog-ai-content.md) for AI-drafted posts drawing imagery from the shared curated-photo library.
 
-[frontend-main](marketing-site-app-frontend-main.md) serves the apex domain: marketing pages, coach signup and the onboarding wizard, the coach's "my platforms" dashboard, and the superadmin console. [frontend-customer](student-portal-app-frontend-customer.md) serves everything else — each tenant's public site, the student portal behind login, and the coach's admin panel, with the site's look and page tree driven entirely by the [Tenant Config & Site Builder](tenant-config-site-builder.md) module.
+## Money and reach
 
-## Key end-to-end flows
+[Billing & Payments](billing-payments.md) runs two independent flows through shared models and a single webhook: the coach's platform subscription (Checkout on our Stripe account) and the marketplace (direct charges on the coach's connected account, with an application fee). [Custom Domains](custom-domains.md) covers the full buy-a-domain lifecycle — search, checkout, registration, DNS, email auth, SSL, and registration as a `django-tenants` domain.
 
-- **Coach signup → live site.** A visitor on `frontend-main` types a brand name; the onboarding wizard provisions a tenant schema, creates the user in both public and tenant schemas, generates a logo recipe, and has AI compose and write the site's pages into `TenantConfig`. Minutes later the coach's subdomain is serving a real site from `frontend-customer`.
-- **Student joins and buys.** A magic link auto-registers the student in the tenant schema; checkout runs as a direct charge on the coach's connected Stripe account; webhook processing grants access to the course, download, or event.
-- **A campaign goes out.** The coach designs an email in the embedded MailCraft builder; the backend renders personalized HTML through MailCraft's export API and Celery fans out delivery via Resend. The superadmin→coach platform campaigns are a deliberate mirror of the same pipeline.
+Outbound communication splits three ways: [Email Campaigns](email-campaigns.md) for bulk sends (design and rendering delegated to the sibling **MailCraft** project, fan-out via Celery), [Mailbox & Notifications](mailbox-notifications.md) for threaded coach↔student conversations and Web Push broadcasts.
 
-## Getting started
+## AI, everywhere
+
+[AI Infrastructure & Assistants](ai-infrastructure-assistants.md) is one provider layer, one SSE framing convention, and one conversation kernel with cost governance — with three chat surfaces built on top. Every Claude call in the product (site composition, blog drafting, logo critique, the help bot, the coach copilot) goes through it and is metered against a budget.
+
+## The plumbing you'll meet early
+
+[Admin Kit Framework](admin-kit-framework.md) is `django.contrib.admin`'s idea re-expressed as JSON: one Python declaration per model yields both a CRUD REST surface and the metadata a generic React renderer uses to draw tables, filters, forms, and bulk actions. Nothing about a model's admin UI is hand-written in TypeScript. It powers both the coach's admin panel and the [Superadmin Platform Console](superadmin-platform-console.md), which reads the public schema exclusively and is therefore served from the apex by `frontend-main`.
+
+[Shared UI Library](shared-ui-library.md) is the single most-called module in the repo — both frontends route their buttons, page states, navigation, and async-action hooks through it. Its conventions (`<Button loading>`, `useAsyncAction`, `<PageState>`, `<NavLink>`/`useNavigate`, sonner toasts) are enforced by a lint guard, so following them up front saves a round trip.
+
+[Observability & Usage Analytics](observability-usage-analytics.md) covers two unrelated telemetry systems that share one rule — telemetry must never break the thing it observes: the public-schema **Logbook** (superadmin-facing, fed by a Vector sidecar shipping every container's logs) and per-tenant **Usage**. There is no separate metrics stack; the logbook is the observability story.
+
+Everything that supports development but never ships — the selective test runner behind `make test-changed`, the demo-asset mirror, custom lint guards, Docker and Caddy config, agent-orientation docs — is covered by [Developer Tooling & Flowmap](developer-tooling-flowmap.md) and [Other](other.md).
+
+## Getting set up
 
 ```bash
-make dev            # full stack up with hot reload (Caddy, Django, both Next.js apps, Celery, MinIO fakes)
-make migrate seed   # schema + demo data
-make health-check   # is everything up?
-make test-changed   # the default verification gate — only tests affected by your diff
+make dev            # full stack with hot reload (Caddy :80, Postgres 17, Redis, Celery, MinIO)
+make migrate        # run migrations
+make seed           # seed dev tenants and demo content
+make health-check   # is the stack already up? check this before `make dev`
 ```
 
-The dev stack is usually already running — check health before reaching for `make dev`, and never rebuild containers to verify a code-only change; everything hot-reloads. Dev bundles local fakes (MinIO for object storage, a GetStream stub, an email sink) so the whole product works offline. `make help` lists the rest.
+The stack hot-reloads, so a code-only change never needs a rebuild. Dev bundles local fakes for the external services: MinIO stands in for S3, `LIVE_FAKE_ENABLED` stubs GetStream so live-class specs run offline, and `EMAIL_SINK_ENABLED` captures outbound mail for read-back at `GET /api/v1/dev/emails/latest/`.
 
-Before working in any area, read its wiki page (named `<area>[-<location>].md`, e.g. `billing-payments-backend-apps.md`) — these pages describe design intent that the code alone won't tell you. `docs/REFERENCE.md` covers cross-cutting concerns, and [Developer Tooling](developer-tooling-flowmap.md) documents the selective test runner and lint guards you'll hit on your first commit.
+Verify at the cheapest level that covers your change:
+
+```bash
+make test-changed             # tests affected by the current diff — the default
+make test-app APP=billing     # one backend app
+make test-frontend            # vitest, both apps
+make e2e-changed              # Playwright specs mapped from the diff
+make lint typecheck format
+```
+
+Full `make test` and full `make e2e` are for changes to shared ground — `apps/core`, `packages/shared`, auth, or billing providers.
+
+## Two things that will bite you
+
+**Serializer changes move the frontend contract.** After editing any serializer, run `npm run gen:api` in `frontend-customer` and read the `src/types/api-generated.ts` diff. A surprising diff means you changed more than you meant to.
+
+**Server-side `fetch()` from Next.js to Django must send `X-Tenant-Domain`.** Build the domain from the tenant slug (`${slug}.${BASE_DOMAIN}`) rather than relying on `getTenantDomain()`, which returns empty inside `generateMetadata` and `manifest.ts`.
+
+---
+
+Each module page above goes deeper on its area, and `docs/REFERENCE.md` carries the cross-cutting domain model, auth flows, and deploy details. Read the relevant module page before working in an area — it will usually answer the question faster than reading the code.

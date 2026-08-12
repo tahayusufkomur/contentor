@@ -823,14 +823,14 @@ def _card(tenant, action):
                     },
                 ),
             }
-        row = photos.pick_photo(action.description, tenant, field=field, exclude_s3_key=exclude_key)
+        image = photos.pick_photo(action.description, tenant, field=field, exclude_s3_key=exclude_key)
         return {
             "kind": "set_block_image",
-            "title": f"Use the photo '{row.title}'",
+            "title": f"Use the photo '{image.title}'",
             "detail": "Ask for a different style anytime — nothing changes until you apply.",
             # Curated pick → the widget plays its brief photo-reveal.
             "reveal": True,
-            "image_url": photos.preview_url(row),
+            "image_url": image.preview_url,
             "token": tokens.stash_action(
                 schema,
                 {
@@ -838,7 +838,7 @@ def _card(tenant, action):
                     "page": action.page,
                     "block_id": action.block_id,
                     "field": field,
-                    "curated_photo_id": row.pk,
+                    "curated_asset_id": image.asset_id,
                 },
             ),
         }
@@ -856,16 +856,16 @@ def _card(tenant, action):
                     {"kind": "set_course_cover", "course_id": action.course_id, "tenant_photo_id": str(photo.pk)},
                 ),
             }
-        row = photos.pick_photo(action.description, tenant, field="courseCover", exclude_s3_key=exclude_key)
+        image = photos.pick_photo(action.description, tenant, field="courseCover", exclude_s3_key=exclude_key)
         return {
             "kind": "set_course_cover",
-            "title": f"Cover for '{course_title[:80]}': the photo '{row.title}'",
+            "title": f"Cover for '{course_title[:80]}': the photo '{image.title}'",
             "detail": "Ask for a different style anytime — nothing changes until you apply.",
             "reveal": True,
-            "image_url": photos.preview_url(row),
+            "image_url": image.preview_url,
             "token": tokens.stash_action(
                 schema,
-                {"kind": "set_course_cover", "course_id": action.course_id, "curated_photo_id": row.pk},
+                {"kind": "set_course_cover", "course_id": action.course_id, "curated_asset_id": image.asset_id},
             ),
         }
     if isinstance(action, SetEventCoverAction):
@@ -887,20 +887,20 @@ def _card(tenant, action):
                     },
                 ),
             }
-        row = photos.pick_photo(action.description, tenant, field="eventCover", exclude_s3_key=exclude_key)
+        image = photos.pick_photo(action.description, tenant, field="eventCover", exclude_s3_key=exclude_key)
         return {
             "kind": "set_event_cover",
-            "title": f"Cover for '{event_title[:80]}': the photo '{row.title}'",
+            "title": f"Cover for '{event_title[:80]}': the photo '{image.title}'",
             "detail": "Ask for a different style anytime — nothing changes until you apply.",
             "reveal": True,
-            "image_url": photos.preview_url(row),
+            "image_url": image.preview_url,
             "token": tokens.stash_action(
                 schema,
                 {
                     "kind": "set_event_cover",
                     "event_id": action.event_id,
                     "event_kind": action.event_kind,
-                    "curated_photo_id": row.pk,
+                    "curated_asset_id": image.asset_id,
                 },
             ),
         }

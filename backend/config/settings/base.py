@@ -379,8 +379,36 @@ EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
 CURATED_LOGO_SYNC_DIR = os.environ.get("CURATED_LOGO_SYNC_DIR", "")
 
 # Same idea for the curated PHOTO catalog (photo_meta.json + images) —
-# seed_curated_photos reads this directory when --dir is not passed.
+# seed_curated_photos reads this directory when --dir is not passed. Since the
+# photography moved out (see CURATED_IMAGE_API_URL below) this catalog holds
+# only the decorative kinds: spot, texture, divider, icon.
 CURATED_PHOTO_SYNC_DIR = os.environ.get("CURATED_PHOTO_SYNC_DIR", "")
+
+# Remote curated photo catalog (the curated-image-api service). Contentor no
+# longer owns the photographic library: it searches this service live and caches
+# whatever a coach or the AI actually uses into that tenant's own storage
+# namespace. Spec: docs/superpowers/specs/2026-08-09-curated-images-offload-design.md
+CURATED_IMAGE_API_URL = os.environ.get("CURATED_IMAGE_API_URL", "")
+CURATED_IMAGE_API_KEY = os.environ.get("CURATED_IMAGE_API_KEY", "")
+# Dev/e2e: serve a small committed fixture catalog instead of calling the
+# service, so the stack stays offline and deterministic. Prod refuses this.
+CURATED_IMAGE_API_FAKE = _env_bool("CURATED_IMAGE_API_FAKE", False)
+# Hosts allowed to serve rendition bytes. Those URLs are chosen by another
+# service, so this allowlist is the SSRF guard on the copy-on-use fetch. An entry
+# covers its subdomains (the provider signs virtual-host style, so live URLs are
+# <bucket>.fsn1.your-objectstorage.com) — see curated_images.cache._host_allowed.
+CURATED_IMAGE_MEDIA_HOSTS = [
+    host.strip()
+    for host in os.environ.get("CURATED_IMAGE_MEDIA_HOSTS", "fsn1.your-objectstorage.com").split(",")
+    if host.strip()
+]
+# Cap on a single cached rendition; the web rendition is normally ~300 KB.
+CURATED_IMAGE_MAX_BYTES = int(os.environ.get("CURATED_IMAGE_MAX_BYTES", str(15 * 1024 * 1024)))
+# Seconds a search response stays in Redis. A coach typing in the library must
+# not fan out one upstream request per keystroke.
+CURATED_IMAGE_CACHE_TTL = int(os.environ.get("CURATED_IMAGE_CACHE_TTL", "600"))
+CURATED_IMAGE_CONNECT_TIMEOUT = float(os.environ.get("CURATED_IMAGE_CONNECT_TIMEOUT", "2"))
+CURATED_IMAGE_READ_TIMEOUT = float(os.environ.get("CURATED_IMAGE_READ_TIMEOUT", "5"))
 
 # Days a `past_due` PlatformSubscription stays before the dunning sweep downgrades.
 PAST_DUE_GRACE_DAYS = int(os.environ.get("PAST_DUE_GRACE_DAYS", "7"))

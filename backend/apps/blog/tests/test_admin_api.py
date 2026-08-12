@@ -212,7 +212,9 @@ def test_generate_passes_tenant_photos_to_ai(coach_client, paid_tenant, settings
     with mock.patch.object(ai, "generate_post", return_value=_draft_result()) as gen:
         coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
     passed_photos = list(gen.call_args.kwargs["photos"])
-    assert len(passed_photos) == 1 and passed_photos[0].title == "Sunrise stretch"
+    # The coach's own photos lead; curated candidates from the catalog follow.
+    assert passed_photos[0].title == "Sunrise stretch"
+    assert all(str(photo.id).startswith("curated:") for photo in passed_photos[1:])
 
 
 def test_generate_resolves_cover_photo_fk(coach_client, paid_tenant, settings):
@@ -234,32 +236,26 @@ def test_generate_with_no_cover_photo_id_leaves_field_null(coach_client, paid_te
     assert post.cover_photo_id is None
 
 
-def test_generate_materializes_curated_cover(coach_client, paid_tenant, settings):
-    from django_tenants.utils import schema_context as _sc
-
-    from apps.core.models import CuratedPhoto
+def test_generate_caches_curated_cover_into_tenant_storage(coach_client, paid_tenant, settings):
+    """A curated cover is copied into this tenant's own storage namespace, not
+    referenced from the catalog service."""
+    from apps.core.curated_images import fake
+    from apps.core.curated_images.cache import tenant_key_for
     from apps.media.models import Photo
 
     settings.ANTHROPIC_API_KEY = "test-key"
-    with _sc("public"):
-        row = CuratedPhoto.objects.create(
-            title="Sunrise run",
-            tags="habits",
-            kind="hero",
-            alt_text="runner",
-            image_key="platform/curated-photos/run.png",
-        )
-    with mock.patch.object(ai, "generate_post", return_value=_draft_result(cover_photo_id=f"curated:{row.pk}")) as gen:
-        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "habits"}, format="json")
+    asset_id = fake.entries()[0]["asset_id"]
+    with mock.patch.object(
+        ai, "generate_post", return_value=_draft_result(cover_photo_id=f"curated:{asset_id}")
+    ) as gen:
+        res = coach_client.post("/api/v1/admin/blog/generate/", {"custom_topic": "gym workout"}, format="json")
     assert res.status_code == 200 and res.data["source"] == "ai"
-    photo = Photo.objects.get(s3_key="platform/curated-photos/run.png")
+    photo = Photo.objects.get(s3_key=tenant_key_for(asset_id))
     post = BlogPost.objects.get(pk=res.data["post"]["id"])
     assert post.cover_photo_id == photo.id
     # curated candidates were offered alongside tenant photos
     offered_ids = [str(p.id) for p in gen.call_args.kwargs["photos"]]
-    assert f"curated:{row.pk}" in offered_ids
-    with _sc("public"):
-        CuratedPhoto.objects.all().delete()
+    assert f"curated:{asset_id}" in offered_ids
 
 
 def test_admin_can_set_and_clear_cover(coach_client, paid_tenant):

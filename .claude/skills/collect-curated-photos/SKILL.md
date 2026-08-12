@@ -1,6 +1,6 @@
 ---
 name: collect-curated-photos
-description: Use when adding new curated photos (hero covers, stock images, spot illustrations, textures, dividers, icons) to Contentor's blog design-element library — generating with Gemini and seeding photo_meta.json / seed_curated_photos. Also when curated-photo coverage is missing a niche or kind.
+description: Use when adding curated DECORATIVE elements (spot illustrations, textures, dividers, icons) to Contentor's blog design-element library — generating with Gemini and seeding photo_meta.json / seed_curated_photos. Also when decorative coverage is missing a niche or kind. NOT for photography (hero covers, stock photos): that catalog moved to the curated-image-api service and is fed by its own generation pipeline + ingestion endpoint.
 ---
 
 # Collect Curated Photos
@@ -13,15 +13,18 @@ Unlike logo_meta.json this file IS in git — commit it with every batch. `seed_
 (`update_or_create` on `image_key`), derives width/height, white-strips ONLY kind=spot, uploads to object
 storage, creates public-schema `CuratedPhoto` rows.
 
-Kinds: `hero` (16:9 covers), `stock` (photographic inline), `spot` (transparent flat illustration),
-`texture` (seamless tiles), `divider` (thin separators), `icon` (small glyphs).
-Only hero/stock/spot are offered to the blog AI writer — tag those three especially well.
+Kinds: `spot` (transparent flat illustration), `texture` (seamless tiles), `divider` (thin
+separators), `icon` (small glyphs).
+
+**Photography is no longer here.** The `hero` and `stock` kinds moved to the curated-image-api
+service (`../curated-image-api`, prod `image-generation.contentor.app`) — see
+`docs/superpowers/specs/2026-08-09-curated-images-offload-design.md`. Contentor searches that
+service live and caches used images per tenant. To add photography, generate and ingest it there
+(`POST /internal/v1/images`, collections `coach-heroes` / `coach-stock`); adding `kind: hero` here
+does nothing — the seeder skips unknown kinds.
 
 ## Prompt recipes (per kind)
 
-- hero: `Generate a photorealistic 16:9 editorial stock photo: <niche scene>, natural light,
-  premium magazine look, no text, no watermark, no logos.`
-- stock: same as hero, but vary aspect and composition per subject.
 - spot: reuse the logo recipe — `flat vector style, 1-2 colors on a plain white background,
   no text, no watermark. Square image.` (the seeder strips the white canvas)
 - texture: `seamless tileable background pattern, <style>, subtle, no text`.
@@ -34,10 +37,7 @@ text on tenant blogs AND what the AI writer reads when choosing.
 
 Same two paths and browser mechanics as collect-curated-logos (backend API preferred when
 GEMINI_API_KEY is valid; otherwise browser Gemini with the two-account daily-quota rotation —
-see that skill for the send/download/quota gotchas, they apply unchanged). Proven ultra-realistic
-photo recipe: `Ultra-realistic photograph, 16:9 editorial stock photo: <scene>, shot on a
-full-frame DSLR with a 50mm lens, natural light, shallow depth of field, lifelike skin and
-textures, high detail, premium magazine quality, no text, no watermark, no logos.`
+see that skill for the send/download/quota gotchas, they apply unchanged).
 
 Extra photo-batch gotchas (learned on the 168-cover run, 2026-07-19):
 - **One automatic download per tab**: after a tab's first "Download full-sized image", later
@@ -98,7 +98,7 @@ only as a reference for how the alpha template was derived.
 
 ## Ingest (per batch)
 
-Photographic kinds (hero/stock): convert PNG downloads to **JPEG, max 1600px wide, quality 85**
+Flat kinds (texture/divider/icon): convert PNG downloads to **JPEG, max 1600px wide, quality 85**
 before ingest (`sips -s format jpeg -s formatOptions 85 --resampleWidth 1600 in.png --out out.jpg`)
 — raw 2752px PNGs are ~8.6MB each and bloat the git catalog ~10×. Keep `spot` as PNG (the
 white-strip pipeline outputs transparency). The seeder + materializer set image/jpeg vs image/png
@@ -113,5 +113,6 @@ docker compose exec -T django python manage.py seed_curated_photos
 ```
 
 Verify: `CuratedPhoto.objects.count()` in public schema matches meta length; superadmin gallery
-at `localhost/admin/m/curated-photos`; coach search at `/api/v1/curated-photos/?kind=hero`.
+at `localhost/admin/m/curated-photos`; coach search at `/api/v1/curated-photos/?kind=spot`
+(photography answers from `/api/v1/curated-images/` instead).
 Commit images + photo_meta.json together.

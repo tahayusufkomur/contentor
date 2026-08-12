@@ -68,7 +68,10 @@ urlpatterns = [
     path("api/v1/track/", include("apps.logbook.urls_track")),
     path("api/v1/platform/", include("apps.core.platform.urls")),
     path("api/v1/logos/", include("apps.core.curated_logos.urls")),
+    # Decorative catalog (spot/texture/divider/icon) is still local; photography
+    # comes from the curated-image-api service via curated-images/.
     path("api/v1/curated-photos/", include("apps.core.curated_photos.urls")),
+    path("api/v1/curated-images/", include("apps.core.curated_images.urls")),
     # Schema-driven admin kit: superadmin (public schema) + coach studio
     # (tenant schema) sites. See apps/adminkit/.
     path("api/v1/platform-admin/", include("apps.adminkit.urls_platform")),

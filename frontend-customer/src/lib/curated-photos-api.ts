@@ -1,13 +1,10 @@
-// Thin client for the curated photo library (backend/apps/core/curated_photos).
+// Thin client for the local decorative catalog
+// (backend/apps/core/curated_photos). Photography moved to the curated-image-api
+// service — see curated-images-api.ts; what stays here are the design elements
+// that were never stock photos.
 import { clientFetch } from "@/lib/api-client";
 
-export type CuratedKind =
-  | "hero"
-  | "stock"
-  | "spot"
-  | "texture"
-  | "divider"
-  | "icon";
+export type CuratedKind = "spot" | "texture" | "divider" | "icon";
 
 export interface CuratedPhoto {
   id: number;

@@ -538,7 +538,11 @@ def test_set_block_image_card_stashes_pick_and_carries_preview():
     from apps.core.copilot import photos as copilot_photos
     from apps.core.copilot import tokens as copilot_tokens
 
-    row = SimpleNamespace(pk=7, title="Sunlit yoga studio", image_key="platform/curated-photos/sun.jpg")
+    image = SimpleNamespace(
+        asset_id="a7f0d1c2-3b4e-4f56-8a90-111213141516",
+        title="Sunlit yoga studio",
+        preview_url="https://cdn.example/sun.jpg",
+    )
     parsed = _turn(
         kind="actions",
         text="",
@@ -548,8 +552,7 @@ def test_set_block_image_card_stashes_pick_and_carries_preview():
     )
     with (
         mock.patch.object(engine, "_block_for_image", return_value=("bgImage", None)) as block_lookup,
-        mock.patch.object(copilot_photos, "pick_photo", return_value=row) as pick,
-        mock.patch.object(copilot_photos, "preview_url", return_value="https://cdn.example/sun.jpg"),
+        mock.patch.object(copilot_photos, "pick_photo", return_value=image) as pick,
     ):
         payload, _ = _run(parsed)
     (card,) = payload["actions"]
@@ -566,7 +569,7 @@ def test_set_block_image_card_stashes_pick_and_carries_preview():
         "page": "home",
         "block_id": "blk_hero",
         "field": "bgImage",
-        "curated_photo_id": 7,
+        "curated_asset_id": "a7f0d1c2-3b4e-4f56-8a90-111213141516",
     }
 
 
@@ -662,7 +665,11 @@ def test_set_course_cover_card_stashes_pick_and_carries_preview():
     from apps.core.copilot import photos as copilot_photos
     from apps.core.copilot import tokens as copilot_tokens
 
-    row = SimpleNamespace(pk=9, title="Golden-hour mat flow", image_key="platform/curated-photos/mat.jpg")
+    image = SimpleNamespace(
+        asset_id="b8e1c2d3-4c5f-4067-9ba1-222324252627",
+        title="Golden-hour mat flow",
+        preview_url="https://cdn.example/mat.jpg",
+    )
     parsed = _turn(
         kind="actions",
         text="",
@@ -670,8 +677,7 @@ def test_set_course_cover_card_stashes_pick_and_carries_preview():
     )
     with (
         mock.patch.object(engine, "_course_for_cover", return_value=("Yoga Basics", None)) as course_lookup,
-        mock.patch.object(copilot_photos, "pick_photo", return_value=row) as pick,
-        mock.patch.object(copilot_photos, "preview_url", return_value="https://cdn.example/mat.jpg"),
+        mock.patch.object(copilot_photos, "pick_photo", return_value=image) as pick,
     ):
         payload, _ = _run(parsed)
     (card,) = payload["actions"]
@@ -683,7 +689,11 @@ def test_set_course_cover_card_stashes_pick_and_carries_preview():
     assert pick.call_args.kwargs["field"] == "courseCover"
     assert pick.call_args.kwargs["exclude_s3_key"] is None
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
-    assert stashed == {"kind": "set_course_cover", "course_id": 3, "curated_photo_id": 9}
+    assert stashed == {
+        "kind": "set_course_cover",
+        "course_id": 3,
+        "curated_asset_id": "b8e1c2d3-4c5f-4067-9ba1-222324252627",
+    }
 
 
 def test_set_course_cover_unknown_course_dropped_with_reason():
@@ -710,7 +720,11 @@ def test_set_event_cover_card_stashes_pick_and_carries_preview():
     from apps.core.copilot import photos as copilot_photos
     from apps.core.copilot import tokens as copilot_tokens
 
-    row = SimpleNamespace(pk=9, title="Golden-hour mat flow", image_key="platform/curated-photos/mat.jpg")
+    image = SimpleNamespace(
+        asset_id="b8e1c2d3-4c5f-4067-9ba1-222324252627",
+        title="Golden-hour mat flow",
+        preview_url="https://cdn.example/mat.jpg",
+    )
     parsed = _turn(
         kind="actions",
         text="",
@@ -718,8 +732,7 @@ def test_set_event_cover_card_stashes_pick_and_carries_preview():
     )
     with (
         mock.patch.object(engine, "_event_for_cover", return_value=("Berlin Retreat", None)) as event_lookup,
-        mock.patch.object(copilot_photos, "pick_photo", return_value=row) as pick,
-        mock.patch.object(copilot_photos, "preview_url", return_value="https://cdn.example/mat.jpg"),
+        mock.patch.object(copilot_photos, "pick_photo", return_value=image) as pick,
     ):
         payload, _ = _run(parsed)
     (card,) = payload["actions"]
@@ -731,7 +744,12 @@ def test_set_event_cover_card_stashes_pick_and_carries_preview():
     assert pick.call_args.kwargs["field"] == "eventCover"
     assert pick.call_args.kwargs["exclude_s3_key"] is None
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
-    assert stashed == {"kind": "set_event_cover", "event_id": 3, "event_kind": "onsite", "curated_photo_id": 9}
+    assert stashed == {
+        "kind": "set_event_cover",
+        "event_id": 3,
+        "event_kind": "onsite",
+        "curated_asset_id": "b8e1c2d3-4c5f-4067-9ba1-222324252627",
+    }
 
 
 def test_set_event_cover_unknown_event_dropped_with_reason():
@@ -1463,7 +1481,7 @@ def test_set_block_image_card_with_attached_photo(tenant_ctx):
     stashed = tokens.take_action(card["token"], "shared_test")
     assert stashed["tenant_photo_id"] == str(photo.pk)
     assert stashed["field"] == "bgImage"
-    assert "curated_photo_id" not in stashed
+    assert "curated_asset_id" not in stashed
 
 
 def test_set_block_image_card_with_unknown_attached_photo_drops(tenant_ctx):

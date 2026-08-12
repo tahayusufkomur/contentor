@@ -141,20 +141,16 @@ def test_empty_queue_triggers_refill(paid_tenant, settings):
     assert BlogPost.objects.get().title == "T"
 
 
-def test_autopilot_offers_and_materializes_curated_photos(paid_tenant, settings):
-    from apps.core.models import CuratedPhoto
+def test_autopilot_offers_and_caches_curated_photos(paid_tenant, settings):
+    from apps.core.curated_images import fake
+    from apps.core.curated_images.cache import tenant_key_for
     from apps.media.models import Photo
 
     settings.ANTHROPIC_API_KEY = "test-key"
     _due_rule(auto_publish=False)
-    BlogTopicIdea.objects.create(title="Morning habits", angle="beginner")
-    with schema_context("public"):
-        row = CuratedPhoto.objects.create(
-            title="Morning light",
-            tags="morning, habits",
-            kind="hero",
-            image_key="platform/curated-photos/morning.png",
-        )
+    BlogTopicIdea.objects.create(title="Morning yoga habits", angle="beginner")
+    # An asset the topic actually matches — candidates are ranked by the query.
+    asset_id = next(e for e in fake.entries() if "yoga" in e["file"])["asset_id"]
     draft = ai.DraftResult(
         {
             "title": "T",
@@ -163,7 +159,7 @@ def test_autopilot_offers_and_materializes_curated_photos(paid_tenant, settings)
             "meta_description": "m",
             "tags": ["t"],
             "ai_model": "x",
-            "cover_photo_id": f"curated:{row.pk}",
+            "cover_photo_id": f"curated:{asset_id}",
             "image_placements": [],
         },
         Decimal("0.03"),
@@ -174,12 +170,10 @@ def test_autopilot_offers_and_materializes_curated_photos(paid_tenant, settings)
     ):
         tasks._generate_for_current_tenant(paid_tenant)
     post = BlogPost.objects.latest("created_at")
-    photo = Photo.objects.get(s3_key="platform/curated-photos/morning.png")
+    photo = Photo.objects.get(s3_key=tenant_key_for(asset_id))
     assert post.cover_photo_id == photo.id
     offered_ids = [str(p.id) for p in gen.call_args.kwargs["photos"]]
-    assert f"curated:{row.pk}" in offered_ids
-    with schema_context("public"):
-        CuratedPhoto.objects.all().delete()
+    assert f"curated:{asset_id}" in offered_ids
 
 
 def test_dispatch_skips_non_ready_tenants(paid_tenant):

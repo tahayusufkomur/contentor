@@ -1,6 +1,8 @@
 # Curated photo offload to curated-image-api
 
-Status: approved design, not implemented.
+Status: implemented (2026-08-10). This document was updated to match what was
+built; the "as built" notes call out where the shipped shape differs from the
+approved design.
 Supersedes the catalog-ownership half of `2026-07-19-curated-photos-design.md`
 (that spec's copy-on-use and never-break-a-reference rules still hold).
 
@@ -93,16 +95,24 @@ Verification: `/v1/images/search` returns 396 published images in
 Small and additive:
 
 1. **`GET /v1/images/{id}`** — same `X-API-Key` auth, rate limiting, and
-   `Image` response shape as search (fresh signed rendition URLs). `404` for
-   unknown, unpublished, or rejected images. Required because caching-on-use
+   response shape as search (fresh signed rendition URLs). `404` for unknown,
+   unpublished, or rejected images alike. Required because caching-on-use
    resolves a single asset long after the search that surfaced it: the blog
    writer picks `curated:<id>` in one Celery task and materializes it in
-   another. Add to `public/openapi.yaml`.
-2. **Collections** `coach-heroes` and `coach-stock`, published.
-3. Contentor's API key gets a per-minute limit generous enough for onboarding
+   another. The `Image` schema splits into `CatalogImage` + `Image` (the latter
+   adds `match_score`), because a by-id lookup has nothing to rank.
+2. **`query` becomes optional on `POST /v1/images/search`** — a picker UI opens
+   before its user has typed anything, and demanding a placeholder query there
+   would rank the catalog against a word nobody chose. Omitted or blank means no
+   lexical constraint: filters still apply, results come back newest-first. The
+   homepage demo route keeps requiring a prompt, so a blank search cannot spend a
+   visitor's quota.
+3. **Collections** `coach-heroes` and `coach-stock`, published, added to
+   `scripts/seed.ts` so deploys reconcile them.
+4. Contentor's API key gets a per-minute limit generous enough for onboarding
    and blog-autopilot bursts (a wizard run issues one search per slot group).
 
-No change to ingestion, storage layout, quotas, or the homepage demo.
+No change to ingestion, storage layout, quotas, or the homepage demo contract.
 
 ## Contentor: `apps/core/curated_images/`
 
@@ -163,20 +173,28 @@ context.
 Coach-auth (`IsCoachOrOwner`), mounted at `/api/v1/curated-images/`:
 
 - `GET /api/v1/curated-images/?q=&collection=&page=` → `{results: [...],
-  page, has_next}`.
+  page, has_next}`. An unknown collection is a `400`; a catalog outage is a
+  `503` carrying the user-safe message.
 - `POST /api/v1/curated-images/<asset-id>/use/` → `PhotoSerializer`, `201`.
-  Resolves via `client.get()`, then `cache_remote_image`. `asset_id` is
-  validated as a UUID before use.
+  Resolves via `client.get()`, then `cache_remote_image`.
+- `GET /api/v1/curated-images/<asset-id>/preview/` — **as built**: fixture bytes
+  for dev and e2e only, `404` whenever fake mode is off. Deliberately
+  unauthenticated, because an `<img>` tag cannot carry the JWT and real previews
+  are signed URLs straight from the service. Production refuses the fake flag, so
+  this route is dead there.
 
 The `use/` response contract is unchanged, so `image-library-dialog.tsx` keeps
 its "materialize before `onSelect` fires" behavior.
 
 ### Frontend
 
-`frontend-customer/src/lib/curated-photos-api.ts` becomes
-`curated-images-api.ts` against the new paths.
-`image-library-dialog.tsx` gains a natural-language search box and a paged
-load-more grid in place of the 60-row cap, following the repo's loading
+**As built:** `curated-photos-api.ts` stays (its `CuratedKind` narrows to the four
+decorative kinds) and a new `curated-images-api.ts` covers the remote catalog —
+rather than one replacing the other, since both catalogs remain.
+`image-library-dialog.tsx` keeps its six category chips but now routes the two
+photographic ones to the remote endpoint and the four decorative ones to the
+local one, normalizing both into one grid item type. It gains a search box and a
+paged load-more grid in place of the 60-row cap, following the repo's loading
 conventions (`StaleContainer` for refinement loads, skeleton body on open,
 `useAsyncAction` for the use action).
 
@@ -190,7 +208,16 @@ description plus the coach brief, take the top ~12 as candidates, and keep the
 single structured call that assigns candidates to slots. Deterministic
 fallback: first result. `apply_photo_picks` calls `cache_remote_image`.
 
-**`apps/core/copilot/photos.py: pick_photo`** — search with
+**`apps/core/copilot/photos.py`** — **as built**, the three apply steps in
+`copilot/views.py` (block image, course cover, event cover) resolved their photo
+with the same fifteen lines each; that collapses into one `photo_for_action`
+helper here, which returns either the coach's attached photo or the catalog asset
+cached into tenant storage. Stashed action cards now carry `curated_asset_id`
+where they carried `curated_photo_id`, so a card created just before a deploy is
+refused with "that photo is no longer available" rather than placing the wrong
+image; cards are per-turn, so the window is the length of one conversation.
+
+`pick_photo` searches with
 `brief_with_turn_style(tenant, description)` as the query and the collection
 from `FIELD_KINDS` (`bgImage` → `coach-heroes`; `image`, `courseCover`,
 `eventCover` → no collection filter, i.e. both). "Try another" excludes by
@@ -221,7 +248,9 @@ Fail soft; never fail the surrounding action.
 
 ## Cleanup
 
-- Data migration deletes the 584 `hero`/`stock` `CuratedPhoto` rows.
+- Data migration `core/0038_curatedphoto_decorative_only` deletes the 584
+  `hero`/`stock` `CuratedPhoto` rows and narrows the field choices. Reverse
+  re-widens the choices but cannot bring rows back.
 - The 584 PNGs leave `frontend-customer/public/curated-photos/`;
   `photo_meta.json` shrinks to the 107 decorative entries.
 - `CuratedPhoto.KINDS` narrows to `["spot", "texture", "divider", "icon"]`;
@@ -249,6 +278,14 @@ CURATED_IMAGE_CACHE_TTL        # search cache seconds, default 600
 
 ## Testing
 
+**As built:** an autouse `curated_image_uploads` fixture in `backend/conftest.py`
+forces fake mode for every test — no suite can reach the service even when the
+dev container exports a real URL and key — and captures the S3 PUT so copy-on-use
+runs its full path (download, key derivation, `Photo` row) while tests stay
+offline. It yields `{key: bytes}` for assertions. The fixture catalog also
+*filters* on a query, not just ranks, mirroring the service's lexical search, so
+callers exercise their no-results path offline.
+
 Backend unit (`make test-app APP=core`, `APP=blog`):
 
 - client: fake mode shape, mocked HTTP for search/get, timeout and 5xx paths
@@ -268,8 +305,14 @@ URL shape; import script against a fixture manifest, including replay.
 
 ## Order of work
 
-1. **API**: `GET /v1/images/{id}` + the two collections + openapi + tests.
-2. **API**: import script; run against prod; verify 396 / 188 published.
+1. **API**: `GET /v1/images/{id}`, optional search query, the two collections,
+   openapi + tests. *(done)*
+2. **API**: import script *(done, dry-run verified: 691 entries → 584
+   photographic, 0 failures)*. **Running it against prod is still pending** and
+   needs the API deployed first, so the `coach-heroes` / `coach-stock`
+   collections exist. The 584 source PNGs have already left the working tree, so
+   point `--dir` at an export of the pre-cleanup commit:
+   `git archive <ref> frontend-customer/public/curated-photos | tar -x -C <tmp>`.
 3. **Contentor**: `curated_images/` module (client, fake, cache, views) + tests.
 4. **Contentor**: swap the four consumers and the frontend dialog.
 5. **Contentor**: cleanup migration, PNG removal, `KINDS` narrowing.

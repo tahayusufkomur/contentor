@@ -1,12 +1,11 @@
 """Curated-photo pick behind the copilot's set_block_image action.
 
-Pure helpers — the pick is deterministic (token-overlap shortlist of the
-CuratedPhoto catalog against the model's photo description, reusing
-ai_curate.shortlist; no extra AI call), and apply_block_image is dict-in/
-dict-out like blocks.py. A block's current photo traces back to its curated
-source by s3_key, so a re-pick can exclude it ("try another"). DB writes
-happen in the execute view. Imports are function-local to match apps/core's
-cycle-dodging convention."""
+The pick needs no extra AI call: the coach's own words become the query for the
+remote curated catalog (curated-image-api) and the service's relevance ranking
+does the rest. apply_block_image is dict-in/dict-out like blocks.py. A block's
+current photo traces back to its catalog asset through its cached tenant s3_key,
+so a re-pick can exclude it ("try another"). DB writes happen in the execute
+view. Imports are function-local to match apps/core's cycle-dodging convention."""
 
 from copy import deepcopy
 
@@ -43,18 +42,18 @@ def image_captions(tenant, pages):
     return {str(r["id"]): (r["alt_text"] or r["title"] or "photo") for r in rows}
 
 
-# Catalog kinds offered per field, mirroring onboarding's ai_photos split:
-# hero backgrounds only from mood-setting hero shots; inline images may also
-# use stock. "courseCover"/"eventCover" are the pseudo-fields the cover
-# actions pick with — thumbnails read well from either kind.
-FIELD_KINDS = {
-    "bgImage": ("hero",),
-    "image": ("hero", "stock"),
-    "courseCover": ("hero", "stock"),
-    "eventCover": ("hero", "stock"),
+# Catalog collection offered per field, mirroring onboarding's ai_photos split:
+# hero backgrounds only from mood-setting wide hero shots; inline images may come
+# from either collection (None = no filter). "courseCover"/"eventCover" are the
+# pseudo-fields the cover actions pick with — thumbnails read well from either.
+FIELD_COLLECTIONS = {
+    "bgImage": "coach-heroes",
+    "image": None,
+    "courseCover": None,
+    "eventCover": None,
 }
 
-SHORTLIST_LIMIT = 30
+CANDIDATE_LIMIT = 24
 
 
 class PhotoOpError(Exception):
@@ -69,43 +68,44 @@ def image_field_for(block_type):
 
 
 def pick_photo(description, tenant, *, field, exclude_s3_key=None):
-    """Best-matching enabled CuratedPhoto for the coach's real profile (niche,
-    onboarding description, follow-up answers) plus the model's per-turn
-    style description, or raises. Only platform-prefixed keys are candidates
-    (a bad catalog key must never be signed or copied into tenant media).
+    """Best-matching catalog image for the coach's real profile (niche,
+    onboarding description, follow-up answers) plus the model's per-turn style
+    description. Returns a curated_images.client.RemoteImage, or raises.
 
-    Regression guard: this used to build CoachBrief from JUST niche + the
-    model's invented per-turn description, dropping the tenant's own
-    onboarding description/follow-ups entirely. A niche whose word doesn't
-    literally appear in the catalog's tags (e.g. "pole_dance_instructor")
-    then scored 0 against every row, and shortlist's zero-score fallback is
-    catalog position order — so coaches saw the same generic gym photo
-    regardless of their actual niche. Building the brief from the tenant
-    (same helper onboarding itself uses) restores that signal."""
-    from django_tenants.utils import schema_context
+    Regression guard: this used to build the query from JUST niche + the model's
+    invented per-turn description, dropping the tenant's own onboarding
+    description/follow-ups entirely. A niche whose word doesn't literally appear
+    in the catalog (e.g. "pole_dance_instructor") then matched nothing, and the
+    zero-match fallback is catalog order — so coaches saw the same generic gym
+    photo regardless of their actual niche. Building the query from the tenant
+    (same helper onboarding itself uses) restores that signal.
 
-    from apps.core.models import CuratedPhoto
-    from apps.core.onboarding.ai_curate import brief_with_turn_style, shortlist
+    Searches via search_or_browse, not search: the remote catalog's query
+    filters, so that same pole-dance coach otherwise gets an empty page and is
+    told the library is empty. A generic photo they can reject beats a dead
+    end — the old local pick degraded this way for free, because it ranked the
+    whole catalog rather than filtering it."""
+    from apps.core.curated_images import client as curated_client
+    from apps.core.curated_images.cache import asset_id_from_key
+    from apps.core.onboarding.ai_curate import brief_query, brief_with_turn_style
 
-    kinds = FIELD_KINDS.get(field) or ("hero", "stock")
-    with schema_context("public"):
-        rows = [
-            r
-            for r in CuratedPhoto.objects.filter(enabled=True, kind__in=kinds).order_by("position", "id")
-            if r.image_key.startswith("platform/") and r.image_key != (exclude_s3_key or "")
-        ]
-    if not rows:
-        raise PhotoOpError("no photos are available in the library yet")
     brief = brief_with_turn_style(tenant, description)
-    return shortlist(rows, brief, limit=SHORTLIST_LIMIT)[0]
-
-
-def preview_url(row):
-    """Presigned URL for the card's photo preview (24h, matches the curated
-    search endpoint)."""
-    from apps.core.storage import generate_presigned_download_url
-
-    return generate_presigned_download_url(row.image_key, expiry=86400)
+    try:
+        page = curated_client.search_or_browse(
+            brief_query(brief),
+            collection=FIELD_COLLECTIONS.get(field),
+            page=1,
+            per_page=CANDIDATE_LIMIT,
+        )
+    except curated_client.CuratedImageError as exc:
+        raise PhotoOpError(str(exc)) from exc
+    # "Try another" excludes whatever is on the block now. The cached tenant key
+    # still carries the catalog asset id, so no extra bookkeeping is needed.
+    excluded = asset_id_from_key(exclude_s3_key or "")
+    candidates = [image for image in page.results if image.asset_id != excluded]
+    if not candidates:
+        raise PhotoOpError("no photos are available in the library yet")
+    return candidates[0]
 
 
 def tenant_photo_url(photo):
@@ -113,6 +113,40 @@ def tenant_photo_url(photo):
     from apps.core.storage import generate_presigned_download_url
 
     return generate_presigned_download_url(photo.s3_key, expiry=86400)
+
+
+def photo_for_action(action):
+    """The tenant media.Photo an apply step should place: either the coach's own
+    attached photo, or the catalog asset the card offered, cached into this
+    tenant's storage on the way through. Shared by set_block_image,
+    set_course_cover and set_event_cover — the three used to resolve this
+    identically. Must run inside the tenant context (it writes media.Photo)."""
+    from apps.media.models import Photo
+
+    if action.get("tenant_photo_id"):
+        photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
+        if photo is None:
+            raise PhotoOpError("that attached photo is not in your library")
+        return photo
+    return cached_curated_photo(action.get("curated_asset_id"))
+
+
+def cached_curated_photo(asset_id):
+    """Tenant media.Photo for a catalog asset id, downloading the rendition into
+    tenant storage on first use. Must run inside the tenant context."""
+    from apps.core.curated_images import client as curated_client
+    from apps.core.curated_images.cache import cache_remote_image
+
+    try:
+        image = curated_client.get(asset_id) if asset_id else None
+    except curated_client.CuratedImageError as exc:
+        raise PhotoOpError(str(exc)) from exc
+    if image is None:
+        raise PhotoOpError("that photo is no longer available")
+    try:
+        return cache_remote_image(image)
+    except curated_client.CuratedImageError as exc:
+        raise PhotoOpError(str(exc)) from exc
 
 
 def apply_block_image(pages, page, block_id, field, photo_pk):

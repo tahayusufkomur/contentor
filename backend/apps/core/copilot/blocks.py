@@ -74,7 +74,7 @@ BLOCK_SCHEMA = {
     },
     "courseGrid": {"layout": ("select", ("standard", "centered")), "heading": _H},
     "pricingPlans": {"layout": ("select", ("cards", "compact")), "heading": _H, "subheading": ("text", 200)},
-    "upcomingEvents": {"layout": ("select", ("grid", "list")), "heading": _H},
+    "upcomingEvents": {"layout": ("select", ("grid", "list")), "heading": _H, "showCovers": ("bool",)},
     "storeProducts": {"layout": ("select", ("grid", "list")), "heading": _H},
     "stats": {
         "layout": ("select", ("cards", "plain", "band")),

@@ -1,7 +1,9 @@
 """Copilot photo executors: pure pick/apply helpers behind set_block_image.
-The pick is deterministic (token-overlap shortlist against the model's photo
-description — no extra AI call); a block's current photo is traced back to
-its curated source by s3_key so a re-pick can exclude it. DB writes happen
+
+The pick needs no extra AI call — the coach's own words are the query for the
+remote curated catalog (kept in offline fixture mode by the conftest) and the
+service ranks. A block's current photo is traced back to its catalog asset
+through its cached tenant s3_key, so a re-pick can exclude it. DB writes happen
 in the execute view, not here."""
 
 from types import SimpleNamespace
@@ -9,19 +11,10 @@ from types import SimpleNamespace
 import pytest
 
 from apps.core.copilot import photos
-from apps.core.models import CuratedPhoto
+from apps.core.curated_images import client as curated_client
+from apps.core.curated_images.cache import tenant_key_for
 
 pytestmark = pytest.mark.django_db
-
-
-def _row(title, tags, kind="hero", image_key=None, enabled=True):
-    return CuratedPhoto.objects.create(
-        title=title,
-        tags=tags,
-        kind=kind,
-        image_key=image_key or f"platform/curated-photos/{title.lower().replace(' ', '-')}.jpg",
-        enabled=enabled,
-    )
 
 
 def _tenant(niche="yoga", description="", name=""):
@@ -44,52 +37,85 @@ def test_image_field_for_rejects_unsupported_type():
 
 
 def test_pick_photo_prefers_description_overlap():
-    _row("City skyline", "city, urban, skyline")
-    match = _row("Sunlit yoga studio", "yoga, studio, calm, warm")
     picked = photos.pick_photo("calm sunlit yoga studio", _tenant(), field="bgImage")
-    assert picked.pk == match.pk
+    assert "yoga" in picked.title.lower()
 
 
 def test_pick_photo_uses_tenant_niche_even_with_no_turn_description():
-    """Regression: the model's per-turn description used to be the ONLY
-    signal — an empty/generic one degraded the pick to catalog position
-    order regardless of the coach's real niche. The tenant's saved niche
-    must still steer the pick with no per-turn text at all."""
-    _row("Gym Strength Session", "fitness, gym, strength, workout")
-    match = _row("Studio Yoga Flow", "yoga, studio, flexibility, calm")
+    """Regression: the model's per-turn description used to be the ONLY signal —
+    an empty/generic one degraded the pick to catalog order regardless of the
+    coach's real niche. The tenant's saved niche must still steer the pick with
+    no per-turn text at all."""
     picked = photos.pick_photo("", _tenant(niche="yoga"), field="bgImage")
-    assert picked.pk == match.pk
+    assert "yoga" in picked.title.lower()
 
 
 def test_pick_photo_uses_tenant_onboarding_description_not_just_niche():
-    """The coach's own onboarding words ('in their own words') must count
-    even when the niche string alone doesn't share vocabulary with the
-    catalog's tags."""
-    _row("Gym Strength Session", "fitness, gym, strength, workout")
-    match = _row("Sunrise Meditation", "yoga, meditation, mindfulness, calm")
+    """The coach's own onboarding words ('in their own words') must count even
+    when the niche string alone shares no vocabulary with the catalog."""
     picked = photos.pick_photo(
-        "", _tenant(niche="pole_dance_instructor", description="I teach mindful meditation flows"), field="bgImage"
+        "", _tenant(niche="pole_dance_instructor", description="I teach mindful yoga flows"), field="bgImage"
     )
-    assert picked.pk == match.pk
+    assert "yoga" in picked.title.lower()
 
 
-def test_pick_photo_excludes_current_photo_key():
-    first = _row("Sunlit yoga studio", "yoga, studio, calm")
-    second = _row("Yoga mat close-up", "yoga, mat, floor", kind="stock")
-    picked = photos.pick_photo("yoga", _tenant(), field="image", exclude_s3_key=first.image_key)
-    assert picked.pk == second.pk
+def test_pick_photo_excludes_the_current_photo():
+    """ "Try another" must not return the shot already on the block. The cached
+    tenant key still carries the catalog asset id, so no extra state is needed."""
+    first = photos.pick_photo("yoga", _tenant(), field="image")
+    second = photos.pick_photo("yoga", _tenant(), field="image", exclude_s3_key=tenant_key_for(first.asset_id))
+    assert second.asset_id != first.asset_id
 
 
-def test_pick_photo_ignores_disabled_and_non_platform_keys():
-    _row("Disabled", "yoga", enabled=False)
-    _row("Outside prefix", "yoga", image_key="tenants/evil.jpg")
-    with pytest.raises(photos.PhotoOpError):
+def test_pick_photo_hero_field_only_offers_the_hero_collection():
+    hero_ids = {
+        image.asset_id
+        for image in curated_client.search(collection=curated_client.HERO_COLLECTION, per_page=50).results
+    }
+    picked = photos.pick_photo("yoga", _tenant(), field="bgImage")
+    assert picked.asset_id in hero_ids
+
+
+def test_pick_photo_falls_back_to_browsing_when_the_query_matches_nothing():
+    """A niche the catalog has no words for (pole dance) filters to zero rows
+    upstream. The coach asked for a photo and must be offered one — telling
+    them the library is empty is both wrong and a dead end."""
+    picked = photos.pick_photo(
+        "a pole dancer mid-spin, dramatic backlight",
+        _tenant(niche="pole_dance"),
+        field="bgImage",
+    )
+    hero_ids = {i.asset_id for i in curated_client.search(collection=curated_client.HERO_COLLECTION).results}
+    assert picked.asset_id in hero_ids
+
+
+def test_pick_photo_can_still_try_another_when_the_query_matches_nothing():
+    """Asking for another photo on a zero-match query must not collapse to the
+    single image the browse fallback happens to rank first."""
+    first = photos.pick_photo("pole dancer mid-spin", _tenant(niche="pole_dance"), field="bgImage")
+    second = photos.pick_photo(
+        "pole dancer mid-spin",
+        _tenant(niche="pole_dance"),
+        field="bgImage",
+        exclude_s3_key=tenant_key_for(first.asset_id),
+    )
+    assert second.asset_id != first.asset_id
+
+
+def test_pick_photo_reports_an_empty_catalog(monkeypatch):
+    monkeypatch.setattr(
+        curated_client, "search", lambda *a, **k: curated_client.SearchPage(results=[], page=1, has_next=False)
+    )
+    with pytest.raises(photos.PhotoOpError, match="no photos"):
         photos.pick_photo("yoga", _tenant(), field="bgImage")
 
 
-def test_pick_photo_hero_field_only_offers_hero_kind():
-    _row("Yoga icon", "yoga", kind="icon")
-    with pytest.raises(photos.PhotoOpError):
+def test_pick_photo_surfaces_a_catalog_outage_as_a_user_safe_error(monkeypatch):
+    def down(*args, **kwargs):
+        raise curated_client.CuratedImageError("the photo library is unavailable right now")
+
+    monkeypatch.setattr(curated_client, "search", down)
+    with pytest.raises(photos.PhotoOpError, match="unavailable"):
         photos.pick_photo("yoga", _tenant(), field="bgImage")
 
 

@@ -1,5 +1,8 @@
-"""Curated photo library: model, seed command, coach search + materialize
-endpoints. Spec: docs/superpowers/specs/2026-07-19-curated-photos-design.md."""
+"""Curated DECORATIVE library: model, seed command, coach search + materialize
+endpoints. Photography moved to the curated-image-api service — see
+test_curated_images.py and
+docs/superpowers/specs/2026-08-09-curated-images-offload-design.md.
+Original spec: docs/superpowers/specs/2026-07-19-curated-photos-design.md."""
 
 import pytest
 from django_tenants.utils import schema_context
@@ -11,21 +14,22 @@ pytestmark = pytest.mark.django_db
 
 def _photo_row(**overrides):
     defaults = {
-        "title": "Sunrise run",
-        "tags": "fitness, running, morning",
-        "alt_text": "runner at sunrise",
-        "kind": "hero",
-        "image_key": "platform/curated-photos/sunrise_run.png",
-        "width": 1600,
-        "height": 900,
+        "title": "Lotus mark",
+        "tags": "wellness, calm, mark",
+        "alt_text": "line-art lotus",
+        "kind": "spot",
+        "image_key": "platform/curated-photos/lotus.png",
+        "width": 512,
+        "height": 512,
     }
     defaults.update(overrides)
     return CuratedPhoto.objects.create(**defaults)
 
 
-def test_kinds_constants():
-    assert CuratedPhoto.KINDS == ["hero", "stock", "spot", "texture", "divider", "icon"]
-    assert CuratedPhoto.AI_KINDS == ("hero", "stock", "spot")
+def test_kinds_are_decorative_only():
+    assert CuratedPhoto.KINDS == ["spot", "texture", "divider", "icon"]
+    # Photography left with the catalog; nothing here feeds the AI writer now.
+    assert not hasattr(CuratedPhoto, "AI_KINDS")
 
 
 def test_position_auto_appends(restore_public):
@@ -39,7 +43,7 @@ def test_position_auto_appends(restore_public):
 def test_defaults(restore_public):
     with schema_context("public"):
         row = CuratedPhoto.objects.create(title="x", image_key="platform/curated-photos/x.png")
-        assert row.kind == "stock"
+        assert row.kind == "spot"
         assert row.enabled is True
         assert row.width is None and row.height is None
 
@@ -51,13 +55,13 @@ def test_defaults(restore_public):
 def curated_row(tenant_ctx):
     with schema_context("public"):
         row = CuratedPhoto.objects.create(
-            title="Sunrise run",
-            tags="fitness, running",
-            alt_text="runner at sunrise",
-            kind="hero",
-            image_key="platform/curated-photos/sunrise_run.png",
-            width=1600,
-            height=900,
+            title="Lotus mark",
+            tags="wellness, calm",
+            alt_text="line-art lotus",
+            kind="spot",
+            image_key="platform/curated-photos/lotus.png",
+            width=512,
+            height=512,
         )
     return row
 
@@ -68,10 +72,10 @@ def test_materialize_creates_tenant_photo(tenant_ctx, curated_row):
 
     photo = materialize_curated_photo(curated_row)
     assert Photo.objects.filter(pk=photo.pk).exists()
-    assert photo.s3_key == "platform/curated-photos/sunrise_run.png"
-    assert photo.title == "Sunrise run"
-    assert photo.alt_text == "runner at sunrise"
-    assert photo.width == 1600 and photo.height == 900
+    assert photo.s3_key == "platform/curated-photos/lotus.png"
+    assert photo.title == "Lotus mark"
+    assert photo.alt_text == "line-art lotus"
+    assert photo.width == 512 and photo.height == 512
 
 
 def test_materialize_is_idempotent_per_tenant(tenant_ctx, curated_row):
@@ -112,28 +116,28 @@ def catalog(tenant_ctx):
     with schema_context("public"):
         rows = [
             CuratedPhoto.objects.create(
-                title="Sunrise run",
-                tags="fitness, running",
-                kind="hero",
-                image_key="platform/curated-photos/run.png",
+                title="Lotus mark",
+                tags="wellness, calm",
+                kind="spot",
+                image_key="platform/curated-photos/lotus.png",
             ),
             CuratedPhoto.objects.create(
-                title="Meal prep",
-                tags="cooking, nutrition",
-                kind="stock",
-                image_key="platform/curated-photos/meal.png",
+                title="Linen weave",
+                tags="paper, grain, texture",
+                kind="texture",
+                image_key="platform/curated-photos/linen.png",
             ),
             CuratedPhoto.objects.create(
                 title="Disabled",
                 tags="x",
-                kind="hero",
+                kind="spot",
                 image_key="platform/curated-photos/off.png",
                 enabled=False,
             ),
             CuratedPhoto.objects.create(
                 title="Escapee",
                 tags="x",
-                kind="hero",
+                kind="spot",
                 image_key="tenant-secrets/oops.png",
             ),
         ]
@@ -149,15 +153,15 @@ def test_search_filters_kind_and_query_and_guards_prefix(coach_client, catalog):
     res = coach_client.get("/api/v1/curated-photos/")
     assert res.status_code == 200
     titles = [r["title"] for r in res.data]
-    assert "Sunrise run" in titles and "Meal prep" in titles
+    assert "Lotus mark" in titles and "Linen weave" in titles
     assert "Disabled" not in titles  # enabled=False hidden
     assert "Escapee" not in titles  # non-platform key never signed
 
-    res = coach_client.get("/api/v1/curated-photos/?kind=hero")
-    assert [r["title"] for r in res.data] == ["Sunrise run"]
+    res = coach_client.get("/api/v1/curated-photos/?kind=spot")
+    assert [r["title"] for r in res.data] == ["Lotus mark"]
 
-    res = coach_client.get("/api/v1/curated-photos/?q=nutri")
-    assert [r["title"] for r in res.data] == ["Meal prep"]
+    res = coach_client.get("/api/v1/curated-photos/?q=grain")
+    assert [r["title"] for r in res.data] == ["Linen weave"]
     assert res.data[0]["image_url"]
 
 
@@ -167,11 +171,11 @@ def test_use_materializes_and_is_idempotent(coach_client, catalog):
     row_id = catalog[0].id
     res = coach_client.post(f"/api/v1/curated-photos/{row_id}/use/")
     assert res.status_code == 201
-    assert res.data["s3_key"] == "platform/curated-photos/run.png"
+    assert res.data["s3_key"] == "platform/curated-photos/lotus.png"
     again = coach_client.post(f"/api/v1/curated-photos/{row_id}/use/")
     assert again.status_code == 201
     assert again.data["id"] == res.data["id"]
-    assert Photo.objects.filter(s3_key="platform/curated-photos/run.png").count() == 1
+    assert Photo.objects.filter(s3_key="platform/curated-photos/lotus.png").count() == 1
 
 
 def test_use_404_for_disabled(coach_client, catalog):
@@ -221,23 +225,26 @@ def _jpg_bytes(size=(160, 90), color=(30, 120, 200)):
 
 @pytest.fixture()
 def catalog_dir(tmp_path):
-    (tmp_path / "run.png").write_bytes(_png_bytes(size=(160, 90)))
+    (tmp_path / "weave.png").write_bytes(_png_bytes(size=(160, 90)))
     (tmp_path / "mark.png").write_bytes(_mark_on_white_png())
-    (tmp_path / "hike.jpg").write_bytes(_jpg_bytes(size=(320, 180)))
+    (tmp_path / "rule.jpg").write_bytes(_jpg_bytes(size=(320, 180)))
     (tmp_path / "photo_meta.json").write_text(
         jsonlib.dumps(
             [
                 {
-                    "title": "Sunrise run",
-                    "filename": "run.png",
-                    "tags": "fitness",
-                    "kind": "hero",
-                    "alt_text": "runner at sunrise",
+                    "title": "Linen weave",
+                    "filename": "weave.png",
+                    "tags": "paper",
+                    "kind": "texture",
+                    "alt_text": "woven paper grain",
                 },
                 {"title": "Lotus mark", "filename": "mark.png", "kind": "spot"},
-                {"title": "Trail hike", "filename": "hike.jpg", "kind": "hero"},
-                {"title": "Ghost", "filename": "missing.png", "kind": "hero"},
-                {"title": "Bad kind", "filename": "run.png", "kind": "sticker"},
+                {"title": "Thin rule", "filename": "rule.jpg", "kind": "divider"},
+                {"title": "Ghost", "filename": "missing.png", "kind": "icon"},
+                {"title": "Bad kind", "filename": "weave.png", "kind": "sticker"},
+                # A stale local catalog still listing photography: the kind no
+                # longer exists here, so it is skipped rather than reseeded.
+                {"title": "Old hero", "filename": "weave.png", "kind": "hero"},
             ]
         )
     )
@@ -252,16 +259,17 @@ def test_seed_creates_rows_and_dimensions(restore_public, catalog_dir, monkeypat
     )
     call_command("seed_curated_photos", dir=str(catalog_dir))
     with schema_context("public"):
-        run = CuratedPhoto.objects.get(image_key="platform/curated-photos/run.png")
-        assert run.kind == "hero" and run.alt_text == "runner at sunrise"
-        assert (run.width, run.height) == (160, 90)
+        weave = CuratedPhoto.objects.get(image_key="platform/curated-photos/weave.png")
+        assert weave.kind == "texture" and weave.alt_text == "woven paper grain"
+        assert (weave.width, weave.height) == (160, 90)
         assert CuratedPhoto.objects.filter(image_key__endswith="mark.png").exists()
-        hike = CuratedPhoto.objects.get(image_key="platform/curated-photos/hike.jpg")
-        assert (hike.width, hike.height) == (320, 180)
+        rule = CuratedPhoto.objects.get(image_key="platform/curated-photos/rule.jpg")
+        assert (rule.width, rule.height) == (320, 180)
         assert not CuratedPhoto.objects.filter(title="Ghost").exists()  # missing file skipped
+        assert not CuratedPhoto.objects.filter(title="Old hero").exists()  # photography no longer seeds here
         assert CuratedPhoto.objects.count() == 3  # bad kind skipped too
-    assert stored["platform/curated-photos/run.png"] == "image/png"
-    assert stored["platform/curated-photos/hike.jpg"] == "image/jpeg"
+    assert stored["platform/curated-photos/weave.png"] == "image/png"
+    assert stored["platform/curated-photos/rule.jpg"] == "image/jpeg"
 
 
 def test_seed_is_idempotent(restore_public, catalog_dir, monkeypatch):

@@ -701,20 +701,26 @@ class CuratedLogo(models.Model):
 
 
 class CuratedPhoto(models.Model):
-    """Superadmin-curated stock/illustration library for tenant content
-    (blogs first). Public schema; objects live in storage under
-    platform/curated-photos/ and are NEVER deleted — rows are disabled
-    instead, so tenant media.Photo rows materialized from them never break.
-    Spec: docs/superpowers/specs/2026-07-19-curated-photos-design.md."""
+    """Superadmin-curated DECORATIVE library for tenant content: spot
+    illustrations, textures, dividers, icons. Photography (the former `hero` and
+    `stock` kinds) moved out to the curated-image-api service — see
+    apps.core.curated_images and
+    docs/superpowers/specs/2026-08-09-curated-images-offload-design.md.
 
-    KINDS = ["hero", "stock", "spot", "texture", "divider", "icon"]
-    AI_KINDS = ("hero", "stock", "spot")  # the only kinds offered to the blog AI writer
+    Public schema; objects live in storage under platform/curated-photos/ and are
+    NEVER deleted — rows are disabled instead, so tenant media.Photo rows
+    materialized from them never break. That promise covers the objects behind
+    the photography that moved too: tenant photos materialized before the move
+    still point at those keys.
+    Original spec: docs/superpowers/specs/2026-07-19-curated-photos-design.md."""
+
+    KINDS = ["spot", "texture", "divider", "icon"]
 
     title = models.CharField(max_length=120)
     prompt = models.TextField(blank=True, default="")
     tags = models.CharField(max_length=500, blank=True, default="")  # comma-separated
     alt_text = models.CharField(max_length=300, blank=True, default="")
-    kind = models.CharField(max_length=10, choices=[(k, k) for k in KINDS], default="stock")
+    kind = models.CharField(max_length=10, choices=[(k, k) for k in KINDS], default="spot")
     image_key = models.CharField(max_length=300)
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
