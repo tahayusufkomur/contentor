@@ -47,6 +47,10 @@ services:
 
   postgres:
     image: postgres:17-alpine
+    # Tuned to this container's mem_limit: shared_buffers ~25%, effective_cache_size
+    # ~70%. Stock defaults (128MB / 4GB) ignore the cgroup entirely -- the 4GB cache
+    # hint in particular skews the planner toward index scans no real cache backs.
+    command: ["postgres", "-c", "shared_buffers=96MB", "-c", "effective_cache_size=256MB"]
     container_name: contentor-postgres
     restart: unless-stopped
     mem_limit: 384m
