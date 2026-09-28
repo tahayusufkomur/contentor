@@ -17,7 +17,7 @@ Kinds: `spot` (transparent flat illustration), `texture` (seamless tiles), `divi
 separators), `icon` (small glyphs).
 
 **Photography is no longer here.** The `hero` and `stock` kinds moved to the curated-image-api
-service (`../curated-image-api`, prod `image-generation.contentor.app`) — see
+service (`../curated-image-api`, prod `pix4less.com`) — see
 `docs/superpowers/specs/2026-08-09-curated-images-offload-design.md`. Contentor searches that
 service live and caches used images per tenant. To add photography, generate and ingest it there
 (`POST /internal/v1/images`, collections `coach-heroes` / `coach-stock`); adding `kind: hero` here
