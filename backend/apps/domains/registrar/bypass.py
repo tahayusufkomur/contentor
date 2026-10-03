@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 
-from .base import Registrar
 from .types import DomainAvailability, DomainPrice, RegisterResult, RegistrarError
 
 # Deterministic: a domain is "taken" iff its name contains this marker.
@@ -10,7 +9,7 @@ _TAKEN_MARKER = "taken"
 _FIXED_COST_MINOR = 999  # $9.99
 
 
-class BypassRegistrar(Registrar):
+class BypassRegistrar:
     name = "bypass"
 
     def _available(self, domain: str) -> bool:

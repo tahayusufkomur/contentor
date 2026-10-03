@@ -9,6 +9,7 @@ from drf_spectacular.views import SpectacularAPIView
 from apps.accounts.backends import AdminJWTBackend
 from apps.billing.views.webhooks import stripe_webhook
 from apps.core.views import health_check
+from apps.live import urls as live_urls
 
 
 def admin_auto_login(request):
@@ -54,7 +55,7 @@ urlpatterns = [
     path("api/v1/admin/", include("apps.usage.admin_urls")),
     path("api/v1/admin/copilot/", include("apps.core.copilot.urls")),
     # Coach-only unified content calendar (live + blog + email) for /admin/calendar.
-    path("api/v1/admin/content-calendar/", include("apps.live.urls_content_calendar")),
+    path("api/v1/admin/content-calendar/", include((live_urls.content_calendar_patterns, "content_calendar"))),
     path("api/v1/blog/", include("apps.blog.urls")),
     path("api/v1/admin/blog/", include("apps.blog.admin_urls")),
     # Platform email/blog live under their own /platform/ sub-prefixes —
@@ -84,10 +85,10 @@ urlpatterns = [
     path("api/v1/tags/", include("apps.tags.urls")),
     path("api/v1/downloads/", include("apps.downloads.urls")),
     path("api/v1/live/", include("apps.live.urls")),
-    path("api/v1/live-streams/", include(("apps.live.urls_streams", "live_streams"))),
-    path("api/v1/zoom-classes/", include("apps.live.urls_zoom")),
-    path("api/v1/onsite-events/", include("apps.live.urls_onsite")),
-    path("api/v1/calendar/", include("apps.live.urls_calendar")),
+    path("api/v1/live-streams/", include((live_urls.stream_patterns, "live_streams"))),
+    path("api/v1/zoom-classes/", include((live_urls.zoom_patterns, "zoom_classes"))),
+    path("api/v1/onsite-events/", include((live_urls.onsite_patterns, "onsite_events"))),
+    path("api/v1/calendar/", include((live_urls.calendar_patterns, "calendar"))),
     path("api/v1/photos/", include("apps.media.urls")),
     path("api/v1/billing/", include("apps.billing.urls")),
     path("api/v1/domains/", include("apps.domains.urls")),

@@ -58,8 +58,7 @@ test-results/
 
 # Generated crawl/e2e artifacts
 e2e/screenshots/
-docs/screenshot-map/*
-!docs/screenshot-map/index.html
+docs/screenshot-map/
 
 # Local tool caches (tokensave MCP server, Playwright MCP traces)
 .tokensave/

@@ -2,13 +2,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { COOKIE_NAME, DJANGO_API_URL } from "@/lib/constants";
 import { headers } from "next/headers";
-import { createTtlPromiseCache } from "@/lib/ttl-promise-cache";
 import type { User } from "@/types/auth";
 
-// Every server-rendered navigation blocks on this lookup before streaming, so
-// cache it briefly. Role/permission changes take up to the TTL to propagate;
-// logout is unaffected (the cookie disappears, so the key is never hit again).
-const userCache = createTtlPromiseCache<User>({ ttlMs: 60_000 });
+const userCache = new Map<string, { promise: Promise<User | null>; exp: number }>();
 
 async function fetchAuthUser(
   token: string,
@@ -37,9 +33,16 @@ export async function getAuthUser(): Promise<User | null> {
   const headersList = await headers();
   const tenantDomain = headersList.get("x-tenant-domain");
 
-  return userCache.get(`${tenantDomain ?? ""}:${token}`, () =>
-    fetchAuthUser(token, tenantDomain),
-  );
+  const key = `${tenantDomain ?? ""}:${token}`;
+  const hit = userCache.get(key);
+  if (hit && hit.exp > Date.now()) return hit.promise;
+
+  const promise = fetchAuthUser(token, tenantDomain).catch((err) => {
+    userCache.delete(key);
+    throw err;
+  });
+  userCache.set(key, { promise, exp: Date.now() + 60_000 });
+  return promise;
 }
 
 export async function requireAuth(): Promise<User> {

@@ -3,7 +3,6 @@ from __future__ import annotations
 import boto3
 from django.conf import settings
 
-from .base import Registrar
 from .types import DomainAvailability, DomainPrice, RegisterResult, RegistrarError
 
 
@@ -11,7 +10,7 @@ def _tld(domain: str) -> str:
     return domain.split(".", 1)[1] if "." in domain else domain
 
 
-class Route53Registrar(Registrar):
+class Route53Registrar:
     name = "route53"
 
     def __init__(self) -> None:

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import uuid
 
-from .base import ResendDomains
 
-
-class FakeResendDomains(ResendDomains):
-    def create_domain(self, domain: str) -> dict:
+class FakeResendDomains:
+    def create_domain(self, domain: str, *, zone_id: str = "") -> dict:
         return {
             "resend_domain_id": f"resend-{uuid.uuid4().hex[:12]}",
             "records": [
@@ -16,5 +14,5 @@ class FakeResendDomains(ResendDomains):
             ],
         }
 
-    def get_status(self, *, resend_domain_id: str) -> str:
+    def get_status(self, *, resend_domain_id: str, zone_id: str = "") -> str:
         return "verified"

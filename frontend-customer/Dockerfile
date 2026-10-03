@@ -2,7 +2,6 @@
 FROM node:20-alpine AS dev
 WORKDIR /app
 COPY frontend-customer/package.json frontend-customer/package-lock.json* ./
-COPY frontend-customer/scripts/ ./scripts/
 RUN npm ci || npm install
 COPY packages /packages
 # packages/shared has no node_modules ancestor on its own filesystem path;
@@ -19,7 +18,6 @@ CMD ["npm", "run", "dev"]
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY frontend-customer/package.json frontend-customer/package-lock.json* ./
-COPY frontend-customer/scripts/ ./scripts/
 RUN npm ci || npm install
 
 FROM node:20-alpine AS builder
