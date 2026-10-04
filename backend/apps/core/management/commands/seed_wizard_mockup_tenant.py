@@ -54,7 +54,7 @@ class Command(BaseCommand):
             existing.delete(force_drop=True)
 
         tenant = Tenant.objects.create(
-            name="Wizard Mockups",
+            name="Your Studio",
             slug=slug,
             subdomain=slug,
             schema_name=schema_name,
@@ -96,7 +96,7 @@ class Command(BaseCommand):
             _create_default_config(tenant, "en")
             User.objects.create_user(
                 email=tenant.owner_email,
-                name="Wizard Mockups",
+                name="Your Studio",
                 role="owner",
                 is_staff=True,
             )

@@ -3,13 +3,7 @@
 
 import type { WizardAnswers, WizardCatalog } from "./types";
 
-export const CHAPTERS = [
-  "business",
-  "look",
-  "pages",
-  "logo",
-  "launch",
-] as const;
+export const CHAPTERS = ["business", "look", "logo", "launch"] as const;
 
 /** Chapters of the content-first (holdout "treatment") flow. The classic
  * flow's CHAPTERS is untouched; "content" is added to the shared ChapterId
@@ -28,24 +22,13 @@ export interface StepDef {
   chapter: ChapterId;
 }
 
-const PAGE_ORDER = [
-  "home",
-  "about",
-  "courses",
-  "pricing",
-  "faq",
-  "contact",
-] as const;
-
-const SELLING_GOALS = ["sell_courses", "sell_downloads"];
-
+// The menu style, hero layout and per-page layouts are NOT asked: the server's
+// recommended defaults apply and coaches change them in the site editor.
 export function buildSteps(
   catalog: WizardCatalog,
   answers: WizardAnswers,
 ): StepDef[] {
-  const goals = answers.goals ?? [];
-  const selling =
-    goals.length === 0 || goals.some((g) => SELLING_GOALS.includes(g));
+  void catalog; // symmetry with buildContentSteps; the classic flow needs no catalog
   const steps: StepDef[] = [
     { id: "business.niche", chapter: "business" },
     { id: "business.describe", chapter: "business" },
@@ -57,14 +40,7 @@ export function buildSteps(
     { id: "business.goals", chapter: "business" },
     { id: "look.theme", chapter: "look" },
     { id: "look.font", chapter: "look" },
-    { id: "look.navbar", chapter: "look" },
-    { id: "look.hero", chapter: "look" },
   );
-  for (const page of PAGE_ORDER) {
-    if (page === "pricing" && !selling) continue; // answers matter: no selling -> no pricing step
-    if ((catalog.page_layouts[page] ?? []).length < 2) continue;
-    steps.push({ id: `pages.${page}`, chapter: "pages" });
-  }
   steps.push({ id: "logo", chapter: "logo" });
   steps.push({ id: "domain", chapter: "launch" });
   steps.push({ id: "review", chapter: "launch" });
@@ -144,10 +120,6 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
       return Boolean(answers.theme);
     case "look.font":
       return Boolean(answers.font_family);
-    case "look.navbar":
-      return Boolean(answers.navbar_layout);
-    case "look.hero":
-      return Boolean(answers.hero_style);
     case "content.course":
       return answers.course_created === true;
     case "content.event":
@@ -160,10 +132,8 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
       return Boolean(answers.custom_domain);
     case "review":
       return false;
-    default: {
-      const page = step.id.replace("pages.", "");
-      return Boolean(answers.page_layouts?.[page]);
-    }
+    default:
+      return true; // a step id this build no longer knows is never "unanswered"
   }
 }
 

@@ -1,5 +1,4 @@
-// Captures one real screenshot per wizard catalog option (page layouts,
-// hero styles, themes), per niche, from the hidden wizard-mockups scratch
+// Captures one real screenshot per wizard theme option, per niche, from the hidden wizard-mockups scratch
 // tenant (seed_wizard_mockup_tenant --niche <n>), and saves downscaled
 // WebPs into frontend-main/public/wizard-mockups/<niche>/. Manual dev
 // tool — re-run whenever demo content or page templates change.
@@ -33,33 +32,9 @@ const WEBP_QUALITY = 0.85;
 // with MOCKUP_NICHES in packages/shared/src/wizard/mockups.ts.
 const NICHES = ["belly_dance", "face_yoga", "fitness", "makeup", "pilates", "pole_dance", "yoga"];
 
-// Mirrors backend/apps/core/onboarding/wizard_catalog.py PAGE_LAYOUTS.
-const LAYOUTS = [
-  { page: "home", id: "home-spotlight", path: "/" },
-  { page: "home", id: "home-story", path: "/" },
-  { page: "about", id: "about-story", path: "/about" },
-  { page: "about", id: "about-portrait", path: "/about" },
-  { page: "courses", id: "courses-grid", path: "/courses" },
-  { page: "courses", id: "courses-guided", path: "/courses" },
-  { page: "pricing", id: "pricing-simple", path: "/plans" },
-  { page: "pricing", id: "pricing-reassure", path: "/plans" },
-  { page: "faq", id: "faq-list", path: "/faq" },
-  { page: "faq", id: "faq-welcoming", path: "/faq" },
-  { page: "contact", id: "contact-form", path: "/contact" },
-  { page: "contact", id: "contact-warm", path: "/contact" },
-  { page: "home", id: "home-complete", path: "/" },
-  { page: "about", id: "about-warm", path: "/about" },
-  { page: "courses", id: "courses-social", path: "/courses" },
-  { page: "pricing", id: "pricing-trust", path: "/plans" },
-  { page: "faq", id: "faq-support", path: "/faq" },
-  { page: "contact", id: "contact-reassure", path: "/contact" },
-];
-
-// Mirrors wizard_catalog.THEMES / HERO_STYLES.
+// Mirrors wizard_catalog.THEMES. (Hero and per-page layout shots were dropped
+// with those wizard steps; the editor offers them after signup.)
 const THEMES = ["ocean", "ember", "forest", "sunset", "violet", "slate"];
-const HEROES = ["centered", "split", "minimal"];
-// Hero cards only sell the top of the page — clip before downscaling.
-const HERO_CLIP = { x: 0, y: 0, width: 1280, height: 640 };
 
 function manage(args) {
   execFileSync(
@@ -69,7 +44,6 @@ function manage(args) {
   );
 }
 
-const setLayout = (page, layoutId) => manage(["set_wizard_mockup_layout", page, layoutId]);
 const setLook = (args) => manage(["set_wizard_mockup_look", ...args]);
 const seedNiche = (niche) => manage(["seed_wizard_mockup_tenant", "--niche", niche]);
 
@@ -186,26 +160,6 @@ async function main() {
     const outDir = join(OUT_ROOT, niche);
     mkdirSync(outDir, { recursive: true });
 
-    // fullPage: true — a viewport-only crop made two layouts that share their
-    // first blocks (home-story/home-complete both open hero, imageText,
-    // courseGrid) render byte-identical thumbnails, since the block that
-    // actually distinguishes them sat below the fold. Capturing the whole
-    // scrollable page makes every layout option provably distinct, no matter
-    // which blocks a future option shares with an existing one.
-    for (const { page: pageKey, id, path } of LAYOUTS) {
-      console.log(`${id} ...`);
-      setLayout(pageKey, id);
-      await capture(outDir, `wm-${id}.localhost`, path, id, { fullPage: true });
-    }
-
-    for (const style of HEROES) {
-      console.log(`hero-${style} ...`);
-      setLook(["--hero", style]);
-      await capture(outDir, `wm-hero-${style}.localhost`, "/", `hero-${style}`, { clip: HERO_CLIP });
-    }
-    // Reset home (hero back to centered, spotlight layout) before theme shots.
-    setLayout("home", "home-spotlight");
-
     for (const theme of THEMES) {
       console.log(`theme-${theme} ...`);
       setLook(["--theme", theme]);
@@ -213,7 +167,7 @@ async function main() {
     }
     // No trailing look-reset: the next niche (or next run) reseeds the
     // scratch tenant from its template anyway.
-    written += LAYOUTS.length + HEROES.length + THEMES.length;
+    written += THEMES.length;
   }
 
   await browser.close();

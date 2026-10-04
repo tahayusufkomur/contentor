@@ -31,17 +31,15 @@ import type {
   WizardCatalog,
   WizardLogoAnswer,
 } from "@/lib/wizard/types";
+import { BASE_DOMAIN } from "@/lib/constants";
 import { ApiError } from "@/types/api";
 
 import { WizardShell } from "./WizardShell";
-import { PageLayoutStep } from "./pages-steps";
 import {
   DescribeStep,
   FollowupsStep,
   FontStep,
   GoalsStep,
-  HeroStep,
-  NavbarStep,
   NicheStep,
   ThemeStep,
 } from "./steps";
@@ -149,7 +147,11 @@ export function WizardFlow({
         : [],
     [isContentFlow, catalog, answers],
   );
-  const step = steps.find((s) => s.id === stepId) ?? steps[0];
+  // A saved step this build no longer has (e.g. a removed layout step) resumes
+  // at the first unanswered step, never back at the very first question.
+  const step =
+    steps.find((s) => s.id === stepId) ??
+    (steps.length > 0 ? firstUnansweredStep(steps, answers) : undefined);
 
   const draft = useCallback(
     (partial: WizardAnswers) => setAnswers((a) => ({ ...a, ...partial })),
@@ -340,15 +342,11 @@ export function WizardFlow({
     );
   }
 
-  const goals = answers.goals ?? [];
   // Steps whose pick IS the advance render no Continue button. Nothing on
   // them is pre-checked either — a checked card with no way forward reads as
   // a dead end. "Finish the rest for me" stays the bulk-accept escape hatch,
   // and finalize still fills any never-answered key with the recommendation.
-  const autoAdvance =
-    step.chapter === "look" ||
-    step.chapter === "pages" ||
-    step.id === "business.niche";
+  const autoAdvance = step.chapter === "look" || step.id === "business.niche";
   // Content steps carry their own Continue (it POSTs a real course/event/post
   // before advancing) plus a Skip link, so the shell must not add a second one.
   // The domain step owns its advance the same way (buy / skip / later).
@@ -413,33 +411,6 @@ export function WizardFlow({
           brand={brand}
           value={answers.font_family}
           onChange={(font_family) => selectAndAdvance({ font_family })}
-          disabled={busy}
-        />
-      );
-      break;
-    case "look.navbar":
-      body = (
-        <NavbarStep
-          catalog={catalog}
-          brand={brand}
-          theme={answers.theme}
-          font={answers.font_family}
-          value={answers.navbar_layout}
-          onChange={(navbar_layout) => selectAndAdvance({ navbar_layout })}
-          disabled={busy}
-        />
-      );
-      break;
-    case "look.hero":
-      body = (
-        <HeroStep
-          catalog={catalog}
-          brand={brand}
-          niche={answers.niche}
-          theme={answers.theme}
-          font={answers.font_family}
-          value={answers.hero_style}
-          onChange={(hero_style) => selectAndAdvance({ hero_style })}
           disabled={busy}
         />
       );
@@ -510,8 +481,10 @@ export function WizardFlow({
     case "review":
       body = (
         <ReviewStep
-          catalog={catalog}
           answers={answers}
+          steps={steps}
+          brand={brand}
+          address={slug ? `${slug}.${BASE_DOMAIN}` : ""}
           onEdit={(id) => {
             setDirection(-1);
             setStepId(id);
@@ -519,28 +492,6 @@ export function WizardFlow({
         />
       );
       break;
-    default: {
-      const page = step.id.replace("pages.", "");
-      body = (
-        <PageLayoutStep
-          catalog={catalog}
-          page={page}
-          value={answers.page_layouts?.[page]}
-          onChange={(layoutId) =>
-            selectAndAdvance({
-              page_layouts: {
-                ...(answers.page_layouts ?? {}),
-                [page]: layoutId,
-              },
-            })
-          }
-          theme={answers.theme}
-          niche={answers.niche}
-          goals={goals}
-          disabled={busy}
-        />
-      );
-    }
   }
 
   return (
@@ -557,11 +508,7 @@ export function WizardFlow({
       }
       onFinishRest={handleFinishRest}
       error={error}
-      wide={
-        step.chapter === "pages" ||
-        step.id === "look.theme" ||
-        step.id === "look.hero"
-      }
+      wide={step.id === "look.theme"}
       footer={
         stepOwnsAdvance ? null : (
           <Button

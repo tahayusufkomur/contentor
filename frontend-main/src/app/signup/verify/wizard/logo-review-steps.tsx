@@ -19,9 +19,9 @@ import type {
   CuratedLogoItem,
   CuratedLogoLayout,
   WizardAnswers,
-  WizardCatalog,
   WizardLogoAnswer,
 } from "@/lib/wizard/types";
+import type { StepDef } from "@/lib/wizard/machine";
 import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 
 import { AiLogoDoor } from "./ai-logo";
@@ -382,16 +382,25 @@ export function LogoStep({
 }
 
 export function ReviewStep({
-  catalog,
   answers,
+  steps,
+  brand,
+  address,
   onEdit,
 }: {
-  catalog: WizardCatalog;
   answers: WizardAnswers;
+  /** The steps of the flow in use — a row only gets an Edit button (and only
+   * appears) when its step exists there. */
+  steps: StepDef[];
+  brand: string;
+  /** Where the site will live, e.g. "glow-studio.contentor.app". */
+  address: string;
   onEdit: (stepId: string) => void;
 }) {
   const t = useTranslations("wizard");
-  const rows: { key: string; step: string; value: string }[] = [
+  const summary: { key: string; step?: string; value: string }[] = [
+    { key: "brand", value: brand || "—" },
+    { key: "address", value: address || "—" },
     {
       key: "niche",
       step: "business.niche",
@@ -418,28 +427,6 @@ export function ReviewStep({
     },
     { key: "font", step: "look.font", value: answers.font_family ?? "—" },
     {
-      key: "navbar",
-      step: "look.navbar",
-      value: answers.navbar_layout
-        ? t(`navbarLayouts.${answers.navbar_layout}`)
-        : "—",
-    },
-    {
-      key: "hero",
-      step: "look.hero",
-      value: answers.hero_style
-        ? t(`heroStyles.${answers.hero_style}.label`)
-        : "—",
-    },
-    {
-      key: "pages",
-      step: "pages.home",
-      value:
-        Object.values(answers.page_layouts ?? {})
-          .map((id) => t(`layouts.${id}`))
-          .join(" · ") || t("common.recommended"),
-    },
-    {
       key: "logo",
       step: "logo",
       value:
@@ -450,6 +437,9 @@ export function ReviewStep({
             : t("logo.wordmark.title"),
     },
   ];
+  const rows = summary.filter(
+    (row) => !row.step || steps.some((s) => s.id === row.step),
+  );
   return (
     <div>
       <SlideHeader
@@ -476,14 +466,18 @@ export function ReviewStep({
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">
               {row.value}
             </span>
-            <button
-              type="button"
-              onClick={() => onEdit(row.step)}
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-foreground/70 transition-colors hover:bg-foreground/[0.1]"
-              aria-label={t("review.edit")}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
+            {row.step ? (
+              <button
+                type="button"
+                onClick={() => onEdit(row.step as string)}
+                className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-foreground/70 transition-colors hover:bg-foreground/[0.1]"
+                aria-label={t("review.edit")}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <span className="h-7 w-7 flex-shrink-0" aria-hidden />
+            )}
           </motion.li>
         ))}
       </motion.ul>

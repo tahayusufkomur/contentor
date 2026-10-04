@@ -30,8 +30,7 @@ async function clickContinue(page: Page) {
 // Auto-advance card steps save-then-advance: while the PATCH is in flight the
 // OLD step stays mounted with enabled cards, and a click there is silently
 // swallowed by WizardFlow's busy guard. Adjacent steps share card labels
-// (navbar/hero both have "Split" and "Minimal"; "Story" substring-matches
-// home's "Storyteller"), so a bare name query can resolve to the outgoing
+// (cards can share labels across steps), so a bare name query can resolve to the outgoing
 // step's card and the pick is lost — the wizard then waits forever. Waiting
 // for the step's unique heading first proves the step we mean is the one on
 // screen. (Continue-style steps don't race: their button is disabled while
@@ -86,34 +85,23 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
   await clickContinue(page); // goals
 
   // Chapter 2 — look (pick NON-defaults to prove choices stick; each is
-  // single-select and auto-advances on click — no Continue needed).
+  // single-select and auto-advances on click — no Continue needed). Menu,
+  // hero and page layouts are not asked: recommended defaults apply.
   await pickCard(page, W.theme.heading, W.themes.slate);
   await pickCard(page, W.font.heading, W.fonts.inter.label);
-  await pickCard(page, W.navbar.heading, W.navbarLayouts.minimal);
-  await pickCard(page, W.hero.heading, W.heroStyles.split.label);
 
-  // Chapter 3 — pages (single-select, auto-advance: nothing is preselected,
-  // so each page needs its own pick — home takes the non-default to prove the
-  // choice sticks, the rest take the recommended card).
-  await pickCard(page, W.pages.titles.home, W.layouts["home-story"]);
-  await pickCard(page, W.pages.titles.about, W.layouts["about-story"]);
-  await pickCard(page, W.pages.titles.courses, W.layouts["courses-grid"]);
-  await pickCard(page, W.pages.titles.pricing, W.layouts["pricing-simple"]); // present because sell_courses picked
-  await pickCard(page, W.pages.titles.faq, W.layouts["faq-list"]);
-  await pickCard(page, W.pages.titles.contact, W.layouts["contact-form"]);
-
-  // Chapter 4 — logo (wordmark is the preselected default)
+  // Chapter 3 — logo (wordmark is the preselected default)
   await expect(page.getByText(W.logo.wordmark.title)).toBeVisible();
   // AI door present but gated for free signups.
   await expect(page.getByText(W.upgrade.title)).toBeVisible();
   await clickContinue(page);
 
-  // Chapter 5 — domain (free signup → paid-gated upsell; keep the free
+  // Chapter 4 — domain (free signup → paid-gated upsell; keep the free
   // address, which records the choice and advances).
   await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: W.domain.keepFree }).click();
 
-  // Chapter 6 — review + create
+  // Chapter 5 — review + create
   await expect(page.getByText(W.review.heading)).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: W.review.create }).click();
   await waitForReady(page);

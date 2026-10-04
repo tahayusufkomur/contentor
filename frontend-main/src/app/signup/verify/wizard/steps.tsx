@@ -19,7 +19,7 @@ import { FONT_STACKS, THEME_SWATCHES } from "@/lib/wizard/wizard-themes";
 import type { DescriptionFollowups, WizardCatalog } from "@/lib/wizard/types";
 import { mockupSrcs } from "@shared/wizard/mockups";
 
-import { MiniHero, MiniNavbar, ScreenshotThumbnail } from "./previews";
+import { ScreenshotThumbnail } from "./previews";
 
 // Keys must match Python modules under backend demo_data/ (same list the
 // old QuestionnaireStep used).
@@ -117,7 +117,7 @@ export function OptionCard({
       variants={itemVariants}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.985 }}
-      // No text-center here: the preview children (MiniHero/MiniNavbar) render
+      // No text-center here: the preview children render
       // real layouts, and inheriting centering would make a left-aligned
       // layout like "Split" preview as centered — misrepresenting the choice.
       // items-center centers the previews themselves; the label centers below.
@@ -462,103 +462,6 @@ export function FontStep({
             >
               {brand}
             </span>
-          </OptionCard>
-        ))}
-      </OptionList>
-    </div>
-  );
-}
-
-export function NavbarStep({
-  catalog,
-  brand,
-  theme,
-  font,
-  value,
-  onChange,
-  disabled,
-}: {
-  catalog: WizardCatalog;
-  brand: string;
-  theme?: string;
-  font?: string;
-  value?: string;
-  onChange: (layout: string) => void;
-  disabled?: boolean;
-}) {
-  const t = useTranslations("wizard");
-  return (
-    <div>
-      <SlideHeader
-        heading={t("navbar.heading")}
-        subhead={t("navbar.subhead")}
-      />
-      <OptionList className="mt-5 flex flex-col gap-2.5">
-        {catalog.navbar_layouts.map((layout) => (
-          <OptionCard
-            key={layout}
-            selected={value === layout}
-            onSelect={() => onChange(layout)}
-            title={t(`navbarLayouts.${layout}`)}
-            disabled={disabled}
-          >
-            <MiniNavbar
-              layout={layout}
-              theme={theme}
-              font={font}
-              brand={brand}
-            />
-          </OptionCard>
-        ))}
-      </OptionList>
-    </div>
-  );
-}
-
-export function HeroStep({
-  catalog,
-  brand,
-  niche,
-  theme,
-  font,
-  value,
-  onChange,
-  disabled,
-}: {
-  catalog: WizardCatalog;
-  brand: string;
-  niche?: string;
-  theme?: string;
-  font?: string;
-  value?: string;
-  onChange: (style: string) => void;
-  disabled?: boolean;
-}) {
-  const t = useTranslations("wizard");
-  return (
-    <div>
-      <SlideHeader heading={t("hero.heading")} subhead={t("hero.subhead")} />
-      <OptionList className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {catalog.hero_styles.map((style) => (
-          <OptionCard
-            key={style}
-            selected={value === style}
-            onSelect={() => onChange(style)}
-            title={t(`heroStyles.${style}.label`)}
-            subtitle={t(`heroStyles.${style}.desc`)}
-            disabled={disabled}
-          >
-            <ScreenshotThumbnail
-              srcs={mockupSrcs(niche, `hero-${style}`)}
-              fallback={
-                <MiniHero
-                  style={style}
-                  theme={theme}
-                  font={font}
-                  brand={brand}
-                />
-              }
-            />
           </OptionCard>
         ))}
       </OptionList>

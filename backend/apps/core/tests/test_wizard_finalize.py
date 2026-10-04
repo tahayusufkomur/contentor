@@ -81,6 +81,22 @@ def test_finalize_fills_defaults_and_enqueues(tenant, delay):
     assert delay[0][3] == "yoga"
 
 
+def test_finalize_applies_recommended_layouts_when_the_wizard_no_longer_asks(tenant, delay):
+    """Menu, hero and per-page layouts are not wizard steps any more: finalize
+    must fill each with the catalog's recommended (first) option."""
+    from apps.core.onboarding import wizard_catalog as wc
+
+    tenant.wizard_state = {"answers": {"niche": "yoga", "theme": "slate"}}
+    tenant.save(update_fields=["wizard_state"])
+    assert _finalize().status_code == 202
+
+    tenant.refresh_from_db()
+    answers = tenant.wizard_state["answers"]
+    assert answers["navbar_layout"] == wc.NAVBAR_LAYOUTS[0]
+    assert answers["hero_style"] == wc.HERO_STYLES[0]
+    assert answers["page_layouts"] == {page: opts[0]["id"] for page, opts in wc.PAGE_LAYOUTS.items()}
+
+
 def test_finalize_without_answers_uses_general(tenant, delay):
     resp = _finalize()
     assert resp.status_code == 202
