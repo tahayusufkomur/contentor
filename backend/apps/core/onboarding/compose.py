@@ -42,32 +42,6 @@ COPY = {
         "contact_submit": "Send message",
         "contact_success": "Thanks! We'll get back to you soon.",
     },
-    "tr": {
-        "nav_courses": "Kurslar",
-        "nav_events": "Etkinlikler",
-        "nav_store": "Mağaza",
-        "nav_pricing": "Planlar",
-        "nav_about": "Hakkımda",
-        "nav_faq": "SSS",
-        "cta": "Hemen Başla",
-        "featured_courses": "Öne Çıkan Kurslar",
-        "all_courses": "Tüm Kurslar",
-        "events_heading": "Yaklaşan Etkinlikler",
-        "store_heading": "İndirilebilir Kaynaklar",
-        "testimonials_heading": "Öğrenciler ne diyor",
-        "faq_heading": "Sıkça sorulan sorular",
-        "cta_heading": "Başlamaya hazır mısın?",
-        "cta_button": "Hemen Katıl",
-        "plans_heading": "Planlar ve Fiyatlar",
-        "plans_subheading": "Hedeflerine uygun bir plan seç.",
-        "about_heading": "Hakkımda",
-        "intro_heading": "Hoş geldin",
-        "intro_body": "Etrafa göz at ve sana uygun olanı bul.",
-        "contact_heading": "İletişime geç",
-        "contact_intro": "Bir sorun mu var? Bize mesaj gönder.",
-        "contact_submit": "Mesaj gönder",
-        "contact_success": "Teşekkürler! En kısa sürede dönüş yapacağız.",
-    },
 }
 
 # courses/billing/pages/analytics are platform core — always on (the setup
@@ -83,7 +57,7 @@ GOAL_MODULES = {
 
 
 def _t(locale: str) -> dict:
-    return COPY["tr" if locale == "tr" else "en"]
+    return COPY["en"]
 
 
 def _img(url=None, photo_id=None) -> dict:

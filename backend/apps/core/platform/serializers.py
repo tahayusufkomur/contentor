@@ -47,7 +47,6 @@ class TenantDetailSerializer(serializers.ModelSerializer):
             "stripe_charges_enabled",
             "stripe_payouts_enabled",
             "billing_currency",
-            "iyzico_submerchant_id",
             "created_at",
         ]
 

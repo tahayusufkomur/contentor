@@ -6,12 +6,12 @@ from apps.accounts.tokens import create_signup_token, create_wizard_token, verif
 
 
 def test_wizard_token_round_trip():
-    token = create_wizard_token("a@b.com", "Coach", "Glow Studio", region="tr")
+    token = create_wizard_token("a@b.com", "Coach", "Glow Studio", region="eu")
     payload = verify_wizard_token(token)
     assert payload["email"] == "a@b.com"
     assert payload["name"] == "Coach"
     assert payload["brand_name"] == "Glow Studio"
-    assert payload["region"] == "tr"
+    assert payload["region"] == "eu"
     assert payload["purpose"] == "wizard"
 
 

@@ -41,7 +41,7 @@ CSRF_TRUSTED_ORIGINS = [
     o.strip()
     for o in os.environ.get(
         "DJANGO_CSRF_TRUSTED_ORIGINS",
-        "https://contentor.app,https://tr.contentor.app,https://*.contentor.app",
+        "https://contentor.app,https://*.contentor.app",
     ).split(",")
     if o.strip()
 ]

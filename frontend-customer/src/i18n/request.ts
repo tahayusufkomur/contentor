@@ -1,29 +1,11 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 
-import {
-  defaultLocale,
-  isValidLocale,
-  regionDefaultLocale,
-  regionFromHost,
-  type Locale,
-} from "./config";
+import { resolveLocale } from "./config";
 
 export default getRequestConfig(async () => {
-  const headerList = await headers();
   const cookieStore = await cookies();
-
-  const cookieLocale = cookieStore.get("user-locale")?.value;
-  let locale: Locale = defaultLocale;
-
-  if (isValidLocale(cookieLocale)) {
-    locale = cookieLocale;
-  } else {
-    const host =
-      headerList.get("x-forwarded-host") || headerList.get("host") || "";
-    const region = regionFromHost(host);
-    locale = regionDefaultLocale(region);
-  }
+  const locale = resolveLocale(cookieStore.get("user-locale")?.value);
 
   const [admin, student, common, pwa] = await Promise.all([
     import(`../../messages/${locale}/admin.json`).then((m) => m.default),

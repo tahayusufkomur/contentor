@@ -4,7 +4,7 @@
 
 ## 1. North star & launch-ready checklist
 
-**Pre-launch. North star: shortest path to the FIRST PAYING COACH** (global-first: coach #1 is EN/USD — iyzico/TR explicitly NOT required for launch, per Decision log).
+**Pre-launch. North star: shortest path to the FIRST PAYING COACH** (global-first: coach #1 is EN/USD — the Turkish market and iyzico were removed 2026-10-04).
 
 Launch-ready = every box checked:
 
@@ -35,7 +35,6 @@ Launch-ready = every box checked:
 | Platform billing — dunning/lifecycle UI, receipts, metrics | partial | webhook already maps `invoice.payment_failed`→past_due (webhooks.py); coach tile renders past_due badge; provider `create_customer_portal_session` implemented but NO endpoint/UI (platform.py: "Phase 2"); receipts/metrics missing |
 | Admin-managed plan pricing (superadmin) | live-in-prod | adminkit platform-plans CRUD + provision_stripe_price swap — roadmap §15 is stale here |
 | Marketplace — Stripe Connect direct charges (coach = MoR) | built-unverified | e2e-verified TEST mode; prod live-mode unverified; "don't blind-deploy" note stands |
-| Marketplace — iyzico (TR) | missing | declared provider choice only; NOT needed for coach #1 (global-first) |
 | Coach earnings / payouts view | partial | earnings endpoint + Connect dashboard link; no in-app payout history |
 | Website builder (6 pages, blocks, autosave) | live-in-prod | deployed 2026-07-03; coach walkthrough pending |
 | Filters / tags | live-in-prod | deployed 2026-07-03 |
@@ -81,7 +80,6 @@ Launch-ready = every box checked:
 ### Later
 
 - Custom-domain onboarder phases 2-4 (buy-domain UX, billing, provisioning polish).
-- iyzico TR marketplace (when a TR coach matters commercially).
 - Dunning/receipts/metrics (billing Phase 4) beyond the MVP.
 - Superadmin→coach impersonation e2e spec; minio image pin; e2e cosmetic carries (list in `.superpowers/sdd/progress.md`).
 - Weekly scheduled `/po review` automation (explicitly deferred at design time).

@@ -26,7 +26,7 @@ to use in conversation, code, and commits.
 > Two Next.js frontends, each with its own `/admin`. The owner's conversational names are
 > **main app** and **coach app** — use these; the directory names are the implementation.
 
-- **Main app** — `frontend-main`. The **apex** site (`contentor.app` / `tr.contentor.app`)
+- **Main app** — `frontend-main`. The **apex** site (`contentor.app`)
   where coaches **discover Contentor, see pricing, sign up, and log in**, and where the
   **superadmin** runs the platform. Talks only to the `public` schema.
 - **Coach app** — `frontend-customer`. The tenant-facing application that **runs each
@@ -71,14 +71,14 @@ to use in conversation, code, and commits.
 - **`public` schema** — the shared schema holding `SHARED_APPS` (`User`, `Tenant`,
   `PlatformPlan`, `PlatformSubscription`, …).
 - **django-tenants** — the library implementing schema-per-tenant routing and migration.
-- **Region** — `global` or `tr`. Immutable per tenant. Sets the domain shape, default
-  locale, default currency, and the `tr_` schema prefix.
+- **Region** — currently only `global`. Immutable per tenant; kept as a column and JWT
+  claim. (Billing currency is separate: USD or EUR from the coach's country at signup.)
 - **Slug** — the URL-safe tenant identifier (e.g. `gorkem-yoga`). Unique per region; the
   subdomain and schema name derive from it. Validated against **reserved slugs**.
 - **Reserved slugs** — names a tenant can't take (`api`, `admin`, `www`, `tr`, `public`, …).
-- **Apex** — the root marketing domain: `contentor.app` (global) / `tr.contentor.app` (TR).
+- **Apex** — the root marketing domain: `contentor.app`.
   Served by `frontend-main`.
-- **Tenant subdomain** — `slug.contentor.app` / `slug.tr.contentor.app`. Served by
+- **Tenant subdomain** — `slug.contentor.app`. Served by
   `frontend-customer`.
 - **`X-Tenant-Domain`** — the header Next.js SSR sends to Django to name the target tenant
   (because Node's `undici` drops a custom `Host`). The multi-tenancy linchpin.
@@ -127,7 +127,7 @@ to use in conversation, code, and commits.
 - **`transaction_fee_pct`** — the platform's percentage cut of a student's payment to a
   coach (for the future marketplace).
 - **Submerchant / payout** — the coach as a payment-provider sub-account; `submerchant_payout`
-  is what they receive after the platform fee. (iyzico / Stripe Connect — future.)
+  is what they receive after the platform fee. (Stripe Connect.)
 - **Bypass** — a dev-only payment provider that fakes an active subscription
   (`BILLING_BYPASS_ENABLED`). Prod refuses it.
 - **Dunning** — the past-due → grace → downgrade-to-Free sweep (`PAST_DUE_GRACE_DAYS`,
@@ -165,8 +165,8 @@ to use in conversation, code, and commits.
 
 - **M0** — pre-billing foundation.
 - **M1** — coach→platform Stripe subscriptions (shipped).
-- **M2** — the student→coach **marketplace** (confirmed, not yet built): **iyzico
-  submerchants for TR, Stripe Connect for global**; the **coach is merchant of record** and
+- **M2** — the student→coach **marketplace** (confirmed, not yet built): **Stripe
+  Connect**; the **coach is merchant of record** and
   the platform takes `transaction_fee_pct`.
 - **Phase 0–4** — the sub-steps of the M1 platform-billing plan (Phase 3 = quota
   enforcement; Phase 4 = receipts/metrics/tooling).

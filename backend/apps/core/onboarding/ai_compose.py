@@ -156,7 +156,7 @@ def compose_available() -> bool:
 
 
 def _brief(pages: dict, *, brand_name, niche, description, followups, goals, locale, courses=(), downloads=()) -> str:
-    language = "Turkish" if locale == "tr" else "English"
+    language = "English"
     lines = [
         "<coach_brief>",
         f"Brand: {brand_name or 'a new coaching brand'}",

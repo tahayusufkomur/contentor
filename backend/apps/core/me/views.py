@@ -16,7 +16,7 @@ from ..models import Tenant
 def _build_tenant_url(tenant: Tenant) -> str:
     """Return the canonical https URL for a tenant's studio."""
     base = settings.CONTENTOR_DOMAIN
-    host = f"{tenant.slug}.tr.{base}" if tenant.region == "tr" else f"{tenant.slug}.{base}"
+    host = f"{tenant.slug}.{base}"
     scheme = "http" if "localhost" in base else "https"
     return f"{scheme}://{host}"
 

@@ -20,10 +20,5 @@
     "settings": "Settings",
     "billing": "Billing",
     "signOut": "Sign out"
-  },
-  "language": {
-    "label": "Language",
-    "switchToTurkish": "Türkçe",
-    "switchToEnglish": "English"
   }
 }

@@ -297,7 +297,7 @@ def wizard_checkout(request):
             "accessible_regions": [],
         },
     )
-    locale = "tr" if tenant.region == "tr" else "en"
+    locale = "en"
     try:
         session = get_provider().create_checkout_session(
             tenant=tenant,

@@ -70,9 +70,7 @@ def magic_link_request(request):
 
     code = login_code.issue(tenant.schema_name, email)
 
-    # Locale: prefer request region's default, falling back to en.
-    locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
-    sent = send_magic_link(email, link, brand_name, locale=locale, code=code)
+    sent = send_magic_link(email, link, brand_name, code=code)
     if not sent:
         if settings.DEBUG:
             # Dev convenience only: surface the link locally when email is stubbed.
@@ -344,7 +342,7 @@ def update_locale(request):
     from apps.core.i18n_helpers import msg
 
     locale = (request.data.get("locale") or "").strip().lower()
-    if locale not in ("en", "tr"):
+    if locale != "en":
         return Response({"detail": msg(request, "unsupported_locale")}, status=400)
     user = request.user
     user.preferred_locale = locale
@@ -626,6 +624,6 @@ def google_callback(request):
     # Pass region as an explicit override so the JWT carries the state region,
     # not whatever the OAuth-callback's tenant happened to have. This is what
     # lets the resulting cookie pass TenantJWTAuthentication's cross-region
-    # check when the user lands back on tr.contentor.app.
+    # check.
     jwt_token = create_jwt(user, tenant, region=region)
     return HttpResponseRedirect(f"{origin}/callback?token={jwt_token}&source=google")

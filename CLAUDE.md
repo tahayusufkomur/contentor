@@ -45,7 +45,7 @@ Per-area deep docs live in `docs/wiki/` — read the relevant page before workin
 - Django apps split into **SHARED_APPS** (public schema) vs **TENANT_APPS** (per-tenant schema); `apps.core.routers.TenantRouter` keeps tenant apps out of public. `apps.mailbox` is dual-listed: public rows = superadmin platform inbox, tenant rows = per-coach mailbox.
 - Auth is JWT. `TenantJWTAuthentication` is the default DRF auth class — public endpoints (magic link, OAuth, signup) MUST set `@authentication_classes([])`; `AllowAny` alone is not enough.
 - API prefix `/api/v1/` (+ `/api/health/`). OpenAPI at `/api/schema/` (drf-spectacular) — after changing any serializer, run `npm run gen:api` in `frontend-customer` and review the `src/types/api-generated.ts` diff; a surprising diff means the frontend contract moved.
-- Routing: apex + `tr.` locale → `frontend-main`; every other host (tenant subdomains) → `frontend-customer` via Caddy catch-all. `/api/*`, `/static/*`, apex `/django-admin/*` → Django directly (NOT proxied through Next.js).
+- Routing: apex → `frontend-main`; every other host (tenant subdomains) → `frontend-customer` via Caddy catch-all. `/api/*`, `/static/*`, apex `/django-admin/*` → Django directly (NOT proxied through Next.js).
 
 ### Multi-Tenancy (critical)
 
@@ -93,12 +93,12 @@ Enforced by `scripts/check-loading-patterns.mjs` in `make lint` — following th
 
 ## Deploy (home server)
 
-Prod = old MacBook (Ubuntu) behind the shared Cloudflare tunnel (fleet tooling: `~/ws/home-server/`), domain `contentor.app` (apex + `tr.` + `*.` tenant subdomains). `docker-compose.prod.yml` is self-contained (NOT a dev-compose override); one parametrized `Caddyfile` (`CONTENTOR_DOMAIN`, `FORWARDED_PROTO`) serves dev and prod; TLS terminates at Cloudflare's edge (Caddy forces `X-Forwarded-Proto https`; WhiteNoise serves admin static). Secrets: Cloudflare KV, fetched at deploy by the fleet's `scripts/secrets.sh` (Touch ID) into RAM on the node — there is no local `.env.prod`; change a prod value with `secrets.sh set contentor <KEY> <VALUE>` (`.env.prod.example` only documents the keys). Dev reads the root `.env`. Prod runs live Stripe — `BILLING_BYPASS_ENABLED` MUST be false. Deploy from the Mac: `make deploy` (full backend tests first, `SKIP_TESTS=1` to bypass) → `~/ws/home-server/deploy.sh contentor`; tunnel ingress via `./deploy.sh edge`.
+Prod = old MacBook (Ubuntu) behind the shared Cloudflare tunnel (fleet tooling: `~/ws/home-server/`), domain `contentor.app` (apex + `*.` tenant subdomains). `docker-compose.prod.yml` is self-contained (NOT a dev-compose override); one parametrized `Caddyfile` (`CONTENTOR_DOMAIN`, `FORWARDED_PROTO`) serves dev and prod; TLS terminates at Cloudflare's edge (Caddy forces `X-Forwarded-Proto https`; WhiteNoise serves admin static). Secrets: Cloudflare KV, fetched at deploy by the fleet's `scripts/secrets.sh` (Touch ID) into RAM on the node — there is no local `.env.prod`; change a prod value with `secrets.sh set contentor <KEY> <VALUE>` (`.env.prod.example` only documents the keys). Dev reads the root `.env`. Prod runs live Stripe — `BILLING_BYPASS_ENABLED` MUST be false. Deploy from the Mac: `make deploy` (full backend tests first, `SKIP_TESTS=1` to bypass) → `~/ws/home-server/deploy.sh contentor`; tunnel ingress via `./deploy.sh edge`.
 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **contentor** (19789 symbols, 36247 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **contentor** (19761 symbols, 36174 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

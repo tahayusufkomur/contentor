@@ -109,11 +109,9 @@ class Payment(models.Model):
     submerchant_payout = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3)
     # Providers: `stripe` (live, via Stripe Connect) and `bypass` (dev/CI).
-    # `iyzico` is a planned Turkish gateway — kept on the TR roadmap but not yet
-    # implemented (no provider in apps/billing/providers/).
     provider = models.CharField(
         max_length=20,
-        choices=[("iyzico", "iyzico"), ("stripe", "Stripe"), ("bypass", "Bypass")],
+        choices=[("stripe", "Stripe"), ("bypass", "Bypass")],
     )
     provider_payment_id = models.CharField(max_length=255, blank=True, default="")
     original_payment = models.ForeignKey(
@@ -146,7 +144,7 @@ class Payment(models.Model):
 
 
 class PaymentItem(models.Model):
-    """Individual item within a payment. Maps 1:1 to iyzico basket items."""
+    """Individual item within a payment. One purchased item (course, bundle, download…) of a Payment."""
 
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="items")
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

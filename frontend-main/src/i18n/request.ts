@@ -1,16 +1,9 @@
-import { headers } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 
-import { defaultLocale, type Locale, locales, resolveHost } from "./config";
+import { defaultLocale } from "./config";
 
 export default getRequestConfig(async () => {
-  const headerList = await headers();
-  const host =
-    headerList.get("x-forwarded-host") || headerList.get("host") || "";
-  const { locale: hostLocale } = resolveHost(host);
-  const locale: Locale = (locales as readonly string[]).includes(hostLocale)
-    ? (hostLocale as Locale)
-    : defaultLocale;
+  const locale = defaultLocale;
 
   // Load namespaces in parallel
   const [marketing, pricing, auth, common, { wizard }] = await Promise.all([

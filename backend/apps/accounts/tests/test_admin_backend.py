@@ -74,7 +74,7 @@ class TestAdminJWTBackend:
 
     def test_cross_region_token_is_rejected(self, tenant_ctx):
         user = self._staff()
-        token = _token(user_id=user.id, tenant_id="shared_test", role="owner", region="tr")
+        token = _token(user_id=user.id, tenant_id="shared_test", role="owner", region="eu")
         rf = RequestFactory()
         request = rf.get("/django-admin/login/", HTTP_HOST=SHARED_DOMAIN)
         request.COOKIES = {"contentor_access_token": token}

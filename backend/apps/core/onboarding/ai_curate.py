@@ -55,7 +55,7 @@ def brief_block(brief: CoachBrief) -> str:
     """Tenant-specific prompt section. Static system prompts must stay
     byte-identical across tenants (prompt caching) — everything coach-specific
     goes through here."""
-    language = "Turkish" if brief.locale == "tr" else "English"
+    language = "English"
     lines = [
         "<coach_brief>",
         f"Brand: {brief.brand_name or 'a new coaching brand'}",

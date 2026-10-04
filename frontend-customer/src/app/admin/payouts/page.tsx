@@ -25,6 +25,9 @@ interface ConnectStatus {
   payouts_enabled: boolean;
   is_paid_active: boolean;
   can_monetize: boolean;
+  /** Stripe Express countries; the account's country is fixed once created. */
+  countries: string[];
+  default_country: string;
 }
 
 export default function PayoutsPage() {
@@ -56,11 +59,22 @@ export default function PayoutsPage() {
     load();
   }, [load]);
 
+  // null = untouched, so the server's guess (from the coach's location) shows.
+  const [pickedCountry, setPickedCountry] = useState<string | null>(null);
+  const country = pickedCountry ?? status?.default_country ?? "US";
+  const countryName = (code: string) => {
+    try {
+      return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+    } catch {
+      return code;
+    }
+  };
+
   const { run: startOnboarding, loading: onboarding } = useAsyncAction(
     async () => {
       const { onboarding_url } = await clientFetch<{ onboarding_url: string }>(
         "/api/v1/billing/connect/onboard/",
-        { method: "POST" },
+        { method: "POST", body: JSON.stringify({ country }) },
       );
       window.location.href = onboarding_url;
     },
@@ -122,6 +136,30 @@ export default function PayoutsPage() {
                     with Stripe to start accepting payments for your paid
                     content.
                   </p>
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="payout-country"
+                      className="text-sm font-medium"
+                    >
+                      Where is your business based?
+                    </label>
+                    <select
+                      id="payout-country"
+                      value={country}
+                      onChange={(e) => setPickedCountry(e.target.value)}
+                      className="flex h-9 w-full max-w-xs rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      {status.countries.map((code) => (
+                        <option key={code} value={code}>
+                          {countryName(code)}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      Stripe sets this once for your payout account; it
+                      can&apos;t be changed later.
+                    </p>
+                  </div>
                   <Button
                     onClick={startOnboarding}
                     loading={onboarding}

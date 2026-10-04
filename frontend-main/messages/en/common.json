@@ -19,13 +19,6 @@
     "contact": "Contact",
     "privacy": "Privacy",
     "terms": "Terms",
-    "switchLanguage": "Türkçe",
-    "switchLanguageEnglish": "English",
     "copyright": "© {year} Contentor. All rights reserved."
-  },
-  "regionBanner": {
-    "title": "Looking for Turkish?",
-    "description": "We have a Turkish version of this site.",
-    "cta": "Switch to Türkçe"
   }
 }

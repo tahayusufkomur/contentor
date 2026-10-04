@@ -189,10 +189,10 @@ def test_locale_reaches_prompt(monkeypatch):
         niche="yoga",
         description="desc",
         goals=["sell_courses"],
-        locale="tr",
+        locale="en",
         tenant_schema="glow",
     )
-    assert "Turkish" in seen["user"]
+    assert "English" in seen["user"]
     assert "Glow" in seen["user"] and "desc" in seen["user"]
 
 

@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 # token to spam the OWNER's inbox from many IPs.
 RESEND_COOLDOWN = timedelta(hours=1)
 
-# TR: needs native review.
 _COPY = {
     "en": {
         "subject": "Pick up where you left off — {brand}",
@@ -45,21 +44,10 @@ _COPY = {
         "expires": "This link is valid for {days} days.",
         "copy_label": "Or copy:",
     },
-    "tr": {
-        "subject": "Kaldığınız yerden devam edin — {brand}",
-        "heading": "Platformunuz sizi bekliyor",
-        "intro": (
-            "<strong>{brand}</strong> platformunu kurmaya başlamıştınız — yaptığınız her seçim kayıtlı. "
-            "Kaldığınız yerden devam etmek için aşağıdaki düğmeye tıklayın."
-        ),
-        "button": "Kuruluma devam et",
-        "expires": "Bu bağlantı {days} gün geçerlidir.",
-        "copy_label": "Veya kopyalayın:",
-    },
 }
 
 # Final "we are about to delete this signup" nudge. Same resume link as the
-# recovery email — only the framing differs. TR: needs native review.
+# recovery email — only the framing differs.
 _ABANDON_COPY = {
     "en": {
         "subject": "Your unfinished setup will be removed — {brand}",
@@ -72,18 +60,6 @@ _ABANDON_COPY = {
         "button": "Resume my setup",
         "expires": "This link is valid for {days} days.",
         "copy_label": "Or copy:",
-    },
-    "tr": {
-        "subject": "Tamamlanmamış kurulumunuz silinecek — {brand}",
-        "heading": "{brand} platformunu hâlâ kurmak istiyor musunuz?",
-        "intro": (
-            "<strong>{brand}</strong> platformunu kurmaya başlamıştınız ama tamamlamadınız. "
-            "Tamamlanmamış bu kaydı {grace} gün içinde sileceğiz. "
-            "Kaldığınız yerden devam etmek için aşağıya tıklayın — henüz hiçbir şey kaybolmadı."
-        ),
-        "button": "Kuruluma devam et",
-        "expires": "Bu bağlantı {days} gün geçerlidir.",
-        "copy_label": "Veya kopyalayın:",
     },
 }
 
@@ -179,10 +155,9 @@ def send_abandon_warning(tenant, now=None) -> bool:
     token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.name, region=region)
 
     base = settings.CONTENTOR_DOMAIN
-    host = f"tr.{base}" if region == "tr" else base
-    link = f"{settings.SITE_SCHEME}://{host}/signup/verify?token={token}"
+    link = f"{settings.SITE_SCHEME}://{base}/signup/verify?token={token}"
 
-    strings = _ABANDON_COPY["tr" if region == "tr" else "en"]
+    strings = _ABANDON_COPY["en"]
     brand = tenant.name
     safe_brand = escape(brand)  # subject is plain text; HTML body gets the escaped form
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
@@ -237,10 +212,9 @@ def send_recovery_email(tenant) -> bool:
     token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.name, region=region)
 
     base = settings.CONTENTOR_DOMAIN
-    host = f"tr.{base}" if region == "tr" else base
-    link = f"{settings.SITE_SCHEME}://{host}/signup/verify?token={token}"
+    link = f"{settings.SITE_SCHEME}://{base}/signup/verify?token={token}"
 
-    strings = _COPY["tr" if region == "tr" else "en"]
+    strings = _COPY["en"]
     brand = tenant.name
     safe_brand = escape(brand)  # subject is plain text; HTML body gets the escaped form
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS

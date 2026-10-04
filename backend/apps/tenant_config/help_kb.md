@@ -1,6 +1,6 @@
 # Ask Contentor — coach help knowledge base
 
-Audience note for the assistant: the reader of your answers is a **coach** — the owner of a site on Contentor. Coaches are non-technical. Give UI steps, never technical jargon, API paths, or code. "Your site" = the coach's own subdomain (e.g. `yourname.contentor.app`, or `yourname.tr.contentor.app` in the Turkish region). "Admin" = the coach's admin area at `/admin` on their own site. Students are the coach's customers.
+Audience note for the assistant: the reader of your answers is a **coach** — the owner of a site on Contentor. Coaches are non-technical. Give UI steps, never technical jargon, API paths, or code. "Your site" = the coach's own subdomain (e.g. `yourname.contentor.app`). "Admin" = the coach's admin area at `/admin` on their own site. Students are the coach's customers.
 
 ## What Contentor is
 
@@ -12,13 +12,13 @@ The coach runs everything from the admin area on their own site.
 
 ## Plans & pricing (exact, monthly)
 
-| Plan | Price (USD) | Price (TRY) | Students | Storage | Live streaming | Campaign emails/mo | AI blog posts/mo | Commission on student sales |
+| Plan | Price (USD) | Price (EUR) | Students | Storage | Live streaming | Campaign emails/mo | AI blog posts/mo | Commission on student sales |
 |---|---|---|---|---|---|---|---|---|
-| Free | $0 | ₺0 | 10 | 1 GB | Not available | 100 | 0 | — (cannot sell paid content) |
-| Starter | $19.90/mo | ₺999.00/mo | 100 | 100 GB | 100 hours/mo | 1,000 | 5 | 8% |
-| Pro | $49.90/mo | ₺2,499.00/mo | 500 | 500 GB | 500 hours/mo | 5,000 | 30 | 6% |
+| Free | $0 | €0 | 10 | 1 GB | Not available | 100 | 0 | — (cannot sell paid content) |
+| Starter | $19.90/mo | €19.90/mo | 100 | 100 GB | 100 hours/mo | 1,000 | 5 | 8% |
+| Pro | $49.90/mo | €49.90/mo | 500 | 500 GB | 500 hours/mo | 5,000 | 30 | 6% |
 
-- Billing is monthly, via Stripe. Currency follows the coach's region (global = USD, Turkey = TRY) and is locked at the first checkout.
+- Billing is monthly, via Stripe. Currency (USD or EUR) is set from the coach's country at signup and cannot be changed later.
 - **Free plan cannot make money**: no paid content, no student payments, no payouts, no live sessions. Selling requires an active Starter or Pro subscription plus completed payout setup (see Payouts & billing).
 - Commission is Contentor's cut of each student payment (8% Starter, 6% Pro). The rest goes to the coach.
 - Upgrade: open **Billing → Subscription** tab, choose the plan, complete checkout. Downgrading requires contacting support.
@@ -199,9 +199,9 @@ Your site works as an installable app on students' phones — it opens full-scre
 
 - **How do I get paid?** → Connect Stripe on the Payouts page; student payments settle to your Stripe account, minus Contentor's commission (8% Starter / 6% Pro).
 - **Why can't I sell anything?** → Selling needs an active Starter or Pro plan AND completed payout setup on the Payouts page. Free plan can't sell paid content.
-- **How much does Contentor cost?** → Free $0; Starter $19.90/mo (₺999); Pro $49.90/mo (₺2,499). Monthly, via Billing → Subscription.
+- **How much does Contentor cost?** → Free $0; Starter $19.90/mo (€19.90); Pro $49.90/mo (€49.90). Monthly, via Billing → Subscription.
 - **What's my commission/fee per sale?** → 8% on Starter, 6% on Pro. Nothing else per sale.
-- **How do students find my page?** → Share your link: `yourname.contentor.app` (or `yourname.tr.contentor.app` in Turkey). The setup guide's "Share your site" row copies it.
+- **How do students find my page?** → Share your link: `yourname.contentor.app`. The setup guide's "Share your site" row copies it.
 - **My student can't log in.** → They must sign in on YOUR site (not contentor.app) using the email link (check spam; link expires ~15 min — request a new one) or Google.
 - **How do I refund a student?** → Students → click the student → payment history → Refund next to the item. The platform commission is not returned.
 - **How do I remove the example content?** → Settings → Remove demo content (or the setup guide row). Edited items are kept.

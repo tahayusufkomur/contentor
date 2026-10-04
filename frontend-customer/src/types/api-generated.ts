@@ -3867,9 +3867,9 @@ export interface paths {
     put?: never;
     /**
      * @description Start the domain purchase from inside the wizard. Success/cancel land
-     *     back on /signup/verify on the SAME host the wizard runs on (tr. locale
-     *     included) — the stashed localStorage token is per-origin, so returning to
-     *     the apex from a tr. wizard would strand the coach.
+     *     back on /signup/verify on the SAME host the wizard runs on — the stashed
+     *     localStorage token is per-origin, so returning to a different origin would
+     *     strand the coach.
      */
     post: operations["v1_onboarding_wizard_domain_checkout_create"];
     delete?: never;
@@ -10226,7 +10226,6 @@ export interface components {
        * @description Immutable. Set at signup from the request host.
        *
        *     * `global` - Global
-       *     * `tr` - Turkey
        */
       readonly region?: components["schemas"]["RegionEnum"];
       /**
@@ -10277,7 +10276,6 @@ export interface components {
        * @description The region this user first signed up in. Informational only — auth-time isolation is enforced by Tenant.region via JWT claims. Same email may own tenants across multiple regions.
        *
        *     * `global` - Global
-       *     * `tr` - Turkey
        * @default global
        */
       readonly region: components["schemas"]["RegionEnum"];
@@ -10321,12 +10319,11 @@ export interface components {
       readonly created_at: string;
     };
     /**
-     * @description * `iyzico` - iyzico
-     *     * `stripe` - Stripe
+     * @description * `stripe` - Stripe
      *     * `bypass` - Bypass
      * @enum {string}
      */
-    PaymentAdminProviderEnum: "iyzico" | "stripe" | "bypass";
+    PaymentAdminProviderEnum: "stripe" | "bypass";
     /**
      * @description * `pending` - Pending
      *     * `completed` - Completed
@@ -10462,10 +10459,9 @@ export interface components {
     ReasonEnum: "spam" | "inappropriate" | "harassment" | "other";
     /**
      * @description * `global` - Global
-     *     * `tr` - Turkey
      * @enum {string}
      */
-    RegionEnum: "global" | "tr";
+    RegionEnum: "global";
     ReportAdmin: {
       readonly id: number;
       reason: components["schemas"]["ReasonEnum"];
@@ -10553,7 +10549,6 @@ export interface components {
        * @description Immutable. Set at signup from the request host.
        *
        *     * `global` - Global
-       *     * `tr` - Turkey
        */
       readonly region: components["schemas"]["RegionEnum"];
       /**
@@ -10628,7 +10623,6 @@ export interface components {
        * @description The region this user first signed up in. Informational only — auth-time isolation is enforced by Tenant.region via JWT claims. Same email may own tenants across multiple regions.
        *
        *     * `global` - Global
-       *     * `tr` - Turkey
        * @default global
        */
       readonly region: components["schemas"]["RegionEnum"];

@@ -15,8 +15,8 @@
 get their own branded subdomain, and sell courses, downloadable resources, and live
 sessions to their "students" — and market to them by email.**
 
-Think "Kajabi / Teachable / Podia", built for two markets at once (a global English
-market and a Turkish market), self-hosted on a home server.
+Think "Kajabi / Teachable / Podia", built for a global English market,
+self-hosted on a home server.
 
 Every coach is a **tenant**: a fully isolated PostgreSQL schema with its own content,
 students, branding, and billing. One Django backend + two Next.js frontends serve all
@@ -66,7 +66,7 @@ Cloudflare Tunnel. TLS terminates at Cloudflare.
                   ┌───────▼────────┐                                                          │
                   │     Caddy      │  Caddyfile routes by host + path (both dev and prod)     │
                   └───┬────────┬───┘                                                          │
-       /api,/static,apex/admin     │        apex + tr. │        every other host (tenants)    │
+       /api,/static,apex/admin     │        apex      │        every other host (tenants)    │
                   ┌───▼───┐    ┌───▼─────────┐    ┌────▼──────────────┐                       │
                   │Django │    │ nextjs-main │    │ nextjs-customer    │◄──── SSR fetch ───────┘
                   │       │    │ (marketing) │    │ (tenant portal)    │   (sends X-Tenant-Domain)
@@ -108,16 +108,11 @@ This is the heart of the system. Internalize it before changing anything.
 
 ### Regions
 
-Two regions, set at signup and **immutable**: `global` and `tr`.
-
-| | Domain shape | Schema name | Default locale | Default currency |
-|---|---|---|---|---|
-| **global** | `slug.contentor.app` | `slug` | `en` | `USD` |
-| **tr** | `slug.tr.contentor.app` | `tr_slug` | `tr` | `TRY` |
-
-The `tr_` schema prefix means the *same* brand slug can exist independently in both
-regions. `User` uniqueness is **`(email, region)`** — the same person can be a coach in
-both regions as two separate `User` rows.
+One region, `global` (the `region` column and JWT claim are kept so another can be added
+later): domain `slug.contentor.app`, schema `slug`, locale `en`. **Currency** is decided
+once at tenant creation from the coach's country (Cloudflare's `CF-IPCountry`): eurozone →
+`EUR`, anything else → `USD`; it is immutable afterwards. `User` uniqueness is
+**`(email, region)`**.
 
 ### How the tenant is resolved per request
 
@@ -151,14 +146,14 @@ models point at the shared `accounts.User` table.
 ### 4.1 Public schema (`apps.core`, `apps.accounts`)
 
 - **`User`** [P] (`apps/accounts/models.py`) — platform user. Unique on `(email, region)`.
-  `role ∈ {owner, coach, student}`, `region ∈ {global, tr}`, `preferred_locale`,
+  `role ∈ {owner, coach, student}`, `region = global`, `preferred_locale`,
   `accessible_regions` (superadmin admin scoping), `payment_customer_id`, `is_staff`,
   `is_superuser`. Custom `UserManager`, email is the username field.
 - **`Tenant`** [P] (`apps/core/models.py`, extends `TenantMixin`) — one row per coach
   site. `slug` (unique, validated against `RESERVED_SLUGS`), `schema_name`, `region`
   (immutable), `billing_currency` (locked at first checkout), `plan` → `PlatformPlan`,
   `subdomain`, `stripe_account_id` (Connect — for future marketplace payouts),
-  `iyzico_submerchant_id` (future), `provisioning_status ∈ {pending, provisioning, ready,
+  `provisioning_status ∈ {pending, provisioning, ready,
   failed}`, `is_demo`, `template_niche`, `template_goals`, `template_seed_status ∈
   {pending, seeding, ready, skipped, failed}`. Property `is_subscription_active` →
   True iff a `PlatformSubscription` exists with status in `{active, past_due}`.
@@ -168,7 +163,7 @@ models point at the shared `accounts.User` table.
   `max_students`, `max_storage_gb`, `max_streaming_hours`, `max_campaign_emails`;
   `transaction_fee_pct` (platform's cut of student payments — used by the future
   marketplace); `is_live_enabled`; `prices` JSONB `{ "USD": {amount_cents, stripe_price_id},
-  "TRY": {…} }`. `get_price(currency)` and `is_free` helpers.
+  "EUR": {…} }`. `get_price(currency)` and `is_free` helpers.
 - **`PlatformSubscription`** [P] — the coach→platform subscription. OneToOne to `Tenant`,
   FK to `User` + `PlatformPlan`. `status ∈ {incomplete, active, past_due, canceled}`,
   `provider ∈ {stripe, bypass}`, Stripe ids, period fields, `cancel_at_period_end`.
@@ -218,7 +213,7 @@ fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
   `pending_plan` (change at next cycle).
 - **`Payment`** [T] — a transaction. `payment_type ∈ {one_time, subscription, refund}`,
   `status ∈ {pending, completed, failed, refunded, partially_refunded}`, `provider ∈
-  {iyzico, stripe, bypass}`, `platform_fee`, `submerchant_payout`, `original_payment`
+  {stripe, bypass}`, `platform_fee`, `submerchant_payout`, `original_payment`
   (refund link), and a **cross-schema** `platform_subscription` FK
   (`db_constraint=False`).
 - **`PaymentItem`** [T] — line item (GenericFK to the purchased content).
@@ -480,10 +475,9 @@ returns HTTP **402** (`QUOTA_EXCEEDED` / `SUBSCRIPTION_INACTIVE`). See [§15](#1
 
 ### 7.3 Student → Coach (the M2 marketplace — confirmed, not yet built)
 
-The tenant-scoped `Subscription` / `Payment` / `Bundle` models and the `iyzico` provider
-choice exist; `Tenant.stripe_account_id` / `iyzico_submerchant_id` are the reserved
-submerchant handles. The confirmed M2 design: **iyzico submerchants for TR, Stripe Connect
-for global**, with the **coach as merchant of record** — funds settle to the coach's
+The tenant-scoped `Subscription` / `Payment` / `Bundle` models exist;
+`Tenant.stripe_account_id` is the connected-account handle. The confirmed M2 design:
+**Stripe Connect**, with the **coach as merchant of record** — funds settle to the coach's
 connected/submerchant account and the platform automatically takes `transaction_fee_pct`
 (recorded in `submerchant_payout`). The collection flow itself is not built yet.
 
@@ -506,8 +500,8 @@ connected/submerchant account and the platform automatically takes `transaction_
    optionally seeds the niche template **as drafts**, then marks `ready`. Retries up to 3×.
 5. Frontend polls `GET /api/v1/onboarding/status/?slug=…` until `ready`.
 
-**Niche templates** live under `apps/core/management/commands/demo_data/<niche>.py`
-(each exposes `TENANT`, `CONFIG`, `COURSES`, `DOWNLOADS`, `SUBSCRIPTION_PLANS`, `BUNDLES`,
+**Niche templates** live under `backend/apps/demo_seed/data/<niche>.json`
+(each carries `TENANT`, `CONFIG`, `COURSES`, `DOWNLOADS`, `SUBSCRIPTION_PLANS`, `BUNDLES`,
 live events…). `seed_template_into_tenant` merges config and creates content as unpublished
 drafts so the coach reviews before going live. `available_niches()` auto-discovers them.
 
@@ -540,7 +534,7 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
 
 - Routes: `/`, `/pricing`, `/demo`, `(auth)/{signup,signup/verify,login,callback}`,
   `/dashboard`, `/admin/{tenants,tenants/[slug],plans,billing,settings,health}`.
-- Routed on `Host(contentor.app)` / `Host(tr.contentor.app)` (and `localhost`/`tr.localhost`).
+- Routed on `Host(contentor.app)` (and `localhost`).
 - Apex-only — **no** `X-Tenant-Domain`; talks to the `public` schema.
 - House design system: OKLCH tokens, 7 themes (light/matte/graphite·/midnight/dark),
   Geist fonts. (See the `house-design-system` skill.)
@@ -573,7 +567,7 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
 ### Dev
 
 `make dev` (compose up --build, hot-reload). Caddy (parametrized `Caddyfile`, `CONTENTOR_DOMAIN=localhost`) routes `/api/v1`, `/api/health`,
-`/api/webhooks` and `/static/*` → Django; apex + `tr.localhost` → `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
+`/api/webhooks` and `/static/*` → Django; apex → `nextjs-main`; every other host (tenant subdomains) → `nextjs-customer`.
 Useful: `make dev-reset`, `make migrate` / `make migrate-shared` / `make makemigrations`,
 `make seed`, `make test`, `make test-changed` / `make e2e-changed` (diff-scoped runs
 via `scripts/select_tests.py` + `e2e/impact-map.json`), `make lint`, `make format`,
@@ -586,7 +580,7 @@ via `scripts/select_tests.py` + `e2e/impact-map.json`), `make lint`, `make forma
   `config.settings.prod`. One `contentor-caddy` edge container on the external `edge`
   network; everything else internal with **no published host ports**.
 - The parametrized `Caddyfile` does all routing: `/api/*`, `/static/*`, apex
-  `/django-admin/*` → Django; apex + `tr.` → `nextjs-main`; every other host → `nextjs-customer`.
+  `/django-admin/*` → Django; apex → `nextjs-main`; every other host → `nextjs-customer`.
 - TLS at Cloudflare; cloudflared→Caddy→Django is HTTP, Caddy forces
   `X-Forwarded-Proto: https`; WhiteNoise serves admin static.
 - **Only the Gunicorn entrypoint** runs migrations + `collectstatic` + `seed_plans`;
@@ -612,7 +606,7 @@ Dev reads the root `.env` (template `.env.example`). Prod secrets live in Cloudf
 - **OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
 - **Billing:** `BILLING_BYPASS_ENABLED` (**false in prod**), `PAST_DUE_GRACE_DAYS`,
   `BILLING_FREE_PLAN_NAME`, `STRIPE_SECRET_KEY`,
-  `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_{STARTER,PRO}_{USD,TRY}` (optional pins).
+  `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_{STARTER,PRO}_{USD,EUR}` (optional pins).
 
 > ⚠️ Live secrets are currently committed to `.env.prod` across the fleet and were exposed
 > in-session — **rotate** S3, Stripe, Resend, LiveCraft, and `DJANGO_SECRET_KEY`. (See the
@@ -644,7 +638,7 @@ Dev reads the root `.env` (template `.env.example`). Prod secrets live in Cloudf
 
 Per-tenant Zoom OAuth + meeting settings (Mar 19), course-form consolidation + inline edit
 panel (Mar 22), dual-access pricing (Mar 22), email campaigns + panel improvements
-(Mar 24–25), bilingual TR/EN (May 11), and platform subscription payments (May 12 — the
+(Mar 24–25), bilingual TR/EN (May 11, since removed), and platform subscription payments (May 12 — the
 5-phase Stripe billing plan). Each has a `plans/` and `specs/` doc.
 
 ---
@@ -656,12 +650,10 @@ Two tracks, confirmed by the owner:
 - **Finish platform billing (Phases 2–4):** lifecycle/dunning UI, **Phase 3 quota
   enforcement** (turn today's log-only gates into hard **402**s), Phase 4 bilingual
   receipts + Prometheus metrics + admin support tooling.
-- **M2 marketplace (student → coach payments):** a **region-split provider model —
-  iyzico submerchants for TR, Stripe Connect for global**. The **coach is the merchant of
+- **M2 marketplace (student → coach payments):** **Stripe Connect**. The **coach is the merchant of
   record**; funds settle to the coach's connected/submerchant account and the platform
   automatically takes `transaction_fee_pct` (recording `submerchant_payout`). Uses the
-  reserved `iyzico_submerchant_id` / `stripe_account_id` fields and the `iyzico` provider
-  choice. Confirmed shape: **Stripe Connect Express, direct charges** (coach = merchant of
+  `stripe_account_id` field. Confirmed shape: **Stripe Connect Express, direct charges** (coach = merchant of
   record, owns refunds/disputes); **Free coaches can never get paid** — charging students
   requires a paid plan + active subscription; marketplace fee **Starter 5% / Pro 4%**;
   platform keeps its fee on refund. Full breakdown:
@@ -676,8 +668,7 @@ Two tracks, confirmed by the owner:
   existing subscribers migrate or keep their old price). Owner wants full pricing control
   here.
 
-**Priority lens: global-first** (English/USD leads; TR follows in lockstep — the codebase
-is already bi-region, so global is mainly the tie-breaker for sequencing).
+**Priority lens: global-first** (English; USD and EUR).
 
 **Explicitly _not_ on the near-term roadmap:** migrating the bespoke sibling sites into
 Contentor (they stay separate — see §16), a dedicated "go-live" push, or net-new
@@ -694,15 +685,15 @@ Clarified with the owner (June 2026):
 | Near-term roadmap | **M2 marketplace + finish platform billing (Phase 3–4).** Not: sibling migration, feature depth, a go-live push. |
 | Sibling sites (`gorkemHanciYoga`, `zeyneple.art`, …) | **Separate products that only share infra** (the `contentor-prod` bucket / home server). Not Contentor tenants; no merge planned. |
 | Revenue model | **Both layers** — coach Free/Starter/Pro subscriptions (live now) + a marketplace `transaction_fee_pct` cut on student sales (M2). |
-| M2 provider | **iyzico for TR, Stripe Connect for global.** |
+| M2 provider | **Stripe Connect.** |
 | Marketplace funds flow | **Coach is merchant of record**; platform skims `transaction_fee_pct`. |
-| Market focus | **Global-first** (TR in lockstep). |
+| Market focus | **Global-first.** |
 | Terminology | **coach + student** (canonical). |
 | Doc audience | You + Claude, future sessions — keep dense/technical. |
 
 Still genuinely open (fill in when decided):
 
-1. **Concrete Starter / Pro prices** per currency (USD/TRY) — seeded amounts live in
+1. **Concrete Starter / Pro prices** per currency (USD/EUR) — seeded amounts live in
    `seed_plans.py` (`PLAN_AMOUNTS`); confirm they're final.
 2. **M2 vs. Phase 3–4 sequencing** — which of the two confirmed tracks ships first.
 3. **Marketplace fee rate(s)** — the actual `transaction_fee_pct` per plan tier.

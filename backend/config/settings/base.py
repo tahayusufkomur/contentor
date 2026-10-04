@@ -198,10 +198,7 @@ LANGUAGE_CODE = "en"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
-LANGUAGES = [
-    ("en", "English"),
-    ("tr", "Türkçe"),
-]
+LANGUAGES = [("en", "English")]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
 CONTENTOR_DOMAIN = os.environ.get("CONTENTOR_DOMAIN", "contentor.localhost")

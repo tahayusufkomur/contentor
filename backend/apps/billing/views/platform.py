@@ -25,11 +25,7 @@ from rest_framework.response import Response
 
 from apps.billing.providers import get_provider
 from apps.billing.providers.types import ProviderError
-from apps.core.constants import (
-    CURRENCY_USD,
-    REGION_DEFAULT_LOCALE,
-    REGION_TR,
-)
+from apps.core.constants import CURRENCY_USD, REGION_DEFAULT_LOCALE
 from apps.core.currency import currency_for_country
 from apps.core.models import Domain, PlatformPlan, PlatformSubscription
 from apps.core.permissions import IsCoachOrOwner
@@ -49,11 +45,8 @@ def _tenant_origin(tenant) -> str:
     primary = Domain.objects.filter(tenant=tenant, is_primary=True).first()
     if primary:
         return f"{scheme}://{primary.domain}"
-    # Fallback — build from region + subdomain. Matches `region_utils.tenant_apex`
-    # but uses tenant.subdomain (which is what django-tenants installs).
+    # Fallback — build from subdomain (which is what django-tenants installs).
     base = dj_settings.CONTENTOR_DOMAIN
-    if tenant.region == REGION_TR:
-        return f"{scheme}://{tenant.subdomain}.tr.{base}"
     return f"{scheme}://{tenant.subdomain}.{base}"
 
 

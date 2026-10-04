@@ -5,7 +5,7 @@
   "cta": "Get Started",
   "ctaProcessing": "Processing...",
   "errors": {
-    "priceNotAvailable": "Pricing for your region isn't available yet. Please contact support.",
+    "priceNotAvailable": "Pricing in your currency isn't available yet. Please contact support.",
     "generic": "Something went wrong starting checkout. Please try again."
   },
   "periods": {
@@ -109,6 +109,6 @@
     "button": "Get Started",
     "trustNote": "Free plan available. No credit card required."
   },
-  "comingSoon": "Pricing for your region is coming soon",
+  "comingSoon": "Pricing in your currency is coming soon",
   "comingSoonNote": "We're finalizing local pricing. Please check back shortly."
 }

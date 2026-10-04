@@ -46,10 +46,6 @@ class Command(BaseCommand):
             (settings.CONTENTOR_DOMAIN, True),  # contentor.localhost (or prod equivalent)
             ("localhost", False),
             ("django", False),  # internal Docker hostname for SSR fetches
-            # Turkish region apex — required for tr.localhost and
-            # tr.contentor.localhost routing into the public tenant.
-            ("tr.localhost", False),
-            (f"tr.{settings.CONTENTOR_DOMAIN}", False),
         ]
         for host, is_primary in platform_hosts:
             Domain.objects.get_or_create(
@@ -177,7 +173,7 @@ class Command(BaseCommand):
                     "role": "owner",
                     "is_staff": True,
                     "is_superuser": True,
-                    "accessible_regions": ["global", "tr"],
+                    "accessible_regions": ["global"],
                 },
             )
             if created:

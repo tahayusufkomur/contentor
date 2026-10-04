@@ -56,8 +56,7 @@ def creator_signup(request):
 
     from apps.core.email import send_email
 
-    # TR: needs native review.
-    locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
+    locale = "en"
     safe_brand = escape(brand_name)  # coach-supplied: never raw into HTML
     strings = {
         "en": {
@@ -67,17 +66,6 @@ def creator_signup(request):
             "button": "Verify &amp; Create My Platform",
             "expires": f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
             "copy_label": "Or copy:",
-        },
-        "tr": {
-            "subject": f"E-postanızı doğrulayın — {brand_name}",
-            "heading": "Contentor'a hoş geldiniz!",
-            "intro": (
-                f"E-postanızı doğrulamak ve <strong>{safe_brand}</strong> "
-                f"platformunu oluşturmak için aşağıdaki düğmeye tıklayın."
-            ),
-            "button": "Doğrula ve Platformumu Oluştur",
-            "expires": f"Bu bağlantı {settings.MAGIC_LINK_EXPIRY_MINUTES} dakika içinde sona erer.",
-            "copy_label": "Veya kopyalayın:",
         },
     }[locale]
     sent = send_email(
@@ -199,12 +187,9 @@ def creator_signup_verify(request):
 
     wizard_token = create_wizard_token(email, payload.get("name", ""), brand_name, region=region)
 
-    # Build the tenant's FQDN based on region. TR tenants live under tr.{base}.
     base_domain = settings.CONTENTOR_DOMAIN
-    tenant_fqdn = f"{slug}.tr.{base_domain}" if region == "tr" else f"{slug}.{base_domain}"
-    # Schema names are globally unique in Postgres, so we prefix TR tenants
-    # to avoid colliding with a same-named brand in the global region.
-    schema_name = f"tr_{slug}" if region == "tr" else slug
+    tenant_fqdn = f"{slug}.{base_domain}"
+    schema_name = slug
 
     if Tenant.objects.filter(slug=slug, region=region).exists():
         tenant = Tenant.objects.get(slug=slug, region=region)
@@ -377,7 +362,7 @@ def onboarding_handoff(request):
 
     magic = create_magic_link_token(tenant.owner_email, tenant.schema_name, tenant.slug)
     base_domain = settings.CONTENTOR_DOMAIN
-    fqdn = f"{tenant.slug}.tr.{base_domain}" if tenant.region == "tr" else f"{tenant.slug}.{base_domain}"
+    fqdn = f"{tenant.slug}.{base_domain}"
     return Response({"login_url": f"{settings.SITE_SCHEME}://{fqdn}/callback?token={magic}&next=/"})
 
 
@@ -396,7 +381,7 @@ def provisioning_status(request):
     except Tenant.DoesNotExist:
         return Response({"detail": msg(request, "tenant_not_found")}, status=404)
     base_domain = settings.CONTENTOR_DOMAIN
-    fqdn = f"{tenant.slug}.tr.{base_domain}" if tenant.region == "tr" else f"{tenant.slug}.{base_domain}"
+    fqdn = f"{tenant.slug}.{base_domain}"
     return Response(
         {
             "slug": tenant.slug,

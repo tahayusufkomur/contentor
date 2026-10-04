@@ -77,9 +77,9 @@ def wizard_domain_search(request):
 @permission_classes([AllowAny])
 def wizard_domain_checkout(request):
     """Start the domain purchase from inside the wizard. Success/cancel land
-    back on /signup/verify on the SAME host the wizard runs on (tr. locale
-    included) — the stashed localStorage token is per-origin, so returning to
-    the apex from a tr. wizard would strand the coach."""
+    back on /signup/verify on the SAME host the wizard runs on — the stashed
+    localStorage token is per-origin, so returning to a different origin would
+    strand the coach."""
     payload, tenant, err = _resolve(request)
     if err is not None:
         return err

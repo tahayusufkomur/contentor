@@ -143,7 +143,7 @@ class TestCheckAccessPaidContent:
             platform_fee=Decimal("9.99"),
             submerchant_payout=Decimal("89.91"),
             currency="USD",
-            provider="iyzico",
+            provider="stripe",
         )
         PaymentItem.objects.create(
             payment=payment,
@@ -166,7 +166,7 @@ class TestCheckAccessPaidContent:
             platform_fee=Decimal("9.99"),
             submerchant_payout=Decimal("89.91"),
             currency="USD",
-            provider="iyzico",
+            provider="stripe",
         )
         PaymentItem.objects.create(
             payment=payment,
@@ -201,7 +201,7 @@ class TestCheckAccessBundlePurchase:
             platform_fee=Decimal("14.99"),
             submerchant_payout=Decimal("134.91"),
             currency="USD",
-            provider="iyzico",
+            provider="stripe",
         )
         PaymentItem.objects.create(
             payment=payment,
@@ -326,7 +326,7 @@ class TestBulkCheckAccess:
             platform_fee=Decimal("9.99"),
             submerchant_payout=Decimal("89.91"),
             currency="USD",
-            provider="iyzico",
+            provider="stripe",
         )
         PaymentItem.objects.create(
             payment=payment,

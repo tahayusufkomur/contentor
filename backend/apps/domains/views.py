@@ -128,7 +128,7 @@ def _checkout_response(
         )
 
     # Callers that must return somewhere other than the apex (the wizard runs
-    # on the request's own host, e.g. the tr. locale) pass explicit URLs;
+    # on the request's own host) pass explicit URLs;
     # everyone else supplies a return_path resolved against the apex.
     if success_url is None or cancel_url is None:
         return_path = _safe_return_path(data.get("return_path"))

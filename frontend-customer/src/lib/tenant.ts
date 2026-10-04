@@ -29,8 +29,7 @@ export async function fetchTenantConfig(
 ): Promise<TenantConfig | null> {
   if (!slug || slug === "unknown") return null;
 
-  // Prefer the live request host so TR tenants (<slug>.tr.<BASE_DOMAIN>) and
-  // custom domains resolve to the right Domain row. Fall back to a slug-built
+  // Prefer the live request host so custom domains resolve to the right Domain row. Fall back to a slug-built
   // global hostname only when headers are unavailable (generateMetadata,
   // manifest.ts), where the slug+BASE_DOMAIN guess is the best we can do.
   const liveDomain = (await getTenantDomain()).split(":")[0];

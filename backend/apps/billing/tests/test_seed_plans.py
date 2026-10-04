@@ -30,7 +30,7 @@ def test_seed_plans_writes_stripe_price_ids(restore_public, settings):
     starter = PlatformPlan.objects.get(name="starter")
     assert starter.prices["USD"]["stripe_price_id"] == "price_starter_usd_test"
     assert starter.prices["EUR"]["stripe_price_id"] == "price_starter_eur_test"
-    # Amounts mirror PLAN_AMOUNTS in seed_plans (the source of truth): $19.90 / ₺999.00.
+    # Amounts mirror PLAN_AMOUNTS in seed_plans (the source of truth): $19.90 / €19.90.
     assert starter.prices["USD"]["amount_cents"] == 1990
     assert starter.prices["EUR"]["amount_cents"] == 1990
 

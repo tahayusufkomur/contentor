@@ -1,15 +1,15 @@
-"""Helpers to derive region info from request host and to build region apex URLs."""
+"""Helpers to derive region info from request host and to build apex URLs.
+
+There is a single region ("global"); the region plumbing stays because
+`Tenant.region`, `User.region` and the JWT claim are keyed on it.
+"""
 
 import re
 from typing import NamedTuple
 
 from django.conf import settings
 
-from .constants import (
-    REGION_DEFAULT_LOCALE,
-    REGION_GLOBAL,
-    REGION_TR,
-)
+from .constants import REGION_DEFAULT_LOCALE, REGION_GLOBAL
 
 
 class HostInfo(NamedTuple):
@@ -18,52 +18,28 @@ class HostInfo(NamedTuple):
     locale: str
 
 
-_TENANT_TR_RE = re.compile(r"^(?P<slug>[a-z0-9][a-z0-9-]*)\.tr\.(?P<base>.+)$")
-_TENANT_GLOBAL_RE = re.compile(r"^(?P<slug>[a-z0-9][a-z0-9-]*)\.(?P<base>.+)$")
-
-_TR_APEX_HOSTS = {"tr.contentor.app", "tr.localhost"}
-_GLOBAL_APEX_HOSTS = {"contentor.app", "localhost"}
+_TENANT_RE = re.compile(r"^(?P<slug>[a-z0-9][a-z0-9-]*)\.(?P<base>.+)$")
+_APEX_HOSTS = {"contentor.app", "localhost"}
 
 
 def resolve_host(host: str) -> HostInfo:
-    """Parse a request host into (region, tenant_slug, locale).
-
-    Order of matching matters: TR tenant pattern must be tried before global
-    tenant pattern because `<slug>.tr.contentor.app` also matches the global
-    regex.
-    """
+    """Parse a request host into (region, tenant_slug, locale)."""
     host = (host or "").split(":")[0].lower()
+    locale = REGION_DEFAULT_LOCALE[REGION_GLOBAL]
 
-    if host in _TR_APEX_HOSTS:
-        return HostInfo(region=REGION_TR, tenant_slug=None, locale=REGION_DEFAULT_LOCALE[REGION_TR])
+    if host in _APEX_HOSTS:
+        return HostInfo(region=REGION_GLOBAL, tenant_slug=None, locale=locale)
 
-    if host in _GLOBAL_APEX_HOSTS:
-        return HostInfo(region=REGION_GLOBAL, tenant_slug=None, locale=REGION_DEFAULT_LOCALE[REGION_GLOBAL])
+    m = _TENANT_RE.match(host)
+    if m and m.group("base") in _APEX_HOSTS:
+        return HostInfo(region=REGION_GLOBAL, tenant_slug=m.group("slug"), locale=locale)
 
-    m = _TENANT_TR_RE.match(host)
-    if m and f"tr.{m.group('base')}" in _TR_APEX_HOSTS:
-        return HostInfo(region=REGION_TR, tenant_slug=m.group("slug"), locale=REGION_DEFAULT_LOCALE[REGION_TR])
-
-    m = _TENANT_GLOBAL_RE.match(host)
-    if m and m.group("base") in _GLOBAL_APEX_HOSTS:
-        return HostInfo(
-            region=REGION_GLOBAL,
-            tenant_slug=m.group("slug"),
-            locale=REGION_DEFAULT_LOCALE[REGION_GLOBAL],
-        )
-
-    return HostInfo(region=REGION_GLOBAL, tenant_slug=None, locale=REGION_DEFAULT_LOCALE[REGION_GLOBAL])
+    return HostInfo(region=REGION_GLOBAL, tenant_slug=None, locale=locale)
 
 
 def region_apex(region: str, scheme: str = "https") -> str:
-    base_domain = settings.CONTENTOR_DOMAIN
-    if region == REGION_TR:
-        return f"{scheme}://tr.{base_domain}"
-    return f"{scheme}://{base_domain}"
+    return f"{scheme}://{settings.CONTENTOR_DOMAIN}"
 
 
 def tenant_apex(region: str, slug: str, scheme: str = "https") -> str:
-    base_domain = settings.CONTENTOR_DOMAIN
-    if region == REGION_TR:
-        return f"{scheme}://{slug}.tr.{base_domain}"
-    return f"{scheme}://{slug}.{base_domain}"
+    return f"{scheme}://{slug}.{settings.CONTENTOR_DOMAIN}"

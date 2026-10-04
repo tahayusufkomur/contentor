@@ -58,7 +58,7 @@ def generate_questions(description: str, *, locale: str, tenant_schema: str) -> 
     the same OnboardingAiUsage monthly budget ai_compose draws from."""
     if not ai_compose.compose_available():
         return []
-    language = "Turkish" if locale == "tr" else "English"
+    language = "English"
     user = f"Language: {language}\n<description>\n{description}\n</description>"
     try:
         parsed, cost, _model = core_ai.structured(
@@ -90,5 +90,4 @@ def wizard_describe_followups(request):
     description = str(request.data.get("description") or "")[: wizard_catalog.DESCRIPTION_MAX_LEN]
     if not description.strip():
         return Response({"questions": []})
-    locale = "tr" if tenant.region == "tr" else "en"
-    return Response({"questions": generate_questions(description, locale=locale, tenant_schema=tenant.schema_name)})
+    return Response({"questions": generate_questions(description, locale="en", tenant_schema=tenant.schema_name)})

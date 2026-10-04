@@ -74,7 +74,7 @@ export interface WebhookEventRow {
   processing_error: string;
 }
 
-// "69.80 USD · 245.70 TRY" for a {currency: amount} map.
+// "69.80 USD · 59.80 EUR" for a {currency: amount} map.
 export function formatCurrencyMap(
   map: Record<string, string> | undefined,
 ): string {

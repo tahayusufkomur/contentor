@@ -111,9 +111,32 @@ def test_onboard_issues_link_for_paid_active(restore_public, owner, paid_plan):
     assert resp.status_code == 200, resp.content
     assert resp.json()["onboarding_url"].startswith("https://connect.stripe.com/")
     mk_acct.assert_called_once()
+    assert mk_acct.call_args.kwargs["country"] == "US"  # no choice, no header
     mk_link.assert_called_once()
     tenant.refresh_from_db()
     assert tenant.stripe_account_id == "acct_b_123"
+
+
+@override_settings(BILLING_BYPASS_ENABLED=True)
+def test_onboard_passes_the_coachs_country(restore_public, owner, paid_plan):
+    _set_plan(restore_public, paid_plan)
+    with (
+        patch("apps.billing.providers.connect.create_express_account", return_value="acct_de") as mk_acct,
+        patch("apps.billing.providers.connect.create_account_link", return_value="https://connect.stripe.com/x"),
+    ):
+        resp = _client(owner).post(ONBOARD_URL, {"country": "de"}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert mk_acct.call_args.kwargs["country"] == "DE"
+
+
+@override_settings(BILLING_BYPASS_ENABLED=True)
+def test_onboard_rejects_unsupported_country(restore_public, owner, paid_plan):
+    _set_plan(restore_public, paid_plan)
+    with patch("apps.billing.providers.connect.create_express_account") as mk_acct:
+        resp = _client(owner).post(ONBOARD_URL, {"country": "ZZ"}, format="json")
+    assert resp.status_code == 400, resp.content
+    assert resp.json()["error"] == "INVALID_COUNTRY"
+    mk_acct.assert_not_called()
 
 
 @override_settings(BILLING_BYPASS_ENABLED=True)

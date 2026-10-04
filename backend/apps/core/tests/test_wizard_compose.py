@@ -108,14 +108,6 @@ def test_home_story_layout_sequence():
     ]
 
 
-def test_tr_locale_writes_turkish_content():
-    over = _build({"goals": ["sell_courses"]}, locale="tr")
-    labels = [link["label"] for link in over["navbar_config"]["links"]]
-    assert "Kurslar" in labels
-    assert over["navbar_config"]["cta"]["text"] == "Hemen Başla"
-    assert over["pages"]["pricing"]["blocks"][0]["heading"] == "Planlar ve Fiyatlar"
-
-
 def test_empty_answers_still_valid():
     over = _build({})
     assert over["theme"] == "ocean"

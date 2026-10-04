@@ -58,7 +58,21 @@ def _client() -> Any:
     return stripe
 
 
-def create_express_account(*, tenant, business_url: str = "") -> str:
+# Countries Stripe Connect Express accounts can be created in. The account's
+# country is fixed at creation, so the coach picks it (default: from CF-IPCountry).
+# ponytail: static list; Stripe rejects an unsupported one with a ProviderError.
+CONNECT_COUNTRIES = (
+    "AT AU BE BG CA CH CY CZ DE DK EE ES FI FR GB GR HK HR HU IE IT JP LT LU LV MT MX NL NO NZ PL PT RO SE SG SI SK US"
+).split()
+DEFAULT_CONNECT_COUNTRY = "US"
+
+
+def connect_country_for(country_code: str | None) -> str:
+    code = (country_code or "").strip().upper()
+    return code if code in CONNECT_COUNTRIES else DEFAULT_CONNECT_COUNTRY
+
+
+def create_express_account(*, tenant, country: str = DEFAULT_CONNECT_COUNTRY, business_url: str = "") -> str:
     """Create an Express connected account for the tenant and return its id.
 
     Capabilities `card_payments` + `transfers` are requested so the account can
@@ -66,7 +80,6 @@ def create_express_account(*, tenant, business_url: str = "") -> str:
     metadata as a secondary resolution path for webhooks.
     """
     stripe = _client()
-    country = "TR" if getattr(tenant, "region", "") == "tr" else "US"
     # Stripe requires a publicly resolvable business URL; drop dev hosts
     # (tenant.localhost) rather than fail account creation.
     if business_url and ".localhost" in business_url:

@@ -5,18 +5,10 @@ and stays there forever. Locale is a downstream preference within a region.
 """
 
 REGION_GLOBAL = "global"
-REGION_TR = "tr"
-REGION_CHOICES = [
-    (REGION_GLOBAL, "Global"),
-    (REGION_TR, "Turkey"),
-]
+REGION_CHOICES = [(REGION_GLOBAL, "Global")]
 
 LOCALE_EN = "en"
-LOCALE_TR = "tr"
-LOCALE_CHOICES = [
-    (LOCALE_EN, "English"),
-    (LOCALE_TR, "Türkçe"),
-]
+LOCALE_CHOICES = [(LOCALE_EN, "English")]
 
 CURRENCY_USD = "USD"
 CURRENCY_EUR = "EUR"
@@ -25,10 +17,7 @@ CURRENCY_CHOICES = [
     (CURRENCY_EUR, "Euro"),
 ]
 
-REGION_DEFAULT_LOCALE = {
-    REGION_GLOBAL: LOCALE_EN,
-    REGION_TR: LOCALE_TR,
-}
+REGION_DEFAULT_LOCALE = {REGION_GLOBAL: LOCALE_EN}
 
 RESERVED_SLUGS = {
     "tr",

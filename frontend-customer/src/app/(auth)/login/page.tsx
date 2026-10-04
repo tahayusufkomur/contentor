@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MagicLinkForm } from "@/components/auth/magic-link-form";
-import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { useTenant } from "@/hooks/use-tenant";
 
 const GOOGLE_ERROR_KEYS: Record<string, string> = {
@@ -114,9 +113,6 @@ export default function LoginPage() {
             </div>
           </div>
           <MagicLinkForm />
-          <div className="flex justify-center pt-2">
-            <LanguageSwitcher />
-          </div>
         </CardContent>
       </Card>
     </div>

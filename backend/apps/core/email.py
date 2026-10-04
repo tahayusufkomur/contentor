@@ -150,14 +150,6 @@ _MAGIC_LINK_COPY: dict[str, dict[str, str]] = {
         "copy_hint": "Or copy this link:",
         "code_hint": "Using the installed app? Enter this code on the sign-in screen instead:",
     },
-    "tr": {
-        "subject": "{brand} için giriş bağlantınız",
-        "intro": "Aşağıdaki düğmeye tıklayarak giriş yapın. Bu bağlantı {minutes} dakika içinde sona erer.",
-        "button": "Giriş yap",
-        "ignore": "Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.",
-        "copy_hint": "Veya bu bağlantıyı kopyalayın:",
-        "code_hint": "Yüklü uygulamayı mı kullanıyorsunuz? Giriş ekranına bunun yerine bu kodu girin:",
-    },
 }
 
 
@@ -165,10 +157,9 @@ def send_magic_link(
     to: str,
     link: str,
     brand_name: str = "Contentor",
-    locale: str = "en",
     code: str | None = None,
 ) -> bool:
-    copy = _MAGIC_LINK_COPY.get(locale, _MAGIC_LINK_COPY["en"])
+    copy = _MAGIC_LINK_COPY["en"]
     minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
     subject = copy["subject"].format(brand=brand_name)
     intro = copy["intro"].format(minutes=minutes)

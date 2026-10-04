@@ -31,7 +31,6 @@ interface TenantDetail {
   stripe_charges_enabled: boolean;
   stripe_payouts_enabled: boolean;
   billing_currency: string;
-  iyzico_submerchant_id: string;
   created_at: string;
   platform_subscription: {
     plan: string;
@@ -148,11 +147,6 @@ export default function TenantDetailPage() {
     {
       label: "Stripe Account",
       value: tenant.stripe_account_id || "Not connected",
-      icon: CreditCard,
-    },
-    {
-      label: "Iyzico Submerchant",
-      value: tenant.iyzico_submerchant_id || "Not connected",
       icon: CreditCard,
     },
     {

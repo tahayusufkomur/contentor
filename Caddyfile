@@ -1,10 +1,10 @@
 # Contentor edge proxy (home server). Caddy is the only edge-facing container;
 # it joins the shared `edge` network so the Cloudflare tunnel can route
-# contentor.app / tr.contentor.app / *.contentor.app to it. TLS is terminated at
+# contentor.app / *.contentor.app to it. TLS is terminated at
 # Cloudflare's edge, so Caddy serves plain HTTP on :80.
 #
 # Tenancy is dynamic: this proxy never knows individual tenants. Any host that
-# isn't the marketing apex/locale falls through to the customer app, which (with
+# isn't the marketing apex falls through to the customer app, which (with
 # Django) resolves the tenant from the Host header. New tenants need no change
 # here — only a wildcard DNS record.
 {
@@ -39,10 +39,10 @@
 		}
 	}
 
-	# --- Django admin — apex + locale only, at /django-admin (apex /admin/*
+	# --- Django admin — apex only, at /django-admin (apex /admin/*
 	# is the superadmin SPA served by nextjs-main below) ---
 	@admin {
-		host {$CONTENTOR_DOMAIN:localhost} tr.{$CONTENTOR_DOMAIN:localhost}
+		host {$CONTENTOR_DOMAIN:localhost}
 		path /django-admin /django-admin/*
 	}
 	handle @admin {
@@ -55,8 +55,8 @@
 		}
 	}
 
-	# --- Marketing / signup / login site — apex + locale ---
-	@main host {$CONTENTOR_DOMAIN:localhost} tr.{$CONTENTOR_DOMAIN:localhost}
+	# --- Marketing / signup / login site — apex ---
+	@main host {$CONTENTOR_DOMAIN:localhost}
 	handle @main {
 		reverse_proxy nextjs-main:3000
 	}

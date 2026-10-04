@@ -43,7 +43,7 @@ def generate_starter_draft(brief: CoachBrief, tenant_schema: str, *, topic: str 
     from apps.blog import ai as blog_ai
     from apps.core.onboarding import ai_compose
 
-    language = "Turkish" if brief.locale == "tr" else "English"
+    language = "English"
     topic = topic or f"Welcome to {brief.brand_name or 'my studio'}: what I offer and how to start"
     instructions = (
         f"Write in {language}. This is the coach's very first post, introducing themselves and their "

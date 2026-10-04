@@ -136,21 +136,6 @@ def test_send_recovery_email_links_a_fresh_wizard_token(tenant, settings):
     assert tenant.recovery_email_sent_at is not None
 
 
-def test_send_recovery_email_tr_region_uses_tr_host_and_copy(restore_public, settings):
-    settings.EMAIL_SINK_ENABLED = True
-    settings.SITE_SCHEME = "https"
-    t = _make_tenant("tr_rec_studio", "Rec Studio TR", "rec-studio-tr", region="tr")
-    try:
-        assert recovery.send_recovery_email(t) is True
-        mail = DevOutboundEmail.objects.filter(to="coach@x.com").latest("id")
-        assert f"https://tr.{settings.CONTENTOR_DOMAIN}/signup/verify?token=" in mail.html
-        assert "Kald" in mail.subject  # "Kaldığınız yerden devam edin"
-    finally:
-        connection.set_schema_to_public()
-        DevOutboundEmail.objects.filter(to="coach@x.com").delete()
-        Tenant.objects.filter(schema_name="tr_rec_studio").delete()
-
-
 def test_send_recovery_email_refuses_renamed_tenant(tenant, settings):
     settings.EMAIL_SINK_ENABLED = True
     # Superadmin can rename a tenant; the token's brand_name must still

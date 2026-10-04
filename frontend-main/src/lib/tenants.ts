@@ -5,7 +5,7 @@ export interface MyTenant {
   id: number;
   name: string;
   slug: string;
-  region: "global" | "tr";
+  region: "global";
   is_active: boolean;
   is_published: boolean;
   has_preview_password: boolean;

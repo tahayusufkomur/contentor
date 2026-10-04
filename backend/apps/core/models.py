@@ -40,7 +40,6 @@ class Tenant(TenantMixin):
     # onboarding completes.
     stripe_charges_enabled = models.BooleanField(default=False)
     stripe_payouts_enabled = models.BooleanField(default=False)
-    iyzico_submerchant_id = models.CharField(max_length=255, blank=True, default="")
     provisioning_status = models.CharField(
         max_length=20,
         choices=[

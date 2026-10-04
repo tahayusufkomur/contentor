@@ -43,17 +43,17 @@ def _bypass_enabled() -> bool:
 
 
 def _to_cents(amount: Decimal) -> int:
-    """Convert a 2-decimal money amount to Stripe minor units (USD cents / TRY kuruş)."""
+    """Convert a 2-decimal money amount to Stripe minor units (USD / EUR cents)."""
     return int((amount * 100).to_integral_value())
 
 
 def tenant_currency(tenant) -> str:
     """The currency a tenant charges in — its connected account's currency.
 
-    Locked at the coach's first platform checkout (`billing_currency`); falls
-    back to the region default. Content/plan prices are interpreted in this
+    Decided once at tenant creation from the coach's country
+    (`billing_currency`). Content/plan prices are interpreted in this
     currency, so the marketplace charge always matches the connected account
-    (a global/USD account can't be charged in TRY).
+    (a USD account can't be charged in EUR).
     """
     return tenant_charge_currency(tenant)
 
@@ -141,7 +141,7 @@ def payment_initialize(request):
     total_submerchant_payout = sum(r["submerchant_payout"] for r in resolved_items)
 
     # The charge currency is the tenant's (connected account's) currency, so a
-    # global/USD coach is never charged in TRY. Content prices are amounts in
+    # USD coach is never charged in another currency. Content prices are amounts in
     # that currency.
     currency = tenant_currency(connection.tenant)
 

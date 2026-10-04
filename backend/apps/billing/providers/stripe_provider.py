@@ -24,10 +24,9 @@ if TYPE_CHECKING:
     from apps.core.models import PlatformPlan, Tenant
 
 
-# Stripe officially supports "tr" as a locale value. Everything else we send is
-# limited to "en" — keep this set small so we never send a string Stripe will
-# reject.
-_SUPPORTED_STRIPE_LOCALES = {"en", "tr"}
+# Only locales we ship; anything else (e.g. a stale user row) falls back to "en"
+# so we never send a string Stripe will reject.
+_SUPPORTED_STRIPE_LOCALES = {"en"}
 
 
 def _client() -> Any:

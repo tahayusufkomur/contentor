@@ -27,17 +27,12 @@ SYSTEM_PROMPT = (
 MAX_OUTPUT_TOKENS = 900
 MAX_OUTLINES = 3
 
-# Deterministic fallback titles, per locale. TR strings need a native review.
+# Deterministic fallback titles, per locale.
 _FALLBACK_COPY = {
     "en": (
         ("Getting Started with {niche}", "A beginner-friendly introduction to {niche}.", 0),
         ("{niche} Fundamentals", "The core skills every {niche} student needs.", 49),
         ("Advanced {niche}", "Go deeper and get real results in {niche}.", 99),
-    ),
-    "tr": (
-        ("{niche} ile Başlangıç", "{niche} konusuna yeni başlayanlar için giriş.", 0),
-        ("{niche} Temelleri", "Her {niche} öğrencisinin ihtiyaç duyduğu temel beceriler.", 490),
-        ("İleri Seviye {niche}", "{niche} alanında daha derine inin ve gerçek sonuçlar alın.", 990),
     ),
 }
 
@@ -71,7 +66,7 @@ def _fallback(brief) -> list[dict]:
 
 
 def _user_turn(brief) -> str:
-    language = "Turkish" if getattr(brief, "locale", "en") == "tr" else "English"
+    language = "English"
     return (
         f"Niche: {getattr(brief, 'niche', '') or '-'}\n"
         f"Description: {getattr(brief, 'description', '') or '-'}\n"

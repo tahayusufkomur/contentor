@@ -49,10 +49,20 @@ def connect_onboard(request):
             status=status.HTTP_402_PAYMENT_REQUIRED,
         )
 
+    requested = str(request.data.get("country") or "").strip().upper()
+    if requested and requested not in connect.CONNECT_COUNTRIES:
+        return Response(
+            {"error": "INVALID_COUNTRY", "detail": "That country is not supported for payouts."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    country = requested or connect.connect_country_for(request.META.get("HTTP_CF_IPCOUNTRY"))
+
     try:
         account_id = tenant.stripe_account_id
         if not account_id:
-            account_id = connect.create_express_account(tenant=tenant, business_url=_tenant_origin(tenant))
+            account_id = connect.create_express_account(
+                tenant=tenant, country=country, business_url=_tenant_origin(tenant)
+            )
             # Persist on the public-schema Tenant row.
             from apps.core.models import Tenant
 
@@ -125,6 +135,8 @@ def connect_status(request):
             "payouts_enabled": bool(tenant.stripe_payouts_enabled),
             "is_paid_active": is_paid_active(tenant),
             "can_monetize": can_monetize(tenant),
+            "countries": connect.CONNECT_COUNTRIES,
+            "default_country": connect.connect_country_for(request.META.get("HTTP_CF_IPCOUNTRY")),
         },
         status=status.HTTP_200_OK,
     )
