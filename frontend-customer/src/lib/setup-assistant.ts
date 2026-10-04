@@ -20,6 +20,8 @@ export interface SetupStatus {
   has_paid_content: boolean;
   /** Unmet requirements that block going live (empty = ready to publish). */
   publish_blockers: string[];
+  /** The tenant's charge currency (USD/EUR). */
+  currency?: string;
 }
 
 export interface DemoContent {
@@ -118,4 +120,9 @@ export async function eraseDemoContent(): Promise<Record<
   } catch {
     return null;
   }
+}
+
+/** The tenant's charge currency for admin price fields; USD until it loads. */
+export function useTenantCurrency(): string {
+  return useSetupStatus()?.currency ?? "USD";
 }

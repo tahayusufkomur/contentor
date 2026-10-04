@@ -12,6 +12,7 @@
 //               Studio uses (render-draft.tsx's renderDraftPngs).
 //   picked   -> the coach already has an AI logo (value.mode === "ai"):
 //               summary card + a "change" link back into chat.
+import { formatPlanName, formatPlanPrice } from "@shared/lib/format-plan-price";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
@@ -59,19 +60,6 @@ interface ChatMsg {
 
 const SYNC_POLL_MS = 2000;
 const SYNC_TIMEOUT_MS = 15000;
-
-function formatPrice(currency: string, amountCents: number | null): string {
-  const amount = (amountCents ?? 0) / 100;
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
-    }).format(amount);
-  } catch {
-    return `${amount} ${currency}`;
-  }
-}
 
 /** Off-screen rasterize the FINAL picked lockup at export resolution — a
  * 1024px-wide lockup PNG and a square 512px mark-only icon PNG. Same
@@ -225,7 +213,7 @@ export function AiLogoDoor({
   const loadLocked = useCallback(() => {
     setDoorState("locked");
     listPlans()
-      .then((res) => setPlans(res.plans.filter((p) => !p.is_free)))
+      .then((res) => setPlans(res.plans.filter((p) => !p.is_free && p.stripe_price_id_present)))
       .catch(() => setDoorError(t("common.errors.generic")));
   }, [t]);
 
@@ -425,8 +413,8 @@ export function AiLogoDoor({
               key={plan.id}
               selected={false}
               onSelect={() => startCheckoutFor(plan)}
-              title={plan.name}
-              subtitle={`${formatPrice(plan.currency, plan.amount_cents)}/mo — ${t("upgrade.cta")}`}
+              title={formatPlanName(plan.name)}
+              subtitle={`${formatPlanPrice(plan.currency, plan.amount_cents)}/mo — ${t("upgrade.cta")}`}
               badge={checkoutBusyId === plan.id ? "…" : undefined}
             />
           ))}

@@ -8,7 +8,17 @@ export const PUBLISH_BLOCKER_META: Record<string, { label: string; href: string 
   payouts: { label: "Connect payments to sell paid content", href: "/admin/payouts" },
 };
 
-export function blockerMeta(key: string): { label: string; href: string } {
+export function blockerMeta(
+  key: string,
+  opts: { onFreePlan?: boolean } = {},
+): { label: string; href: string } {
+  // On the free plan "connect payments" is a dead end: paid content needs Starter first.
+  if (key === "payouts" && opts.onFreePlan) {
+    return {
+      label: "Paid content needs the Starter plan — upgrade, or make it free",
+      href: "/admin/billing",
+    };
+  }
   // An unknown key means the backend gained a requirement this build predates.
   // Show it: an empty list with a disabled button is a dead end.
   return PUBLISH_BLOCKER_META[key] ?? { label: key.replaceAll("_", " "), href: "/admin" };

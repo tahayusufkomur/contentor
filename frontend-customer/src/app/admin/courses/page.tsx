@@ -22,6 +22,8 @@ import {
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { DemoBadge } from "@/components/setup/demo-badge";
+import { formatMoney } from "@/lib/format";
+import { useTenantCurrency } from "@/lib/setup-assistant";
 import type { Course } from "@/types/course";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +63,7 @@ const courseFields: FieldConfig<Course>[] = [
 ];
 
 export default function AdminCoursesPage() {
+  const currency = useTenantCurrency();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
@@ -196,7 +199,7 @@ export default function AdminCoursesPage() {
                   {course.pricing_type === "free"
                     ? "Free"
                     : course.pricing_type === "paid"
-                      ? `$${course.price}`
+                      ? formatMoney(course.price, currency)
                       : "Subscription"}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
@@ -224,7 +227,7 @@ export default function AdminCoursesPage() {
                 {course.pricing_type === "free"
                   ? "Free"
                   : course.pricing_type === "paid"
-                    ? `$${course.price}`
+                    ? formatMoney(course.price, currency)
                     : "Subscription"}
               </Badge>
             </TableCell>

@@ -19,15 +19,16 @@ export default async function PublicLayout({
   const isAdmin = user?.role === "owner" || user?.role === "coach";
   const config = isAdmin ? await fetchTenantConfig(slug) : null;
 
+  // Public endpoint: a tenant with no active plans hides Pricing/Subscribe.
   let hasSubscription = false;
-  if (user) {
-    try {
-      const plans = await serverFetch<SubscriptionPlan[]>(
-        "/api/v1/billing/plans/",
-      );
-      hasSubscription = plans.some((p) => p.is_subscribed);
-    } catch {}
-  }
+  let plansEnabled = true; // fail open — a fetch hiccup must not hide the link
+  try {
+    const plans = await serverFetch<SubscriptionPlan[]>(
+      "/api/v1/billing/plans/",
+    );
+    plansEnabled = plans.length > 0;
+    hasSubscription = Boolean(user) && plans.some((p) => p.is_subscribed);
+  } catch {}
 
   const posts = await fetchPublishedPosts();
   const blogEnabled = posts.length > 0;
@@ -37,6 +38,7 @@ export default async function PublicLayout({
       <PublicHeader
         user={user}
         hasSubscription={hasSubscription}
+        plansEnabled={plansEnabled}
         blogEnabled={blogEnabled}
       />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>

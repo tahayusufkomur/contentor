@@ -90,6 +90,9 @@ def test_plans_endpoint_returns_prices_and_limits(restore_public, plans_seeded):
         assert "max_storage_gb" in plan
         assert "max_streaming_hours" in plan
         assert "max_campaign_emails" in plan
+        assert "max_ai_blog_posts" in plan
+        assert "transaction_fee_pct" in plan
+        assert "is_live_enabled" in plan
     assert starter["max_students"] == 100
     assert pro["max_students"] == 1000
 

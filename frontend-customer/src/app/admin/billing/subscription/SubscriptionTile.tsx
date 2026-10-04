@@ -138,7 +138,7 @@ export function SubscriptionTile({
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                   {t("plan")}
                 </dt>
-                <dd className="font-medium">{state.plan.name}</dd>
+                <dd className="font-medium capitalize">{state.plan.name}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">

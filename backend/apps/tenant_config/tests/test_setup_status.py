@@ -85,6 +85,20 @@ def test_first_course_ignores_untouched_demo(client, coach, config):
     demo.delete()
 
 
+def test_setup_status_reports_the_tenant_currency(client, config):
+    from apps.core.models import Tenant
+    from django.db import connection
+
+    Tenant.objects.filter(pk=connection.tenant.pk).update(billing_currency="EUR")
+    connection.tenant.billing_currency = "EUR"
+    try:
+        with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+            assert client.get("/api/v1/admin/setup-status/").json()["currency"] == "EUR"
+    finally:
+        Tenant.objects.filter(pk=connection.tenant.pk).update(billing_currency="USD")
+        connection.tenant.billing_currency = "USD"
+
+
 def test_checklist_first_course_ignores_drafts(client, coach, config):
     """The checklist must agree with the publish gate: a draft is not 'done'."""
     Course.objects.create(title="Draft", slug="draft-setup", instructor=coach, is_published=False)

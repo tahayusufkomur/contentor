@@ -36,8 +36,8 @@ import {
   useRichEditor,
 } from "@/components/owner/rich-editor";
 import { RichHtml } from "@/components/blocks/rich-html";
-import { refreshSetupStatus } from "@/lib/setup-assistant";
-import { formatDuration } from "@/lib/format";
+import { refreshSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
+import { currencySymbol, formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
 import type { Photo } from "@/types/photo";
@@ -68,6 +68,7 @@ export function CourseForm({
   onCourseLoaded,
 }: CourseFormProps) {
   const navigate = useNavigate();
+  const currency = useTenantCurrency();
   const isCreate = !initialCourse;
   const [course, setCourse] = useState<CourseDetail | null>(
     initialCourse ?? null,
@@ -455,9 +456,10 @@ export function CourseForm({
               {(isCreate ? createForm.pricing_type : course?.pricing_type) ===
                 "paid" && (
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price</Label>
+                  <Label htmlFor="price">Price ({currency})</Label>
                   <Input
                     id="price"
+                    placeholder={currencySymbol(currency)}
                     type="number"
                     step="0.01"
                     min="0"

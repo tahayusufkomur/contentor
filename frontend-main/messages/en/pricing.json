@@ -32,7 +32,7 @@
     },
     "starter": {
       "name": "Starter",
-      "price": "$19",
+      "price": "$19.90",
       "period": "/month",
       "description": "For growing creators ready to scale their business.",
       "features": {
@@ -57,7 +57,7 @@
     },
     "pro": {
       "name": "Pro",
-      "price": "$49",
+      "price": "$49.90",
       "period": "/month",
       "description": "For established businesses that need everything.",
       "features": {

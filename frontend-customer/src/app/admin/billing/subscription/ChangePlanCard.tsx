@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { formatPlanPrice } from "@shared/lib/format-plan-price";
 import {
   getSubscription,
   listPlatformPlans,
@@ -20,25 +21,6 @@ import {
 } from "@/lib/api/billing-platform";
 
 type CurrencyCode = "USD" | "EUR";
-
-function formatPrice(
-  amountCents: number | null,
-  currency: CurrencyCode,
-): string {
-  if (amountCents == null) return "—";
-  const amount = amountCents / 100;
-  try {
-    // Plan prices carry cents ($19.90), so show them; whole amounts stay bare.
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    return `${amount} ${currency}`;
-  }
-}
 
 /** Sort: Free first, then by USD amount ascending (Starter before Pro). */
 function sortPlans(plans: PlatformPlanSummary[]): PlatformPlanSummary[] {
@@ -133,7 +115,12 @@ export function ChangePlanCard() {
 
   // Non-Free plans only — Free is the implicit baseline and is shown by the
   // SubscriptionTile above.
-  const paidPlans = sortedPlans.filter((p) => !p.is_free);
+  // A plan with no price in the viewer's currency is not offered at all
+  // (no "Coming soon" card) — unless it is their current plan.
+  const paidPlans = sortedPlans.filter(
+    (p) =>
+      !p.is_free && (p.id === currentPlanId || p.prices?.[currency]?.available),
+  );
 
   return (
     <PageState
@@ -184,9 +171,9 @@ export function ChangePlanCard() {
                     </CardTitle>
                     <div className="mt-3 flex items-baseline gap-1">
                       <span className="text-3xl font-bold tracking-tight text-foreground">
-                        {formatPrice(
-                          priceEntry?.amount_cents ?? null,
+                        {formatPlanPrice(
                           currency,
+                          priceEntry?.amount_cents ?? null,
                         )}
                       </span>
                       <span className="text-sm text-muted-foreground">/mo</span>
@@ -223,12 +210,33 @@ export function ChangePlanCard() {
                           })}
                         </span>
                       </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                        <span>{t("limits.sell")}</span>
+                      </li>
+                      {plan.is_live_enabled && (
+                        <li className="flex items-start gap-2">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                          <span>{t("limits.live")}</span>
+                        </li>
+                      )}
+                      {plan.max_ai_blog_posts > 0 && (
+                        <li className="flex items-start gap-2">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                          <span>
+                            {t("limits.aiBlog", { n: plan.max_ai_blog_posts })}
+                          </span>
+                        </li>
+                      )}
+                      <li className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                        <span>
+                          {t("limits.fee", {
+                            n: Number(plan.transaction_fee_pct),
+                          })}
+                        </span>
+                      </li>
                     </ul>
-                    {!available && !isCurrent && (
-                      <p className="text-xs text-muted-foreground">
-                        {t("comingSoonInCurrency", { currency })}
-                      </p>
-                    )}
                     <UpgradeButton
                       plan={plan}
                       isCurrent={isCurrent}
@@ -239,7 +247,11 @@ export function ChangePlanCard() {
                           ? t("currentPlan")
                           : isDowngrade
                             ? t("downgrade")
-                            : t("upgradeTo", { plan: plan.name })
+                            : t("upgradeTo", {
+                              plan:
+                                plan.name.charAt(0).toUpperCase() +
+                                plan.name.slice(1),
+                            })
                       }
                       loadingLabel={t("processing")}
                       errorLabel={t("error")}

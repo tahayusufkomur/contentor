@@ -3,6 +3,8 @@ import type { LogoRecipe } from "@/types/logo";
 export interface WizardCatalog {
   niches: string[];
   goals: string[];
+  /** Goals that need the Starter plan (selling, live classes). */
+  paid_goals: string[];
   themes: string[];
   theme_ranking: Record<string, string[]>;
   fonts: Record<string, string>; // wizard font id -> font_family value

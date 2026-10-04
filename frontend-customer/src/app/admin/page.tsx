@@ -17,10 +17,11 @@ import {
   DollarSign,
 } from "lucide-react";
 import { UsageAdoptionCard } from "@/components/admin/usage-adoption-card";
+import { formatMoney } from "@/lib/format";
+import { useTenantCurrency } from "@/lib/setup-assistant";
 import { PublishCard } from "@/components/admin/publish-card";
 import { SetupGuideCard } from "@/components/admin/setup-guide-card";
 
-import { RecentActivityCard } from "@/components/admin/recent-activity-card";
 import { Mail, Newspaper, Video } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const currency = useTenantCurrency();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     students: 0,
@@ -64,7 +66,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Revenue",
-      value: `$${stats.revenue.toLocaleString()}`,
+      value: formatMoney(stats.revenue, currency),
       icon: DollarSign,
       description: "All time",
     },
@@ -172,11 +174,7 @@ export default function AdminDashboard() {
         </div>
       </PageState>
 
-      {/* Adoption & Recent Activity Grid */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <UsageAdoptionCard />
-        <RecentActivityCard />
-      </div>
+      <UsageAdoptionCard />
     </div>
   );
 }

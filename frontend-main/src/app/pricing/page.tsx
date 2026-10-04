@@ -11,6 +11,7 @@ import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { Parallax } from "@/components/landing/parallax";
+import { formatPlanPrice } from "@shared/lib/format-plan-price";
 import { getAuthUser } from "@/lib/auth";
 import { BASE_DOMAIN, DJANGO_API_URL } from "@/lib/constants";
 
@@ -87,20 +88,6 @@ interface PlansResponse {
   region: string;
   currency: string;
   plans: PlanSummary[];
-}
-
-/** Format a minor-unit amount in the plan's currency (e.g. 1900 USD → "$19"). */
-function formatPrice(currency: string, amountCents: number | null): string {
-  const amount = (amountCents ?? 0) / 100;
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
-    }).format(amount);
-  } catch {
-    return `${amount} ${currency}`;
-  }
 }
 
 /** A limit of 0 means "unlimited" across the platform plan model. */
@@ -226,7 +213,7 @@ export default async function PricingPage() {
             const priceDisplay = plan
               ? plan.is_free
                 ? t(`plans.${key}.price`)
-                : formatPrice(plan.currency, plan.amount_cents)
+                : formatPlanPrice(plan.currency, plan.amount_cents)
               : t(`plans.${key}.price`);
             return (
               <ScrollReveal

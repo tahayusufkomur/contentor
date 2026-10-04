@@ -76,6 +76,9 @@ export interface PlatformPlanSummary {
   max_storage_gb: number;
   max_streaming_hours: number;
   max_campaign_emails: number;
+  max_ai_blog_posts: number;
+  transaction_fee_pct: string;
+  is_live_enabled: boolean;
 }
 
 export interface ListPlatformPlansResponse {

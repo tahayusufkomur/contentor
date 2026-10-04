@@ -346,6 +346,11 @@ export function GoalsStep({
             <span className="text-[14.5px] font-medium tracking-tight">
               {t(`goals.items.${key}`)}
             </span>
+            {catalog.paid_goals?.includes(key) && (
+              <span className="ml-auto rounded-full bg-foreground/[0.06] px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                {t("goals.needsStarter")}
+              </span>
+            )}
           </motion.button>
         ))}
       </OptionList>

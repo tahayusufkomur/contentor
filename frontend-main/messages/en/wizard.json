@@ -73,6 +73,7 @@
       "subhead": "Pick everything you plan to do — this shapes your pages and menu.",
       "selectAll": "Select all",
       "clearAll": "Clear all",
+      "needsStarter": "Starter plan",
       "items": {
         "sell_courses": "Sell recorded courses",
         "run_live_classes": "Run live online classes",

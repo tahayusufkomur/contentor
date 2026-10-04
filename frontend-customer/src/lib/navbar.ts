@@ -32,3 +32,21 @@ export function showBrandName(
   if (!config?.logo_url) return true;
   return config.navbar_config?.show_brand_name === true;
 }
+
+/** The coach's own nav links, minus "/plans" when the tenant sells no
+ * subscription plans (it would land on "No plans available"). */
+export function visibleNavLinks<T extends { href: string }>(
+  links: T[],
+  plansEnabled: boolean,
+): T[] {
+  return plansEnabled ? links : links.filter((l) => l.href !== "/plans");
+}
+
+/** The Subscribe/Plans button is for students of a tenant that has plans;
+ * staff are not buying their own subscriptions. */
+export function showSubscribeButton(
+  plansEnabled: boolean,
+  role: string | undefined,
+): boolean {
+  return plansEnabled && role !== "owner" && role !== "coach";
+}

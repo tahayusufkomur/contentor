@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { logoSizeClass, showBrandName } from "@/lib/navbar";
+import {
+  logoSizeClass,
+  showBrandName,
+  showSubscribeButton,
+  visibleNavLinks,
+} from "@/lib/navbar";
 
 describe("logoSizeClass", () => {
   it("maps presets to heights and defaults to md", () => {
@@ -32,5 +37,25 @@ describe("showBrandName", () => {
         navbar_config: { show_brand_name: true },
       }),
     ).toBe(true);
+  });
+});
+
+describe("visibleNavLinks", () => {
+  const links = [
+    { label: "Courses", href: "/courses" },
+    { label: "Pricing", href: "/plans" },
+  ];
+  it("hides Pricing when the tenant has no plans", () => {
+    expect(visibleNavLinks(links, false).map((l) => l.href)).toEqual(["/courses"]);
+    expect(visibleNavLinks(links, true)).toHaveLength(2);
+  });
+});
+
+describe("showSubscribeButton", () => {
+  it("is for students of a tenant with plans only", () => {
+    expect(showSubscribeButton(true, "student")).toBe(true);
+    expect(showSubscribeButton(false, "student")).toBe(false);
+    expect(showSubscribeButton(true, "owner")).toBe(false);
+    expect(showSubscribeButton(true, "coach")).toBe(false);
   });
 });

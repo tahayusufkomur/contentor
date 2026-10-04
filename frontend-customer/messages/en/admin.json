@@ -388,7 +388,7 @@
     "currency": "Currency",
     "nextBillingDate": "Next billing date",
     "provider": "Provider",
-    "freeNotice": "You're on the Free plan. Upgrade for more capacity.",
+    "freeNotice": "Free plan: 10 students, 1 GB, free content only. Upgrade to sell courses and run live classes.",
     "cancelsOn": "Subscription cancels on {date}.",
     "checkoutCanceled": "Checkout was canceled. Your plan was not changed.",
     "noData": "No subscription data available.",
@@ -412,7 +412,11 @@
         "students": "{n} students",
         "storage": "{n} GB storage",
         "streamingHours": "{n} streaming hours/mo",
-        "campaignEmails": "{n} campaign emails/mo"
+        "campaignEmails": "{n} campaign emails/mo",
+        "sell": "Sell paid content and get paid through Stripe",
+        "live": "Live classes",
+        "fee": "{n}% transaction fee on sales",
+        "aiBlog": "{n} AI blog posts/mo"
       }
     }
   }

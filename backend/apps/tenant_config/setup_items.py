@@ -7,6 +7,7 @@ next-intl owns the copy.
 
 from collections import defaultdict
 
+from apps.core.currency import tenant_charge_currency
 from apps.core.monetization import can_monetize, is_paid_active
 
 from .models import SeededObject
@@ -265,5 +266,7 @@ def compute_setup_state(config, tenant) -> dict:
         "demo_present": seeded_rows_exist,
         "dismissed": config.setup_guide_dismissed,
         "has_paid_content": _has_paid_content(seeded),
+        # The tenant's charge currency: admin price fields/labels must not hardcode "$".
+        "currency": tenant_charge_currency(tenant),
         "publish_blockers": publish_blockers(config, tenant),
     }

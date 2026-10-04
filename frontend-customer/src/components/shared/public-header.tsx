@@ -16,7 +16,12 @@ import type {
   TenantConfig,
 } from "@/types/tenant";
 import AnnouncementBell from "@/components/shared/announcement-bell";
-import { logoSizeClass, showBrandName } from "@/lib/navbar";
+import {
+  logoSizeClass,
+  showBrandName,
+  showSubscribeButton,
+  visibleNavLinks,
+} from "@/lib/navbar";
 import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 
 const VALID_LAYOUTS: ReadonlySet<string> = new Set([
@@ -106,6 +111,7 @@ function DesktopLinks({
 function AuthCluster({
   user,
   hasSubscription,
+  showSubscribe,
   showLogin,
   cta,
   compact,
@@ -116,6 +122,7 @@ function AuthCluster({
 }: {
   user?: User | null;
   hasSubscription?: boolean;
+  showSubscribe: boolean;
   showLogin: boolean;
   cta: { text: string; href: string } | null;
   compact?: boolean;
@@ -149,17 +156,23 @@ function AuthCluster({
               {user.name || user.email}
             </span>
           )}
-          <Button
-            asChild
-            size="sm"
-            variant={hasSubscription ? "outline" : "default"}
-            className="gap-1.5"
-          >
-            <Link href="/plans" title={hasSubscription ? "Plans" : "Subscribe"}>
-              <Zap className="h-4 w-4" />
-              {!compact && (hasSubscription ? "Plans" : "Subscribe")}
-            </Link>
-          </Button>
+          {showSubscribe && (
+            <Button
+              asChild
+              size="sm"
+              variant={hasSubscription ? "outline" : "default"}
+              className="gap-1.5"
+            >
+              <Link
+                href="/plans"
+                title={hasSubscription ? "Plans" : "Subscribe"}
+                aria-label={hasSubscription ? "Plans" : "Subscribe"}
+              >
+                <Zap className="h-4 w-4" />
+                {!compact && (hasSubscription ? "Plans" : "Subscribe")}
+              </Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -193,12 +206,15 @@ function AuthCluster({
 export function PublicHeader({
   user,
   hasSubscription,
+  plansEnabled = true,
   communityEnabled,
   communityUnread,
   blogEnabled,
 }: {
   user?: User | null;
   hasSubscription?: boolean;
+  /** The tenant has at least one active subscription plan. */
+  plansEnabled?: boolean;
   communityEnabled?: boolean;
   communityUnread?: boolean;
   blogEnabled?: boolean;
@@ -225,7 +241,10 @@ export function PublicHeader({
     layout !== "pill" &&
     pathname === "/";
 
-  const allNavLinks = navbar?.links?.length ? navbar.links : FALLBACK_LINKS;
+  const allNavLinks = visibleNavLinks(
+    navbar?.links?.length ? navbar.links : FALLBACK_LINKS,
+    plansEnabled,
+  );
   const navLinks = user
     ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
     : allNavLinks;
@@ -266,6 +285,7 @@ export function PublicHeader({
   const authProps = {
     user,
     hasSubscription,
+    showSubscribe: showSubscribeButton(plansEnabled, user?.role),
     showLogin,
     cta,
     allowDarkMode,
@@ -328,17 +348,19 @@ export function PublicHeader({
                 ? "Admin"
                 : "Dashboard"}
             </NavLink>
-            <Button
-              asChild
-              size="sm"
-              variant={hasSubscription ? "outline" : "default"}
-              className="w-full gap-1.5"
-            >
-              <Link href="/plans" onClick={() => setMobileOpen(false)}>
-                <Zap className="h-4 w-4" />
-                {hasSubscription ? "Plans" : "Subscribe"}
-              </Link>
-            </Button>
+            {authProps.showSubscribe && (
+              <Button
+                asChild
+                size="sm"
+                variant={hasSubscription ? "outline" : "default"}
+                className="w-full gap-1.5"
+              >
+                <Link href="/plans" onClick={() => setMobileOpen(false)}>
+                  <Zap className="h-4 w-4" />
+                  {hasSubscription ? "Plans" : "Subscribe"}
+                </Link>
+              </Button>
+            )}
             <div className="flex items-center gap-2 border-t pt-3">
               <UserIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">

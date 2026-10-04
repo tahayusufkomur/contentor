@@ -327,6 +327,7 @@ def list_plans(request):
                 "max_storage_gb": plan.max_storage_gb,
                 "max_streaming_hours": plan.max_streaming_hours,
                 "max_campaign_emails": plan.max_campaign_emails,
+                "max_ai_blog_posts": plan.max_ai_blog_posts,
                 "transaction_fee_pct": str(plan.transaction_fee_pct),
                 "is_live_enabled": plan.is_live_enabled,
             }

@@ -408,7 +408,8 @@ def availability(tenant, month=None):
         "enabled": enabled,
         "eligible": eligible,
         "remaining": remaining,
-        "limit": limit,
+        # The one-off grant is "1 of 1", never "1 of 0" (the plan limit is 0 on Free).
+        "limit": 1 if free_grant else limit,
         "reason": reason,
         "free_grant": free_grant,
     }

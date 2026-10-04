@@ -174,6 +174,7 @@ def test_availability_free_grant_makes_free_plan_eligible(settings):
     assert status["eligible"] is True
     assert status["free_grant"] is True
     assert status["remaining"] == 1
+    assert status["limit"] == 1  # "1 of 1", not "1 of 0"
     assert status["reason"] is None
 
 

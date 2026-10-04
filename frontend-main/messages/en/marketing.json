@@ -1,12 +1,12 @@
 {
   "hero": {
-    "badge": "Free plan available — no credit card required",
+    "badge": "Free to build — no credit card required",
     "title1": "Your own course platform.",
     "title2": "Your brand. Your money.",
-    "subtitle": "Courses, live classes, and payments under your own name — your students never see ours. Launch in minutes; payments go straight to your Stripe account.",
-    "ctaPrimary": "Create your platform free",
+    "subtitle": "Courses, live classes, and payments under your own name — your students never see ours. Build your site free in minutes; selling starts on Starter, with payments straight to your Stripe account.",
+    "ctaPrimary": "Create your site free",
     "ctaSecondary": "Explore live demos",
-    "trustNote": "Free forever plan. No credit card. You own your students, your content, and your revenue."
+    "trustNote": "Build your site and teach free classes on the free plan — no credit card. Selling and live classes start at $19.90/mo. You own your students, your content, and your revenue."
   },
   "socialProof": {
     "tagline": "Built for yoga instructors, fitness coaches, music teachers, dance academies, and every coach who teaches online",
@@ -20,7 +20,7 @@
   },
   "stats": {
     "earned": {
-      "value": "$19",
+      "value": "$19.90",
       "label": "Per month for what costs $149+ on legacy platforms"
     },
     "students": {
@@ -129,7 +129,7 @@
     "items": {
       "freePlan": {
         "q": "Is there really a free plan?",
-        "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your platform and run it with a small group. Selling and live classes unlock on paid plans — upgrade anytime as you grow."
+        "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your site and teach free classes to a small group. Selling courses, live classes and payouts to your Stripe account need the Starter plan ($19.90/mo) — upgrade anytime as you grow."
       },
       "technical": {
         "q": "Do I need technical skills?",
@@ -141,7 +141,7 @@
       },
       "payments": {
         "q": "How do payments work?",
-        "a": "We integrate directly with Stripe. Payments go straight to your own Stripe account — we never hold your money. You can sell one-time courses or recurring subscriptions."
+        "a": "Selling starts on the Starter plan. We integrate directly with Stripe: payments go straight to your own Stripe account — we never hold your money — minus a small transaction fee (8% on Starter, 6% on Pro). You can sell one-time courses or recurring subscriptions."
       },
       "liveClasses": {
         "q": "How do live classes work?",

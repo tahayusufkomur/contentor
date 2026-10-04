@@ -17,6 +17,7 @@
 // coach is never trapped behind payment. Purchase NEVER blocks finalize —
 // registration/DNS/SSL run in Celery long after the wizard closes.
 
+import { formatPlanName, formatPlanPrice } from "@shared/lib/format-plan-price";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Globe2, Search } from "lucide-react";
@@ -133,7 +134,7 @@ export function DomainStep({
   const enterLocked = useCallback(() => {
     setPhase("locked");
     listPlans()
-      .then((res) => setPlans(res.plans.filter((p) => !p.is_free)))
+      .then((res) => setPlans(res.plans.filter((p) => !p.is_free && p.stripe_price_id_present)))
       .catch(() => setError(t("common.errors.generic")));
   }, [t]);
 
@@ -356,8 +357,8 @@ export function DomainStep({
                   key={plan.id}
                   selected={false}
                   onSelect={() => startPlanCheckout(plan)}
-                  title={plan.name}
-                  subtitle={`${formatPrice(plan.amount_cents ?? 0, plan.currency)}/mo — ${t("upgrade.cta")}`}
+                  title={formatPlanName(plan.name)}
+                  subtitle={`${formatPlanPrice(plan.currency, plan.amount_cents)}/mo — ${t("upgrade.cta")}`}
                   badge={checkoutBusyId === plan.id ? "…" : undefined}
                   disabled={disabled || checkoutBusyId !== null}
                 />
