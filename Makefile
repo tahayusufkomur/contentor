@@ -1,5 +1,8 @@
 .PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec test-changed e2e-changed wiki wiki-sync
 
+# Prod env lives in Cloudflare KV (fleet scripts/secrets.sh, Touch ID), not on
+# disk. Targets that need it materialize .env.prod for that one command only.
+PROD_ENV = ~/ws/home-server/scripts/secrets.sh get contentor > .env.prod && trap 'rm -f .env.prod' EXIT
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 
 # ============================================================================
@@ -87,8 +90,8 @@ seed: ## Reset to ONE test tenant (demo-yoga, Pro: coach + 1 student) + plans, s
 	-docker compose exec django python manage.py seed_connect_test --tenant demo-yoga
 	docker compose exec django python manage.py seed_curated_logos
 
-seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinIO (host-run, needs .env.prod)
-	python3 scripts/mirror_demo_assets.py
+seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinIO (host-run; prod creds from KV)
+	@$(PROD_ENV); python3 scripts/mirror_demo_assets.py
 
 
 capture-wizard-mockups: seed-demo-assets ## Capture per-niche wizard screenshots (needs make dev running; ARGS="--niche belly_dance" for one niche)
@@ -196,10 +199,10 @@ deploy: ## Deploy contentor to the home server (full backend tests first; SKIP_T
 	cd ~/ws/home-server && ./deploy.sh contentor
 
 prod-build: ## Build the prod images locally (catches prod build breaks; no network needed)
-	$(PROD_COMPOSE) build
+	@$(PROD_ENV); $(PROD_COMPOSE) build
 
-prod-config: ## Validate the prod compose + .env.prod interpolation
-	$(PROD_COMPOSE) config >/dev/null && echo "prod compose OK"
+prod-config: ## Validate the prod compose against the prod env in KV
+	@$(PROD_ENV); $(PROD_COMPOSE) config >/dev/null && echo "prod compose OK"
 
 # ============================================================================
 # E2E — Playwright end-to-end tests (e2e/)

@@ -599,7 +599,7 @@ via `scripts/select_tests.py` + `e2e/impact-map.json`), `make lint`, `make forma
 
 ## 12. Environment variables (categories)
 
-Templates: `backend/.env.example`, root `.env.example` (dev), `.env.prod.example` (prod).
+Dev reads the root `.env` (template `.env.example`). Prod secrets live in Cloudflare KV (fleet `scripts/secrets.sh`); `.env.prod.example` documents the keys prod needs.
 
 - **Platform/Django:** `CONTENTOR_DOMAIN`, `CONTENTOR_SUPERUSERS`, `DJANGO_SETTINGS_MODULE`,
   `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` (must include `django` for SSR), `DJANGO_DEBUG`.

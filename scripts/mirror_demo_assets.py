@@ -76,7 +76,7 @@ def main() -> int:
     if not src_path.exists():
         # Expected on machines without prod creds — skip quietly (exit 0) so
         # `make dev` isn't blocked. Any REAL failure below exits non-zero.
-        print("NOTE: .env.prod not found — skipping demo-asset mirror; seeded media will 404 until 'make seed-demo-assets' runs on a machine with prod creds.")
+        print("NOTE: no prod creds here — skipping demo-asset mirror; seeded media will 404 until 'make seed-demo-assets' (which fetches them from KV) has run once.")
         return 0
     src_env = load_env(src_path)
     dst_env = load_env(REPO_ROOT / ".env")
