@@ -107,7 +107,8 @@ describe("applyAiRank", () => {
 
 describe("pilates ranking on the real catalog", () => {
   it("keeps other niches' marks out of the first 12", async () => {
-    const raw = (await import("../../../public/logos/logo_meta.json")).default as {
+    const raw = (await import("../../../public/logos/logo_meta.json"))
+      .default as {
       title: string;
       tags: string;
     }[];
@@ -115,7 +116,10 @@ describe("pilates ranking on the real catalog", () => {
       title: l.title,
       tags: l.tags.split(",").map((t) => t.trim().toLowerCase()),
     }));
-    const top = rankCuratedLogos(logos, briefKeywords({ niche: "pilates" })).slice(0, 12);
+    const top = rankCuratedLogos(
+      logos,
+      briefKeywords({ niche: "pilates" }),
+    ).slice(0, 12);
     expect(top.length).toBe(12);
     for (const l of top) {
       expect(l.title.toLowerCase()).not.toMatch(/pregnan|yoga|bodybuilder/);

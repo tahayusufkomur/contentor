@@ -203,14 +203,16 @@ def send_magic_link(
 def action_email(*, heading: str, intro: str, button: str, link: str, expires: str) -> tuple[str, str]:
     """The one branded "click this button" email (signup verification, wizard
     recovery). Returns (html, text). Every argument is plain text and gets
-    escaped here, so coach-supplied text (a brand name in ``intro``) is safe. The raw link is deliberately NOT repeated in the HTML (the button is the
+    escaped here, so coach-supplied text (a brand name in ``intro``) is safe.
+    The raw link is deliberately NOT repeated in the HTML (the button is the
     link); the plain-text alternative carries it for clients that strip buttons."""
     from django.utils.html import escape
 
     font_stack = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif"
     html = f"""
     <div style="font-family: {font_stack}; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <p style="font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: #1a1a2e; margin: 0 0 24px;">Contentor</p>
+        <p style="font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
+                  color: #1a1a2e; margin: 0 0 24px;">Contentor</p>
         <h2 style="color: #1a1a2e; margin: 0 0 8px; letter-spacing: -0.02em;">{escape(heading)}</h2>
         <p style="color: #444; font-size: 16px; line-height: 1.5;">{escape(intro)}</p>
         <a href="{escape(link)}"
@@ -219,7 +221,9 @@ def action_email(*, heading: str, intro: str, button: str, link: str, expires: s
             {escape(button)}
         </a>
         <p style="color: #888; font-size: 13px;">{escape(expires)}</p>
-        <p style="color: #aaa; font-size: 12px; margin-top: 32px;">Contentor · Courses, live classes and payments under your own brand.</p>
+        <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
+            Contentor · Courses, live classes and payments under your own brand.
+        </p>
     </div>
     """
     text = f"{heading}\n\n{intro}\n\n{button}: {link}\n\n{expires}\n"

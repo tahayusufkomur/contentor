@@ -212,7 +212,10 @@ class TestMagicLinkVerify:
                 # A coach provisioned by the wizard exists but has never logged in: still a first visit.
                 coach = User.objects.create(email="coachfirst@example.com", role="owner", is_staff=True)
                 token = create_magic_link_token(coach.email, tenant.schema_name, tenant.slug)
-                assert client.post("/api/v1/auth/magic-link/verify/", {"token": token}, format="json").json()["created"] is True
+                assert (
+                    client.post("/api/v1/auth/magic-link/verify/", {"token": token}, format="json").json()["created"]
+                    is True
+                )
             finally:
                 User.objects.all().delete()
 

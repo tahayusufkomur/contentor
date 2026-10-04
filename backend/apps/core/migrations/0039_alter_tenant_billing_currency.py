@@ -4,15 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0038_curatedphoto_decorative_only'),
+        ("core", "0038_curatedphoto_decorative_only"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tenant',
-            name='billing_currency',
-            field=models.CharField(blank=True, choices=[('USD', 'US Dollar'), ('EUR', 'Euro')], default='', help_text='Set at first Stripe checkout, immutable thereafter.', max_length=3),
+            model_name="tenant",
+            name="billing_currency",
+            field=models.CharField(
+                blank=True,
+                choices=[("USD", "US Dollar"), ("EUR", "Euro")],
+                default="",
+                help_text="Set at first Stripe checkout, immutable thereafter.",
+                max_length=3,
+            ),
         ),
     ]

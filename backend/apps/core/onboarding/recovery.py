@@ -165,9 +165,7 @@ def send_abandon_warning(tenant, now=None) -> bool:
         link=link,
         expires=strings["expires"].format(days=days),
     )
-    sent = send_email(
-        to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text
-    )
+    sent = send_email(to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text)
     if sent:
         tenant.abandon_warned_at = now or timezone.now()
         tenant.save(update_fields=["abandon_warned_at"])
@@ -211,9 +209,7 @@ def send_recovery_email(tenant) -> bool:
         link=link,
         expires=strings["expires"].format(days=days),
     )
-    sent = send_email(
-        to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text
-    )
+    sent = send_email(to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text)
     if sent:
         tenant.recovery_email_sent_at = timezone.now()
         tenant.save(update_fields=["recovery_email_sent_at"])

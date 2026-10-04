@@ -253,10 +253,10 @@ export function ChangePlanCard() {
                           : isDowngrade
                             ? t("downgrade")
                             : t("upgradeTo", {
-                              plan:
-                                plan.name.charAt(0).toUpperCase() +
-                                plan.name.slice(1),
-                            })
+                                plan:
+                                  plan.name.charAt(0).toUpperCase() +
+                                  plan.name.slice(1),
+                              })
                       }
                       loadingLabel={t("processing")}
                       errorLabel={t("error")}

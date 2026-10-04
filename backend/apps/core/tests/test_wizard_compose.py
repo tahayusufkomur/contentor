@@ -182,8 +182,6 @@ def test_fallback_site_has_no_invented_credentials_or_testimonials(niche):
 
 
 def test_empty_description_gets_a_neutral_about_sentence():
-    over = build_config_overrides(
-        {"niche": "pilates"}, brand_name="Glow Studio", landing_sections=SECTIONS
-    )
+    over = build_config_overrides({"niche": "pilates"}, brand_name="Glow Studio", landing_sections=SECTIONS)
     about = next(b for b in over["pages"]["about"]["blocks"] if b["type"] == "imageText")
     assert about["body"] == "Glow Studio offers pilates classes you can follow from anywhere."

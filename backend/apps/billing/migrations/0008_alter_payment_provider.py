@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('billing', '0007_tenant_charge_currency_default'),
+        ("billing", "0007_tenant_charge_currency_default"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payment',
-            name='provider',
-            field=models.CharField(choices=[('stripe', 'Stripe'), ('bypass', 'Bypass')], max_length=20),
+            model_name="payment",
+            name="provider",
+            field=models.CharField(choices=[("stripe", "Stripe"), ("bypass", "Bypass")], max_length=20),
         ),
     ]

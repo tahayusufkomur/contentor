@@ -9,28 +9,45 @@ def tr_to_en(apps, schema_editor):
     apps.get_model("accounts", "User").objects.filter(preferred_locale="tr").update(preferred_locale="en")
 
 
-
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0005_user_first_pwa_at_user_last_display_mode_and_more'),
+        ("accounts", "0005_user_first_pwa_at_user_last_display_mode_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='accessible_regions',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('global', 'Global')], max_length=8), blank=True, default=list, help_text='Superadmin only: regions this user can see in Django admin.', null=True, size=None),
+            model_name="user",
+            name="accessible_regions",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(choices=[("global", "Global")], max_length=8),
+                blank=True,
+                default=list,
+                help_text="Superadmin only: regions this user can see in Django admin.",
+                null=True,
+                size=None,
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='preferred_locale',
-            field=models.CharField(blank=True, choices=[('en', 'English')], default='', help_text='Empty = fall back to tenant default; otherwise overrides.', max_length=2),
+            model_name="user",
+            name="preferred_locale",
+            field=models.CharField(
+                blank=True,
+                choices=[("en", "English")],
+                default="",
+                help_text="Empty = fall back to tenant default; otherwise overrides.",
+                max_length=2,
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='region',
-            field=models.CharField(choices=[('global', 'Global')], db_index=True, default='global', help_text='The region this user first signed up in. Informational only — auth-time isolation is enforced by Tenant.region via JWT claims. Same email may own tenants across multiple regions.', max_length=8),
+            model_name="user",
+            name="region",
+            field=models.CharField(
+                choices=[("global", "Global")],
+                db_index=True,
+                default="global",
+                help_text="The region this user first signed up in. Informational only — auth-time isolation is enforced by Tenant.region via JWT claims. Same email may own tenants across multiple regions.",
+                max_length=8,
+            ),
         ),
         migrations.RunPython(tr_to_en, migrations.RunPython.noop),
     ]

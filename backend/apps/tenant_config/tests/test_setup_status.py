@@ -86,8 +86,9 @@ def test_first_course_ignores_untouched_demo(client, coach, config):
 
 
 def test_setup_status_reports_the_tenant_currency(client, config):
-    from apps.core.models import Tenant
     from django.db import connection
+
+    from apps.core.models import Tenant
 
     Tenant.objects.filter(pk=connection.tenant.pk).update(billing_currency="EUR")
     connection.tenant.billing_currency = "EUR"

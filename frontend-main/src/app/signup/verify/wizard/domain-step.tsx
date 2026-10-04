@@ -134,7 +134,11 @@ export function DomainStep({
   const enterLocked = useCallback(() => {
     setPhase("locked");
     listPlans()
-      .then((res) => setPlans(res.plans.filter((p) => !p.is_free && p.stripe_price_id_present)))
+      .then((res) =>
+        setPlans(
+          res.plans.filter((p) => !p.is_free && p.stripe_price_id_present),
+        ),
+      )
       .catch(() => setError(t("common.errors.generic")));
   }, [t]);
 

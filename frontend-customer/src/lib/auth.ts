@@ -4,7 +4,10 @@ import { COOKIE_NAME, DJANGO_API_URL } from "@/lib/constants";
 import { headers } from "next/headers";
 import type { User } from "@/types/auth";
 
-const userCache = new Map<string, { promise: Promise<User | null>; exp: number }>();
+const userCache = new Map<
+  string,
+  { promise: Promise<User | null>; exp: number }
+>();
 
 async function fetchAuthUser(
   token: string,

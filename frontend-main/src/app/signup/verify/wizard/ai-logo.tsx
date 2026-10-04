@@ -213,7 +213,11 @@ export function AiLogoDoor({
   const loadLocked = useCallback(() => {
     setDoorState("locked");
     listPlans()
-      .then((res) => setPlans(res.plans.filter((p) => !p.is_free && p.stripe_price_id_present)))
+      .then((res) =>
+        setPlans(
+          res.plans.filter((p) => !p.is_free && p.stripe_price_id_present),
+        ),
+      )
       .catch(() => setDoorError(t("common.errors.generic")));
   }, [t]);
 

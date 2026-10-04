@@ -8,18 +8,21 @@ def tr_to_en(apps, schema_editor):
     apps.get_model("tenant_config", "TenantConfig").objects.filter(default_locale="tr").update(default_locale="en")
 
 
-
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0023_copilotchat'),
+        ("tenant_config", "0023_copilotchat"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tenantconfig',
-            name='default_locale',
-            field=models.CharField(choices=[('en', 'English')], default='en', help_text='Default UI language for this tenant. Coach-configurable.', max_length=2),
+            model_name="tenantconfig",
+            name="default_locale",
+            field=models.CharField(
+                choices=[("en", "English")],
+                default="en",
+                help_text="Default UI language for this tenant. Coach-configurable.",
+                max_length=2,
+            ),
         ),
         migrations.RunPython(tr_to_en, migrations.RunPython.noop),
     ]

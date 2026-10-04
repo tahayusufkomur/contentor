@@ -4,19 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0039_alter_tenant_billing_currency'),
+        ("core", "0039_alter_tenant_billing_currency"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tenant',
-            name='iyzico_submerchant_id',
+            model_name="tenant",
+            name="iyzico_submerchant_id",
         ),
         migrations.AlterField(
-            model_name='tenant',
-            name='region',
-            field=models.CharField(choices=[('global', 'Global')], db_index=True, default='global', help_text='Immutable. Set at signup from the request host.', max_length=8),
+            model_name="tenant",
+            name="region",
+            field=models.CharField(
+                choices=[("global", "Global")],
+                db_index=True,
+                default="global",
+                help_text="Immutable. Set at signup from the request host.",
+                max_length=8,
+            ),
         ),
     ]

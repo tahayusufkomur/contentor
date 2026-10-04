@@ -46,7 +46,9 @@ describe("visibleNavLinks", () => {
     { label: "Pricing", href: "/plans" },
   ];
   it("hides Pricing when the tenant has no plans", () => {
-    expect(visibleNavLinks(links, false).map((l) => l.href)).toEqual(["/courses"]);
+    expect(visibleNavLinks(links, false).map((l) => l.href)).toEqual([
+      "/courses",
+    ]);
     expect(visibleNavLinks(links, true)).toHaveLength(2);
   });
 });

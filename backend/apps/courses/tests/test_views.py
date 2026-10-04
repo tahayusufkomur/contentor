@@ -117,7 +117,9 @@ def make_client(user=None):
 class TestCourseListCreate:
     def test_switching_to_free_clears_price(self, owner):
         client = make_client(owner)
-        resp = client.post("/api/v1/courses/", {"title": "Paid", "pricing_type": "paid", "price": "49.00"}, format="json")
+        resp = client.post(
+            "/api/v1/courses/", {"title": "Paid", "pricing_type": "paid", "price": "49.00"}, format="json"
+        )
         assert resp.status_code == 201, resp.content
         course = Course.objects.get(title="Paid")
         resp = client.put(f"/api/v1/courses/{course.slug}/", {"pricing_type": "free"}, format="json")
