@@ -72,7 +72,7 @@ def paid_bundle(tenant_ctx, paid_course):
         name="Paid Bundle",
         description="A bundle for store testing",
         price=Decimal("149.00"),
-        currency="TRY",
+        currency="USD",
         is_active=True,
     )
     ct = ContentType.objects.get_for_model(Course)

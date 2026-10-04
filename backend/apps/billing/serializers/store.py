@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.core.currency import tenant_charge_currency
+
 
 class StoreItemSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -7,7 +9,7 @@ class StoreItemSerializer(serializers.Serializer):
     description = serializers.CharField(allow_blank=True, default="")
     type = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    currency = serializers.CharField(default="TRY")
+    currency = serializers.CharField(default=tenant_charge_currency)
     thumbnail_url = serializers.CharField(allow_blank=True, default="")
     is_active = serializers.BooleanField(default=True)
     item_count = serializers.IntegerField(default=0)

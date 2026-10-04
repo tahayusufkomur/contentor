@@ -254,7 +254,7 @@ class TestDownloadUrl:
             has_access=False,
             pricing_type="paid",
             price=Decimal("29.00"),
-            currency="TRY",
+            currency="USD",
             unlock_methods=["purchase"],
         )
 

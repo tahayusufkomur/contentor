@@ -150,7 +150,7 @@ class TestKnowledgePack:
         """§6.2 / §11 "currency single-source": every catalog line must use
         tenant_charge_currency(tenant), never a per-item currency field, so a
         plan whose stored `currency` diverges from the tenant's real charge
-        currency (e.g. left at the SubscriptionPlan default "TRY" on a
+        currency (e.g. left at a stale value on a
         USD-billing tenant) doesn't show a different currency than courses/
         downloads/live items in the same answer."""
         from apps.billing.models import SubscriptionPlan
@@ -158,11 +158,11 @@ class TestKnowledgePack:
         tenant.billing_currency = "USD"
         tenant.save(update_fields=["billing_currency"])
         plan = SubscriptionPlan.objects.create(
-            name="Gold", price=Decimal("29.00"), currency="TRY", billing_interval_months=1, is_active=True
+            name="Gold", price=Decimal("29.00"), currency="EUR", billing_interval_months=1, is_active=True
         )
         prompt, _ = student_bot.build_system_prompt(tenant, config)
         assert f"{plan.price} USD/month" in prompt
-        assert "TRY" not in prompt
+        assert "EUR" not in prompt
 
 
 # ── Availability (all 5 reasons) ─────────────────────────────────────────

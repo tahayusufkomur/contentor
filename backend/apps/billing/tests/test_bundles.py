@@ -64,7 +64,7 @@ def bundle(tenant_ctx, course):
         name="Test Bundle",
         description="A bundle for testing",
         price=Decimal("149.00"),
-        currency="TRY",
+        currency="USD",
         is_active=True,
     )
     ct = ContentType.objects.get_for_model(Course)
@@ -116,7 +116,6 @@ class TestBundleCreate:
             "name": "New Bundle",
             "description": "Created by owner",
             "price": "199.00",
-            "currency": "TRY",
             "is_active": True,
             "items": [{"content_type": "course", "object_id": course.pk}],
         }
@@ -127,9 +126,20 @@ class TestBundleCreate:
         assert len(data["items"]) == 1
         assert data["items"][0]["object_id"] == course.pk
 
+    def test_bundle_currency_is_the_tenants_not_the_clients(self, owner, course):
+        """Students must never see a currency the coach did not charge in."""
+        from apps.billing.models import Bundle
+        from apps.core.currency import tenant_charge_currency
+
+        client = make_client(owner)
+        payload = {"name": "Cur Bundle", "price": "10.00", "currency": "TRY", "items": []}
+        response = client.post("/api/v1/billing/bundles/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        assert Bundle.objects.get(name="Cur Bundle").currency == tenant_charge_currency()
+
     def test_student_cannot_create_bundle(self, student, course):
         client = make_client(student)
-        payload = {"name": "Student Bundle", "price": "50.00", "currency": "TRY"}
+        payload = {"name": "Student Bundle", "price": "50.00"}
         response = client.post("/api/v1/billing/bundles/", data=payload, format="json")
         assert response.status_code == 403, response.content
 

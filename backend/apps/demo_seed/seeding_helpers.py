@@ -36,6 +36,7 @@ from django.utils import timezone
 from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
+from apps.core.currency import tenant_charge_currency
 from apps.demo_seed.registry import load_niche
 
 # Breadth-over-bulk defaults. Callers scale volume by passing count / include_live.
@@ -337,7 +338,7 @@ def seed_subscription_plans(tenant, niche):
                 name=plan_data["name"],
                 description=plan_data.get("description", ""),
                 price=Decimal(plan_data["price"]),
-                currency=plan_data.get("currency", "TRY"),
+                currency=tenant_charge_currency(),
                 billing_interval_months=plan_data.get("billing_interval_months", 1),
                 sort_order=plan_data.get("sort_order", 0),
             )
@@ -375,7 +376,7 @@ def seed_bundles(tenant, niche):
                 name=bundle_data["name"],
                 description=bundle_data.get("description", ""),
                 price=Decimal(bundle_data["price"]),
-                currency=bundle_data.get("currency", "TRY"),
+                currency=tenant_charge_currency(),
             )
             for idx in bundle_data.get("course_indices", []):
                 if idx < len(courses):
@@ -661,7 +662,7 @@ def seed_purchases_and_progress(tenant, niche, *, pro_edge_cases: bool = False):
                     amount=course.price,
                     platform_fee=round(course.price * Decimal("0.06"), 2),
                     submerchant_payout=round(course.price * Decimal("0.94"), 2),
-                    currency="TRY",
+                    currency=tenant_charge_currency(),
                     provider="bypass",
                     provider_payment_id=f"seed-{user.pk}-course-{course.pk}",
                 )
@@ -686,7 +687,7 @@ def seed_purchases_and_progress(tenant, niche, *, pro_edge_cases: bool = False):
                     amount=bundle.price,
                     platform_fee=round(bundle.price * Decimal("0.06"), 2),
                     submerchant_payout=round(bundle.price * Decimal("0.94"), 2),
-                    currency="TRY",
+                    currency=tenant_charge_currency(),
                     provider="bypass",
                     provider_payment_id=f"seed-{user.pk}-bundle-{bundle.pk}",
                 )

@@ -399,7 +399,7 @@ def _tenant_charge_currency(tenant) -> str:
     return tenant_charge_currency(tenant)
 
 
-def _seed_subscription_plans(plans_data, courses, currency="TRY"):
+def _seed_subscription_plans(plans_data, courses, currency):
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
@@ -414,7 +414,7 @@ def _seed_subscription_plans(plans_data, courses, currency="TRY"):
             name=plan_data["name"],
             description=plan_data.get("description", ""),
             price=Decimal(plan_data["price"]),
-            currency=plan_data.get("currency") or currency,
+            currency=currency,
             billing_interval_months=plan_data.get("billing_interval_months", 1),
             sort_order=plan_data.get("sort_order", 0),
         )
@@ -429,7 +429,7 @@ def _seed_subscription_plans(plans_data, courses, currency="TRY"):
     return created
 
 
-def _seed_bundles(bundles_data, courses, currency="TRY"):
+def _seed_bundles(bundles_data, courses, currency):
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import Bundle, BundleItem
@@ -444,7 +444,7 @@ def _seed_bundles(bundles_data, courses, currency="TRY"):
             name=bundle_data["name"],
             description=bundle_data.get("description", ""),
             price=Decimal(bundle_data["price"]),
-            currency=bundle_data.get("currency") or currency,
+            currency=currency,
         )
         for idx in bundle_data.get("course_indices", []):
             if idx < len(courses):

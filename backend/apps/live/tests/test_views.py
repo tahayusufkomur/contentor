@@ -510,3 +510,29 @@ class TestLiveStreamStop:
         client = make_client(owner)
         response = client.post(f"/api/v1/live-streams/{draft_live_stream.pk}/stop/")
         assert response.status_code == 400, response.content
+
+
+@pytest.mark.django_db(transaction=True)
+def test_paid_event_price_uses_the_tenants_currency(tenant_ctx, owner):
+    """Students must see the currency the coach charges in, never a hardcoded one."""
+    from django.db import connection
+
+    from apps.core.models import Tenant
+
+    Tenant.objects.filter(pk=connection.tenant.pk).update(billing_currency="EUR")
+    connection.tenant.billing_currency = "EUR"
+    paid = LiveClass.objects.create(
+        title="Paid Class",
+        description="",
+        instructor=owner,
+        status="scheduled",
+        pricing_type="paid",
+        price=Decimal("25.00"),
+    )
+    try:
+        resp = APIClient(HTTP_HOST=SHARED_DOMAIN).get(f"/api/v1/calendar/live_class/{paid.pk}/")
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["access_info"]["currency"] == "EUR"
+    finally:
+        Tenant.objects.filter(pk=connection.tenant.pk).update(billing_currency="USD")
+        connection.tenant.billing_currency = "USD"

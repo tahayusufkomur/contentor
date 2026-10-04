@@ -53,7 +53,7 @@ def plan(db):
         is_live_enabled=True,
         prices={
             "USD": {"amount_cents": 1900, "stripe_price_id": "price_usd_starter_test"},
-            "TRY": {"amount_cents": 65000, "stripe_price_id": "price_try_starter_test"},
+            "EUR": {"amount_cents": 1900, "stripe_price_id": "price_eur_starter_test"},
         },
     )
 

@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
+from apps.core.currency import tenant_charge_currency
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
 
@@ -526,7 +527,7 @@ def calendar_event_detail(request, event_type, pk):
                 has_access=False,
                 pricing_type=pricing_type,
                 price=obj.price,
-                currency=getattr(obj, "currency", "TRY"),
+                currency=getattr(obj, "currency", None) or tenant_charge_currency(),
                 unlock_methods=["purchase"],
             )
 

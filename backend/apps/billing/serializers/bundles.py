@@ -110,6 +110,8 @@ class BundleCreateSerializer(serializers.ModelSerializer):
             "is_active",
             "items",
         ]
+        # Always the tenant's charge currency (the model default) — never client-chosen.
+        read_only_fields = ["currency"]
 
     def create(self, validated_data):
         items_data = validated_data.pop("items", [])

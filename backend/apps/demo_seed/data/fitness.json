@@ -330,7 +330,6 @@
       "name": "Monthly Pass",
       "description": "Access all subscription courses and live classes for one month.",
       "price": "49.00",
-      "currency": "TRY",
       "sort_order": 1,
       "access_course_indices": [
         1,
@@ -342,7 +341,6 @@
       "description": "Full year of unlimited access — save 40% compared to monthly.",
       "billing_interval_months": 12,
       "price": "349.00",
-      "currency": "TRY",
       "sort_order": 2,
       "access_course_indices": [
         1,
@@ -355,7 +353,6 @@
       "name": "Complete Fitness Collection",
       "description": "All three programs at a discounted price. Build your foundation and train like a pro.",
       "price": "79.00",
-      "currency": "TRY",
       "course_indices": [
         0,
         1,

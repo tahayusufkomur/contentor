@@ -72,7 +72,7 @@ def subscription_course(tenant_ctx, coach):
 def subscription_course_with_plan(subscription_course, tenant_ctx):
     """subscription_course linked to an active plan via SubscriptionPlanAccess."""
     ct = ContentType.objects.get_for_model(Course)
-    plan = SubscriptionPlan.objects.create(name="Auto Plan", price=Decimal("49.90"), currency="TRY")
+    plan = SubscriptionPlan.objects.create(name="Auto Plan", price=Decimal("49.90"), currency="USD")
     SubscriptionPlanAccess.objects.create(plan=plan, content_type=ct, object_id=subscription_course.pk)
     return subscription_course, plan
 
@@ -142,7 +142,7 @@ class TestCheckAccessPaidContent:
             amount=Decimal("99.90"),
             platform_fee=Decimal("9.99"),
             submerchant_payout=Decimal("89.91"),
-            currency="TRY",
+            currency="USD",
             provider="iyzico",
         )
         PaymentItem.objects.create(
@@ -165,7 +165,7 @@ class TestCheckAccessPaidContent:
             amount=Decimal("99.90"),
             platform_fee=Decimal("9.99"),
             submerchant_payout=Decimal("89.91"),
-            currency="TRY",
+            currency="USD",
             provider="iyzico",
         )
         PaymentItem.objects.create(
@@ -189,7 +189,7 @@ class TestCheckAccessPaidContent:
 class TestCheckAccessBundlePurchase:
     def test_bundle_grants_access(self, service, student, paid_course):
         ct = ContentType.objects.get_for_model(Course)
-        bundle = Bundle.objects.create(name="Test Bundle", price=Decimal("149.90"), currency="TRY")
+        bundle = Bundle.objects.create(name="Test Bundle", price=Decimal("149.90"), currency="USD")
         BundleItem.objects.create(bundle=bundle, content_type=ct, object_id=paid_course.pk)
 
         bundle_ct = ContentType.objects.get_for_model(Bundle)
@@ -200,7 +200,7 @@ class TestCheckAccessBundlePurchase:
             amount=Decimal("149.90"),
             platform_fee=Decimal("14.99"),
             submerchant_payout=Decimal("134.91"),
-            currency="TRY",
+            currency="USD",
             provider="iyzico",
         )
         PaymentItem.objects.create(
@@ -224,14 +224,14 @@ class TestCheckAccessBundlePurchase:
 class TestCheckAccessSubscription:
     def test_active_subscription_grants_access(self, service, student, subscription_course):
         ct = ContentType.objects.get_for_model(Course)
-        plan = SubscriptionPlan.objects.create(name="Monthly", price=Decimal("49.90"), currency="TRY")
+        plan = SubscriptionPlan.objects.create(name="Monthly", price=Decimal("49.90"), currency="USD")
         SubscriptionPlanAccess.objects.create(plan=plan, content_type=ct, object_id=subscription_course.pk)
         now = timezone.now()
         Subscription.objects.create(
             student=student,
             plan=plan,
             billing_amount=Decimal("49.90"),
-            billing_currency="TRY",
+            billing_currency="USD",
             status="active",
             current_period_start=now - timedelta(days=1),
             current_period_end=now + timedelta(days=29),
@@ -242,14 +242,14 @@ class TestCheckAccessSubscription:
 
     def test_expired_subscription_denies_access(self, service, student, subscription_course):
         ct = ContentType.objects.get_for_model(Course)
-        plan = SubscriptionPlan.objects.create(name="Monthly Expired", price=Decimal("49.90"), currency="TRY")
+        plan = SubscriptionPlan.objects.create(name="Monthly Expired", price=Decimal("49.90"), currency="USD")
         SubscriptionPlanAccess.objects.create(plan=plan, content_type=ct, object_id=subscription_course.pk)
         now = timezone.now()
         Subscription.objects.create(
             student=student,
             plan=plan,
             billing_amount=Decimal("49.90"),
-            billing_currency="TRY",
+            billing_currency="USD",
             status="active",
             current_period_start=now - timedelta(days=31),
             current_period_end=now - timedelta(days=1),
@@ -258,14 +258,14 @@ class TestCheckAccessSubscription:
         assert info.has_access is False
 
     def test_subscription_without_plan_access_denies(self, service, student, subscription_course):
-        plan = SubscriptionPlan.objects.create(name="Monthly No Access", price=Decimal("49.90"), currency="TRY")
+        plan = SubscriptionPlan.objects.create(name="Monthly No Access", price=Decimal("49.90"), currency="USD")
         # No SubscriptionPlanAccess linking to subscription_course
         now = timezone.now()
         Subscription.objects.create(
             student=student,
             plan=plan,
             billing_amount=Decimal("49.90"),
-            billing_currency="TRY",
+            billing_currency="USD",
             status="active",
             current_period_start=now - timedelta(days=1),
             current_period_end=now + timedelta(days=29),
@@ -325,7 +325,7 @@ class TestBulkCheckAccess:
             amount=Decimal("99.90"),
             platform_fee=Decimal("9.99"),
             submerchant_payout=Decimal("89.91"),
-            currency="TRY",
+            currency="USD",
             provider="iyzico",
         )
         PaymentItem.objects.create(

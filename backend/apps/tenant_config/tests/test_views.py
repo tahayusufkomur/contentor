@@ -68,7 +68,7 @@ class TestAdminStats:
             amount=Decimal("120.00"),
             platform_fee=Decimal("12.00"),
             submerchant_payout=Decimal("108.00"),
-            currency="TRY",
+            currency="USD",
             provider="bypass",
         )
         Payment.objects.create(
@@ -78,7 +78,7 @@ class TestAdminStats:
             amount=Decimal("80.00"),
             platform_fee=Decimal("8.00"),
             submerchant_payout=Decimal("72.00"),
-            currency="TRY",
+            currency="USD",
             provider="bypass",
         )
         Payment.objects.create(
@@ -88,7 +88,7 @@ class TestAdminStats:
             amount=Decimal("20.00"),
             platform_fee=Decimal("0.00"),
             submerchant_payout=Decimal("0.00"),
-            currency="TRY",
+            currency="USD",
             provider="bypass",
         )
 

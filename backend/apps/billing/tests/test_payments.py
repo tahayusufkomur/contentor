@@ -85,7 +85,7 @@ def paid_bundle(tenant_ctx, paid_course):
         name="Paid Bundle",
         description="A bundle for payment testing",
         price=Decimal("149.00"),
-        currency="TRY",
+        currency="USD",
         is_active=True,
     )
     ct = ContentType.objects.get_for_model(Course)
@@ -99,7 +99,7 @@ def active_plan(tenant_ctx):
         name="Basic Plan",
         description="Basic subscription plan",
         price=Decimal("29.99"),
-        currency="TRY",
+        currency="USD",
         is_active=True,
     )
 
@@ -110,7 +110,7 @@ def inactive_plan(tenant_ctx):
         name="Inactive Plan",
         description="An inactive plan",
         price=Decimal("49.99"),
-        currency="TRY",
+        currency="USD",
         is_active=False,
     )
 
@@ -222,7 +222,7 @@ class TestPaymentItemRefund:
             amount=paid_course.price,
             platform_fee=Decimal("9.90"),
             submerchant_payout=Decimal("89.10"),
-            currency="TRY",
+            currency="USD",
             provider="bypass",
         )
         item1 = PaymentItem.objects.create(

@@ -4,12 +4,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from apps.core.currency import tenant_charge_currency
+
 
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default="TRY")
+    currency = models.CharField(max_length=3, default=tenant_charge_currency)
     # Billing cycle length in months: 1 = monthly, 12 = yearly, anything else
     # is a custom cycle. Stripe caps recurring periods at 3 years (36 months).
     billing_interval_months = models.PositiveIntegerField(
@@ -57,7 +59,7 @@ class Subscription(models.Model):
         SubscriptionPlan, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     billing_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    billing_currency = models.CharField(max_length=3, default="TRY")
+    billing_currency = models.CharField(max_length=3, default=tenant_charge_currency)
     status = models.CharField(
         max_length=20,
         choices=[("active", "Active"), ("past_due", "Past Due"), ("expired", "Expired")],
@@ -168,7 +170,7 @@ class Bundle(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default="TRY")
+    currency = models.CharField(max_length=3, default=tenant_charge_currency)
     thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

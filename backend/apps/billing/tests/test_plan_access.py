@@ -75,7 +75,7 @@ def plan(tenant_ctx):
         name="Basic Plan",
         description="Basic subscription plan",
         price=Decimal("29.99"),
-        currency="TRY",
+        currency="USD",
         is_active=True,
     )
 

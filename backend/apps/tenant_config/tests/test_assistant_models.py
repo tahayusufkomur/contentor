@@ -41,9 +41,9 @@ def test_plan_field_default_zero():
 @override_settings(
     BILLING_FREE_PLAN_NAME="Free",
     STRIPE_PRICE_STARTER_USD="price_starter_usd_test",
-    STRIPE_PRICE_STARTER_TRY="price_starter_try_test",
+    STRIPE_PRICE_STARTER_EUR="price_starter_eur_test",
     STRIPE_PRICE_PRO_USD="price_pro_usd_test",
-    STRIPE_PRICE_PRO_TRY="price_pro_try_test",
+    STRIPE_PRICE_PRO_EUR="price_pro_eur_test",
     STRIPE_SECRET_KEY="",
     CONTENTOR_SUPERUSERS=[],
 )
