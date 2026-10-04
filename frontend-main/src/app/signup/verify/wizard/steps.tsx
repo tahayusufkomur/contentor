@@ -157,7 +157,7 @@ export function OptionCard({
         </span>
       )}
       {badge && (
-        <span className="absolute left-2 top-2 rounded-full bg-foreground/[0.06] px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+        <span className="absolute left-2 top-2 z-10 rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground shadow-sm">
           {badge}
         </span>
       )}
