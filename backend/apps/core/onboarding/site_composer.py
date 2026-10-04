@@ -939,6 +939,8 @@ gives the visitor, in a line no other page uses:
   faq: easing the doubts someone has before they start.
   contact: an invitation to write with a question.
 - Never reuse or lightly reword a line from "used_headlines" (headlines already on the coach's other pages).
+- courseShowcase, events and pricing sections show each offer's own title on its card; their heading and intro \
+frame the offers (what someone gets by starting) and never repeat an offer's title.
 
 Links
 - Every field ending in "Href" is one of: /courses, /about, /contact, /calendar, /plans, /faq, /blog. Never link a \
