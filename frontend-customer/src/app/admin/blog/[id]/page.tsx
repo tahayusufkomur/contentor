@@ -16,6 +16,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { refreshSetupStatus } from "@/lib/setup-assistant";
 import { PageState } from "@/components/ui/page-state";
 import { SkeletonForm } from "@/components/ui/skeletons";
 import { CoverPicker } from "@/components/admin/blog/cover-picker";
@@ -75,6 +76,7 @@ export default function BlogEditorPage() {
     });
     setPost(updated);
     toast.success("Saved");
+    void refreshSetupStatus();
   };
 
   const { run: save, loading: saving } = useAsyncAction(() => doSave(), {

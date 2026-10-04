@@ -19,7 +19,7 @@ import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import { blockerMeta } from "@/lib/publish-blockers";
-import { useSetupStatus } from "@/lib/setup-assistant";
+import { refreshSetupStatus, useSetupStatus } from "@/lib/setup-assistant";
 import { ApiError } from "@/types/api";
 
 interface MeTenant {
@@ -100,6 +100,7 @@ export function PublishCard() {
     async () => {
       if (!canPublish) return;
       await patchTenant({ is_published: true });
+      void refreshSetupStatus();
       toast.success("Your app is live 🎉");
     },
     { onError: patchErrorToast },
@@ -114,6 +115,7 @@ export function PublishCard() {
       )
         return;
       await patchTenant({ is_published: false });
+      void refreshSetupStatus();
     },
     { onError: patchErrorToast },
   );

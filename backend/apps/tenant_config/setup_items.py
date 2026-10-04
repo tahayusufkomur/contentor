@@ -191,7 +191,14 @@ def compute_setup_state(config, tenant) -> dict:
         "site",
         bool(progress.get("look_edited")) or bool(config.logo_id or config.logo_url),
     )
-    add("first_course", "content", _has_own(Course, seeded.get("courses.course", [])))
+    # Same rule as the publish gate (publish_blockers): a draft course never
+    # ticks this, or the checklist says done while Publish stays blocked.
+    add(
+        "first_course",
+        "content",
+        _has_own(Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True))
+        or _has_own(DownloadFile, seeded.get("downloads.downloadfile", [])),
+    )
     if was_seeded:
         add("demo_cleanup", "content", not seeded_rows_exist)
     add("payouts", "business", can_monetize(tenant))
@@ -224,7 +231,14 @@ def compute_setup_state(config, tenant) -> dict:
     if "write_blog" in wizard_goals:
         from apps.blog.models import BlogPost
 
-        add("first_blog_post", "extras", BlogPost.objects.exists(), optional=True)
+        add(
+            "first_blog_post",
+            "extras",
+            _has_own(
+                BlogPost, seeded.get("blog.blogpost", []), queryset=BlogPost.objects.filter(status="published")
+            ),
+            optional=True,
+        )
     if "build_community" in wizard_goals:
         from apps.community.models import Post
 

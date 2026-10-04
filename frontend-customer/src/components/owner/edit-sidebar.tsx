@@ -39,7 +39,7 @@ import {
   pageKeyForPath,
 } from "@/lib/blocks/pages";
 import { SetupAssistantPanel } from "@/components/setup/setup-assistant-panel";
-import { useSetupStatus } from "@/lib/setup-assistant";
+import { refreshSetupStatus, useSetupStatus } from "@/lib/setup-assistant";
 import type { Block, PageTemplate, TenantConfig } from "@/types/tenant";
 
 type Mode = "site" | "pages";
@@ -151,7 +151,10 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (res.ok) router.refresh();
+        if (res.ok) {
+          router.refresh();
+          void refreshSetupStatus();
+        }
         else toast.error("Could not save your changes. Please try again.");
       } catch {
         toast.error("Could not save your changes. Please try again.");

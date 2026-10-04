@@ -36,6 +36,7 @@ import {
   useRichEditor,
 } from "@/components/owner/rich-editor";
 import { RichHtml } from "@/components/blocks/rich-html";
+import { refreshSetupStatus } from "@/lib/setup-assistant";
 import { formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
@@ -153,6 +154,7 @@ export function CourseForm({
           }),
         });
         toast.success("Course created");
+        void refreshSetupStatus();
         navigate(`/admin/courses/${created.slug}`);
         return;
       }
@@ -172,6 +174,7 @@ export function CourseForm({
         }),
       });
       toast.success("Course saved");
+      void refreshSetupStatus();
       await loadCourse();
     },
     {

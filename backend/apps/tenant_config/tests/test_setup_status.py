@@ -71,7 +71,7 @@ def test_pages_edited_marks_page_items(client, config):
 
 
 def test_first_course_ignores_untouched_demo(client, coach, config):
-    demo = Course.objects.create(title="D", slug="d-setupv2", instructor=coach)
+    demo = Course.objects.create(title="D", slug="d-setupv2", instructor=coach, is_published=True)
     register_seeded([demo], niche="general")
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
         items = _items(client.get("/api/v1/admin/setup-status/").json())
@@ -83,6 +83,18 @@ def test_first_course_ignores_untouched_demo(client, coach, config):
         items = _items(client.get("/api/v1/admin/setup-status/").json())
     assert items["first_course"]["done"] is True  # edited demo counts as own
     demo.delete()
+
+
+def test_checklist_first_course_ignores_drafts(client, coach, config):
+    """The checklist must agree with the publish gate: a draft is not 'done'."""
+    Course.objects.create(title="Draft", slug="draft-setup", instructor=coach, is_published=False)
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        items = _items(client.get("/api/v1/admin/setup-status/").json())
+    assert items["first_course"]["done"] is False
+    Course.objects.filter(slug="draft-setup").update(is_published=True)
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        items = _items(client.get("/api/v1/admin/setup-status/").json())
+    assert items["first_course"]["done"] is True
 
 
 def test_manual_override_roundtrip(client, config):
@@ -353,8 +365,12 @@ def test_goal_driven_items_present_with_wizard_goals(client, config, wizard_goal
 def test_first_blog_post_autocompletes(client, config, wizard_goals_tenant):
     from apps.blog.models import BlogPost
 
-    BlogPost.objects.create(title="Hello", slug="hello-setup-test")
+    post = BlogPost.objects.create(title="Hello", slug="hello-setup-test", status="draft")
     try:
+        with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+            body = client.get("/api/v1/admin/setup-status/").json()
+        assert _items(body)["first_blog_post"]["done"] is False  # a draft is not "done"
+        BlogPost.objects.filter(pk=post.pk).update(status="published")
         with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
             body = client.get("/api/v1/admin/setup-status/").json()
         assert _items(body)["first_blog_post"]["done"] is True
