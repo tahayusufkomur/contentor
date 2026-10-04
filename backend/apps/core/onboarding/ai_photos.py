@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-CANDIDATES_PER_GROUP = 24
+CANDIDATES_PER_GROUP = 12  # one catalog page
 MAX_SLOTS = 16
 MAX_OUTPUT_TOKENS = 1000
 
@@ -114,7 +114,7 @@ def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> 
         # whose niche it has no words for would otherwise finish the wizard with
         # a photo-less site rather than generic-but-real imagery.
         hero_pool = curated_client.search_or_browse(
-            query, collection=curated_client.HERO_COLLECTION, per_page=CANDIDATES_PER_GROUP
+            query, orientation=curated_client.WIDE, per_page=CANDIDATES_PER_GROUP
         ).results
         content_pool = curated_client.search_or_browse(query, per_page=CANDIDATES_PER_GROUP).results
     except curated_client.CuratedImageError as exc:

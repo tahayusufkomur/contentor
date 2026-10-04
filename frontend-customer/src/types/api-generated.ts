@@ -452,6 +452,135 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/copilot/audit/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Newest-first feed of executed copilot actions for /admin/site-ai. */
+    get: operations["v1_admin_copilot_audit_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/chats/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description List recent chats / create one (optionally seeded with entries — the
+     *     one-time localStorage import path). Creation prunes beyond MAX_CHATS so
+     *     the table can't grow unbounded.
+     */
+    get: operations["v1_admin_copilot_chats_retrieve"];
+    put?: never;
+    /**
+     * @description List recent chats / create one (optionally seeded with entries — the
+     *     one-time localStorage import path). Creation prunes beyond MAX_CHATS so
+     *     the table can't grow unbounded.
+     */
+    post: operations["v1_admin_copilot_chats_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/chats/{chat_id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_admin_copilot_chats_retrieve_2"];
+    put?: never;
+    post?: never;
+    delete: operations["v1_admin_copilot_chats_destroy"];
+    options?: never;
+    head?: never;
+    patch: operations["v1_admin_copilot_chats_partial_update"];
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/converse/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_copilot_converse_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/execute/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_copilot_execute_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/photos/describe/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Vision caption for a just-uploaded attachment: what does the photo
+     *     show? Saved to Photo.alt_text so the copilot (and media search) can
+     *     refer to it later. Best-effort — always 200 with a possibly-empty
+     *     description; an upload must never fail on a describe hiccup.
+     */
+    post: operations["v1_admin_copilot_photos_describe_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/undo/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_copilot_undo_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/demo-content/": {
     parameters: {
       query?: never;
@@ -713,65 +842,6 @@ export interface paths {
     head?: never;
     /** @description Setup Assistant state: per-item checklist + dismiss + manual overrides. */
     patch: operations["v1_admin_setup_status_partial_update"];
-    trace?: never;
-  };
-  "/api/v1/admin/site-ai/apply/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Persist a previewed edit, spending one monthly allowance unit.
-     *
-     *     402 when there is nothing left — a soft refusal, not a wall: the coach can
-     *     still edit manually for free on every plan.
-     */
-    post: operations["v1_admin_site_ai_apply_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/admin/site-ai/preview/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Stream a proposed edit. FREE — previewing never consumes an allowance;
-     *     only Apply does. USD still accrues on every attempt (kill-switch).
-     */
-    post: operations["v1_admin_site_ai_preview_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/admin/site-ai/status/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Remaining monthly site-edit allowance for this tenant. */
-    get: operations["v1_admin_site_ai_status_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
     trace?: never;
   };
   "/api/v1/admin/stats/": {
@@ -2296,6 +2366,97 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/curated-images/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_curated_images_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curated-images/{asset_id}/preview/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description Bytes for an offline fixture image. Real catalog previews are signed URLs
+     *     straight from the service; this exists only so the picker shows something in
+     *     dev and e2e, where there is no signed URL to hand an <img> tag (which cannot
+     *     carry the JWT anyway). 404 whenever fake mode is off — including production,
+     *     which refuses the flag outright.
+     */
+    get: operations["v1_curated_images_preview_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curated-images/{asset_id}/use/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_curated_images_use_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curated-images/generate/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Queue a brand-new image for when search finds nothing that fits. Unlike
+     *     search this costs credits per image, so each tenant gets a monthly cap.
+     */
+    post: operations["v1_curated_images_generate_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/curated-images/generate/{job_id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_curated_images_generate_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/curated-photos/": {
     parameters: {
       query?: never;
@@ -3695,6 +3856,69 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/onboarding/wizard/domain/checkout/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Start the domain purchase from inside the wizard. Success/cancel land
+     *     back on /signup/verify on the SAME host the wizard runs on (tr. locale
+     *     included) — the stashed localStorage token is per-origin, so returning to
+     *     the apex from a tr. wizard would strand the coach.
+     */
+    post: operations["v1_onboarding_wizard_domain_checkout_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/domain/search/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Availability search. POST (not GET) so the token stays out of logs. */
+    post: operations["v1_onboarding_wizard_domain_search_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/wizard/domain/sync/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Return-from-checkout probe + status read, one shape for both. With a
+     *     `session_id` we activate the purchase server-side instead of waiting for
+     *     the webhook (local dev receives none; prod's can trail the redirect).
+     *     With a `custom_domain_id` under DOMAINS_BYPASS_ENABLED we activate the
+     *     bypass "purchase" directly — there is no Stripe session to retrieve.
+     *     With neither, this is a plain read of the current domain.
+     */
+    post: operations["v1_onboarding_wizard_domain_sync_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/onboarding/wizard/finalize/": {
     parameters: {
       query?: never;
@@ -3812,8 +4036,12 @@ export interface paths {
     /**
      * @description Enqueue early schema provisioning for the token's tenant. Idempotent:
      *     only 'pending' tenants enqueue; any other state just reports its status.
-     *     The frontend polls the existing provisioning-status view until 'provisioned'
-     *     before showing the content step.
+     *     The frontend polls this same view every 1.5s until 'provisioned', so the
+     *     'pending' guard must flip synchronously here — the task is the only other
+     *     thing that changes provisioning_status, and it may not start running for
+     *     several polls (worker backlog, slow migration), which used to re-enqueue a
+     *     duplicate on every intervening tick. select_for_update closes the window
+     *     between two near-simultaneous polls too.
      */
     post: operations["v1_onboarding_wizard_provision_create"];
     delete?: never;
@@ -3858,6 +4086,13 @@ export interface paths {
      * @description Persist the last-previewed pages, decrementing the reveal's single free
      *     apply. 402 (not a hard block — Publish stays available) once spent; the
      *     admin Site AI panel enforces the monthly plan quota separately.
+     *
+     *     Deliberately does NOT call site_ai.record_update(): that increments
+     *     updates_used, the SAME counter site_ai.availability() reads for the paid
+     *     admin panel's monthly quota. The reveal's one free apply is tracked
+     *     entirely by wizard_state["reveal_applies_used"] below and must stay
+     *     outside that meter — otherwise using the reveal's free apply would show
+     *     up as spent allowance in the coach's own /admin/site-ai panel.
      */
     post: operations["v1_onboarding_wizard_site_edit_apply_create"];
     delete?: never;
@@ -4373,6 +4608,140 @@ export interface paths {
      *     behaviour is driven by the `model_admin` declaration.
      */
     get: operations["v1_platform_admin_blog_ai_usage_meta_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/copilot-settings/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_copilot_settings_list"];
+    put?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    post: operations["v1_platform_admin_copilot_settings_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/copilot-settings/{id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_copilot_settings_retrieve"];
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    put: operations["v1_platform_admin_copilot_settings_update"];
+    post?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    delete: operations["v1_platform_admin_copilot_settings_destroy"];
+    options?: never;
+    head?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    patch: operations["v1_platform_admin_copilot_settings_partial_update"];
+    trace?: never;
+  };
+  "/api/v1/platform-admin/copilot-settings/actions/{action_name}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    post: operations["v1_platform_admin_copilot_settings_actions_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/copilot-settings/autocomplete/{field_name}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_copilot_settings_autocomplete_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform-admin/copilot-settings/meta/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description CRUD + meta + actions + autocomplete for one ModelAdmin.
+     *
+     *     Subclasses are generated per registration (see `build_viewset`); all
+     *     behaviour is driven by the `model_admin` declaration.
+     */
+    get: operations["v1_platform_admin_copilot_settings_meta_retrieve"];
     put?: never;
     post?: never;
     delete?: never;
@@ -8695,6 +9064,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/webhooks/livecraft/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description {"event": "recording.ready", "room": "<slug>-<hex>", "key": "<s3 key>"} — signed.
+     *
+     *     The room name carries the tenant slug, so one global URL serves every
+     *     tenant. The recording lands in our bucket, so the key is all we store.
+     */
+    post: operations["webhooks_livecraft_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/webhooks/stripe/": {
     parameters: {
       query?: never;
@@ -8880,6 +9271,13 @@ export interface components {
       /** Format: date-time */
       readonly joined_at: string;
     };
+    CopilotSettingsAdmin: {
+      readonly id: number;
+      /** @description Clarifying questions the copilot may ask in one conversation before it must act or answer. 0 = no cap. */
+      max_asks_per_conversation?: number;
+      /** Format: date-time */
+      readonly updated_at: string;
+    };
     CourseAdmin: {
       readonly id: number;
       title: string;
@@ -8993,15 +9391,13 @@ export interface components {
       readonly updated_at: string;
     };
     /**
-     * @description * `hero` - hero
-     *     * `stock` - stock
-     *     * `spot` - spot
+     * @description * `spot` - spot
      *     * `texture` - texture
      *     * `divider` - divider
      *     * `icon` - icon
      * @enum {string}
      */
-    KindEnum: "hero" | "stock" | "spot" | "texture" | "divider" | "icon";
+    KindEnum: "spot" | "texture" | "divider" | "icon";
     LogoAiUsageAdmin: {
       readonly id: number;
       readonly tenant_schema: string;
@@ -9145,6 +9541,21 @@ export interface components {
        */
       previous?: string | null;
       results: components["schemas"]["CommunityMemberAdmin"][];
+    };
+    PaginatedCopilotSettingsAdminList: {
+      /** @example 123 */
+      count: number;
+      /**
+       * Format: uri
+       * @example http://api.example.org/accounts/?page=4
+       */
+      next?: string | null;
+      /**
+       * Format: uri
+       * @example http://api.example.org/accounts/?page=2
+       */
+      previous?: string | null;
+      results: components["schemas"]["CopilotSettingsAdmin"][];
     };
     PaginatedCourseAdminList: {
       /** @example 123 */
@@ -9557,6 +9968,13 @@ export interface components {
       requires_approval?: boolean;
       /** Format: date-time */
       readonly joined_at?: string;
+    };
+    PatchedCopilotSettingsAdmin: {
+      readonly id?: number;
+      /** @description Clarifying questions the copilot may ask in one conversation before it must act or answer. 0 = no cap. */
+      max_asks_per_conversation?: number;
+      /** Format: date-time */
+      readonly updated_at?: string;
     };
     PatchedCourseAdmin: {
       readonly id?: number;
@@ -11022,6 +11440,194 @@ export interface operations {
       };
     };
   };
+  v1_admin_copilot_audit_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_chats_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_chats_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_chats_retrieve_2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        chat_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_chats_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        chat_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_chats_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        chat_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_converse_create: {
+    parameters: {
+      query?: {
+        format?: "json" | "txt";
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_execute_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_photos_describe_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_undo_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_demo_content_retrieve: {
     parameters: {
       query?: never;
@@ -11433,62 +12039,6 @@ export interface operations {
     };
   };
   v1_admin_setup_status_partial_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_admin_site_ai_apply_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_admin_site_ai_preview_create: {
-    parameters: {
-      query?: {
-        format?: "json" | "txt";
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_admin_site_ai_status_retrieve: {
     parameters: {
       query?: never;
       header?: never;
@@ -13531,6 +14081,102 @@ export interface operations {
       };
     };
   };
+  v1_curated_images_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_curated_images_preview_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        asset_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_curated_images_use_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        asset_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_curated_images_generate_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_curated_images_generate_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        job_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_curated_photos_retrieve: {
     parameters: {
       query?: never;
@@ -15431,6 +16077,60 @@ export interface operations {
       };
     };
   };
+  v1_onboarding_wizard_domain_checkout_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_domain_search_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_wizard_domain_sync_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_onboarding_wizard_finalize_create: {
     parameters: {
       query?: never;
@@ -16470,6 +17170,217 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["BlogAiUsageAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_list: {
+    parameters: {
+      query?: {
+        /** @description A page number within the paginated result set. */
+        page?: number;
+        /** @description Number of results to return per page. */
+        page_size?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PaginatedCopilotSettingsAdminList"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["CopilotSettingsAdmin"];
+        "multipart/form-data": components["schemas"]["CopilotSettingsAdmin"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["CopilotSettingsAdmin"];
+        "multipart/form-data": components["schemas"]["CopilotSettingsAdmin"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["PatchedCopilotSettingsAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["PatchedCopilotSettingsAdmin"];
+        "multipart/form-data": components["schemas"]["PatchedCopilotSettingsAdmin"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_actions_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        action_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        "application/x-www-form-urlencoded": components["schemas"]["CopilotSettingsAdmin"];
+        "multipart/form-data": components["schemas"]["CopilotSettingsAdmin"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_autocomplete_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        field_name: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
+        };
+      };
+    };
+  };
+  v1_platform_admin_copilot_settings_meta_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CopilotSettingsAdmin"];
         };
       };
     };
@@ -23041,6 +23952,24 @@ export interface operations {
     responses: {
       /** @description No response body */
       204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  webhooks_livecraft_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
         headers: {
           [name: string]: unknown;
         };

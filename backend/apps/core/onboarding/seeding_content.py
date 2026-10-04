@@ -72,12 +72,21 @@ def _outlines_for(brief, tenant_schema):
     return generate_course_outlines(brief, tenant_schema)
 
 
+def _cover_queries(brief, title):
+    """Niche + title, then the niche alone: the catalog matches short visual
+    queries far better than a bare course title (see ai_curate.photo_query)."""
+    from apps.core.onboarding.ai_curate import photo_query
+
+    return (photo_query(brief, title), photo_query(brief)) if brief else (title,)
+
+
 def seed_draft_products(tenant, brief, *, count=3) -> int:
     """Up to `count` draft (is_published=False) Courses from AI outlines,
     registered seeded. generate_course_outlines is itself fail-soft (a
     deterministic fallback when AI is unavailable), so this never needs its
     own AI-availability gate. Must run inside the caller's tenant_context."""
     from apps.accounts.models import User
+    from apps.core.curated_images.cache import auto_cover
     from apps.courses.models import Course
 
     owner = User.objects.filter(role="owner").order_by("id").first()
@@ -91,6 +100,7 @@ def seed_draft_products(tenant, brief, *, count=3) -> int:
             price=o.get("suggested_price", 0),
             instructor=owner,
             is_published=False,
+            thumbnail=auto_cover(*_cover_queries(brief, o["title"])),
         )
         register_seeded([course], niche=tenant.template_niche or "general")
         made += 1

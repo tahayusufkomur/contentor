@@ -1,4 +1,4 @@
-"""Read side of the remote curated photo catalog (the curated-image-api service).
+"""Read side of the remote photo catalog: Pix4Less (https://pix4less.com/docs).
 
 Contentor no longer owns the photographic library. This module is the only place
 that talks to that service: it normalizes the service's Image payload into a
@@ -13,6 +13,7 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass
+from urllib.parse import urljoin
 
 import requests
 from django.conf import settings
@@ -20,12 +21,20 @@ from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
-# Collections stand in for the `kind` field the remote catalog does not have.
-HERO_COLLECTION = "coach-heroes"
-STOCK_COLLECTION = "coach-stock"
+# What a hero background or a cover asks for: the catalog has no "hero" kind,
+# but a wide shot is what those slots need.
+WIDE = "landscape"
+ORIENTATIONS = frozenset({"landscape", "portrait", "square"})
 
-MAX_PER_PAGE = 48
+MAX_PER_PAGE = 12  # the service's hard page size
 UNAVAILABLE = "the photo library is unavailable right now"
+OUT_OF_CREDITS = "image credits are used up for now"
+
+# Generation (POST /v1/images/generate): the service's default model caps its
+# prompt at 451 characters, and a job ends in exactly one of these states.
+GENERATION_PROMPT_MAX = 450
+GENERATION_ASPECT_RATIOS = frozenset({"16:9", "1:1", "4:3", "9:16", "4:5"})
+GENERATION_DONE = frozenset({"fulfilled", "failed", "rejected"})
 
 
 class CuratedImageError(Exception):
@@ -68,6 +77,20 @@ class SearchPage:
     shuffle_cycle_restarted: bool = False
 
 
+@dataclass(frozen=True)
+class GenerationJob:
+    """A queued/finished request for a brand-new image. `image` is set only
+    once the job is fulfilled; failed and rejected jobs never get one."""
+
+    job_id: str
+    status: str
+    image: RemoteImage | None = None
+
+    @property
+    def done(self) -> bool:
+        return self.status in GENERATION_DONE
+
+
 def is_fake() -> bool:
     return bool(getattr(settings, "CURATED_IMAGE_API_FAKE", False))
 
@@ -90,15 +113,26 @@ def _url(path: str) -> str:
     return f"{settings.CURATED_IMAGE_API_URL.rstrip('/')}{path}"
 
 
-def _request(method: str, path: str, *, json_body: dict | None = None, allow_404: bool = False):
+def _request(
+    method: str,
+    path: str,
+    *,
+    json_body: dict | None = None,
+    allow_404: bool = False,
+    headers: dict | None = None,
+    read_timeout: float | None = None,
+):
     """One upstream call with a single retry. Returns the parsed body, or None
     for an allowed 404. Raises CuratedImageError for everything else."""
     if not available():
         raise CuratedImageError("the photo library is not configured")
+    timeout = (_timeout()[0], read_timeout) if read_timeout else _timeout()
     last_error: Exception | None = None
     for _attempt in (1, 2):
         try:
-            response = requests.request(method, _url(path), json=json_body, headers=_headers(), timeout=_timeout())
+            response = requests.request(
+                method, _url(path), json=json_body, headers={**_headers(), **(headers or {})}, timeout=timeout
+            )
         except requests.ReadTimeout as exc:
             # The service took the request and is being slow. A second attempt
             # only doubles the wait before the same failure and piles load onto
@@ -116,7 +150,7 @@ def _request(method: str, path: str, *, json_body: dict | None = None, allow_404
         if response.status_code >= 400:
             # 4xx is our own mistake (bad key, bad request) — retrying cannot fix it.
             logger.error("curated catalog %s %s -> %s %s", method, path, response.status_code, response.text[:300])
-            raise CuratedImageError(UNAVAILABLE)
+            raise CuratedImageError(OUT_OF_CREDITS if response.status_code == 402 else UNAVAILABLE)
         try:
             return response.json()
         except ValueError as exc:
@@ -126,11 +160,18 @@ def _request(method: str, path: str, *, json_body: dict | None = None, allow_404
     raise CuratedImageError(UNAVAILABLE)
 
 
+def _absolute(url: str) -> str:
+    """Preview URLs come back as paths on the service's own origin
+    (/media/previews/<id>/web.webp); a browser on a tenant domain and the
+    copy-on-use download both need the full URL."""
+    return urljoin(f"{settings.CURATED_IMAGE_API_URL.rstrip('/')}/", url) if url else ""
+
+
 def _image_from_payload(payload: dict) -> RemoteImage:
     renditions = payload.get("renditions") or {}
     web = renditions.get("web") or {}
     thumbnail = renditions.get("thumbnail") or {}
-    web_url = web.get("url") or payload.get("url") or ""
+    web_url = _absolute(web.get("url") or payload.get("url") or "")
     if not payload.get("id") or not web_url:
         raise CuratedImageError(UNAVAILABLE)
     return RemoteImage(
@@ -140,29 +181,30 @@ def _image_from_payload(payload: dict) -> RemoteImage:
         tags=[str(tag) for tag in (payload.get("tags") or [])],
         width=web.get("width") or payload.get("width"),
         height=web.get("height") or payload.get("height"),
-        preview_url=thumbnail.get("url") or web_url,
+        preview_url=_absolute(thumbnail.get("url") or "") or web_url,
         web_url=web_url,
     )
 
 
-def _cache_key(query: str, collection: str | None, page: int, per_page: int) -> str:
-    digest = hashlib.sha256(json.dumps([query, collection or "", page, per_page], sort_keys=True).encode()).hexdigest()[
-        :32
-    ]
-    return f"curated-images:v1:search:{digest}"
+def _cache_key(query: str, orientation: str | None, page: int, per_page: int) -> str:
+    digest = hashlib.sha256(
+        json.dumps([query, orientation or "", page, per_page], sort_keys=True).encode()
+    ).hexdigest()[:32]
+    return f"curated-images:v2:search:{digest}"
 
 
 def search(
     query: str = "",
     *,
-    collection: str | None = None,
+    orientation: str | None = None,
     page: int = 1,
-    per_page: int = 24,
+    per_page: int = MAX_PER_PAGE,
     session_id: str = "",
     shuffle: bool = False,
 ) -> SearchPage:
-    """Ranked catalog page for a plain-language query. An empty query browses
-    newest-first, which is what a picker opening for the first time wants.
+    """Ranked catalog page for a plain-language query, over the whole library.
+    An empty query browses newest-first, which is what a picker opening for the
+    first time wants. `orientation` narrows to landscape/portrait/square.
 
     Cached in Redis so a coach typing does not fan out one upstream request per
     keystroke. The TTL must stay below the service's signed-URL lifetime (15
@@ -181,11 +223,11 @@ def search(
         from . import fake
 
         return fake.search(
-            query, collection=collection, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle
+            query, orientation=orientation, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle
         )
 
     sessioned = bool(session_id or shuffle)
-    key = _cache_key(query, collection, page, per_page)
+    key = _cache_key(query, orientation, page, per_page)
     cached = None if sessioned else cache.get(key)
     if cached is None:
         body = _request(
@@ -193,7 +235,7 @@ def search(
             "/v1/images/search",
             json_body={
                 **({"query": query} if query else {}),
-                **({"filters": {"collection": collection}} if collection else {}),
+                **({"filters": {"orientation": orientation}} if orientation else {}),
                 **({"session_id": session_id} if session_id else {}),
                 **({"shuffle": True} if shuffle else {}),
                 "page": page,
@@ -221,13 +263,13 @@ def search(
 def search_or_browse(
     query: str = "",
     *,
-    collection: str | None = None,
+    orientation: str | None = None,
     page: int = 1,
-    per_page: int = 24,
+    per_page: int = MAX_PER_PAGE,
     session_id: str = "",
     shuffle: bool = False,
 ) -> SearchPage:
-    """Ranked page for `query`, falling back to browsing the same collection
+    """Ranked page for `query`, falling back to browsing (same orientation)
     when the query matches nothing.
 
     The catalog's lexical search FILTERS as well as ranks: a coach whose subject
@@ -243,11 +285,11 @@ def search_or_browse(
     result set means the coach reached the end of their matches, not that they
     should suddenly be shown unrelated images.
     """
-    first = search(query, collection=collection, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle)
+    first = search(query, orientation=orientation, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle)
     if first.results or not query or page != 1:
         return first
     return search(
-        collection=collection, page=1, per_page=per_page, session_id=session_id or first.session_id, shuffle=shuffle
+        orientation=orientation, page=1, per_page=per_page, session_id=session_id or first.session_id, shuffle=shuffle
     )
 
 
@@ -266,3 +308,49 @@ def get(asset_id: str) -> RemoteImage | None:
     if body is None:
         return None
     return _image_from_payload(body.get("data") or {})
+
+
+def _job_from_payload(body: dict) -> GenerationJob:
+    data = (body or {}).get("data") or {}
+    if not data.get("id"):
+        raise CuratedImageError(UNAVAILABLE)
+    status = str(data.get("status") or "")
+    image = data.get("image") if status == "fulfilled" else None
+    return GenerationJob(job_id=str(data["id"]), status=status, image=_image_from_payload(image) if image else None)
+
+
+def generate(prompt: str, *, aspect_ratio: str = "16:9", idempotency_key: str) -> GenerationJob:
+    """Queue a brand-new image for when the library has nothing that fits.
+
+    Unlike search this is charged per image, and the result joins the service's
+    public catalog — callers gate it (see views.curated_image_generate). The
+    idempotency key makes the single retry in _request safe: the service replays
+    the first response instead of queueing (and charging for) a second job.
+    """
+    prompt = " ".join((prompt or "").split())[:GENERATION_PROMPT_MAX]
+    if not prompt:
+        raise CuratedImageError("describe the image you want")
+    if is_fake():
+        from . import fake
+
+        return fake.generate(prompt)
+    body = _request(
+        "POST",
+        "/v1/images/generate",
+        json_body={"query": prompt, "aspect_ratio": aspect_ratio},
+        headers={"Idempotency-Key": idempotency_key},
+    )
+    return _job_from_payload(body)
+
+
+def generation(job_id: str, *, wait: int = 0) -> GenerationJob | None:
+    """Current state of a generation job, or None if the service does not know
+    it. `wait` long-polls (the service holds the request up to 25s) so callers
+    don't hammer the status endpoint while a ~1 minute job runs."""
+    if is_fake():
+        from . import fake
+
+        return fake.generation(job_id)
+    path = f"/v1/generation-requests/{job_id}" + (f"?wait={wait}" if wait else "")
+    body = _request("GET", path, allow_404=True, read_timeout=wait + 10 if wait else None)
+    return None if body is None else _job_from_payload(body)

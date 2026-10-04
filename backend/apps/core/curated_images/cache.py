@@ -53,6 +53,10 @@ def _host_allowed(hostname: str | None) -> bool:
     """
     if not hostname:
         return False
+    # The service serves previews from its own origin; the allowlist covers
+    # any object-storage host it signs URLs for.
+    if hostname == urlparse(settings.CURATED_IMAGE_API_URL).hostname:
+        return True
     return any(
         hostname == allowed or hostname.endswith(f".{allowed}") for allowed in settings.CURATED_IMAGE_MEDIA_HOSTS
     )
@@ -122,3 +126,41 @@ def cache_remote_image(image: RemoteImage):
         width=image.width,
         height=image.height,
     )
+
+
+def auto_cover(*queries: str):
+    """A wide catalog photo for something automation just created without one
+    (a seeded draft course, a copilot-created course or event), as a tenant
+    media.Photo — or None. Fail-soft: content creation must never fail because
+    the library is down or has nothing to offer. Must run inside the tenant
+    context.
+
+    `queries` are tried most-specific first (niche + title, then the niche
+    alone); the catalog drops whatever it cannot match, so the last resort is
+    browsing with no query at all.
+
+    Prefers a match this tenant has not used yet, so three seeded courses whose
+    titles the catalog has no words for don't all get the same fallback photo.
+    """
+    from apps.media.models import Photo
+
+    from . import client
+
+    try:
+        results = []
+        for query in dict.fromkeys((*queries, "")):  # de-duplicated, in order
+            results = client.search(query, orientation=client.WIDE).results
+            if results:
+                break
+        else:
+            return None
+        used = set(
+            Photo.objects.filter(s3_key__in=[tenant_key_for(i.asset_id) for i in results]).values_list(
+                "s3_key", flat=True
+            )
+        )
+        fresh = next((image for image in results if tenant_key_for(image.asset_id) not in used), results[0])
+        return cache_remote_image(fresh)
+    except CuratedImageError:
+        logger.warning("auto cover unavailable for %r", queries[:1])
+        return None

@@ -118,7 +118,6 @@ export function InlineImages({
       <ImageLibraryDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        defaultKind="stock"
         onSelect={add}
       />
     </div>

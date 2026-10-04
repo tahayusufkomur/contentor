@@ -68,7 +68,6 @@ export function CoverPicker({
       <ImageLibraryDialog
         open={open}
         onOpenChange={setOpen}
-        defaultKind="hero"
         onSelect={(photo) => void setCover(photo)}
       />
     </div>

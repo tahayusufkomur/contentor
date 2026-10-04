@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Image as ImageIcon, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ImageLibraryDialog } from "@/components/admin/blog/image-library-dialog";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import type { Photo } from "@/types/photo";
@@ -26,7 +28,9 @@ export function PhotoPicker({
   onClear,
   label = "Choose photo",
 }: PhotoPickerProps) {
+  const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   async function fetchPhotos(search: string): Promise<Photo[]> {
     const params = search ? `?search=${encodeURIComponent(search)}` : "";
@@ -112,6 +116,14 @@ export function PhotoPicker({
           >
             {label}
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setLibraryOpen(true)}
+          >
+            {t("blog.libraryTab")}
+          </Button>
           {displayUrl && onClear && (
             <Button type="button" variant="ghost" size="sm" onClick={onClear}>
               <X className="h-3.5 w-3.5" />
@@ -119,6 +131,17 @@ export function PhotoPicker({
           )}
         </div>
       </div>
+
+      {/* Stock photos: the pick is copied into this tenant's media first, so
+          the caller gets an ordinary tenant Photo either way. */}
+      <ImageLibraryDialog
+        open={libraryOpen}
+        onOpenChange={setLibraryOpen}
+        title={t("blog.libraryTitle")}
+        onSelect={async (picked) =>
+          onSelect(await clientFetch<Photo>(`/api/v1/photos/${picked.id}/`))
+        }
+      />
 
       <MediaPickerBase<Photo>
         open={open}

@@ -43,6 +43,11 @@ def _to_image(entry: dict):
     )
 
 
+def _orientation(entry: dict) -> str:
+    width, height = entry["width"], entry["height"]
+    return "landscape" if width > height else "portrait" if width < height else "square"
+
+
 def _tokens(text: str) -> set[str]:
     return {token for token in text.lower().replace(",", " ").split() if len(token) > 2}
 
@@ -68,7 +73,7 @@ def _session_remember(session_id: str, asset_ids: list[str]) -> None:
 
 
 def search(
-    query: str, *, collection: str | None, page: int, per_page: int, session_id: str = "", shuffle: bool = False
+    query: str, *, orientation: str | None, page: int, per_page: int, session_id: str = "", shuffle: bool = False
 ):
     """Offline stand-in for the service's search, including its session
     semantics: with a session id the same image is never handed back twice, and
@@ -78,7 +83,7 @@ def search(
 
     from .client import SearchPage
 
-    rows = [entry for entry in _entries() if not collection or entry["collection"] == collection]
+    rows = [entry for entry in _entries() if not orientation or _orientation(entry) == orientation]
     if query:
         # A query FILTERS as well as ranks, mirroring the service's lexical
         # search: a topic the catalog has no words for comes back empty, so
@@ -131,3 +136,26 @@ def entries() -> list[dict]:
 def fixture_path(asset_id: str) -> str:
     entry = next((e for e in _entries() if e["asset_id"] == asset_id), None)
     return str(FIXTURE_DIR / entry["file"]) if entry else ""
+
+
+_JOB_PREFIX = "fake-job-"
+
+
+def generate(prompt: str):
+    """Offline generation: "creates" whichever fixture best matches the prompt
+    and finishes at once, so the picker's generate path runs end to end."""
+    from .client import GenerationJob
+
+    wanted = _tokens(prompt)
+    entry = max(
+        _entries(),
+        key=lambda e: len(wanted & _tokens(f"{e['title']} {e['description']} {' '.join(e['tags'])}")),
+    )
+    return GenerationJob(job_id=f"{_JOB_PREFIX}{entry['asset_id']}", status="fulfilled", image=_to_image(entry))
+
+
+def generation(job_id: str):
+    from .client import GenerationJob
+
+    image = get(job_id.removeprefix(_JOB_PREFIX)) if job_id.startswith(_JOB_PREFIX) else None
+    return GenerationJob(job_id=job_id, status="fulfilled", image=image) if image else None

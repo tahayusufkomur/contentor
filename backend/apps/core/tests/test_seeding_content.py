@@ -79,5 +79,7 @@ def test_seeds_draft_courses(restore_public):
             courses = list(Course.objects.all())
             assert n == 2
             assert all(c.is_published is False for c in courses)
+            # Each draft arrives with its own stock cover.
+            assert len({c.thumbnail_id for c in courses if c.thumbnail_id}) == 2
     finally:
         _drop("seedc_prod")

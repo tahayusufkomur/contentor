@@ -65,7 +65,7 @@ def _pools(brief):
     query = brief_query(brief)
     return (
         curated_client.search_or_browse(
-            query, collection=curated_client.HERO_COLLECTION, per_page=ai_photos.CANDIDATES_PER_GROUP
+            query, orientation=curated_client.WIDE, per_page=ai_photos.CANDIDATES_PER_GROUP
         ).results,
         curated_client.search_or_browse(query, per_page=ai_photos.CANDIDATES_PER_GROUP).results,
     )
@@ -171,7 +171,7 @@ def test_pick_photos_still_has_candidates_for_a_niche_the_catalog_cannot_match(m
     from apps.core.onboarding.ai_curate import brief_query
 
     brief = CoachBrief(niche="pole_dance", description="aerial hoop choreography")
-    assert not curated_client.search(brief_query(brief), collection=curated_client.HERO_COLLECTION).results
+    assert not curated_client.search(brief_query(brief), orientation=curated_client.WIDE).results
     monkeypatch.setattr(ai_photos.core_ai, "structured", _fake_structured([{"slot": "hero", "candidate": 1}]))
     picks = ai_photos.pick_photos(brief, [ai_photos.Slot("hero", "Homepage hero", "hero")], tenant_schema="glow")
     assert picks["hero"].asset_id

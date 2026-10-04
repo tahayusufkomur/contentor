@@ -79,7 +79,7 @@ def test_search_normalizes_payload_and_prefers_the_thumbnail_for_previews(live_c
         return _Response(payload={"data": [_image_payload()], "pagination": {"has_next": True}})
 
     monkeypatch.setattr(requests, "request", _request)
-    page = client.search("sunrise run", collection=client.HERO_COLLECTION, page=2, per_page=12)
+    page = client.search("sunrise run", orientation=client.WIDE, page=2, per_page=12)
 
     assert page.has_next is True and page.page == 2
     image = page.results[0]
@@ -91,7 +91,7 @@ def test_search_normalizes_payload_and_prefers_the_thumbnail_for_previews(live_c
 
     method, url, body, headers = calls[0]
     assert (method, url) == ("POST", "https://catalog.test/v1/images/search")
-    assert body == {"query": "sunrise run", "filters": {"collection": "coach-heroes"}, "page": 2, "per_page": 12}
+    assert body == {"query": "sunrise run", "filters": {"orientation": "landscape"}, "page": 2, "per_page": 12}
     assert headers["X-API-Key"] == "test-key"
 
 
@@ -187,7 +187,7 @@ def test_unconfigured_catalog_is_reported_not_crashed(settings):
 
 
 def test_search_or_browse_returns_the_ranked_page_when_the_query_matches():
-    page = client.search_or_browse("yoga studio", collection=client.HERO_COLLECTION)
+    page = client.search_or_browse("yoga studio", orientation=client.WIDE)
     assert "yoga" in page.results[0].title.lower()
 
 
@@ -195,15 +195,15 @@ def test_search_or_browse_browses_when_the_query_matches_nothing():
     """The catalog's lexical search FILTERS as well as ranks, so a coach whose
     vocabulary it has no words for (pole dance, a query in another language)
     gets an empty page. Surfaces that must show something browse instead."""
-    assert client.search("pole dance aerial hoop", collection=client.HERO_COLLECTION).results == []
-    page = client.search_or_browse("pole dance aerial hoop", collection=client.HERO_COLLECTION)
+    assert client.search("pole dance aerial hoop", orientation=client.WIDE).results == []
+    page = client.search_or_browse("pole dance aerial hoop", orientation=client.WIDE)
     assert page.results
     assert all(image.asset_id for image in page.results)
 
 
 def test_search_or_browse_keeps_the_collection_filter_in_the_fallback():
-    heroes = {image.asset_id for image in client.search(collection=client.HERO_COLLECTION, per_page=50).results}
-    page = client.search_or_browse("pole dance aerial hoop", collection=client.HERO_COLLECTION)
+    heroes = {image.asset_id for image in client.search(orientation=client.WIDE, per_page=50).results}
+    page = client.search_or_browse("pole dance aerial hoop", orientation=client.WIDE)
     assert {image.asset_id for image in page.results} <= heroes
 
 
@@ -256,30 +256,58 @@ def test_fixture_session_never_repeats_until_the_cycle_restarts():
     from django.core.cache import cache
 
     cache.clear()
-    pool = len(client.search(collection=client.HERO_COLLECTION, per_page=50).results)
+    pool = len(client.search(orientation=client.WIDE, per_page=50).results)
     seen, restarted = [], False
     session = ""
     for _ in range(pool):
-        page = client.search(collection=client.HERO_COLLECTION, per_page=1, session_id=session, shuffle=True)
+        page = client.search(orientation=client.WIDE, per_page=1, session_id=session, shuffle=True)
         session = page.session_id
         assert page.session_id
         seen.append(page.results[0].asset_id)
         restarted = restarted or page.shuffle_cycle_restarted
     assert len(set(seen)) == pool and restarted is False
-    exhausted = client.search(collection=client.HERO_COLLECTION, per_page=1, session_id=session, shuffle=True)
+    exhausted = client.search(orientation=client.WIDE, per_page=1, session_id=session, shuffle=True)
     assert exhausted.shuffle_cycle_restarted is True
     assert exhausted.results[0].asset_id == seen[0]  # restarts at the top match
+
+
+def test_search_follows_the_live_contract(live_client, monkeypatch):
+    """The service returns preview URLs as paths on its own origin and holds at
+    most 12 images per page; a browser on a tenant domain needs full URLs."""
+    calls = []
+    relative = _image_payload(
+        url="/media/previews/abc/web.webp",
+        renditions={
+            "web": {"url": "/media/previews/abc/web.webp", "width": 1600, "height": 900},
+            "thumbnail": {"url": "/media/previews/abc/thumbnail.webp", "width": 640, "height": 360},
+        },
+    )
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        calls.append(json)
+        return _Response(payload={"data": [relative], "pagination": {"has_next": False}})
+
+    monkeypatch.setattr(requests, "request", _request)
+    image = client.search("yoga", per_page=50).results[0]
+
+    assert calls[0]["per_page"] == 12 and "filters" not in calls[0]
+    assert image.web_url == "https://catalog.test/media/previews/abc/web.webp"
+    assert image.preview_url == "https://catalog.test/media/previews/abc/thumbnail.webp"
+    # ...and the copy-on-use download accepts the service's own origin.
+    assert curated_cache._host_allowed("catalog.test") is True
+    assert curated_cache._host_allowed("evil-catalog.test") is False
 
 
 # ── offline fixture catalog ──────────────────────────────────────────────────
 
 
-def test_fixture_catalog_filters_by_collection_and_ranks_by_query():
+def test_fixture_catalog_filters_by_orientation_and_ranks_by_query():
     assert client.is_fake() is True  # conftest keeps every test offline
-    heroes = client.search(collection=client.HERO_COLLECTION, per_page=50).results
-    stock = client.search(collection=client.STOCK_COLLECTION, per_page=50).results
-    assert heroes and stock
-    assert not {image.asset_id for image in heroes} & {image.asset_id for image in stock}
+    wide = client.search(orientation=client.WIDE).results
+    tall = client.search(orientation="portrait").results
+    assert wide and tall
+    assert not {image.asset_id for image in wide} & {image.asset_id for image in tall}
+    assert len(wide) + len(tall) == len(client.search().results)
     assert "yoga" in client.search("yoga studio").results[0].title.lower()
 
 
@@ -446,15 +474,15 @@ def test_search_endpoint_requires_a_coach(tenant_ctx):
 
 
 def test_search_endpoint_returns_a_page(coach_client):
-    res = coach_client.get("/api/v1/curated-images/?collection=coach-heroes")
+    res = coach_client.get("/api/v1/curated-images/?orientation=landscape")
     assert res.status_code == 200
     assert res.data["results"] and res.data["page"] == 1
     first = res.data["results"][0]
     assert set(first) == {"id", "title", "alt_text", "tags", "width", "height", "image_url"}
 
 
-def test_search_endpoint_rejects_an_unknown_collection(coach_client):
-    assert coach_client.get("/api/v1/curated-images/?collection=all-of-them").status_code == 400
+def test_search_endpoint_rejects_an_unknown_orientation(coach_client):
+    assert coach_client.get("/api/v1/curated-images/?orientation=diagonal").status_code == 400
 
 
 def test_search_endpoint_reports_an_outage_instead_of_failing(coach_client, monkeypatch):
@@ -520,3 +548,71 @@ def test_cache_bypasses_http_for_fixture_bytes(tenant_ctx, monkeypatch, curated_
     photo = curated_cache.cache_remote_image(image)
     assert curated_image_uploads[photo.s3_key][:4] == b"RIFF"
     assert io.BytesIO(curated_image_uploads[photo.s3_key]).read(4) == b"RIFF"
+
+
+# ── generation ───────────────────────────────────────────────────────────────
+
+
+def test_generate_sends_an_idempotency_key_and_reads_the_job(live_client, monkeypatch):
+    calls = []
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        calls.append((method, url, json, headers, timeout))
+        if method == "POST":
+            return _Response(status_code=202, payload={"data": {"id": "job-1", "status": "pending", "image": None}})
+        return _Response(payload={"data": {"id": "job-1", "status": "fulfilled", "image": _image_payload()}})
+
+    monkeypatch.setattr(requests, "request", _request)
+    queued = client.generate("  a red   canoe at sunrise ", idempotency_key="key-1")
+    assert (queued.job_id, queued.status, queued.done, queued.image) == ("job-1", "pending", False, None)
+    method, url, body, headers, _ = calls[0]
+    assert (method, url) == ("POST", "https://catalog.test/v1/images/generate")
+    assert body == {"query": "a red canoe at sunrise", "aspect_ratio": "16:9"}
+    assert headers["Idempotency-Key"] == "key-1" and headers["X-API-Key"] == "test-key"
+
+    finished = client.generation("job-1", wait=8)
+    assert finished.done and finished.image.title == "Sunrise trail run"
+    assert calls[1][1] == "https://catalog.test/v1/generation-requests/job-1?wait=8"
+    assert calls[1][4][1] == 18  # read timeout outlasts the long-poll
+
+
+def test_out_of_credits_reads_as_such(live_client, monkeypatch):
+    monkeypatch.setattr(requests, "request", lambda *a, **k: _Response(status_code=402, text="payment_required"))
+    with pytest.raises(client.CuratedImageError, match="credits"):
+        client.generate("a red canoe", idempotency_key="key-2")
+
+
+def test_generate_endpoint_returns_a_tenant_photo_and_counts_against_the_cap(coach_client, settings):
+    settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT = 1
+    res = coach_client.post("/api/v1/curated-images/generate/", {"prompt": "yoga studio at dawn"}, format="json")
+    assert res.status_code == 202, res.data
+    assert res.data["done"] is True and res.data["photo"]["id"]
+
+    polled = coach_client.get(f"/api/v1/curated-images/generate/{res.data['job_id']}/")
+    assert polled.status_code == 200 and polled.data["photo"]["id"] == res.data["photo"]["id"]
+
+    again = coach_client.post("/api/v1/curated-images/generate/", {"prompt": "another one"}, format="json")
+    assert again.status_code == 429
+
+
+def test_generate_endpoint_guards_its_inputs(coach_client):
+    post = coach_client.post
+    assert post("/api/v1/curated-images/generate/", {"prompt": "  "}, format="json").status_code == 400
+    assert (
+        post("/api/v1/curated-images/generate/", {"prompt": "x", "aspect_ratio": "7:3"}, format="json").status_code
+        == 400
+    )
+    # A job this tenant never started is not pollable.
+    assert coach_client.get("/api/v1/curated-images/generate/fake-job-someone-elses/").status_code == 404
+
+
+# ── automatic covers ─────────────────────────────────────────────────────────
+
+
+def test_auto_cover_prefers_photos_the_tenant_has_not_used(tenant_ctx, curated_image_uploads):
+    """Subjects the library has no words for all fall back to the same page;
+    each call must still hand back a different photo."""
+    first = curated_cache.auto_cover("zzz unmatched subject one")
+    second = curated_cache.auto_cover("zzz unmatched subject two")
+    assert first and second and first.pk != second.pk
+    assert first.width > first.height  # covers are wide shots

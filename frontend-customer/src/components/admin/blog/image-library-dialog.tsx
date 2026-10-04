@@ -1,9 +1,9 @@
 "use client";
 
 // Shared picker: the curated library ("Library") or the tenant's own media ("My
-// photos"). The library spans two catalogs — photography from the remote
-// curated-image-api service (searchable, paged) and the local decorative
-// elements (spot/texture/divider/icon). Either way the pick is materialized into
+// photos"). The library spans two catalogs — photography from the whole remote
+// Pix4Less library (searchable, paged) and the local decorative elements
+// (spot/texture/divider/icon). Either way the pick is materialized into
 // a tenant Photo before onSelect fires, so callers only ever see tenant photo
 // ids; for remote photos that materialize step also copies the image into this
 // tenant's own storage.
@@ -20,15 +20,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StaleContainer } from "@/components/ui/stale-container";
 import { clientFetch } from "@/lib/api-client";
 import {
-  type CuratedCollection,
+  generateCuratedImage,
   materializeCuratedImage,
   searchCuratedImages,
 } from "@/lib/curated-images-api";
+import { ApiError } from "@/types/api";
 import {
   type CuratedKind,
   materializeCuratedPhoto,
   searchCuratedPhotos,
 } from "@/lib/curated-photos-api";
+import { toast } from "sonner";
+
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export interface PickedPhoto {
@@ -52,18 +55,15 @@ interface LibraryItem {
   remote: boolean;
 }
 
-/** Photography (remote collections) first, then the local design elements. */
-const CATEGORIES = [
-  {
-    key: "hero",
-    labelKey: "blog.kindHero",
-    collection: "coach-heroes" as CuratedCollection,
-  },
-  {
-    key: "stock",
-    labelKey: "blog.kindStock",
-    collection: "coach-stock" as CuratedCollection,
-  },
+export type LibraryCategory = "photos" | CuratedKind;
+
+/** Photography (the remote library) first, then the local design elements. */
+const CATEGORIES: {
+  key: LibraryCategory;
+  labelKey: string;
+  kind?: CuratedKind;
+}[] = [
+  { key: "photos", labelKey: "blog.kindPhotos" },
   { key: "spot", labelKey: "blog.kindSpot", kind: "spot" as CuratedKind },
   {
     key: "texture",
@@ -78,18 +78,18 @@ const CATEGORIES = [
   { key: "icon", labelKey: "blog.kindIcon", kind: "icon" as CuratedKind },
 ];
 
-export type LibraryCategory = (typeof CATEGORIES)[number]["key"];
-
 export function ImageLibraryDialog({
   open,
   onOpenChange,
-  defaultKind = "hero",
+  defaultKind = "photos",
+  title,
   onSelect,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultKind?: LibraryCategory;
-  onSelect: (photo: PickedPhoto) => void;
+  title?: string;
+  onSelect: (photo: PickedPhoto) => void | Promise<void>;
 }) {
   const t = useTranslations("admin");
   const [tab, setTab] = useState<"library" | "mine">("library");
@@ -121,12 +121,8 @@ export function ImageLibraryDialog({
         setHasNext(false);
         return;
       }
-      if (active.collection) {
-        const data = await searchCuratedImages({
-          q: query,
-          collection: active.collection,
-          page,
-        });
+      if (!active.kind) {
+        const data = await searchCuratedImages({ q: query, page });
         if (signal.cancelled) return;
         const batch = data.results.map((image) => ({
           key: image.id,
@@ -181,10 +177,39 @@ export function ImageLibraryDialog({
       const photo = item.remote
         ? await materializeCuratedImage(item.id)
         : await materializeCuratedPhoto(Number(item.id));
-      onSelect({ id: photo.id, url: photo.signed_url, title: photo.title });
+      await onSelect({
+        id: photo.id,
+        url: photo.signed_url,
+        title: photo.title,
+      });
       onOpenChange(false);
     },
     { errorToast: t("blog.errGeneric") },
+  );
+
+  // "Nothing fits" escape hatch: create the image the coach just described.
+  const { run: generate, loading: generating } = useAsyncAction(
+    async (prompt: string) => {
+      const photo = await generateCuratedImage(prompt);
+      if (!photo) {
+        toast.error(t("blog.libraryGenerateFailed"));
+        return;
+      }
+      await onSelect({
+        id: photo.id,
+        url: photo.signed_url,
+        title: photo.title,
+      });
+      onOpenChange(false);
+    },
+    {
+      onError: (err) =>
+        toast.error(
+          err instanceof ApiError && err.status === 429
+            ? t("blog.libraryGenerateLimit")
+            : t("blog.libraryGenerateFailed"),
+        ),
+    },
   );
 
   if (!open) return null;
@@ -214,7 +239,9 @@ export function ImageLibraryDialog({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">{t("blog.coverChoose")}</h2>
+            <h2 className="text-base font-semibold">
+              {title ?? t("blog.coverChoose")}
+            </h2>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
@@ -280,7 +307,7 @@ export function ImageLibraryDialog({
                     <button
                       key={item.key}
                       type="button"
-                      disabled={busy}
+                      disabled={busy || generating}
                       onClick={() => pick(item)}
                       className="group overflow-hidden rounded-md border bg-muted/30 hover:ring-2 hover:ring-ring"
                       title={item.title}
@@ -301,6 +328,20 @@ export function ImageLibraryDialog({
                   )}
                 </div>
               </StaleContainer>
+              {tab === "library" && category === "photos" && query.trim() && (
+                <div className="pt-3 text-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    loading={generating}
+                    loadingText={t("blog.libraryGenerating")}
+                    disabled={busy}
+                    onClick={() => generate(query.trim())}
+                  >
+                    {t("blog.libraryGenerate", { query: query.trim() })}
+                  </Button>
+                </div>
+              )}
               {hasNext && (
                 <div className="pt-3 text-center">
                   <Button

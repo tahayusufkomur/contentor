@@ -36,6 +36,24 @@ def _fail(errors):
     raise ContentOpError(f"{'.'.join(path)}: {current}" if path else current)
 
 
+def _give_cover(item):
+    """A course or event the copilot creates arrives with a fitting stock photo
+    instead of an empty thumbnail; the coach can swap it like any other cover."""
+    from django.db import connection
+
+    from apps.core.curated_images.cache import auto_cover
+    from apps.core.onboarding.ai_curate import CoachBrief, photo_query
+
+    if item.thumbnail_id or item.thumbnail_url:
+        return
+    # Niche + title, then the niche alone: the catalog matches short visual
+    # queries far better than a bare title.
+    brief = CoachBrief.from_tenant(connection.tenant)
+    item.thumbnail = auto_cover(photo_query(brief, item.title), photo_query(brief))
+    if item.thumbnail is not None:
+        item.save(update_fields=["thumbnail"])
+
+
 def create_course(user, params):
     from apps.courses.serializers import CourseCreateUpdateSerializer
 
@@ -43,6 +61,7 @@ def create_course(user, params):
     if not serializer.is_valid():
         _fail(serializer.errors)
     course = serializer.save(instructor=user, is_published=False)
+    _give_cover(course)
     return {
         "kind": "create_course",
         "id": course.id,
@@ -59,6 +78,7 @@ def create_event(user, event_kind, params):
     if not serializer.is_valid():
         _fail(serializer.errors)
     event = serializer.save(instructor=user)
+    _give_cover(event)
     tab = "onsite" if event_kind == "onsite" else "classes"
     return {
         "kind": "create_event",

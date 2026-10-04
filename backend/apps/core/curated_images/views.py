@@ -7,9 +7,13 @@ AI writer consume this.
 """
 
 import logging
+import uuid
 
 from django.conf import settings
+from django.core.cache import cache
+from django.db import connection
 from django.http import FileResponse, Http404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -22,8 +26,6 @@ from .cache import cache_remote_image
 from .client import CuratedImageError
 
 logger = logging.getLogger(__name__)
-
-COLLECTIONS = {client.HERO_COLLECTION, client.STOCK_COLLECTION}
 
 
 def _serialize(image: client.RemoteImage) -> dict:
@@ -41,9 +43,9 @@ def _serialize(image: client.RemoteImage) -> dict:
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def curated_image_search(request):
-    collection = request.query_params.get("collection", "").strip() or None
-    if collection and collection not in COLLECTIONS:
-        return Response({"detail": "Unknown collection."}, status=status.HTTP_400_BAD_REQUEST)
+    orientation = request.query_params.get("orientation", "").strip() or None
+    if orientation and orientation not in client.ORIENTATIONS:
+        return Response({"detail": "Unknown orientation."}, status=status.HTTP_400_BAD_REQUEST)
     try:
         page_number = max(1, int(request.query_params.get("page", "1")))
     except ValueError:
@@ -51,9 +53,8 @@ def curated_image_search(request):
     try:
         page = client.search(
             request.query_params.get("q", ""),
-            collection=collection,
+            orientation=orientation,
             page=page_number,
-            per_page=24,
         )
     except CuratedImageError as exc:
         return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -82,6 +83,68 @@ def curated_image_use(request, asset_id):
     from apps.media.serializers import PhotoSerializer
 
     return Response(PhotoSerializer(photo).data, status=status.HTTP_201_CREATED)
+
+
+def _job_response(job: client.GenerationJob) -> dict:
+    """What the picker polls for. A fulfilled job is copied into tenant media
+    right here, so the caller gets an ordinary tenant Photo like any other pick."""
+    body = {"job_id": job.job_id, "status": job.status, "done": job.done, "photo": None}
+    if job.image is not None:
+        from apps.media.serializers import PhotoSerializer
+
+        body["photo"] = PhotoSerializer(cache_remote_image(job.image)).data
+    return body
+
+
+def _job_key(job_id: str) -> str:
+    return f"curated-images:job:{job_id}"
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def curated_image_generate(request):
+    """Queue a brand-new image for when search finds nothing that fits. Unlike
+    search this costs credits per image, so each tenant gets a monthly cap."""
+    prompt = str(request.data.get("prompt") or "").strip()
+    aspect_ratio = str(request.data.get("aspect_ratio") or "16:9")
+    if not prompt or aspect_ratio not in client.GENERATION_ASPECT_RATIOS:
+        return Response({"detail": "Describe the image you want."}, status=status.HTTP_400_BAD_REQUEST)
+    # ponytail: the cap lives in the cache, so a Redis flush resets the month.
+    # Move it to a usage model if generation ever needs an audit trail.
+    count_key = f"curated-images:generated:{connection.schema_name}:{timezone.now():%Y-%m}"
+    if cache.get(count_key, 0) >= settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT:
+        return Response(
+            {"detail": "You have used this month's image generations."}, status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    try:
+        job = client.generate(prompt, aspect_ratio=aspect_ratio, idempotency_key=uuid.uuid4().hex)
+        body = _job_response(job)
+    except CuratedImageError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    if job.done and job.image is None:  # the service refused the description outright
+        return Response({"detail": "That description could not be turned into an image."}, status=422)
+    cache.add(count_key, 0, timeout=40 * 86400)
+    cache.incr(count_key)
+    # Job ids belong to the platform's one account; remember whose this is so a
+    # tenant can only poll (and collect the image of) jobs it started.
+    cache.set(_job_key(job.job_id), connection.schema_name, timeout=3600)
+    return Response(body, status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def curated_image_generation(request, job_id):
+    if cache.get(_job_key(job_id)) != connection.schema_name:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        # Long-poll: most jobs take about a minute, so hold each status call a
+        # few seconds rather than have the picker hammer the endpoint.
+        job = client.generation(job_id, wait=8)
+        if job is None:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(_job_response(job))
+    except CuratedImageError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 @api_view(["GET"])

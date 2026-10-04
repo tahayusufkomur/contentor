@@ -79,10 +79,7 @@ def test_pick_photo_excludes_the_current_photo():
 
 
 def test_pick_photo_hero_field_only_offers_the_hero_collection():
-    hero_ids = {
-        image.asset_id
-        for image in curated_client.search(collection=curated_client.HERO_COLLECTION, per_page=50).results
-    }
+    hero_ids = {image.asset_id for image in curated_client.search(orientation=curated_client.WIDE, per_page=50).results}
     picked = photos.pick_photo("yoga", _tenant(), field="bgImage")
     assert picked.asset_id in hero_ids
 
@@ -96,7 +93,7 @@ def test_pick_photo_falls_back_to_browsing_when_the_query_matches_nothing():
         _tenant(niche="pole_dance"),
         field="bgImage",
     )
-    hero_ids = {i.asset_id for i in curated_client.search(collection=curated_client.HERO_COLLECTION).results}
+    hero_ids = {i.asset_id for i in curated_client.search(orientation=curated_client.WIDE).results}
     assert picked.asset_id in hero_ids
 
 
@@ -128,7 +125,7 @@ def fresh_offer_memory():
 def _hero_pool_size():
     """Heroes the offline fixture catalog can offer a coach it has no words for
     (the browse fallback) — the size the rotation tests reason about."""
-    return len(curated_client.search_or_browse("pole dance", collection=curated_client.HERO_COLLECTION).results)
+    return len(curated_client.search_or_browse("pole dance", orientation=curated_client.WIDE).results)
 
 
 def test_pick_photo_does_not_repeat_a_photo_it_just_offered(fresh_offer_memory):

@@ -39,8 +39,8 @@ def curated_candidates(topic, limit=MAX_CURATED_CANDIDATES):
     if limit <= 0:
         return []
     try:
-        # No collection filter: a blog cover reads well from a hero or a stock
-        # shot, and narrowing here would halve an already small candidate pool.
+        # No orientation filter: a blog cover reads well from any shape, and
+        # narrowing here would shrink the candidate pool.
         page = curated_client.search(topic, page=1, per_page=limit)
         results = page.results
         if not results:
@@ -48,7 +48,7 @@ def curated_candidates(topic, limit=MAX_CURATED_CANDIDATES):
             # for, scores zero against every row. Offer a few generic covers so
             # photo-less tenants still get a cover rather than nothing.
             results = curated_client.search(
-                collection=curated_client.HERO_COLLECTION, page=1, per_page=min(limit, _FALLBACK_CANDIDATES)
+                orientation=curated_client.WIDE, page=1, per_page=min(limit, _FALLBACK_CANDIDATES)
             ).results
     except curated_client.CuratedImageError as exc:
         logger.warning("blog curated candidates unavailable: %s", exc)

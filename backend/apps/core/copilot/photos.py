@@ -42,12 +42,12 @@ def image_captions(tenant, pages):
     return {str(r["id"]): (r["alt_text"] or r["title"] or "photo") for r in rows}
 
 
-# Catalog collection offered per field, mirroring onboarding's ai_photos split:
-# hero backgrounds only from mood-setting wide hero shots; inline images may come
-# from either collection (None = no filter). "courseCover"/"eventCover" are the
-# pseudo-fields the cover actions pick with — thumbnails read well from either.
-FIELD_COLLECTIONS = {
-    "bgImage": "coach-heroes",
+# Orientation asked for per field, mirroring onboarding's ai_photos split: hero
+# backgrounds only from wide shots; inline images may be any shape (None = no
+# filter). "courseCover"/"eventCover" are the pseudo-fields the cover actions
+# pick with — thumbnails read well from either.
+FIELD_ORIENTATIONS = {
+    "bgImage": "landscape",
     "image": None,
     "courseCover": None,
     "eventCover": None,
@@ -141,7 +141,7 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
     from apps.core.onboarding.ai_curate import CoachBrief, photo_query
 
     brief = CoachBrief.from_tenant(tenant)
-    collection = FIELD_COLLECTIONS.get(field)
+    orientation = FIELD_ORIENTATIONS.get(field)
     # "Try another" excludes whatever is on the block now. The cached tenant key
     # still carries the catalog asset id, so no extra bookkeeping is needed.
     excluded = asset_id_from_key(exclude_s3_key or "")
@@ -151,7 +151,7 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
     for query in (
         photo_query(brief, description),  # the niche, shown the way this turn asked
         photo_query(brief),  # the niche alone
-        "",  # anything in the collection
+        "",  # anything in the library
     ):
         if query not in queries:
             queries.append(query)
@@ -170,7 +170,7 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
             try:
                 page = curated_client.search_or_browse(
                     query,
-                    collection=collection,
+                    orientation=orientation,
                     page=1,
                     per_page=per_page,
                     session_id=session_id,

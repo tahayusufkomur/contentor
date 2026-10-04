@@ -287,7 +287,7 @@ def test_provision_applies_ai_photo_picks(cleanup, monkeypatch):
     from apps.core.onboarding import ai_compose, ai_photos
 
     connection.set_schema_to_public()
-    hero_image = curated_client.search(collection=curated_client.HERO_COLLECTION).results[0]
+    hero_image = curated_client.search(orientation=curated_client.WIDE).results[0]
 
     def fake_pick(brief, slots, *, tenant_schema):
         # Deterministic stand-in for the LLM: hero + first course slot.

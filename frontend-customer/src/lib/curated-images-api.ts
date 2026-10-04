@@ -1,13 +1,10 @@
-// Thin client for the remote curated photo catalog
-// (backend/apps/core/curated_images → the curated-image-api service).
+// Thin client for the remote photo catalog
+// (backend/apps/core/curated_images → Pix4Less, the whole library).
 // Photography lives in that service; the decorative catalog (spot, texture,
 // divider, icon) is still local — see curated-photos-api.ts.
 import { clientFetch } from "@/lib/api-client";
 
 import type { MaterializedPhoto } from "@/lib/curated-photos-api";
-
-// Collections stand in for the `kind` field the remote catalog does not have.
-export type CuratedCollection = "coach-heroes" | "coach-stock";
 
 export interface CuratedImage {
   id: string;
@@ -27,17 +24,43 @@ export interface CuratedImagePage {
 
 export function searchCuratedImages(params: {
   q?: string;
-  collection?: CuratedCollection;
   page?: number;
 }): Promise<CuratedImagePage> {
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
-  if (params.collection) search.set("collection", params.collection);
   if (params.page && params.page > 1) search.set("page", String(params.page));
   const qs = search.toString();
   return clientFetch<CuratedImagePage>(
     `/api/v1/curated-images/${qs ? `?${qs}` : ""}`,
   );
+}
+
+export interface CuratedImageJob {
+  job_id: string;
+  status: string;
+  done: boolean;
+  photo: MaterializedPhoto | null;
+}
+
+/** Create a brand-new image from a description when the library has nothing
+ * that fits. Counts against the tenant's monthly cap (429 once it is used up).
+ * Most jobs take about a minute; this resolves with the tenant photo, or null
+ * when the service could not produce one. */
+export async function generateCuratedImage(
+  prompt: string,
+): Promise<MaterializedPhoto | null> {
+  let job = await clientFetch<CuratedImageJob>(
+    "/api/v1/curated-images/generate/",
+    { method: "POST", body: JSON.stringify({ prompt }) },
+  );
+  // Each status call long-polls a few seconds server-side, so this loop is
+  // not a busy wait. 40 rounds comfortably outlasts a slow job.
+  for (let round = 0; !job.done && round < 40; round += 1) {
+    job = await clientFetch<CuratedImageJob>(
+      `/api/v1/curated-images/generate/${job.job_id}/`,
+    );
+  }
+  return job.photo;
 }
 
 // Named materialize*, not use* — ESLint treats use-prefixed functions as React

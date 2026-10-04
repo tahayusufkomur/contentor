@@ -418,6 +418,9 @@ CURATED_IMAGE_MEDIA_HOSTS = [
     if host.strip()
 ]
 # Cap on a single cached rendition; the web rendition is normally ~300 KB.
+# Brand-new images a tenant may generate per calendar month (0 turns it off).
+# Search is unlimited on our plan; generation is charged per image.
+CURATED_IMAGE_GENERATE_MONTHLY_LIMIT = int(os.environ.get("CURATED_IMAGE_GENERATE_MONTHLY_LIMIT", "20"))
 CURATED_IMAGE_MAX_BYTES = int(os.environ.get("CURATED_IMAGE_MAX_BYTES", str(15 * 1024 * 1024)))
 # Seconds a search response stays in Redis. A coach typing in the library must
 # not fan out one upstream request per keystroke.

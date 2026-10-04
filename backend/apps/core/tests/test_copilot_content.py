@@ -50,6 +50,20 @@ def test_create_course_lands_as_draft_with_outline(coach):
     assert modules[0].lessons.count() == 2
     assert result["kind"] == "create_course"
     assert result["url"] == f"/admin/courses/{course.slug}"
+    # Arrives with a stock cover matched to its title rather than an empty one.
+    assert "yoga" in course.thumbnail.title.lower()
+
+
+def test_created_course_survives_a_library_outage(coach, monkeypatch):
+    from apps.core.curated_images import client as curated_client
+    from apps.courses.models import Course
+
+    def _down(*args, **kwargs):
+        raise curated_client.CuratedImageError("down")
+
+    monkeypatch.setattr(curated_client, "search", _down)
+    result = content.create_course(coach, {"title": "Yoga Foundations", "description": "Start here."})
+    assert Course.objects.get(id=result["id"]).thumbnail is None
 
 
 def test_create_course_invalid_input_raises_user_safe_error(coach):
