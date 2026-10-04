@@ -18,26 +18,9 @@ import { Input } from "@/components/ui/input";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
+import { blockerMeta } from "@/lib/publish-blockers";
 import { useSetupStatus } from "@/lib/setup-assistant";
 import { ApiError } from "@/types/api";
-
-// Copy + deep link for each mandatory publish requirement (decision
-// 2026-07-05). Keys mirror the backend `publish_blockers` output.
-const PUBLISH_BLOCKER_META: Record<string, { label: string; href: string }> = {
-  look: { label: "Add your logo", href: "/?edit=1&studio=1" },
-  demo_cleanup: {
-    label: "Remove the demo content",
-    href: "/admin/courses",
-  },
-  first_course: {
-    label: "Create your first course or download",
-    href: "/admin/courses/new",
-  },
-  payouts: {
-    label: "Connect payments to sell paid content",
-    href: "/admin/payouts",
-  },
-};
 
 interface MeTenant {
   slug: string;
@@ -261,8 +244,7 @@ export function PublishCard() {
                     </p>
                     <ul className="space-y-1.5">
                       {blockers.map((key) => {
-                        const meta = PUBLISH_BLOCKER_META[key];
-                        if (!meta) return null;
+                        const meta = blockerMeta(key);
                         return (
                           <li key={key}>
                             <Link
