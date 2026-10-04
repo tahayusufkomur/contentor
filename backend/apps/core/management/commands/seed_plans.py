@@ -7,15 +7,15 @@ from apps.core.stripe_pricing import provision_stripe_price
 
 # ── Monthly plan prices ──────────────────────────────────────────────────────
 # Amounts are the source of truth, in each currency's smallest unit (USD cents,
-# TRY kuruş — both 2-decimal in Stripe). The actual Stripe Price objects are
+# EUR cents — both 2-decimal in Stripe). The actual Stripe Price objects are
 # created automatically from these on seed (see `provision_stripe_price`); you
 # never create a Price in the dashboard or paste a price_id. Change a number
 # here and the next deploy provisions a fresh Price and re-points the plan.
 # (Superadmins can also change amounts at runtime via the platform plan-edit
 # endpoint, which calls the same `provision_stripe_price` helper.)
 PLAN_AMOUNTS = {
-    "starter": {"USD": 1990, "TRY": 99900},  # $19.90 / ₺999.00
-    "pro": {"USD": 4990, "TRY": 249900},  # $49.90 / ₺2499.00
+    "starter": {"USD": 1990, "EUR": 1990},  # $19.90 / €19.90
+    "pro": {"USD": 4990, "EUR": 4990},  # $49.90 / €49.90
 }
 
 
@@ -64,9 +64,9 @@ class Command(BaseCommand):
         # override); otherwise the Price is auto-provisioned from PLAN_AMOUNTS.
         env_overrides = {
             ("starter", "USD"): settings.STRIPE_PRICE_STARTER_USD,
-            ("starter", "TRY"): settings.STRIPE_PRICE_STARTER_TRY,
+            ("starter", "EUR"): settings.STRIPE_PRICE_STARTER_EUR,
             ("pro", "USD"): settings.STRIPE_PRICE_PRO_USD,
-            ("pro", "TRY"): settings.STRIPE_PRICE_PRO_TRY,
+            ("pro", "EUR"): settings.STRIPE_PRICE_PRO_EUR,
         }
 
         def resolve_price_id(plan_key, currency):
@@ -113,9 +113,9 @@ class Command(BaseCommand):
                         "amount_cents": PLAN_AMOUNTS["starter"]["USD"],
                         "stripe_price_id": resolve_price_id("starter", "USD"),
                     },
-                    "TRY": {
-                        "amount_cents": PLAN_AMOUNTS["starter"]["TRY"],
-                        "stripe_price_id": resolve_price_id("starter", "TRY"),
+                    "EUR": {
+                        "amount_cents": PLAN_AMOUNTS["starter"]["EUR"],
+                        "stripe_price_id": resolve_price_id("starter", "EUR"),
                     },
                 },
             },
@@ -136,9 +136,9 @@ class Command(BaseCommand):
                         "amount_cents": PLAN_AMOUNTS["pro"]["USD"],
                         "stripe_price_id": resolve_price_id("pro", "USD"),
                     },
-                    "TRY": {
-                        "amount_cents": PLAN_AMOUNTS["pro"]["TRY"],
-                        "stripe_price_id": resolve_price_id("pro", "TRY"),
+                    "EUR": {
+                        "amount_cents": PLAN_AMOUNTS["pro"]["EUR"],
+                        "stripe_price_id": resolve_price_id("pro", "EUR"),
                     },
                 },
             },

@@ -243,7 +243,7 @@ def wizard_checkout(request):
     handling is needed."""
     from django.db import transaction
 
-    from apps.core.constants import REGION_DEFAULT_CURRENCY
+    from apps.core.constants import CURRENCY_USD
     from apps.core.models import PlatformPlan
 
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
@@ -263,7 +263,7 @@ def wizard_checkout(request):
     with transaction.atomic():
         locked = type(tenant).objects.select_for_update().get(pk=tenant.pk)
         if not locked.billing_currency:
-            locked.billing_currency = REGION_DEFAULT_CURRENCY.get(locked.region, "USD")
+            locked.billing_currency = CURRENCY_USD
             locked.save(update_fields=["billing_currency"])
         tenant.billing_currency = locked.billing_currency
 

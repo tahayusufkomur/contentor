@@ -203,7 +203,7 @@ class PlatformPlan(models.Model):
     stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     # Multi-currency prices. Shape:
     #   {"USD": {"amount_cents": 1900, "stripe_price_id": "price_..."},
-    #    "TRY": {"amount_cents": 59900, "stripe_price_id": "price_..."}}
+    #    "EUR": {"amount_cents": 1990, "stripe_price_id": "price_..."}}
     prices = models.JSONField(default=dict, blank=True)
     is_live_enabled = models.BooleanField(default=False)
     # Archived plans stay in the DB (the Tenant.plan FK is PROTECT, so existing

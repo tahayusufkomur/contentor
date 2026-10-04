@@ -448,8 +448,8 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 # in Phase 0; downstream callers must handle PRICE_NOT_AVAILABLE.
 STRIPE_PRICE_STARTER_USD = os.environ.get("STRIPE_PRICE_STARTER_USD", "")
 STRIPE_PRICE_PRO_USD = os.environ.get("STRIPE_PRICE_PRO_USD", "")
-STRIPE_PRICE_STARTER_TRY = os.environ.get("STRIPE_PRICE_STARTER_TRY", "")
-STRIPE_PRICE_PRO_TRY = os.environ.get("STRIPE_PRICE_PRO_TRY", "")
+STRIPE_PRICE_STARTER_EUR = os.environ.get("STRIPE_PRICE_STARTER_EUR", "")
+STRIPE_PRICE_PRO_EUR = os.environ.get("STRIPE_PRICE_PRO_EUR", "")
 
 # --- Logging ------------------------------------------------------------------
 # Everything goes to stdout so `docker logs` / the fleet telemetry collector see
@@ -550,7 +550,7 @@ DOMAINS_MARKUP_MULTIPLIER = 1.20
 DOMAINS_DEFAULT_CURRENCY = "EUR"
 # Static USD->currency FX table (markup + ceil rounding absorbs drift). Keyed by
 # ISO 4217. 1 USD = N units of the currency.
-DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92, "TRY": 32.0}
+DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92}
 
 # AWS Route 53 Domains. Dedicated credentials — the AWS_ACCESS_KEY_ID /
 # AWS_SECRET_ACCESS_KEY above are the Hetzner S3 object-storage keys (boto3),

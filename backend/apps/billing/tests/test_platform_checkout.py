@@ -37,7 +37,7 @@ def starter_plan(restore_public):
             "is_live_enabled": True,
             "prices": {
                 "USD": {"amount_cents": 1900, "stripe_price_id": "price_test_starter_usd"},
-                "TRY": {"amount_cents": 65000, "stripe_price_id": "price_test_starter_try"},
+                "EUR": {"amount_cents": 1900, "stripe_price_id": "price_test_starter_eur"},
             },
         },
     )
@@ -58,8 +58,26 @@ def starter_plan_no_usd(restore_public):
             "is_live_enabled": True,
             "prices": {
                 "USD": {"amount_cents": 1900, "stripe_price_id": ""},
-                "TRY": {"amount_cents": 65000, "stripe_price_id": "price_test_starter_try"},
+                "EUR": {"amount_cents": 1900, "stripe_price_id": "price_test_starter_eur"},
             },
+        },
+    )
+    return plan
+
+
+@pytest.fixture()
+def starter_plan_no_eur(restore_public):
+    plan, _ = PlatformPlan.objects.update_or_create(
+        name="phase1-starter-no-eur",
+        defaults={
+            "price_monthly": 19,
+            "transaction_fee_pct": 8,
+            "max_students": 100,
+            "max_storage_gb": 100,
+            "max_streaming_hours": 100,
+            "max_campaign_emails": 1000,
+            "is_live_enabled": True,
+            "prices": {"USD": {"amount_cents": 1900, "stripe_price_id": "price_test_starter_usd"}},
         },
     )
     return plan
@@ -135,11 +153,9 @@ def test_checkout_creates_session_for_global_tenant_with_usd(restore_public, own
 
 
 @override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_SECRET_KEY="sk_test_phase1_dummy")  # noqa: S106
-def test_checkout_creates_session_for_tr_tenant_with_try(restore_public, owner, starter_plan):
+def test_checkout_uses_eur_price_for_eur_tenant(restore_public, owner, starter_plan):
     tenant = restore_public
-    Tenant.objects.filter(pk=tenant.pk).update(billing_currency="", region="tr")
-    owner.preferred_locale = "tr"
-    owner.save(update_fields=["preferred_locale"])
+    Tenant.objects.filter(pk=tenant.pk).update(billing_currency="EUR", region="global")
     client = _client(owner)
 
     with patch("stripe.checkout.Session.create", return_value=_fake_stripe_session()) as create_mock:
@@ -150,20 +166,31 @@ def test_checkout_creates_session_for_tr_tenant_with_try(restore_public, owner, 
         )
 
     assert response.status_code == 200, response.content
-    tenant.refresh_from_db()
-    assert tenant.billing_currency == "TRY"
-
     kwargs = create_mock.call_args.kwargs
-    assert kwargs["line_items"] == [{"price": "price_test_starter_try", "quantity": 1}]
-    assert kwargs["locale"] == "tr"
-    assert kwargs["metadata"]["region"] == "tr"
+    assert kwargs["line_items"] == [{"price": "price_test_starter_eur", "quantity": 1}]
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_SECRET_KEY="sk_test_phase1_dummy")  # noqa: S106
+def test_checkout_eur_tenant_without_eur_price_is_not_available(restore_public, owner, starter_plan_no_eur):
+    """A eurozone coach whose plan has no EUR Stripe price yet gets a clear 400, not a broken checkout."""
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(billing_currency="EUR", region="global")
+    client = _client(owner)
+
+    response = client.post(
+        "/api/v1/billing/platform/checkout/",
+        data={"plan_id": starter_plan_no_eur.pk},
+        format="json",
+    )
+    assert response.status_code == 400, response.content
+    assert response.json() == {"error": "PRICE_NOT_AVAILABLE", "currency": "EUR"}
 
 
 @override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_SECRET_KEY="sk_test_phase1_dummy")  # noqa: S106
 def test_checkout_with_locked_currency_uses_locked_value(restore_public, owner, starter_plan):
     """Pre-locked billing_currency must not change on checkout."""
     tenant = restore_public
-    Tenant.objects.filter(pk=tenant.pk).update(billing_currency="USD", region="tr")
+    Tenant.objects.filter(pk=tenant.pk).update(billing_currency="USD", region="global")
     client = _client(owner)
 
     with patch("stripe.checkout.Session.create", return_value=_fake_stripe_session()) as create_mock:

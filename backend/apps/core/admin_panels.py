@@ -54,7 +54,7 @@ class PlatformPlanAdmin(ModelAdmin):
     # Tenant.plan is PROTECT — archiving (is_active=False) is the removal path.
     can_delete = False
     # `prices` carries the canonical per-currency amounts the form edits as JSON,
-    # e.g. {"USD": {"amount_cents": 1900}, "TRY": {"amount_cents": 59900}}.
+    # e.g. {"USD": {"amount_cents": 1900}, "EUR": {"amount_cents": 1990}}.
 
     def _sync_pricing(self, plan):
         """Provision Stripe Prices from the just-saved plan, mirroring the

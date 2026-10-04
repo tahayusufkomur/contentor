@@ -21,7 +21,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture()
 def plans_seeded(restore_public):
-    """Seed two paid plans, only one of which has TRY priced (other is USD-only).
+    """Seed two paid plans, only one of which has EUR priced (other is USD-only).
 
     Returns the list of plan PKs for assertions.
     """
@@ -37,7 +37,7 @@ def plans_seeded(restore_public):
         max_campaign_emails=1000,
         prices={
             "USD": {"amount_cents": 1900, "stripe_price_id": "price_test_starter_usd"},
-            "TRY": {"amount_cents": 65000, "stripe_price_id": "price_test_starter_try"},
+            "EUR": {"amount_cents": 1900, "stripe_price_id": "price_test_starter_eur"},
         },
     )
     pro = PlatformPlan.objects.create(
@@ -49,9 +49,9 @@ def plans_seeded(restore_public):
         max_streaming_hours=100,
         max_campaign_emails=10000,
         prices={
-            # TRY has no stripe_price_id yet — UI must mark it unavailable.
+            # EUR has no stripe_price_id yet — UI must mark it unavailable.
             "USD": {"amount_cents": 4900, "stripe_price_id": "price_test_pro_usd"},
-            "TRY": {"amount_cents": 165000, "stripe_price_id": ""},
+            "EUR": {"amount_cents": 11900, "stripe_price_id": ""},
         },
     )
     return [starter.pk, pro.pk]
@@ -62,7 +62,7 @@ def _client():
 
 
 def test_plans_endpoint_returns_prices_and_limits(restore_public, plans_seeded):
-    """Plans response includes USD + TRY entries with amount_cents and `available`,
+    """Plans response includes USD + EUR entries with amount_cents and `available`,
     plus the four limit fields the upgrade UI renders as feature bullets."""
     response = _client().get("/api/v1/billing/platform/plans/")
     assert response.status_code == 200, response.content
@@ -76,13 +76,13 @@ def test_plans_endpoint_returns_prices_and_limits(restore_public, plans_seeded):
     # Per-currency prices map.
     assert starter["prices"]["USD"]["amount_cents"] == 1900
     assert starter["prices"]["USD"]["available"] is True
-    assert starter["prices"]["TRY"]["amount_cents"] == 65000
-    assert starter["prices"]["TRY"]["available"] is True
+    assert starter["prices"]["EUR"]["amount_cents"] == 1900
+    assert starter["prices"]["EUR"]["available"] is True
 
-    # Pro has TRY priced but no stripe_price_id — must be available=False.
+    # Pro has EUR priced but no stripe_price_id — must be available=False.
     assert pro["prices"]["USD"]["available"] is True
-    assert pro["prices"]["TRY"]["available"] is False
-    assert pro["prices"]["TRY"]["amount_cents"] == 165000
+    assert pro["prices"]["EUR"]["available"] is False
+    assert pro["prices"]["EUR"]["amount_cents"] == 11900
 
     # Limits.
     for plan in (starter, pro):
@@ -115,5 +115,21 @@ def test_plans_endpoint_does_not_leak_stripe_ids(restore_public, plans_seeded):
     _walk(payload)
     # Belt + braces: also assert the literal string isn't anywhere in the body.
     assert "price_test_starter_usd" not in raw
-    assert "price_test_starter_try" not in raw
+    assert "price_test_starter_eur" not in raw
     assert "price_test_pro_usd" not in raw
+
+
+def test_plans_endpoint_currency_tenant_wins_else_visitor_country(restore_public, plans_seeded):
+    from apps.core.models import Tenant
+
+    url = "/api/v1/billing/platform/plans/"
+    # A tenant with a currency always sees its own, whatever the visitor's country.
+    Tenant.objects.filter(pk=restore_public.pk).update(billing_currency="EUR")
+    assert _client().get(url, HTTP_CF_IPCOUNTRY="US").json()["currency"] == "EUR"
+    # No currency yet (not decided / anonymous): guessed from the country header.
+    Tenant.objects.filter(pk=restore_public.pk).update(billing_currency="")
+    de = _client().get(url, HTTP_CF_IPCOUNTRY="DE").json()
+    assert de["currency"] == "EUR"
+    assert next(p for p in de["plans"] if p["name"] == "phase15-starter")["currency"] == "EUR"
+    assert _client().get(url, HTTP_CF_IPCOUNTRY="US").json()["currency"] == "USD"
+    assert _client().get(url).json()["currency"] == "USD"

@@ -26,10 +26,11 @@ from rest_framework.response import Response
 from apps.billing.providers import get_provider
 from apps.billing.providers.types import ProviderError
 from apps.core.constants import (
-    REGION_DEFAULT_CURRENCY,
+    CURRENCY_USD,
     REGION_DEFAULT_LOCALE,
     REGION_TR,
 )
+from apps.core.currency import currency_for_country
 from apps.core.models import Domain, PlatformPlan, PlatformSubscription
 from apps.core.permissions import IsCoachOrOwner
 
@@ -115,7 +116,7 @@ def start_checkout(request):
 
         locked = Tenant.objects.select_for_update().get(pk=tenant.pk)
         if not locked.billing_currency:
-            locked.billing_currency = REGION_DEFAULT_CURRENCY.get(locked.region, "USD")
+            locked.billing_currency = CURRENCY_USD
             locked.save(update_fields=["billing_currency"])
         tenant.billing_currency = locked.billing_currency
 
@@ -264,13 +265,13 @@ def get_entitlements(request):
     return Response(_compute_entitlements(connection.tenant), status=status.HTTP_200_OK)
 
 
-_SUPPORTED_CURRENCIES = ("USD", "TRY")
+_SUPPORTED_CURRENCIES = ("USD", "EUR")
 
 
 def _build_prices(plan: PlatformPlan) -> dict:
     """Return per-currency price summary for `plan`.
 
-    Shape: `{"USD": {"amount_cents": int|None, "available": bool}, "TRY": {...}}`.
+    Shape: `{"USD": {"amount_cents": int|None, "available": bool}, "EUR": {...}}`.
     `available` reflects whether a non-empty `stripe_price_id` is configured —
     the actual id is intentionally NOT exposed (provider details stay server-side).
     """
@@ -294,8 +295,8 @@ def list_plans(request):
     Used by the marketing pricing page AND the in-tenant ChangePlanCard to
     render plan tiers. Returns:
 
-      - `region` / `currency` — the region-default currency (back-compat for
-        the marketing page).
+      - `region` / `currency` — the viewer's currency (tenant billing currency,
+        else guessed from the visitor's country).
       - `plans[]` — each entry has `id`, `name`, `is_free`, the legacy
         flat `currency` / `amount_cents` (marketing page back-compat), a
         full `prices` map keyed by currency, and the four limit fields
@@ -304,11 +305,14 @@ def list_plans(request):
     `stripe_price_id` is never returned — only a boolean `available` flag
     per currency.
     """
-    # `request.region` is set by RegionResolverMiddleware. Pricing page calls
-    # this from the public schema (marketing apex), so region drives which
-    # currency we surface as the top-level default.
+    # A tenant sees its own (immutable) billing currency; anonymous callers on
+    # the marketing apex / wizard get one guessed from Cloudflare's country.
     region = getattr(request, "region", None) or "global"
-    currency = REGION_DEFAULT_CURRENCY.get(region, "USD")
+    tenant = getattr(connection, "tenant", None)
+    if tenant is not None and tenant.schema_name != "public" and tenant.billing_currency:
+        currency = tenant.billing_currency
+    else:
+        currency = currency_for_country(request.META.get("HTTP_CF_IPCOUNTRY"))
     plans_qs = PlatformPlan.objects.filter(is_active=True).order_by("price_monthly")
     out = []
     for plan in plans_qs:

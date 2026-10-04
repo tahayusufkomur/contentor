@@ -4,7 +4,7 @@ from apps.domains.pricing import compute_price
 def test_eur_markup_and_ceil(settings):
     # $9.99 cost, EUR rate 0.92 -> 9.99*0.92 = 9.19 EUR cost -> *1.20 = 11.03 -> ceil to 12.00
     settings.DOMAINS_MARKUP_MULTIPLIER = 1.20
-    settings.DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92, "TRY": 32.0}
+    settings.DOMAINS_FX_RATES = {"USD": 1.0, "EUR": 0.92}
     price_minor, fx = compute_price(999, "EUR")
     assert price_minor == 1200  # €12.00
     assert fx == 0.92

@@ -238,3 +238,22 @@ def test_wizard_state_patch_is_still_closed_once_provisioning_or_ready():
     finally:
         connection.set_schema_to_public()
         Tenant.objects.filter(pk=tenant.pk).delete()
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize(("country", "expected"), [("DE", "EUR"), ("US", "USD"), (None, "USD")])
+def test_verify_sets_billing_currency_from_country(client, country, expected):
+    from apps.accounts.tokens import create_signup_token
+
+    token = create_signup_token("curr@example.com", "Curr", "Curr Brand", "global")
+    slug = "curr-brand"
+    connection.set_schema_to_public()
+    Tenant.objects.filter(slug=slug, region="global").delete()
+    extra = {"HTTP_CF_IPCOUNTRY": country} if country else {}
+    try:
+        resp = client.post("/api/v1/onboarding/signup/verify/", {"token": token}, format="json", **extra)
+        assert resp.status_code == 201, resp.content
+        assert Tenant.objects.get(slug=slug, region="global").billing_currency == expected
+    finally:
+        connection.set_schema_to_public()
+        Tenant.objects.filter(slug=slug, region="global").delete()

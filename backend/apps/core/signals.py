@@ -8,7 +8,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django_tenants.utils import schema_context
 
-from .constants import REGION_DEFAULT_CURRENCY
+from .constants import CURRENCY_USD
 from .models import CuratedLogo, PlatformPlan, PlatformSubscription, Tenant
 from .storage import get_s3_client
 from .validators import validate_tenant_slug
@@ -25,9 +25,9 @@ def tenant_pre_save(sender, instance, **kwargs):
         validate_tenant_slug(instance.slug)
 
     if not instance.pk:
-        # Creation: mirror billing_currency from region if not explicitly set.
+        # Creation: callers pass currency_for_country(...); default to USD.
         if not instance.billing_currency:
-            instance.billing_currency = REGION_DEFAULT_CURRENCY.get(instance.region, "USD")
+            instance.billing_currency = CURRENCY_USD
         return
 
     # Update: prevent region and billing_currency from being changed once set.

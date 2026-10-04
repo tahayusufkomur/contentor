@@ -42,7 +42,7 @@ test("paid coach buys a custom domain inside the wizard", async ({ page }) => {
     "from apps.core.models import Tenant, PlatformPlan, PlatformSubscription\n" +
       "from apps.accounts.models import User\n" +
       `t = Tenant.objects.get(slug='${slug}')\n` +
-      "plan, _ = PlatformPlan.objects.get_or_create(name='Starter', defaults={'price_monthly': 19, 'transaction_fee_pct': 8})\n" +
+      "plan = PlatformPlan.objects.get(name='starter')\n" +
       `u = User.objects.filter(email='${email}').first() or User.objects.create_user(email='${email}', name='E2E Coach', password='e2e-pass-1', role='coach')\n` +
       "PlatformSubscription.objects.get_or_create(tenant=t, defaults={'user': u, 'plan': plan, 'status': 'active', 'provider': 'bypass'})",
   ]);

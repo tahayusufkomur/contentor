@@ -1540,8 +1540,8 @@ export interface paths {
      *     Used by the marketing pricing page AND the in-tenant ChangePlanCard to
      *     render plan tiers. Returns:
      *
-     *       - `region` / `currency` — the region-default currency (back-compat for
-     *         the marketing page).
+     *       - `region` / `currency` — the viewer's currency (tenant billing currency,
+     *         else guessed from the visitor's country).
      *       - `plans[]` — each entry has `id`, `name`, `is_free`, the legacy
      *         flat `currency` / `amount_cents` (marketing page back-compat), a
      *         full `prices` map keyed by currency, and the four limit fields
@@ -9168,10 +9168,10 @@ export interface components {
     AudienceEnum: "coach" | "visitor" | "student" | "all";
     /**
      * @description * `USD` - US Dollar
-     *     * `TRY` - Turkish Lira
+     *     * `EUR` - Euro
      * @enum {string}
      */
-    BillingCurrencyEnum: "USD" | "TRY";
+    BillingCurrencyEnum: "USD" | "EUR";
     /** @enum {unknown} */
     BlankEnum: "";
     BlogAiUsageAdmin: {
@@ -10233,7 +10233,7 @@ export interface components {
        * @description Set at first Stripe checkout, immutable thereafter.
        *
        *     * `USD` - US Dollar
-       *     * `TRY` - Turkish Lira
+       *     * `EUR` - Euro
        */
       readonly billing_currency?: components["schemas"]["BillingCurrencyEnum"];
       readonly stripe_account_id?: string;
@@ -10560,7 +10560,7 @@ export interface components {
        * @description Set at first Stripe checkout, immutable thereafter.
        *
        *     * `USD` - US Dollar
-       *     * `TRY` - Turkish Lira
+       *     * `EUR` - Euro
        */
       readonly billing_currency: components["schemas"]["BillingCurrencyEnum"];
       readonly stripe_account_id: string;

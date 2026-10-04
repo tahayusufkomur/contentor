@@ -53,6 +53,6 @@ def test_returns_empty_on_stripe_error():
     stripe.Price.list.side_effect = RuntimeError("stripe down")
     with patch.object(stripe_pricing, "_stripe_client", return_value=stripe):
         out = stripe_pricing.provision_stripe_price(
-            plan_key="pro", currency="TRY", amount_cents=249900, log=lambda *_: None
+            plan_key="pro", currency="EUR", amount_cents=4990, log=lambda *_: None
         )
     assert out == ""

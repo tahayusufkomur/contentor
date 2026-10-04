@@ -19,26 +19,7 @@ import {
   type PlatformSubscriptionState,
 } from "@/lib/api/billing-platform";
 
-interface Props {
-  /** Optional region override, primarily for tests. Production callers omit
-   *  this — the component derives currency from `subscription.currency`
-   *  first, then host. */
-  regionHint?: "global" | "tr";
-}
-
-type CurrencyCode = "USD" | "TRY";
-
-/** Derive the host-based region. Mirrors `frontend-customer/src/i18n/config.ts`
- *  but kept inline here because that module is server-only (`headers()`). */
-function regionFromHost(host: string): "global" | "tr" {
-  const h = (host || "").split(":")[0].toLowerCase();
-  if (/\.tr\.contentor\.(app|localhost)$/i.test(h)) return "tr";
-  return "global";
-}
-
-function currencyForRegion(region: "global" | "tr"): CurrencyCode {
-  return region === "tr" ? "TRY" : "USD";
-}
+type CurrencyCode = "USD" | "EUR";
 
 function formatPrice(
   amountCents: number | null,
@@ -47,10 +28,12 @@ function formatPrice(
   if (amountCents == null) return "—";
   const amount = amountCents / 100;
   try {
-    return new Intl.NumberFormat(currency === "TRY" ? "tr-TR" : "en-US", {
+    // Plan prices carry cents ($19.90), so show them; whole amounts stay bare.
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   } catch {
     return `${amount} ${currency}`;
@@ -80,12 +63,13 @@ function sortPlans(plans: PlatformPlanSummary[]): PlatformPlanSummary[] {
  * downgrade" rather than a full self-serve downgrade flow. The spec defers
  * downgrades; bundling it here would balloon scope.
  */
-export function ChangePlanCard({ regionHint }: Props) {
+export function ChangePlanCard() {
   const t = useTranslations("admin.subscription.changePlan");
   const tRoot = useTranslations("admin.subscription");
   const [subscription, setSubscription] =
     useState<PlatformSubscriptionState | null>(null);
   const [plans, setPlans] = useState<PlatformPlanSummary[] | null>(null);
+  const [viewerCurrency, setViewerCurrency] = useState<string>("USD");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -104,6 +88,7 @@ export function ChangePlanCard({ regionHint }: Props) {
         if (cancelled) return;
         setSubscription(subRes);
         setPlans(plansRes.plans);
+        setViewerCurrency(plansRes.currency);
       } catch {
         if (!cancelled) setLoadError(tRoot("error"));
       } finally {
@@ -116,18 +101,8 @@ export function ChangePlanCard({ regionHint }: Props) {
     };
   }, [tRoot, reloadKey]);
 
-  const currency: CurrencyCode = useMemo(() => {
-    // Prefer the tenant's locked billing_currency if present on the
-    // subscription state. Else derive from host (or override).
-    const fromSub = subscription?.currency;
-    if (fromSub === "USD" || fromSub === "TRY") return fromSub;
-    const region =
-      regionHint ??
-      (typeof window !== "undefined"
-        ? regionFromHost(window.location.host)
-        : "global");
-    return currencyForRegion(region);
-  }, [regionHint, subscription?.currency]);
+  // The tenant's billing currency is decided once at signup (server-side).
+  const currency: CurrencyCode = viewerCurrency === "EUR" ? "EUR" : "USD";
 
   const sortedPlans = useMemo(() => (plans ? sortPlans(plans) : []), [plans]);
   const currentPlanId = subscription?.plan?.id ?? null;

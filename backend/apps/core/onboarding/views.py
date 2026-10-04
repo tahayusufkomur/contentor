@@ -218,7 +218,8 @@ def creator_signup_verify(request):
             }
         )
 
-    from apps.core.constants import REGION_DEFAULT_CURRENCY, REGION_DEFAULT_LOCALE
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.currency import currency_for_country
 
     tenant = Tenant.objects.create(
         schema_name=schema_name,
@@ -228,7 +229,7 @@ def creator_signup_verify(request):
         owner_email=email,
         provisioning_status="pending",
         region=region,
-        billing_currency=REGION_DEFAULT_CURRENCY.get(region, "USD"),
+        billing_currency=currency_for_country(request.META.get("HTTP_CF_IPCOUNTRY")),
         # Assigned here and only here: the resume branch above must leave a
         # returning coach's bucket untouched. email:region is the stable key.
         wizard_bucket=assign_wizard_bucket(f"{email}:{region}"),

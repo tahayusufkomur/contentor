@@ -63,7 +63,7 @@ class PlatformPlanUpdateSerializer(serializers.Serializer):
 
     `name` is intentionally NOT editable: it is the stable key the seed command
     upserts by and the Stripe lookup_key derives from. `amounts` is a per-currency
-    map of minor units (USD cents / TRY kuruş), e.g. {"USD": 1990, "TRY": 99900};
+    map of minor units (USD / EUR cents), e.g. {"USD": 1990, "EUR": 1990};
     each entry that changes provisions a fresh Stripe Price (grandfathering).
     """
 

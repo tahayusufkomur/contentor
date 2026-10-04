@@ -46,7 +46,7 @@ def starter_plan(restore_public):
         is_live_enabled=True,
         prices={
             "USD": {"amount_cents": 1990, "stripe_price_id": "price_old_usd"},
-            "TRY": {"amount_cents": 99900, "stripe_price_id": "price_old_try"},
+            "EUR": {"amount_cents": 1990, "stripe_price_id": "price_old_eur"},
         },
     )
 
@@ -94,8 +94,8 @@ def test_amount_change_provisions_new_price(mock_provision, superuser, starter_p
     # Legacy USD fallback kept in sync.
     assert starter_plan.price_monthly == Decimal("24.90")
     # The other currency is untouched (grandfathered, not re-provisioned).
-    assert starter_plan.prices["TRY"]["stripe_price_id"] == "price_old_try"
-    assert starter_plan.prices["TRY"]["amount_cents"] == 99900
+    assert starter_plan.prices["EUR"]["stripe_price_id"] == "price_old_eur"
+    assert starter_plan.prices["EUR"]["amount_cents"] == 1990
     mock_provision.assert_called_once_with(plan_key="starter", currency="USD", amount_cents=2490)
 
 
@@ -116,7 +116,7 @@ def test_amount_change_without_stripe_keeps_old_price_id(mock_provision, superus
 def test_invalid_currency_rejected(superuser, starter_plan):
     resp = _client(superuser).patch(
         _url(starter_plan.pk),
-        {"amounts": {"EUR": 1000}},
+        {"amounts": {"TRY": 1000}},
         format="json",
     )
     assert resp.status_code == 400
