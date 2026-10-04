@@ -8,6 +8,7 @@
 // ids; for remote photos that materialize step also copies the image into this
 // tenant's own storage.
 
+import { useTenant } from "@/hooks/use-tenant";
 import { useCallback, useEffect, useState } from "react";
 
 import { X } from "lucide-react";
@@ -94,7 +95,12 @@ export function ImageLibraryDialog({
   const t = useTranslations("admin");
   const [tab, setTab] = useState<"library" | "mine">("library");
   const [category, setCategory] = useState<LibraryCategory>(defaultKind);
-  const [query, setQuery] = useState("");
+  // Open on the coach's own niche ("yoga") instead of a blank search that shows
+  // the library's random first page.
+  const niche = useTenant()?.niche;
+  const [query, setQuery] = useState(
+    niche && niche !== "general" ? niche.replace(/_/g, " ") : "",
+  );
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [myPhotos, setMyPhotos] = useState<TenantPhoto[]>([]);
   const [page, setPage] = useState(1);

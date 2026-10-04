@@ -15,6 +15,12 @@ import { useSetupStatus } from "@/lib/setup-assistant";
  *  bottom-right corner belongs to the EditButton). While setup is running it
  *  shows the progress ring; once the checklist is done or dismissed it stays
  *  as a "?" so Ask Contentor remains one click away. */
+// The AI assistant pill owns the bottom-right corner on every admin page; sit
+// just above it (and above the install banner clearance) instead of underneath.
+const BUBBLE_STYLE = {
+  bottom: "calc(var(--install-banner-clearance, 12px) + 64px)",
+} as const;
+
 export function SetupAssistantBubble() {
   const t = useTranslations("admin");
   const status = useSetupStatus();
@@ -49,7 +55,8 @@ export function SetupAssistantBubble() {
           type="button"
           aria-label={t("setup.help.bubbleLabel")}
           onClick={() => openPanel("help")}
-          className="fixed bottom-6 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-full border bg-background shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+          style={BUBBLE_STYLE}
+          className="fixed right-6 z-40 flex h-11 w-11 items-center justify-center rounded-full border bg-background shadow-lg transition-all hover:scale-105 hover:shadow-xl"
         >
           <HelpCircle className="h-5 w-5 text-primary" />
         </button>
@@ -58,7 +65,8 @@ export function SetupAssistantBubble() {
           type="button"
           aria-label={t("setup.bubbleLabel")}
           onClick={() => openPanel("checklist")}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border bg-background py-2 pl-2 pr-4 text-sm font-medium shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+          style={BUBBLE_STYLE}
+          className="fixed right-6 z-40 flex items-center gap-2 rounded-full border bg-background py-2 pl-2 pr-4 text-sm font-medium shadow-lg transition-all hover:scale-105 hover:shadow-xl"
         >
           <span className="relative flex h-9 w-9 items-center justify-center">
             <svg viewBox="0 0 36 36" className="h-9 w-9 -rotate-90">

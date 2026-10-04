@@ -236,7 +236,7 @@
     "fillFields": "Please fill in all fields."
   },
   "setup": {
-    "title": "Get your studio live",
+    "title": "Get your site live",
     "progressLabel": "{done} of {total} done",
     "bubbleLabel": "Setup guide",
     "openFull": "Open the setup guide",
@@ -266,8 +266,8 @@
         "description": "Tell your story in your own words."
       },
       "page_courses": {
-        "title": "Programs page",
-        "description": "Check how your programs are presented."
+        "title": "Courses page",
+        "description": "Check how your courses are presented."
       },
       "page_pricing": {
         "title": "Pricing page",
@@ -326,7 +326,7 @@
         "description": "Copy your link and send it to your students."
       },
       "studio_email": {
-        "title": "Pick your studio email address",
+        "title": "Pick your site email address",
         "description": "Get your own address for student mail."
       }
     },

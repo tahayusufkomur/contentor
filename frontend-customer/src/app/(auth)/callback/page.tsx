@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { useTenant } from "@/hooks/use-tenant";
 
 export default function CallbackPage() {
   const navigate = useNavigate();
   const searchParams = useSearchParams();
+  const brand = useTenant()?.brand_name;
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -61,12 +63,17 @@ export default function CallbackPage() {
         const role = data.user?.role;
         const dest =
           next ?? (role === "owner" || role === "coach" ? "/admin" : "/");
+        // A first visit is greeted as one; "Welcome back!" on day one read as a bug.
+        const greeting =
+          data.created === true
+            ? `Welcome to ${brand || "your site"}!`
+            : "Welcome back!";
         navigate(
-          `${dest}${dest.includes("?") ? "&" : "?"}toast=Welcome+back!&toast_type=success`,
+          `${dest}${dest.includes("?") ? "&" : "?"}toast=${encodeURIComponent(greeting)}&toast_type=success`,
         );
       })
       .catch(() => setError("Network error"));
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, brand]);
 
   if (error) {
     return (

@@ -284,7 +284,7 @@ export function SetupAssistantPanel({
                 ))}
               </div>
 
-              <div className="border-t p-3 text-center">
+              <div className="border-t p-3 pb-16 text-center">
                 <button
                   type="button"
                   onClick={() => {

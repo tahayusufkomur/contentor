@@ -198,6 +198,24 @@ class TestMagicLinkVerify:
             finally:
                 User.objects.all().delete()
 
+    def test_created_flag_is_true_only_on_the_first_login(self, restore_public):
+        """The portal greets a first visit ("Welcome to ...") differently from a return."""
+        tenant = restore_public
+        with tenant_context(tenant):
+            try:
+                client = make_client()
+                for expected in (True, False):
+                    token = create_magic_link_token("first@example.com", tenant.schema_name, tenant.slug)
+                    response = client.post("/api/v1/auth/magic-link/verify/", {"token": token}, format="json")
+                    assert response.status_code == 200, response.content
+                    assert response.json()["created"] is expected
+                # A coach provisioned by the wizard exists but has never logged in: still a first visit.
+                coach = User.objects.create(email="coachfirst@example.com", role="owner", is_staff=True)
+                token = create_magic_link_token(coach.email, tenant.schema_name, tenant.slug)
+                assert client.post("/api/v1/auth/magic-link/verify/", {"token": token}, format="json").json()["created"] is True
+            finally:
+                User.objects.all().delete()
+
     def test_invalid_token_returns_400(self, tenant_ctx):
         """Invalid/expired token returns 400."""
         client = make_client()

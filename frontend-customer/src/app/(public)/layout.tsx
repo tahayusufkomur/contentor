@@ -1,4 +1,5 @@
 import { getAuthUser } from "@/lib/auth";
+import { PublicFooter } from "@/components/shared/public-footer";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { serverFetch } from "@/lib/api-server";
 import { fetchPublishedPosts } from "@/lib/blog-public";
@@ -42,6 +43,7 @@ export default async function PublicLayout({
         blogEnabled={blogEnabled}
       />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
+      <PublicFooter />
       {!isAdmin && <SiteAssistantBubble />}
       {isAdmin && <CopilotBubble />}
     </>

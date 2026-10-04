@@ -154,7 +154,7 @@ export function CourseForm({
             })),
           }),
         });
-        toast.success("Course created");
+        toast.success("Course saved as a draft — add lessons, then publish");
         void refreshSetupStatus();
         navigate(`/admin/courses/${created.slug}`);
         return;
@@ -323,15 +323,16 @@ export function CourseForm({
       <div className="space-y-6">
         {/* ───── Course Details & Settings ───── */}
         <Card>
-          <CardHeader>
-            <CardTitle>{isCreate ? "New Course" : "Course Settings"}</CardTitle>
-            <CardDescription>
-              {isCreate
-                ? "Fill in the details to create a new course."
-                : "Update course details, pricing, and publishing."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+          {/* The create page already carries the "New Course" heading. */}
+          {!isCreate && (
+            <CardHeader>
+              <CardTitle>Course Settings</CardTitle>
+              <CardDescription>
+                Update course details, pricing, and publishing.
+              </CardDescription>
+            </CardHeader>
+          )}
+          <CardContent className={isCreate ? "space-y-6 pt-6" : "space-y-6"}>
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input
@@ -507,6 +508,10 @@ export function CourseForm({
             </div>
             <div className="space-y-1.5">
               <Label>Filters</Label>
+              <p className="text-xs text-muted-foreground">
+                Optional categories (level, style…) students can filter your
+                courses by.
+              </p>
               <FilterPicker
                 value={filterOptionIds}
                 onChange={setFilterOptionIds}

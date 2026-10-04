@@ -15,6 +15,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
@@ -65,6 +66,7 @@ export function PublishCard() {
   const [loadError, setLoadError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [pw, setPw] = useState("");
+  const [wentLive, setWentLive] = useState(false);
   const status = useSetupStatus();
   const freePlan = useIsLocked("selling");
   const blockers = status?.publish_blockers ?? [];
@@ -103,7 +105,7 @@ export function PublishCard() {
       if (!canPublish) return;
       await patchTenant({ is_published: true });
       void refreshSetupStatus();
-      toast.success("Your app is live 🎉");
+      setWentLive(true);
     },
     { onError: patchErrorToast },
   );
@@ -170,6 +172,68 @@ export function PublishCard() {
         </Card>
       }
     >
+      {tenant && wentLive && (
+        <ModalPortal>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setWentLive(false)}
+              className="absolute inset-0 bg-black/50"
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="relative w-full max-w-md space-y-4 rounded-xl border bg-background p-5 shadow-xl"
+            >
+              <h3 className="text-lg font-semibold">You&apos;re live! 🎉</h3>
+              <p className="text-sm text-muted-foreground">
+                Your site is public. Share the link with your students:
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1.5 text-sm">
+                  {tenant.studio_url}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={copyLink}
+                >
+                  <Copy className="h-3.5 w-3.5" /> Copy
+                </Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
+                  onClick={copyInstallGuide}
+                >
+                  <Copy className="h-3.5 w-3.5" /> Share install guide
+                </Button>
+                <Button asChild size="sm">
+                  <Link
+                    href="/admin/students"
+                    onClick={() => setWentLive(false)}
+                  >
+                    Invite your first students
+                  </Link>
+                </Button>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setWentLive(false)}
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
       {tenant && (
         <Card
           id="publish-card"
@@ -181,12 +245,13 @@ export function PublishCard() {
             <CardTitle className="flex items-center gap-2 text-base">
               {tenant.is_published ? (
                 <>
-                  <Globe className="h-4 w-4 text-emerald-600" /> Your app is
+                  <Globe className="h-4 w-4 text-emerald-600" /> Your site is
                   live
                 </>
               ) : (
                 <>
-                  <Rocket className="h-4 w-4 text-amber-600" /> Publish your app
+                  <Rocket className="h-4 w-4 text-amber-600" /> Publish your
+                  site
                 </>
               )}
             </CardTitle>
@@ -196,7 +261,7 @@ export function PublishCard() {
               <>
                 <p className="text-sm text-muted-foreground">
                   <span className="font-medium text-emerald-600">● Live</span> —
-                  students can find and install your app.
+                  students can find and install your site.
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button asChild variant="outline" size="sm" className="gap-1">
@@ -238,7 +303,7 @@ export function PublishCard() {
             ) : (
               <>
                 <p className="text-sm text-muted-foreground">
-                  Your app is hidden behind a preview gate. Publish it to let
+                  Your site is hidden behind a preview gate. Publish it to let
                   students find and install it.
                 </p>
                 {!canPublish && (
@@ -276,7 +341,7 @@ export function PublishCard() {
                       : "Finish the required setup steps to publish"
                   }
                 >
-                  <Rocket className="h-4 w-4" /> Publish app — go live
+                  <Rocket className="h-4 w-4" /> Publish site — go live
                 </Button>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   <span>Preview link:</span>
@@ -295,51 +360,53 @@ export function PublishCard() {
               </>
             )}
 
-            {/* Preview password */}
-            <div className="space-y-2 border-t pt-3">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <KeyRound className="h-3.5 w-3.5" /> Preview password
-                {tenant.has_preview_password ? " — set" : ""}
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <Input
-                  type="text"
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
-                  placeholder={
-                    tenant.has_preview_password
-                      ? "Change password"
-                      : "Set a password"
-                  }
-                  className="h-9 w-48"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={savePassword}
-                  disabled={!pw.trim()}
-                  loading={savingPassword}
-                  loadingText="Saving…"
-                >
-                  Save
-                </Button>
-                {tenant.has_preview_password && (
+            {/* Preview password — only meaningful while the site is hidden */}
+            {!tenant.is_published && (
+              <div className="space-y-2 border-t pt-3">
+                <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <KeyRound className="h-3.5 w-3.5" /> Preview password
+                  {tenant.has_preview_password ? " — set" : ""}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    type="text"
+                    value={pw}
+                    onChange={(e) => setPw(e.target.value)}
+                    placeholder={
+                      tenant.has_preview_password
+                        ? "Change password"
+                        : "Set a password"
+                    }
+                    className="h-9 w-48"
+                  />
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    onClick={clearPassword}
-                    loading={clearingPassword}
-                    loadingText="Clearing…"
+                    onClick={savePassword}
+                    disabled={!pw.trim()}
+                    loading={savingPassword}
+                    loadingText="Saving…"
                   >
-                    Clear
+                    Save
                   </Button>
-                )}
+                  {tenant.has_preview_password && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearPassword}
+                      loading={clearingPassword}
+                      loadingText="Clearing…"
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Share the preview link + password to let others see the site
+                  before you publish.
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Share the preview link + password to let others see the site
-                before you publish.
-              </p>
-            </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -14,12 +14,7 @@ export default function NewCoursePage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">New Course</h1>
-          <p className="text-sm text-muted-foreground">
-            Fill in the details below to create a new course.
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight">New Course</h1>
       </div>
 
       <CourseForm />

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { UsageAdoptionCard } from "@/components/admin/usage-adoption-card";
 import { formatMoney } from "@/lib/format";
-import { useTenantCurrency } from "@/lib/setup-assistant";
+import { useSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { PublishCard } from "@/components/admin/publish-card";
 import { SetupGuideCard } from "@/components/admin/setup-guide-card";
 
@@ -35,6 +35,10 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
   const currency = useTenantCurrency();
+  const setup = useSetupStatus();
+  // Until the status loads, show the overview line rather than flash "what's left".
+  const published =
+    !setup || Boolean(setup.items.find((i) => i.key === "publish")?.done);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     students: 0,
@@ -85,7 +89,9 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
-            Welcome back. Here is an overview of your platform.
+            {published
+              ? "Here is an overview of your site."
+              : "Here's what's left to get your site live."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

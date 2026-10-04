@@ -14,7 +14,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISS_KEY = "pwa-install-dismissed";
 
-export function InstallPrompt() {
+/** `hide`: coaches/owners are building the site, not installing it. */
+export function InstallPrompt({ hide = false }: { hide?: boolean }) {
   const t = useTranslations("pwa");
   const pathname = usePathname();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
@@ -89,7 +90,7 @@ export function InstallPrompt() {
 
   // Never show inside the coach admin, in standalone, after dismissal, or with
   // nothing to offer.
-  if (pathname?.startsWith("/admin")) return null;
+  if (hide || pathname?.startsWith("/admin")) return null;
   if (hidden || (!deferred && !showIosHint)) return null;
 
   return (

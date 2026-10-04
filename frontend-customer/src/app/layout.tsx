@@ -82,9 +82,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const name = config?.brand_name || "Welcome";
   const v = config?.icon_id ?? config?.logo_id ?? "default";
 
+  // An empty meta description reads as an unfinished site in search results:
+  // fall back to the home hero's subheadline (the one sentence the coach wrote).
+  const homeHero = config?.pages?.home?.blocks?.find(
+    (b) => b.type === "hero",
+  ) as { subheading?: string } | undefined;
+  const description =
+    config?.meta_description?.trim() || homeHero?.subheading?.trim() || "";
+
   return {
-    title: name,
-    description: config?.meta_description || "",
+    // Inner pages set `title: "About"` and render "About · <Brand>".
+    title: { default: name, template: `%s · ${name}` },
+    description,
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
@@ -133,6 +142,8 @@ export default async function RootLayout({
   }
   const gated = await isSiteGated(config, slug);
   const hasSession = Boolean((await cookies()).get(COOKIE_NAME)?.value);
+  const authUser = hasSession ? await getAuthUser() : null;
+  const isStaff = authUser?.role === "owner" || authUser?.role === "coach";
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -181,7 +192,7 @@ export default async function RootLayout({
                   <>
                     <RedirectToast />
                     {children}
-                    <InstallPrompt />
+                    <InstallPrompt hide={isStaff} />
                     <SwUpdateToast />
                     <PushOptIn />
                     <UsageReporter authed={hasSession} />

@@ -134,7 +134,16 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   }, [stateReady, published, t]);
 
   return (
-    <div className="flex h-screen">
+    // The coach's display font is for their public site; the admin stays neutral.
+    <div
+      className="flex h-screen"
+      style={
+        {
+          "--font-sans": "var(--font-instrument), system-ui, sans-serif",
+          fontFamily: "var(--font-instrument), system-ui, sans-serif",
+        } as React.CSSProperties
+      }
+    >
       <AppSidebar
         title={t("title")}
         sections={navSections}

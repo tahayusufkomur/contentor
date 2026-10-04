@@ -6,6 +6,8 @@ import { getAuthUser } from "@/lib/auth";
 import { EventsList } from "@/components/public/events/events-list";
 import type { CalendarEvent } from "@/types/live";
 
+export const metadata = { title: "Events" };
+
 const isoDate = (d: Date) => d.toISOString().split("T")[0];
 
 export default async function EventsPage() {

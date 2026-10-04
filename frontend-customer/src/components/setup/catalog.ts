@@ -38,13 +38,15 @@ export const SETUP_GROUP_ORDER = [
 ] as const;
 
 export const SETUP_CATALOG: Record<string, CatalogEntry> = {
-  page_home: { icon: Home, href: "/" },
-  page_about: { icon: Info, href: "/about" },
-  page_courses: { icon: BookOpen, href: "/courses" },
+  // Page items open the page IN the editor (as `look` does) — landing on the
+  // read-only page was a dead end for "edit your home page".
+  page_home: { icon: Home, href: "/?edit=1", hardNav: true },
+  page_about: { icon: Info, href: "/about?edit=1", hardNav: true },
+  page_courses: { icon: BookOpen, href: "/courses?edit=1", hardNav: true },
   // The builder's "pricing" page renders at /plans on the tenant site.
-  page_pricing: { icon: Tag, href: "/plans" },
-  page_faq: { icon: FileQuestion, href: "/faq" },
-  page_contact: { icon: Phone, href: "/contact" },
+  page_pricing: { icon: Tag, href: "/plans?edit=1", hardNav: true },
+  page_faq: { icon: FileQuestion, href: "/faq?edit=1", hardNav: true },
+  page_contact: { icon: Phone, href: "/contact?edit=1", hardNav: true },
   look: { icon: Paintbrush, href: "/?edit=1&studio=1", hardNav: true },
   first_course: { icon: BookOpen, href: "/admin/courses/new" },
   demo_cleanup: { icon: Trash2, href: null, action: "erase" },

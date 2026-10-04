@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -115,8 +116,14 @@ def _login_user_response(request, tenant, email, via="magic_link"):
         },
     )
     logger.info("login via %s email=%s tenant=%s new_student=%s", via, user.email, tenant.slug, created)
+    # First visit = the row was just made, or a wizard-provisioned owner who has
+    # never logged in. The portal uses it to greet "Welcome to ..." vs "back".
+    first_login = created or user.last_login is None
+    now = timezone.now()
+    User.objects.filter(pk=user.pk).update(last_login=now)
+    user.last_login = now
     jwt_token = create_jwt(user, tenant)
-    response = Response({"user": UserSerializer(user).data})
+    response = Response({"user": UserSerializer(user).data, "created": first_login})
     _set_session_cookie(response, jwt_token)
     # Readable locale cookie — edge middleware in Next.js reads this without decoding the JWT.
     _set_locale_cookie(response, user, tenant)
