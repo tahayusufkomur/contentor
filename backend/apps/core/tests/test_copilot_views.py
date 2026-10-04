@@ -1275,3 +1275,91 @@ def test_execute_set_course_cover_with_missing_tenant_photo_400(client):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 400
     assert "not in your library" in resp.json()["detail"]
+
+
+# --- styled sections ------------------------------------------------------------
+
+
+@pytest.fixture()
+def two_styles(monkeypatch):
+    from apps.tenant_config import sections
+
+    base = {f: ["only"] for f in sections.families()}
+    styles = {
+        "calm": {"id": "calm", "enabled": True, "variants": {**base, "hero": ["split", "intro"]}},
+        "bold": {"id": "bold", "enabled": True, "variants": {**base, "hero": ["poster", "intro"]}},
+    }
+    monkeypatch.setattr(sections, "styles", lambda: styles)
+
+
+def _styled_config():
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.style = "calm"
+    cfg.setup_progress = {}
+    cfg.pages = {
+        "home": {
+            "blocks": [
+                {"id": "blk_a", "type": "section.hero", "variant": "calm.split", "headline": "Hi"},
+                {"id": "blk_b", "type": "cta", "heading": "Legacy"},
+            ]
+        },
+        "about": {"blocks": [{"id": "blk_c", "type": "section.hero", "variant": "calm.intro", "headline": "About"}]},
+    }
+    cfg.save()
+    return cfg
+
+
+def test_execute_edit_style_restyles_every_page_and_undo_restores(client, coach, two_styles):
+    from django.core.cache import cache
+
+    cfg = _styled_config()
+    pages_before = cfg.pages
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    res = _execute_token(client, copilot_tokens.stash_action("shared_test", {"kind": "edit_style", "style": "bold"}))
+    assert res.status_code == 200, res.content
+    assert res.json()["result"] == {"kind": "edit_style", "style": "bold"}
+    assert cache.get("tenant:shared_test:config") is None
+    cfg.refresh_from_db()
+    assert cfg.style == "bold"
+    assert cfg.setup_progress.get("look_edited") is True
+    assert cfg.pages["home"]["blocks"][0] == {
+        "id": "blk_a",
+        "type": "section.hero",
+        "variant": "bold.poster",
+        "headline": "Hi",
+    }
+    assert cfg.pages["home"]["blocks"][1] == {"id": "blk_b", "type": "cta", "heading": "Legacy"}
+    assert cfg.pages["about"]["blocks"][0]["variant"] == "bold.intro"
+    assert _latest_audit().summary == "Switched site style to bold"
+
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+    assert undo.status_code == 200, undo.content
+    cfg.refresh_from_db()
+    assert cfg.style == "calm"
+    assert cfg.pages == pages_before
+
+
+def test_execute_edit_style_refuses_disabled_or_unknown_style(client, coach, two_styles):
+    _styled_config()
+    res = _execute_token(client, copilot_tokens.stash_action("shared_test", {"kind": "edit_style", "style": "nope"}))
+    assert res.status_code == 400
+    assert "calm" in res.json()["detail"]
+
+
+def test_execute_edit_pages_busts_cache(client, coach):
+    from django.core.cache import cache
+
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
+    pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": True, "heading": "New"}]}}
+    token = copilot_tokens.stash_action(
+        "shared_test", {"kind": "edit_pages", "pages": pages, "extras": {}, "changes_count": 1}
+    )
+    res = _execute_token(client, token)
+    assert res.status_code == 200, res.content
+    assert cache.get("tenant:shared_test:config") is None
+    assert TenantConfig.objects.first().pages == pages

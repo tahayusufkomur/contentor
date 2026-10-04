@@ -27,6 +27,9 @@ export interface FieldSchema {
   helpText?: string;
   /** Options for `select`. */
   options?: { label: string; value: string }[];
+  /** `select` only: options computed from the block's own data (resolved by
+   *  the block form before rendering; wins over `options`). */
+  dynamicOptions?: (data: Data) => { label: string; value: string }[];
   /** `select` only: how to render the options. `icons` = icon-tile picker (icon
    *  resolved by value in the renderer); `slider` = labelled snap-slider for
    *  ordered "how much" settings. Omitted = one-click buttons (no dropdown). */

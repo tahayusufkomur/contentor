@@ -1,5 +1,7 @@
 "use client";
 
+import { StyleStep } from "./style-step";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -408,6 +410,17 @@ export function WizardFlow({
         />
       );
       break;
+    case "look.style":
+      body = (
+        <StyleStep
+          niche={answers.niche}
+          brand={brand}
+          value={answers.style}
+          onChange={(style) => selectAndAdvance({ style })}
+          disabled={busy}
+        />
+      );
+      break;
     case "look.font":
       body = (
         <FontStep
@@ -512,7 +525,7 @@ export function WizardFlow({
       }
       onFinishRest={handleFinishRest}
       error={error}
-      wide={step.id === "look.theme"}
+      wide={step.id === "look.theme" || step.id === "look.style"}
       footer={
         stepOwnsAdvance ? null : (
           <Button

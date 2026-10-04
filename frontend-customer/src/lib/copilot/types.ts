@@ -26,6 +26,7 @@ export type ActionKind =
   | "create_event"
   | "create_blog_post"
   | "edit_theme"
+  | "edit_style"
   | "edit_navbar"
   | "set_block_image"
   | "set_course_cover";

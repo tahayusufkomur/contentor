@@ -19,6 +19,8 @@ interface SubscribeButtonProps {
   className?: string;
   variant?: "default" | "outline";
   size?: "default" | "sm" | "lg";
+  /** Replaces the default "Subscribe — price" text (and its icon). */
+  label?: React.ReactNode;
 }
 
 export function SubscribeButton({
@@ -30,6 +32,7 @@ export function SubscribeButton({
   className,
   variant = "default",
   size = "default",
+  label,
 }: SubscribeButtonProps) {
   const router = useRouter();
   const navigate = useNavigate();
@@ -76,9 +79,13 @@ export function SubscribeButton({
       loading={loading}
       onClick={handleSubscribe}
     >
-      <Zap className="mr-2 h-4 w-4" />
-      Subscribe — {price} {currency}
-      {billingIntervalSuffix(intervalMonths)}
+      {label ?? (
+        <>
+          <Zap className="mr-2 h-4 w-4" />
+          Subscribe — {price} {currency}
+          {billingIntervalSuffix(intervalMonths)}
+        </>
+      )}
     </Button>
   );
 }

@@ -51,7 +51,7 @@ def test_handoff_returns_login_url(tenant, settings):
     assert resp.status_code == 200, resp.content
     url = resp.json()["login_url"]
     assert url.startswith(f"https://glow-studio.{settings.CONTENTOR_DOMAIN}/callback?token=")
-    assert url.endswith("&next=/admin")
+    assert url.endswith("&next=/setup")  # guided onboarding first
 
 
 def test_handoff_requires_ready(tenant):

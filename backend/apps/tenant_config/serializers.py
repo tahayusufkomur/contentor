@@ -8,6 +8,7 @@ from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.media.models import Photo
 
 from . import logo_recipe as logo_recipe_lib
+from . import sections
 from .defaults import (
     KNOWN_BLOCK_TYPES,
     KNOWN_PAGE_KEYS,
@@ -151,6 +152,13 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             )
         return cleaned
 
+    def validate_style(self, value):
+        # "" = legacy (unstyled) rendering. Any shipped style id is accepted —
+        # "enabled" gates what new coaches are offered, not what may be saved.
+        if value and sections.style(value) is None:
+            raise serializers.ValidationError("Style must be one of the site style IDs.")
+        return value
+
     def validate_custom_css(self, value):
         # Trust boundary: this CSS is injected into a <style> tag on every
         # tenant page. Strip the </style> breakout vector and active-content
@@ -178,6 +186,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "icon_id",
             "logo_recipe",
             "theme",
+            "style",
             "dark_mode_enabled",
             "font_family",
             "custom_css",
@@ -255,6 +264,8 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             # gate when it isn't published (owners + valid preview cookie pass).
             data["is_published"] = bool(getattr(tenant, "is_published", True))
             data["has_preview_password"] = bool(getattr(tenant, "preview_password", ""))
+        # Guided onboarding gate: the customer app redirects owners to /setup.
+        data["setup_flow_active"] = (instance.setup_flow or {}).get("status") == "active"
         return data
 
     def _sign_landing_section_photos(self, sections):
@@ -346,6 +357,8 @@ def _clean_block(raw):
         if isinstance(block.get(field), str):
             block[field] = sanitize_rich_text(block[field])
     _scrub_unsafe_urls(block)
+    if block["type"] in sections.SECTION_TYPES:
+        return sections.clean_section_block(block)
     return block
 
 

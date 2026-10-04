@@ -84,11 +84,10 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
   await page.getByRole("button", { name: W.goals.items.sell_courses }).click();
   await clickContinue(page); // goals
 
-  // Chapter 2 — look (pick NON-defaults to prove choices stick; each is
-  // single-select and auto-advances on click — no Continue needed). Menu,
-  // hero and page layouts are not asked: recommended defaults apply.
-  await pickCard(page, W.theme.heading, W.themes.slate);
-  await pickCard(page, W.font.heading, W.fonts.inter.label);
+  // Chapter 2 — look: one Style step (pick a NON-default to prove the choice
+  // sticks; single-select, auto-advances on click). Theme, font, menu, hero
+  // and page layouts are not asked: the style carries them.
+  await pickCard(page, W.style.heading, "Swiss Grid");
 
   // Chapter 3 — logo (wordmark is the preselected default)
   await expect(page.getByText(W.logo.wordmark.title)).toBeVisible();
@@ -126,13 +125,13 @@ test("auto-advance cards disable while a pick is saving", async ({ page }) => {
     await route.continue();
   });
 
-  await pickCard(page, W.theme.heading, W.themes.slate);
+  await pickCard(page, W.style.heading, "Swiss Grid");
   // While the save is in flight the step's cards are disabled (same idiom as
   // the Continue button) — a second click must not be silently swallowed by
   // WizardFlow's busy guard.
-  await expect(page.getByRole("button", { name: W.themes.slate })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Swiss Grid" })).toBeDisabled();
   // Once the save lands, the wizard advances normally.
-  await expect(page.getByRole("heading", { name: W.font.heading })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: W.logo.heading })).toBeVisible({ timeout: 15_000 });
   await page.unroute("**/api/v1/onboarding/wizard/state/");
 });
 

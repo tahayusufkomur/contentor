@@ -81,14 +81,9 @@ def update_my_tenant(request, slug):
         # requirements are met (decision 2026-07-05). Computed in the tenant's
         # own schema, where the config + content live.
         if want_published:
-            from django_tenants.utils import tenant_context
+            from apps.tenant_config.setup_items import tenant_publish_blockers
 
-            from apps.tenant_config.models import TenantConfig
-            from apps.tenant_config.setup_items import publish_blockers
-
-            with tenant_context(tenant):
-                config = TenantConfig.objects.first()
-                blockers = publish_blockers(config, tenant) if config else []
+            blockers = tenant_publish_blockers(tenant)
             if blockers:
                 return Response(
                     {"detail": "publish_requirements_unmet", "blockers": blockers},

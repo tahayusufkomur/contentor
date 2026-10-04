@@ -31,6 +31,7 @@ export function SetupGuideCard() {
   const { done, total } = status.progress;
   const next = status.items.filter((i) => !i.optional && !i.done).slice(0, 3);
   const allDone = done === total;
+  const live = status.items.some((i) => i.key === "publish" && i.done);
 
   return (
     <>
@@ -39,7 +40,11 @@ export function SetupGuideCard() {
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold">
-                {allDone ? t("setup.celebrateTitle") : t("setup.title")}
+                {allDone
+                  ? t("setup.celebrateTitle")
+                  : live
+                    ? t("setup.titleLive")
+                    : t("setup.title")}
               </h2>
               <p className="text-sm text-muted-foreground">
                 {allDone

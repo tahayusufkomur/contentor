@@ -2,7 +2,9 @@
 
 BLOCK_SCHEMA below is this module's own write surface: it mirrors the
 frontend block registry's field set and select values, and is the trust
-boundary for what the copilot may add or edit. testimonials is deliberately
+boundary for what the copilot may add or edit; styled-section families
+(section.<family>) are derived from the synced manifest (apps.tenant_config.
+sections) rather than hand-mirrored. testimonials is deliberately
 absent so fabricated social proof stays impossible; gallery/logos/video wait
 on image/URL handling. All functions are dict-in/dict-out and never mutate
 their inputs; DB writes happen in the execute view."""
@@ -11,6 +13,7 @@ from copy import deepcopy
 from uuid import uuid4
 
 from apps.core.onboarding.ai_compose import MAX_FAQ_ITEMS
+from apps.tenant_config import sections
 from apps.tenant_config.defaults import sanitize_rich_text
 
 
@@ -91,6 +94,72 @@ BLOCK_SCHEMA = {
 }
 
 
+def _section_schema(family):
+    """Copilot write surface for one manifest family, in BLOCK_SCHEMA's tuple
+    format. Image fields stay out (set_block_image places photos); item lists
+    whose items hold images (moments) stay out too — editor only."""
+    schema = {}
+    for name, spec in family["fields"].items():
+        kind = spec.get("type")
+        if kind in ("text", "richtext"):
+            schema[name] = ("text" if kind == "text" else "rich", spec.get("max", 200))
+        elif kind in ("link", "bool"):
+            schema[name] = (kind,)
+        elif kind == "select":
+            schema[name] = ("select", tuple(str(o) for o in spec.get("options") or ()))
+        elif kind == "items":
+            item_fields = spec.get("fields") or {}
+            if all(f.get("type") == "text" for f in item_fields.values()):
+                schema[name] = ("items", {k: f.get("max", 200) for k, f in item_fields.items()}, spec.get("max", 6))
+    return schema
+
+
+# Styled sections (section.<family>) derive from the synced manifest.
+BLOCK_SCHEMA.update(
+    {f"{sections.SECTION_PREFIX}{fam}": _section_schema(spec) for fam, spec in sections.families().items()}
+)
+
+# Placeholder copy for required section text the model left out, so an added
+# section never renders empty. The coach sees it on the confirm card.
+_SECTION_PLACEHOLDERS = {
+    "headline": "Welcome",
+    "body": "<p>A few words about who you are and how you teach.</p>",
+    "statement": "Every student grows best at their own pace.",
+    "ctaLabel": "Get started",
+    "title": "{label} {n}",
+    "text": "A short line about this.",
+    "q": "Question {n}?",
+    "a": "The answer goes here.",
+}
+_SECTION_HEADINGS = {
+    "story": "About me",
+    "benefits": "What you'll gain",
+    "howItWorks": "How it works",
+    "faq": "Frequently asked questions",
+    "cta": "Ready to begin?",
+    "contact": "Get in touch",
+}
+
+
+def _placeholder(family, field, label="", n=1):
+    if field == "heading":
+        return _SECTION_HEADINGS.get(family, sections.families()[family]["label"])
+    return _SECTION_PLACEHOLDERS.get(field, "").format(label=label, n=n)
+
+
+def _seed_section(block, family):
+    """Fill required top-level text, and empty item lists up to their min."""
+    for name, spec in sections.families()[family]["fields"].items():
+        if spec.get("type") in ("text", "richtext") and spec.get("required") and not block.get(name):
+            block[name] = _placeholder(family, name)
+        elif spec.get("type") == "items" and spec.get("min") and not block.get(name):
+            label = spec.get("itemLabel", "Item")
+            block[name] = [
+                {k: _placeholder(family, k, label, n) for k, f in spec["fields"].items() if f.get("required")}
+                for n in range(1, spec["min"] + 1)
+            ]
+
+
 def clean_link(value):
     """Same semantics as tenant_config's _clean_nav_href, but refusing (not
     blanking) unsafe schemes so the coach gets an honest card-drop reason."""
@@ -105,9 +174,18 @@ def clean_field(block_type, field, value):
     if spec is None:
         raise BlockOpError(f"{block_type} has no editable field '{field}'")
     kind = spec[0]
+    # Sections cut on a word boundary and measure rich text as plain text
+    # (manifest semantics); legacy blocks keep their hard cut.
+    section = block_type in sections.SECTION_TYPES
+
+    def cut(text, limit):
+        return sections.clamp_text(text, limit) if section else text[:limit]
+
     if kind == "text":
-        return str(value)[: spec[1]]
+        return cut(str(value), spec[1])
     if kind == "rich":
+        if section:
+            return sections.clamp_richtext(str(value), spec[1])
         return sanitize_rich_text(str(value)[: spec[1]])
     if kind == "select":
         v = str(value).strip()
@@ -127,20 +205,34 @@ def clean_field(block_type, field, value):
         return bool(value)
     _, item_caps, max_items = spec
     return [
-        {k: str(it.get(k, ""))[:cap] for k, cap in item_caps.items()}
+        {k: cut(str(it.get(k, "")), cap) for k, cap in item_caps.items()}
         for it in list(value or [])[:max_items]
         if isinstance(it, dict)
     ]
 
 
-def build_block(block_type, fields):
+def build_block(block_type, fields, style_id=""):
+    """A new block of ``block_type``. Section blocks take the default layout of
+    the tenant's style (``style_id``) for their family and get placeholder
+    copy for any required text the model left out."""
     schema = BLOCK_SCHEMA.get(block_type)
     if schema is None:
         raise BlockOpError(f"unknown block type: {block_type}")
     block = {"id": mint_block_id(), "type": block_type, "enabled": True}
+    family = sections.family_of(block_type)
+    if family:
+        family_fields = sections.families()[family]["fields"]
+        if any(spec.get("type") == "items" and name not in schema for name, spec in family_fields.items()):
+            raise BlockOpError(f"the {family} section needs photos — add it from the page editor")
+        variant = sections.resolve_variant(style_id, family, None) if style_id else None
+        if variant is None:
+            raise BlockOpError(f"{block_type} needs a site style — switch to a style first")
+        block["variant"] = variant
     for field, value in (fields or {}).items():
         if field in schema:
             block[field] = clean_field(block_type, field, value)
+    if family:
+        _seed_section(block, family)
     return block
 
 

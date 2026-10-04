@@ -48,6 +48,8 @@ export interface WizardAnswers {
   goals?: string[];
   theme?: string;
   font_family?: string;
+  /** Site style id (packages/shared/src/sections/styles). */
+  style?: string;
   navbar_layout?: string;
   hero_style?: string;
   page_layouts?: Record<string, string>;

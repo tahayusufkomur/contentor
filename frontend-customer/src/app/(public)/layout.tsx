@@ -1,4 +1,7 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
+import { setupFlowActive } from "@/app/setup/gate";
 import { PublicFooter } from "@/components/shared/public-footer";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { serverFetch } from "@/lib/api-server";
@@ -16,9 +19,17 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, slug] = await Promise.all([getAuthUser(), getTenantSlug()]);
+  const [user, slug, hdrs] = await Promise.all([
+    getAuthUser(),
+    getTenantSlug(),
+    headers(),
+  ]);
   const isAdmin = user?.role === "owner" || user?.role === "coach";
-  const config = isAdmin ? await fetchTenantConfig(slug) : null;
+  // ?embed=1 (middleware → x-embed): the /setup preview iframe. Plain site,
+  // no owner chrome, no redirect back to /setup.
+  const embed = hdrs.get("x-embed") === "1";
+  if (isAdmin && !embed && (await setupFlowActive(slug))) redirect("/setup");
+  const config = isAdmin && !embed ? await fetchTenantConfig(slug) : null;
 
   // Public endpoint: a tenant with no active plans hides Pricing/Subscribe.
   let hasSubscription = false;
@@ -37,15 +48,16 @@ export default async function PublicLayout({
   const content = (
     <>
       <PublicHeader
-        user={user}
+        // The /setup preview shows the site as a visitor sees it.
+        user={embed ? null : user}
         hasSubscription={hasSubscription}
         plansEnabled={plansEnabled}
         blogEnabled={blogEnabled}
       />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
       <PublicFooter />
-      {!isAdmin && <SiteAssistantBubble />}
-      {isAdmin && <CopilotBubble />}
+      {!isAdmin && !embed && <SiteAssistantBubble />}
+      {isAdmin && !embed && <CopilotBubble />}
     </>
   );
 

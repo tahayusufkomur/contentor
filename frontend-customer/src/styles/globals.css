@@ -152,3 +152,10 @@
   height: 0;
   pointer-events: none;
 }
+
+/* Styled-section pages are designed full-bleed: lift the public layout's
+   content cap and padding (see pageWrapperClass in lib/blocks/section-defs). */
+main:has(> .page-fullbleed) {
+  max-width: none;
+  padding: 0;
+}

@@ -174,6 +174,8 @@ export interface TenantConfig {
   dark_mode_enabled: boolean;
   font_family: string;
   custom_css: string;
+  /** Site style id (packages/shared/src/sections/styles); "" = legacy theme. */
+  style?: string;
   enabled_modules: string[];
   social_links: Record<string, string>;
   meta_description: string;
@@ -194,4 +196,6 @@ export interface TenantConfig {
   /** Publish gate: when false the public site is hidden behind a preview gate. */
   is_published?: boolean;
   has_preview_password?: boolean;
+  /** Guided onboarding (/setup) still running — coach routes redirect there. */
+  setup_flow_active?: boolean;
 }

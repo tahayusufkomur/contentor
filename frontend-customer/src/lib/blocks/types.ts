@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { Block } from "@/types/tenant";
 import type { FieldSchema } from "./field-schema";
 
-export type BlockGroup = "content" | "dynamic";
+export type BlockGroup = "content" | "dynamic" | "section";
 
 /** Datasets dynamic blocks pull at render time. */
 export type DynamicDataKey = "courses" | "plans" | "events" | "storeProducts";

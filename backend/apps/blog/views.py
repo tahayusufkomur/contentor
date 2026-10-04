@@ -58,6 +58,18 @@ class PublicPostDetail(generics.RetrieveAPIView):
         return BlogPost.objects.filter(status="published").select_related("cover_photo")
 
 
+class OwnerPostPreview(generics.RetrieveAPIView):
+    """Coach/owner-only: any post (drafts too) in the public shape, so the
+    guided setup can preview a draft at /blog/<slug> before it's published."""
+
+    permission_classes = [IsCoachOrOwner]
+    serializer_class = BlogPostDetailSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return BlogPost.objects.select_related("cover_photo")
+
+
 # ── Coach admin ───────────────────────────────────────────────────────────────
 
 

@@ -1,0 +1,181 @@
+/* Swiss Grid site style. Every class and keyframe is prefixed `swiss-`. */
+
+.swiss-sec {
+  --swiss-g: 1rem; /* gutter — keep in sync with gap-x-4 / md:gap-x-6 */
+  font-family: var(--font-sans);
+}
+@media (min-width: 768px) {
+  .swiss-sec { --swiss-g: 1.5rem; }
+}
+.swiss-sec ::selection { background: var(--primary); color: var(--primary-foreground); }
+
+/* ---- type ---------------------------------------------------------- */
+.swiss-mono {
+  font-family: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.swiss-h1,
+.swiss-h1-intro,
+.swiss-h2,
+.swiss-h3,
+.swiss-step,
+.swiss-statement,
+.swiss-email {
+  font-family: var(--font-display);
+  font-weight: 500;
+  overflow-wrap: break-word;
+}
+.swiss-h1 {
+  font-size: clamp(2.75rem, 0.9rem + 6.6vw, 7.75rem);
+  line-height: 0.94;
+  letter-spacing: -0.048em;
+  text-wrap: pretty;
+}
+.swiss-h1-intro {
+  font-size: clamp(2.5rem, 1.2rem + 4.2vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.042em;
+  text-wrap: balance;
+}
+.swiss-h2 {
+  font-size: clamp(2rem, 1.15rem + 3vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.036em;
+  text-wrap: balance;
+}
+.swiss-h3 {
+  font-size: clamp(1.25rem, 1.08rem + 0.55vw, 1.625rem);
+  line-height: 1.15;
+  letter-spacing: -0.018em;
+}
+.swiss-step {
+  font-size: clamp(1.625rem, 1.2rem + 1.3vw, 2.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+.swiss-statement {
+  font-weight: 400;
+  font-size: clamp(1.75rem, 0.95rem + 3.1vw, 4.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.034em;
+  text-wrap: pretty;
+}
+.swiss-email {
+  font-size: clamp(1.75rem, 0.5rem + 5.6vw, 6.75rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+}
+.swiss-lead {
+  font-size: clamp(1.125rem, 1.02rem + 0.35vw, 1.375rem);
+  line-height: 1.4;
+  letter-spacing: -0.012em;
+}
+/* First line starts on the column-4 axis of an N-col span (default 12). */
+.swiss-indent { text-indent: calc((100% + var(--swiss-g)) * 3 / var(--swiss-cols, 12)); }
+
+/* Book-set paragraphs: no gap, indented continuation. */
+.swiss-sec .swiss-prose p { margin: 0; }
+.swiss-sec .swiss-prose p + p { margin-top: 0; text-indent: 2em; }
+
+/* ---- structure ----------------------------------------------------- */
+.swiss-rule {
+  height: 1px;
+  background: currentColor;
+  transform-origin: left center;
+}
+.swiss-guide {
+  border-inline: 1px solid color-mix(in oklch, currentColor 7%, transparent);
+  transform-origin: top center;
+}
+
+/* Hero: cobalt plumb line on the column-4 axis. */
+.swiss-plumb {
+  width: 1px;
+  margin-left: calc((100% + var(--swiss-g)) * 3 / 12);
+  background: var(--primary);
+  transform-origin: top center;
+}
+
+/* Photos are monochrome so cobalt stays the only colour on the page. */
+.swiss-photo img { filter: grayscale(1) contrast(1.05); }
+.swiss-duo { background: transparent; }
+.swiss-duo img { filter: grayscale(1) contrast(1.1); mix-blend-mode: luminosity; }
+
+/* Cards bring their photo back to colour while pointed at. */
+.swiss-card:hover .swiss-photo img,
+.swiss-card:focus-visible .swiss-photo img { filter: none; }
+
+/* ---- focus --------------------------------------------------------- */
+.swiss-sec a:focus-visible,
+.swiss-sec button:focus-visible,
+.swiss-sec [tabindex]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.swiss-inverse a:focus-visible,
+.swiss-inverse button:focus-visible { outline-color: var(--inverse-foreground); }
+
+/* ---- contact form, restyled to the grid ---------------------------- */
+.swiss-form label {
+  font-family: "Fragment Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+.swiss-form input,
+.swiss-form textarea {
+  border-radius: 0;
+  border-width: 0 0 1px;
+  border-color: var(--foreground);
+  background: transparent;
+  box-shadow: none;
+  padding-inline: 0;
+  font-size: 1rem;
+}
+.swiss-form input:focus-visible,
+.swiss-form textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--primary);
+  border-bottom-width: 2px;
+}
+.swiss-form button {
+  border-radius: 0;
+  min-height: 3rem;
+  font-size: 0.9375rem;
+  box-shadow: none;
+}
+.swiss-form button:hover { background: var(--foreground); color: var(--background); }
+
+/* ---- motion -------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .swiss-hero .swiss-guide {
+    animation: swiss-rise 1.1s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+    animation-delay: calc(var(--i) * 45ms);
+  }
+  .swiss-hero .swiss-rule { animation: swiss-draw 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both; }
+  .swiss-plumb { animation: swiss-rise 0.6s 0.7s cubic-bezier(0.5, 0, 0.2, 1) both; }
+  .swiss-card .swiss-photo img { transition: filter 0.45s ease; }
+
+  @supports (animation-timeline: view()) {
+    .swiss-sec:not(.swiss-hero) .swiss-rule {
+      animation: swiss-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 90%;
+    }
+  }
+}
+@keyframes swiss-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes swiss-rise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}

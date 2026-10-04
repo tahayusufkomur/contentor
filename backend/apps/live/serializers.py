@@ -421,6 +421,13 @@ class CalendarEventSerializer(serializers.Serializer):
     location = serializers.CharField(allow_blank=True, default="")
     thumbnail_signed_url = serializers.CharField(allow_null=True, default=None)
     filter_options = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    # Tenant charge currency, so public listings can format prices.
+    currency = serializers.SerializerMethodField()
+
+    def get_currency(self, obj):
+        from apps.core.currency import tenant_charge_currency
+
+        return tenant_charge_currency()
 
 
 class AccessInfoSerializer(serializers.Serializer):

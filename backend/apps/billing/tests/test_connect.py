@@ -225,3 +225,24 @@ def test_status_free_tenant_cannot_monetize(restore_public, owner, free_plan):
     assert body["connected"] is False
     assert body["can_monetize"] is False
     assert body["is_paid_active"] is False
+
+
+@override_settings(BILLING_BYPASS_ENABLED=True)
+def test_onboard_return_path_brings_the_coach_back_to_setup(restore_public, owner, paid_plan):
+    _set_plan(restore_public, paid_plan, stripe_account_id="acct_setup")
+    with patch("apps.billing.providers.connect.create_account_link", return_value="https://connect.stripe.com/z") as mk:
+        resp = _client(owner).post(ONBOARD_URL, {"return_path": "/setup?step=payouts"}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert mk.call_args.kwargs["return_url"].endswith("/setup?step=payouts")
+    assert mk.call_args.kwargs["refresh_url"].endswith("/setup?step=payouts")
+
+
+@override_settings(BILLING_BYPASS_ENABLED=True)
+@pytest.mark.parametrize("bad", ["https://evil.example/setup", "/admin/payouts", "setup"])
+def test_onboard_rejects_a_foreign_return_path(restore_public, owner, paid_plan, bad):
+    _set_plan(restore_public, paid_plan, stripe_account_id="acct_setup")
+    with patch("apps.billing.providers.connect.create_account_link") as mk:
+        resp = _client(owner).post(ONBOARD_URL, {"return_path": bad}, format="json")
+    assert resp.status_code == 400
+    assert resp.json()["error"] == "INVALID_RETURN_PATH"
+    mk.assert_not_called()

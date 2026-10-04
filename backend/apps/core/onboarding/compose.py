@@ -213,15 +213,7 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
 
     home = [_hero(answers, brand_name, sections)]
     home_layout = layout("home")
-    if home_layout == "home-story":
-        home += [
-            _about_image_text(answers, brand_name, sections, copy),
-            _course_grid(copy, "featured_courses"),
-            *_goal_blocks(goals, copy),
-            _faq(sections, copy),
-            _cta(sections, copy),
-        ]
-    elif home_layout == "home-complete":
+    if home_layout == "home-story" or home_layout == "home-complete":
         home += [
             _about_image_text(answers, brand_name, sections, copy),
             _course_grid(copy, "featured_courses"),
@@ -249,7 +241,10 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
             _cta(sections, copy),
         ]
     else:  # about-story
-        about = [_intro(copy, "blk_about_intro"), _about_image_text(answers, brand_name, sections, copy, "blk_about_bio")]
+        about = [
+            _intro(copy, "blk_about_intro"),
+            _about_image_text(answers, brand_name, sections, copy, "blk_about_bio"),
+        ]
 
     courses = [_course_grid(copy, "all_courses", "blk_courses_grid")]
     courses_layout = layout("courses")

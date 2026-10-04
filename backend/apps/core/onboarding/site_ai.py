@@ -114,6 +114,8 @@ def apply_edit(tenant, pages, extras=None):
     a chat edit has none of that context, and reconstructing it just to
     reuse the helper is out of scope for this reveal-chat MVP.
     """
+    from django.core.cache import cache
+
     from apps.tenant_config.models import TenantConfig
 
     with tenant_context(tenant):
@@ -124,6 +126,9 @@ def apply_edit(tenant, pages, extras=None):
             cfg.meta_description = extras["meta_description"]
             update_fields.append("meta_description")
         cfg.save(update_fields=update_fields)
+    # Public pages read blocks through the cached config object. Busting here
+    # covers every caller (copilot edit_pages, the reveal's wizard apply).
+    cache.delete(f"tenant:{tenant.schema_name}:config")
 
 
 def diff_pages(old_pages, new_pages):

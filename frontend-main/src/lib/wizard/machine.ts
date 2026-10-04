@@ -1,6 +1,7 @@
 /** Pure wizard step machine — no React, no fetch. The server's catalog is
  * the vocabulary; this module only decides ORDER and SKIPPING. */
 
+import { ENABLED_STYLES, rankStylesForNiche } from "@shared/sections/styles";
 import type { WizardAnswers, WizardCatalog } from "./types";
 
 export const CHAPTERS = ["business", "look", "logo", "launch"] as const;
@@ -36,11 +37,18 @@ export function buildSteps(
   if ((answers.description_followups?.items?.length ?? 0) > 0) {
     steps.push({ id: "business.followups", chapter: "business" });
   }
-  steps.push(
-    { id: "business.goals", chapter: "business" },
-    { id: "look.theme", chapter: "look" },
-    { id: "look.font", chapter: "look" },
-  );
+  steps.push({ id: "business.goals", chapter: "business" });
+  // Site styles replace the separate theme + font picks once any is enabled;
+  // a single enabled style is applied without asking.
+  const styles = ENABLED_STYLES();
+  if (styles.length === 0) {
+    steps.push(
+      { id: "look.theme", chapter: "look" },
+      { id: "look.font", chapter: "look" },
+    );
+  } else if (styles.length > 1) {
+    steps.push({ id: "look.style", chapter: "look" });
+  }
   steps.push({ id: "logo", chapter: "logo" });
   steps.push({ id: "domain", chapter: "launch" });
   steps.push({ id: "review", chapter: "launch" });
@@ -120,6 +128,8 @@ function answered(step: StepDef, answers: WizardAnswers): boolean {
       return Boolean(answers.theme);
     case "look.font":
       return Boolean(answers.font_family);
+    case "look.style":
+      return Boolean(answers.style);
     case "content.course":
       return answers.course_created === true;
     case "content.event":
@@ -166,5 +176,8 @@ export function finishRestAnswers(
     hero_style: answers.hero_style ?? rec.hero_style,
     page_layouts: pageLayouts,
     logo: answers.logo ?? { mode: "wordmark", curated_id: null },
+    ...(ENABLED_STYLES().length > 0
+      ? { style: answers.style ?? rankStylesForNiche(niche)[0]?.id }
+      : {}),
   };
 }

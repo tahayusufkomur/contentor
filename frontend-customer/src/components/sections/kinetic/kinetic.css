@@ -1,0 +1,163 @@
+/* Kinetic Club — style-scoped helpers. Every class/keyframe is kinetic-*. */
+
+/* Surfaces: set the local dim-text / rule / stroke tokens for their content. */
+.kinetic-ink {
+  background-color: var(--inverse);
+  color: var(--inverse-foreground);
+  --k-dim: color-mix(in oklch, var(--inverse-foreground) 74%, transparent);
+  --k-rule: color-mix(in oklch, var(--inverse-foreground) 22%, transparent);
+  --k-stroke: var(--inverse-foreground);
+}
+.kinetic-paper {
+  background-color: var(--background);
+  color: var(--foreground);
+  --k-dim: var(--muted-foreground);
+  --k-rule: var(--foreground);
+  --k-stroke: var(--foreground);
+}
+.kinetic-iron {
+  background-color: var(--muted);
+  color: var(--foreground);
+  --k-dim: var(--muted-foreground);
+  --k-rule: var(--foreground);
+  --k-stroke: var(--foreground);
+}
+.kinetic-signal {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  --k-dim: color-mix(in oklch, var(--primary-foreground) 88%, transparent);
+  --k-rule: color-mix(in oklch, var(--primary-foreground) 35%, transparent);
+  --k-stroke: var(--primary-foreground);
+}
+
+/* Cut top-right corner (buttons, tickets). */
+.kinetic-notch {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--kinetic-notch, 14px)) 0,
+    100% var(--kinetic-notch, 14px),
+    100% 100%,
+    0 100%
+  );
+}
+
+/* Outlined display type. */
+.kinetic-outline {
+  color: transparent;
+  -webkit-text-stroke: var(--kinetic-stroke-w, 2px)
+    var(--k-stroke, currentColor);
+}
+
+/* Focus: inside the box (clip-path would cut an outside ring). */
+.kinetic-focus:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: -7px;
+}
+.kinetic-focus-out:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
+}
+
+/* Angled top edge: a wedge of the section's own colour over the previous one. */
+.kinetic-wedge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: clamp(18px, 3.2vw, 52px);
+  background: inherit;
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  pointer-events: none;
+}
+
+.kinetic-marquee {
+  display: flex;
+  width: max-content;
+}
+
+/* Thick-bar plus/minus for the FAQ. */
+.kinetic-faq[open] .kinetic-plus-v {
+  transform: scaleY(0);
+}
+.kinetic-faq[open] .kinetic-plus {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+.kinetic-faq > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Contact form: thick bottom-rule inputs. */
+.kinetic-form input:not([aria-hidden="true"]),
+.kinetic-form textarea {
+  border-width: 0 0 3px 0;
+  border-color: var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1.0625rem;
+}
+.kinetic-form input:focus-visible,
+.kinetic-form textarea:focus-visible {
+  border-color: var(--primary);
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+  outline: none;
+}
+.kinetic-form label {
+  font-stretch: 125%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kinetic-marquee {
+    animation: kinetic-scroll var(--kinetic-speed, 40s) linear infinite;
+  }
+  .kinetic-marquee-rev {
+    animation-direction: reverse;
+  }
+  .kinetic-hold:hover .kinetic-marquee {
+    animation-play-state: paused;
+  }
+  .kinetic-rise {
+    animation: kinetic-rise 1s cubic-bezier(0.2, 0.75, 0.1, 1) 0.1s both;
+  }
+  .kinetic-plus-v {
+    transition: transform 0.25s ease;
+  }
+  @supports (animation-timeline: view()) {
+    .kinetic-drift {
+      animation: kinetic-drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
+
+@keyframes kinetic-scroll {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes kinetic-rise {
+  from {
+    clip-path: inset(100% -0.2em -0.3em -0.2em);
+    transform: translateY(0.3em);
+  }
+  to {
+    clip-path: inset(-0.3em -0.2em -0.3em -0.2em);
+    transform: none;
+  }
+}
+@keyframes kinetic-drift {
+  from {
+    transform: translateX(6%);
+  }
+  to {
+    transform: translateX(-10%);
+  }
+}

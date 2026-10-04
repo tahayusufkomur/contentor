@@ -1,5 +1,6 @@
-"""Chrome executors behind edit_theme / edit_navbar: narrow TenantConfig
-fields (theme id from the catalog, navbar layout/cta).
+"""Chrome executors behind edit_theme / edit_style / edit_navbar: narrow
+TenantConfig fields (theme id from the catalog, style id from the section
+manifest, navbar layout/cta).
 
 Pure helpers — validation and merge only, no DB writes (those happen in the
 execute view, like blocks.py). Navbar updates are overlaid on the current
@@ -20,6 +21,19 @@ def clean_theme(theme_id):
     if theme not in TenantTheme.values:
         raise ChromeOpError("theme must be one of: " + ", ".join(TenantTheme.values))
     return theme
+
+
+def clean_style(style_id):
+    """An enabled site style id from the section manifest."""
+    from apps.tenant_config import sections
+
+    value = str(style_id or "").strip()
+    enabled = sections.enabled_styles()
+    if value not in enabled:
+        if not enabled:
+            raise ChromeOpError("no site styles are available yet")
+        raise ChromeOpError("style must be one of: " + ", ".join(enabled))
+    return value
 
 
 def theme_label(theme_id):

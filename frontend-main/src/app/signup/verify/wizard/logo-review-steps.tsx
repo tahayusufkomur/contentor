@@ -1,5 +1,7 @@
 "use client";
 
+import { SITE_STYLES } from "@shared/sections/styles";
+
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
@@ -44,8 +46,7 @@ const PAGE_SIZE = 20;
  * to their tallest card, and curated titles ("Minimalist Yoga Logo Abstract
  * Circles") wrap to three lines in a 4-up card, which made whole rows grow.
  * Scoped to the gallery — OptionCard's title is shared by every wizard step. */
-const GALLERY_GRID =
-  "grid grid-cols-2 items-start gap-2.5 sm:grid-cols-4";
+const GALLERY_GRID = "grid grid-cols-2 items-start gap-2.5 sm:grid-cols-4";
 
 /** Lockups a curated mark can be paired with. `name_only` is deliberately
  * absent: hiding the mark you just picked is what the Wordmark door already
@@ -426,6 +427,11 @@ export function ReviewStep({
       value: answers.theme ? t(`themes.${answers.theme}`) : "—",
     },
     { key: "font", step: "look.font", value: answers.font_family ?? "—" },
+    {
+      key: "style",
+      step: "look.style",
+      value: (answers.style && SITE_STYLES[answers.style]?.label) || "—",
+    },
     {
       key: "logo",
       step: "logo",

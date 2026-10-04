@@ -13,6 +13,7 @@ import { PushOptIn } from "@/components/shared/push-optin";
 import { SwUpdateToast } from "@/components/shared/sw-update-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
+import { getSiteStyle, styleFontsHref } from "@/lib/site-styles";
 import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { UsageReporter } from "@/components/shared/usage-reporter";
@@ -26,7 +27,13 @@ import { TrackPageView } from "@shared/tracking/track-page-view";
 
 // Routes that must stay reachable even when the site is unpublished, so the
 // owner can log in to preview.
-const GATE_BYPASS_PREFIXES = ["/login", "/callback", "/impersonate"];
+const GATE_BYPASS_PREFIXES = [
+  "/login",
+  "/callback",
+  "/impersonate",
+  // Dev-only design showcase (the page itself 404s in production).
+  ...(process.env.NODE_ENV === "production" ? [] : ["/design-showcase"]),
+];
 
 async function isSiteGated(
   config: Awaited<ReturnType<typeof fetchTenantConfig>>,
@@ -141,6 +148,7 @@ export default async function RootLayout({
     );
   }
   const gated = await isSiteGated(config, slug);
+  const siteStyle = getSiteStyle(config?.style);
   const hasSession = Boolean((await cookies()).get(COOKIE_NAME)?.value);
   const authUser = hasSession ? await getAuthUser() : null;
   const isStaff = authUser?.role === "owner" || authUser?.role === "coach";
@@ -155,11 +163,15 @@ export default async function RootLayout({
     >
       <head>
         {config && <TenantThemeStyle config={config} />}
-        {config?.font_family && (
-          <link
-            href={`https://fonts.googleapis.com/css2?family=${encodeURIComponent(config.font_family)}&display=swap`}
-            rel="stylesheet"
-          />
+        {siteStyle ? (
+          <link href={styleFontsHref(siteStyle)} rel="stylesheet" />
+        ) : (
+          config?.font_family && (
+            <link
+              href={`https://fonts.googleapis.com/css2?family=${encodeURIComponent(config.font_family)}&display=swap`}
+              rel="stylesheet"
+            />
+          )
         )}
       </head>
       <body
@@ -173,7 +185,9 @@ export default async function RootLayout({
             themes={["light", "dim", "dark"]}
             enableSystem={false}
             forcedTheme={
-              config?.dark_mode_enabled === false ? "light" : undefined
+              config?.dark_mode_enabled === false || siteStyle
+                ? "light"
+                : undefined
             }
             disableTransitionOnChange
           >

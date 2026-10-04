@@ -145,11 +145,25 @@ def _layout_ids(page: str) -> set[str]:
     return {option["id"] for option in PAGE_LAYOUTS[page]}
 
 
+def recommended_style(niche: str) -> str:
+    """Best enabled site style for a niche ("" when none is enabled): styles
+    listing the niche first, in manifest order — mirrors the wizard's
+    rankStylesForNiche in packages/shared/src/sections/styles/index.ts."""
+    from apps.tenant_config import sections
+
+    enabled = sorted(sections.enabled_styles().values(), key=lambda s: s.get("order", 0))
+    fits = [s for s in enabled if niche in s.get("niches", [])]
+    ranked = fits + [s for s in enabled if s not in fits]
+    return ranked[0]["id"] if ranked else ""
+
+
 def recommended_answers(niche: str) -> dict:
     """Complete default answer set for a niche — what "finish the rest for
     me" and finalize-with-gaps apply. Unknown niches fall back to general."""
     niche = niche if niche in THEME_RANKING else "general"
+    style = recommended_style(niche)
     return {
+        **({"style": style} if style else {}),
         "niche": niche,
         "description": "",
         "goals": ["sell_courses"],
@@ -208,6 +222,11 @@ def validate_answers(partial: dict) -> list[str]:
         elif key == "font_family":
             if value not in FONTS.values():
                 errors.append(f"unknown font '{value}'")
+        elif key == "style":
+            from apps.tenant_config import sections
+
+            if value not in sections.enabled_styles():
+                errors.append(f"unknown style '{value}'")
         elif key == "navbar_layout":
             if value not in NAVBAR_LAYOUTS:
                 errors.append(f"unknown navbar layout '{value}'")

@@ -61,7 +61,7 @@ export function CanvasDndProvider({
       if (!isDropZoneId(String(over.id))) return;
       store.insertBlock(
         activePageKey,
-        newBlock(paletteTypeFromId(activeIdStr), store.niche),
+        newBlock(paletteTypeFromId(activeIdStr), store.niche, store.siteStyle),
         dropZoneIndexFromId(String(over.id)),
       );
       return;

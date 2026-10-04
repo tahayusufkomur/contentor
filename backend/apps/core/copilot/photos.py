@@ -9,9 +9,20 @@ view. Imports are function-local to match apps/core's cycle-dodging convention."
 
 from copy import deepcopy
 
-# Which image field each block type carries (hero backgrounds vs. inline
-# images) — also the allowlist of block types the copilot may set photos on.
-IMAGE_FIELDS = {"hero": "bgImage", "imageText": "image"}
+from apps.tenant_config import sections
+
+# Which image fields each block type carries, default target first (hero
+# backgrounds vs. inline images; a styled section's main photo then its second
+# slot) — also the allowlist of block types the copilot may set photos on.
+IMAGE_FIELDS = {
+    "hero": ("bgImage",),
+    "imageText": ("image",),
+    **{
+        block_type: fields
+        for block_type in sorted(sections.SECTION_TYPES)
+        if (fields := sections.image_fields(sections.family_of(block_type)))
+    },
+}
 
 
 def image_captions(tenant, pages):
@@ -31,10 +42,10 @@ def image_captions(tenant, pages):
         for b in blocks.page_blocks(page_value) or []:
             if not isinstance(b, dict):
                 continue
-            field = IMAGE_FIELDS.get(b.get("type"))
-            value = b.get(field) if field else None
-            if isinstance(value, dict) and value.get("photo_id"):
-                ids.add(str(value["photo_id"]))
+            for field in IMAGE_FIELDS.get(b.get("type"), ()):
+                value = b.get(field)
+                if isinstance(value, dict) and value.get("photo_id"):
+                    ids.add(str(value["photo_id"]))
     if not ids:
         return {}
     with tenant_context(tenant):
@@ -99,10 +110,16 @@ def remember_session(subject, session_id, level):
         cache.set(_session_key(subject), {"sid": session_id, "level": int(level)}, timeout=_SESSION_TTL)
 
 
-def image_field_for(block_type):
-    field = IMAGE_FIELDS.get(block_type)
-    if field is None:
+def image_field_for(block_type, field=None):
+    """The image field a photo lands in: ``field`` when the block type has it,
+    else the type's main photo."""
+    fields = IMAGE_FIELDS.get(block_type)
+    if not fields:
         raise PhotoOpError("photos can go on these sections only: " + ", ".join(sorted(IMAGE_FIELDS)))
+    if field is None:
+        return fields[0]
+    if field not in fields:
+        raise PhotoOpError(f"{block_type} has photo fields: " + ", ".join(fields))
     return field
 
 

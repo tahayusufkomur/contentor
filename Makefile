@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec test-changed e2e-changed wiki wiki-sync
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec test-changed e2e-changed wiki wiki-sync sections-sync
 
 # Prod env lives in Cloudflare KV (fleet scripts/secrets.sh, Touch ID), not on
 # disk. Targets that need it materialize .env.prod for that one command only.
@@ -139,11 +139,15 @@ typecheck: ## Typecheck both Next.js apps (tsc --noEmit; covers packages/shared 
 typecheck-backend: ## Advisory mypy run (config in backend/pyproject.toml; not yet a gate)
 	-docker compose exec django mypy apps --config-file pyproject.toml
 
-lint: ## Run all linters via pre-commit, then loading-pattern check, selector self-test, and TS typecheck
+lint: ## Run all linters via pre-commit, then loading-pattern check, selector self-test, section-manifest sync check, and TS typecheck
 	pre-commit run --all-files
+	python3 scripts/sync_sections.py --check
 	node scripts/check-loading-patterns.mjs
 	python3 scripts/select_tests.py --self-test
 	@$(MAKE) typecheck
+
+sections-sync: ## Copy the section manifest (packages/shared/src/sections) into the backend
+	python3 scripts/sync_sections.py
 
 format: ## Auto-format backend (ruff) and frontend (prettier)
 	cd backend && ruff format .

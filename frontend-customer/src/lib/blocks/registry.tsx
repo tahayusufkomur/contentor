@@ -20,6 +20,12 @@ import type { Block } from "@/types/tenant";
 import type { BlockDefinition, BlockGroup, DynamicDataKey } from "./types";
 import type { FieldSchema } from "./field-schema";
 import { exampleFor } from "./examples";
+import {
+  SECTION_BLOCK_DEFS,
+  isSectionType,
+  sectionDefaultData,
+  sectionFamily,
+} from "./section-defs";
 
 import { HeroBlock } from "@/components/blocks/hero-block";
 import { RichTextBlock } from "@/components/blocks/rich-text-block";
@@ -586,6 +592,8 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       { key: "limit", label: "Max products", type: "number" },
     ],
   },
+  // --- Styled sections (one def per family; the variant picks the layout) ---
+  ...SECTION_BLOCK_DEFS,
 };
 
 export function getBlockDef(type: string): BlockDefinition | undefined {
@@ -595,6 +603,7 @@ export function getBlockDef(type: string): BlockDefinition | undefined {
 export const BLOCKS_BY_GROUP: Record<BlockGroup, BlockDefinition[]> = {
   content: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "content"),
   dynamic: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "dynamic"),
+  section: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "section"),
 };
 
 /** Dynamic datasets referenced by the enabled blocks on a page. */
@@ -621,8 +630,20 @@ export function mintBlockId(): string {
  *  example copy matching the tenant's `niche` (generic fallback when unknown).
  *  Media/dynamic blocks get example heading/intro text too; their images and
  *  live items (courses/plans/events/products) still come from the coach. */
-export function newBlock(type: string, niche?: string): Block {
+export function newBlock(
+  type: string,
+  niche?: string,
+  siteStyle?: string,
+): Block {
   const def = BLOCK_REGISTRY[type];
+  if (isSectionType(type)) {
+    return {
+      id: mintBlockId(),
+      type,
+      enabled: true,
+      ...sectionDefaultData(sectionFamily(type), siteStyle),
+    };
+  }
   return {
     id: mintBlockId(),
     type,

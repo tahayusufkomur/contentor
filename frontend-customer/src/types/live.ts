@@ -111,6 +111,8 @@ export interface CalendarEvent {
   location: string;
   thumbnail_signed_url: string | null;
   filter_options?: import("./course").FilterOption[];
+  /** Tenant charge currency (ISO code). */
+  currency?: string;
 }
 
 export interface CalendarEventDetail extends CalendarEvent {

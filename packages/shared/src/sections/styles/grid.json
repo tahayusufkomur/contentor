@@ -1,0 +1,69 @@
+{
+  "id": "grid",
+  "label": "Swiss Grid",
+  "mood": "Clear, intelligent, modern — a text-led grid with cobalt accents and mono labels.",
+  "niches": [
+    "general"
+  ],
+  "order": 3,
+  "enabled": true,
+  "fonts": {
+    "display": "Host Grotesk",
+    "body": "Host Grotesk",
+    "googleQuery": "family=Host+Grotesk:wght@300..700&family=Fragment+Mono"
+  },
+  "palette": {
+    "background": "oklch(0.975 0.008 95)",
+    "surface": "oklch(0.94 0.008 95)",
+    "foreground": "oklch(0.18 0 0)",
+    "mutedForeground": "oklch(0.46 0 0)",
+    "primary": "oklch(0.47 0.22 265)",
+    "primaryForeground": "oklch(0.99 0 0)",
+    "accent": "oklch(0.90 0.045 265)",
+    "accentForeground": "oklch(0.18 0 0)",
+    "border": "oklch(0.84 0.004 95)",
+    "inverse": "oklch(0.45 0.22 265)",
+    "inverseForeground": "oklch(0.98 0.005 95)"
+  },
+  "radius": "0rem",
+  "photoWords": "clean natural light, strong graphic composition, neutral background, candid documentary, modern minimal interior",
+  "variants": {
+    "hero": [
+      "statement",
+      "intro"
+    ],
+    "story": [
+      "columns"
+    ],
+    "benefits": [
+      "index"
+    ],
+    "courseShowcase": [
+      "catalogue"
+    ],
+    "howItWorks": [
+      "ruled"
+    ],
+    "philosophy": [
+      "paragraph"
+    ],
+    "moments": [
+      "tiles"
+    ],
+    "pricing": [
+      "table"
+    ],
+    "faq": [
+      "open"
+    ],
+    "cta": [
+      "block"
+    ],
+    "contact": [
+      "definition"
+    ],
+    "events": [
+      "table"
+    ]
+  }
+}

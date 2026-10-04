@@ -34,7 +34,7 @@ def _turn(**kw):
     return engine.CopilotTurn.model_validate(kw)
 
 
-def _run(parsed):
+def _run(parsed, style=""):
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
@@ -44,6 +44,7 @@ def _run(parsed):
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
         mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
+        mock.patch.object(engine, "_tenant_style", return_value=style),
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(
             engine.site_ai,
@@ -560,7 +561,7 @@ def test_set_block_image_card_stashes_pick_and_carries_preview():
     assert "Sunlit yoga studio" in card["title"]
     assert card["image_url"] == "https://cdn.example/sun.jpg"
     assert card["reveal"] is True  # curated pick → widget plays its reveal
-    block_lookup.assert_called_once_with(TENANT, "home", "blk_hero")
+    block_lookup.assert_called_once_with(TENANT, "home", "blk_hero", None)
     assert pick.call_args.kwargs["field"] == "bgImage"
     assert pick.call_args.kwargs["exclude_s3_key"] is None
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
@@ -1677,3 +1678,127 @@ def test_pages_digest_falls_back_to_title_then_generic_word(tenant_ctx):
     digest = engine._pages_digest(tenant_ctx)
     assert 'bgImage=photo("Studio shot")' in digest
     assert 'image=photo("photo")' in digest
+
+
+# --- styled sections ------------------------------------------------------------
+
+
+def _fixture_styles():
+    from apps.tenant_config import sections
+
+    base = {family: ["only"] for family in sections.families()}
+    return {
+        "calm": {
+            "id": "calm",
+            "label": "Calm",
+            "mood": "soft and slow",
+            "enabled": True,
+            "photoWords": "soft natural light",
+            "variants": {**base, "hero": ["split", "intro"]},
+        },
+        "draft": {"id": "draft", "label": "Draft", "mood": "wip", "enabled": False, "variants": base},
+    }
+
+
+@pytest.fixture()
+def fixture_styles(monkeypatch):
+    from apps.tenant_config import sections
+
+    styles = _fixture_styles()
+    monkeypatch.setattr(sections, "styles", lambda: styles)
+    return styles
+
+
+def test_add_block_section_card_takes_the_tenant_style_default(fixture_styles):
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "add_block", "page": "home", "block_type": "section.hero", "fields": {"kicker": "New"}}],
+    )
+    payload, _ = _run(parsed, style="calm")
+    (card,) = payload["actions"]
+    block = copilot_tokens.take_action(card["token"], "demo_yoga")["block"]
+    assert block["type"] == "section.hero" and block["variant"] == "calm.split"
+    assert block["kicker"] == "New" and block["headline"]  # required text seeded
+
+
+def test_add_block_section_without_a_style_is_dropped_with_reason(fixture_styles):
+    parsed = _turn(
+        kind="actions", text="", actions=[{"kind": "add_block", "page": "home", "block_type": "section.faq"}]
+    )
+    payload, _ = _run(parsed)
+    assert payload["kind"] == "answer" and "style" in payload["text"]
+
+
+def test_edit_style_card_only_for_enabled_styles(fixture_styles):
+    from apps.core.copilot import tokens as copilot_tokens
+
+    payload, _ = _run(_turn(kind="actions", text="", actions=[{"kind": "edit_style", "style": "calm"}]))
+    (card,) = payload["actions"]
+    assert card["kind"] == "edit_style" and "Calm" in card["title"]
+    assert copilot_tokens.take_action(card["token"], "demo_yoga") == {"kind": "edit_style", "style": "calm"}
+    payload, _ = _run(_turn(kind="actions", text="", actions=[{"kind": "edit_style", "style": "draft"}]))
+    assert payload["kind"] == "answer" and "calm" in payload["text"]
+
+
+def test_style_guide_lists_enabled_styles_and_field_guide_names_item_fields(fixture_styles):
+    guide = engine._style_guide()
+    assert "edit_style" in guide and "calm (Calm: soft and slow)" in guide and "draft" not in guide
+    assert "section.howItWorks:" in engine.SYSTEM_PROMPT
+    assert "steps({title/text} max 4)" in engine.SYSTEM_PROMPT
+    assert "items({q/a} max 6)" in engine.SYSTEM_PROMPT  # legacy faq unchanged
+
+
+def test_set_block_image_appends_the_style_photo_words(fixture_styles):
+    image = SimpleNamespace(asset_id="a1", title="Studio", preview_url="https://cdn.example/s.jpg")
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "set_block_image",
+                "page": "home",
+                "block_id": "blk_s",
+                "description": "teacher smiling",
+                "field": "image2",
+            }
+        ],
+    )
+    from apps.core.copilot import photos as copilot_photos
+
+    with (
+        mock.patch.object(engine, "_block_for_image", return_value=("image2", None)) as block_lookup,
+        mock.patch.object(copilot_photos, "pick_photo", return_value=image) as pick,
+    ):
+        payload, _ = _run(parsed, style="calm")
+    assert payload["actions"][0]["kind"] == "set_block_image"
+    block_lookup.assert_called_once_with(TENANT, "home", "blk_s", "image2")
+    assert pick.call_args.args[0] == "teacher smiling soft natural light"
+
+
+def test_chrome_digest_names_the_style(tenant_with_pages, fixture_styles):
+    from apps.tenant_config.models import TenantConfig
+
+    assert "Style: none (classic blocks)" in engine._chrome_digest(tenant_with_pages)
+    TenantConfig.objects.update(style="calm")
+    assert "Style: calm (Calm)" in engine._chrome_digest(tenant_with_pages)
+    assert engine._tenant_style(tenant_with_pages) == "calm"
+
+
+def test_pages_digest_shows_section_variant_and_both_photo_slots(tenant_with_pages):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    cfg.pages = {
+        "home": {
+            "blocks": [
+                {"id": "blk_s", "type": "section.hero", "variant": "calm.split", "headline": "Breathe", "enabled": True}
+            ]
+        }
+    }
+    cfg.save(update_fields=["pages"])
+    digest = engine._pages_digest(tenant_with_pages)
+    assert 'blk_s section.hero variant=calm.split headline="Breathe"' in digest
+    assert "image=(none set) image2=(none set)" in digest

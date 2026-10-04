@@ -96,7 +96,7 @@ class TenantConfigView(RetrieveUpdateAPIView):
         instance = serializer.instance
         old_pages = _json.loads(_json.dumps(instance.pages or {}, sort_keys=True))
         old_pages = _strip_volatile_urls(old_pages)
-        old_look = (instance.theme, instance.font_family, _logo_signal(instance))
+        old_look = (instance.theme, instance.font_family, instance.style, _logo_signal(instance))
 
         config = serializer.save()
 
@@ -107,7 +107,7 @@ class TenantConfigView(RetrieveUpdateAPIView):
         for key, value in new_pages.items():
             if old_pages.get(key) != value:
                 edited.add(key)
-        new_look = (config.theme, config.font_family, _logo_signal(config))
+        new_look = (config.theme, config.font_family, config.style, _logo_signal(config))
         changed = False
         if sorted(edited) != progress.get("pages_edited", []):
             progress["pages_edited"] = sorted(edited)

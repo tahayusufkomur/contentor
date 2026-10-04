@@ -60,3 +60,23 @@ def test_public_detail_has_cover_url_and_injected_images(tenant_ctx):
 
     listing = client.get("/api/v1/blog/posts/")
     assert listing.data["results"][0]["cover_photo_url"]
+
+
+def test_owner_preview_serves_drafts_to_the_coach_only(posts):
+    from apps.accounts.models import User
+
+    coach = User.objects.create_user(
+        email="coach@blogpreview.test",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    anon = APIClient(HTTP_HOST=HOST)
+    assert anon.get("/api/v1/blog/preview/draft/").status_code in (401, 403)
+
+    client = APIClient(HTTP_HOST=HOST)
+    client.force_authenticate(user=coach)
+    res = client.get("/api/v1/blog/preview/draft/")
+    assert res.status_code == 200
+    assert res.data["title"] == "Draft"

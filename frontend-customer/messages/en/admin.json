@@ -372,7 +372,8 @@
       "agentJoined": "{name} joined the chat",
       "assistantResumed": "The assistant is back",
       "humanModeNotice": "You're chatting with {name}"
-    }
+    },
+    "titleLive": "Finish setting up"
   },
   "settings": {
     "title": "Settings",

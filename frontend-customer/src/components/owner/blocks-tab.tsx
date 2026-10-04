@@ -54,7 +54,7 @@ export function BlocksTab({
     setConfirmingId(null);
   };
   const add = (type: string) => {
-    const block = newBlock(type, store.niche);
+    const block = newBlock(type, store.niche, store.siteStyle);
     store.insertBlock(pageKey, block);
     // insertBlock already selects the new block; ask for the reveal too so the
     // canvas scrolls to it (it lands at the end of a page that may be long).
@@ -229,10 +229,17 @@ export function BlocksTab({
               Cancel
             </button>
           </div>
-          {(["content", "dynamic"] as const).map((group) => (
+          {(store.siteStyle
+            ? (["section"] as const)
+            : (["content", "dynamic"] as const)
+          ).map((group) => (
             <div key={group} className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">
-                {group === "content" ? "Content" : "Dynamic"}
+                {group === "content"
+                  ? "Content"
+                  : group === "dynamic"
+                    ? "Dynamic"
+                    : "Sections"}
               </p>
               <div className="grid grid-cols-2 gap-1.5">
                 {BLOCKS_BY_GROUP[group].map((def) => {

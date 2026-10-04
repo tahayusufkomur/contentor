@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 from apps.core import ai as core_ai
 from apps.core.copilot import blocks, chrome, content, logos, photos, tokens
 from apps.core.onboarding import site_ai
+from apps.tenant_config import sections
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,9 @@ SYSTEM_PROMPT = (
     "- edit_pages: rewrite existing page copy from an instruction\n"
     "- add_block: add a new section (types: hero, richText, imageText, "
     "courseGrid, upcomingEvents, storeProducts, pricingPlans, cta, faq, "
-    "contact, stats, banner) to a page, with initial field content\n"
+    "contact, stats, banner) to a page, with initial field content; when "
+    "the Style line in the user turn names a style, prefer the section.* "
+    "types from the field guide — their layout follows that style\n"
     "- remove_block / move_block: by block id from the page digest\n"
     "- create_course: create a DRAFT course (title, description, price, "
     "modules each with lesson titles); the coach reviews and publishes it "
@@ -69,9 +72,10 @@ SYSTEM_PROMPT = (
     "engines show); write it yourself from the site's content when the coach "
     "asks for 'better Google text'\n"
     "- set_block_image: put a photo from the platform's curated library on "
-    "a hero or imageText block (block_id from the digest, plus a short "
-    "description of the photo you want, e.g. 'calm sunlit yoga studio, "
-    "warm tones'); propose it again with a different description if the "
+    "a hero, imageText or section.* block (block_id from the digest, plus a "
+    "short description of the photo you want, e.g. 'calm sunlit yoga "
+    "studio, warm tones'; for a section's second photo slot pass "
+    "field=image2); propose it again with a different description if the "
     "coach wants another style\n"
     "- set_course_cover: put a curated photo on a course's cover "
     "(course_id from the course list in the user turn, plus a short "
@@ -147,7 +151,7 @@ def _field_guide():
             elif spec[0] == "bool":
                 parts.append(f"{field}(true/false)")
             elif spec[0] == "items":
-                parts.append(f"items({{{'/'.join(spec[1])}}} max {spec[2]})")
+                parts.append(f"{field}({{{'/'.join(spec[1])}}} max {spec[2]})")
             else:
                 parts.append(field)
         lines.append(f"{btype}: {', '.join(parts)}")
@@ -155,7 +159,23 @@ def _field_guide():
     return "\n".join(lines)
 
 
-SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + _field_guide()
+def _style_guide():
+    """edit_style's line, listing the enabled site styles. Platform-level
+    static data (the synced manifest), so the prompt stays byte-identical
+    across tenants; the tenant's current style rides in the user turn."""
+    enabled = sections.enabled_styles()
+    if not enabled:
+        return ""
+    catalog = "; ".join(f"{sid} ({s.get('label', sid)}: {s.get('mood', '')})" for sid, s in enabled.items())
+    return (
+        "- edit_style: switch the site's design style (section layouts, fonts "
+        "and colors); every section keeps its content. On a site with a "
+        "style, colors come from the style — use edit_style, not edit_theme. "
+        f"style must be one of: {catalog}\n"
+    )
+
+
+SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + _style_guide() + _field_guide()
 
 STATS_SETUP_STEER = (
     "The user turn includes a Stats line (answer number questions from it — "
@@ -263,6 +283,11 @@ class EditThemeAction(BaseModel):
     theme: str
 
 
+class EditStyleAction(BaseModel):
+    kind: Literal["edit_style"]
+    style: str
+
+
 class EditNavbarAction(BaseModel):
     kind: Literal["edit_navbar"]
     layout: str | None = None
@@ -284,6 +309,7 @@ class SetBlockImageAction(BaseModel):
     block_id: str
     description: str = ""
     photo_id: str | None = None  # a photo the coach attached to their message
+    field: str | None = None  # section blocks: "image2" for the second photo slot
 
 
 class SetCourseCoverAction(BaseModel):
@@ -361,6 +387,7 @@ CopilotAction = Annotated[
     | CreateBlogPostAction
     | DraftAnnouncementAction
     | EditThemeAction
+    | EditStyleAction
     | EditNavbarAction
     | EditSeoAction
     | SetBlockImageAction
@@ -419,29 +446,41 @@ def _pages_digest(tenant):
                 for f in schema
                 if b.get(f) not in (None, "")
             )
-            image_field = photos.IMAGE_FIELDS.get(b.get("type"))
-            image_value = b.get(image_field) if image_field else None
-            if isinstance(image_value, dict) and image_value.get("photo_id"):
-                caption = captions.get(str(image_value["photo_id"]), "photo")
-                vals = f'{vals} {image_field}=photo("{caption}")'.strip()
-            elif image_field:
-                vals = f"{vals} {image_field}=(none set)".strip()
+            if b.get("variant"):
+                vals = f'variant={b["variant"]} {vals}'.strip()
+            for image_field in photos.IMAGE_FIELDS.get(b.get("type"), ()):
+                image_value = b.get(image_field)
+                if isinstance(image_value, dict) and image_value.get("photo_id"):
+                    caption = captions.get(str(image_value["photo_id"]), "photo")
+                    vals = f'{vals} {image_field}=photo("{caption}")'.strip()
+                else:
+                    vals = f"{vals} {image_field}=(none set)".strip()
             lines.append(f"  {b.get('id')} {b.get('type')}{flags} {vals}".rstrip())
     return "\n".join(lines) or "(no pages yet)"
 
 
 def _chrome_digest(tenant):
-    """One-line current theme/navbar state for the user turn."""
+    """One-line current theme/style/navbar state for the user turn."""
     from apps.tenant_config.models import TenantConfig
 
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
     if cfg is None:
-        return "Theme: ocean; Navbar: layout=classic, cta=none"
+        return "Theme: ocean; Style: none (classic blocks); Navbar: layout=classic, cta=none"
     nav = cfg.navbar_config or {}
     cta = nav.get("cta") or {}
     cta_part = f"'{cta.get('text')}' -> {cta.get('href')}" if cta.get("text") else "none"
-    return f"Theme: {cfg.theme}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
+    style = sections.style(cfg.style)
+    style_part = f"{cfg.style} ({style.get('label', cfg.style)})" if style else "none (classic blocks)"
+    return f"Theme: {cfg.theme}; Style: {style_part}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
+
+
+def _tenant_style(tenant):
+    """The tenant's site style id ("" = classic blocks)."""
+    from apps.tenant_config.models import TenantConfig
+
+    with tenant_context(tenant):
+        return TenantConfig.objects.values_list("style", flat=True).first() or ""
 
 
 def _tenant_photo(tenant, photo_id):
@@ -457,7 +496,7 @@ def _tenant_photo(tenant, photo_id):
     return photo
 
 
-def _block_for_image(tenant, page, block_id):
+def _block_for_image(tenant, page, block_id, field=None):
     """Resolve a block's image field and the s3_key of its current photo
     (so the pick can exclude it — "try another" must not return the same
     shot). Raises photos.PhotoOpError for unknown/unsupported blocks."""
@@ -469,7 +508,7 @@ def _block_for_image(tenant, page, block_id):
     block = next((b for b in blocks_ if isinstance(b, dict) and b.get("id") == block_id), None)
     if block is None:
         raise photos.PhotoOpError(f"no block {block_id} on {page}")
-    field = photos.image_field_for(block.get("type"))
+    field = photos.image_field_for(block.get("type"), field)
     current_id = (block.get(field) or {}).get("photo_id") if isinstance(block.get(field), dict) else None
     exclude_key = None
     if current_id:
@@ -719,6 +758,27 @@ def _user_turn(tenant, transcript, selections, message, attachments=None):
     return "\n\n".join(parts)
 
 
+def _block_label(block_type):
+    """Human name for a block type in card titles: a section's family label
+    ("hero", "coach story"), else the block type itself."""
+    family = sections.family_of(block_type or "")
+    if family:
+        return (sections.families().get(family, {}).get("label") or family).lower()
+    return block_type or "block"
+
+
+def _label_of(tenant, page, block_id):
+    found = next(
+        (
+            b
+            for b in blocks.page_blocks(_tenant_pages(tenant).get(page)) or []
+            if isinstance(b, dict) and b.get("id") == block_id
+        ),
+        {},
+    )
+    return _block_label(found.get("type", ""))
+
+
 def _card(tenant, action):
     """Validate one proposed action and turn it into a confirmable card.
     Raises blocks.BlockOpError (or site_ai's ComposeError) when unusable."""
@@ -736,11 +796,12 @@ def _card(tenant, action):
             ),
         }
     if isinstance(action, AddBlockAction):
-        block = blocks.build_block(action.block_type, action.fields)
+        style_id = _tenant_style(tenant) if sections.family_of(action.block_type) else ""
+        block = blocks.build_block(action.block_type, action.fields, style_id=style_id)
         detail = ", ".join(f"{k}: {v}" for k, v in block.items() if k not in ("id", "type", "enabled"))
         return {
             "kind": "add_block",
-            "title": f"Add {action.block_type} to {action.page}",
+            "title": f"Add a {_block_label(action.block_type)} to {action.page}",
             "detail": detail[:500],
             "token": tokens.stash_action(
                 schema,
@@ -750,7 +811,7 @@ def _card(tenant, action):
     if isinstance(action, RemoveBlockAction):
         return {
             "kind": "remove_block",
-            "title": f"Remove {action.block_id} from {action.page}",
+            "title": f"Remove the {_label_of(tenant, action.page, action.block_id)} from {action.page}",
             "detail": "",
             "token": tokens.stash_action(schema, action.model_dump()),
         }
@@ -760,7 +821,7 @@ def _card(tenant, action):
             detail = f"to {action.to_page} ({detail})"
         return {
             "kind": "move_block",
-            "title": f"Move {action.block_id} on {action.page}",
+            "title": f"Move the {_label_of(tenant, action.page, action.block_id)} on {action.page}",
             "detail": detail,
             "token": tokens.stash_action(schema, action.model_dump()),
         }
@@ -781,7 +842,7 @@ def _card(tenant, action):
         ]
         return {
             "kind": "edit_block_fields",
-            "title": f"Update the {block.get('type', 'block')} on {action.page}",
+            "title": f"Update the {_block_label(block.get('type', ''))} on {action.page}",
             "detail": f"{len(rows)} field(s) change",
             "changes": rows,
             "token": tokens.stash_action(schema, action.model_dump()),
@@ -804,7 +865,7 @@ def _card(tenant, action):
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, SetBlockImageAction):
-        field, exclude_key = _block_for_image(tenant, action.page, action.block_id)
+        field, exclude_key = _block_for_image(tenant, action.page, action.block_id, action.field)
         if action.photo_id:
             photo = _tenant_photo(tenant, action.photo_id)
             return {
@@ -823,8 +884,11 @@ def _card(tenant, action):
                     },
                 ),
             }
+        # A styled site's photos share one look: the style's photo words ride
+        # along with the model's description.
+        photo_words = (sections.style(_tenant_style(tenant)) or {}).get("photoWords", "")
         image = photos.pick_photo(
-            action.description,
+            f"{action.description} {photo_words}".strip(),
             tenant,
             field=field,
             exclude_s3_key=exclude_key,
@@ -1108,6 +1172,14 @@ def _card(tenant, action):
             "title": f"Switch theme to {chrome.theme_label(theme)}",
             "detail": "Colors change across the whole site — you can switch back anytime.",
             "token": tokens.stash_action(schema, {"kind": "edit_theme", "theme": theme}),
+        }
+    if isinstance(action, EditStyleAction):
+        style_id = chrome.clean_style(action.style)
+        return {
+            "kind": "edit_style",
+            "title": f"Switch the site style to {(sections.style(style_id) or {}).get('label', style_id)}",
+            "detail": "Every section keeps its content and takes the new layout — you can switch back anytime.",
+            "token": tokens.stash_action(schema, {"kind": "edit_style", "style": style_id}),
         }
     if isinstance(action, EditNavbarAction):
         updates = {}

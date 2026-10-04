@@ -1,4 +1,5 @@
 import { BlockRenderer } from "./block-renderer";
+import { pageWrapperClass } from "@/lib/blocks/section-defs";
 import type { Block } from "@/types/tenant";
 import type { DynamicData } from "@/lib/blocks/fetch-dynamic-data";
 
@@ -15,11 +16,12 @@ export function PageRenderer({
   pageTitle,
 }: PageRendererProps) {
   const visible = blocks.filter((b) => b.enabled !== false);
-  const firstIsHero = visible[0]?.type === "hero";
+  const firstIsHero =
+    visible[0]?.type === "hero" || visible[0]?.type === "section.hero";
 
   // Break out of the layout's px-4/py-8 container so sections are full-bleed.
   return (
-    <div className="-mx-4 -mt-8 md:-mx-6">
+    <div className={pageWrapperClass(visible)}>
       {pageTitle && !firstIsHero && <h1 className="sr-only">{pageTitle}</h1>}
       {visible.length === 0 ? (
         <div className="px-4 py-24 text-center text-sm text-muted-foreground">

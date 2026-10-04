@@ -1,3 +1,4 @@
+import { serverFetch } from "@/lib/api-server";
 // Server-side fetch helpers for the public coach-site blog. Mirrors
 // fetchTenantConfig's domain-header + retry conventions (src/lib/tenant.ts).
 import { DJANGO_API_URL } from "@/lib/constants";
@@ -49,6 +50,21 @@ export async function fetchPublishedPost(
     );
     if (!res.ok) return null;
     return res.json();
+  } catch {
+    return null;
+  }
+}
+
+/** A post by slug for the signed-in coach/owner, drafts included (null for
+ *  everyone else). Lets the guided setup preview a draft before it's live. */
+export async function fetchOwnerPreviewPost(
+  slug: string,
+): Promise<BlogPostPublic | null> {
+  try {
+    return await serverFetch<BlogPostPublic>(
+      `/api/v1/blog/preview/${encodeURIComponent(slug)}/`,
+      { cache: "no-store" },
+    );
   } catch {
     return null;
   }

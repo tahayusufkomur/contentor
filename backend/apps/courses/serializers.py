@@ -95,6 +95,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    instructor_name = serializers.CharField(source="instructor.name", read_only=True, default="")
 
     class Meta:
         model = Course
@@ -104,6 +105,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "instructor",
+            "instructor_name",
             "thumbnail_url",
             "thumbnail_id",
             "price",
@@ -164,6 +166,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     unlock_options = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    instructor_name = serializers.CharField(source="instructor.name", read_only=True, default="")
 
     class Meta:
         model = Course
@@ -173,6 +176,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "instructor",
+            "instructor_name",
             "thumbnail_url",
             "thumbnail_id",
             "price",

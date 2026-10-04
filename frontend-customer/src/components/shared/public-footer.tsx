@@ -16,7 +16,7 @@ export function PublicFooter() {
 
   return (
     <footer className="border-t">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-6">
+      <div className="mx-auto flex max-w-[var(--site-wrap,80rem)] flex-col gap-4 px-[var(--site-gutter,1rem)] py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-[var(--site-gutter-md,1.5rem)]">
         <p>
           © {new Date().getFullYear()} {config.brand_name}
         </p>

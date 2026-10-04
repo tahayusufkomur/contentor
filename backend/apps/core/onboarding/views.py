@@ -343,7 +343,7 @@ def onboarding_handoff(request):
     magic = create_magic_link_token(tenant.owner_email, tenant.schema_name, tenant.slug)
     base_domain = settings.CONTENTOR_DOMAIN
     fqdn = f"{tenant.slug}.{base_domain}"
-    return Response({"login_url": f"{settings.SITE_SCHEME}://{fqdn}/callback?token={magic}&next=/admin"})
+    return Response({"login_url": f"{settings.SITE_SCHEME}://{fqdn}/callback?token={magic}&next=/setup"})
 
 
 @api_view(["GET"])

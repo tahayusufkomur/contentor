@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
+import { pageWrapperClass } from "@/lib/blocks/section-defs";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -43,7 +44,7 @@ export function EditModeCanvas({
   // wrapper so the canvas mirrors the live page.
   if (!store || !editMode) {
     return (
-      <div className="-mx-4 -mt-8 md:-mx-6">
+      <div className={pageWrapperClass(liveBlocks)}>
         {liveBlocks.map((block) => (
           <BlockRenderer
             key={block.id}
@@ -56,7 +57,7 @@ export function EditModeCanvas({
   }
 
   return (
-    <div className="-mx-4 -mt-8 md:-mx-6">
+    <div className={pageWrapperClass(liveBlocks)}>
       {liveBlocks.length === 0 ? (
         <div className="px-4 py-20 text-center text-sm text-muted-foreground">
           <p className="mb-2">This page has no blocks yet.</p>

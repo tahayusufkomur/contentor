@@ -450,7 +450,7 @@ export function PublicHeader({
       className={`${shellCls} transition-colors duration-200`}
     >
       {layout === "centered" ? (
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-[var(--site-wrap,80rem)] px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
           <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center">
             <div />
             <Brand config={config} />
@@ -466,7 +466,7 @@ export function PublicHeader({
           </nav>
         </div>
       ) : layout === "split" ? (
-        <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-4">
+        <div className="mx-auto grid h-16 max-w-[var(--site-wrap,80rem)] grid-cols-[1fr_auto_1fr] items-center px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
           <nav className="hidden md:block">
             <DesktopLinks
               links={fullNavLinks.slice(0, Math.ceil(fullNavLinks.length / 2))}
@@ -486,7 +486,7 @@ export function PublicHeader({
           <div className="flex justify-end md:hidden">{burger}</div>
         </div>
       ) : layout === "minimal" ? (
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <div className="mx-auto flex h-16 max-w-[var(--site-wrap,80rem)] items-center justify-between px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
           <Brand config={config} />
           <div className="flex items-center gap-2">
             {!user && cta && (
@@ -499,7 +499,7 @@ export function PublicHeader({
         </div>
       ) : (
         /* classic — today's layout */
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <div className="mx-auto flex h-16 max-w-[var(--site-wrap,80rem)] items-center justify-between px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
           <Brand config={config} />
           <nav className="hidden items-center gap-6 md:flex">
             <DesktopLinks links={fullNavLinks} showInstall={showInstall} />

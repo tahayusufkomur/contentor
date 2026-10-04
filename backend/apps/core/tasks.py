@@ -81,6 +81,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
     photo ids) are available as raw material — and so these values WIN over
     the niche defaults. Pure overwrites, so a Celery retry is safe.
     """
+    from apps.core.onboarding import site_composer
     from apps.core.onboarding.compose import apply_wizard_logo, build_config_overrides
     from apps.tenant_config.models import TenantConfig
 
@@ -99,16 +100,29 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
 
         state = dict(tenant.wizard_state or {})
         ai_status = None
-        if not state.get("ai_compose_status"):
-            overrides["pages"], extras, ai_status = _compose_pages_with_ai(
-                tenant, answers, overrides["pages"], preferred_locale
-            )
-            if extras:
-                _apply_compose_extras(config, overrides, extras)
-
         photos_status = None
-        if not state.get("ai_photos_status"):
-            photos_status = _pick_photos_with_ai(tenant, answers, overrides["pages"], preferred_locale)
+        site_style = site_composer.site_style_for(answers)
+        if site_style:
+            # Styled site: a designed skeleton now; compose_site_task fills it
+            # (copy + photos) once the tenant is ready.
+            overrides["pages"] = site_composer.skeleton_pages(
+                site_style,
+                niche=answers.get("niche") or "general",
+                brand_name=config.brand_name,
+                description=answers.get("description") or "",
+            )
+            overrides["style"] = site_style
+            overrides["setup_flow"] = site_composer.initial_setup_flow()
+        else:
+            if not state.get("ai_compose_status"):
+                overrides["pages"], extras, ai_status = _compose_pages_with_ai(
+                    tenant, answers, overrides["pages"], preferred_locale
+                )
+                if extras:
+                    _apply_compose_extras(config, overrides, extras)
+
+            if not state.get("ai_photos_status"):
+                photos_status = _pick_photos_with_ai(tenant, answers, overrides["pages"], preferred_locale)
 
         for field, value in overrides.items():
             setattr(config, field, value)
@@ -199,9 +213,7 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
     if not ai_compose.compose_available():
         # Surface WHY (no provider / disabled / budget spent) in the logbook —
         # a silent skip once hid a worker with no AI binary.
-        logger.warning(
-            "ai compose skipped slug=%s provider=%s", tenant.slug, ai_compose.core_ai.available()
-        )
+        logger.warning("ai compose skipped slug=%s provider=%s", tenant.slug, ai_compose.core_ai.available())
         return pages, None, "skipped"
 
     course_items, download_items = _gather_content_items(tenant)
@@ -387,8 +399,18 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
 
         provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
 
+        from apps.core.onboarding.site_composer import site_style_for
+
+        wizard_answers = (tenant.wizard_state or {}).get("answers") or {}
+        # Styled sites start with no demo content: the coach creates their real
+        # first course/event/post in the guided /setup flow.
+        styled = bool(site_style_for(wizard_answers))
+
         _set_provisioning_stage(tenant, "seed")
-        if niche and tenant.template_seed_status != "ready":
+        if niche and tenant.template_seed_status != "ready" and styled:
+            tenant.template_seed_status = "skipped"
+            tenant.save(update_fields=["template_seed_status"])
+        elif niche and tenant.template_seed_status != "ready":
             from apps.core.demo.seed_template import TemplateSeedError, seed_template_into_tenant
 
             try:
@@ -399,15 +421,17 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
                 tenant.template_seed_status = "failed"
             tenant.save(update_fields=["template_seed_status"])
 
-        wizard_answers = (tenant.wizard_state or {}).get("answers") or {}
         if wizard_answers:
             _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
-            _seed_starter_post(tenant, preferred_locale)
+            if not styled:
+                _seed_starter_post(tenant, preferred_locale)
 
         _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
         logger.info("Tenant %s provisioned successfully", tenant.slug)
+        if styled:
+            _enqueue_compose_site(tenant)
 
     except Exception as exc:
         tenant.provisioning_status = "failed"
@@ -461,25 +485,67 @@ def compose_wizard_site(self, tenant_id):
         answers = (tenant.wizard_state or {}).get("answers") or {}
         _apply_wizard_answers(tenant, answers, preferred_locale)
 
-        try:
-            from apps.core.onboarding import ai_curate, seeding_content
+        from apps.core.onboarding.site_composer import site_style_for
 
-            brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
-            with tenant_context(tenant):
-                seeding_content.seed_starter_posts(tenant, brief)
-                seeding_content.seed_draft_products(tenant, brief)
-        except Exception:  # noqa: BLE001 — seeding is best-effort, never fails the reveal
-            logger.exception("reveal seeding failed for %s", tenant.slug)
+        styled = bool(site_style_for(answers))
+        if not styled:  # styled sites get no demo posts/products
+            try:
+                from apps.core.onboarding import ai_curate, seeding_content
+
+                brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+                with tenant_context(tenant):
+                    seeding_content.seed_starter_posts(tenant, brief)
+                    seeding_content.seed_draft_products(tenant, brief)
+            except Exception:  # noqa: BLE001 — seeding is best-effort, never fails the reveal
+                logger.exception("reveal seeding failed for %s", tenant.slug)
 
         _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
         logger.info("Tenant %s composed at reveal", tenant.slug)
+        if styled:
+            _enqueue_compose_site(tenant)
     except Exception as exc:
         tenant.provisioning_status = "failed"
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("compose_wizard_site failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
+
+
+def _enqueue_compose_site(tenant):
+    """Fill a styled tenant's skeleton pages in the background, after commit."""
+    from django.db import transaction
+
+    tenant_id = tenant.id
+    transaction.on_commit(lambda: compose_site_task.delay(tenant_id))
+
+
+@shared_task
+def compose_site_task(tenant_id):
+    """Plan + compose every page of a styled site (apps.core.onboarding.
+    site_composer). Per-page status lands in TenantConfig.setup_flow
+    ["page_builds"]; pages already building elsewhere are skipped."""
+    from apps.core.models import Tenant
+    from apps.core.onboarding import site_composer
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is not None:
+        site_composer.compose_site(tenant)
+
+
+@shared_task
+def compose_page_task(tenant_id, page_key, instruction=None):
+    """(Re)compose one page, optionally steered by the coach's request. Runs
+    even when the page reads "building": callers (setup_flow.start_page_build)
+    mark it building before enqueueing and own the de-duplication. Returns
+    False on failure."""
+    from apps.core.models import Tenant
+    from apps.core.onboarding import site_composer
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return False
+    return site_composer.build_page(tenant, page_key, instruction=instruction, skip_if_building=False)
 
 
 AI_STARTER_POST_TIMEOUT_SECONDS = 90

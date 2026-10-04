@@ -26,6 +26,8 @@ safely from migrations, serializers, and the seed commands alike.
 
 from __future__ import annotations
 
+from .sections import SECTION_TYPES
+
 # Fixed set of buildable pages. ``pricing`` renders at the /plans route on the
 # frontend; the mismatch is resolved there, not here.
 KNOWN_PAGE_KEYS = ("home", "about", "courses", "pricing", "faq", "contact")
@@ -53,7 +55,9 @@ DYNAMIC_BLOCK_TYPES = (
     "upcomingEvents",
     "storeProducts",
 )
-KNOWN_BLOCK_TYPES = frozenset(CONTENT_BLOCK_TYPES + DYNAMIC_BLOCK_TYPES)
+# Styled sections (``section.<family>``) come from the synced manifest; see
+# apps.tenant_config.sections for their schemas and cleaner.
+KNOWN_BLOCK_TYPES = frozenset(CONTENT_BLOCK_TYPES + DYNAMIC_BLOCK_TYPES) | SECTION_TYPES
 
 # --- Optional per-block style overrides (hybrid theme-lock) ------------------
 # Theme-token-first overrides a coach may set on a block. Theme-lock stays the
@@ -96,6 +100,8 @@ BLOCK_STYLE_ALLOWLIST = {
     "pricingPlans": frozenset({"spacing", "textColor"}),
     "upcomingEvents": frozenset({"spacing", "textColor"}),
     "storeProducts": frozenset({"spacing", "textColor"}),
+    # Styled sections are fully designed by their style: no overrides.
+    **{section_type: frozenset() for section_type in SECTION_TYPES},
 }
 
 

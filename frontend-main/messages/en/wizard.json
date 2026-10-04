@@ -117,6 +117,10 @@
       "heading": "Pick your type",
       "subhead": "How your brand name and headings will read."
     },
+    "style": {
+      "heading": "Choose your look",
+      "subhead": "Each style is a complete design — type, color, layouts and photo mood. You can switch anytime."
+    },
     "fonts": {
       "inter": {
         "label": "Inter",
@@ -244,8 +248,8 @@
     "review": {
       "heading": "Ready to launch?",
       "subhead": "Everything below is editable after launch, too.",
-      "create": "Create my platform",
-      "creating": "Creating your platform…",
+      "create": "Create my site",
+      "creating": "Creating your site…",
       "edit": "Edit",
       "rows": {
         "niche": "Niche",
@@ -255,7 +259,8 @@
         "logo": "Logo",
         "description": "About you",
         "brand": "Brand",
-        "address": "Address"
+        "address": "Address",
+        "style": "Style"
       }
     },
     "provisioning": {
@@ -278,19 +283,6 @@
       "closedCta": "Go to login",
       "failed": "We couldn't send a link for this signup. Please start again.",
       "startOver": "Start over"
-    },
-    "revealChat": {
-      "title": "Want anything different?",
-      "placeholder": "Tell me what you'd like to change…",
-      "preview": "Preview",
-      "thinking": "Thinking…",
-      "readyHint": "Ready to apply your change.",
-      "apply": "Apply",
-      "applying": "Applying…",
-      "discard": "Discard",
-      "remaining": "Free refinements left: {count}",
-      "exhausted": "That was your free refinement — you can still publish anytime, and unlock more with a paid plan.",
-      "error": "Something went wrong. Please try again."
     }
   }
 }

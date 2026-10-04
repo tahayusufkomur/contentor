@@ -31,6 +31,16 @@ def test_image_field_for_maps_supported_block_types():
     assert photos.image_field_for("imageText") == "image"
 
 
+def test_image_field_for_section_blocks_takes_a_named_slot():
+    assert photos.image_field_for("section.hero") == "image"
+    assert photos.image_field_for("section.hero", "image2") == "image2"
+    assert photos.image_field_for("section.cta", "image") == "image"
+    with pytest.raises(photos.PhotoOpError):
+        photos.image_field_for("section.cta", "image2")
+    with pytest.raises(photos.PhotoOpError):
+        photos.image_field_for("section.moments")  # its photos live in items
+
+
 def test_image_field_for_rejects_unsupported_type():
     with pytest.raises(photos.PhotoOpError, match="hero"):
         photos.image_field_for("faq")

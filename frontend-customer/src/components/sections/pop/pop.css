@@ -1,0 +1,305 @@
+/* Pop Studio — section look primitives. Every class and keyframe is pop-
+   prefixed; layout lives in Tailwind on the components. */
+
+.pop-root {
+  --pop-ink: var(--foreground);
+  --pop-paper: oklch(0.995 0.008 95);
+  --pop-pink: oklch(0.86 0.08 350);
+  --pop-sun: oklch(0.93 0.11 95);
+  --pop-r: 1.75rem;
+  --pop-r-sm: 1.125rem;
+  --pop-off: 4px;
+  --pop-focus: var(--foreground);
+  position: relative;
+  overflow-x: clip;
+  background: var(--pop-bg, var(--background));
+  color: var(--pop-fg, var(--foreground));
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+@media (min-width: 768px) {
+  .pop-root {
+    --pop-off: 6px;
+  }
+}
+.pop-root {
+  border-top: 2px solid var(--pop-ink);
+}
+.pop-root.pop-top {
+  border-top: 0;
+}
+.pop-dark {
+  --pop-focus: var(--accent);
+}
+.pop-root :focus-visible {
+  outline: 3px solid var(--pop-focus);
+  outline-offset: 3px;
+}
+
+/* ── type ─────────────────────────────────────────────── */
+.pop-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: -0.018em;
+  line-height: 0.9;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.pop-h1 {
+  font-size: clamp(3rem, 0.9rem + 6.2vw, 7.5rem);
+}
+.pop-h2 {
+  font-size: clamp(2.5rem, 1.35rem + 4.2vw, 5.25rem);
+}
+.pop-h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-stretch: 85%;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.pop-mono {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.pop-lede {
+  font-size: clamp(1.125rem, 1rem + 0.45vw, 1.3125rem);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* ── kicker: a label-maker sticker ─────────────────────── */
+.pop-kicker {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  padding: 0.4rem 0.95rem 0.36rem;
+  border: 2px solid var(--pop-ink);
+  border-radius: 999px;
+  color: var(--foreground);
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+/* ── cards, buttons, stickers ─────────────────────────── */
+.pop-card {
+  border: 2px solid var(--pop-ink);
+  border-radius: var(--pop-r);
+  box-shadow: var(--pop-off) var(--pop-off) 0 var(--pop-ink);
+}
+.pop-btn {
+  display: inline-flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.6rem;
+  border: 2px solid var(--pop-ink);
+  border-radius: 999px;
+  box-shadow: 4px 4px 0 var(--pop-ink);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.15;
+  text-align: center;
+}
+.pop-btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.pop-btn-paper {
+  background: var(--pop-paper);
+  color: var(--foreground);
+}
+.pop-btn-ink {
+  background: var(--foreground);
+  color: var(--background);
+}
+@media (hover: hover) {
+  .pop-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--pop-ink);
+  }
+}
+.pop-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--pop-ink);
+}
+.pop-sticker {
+  display: inline-block;
+  border: 2px solid var(--pop-ink);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--pop-ink);
+  rotate: var(--pop-tilt, 0deg);
+}
+
+/* Hero: a photo set inline in the headline, after the last word. */
+.pop-inline-photo {
+  display: inline-block;
+  width: 1.5em;
+  height: 0.74em;
+  margin-left: 0.12em;
+  vertical-align: -0.04em;
+  border: 2px solid var(--pop-ink);
+  border-radius: 999px;
+  rotate: -4deg;
+}
+
+/* Philosophy: highlighter slabs behind each line. */
+.pop-mark {
+  padding: 0.02em 0.14em 0.06em;
+  border-radius: 0.14em;
+  background: var(--accent);
+  color: var(--foreground);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* How it works: a squiggle joining the step circles. */
+.pop-squiggle {
+  height: 18px;
+  background: var(--primary);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='18' viewBox='0 0 44 18'%3E%3Cpath d='M0 9 Q11 0 22 9 T44 9' fill='none' stroke='black' stroke-width='3.5'/%3E%3C/svg%3E")
+    repeat-x left center / 44px 18px;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='18' viewBox='0 0 44 18'%3E%3Cpath d='M0 9 Q11 0 22 9 T44 9' fill='none' stroke='black' stroke-width='3.5'/%3E%3C/svg%3E")
+    repeat-x left center / 44px 18px;
+}
+
+/* Moments: polaroids with tilts and tape. */
+.pop-polaroid {
+  rotate: var(--pop-tilt, 0deg);
+}
+.pop-polaroid figure {
+  position: relative;
+}
+.pop-polaroid:nth-child(odd) figure::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  z-index: 2;
+  width: 5.5rem;
+  height: 1.6rem;
+  translate: -50% 0;
+  rotate: -5deg;
+  background: color-mix(in oklch, var(--pop-sun) 82%, transparent);
+  border-inline: 2px dashed color-mix(in oklch, var(--foreground) 25%, transparent);
+}
+
+/* FAQ: open/close plus. */
+.pop-faq summary {
+  list-style: none;
+}
+.pop-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Events: ticket stub perforation notches. */
+.pop-ticket-cut {
+  position: relative;
+}
+.pop-ticket-cut::before,
+.pop-ticket-cut::after {
+  content: "";
+  position: absolute;
+  left: -15px;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--pop-ink);
+  border-radius: 50%;
+  background: var(--pop-bg);
+}
+.pop-ticket-cut::before {
+  top: -16px;
+}
+.pop-ticket-cut::after {
+  bottom: -16px;
+}
+
+/* Contact: postage-stamp perforated edge. */
+.pop-stamp {
+  --r: 5px;
+  padding: calc(2.4 * var(--r));
+  -webkit-mask:
+    radial-gradient(var(--r), #0000 98%, #000) round calc(-1.5 * var(--r)) calc(-1.5 * var(--r)) /
+      calc(3 * var(--r)) calc(3 * var(--r)),
+    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r)) calc(100% - 3 * var(--r));
+  mask:
+    radial-gradient(var(--r), #0000 98%, #000) round calc(-1.5 * var(--r)) calc(-1.5 * var(--r)) /
+      calc(3 * var(--r)) calc(3 * var(--r)),
+    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r)) calc(100% - 3 * var(--r));
+}
+
+/* CTA: ribbon marquee. */
+.pop-marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+/* ── motion ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .pop-btn,
+  .pop-lift {
+    transition:
+      transform 0.16s ease,
+      box-shadow 0.16s ease,
+      rotate 0.3s ease;
+  }
+  .pop-polaroid {
+    transition:
+      rotate 0.35s cubic-bezier(0.3, 1.4, 0.5, 1),
+      scale 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+  }
+  .pop-spin {
+    animation: pop-spin 26s linear infinite;
+  }
+  .pop-marquee-track {
+    animation: pop-marquee 32s linear infinite;
+  }
+  .pop-plus {
+    transition: rotate 0.25s ease;
+  }
+  @media (hover: hover) {
+    .pop-wiggle:hover {
+      animation: pop-wiggle 0.5s ease-in-out;
+    }
+    .pop-lift:hover {
+      transform: translate(-2px, -3px);
+      box-shadow: calc(var(--pop-off) + 3px) calc(var(--pop-off) + 4px) 0 var(--pop-ink);
+    }
+    .pop-polaroid:hover {
+      z-index: 5;
+      rotate: 0deg;
+      scale: 1.04;
+    }
+  }
+}
+@keyframes pop-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pop-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes pop-wiggle {
+  0%,
+  100% {
+    rotate: var(--pop-tilt, 0deg);
+  }
+  25% {
+    rotate: calc(var(--pop-tilt, 0deg) - 4deg);
+  }
+  75% {
+    rotate: calc(var(--pop-tilt, 0deg) + 4deg);
+  }
+}

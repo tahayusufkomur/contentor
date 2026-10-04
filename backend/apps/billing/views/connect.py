@@ -57,6 +57,17 @@ def connect_onboard(request):
         )
     country = requested or connect.connect_country_for(request.META.get("HTTP_CF_IPCOUNTRY"))
 
+    # The guided /setup flow brings the coach back to itself; nothing else may
+    # steer Stripe's redirect: a /setup path, appended to the tenant's own origin.
+    return_path = request.data.get("return_path")
+    if return_path is not None:
+        return_path = str(return_path)
+        if not return_path.startswith("/setup"):
+            return Response(
+                {"error": "INVALID_RETURN_PATH", "detail": "return_path must be a relative /setup path."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     try:
         account_id = tenant.stripe_account_id
         if not account_id:
@@ -70,10 +81,13 @@ def connect_onboard(request):
             tenant.stripe_account_id = account_id
 
         origin = _tenant_origin(tenant)
+        if return_path:
+            refresh_url = return_url = f"{origin}{return_path}"
+        else:
+            refresh_url = f"{origin}/admin/payouts?connect=refresh"
+            return_url = f"{origin}/admin/payouts?connect=return"
         onboarding_url = connect.create_account_link(
-            account_id=account_id,
-            refresh_url=f"{origin}/admin/payouts?connect=refresh",
-            return_url=f"{origin}/admin/payouts?connect=return",
+            account_id=account_id, refresh_url=refresh_url, return_url=return_url
         )
     except ProviderError as exc:
         return Response(

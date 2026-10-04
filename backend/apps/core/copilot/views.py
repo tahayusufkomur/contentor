@@ -148,16 +148,29 @@ def _execute(tenant, user, action):
     if creator is not None:
         with tenant_context(tenant):
             return creator(user, action), {}
-    if kind in ("edit_theme", "edit_navbar"):
+    if kind in ("edit_theme", "edit_style", "edit_navbar"):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise chrome.ChromeOpError("site is not set up yet")
-            if kind == "edit_theme":
-                old_theme = cfg.theme
-                theme = chrome.clean_theme(action.get("theme"))
-                cfg.theme = theme
-                fields = ["theme"]
+            if kind in ("edit_theme", "edit_style"):
+                if kind == "edit_theme":
+                    old_theme = cfg.theme
+                    theme = chrome.clean_theme(action.get("theme"))
+                    cfg.theme = theme
+                    fields = ["theme"]
+                    result = {"kind": kind, "theme": theme}
+                    inverse = {"kind": "edit_theme", "theme": old_theme}
+                else:
+                    from apps.tenant_config import sections
+
+                    style_id = chrome.clean_style(action.get("style"))
+                    inverse = {"kind": "restore_style", "style": cfg.style, "pages": deepcopy(cfg.pages or {})}
+                    cfg.style = style_id
+                    # Every section block takes the new style's matching layout.
+                    cfg.pages = sections.restyle_pages(cfg.pages or {}, style_id)
+                    fields = ["style", "pages"]
+                    result = {"kind": kind, "style": style_id}
                 # Setup Assistant parity with TenantConfigView.perform_update.
                 progress = dict(cfg.setup_progress or {})
                 if not progress.get("look_edited"):
@@ -165,8 +178,6 @@ def _execute(tenant, user, action):
                     cfg.setup_progress = progress
                     fields.append("setup_progress")
                 cfg.save(update_fields=fields)
-                result = {"kind": kind, "theme": theme}
-                inverse = {"kind": "edit_theme", "theme": old_theme}
             else:
                 navbar_before = dict(cfg.navbar_config or {})
                 cfg.navbar_config = chrome.merge_navbar(cfg.navbar_config or {}, action.get("updates") or {})
@@ -375,6 +386,8 @@ def _audit_summary(action, result):
         return f"Duplicated {block} on {page}"
     if kind == "edit_theme":
         return f"Switched theme to {action.get('theme')}"
+    if kind == "edit_style":
+        return f"Switched site style to {action.get('style')}"
     if kind == "edit_navbar":
         return "Updated the navbar"
     if kind == "edit_seo":
@@ -522,6 +535,10 @@ def _apply_inverse(tenant, inverse):
         if kind == "restore_pages":
             cfg.pages = inverse.get("pages") or {}
             cfg.save(update_fields=["pages"])
+        elif kind == "restore_style":
+            cfg.style = str(inverse.get("style") or "")[:40]
+            cfg.pages = inverse.get("pages") or {}
+            cfg.save(update_fields=["style", "pages"])
         elif kind == "edit_theme":
             cfg.theme = chrome.clean_theme(inverse.get("theme"))
             cfg.save(update_fields=["theme"])

@@ -9,13 +9,13 @@ export function TenantThemeEnforcer() {
   const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
-    if (
-      config?.dark_mode_enabled === false &&
-      (resolvedTheme === "dark" || resolvedTheme === "dim")
-    ) {
+    // Styled sites are designed as one mode, like a dark-mode-off theme.
+    const singleMode =
+      config?.dark_mode_enabled === false || Boolean(config?.style);
+    if (singleMode && (resolvedTheme === "dark" || resolvedTheme === "dim")) {
       setTheme("light");
     }
-  }, [config?.dark_mode_enabled, resolvedTheme, setTheme]);
+  }, [config?.dark_mode_enabled, config?.style, resolvedTheme, setTheme]);
 
   return null;
 }

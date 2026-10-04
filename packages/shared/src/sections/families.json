@@ -1,0 +1,563 @@
+{
+  "version": 1,
+  "families": {
+    "hero": {
+      "label": "Hero",
+      "kind": "content",
+      "imageHeavy": true,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "headline": {
+          "type": "text",
+          "max": 70,
+          "required": true,
+          "label": "Headline"
+        },
+        "subhead": {
+          "type": "text",
+          "max": 180,
+          "label": "Subheadline"
+        },
+        "ctaLabel": {
+          "type": "text",
+          "max": 28,
+          "label": "Button text"
+        },
+        "ctaHref": {
+          "type": "link",
+          "label": "Button link"
+        },
+        "secondaryLabel": {
+          "type": "text",
+          "max": 28,
+          "label": "Second button text"
+        },
+        "secondaryHref": {
+          "type": "link",
+          "label": "Second button link"
+        },
+        "meta": {
+          "type": "text",
+          "max": 60,
+          "label": "Small line (e.g. location or format)"
+        },
+        "image": {
+          "type": "image",
+          "aspect": "4:5",
+          "role": "the coach teaching or practising, the hero moment",
+          "required": true,
+          "label": "Main photo"
+        },
+        "image2": {
+          "type": "image",
+          "aspect": "1:1",
+          "role": "a close detail of the practice (hands, tools, texture) with a person",
+          "label": "Detail photo"
+        }
+      }
+    },
+    "story": {
+      "label": "Coach story",
+      "kind": "content",
+      "imageHeavy": true,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "required": true,
+          "label": "Heading"
+        },
+        "body": {
+          "type": "richtext",
+          "max": 900,
+          "required": true,
+          "label": "Story"
+        },
+        "signature": {
+          "type": "text",
+          "max": 40,
+          "label": "Signature (coach name)"
+        },
+        "ctaLabel": {
+          "type": "text",
+          "max": 28,
+          "label": "Link text"
+        },
+        "ctaHref": {
+          "type": "link",
+          "label": "Link"
+        },
+        "image": {
+          "type": "image",
+          "aspect": "4:5",
+          "role": "warm portrait of the coach",
+          "required": true,
+          "label": "Portrait"
+        },
+        "image2": {
+          "type": "image",
+          "aspect": "3:2",
+          "role": "the coach in their teaching setting",
+          "label": "Setting photo"
+        }
+      }
+    },
+    "benefits": {
+      "label": "Benefits",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "required": true,
+          "label": "Heading"
+        },
+        "intro": {
+          "type": "text",
+          "max": 220,
+          "label": "Intro"
+        },
+        "items": {
+          "type": "items",
+          "min": 3,
+          "max": 6,
+          "label": "Benefits",
+          "itemLabel": "Benefit",
+          "fields": {
+            "title": {
+              "type": "text",
+              "max": 40,
+              "required": true,
+              "label": "Title"
+            },
+            "text": {
+              "type": "text",
+              "max": 160,
+              "required": true,
+              "label": "Text"
+            }
+          }
+        },
+        "image": {
+          "type": "image",
+          "aspect": "3:4",
+          "role": "a student enjoying the practice",
+          "label": "Photo"
+        }
+      }
+    },
+    "courseShowcase": {
+      "label": "Courses",
+      "kind": "dynamic",
+      "source": "courses",
+      "imageHeavy": true,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "label": "Heading"
+        },
+        "intro": {
+          "type": "text",
+          "max": 200,
+          "label": "Intro"
+        },
+        "ctaLabel": {
+          "type": "text",
+          "max": 28,
+          "label": "Button text"
+        },
+        "limit": {
+          "type": "select",
+          "options": [
+            "3",
+            "6"
+          ],
+          "default": "3",
+          "label": "How many"
+        }
+      }
+    },
+    "howItWorks": {
+      "label": "How it works",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "required": true,
+          "label": "Heading"
+        },
+        "intro": {
+          "type": "text",
+          "max": 200,
+          "label": "Intro"
+        },
+        "steps": {
+          "type": "items",
+          "min": 3,
+          "max": 4,
+          "label": "Steps",
+          "itemLabel": "Step",
+          "fields": {
+            "title": {
+              "type": "text",
+              "max": 40,
+              "required": true,
+              "label": "Title"
+            },
+            "text": {
+              "type": "text",
+              "max": 160,
+              "required": true,
+              "label": "Text"
+            }
+          }
+        },
+        "image": {
+          "type": "image",
+          "aspect": "4:5",
+          "role": "a student following a session",
+          "label": "Photo"
+        }
+      }
+    },
+    "philosophy": {
+      "label": "Philosophy",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "statement": {
+          "type": "text",
+          "max": 220,
+          "required": true,
+          "label": "Statement"
+        },
+        "attribution": {
+          "type": "text",
+          "max": 60,
+          "label": "Attribution (coach name)"
+        },
+        "image": {
+          "type": "image",
+          "aspect": "16:9",
+          "role": "an atmospheric wide shot of the practice with a person",
+          "label": "Atmosphere photo"
+        }
+      }
+    },
+    "moments": {
+      "label": "Moments",
+      "kind": "content",
+      "imageHeavy": true,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "label": "Heading"
+        },
+        "caption": {
+          "type": "text",
+          "max": 160,
+          "label": "Caption"
+        },
+        "photos": {
+          "type": "items",
+          "min": 3,
+          "max": 6,
+          "label": "Photos",
+          "itemLabel": "Photo",
+          "fields": {
+            "image": {
+              "type": "image",
+              "aspect": "4:5",
+              "role": "a candid moment from a class or session",
+              "required": true,
+              "label": "Photo"
+            },
+            "caption": {
+              "type": "text",
+              "max": 60,
+              "label": "Caption"
+            }
+          }
+        }
+      }
+    },
+    "pricing": {
+      "label": "Pricing",
+      "kind": "dynamic",
+      "source": "plans",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "label": "Heading"
+        },
+        "intro": {
+          "type": "text",
+          "max": 200,
+          "label": "Intro"
+        }
+      }
+    },
+    "faq": {
+      "label": "FAQ",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "required": true,
+          "label": "Heading"
+        },
+        "intro": {
+          "type": "text",
+          "max": 200,
+          "label": "Intro"
+        },
+        "items": {
+          "type": "items",
+          "min": 3,
+          "max": 8,
+          "label": "Questions",
+          "itemLabel": "Question",
+          "fields": {
+            "q": {
+              "type": "text",
+              "max": 120,
+              "required": true,
+              "label": "Question"
+            },
+            "a": {
+              "type": "text",
+              "max": 500,
+              "required": true,
+              "label": "Answer"
+            }
+          }
+        }
+      }
+    },
+    "cta": {
+      "label": "Call to action",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 90,
+          "required": true,
+          "label": "Heading"
+        },
+        "text": {
+          "type": "text",
+          "max": 200,
+          "label": "Text"
+        },
+        "ctaLabel": {
+          "type": "text",
+          "max": 28,
+          "required": true,
+          "label": "Button text"
+        },
+        "ctaHref": {
+          "type": "link",
+          "label": "Button link"
+        },
+        "image": {
+          "type": "image",
+          "aspect": "16:9",
+          "role": "an inviting wide shot of a session",
+          "label": "Background photo"
+        }
+      }
+    },
+    "contact": {
+      "label": "Contact",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "required": true,
+          "label": "Heading"
+        },
+        "text": {
+          "type": "text",
+          "max": 300,
+          "label": "Text"
+        },
+        "email": {
+          "type": "text",
+          "max": 120,
+          "label": "Email"
+        },
+        "location": {
+          "type": "text",
+          "max": 80,
+          "label": "Location"
+        },
+        "hours": {
+          "type": "text",
+          "max": 80,
+          "label": "Hours / response time"
+        },
+        "showForm": {
+          "type": "bool",
+          "default": true,
+          "label": "Show contact form"
+        },
+        "image": {
+          "type": "image",
+          "aspect": "4:5",
+          "role": "the coach, friendly and approachable",
+          "label": "Photo"
+        }
+      }
+    },
+    "events": {
+      "label": "Upcoming events",
+      "kind": "dynamic",
+      "source": "events",
+      "imageHeavy": false,
+      "fields": {
+        "kicker": {
+          "type": "text",
+          "max": 40,
+          "label": "Kicker"
+        },
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "label": "Heading"
+        },
+        "intro": {
+          "type": "text",
+          "max": 200,
+          "label": "Intro"
+        },
+        "ctaLabel": {
+          "type": "text",
+          "max": 28,
+          "label": "Button text"
+        }
+      }
+    }
+  },
+  "recipes": {
+    "home": [
+      "hero",
+      "story",
+      "benefits",
+      "courseShowcase",
+      "philosophy",
+      "howItWorks",
+      "moments",
+      "cta"
+    ],
+    "about": [
+      "hero:intro",
+      "story",
+      "philosophy",
+      "moments",
+      "cta"
+    ],
+    "courses": [
+      "hero:intro",
+      "courseShowcase",
+      "howItWorks",
+      "faq",
+      "cta"
+    ],
+    "pricing": [
+      "hero:intro",
+      "pricing",
+      "faq",
+      "cta"
+    ],
+    "faq": [
+      "hero:intro",
+      "faq",
+      "contact"
+    ],
+    "contact": [
+      "hero:intro",
+      "contact",
+      "faq"
+    ]
+  },
+  "requiredFamilies": {
+    "courses": [
+      "courseShowcase"
+    ],
+    "pricing": [
+      "pricing"
+    ],
+    "faq": [
+      "faq"
+    ],
+    "contact": [
+      "contact"
+    ]
+  }
+}

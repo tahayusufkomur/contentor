@@ -1,0 +1,233 @@
+"""Styled-section catalog: loaders over the synced manifest + the block cleaner.
+
+The manifest lives in packages/shared/src/sections (source of truth) and is
+copied into ``sections_manifest/`` by ``make sections-sync`` (``make lint``
+fails on drift). Families own content schemas, styles own layouts:
+
+    {"id": "blk_…", "type": "section.<family>", "variant": "<styleId>.<name>",
+     "enabled": true, …family fields at top level…}
+
+Pure Python (no Django, no model access) so ``defaults`` — which migrations
+import — can derive KNOWN_BLOCK_TYPES from it.
+"""
+
+from __future__ import annotations
+
+import html
+import json
+from functools import cache
+from pathlib import Path
+
+MANIFEST_DIR = Path(__file__).resolve().parent / "sections_manifest"
+SECTION_PREFIX = "section."
+
+_UNSAFE_URL_PREFIXES = ("javascript:", "data:", "vbscript:")
+_LINK_MAX = 300
+_IMAGE_KEYS = ("url", "photo_id", "alt")
+_BASE_KEYS = ("id", "type", "variant", "enabled", "style")
+_DROP = object()  # sentinel: omit the field
+
+
+@cache
+def manifest() -> dict:
+    return json.loads((MANIFEST_DIR / "families.json").read_text())
+
+
+def families() -> dict:
+    """family id -> {label, kind, fields, …}."""
+    return manifest()["families"]
+
+
+@cache
+def styles() -> dict:
+    """style id -> SiteStyle dict, in display order. Empty when none ship yet."""
+    found = []
+    for path in sorted((MANIFEST_DIR / "styles").glob("*.json")):
+        data = json.loads(path.read_text())
+        found.append((data.get("order", 0), data.get("id") or path.stem, data))
+    return {sid: data for _order, sid, data in sorted(found, key=lambda t: (t[0], t[1]))}
+
+
+def enabled_styles() -> dict:
+    return {sid: s for sid, s in styles().items() if s.get("enabled")}
+
+
+def style(style_id) -> dict | None:
+    return styles().get(str(style_id or ""))
+
+
+def variants(style_id, family) -> list[str]:
+    """Variant names a style ships for a family; the first is its default."""
+    return list(((style(style_id) or {}).get("variants") or {}).get(family) or [])
+
+
+def family_of(block_type) -> str | None:
+    """'section.hero' -> 'hero' for a known family, else None."""
+    if not isinstance(block_type, str) or not block_type.startswith(SECTION_PREFIX):
+        return None
+    family = block_type[len(SECTION_PREFIX) :]
+    return family if family in families() else None
+
+
+def image_fields(family) -> tuple[str, ...]:
+    """Top-level image fields of a family, main slot first ('image', 'image2')."""
+    fields = (families().get(family) or {}).get("fields") or {}
+    return tuple(name for name, spec in fields.items() if spec.get("type") == "image")
+
+
+def resolve_variant(style_id, family, name) -> str | None:
+    """'<style>.<name>' when the style ships that variant for the family, else
+    the style's first variant for it; None when the style has none."""
+    names = variants(style_id, family)
+    if not names:
+        return None
+    return f"{style_id}.{name if name in names else names[0]}"
+
+
+def restyle_variant(variant, target_style_id, family) -> str:
+    """Map a block's variant onto another style: the same variant name when the
+    target has it (keeps the compact hero "intro" an intro), else the same index
+    within the family, else the target's first. Unmappable → unchanged."""
+    target = variants(target_style_id, family)
+    if not target:
+        return variant
+    source_style, _, name = str(variant or "").partition(".")
+    if name in target:
+        return f"{target_style_id}.{name}"
+    source = variants(source_style, family)
+    index = source.index(name) if name in source else 0
+    return f"{target_style_id}.{target[index] if index < len(target) else target[0]}"
+
+
+def restyle_pages(pages, target_style_id) -> dict:
+    """New pages dict with every section block's variant mapped onto the target
+    style. Content and images are untouched."""
+    out = {}
+    for key, page in (pages or {}).items():
+        if not (isinstance(page, dict) and isinstance(page.get("blocks"), list)):
+            out[key] = page
+            continue
+        blocks = []
+        for block in page["blocks"]:
+            family = family_of(block.get("type")) if isinstance(block, dict) else None
+            if family:
+                block = {**block, "variant": restyle_variant(block.get("variant"), target_style_id, family)}
+            blocks.append(block)
+        out[key] = {**page, "blocks": blocks}
+    return out
+
+
+# --- cleaning -----------------------------------------------------------------
+
+
+def clamp_text(value, limit) -> str:
+    """Plain text cut to ``limit`` chars on a word boundary (hard cut when a
+    single word is longer than the limit). Non-strings become ""."""
+    text = value if isinstance(value, str) else ""
+    if len(text) <= limit:
+        return text
+    space = text.rfind(" ", 0, limit + 1)
+    return (text[:space] if space > 0 else text[:limit]).rstrip()
+
+
+def clamp_richtext(value, limit) -> str:
+    """Rich text whose PLAIN-text length is within ``limit``: sanitized HTML
+    kept as-is when it fits, else tags stripped and the text cut."""
+    import nh3
+
+    from .defaults import sanitize_rich_text  # function-local: defaults imports this module
+
+    cleaned = sanitize_rich_text(value)
+    plain = html.unescape(nh3.clean(cleaned, tags=set()))
+    if len(plain) <= limit:
+        return cleaned
+    return html.escape(clamp_text(plain, limit), quote=False)
+
+
+def _clean_link(value) -> str:
+    href = value.strip() if isinstance(value, str) else ""
+    return "" if href.lower().startswith(_UNSAFE_URL_PREFIXES) else href[:_LINK_MAX]
+
+
+def _clean_image(value):
+    if not isinstance(value, dict):
+        return None
+    out = {}
+    for key in _IMAGE_KEYS:
+        v = value.get(key)
+        if v is None or isinstance(v, str):
+            out[key] = v
+    if isinstance(out.get("url"), str) and out["url"].strip().lower().startswith(_UNSAFE_URL_PREFIXES):
+        out["url"] = None
+    if isinstance(out.get("alt"), str):
+        out["alt"] = out["alt"][:200]
+    return out
+
+
+def _clean_value(spec, value):
+    """Cleaned value for one field, or ``_DROP`` to omit the field."""
+    kind = spec.get("type")
+    if kind == "text":
+        return clamp_text(value, spec.get("max", 200))
+    if kind == "richtext":
+        return clamp_richtext(value, spec.get("max", 2000))
+    if kind == "link":
+        return _clean_link(value)
+    if kind == "bool":
+        if isinstance(value, str):
+            return value.strip().lower() == "true"
+        return bool(value)
+    if kind == "select":
+        options = [str(o) for o in spec.get("options") or []]
+        v = str(value) if value is not None else ""
+        if v in options:
+            return v
+        default = spec.get("default")
+        return str(default) if default is not None else (options[0] if options else _DROP)
+    if kind == "image":
+        return _clean_image(value) or _DROP
+    if kind == "items":
+        if not isinstance(value, list):
+            return _DROP
+        item_fields = spec.get("fields") or {}
+        return [_clean_fields(item_fields, item) for item in value[: spec.get("max", 12)] if isinstance(item, dict)]
+    return _DROP
+
+
+def _clean_fields(field_specs, raw) -> dict:
+    out = {}
+    for name, spec in field_specs.items():
+        if name not in raw:
+            continue
+        value = _clean_value(spec, raw[name])
+        if value is not _DROP:
+            out[name] = value
+    return out
+
+
+def clean_section_block(block):
+    """Shape a ``section.*`` block against its family schema: text clamped to
+    its max on a word boundary, item lists capped (unknown item keys dropped),
+    selects coerced to an allowed option, image dicts reduced to url/photo_id/
+    alt, unknown keys dropped. Unknown family → None (drop the block). A
+    variant of a known style resolves to one that style ships; a variant of an
+    unknown style is kept as-is (the frontend falls back)."""
+    if not isinstance(block, dict):
+        return None
+    family = family_of(block.get("type"))
+    if family is None:
+        return None
+    out = {key: block[key] for key in _BASE_KEYS if key in block}
+    if "enabled" in out:
+        out["enabled"] = bool(out["enabled"])
+    variant = block.get("variant")
+    if isinstance(variant, str):
+        style_id, _, name = variant.partition(".")
+        out["variant"] = (resolve_variant(style_id, family, name) if style(style_id) else None) or variant[:80]
+    else:
+        out.pop("variant", None)
+    out.update(_clean_fields(families()[family]["fields"], block))
+    return out
+
+
+SECTION_TYPES = frozenset(SECTION_PREFIX + family for family in families())

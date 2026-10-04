@@ -826,6 +826,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/setup-flow/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_admin_setup_flow_retrieve"];
+    put?: never;
+    post: operations["v1_admin_setup_flow_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/build-page/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_setup_flow_build_page_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/draft/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_setup_flow_draft_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/setup-status/": {
     parameters: {
       query?: never;
@@ -1743,6 +1791,26 @@ export interface paths {
       cookie?: never;
     };
     get: operations["v1_blog_posts_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/blog/preview/{slug}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description Coach/owner-only: any post (drafts too) in the public shape, so the
+     *     guided setup can preview a draft at /blog/<slug> before it's published.
+     */
+    get: operations["v1_blog_preview_retrieve"];
     put?: never;
     post?: never;
     delete?: never;
@@ -10253,6 +10321,7 @@ export interface components {
       icon_id?: string | null;
       logo_recipe?: unknown;
       theme?: components["schemas"]["ThemeEnum"];
+      style?: string;
       dark_mode_enabled?: boolean;
       font_family?: string;
       custom_css?: string;
@@ -10590,6 +10659,7 @@ export interface components {
       icon_id?: string | null;
       logo_recipe?: unknown;
       theme?: components["schemas"]["ThemeEnum"];
+      style?: string;
       dark_mode_enabled?: boolean;
       font_family?: string;
       custom_css?: string;
@@ -12014,6 +12084,78 @@ export interface operations {
       };
     };
   };
+  v1_admin_setup_flow_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_build_page_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_draft_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_setup_status_retrieve: {
     parameters: {
       query?: never;
@@ -13000,6 +13142,27 @@ export interface operations {
     };
   };
   v1_blog_posts_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        slug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BlogPostDetail"];
+        };
+      };
+    };
+  };
+  v1_blog_preview_retrieve: {
     parameters: {
       query?: never;
       header?: never;

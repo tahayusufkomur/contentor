@@ -112,6 +112,9 @@ def publish_blockers(config, tenant) -> list[str]:
     create (the free plan has ``is_live_enabled`` False), which would leave the
     gate permanently unsatisfiable.
 
+    The guided /setup flow can skip ``event``/``post``: a skipped step drops
+    its blocker (``config.setup_flow["skipped"]``).
+
     ``demo_cleanup`` is deliberately NOT a blocker (see the AI-seeding plan):
     seeded content is niche-appropriate AI/starter content the coach may
     reasonably ship as-is, and registering it as ``SeededObject`` rows must
@@ -138,7 +141,8 @@ def publish_blockers(config, tenant) -> list[str]:
         blockers.append("first_course")
 
     goals = _wizard_goals(tenant)
-    if EVENT_GOALS.intersection(goals) and _live_entitled(tenant):
+    skipped = (config.setup_flow or {}).get("skipped") or []
+    if EVENT_GOALS.intersection(goals) and _live_entitled(tenant) and "event" not in skipped:
         from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
         live_pairs = (
@@ -150,7 +154,7 @@ def publish_blockers(config, tenant) -> list[str]:
         if not any(_has_own(model, seeded.get(label, [])) for model, label in live_pairs):
             blockers.append("first_event")
 
-    if BLOG_GOAL in goals:
+    if BLOG_GOAL in goals and "post" not in skipped:
         from apps.blog.models import BlogPost
 
         if not _has_own(
@@ -161,6 +165,18 @@ def publish_blockers(config, tenant) -> list[str]:
     if _has_paid_content(seeded) and not can_monetize(tenant):
         blockers.append("payouts")
     return blockers
+
+
+def tenant_publish_blockers(tenant) -> list[str]:
+    """``publish_blockers`` computed in the tenant's own schema (where the
+    config + content live) — callable from the public schema too."""
+    from django_tenants.utils import tenant_context
+
+    from .models import TenantConfig
+
+    with tenant_context(tenant):
+        config = TenantConfig.objects.first()
+        return publish_blockers(config, tenant) if config else []
 
 
 def compute_setup_state(config, tenant) -> dict:
@@ -235,9 +251,7 @@ def compute_setup_state(config, tenant) -> dict:
         add(
             "first_blog_post",
             "extras",
-            _has_own(
-                BlogPost, seeded.get("blog.blogpost", []), queryset=BlogPost.objects.filter(status="published")
-            ),
+            _has_own(BlogPost, seeded.get("blog.blogpost", []), queryset=BlogPost.objects.filter(status="published")),
             optional=True,
         )
     if "build_community" in wizard_goals:

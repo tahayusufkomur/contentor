@@ -1,0 +1,72 @@
+{
+  "id": "journal",
+  "label": "Quiet Journal",
+  "mood": "A calm editorial magazine \u2014 light serif headlines, paper tones, quiet confidence.",
+  "niches": [
+    "yoga",
+    "pilates",
+    "face_yoga",
+    "general"
+  ],
+  "order": 1,
+  "enabled": true,
+  "fonts": {
+    "display": "Newsreader",
+    "body": "Hanken Grotesk",
+    "googleQuery": "family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..400&family=Hanken+Grotesk:wght@400;500;600"
+  },
+  "palette": {
+    "background": "oklch(0.975 0.008 85)",
+    "surface": "oklch(0.945 0.012 80)",
+    "foreground": "oklch(0.24 0.012 60)",
+    "mutedForeground": "oklch(0.48 0.015 65)",
+    "primary": "oklch(0.27 0.015 55)",
+    "primaryForeground": "oklch(0.975 0.008 85)",
+    "accent": "oklch(0.47 0.13 28)",
+    "accentForeground": "oklch(0.975 0.008 85)",
+    "border": "oklch(0.87 0.012 75)",
+    "inverse": "oklch(0.34 0.035 135)",
+    "inverseForeground": "oklch(0.95 0.012 85)"
+  },
+  "radius": "0.25rem",
+  "photoWords": "soft natural window light, muted neutral tones, calm editorial, negative space",
+  "variants": {
+    "hero": [
+      "editorial",
+      "intro"
+    ],
+    "story": [
+      "letter"
+    ],
+    "benefits": [
+      "contents"
+    ],
+    "courseShowcase": [
+      "issue"
+    ],
+    "howItWorks": [
+      "columns"
+    ],
+    "philosophy": [
+      "pullquote"
+    ],
+    "moments": [
+      "strip"
+    ],
+    "pricing": [
+      "columns"
+    ],
+    "faq": [
+      "sticky"
+    ],
+    "cta": [
+      "band"
+    ],
+    "contact": [
+      "colophon"
+    ],
+    "events": [
+      "programme"
+    ]
+  }
+}

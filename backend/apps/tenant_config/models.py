@@ -27,6 +27,9 @@ class TenantConfig(models.Model):
     theme = models.CharField(max_length=30, choices=TenantTheme.choices, default=TenantTheme.OCEAN)
     dark_mode_enabled = models.BooleanField(default=True)
     font_family = models.CharField(max_length=100, default="Inter")
+    # Site style id from the section manifest (apps.tenant_config.sections);
+    # "" = legacy theme/font rendering.
+    style = models.CharField(max_length=40, blank=True, default="")
     custom_css = models.TextField(blank=True, default="")
     enabled_modules = models.JSONField(default=list)
     social_links = models.JSONField(default=dict)
@@ -57,6 +60,10 @@ class TenantConfig(models.Model):
     # Setup Assistant state: {"pages_edited": [...], "look_edited": bool,
     # "manual": {item_key: True}}. Auto-detection is append-only.
     setup_progress = models.JSONField(default=dict, blank=True)
+    # Guided onboarding at /setup: {status: "active"|"done", step, done[], skipped[],
+    # started_at, completed_at, published, page_builds{page: {status, updated_at}}}.
+    # {} (existing tenants) means done; the wizard sets it active at provisioning.
+    setup_flow = models.JSONField(default=dict, blank=True)
     emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:

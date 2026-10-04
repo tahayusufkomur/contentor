@@ -154,8 +154,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
         if (res.ok) {
           router.refresh();
           void refreshSetupStatus();
-        }
-        else toast.error("Could not save your changes. Please try again.");
+        } else toast.error("Could not save your changes. Please try again.");
       } catch {
         toast.error("Could not save your changes. Please try again.");
       } finally {
@@ -296,6 +295,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
         onPagesChange={(pages) => handleChange({ pages })}
         serverPages={serverSync}
         niche={config.niche}
+        siteStyle={config.style ?? ""}
       >
         <RichEditorProvider>
           <CanvasDndProvider activePageKey={activePageKey}>

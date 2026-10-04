@@ -158,3 +158,52 @@ def test_move_block_across_pages():
     assert [b["id"] for b in after["about"]["blocks"]] == ["blk_intro", "blk_hero"]
     with pytest.raises(blocks.BlockOpError):
         blocks.move_block(pages, "home", "blk_hero", None, to_page="nope")
+
+
+# --- styled sections ------------------------------------------------------------
+
+
+@pytest.fixture()
+def calm_style(monkeypatch):
+    from apps.tenant_config import sections
+
+    styles = {
+        "calm": {"id": "calm", "enabled": True, "variants": {f: ["first", "second"] for f in sections.families()}}
+    }
+    monkeypatch.setattr(sections, "styles", lambda: styles)
+
+
+def test_section_schema_derives_from_manifest():
+    schema = blocks.BLOCK_SCHEMA["section.hero"]
+    assert schema["headline"] == ("text", 70)
+    assert schema["ctaHref"] == ("link",)
+    assert "image" not in schema and "image2" not in schema  # photos go through set_block_image
+    assert blocks.BLOCK_SCHEMA["section.story"]["body"] == ("rich", 900)
+    assert blocks.BLOCK_SCHEMA["section.courseShowcase"]["limit"] == ("select", ("3", "6"))
+    assert blocks.BLOCK_SCHEMA["section.howItWorks"]["steps"] == ("items", {"title": 40, "text": 160}, 4)
+    assert "photos" not in blocks.BLOCK_SCHEMA["section.moments"]  # items holding images: editor only
+
+
+def test_build_section_block_sets_style_default_and_seeds_required_copy(calm_style):
+    b = blocks.build_block("section.benefits", {"kicker": "Why", "evil": "x"}, style_id="calm")
+    assert b["variant"] == "calm.first" and b["kicker"] == "Why" and "evil" not in b
+    assert b["heading"]  # required text seeded
+    assert len(b["items"]) == 3 and all(item["title"] and item["text"] for item in b["items"])
+    given = blocks.build_block("section.faq", {"items": [{"q": "Cost?", "a": "Free."}]}, style_id="calm")
+    assert given["items"] == [{"q": "Cost?", "a": "Free."}]  # provided items are not padded
+
+
+def test_build_section_block_refusals(calm_style):
+    with pytest.raises(blocks.BlockOpError, match="style"):
+        blocks.build_block("section.hero", {})
+    with pytest.raises(blocks.BlockOpError, match="style"):
+        blocks.build_block("section.hero", {}, style_id="nope")
+    with pytest.raises(blocks.BlockOpError, match="photos"):
+        blocks.build_block("section.moments", {}, style_id="calm")
+
+
+def test_section_text_fields_cut_on_word_boundary():
+    assert blocks.clean_field("section.cta", "heading", "word " * 40) == ("word " * 18).strip()
+    assert blocks.clean_field("cta", "heading", "word " * 40) == ("word " * 40)[:120]  # legacy hard cut
+    rich = blocks.clean_field("section.story", "body", "<p>Hello <script>x</script>there</p>")
+    assert "<script>" not in rich and "Hello" in rich

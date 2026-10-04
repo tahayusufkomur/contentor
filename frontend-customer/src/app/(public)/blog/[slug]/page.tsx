@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
-import { fetchPublishedPost } from "@/lib/blog-public";
+import { fetchOwnerPreviewPost, fetchPublishedPost } from "@/lib/blog-public";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await fetchPublishedPost(slug);
+  const post =
+    (await fetchPublishedPost(slug)) ?? (await fetchOwnerPreviewPost(slug));
   if (!post) return {};
   return {
     title: post.title,
@@ -32,10 +33,12 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   const tenantSlug = await getTenantSlug();
-  const [post, config] = await Promise.all([
+  const [published, config] = await Promise.all([
     fetchPublishedPost(slug),
     fetchTenantConfig(tenantSlug),
   ]);
+  // Drafts are visible to the coach only (guided setup preview).
+  const post = published ?? (await fetchOwnerPreviewPost(slug));
   if (!post) notFound();
 
   const jsonLd = {

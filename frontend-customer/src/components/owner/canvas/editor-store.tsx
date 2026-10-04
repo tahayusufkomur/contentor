@@ -233,6 +233,9 @@ function reducer(state: EditorState, action: Action): EditorState {
 export interface EditorStore extends EditorState {
   /** The tenant's niche (for seeding new blocks with example content). */
   niche: string;
+  /** The tenant's site style id ("" = legacy themed blocks). Styled tenants
+   *  build with section blocks in this style. */
+  siteStyle: string;
   canUndo: boolean;
   canRedo: boolean;
   blocksFor(pageKey: PageKey): Block[];
@@ -277,6 +280,7 @@ interface EditorStoreProviderProps {
    *  explicitly; `initialPages` is only read at mount. */
   serverPages?: { pages: PagesConfig; seq: number };
   niche?: string;
+  siteStyle?: string;
   children: React.ReactNode;
 }
 
@@ -285,6 +289,7 @@ export function EditorStoreProvider({
   onPagesChange,
   serverPages,
   niche = "",
+  siteStyle = "",
   children,
 }: EditorStoreProviderProps) {
   const [state, dispatch] = useReducer(reducer, null, () => ({
@@ -345,6 +350,7 @@ export function EditorStoreProvider({
     () => ({
       ...state,
       niche,
+      siteStyle,
       canUndo: state.past.length > 0,
       canRedo: state.future.length > 0,
       blocksFor: (pageKey) => state.pages[pageKey]?.blocks ?? [],
@@ -372,7 +378,7 @@ export function EditorStoreProvider({
       undo: () => dispatch({ type: "undo" }),
       redo: () => dispatch({ type: "redo" }),
     }),
-    [state, niche],
+    [state, niche, siteStyle],
   );
 
   return (

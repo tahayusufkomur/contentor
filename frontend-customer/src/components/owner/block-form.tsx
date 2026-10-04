@@ -23,10 +23,13 @@ export function BlockForm({ block, onChange }: BlockFormProps) {
     <div className="space-y-3">
       {def.fields.map((field) => {
         if (field.showWhen && !field.showWhen(block)) return null;
+        const resolved = field.dynamicOptions
+          ? { ...field, options: field.dynamicOptions(block) }
+          : field;
         return (
           <FieldRenderer
             key={field.key}
-            field={field}
+            field={resolved}
             value={block[field.key]}
             onChange={(value) => onChange({ [field.key]: value })}
           />

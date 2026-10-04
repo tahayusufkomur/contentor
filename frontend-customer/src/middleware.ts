@@ -20,6 +20,13 @@ export function middleware(request: NextRequest) {
   headers.set("x-tenant-domain", hostname);
   // Expose the path so the root layout can let auth routes bypass the publish gate.
   headers.set("x-pathname", request.nextUrl.pathname);
+  // The /setup preview iframe: the (public) layout drops the owner chrome
+  // and the /setup redirect for these requests.
+  if (request.nextUrl.searchParams.get("embed") === "1") {
+    headers.set("x-embed", "1");
+  } else {
+    headers.delete("x-embed");
+  }
 
   // Dev override
   if (process.env.NODE_ENV === "development") {

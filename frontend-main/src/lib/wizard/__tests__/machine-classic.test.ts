@@ -18,13 +18,12 @@ const catalog = {
 const ids = (answers = {}) => buildSteps(catalog, answers).map((s) => s.id);
 
 describe("classic wizard steps", () => {
-  it("has no menu, hero or per-page layout steps", () => {
+  it("asks one Style step instead of theme + font once styles exist", () => {
     expect(ids()).toEqual([
       "business.niche",
       "business.describe",
       "business.goals",
-      "look.theme",
-      "look.font",
+      "look.style",
       "logo",
       "domain",
       "review",
@@ -53,6 +52,8 @@ describe("resuming after a step was removed (Review Focus 1)", () => {
   it("an unknown saved step is not in the flow", () => {
     expect(steps.some((s) => s.id === "pages.home")).toBe(false);
     expect(steps.some((s) => s.id === "look.navbar")).toBe(false);
+    // Coaches mid-wizard on the old theme/font steps resume at the Style step.
+    expect(steps.some((s) => s.id === "look.theme")).toBe(false);
   });
 
   it("falls to the first unanswered step, never back to the niche question", () => {
@@ -62,7 +63,7 @@ describe("resuming after a step was removed (Review Focus 1)", () => {
       goals: ["sell_courses"],
       theme: "ocean",
     };
-    expect(firstUnansweredStep(steps, answers).id).toBe("look.font");
+    expect(firstUnansweredStep(steps, answers).id).toBe("look.style");
   });
 
   it("stepIndex of an unknown id is the start (callers must guard)", () => {
