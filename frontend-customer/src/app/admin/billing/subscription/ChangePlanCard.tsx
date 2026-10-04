@@ -149,6 +149,11 @@ export function ChangePlanCard() {
               {actionError}
             </div>
           )}
+          {paidPlans.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              {t("comingSoonInCurrency", { currency })}
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             {paidPlans.map((plan) => {
               const isCurrent = plan.id === currentPlanId;

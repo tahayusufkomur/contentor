@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
@@ -120,7 +120,7 @@ function AnonymousSignupFlow() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
-  const restored = useRef(false);
+  const [restored, setRestored] = useState(false);
 
   // A reload (or a password manager's autofill hiccup) must not wipe the form:
   // keep {brand, name, email, step} for this tab only.
@@ -137,10 +137,10 @@ function AnonymousSignupFlow() {
     } catch {
       // storage unavailable or corrupt — start fresh
     }
-    restored.current = true;
+    setRestored(true);
   }, []);
   useEffect(() => {
-    if (!restored.current) return;
+    if (!restored) return; // never overwrite the saved draft with the empty initial state
     try {
       sessionStorage.setItem(
         DRAFT_KEY,
@@ -149,7 +149,7 @@ function AnonymousSignupFlow() {
     } catch {
       // private mode — the draft just isn't kept
     }
-  }, [brandName, name, email, step]);
+  }, [restored, brandName, name, email, step]);
 
   useEffect(() => {
     if (cooldown <= 0) return;

@@ -167,7 +167,10 @@ def send_magic_link(
 ) -> bool:
     copy = _MAGIC_LINK_COPY["en"]
     minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
-    subject = copy["subject"].format(brand=brand_name)
+    from django.utils.html import escape
+
+    subject = copy["subject"].format(brand=brand_name)  # plain text
+    safe_brand = escape(brand_name)  # coach-controlled: never raw into HTML
     intro = copy["intro"].format(minutes=minutes)
     font_stack = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif"
     code_block = ""
@@ -179,7 +182,7 @@ def send_magic_link(
         """
     html = f"""
     <div style="font-family: {font_stack}; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <h2 style="color: #1a1a2e; margin-bottom: 8px; letter-spacing: -0.02em;">{brand_name}</h2>
+        <h2 style="color: #1a1a2e; margin-bottom: 8px; letter-spacing: -0.02em;">{safe_brand}</h2>
         <p style="color: #444; font-size: 16px;">{intro}</p>
         <a href="{link}"
            style="display: inline-block; background: #0391F9; color: white; padding: 12px 32px;

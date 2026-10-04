@@ -46,3 +46,12 @@ def test_action_email_is_branded_escaped_and_has_a_text_alternative():
     assert "&lt;b&gt;x&lt;/b&gt;" in html and "<b>x</b>" not in html
     assert "Or copy" not in html  # the raw token is not repeated under the button
     assert "https://x.test/signup/verify?token=abc&v=1" in text
+
+
+def test_magic_link_email_escapes_the_coach_brand():
+    from apps.core.email import send_magic_link
+
+    with patch("apps.core.email.send_email", return_value=True) as send:
+        send_magic_link("s@example.com", "https://x.test/cb?token=1", brand_name="<img src=x onerror=1>")
+    html = send.call_args.args[2]
+    assert "&lt;img" in html and "<img" not in html
