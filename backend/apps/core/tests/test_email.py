@@ -41,3 +41,12 @@ def test_send_email_from_email_with_name_is_wrapped():
         ok = email.send_email("a@b.com", "Hi", "<p>x</p>", from_name="Coach", from_email="info@coach.com")
     assert ok is True
     assert mock.call_args.args[0]["from"] == "Coach <info@coach.com>"
+
+
+@override_settings(**_RESEND_SETTINGS)
+def test_send_email_skips_reserved_test_domains():
+    with patch.object(email.resend.Emails, "send") as mock:
+        assert email.send_email("priya@demo.test", "Hi", "<p>x</p>") is False
+        assert email.send_email("coach@demo-yoga.TEST", "Hi", "<p>x</p>") is False
+        assert email.send_email("a@b.com", "Hi", "<p>x</p>") is True
+    assert mock.call_count == 1

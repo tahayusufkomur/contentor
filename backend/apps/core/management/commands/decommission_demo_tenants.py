@@ -4,9 +4,9 @@ Prod runbook (after deploying this release):
     docker compose -f docker-compose.prod.yml exec django \
         python manage.py decommission_demo_tenants --yes
 
-Dev note: the 3 dev tenants (demo-fitness/demo-pilates/demo-yoga, seeded by
-`seed_dev_tenants`) share schema names with entries in the niche registry —
-running this against the dev stack deletes them too; reseed with `make seed`.
+Dev note: the dev/test tenant (demo-yoga, seeded by `seed_dev_tenants`) shares
+its schema name with a niche-registry entry — running this deletes it too;
+reseed with `make seed` (prod: `seed_dev_tenants --force --reset`).
 The prod bucket's demo/* media objects are NOT touched by this command (they
 remain the mirror source for dev's `mirror_demo_assets`).
 

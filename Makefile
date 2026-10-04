@@ -75,9 +75,10 @@ migrate-shared: ## Run shared (public) schema migrations only
 makemigrations: ## Generate new migration files
 	docker compose exec django python manage.py makemigrations
 
-seed: ## Seed plans, public tenant, superusers, 3 dev tenants, and the curated logo catalog
+seed: ## Reset to ONE test tenant (demo-yoga, Pro: coach + 1 student) + plans, superusers, Stripe test payouts, logos
 	docker compose exec django python manage.py seed_plans
-	docker compose exec django python manage.py seed_dev_tenants --force
+	docker compose exec django python manage.py seed_dev_tenants --force --reset
+	-docker compose exec django python manage.py seed_connect_test --tenant demo-yoga
 	docker compose exec django python manage.py seed_curated_logos
 
 seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinIO (host-run, needs .env.prod)

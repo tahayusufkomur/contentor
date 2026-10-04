@@ -9,6 +9,11 @@ logger = logging.getLogger(__name__)
 
 _CF_SEND_URL = "https://api.cloudflare.com/client/v4/accounts/{account_id}/email/sending/send"
 
+# RFC 2606 reserved TLDs: undeliverable by definition. Seeded/test users live on
+# them (demo-yoga's coach@demo-yoga.test, priya@demo.test); sending would only
+# bounce and dent the sender reputation of the real domains.
+_RESERVED_TLDS = (".test", ".example", ".invalid", ".localhost")
+
 
 def _sender_domain(address: str) -> str:
     return address.rsplit("@", 1)[-1].strip("> ").lower() if "@" in address else ""
@@ -94,6 +99,10 @@ def send_email(
         if attachments:
             logger.info("[email-sink] %d attachment(s) omitted from sink", len(attachments))
         return True
+
+    if _sender_domain(to).endswith(_RESERVED_TLDS):
+        logger.info("Skipping email to reserved-domain address to=%s subject=%s", to, subject)
+        return False
 
     sender_address = from_email or settings.RESEND_FROM_EMAIL
 

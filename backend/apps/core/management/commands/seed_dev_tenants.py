@@ -1,31 +1,16 @@
-"""Seed the three canonical dev tenants (fitness / pilates / yoga).
+"""Seed the one dev/test tenant: ``demo-yoga`` on the Pro plan, every feature on.
 
-Replaces the marketing "demo website" subsystem (``seed_all_demos`` /
-``seed_demo_tenant``) with a small, plan-scaled set of real, published tenants
-for local development and e2e. Each tenant is a genuine coach account — a real
-owner login, ``is_published=True`` (so anonymous browsing / e2e never hits the
-preview gate) and ``template_niche`` set (so the tenant_config serializer's
-``niche`` field resolves and the builder gets niche-appropriate block defaults).
+One tenant keeps manual testing simple: one coach (the owner) and one student
+(Priya, who owns a course, a subscription and lesson progress), with sample
+content for every feature — courses, downloads, live classes/streams, billing
+catalog, mailbox, community, notifications, site assistant, blog + autopilot
+queue, email campaigns, usage analytics, filters and tags. e2e runs against the
+same tenant (``e2e/helpers/auth.ts``).
 
-Depth is scaled by plan tier so the three tenants exercise the free / starter /
-pro feature envelopes:
-
-* ``demo-fitness`` (free)    — no live events, 5 courses, 8 students, no mailbox, no
-  community, no notifications, no site assistant, no blog autopilot/topic queue.
-* ``demo-pilates`` (starter) — live on, 8 courses, 40 students, 3 mailbox conversations,
-  3 community posts, "light" notifications (one announcement + template only), site
-  assistant enabled with 3 knowledge entries, no blog autopilot/topic queue.
-* ``demo-yoga`` (pro)        — live on, 10 courses, 80 students, 5 mailbox conversations,
-  5 community posts, "full" notifications (+ recurring schedule, email opt-out, push
-  subscription), site assistant enabled with 5 knowledge entries, blog autopilot enabled
-  with a 3-idea topic queue.
-
-All three tenants additionally get a spread of ``UsageEvent`` rows (usage analytics
-dashboards), a "Level" filter assigned to their courses, and a handful of Tags spread
-across their courses/videos/photos/downloads — none of these three features have a
-plan-tier gate, so they're seeded identically everywhere. Blog posts + email campaigns
-(``calendar_content``) are likewise seeded identically across all three tiers; only the
-autopilot queue on top of them (``seed_blog_extras``) is plan-gated, and pro-only.
+``--reset`` deletes every other tenant first, so dev and prod both end up with
+exactly this one. Logins: in DEBUG, any email on a ``demo-*`` login page signs
+in instantly; in prod, sign in as superadmin and use "Log in as" (tenant →
+coach, coach → student).
 
 Content wiring is delegated to ``apps.demo_seed.seeding_helpers`` — these helpers
 re-query the tenant DB for what they need (they do NOT thread prior-step outputs),
@@ -59,7 +44,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection
+from django.db import connection, transaction
 from django_tenants.utils import schema_context, tenant_context
 
 from apps.accounts.models import User
@@ -68,91 +53,32 @@ from apps.core.models import Domain, PlatformPlan, PlatformSubscription, Tenant
 from apps.demo_seed import calendar_content, seeding_helpers
 from apps.demo_seed.registry import load_niche
 
-# (slug, plan tier, niche key, depth config). Depth scales content volume by
-# plan tier; the seeding helpers take these as explicit count / include_live
-# kwargs (no plan-limit enforcement happens here). ``notifications`` is a 3-way
-# level gate rather than a count (0/"" = skip, "light" = starter, "full" = pro)
-# because the feature's plan gate is "full for pro, light for starter" — not a
-# simple on/off or more-of-the-same-thing scale like mailbox/community/
-# assistant below. ``assistant`` is a simple starter+pro on/off gate (spec D2,
-# same 2-way shape as mailbox/community) — the int is the knowledge-entry
-# count passed straight to ``seed_assistant``, not a distinct depth tier.
-# ``blog_extras`` (spec D7) is a stricter PRO-ONLY on/off gate — 0 for both
-# free AND starter, nonzero for pro only — because blog autopilot is a pro
-# feature, unlike assistant/mailbox/community's starter+pro gate. The int is
-# the topic-idea count passed straight to ``seed_blog_extras``.
-# ``pro_edge_cases`` (spec D8) is also PRO-ONLY, same shape as ``blog_extras`` —
-# but unlike every other key above, it doesn't gate a separate helper call;
-# ``seed_purchases_and_progress`` runs unconditionally for all three tiers, and
-# this bool just asks that one call to additionally push one Payment/
-# Subscription it already created into a refunded / past_due edge state.
+# (slug, plan tier, niche key, depth config). The depth keys are the explicit
+# count / on-off kwargs of the seeding helpers (no plan-limit enforcement here).
+# One student on purpose — the login a tester uses — so ``pro_edge_cases`` (which
+# would refund her purchase and put her subscription past_due) stays off.
 DEV_TENANTS = [
-    (
-        "demo-fitness",
-        "free",
-        "fitness",
-        {
-            "include_live": False,
-            "students": 8,
-            "courses": 5,
-            "mailbox": 0,
-            "community": 0,
-            "notifications": "",
-            "assistant": 0,
-            "blog_extras": 0,
-            "pro_edge_cases": False,
-        },
-    ),
-    (
-        "demo-pilates",
-        "starter",
-        "pilates",
-        {
-            "include_live": True,
-            "students": 40,
-            "courses": 8,
-            "mailbox": 3,
-            "community": 3,
-            "notifications": "light",
-            "assistant": 3,
-            "blog_extras": 0,
-            "pro_edge_cases": False,
-        },
-    ),
     (
         "demo-yoga",
         "pro",
         "yoga",
         {
             "include_live": True,
-            "students": 80,
+            "students": 1,
             "courses": 10,
-            "mailbox": 5,
+            "mailbox": 1,
             "community": 5,
             "notifications": "full",
             "assistant": 5,
             "blog_extras": 3,
-            "pro_edge_cases": True,
+            "pro_edge_cases": False,
         },
     ),
 ]
 
-# Minimal PlatformPlan fields used only when a tier's plan row does not already
-# exist (fresh / test DB). In a seeded dev/prod DB the canonical rows created by
-# `seed_plans` are reused. Mirrors the tier shape from seed_plans. No "free"
-# entry: the free tier always reuses the canonical BILLING_FREE_PLAN_NAME row
-# via `.get()` (see `_resolve_plan`), never get_or_create, so it never needs
-# defaults of its own.
+# Used only when the plan row does not exist yet (fresh / test DB); a seeded
+# DB reuses the canonical row from `seed_plans`.
 _PLAN_DEFAULTS = {
-    "starter": {
-        "price_monthly": 19,
-        "transaction_fee_pct": 8,
-        "max_students": 100,
-        "max_storage_gb": 100,
-        "max_streaming_hours": 100,
-        "max_campaign_emails": 1000,
-        "is_live_enabled": True,
-    },
     "pro": {
         "price_monthly": 49,
         "transaction_fee_pct": 6,
@@ -166,7 +92,7 @@ _PLAN_DEFAULTS = {
 
 
 class Command(BaseCommand):
-    help = "Seed the three canonical dev tenants (fitness/pilates/yoga), plan-scaled."
+    help = "Seed the one dev/test tenant (demo-yoga, Pro); --reset removes every other tenant."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -174,9 +100,20 @@ class Command(BaseCommand):
             action="store_true",
             help="Tear down and recreate tenants that already exist.",
         )
+        parser.add_argument(
+            "--reset",
+            action="store_true",
+            help="Delete every other tenant (schema + domains + row) first.",
+        )
 
     def handle(self, *args, **options):
         force = options["force"]
+
+        if options["reset"]:
+            keep = {slug for slug, *_ in DEV_TENANTS}
+            others = Tenant.objects.exclude(schema_name="public").exclude(slug__in=keep)
+            for slug in list(others.values_list("slug", flat=True)):
+                self._teardown(slug)
 
         for slug, tier, niche, depth in DEV_TENANTS:
             if Tenant.objects.filter(slug=slug).exists():
@@ -188,7 +125,19 @@ class Command(BaseCommand):
             self.stdout.write(self.style.NOTICE(f"\n→ Seeding {slug} ({tier} / {niche})"))
             self._seed_tenant(slug, tier, niche, depth)
 
-        self.stdout.write(self.style.SUCCESS("\nDev tenants ready."))
+        self.stdout.write(self.style.SUCCESS("\nDev tenant ready."))
+        self._print_logins()
+
+    def _print_logins(self):
+        scheme = "http" if settings.DEBUG else "https"
+        domain = settings.CONTENTOR_DOMAIN
+        self.stdout.write(f"""
+Logins
+  superadmin  {scheme}://{domain}/admin  (CONTENTOR_SUPERUSERS account)
+  coach       {scheme}://demo-yoga.{domain}/admin  coach@demo-yoga.test
+  student     {scheme}://demo-yoga.{domain}/login  priya@demo.test
+  DEBUG: any email on the demo-yoga login page signs in instantly.
+  Prod: sign in as superadmin, then "Log in as" (tenant -> coach, coach -> student).""")
 
     # ------------------------------------------------------------------
     # Teardown
@@ -213,36 +162,22 @@ class Command(BaseCommand):
         """
         tenant = Tenant.objects.get(slug=slug)
         self.stdout.write(f"  Tearing down existing '{slug}'...")
-        with connection.cursor() as cursor:
+        # Atomic: a failed DROP must not leave the row deleted and the schema
+        # orphaned. Quoted: signup-created schemas can contain hyphens.
+        with transaction.atomic(), connection.cursor() as cursor:
             cursor.execute("DELETE FROM core_platformsubscription WHERE tenant_id = %s", [tenant.id])
-        Domain.objects.filter(tenant=tenant).delete()
-        schema = tenant.schema_name
-        tenant.delete()
-        with connection.cursor() as cursor:
-            cursor.execute(f"DROP SCHEMA IF EXISTS {schema} CASCADE")
+            Domain.objects.filter(tenant=tenant).delete()
+            schema = tenant.schema_name
+            tenant.delete()
+            cursor.execute(f"DROP SCHEMA IF EXISTS {connection.ops.quote_name(schema)} CASCADE")
 
     # ------------------------------------------------------------------
     # Plans
     # ------------------------------------------------------------------
 
     def _resolve_plan(self, tier):
-        """Reuse the canonical PlatformPlan for this tier.
-
-        ``starter``/``pro`` map to plans named exactly that (matching
-        ``seed_plans``' rows) — a fresh/test DB has none of these yet, so
-        get_or_create backfills a minimal plan row. ``free`` is different: the
-        canonical free-tier plan is NOT named "free" — it's named
-        ``settings.BILLING_FREE_PLAN_NAME`` (default "Free"), and it is always
-        already seeded (by ``seed_plans`` and by migration
-        ``0005_backfill_free_plan``), so we must reuse that exact row rather
-        than get_or_create a second, duplicate lowercase "free" row. If it's
-        somehow missing, let DoesNotExist surface — running this command
-        without ``seed_plans`` having run first is a footgun that should fail
-        loudly, not silently create a duplicate.
-        """
-        if tier == "free":
-            free_name = getattr(settings, "BILLING_FREE_PLAN_NAME", "Free")
-            return PlatformPlan.objects.get(name=free_name)
+        """Reuse the canonical PlatformPlan named ``tier`` (seeded by
+        ``seed_plans``); a fresh/test DB gets a minimal row backfilled."""
         plan, _ = PlatformPlan.objects.get_or_create(name=tier, defaults=_PLAN_DEFAULTS[tier])
         return plan
 
@@ -258,6 +193,14 @@ class Command(BaseCommand):
         region = REGION_GLOBAL
         preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
         owner_email = f"coach@{tenant_data['subdomain']}.test"
+
+        # A schema no Tenant row owns is an orphan (an aborted run, or a
+        # transactional test's flush, which drops rows but not schemas); reusing
+        # it would collide with its leftover users, so start clean.
+        schema = tenant_data["schema_name"]
+        if not Tenant.objects.filter(schema_name=schema).exists():
+            with connection.cursor() as cursor:
+                cursor.execute(f"DROP SCHEMA IF EXISTS {connection.ops.quote_name(schema)} CASCADE")
 
         tenant = Tenant.objects.create(
             name=tenant_data["name"],
