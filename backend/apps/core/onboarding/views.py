@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.utils.html import escape
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -57,11 +58,12 @@ def creator_signup(request):
 
     # TR: needs native review.
     locale = "tr" if getattr(request, "region", "global") == "tr" else "en"
+    safe_brand = escape(brand_name)  # coach-supplied: never raw into HTML
     strings = {
         "en": {
             "subject": f"Verify your email — {brand_name}",
             "heading": "Welcome to Contentor!",
-            "intro": f"Click the button below to verify your email and create <strong>{brand_name}</strong>.",
+            "intro": f"Click the button below to verify your email and create <strong>{safe_brand}</strong>.",
             "button": "Verify &amp; Create My Platform",
             "expires": f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
             "copy_label": "Or copy:",
@@ -70,7 +72,7 @@ def creator_signup(request):
             "subject": f"E-postanızı doğrulayın — {brand_name}",
             "heading": "Contentor'a hoş geldiniz!",
             "intro": (
-                f"E-postanızı doğrulamak ve <strong>{brand_name}</strong> "
+                f"E-postanızı doğrulamak ve <strong>{safe_brand}</strong> "
                 f"platformunu oluşturmak için aşağıdaki düğmeye tıklayın."
             ),
             "button": "Doğrula ve Platformumu Oluştur",

@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.utils import timezone
+from django.utils.html import escape
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
@@ -183,6 +184,7 @@ def send_abandon_warning(tenant, now=None) -> bool:
 
     strings = _ABANDON_COPY["tr" if region == "tr" else "en"]
     brand = tenant.name
+    safe_brand = escape(brand)  # subject is plain text; HTML body gets the escaped form
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     grace = settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
     sent = send_email(
@@ -190,8 +192,8 @@ def send_abandon_warning(tenant, now=None) -> bool:
         subject=strings["subject"].format(brand=brand),
         html=f"""
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #1a1a2e;">{strings["heading"].format(brand=brand)}</h2>
-            <p style="color: #444;">{strings["intro"].format(brand=brand, grace=grace)}</p>
+            <h2 style="color: #1a1a2e;">{strings["heading"].format(brand=safe_brand)}</h2>
+            <p style="color: #444;">{strings["intro"].format(brand=safe_brand, grace=grace)}</p>
             <a href="{link}"
                style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
                       border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
@@ -240,6 +242,7 @@ def send_recovery_email(tenant) -> bool:
 
     strings = _COPY["tr" if region == "tr" else "en"]
     brand = tenant.name
+    safe_brand = escape(brand)  # subject is plain text; HTML body gets the escaped form
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     sent = send_email(
         to=tenant.owner_email,
@@ -247,7 +250,7 @@ def send_recovery_email(tenant) -> bool:
         html=f"""
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
             <h2 style="color: #1a1a2e;">{strings["heading"]}</h2>
-            <p style="color: #444;">{strings["intro"].format(brand=brand)}</p>
+            <p style="color: #444;">{strings["intro"].format(brand=safe_brand)}</p>
             <a href="{link}"
                style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
                       border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
