@@ -14,6 +14,9 @@ _MESSAGES: dict[str, dict[str, str]] = {
     "brand_taken": {
         "en": "Brand name already taken",
     },
+    "brand_unusable": {
+        "en": "Please use letters or numbers in your brand name",
+    },
     "brand_required": {
         "en": "Brand name is required",
     },

@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.html import escape
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
@@ -35,14 +34,13 @@ RESEND_COOLDOWN = timedelta(hours=1)
 _COPY = {
     "en": {
         "subject": "Pick up where you left off — {brand}",
-        "heading": "Your platform is waiting",
+        "heading": "Your site is waiting",
         "intro": (
-            "You started setting up <strong>{brand}</strong> — every choice you made is saved. "
+            "You started setting up {brand} — every choice you made is saved. "
             "Click below to continue right where you left off."
         ),
         "button": "Continue my setup",
         "expires": "This link is valid for {days} days.",
-        "copy_label": "Or copy:",
     },
 }
 
@@ -53,13 +51,12 @@ _ABANDON_COPY = {
         "subject": "Your unfinished setup will be removed — {brand}",
         "heading": "Still want to build {brand}?",
         "intro": (
-            "You started setting up <strong>{brand}</strong> but never finished. "
+            "You started setting up {brand} but never finished. "
             "We'll remove this unfinished signup in {grace} days to free it up. "
             "Click below to pick up exactly where you left off — nothing is lost yet."
         ),
         "button": "Resume my setup",
         "expires": "This link is valid for {days} days.",
-        "copy_label": "Or copy:",
     },
 }
 
@@ -141,7 +138,7 @@ def send_abandon_warning(tenant, now=None) -> bool:
     """
     from apps.accounts.models import User
     from apps.accounts.tokens import create_wizard_token
-    from apps.core.email import send_email
+    from apps.core.email import action_email, send_email
 
     # Same guard as send_recovery_email: a superadmin rename would mint a link
     # that resolves to nothing. Refuse rather than send a dead link — the
@@ -159,27 +156,17 @@ def send_abandon_warning(tenant, now=None) -> bool:
 
     strings = _ABANDON_COPY["en"]
     brand = tenant.name
-    safe_brand = escape(brand)  # subject is plain text; HTML body gets the escaped form
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     grace = settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
+    html, text = action_email(
+        heading=strings["heading"].format(brand=brand),
+        intro=strings["intro"].format(brand=brand, grace=grace),
+        button=strings["button"],
+        link=link,
+        expires=strings["expires"].format(days=days),
+    )
     sent = send_email(
-        to=tenant.owner_email,
-        subject=strings["subject"].format(brand=brand),
-        html=f"""
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #1a1a2e;">{strings["heading"].format(brand=safe_brand)}</h2>
-            <p style="color: #444;">{strings["intro"].format(brand=safe_brand, grace=grace)}</p>
-            <a href="{link}"
-               style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
-                      border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
-                {strings["button"]}
-            </a>
-            <p style="color: #888; font-size: 13px;">{strings["expires"].format(days=days)}</p>
-            <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-                {strings["copy_label"]} <span style="word-break: break-all;">{link}</span>
-            </p>
-        </div>
-        """,
+        to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text
     )
     if sent:
         tenant.abandon_warned_at = now or timezone.now()
@@ -198,7 +185,7 @@ def send_recovery_email(tenant) -> bool:
     """
     from apps.accounts.models import User
     from apps.accounts.tokens import create_wizard_token
-    from apps.core.email import send_email
+    from apps.core.email import action_email, send_email
 
     # The wizard resolver looks tenants up by slugified token brand_name —
     # a superadmin rename would mint a link that resolves to nothing (or,
@@ -216,26 +203,16 @@ def send_recovery_email(tenant) -> bool:
 
     strings = _COPY["en"]
     brand = tenant.name
-    safe_brand = escape(brand)  # subject is plain text; HTML body gets the escaped form
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
+    html, text = action_email(
+        heading=strings["heading"].format(brand=brand),
+        intro=strings["intro"].format(brand=brand),
+        button=strings["button"],
+        link=link,
+        expires=strings["expires"].format(days=days),
+    )
     sent = send_email(
-        to=tenant.owner_email,
-        subject=strings["subject"].format(brand=brand),
-        html=f"""
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #1a1a2e;">{strings["heading"]}</h2>
-            <p style="color: #444;">{strings["intro"].format(brand=safe_brand)}</p>
-            <a href="{link}"
-               style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
-                      border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
-                {strings["button"]}
-            </a>
-            <p style="color: #888; font-size: 13px;">{strings["expires"].format(days=days)}</p>
-            <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-                {strings["copy_label"]} <span style="word-break: break-all;">{link}</span>
-            </p>
-        </div>
-        """,
+        to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text
     )
     if sent:
         tenant.recovery_email_sent_at = timezone.now()

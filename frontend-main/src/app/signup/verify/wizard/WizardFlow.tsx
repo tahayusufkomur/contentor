@@ -84,6 +84,8 @@ export function WizardFlow({
   const [stepId, setStepId] = useState("business.niche");
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = back; drives the slide
   const [busy, setBusy] = useState(false);
+  // Describe -> Continue waits on the AI follow-up questions: say so, not "Saving…".
+  const [thinking, setThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAllThemes, setShowAllThemes] = useState(false);
   const [bucket, setBucket] = useState("");
@@ -275,6 +277,7 @@ export function WizardFlow({
           : undefined;
       if (!followups && description.trim()) {
         setBusy(true);
+        setThinking(true);
         try {
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), 20_000);
@@ -294,6 +297,7 @@ export function WizardFlow({
           // AI unavailable or slow — continue without follow-ups.
         } finally {
           setBusy(false);
+          setThinking(false);
         }
       }
       const partial: WizardAnswers = {
@@ -519,7 +523,11 @@ export function WizardFlow({
             onClick={handleContinue}
             loading={busy}
             loadingText={
-              step.id === "review" ? t("review.creating") : t("common.saving")
+              step.id === "review"
+                ? t("review.creating")
+                : thinking
+                  ? t("common.thinking")
+                  : t("common.saving")
             }
           >
             {step.id === "review" ? (

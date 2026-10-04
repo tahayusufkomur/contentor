@@ -76,6 +76,7 @@ def test_catalog_endpoint_serves_payload():
     assert resp.status_code == 200
     data = resp.json()
     assert "yoga" in data["niches"]
+    assert data["niches"][-1] == "general"  # catch-all is last, not alphabetical
     assert len(data["page_layouts"]["home"]) == 3
     assert data["recommended"]["logo"]["mode"] == "wordmark"
     assert data["curated_logo_layouts"] == ["horizontal", "stacked"]

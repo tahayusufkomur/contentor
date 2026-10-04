@@ -16,6 +16,7 @@
       "saving": "Saving…",
       "showAll": "Show all",
       "preview": "Preview",
+      "thinking": "Thinking of a couple of questions…",
       "errors": {
         "generic": "Something went wrong. Please try again."
       }
@@ -60,7 +61,7 @@
     },
     "describe": {
       "heading": "Describe what you do",
-      "subhead": "One or two sentences. We'll use your words across your site — you can skip this.",
+      "subhead": "One or two sentences. We'll use your words across your site. Optional — leave it blank to skip.",
       "placeholder": "I help busy professionals build a calm daily practice…"
     },
     "followups": {

@@ -281,7 +281,8 @@ def catalog_payload() -> dict:
     from apps.core.demo.seed_template import available_niches
 
     return {
-        "niches": available_niches(),
+        # "Something else" (general) is the catch-all: always last, never mid-list.
+        "niches": sorted(available_niches(), key=lambda n: n == "general"),
         "goals": list(GOALS),
         "paid_goals": list(PAID_GOALS),
         "themes": list(THEMES),

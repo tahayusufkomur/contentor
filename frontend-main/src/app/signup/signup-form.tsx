@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
+import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
@@ -104,6 +105,9 @@ function AuthenticatedSignupForm({
 
 type Step = "brand" | "contact" | "email-sent";
 
+const DRAFT_KEY = "contentor_signup_draft";
+const RESEND_COOLDOWN_SECONDS = 30; // the endpoint allows 5/min per IP
+
 /** New coach: brand name -> name+email -> verification email sent. Renders
  * inside the wizard's own shell so this feels like the wizard's first step
  * instead of a separate form. */
@@ -115,6 +119,43 @@ function AnonymousSignupFlow() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+  const restored = useRef(false);
+
+  // A reload (or a password manager's autofill hiccup) must not wipe the form:
+  // keep {brand, name, email, step} for this tab only.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (typeof d.brandName === "string") setBrandName(d.brandName);
+        if (typeof d.name === "string") setName(d.name);
+        if (typeof d.email === "string") setEmail(d.email);
+        if (d.step === "contact" || d.step === "email-sent") setStep(d.step);
+      }
+    } catch {
+      // storage unavailable or corrupt — start fresh
+    }
+    restored.current = true;
+  }, []);
+  useEffect(() => {
+    if (!restored.current) return;
+    try {
+      sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ brandName, name, email, step }),
+      );
+    } catch {
+      // private mode — the draft just isn't kept
+    }
+  }, [brandName, name, email, step]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
 
   const { run: handleBrandContinue, loading: brandLoading } = useAsyncAction(
     async () => {
@@ -148,14 +189,29 @@ function AnonymousSignupFlow() {
         return;
       }
       setStep("email-sent");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     },
     { onError: () => setError(t("errors.generic")) },
+  );
+
+  const { run: handleResend, loading: resending } = useAsyncAction(
+    async () => {
+      const res = await fetch("/api/v1/onboarding/signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brand_name: brandName, name, email }),
+        credentials: "same-origin",
+      });
+      if (!res.ok) throw new Error("resend failed");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+      toast.success(t("resent"));
+    },
+    { errorToast: t("errors.generic") },
   );
 
   if (step === "email-sent") {
     return (
       <AuthShell
-        eyebrow={t("verifyTitle")}
         title={t("verifyTitle")}
         subtitle={t("verifyDescription", { email })}
       >
@@ -166,6 +222,32 @@ function AnonymousSignupFlow() {
           <p className="mt-6 text-sm text-muted-foreground">
             <strong className="text-foreground">{brandName}</strong>
           </p>
+          <p className="mt-4 text-[13px] text-muted-foreground">
+            {t("spamHint")}
+          </p>
+          <div className="mt-5 flex flex-col items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              loading={resending}
+              disabled={cooldown > 0}
+              onClick={handleResend}
+            >
+              {cooldown > 0
+                ? t("resendIn", { seconds: cooldown })
+                : t("resend")}
+            </Button>
+            <button
+              type="button"
+              className="text-[13px] font-medium text-foreground underline-offset-4 hover:underline"
+              onClick={() => {
+                setDirection(-1);
+                setStep("contact");
+              }}
+            >
+              {t("useDifferentEmail")}
+            </button>
+          </div>
         </div>
       </AuthShell>
     );
@@ -198,13 +280,13 @@ function AnonymousSignupFlow() {
         footer={
           <>
             <Button
-              type="button"
+              type="submit"
+              form="brand-form"
               variant="brand"
               size="lg"
               className="w-full max-w-[340px]"
               loading={brandLoading}
               disabled={!brandName.trim()}
-              onClick={handleBrandContinue}
             >
               {t("submit")}
             </Button>
@@ -217,7 +299,16 @@ function AnonymousSignupFlow() {
             heading={t("brandStepHeading")}
             subhead={t("brandStepSubhead")}
           />
-          <div className="mx-auto mt-5 max-w-[380px] space-y-2">
+          {/* A form, so Enter continues; the password-manager opt-outs keep its
+           * icon from covering the Continue button on this non-credential field. */}
+          <form
+            id="brand-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (brandName.trim() && !brandLoading) void handleBrandContinue();
+            }}
+            className="mx-auto mt-5 max-w-[380px] space-y-2"
+          >
             <Label
               htmlFor="brandName"
               className="text-[13px] font-medium text-foreground/80"
@@ -230,8 +321,11 @@ function AnonymousSignupFlow() {
               value={brandName}
               onChange={(e) => setBrandName(e.target.value)}
               autoFocus
+              autoComplete="off"
+              data-1p-ignore
+              data-lpignore="true"
             />
-          </div>
+          </form>
         </div>
       </WizardShell>
     );

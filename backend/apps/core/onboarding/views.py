@@ -1,7 +1,6 @@
 import logging
 
 from django.conf import settings
-from django.utils.html import escape
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -37,6 +36,8 @@ def creator_signup(request):
     from apps.core.i18n_helpers import msg
 
     slug = slugify(serializer.validated_data["brand_name"])[:63]
+    if not slug:  # e.g. a name with no ASCII letters/digits — no usable subdomain
+        return Response({"detail": msg(request, "brand_unusable")}, status=400)
     region = getattr(request, "region", "global")
     if Tenant.objects.filter(slug=slug, region=region).exists():
         return Response({"detail": msg(request, "brand_taken")}, status=400)
@@ -54,39 +55,16 @@ def creator_signup(request):
     host = request.get_host()
     link = f"{scheme}://{host}/signup/verify?token={token}"
 
-    from apps.core.email import send_email
+    from apps.core.email import action_email, send_email
 
-    locale = "en"
-    safe_brand = escape(brand_name)  # coach-supplied: never raw into HTML
-    strings = {
-        "en": {
-            "subject": f"Verify your email — {brand_name}",
-            "heading": "Welcome to Contentor!",
-            "intro": f"Click the button below to verify your email and create <strong>{safe_brand}</strong>.",
-            "button": "Verify &amp; Create My Platform",
-            "expires": f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
-            "copy_label": "Or copy:",
-        },
-    }[locale]
-    sent = send_email(
-        to=email,
-        subject=strings["subject"],
-        html=f"""
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-            <h2 style="color: #1a1a2e;">{strings["heading"]}</h2>
-            <p style="color: #444;">{strings["intro"]}</p>
-            <a href="{link}"
-               style="display: inline-block; background: #171717; color: white; padding: 12px 32px;
-                      border-radius: 6px; text-decoration: none; font-weight: 600; margin: 24px 0;">
-                {strings["button"]}
-            </a>
-            <p style="color: #888; font-size: 13px;">{strings["expires"]}</p>
-            <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-                {strings["copy_label"]} <span style="word-break: break-all;">{link}</span>
-            </p>
-        </div>
-        """,
+    html, text = action_email(
+        heading="Confirm your email",
+        intro=f"Click the button below to verify your email and create {brand_name}.",
+        button="Verify and create my site",
+        link=link,
+        expires=f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
     )
+    sent = send_email(to=email, subject=f"Verify your email — {brand_name}", html=html, text=text)
     if not sent:
         if settings.DEBUG:
             print(f"\n{'=' * 60}")
@@ -114,6 +92,8 @@ def check_brand_name(request):
         return Response({"detail": msg(request, "brand_required")}, status=400)
 
     slug = slugify(brand_name)[:63]
+    if not slug:
+        return Response({"available": False, "detail": msg(request, "brand_unusable")})
     region = getattr(request, "region", "global")
     if Tenant.objects.filter(slug=slug, region=region).exists():
         return Response({"available": False, "detail": msg(request, "brand_taken")})
