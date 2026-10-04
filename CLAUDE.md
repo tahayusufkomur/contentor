@@ -13,8 +13,9 @@ Guidance for Claude Code when working in the Contentor repository.
 
 - **Small, well-scoped changes: implement directly.** No plan docs, no brainstorming ceremony, no subagent fan-out. Reserve specs/plans/multi-agent process for large or risky work.
 - **Orient from docs, don't re-explore.** Read the area's `docs/wiki/` page first; `docs/REFERENCE.md` for cross-cutting context. Grep/graph-query only for what the docs don't answer.
-- **Verify at the cheapest sufficient level:** `make test-changed` (plus `make e2e-changed` if user-facing), or `make test-app APP=x`. Full `make test` / full e2e only when touching shared core (`apps/core`, `packages/shared`, auth, billing providers).
-- **The dev stack is usually already running** — check `make health-check` before reaching for `make dev`. Never rebuild the stack to verify a code-only change; containers hot-reload.
+- **Verify at the cheapest sufficient level:** `make test-changed` (plus `make e2e-changed` if user-facing), or `make test-app APP=x`. Full `make test` / full e2e only when touching shared runtime code (`apps/core` outside its tests and management commands, `packages/shared`, auth, billing providers) — `make test-changed` already encodes this, so trust its plan (`PLAN=1` to preview). `make deploy` runs the full backend suite itself: never run it separately right before deploying.
+- **The dev stack is usually already running** — check `make health-check` first. If it is down, start it with `make dev-d` (detached, returns when Django is healthy); foreground `make dev` blocks an agent until the tool timeout and killing it stops the stack. Never rebuild the stack to verify a code-only change; containers hot-reload.
+- **The Docker VM has 4.4 GB RAM (6 CPUs, 4 GB swap) and the RAM is fixed.** One heavy job at a time (full suite, e2e, build). `make test` stops the two Next.js dev servers for the run and restarts them; their heap caps and `mem_limit`s in `docker-compose.yml` are sized to that budget — don't raise them.
 - **GitNexus `impact`/`detect_changes` are for widely-shared symbols and refactors** — skip that ceremony for small local edits; pre-commit + test-changed is the gate (see calibration note at the bottom).
 
 ## Commands
@@ -22,11 +23,12 @@ Guidance for Claude Code when working in the Contentor repository.
 `make help` lists everything. The ones that matter day-to-day:
 
 ```bash
-make dev / down / logs           # stack up (hot-reload) / stop / tail logs
+make dev / down / logs           # stack up (hot-reload, foreground) / stop / tail logs
+make dev-d                       # stack up detached, waits for Django health (agents: use this)
 make migrate | makemigrations | seed
 make test-changed                # DEFAULT: only tests affected by the diff (BASE=<ref>, PLAN=1)
 make test-app APP=billing        # one backend app
-make test | test-fresh           # full backend suite | rebuild test DB (after new migrations)
+make test | test-fresh           # full backend suite, ~1 min (pauses Next.js dev servers) | rebuild test DB (after new migrations)
 make test-frontend               # vitest, both apps
 make lint | format | typecheck
 make e2e-changed | e2e-spec SPEC=04-live-class | e2e | e2e-stripe

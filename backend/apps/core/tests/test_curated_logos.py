@@ -308,10 +308,16 @@ class TestSeedCommand:
         (tmp_path / "yoga.png").write_bytes(_PNG_BYTES)
         (tmp_path / "chef.png").write_bytes(_PNG_BYTES)
         self.stored = {}
-        monkeypatch.setattr(
-            "apps.core.management.commands.seed_curated_logos._store_object",
-            lambda key, fileobj, content_type: self.stored.update({key: fileobj.read()}),
-        )
+        self.uploads = []
+
+        def store(key, fileobj, content_type):
+            self.stored[key] = fileobj.read()
+            self.uploads.append(key)
+
+        monkeypatch.setattr("apps.core.management.commands.seed_curated_logos._store_object", store)
+        # Bucket md5 lookup: nothing stored yet unless a test says otherwise.
+        self.bucket_md5 = {}
+        monkeypatch.setattr("apps.core.management.commands.seed_curated_logos._stored_md5", self.bucket_md5.get)
         return tmp_path
 
     def test_seeds_rows_in_order_and_skips_missing(self, restore_public, catalog_dir):
@@ -329,6 +335,24 @@ class TestSeedCommand:
         call_command("seed_curated_logos", dir=str(catalog_dir))
         call_command("seed_curated_logos", dir=str(catalog_dir))
         assert CuratedLogo.objects.count() == 2
+
+    def test_rerun_skips_logos_already_in_the_bucket(self, restore_public, catalog_dir):
+        import hashlib
+
+        from django.core.management import call_command
+
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        self.uploads.clear()
+        # The bucket now holds a byte-identical yoga.png; chef.png differs.
+        self.bucket_md5["platform/curated-logos/yoga.png"] = hashlib.md5(_PNG_BYTES).hexdigest()  # noqa: S324
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        assert self.uploads == ["platform/curated-logos/chef.png"]
+        # A metadata edit still lands even though the image is unchanged.
+        meta = jsonlib.loads((catalog_dir / "logo_meta.json").read_text())
+        meta[0]["title"] = "Yoga 2"
+        (catalog_dir / "logo_meta.json").write_text(jsonlib.dumps(meta))
+        call_command("seed_curated_logos", dir=str(catalog_dir))
+        assert CuratedLogo.objects.get(image_key__endswith="yoga.png").title == "Yoga 2"
 
     def test_uploads_cleaned_pngs(self, restore_public, catalog_dir):
         from django.core.management import call_command

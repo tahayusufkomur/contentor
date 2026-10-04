@@ -959,7 +959,13 @@ def test_undo_non_integer_audit_id_returns_404(client, coach):
 def test_undo_restore_logo_gone_photo_returns_400_and_stays_undone(client, coach):
     from apps.core.curated_logos.materialize import materialize_curated_logo
     from apps.core.models import CuratedLogo
-    from apps.tenant_config.models import CopilotAudit
+    from apps.tenant_config.models import CopilotAudit, TenantConfig
+
+    # The undo needs a site config to restore onto; without one it stops at
+    # "site is not set up yet" before reaching the check under test. (This used
+    # to pass only when an earlier test in the same worker left a row behind.)
+    if not TenantConfig.objects.exists():
+        TenantConfig.objects.create(brand_name="T")
 
     # Inverse payloads persist through a JSONField, so a Photo FK id round-
     # trips as a string (as it would from a real execute→undo cycle) — build

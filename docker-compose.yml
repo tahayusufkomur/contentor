@@ -26,6 +26,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-contentor}
       POSTGRES_USER: ${POSTGRES_USER:-contentor}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    # Dev only: no durability. The test suite is DDL-heavy (a schema per
+    # tenant), and fsync through the Docker VM disk dominates it. A VM crash can
+    # corrupt this DB — `make seed` rebuilds it. Never copy this to prod.
+    command: ["postgres", "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -141,9 +145,14 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
-      # Dev-server heap: default (~half of container-visible RAM) OOM-crashed
-      # node once enough routes were compiled, wiping the compile cache.
-      - NODE_OPTIONS=--max-old-space-size=3072
+      # Dev-server heap, sized for the 4.4 GB Docker VM (the whole stack must
+      # fit): high enough that node doesn't OOM-crash and wipe the compile
+      # cache, low enough that V8 collects instead of eating the VM. Paired
+      # with onDemandEntries in next.config.mjs, which bounds the live set.
+      - NODE_OPTIONS=--max-old-space-size=1536
+    # Above this the container swaps (and at 2x is killed) by itself, instead
+    # of the VM OOM-killing postgres or a pytest worker.
+    mem_limit: 2g
     depends_on:
       - django
 
@@ -165,7 +174,8 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://django:8000
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-localhost}
-      - NODE_OPTIONS=--max-old-space-size=3072
+      - NODE_OPTIONS=--max-old-space-size=768
+    mem_limit: 1g
     depends_on:
       - django
 

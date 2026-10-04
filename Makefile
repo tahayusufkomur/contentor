@@ -38,6 +38,12 @@ dev: ## Start all services with hot-reload
 	python3 scripts/mirror_demo_assets.py
 	docker compose up --build
 
+dev-d: ## Same as dev but detached; returns once Django is healthy (use from scripts/agents)
+	docker compose up -d --wait minio
+	python3 scripts/mirror_demo_assets.py
+	docker compose up -d --build
+	docker compose up -d --wait django
+
 down: ## Stop all services and remove volumes
 	docker compose down -v
 
@@ -93,14 +99,22 @@ capture-wizard-mockups: seed-demo-assets ## Capture per-niche wizard screenshots
 # Quality
 # ============================================================================
 
-test: ## Run all backend tests (parallel, reuses test DB)
-	docker compose exec django pytest -n auto
+# Full-suite runs stop the two Next.js dev servers first and restart them after:
+# they hold ~2 GB of the 4.4 GB Docker VM, and pytest alongside them pushes the
+# VM into swap and OOM kills (suite went from ~3 to 15 min, with flaky failures).
+# `up -d`, not `start`: it also recreates them if a prune removed the stopped ones.
+NEXT_SERVICES := nextjs-customer nextjs-main
+PYTEST_FULL = docker compose stop $(NEXT_SERVICES); \
+	docker compose exec django pytest -n auto $(1); rc=$$?; \
+	docker compose up -d $(NEXT_SERVICES); exit $$rc
 
-test-backend: ## Run backend tests (alias for test)
-	docker compose exec django pytest -n auto
+test: ## Run all backend tests (parallel, reuses test DB; pauses the Next.js dev servers)
+	@$(call PYTEST_FULL,)
+
+test-backend: test ## Run backend tests (alias for test)
 
 test-fresh: ## Rebuild the test DB, then run tests (use after new migrations)
-	docker compose exec django pytest -n auto --create-db
+	@$(call PYTEST_FULL,--create-db)
 
 test-app: ## Run one backend app's tests: make test-app APP=billing
 	@test -n "$(APP)" || { echo "usage: make test-app APP=<app-name>  (e.g. APP=billing)"; exit 1; }

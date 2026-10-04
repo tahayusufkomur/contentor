@@ -39,6 +39,14 @@ LIVECRAFT_FAKE = True
 TENANT_RATE_LIMIT_DEFAULT = 100
 TENANT_RATE_LIMIT_UPLOAD = 10
 
+# New tenant schemas are cloned (structure only) from the session's shared_test
+# schema instead of replaying every tenant migration: ~70 tests provision a
+# real tenant and paid 5-7s each for it. shared_test itself is still built by
+# real migrations, so those stay covered; when it doesn't exist yet,
+# django-tenants falls back to migrating. conftest sets Tenant.clone_mode.
+TENANT_CREATION_FAKES_MIGRATIONS = True
+TENANT_BASE_SCHEMA = "shared_test"
+
 _worker = os.environ.get("PYTEST_XDIST_WORKER")  # e.g. "gw0"
 if _worker:
     _redis_db = 2 + (int(_worker.removeprefix("gw")) % 14)

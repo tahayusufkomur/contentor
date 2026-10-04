@@ -20,7 +20,9 @@ Individual test files should import the fixtures they need:
 
 import pytest
 from django.conf import settings
-from django.db import connection
+from django.core.management.color import no_style
+from django.db import connection, connections
+from django.test import TransactionTestCase
 from django_redis import get_redis_connection
 from django_tenants.utils import tenant_context
 
@@ -70,6 +72,11 @@ from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry
 SHARED_SCHEMA = "shared_test"
 SHARED_DOMAIN = "shared-test.localhost"
 
+# Tenants created by tests clone shared_test's structure without its rows (see
+# TENANT_CREATION_FAKES_MIGRATIONS in settings/test.py): a mid-test copy of
+# another test's data would be worse than an empty schema.
+Tenant.clone_mode = "NODATA"
+
 # Tables whose rows come from migrations, not tests — never truncate.
 MIGRATION_SEEDED_TABLES = frozenset(
     {
@@ -80,6 +87,28 @@ MIGRATION_SEEDED_TABLES = frozenset(
         "auth_group_permissions",
     }
 )
+
+
+def _fast_fixture_teardown(self):
+    """TransactionTestCase teardown without the post_migrate round trip.
+
+    Django's flush truncates every table and then re-emits post_migrate to
+    rebuild the content types and permissions it just wiped: ~200 queries and
+    ~0.1s after each of the ~1000 transaction=True tests. Truncating everything
+    *except* those migration-seeded tables leaves the same end state for free.
+    No app here has its own post_migrate receiver.
+    """
+    for db_name in self._databases_names(include_mirrors=False):
+        conn = connections[db_name]
+        tables = [
+            table
+            for table in conn.introspection.django_table_names(only_existing=True, include_views=False)
+            if table not in MIGRATION_SEEDED_TABLES
+        ]
+        conn.ops.execute_sql_flush(conn.ops.sql_flush(no_style(), tables, reset_sequences=False, allow_cascade=False))
+
+
+TransactionTestCase._fixture_teardown = _fast_fixture_teardown
 
 
 def _truncate_stale_tenant_data():
@@ -352,4 +381,9 @@ def tenant_ctx(restore_public):
     with tenant_context(tenant):
         _clean_tenant_tables()
         yield tenant
-        _clean_tenant_tables()
+        # A regular (non-transactional) test runs inside an atomic block that
+        # is rolled back right after this, so deleting its rows here is pure
+        # waste (~80ms of cascade queries per test). Only transaction=True
+        # tests commit and need the explicit cleanup.
+        if not connection.in_atomic_block:
+            _clean_tenant_tables()

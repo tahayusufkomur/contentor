@@ -31,6 +31,15 @@ WIDE_PREFIXES = (
 )
 WIDE_FILES = ("backend/conftest.py", "backend/pyproject.toml", "backend/Dockerfile")
 
+# Test modules and management commands sit on no request path, so the owning
+# app's own tests cover them even inside a WIDE app. Only test_*.py qualifies:
+# shared helpers under tests/ (conftest, factories) still widen. seed_* commands
+# build the data every e2e spec runs against, so they keep all e2e specs.
+LOCAL_BACKEND_RE = re.compile(
+    r"^backend/apps/(?P<app>[^/]+)/"
+    r"(?:(?:.+/)?(?P<test>test_[^/]+\.py)|management/commands/(?P<seed>seed_)?[^/]+\.py)$"
+)
+
 # No runtime effect on any suite.
 IGNORED_PREFIXES = (
     "docs/",
@@ -91,6 +100,7 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
     backend_full = False
     create_db = False
     touched_apps = set()
+    local_apps = set()  # own tests only: no importer expansion, no e2e map
     e2e_all = False
     e2e_specs = set()
     e2e_touched = False  # something mapped (possibly to "none") -> at least smoke
@@ -113,6 +123,18 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
         if path.startswith("backend/"):
             if "/migrations/" in path:
                 create_db = True
+            local = LOCAL_BACKEND_RE.match(path)
+            if local and local["app"] in backend_apps:
+                local_apps.add(local["app"])
+                if local["seed"]:
+                    e2e_all = True
+                    say(f"{path}: seed command -> apps/{local['app']} tests + all e2e specs")
+                elif local["test"]:
+                    say(f"{path}: test module -> apps/{local['app']} tests only")
+                else:
+                    e2e_touched = True
+                    say(f"{path}: management command -> apps/{local['app']} tests + smoke")
+                continue
             if path.startswith(WIDE_PREFIXES) or path in WIDE_FILES:
                 widen(path, "shared backend infra")
                 continue
@@ -175,8 +197,8 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
         say("migrations changed -> full suite with --create-db (--reuse-db would miss them)")
     elif backend_full:
         plan.backend_kind = "full"
-    elif touched_apps:
-        selected = set(touched_apps)
+    elif touched_apps or local_apps:
+        selected = touched_apps | local_apps
         for app in sorted(touched_apps):
             extra = sorted(importers.get(app, set()) - {app})
             selected.update(extra)
@@ -278,13 +300,9 @@ def execute(plan, mode, base, dry):
     rc = 0
     if mode == "backend":
         if plan.backend_kind == "full-create-db":
-            rc = max(rc, _run(
-                ["docker", "compose", "exec", "django", "pytest", "-n", "auto", "--create-db"],
-                REPO_ROOT, dry))
+            rc = max(rc, _run(["make", "test-fresh"], REPO_ROOT, dry))
         elif plan.backend_kind == "full":
-            rc = max(rc, _run(
-                ["docker", "compose", "exec", "django", "pytest", "-n", "auto"],
-                REPO_ROOT, dry))
+            rc = max(rc, _run(["make", "test"], REPO_ROOT, dry))
         elif plan.backend_kind == "apps":
             testable = [a for a in plan.backend_apps if _has_tests(a)]
             skipped = [a for a in plan.backend_apps if not _has_tests(a)]
@@ -369,6 +387,26 @@ _CASES = [
         "wide trigger -> full backend + all e2e",
         ["backend/apps/core/signals.py"],
         dict(backend_kind="full", e2e_kind="all"),
+    ),
+    (
+        "test module in a wide app -> that app's tests only",
+        ["backend/apps/billing/tests/test_x.py", "backend/apps/courses/tests/test_y.py"],
+        dict(backend_kind="apps", backend_apps=["billing", "courses"], e2e_kind="none"),
+    ),
+    (
+        "management command -> own tests + smoke; seed_* -> all e2e",
+        ["backend/apps/usage/management/commands/prune.py"],
+        dict(backend_kind="apps", backend_apps=["usage"], e2e_kind="specs", e2e_specs=["00-smoke"]),
+    ),
+    (
+        "seed command -> own tests + all e2e",
+        ["backend/apps/usage/management/commands/seed_x.py"],
+        dict(backend_kind="apps", backend_apps=["usage"], e2e_kind="all"),
+    ),
+    (
+        "shared test helper still widens via its app",
+        ["backend/apps/billing/tests/factories.py"],
+        dict(backend_kind="apps", backend_apps=["billing", "courses"]),
     ),
     (
         "migrations -> full with create-db",

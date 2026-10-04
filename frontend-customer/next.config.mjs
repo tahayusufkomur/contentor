@@ -21,12 +21,13 @@ const nextConfig = {
     staleTimes: { dynamic: 30, static: 180 },
   },
   allowedDevOrigins: [`*.${BASE_DOMAIN}`],
-  // Dev-only: keep compiled routes alive for an hour instead of the default
+  // Dev-only: keep compiled routes alive for 15 min instead of the default
   // ~1 minute — panel-to-panel admin navigation was re-triggering webpack
   // compiles on every revisit (638+ modules, 1.5-2s each) once entries expired.
+  // Bounded to 25 routes so the dev server fits its heap cap (docker-compose.yml).
   onDemandEntries: {
-    maxInactiveAge: 60 * 60 * 1000,
-    pagesBufferLength: 100,
+    maxInactiveAge: 15 * 60 * 1000,
+    pagesBufferLength: 25,
   },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**.amazonaws.com" }],
