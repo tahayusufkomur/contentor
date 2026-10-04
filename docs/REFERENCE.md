@@ -522,7 +522,7 @@ drafts so the coach reviews before going live. `available_niches()` auto-discove
 | **MailCraft** | Sibling email-builder SaaS (`mailcraft.contentor.app`); coaches design templates in an embedded iframe; campaigns render per-recipient via its `/render` API | `apps/email_campaigns/emailcraft_client.py`, `django-contentor-email-builder` | `EMAILCRAFT_BASE_URL`, `EMAILCRAFT_TOKEN`, per-tenant `emailcraft_api_key` (`mc_live_*`) |
 | **Resend** | Transactional + campaign email delivery | `apps/core/email.py` | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
 | **S3 / Hetzner** | Media storage; presigned single-PUT + multipart uploads; path `tenants/{slug}/{category}/…` | `apps/core/storage.py`, `views_upload.py`, `views_multipart.py` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT`, `AWS_PRESIGNED_EXPIRY` |
-| **Stripe** | Coach→platform billing (see §7) | `apps/billing/providers/stripe_provider.py` | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` |
+| **Stripe** | Coach→platform billing (see §7) | `apps/billing/providers/stripe_provider.py` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` |
 | **Google OAuth** | Social login | `apps/accounts/views.py` | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` |
 
 ---
@@ -611,7 +611,7 @@ Templates: `backend/.env.example`, root `.env.example` (dev), `.env.prod.example
 - **Live:** `LIVECRAFT_URL`, `LIVECRAFT_API_KEY`, `ZOOM_TOKEN_ENCRYPTION_KEY`.
 - **OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
 - **Billing:** `BILLING_BYPASS_ENABLED` (**false in prod**), `PAST_DUE_GRACE_DAYS`,
-  `BILLING_FREE_PLAN_NAME`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`,
+  `BILLING_FREE_PLAN_NAME`, `STRIPE_SECRET_KEY`,
   `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_{STARTER,PRO}_{USD,TRY}` (optional pins).
 
 > ⚠️ Live secrets are currently committed to `.env.prod` across the fleet and were exposed

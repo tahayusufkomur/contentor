@@ -87,7 +87,7 @@ def fake_provider(monkeypatch):
 
     from apps.core.onboarding import wizard as wizard_mod
 
-    monkeypatch.setattr(wizard_mod, "get_provider", lambda tenant: FakeProvider())
+    monkeypatch.setattr(wizard_mod, "get_provider", lambda: FakeProvider())
     return calls
 
 

@@ -438,7 +438,6 @@ BILLING_FREE_PLAN_NAME = os.environ.get("BILLING_FREE_PLAN_NAME", "Free")
 
 # Stripe credentials. Empty in dev/CI unless explicitly wired.
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
-STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 # Stripe Price IDs per plan and presentment currency. seed_plans reads these

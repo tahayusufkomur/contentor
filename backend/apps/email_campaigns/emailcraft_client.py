@@ -158,18 +158,6 @@ def get_template_preview(api_key: str, template_id: str) -> dict:
     return response.json()
 
 
-def export_html(api_key: str, json_data: dict, variables_mode: str = "defaults") -> dict:
-    response = _request_with_fallback(
-        "POST",
-        ["/api/export/html", "/api/v1/export/html"],
-        headers=_org_headers(api_key),
-        timeout=10,
-        json={"json_data": json_data, "variables_mode": variables_mode},
-        fallback_status_codes={404, 405},
-    )
-    return response.json()
-
-
 def list_gallery(api_key: str, category: str | None = None) -> dict:
     params = {}
     if category:

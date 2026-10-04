@@ -3,12 +3,12 @@ from __future__ import annotations
 import requests
 from django.conf import settings
 
-from .base import Cloudflare, CloudflareError
+from .base import CloudflareError
 
 _BASE = "https://api.cloudflare.com/client/v4"
 
 
-class CloudflareClient(Cloudflare):
+class CloudflareClient:
     def __init__(self) -> None:
         self._headers = {
             "Authorization": f"Bearer {settings.CLOUDFLARE_API_TOKEN}",

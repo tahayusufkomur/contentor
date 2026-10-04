@@ -1,13 +1,11 @@
 """PaymentProvider abstraction tests.
 
 Covers:
-- `get_provider(tenant)` returns BypassProvider under the env flag, otherwise
+- `get_provider()` returns BypassProvider under the env flag, otherwise
   StripeProvider.
 - `StripeProvider.create_checkout_session(...)` raises `ProviderError` when
   the configured Stripe price ID is missing for the tenant's currency
   (Phase 1 contract — replaces the Phase 0 NotImplementedError stub).
-- `StripeProvider.create_customer_portal_session` and `cancel_subscription`
-  still raise NotImplementedError — those land in Phase 2.
 - `BypassProvider.create_checkout_session(...)` returns a `CheckoutSession`
   and inserts a `WebhookEvent(provider="bypass")` row.
 """
@@ -61,16 +59,16 @@ def plan(db):
 
 
 @override_settings(BILLING_BYPASS_ENABLED=True)
-def test_get_provider_returns_bypass_when_flag_on(shared_tenant):
-    provider = get_provider(shared_tenant)
+def test_get_provider_returns_bypass_when_flag_on():
+    provider = get_provider()
     assert isinstance(provider, BypassProvider)
     assert provider.name == "bypass"
     assert isinstance(provider, PaymentProvider)
 
 
 @override_settings(BILLING_BYPASS_ENABLED=False)
-def test_get_provider_returns_stripe_when_flag_off(shared_tenant):
-    provider = get_provider(shared_tenant)
+def test_get_provider_returns_stripe_when_flag_off():
+    provider = get_provider()
     assert isinstance(provider, StripeProvider)
     assert provider.name == "stripe"
     assert isinstance(provider, PaymentProvider)
@@ -104,15 +102,6 @@ def test_stripe_provider_create_checkout_session_raises_provider_error_when_pric
             locale="en",
         )
     assert excinfo.value.code == "PRICE_NOT_AVAILABLE"
-
-
-def test_stripe_provider_phase2_methods_raise_not_implemented():
-    """Customer Portal + cancel land in Phase 2; the skeletons stay until then."""
-    provider = StripeProvider()
-    with pytest.raises(NotImplementedError):
-        provider.create_customer_portal_session(provider_customer_id="cus_x", return_url="https://example.com")
-    with pytest.raises(NotImplementedError):
-        provider.cancel_subscription(provider_subscription_id="sub_x")
 
 
 def test_bypass_provider_create_checkout_session_emits_webhook_event(restore_public, shared_tenant, plan, coach_user):

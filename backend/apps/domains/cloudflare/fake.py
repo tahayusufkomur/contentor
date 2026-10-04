@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import uuid
 
-from .base import Cloudflare
 
-
-class FakeCloudflare(Cloudflare):
+class FakeCloudflare:
     def __init__(self) -> None:
         self.zones: dict[str, dict] = {}
 

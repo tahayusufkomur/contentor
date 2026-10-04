@@ -117,22 +117,3 @@ class BypassProvider(PaymentProvider):
             expires_at=now + timedelta(hours=1),
             provider_session_id=session_id,
         )
-
-    def create_customer_portal_session(
-        self,
-        *,
-        provider_customer_id: str,
-        return_url: str,
-    ) -> str:
-        del provider_customer_id
-        return return_url
-
-    def cancel_subscription(self, *, provider_subscription_id: str) -> None:
-        del provider_subscription_id
-        # No-op in bypass; PlatformSubscription state transitions are driven
-        # directly by the caller in Phase 0.
-        return None
-
-    def parse_webhook(self, *, body: bytes, signature: str) -> dict | None:
-        del body, signature
-        return None

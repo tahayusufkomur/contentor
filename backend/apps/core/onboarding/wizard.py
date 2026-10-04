@@ -299,7 +299,7 @@ def wizard_checkout(request):
     )
     locale = "tr" if tenant.region == "tr" else "en"
     try:
-        session = get_provider(tenant).create_checkout_session(
+        session = get_provider().create_checkout_session(
             tenant=tenant,
             user=user,
             plan=plan,
@@ -312,7 +312,7 @@ def wizard_checkout(request):
         return Response({"detail": exc.code}, status=400)
 
     logger.info("wizard checkout started slug=%s plan=%s currency=%s", tenant.slug, plan.pk, tenant.billing_currency)
-    return Response({"checkout_url": session.url, "provider": get_provider(tenant).name})
+    return Response({"checkout_url": session.url, "provider": get_provider().name})
 
 
 @api_view(["POST"])

@@ -132,7 +132,7 @@ def start_checkout(request):
     cancel_url = f"{origin}/admin/billing?checkout=cancel"
     locale = _resolve_locale(request.user, tenant)
 
-    provider = get_provider(tenant)
+    provider = get_provider()
     try:
         session = provider.create_checkout_session(
             tenant=tenant,

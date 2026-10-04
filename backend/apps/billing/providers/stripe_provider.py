@@ -1,7 +1,7 @@
 """Stripe payment provider — Phase 1 implementation.
 
 Wraps `stripe.checkout.Session.create`, `stripe.Webhook.construct_event`, and
-related calls. Customer Portal, cancel, invoice list land in Phase 2.
+related calls.
 
 The Stripe API key is set lazily inside `_client()` so import order (settings
 not yet loaded, etc.) cannot break the module-load and so per-test settings
@@ -110,23 +110,6 @@ class StripeProvider(PaymentProvider):
             expires_at=datetime.fromtimestamp(session.expires_at, tz=UTC),
             provider_session_id=session.id,
         )
-
-    def create_customer_portal_session(
-        self,
-        *,
-        provider_customer_id: str,
-        return_url: str,
-    ) -> str:
-        raise NotImplementedError("Phase 2")
-
-    def cancel_subscription(self, *, provider_subscription_id: str) -> None:
-        raise NotImplementedError("Phase 2")
-
-    def parse_webhook(self, *, body: bytes, signature: str) -> dict | None:
-        # Kept for ABC compatibility; the dedicated webhook view uses
-        # `verify_webhook_signature` directly so it can return the typed Event.
-        event = self.verify_webhook_signature(body, signature)
-        return dict(event)
 
     def verify_webhook_signature(self, payload: bytes, sig_header: str) -> Any:
         """Verify the Stripe-Signature header and return the parsed Event.

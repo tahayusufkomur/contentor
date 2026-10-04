@@ -593,18 +593,6 @@ def _validate_lockup(item):
     }
 
 
-def _validate_design(item, palette_count):
-    mark = _validate_pack_mark(item)
-    if not mark:
-        return None
-    return {
-        **mark,
-        "concept": str(item.concept or "")[:200],
-        "palette_index": int(max(0, min(palette_count - 1, item.palette_index))),
-        **_validate_lockup(item),
-    }
-
-
 def refine_design(recipe, elements, instruction):
     """One gated, uncached Claude call -> a refined design (mark, palette,
     font_vibe, and the whole lockup — layout, badge, font, typography,

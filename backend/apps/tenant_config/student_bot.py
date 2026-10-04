@@ -62,10 +62,6 @@ knowledge above. Output nothing after that line.
 """
 
 
-class StudentBotError(Exception):
-    pass
-
-
 def _line(kind, title, price_txt, url, desc=""):
     piece = f"- [{kind}] {title} — {price_txt}"
     if desc:
