@@ -11,6 +11,11 @@ schema-validated generation), selected by settings.AI_PROVIDER:
   CLI. ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN are stripped from the
   subprocess env so the CLI can never silently bill the key; cost is always
   Decimal("0") — subscription usage must not accrue against USD budget caps.
+- "agentc": the Agent Container hub (settings.AGENTC_HUB), which runs the
+  Gemini CLI headless on subscription accounts. Cost is Decimal("0") like
+  "cli". The hub's agent HAS tools and our prompts carry untrusted coach
+  text, so any run whose event log shows a tool call is discarded
+  (_agentc_run). No vision, no token streaming.
 
 Prompt-caching contract: the ``system`` argument must be byte-frozen per
 feature (persona / knowledge base / static prompt only). Tenant state
@@ -19,6 +24,7 @@ fragment the Anthropic cache per tenant).
 """
 
 import json
+import logging
 import os
 import re
 import shutil
@@ -27,7 +33,10 @@ import tempfile
 import time
 from decimal import Decimal
 
+import requests
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 # The logo Brand Pack (the longest structured call) measures ~106s on haiku
 # in the dev container, so 120 was a coin-flip. A single attempt must stay
@@ -72,7 +81,13 @@ def estimate_cost(usage, model):
 
 def available():
     """Provider preflight -> (ok, reason).
-    Reasons: ok | no_api_key | cli_no_binary | cli_no_token."""
+    Reasons: ok | no_api_key | cli_no_binary | cli_no_token | agentc_unreachable."""
+    if settings.AI_PROVIDER == "agentc":
+        try:
+            ok = requests.get(_agentc_url("/health"), timeout=2).json().get("ok") is True
+        except Exception:  # any probe failure means the hub is not usable
+            ok = False
+        return (True, "ok") if ok else (False, "agentc_unreachable")
     if settings.AI_PROVIDER == "cli":
         if shutil.which(settings.AI_CLI_BIN) is None:
             return False, "cli_no_binary"
@@ -114,13 +129,41 @@ def _cli_model_alias(model):
     return settings.AI_CLI_MODEL
 
 
+# Prompt-only JSON contract for providers without parse-forced output (cli,
+# agentc).
+def _schema_note(output_model):
+    return "\n\nRespond with ONLY a JSON object (no prose, no code fences) matching this JSON schema:\n" + json.dumps(
+        output_model.model_json_schema()
+    )
+
+
+# The system-prompt note alone is not enough: chatty inputs (a greeting to
+# the copilot) reliably pull the model into prose, and the identical retry
+# fails the same way (observed 2026-08-06, 2/2 prose without this line,
+# 2/2 valid JSON with it). The user-turn reminder is the last thing the
+# model reads, so it survives long system prompts.
+_JSON_USER_NOTE = "\n\n(Reply with ONLY the JSON object matching the schema — no prose.)"
+
+
+def _strip_fences(text):
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.strip("`\n")
+        if text.startswith("json"):
+            text = text[4:].lstrip()
+    return text
+
+
 # ── structured output (blog drafts/topics, brand pack) ──────────────────────
 
 
-def structured(*, system, user, output_model, model, max_tokens):
+def structured(*, system, user, output_model, model, max_tokens, label=None):
     """One structured-output call -> (validated ``output_model`` instance,
     cost_usd, effective_model). Raises AiError on provider or schema
-    failure."""
+    failure. ``label`` tags the run on the agentc hub; other providers
+    ignore it."""
+    if settings.AI_PROVIDER == "agentc":
+        return _agentc_structured(system, user, output_model, label)
     if settings.AI_PROVIDER == "cli":
         return _cli_structured(system, user, output_model, model)
     return _anthropic_structured(system, user, output_model, model, max_tokens)
@@ -151,24 +194,14 @@ def _cli_structured(system, user, output_model, model):
     retry absorbs it (observed in the field 2026-07-09)."""
     from pydantic import ValidationError
 
-    schema_note = (
-        "\n\nRespond with ONLY a JSON object (no prose, no code fences) matching this JSON schema:\n"
-        + json.dumps(output_model.model_json_schema())
-    )
-    # The system-prompt note alone is not enough: chatty inputs (a greeting to
-    # the copilot) reliably pull the model into prose, and the identical retry
-    # fails the same way (observed 2026-08-06, 2/2 prose without this line,
-    # 2/2 valid JSON with it). The user-turn reminder is the last thing the
-    # model reads, so it survives long system prompts.
-    user_note = "\n\n(Reply with ONLY the JSON object matching the schema — no prose.)"
     cmd = [
         settings.AI_CLI_BIN,
         "-p",
-        user + user_note,
+        user + _JSON_USER_NOTE,
         "--model",
         _cli_model_alias(model),
         "--system-prompt",
-        system + schema_note,
+        system + _schema_note(output_model),
         "--disallowedTools",
         "*",
         "--max-turns",
@@ -194,11 +227,7 @@ def _cli_structured(system, user, output_model, model):
             raise AiError(f"claude CLI failed (rc={proc.returncode}): {(proc.stderr or '')[:500]}")
         try:
             envelope = json.loads(proc.stdout)
-            text = (envelope.get("result") or "").strip()
-            if text.startswith("```"):
-                text = text.strip("`\n")
-                if text.startswith("json"):
-                    text = text[4:].lstrip()
+            text = _strip_fences(envelope.get("result") or "")
             # Subscription usage — nothing accrues against the USD caps.
             # Return the requested model (not the CLI alias) so the audit
             # trail matches the anthropic path's shape.
@@ -206,6 +235,113 @@ def _cli_structured(system, user, output_model, model):
         except (ValueError, ValidationError) as exc:
             last_error = exc
     raise AiError(f"claude CLI output did not match schema: {last_error}") from last_error
+
+
+# ── agentc provider (Agent Container hub) ───────────────────────────────────
+# The hub runs `agy -p <prompt> --dangerously-skip-permissions`: the agent has
+# file and shell tools and there is no flag to take them away. The prompt
+# forbids tools; the event-log check in _agentc_run enforces it.
+
+AGENTC_POLL_SECONDS = 1.5
+# Per HTTP call; the run as a whole is bounded by AGENTC_TIMEOUT_SECONDS.
+_AGENTC_HTTP_TIMEOUT = 10
+_AGENTC_TERMINAL = frozenset({"succeeded", "failed", "timed_out", "cancelled", "rejected"})
+_AGENTC_RULES = (
+    "\n\nHard rules: Do not use any tools. Do not read, write or list files. Do not run commands. "
+    "Reply with ONLY {reply}.\n\n"
+)
+
+
+def _agentc_url(path):
+    return settings.AGENTC_HUB.rstrip("/") + path
+
+
+# Runs nobody is waiting on (whole-site composition) queue behind a coach's
+# interactive requests on the shared 3-slot hub.
+_AGENTC_BACKGROUND_LABELS = ("contentor:compose",)
+
+
+def _agentc_run(prompt, label):
+    """Run one prompt on the hub -> its resultText. Raises AiError on any
+    failure, including a run whose event log shows a tool call (fail closed:
+    an unreadable event log counts as a failure too)."""
+    label = label or "contentor"
+    deadline = time.monotonic() + settings.AGENTC_TIMEOUT_SECONDS
+    body = {
+        "prompt": prompt,
+        "cwd": settings.AGENTC_CWD,
+        "model": settings.AGENTC_MODEL,
+        "timeoutSec": settings.AGENTC_TIMEOUT_SECONDS,
+        "worktree": False,
+        "requireSyncFresh": False,
+        "priority": "background" if label.startswith(_AGENTC_BACKGROUND_LABELS) else "interactive",
+        "label": label,
+    }
+    try:
+        resp = requests.post(_agentc_url("/vendors/gemini/runs"), json=body, timeout=_AGENTC_HTTP_TIMEOUT)
+        if not resp.ok:
+            raise AiError(f"agentc run create failed ({resp.status_code}): {resp.text[:500]}")
+        run = resp.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise AiError(f"agentc run create failed: {exc}") from exc
+    run_id = run.get("id")
+    try:
+        while run.get("state") not in _AGENTC_TERMINAL:
+            if time.monotonic() >= deadline:
+                raise AiError(f"agentc run {run_id} exceeded {settings.AGENTC_TIMEOUT_SECONDS}s")
+            time.sleep(AGENTC_POLL_SECONDS)
+            resp = requests.get(_agentc_url(f"/runs/{run_id}"), timeout=_AGENTC_HTTP_TIMEOUT)
+            resp.raise_for_status()
+            run = resp.json()
+    except (AiError, requests.RequestException, ValueError) as exc:
+        _agentc_cancel(run_id)
+        if isinstance(exc, AiError):
+            raise
+        raise AiError(f"agentc run {run_id} poll failed: {exc}") from exc
+    if run["state"] != "succeeded":
+        raise AiError(f"agentc run {run_id} {run['state']}: {str(run.get('error') or '')[:500]}")
+    if _agentc_used_tool(run_id):
+        logger.warning("agentc run %s (label=%s) used a tool; output discarded", run_id, label)
+        raise AiError("agent used a tool")
+    return run.get("resultText") or ""
+
+
+def _agentc_cancel(run_id):
+    try:
+        requests.post(_agentc_url(f"/runs/{run_id}/cancel"), timeout=_AGENTC_HTTP_TIMEOUT)
+    except requests.RequestException:
+        logger.warning("agentc cancel of run %s failed", run_id)
+
+
+def _agentc_used_tool(run_id):
+    """Scan the run's event log (NDJSON; the hub closes the stream once the
+    run is terminal) for a ``tool`` event. Raises AiError if unreadable."""
+    try:
+        with requests.get(
+            _agentc_url(f"/runs/{run_id}/events"), params={"since": 0}, timeout=_AGENTC_HTTP_TIMEOUT, stream=True
+        ) as resp:
+            resp.raise_for_status()
+            return any(json.loads(line).get("type") == "tool" for line in resp.iter_lines() if line.strip())
+    except (requests.RequestException, ValueError, AttributeError) as exc:
+        raise AiError(f"agentc run {run_id} events unreadable: {exc}") from exc
+
+
+def _agentc_structured(system, user, output_model, label):
+    """One retry (a fresh run) absorbs invalid JSON, like the cli path. A
+    tool-use AiError is not retried."""
+    from pydantic import ValidationError
+
+    prompt = (
+        system + _schema_note(output_model) + _AGENTC_RULES.format(reply="the JSON object") + user + _JSON_USER_NOTE
+    )
+    last_error = None
+    for _attempt in range(2):
+        text = _strip_fences(_agentc_run(prompt, label))
+        try:
+            return output_model.model_validate_json(text), Decimal("0"), settings.AGENTC_MODEL
+        except (ValueError, ValidationError) as exc:
+            last_error = exc
+    raise AiError(f"agentc output did not match schema: {last_error}") from last_error
 
 
 # ── streamed structured output (progress UI for the long calls) ─────────────
@@ -269,14 +405,17 @@ def _partial_json(text):
         return {}
 
 
-def structured_stream(*, system, user, output_model, model, max_tokens):
+def structured_stream(*, system, user, output_model, model, max_tokens, label=None):
     """Streaming twin of structured(). Yields ("partial", dict) as the output
     forms, then exactly one ("done", (parsed, cost_usd, effective_model)).
     Raises AiError on provider or schema failure, like structured().
 
-    The cli provider cannot stream (blocking subprocess), so it yields no
-    partials and goes straight to ("done", …) — callers degrade to an
+    The cli and agentc providers cannot stream (blocking), so they yield no
+    partials and go straight to ("done", …) — callers degrade to an
     indeterminate wait rather than breaking."""
+    if settings.AI_PROVIDER == "agentc":
+        yield ("done", _agentc_structured(system, user, output_model, label))
+        return
     if settings.AI_PROVIDER == "cli":
         yield ("done", _cli_structured(system, user, output_model, model))
         return
@@ -317,17 +456,17 @@ def _anthropic_structured_stream(system, user, output_model, model, max_tokens):
 
 
 def supports_vision():
-    """Whether the active provider can take image inputs. The cli provider
-    (claude -p) has no reliable image path — callers skip the critique pass."""
-    return settings.AI_PROVIDER != "cli"
+    """Whether the active provider can take image inputs. The cli (claude -p)
+    and agentc providers have no image path — callers skip the critique pass."""
+    return settings.AI_PROVIDER == "anthropic"
 
 
 def structured_messages(*, system, messages, output_model, model, max_tokens):
     """Structured output over a full messages array (content blocks may
     include base64 images) -> (validated instance, cost_usd, model).
-    Anthropic provider only; raises AiError on the cli provider."""
-    if settings.AI_PROVIDER == "cli":
-        raise AiError("cli provider does not support vision calls")
+    Anthropic provider only; raises AiError on the others."""
+    if settings.AI_PROVIDER != "anthropic":
+        raise AiError(f"{settings.AI_PROVIDER} provider does not support vision calls")
     client = _anthropic_client()
     try:
         response = client.messages.parse(
@@ -345,13 +484,23 @@ def structured_messages(*, system, messages, output_model, model, max_tokens):
 # ── streaming chat (help bot) ────────────────────────────────────────────────
 
 
-def stream_text(*, system, history, model, max_tokens):
+def stream_text(*, system, history, model, max_tokens, label=None):
     """Yield ("delta", text) events, then exactly one ("done", info) where
-    info = {"cost_usd": Decimal, "provider": str, "model": str}."""
-    if settings.AI_PROVIDER == "cli":
+    info = {"cost_usd": Decimal, "provider": str, "model": str}. ``label``
+    tags the run on the agentc hub; other providers ignore it."""
+    if settings.AI_PROVIDER == "agentc":
+        yield from _stream_agentc(system, history, label)
+    elif settings.AI_PROVIDER == "cli":
         yield from _stream_cli(system, history, model)
     else:
         yield from _stream_anthropic(system, history, model, max_tokens)
+
+
+def _stream_agentc(system, history, label):
+    """Not a real stream: the whole answer arrives as one delta."""
+    prompt = system + _AGENTC_RULES.format(reply="your answer text") + _cli_prompt(history)
+    yield ("delta", _agentc_run(prompt, label))
+    yield ("done", {"cost_usd": Decimal("0"), "provider": "agentc", "model": settings.AGENTC_MODEL})
 
 
 def _stream_anthropic(system, history, model, max_tokens):

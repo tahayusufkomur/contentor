@@ -272,8 +272,18 @@ LIVECRAFT_API_KEY = os.environ.get("LIVECRAFT_API_KEY", "")
 # "anthropic" (prod: API key + prompt caching) or "cli" (local dev: the
 # developer's Claude subscription via the `claude` CLI; needs the binary in
 # the container — dev compose builds with INSTALL_CLAUDE_CLI=1 — and
-# CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`).
+# CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`), or "agentc" (the Agent
+# Container hub: Gemini CLI on subscription accounts, AGENTC_* below).
 AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
+AGENTC_HUB = os.environ.get("AGENTC_HUB", "http://host.docker.internal:39300")
+AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "gemini-3.7-flash-high")
+# Working dir on the HUB host (must already exist there), not in this container.
+AGENTC_CWD = os.environ.get("AGENTC_CWD", "/Users/tahayusufkomur/ws/agent-studio-runs")
+# Per run, queue wait included.
+AGENTC_TIMEOUT_SECONDS = int(os.environ.get("AGENTC_TIMEOUT_SECONDS", "180"))
+# Pages the site composer builds at once (apps.core.onboarding.site_composer).
+# 2 of the hub's 3 slots, so a coach's draft/chat request never waits behind it.
+SITE_COMPOSE_CONCURRENCY = int(os.environ.get("SITE_COMPOSE_CONCURRENCY", "2"))
 AI_CLI_BIN = os.environ.get("AI_CLI_BIN", "claude")
 # Dev default is haiku: local runs test plumbing/UI, not output quality, and
 # it's faster + lighter on the developer's subscription quota. Set

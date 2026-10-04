@@ -56,3 +56,6 @@ if _worker:
     else:
         _location = f"{_location}/{_redis_db}"
     CACHES["default"]["LOCATION"] = _location  # noqa: F405
+
+# Tests run the composer sequentially: worker threads can't see a test's transaction.
+SITE_COMPOSE_CONCURRENCY = 1
