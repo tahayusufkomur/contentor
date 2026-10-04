@@ -127,7 +127,13 @@ get(asset_id) -> RemoteImage        # GET /v1/images/{id}
 ```
 
 - Base URL `CURATED_IMAGE_API_URL`, credential `CURATED_IMAGE_API_KEY`.
-- Timeouts: 2s connect, 5s read; one retry on connect/5xx.
+- Timeouts: 2s connect, 15s read; one retry on connect/5xx only. **As built**,
+  the read budget started at 5s, but a query the service has not answered before
+  costs it ~5s (flat across `per_page` 4..48 — fixed work per query, not payload
+  size). The copilot composes a fresh query almost every turn, so picks timed out
+  mid-conversation and told coaches the library was unavailable. A read timeout is
+  no longer retried either: the service already has the request, so a second
+  attempt only doubles the wait before the same failure.
 - Redis cache on `(query, collection, page, per_page)`, ~10 min TTL, so a coach
   typing in the library dialog does not fan out to the API.
 - Normalizes the API's `Image` into a small internal dataclass

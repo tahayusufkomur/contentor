@@ -58,6 +58,14 @@ class SearchPage:
     results: list[RemoteImage]
     page: int
     has_next: bool
+    # Set when the caller searched with a session. The service remembers what a
+    # session has already been handed and excludes it (atomically, even under
+    # concurrent calls), which is what "show me another" rides on.
+    session_id: str = ""
+    # The session has now seen every match above the service's confidence floor,
+    # so this page restarts at the highest-confidence one. Callers that want
+    # genuine variety treat it as "widen the query", not "here is something new".
+    shuffle_cycle_restarted: bool = False
 
 
 def is_fake() -> bool:
@@ -91,7 +99,13 @@ def _request(method: str, path: str, *, json_body: dict | None = None, allow_404
     for _attempt in (1, 2):
         try:
             response = requests.request(method, _url(path), json=json_body, headers=_headers(), timeout=_timeout())
-        except requests.RequestException as exc:  # connect/read timeouts, DNS, resets
+        except requests.ReadTimeout as exc:
+            # The service took the request and is being slow. A second attempt
+            # only doubles the wait before the same failure and piles load onto
+            # something already struggling — give up and let the caller degrade.
+            last_error = exc
+            break
+        except requests.RequestException as exc:  # connect timeouts, DNS, resets
             last_error = exc
             continue
         if allow_404 and response.status_code == 404:
@@ -138,13 +152,27 @@ def _cache_key(query: str, collection: str | None, page: int, per_page: int) -> 
     return f"curated-images:v1:search:{digest}"
 
 
-def search(query: str = "", *, collection: str | None = None, page: int = 1, per_page: int = 24) -> SearchPage:
+def search(
+    query: str = "",
+    *,
+    collection: str | None = None,
+    page: int = 1,
+    per_page: int = 24,
+    session_id: str = "",
+    shuffle: bool = False,
+) -> SearchPage:
     """Ranked catalog page for a plain-language query. An empty query browses
     newest-first, which is what a picker opening for the first time wants.
 
     Cached in Redis so a coach typing does not fan out one upstream request per
     keystroke. The TTL must stay below the service's signed-URL lifetime (15
     minutes) — a cached page hands out URLs that were signed when it was stored.
+
+    `session_id` + `shuffle` ask the service for the next matches this session
+    has NOT been shown — how "another please" gets a different photo. Those
+    calls deliberately skip the cache: the whole point is that two identical
+    requests return different images, and a shared cache key would both defeat
+    that and hand one session's page to another.
     """
     query = " ".join((query or "").split())[:2000]
     per_page = max(1, min(per_page, MAX_PER_PAGE))
@@ -152,10 +180,13 @@ def search(query: str = "", *, collection: str | None = None, page: int = 1, per
     if is_fake():
         from . import fake
 
-        return fake.search(query, collection=collection, page=page, per_page=per_page)
+        return fake.search(
+            query, collection=collection, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle
+        )
 
+    sessioned = bool(session_id or shuffle)
     key = _cache_key(query, collection, page, per_page)
-    cached = cache.get(key)
+    cached = None if sessioned else cache.get(key)
     if cached is None:
         body = _request(
             "POST",
@@ -163,6 +194,8 @@ def search(query: str = "", *, collection: str | None = None, page: int = 1, per
             json_body={
                 **({"query": query} if query else {}),
                 **({"filters": {"collection": collection}} if collection else {}),
+                **({"session_id": session_id} if session_id else {}),
+                **({"shuffle": True} if shuffle else {}),
                 "page": page,
                 "per_page": per_page,
             },
@@ -170,18 +203,29 @@ def search(query: str = "", *, collection: str | None = None, page: int = 1, per
         cached = {
             "data": body.get("data") or [],
             "pagination": body.get("pagination") or {},
+            "session_id": str(body.get("session_id") or ""),
+            "restarted": bool(body.get("shuffle_cycle_restarted")),
         }
-        ttl = max(60, min(settings.CURATED_IMAGE_CACHE_TTL, 600))
-        cache.set(key, cached, ttl)
+        if not sessioned:
+            ttl = max(60, min(settings.CURATED_IMAGE_CACHE_TTL, 600))
+            cache.set(key, cached, ttl)
     return SearchPage(
         results=[_image_from_payload(item) for item in cached["data"]],
         page=page,
         has_next=bool(cached["pagination"].get("has_next")),
+        session_id=cached.get("session_id") or "",
+        shuffle_cycle_restarted=bool(cached.get("restarted")),
     )
 
 
 def search_or_browse(
-    query: str = "", *, collection: str | None = None, page: int = 1, per_page: int = 24
+    query: str = "",
+    *,
+    collection: str | None = None,
+    page: int = 1,
+    per_page: int = 24,
+    session_id: str = "",
+    shuffle: bool = False,
 ) -> SearchPage:
     """Ranked page for `query`, falling back to browsing the same collection
     when the query matches nothing.
@@ -199,10 +243,12 @@ def search_or_browse(
     result set means the coach reached the end of their matches, not that they
     should suddenly be shown unrelated images.
     """
-    first = search(query, collection=collection, page=page, per_page=per_page)
+    first = search(query, collection=collection, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle)
     if first.results or not query or page != 1:
         return first
-    return search(collection=collection, page=1, per_page=per_page)
+    return search(
+        collection=collection, page=1, per_page=per_page, session_id=session_id or first.session_id, shuffle=shuffle
+    )
 
 
 def get(asset_id: str) -> RemoteImage | None:

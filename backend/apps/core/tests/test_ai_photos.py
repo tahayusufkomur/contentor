@@ -136,6 +136,33 @@ def test_pick_photos_catalog_outage_raises_curate_error(monkeypatch):
         ai_photos.pick_photos(CoachBrief(niche="yoga"), [ai_photos.Slot("hero", "x", "hero")], tenant_schema="glow")
 
 
+def test_photo_query_describes_the_picture_not_the_business():
+    """The catalog scores how completely an image covers EVERY concept in the
+    query and drops whatever falls under its confidence floor, so each extra
+    word both slows the search and shrinks the result set. A coach's onboarding
+    prose ("I will teach online - on site pole dance classes") is not visual: it
+    took the real service ~15s to answer and matched nothing, where the niche
+    plus the requested style answers in ~5s and matches. Keep it visual."""
+    from apps.core.onboarding.ai_curate import photo_query
+
+    brief = CoachBrief(
+        niche="pole_dance",
+        description="I will teach online - on site pole dance classes.",
+        followups=(("What makes you different?", "Small friendly beginner groups, no experience needed"),),
+    )
+    query = photo_query(brief, "a bright airy studio with dramatic side light")
+    assert "pole dance" in query
+    assert "bright airy studio" in query
+    assert "teach online" not in query and "beginner groups" not in query
+    assert len(query.split()) <= 14
+
+
+def test_photo_query_falls_back_to_the_niche_with_no_style_asked_for():
+    from apps.core.onboarding.ai_curate import photo_query
+
+    assert photo_query(CoachBrief(niche="pole_dance")) == "pole dance"
+
+
 def test_pick_photos_still_has_candidates_for_a_niche_the_catalog_cannot_match(monkeypatch):
     """A pole-dance coach's own words filter the catalog to zero rows. The
     wizard must still place photos — an empty pool means it silently finishes

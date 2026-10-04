@@ -823,7 +823,13 @@ def _card(tenant, action):
                     },
                 ),
             }
-        image = photos.pick_photo(action.description, tenant, field=field, exclude_s3_key=exclude_key)
+        image = photos.pick_photo(
+            action.description,
+            tenant,
+            field=field,
+            exclude_s3_key=exclude_key,
+            subject=f"{schema}:page:{action.page}:{action.block_id}:{field}",
+        )
         return {
             "kind": "set_block_image",
             "title": f"Use the photo '{image.title}'",
@@ -856,7 +862,13 @@ def _card(tenant, action):
                     {"kind": "set_course_cover", "course_id": action.course_id, "tenant_photo_id": str(photo.pk)},
                 ),
             }
-        image = photos.pick_photo(action.description, tenant, field="courseCover", exclude_s3_key=exclude_key)
+        image = photos.pick_photo(
+            action.description,
+            tenant,
+            field="courseCover",
+            exclude_s3_key=exclude_key,
+            subject=f"{schema}:course:{action.course_id}",
+        )
         return {
             "kind": "set_course_cover",
             "title": f"Cover for '{course_title[:80]}': the photo '{image.title}'",
@@ -887,7 +899,13 @@ def _card(tenant, action):
                     },
                 ),
             }
-        image = photos.pick_photo(action.description, tenant, field="eventCover", exclude_s3_key=exclude_key)
+        image = photos.pick_photo(
+            action.description,
+            tenant,
+            field="eventCover",
+            exclude_s3_key=exclude_key,
+            subject=f"{schema}:event:{action.event_kind}:{action.event_id}",
+        )
         return {
             "kind": "set_event_cover",
             "title": f"Cover for '{event_title[:80]}': the photo '{image.title}'",

@@ -55,9 +55,48 @@ FIELD_COLLECTIONS = {
 
 CANDIDATE_LIMIT = 24
 
+# One catalog search session per subject (a block, course or event), so
+# "another please" moves on. The service excludes whatever a session has already
+# been handed — atomically, even under concurrent calls — so contentor only has
+# to remember which session belongs to which subject. The offer flow changes
+# nothing until the coach applies, so exclude_s3_key cannot see the photo just
+# proposed; without the session the same top match came back every turn.
+# Cached, not stored: forgetting after a day is a repeat photo, not a broken
+# site, and the service expires its side after 24h idle anyway.
+_SESSION_KEY = "copilot:photo-session:{subject}"
+_SESSION_TTL = 86400
+
 
 class PhotoOpError(Exception):
     """User-safe message describing why a photo operation was refused."""
+
+
+def _session_key(subject):
+    from hashlib import sha256
+
+    return _SESSION_KEY.format(subject=sha256(str(subject).encode()).hexdigest()[:32])
+
+
+def search_session(subject):
+    """This subject's rotation state: the catalog session it browses under, and
+    how far down the query ladder it has already widened.
+
+    The widening has to be remembered, not re-derived. shuffle_cycle_restarted
+    is a one-shot flag — the service resets the session's seen-set as it wraps,
+    so the very next call walks the same narrow match set again and reports
+    restarted=False. Without a sticky level the pick would bounce between the
+    two shots the tightest query clears forever."""
+    from django.core.cache import cache
+
+    state = (cache.get(_session_key(subject)) or {}) if subject else {}
+    return str(state.get("sid") or ""), int(state.get("level") or 0)
+
+
+def remember_session(subject, session_id, level):
+    from django.core.cache import cache
+
+    if subject and session_id:
+        cache.set(_session_key(subject), {"sid": session_id, "level": int(level)}, timeout=_SESSION_TTL)
 
 
 def image_field_for(block_type):
@@ -67,45 +106,99 @@ def image_field_for(block_type):
     return field
 
 
-def pick_photo(description, tenant, *, field, exclude_s3_key=None):
+def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
     """Best-matching catalog image for the coach's real profile (niche,
     onboarding description, follow-up answers) plus the model's per-turn style
     description. Returns a curated_images.client.RemoteImage, or raises.
 
-    Regression guard: this used to build the query from JUST niche + the model's
-    invented per-turn description, dropping the tenant's own onboarding
-    description/follow-ups entirely. A niche whose word doesn't literally appear
-    in the catalog (e.g. "pole_dance_instructor") then matched nothing, and the
-    zero-match fallback is catalog order — so coaches saw the same generic gym
-    photo regardless of their actual niche. Building the query from the tenant
-    (same helper onboarding itself uses) restores that signal.
+    Pass `subject` (a stable id for the block/course/event being dressed) to get
+    "another please" behaviour: the pick then skips what it recently offered for
+    that subject and records what it hands back. Without it the pick is
+    stateless, and a repeated ask returns the same rank-one asset — the offer
+    changes nothing until the coach applies, so exclude_s3_key cannot see it.
 
-    Searches via search_or_browse, not search: the remote catalog's query
-    filters, so that same pole-dance coach otherwise gets an empty page and is
-    told the library is empty. A generic photo they can reject beats a dead
-    end — the old local pick degraded this way for free, because it ranked the
-    whole catalog rather than filtering it."""
+    The query comes from photo_query (niche + the style this turn asked for),
+    NOT brief_query. An older guard fed the coach's onboarding description in
+    too, because the local catalog ranked without filtering and a niche missing
+    from the tags scored zero. The remote service inverts that: it scores how
+    completely an image covers every concept and discards the rest, so the extra
+    prose made the search both slower and emptier (~15s for no matches, against
+    ~5s with matches). The niche still steers the pick.
+
+    Searches via search_or_browse, not search: the remote query filters, so a
+    pole-dance coach whose words the catalog lacks would otherwise get an empty
+    page and be told the library is empty. A generic photo they can reject beats
+    a dead end.
+
+    Because the service drops anything under its confidence floor, a precise
+    query can clear as few as two shots where the niche alone clears two dozen —
+    so two "another please" exhaust it. The service says when that happens
+    (shuffle_cycle_restarted) and the pick then WIDENS: niche alone, then browse
+    the collection. The session spans all three, so a widened query still cannot
+    hand back a photo this subject has already seen."""
     from apps.core.curated_images import client as curated_client
     from apps.core.curated_images.cache import asset_id_from_key
-    from apps.core.onboarding.ai_curate import brief_query, brief_with_turn_style
+    from apps.core.onboarding.ai_curate import CoachBrief, photo_query
 
-    brief = brief_with_turn_style(tenant, description)
-    try:
-        page = curated_client.search_or_browse(
-            brief_query(brief),
-            collection=FIELD_COLLECTIONS.get(field),
-            page=1,
-            per_page=CANDIDATE_LIMIT,
-        )
-    except curated_client.CuratedImageError as exc:
-        raise PhotoOpError(str(exc)) from exc
+    brief = CoachBrief.from_tenant(tenant)
+    collection = FIELD_COLLECTIONS.get(field)
     # "Try another" excludes whatever is on the block now. The cached tenant key
     # still carries the catalog asset id, so no extra bookkeeping is needed.
     excluded = asset_id_from_key(exclude_s3_key or "")
-    candidates = [image for image in page.results if image.asset_id != excluded]
-    if not candidates:
+    session_id, level = search_session(subject)
+
+    queries = []
+    for query in (
+        photo_query(brief, description),  # the niche, shown the way this turn asked
+        photo_query(brief),  # the niche alone
+        "",  # anything in the collection
+    ):
+        if query not in queries:
+            queries.append(query)
+
+    # Rotating asks for ONE image at a time: everything a session is handed
+    # counts as seen, so a full page per turn would burn the whole catalog on
+    # the first ask and report "restarted" ever after. A stateless pick has no
+    # session to spend and takes the whole ranked page.
+    per_page = 1 if subject else CANDIDATE_LIMIT
+    best = None  # rank one of the first query tried, for the fully-exhausted case
+    for index in range(min(level, len(queries) - 1), len(queries)):
+        query = queries[index]
+        # Twice at most: a second look only if the one image offered is the very
+        # photo already on the block, which the session now excludes anyway.
+        for _attempt in (1, 2):
+            try:
+                page = curated_client.search_or_browse(
+                    query,
+                    collection=collection,
+                    page=1,
+                    per_page=per_page,
+                    session_id=session_id,
+                    shuffle=bool(subject),
+                )
+            except curated_client.CuratedImageError as exc:
+                raise PhotoOpError(str(exc)) from exc
+            session_id = page.session_id or session_id
+            candidates = [image for image in page.results if image.asset_id != excluded]
+            if best is None and candidates:
+                best = candidates[0]
+            if candidates and not page.shuffle_cycle_restarted:
+                remember_session(subject, session_id, index)
+                return candidates[0]
+            if page.shuffle_cycle_restarted:
+                # This query has nothing left to show; never come back to it.
+                level = min(index + 1, len(queries) - 1)
+            # Only worth a second look while this query still has unseen images
+            # and the sole one it offered was the block's current photo.
+            if not (subject and page.results and not candidates and not page.shuffle_cycle_restarted):
+                break
+    remember_session(subject, session_id, level)
+    if best is None:
         raise PhotoOpError("no photos are available in the library yet")
-    return candidates[0]
+    # Every photo the catalog can offer this subject has been shown. Starting
+    # over beats refusing — the coach asked for a photo, and "no photos are
+    # available" would be a lie about a full library.
+    return best
 
 
 def tenant_photo_url(photo):

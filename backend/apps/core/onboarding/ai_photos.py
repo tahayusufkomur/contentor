@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from apps.core import ai as core_ai
 from apps.core.curated_images import client as curated_client
 from apps.core.onboarding import ai_compose
-from apps.core.onboarding.ai_curate import CoachBrief, brief_block, brief_query
+from apps.core.onboarding.ai_curate import CoachBrief, brief_block, photo_query
 
 if TYPE_CHECKING:
     from apps.core.curated_images.client import RemoteImage
@@ -106,7 +106,9 @@ def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> 
     CurateError on provider or catalog failure."""
     if not slots:
         return {}
-    query = brief_query(brief)
+    # photo_query, not brief_query: the coach's onboarding prose is about their
+    # business, and feeding it to the catalog costs ~15s and matches nothing.
+    query = photo_query(brief)
     try:
         # search_or_browse, not search: the catalog's query filters, so a coach
         # whose niche it has no words for would otherwise finish the wizard with

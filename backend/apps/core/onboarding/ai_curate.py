@@ -95,6 +95,31 @@ def brief_query(brief: CoachBrief, extra: str = "") -> str:
     return " ".join(part.strip() for part in parts if part and part.strip())[:2000]
 
 
+PHOTO_QUERY_MAX_WORDS = 14
+
+
+def photo_query(brief: CoachBrief, extra: str = "") -> str:
+    """Short, visual query for the remote curated catalog: what the picture
+    should SHOW, not who the coach is.
+
+    Use this for photo search, never brief_query. The catalog scores how
+    completely an image covers every concept in the query and discards anything
+    under its confidence floor, so each extra word costs latency AND results.
+    Measured against the live service for one pole-dance coach:
+
+        "pole dance"                                  ~1.0s, matches
+        "pole dance <style the model asked for>"      ~5.0s, matches
+        the full brief (21 words of business prose)  ~15.2s, matches NOTHING
+
+    That last one is what brief_query builds, and it timed out mid-conversation
+    while returning an empty page — the coach's own words about their business
+    ("I will teach online - on site pole dance classes") describe a service, not
+    a photograph. Niche plus the requested style is the visual signal; the
+    caller widens (niche alone, then browse) when it wants more variety."""
+    words = f"{brief.niche.replace('_', ' ')} {extra or ''}".split()
+    return " ".join(words[:PHOTO_QUERY_MAX_WORDS])
+
+
 def brief_with_turn_style(tenant, turn_description: str) -> CoachBrief:
     """CoachBrief.from_tenant plus the model's per-turn style text ("calm
     sunlit studio, warm tones") layered onto description — used by the

@@ -50,11 +50,22 @@ def test_pick_photo_uses_tenant_niche_even_with_no_turn_description():
     assert "yoga" in picked.title.lower()
 
 
-def test_pick_photo_uses_tenant_onboarding_description_not_just_niche():
-    """The coach's own onboarding words ('in their own words') must count even
-    when the niche string alone shares no vocabulary with the catalog."""
+def test_pick_photo_leaves_the_coachs_business_prose_out_of_the_query():
+    """Deliberate reversal of an older guard. That guard put the coach's
+    onboarding description into the photo query, because the LOCAL catalog
+    ranked without filtering and a niche absent from the tags scored zero. The
+    remote service works the other way round: it scores how completely an image
+    covers EVERY concept given and drops the rest, so business prose ("I will
+    teach online - on site classes") made queries slower AND emptier — measured
+    at ~15s for nothing, versus ~5s with matches for niche + style. The niche
+    still steers the pick (see the test above); the prose must not reach the
+    catalog at all."""
+    from apps.core.onboarding.ai_curate import CoachBrief, photo_query
+
+    brief = CoachBrief(niche="yoga", description="I run small friendly beginner classes on weekday evenings")
+    assert photo_query(brief, "calm sunlit room") == "yoga calm sunlit room"
     picked = photos.pick_photo(
-        "", _tenant(niche="pole_dance_instructor", description="I teach mindful yoga flows"), field="bgImage"
+        "calm sunlit room", _tenant(niche="yoga", description=brief.description), field="bgImage"
     )
     assert "yoga" in picked.title.lower()
 
@@ -100,6 +111,64 @@ def test_pick_photo_can_still_try_another_when_the_query_matches_nothing():
         exclude_s3_key=tenant_key_for(first.asset_id),
     )
     assert second.asset_id != first.asset_id
+
+
+@pytest.fixture()
+def fresh_offer_memory():
+    """The offer memory lives in Redis, which outlives both the test and the
+    run. Without this the rotation tests inherit each other's picks (and a
+    second `pytest` gets different answers than the first)."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
+
+
+def _hero_pool_size():
+    """Heroes the offline fixture catalog can offer a coach it has no words for
+    (the browse fallback) — the size the rotation tests reason about."""
+    return len(curated_client.search_or_browse("pole dance", collection=curated_client.HERO_COLLECTION).results)
+
+
+def test_pick_photo_does_not_repeat_a_photo_it_just_offered(fresh_offer_memory):
+    """ "Another please" must move on. The offer flow deliberately changes
+    nothing until the coach applies, so the block still holds its old photo and
+    exclude_s3_key cannot see what was just proposed — without a memory of the
+    offer the same rank-one asset comes back every turn."""
+    tenant = _tenant(niche="pole_dance")
+    subject = "glow:page:home:hero-1:bgImage"
+    seen = [photos.pick_photo("", tenant, field="bgImage", subject=subject).asset_id for _ in range(3)]
+    assert len(set(seen)) == 3
+
+
+def test_pick_photo_keeps_separate_subjects_independent(fresh_offer_memory):
+    """A course cover and a hero rotate on their own — offering a photo for one
+    must not burn it for the other."""
+    tenant = _tenant(niche="pole_dance")
+    first = photos.pick_photo("", tenant, field="bgImage", subject="glow:page:home:hero-1:bgImage").asset_id
+    photos.pick_photo("", tenant, field="bgImage", subject="glow:page:home:hero-1:bgImage")
+    other = photos.pick_photo("", tenant, field="bgImage", subject="glow:course:7").asset_id
+    assert other == first
+
+
+def test_pick_photo_starts_the_rotation_over_once_every_match_is_used(fresh_offer_memory):
+    """A small catalog runs out. Repeating beats refusing — the coach asked for
+    a photo, and "no photos are available" would be a lie about a full library."""
+    tenant = _tenant(niche="pole_dance")
+    subject = "glow:page:home:hero-2:bgImage"
+    pool = _hero_pool_size()
+    picks = [photos.pick_photo("", tenant, field="bgImage", subject=subject).asset_id for _ in range(pool + 2)]
+    assert len(set(picks[:pool])) == pool  # every hero offered before any repeat
+    assert picks[pool] == picks[0]  # then the rotation starts over, no refusal
+
+
+def test_pick_photo_without_a_subject_keeps_no_memory(fresh_offer_memory):
+    """The pick stays stateless unless a caller opts in with a subject."""
+    tenant = _tenant(niche="pole_dance")
+    first = photos.pick_photo("", tenant, field="bgImage").asset_id
+    second = photos.pick_photo("", tenant, field="bgImage").asset_id
+    assert first == second
 
 
 def test_pick_photo_reports_an_empty_catalog(monkeypatch):

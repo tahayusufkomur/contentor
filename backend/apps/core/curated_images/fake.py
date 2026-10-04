@@ -47,7 +47,35 @@ def _tokens(text: str) -> set[str]:
     return {token for token in text.lower().replace(",", " ").split() if len(token) > 2}
 
 
-def search(query: str, *, collection: str | None, page: int, per_page: int):
+_SESSION_KEY = "curated-images:fake-session:{sid}"
+_SESSION_TTL = 86400  # the service expires a search session after 24h idle
+
+
+def _session_seen(session_id: str) -> list[str]:
+    from django.core.cache import cache
+
+    return list(cache.get(_SESSION_KEY.format(sid=session_id)) or []) if session_id else []
+
+
+def _session_remember(session_id: str, asset_ids: list[str]) -> None:
+    from django.core.cache import cache
+
+    if not session_id or not asset_ids:
+        return
+    seen = _session_seen(session_id)
+    seen += [a for a in asset_ids if a not in seen]
+    cache.set(_SESSION_KEY.format(sid=session_id), seen, timeout=_SESSION_TTL)
+
+
+def search(
+    query: str, *, collection: str | None, page: int, per_page: int, session_id: str = "", shuffle: bool = False
+):
+    """Offline stand-in for the service's search, including its session
+    semantics: with a session id the same image is never handed back twice, and
+    once every match has been shown the cycle restarts at the top and says so.
+    Callers exercise their "another please" path offline exactly as in prod."""
+    from uuid import uuid4
+
     from .client import SearchPage
 
     rows = [entry for entry in _entries() if not collection or entry["collection"] == collection]
@@ -61,12 +89,29 @@ def search(query: str, *, collection: str | None, page: int, per_page: int):
             return len(wanted & _tokens(f"{entry['title']} {entry['description']} {' '.join(entry['tags'])}"))
 
         rows = sorted((entry for entry in rows if score(entry)), key=lambda entry: -score(entry))
-    start = (page - 1) * per_page
-    window = rows[start : start + per_page]
+
+    sessioned = bool(session_id or shuffle)
+    if not sessioned:
+        start = (page - 1) * per_page
+        window = rows[start : start + per_page]
+        return SearchPage(
+            results=[_to_image(entry) for entry in window],
+            page=page,
+            has_next=len(rows) > start + per_page,
+        )
+
+    session_id = session_id or uuid4().hex
+    seen = set(_session_seen(session_id))
+    unseen = [entry for entry in rows if entry["asset_id"] not in seen]
+    restarted = not unseen and bool(rows)
+    window = (unseen or rows)[:per_page]
+    _session_remember(session_id, [entry["asset_id"] for entry in window])
     return SearchPage(
         results=[_to_image(entry) for entry in window],
         page=page,
-        has_next=len(rows) > start + per_page,
+        has_next=len(unseen) > per_page,
+        session_id=session_id,
+        shuffle_cycle_restarted=restarted,
     )
 
 

@@ -20,6 +20,10 @@
 			# cloudflared->Caddy is HTTP; tell Django the public scheme is HTTPS
 			# so SECURE_SSL_REDIRECT / secure cookies don't loop.
 			header_up X-Forwarded-Proto {$FORWARDED_PROTO:http}
+			# Prod: Caddy won't forward the XFF cloudflared sends (peer isn't a
+			# trusted_proxy) — rebuild it from the unspoofable CF edge header.
+			# Dev: the header is absent, so Django falls back to REMOTE_ADDR.
+			header_up X-Forwarded-For {header.Cf-Connecting-Ip}
 		}
 	}
 
@@ -28,6 +32,10 @@
 	handle @static {
 		reverse_proxy django:8000 {
 			header_up X-Forwarded-Proto {$FORWARDED_PROTO:http}
+			# Prod: Caddy won't forward the XFF cloudflared sends (peer isn't a
+			# trusted_proxy) — rebuild it from the unspoofable CF edge header.
+			# Dev: the header is absent, so Django falls back to REMOTE_ADDR.
+			header_up X-Forwarded-For {header.Cf-Connecting-Ip}
 		}
 	}
 
@@ -40,6 +48,10 @@
 	handle @admin {
 		reverse_proxy django:8000 {
 			header_up X-Forwarded-Proto {$FORWARDED_PROTO:http}
+			# Prod: Caddy won't forward the XFF cloudflared sends (peer isn't a
+			# trusted_proxy) — rebuild it from the unspoofable CF edge header.
+			# Dev: the header is absent, so Django falls back to REMOTE_ADDR.
+			header_up X-Forwarded-For {header.Cf-Connecting-Ip}
 		}
 	}
 

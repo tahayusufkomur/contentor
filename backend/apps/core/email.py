@@ -1,9 +1,80 @@
 import logging
+import mimetypes
 
+import requests
 import resend
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+_CF_SEND_URL = "https://api.cloudflare.com/client/v4/accounts/{account_id}/email/sending/send"
+
+
+def _sender_domain(address: str) -> str:
+    return address.rsplit("@", 1)[-1].strip("> ").lower() if "@" in address else ""
+
+
+def _routes_via_cloudflare(domain: str) -> bool:
+    """Platform domains and live coach custom domains (whose zones live in our
+    Cloudflare account and are onboarded to Email Sending by provisioning)."""
+    if domain in settings.CF_EMAIL_DOMAINS:
+        return True
+    try:
+        from apps.domains.models import CustomDomain  # local import: avoids app-load cycle
+
+        return CustomDomain.objects.filter(domain=domain, provisioning_status="live").exists()
+    except Exception:
+        logger.exception("CustomDomain lookup failed for %s; falling back to Resend", domain)
+        return False
+
+
+def _send_via_cloudflare(
+    sender: str,
+    from_name: str,
+    to: str,
+    subject: str,
+    html: str,
+    headers: dict | None,
+    attachments: list[dict] | None,
+) -> bool:
+    payload: dict = {
+        "from": {"address": sender, **({"name": from_name} if from_name else {})},
+        "to": [to],
+        "subject": subject,
+        "html": html,
+    }
+    if headers:
+        payload["headers"] = headers
+    if attachments:
+        # Incoming attachments use the Resend shape: {filename, content(b64)}.
+        payload["attachments"] = [
+            {
+                "content": a["content"],
+                "filename": a.get("filename", "attachment"),
+                "type": a.get("type") or mimetypes.guess_type(a.get("filename", ""))[0] or "application/octet-stream",
+                "disposition": "attachment",
+            }
+            for a in attachments
+        ]
+    try:
+        resp = requests.post(
+            _CF_SEND_URL.format(account_id=settings.CF_ACCOUNT_ID),
+            json=payload,
+            headers={"Authorization": f"Bearer {settings.CF_EMAIL_TOKEN}"},
+            timeout=30,
+        )
+        data = resp.json()
+        if resp.status_code >= 400 or not data.get("success"):
+            logger.error("Cloudflare email send failed to=%s: %s", to, data.get("errors"))
+            return False
+        bounces = (data.get("result") or {}).get("permanent_bounces") or []
+        if bounces:
+            logger.error("Cloudflare email permanent bounce to=%s: %s", to, bounces)
+            return False
+        return True
+    except Exception:
+        logger.exception("Failed to send email (cloudflare) to %s", to)
+        return False
 
 
 def send_email(
@@ -24,6 +95,13 @@ def send_email(
             logger.info("[email-sink] %d attachment(s) omitted from sink", len(attachments))
         return True
 
+    sender_address = from_email or settings.RESEND_FROM_EMAIL
+
+    # Platform domains and Cloudflare-onboarded coach custom domains go through
+    # Cloudflare Email Sending; anything else falls back to Resend.
+    if settings.CF_EMAIL_TOKEN and _routes_via_cloudflare(_sender_domain(sender_address)):
+        return _send_via_cloudflare(sender_address, from_name, to, subject, html, headers, attachments)
+
     if not settings.RESEND_API_KEY:
         logger.warning("RESEND_API_KEY not set, logging email instead")
         logger.info("Email to=%s subject=%s", to, subject)
@@ -31,7 +109,7 @@ def send_email(
 
     resend.api_key = settings.RESEND_API_KEY
 
-    sender = from_email or settings.RESEND_FROM_EMAIL
+    sender = sender_address
     if from_name:
         sender = f"{from_name} <{sender}>"
 

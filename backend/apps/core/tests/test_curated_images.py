@@ -136,6 +136,23 @@ def test_transport_failure_retries_once_then_reports_unavailable(live_client, mo
     assert "unavailable" in str(exc.value)
 
 
+def test_a_read_timeout_is_not_retried(live_client, monkeypatch):
+    """A read timeout means the service took the request and is being slow.
+    Asking again just doubles what the coach waits before the same failure —
+    and adds load to a service already struggling. Only connect failures and
+    5xx (where the work may never have started) are worth a second attempt."""
+    attempts = []
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        attempts.append(url)
+        raise requests.ReadTimeout("upstream slow")
+
+    monkeypatch.setattr(requests, "request", _request)
+    with pytest.raises(client.CuratedImageError):
+        client.search("sunrise run")
+    assert len(attempts) == 1
+
+
 def test_a_bad_request_is_not_retried(live_client, monkeypatch):
     attempts = []
 
@@ -193,6 +210,65 @@ def test_search_or_browse_keeps_the_collection_filter_in_the_fallback():
 def test_search_or_browse_reports_a_genuinely_empty_catalog_as_empty(monkeypatch):
     monkeypatch.setattr(client, "search", lambda *a, **k: client.SearchPage(results=[], page=1, has_next=False))
     assert client.search_or_browse("yoga").results == []
+
+
+def test_a_session_search_sends_the_session_and_skips_the_cache(live_client, monkeypatch):
+    """Two identical session searches must reach the service, not the page
+    cache: the whole point is that the second one returns different images."""
+    bodies = []
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        bodies.append(json)
+        return _Response(
+            payload={
+                "data": [_image_payload()],
+                "pagination": {},
+                "session_id": "sess-1",
+                "shuffle_cycle_restarted": True,
+            }
+        )
+
+    monkeypatch.setattr(requests, "request", _request)
+    page = client.search("sunrise run", session_id="sess-1", shuffle=True)
+    assert page.session_id == "sess-1" and page.shuffle_cycle_restarted is True
+    client.search("sunrise run", session_id="sess-1", shuffle=True)
+    assert len(bodies) == 2  # never served from cache
+    assert bodies[0]["session_id"] == "sess-1" and bodies[0]["shuffle"] is True
+
+
+def test_a_plain_search_still_caches_and_sends_no_session(live_client, monkeypatch):
+    bodies = []
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        bodies.append(json)
+        return _Response(payload={"data": [_image_payload()], "pagination": {}})
+
+    monkeypatch.setattr(requests, "request", _request)
+    client.search("sunrise run")
+    client.search("sunrise run")
+    assert len(bodies) == 1
+    assert "session_id" not in bodies[0] and "shuffle" not in bodies[0]
+
+
+def test_fixture_session_never_repeats_until_the_cycle_restarts():
+    """The offline catalog mirrors the service's session semantics, so the
+    "another please" path is exercised in dev and e2e too."""
+    from django.core.cache import cache
+
+    cache.clear()
+    pool = len(client.search(collection=client.HERO_COLLECTION, per_page=50).results)
+    seen, restarted = [], False
+    session = ""
+    for _ in range(pool):
+        page = client.search(collection=client.HERO_COLLECTION, per_page=1, session_id=session, shuffle=True)
+        session = page.session_id
+        assert page.session_id
+        seen.append(page.results[0].asset_id)
+        restarted = restarted or page.shuffle_cycle_restarted
+    assert len(set(seen)) == pool and restarted is False
+    exhausted = client.search(collection=client.HERO_COLLECTION, per_page=1, session_id=session, shuffle=True)
+    assert exhausted.shuffle_cycle_restarted is True
+    assert exhausted.results[0].asset_id == seen[0]  # restarts at the top match
 
 
 # ── offline fixture catalog ──────────────────────────────────────────────────

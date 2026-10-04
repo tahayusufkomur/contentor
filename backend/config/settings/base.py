@@ -231,6 +231,18 @@ GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "")
 # --- Resend ---
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "noreply@contentor.com")
+# --- Cloudflare Email Sending ---
+# Platform-domain mail routes through Cloudflare when CF_EMAIL_TOKEN is set;
+# senders on other domains (coach custom domains verified via Resend
+# email_auth) keep using Resend. CF_EMAIL_DOMAINS is a comma-separated list.
+CF_ACCOUNT_ID = os.environ.get("CF_ACCOUNT_ID", "")
+CF_EMAIL_TOKEN = os.environ.get("CF_EMAIL_TOKEN", "")
+CF_EMAIL_DOMAINS = [
+    d.strip().lower() for d in os.environ.get("CF_EMAIL_DOMAINS", "contentor.app").split(",") if d.strip()
+]
+# Sender-auth provider for coach custom domains: "cloudflare" (Email Sending
+# subdomain onboarding on the domain's own zone) or "resend" (legacy rollback).
+EMAIL_AUTH_PROVIDER = os.environ.get("EMAIL_AUTH_PROVIDER", "cloudflare")
 # Fixed From address for the superadmin platform inbox (public-schema mailbox).
 PLATFORM_SUPPORT_FROM = os.environ.get("PLATFORM_SUPPORT_FROM", "support@contentor.app")
 
@@ -408,7 +420,12 @@ CURATED_IMAGE_MAX_BYTES = int(os.environ.get("CURATED_IMAGE_MAX_BYTES", str(15 *
 # not fan out one upstream request per keystroke.
 CURATED_IMAGE_CACHE_TTL = int(os.environ.get("CURATED_IMAGE_CACHE_TTL", "600"))
 CURATED_IMAGE_CONNECT_TIMEOUT = float(os.environ.get("CURATED_IMAGE_CONNECT_TIMEOUT", "2"))
-CURATED_IMAGE_READ_TIMEOUT = float(os.environ.get("CURATED_IMAGE_READ_TIMEOUT", "5"))
+# A query the service has not answered before costs it ~5s (measured flat across
+# per_page 4..48, so it is fixed work per query, not payload size). The copilot
+# builds a fresh query nearly every turn, so a 5s budget timed out mid-turn and
+# told coaches the library was unavailable. Keep enough headroom that only a
+# genuinely stuck service trips this; the Redis page cache absorbs repeats.
+CURATED_IMAGE_READ_TIMEOUT = float(os.environ.get("CURATED_IMAGE_READ_TIMEOUT", "15"))
 
 # Days a `past_due` PlatformSubscription stays before the dunning sweep downgrades.
 PAST_DUE_GRACE_DAYS = int(os.environ.get("PAST_DUE_GRACE_DAYS", "7"))

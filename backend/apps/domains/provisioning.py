@@ -50,7 +50,7 @@ def _step_email_auth(cd) -> None:
     if cd.resend_domain_id:
         return
     resend = get_resend_domains()
-    out = resend.create_domain(cd.domain)
+    out = resend.create_domain(cd.domain, zone_id=cd.cloudflare_zone_id)
     cd.resend_domain_id = out["resend_domain_id"]
     cd.save(update_fields=["resend_domain_id", "updated_at"])
     cf = get_cloudflare()
