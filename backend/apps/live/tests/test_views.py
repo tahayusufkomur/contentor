@@ -265,26 +265,24 @@ class TestLiveClassDetail:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveClassStart:
-    @patch("apps.live.stream_service.create_call")
+    @patch("apps.live.livecraft.create_room")
     def test_draft_class_can_be_started(self, mock_create_call, draft_live_class, owner):
         """Draft class can be started, status becomes live."""
-        mock_create_call.return_value = None
         client = make_client(owner)
         response = client.post(f"/api/v1/live/{draft_live_class.pk}/start/")
         assert response.status_code == 200, response.content
         data = response.json()
         assert data["status"] == "live"
 
-    @patch("apps.live.stream_service.create_call")
+    @patch("apps.live.livecraft.create_room")
     def test_scheduled_class_can_be_started(self, mock_create_call, scheduled_live_class, owner):
         """Scheduled class can be started, status becomes live."""
-        mock_create_call.return_value = None
         client = make_client(owner)
         response = client.post(f"/api/v1/live/{scheduled_live_class.pk}/start/")
         assert response.status_code == 200, response.content
         assert response.json()["status"] == "live"
 
-    @patch("apps.live.stream_service.create_call")
+    @patch("apps.live.livecraft.create_room")
     def test_already_live_class_returns_400(self, mock_create_call, draft_live_class, owner):
         """Already live class returns 400."""
         draft_live_class.status = "live"
@@ -293,7 +291,7 @@ class TestLiveClassStart:
         response = client.post(f"/api/v1/live/{draft_live_class.pk}/start/")
         assert response.status_code == 400, response.content
 
-    @patch("apps.live.stream_service.create_call")
+    @patch("apps.live.livecraft.create_room")
     def test_student_cannot_start_class(self, mock_create_call, draft_live_class, student):
         """Student gets 403 when trying to start a class."""
         client = make_client(student)
@@ -303,10 +301,9 @@ class TestLiveClassStart:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveClassStop:
-    @patch("apps.live.stream_service.stop_call")
+    @patch("apps.live.livecraft.end_room")
     def test_live_class_can_be_stopped(self, mock_stop_call, draft_live_class, owner):
         """Live class can be stopped, status becomes ended."""
-        mock_stop_call.return_value = None
         draft_live_class.status = "live"
         draft_live_class.save(update_fields=["status"])
         client = make_client(owner)
@@ -314,7 +311,7 @@ class TestLiveClassStop:
         assert response.status_code == 200, response.content
         assert response.json()["status"] == "ended"
 
-    @patch("apps.live.stream_service.stop_call")
+    @patch("apps.live.livecraft.end_room")
     def test_non_live_class_returns_400(self, mock_stop_call, draft_live_class, owner):
         """Non-live class returns 400 on stop."""
         client = make_client(owner)
@@ -324,41 +321,25 @@ class TestLiveClassStop:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveClassToken:
-    @patch("apps.live.views.settings")
-    @patch("apps.live.stream_service.generate_user_token")
-    @patch("apps.live.stream_service.upsert_user")
-    def test_student_gets_viewer_token_for_free_class(
-        self, mock_upsert, mock_gen_token, mock_settings, draft_live_class, student, owner
-    ):
+    def test_student_gets_viewer_token_for_free_class(self, draft_live_class, student, owner):
         """Student gets token with role=viewer for a free live class."""
-        mock_upsert.return_value = None
-        mock_gen_token.return_value = "fake-token-123"
-        mock_settings.GETSTREAM_API_KEY = "fake-api-key"
         draft_live_class.status = "live"
         draft_live_class.save(update_fields=["status"])
         client = make_client(student)
         response = client.post(f"/api/v1/live/{draft_live_class.pk}/token/")
         assert response.status_code == 200, response.content
         data = response.json()
-        assert data["token"] == "fake-token-123"
+        assert draft_live_class.room_name in data["join_url"]
         assert data["role"] == "viewer"
 
-    @patch("apps.live.views.settings")
-    @patch("apps.live.stream_service.generate_user_token")
-    @patch("apps.live.stream_service.upsert_user")
-    def test_owner_gets_host_token(self, mock_upsert, mock_gen_token, mock_settings, draft_live_class, owner):
+    def test_owner_gets_host_token(self, draft_live_class, owner):
         """Owner/instructor gets token with role=host."""
-        mock_upsert.return_value = None
-        mock_gen_token.return_value = "fake-token-host"
-        mock_settings.GETSTREAM_API_KEY = "fake-api-key"
         draft_live_class.status = "live"
         draft_live_class.save(update_fields=["status"])
         client = make_client(owner)
         response = client.post(f"/api/v1/live/{draft_live_class.pk}/token/")
         assert response.status_code == 200, response.content
-        data = response.json()
-        assert data["token"] == "fake-token-host"
-        assert data["role"] == "host"
+        assert response.json()["role"] == "host"
 
     def test_non_live_class_returns_400(self, draft_live_class, student):
         """Non-live class returns 400 on token request."""
@@ -478,25 +459,23 @@ class TestLiveStreamDetail:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveStreamStart:
-    @patch("apps.live.stream_service.create_livestream")
+    @patch("apps.live.livecraft.create_room")
     def test_draft_stream_can_be_started(self, mock_create, draft_live_stream, owner):
         """Draft stream can be started, status becomes live."""
-        mock_create.return_value = None
         client = make_client(owner)
         response = client.post(f"/api/v1/live-streams/{draft_live_stream.pk}/start/")
         assert response.status_code == 200, response.content
         assert response.json()["status"] == "live"
 
-    @patch("apps.live.stream_service.create_livestream")
+    @patch("apps.live.livecraft.create_room")
     def test_scheduled_stream_can_be_started(self, mock_create, scheduled_live_stream, owner):
         """Scheduled stream can be started, status becomes live."""
-        mock_create.return_value = None
         client = make_client(owner)
         response = client.post(f"/api/v1/live-streams/{scheduled_live_stream.pk}/start/")
         assert response.status_code == 200, response.content
         assert response.json()["status"] == "live"
 
-    @patch("apps.live.stream_service.create_livestream")
+    @patch("apps.live.livecraft.create_room")
     def test_already_live_stream_returns_400(self, mock_create, draft_live_stream, owner):
         """Already live stream returns 400."""
         draft_live_stream.status = "live"
@@ -505,7 +484,7 @@ class TestLiveStreamStart:
         response = client.post(f"/api/v1/live-streams/{draft_live_stream.pk}/start/")
         assert response.status_code == 400, response.content
 
-    @patch("apps.live.stream_service.create_livestream")
+    @patch("apps.live.livecraft.create_room")
     def test_student_cannot_start_stream(self, mock_create, draft_live_stream, student):
         """Student gets 403 when trying to start a stream."""
         client = make_client(student)
@@ -515,10 +494,9 @@ class TestLiveStreamStart:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveStreamStop:
-    @patch("apps.live.stream_service.stop_livestream")
+    @patch("apps.live.livecraft.end_room")
     def test_live_stream_can_be_stopped(self, mock_stop, draft_live_stream, owner):
         """Live stream can be stopped, status becomes ended."""
-        mock_stop.return_value = None
         draft_live_stream.status = "live"
         draft_live_stream.save(update_fields=["status"])
         client = make_client(owner)
@@ -526,7 +504,7 @@ class TestLiveStreamStop:
         assert response.status_code == 200, response.content
         assert response.json()["status"] == "ended"
 
-    @patch("apps.live.stream_service.stop_livestream")
+    @patch("apps.live.livecraft.end_room")
     def test_non_live_stream_returns_400(self, mock_stop, draft_live_stream, owner):
         """Non-live stream returns 400 on stop."""
         client = make_client(owner)

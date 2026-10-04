@@ -14,17 +14,9 @@ interface StreamData {
 
 interface LiveStreamClientProps {
   streamId: string;
-  userId: string;
-  userName: string;
-  userImage?: string;
 }
 
-export default function LiveStreamClient({
-  streamId,
-  userId,
-  userName,
-  userImage,
-}: LiveStreamClientProps) {
+export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
   const router = useRouter();
   const [stream, setStream] = useState<StreamData | null>(null);
   const [error, setError] = useState("");
@@ -112,12 +104,5 @@ export default function LiveStreamClient({
     );
   }
 
-  return (
-    <LiveStreamRoom
-      streamId={streamId}
-      userId={userId}
-      userName={userName}
-      userImage={userImage}
-    />
-  );
+  return <LiveStreamRoom streamId={streamId} />;
 }

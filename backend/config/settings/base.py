@@ -264,9 +264,12 @@ AWS_PRESIGNED_EXPIRY = int(os.environ.get("AWS_PRESIGNED_EXPIRY", "3600"))
 # Inbound mailbox webhook carries base64 attachments (≤ ~25 MB email + overhead).
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 
-# --- GetStream Video ---
-GETSTREAM_API_KEY = os.environ.get("GETSTREAM_API_KEY", "")
-GETSTREAM_API_SECRET = os.environ.get("GETSTREAM_API_SECRET", "")
+# --- LiveCraft (self-hosted live video product, apps.live.livecraft) ---
+# Base URL of the LiveCraft app as Django reaches it, and the API key it issued
+# us (the same key verifies its recording callbacks). LIVECRAFT_FAKE (below)
+# skips the service entirely: join links become inert placeholders.
+LIVECRAFT_URL = os.environ.get("LIVECRAFT_URL", "")
+LIVECRAFT_API_KEY = os.environ.get("LIVECRAFT_API_KEY", "")
 
 # --- AI provider (apps.core.ai) ---
 # "anthropic" (prod: API key + prompt caching) or "cli" (local dev: the
@@ -377,8 +380,8 @@ def _env_bool(name: str, default: bool) -> bool:
 # `config.settings.prod`.
 BILLING_BYPASS_ENABLED = _env_bool("BILLING_BYPASS_ENABLED", True)
 
-# Fake GetStream service for offline/dev use. Production refuses this (prod.py).
-LIVE_FAKE_ENABLED = _env_bool("LIVE_FAKE_ENABLED", False)
+# Skip LiveCraft entirely (see LIVECRAFT_URL above). Production refuses this.
+LIVECRAFT_FAKE = _env_bool("LIVECRAFT_FAKE", False)
 
 # Dev-only email sink: stores outbound mail in DB instead of calling Resend.
 # Lets local e2e tests read magic links / verification codes without a real inbox.

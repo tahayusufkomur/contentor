@@ -15,17 +15,9 @@ interface LiveClassData {
 
 interface LiveRoomClientProps {
   liveClassId: string;
-  userId: string;
-  userName: string;
-  userImage?: string;
 }
 
-export default function LiveRoomClient({
-  liveClassId,
-  userId,
-  userName,
-  userImage,
-}: LiveRoomClientProps) {
+export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
   const router = useRouter();
   const [liveClass, setLiveClass] = useState<LiveClassData | null>(null);
   const [error, setError] = useState("");
@@ -116,12 +108,5 @@ export default function LiveRoomClient({
     );
   }
 
-  return (
-    <LiveClassRoom
-      liveClassId={liveClassId}
-      userId={userId}
-      userName={userName}
-      userImage={userImage}
-    />
-  );
+  return <LiveClassRoom liveClassId={liveClassId} />;
 }

@@ -76,16 +76,16 @@ _ = os
 
 DOMAINS_BYPASS_ENABLED = False
 
-LIVE_FAKE_ENABLED = _env_bool("LIVE_FAKE_ENABLED", False)
-if LIVE_FAKE_ENABLED:
-    raise ImproperlyConfigured("LIVE_FAKE_ENABLED must be false in production")
-
 EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", False)
 if EMAIL_SINK_ENABLED:  # noqa: F405
     raise ImproperlyConfigured("EMAIL_SINK_ENABLED must be false in production")
 
 # The curated photo catalog lives in another service in production; the fixture
 # catalog would silently hand every coach the same eight demo photos.
+LIVECRAFT_FAKE = _env_bool("LIVECRAFT_FAKE", False)
+if LIVECRAFT_FAKE:
+    raise ImproperlyConfigured("LIVECRAFT_FAKE must be false in production")
+
 CURATED_IMAGE_API_FAKE = _env_bool("CURATED_IMAGE_API_FAKE", False)
 if CURATED_IMAGE_API_FAKE:
     raise ImproperlyConfigured("CURATED_IMAGE_API_FAKE must be false in production")

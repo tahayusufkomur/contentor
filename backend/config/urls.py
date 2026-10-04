@@ -10,6 +10,7 @@ from apps.accounts.backends import AdminJWTBackend
 from apps.billing.views.webhooks import stripe_webhook
 from apps.core.views import health_check
 from apps.live import urls as live_urls
+from apps.live.webhooks import livecraft_webhook
 
 
 def admin_auto_login(request):
@@ -34,6 +35,7 @@ urlpatterns = [
     # The webhook view sets `@authentication_classes([])` so DRF defaults do
     # not run on it; region + tenant middleware skip `/api/webhooks/*`.
     path("api/webhooks/stripe/", stripe_webhook, name="stripe-webhook"),
+    path("api/webhooks/livecraft/", livecraft_webhook, name="livecraft-webhook"),
     path("api/health/", health_check, name="health-check"),
     path(
         "api/schema/",

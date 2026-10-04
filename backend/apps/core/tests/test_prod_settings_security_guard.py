@@ -15,7 +15,6 @@ def _import_prod(monkeypatch, *, secret_key, allowed_hosts):
     monkeypatch.setenv("DJANGO_SECRET_KEY", secret_key)
     monkeypatch.setenv("DJANGO_ALLOWED_HOSTS", allowed_hosts)
     monkeypatch.setenv("BILLING_BYPASS_ENABLED", "false")
-    monkeypatch.setenv("LIVE_FAKE_ENABLED", "false")
     monkeypatch.setenv("EMAIL_SINK_ENABLED", "false")
     monkeypatch.setenv("CURATED_IMAGE_API_FAKE", "false")
     monkeypatch.setenv("AI_PROVIDER", "anthropic")

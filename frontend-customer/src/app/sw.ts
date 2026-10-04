@@ -14,18 +14,14 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-// Never cache auth, billing/checkout, or third-party payment/chat traffic.
+// Never cache auth, billing/checkout, or third-party payment traffic.
 // These match first, so defaultCache never sees them.
 const NEVER_CACHE: RegExp[] = [
   /^\/admin(\/|$)/,
   /^\/checkout(\/|$)/,
   /^\/api\/v1\/(auth|billing)(\/|$)/,
 ];
-const NEVER_CACHE_HOSTS: readonly string[] = [
-  "stripe.com",
-  "stream-io-api.com",
-  "getstream.io",
-];
+const NEVER_CACHE_HOSTS: readonly string[] = ["stripe.com"];
 
 const guardedCache: RuntimeCaching[] = [
   {

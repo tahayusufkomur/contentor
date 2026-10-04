@@ -50,4 +50,6 @@ RESERVED_SLUGS = {
     "blog",
     "status",
     "public",
+    "rtc",
+    "livecraft",
 }

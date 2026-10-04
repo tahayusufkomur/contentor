@@ -30,6 +30,10 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 AI_PROVIDER = "anthropic"
 
+# Same reasoning: a dev .env pointing at a running LiveCraft must not make
+# tests create real rooms. Tests of the HTTP client turn the fake off themselves.
+LIVECRAFT_FAKE = True
+
 # Undo dev's raised e2e ceiling: the middleware tests assert the prod
 # thresholds (TenantRateLimitMiddleware.DEFAULT_RATE / UPLOAD_RATE).
 TENANT_RATE_LIMIT_DEFAULT = 100

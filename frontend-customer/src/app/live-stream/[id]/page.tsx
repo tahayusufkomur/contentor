@@ -13,12 +13,5 @@ export default async function LiveStreamPage({
   if (!user)
     redirect("/login?toast=You+need+to+log+in+to+join&toast_type=info");
 
-  return (
-    <LiveStreamClient
-      streamId={params.id}
-      userId={String(user.id)}
-      userName={user.name || user.email}
-      userImage={user.avatar_url}
-    />
-  );
+  return <LiveStreamClient streamId={params.id} />;
 }

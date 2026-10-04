@@ -47,7 +47,7 @@ single most common source of confusion:
 
 **Backend:** Django 5.1 + Django REST Framework, `django-tenants` (schema-per-tenant),
 Celery (worker + beat) on Redis, Gunicorn for HTTP. Realtime chat/video is via
-Stream.io (external SaaS), so the app serves no WebSockets of its own.
+LiveCraft (sibling product `../livecraft`, self-hosted LiveKit) embedded by iframe, so the app serves no WebSockets of its own.
 
 **Frontends:** two independent Next.js 14 (App Router) apps — `frontend-main` and
 `frontend-customer` — Tailwind + Radix UI, `next-intl` for i18n.
@@ -194,11 +194,18 @@ models point at the shared `accounts.User` table.
 All four share `_EventStatusMixin` (computes `draft → scheduled → live/ongoing → ended`
 from `scheduled_at` + `duration_minutes`):
 
-- **`LiveClass`** [T] — interactive Stream.io call (1:N video + chat); auto-generated
+- **`LiveClass`** [T] — interactive LiveCraft `meeting` room (1:N video, host moderation); auto-generated
   unique `room_name`; optional `recording` → `Video`, `auto_recording`.
-- **`LiveStream`** [T] — one-way Stream.io broadcast.
+- **`LiveStream`** [T] — LiveCraft `broadcast` room (viewers watch + chat).
 - **`ZoomClass`** [T] — external Zoom meeting (`zoom_link`, `zoom_meeting_id`); no SDK.
 - **`OnsiteEvent`** [T] — in-person event (`location`, `address`, `max_capacity`).
+
+**Video permissions.** Contentor decides who joins a `LiveClass`/`LiveStream` and as
+what (`views._join_response`): the instructor or the tenant owner joins as `host`;
+anyone else passing `ContentAccessService` joins as `participant` (class) or
+`viewer` (stream), and only while the session is `live`. Everything after that
+(token grants, moderation, blocking, and the known abuse risks with their planned
+fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
 
 ### 4.4 Billing (`apps.billing` — tenant-scoped, student↔coach)
 
@@ -510,7 +517,7 @@ drafts so the coach reviews before going live. `available_niches()` auto-discove
 
 | Integration | Purpose | Where | Key env |
 |---|---|---|---|
-| **Stream.io** | Live video + chat (LiveClass interactive, LiveStream broadcast); per-user JWTs; auto-recording | `apps/live/stream_service.py` | `GETSTREAM_API_KEY`, `GETSTREAM_API_SECRET`, `NEXT_PUBLIC_GETSTREAM_API_KEY` |
+| **LiveCraft** (own product, `../livecraft`) | Live video: Contentor creates rooms and join links (host / participant / viewer) over its API-key API and iframes the room; LiveCraft owns the UI, moderation, chat and recording, and posts signed `recording.ready` callbacks to `/api/webhooks/livecraft/` | `apps/live/livecraft.py`, `apps/live/webhooks.py` | `LIVECRAFT_URL`, `LIVECRAFT_API_KEY` (`LIVECRAFT_FAKE` dev/tests) |
 | **Zoom OAuth** | Per-tenant Zoom connection; refresh token (Fernet-encrypted) on `TenantConfig`; access token cached `tenant:{schema}:zoom_access_token` | `apps/live/urls_zoom.py`, views | `ZOOM_TOKEN_ENCRYPTION_KEY` (+ a single shared Zoom marketplace app) |
 | **MailCraft** | Sibling email-builder SaaS (`mailcraft.contentor.app`); coaches design templates in an embedded iframe; campaigns render per-recipient via its `/render` API | `apps/email_campaigns/emailcraft_client.py`, `django-contentor-email-builder` | `EMAILCRAFT_BASE_URL`, `EMAILCRAFT_TOKEN`, per-tenant `emailcraft_api_key` (`mc_live_*`) |
 | **Resend** | Transactional + campaign email delivery | `apps/core/email.py` | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
@@ -557,7 +564,7 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
   same-origin cookies and special-cases demo read-only `403`s into a sign-up toast.
 - **Theming is per-tenant:** `TenantConfig` (theme/font/custom_css) → `src/lib/themes.ts`
   `generateThemeCSS()` → injected via `TenantThemeStyle`; config cached ~60s by domain.
-- Adds Stream.io SDKs (`@stream-io/video-react-sdk`, `stream-chat`).
+- Embeds LiveCraft rooms in an iframe (`components/live/live-frame.tsx`); no video SDKs of its own.
 
 ---
 
@@ -597,19 +604,18 @@ Templates: `backend/.env.example`, root `.env.example` (dev), `.env.prod.example
 - **Platform/Django:** `CONTENTOR_DOMAIN`, `CONTENTOR_SUPERUSERS`, `DJANGO_SETTINGS_MODULE`,
   `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` (must include `django` for SSR), `DJANGO_DEBUG`.
 - **DB/Cache:** `POSTGRES_*`, `REDIS_URL`, `CELERY_BROKER_URL`.
-- **Frontend (baked):** `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_BASE_DOMAIN`,
-  `NEXT_PUBLIC_GETSTREAM_API_KEY`.
+- **Frontend (baked):** `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_BASE_DOMAIN`.
 - **Email:** `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `EMAILCRAFT_BASE_URL`, `EMAILCRAFT_TOKEN`.
 - **Storage:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET_NAME`,
   `AWS_ENDPOINT`, `AWS_PRESIGNED_EXPIRY`.
-- **Live:** `GETSTREAM_API_KEY`, `GETSTREAM_API_SECRET`, `ZOOM_TOKEN_ENCRYPTION_KEY`.
+- **Live:** `LIVECRAFT_URL`, `LIVECRAFT_API_KEY`, `ZOOM_TOKEN_ENCRYPTION_KEY`.
 - **OAuth:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
 - **Billing:** `BILLING_BYPASS_ENABLED` (**false in prod**), `PAST_DUE_GRACE_DAYS`,
   `BILLING_FREE_PLAN_NAME`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`,
   `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_{STARTER,PRO}_{USD,TRY}` (optional pins).
 
 > ⚠️ Live secrets are currently committed to `.env.prod` across the fleet and were exposed
-> in-session — **rotate** S3, Stripe, Resend, Stream.io, and `DJANGO_SECRET_KEY`. (See the
+> in-session — **rotate** S3, Stripe, Resend, LiveCraft, and `DJANGO_SECRET_KEY`. (See the
 > "secrets to rotate" memory.)
 
 ---

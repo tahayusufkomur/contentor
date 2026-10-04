@@ -13,7 +13,8 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
-from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
+from apps.live import livecraft
+from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 SHARED_DOMAIN = "shared-test.localhost"
 
@@ -117,19 +118,34 @@ class TestOnsiteAddressGating:
         assert data["address"] == "Exactstrasse 1, 10115 Berlin"
 
 
+def _live(model, owner):
+    return model.objects.create(
+        title="Free", instructor=owner, pricing_type="free", status="live", scheduled_at=timezone.now()
+    )
+
+
 @pytest.mark.django_db(transaction=True)
-class TestTokenScoping:
-    def test_live_class_token_is_scoped_to_the_call(self, tenant_ctx, owner, student):
-        lc = LiveClass.objects.create(
-            title="Free Live",
-            instructor=owner,
-            pricing_type="free",
-            status="live",
-            scheduled_at=timezone.now(),
-        )
-        with patch("apps.live.views.stream_service.generate_user_token", return_value="tok") as gen:
+class TestJoinRoles:
+    """Contentor decides who joins as what; the fake LiveCraft echoes it into the link."""
+
+    def test_class_student_joins_as_participant(self, tenant_ctx, owner, student):
+        lc = _live(LiveClass, owner)
+        url = make_client(student).post(f"/api/v1/live/{lc.pk}/token/").json()["join_url"]
+        assert url.endswith(f"/{lc.room_name}/u{student.id}/participant")
+
+    def test_stream_student_joins_as_viewer(self, tenant_ctx, owner, student):
+        ls = _live(LiveStream, owner)
+        url = make_client(student).post(f"/api/v1/live-streams/{ls.pk}/token/").json()["join_url"]
+        assert url.endswith(f"/{ls.room_name}/u{student.id}/viewer")
+
+    def test_instructor_joins_as_host(self, tenant_ctx, owner):
+        lc = _live(LiveClass, owner)
+        resp = make_client(owner).post(f"/api/v1/live/{lc.pk}/token/").json()
+        assert resp["join_url"].endswith(f"/u{owner.id}/host")
+        assert resp["role"] == "host"
+
+    def test_blocked_student_gets_403(self, tenant_ctx, owner, student):
+        lc = _live(LiveClass, owner)
+        with patch("apps.live.livecraft.join_url", side_effect=livecraft.LiveCraftError("blocked", 403)):
             resp = make_client(student).post(f"/api/v1/live/{lc.pk}/token/")
-        assert resp.status_code == 200
-        # Token must be restricted to this call's CID, not app-wide.
-        _, kwargs = gen.call_args
-        assert kwargs.get("call_cids") == [f"default:{lc.room_name}"]
+        assert resp.status_code == 403

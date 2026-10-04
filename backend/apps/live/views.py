@@ -1,7 +1,6 @@
 import logging
 from dataclasses import asdict
 
-from django.conf import settings  # noqa: F401  (in-flight tests patch apps.live.views.settings)
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -14,7 +13,7 @@ from apps.core.access import ContentAccessService
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
 
-from . import stream_service
+from . import livecraft
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 from .serializers import (
     CalendarEventDetailSerializer,
@@ -50,6 +49,27 @@ def _serialize_list_response(request, qs, serializer_class):
         serializer = serializer_class(page, many=True, context=ctx)
         return paginator.get_paginated_response(serializer.data)
     return Response(serializer_class(qs, many=True, context=ctx).data)
+
+
+def _is_host(user, event):
+    return user.id == event.instructor_id or user.role == "owner"
+
+
+def _join_response(request, event, *, guest_role):
+    """Join link for this user: hosts moderate; everyone else joins as `guest_role`."""
+    host = _is_host(request.user, event)
+    try:
+        url = livecraft.join_url(event.room_name, request.user, role="host" if host else guest_role)
+    except livecraft.LiveCraftError as exc:
+        if exc.status == 403:
+            return Response({"detail": "You were removed from this session."}, status=status.HTTP_403_FORBIDDEN)
+        logger.exception("LiveCraft join failed for room %s", event.room_name)
+        return Response({"detail": "Failed to connect to video service."}, status=status.HTTP_502_BAD_GATEWAY)
+    return Response({"join_url": url, "role": "host" if host else "viewer"})
+
+
+def _start_room(event, *, layout):
+    livecraft.create_room(event.room_name, title=event.title, layout=layout, auto_record=event.auto_recording)
 
 
 @api_view(["GET", "POST"])
@@ -105,9 +125,9 @@ def live_class_start(request, pk):
         )
 
     try:
-        stream_service.create_call(live_class, request.user)
-    except Exception:
-        logger.exception("Failed to create GetStream call for live class %s", pk)
+        _start_room(live_class, layout="meeting")
+    except livecraft.LiveCraftError:
+        logger.exception("Failed to create LiveCraft room for live class %s", pk)
         return Response(
             {"detail": "Failed to start video call. Please try again."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -129,7 +149,7 @@ def live_class_stop(request, pk):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    stream_service.stop_call(live_class.room_name)
+    livecraft.end_room(live_class.room_name)
 
     live_class.status = "ended"
     live_class.ended_at = timezone.now()
@@ -156,27 +176,7 @@ def live_class_token(request, pk):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    try:
-        stream_service.upsert_user(request.user)
-        # Scope the token to THIS call so it can't be replayed to join others.
-        token = stream_service.generate_user_token(request.user.id, call_cids=[f"default:{live_class.room_name}"])
-    except Exception:
-        logger.exception("Failed to generate GetStream token for user %s", request.user.id)
-        return Response(
-            {"detail": "Failed to connect to video service."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-
-    is_host = request.user.id == live_class.instructor_id or request.user.role == "owner"
-
-    return Response(
-        {
-            "token": token,
-            "api_key": stream_service.api_key(),
-            "call_id": live_class.room_name,
-            "role": "host" if is_host else "viewer",
-        }
-    )
+    return _join_response(request, live_class, guest_role="participant")
 
 
 # ─── Live Stream views ───────────────────────────────────────────────
@@ -235,9 +235,9 @@ def live_stream_start(request, pk):
         )
 
     try:
-        stream_service.create_livestream(live_stream, request.user)
-    except Exception:
-        logger.exception("Failed to create GetStream livestream for %s", pk)
+        _start_room(live_stream, layout="broadcast")
+    except livecraft.LiveCraftError:
+        logger.exception("Failed to create LiveCraft room for live stream %s", pk)
         return Response(
             {"detail": "Failed to start live stream. Please try again."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -259,7 +259,7 @@ def live_stream_stop(request, pk):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    stream_service.stop_livestream(live_stream.room_name)
+    livecraft.end_room(live_stream.room_name)
 
     live_stream.status = "ended"
     live_stream.ended_at = timezone.now()
@@ -286,29 +286,7 @@ def live_stream_token(request, pk):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    try:
-        stream_service.upsert_user(request.user)
-        # Scope the token to THIS stream's call AND chat channel (both are
-        # "livestream:<room_name>") so it can't read/join any other stream.
-        cid = f"livestream:{live_stream.room_name}"
-        token = stream_service.generate_user_token(request.user.id, call_cids=[cid], channel_cids=[cid])
-    except Exception:
-        logger.exception("Failed to generate GetStream token for user %s", request.user.id)
-        return Response(
-            {"detail": "Failed to connect to video service."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-
-    is_host = request.user.id == live_stream.instructor_id or request.user.role == "owner"
-
-    return Response(
-        {
-            "token": token,
-            "api_key": stream_service.api_key(),
-            "call_id": live_stream.room_name,
-            "role": "host" if is_host else "viewer",
-        }
-    )
+    return _join_response(request, live_stream, guest_role="viewer")
 
 
 # ─── Zoom Class views ──────────────────────────────────────────────

@@ -36,7 +36,7 @@ make wiki | wiki-sync            # regenerate architecture wiki | re-mirror only
 
 ## Architecture
 
-Monorepo: `backend/` (Django: `config/` + `apps/`, settings split base/dev/prod) · `frontend-main/` (marketing/signup/onboarding, Next.js 14) · `frontend-customer/` (tenant portal, Next.js 14, adds Stream.io chat + video) · `packages/shared` (UI + hooks used by both apps) · `e2e/` (Playwright).
+Monorepo: `backend/` (Django: `config/` + `apps/`, settings split base/dev/prod) · `frontend-main/` (marketing/signup/onboarding, Next.js 14) · `frontend-customer/` (tenant portal, Next.js 14; live video is embedded from LiveCraft) · `packages/shared` (UI + hooks used by both apps) · `e2e/` (Playwright).
 
 Per-area deep docs live in `docs/wiki/` — read the relevant page before working in an area. Non-obvious structural facts:
 
@@ -57,7 +57,7 @@ Per-area deep docs live in `docs/wiki/` — read the relevant page before workin
 
 ### Local fakes + e2e
 
-Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). `LIVE_FAKE_ENABLED=true` (dev `.env`) stubs GetStream so live-class specs run offline. `EMAIL_SINK_ENABLED=true` captures outbound email — read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses both flags). Dev runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set `true` for fully-offline payments. E2e lives in `e2e/`: `make e2e` runs the 24 non-Stripe specs (2 Stripe specs auto-skip without `STRIPE_E2E`; `90-logo-eval` is an AI-scored eval); `make e2e-stripe` adds them (needs `sk_test_*` keys + `make stripe-listen` in another shell). `make e2e-changed` maps the diff via `e2e/impact-map.json` — fail-closed, `00-smoke` always runs; the selector self-test in `make lint` fails if a spec has no map entry.
+Dev compose bundles MinIO as the object store; `AWS_ENDPOINT_EXTERNAL` controls the presigned-URL host the browser uses (must be reachable from the host, not inside Docker). Live video is LiveCraft, a sibling product ([../livecraft](../livecraft/), self-hosted LiveKit): `apps.live.livecraft` creates rooms + join links and the tenant portal iframes them. Without `LIVECRAFT_URL` dev runs a fake (inert join links); for real video run `make dev` there and set `LIVECRAFT_URL=http://host.docker.internal:7800` + `LIVECRAFT_API_KEY=dev-key`. Video behaviour is tested in LiveCraft's own e2e. `EMAIL_SINK_ENABLED=true` captures outbound email — read back via `GET /api/v1/dev/emails/latest/?to=` (prod refuses it). Dev runs `BILLING_BYPASS_ENABLED=false` (real Stripe test-mode); set `true` for fully-offline payments. E2e lives in `e2e/`: `make e2e` runs the 24 non-Stripe specs (2 Stripe specs auto-skip without `STRIPE_E2E`; `90-logo-eval` is an AI-scored eval); `make e2e-stripe` adds them (needs `sk_test_*` keys + `make stripe-listen` in another shell). `make e2e-changed` maps the diff via `e2e/impact-map.json` — fail-closed, `00-smoke` always runs; the selector self-test in `make lint` fails if a spec has no map entry.
 
 ## MailCraft
 

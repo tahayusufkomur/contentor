@@ -219,7 +219,6 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://django:8000}
         NEXT_PUBLIC_BASE_DOMAIN: ${CONTENTOR_DOMAIN:-contentor.app}
-        NEXT_PUBLIC_GETSTREAM_API_KEY: ${GETSTREAM_API_KEY:-}
     container_name: contentor-nextjs-customer
     restart: unless-stopped
     mem_limit: 320m
@@ -228,7 +227,6 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://django:8000}
       - NEXT_PUBLIC_BASE_DOMAIN=${CONTENTOR_DOMAIN:-contentor.app}
-      - NEXT_PUBLIC_GETSTREAM_API_KEY=${GETSTREAM_API_KEY:-}
     networks:
       - internal
     depends_on:
