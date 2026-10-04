@@ -10,7 +10,7 @@ export function HeroSection() {
   const t = useTranslations("marketing.hero");
 
   return (
-    <section className="relative isolate overflow-hidden pb-12 pt-28 md:pt-36 lg:pt-44">
+    <section className="relative isolate overflow-hidden pb-10 pt-24 md:pt-28 lg:pt-32">
       {/* Restrained backdrop: faint grid + a single marketing-accent glow */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="grid-fade absolute inset-0" />
@@ -32,7 +32,7 @@ export function HeroSection() {
         </div>
 
         {/* Display title */}
-        <h1 className="text-display mt-8 text-[44px] leading-[1.02] sm:text-[64px] md:text-[80px] lg:text-[96px]">
+        <h1 className="text-display mt-6 text-[44px] leading-[1.02] sm:text-[60px] md:text-[72px] lg:text-[80px]">
           <span
             className="block reveal-fade-up text-foreground"
             style={{ animationDelay: "0.08s" }}
@@ -48,14 +48,14 @@ export function HeroSection() {
         </h1>
 
         <p
-          className="mx-auto mt-7 max-w-2xl reveal-fade-up text-balance text-lg leading-relaxed text-muted-foreground"
+          className="mx-auto mt-5 max-w-2xl reveal-fade-up text-balance text-lg leading-relaxed text-muted-foreground"
           style={{ animationDelay: "0.32s" }}
         >
           {t("subtitle")}
         </p>
 
         <div
-          className="mt-10 flex reveal-fade-up items-center justify-center gap-3"
+          className="mt-8 flex reveal-fade-up items-center justify-center gap-3"
           style={{ animationDelay: "0.44s" }}
         >
           <Button asChild size="xl">

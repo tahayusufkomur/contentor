@@ -6,12 +6,18 @@
 // — Preview streams a proposed change (free), Apply persists it and spends
 // the reveal's single free apply. Running out never blocks Publish, it
 // only stops further chat refinements until the Phase-2 paid quota applies.
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
-import { applySiteEdit, isAbortError, previewSiteEdit } from "@/lib/wizard/api";
+import { Input } from "@/components/ui/input";
+import {
+  applySiteEdit,
+  isAbortError,
+  previewSiteEdit,
+  readWizardState,
+} from "@/lib/wizard/api";
 
 // Mirrors apps/core/onboarding/wizard.py's REVEAL_FREE_APPLIES — there is no
 // shared source between the Django app and this bundle, so the two must be
@@ -29,6 +35,22 @@ export function RevealChat({ token }: { token: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const exhausted = remaining <= 0;
+
+  // The counter lives on the server: a coach who already used their free
+  // refinement (then reloaded) must not be offered "1 left" again.
+  useEffect(() => {
+    let cancelled = false;
+    readWizardState(token)
+      .then((res) => {
+        if (cancelled) return;
+        const used = res.state.reveal_applies_used ?? 0;
+        setRemaining(Math.max(0, REVEAL_FREE_APPLIES - used));
+      })
+      .catch(() => {}); // keep the optimistic default
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   const runPreview = useCallback(async () => {
     const text = instruction.trim();
@@ -109,7 +131,7 @@ export function RevealChat({ token }: { token: string }) {
             </div>
           ) : (
             <div className="mt-3 flex gap-2">
-              <input
+              <Input
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
                 onKeyDown={(e) => {
@@ -117,7 +139,7 @@ export function RevealChat({ token }: { token: string }) {
                 }}
                 placeholder={t("revealChat.placeholder")}
                 disabled={phase === "thinking"}
-                className="min-w-0 flex-1 rounded-xl border border-foreground/[0.08] bg-white px-3 py-2 text-[13px] outline-none placeholder:text-muted-foreground/70 focus:border-primary"
+                className="min-w-0 flex-1"
               />
               <Button
                 type="button"

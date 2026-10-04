@@ -263,15 +263,7 @@ export function DomainStep({
   };
 
   const skipLinks = (
-    <div className="mt-6 flex items-center justify-center gap-6">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => onDone({ custom_domain: { choice: "skipped" } })}
-        className="text-[13px] text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
-      >
-        {t("domain.keepFree")}
-      </button>
+    <div className="mt-6 flex items-center justify-center">
       <button
         type="button"
         disabled={disabled}

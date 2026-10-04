@@ -99,7 +99,7 @@ test("coach walks the full wizard and the tenant provisions", async ({ page }) =
   // Chapter 4 — domain (free signup → paid-gated upsell; keep the free
   // address, which records the choice and advances).
   await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: W.domain.keepFree }).click();
+  await page.getByRole("button", { name: W.domain.later }).click();
 
   // Chapter 5 — review + create
   await expect(page.getByText(W.review.heading)).toBeVisible({ timeout: 15_000 });
@@ -151,7 +151,7 @@ test("finish-the-rest-for-me fast path provisions", async ({ page }) => {
   await expect(page.getByText(W.logo.heading)).toBeVisible({ timeout: 10_000 });
   await clickContinue(page);
   await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: W.domain.keepFree }).click();
+  await page.getByRole("button", { name: W.domain.later }).click();
   await page.getByRole("button", { name: W.review.create }).click();
   await waitForReady(page);
 });

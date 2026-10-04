@@ -77,6 +77,11 @@ export interface WizardState {
   curated_logo_rank?: number[];
 }
 
+/** Free refinements the reveal already spent (server-side counter). */
+export interface RevealState {
+  reveal_applies_used?: number;
+}
+
 export interface WizardStateResponse {
   slug: string;
   status: string;
@@ -85,7 +90,7 @@ export interface WizardStateResponse {
   /** A/B holdout bucket: "treatment" -> content-first flow, anything else
    * (including "" on tenants created before the holdout) -> classic. */
   wizard_bucket?: string;
-  state: WizardState;
+  state: WizardState & RevealState;
 }
 
 export interface CuratedLogoItem {

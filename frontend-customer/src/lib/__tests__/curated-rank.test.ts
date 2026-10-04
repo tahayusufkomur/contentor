@@ -81,7 +81,7 @@ describe("rankCuratedLogos", () => {
   it("keeps catalog order among equally scored logos", () => {
     const ranked = rankCuratedLogos(
       catalog,
-      briefKeywords({ niche: "general" }),
+      briefKeywords({ niche: "basket weaving" }),
     );
     expect(ranked.map((l) => l.title)).toEqual(catalog.map((l) => l.title));
   });
@@ -102,5 +102,24 @@ describe("applyAiRank", () => {
       1, 2, 3, 4,
     ]);
     expect(applyAiRank(items, []).map((x) => x.id)).toEqual([1, 2, 3, 4]);
+  });
+});
+
+describe("pilates ranking on the real catalog", () => {
+  it("keeps other niches' marks out of the first 12", async () => {
+    const raw = (await import("../../../public/logos/logo_meta.json")).default as {
+      title: string;
+      tags: string;
+    }[];
+    const logos = raw.map((l) => ({
+      title: l.title,
+      tags: l.tags.split(",").map((t) => t.trim().toLowerCase()),
+    }));
+    const top = rankCuratedLogos(logos, briefKeywords({ niche: "pilates" })).slice(0, 12);
+    expect(top.length).toBe(12);
+    for (const l of top) {
+      expect(l.title.toLowerCase()).not.toMatch(/pregnan|yoga|bodybuilder/);
+    }
+    expect(top.every((l) => l.tags.includes("pilates"))).toBe(true);
   });
 });

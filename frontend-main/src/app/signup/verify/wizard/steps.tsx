@@ -95,6 +95,7 @@ export function OptionCard({
   subtitle,
   badge,
   disabled,
+  hideTitle,
   children,
 }: {
   selected: boolean;
@@ -103,6 +104,9 @@ export function OptionCard({
   subtitle?: string;
   badge?: string;
   disabled?: boolean;
+  /** Art-only card (logo gallery): the title stays as the accessible name and
+   * the selected check sits under the art instead of covering it. */
+  hideTitle?: boolean;
   children?: React.ReactNode;
 }) {
   return (
@@ -114,6 +118,7 @@ export function OptionCard({
       // click in WizardFlow's busy guard with zero feedback. Same idiom as
       // the Continue button's disabled={busy}.
       disabled={disabled}
+      aria-label={hideTitle ? title : undefined}
       variants={itemVariants}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.985 }}
@@ -131,22 +136,32 @@ export function OptionCard({
       }`}
     >
       {children}
-      <span className="flex flex-col items-center gap-0.5 text-center">
-        <span className="text-[13.5px] font-semibold tracking-tight">
-          {title}
+      {hideTitle ? (
+        <span className="flex h-5 items-center justify-center" aria-hidden>
+          {selected && (
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <Check className="h-3 w-3" strokeWidth={3} />
+            </span>
+          )}
         </span>
-        {subtitle && (
-          <span className="text-[11.5px] leading-snug text-muted-foreground">
-            {subtitle}
+      ) : (
+        <span className="flex flex-col items-center gap-0.5 text-center">
+          <span className="text-[13.5px] font-semibold tracking-tight">
+            {title}
           </span>
-        )}
-      </span>
+          {subtitle && (
+            <span className="text-[11.5px] leading-snug text-muted-foreground">
+              {subtitle}
+            </span>
+          )}
+        </span>
+      )}
       {badge && (
         <span className="absolute left-2 top-2 rounded-full bg-foreground/[0.06] px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
           {badge}
         </span>
       )}
-      {selected && (
+      {selected && !hideTitle && (
         <motion.span
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

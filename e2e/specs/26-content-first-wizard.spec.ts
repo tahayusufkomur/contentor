@@ -94,7 +94,7 @@ test("treatment coach creates a real course during signup", async ({ page }) => 
   await expect(page.getByText(W.logo.wordmark.title)).toBeVisible({ timeout: 60_000 });
   await clickFooterContinue(page);
   await expect(page.getByRole("heading", { name: W.domain.heading })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: W.domain.keepFree }).click();
+  await page.getByRole("button", { name: W.domain.later }).click();
   await expect(page.getByText(W.review.heading)).toBeVisible({ timeout: 30_000 });
 });
 

@@ -45,8 +45,7 @@ const PAGE_SIZE = 20;
  * Circles") wrap to three lines in a 4-up card, which made whole rows grow.
  * Scoped to the gallery — OptionCard's title is shared by every wizard step. */
 const GALLERY_GRID =
-  "grid grid-cols-2 items-start gap-2.5 sm:grid-cols-4 " +
-  "[&_button>span>span:first-child]:line-clamp-2";
+  "grid grid-cols-2 items-start gap-2.5 sm:grid-cols-4";
 
 /** Lockups a curated mark can be paired with. `name_only` is deliberately
  * absent: hiding the mark you just picked is what the Wordmark door already
@@ -78,7 +77,7 @@ function LogoLockup({
   // Gallery cards are half as wide once the grid goes 4-up, so the mark and
   // the name step down at `sm` to keep the lockup legible. The picker (lg) is
   // always 2-up, so it keeps its full size.
-  const img = size === "lg" ? "h-12 w-12" : "h-10 w-10 sm:h-8 sm:w-8";
+  const img = size === "lg" ? "h-12 w-12" : "h-14 w-14 sm:h-12 sm:w-12";
   const text = size === "lg" ? "text-[14px]" : "text-[12px] sm:text-[11px]";
   return (
     <span
@@ -280,7 +279,7 @@ export function LogoStep({
                 {/* 8 tiles fill two rows of the 4-up grid and four of the 2-up
                  * one — enough to claim the space without faking a full page. */}
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[104px] rounded-2xl" />
+                  <Skeleton key={i} className="h-[120px] rounded-2xl" />
                 ))}
               </div>
             ) : (
@@ -304,6 +303,7 @@ export function LogoStep({
                         })
                       }
                       title={item.title}
+                      hideTitle
                     >
                       <LogoLockup
                         imageUrl={item.image_url}

@@ -10,6 +10,8 @@ export interface RankableCuratedLogo {
 }
 
 export interface BriefKeywords {
+  /** The coach's niche as the catalog spells it ("pole dance"), if any. */
+  niche?: string;
   /** The coach's own words: niche + description + style chips. */
   primary: Set<string>;
   /** Vocabulary we associate with the niche — a weaker signal. */
@@ -19,12 +21,14 @@ export interface BriefKeywords {
 /** Wizard niche ids (or free-text niches) → related catalog vocabulary. */
 const NICHE_KEYWORDS: Record<string, string[]> = {
   yoga: ["meditation", "lotus", "zen", "wellness", "calm"],
-  pilates: ["wellness", "calm"],
+  pilates: ["reformer", "core", "stretch", "mat"],
   fitness: ["gym", "dumbbell", "barbell", "strength", "bodybuilder", "sport"],
   "pole dance": ["dance", "dancer", "pole"],
   "belly dance": ["dance", "dancer"],
   "face yoga": ["face", "beauty", "skincare", "massage"],
   makeup: ["beauty", "lipstick", "mascara", "face"],
+  // "Something else": no niche to match, so lean on neutral, broadly usable styles.
+  general: ["minimal", "modern", "elegant"],
 };
 
 const STOPWORDS = new Set(
@@ -66,7 +70,7 @@ export function briefKeywords(brief: {
   }
   for (const w of words(brief.description ?? "")) primary.add(w);
   for (const chip of brief.styleChips ?? []) primary.add(chip.toLowerCase());
-  return { primary, secondary };
+  return { niche: niche || undefined, primary, secondary };
 }
 
 /**
@@ -78,12 +82,16 @@ export function rankCuratedLogos<T extends RankableCuratedLogo>(
   logos: T[],
   keywords: BriefKeywords,
 ): T[] {
-  const { primary, secondary } = keywords;
+  const { primary, secondary, niche } = keywords;
   if (primary.size === 0 && secondary.size === 0) return [...logos];
   const primaryHit = (w: string) => [...primary].some((k) => matches(w, k));
 
   const score = (logo: T): number => {
     let s = 0;
+    // The catalog lists a mark's own niche first ("pilates, reformer, …");
+    // marks that merely also carry the tag ("yoga, pilates, pregnancy") are
+    // shared with other niches and must not outrank the real thing.
+    if (niche && logo.tags[0] === niche) s += 3;
     const viaTags = new Set<string>();
     for (const tag of logo.tags) {
       const tagWords = words(tag);
