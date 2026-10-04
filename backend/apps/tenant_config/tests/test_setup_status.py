@@ -235,9 +235,22 @@ def test_publish_blockers_payouts_only_when_paid_content(coach, config):
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
         assert _blockers(config, connection.tenant) == set()
 
-    Course.objects.create(title="Paid", slug="paid-pub", instructor=coach, price=10)
+    Course.objects.create(title="Paid", slug="paid-pub", instructor=coach, price=10, pricing_type="paid")
     with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
         assert _blockers(config, connection.tenant) == {"payouts"}
+
+
+def test_free_course_with_stale_price_is_not_paid_content(coach, config):
+    """Paid -> Free used to leave the old price behind and demand payouts."""
+    from django.db import connection
+
+    config.logo_url = "https://s3.example.com/logo.png"
+    config.save(update_fields=["logo_url"])
+    Course.objects.create(
+        title="Was paid", slug="was-paid", instructor=coach, price=49, pricing_type="free", is_published=True
+    )
+    with patch("apps.tenant_config.setup_items.can_monetize", return_value=False):
+        assert _blockers(config, connection.tenant) == set()
 
 
 def test_publish_blockers_ignore_unremoved_demo(client, coach, config):

@@ -301,6 +301,14 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "modules",
         ]
 
+    def validate(self, attrs):
+        # Free content never keeps a price: the publish gate and the storefront
+        # both read `price`, so a leftover value would silently demand payouts.
+        pricing_type = attrs.get("pricing_type", getattr(self.instance, "pricing_type", "free"))
+        if pricing_type != "paid":
+            attrs["price"] = 0
+        return attrs
+
     def validate_modules(self, value):
         if self.instance is not None:
             raise serializers.ValidationError(

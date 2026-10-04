@@ -115,6 +115,16 @@ def make_client(user=None):
 
 @pytest.mark.django_db(transaction=True)
 class TestCourseListCreate:
+    def test_switching_to_free_clears_price(self, owner):
+        client = make_client(owner)
+        resp = client.post("/api/v1/courses/", {"title": "Paid", "pricing_type": "paid", "price": "49.00"}, format="json")
+        assert resp.status_code == 201, resp.content
+        course = Course.objects.get(title="Paid")
+        resp = client.put(f"/api/v1/courses/{course.slug}/", {"pricing_type": "free"}, format="json")
+        assert resp.status_code == 200, resp.content
+        course.refresh_from_db()
+        assert course.price == 0
+
     def test_student_sees_only_published(self, published_course, unpublished_course, student):
         """Students should only see published courses."""
         client = make_client(student)

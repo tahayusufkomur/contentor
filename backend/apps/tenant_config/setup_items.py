@@ -87,8 +87,8 @@ def _has_paid_content(seeded) -> bool:
     course_demo = [row.object_id for row in seeded.get("courses.course", [])]
     dl_demo = [row.object_id for row in seeded.get("downloads.downloadfile", [])]
     return (
-        Course.objects.filter(price__gt=0).exclude(pk__in=course_demo).exists()
-        or DownloadFile.objects.filter(price__gt=0).exclude(pk__in=dl_demo).exists()
+        Course.objects.filter(pricing_type="paid", price__gt=0).exclude(pk__in=course_demo).exists()
+        or DownloadFile.objects.filter(pricing_type="paid", price__gt=0).exclude(pk__in=dl_demo).exists()
     )
 
 
