@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Professional makeup artist with over 12 years of experience in bridal, editorial, and fashion makeup. I have worked backstage at fashion weeks and with celebrity clients, and now I am passionate about sharing my techniques with aspiring artists around the world.",
+        "body": "Makeup classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/make_up_5.png"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Olivia H.",
-            "text": "The Everyday Glam course transformed my morning routine. I finally understand how to blend foundation properly and my skin looks flawless every day!",
-            "avatar_url": ""
-          },
-          {
-            "name": "Zara B.",
-            "text": "Bridal Makeup Mastery gave me the confidence to start freelancing as a bridal artist. The business tips alone were worth the investment.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Hannah L.",
-            "text": "The editorial course blew my mind. I never thought I could create avant-garde looks, but the step-by-step breakdowns made it so accessible.",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and learn at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

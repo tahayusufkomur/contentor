@@ -35,7 +35,7 @@ def test_sets_home_spotlight_blocks(mockup_tenant):
     call_command("set_wizard_mockup_layout", "home", "home-spotlight")
     config = TenantConfig.objects.first()
     types = [b["type"] for b in config.pages["home"]["blocks"]]
-    assert types == ["hero", "courseGrid", "testimonials", "cta"]
+    assert types == ["hero", "courseGrid", "cta"]
 
 
 def test_does_not_touch_other_pages(mockup_tenant):

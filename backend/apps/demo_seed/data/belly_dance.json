@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Passionate belly dance instructor with over 10 years of experience in Oriental, Tribal Fusion, and Classical Egyptian styles. I believe dance is for everyone — no experience needed, just an open heart and a love for movement.",
+        "body": "Belly dance classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/belly_dance_7.jpg"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Ayşe K.",
-            "text": "This academy transformed the way I move. The structured lessons made it so easy to build confidence in my shimmies and isolations.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Leila M.",
-            "text": "I never imagined I could learn belly dance online, but the video quality and detailed breakdowns are incredible. I practice every single day!",
-            "avatar_url": ""
-          },
-          {
-            "name": "Nadia S.",
-            "text": "The choreography course is a masterpiece. I went from feeling lost on stage to performing with real expression and musicality.",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and learn at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

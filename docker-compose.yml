@@ -181,6 +181,8 @@ services:
   celery-worker:
     build:
       context: ./backend
+      args:
+        INSTALL_CLAUDE_CLI: "1"  # wizard AI copy runs in the worker, not django
     command: celery -A config.celery worker -l info --concurrency=2
     volumes:
       - ./backend:/app/backend

@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Certified pole dance instructor and competitor with over 8 years of teaching experience. My mission is to make pole dance accessible to all body types and fitness levels — no gymnastics background required, just the courage to try something new.",
+        "body": "Pole dance classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/pole_7.jpg"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Jessica R.",
-            "text": "I was terrified of trying pole dance, but the Basics course broke everything down so clearly. I can now do a fireman spin and I feel incredible!",
-            "avatar_url": ""
-          },
-          {
-            "name": "Mia T.",
-            "text": "The spins and transitions course completely changed my flow. I went from clunky moves to smooth, connected sequences in just a few weeks.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Priya D.",
-            "text": "Advanced Pole Tricks pushed me beyond what I thought was possible. The detailed progressions for each trick made even the scary inversions feel safe.",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and progress at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

@@ -197,6 +197,11 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
     from apps.core.onboarding import ai_compose
 
     if not ai_compose.compose_available():
+        # Surface WHY (no provider / disabled / budget spent) in the logbook —
+        # a silent skip once hid a worker with no AI binary.
+        logger.warning(
+            "ai compose skipped slug=%s provider=%s", tenant.slug, ai_compose.core_ai.available()
+        )
         return pages, None, "skipped"
 
     course_items, download_items = _gather_content_items(tenant)

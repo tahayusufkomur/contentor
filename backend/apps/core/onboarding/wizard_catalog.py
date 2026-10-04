@@ -27,6 +27,10 @@ GOALS = (
     "send_announcements",
 )
 
+# Goals the free plan cannot do (selling and live need Starter). Still selectable;
+# the wizard just tags them so the coach isn't surprised later.
+PAID_GOALS = ("sell_courses", "sell_downloads", "run_live_classes")
+
 THEMES = ("ocean", "ember", "forest", "sunset", "violet", "slate")
 
 # First entry = the niche module's own theme (demo_data/<niche>.py CONFIG),
@@ -279,6 +283,7 @@ def catalog_payload() -> dict:
     return {
         "niches": available_niches(),
         "goals": list(GOALS),
+        "paid_goals": list(PAID_GOALS),
         "themes": list(THEMES),
         "theme_ranking": {niche: list(ranked) for niche, ranked in THEME_RANKING.items()},
         "fonts": dict(FONTS),

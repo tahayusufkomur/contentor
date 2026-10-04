@@ -121,12 +121,12 @@ def _types(pages, page):
 
 def test_home_complete_layout_blocks():
     pages = _build({"page_layouts": {"home": "home-complete"}})["pages"]
-    assert _types(pages, "home") == ["hero", "imageText", "courseGrid", "testimonials", "faq", "cta"]
+    assert _types(pages, "home") == ["hero", "imageText", "courseGrid", "faq", "cta"]
 
 
 def test_home_complete_goal_blocks_splice_after_course_grid():
     pages = _build({"page_layouts": {"home": "home-complete"}, "goals": ["sell_downloads"]})["pages"]
-    assert _types(pages, "home") == ["hero", "imageText", "courseGrid", "storeProducts", "testimonials", "faq", "cta"]
+    assert _types(pages, "home") == ["hero", "imageText", "courseGrid", "storeProducts", "faq", "cta"]
 
 
 def test_about_warm_layout_blocks():
@@ -136,12 +136,12 @@ def test_about_warm_layout_blocks():
 
 def test_courses_social_layout_blocks():
     pages = _build({"page_layouts": {"courses": "courses-social"}})["pages"]
-    assert _types(pages, "courses") == ["courseGrid", "testimonials", "cta"]
+    assert _types(pages, "courses") == ["courseGrid", "cta"]
 
 
 def test_pricing_trust_layout_blocks():
     pages = _build({"page_layouts": {"pricing": "pricing-trust"}})["pages"]
-    assert _types(pages, "pricing") == ["pricingPlans", "testimonials", "cta"]
+    assert _types(pages, "pricing") == ["pricingPlans", "cta"]
 
 
 def test_faq_support_layout_blocks():
@@ -154,3 +154,36 @@ def test_contact_reassure_layout_blocks_have_unique_ids():
     assert _types(pages, "contact") == ["contact", "faq"]
     ids = [b["id"] for b in pages["contact"]["blocks"]]
     assert len(ids) == len(set(ids))
+
+
+# --- The no-AI fallback tells no lies (Review Focus 3) ---------------------------
+
+
+@pytest.mark.parametrize("niche", __import__("apps.demo_seed.registry", fromlist=["x"]).list_niches())
+def test_fallback_site_has_no_invented_credentials_or_testimonials(niche):
+    import json
+
+    from apps.demo_seed.registry import load_niche
+
+    sections = load_niche(niche).CONFIG["landing_sections"]
+    description = "I teach mat Pilates for desk workers."
+    over = build_config_overrides(
+        {"niche": niche, "description": description, "goals": ["sell_courses"]},
+        brand_name="Glow Studio",
+        landing_sections=sections,
+    )
+    blocks = [b for page in over["pages"].values() for b in page["blocks"]]
+    assert not [b for b in blocks if b["type"] == "testimonials"]
+    about = next(b for b in blocks if b["type"] == "imageText")
+    assert about["body"] == description
+    text = json.dumps(over["pages"])
+    for invented in ("years of experience", "years of teaching", "Certified", "Clara D.", "lifetime access"):
+        assert invented not in text
+
+
+def test_empty_description_gets_a_neutral_about_sentence():
+    over = build_config_overrides(
+        {"niche": "pilates"}, brand_name="Glow Studio", landing_sections=SECTIONS
+    )
+    about = next(b for b in over["pages"]["about"]["blocks"] if b["type"] == "imageText")
+    assert about["body"] == "Glow Studio offers pilates classes you can follow from anywhere."

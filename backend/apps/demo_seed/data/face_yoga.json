@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Certified face yoga instructor and holistic wellness coach with over 6 years of experience. After seeing dramatic results in my own skin, I dedicated my career to teaching natural facial rejuvenation techniques that anyone can do at home.",
+        "body": "Face yoga classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/face_yoga_5.png"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Sarah W.",
-            "text": "After just three weeks of the Basics course, my jawline is noticeably more defined. I cannot believe something so simple actually works!",
-            "avatar_url": ""
-          },
-          {
-            "name": "Mei C.",
-            "text": "The Anti-Aging Routines course is my daily ritual now. My forehead lines have softened and my skin looks so much more lifted and radiant.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Astrid N.",
-            "text": "Sculpt & Tone gave me cheekbones I did not know I had! The targeted exercises are so effective and only take ten minutes a day.",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and progress at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

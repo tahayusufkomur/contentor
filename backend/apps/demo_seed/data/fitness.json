@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Certified personal trainer and sports science graduate with over 8 years of coaching experience. I specialize in functional training, HIIT, and strength programming for all fitness levels. My mission is to make professional-grade training accessible to everyone — no gym required.",
+        "body": "Fitness classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/fitness_7.jpg"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Marcus T.",
-            "text": "The Total Body Transformation program completely changed my routine. I lost 12 kg in three months and feel stronger than ever. The structured approach kept me accountable every single day.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Sarah L.",
-            "text": "As a busy mom, I needed workouts I could do at home. The HIIT Power Program fits perfectly into my schedule — 30 minutes, maximum results. I have so much more energy now!",
-            "avatar_url": ""
-          },
-          {
-            "name": "David K.",
-            "text": "The Strength & Conditioning course gave me the foundation I was missing. My lifts have improved dramatically and I finally understand proper form and programming.",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and train at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Certified yoga instructor with over 12 years of teaching experience in Hatha, Vinyasa, and Ashtanga traditions. I believe yoga is a journey of self-discovery — meeting yourself on the mat with compassion, breath, and intention.",
+        "body": "Yoga classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/yoga_7.jpg"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Priya R.",
-            "text": "These classes changed my life. The beginner course gave me a solid foundation, and now I practice every morning before work. My flexibility and focus have improved so much.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Sarah L.",
-            "text": "The Vinyasa Flow course is beautifully structured. Each lesson builds on the last, and the cues are so clear that I always feel safe pushing my edge.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Marcus T.",
-            "text": "I was skeptical about learning yoga online, but the video quality and detailed alignment instructions made it feel like a private session. Highly recommend!",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enroll, you get lifetime access to the course material. Rewatch lessons as many times as you like and learn at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

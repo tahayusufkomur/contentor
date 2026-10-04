@@ -61,7 +61,7 @@
       "about": {
         "enabled": true,
         "heading": "About Me",
-        "body": "Certified Pilates instructor with over 12 years of experience in mat and reformer Pilates. I specialise in helping people of all fitness levels build a strong, balanced body through precise, controlled movement — no gym required, just a mat and commitment.",
+        "body": "Pilates classes and programs you can follow at your own pace, from anywhere.",
         "image_url": "demo/photos/pilates_5.jpg"
       },
       "courses": {
@@ -69,25 +69,9 @@
         "heading": "Featured Programs"
       },
       "testimonials": {
-        "enabled": true,
+        "enabled": false,
         "heading": "What Students Say",
-        "items": [
-          {
-            "name": "Clara D.",
-            "text": "After just four weeks my posture improved dramatically. The lessons are clear, well-paced, and I can feel every muscle engaging properly.",
-            "avatar_url": ""
-          },
-          {
-            "name": "Marco T.",
-            "text": "I was sceptical about online Pilates, but the detailed cues and camera angles make it feel like a private session. My back pain is finally gone!",
-            "avatar_url": ""
-          },
-          {
-            "name": "Hana Y.",
-            "text": "The Full Body Sculpt course pushed me in the best way. I feel stronger, more flexible, and genuinely look forward to every workout.",
-            "avatar_url": ""
-          }
-        ]
+        "items": []
       },
       "faq": {
         "enabled": true,
@@ -107,7 +91,7 @@
           },
           {
             "q": "How long do I have access to the courses?",
-            "a": "Once you enrol, you get lifetime access to the course material. Rewatch lessons as many times as you like and progress at your own pace."
+            "a": "Each course page lists what's included. Open a course to see the details."
           }
         ]
       },

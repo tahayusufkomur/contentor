@@ -32,7 +32,7 @@ def test_sets_hero_rebuilds_home_as_spotlight(mockup_tenant):
     call_command("set_wizard_mockup_look", hero="split")
     config = TenantConfig.objects.first()
     blocks = config.pages["home"]["blocks"]
-    assert [b["type"] for b in blocks] == ["hero", "courseGrid", "testimonials", "cta"]
+    assert [b["type"] for b in blocks] == ["hero", "courseGrid", "cta"]
     assert blocks[0]["layout"] == "split"
 
 

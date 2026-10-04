@@ -28,7 +28,6 @@ COPY = {
         "all_courses": "All Courses",
         "events_heading": "Upcoming Events",
         "store_heading": "Downloads & Resources",
-        "testimonials_heading": "What students say",
         "faq_heading": "Frequently asked questions",
         "cta_heading": "Ready to start learning?",
         "cta_button": "Join Now",
@@ -121,14 +120,25 @@ def _hero(answers, brand_name, sections) -> dict:
     }
 
 
-def _about_image_text(sections, copy, block_id="blk_about") -> dict:
+def _about_body(answers, brand_name) -> str:
+    """Only words the coach actually gave us. No description -> a neutral sentence
+    that claims nothing (no credentials, years or results)."""
+    description = (answers.get("description") or "").strip()
+    if description:
+        return description
+    niche = (answers.get("niche") or "").replace("_", " ")
+    topic = f"{niche} classes" if niche and niche != "general" else "classes"
+    return f"{brand_name or 'We'} offers {topic} you can follow from anywhere."
+
+
+def _about_image_text(answers, brand_name, sections, copy, block_id="blk_about") -> dict:
     about = sections.get("about") or {}
     return {
         "id": block_id,
         "type": "imageText",
         "enabled": True,
         "heading": about.get("heading") or copy["about_heading"],
-        "body": about.get("body") or "",
+        "body": _about_body(answers, brand_name),
         "image": _img(about.get("image_url"), about.get("image_photo_id")),
         "imagePosition": "right",
     }
@@ -136,25 +146,6 @@ def _about_image_text(sections, copy, block_id="blk_about") -> dict:
 
 def _course_grid(copy, heading_key, block_id="blk_courses") -> dict:
     return {"id": block_id, "type": "courseGrid", "enabled": True, "heading": copy[heading_key]}
-
-
-def _testimonials(sections, copy) -> dict:
-    items = [
-        {
-            "name": it.get("name", ""),
-            "text": it.get("text", ""),
-            "avatar": _img(it.get("avatar_url"), it.get("avatar_photo_id")),
-        }
-        for it in (sections.get("testimonials") or {}).get("items", [])
-        if isinstance(it, dict)
-    ]
-    return {
-        "id": "blk_testimonials",
-        "type": "testimonials",
-        "enabled": bool(items),
-        "heading": (sections.get("testimonials") or {}).get("heading") or copy["testimonials_heading"],
-        "items": items,
-    }
 
 
 def _faq(sections, copy, block_id="blk_faq") -> dict:
@@ -224,7 +215,7 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
     home_layout = layout("home")
     if home_layout == "home-story":
         home += [
-            _about_image_text(sections, copy),
+            _about_image_text(answers, brand_name, sections, copy),
             _course_grid(copy, "featured_courses"),
             *_goal_blocks(goals, copy),
             _faq(sections, copy),
@@ -232,10 +223,9 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
         ]
     elif home_layout == "home-complete":
         home += [
-            _about_image_text(sections, copy),
+            _about_image_text(answers, brand_name, sections, copy),
             _course_grid(copy, "featured_courses"),
             *_goal_blocks(goals, copy),
-            _testimonials(sections, copy),
             _faq(sections, copy),
             _cta(sections, copy),
         ]
@@ -243,32 +233,30 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
         home += [
             _course_grid(copy, "featured_courses"),
             *_goal_blocks(goals, copy),
-            _testimonials(sections, copy),
             _cta(sections, copy),
         ]
 
     about_layout = layout("about")
     if about_layout == "about-portrait":
         about = [
-            _about_image_text(sections, copy, "blk_about_bio"),
-            _testimonials(sections, copy),
+            _about_image_text(answers, brand_name, sections, copy, "blk_about_bio"),
             _cta(sections, copy),
         ]
     elif about_layout == "about-warm":
         about = [
-            _about_image_text(sections, copy, "blk_about_bio"),
+            _about_image_text(answers, brand_name, sections, copy, "blk_about_bio"),
             _faq(sections, copy, "blk_about_faq"),
             _cta(sections, copy),
         ]
     else:  # about-story
-        about = [_intro(copy, "blk_about_intro"), _about_image_text(sections, copy, "blk_about_bio")]
+        about = [_intro(copy, "blk_about_intro"), _about_image_text(answers, brand_name, sections, copy, "blk_about_bio")]
 
     courses = [_course_grid(copy, "all_courses", "blk_courses_grid")]
     courses_layout = layout("courses")
     if courses_layout == "courses-guided":
         courses = [_intro(copy), *courses, _cta(sections, copy)]
     elif courses_layout == "courses-social":
-        courses = [*courses, _testimonials(sections, copy), _cta(sections, copy)]
+        courses = [*courses, _cta(sections, copy)]
 
     pricing = [
         {
@@ -283,7 +271,7 @@ def _build_pages(answers, *, brand_name, sections, goals, copy) -> dict:
     if pricing_layout == "pricing-reassure":
         pricing += [_faq(sections, copy, "blk_pricing_faq"), _cta(sections, copy, "blk_pricing_cta")]
     elif pricing_layout == "pricing-trust":
-        pricing += [_testimonials(sections, copy), _cta(sections, copy, "blk_pricing_cta")]
+        pricing += [_cta(sections, copy, "blk_pricing_cta")]
 
     faq_page = [_faq(sections, copy)]
     faq_layout = layout("faq")

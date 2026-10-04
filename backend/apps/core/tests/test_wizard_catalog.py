@@ -155,6 +155,12 @@ def test_logo_answer_rejects_bad_ai_shapes(logo):
     assert wc.validate_answers({"logo": logo}) != []
 
 
+def test_paid_goals_are_marked_and_are_real_goals():
+    payload = wc.catalog_payload()
+    assert set(payload["paid_goals"]) == {"sell_courses", "sell_downloads", "run_live_classes"}
+    assert set(payload["paid_goals"]) <= set(payload["goals"])
+
+
 def test_new_goals_present():
     assert "write_blog" in wc.GOALS
     assert "send_announcements" in wc.GOALS
