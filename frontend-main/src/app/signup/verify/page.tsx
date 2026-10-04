@@ -109,7 +109,8 @@ export default function SignupVerifyPage() {
     [t],
   );
 
-  const resumeToken = token ?? wizardToken;
+  // The 7-day wizard token outlives the 15-minute signup token in the URL.
+  const resumeToken = wizardToken ?? token;
   const { run: handleResend, loading: resending } = useAsyncAction(
     async () => {
       if (!resumeToken) return;
@@ -199,6 +200,8 @@ export default function SignupVerifyPage() {
         } catch {
           // storage unavailable (private mode) — resume via email link only
         }
+        // The signup token has done its job; keep it out of the address bar.
+        window.history.replaceState(null, "", "/signup/verify");
         setState("wizard");
       })
       .catch(() => {
