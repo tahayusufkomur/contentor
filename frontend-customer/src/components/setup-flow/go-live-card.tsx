@@ -26,11 +26,30 @@ export function GoLiveCard({
 }) {
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
-  const [returning] = useState(
+  const [returning, setReturning] = useState(
     () =>
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("checkout") === "success",
   );
+  // The flag lives in state only: a reload must not wait on Stripe again.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("checkout")) return;
+    url.searchParams.delete("checkout");
+    window.history.replaceState(null, "", url.pathname + url.search);
+  }, []);
+  // Stripe's webhook is usually seconds; past a minute stop waiting and show
+  // the plan card again (with the free way out) instead of spinning forever.
+  useEffect(() => {
+    if (!returning) return;
+    const t = setTimeout(() => {
+      setReturning(false);
+      toast.message(
+        "Your payment is still being confirmed. If it went through, reload this page in a minute.",
+      );
+    }, 60_000);
+    return () => clearTimeout(t);
+  }, [returning]);
 
   const load = useCallback(async () => {
     try {
