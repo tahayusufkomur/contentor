@@ -800,19 +800,21 @@ def _style_and_brand(tenant) -> tuple[str, str]:
 
 
 def _coach_data(tenant, brand) -> dict:
-    answers = (tenant.wizard_state or {}).get("answers") or {}
+    from apps.tenant_config import interview_brief
+
+    answers = interview_brief.answers_of(tenant)
     niche = answers.get("niche") or getattr(tenant, "template_niche", "") or "general"
     followups = [
         {"q": str(item.get("q") or "").strip()[:200], "a": str(item.get("a") or "").strip()[:500]}
         for item in ((answers.get("description_followups") or {}).get("items") or [])
         if isinstance(item, dict) and str(item.get("a") or "").strip()
-    ]
+    ] + interview_brief.composer_facts(answers)
     return {
         "brand": brand,
         "niche": niche,
         "topic": topic(niche),
         "description": str(answers.get("description") or "").strip()[:500],
-        "followups": followups[:4],
+        "followups": followups[:12],
         "goals": [str(g) for g in (answers.get("goals") or []) if isinstance(g, str)][:8],
     }
 

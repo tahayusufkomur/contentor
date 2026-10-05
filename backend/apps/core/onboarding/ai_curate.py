@@ -33,12 +33,14 @@ class CoachBrief:
 
     @classmethod
     def from_tenant(cls, tenant, locale: str = "en") -> CoachBrief:
-        answers = (tenant.wizard_state or {}).get("answers") or {}
+        from apps.tenant_config import interview_brief
+
+        answers = interview_brief.answers_of(tenant)
         followups = tuple(
             (str(item.get("q") or "").strip(), str(item.get("a") or "").strip())
             for item in ((answers.get("description_followups") or {}).get("items") or [])
             if str(item.get("q") or "").strip() and str(item.get("a") or "").strip()
-        )
+        ) + tuple((f["q"], f["a"]) for f in interview_brief.composer_facts(answers))
         return cls(
             niche=answers.get("niche") or "general",
             description=str(answers.get("description") or ""),
