@@ -485,7 +485,7 @@ def _delete_draft(kind: str, ref) -> None:
         (Course if kind == "course" else BlogPost).objects.filter(pk=ref).delete()
 
 
-def create_draft(tenant, user, kind: str, prompt: str) -> dict:
+def create_draft(tenant, user, kind: str, prompt: str, *, label: str = "contentor:setup-draft") -> dict:
     """ONE structured AI call → a real draft via the copilot executors. A
     re-draft replaces (deletes) the flow's previous draft of that kind.
     Raises ai.AiError (provider down / unavailable) or ContentOpError."""
@@ -504,7 +504,7 @@ def create_draft(tenant, user, kind: str, prompt: str) -> dict:
             output_model=DRAFT_MODELS[kind],
             model=settings.COPILOT_MODEL,
             max_tokens=3000,
-            label="contentor:setup-draft",
+            label=label,
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

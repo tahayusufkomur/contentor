@@ -5,7 +5,7 @@ import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { MicButton } from "@/components/copilot/mic-button";
-import { joinSpeech } from "@/lib/interview";
+import { joinSpeech, pastEntries } from "@/lib/interview";
 import {
   DELEGATE,
   type GuideTurn,
@@ -46,6 +46,15 @@ export function InterviewChat({
   const [hearing, setHearing] = useState("");
   const spoken = useRef(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  // A turn can wait behind site building on the shared AI hub; say so
+  // honestly instead of leaving a bare spinner.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    setSlow(false);
+    if (!sending) return;
+    const t = setTimeout(() => setSlow(true), 12000);
+    return () => clearTimeout(t);
+  }, [sending]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -54,12 +63,9 @@ export function InterviewChat({
     });
   }, [entries.length, sending, guide]);
 
-  // The latest guide turn is drawn live below (with its chips); the
-  // transcript holds everything before it.
-  const past =
-    entries.at(-1)?.role === "guide" && !sending
-      ? entries.slice(0, -1)
-      : entries;
+  // The latest guide question is drawn live below (with its chips); the
+  // transcript holds everything else.
+  const past = pastEntries(entries, sending);
 
   const submit = () => {
     const text = joinSpeech(draft, hearing).trim();
@@ -115,7 +121,9 @@ export function InterviewChat({
           {sending ? (
             <p className="flex items-center gap-2 text-[var(--sf-graphite)]">
               <Spinner size="sm" className="text-[var(--sf-brass)]" />
-              Thinking…
+              {slow
+                ? "Still thinking. Your site is being built at the same time, so this can take a little longer."
+                : "Thinking…"}
             </p>
           ) : (
             <div className="motion-safe:animate-fade-in-up">

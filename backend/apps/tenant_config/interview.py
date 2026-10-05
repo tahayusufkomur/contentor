@@ -38,7 +38,8 @@ Do these things:
    For "offers" give the matching ids from: course, live, onsite, articles, community, memberships.
 2. edit_request: if the message asks you to change or create something on their site (a
    headline, a photo, colours, wording, a page section, a course, an event, a post, the logo,
-   the style), restate that request in one clear sentence. Otherwise null.
+   the style), restate that request in one clear sentence. Otherwise null. A message that
+   simply answers your question (including picking an option) is never an edit_request.
    If the coach asks you a question (how payouts work, what a plan includes, what to write),
    answer it briefly and honestly in ack before moving on. Never promise features you were
    not told exist.
@@ -189,7 +190,8 @@ def run_turn(tenant, message: str, *, spoken: bool = False, choice: dict | None 
         guide = guide_for(nxt, turn.ack, turn.question, turn.options)
     else:
         guide = guide_for(nxt, turn.ack if turn else "")
-    edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request else None
+    # A tapped chip/card is applied by code; it is never also a site edit.
+    edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice else None
     fired = milestones.fire(tenant, answers)
 
     def mutate(_config, flow):

@@ -4,6 +4,7 @@ import {
   joinSpeech,
   landedPage,
   noteEntry,
+  pastEntries,
   toEntry,
 } from "@/lib/interview";
 
@@ -70,5 +71,32 @@ describe("formatPrice", () => {
   it("formats cents in the plan currency", () => {
     expect(formatPrice(1990, "usd")).toBe("$19.90");
     expect(formatPrice(null, "eur")).toBe("");
+  });
+});
+
+describe("pastEntries", () => {
+  const q = (question: string) => ({
+    role: "guide" as const,
+    ack: "",
+    question,
+    options: [],
+    field: "x",
+    can_delegate: true,
+  });
+  it("hides the live question even when a note follows it", () => {
+    const entries = [
+      q("old"),
+      { role: "coach" as const, text: "a" },
+      q("live"),
+      noteEntry("Done"),
+    ];
+    expect(
+      pastEntries(entries, false).map((e) =>
+        e.role === "guide" ? e.question || e.ack : e.text,
+      ),
+    ).toEqual(["old", "a", "Done"]);
+  });
+  it("keeps everything while a turn is in flight", () => {
+    expect(pastEntries([q("live")], true)).toHaveLength(1);
   });
 });

@@ -197,3 +197,18 @@ def test_page_finishing_after_style_switch_lands_in_new_style(tenant_ctx, config
     with mock.patch("apps.tenant_config.sections.restyle_pages", wraps=sections.restyle_pages) as restyle:
         site_composer._save_page(tenant_ctx, "home", blocks, built_style="journal")
     restyle.assert_called_with(mock.ANY, "grid")
+
+
+def test_interview_background_ai_runs_behind_the_coach(tenant_ctx, config, owner):
+    """Drafts started by the interview must not take an interactive hub slot
+    from the coach's next question."""
+    from apps.core.models import Tenant
+
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": {}})
+    tenant_ctx.refresh_from_db()
+    with (
+        mock.patch("apps.tenant_config.setup_flow.create_draft") as create,
+        mock.patch("apps.tenant_config.setup_flow.start_page_build"),
+    ):
+        ms.run_draft(tenant_ctx, "course", "prompt")
+    assert create.call_args.kwargs["label"].startswith("contentor:compose")

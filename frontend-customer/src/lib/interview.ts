@@ -46,3 +46,17 @@ export function formatPrice(cents: number | null, currency: string): string {
     currency: currency.toUpperCase(),
   }).format(cents / 100);
 }
+
+/** The transcript above the live question: everything except the latest
+ * guide question (drawn live with its chips). Notes after it stay visible. */
+export function pastEntries(
+  entries: InterviewEntry[],
+  sending: boolean,
+): InterviewEntry[] {
+  if (sending) return entries;
+  let live = -1;
+  entries.forEach((e, i) => {
+    if (e.role === "guide" && e.question) live = i;
+  });
+  return entries.filter((_, i) => i !== live);
+}

@@ -160,7 +160,9 @@ def run_draft(tenant, kind: str, prompt: str) -> None:
     owner = User.objects.filter(role="owner").order_by("id").first()
     status = "ready"
     try:
-        setup_flow.create_draft(tenant, owner, kind, prompt)
+        # Background priority: the coach's next interview question must not
+        # queue behind a draft on the shared hub.
+        setup_flow.create_draft(tenant, owner, kind, prompt, label="contentor:compose-draft")
     except (core_ai.AiError, ContentOpError):
         logger.warning("interview draft fell back schema=%s kind=%s", tenant.schema_name, kind, exc_info=True)
         try:

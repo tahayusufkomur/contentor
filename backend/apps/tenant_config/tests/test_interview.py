@@ -204,3 +204,17 @@ def test_model_may_fill_fields_not_yet_required(client, quiet):
     client.post(URL, {"message": "Yoga, my course is 49"}, format="json")
     sent = quiet.calls[0]["user"]
     assert '"course_price"' in sent and '"live_when"' in sent
+
+
+def test_a_tapped_choice_never_becomes_a_site_edit(client, quiet):
+    """The pick is applied by code; the model must not also 'edit' it."""
+    quiet.reply = interview.InterviewTurn(edit_request="Use the Quiet Journal style", next_field="story", question="q")
+    with (
+        mock.patch("apps.tenant_config.interview_milestones.choose"),
+        mock.patch("apps.core.copilot.engine.run_turn") as run,
+    ):
+        body = client.post(
+            URL, {"message": "Quiet Journal", "choice": {"field": "site_style", "value": "journal"}}, format="json"
+        ).json()
+    run.assert_not_called()
+    assert body["edit"] is None

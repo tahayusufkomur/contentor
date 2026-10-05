@@ -134,3 +134,18 @@ def test_rank_logos_empty_catalog_no_call(monkeypatch):
 
     monkeypatch.setattr(ai_curate.core_ai, "structured", boom)
     assert ai_curate.rank_logos(ai_curate.CoachBrief(), tenant_schema="glow") == []
+
+
+def test_logo_rank_runs_at_background_priority():
+    from unittest import mock
+
+    rows = [SimpleNamespace(pk=1, title="Lotus", tags="yoga", position=1)]
+    with (
+        mock.patch("apps.core.models.CuratedLogo.objects") as objects,
+        mock.patch("apps.core.onboarding.ai_curate.shortlist", return_value=rows),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch("apps.core.ai.structured", return_value=(ai_curate._LogoRank(logo_ids=[1]), 0, "m")) as call,
+    ):
+        objects.filter.return_value.order_by.return_value = rows
+        ai_curate.rank_logos(ai_curate.CoachBrief(niche="yoga"), tenant_schema="x")
+    assert call.call_args.kwargs["label"].startswith("contentor:compose")
