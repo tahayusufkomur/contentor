@@ -121,3 +121,22 @@ export async function requestHandoff(
   if (!res.ok) throw new Error("handoff_failed");
   return res.json();
 }
+
+/** Re-send the "continue your setup" email for an expired link. */
+export async function recoverSignup(token: string): Promise<void> {
+  const res = await fetch("/api/v1/onboarding/wizard/recover/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ token }),
+  });
+  if (!res.ok) {
+    let body: unknown = { detail: "Request failed" };
+    try {
+      body = await res.json();
+    } catch {
+      // swallow parse failure
+    }
+    throw new ApiError(res.status, body as Record<string, unknown>);
+  }
+}

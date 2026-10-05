@@ -211,9 +211,21 @@ def creator_signup_verify(request):
         region,
         email,
     )
-    # Provisioning is enqueued from the onboarding template endpoint (or the
-    # skip endpoint) so we can seed niche content as part of the same task —
-    # this collapses provisioning + seeding into one progress screen.
+    # One onboarding: the site is created now and the coach continues in
+    # /setup on their own subdomain, where the interview fills the brief.
+    from django.db import transaction
+
+    from apps.core.onboarding.wizard_catalog import recommended_answers
+    from apps.core.tasks import provision_tenant
+
+    answers = {**recommended_answers("general"), "goals": []}
+    Tenant.objects.filter(pk=tenant.pk).update(
+        wizard_state={"version": 2, "flow": "interview", "answers": answers},
+        template_niche="general",
+        template_seed_status="seeding",
+    )
+    tenant_id, owner_name = tenant.id, payload.get("name", "")
+    transaction.on_commit(lambda: provision_tenant.delay(tenant_id, email, owner_name, "general"))
 
     return Response(
         {

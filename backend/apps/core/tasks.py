@@ -425,7 +425,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         tenant.provisioning_status = "ready"
         tenant.save(update_fields=["provisioning_status"])
         logger.info("Tenant %s provisioned successfully", tenant.slug)
-        if styled:
+        if styled and _should_compose_site(tenant):
             _enqueue_compose_site(tenant)
 
     except Exception as exc:
@@ -433,6 +433,12 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Tenant provisioning failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
+
+
+def _should_compose_site(tenant) -> bool:
+    """Interview tenants build page by page as the coach answers (setup
+    interview milestones); everyone else composes the whole site now."""
+    return (tenant.wizard_state or {}).get("flow") != "interview"
 
 
 def _enqueue_compose_site(tenant):

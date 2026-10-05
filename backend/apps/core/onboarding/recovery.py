@@ -255,7 +255,8 @@ def wizard_recover(request):
         return Response({"detail": msg(request, "tenant_not_found")}, status=404)
     if tenant.owner_email != payload.get("email"):
         return Response({"detail": "Token does not match tenant owner."}, status=403)
-    if tenant.provisioning_status != "pending" or tenant.template_seed_status != "pending":
+    in_interview = (tenant.wizard_state or {}).get("flow") == "interview" and not tenant.is_published
+    if not in_interview and (tenant.provisioning_status != "pending" or tenant.template_seed_status != "pending"):
         return Response({"detail": "wizard_closed"}, status=409)
 
     if tenant.recovery_email_sent_at and timezone.now() - tenant.recovery_email_sent_at < RESEND_COOLDOWN:

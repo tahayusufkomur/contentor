@@ -1,36 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, AlertCircle, Rocket, MailPlus } from "lucide-react";
+import { AlertCircle, CheckCircle2, MailPlus, Rocket } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
-
-import { WizardFlow } from "./wizard/WizardFlow";
-import { requestHandoff } from "@/lib/api/onboarding";
-import { recoverWizard } from "@/lib/wizard/api";
+import { recoverSignup, requestHandoff } from "@/lib/api/onboarding";
 import { ApiError } from "@/types/api";
 
-type VerifyState =
-  | "verifying"
-  | "wizard"
-  | "provisioning"
-  | "ready"
-  | "expired"
-  | "error";
-
+type VerifyState = "verifying" | "preparing" | "expired" | "error";
 type ResumeState = "idle" | "sent" | "closed" | "failed";
-
-const KNOWN_STAGES = [
-  "schema",
-  "config",
-  "seed",
-  "ai_copy",
-  "finalizing",
-] as const;
+const TOKEN_KEY = "contentor_wizard_token";
 
 function StateIcon({
   variant,
@@ -53,317 +36,200 @@ function StateIcon({
   );
 }
 
+/** Verify the email, create the site, then hand the coach straight to their
+ * own /setup — the whole onboarding happens there. */
 export default function SignupVerifyPage() {
   const t = useTranslations("auth.signup");
-  const tw = useTranslations("wizard");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [state, setState] = useState<VerifyState>("verifying");
   const [error, setError] = useState("");
-  const [slug, setSlug] = useState("");
   const [domain, setDomain] = useState("");
-  const [stage, setStage] = useState<string | null>(null);
-  const [wizardToken, setWizardToken] = useState<string | null>(null);
-  const [loginUrl, setLoginUrl] = useState<string | null>(null);
   const [resumeState, setResumeState] = useState<ResumeState>("idle");
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const verifiedRef = useRef(false);
+  const resumeToken = useRef<string | null>(null);
+  const started = useRef(false);
 
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, []);
-
-  const startPolling = useCallback(
-    (tenantSlug: string) => {
-      pollRef.current = setInterval(async () => {
-        try {
-          const statusRes = await fetch(
-            `/api/v1/onboarding/status/?slug=${tenantSlug}`,
-            {
-              credentials: "same-origin",
-            },
-          );
-          if (statusRes.ok) {
-            const statusData = await statusRes.json();
-            setStage(
-              typeof statusData.stage === "string" ? statusData.stage : null,
-            );
-            if (statusData.status === "ready") {
-              if (pollRef.current) clearInterval(pollRef.current);
-              setDomain(statusData.domain);
-              setState("ready");
-            } else if (statusData.status === "failed") {
-              if (pollRef.current) clearInterval(pollRef.current);
-              setError(t("verify.errors.setupFailed"));
-              setState("error");
-            }
-          }
-        } catch {
-          // Keep polling
-        }
-      }, 2000);
+  const handoff = useCallback(
+    async (wizardToken: string) => {
+      try {
+        const { login_url } = await requestHandoff(wizardToken);
+        window.location.assign(login_url);
+      } catch {
+        setError(t("verify.errors.setupFailed"));
+        setState("error");
+      }
     },
     [t],
   );
 
-  // The 7-day wizard token outlives the 15-minute signup token in the URL.
-  const resumeToken = wizardToken ?? token;
-  const { run: handleResend, loading: resending } = useAsyncAction(
-    async () => {
-      if (!resumeToken) return;
-      await recoverWizard(resumeToken);
-      try {
-        localStorage.removeItem("contentor_wizard_token");
-      } catch {
-        // storage unavailable — nothing to clear
-      }
-      setResumeState("sent");
-    },
-    {
-      onError: (err) => {
-        if (err instanceof ApiError && err.status === 409) {
-          setResumeState("closed");
-          return;
+  const waitForSite = useCallback(
+    (slug: string, wizardToken: string) => {
+      const poll = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/v1/onboarding/status/?slug=${slug}`, {
+            credentials: "same-origin",
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.status === "ready") {
+            clearInterval(poll);
+            void handoff(wizardToken);
+          } else if (data.status === "failed") {
+            clearInterval(poll);
+            setError(t("verify.errors.setupFailed"));
+            setState("error");
+          }
+        } catch {
+          // keep polling
         }
-        setResumeState("failed");
-      },
+      }, 1500);
     },
+    [handoff, t],
   );
 
   useEffect(() => {
-    if (verifiedRef.current) return;
-    verifiedRef.current = true;
-
-    if (!token) {
-      const stored =
-        typeof window !== "undefined"
-          ? localStorage.getItem("contentor_wizard_token")
-          : null;
-      if (stored) {
-        setWizardToken(stored);
-        setState("wizard");
-        return;
-      }
+    if (started.current) return;
+    started.current = true;
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(TOKEN_KEY);
+    } catch {
+      // storage unavailable
+    }
+    const proof = token ?? stored;
+    if (!proof) {
       setError(t("verify.errors.noToken"));
       setState("error");
       return;
     }
-
+    resumeToken.current = proof;
     fetch("/api/v1/onboarding/signup/verify/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
+      body: JSON.stringify({ token: proof }),
       credentials: "same-origin",
     })
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) {
-          // An expired (15-min) email link isn't necessarily a dead wizard —
-          // try the token this browser stashed on first verify before giving up.
-          const stored =
-            typeof window !== "undefined"
-              ? localStorage.getItem("contentor_wizard_token")
-              : null;
-          if (stored) {
-            setWizardToken(stored);
-            setState("wizard");
-            return;
-          }
           setState("expired");
           return;
         }
-
-        setSlug(data.slug);
-        setDomain(data.domain);
-
-        // If the tenant is somehow already provisioned (idempotent re-verify
-        // after the user previously completed the wizard), skip ahead.
-        if (data.status === "ready") {
-          setState("ready");
-          return;
-        }
-        // status === 'provisioning' means the wizard was already finalized
-        // in a previous session; resume polling.
-        if (data.status === "provisioning") {
-          setState("provisioning");
-          startPolling(data.slug);
-          return;
-        }
-
-        const wt = (data.wizard_token as string | undefined) ?? token;
-        setWizardToken(wt);
+        const wizardToken = (data.wizard_token as string | undefined) ?? proof;
+        resumeToken.current = wizardToken;
         try {
-          localStorage.setItem("contentor_wizard_token", wt);
+          localStorage.setItem(TOKEN_KEY, wizardToken);
         } catch {
-          // storage unavailable (private mode) — resume via email link only
+          // resume via email link only
         }
-        // The signup token has done its job; keep it out of the address bar.
         window.history.replaceState(null, "", "/signup/verify");
-        setState("wizard");
+        setDomain(data.domain);
+        setState("preparing");
+        if (data.status === "ready") void handoff(wizardToken);
+        else waitForSite(data.slug, wizardToken);
       })
       .catch(() => {
         setError(t("verify.errors.network"));
         setState("error");
       });
-  }, [token, t, startPolling]);
+  }, [token, t, handoff, waitForSite]);
 
-  // One-click login: when the studio is ready, swap the CTA for an
-  // authenticated URL. Uses resumeToken, not just the URL token — after the
-  // wizard's checkout round-trip or a localStorage resume there IS no URL
-  // token, and the CTA silently degraded to a logged-out domain link. Falls
-  // back to the plain domain link on any failure (e.g. every token expired)
-  // — the lock screen's owner-login path remains the safety net.
-  useEffect(() => {
-    if (state !== "ready" || !resumeToken || loginUrl) return;
-    requestHandoff(resumeToken)
-      .then((d) => setLoginUrl(d.login_url))
-      .catch(() => {});
-  }, [state, resumeToken, loginUrl]);
+  const { run: resend, loading: resending } = useAsyncAction(
+    async () => {
+      if (!resumeToken.current) return;
+      await recoverSignup(resumeToken.current);
+      setResumeState("sent");
+    },
+    {
+      onError: (err) =>
+        setResumeState(
+          err instanceof ApiError && err.status === 409 ? "closed" : "failed",
+        ),
+    },
+  );
 
-  if (state === "verifying") {
+  if (state === "verifying" || state === "preparing") {
     return (
       <AuthShell
-        eyebrow={t("verify.verifyingEyebrow")}
-        title={t("verify.verifyingTitle")}
-        subtitle={t("verify.verifyingSubtitle")}
+        eyebrow={t(
+          state === "verifying"
+            ? "verify.verifyingEyebrow"
+            : "verify.provisioningEyebrow",
+        )}
+        title={t(
+          state === "verifying"
+            ? "verify.verifyingTitle"
+            : "verify.provisioningTitle",
+        )}
+        subtitle={t(
+          state === "verifying"
+            ? "verify.verifyingSubtitle"
+            : "verify.provisioningSubtitle",
+        )}
       >
         <StateIcon variant="primary">
-          <Spinner />
-        </StateIcon>
-        <div className="mt-7 flex items-center justify-center">
-          <div className="h-1 w-40 overflow-hidden rounded-full bg-foreground/[0.08]">
-            <div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] to-[oklch(0.55_0.24_270)]" />
-          </div>
-        </div>
-      </AuthShell>
-    );
-  }
-
-  if (state === "wizard" && wizardToken) {
-    return (
-      <WizardFlow
-        token={wizardToken}
-        onTokenExpired={() => setState("expired")}
-        onProvisioning={(flowSlug) => {
-          const target = flowSlug || slug;
-          if (flowSlug) setSlug(flowSlug);
-          setState("provisioning");
-          startPolling(target);
-        }}
-      />
-    );
-  }
-
-  if (state === "provisioning") {
-    return (
-      <AuthShell
-        eyebrow={t("verify.provisioningEyebrow")}
-        title={t("verify.provisioningTitle")}
-        subtitle={t("verify.provisioningSubtitle")}
-      >
-        <StateIcon variant="primary">
-          <Rocket className="h-6 w-6" />
+          {state === "verifying" ? <Spinner /> : <Rocket className="h-6 w-6" />}
         </StateIcon>
         <div className="mt-7 flex items-center justify-center gap-2 text-[14px] text-muted-foreground">
           <Spinner size="sm" />
           <span>
-            {stage && (KNOWN_STAGES as readonly string[]).includes(stage)
-              ? tw(`provisioning.${stage}`)
-              : t("verify.creating")}{" "}
-            <strong className="text-foreground">{domain || slug}</strong>
+            {t("verify.creating")}{" "}
+            <strong className="text-foreground">{domain}</strong>
           </span>
         </div>
       </AuthShell>
     );
   }
 
-  if (state === "ready") {
-    return (
-      <AuthShell
-        eyebrow={t("verify.readyEyebrow")}
-        title={t("verify.readyTitle")}
-        subtitle={t("verify.readySubtitle")}
-      >
-        <StateIcon variant="success">
-          <CheckCircle2 className="h-6 w-6" />
-        </StateIcon>
-        <Button asChild variant="brand" size="lg" className="mt-7 w-full">
-          <a href={loginUrl ?? `http://${domain}`}>
-            {t("verify.openCta", { domain })}
-          </a>
-        </Button>
-      </AuthShell>
-    );
-  }
-
   if (state === "expired") {
-    if (resumeState === "sent") {
+    const r = (key: string) => t(`verify.resume.${key}`);
+    if (resumeState === "sent" || resumeState === "closed") {
       return (
         <AuthShell
-          eyebrow={tw("resume.eyebrow")}
-          title={tw("resume.sentTitle")}
-          subtitle={tw("resume.sentSubtitle")}
+          eyebrow={r("eyebrow")}
+          title={r(resumeState === "sent" ? "sentTitle" : "closedTitle")}
+          subtitle={r(
+            resumeState === "sent" ? "sentSubtitle" : "closedSubtitle",
+          )}
         >
           <StateIcon variant="success">
             <CheckCircle2 className="h-6 w-6" />
           </StateIcon>
-        </AuthShell>
-      );
-    }
-    if (resumeState === "closed") {
-      return (
-        <AuthShell
-          eyebrow={tw("resume.eyebrow")}
-          title={tw("resume.closedTitle")}
-          subtitle={tw("resume.closedSubtitle")}
-        >
-          <StateIcon variant="success">
-            <CheckCircle2 className="h-6 w-6" />
-          </StateIcon>
-          <Button asChild variant="brand" size="lg" className="mt-7 w-full">
-            <a href="/login">{tw("resume.closedCta")}</a>
-          </Button>
-        </AuthShell>
-      );
-    }
-    if (resumeState === "failed") {
-      return (
-        <AuthShell
-          eyebrow={tw("resume.eyebrow")}
-          title={tw("resume.title")}
-          subtitle={tw("resume.failed")}
-        >
-          <StateIcon variant="destructive">
-            <AlertCircle className="h-6 w-6" />
-          </StateIcon>
-          <Button asChild variant="outline" size="lg" className="mt-7 w-full">
-            <a href="/signup">{tw("resume.startOver")}</a>
-          </Button>
         </AuthShell>
       );
     }
     return (
       <AuthShell
-        eyebrow={tw("resume.eyebrow")}
-        title={tw("resume.title")}
-        subtitle={tw("resume.subtitle")}
+        eyebrow={r("eyebrow")}
+        title={r("title")}
+        subtitle={resumeState === "failed" ? r("failed") : r("subtitle")}
       >
-        <StateIcon variant="primary">
-          <MailPlus className="h-6 w-6" />
-        </StateIcon>
-        <Button
-          type="button"
-          variant="brand"
-          size="lg"
-          className="mt-7 w-full"
-          onClick={() => void handleResend()}
-          loading={resending}
-          loadingText={tw("resume.sending")}
+        <StateIcon
+          variant={resumeState === "failed" ? "destructive" : "primary"}
         >
-          {tw("resume.resend")}
-        </Button>
+          {resumeState === "failed" ? (
+            <AlertCircle className="h-6 w-6" />
+          ) : (
+            <MailPlus className="h-6 w-6" />
+          )}
+        </StateIcon>
+        {resumeState === "failed" ? (
+          <Button asChild variant="outline" size="lg" className="mt-7 w-full">
+            <a href="/signup">{r("startOver")}</a>
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="brand"
+            size="lg"
+            className="mt-7 w-full"
+            onClick={() => void resend()}
+            loading={resending}
+            loadingText={r("sending")}
+          >
+            {r("resend")}
+          </Button>
+        )}
       </AuthShell>
     );
   }
