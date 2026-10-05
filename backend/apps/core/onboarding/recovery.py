@@ -1,7 +1,8 @@
-"""Drop-off recovery for the pre-provision onboarding wizard.
+"""Drop-off recovery for onboarding.
 
-A coach who verified email but abandoned the wizard gets ONE automated
-nudge (hourly beat task, Task 3) with a freshly-minted 7-day wizard token —
+A coach who verified email but stalled (the old wizard, or the /setup
+interview) gets ONE automated nudge (hourly beat task) with a freshly-minted
+7-day wizard token —
 their answers are already server-side, so the link resumes exactly where
 they left off. The same email can be re-requested from the expired-token
 resume screen via the wizard_recover view (Task 5).
@@ -15,6 +16,7 @@ import logging
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
@@ -36,7 +38,7 @@ _COPY = {
         "subject": "Pick up where you left off — {brand}",
         "heading": "Your site is waiting",
         "intro": (
-            "You started setting up {brand} — every choice you made is saved. "
+            "You started setting up {brand} — every answer you gave is saved. "
             "Click below to continue right where you left off."
         ),
         "button": "Continue my setup",
@@ -62,10 +64,13 @@ _ABANDON_COPY = {
 
 
 def _last_activity(tenant):
-    """Most recent wizard step save, falling back to signup time."""
-    stamps = (tenant.wizard_state or {}).get("step_timestamps") or {}
+    """Most recent wizard step save or interview turn, falling back to signup time."""
+    state = tenant.wizard_state or {}
+    stamps = list((state.get("step_timestamps") or {}).values())
+    if state.get("interview_last_at"):
+        stamps.append(state["interview_last_at"])
     latest = tenant.created_at
-    for value in stamps.values():
+    for value in stamps:
         try:
             parsed = datetime.fromisoformat(value)
         except (TypeError, ValueError):
@@ -89,8 +94,8 @@ def recovery_candidates(now=None):
 
     prefiltered = (
         Tenant.objects.filter(
-            provisioning_status="pending",
-            template_seed_status="pending",
+            Q(provisioning_status="pending", template_seed_status="pending")
+            | Q(provisioning_status="ready", wizard_state__flow="interview", is_published=False),
             recovery_email_sent_at__isnull=True,
             created_at__gte=oldest,
             created_at__lt=idle_cutoff,
@@ -120,8 +125,9 @@ def find_abandoned_tenants(now=None):
     grace_cutoff = now - timedelta(days=settings.WIZARD_ABANDON_DELETE_GRACE_DAYS)
 
     reclaimable = Tenant.objects.exclude(schema_name="public").filter(
+        Q(provisioning_status__in=("pending", "provisioned", "failed"))
+        | Q(provisioning_status="ready", wizard_state__flow="interview"),
         is_published=False,
-        provisioning_status__in=("pending", "provisioned", "failed"),
     )
 
     to_warn = [t for t in reclaimable.filter(abandon_warned_at__isnull=True) if _last_activity(t) < warn_cutoff]
