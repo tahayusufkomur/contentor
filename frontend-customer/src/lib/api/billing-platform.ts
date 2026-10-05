@@ -44,12 +44,16 @@ export interface StartCheckoutResponse {
 
 export async function startCheckout(
   planId: number,
+  returnPath?: string,
 ): Promise<StartCheckoutResponse> {
   return clientFetch<StartCheckoutResponse>(
     "/api/v1/billing/platform/checkout/",
     {
       method: "POST",
-      body: JSON.stringify({ plan_id: planId }),
+      body: JSON.stringify({
+        plan_id: planId,
+        ...(returnPath ? { return_path: returnPath } : {}),
+      }),
     },
   );
 }

@@ -37,6 +37,7 @@ export interface SetupFlowState {
   publish_blockers: string[];
   is_published: boolean;
   suggestions: Partial<Record<ContentKind, string[]>>;
+  interview: InterviewState;
 }
 
 export type SetupAction =
@@ -64,6 +65,10 @@ export interface SetupFlowApi {
   act: (body: SetupAction) => Promise<SetupFlowState>;
   buildPage: (page: string, force?: boolean) => Promise<unknown>;
   draft: (kind: ContentKind, prompt: string) => Promise<DraftResult>;
+  turn: (body: TurnRequest) => Promise<TurnResponse>;
+  logos: (page: number) => Promise<LookCards>;
+  golive: () => Promise<GoLiveState>;
+  goliveAction: (action: "publish" | "make_free") => Promise<GoLiveState>;
 }
 
 const BASE = "/api/v1/admin/setup-flow";
@@ -79,6 +84,11 @@ export const setupFlowApi: SetupFlowApi = {
     clientFetch(`${BASE}/build-page/`, post({ page, force })),
   draft: (kind, prompt) =>
     clientFetch<DraftResult>(`${BASE}/draft/`, post({ kind, prompt })),
+  turn: (body) => clientFetch<TurnResponse>(`${BASE}/turn/`, post(body)),
+  logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
+  golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
+  goliveAction: (action) =>
+    clientFetch<GoLiveState>(`${BASE}/golive/`, post({ action })),
 };
 
 export const fetchConnectStatus = (refresh: boolean) =>
@@ -89,7 +99,7 @@ export const fetchConnectStatus = (refresh: boolean) =>
 export const startConnectOnboarding = () =>
   clientFetch<{ onboarding_url: string }>(
     "/api/v1/billing/connect/onboard/",
-    post({ return_path: "/setup?step=payouts" }),
+    post({ return_path: "/setup?connect=return" }),
   );
 
 /** Which step fixes each publish blocker, and how to say it. */
@@ -101,14 +111,91 @@ export const BLOCKERS: Record<string, { label: string; step: string }> = {
   look: { label: "Finish your home page", step: "page:home" },
 };
 
-export const STEP_GROUPS: { label: string; kinds: StepKind[] }[] = [
-  { label: "Your content", kinds: ["content"] },
-  { label: "Your pages", kinds: ["page"] },
-  { label: "Go live", kinds: ["payouts", "launch"] },
-];
-
 /** iframe src for a public path, flagged so the site renders without the
  * owner chrome and without the /setup redirect. */
 export function embedSrc(path: string): string {
   return `${path}${path.includes("?") ? "&" : "?"}embed=1`;
+}
+
+export const DELEGATE = "__delegate__";
+
+export interface LookOption {
+  value: string;
+  label: string;
+  detail?: string;
+  image_url?: string;
+}
+
+export interface LookCards {
+  kind: "style" | "logo";
+  options: LookOption[];
+  page?: number;
+  more?: boolean;
+}
+
+export interface GuideTurn {
+  ack: string;
+  question: string;
+  options: string[];
+  field: string | null;
+  can_delegate: boolean;
+  cards?: LookCards | null;
+}
+
+export interface CopilotCard {
+  kind: string;
+  title: string;
+  token: string;
+}
+
+export interface CopilotPayload {
+  kind: "answer" | "ask" | "actions" | "unavailable";
+  text?: string;
+  actions?: CopilotCard[];
+}
+
+export type InterviewEntry =
+  | { role: "coach"; text: string }
+  | ({
+      role: "guide";
+      edit?: CopilotPayload;
+      /** Applied copilot change that can still be undone. */
+      audit_id?: number;
+    } & Omit<GuideTurn, "cards">);
+
+export interface InterviewState {
+  turns: InterviewEntry[];
+  guide: GuideTurn;
+  remaining: number;
+  phase: "interview" | "building" | "golive";
+  fired: string[];
+  draft_status: Partial<Record<ContentKind, "building" | "ready" | "failed">>;
+}
+
+export interface TurnRequest {
+  message: string;
+  spoken?: boolean;
+  choice?: { field: string; value: string };
+}
+
+export interface TurnResponse {
+  coach_text: string;
+  guide: GuideTurn;
+  edit: CopilotPayload | null;
+  fired: string[];
+  state: SetupFlowState;
+}
+
+export interface GoLiveState {
+  ready: boolean;
+  building: boolean;
+  needs_plan: boolean;
+  needs_payouts: boolean;
+  plan: {
+    id: number;
+    name: string;
+    amount_cents: number | null;
+    currency: string;
+  } | null;
+  blockers: string[];
 }
