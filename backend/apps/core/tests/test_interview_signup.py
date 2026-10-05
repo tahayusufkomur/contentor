@@ -58,3 +58,24 @@ def test_suite_never_enqueues_real_provisioning():
     from apps.core import tasks
 
     assert isinstance(tasks.provision_tenant.delay, mock.Mock)
+
+
+def test_reverify_restarts_provisioning_that_never_ran():
+    """Review finding 6: an old-wizard tenant still 'pending' at deploy, or a
+    lost enqueue, must not leave the verify page polling forever."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    _verify("Iv Again Test")
+    tenant = Tenant.objects.get(slug="iv-again-test")
+    Tenant.objects.filter(pk=tenant.pk).update(
+        created_at=timezone.now() - timedelta(minutes=10),
+        wizard_state={"answers": {"niche": "yoga", "description": "Old wizard answers"}},
+    )
+    resp, delay = _verify("Iv Again Test")
+    assert resp.status_code == 200
+    delay.assert_called_once()
+    state = Tenant.objects.get(pk=tenant.pk).wizard_state
+    assert state["flow"] == "interview"
+    assert state["answers"]["description"] == "Old wizard answers"

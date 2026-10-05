@@ -64,7 +64,16 @@ export default function SignupVerifyPage() {
 
   const waitForSite = useCallback(
     (slug: string, wizardToken: string) => {
+      let polls = 0;
       const poll = setInterval(async () => {
+        // ~3 minutes: provisioning is seconds; past that, stop and say so —
+        // reloading re-verifies, which restarts a provisioning that never ran.
+        if (++polls > 120) {
+          clearInterval(poll);
+          setError(t("verify.errors.slow"));
+          setState("error");
+          return;
+        }
         try {
           const res = await fetch(`/api/v1/onboarding/status/?slug=${slug}`, {
             credentials: "same-origin",

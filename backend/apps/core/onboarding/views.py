@@ -1,6 +1,8 @@
 import logging
+from datetime import timedelta
 
 from django.conf import settings
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -173,6 +175,12 @@ def creator_signup_verify(request):
 
     if Tenant.objects.filter(slug=slug, region=region).exists():
         tenant = Tenant.objects.get(slug=slug, region=region)
+        # Never provisioned (signed up under the old wizard, or the enqueue
+        # was lost): start it now, or the verify page would poll forever.
+        stale = timezone.now() - tenant.created_at > PROVISION_RETRY_AFTER
+        if tenant.provisioning_status == "pending" and stale:
+            old_answers = (tenant.wizard_state or {}).get("answers") or {}
+            _start_interview_provisioning(tenant, email, payload.get("name", ""), old_answers)
         return Response(
             {
                 "slug": slug,
@@ -211,21 +219,7 @@ def creator_signup_verify(request):
         region,
         email,
     )
-    # One onboarding: the site is created now and the coach continues in
-    # /setup on their own subdomain, where the interview fills the brief.
-    from django.db import transaction
-
-    from apps.core.onboarding.wizard_catalog import recommended_answers
-    from apps.core.tasks import provision_tenant
-
-    answers = {**recommended_answers("general"), "goals": []}
-    Tenant.objects.filter(pk=tenant.pk).update(
-        wizard_state={"version": 2, "flow": "interview", "answers": answers},
-        template_niche="general",
-        template_seed_status="seeding",
-    )
-    tenant_id, owner_name = tenant.id, payload.get("name", "")
-    transaction.on_commit(lambda: provision_tenant.delay(tenant_id, email, owner_name, "general"))
+    _start_interview_provisioning(tenant, email, payload.get("name", ""))
 
     return Response(
         {
@@ -415,3 +409,27 @@ def _resolve_tenant_from_wizard_token(request):
     if tenant.owner_email != payload["email"]:
         return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
     return payload, tenant, None
+
+
+# A re-verify restarts provisioning only for a tenant this old that is still
+# "pending" — younger ones are most likely just queued.
+PROVISION_RETRY_AFTER = timedelta(minutes=2)
+
+
+def _start_interview_provisioning(tenant, email, owner_name, answers=None) -> None:
+    """One onboarding: create the site now; the coach continues in /setup on
+    their own subdomain, where the interview fills the brief. ``answers``
+    (an old-wizard tenant's) are kept on top of the defaults."""
+    from django.db import transaction
+
+    from apps.core.onboarding.wizard_catalog import recommended_answers
+    from apps.core.tasks import provision_tenant
+
+    merged = {**recommended_answers("general"), "goals": [], **(answers or {})}
+    Tenant.objects.filter(pk=tenant.pk).update(
+        wizard_state={"version": 2, "flow": "interview", "answers": merged},
+        template_niche="general",
+        template_seed_status="seeding",
+    )
+    tenant_id = tenant.id
+    transaction.on_commit(lambda: provision_tenant.delay(tenant_id, email, owner_name, "general"))
