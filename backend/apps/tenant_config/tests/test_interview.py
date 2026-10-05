@@ -196,3 +196,11 @@ def test_turn_is_coach_only(tenant_ctx, config):
     c = APIClient(HTTP_HOST="shared-test.localhost")
     c.force_authenticate(user=student)
     assert c.post(URL, {"message": "hi"}, format="json").status_code == 403
+
+
+def test_model_may_fill_fields_not_yet_required(client, quiet):
+    """A price said before 'sells' is known must still be extractable."""
+    quiet.reply = interview.InterviewTurn(next_field="audience", question="q")
+    client.post(URL, {"message": "Yoga, my course is 49"}, format="json")
+    sent = quiet.calls[0]["user"]
+    assert '"course_price"' in sent and '"live_when"' in sent
