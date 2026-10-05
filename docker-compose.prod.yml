@@ -118,6 +118,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
     networks:
       - internal
+      - agentc
     depends_on:
       postgres:
         condition: service_healthy
@@ -149,6 +150,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
     networks:
       - internal
+      - agentc
     depends_on:
       django:
         condition: service_healthy
@@ -241,6 +243,12 @@ networks:
     driver: bridge
   # Fleet monitoring net; created once: `docker network create observability`
   observability:
+    external: true
+  # The Agent Container hub (AI_PROVIDER=agentc reaches it as
+  # http://agent-container-hub:39300). Exists on every fleet node; the hub
+  # container itself runs on acemagic only.
+  agentc:
+    name: agent-container_default
     external: true
 
 volumes:
