@@ -348,6 +348,10 @@ def onboarding_handoff(request):
     if tenant.provisioning_status != "ready":
         return Response({"detail": "not_ready"}, status=409)
 
+    from apps.tenant_config.interview_brief import touch
+
+    touch(tenant)  # a resume via handoff is activity (abandoned-signup cleanup)
+
     from apps.accounts.tokens import create_magic_link_token
 
     magic = create_magic_link_token(tenant.owner_email, tenant.schema_name, tenant.slug)

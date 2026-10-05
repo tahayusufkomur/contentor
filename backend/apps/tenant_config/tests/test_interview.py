@@ -218,3 +218,13 @@ def test_a_tapped_choice_never_becomes_a_site_edit(client, quiet):
         ).json()
     run.assert_not_called()
     assert body["edit"] is None
+
+
+def test_opening_setup_counts_as_activity(client, tenant_ctx):
+    """Review finding 1: a coach on /setup (or go-live) is not idle."""
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(
+        wizard_state={"flow": "interview", "answers": {}, "interview_last_at": "2020-01-01T00:00:00+00:00"}
+    )
+    with mock.patch("apps.tenant_config.interview_milestones.cards_for", return_value=None):
+        client.get("/api/v1/admin/setup-flow/")
+    assert Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["interview_last_at"] > "2026-01-01"

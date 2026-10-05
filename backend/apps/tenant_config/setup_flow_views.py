@@ -11,6 +11,7 @@ from apps.core.permissions import IsCoachOrOwner
 from apps.core.throttling import SetupInterviewThrottle
 
 from . import interview, interview_golive, interview_milestones, setup_flow
+from .interview_brief import touch
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ def _data(request) -> dict:
 @permission_classes([IsCoachOrOwner])
 def setup_flow_state(request):
     tenant = connection.tenant
+    touch(tenant)
     if request.method == "POST":
         data = _data(request)
         try:
@@ -99,6 +101,7 @@ def setup_flow_logos(request):
 @permission_classes([IsCoachOrOwner])
 def setup_flow_golive(request):
     tenant = connection.tenant
+    touch(tenant)
     if request.method == "POST":
         action = str(_data(request).get("action") or "")
         try:

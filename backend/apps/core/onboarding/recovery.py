@@ -114,9 +114,10 @@ def find_abandoned_tenants(now=None):
       * to_delete — warned >= WIZARD_ABANDON_DELETE_GRACE_DAYS ago.
 
     Only ever considers reclaimable tenants: not the public row, not published,
-    and provisioning_status in {pending, provisioned, failed} (never 'ready' or
-    in-flight 'provisioning'). Idleness uses _last_activity (max wizard step
-    timestamp, else created_at).
+    not paying, and provisioning_status in {pending, provisioned, failed} — or
+    'ready' for an unfinished /setup interview (never in-flight 'provisioning').
+    Idleness uses _last_activity (latest wizard step or interview activity,
+    else created_at); a tenant active since its warning is not deleted.
     """
     from apps.core.models import Tenant
 
@@ -130,8 +131,21 @@ def find_abandoned_tenants(now=None):
         is_published=False,
     )
 
-    to_warn = [t for t in reclaimable.filter(abandon_warned_at__isnull=True) if _last_activity(t) < warn_cutoff]
-    to_delete = [t for t in reclaimable.filter(abandon_warned_at__isnull=False) if t.abandon_warned_at < grace_cutoff]
+    # A paying coach is never reclaimed, whatever their setup state.
+    to_warn = [
+        t
+        for t in reclaimable.filter(abandon_warned_at__isnull=True)
+        if _last_activity(t) < warn_cutoff and not t.has_paid_platform_plan
+    ]
+    # Deleted only if nothing happened since the warning: a coach who came
+    # back (any setup activity stamps interview_last_at) is safe.
+    to_delete = [
+        t
+        for t in reclaimable.filter(abandon_warned_at__isnull=False)
+        if t.abandon_warned_at < grace_cutoff
+        and _last_activity(t) <= t.abandon_warned_at
+        and not t.has_paid_platform_plan
+    ]
     return to_warn, to_delete
 
 

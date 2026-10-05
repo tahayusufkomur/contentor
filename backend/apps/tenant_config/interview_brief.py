@@ -298,3 +298,31 @@ def save_answers(tenant, answers: dict) -> None:
         state["interview_last_at"] = timezone.now().isoformat()
         Tenant.objects.filter(pk=tenant.pk).update(wizard_state=state)
     tenant.wizard_state = state
+
+
+TOUCH_EVERY_SECONDS = 600
+
+
+def touch(tenant) -> None:
+    """Record setup activity (opening /setup, go-live, handoff) so the
+    abandoned-signup cleanup never mistakes a working coach for an idle one.
+    Coarse on purpose: at most one write per 10 minutes per tenant."""
+    from datetime import datetime
+
+    from apps.core.models import Tenant
+
+    state = tenant.wizard_state or {}
+    if state.get("flow") != "interview":
+        return
+    last = state.get("interview_last_at")
+    try:
+        fresh = last and (timezone.now() - datetime.fromisoformat(last)).total_seconds() < TOUCH_EVERY_SECONDS
+    except (TypeError, ValueError):
+        fresh = False
+    if fresh:
+        return
+    with transaction.atomic():
+        state = dict(Tenant.objects.select_for_update().get(pk=tenant.pk).wizard_state or {})
+        state["interview_last_at"] = timezone.now().isoformat()
+        Tenant.objects.filter(pk=tenant.pk).update(wizard_state=state)
+    tenant.wizard_state = state
