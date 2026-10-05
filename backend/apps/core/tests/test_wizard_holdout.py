@@ -1,6 +1,5 @@
 """The wizard A/B test is over: every new tenant lands in "control". The
-bucket is still assigned exactly once at email-verify and visible to the
-frontend in the wizard-state body."""
+bucket is still assigned exactly once at email-verify."""
 
 import pytest
 from django.db import connection
@@ -8,7 +7,6 @@ from rest_framework.test import APIClient
 
 from apps.core.models import Tenant
 from apps.core.onboarding.experiments import WIZARD_BUCKETS, assign_wizard_bucket
-from apps.core.onboarding.wizard import _state_body
 
 
 @pytest.fixture()
@@ -20,36 +18,10 @@ def test_every_seed_lands_in_control():
     assert {assign_wizard_bucket(f"seed-{i}") for i in range(200)} == {"control"}
 
 
-# ── persistence + exposure ───────────────────────────────────────────────────
+# ── persistence ──────────────────────────────────────────────────────────────
 #
 # These commit real public-schema rows (transaction=True), so every test cleans
 # up its own tenants in a finally block.
-
-
-def _row(schema="bucket_expose"):
-    connection.set_schema_to_public()
-    slug = schema.replace("_", "-")
-    return Tenant.objects.create(
-        schema_name=schema,
-        name=slug,
-        slug=slug,
-        subdomain=slug,
-        owner_email=f"{slug}@example.com",
-        region="global",
-        wizard_bucket=assign_wizard_bucket(f"{slug}@example.com"),
-    )
-
-
-@pytest.mark.django_db(transaction=True)
-def test_state_body_exposes_the_bucket():
-    tenant = _row()
-    try:
-        body = _state_body(tenant)
-        assert body["wizard_bucket"] == tenant.wizard_bucket
-        assert body["wizard_bucket"] in WIZARD_BUCKETS
-    finally:
-        connection.set_schema_to_public()
-        Tenant.objects.filter(pk=tenant.pk).delete()
 
 
 @pytest.mark.django_db(transaction=True)
@@ -160,43 +132,8 @@ def test_report_never_counts_the_public_row_and_survives_an_empty_bucket():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_wizard_state_patch_still_works_after_early_provisioning():
-    """The content-first flow provisions the schema mid-wizard (status
-    'provisioned') and must keep saving answers afterwards. Closing the wizard
-    on any non-'pending' status would 409 every save from the course step on."""
-    from apps.accounts.tokens import create_wizard_token
-
-    api = APIClient()
-    connection.set_schema_to_public()
-    Tenant.objects.filter(slug="patch-after-prov").delete()
-    tenant = Tenant.objects.create(
-        schema_name="patch_after_prov",
-        name="patch-after-prov",
-        slug="patch-after-prov",
-        subdomain="patch-after-prov",
-        owner_email="patch-after-prov@example.com",
-        region="global",
-        provisioning_status="provisioned",  # early provisioning already ran
-    )
-    token = create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region="global")
-    try:
-        resp = api.patch(
-            "/api/v1/onboarding/wizard/state/",
-            {"token": token, "answers": {"course_created": True}, "current_step": "content.event"},
-            format="json",
-        )
-        assert resp.status_code == 200, resp.content
-        tenant.refresh_from_db()
-        assert (tenant.wizard_state or {}).get("answers", {}).get("course_created") is True
-    finally:
-        connection.set_schema_to_public()
-        Tenant.objects.filter(pk=tenant.pk).delete()
-
-
-@pytest.mark.django_db(transaction=True)
-def test_wizard_state_patch_is_still_closed_once_provisioning_or_ready():
-    """The classic in-flight and finished states must stay closed — those are
-    real 'the wizard is over' signals."""
+def test_wizard_state_patch_is_closed_once_provisioning_starts():
+    """Only a 'pending' tenant is mid-wizard; every later state closes it."""
     from apps.accounts.tokens import create_wizard_token
 
     api = APIClient()
@@ -211,7 +148,7 @@ def test_wizard_state_patch_is_still_closed_once_provisioning_or_ready():
     )
     token = create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region="global")
     try:
-        for status in ("provisioning", "ready"):
+        for status in ("provisioning", "provisioned", "ready"):
             Tenant.objects.filter(pk=tenant.pk).update(provisioning_status=status)
             resp = api.patch(
                 "/api/v1/onboarding/wizard/state/",

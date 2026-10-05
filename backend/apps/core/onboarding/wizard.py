@@ -20,10 +20,6 @@ from . import wizard_catalog
 
 logger = logging.getLogger(__name__)
 
-#: Provisioning states in which the wizard is still being filled in. See the
-#: PATCH guard in wizard_state for why 'provisioned' belongs here.
-WIZARD_OPEN_STATUSES = ("pending", "provisioned")
-
 # One free AI refinement at the reveal (Phase 2 decision 4). The auto-generated
 # design itself is always free; this budgets follow-up chat edits. The ongoing
 # monthly allowance lives on the plan (max_site_ai_updates) and is enforced by
@@ -76,7 +72,6 @@ def _state_body(tenant) -> dict:
         "status": tenant.provisioning_status,
         "template_status": tenant.template_seed_status,
         "has_paid_platform_plan": tenant.has_paid_platform_plan,
-        "wizard_bucket": tenant.wizard_bucket,
         "state": tenant.wizard_state or {},
     }
 
@@ -95,11 +90,7 @@ def wizard_state(request):
         return err
 
     if request.method == "PATCH":
-        # 'provisioned' is mid-wizard for the content-first flow: the schema is
-        # created early (at the content step) so the coach can write a real
-        # course/event/post, but the wizard is still running and must keep
-        # saving answers. 'provisioning'/'ready'/'failed' really are closed.
-        if tenant.provisioning_status not in WIZARD_OPEN_STATUSES or tenant.template_seed_status in (
+        if tenant.provisioning_status != "pending" or tenant.template_seed_status in (
             "seeding",
             "ready",
             "skipped",
@@ -183,54 +174,6 @@ def wizard_finalize(request):
     provision_tenant.delay(tenant.id, payload["email"], payload.get("name", ""), merged["niche"])
     logger.info("wizard finalized slug=%s niche=%s goals=%s", tenant.slug, merged["niche"], tenant.template_goals)
     return Response({"slug": tenant.slug, "status": "pending", "template_status": "seeding"}, status=202)
-
-
-@api_view(["POST"])
-@authentication_classes([])
-@permission_classes([AllowAny])
-def wizard_provision(request):
-    """Enqueue early schema provisioning for the token's tenant. Idempotent:
-    only 'pending' tenants enqueue; any other state just reports its status.
-    The frontend polls this same view every 1.5s until 'provisioned', so the
-    'pending' guard must flip synchronously here — the task is the only other
-    thing that changes provisioning_status, and it may not start running for
-    several polls (worker backlog, slow migration), which used to re-enqueue a
-    duplicate on every intervening tick. select_for_update closes the window
-    between two near-simultaneous polls too."""
-    from django.db import transaction
-
-    from ..tasks import provision_wizard_schema
-
-    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
-    if err:
-        return err
-    if tenant.provisioning_status == "pending":
-        with transaction.atomic():
-            locked = type(tenant).objects.select_for_update().get(pk=tenant.pk)
-            won_race = locked.provisioning_status == "pending"
-            if won_race:
-                locked.provisioning_status = "provisioning"
-                locked.save(update_fields=["provisioning_status"])
-        tenant.provisioning_status = locked.provisioning_status
-        if won_race:
-            provision_wizard_schema.delay(tenant.id, tenant.owner_email, tenant.name)
-    return Response({"status": tenant.provisioning_status})
-
-
-@api_view(["POST"])
-@authentication_classes([])
-@permission_classes([AllowAny])
-def wizard_compose(request):
-    """Trigger compose-at-reveal for the content-first flow. Only a provisioned
-    tenant composes; the frontend polls onboarding/status until 'ready'."""
-    from ..tasks import compose_wizard_site
-
-    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
-    if err:
-        return err
-    if tenant.provisioning_status == "provisioned":
-        compose_wizard_site.delay(tenant.id)
-    return Response({"status": tenant.provisioning_status})
 
 
 @api_view(["POST"])

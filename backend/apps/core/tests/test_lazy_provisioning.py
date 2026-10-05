@@ -1,17 +1,13 @@
-"""provision_tenant_schema is the reusable schema+owner+config step, split out
-of provision_tenant so it can run early (at the wizard content step) without
-seeding or AI-composing."""
-
-from unittest import mock
+"""provision_tenant_schema is the schema+owner+config step of provision_tenant:
+it stops at 'provisioned' without seeding or AI-composing."""
 
 import pytest
 from django.db import connection
 from django_tenants.utils import tenant_context
-from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.core.models import Tenant
-from apps.core.tasks import provision_tenant_schema, provision_wizard_schema
+from apps.core.tasks import provision_tenant_schema
 from apps.tenant_config.models import TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -71,113 +67,3 @@ def test_schema_step_is_idempotent(restore_public):
             assert User.objects.filter(role="owner").count() == 1
     finally:
         _drop(schema)
-
-
-@pytest.fixture()
-def client():
-    return APIClient()
-
-
-def _row_tenant(schema, **kw):
-    """A public-schema Tenant row only — no PG schema (the enqueue task is
-    mocked). region='global' so the wizard token's slugify(brand_name) + region
-    resolve back to this row."""
-    connection.set_schema_to_public()
-    defaults = {
-        "schema_name": schema,
-        "name": schema.replace("_", "-"),
-        "slug": schema.replace("_", "-"),
-        "subdomain": schema.replace("_", "-"),
-        "owner_email": f"{schema}@example.com",
-        "region": "global",
-        "provisioning_status": "pending",
-    }
-    defaults.update(kw)
-    return Tenant.objects.create(**defaults)
-
-
-def _wizard_token(tenant):
-    # Mirror how _resolve_tenant_from_wizard_token resolves: it does
-    # slug = slugify(brand_name) and matches owner_email + region. Passing the
-    # already-slug tenant.slug as brand_name slugifies to itself, so it resolves.
-    from apps.accounts.tokens import create_wizard_token
-
-    return create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region=tenant.region or "global")
-
-
-# The view imports the task function-locally to dodge an import cycle (the
-# house style in this package), so the task is not an attribute of wizard.py.
-# Patch it at its source module, exactly as test_wizard_finalize.py does for
-# provision_tenant.
-_TASK_DELAY = "apps.core.tasks.provision_wizard_schema.delay"
-
-
-def test_provision_endpoint_enqueues_only_when_pending(client):
-    tenant = _row_tenant("prov_ep", provisioning_status="pending")
-    try:
-        with mock.patch(_TASK_DELAY) as delay:
-            resp = client.post(
-                "/api/v1/onboarding/wizard/provision/",
-                {"token": _wizard_token(tenant)},
-                format="json",
-            )
-        assert resp.status_code == 200
-        delay.assert_called_once_with(tenant.id, tenant.owner_email, tenant.name)
-    finally:
-        Tenant.objects.filter(pk=tenant.pk).delete()
-
-
-def test_provision_endpoint_is_idempotent_when_already_provisioned(client):
-    tenant = _row_tenant("prov_ep2", provisioning_status="provisioned")
-    try:
-        with mock.patch(_TASK_DELAY) as delay:
-            resp = client.post(
-                "/api/v1/onboarding/wizard/provision/",
-                {"token": _wizard_token(tenant)},
-                format="json",
-            )
-        assert resp.status_code == 200
-        assert resp.json()["status"] == "provisioned"
-        delay.assert_not_called()
-    finally:
-        Tenant.objects.filter(pk=tenant.pk).delete()
-
-
-def test_wizard_schema_task_runs_when_endpoint_already_marked_provisioning(restore_public):
-    """The endpoint now flips 'pending' -> 'provisioning' synchronously before
-    enqueueing (closing the double-poll race). The task's own guard must accept
-    that handoff state, or the task would see 'provisioning' and no-op forever."""
-    schema = "prov_task_handoff"
-    tenant = _make_tenant(schema)
-    tenant.provisioning_status = "provisioning"
-    tenant.save(update_fields=["provisioning_status"])
-    try:
-        provision_wizard_schema(tenant.id, tenant.owner_email, tenant.name)
-
-        tenant.refresh_from_db()
-        assert tenant.provisioning_status == "provisioned"
-        with tenant_context(tenant):
-            assert TenantConfig.objects.count() == 1
-    finally:
-        _drop(schema)
-
-
-def test_provision_endpoint_does_not_double_enqueue_while_task_is_in_flight(client):
-    """The Celery task is the only thing that used to flip provisioning_status
-    away from 'pending', so every poll tick landing before the task starts
-    (worker busy, queue backlog) re-enqueued a duplicate. The endpoint must
-    close that window itself, synchronously, on the first call."""
-    tenant = _row_tenant("prov_ep3", provisioning_status="pending")
-    try:
-        with mock.patch(_TASK_DELAY) as delay:
-            token = _wizard_token(tenant)
-            for _ in range(5):
-                resp = client.post(
-                    "/api/v1/onboarding/wizard/provision/",
-                    {"token": token},
-                    format="json",
-                )
-                assert resp.status_code == 200
-        delay.assert_called_once_with(tenant.id, tenant.owner_email, tenant.name)
-    finally:
-        Tenant.objects.filter(pk=tenant.pk).delete()
