@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import boto3
 from botocore.config import Config
 from django.conf import settings
@@ -5,15 +7,23 @@ from django.db import connection
 
 
 def get_s3_client(external=False):
-    kwargs = {
-        "aws_access_key_id": settings.AWS_ACCESS_KEY_ID,
-        "aws_secret_access_key": settings.AWS_SECRET_ACCESS_KEY,
-        # Path-style + v4 keep MinIO happy and are harmless for Hetzner.
-        "config": Config(signature_version="s3v4", s3={"addressing_style": "path"}),
-    }
     endpoint = settings.AWS_ENDPOINT
     if external and settings.AWS_ENDPOINT_EXTERNAL:
         endpoint = settings.AWS_ENDPOINT_EXTERNAL
+    return _s3_client(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY, endpoint or None)
+
+
+# boto3.client() costs ~10ms, so building one per presign made list endpoints
+# (783-row curated logo catalog) take seconds. Keyed on every setting it reads,
+# so override_settings in tests gets its own client. Clients are thread-safe.
+@lru_cache(maxsize=8)
+def _s3_client(access_key_id, secret_access_key, endpoint):
+    kwargs = {
+        "aws_access_key_id": access_key_id,
+        "aws_secret_access_key": secret_access_key,
+        # Path-style + v4 keep MinIO happy and are harmless for Hetzner.
+        "config": Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+    }
     if endpoint:
         kwargs["endpoint_url"] = endpoint
     return boto3.client("s3", **kwargs)
