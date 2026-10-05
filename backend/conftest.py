@@ -234,6 +234,19 @@ def _clear_rate_limits():
 
 
 @pytest.fixture(autouse=True)
+def _no_real_provisioning(monkeypatch):
+    """Signup verify enqueues provision_tenant on commit. Tests share the dev
+    stack's Redis broker, so a real .delay() would make the dev Celery worker
+    provision whatever DEV tenant shares the test tenant's id. Tests that care
+    patch .delay themselves (mock.patch nests over this)."""
+    from unittest import mock
+
+    from apps.core import tasks
+
+    monkeypatch.setattr(tasks.provision_tenant, "delay", mock.Mock(name="provision_tenant.delay"))
+
+
+@pytest.fixture(autouse=True)
 def _curated_mirror_off(settings):
     """The dev container exports CURATED_LOGO_SYNC_DIR (repo bind mount) — force
     the CuratedLogo mirror OFF for every test so suites never write into the

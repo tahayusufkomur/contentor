@@ -49,3 +49,12 @@ def test_provision_skips_whole_site_compose_for_interview_tenants():
 
     assert tasks._should_compose_site(mock.Mock(wizard_state={"flow": "interview"})) is False
     assert tasks._should_compose_site(mock.Mock(wizard_state={})) is True
+
+
+def test_suite_never_enqueues_real_provisioning():
+    """Verify enqueues provisioning on commit; under pytest that must never
+    reach the dev stack's real Celery broker (it would provision whatever dev
+    tenant shares the test tenant's id)."""
+    from apps.core import tasks
+
+    assert isinstance(tasks.provision_tenant.delay, mock.Mock)
