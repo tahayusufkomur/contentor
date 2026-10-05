@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec test-changed e2e-changed wiki wiki-sync sections-sync
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec eval-sites test-changed e2e-changed wiki wiki-sync sections-sync
 
 # Prod env lives in Cloudflare KV (fleet scripts/secrets.sh, Touch ID), not on
 # disk. Targets that need it materialize .env.prod for that one command only.
@@ -29,7 +29,7 @@ help: ## Show this help
 	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- E2E ---\033[0m"
-	@grep -E '^(e2e|e2e-stripe|e2e-spec|e2e-changed):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(e2e|e2e-stripe|e2e-spec|e2e-changed|eval-sites):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
 # ============================================================================
@@ -217,6 +217,11 @@ e2e-stripe: ## e2e incl. real Stripe test-mode specs (needs sk_test keys in .env
 e2e-spec: ## Run one e2e spec by substring: make e2e-spec SPEC=04-live-class
 	@test -n "$(SPEC)" || { echo "usage: make e2e-spec SPEC=<spec-substring>  (e.g. SPEC=04-live-class)"; exit 1; }
 	cd e2e && npm install --silent && npx playwright install chromium && npx playwright test $(SPEC)
+
+eval-sites: ## Manual site-quality eval for one style, never CI: make eval-sites STYLE=journal [BRIEFS=yoga,chess]
+	@test -n "$(STYLE)" || { echo "usage: make eval-sites STYLE=<style-id> [BRIEFS=<id,id>]  (briefs: e2e/fixtures/site-eval-briefs.json)"; exit 1; }
+	cd e2e && npm install --silent && npx playwright install chromium && \
+		SITE_EVAL=1 STYLE=$(STYLE) BRIEFS=$(BRIEFS) SITE_EVAL_RUN=$$(date +%Y%m%d-%H%M) npx playwright test 91-site-eval --retries=0 --reporter=list
 
 e2e-changed: ## Run only e2e specs affected by the diff, via e2e/impact-map.json (BASE=<ref>, PLAN=1)
 	python3 scripts/select_tests.py --mode e2e $(if $(BASE),--base $(BASE),) $(if $(PLAN),--plan,)

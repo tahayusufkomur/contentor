@@ -1,0 +1,158 @@
+[
+  {
+    "id": "yoga",
+    "brand": "Mara Lindqvist",
+    "niche": "yoga",
+    "description": "I teach slow vinyasa and yin to people who sit at a desk all day. Most of my students arrive stiff, tired and a little intimidated by yoga. My classes are 45 minutes, built around the hips, spine and shoulders, with plenty of options for tight bodies.",
+    "followups": [
+      {
+        "q": "Who is your ideal student?",
+        "a": "Office workers in their 30s to 50s, mostly women, who have tried a gym class and felt out of place."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "build_community"]
+  },
+  {
+    "id": "business-coaching",
+    "brand": "Northline Advisory",
+    "niche": "general",
+    "description": "We coach owners of small service businesses (5 to 30 staff) who are stuck doing everything themselves. Our programme covers pricing, hiring a first manager and building a weekly operating rhythm so the owner can step back from day-to-day firefighting.",
+    "followups": [
+      {
+        "q": "What result do clients come for?",
+        "a": "Getting their evenings back without revenue dropping."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "email_marketing"]
+  },
+  {
+    "id": "language-tutoring",
+    "brand": "Lucía Ferrer",
+    "niche": "general",
+    "description": "I tutor conversational Spanish for adults who studied it at school and froze the first time they tried to use it. Lessons are small online groups focused on speaking, real situations and the Spanish people actually use in Spain and Latin America.",
+    "followups": [
+      {
+        "q": "What level do you teach?",
+        "a": "Mostly A2 to B1 learners who understand more than they can say."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "sell_downloads"]
+  },
+  {
+    "id": "fitness",
+    "brand": "Iron & Oak Strength",
+    "niche": "fitness",
+    "description": "We run barbell strength programmes for adults over 40 who have never lifted. Every programme starts with movement basics, progresses slowly and is built around three short sessions a week at home or in a basic gym.",
+    "followups": [
+      {
+        "q": "What do members usually struggle with?",
+        "a": "Fear of injury and not knowing how much weight to use."
+      }
+    ],
+    "goals": ["sell_courses", "build_community", "send_announcements"]
+  },
+  {
+    "id": "music",
+    "brand": "Theo Okafor",
+    "niche": "general",
+    "description": "I teach piano to adult beginners who always wanted to play but never had lessons. My method starts with chords and songs you know rather than scales, and every course ends with a piece you can play for friends.",
+    "followups": [
+      {
+        "q": "What do you need students to have?",
+        "a": "Any keyboard with 61 keys or more and twenty minutes a day."
+      }
+    ],
+    "goals": ["sell_courses", "sell_downloads"]
+  },
+  {
+    "id": "painting",
+    "brand": "Studio Ochre",
+    "niche": "general",
+    "description": "We teach loose watercolour landscapes. Our courses show every brushstroke in real time, from mixing a sky to painting a wet-on-wet reflection, and are made for hobby painters who are tired of tight, overworked paintings.",
+    "followups": [
+      {
+        "q": "What materials do you recommend?",
+        "a": "A short list: three tubes of paint, two brushes and cotton paper."
+      }
+    ],
+    "goals": ["sell_courses", "sell_downloads", "write_blog"]
+  },
+  {
+    "id": "cooking",
+    "brand": "The Weeknight Kitchen",
+    "niche": "general",
+    "description": "We teach busy parents to cook five dinners a week from scratch in under 40 minutes. Each course is a week of recipes with one shopping list, prep steps for Sunday and dishes children actually eat.",
+    "followups": [
+      {
+        "q": "Any dietary focus?",
+        "a": "Mostly vegetables, legumes and fish, with a vegetarian swap for every recipe."
+      }
+    ],
+    "goals": ["sell_courses", "email_marketing", "write_blog"]
+  },
+  {
+    "id": "wellness",
+    "brand": "Quiet Hours",
+    "niche": "general",
+    "description": "I help people who sleep badly because of stress. My programmes combine an evening wind-down routine, breathing practice and simple changes to the bedroom and the hour before bed. No supplements and no gadgets.",
+    "followups": [
+      {
+        "q": "Who comes to you?",
+        "a": "Professionals and new parents who lie awake with a racing mind."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "email_marketing"]
+  },
+  {
+    "id": "photography",
+    "brand": "Lena Hart",
+    "niche": "general",
+    "description": "I teach natural-light portrait photography to people with a camera they barely use beyond auto mode. My courses cover reading light, posing real people kindly and editing skin tones that look true.",
+    "followups": [
+      {
+        "q": "Which cameras do students use?",
+        "a": "Any mirrorless or DSLR; a phone works for the first two modules."
+      }
+    ],
+    "goals": ["sell_courses", "in_person_events", "sell_downloads"]
+  },
+  {
+    "id": "dance",
+    "brand": "Saffron Belly Dance",
+    "niche": "belly_dance",
+    "description": "We teach Egyptian-style belly dance to women of every age and body type. Beginners learn isolations, shimmies and a full short choreography in their first eight weeks, online or in our weekly studio class.",
+    "followups": [
+      {
+        "q": "What makes your classes different?",
+        "a": "We count every move slowly and explain the music, so nobody feels lost."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "in_person_events"]
+  },
+  {
+    "id": "chess",
+    "brand": "Opening Move Chess",
+    "niche": "general",
+    "description": "We coach chess for improving club players rated 1000 to 1600. Our courses cover opening ideas instead of memorised lines, how to calculate in the middlegame and how to convert winning endgames, with weekly live game reviews.",
+    "followups": [
+      {
+        "q": "Do you teach children?",
+        "a": "Teens and adults; parents often join alongside their kids."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "build_community"]
+  },
+  {
+    "id": "career-coaching",
+    "brand": "Priya Raman",
+    "niche": "general",
+    "description": "I coach mid-career professionals who want to change field without starting over. Together we map transferable skills, rewrite the CV and LinkedIn story, and practise interviews for the new industry.",
+    "followups": [
+      {
+        "q": "Which fields do clients move between?",
+        "a": "Often from teaching, finance or retail into tech, policy and nonprofits."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "sell_downloads"]
+  }
+]

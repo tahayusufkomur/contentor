@@ -156,6 +156,7 @@
     "27-wizard-domain-purchase"
   ],
   "manual": [
-    "90-logo-eval"
+    "90-logo-eval",
+    "91-site-eval"
   ]
 }

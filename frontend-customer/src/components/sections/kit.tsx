@@ -126,6 +126,7 @@ export function Img({
       ) : (
         <div
           aria-hidden="true"
+          data-empty-image=""
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,color-mix(in_oklch,var(--primary)_18%,transparent),transparent_60%),radial-gradient(ellipse_at_80%_90%,color-mix(in_oklch,var(--accent)_22%,transparent),transparent_55%)]"
         />
       )}
