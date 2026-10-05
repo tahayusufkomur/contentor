@@ -9,6 +9,7 @@ import { ImagePlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { MicButton } from "@/components/copilot/mic-button";
 import { docToMessage, type TipTapNode } from "@/lib/copilot/composer";
 import {
   MAX_ATTACHED,
@@ -183,6 +184,16 @@ export function CopilotComposer({
                 <ImagePlus className="size-4" aria-hidden />
               )}
             </button>
+            <MicButton
+              disabled={sending}
+              onText={(text) =>
+                editor
+                  .chain()
+                  .focus("end")
+                  .insertContent(editor.isEmpty ? text : ` ${text}`)
+                  .run()
+              }
+            />
           </span>
           <Button
             size="sm"

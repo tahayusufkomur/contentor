@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MicButton } from "@/components/copilot/mic-button";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { ContentKind } from "@/lib/setup-flow";
@@ -64,21 +65,35 @@ export function ContentQuestion({
         <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-[var(--sf-graphite)]">
           {copy.help}
         </p>
-        <Textarea
-          id={id}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault();
-              if (text.trim()) onDraft(text.trim());
+        <div className="relative mt-6">
+          <Textarea
+            id={id}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                if (text.trim()) onDraft(text.trim());
+              }
+            }}
+            placeholder={copy.placeholder}
+            rows={4}
+            maxLength={600}
+            className="resize-none rounded-xl pr-12 border-[var(--sf-line-strong)] bg-white px-4 py-3 text-[15px] leading-relaxed shadow-[0_1px_2px_rgb(20_22_28/0.04)] focus-visible:ring-[3px] focus-visible:ring-[rgb(154_119_58/0.3)] focus-visible:ring-offset-0"
+          />
+          <MicButton
+            disabled={drafting}
+            className="absolute bottom-2.5 right-2.5 p-1.5"
+            onText={(spoken) =>
+              setText((prev) =>
+                (prev.trim() ? `${prev.trimEnd()} ${spoken}` : spoken).slice(
+                  0,
+                  600,
+                ),
+              )
             }
-          }}
-          placeholder={copy.placeholder}
-          rows={4}
-          maxLength={600}
-          className="mt-6 resize-none rounded-xl border-[var(--sf-line-strong)] bg-white px-4 py-3 text-[15px] leading-relaxed shadow-[0_1px_2px_rgb(20_22_28/0.04)] focus-visible:ring-[3px] focus-visible:ring-[rgb(154_119_58/0.3)] focus-visible:ring-offset-0"
-        />
+          />
+        </div>
         {suggestions.length > 0 && (
           <div className="mt-4">
             <p className="text-[13px] text-[var(--sf-faint)]">

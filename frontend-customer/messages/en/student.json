@@ -125,6 +125,9 @@
     "attachTooLarge": "That photo is too large (max 10 MB).",
     "attachFailed": "Couldn't upload the photo. Please try again.",
     "attachedOnly": "(sent a photo)",
-    "creatingPhoto": "Creating your photo…"
+    "creatingPhoto": "Creating your photo…",
+    "dictate": "Speak instead of typing",
+    "stopDictation": "Stop listening",
+    "micBlocked": "Microphone access is blocked. Allow it in your browser to speak."
   }
 }
