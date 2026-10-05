@@ -471,6 +471,21 @@ def compose_page_task(tenant_id, page_key, instruction=None):
     return site_composer.build_page(tenant, page_key, instruction=instruction, skip_if_building=False)
 
 
+@shared_task
+def interview_draft_task(tenant_id, kind, prompt):
+    """First-content draft for the /setup interview, with a deterministic
+    fallback (interview_milestones.run_draft). Status lands in
+    TenantConfig.setup_flow["draft_status"][kind]."""
+    from apps.core.models import Tenant
+    from apps.tenant_config import interview_milestones
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        interview_milestones.run_draft(tenant, kind, prompt)
+
+
 AI_STARTER_POST_TIMEOUT_SECONDS = 90
 
 
@@ -505,16 +520,15 @@ def _seed_starter_post(tenant, preferred_locale):
 
 @shared_task
 def rank_curated_logos(tenant_id):
-    """Wizard-time helper: AI-rank the curated logo catalog for this coach and
-    stash the order in wizard_state. Fired when the business chapter is saved;
-    the logo step reads the result a few steps later. Every failure path is a
-    silent no-op — the wizard falls back to the client-side keyword rank."""
+    """AI-rank the curated logo catalog for this coach and stash the order in
+    wizard_state (read by the /setup interview's logo cards). Every failure path is a
+    silent no-op — the cards fall back to the keyword shortlist."""
     from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.models import Tenant
     from apps.core.onboarding import ai_compose, ai_curate
 
     tenant = Tenant.objects.filter(id=tenant_id).first()
-    if tenant is None or tenant.provisioning_status != "pending":
+    if tenant is None:
         return
     if not ai_compose.compose_available():
         return

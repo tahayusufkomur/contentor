@@ -1325,14 +1325,23 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
             blocks = [sections.clean_section_block(b) for b in blocks]
         _store_used_assets(tenant, page_key, placed)
 
+    _save_page(tenant, page_key, blocks, built_style=style_id)
+    return blocks
+
+
+def _save_page(tenant, page_key, blocks, *, built_style) -> None:
+    """Store a composed page. A coach can switch style while a page builds;
+    a build that lands afterwards is restyled to the current style."""
+
     def save(config):
         pages = dict(config.pages or {})
         pages[page_key] = {"blocks": blocks}
+        if config.style and config.style != built_style:
+            pages = sections.restyle_pages(pages, config.style)
         config.pages = pages
         return ["pages"]
 
     _update_config(tenant, save)
-    return blocks
 
 
 def compose_site(tenant) -> None:
@@ -1413,6 +1422,8 @@ def initial_setup_flow() -> dict:
         "completed_at": None,
         "published": False,
         "page_builds": {},
+        "interview": {"turns": [], "fired": []},
+        "draft_status": {},
     }
 
 

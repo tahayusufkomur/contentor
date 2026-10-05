@@ -394,6 +394,14 @@ PROMPT_MAX_LEN = 2000
 MAX_PRICE = 9999
 
 
+def _may_price(tenant) -> bool:
+    """Drafts may carry a price when the plan can sell, or the coach told the
+    interview they sell (go-live then asks for the plan before publishing)."""
+    from .interview_brief import answers_of
+
+    return is_paid_active(tenant) or answers_of(tenant).get("sells") == "paid"
+
+
 def _draft_user_turn(tenant, config, prompt: str) -> str:
     from apps.core.currency import tenant_charge_currency
     from apps.core.onboarding.ai_curate import CoachBrief
@@ -406,7 +414,7 @@ def _draft_user_turn(tenant, config, prompt: str) -> str:
             "niche": brief.niche,
             "description": brief.description,
             "goals": list(brief.goals),
-            "can_sell": is_paid_active(tenant),
+            "can_sell": _may_price(tenant),
             "currency": tenant_charge_currency(tenant),
             "today": timezone.localdate().isoformat(),
             "timezone": config.timezone,
@@ -429,7 +437,7 @@ def _create(tenant, user, config, kind: str, draft):
     from apps.core.copilot import content
 
     if kind == "course":
-        paid = is_paid_active(tenant) and draft.pricing_type == "paid" and draft.price > 0
+        paid = _may_price(tenant) and draft.pricing_type == "paid" and draft.price > 0
         params = {
             "title": draft.title[:200],
             "description": draft.description,
@@ -495,7 +503,10 @@ def create_draft(tenant, user, kind: str, prompt: str) -> dict:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
         raise
     ai_compose.record_spend(tenant.schema_name, cost)
+    return _store_draft(tenant, user, config, kind, parsed)
 
+
+def _store_draft(tenant, user, config, kind: str, parsed) -> dict:
     ref = _create(tenant, user, config, kind, parsed)
     previous = {}
 
@@ -514,3 +525,40 @@ def create_draft(tenant, user, kind: str, prompt: str) -> dict:
         **({"slug": item["slug"]} if "slug" in item else {}),
         "preview_path": content_preview_path(kind, item),
     }
+
+
+def fallback_draft(kind: str, answers: dict):
+    """A plain, honest first draft from the brief alone — used when the AI
+    call fails so go-live is never blocked on a provider."""
+    from html import escape
+
+    teaches = answers.get("teaches") or "my practice"
+    offers = answers.get("offers") or []
+    if kind == "course":
+        price = answers.get("course_price") or 0
+        paid = answers.get("sells") == "paid" and price > 0
+        return CourseDraft(
+            title=str(answers.get("course_topic") or f"Getting started with {teaches}")[:80],
+            description=f"A first course for {answers.get('audience') or 'new students'}.",
+            modules=[_Module(title="Foundations", lessons=["Welcome", "Your first practice"])],
+            pricing_type="paid" if paid else "free",
+            price=price if paid else 0,
+        )
+    if kind == "event":
+        return EventDraft(
+            title=str(answers.get("live_topic") or f"{teaches} live class")[:80],
+            description="A live session to practise together.",
+            event_kind="onsite" if "onsite" in offers and "live" not in offers else "live",
+            scheduled_at=timezone.now() + timedelta(days=3),
+            location=str(answers.get("location") or ""),
+        )
+    intro = escape(str(answers.get("story") or answers.get("pitch") or "Welcome to my new site."))
+    return PostDraft(
+        title=str(answers.get("article_topic") or f"Why I teach {teaches}")[:90],
+        excerpt="A short note to start.",
+        body_html=f"<p>{intro}</p>",
+    )
+
+
+def create_fallback_draft(tenant, user, kind: str, answers: dict) -> dict:
+    return _store_draft(tenant, user, TenantConfig.objects.first(), kind, fallback_draft(kind, answers))
