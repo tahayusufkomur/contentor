@@ -12,8 +12,7 @@
       "02-courses"
     ],
     "domains": [
-      "01-signup-onboarding",
-      "27-wizard-domain-purchase"
+      "01-signup-onboarding"
     ],
     "downloads": [
       "12-downloads"
@@ -44,6 +43,7 @@
       "02-courses"
     ],
     "tenant_config": [
+      "01-signup-onboarding",
       "09-builder",
       "14-navbar-layouts",
       "15-logo-studio",
@@ -87,8 +87,7 @@
     "src/components/logo": [
       "15-logo-studio",
       "17-logo-curated-library",
-      "18-curated-library-admin",
-      "23-wizard-ai-logo"
+      "18-curated-library-admin"
     ],
     "src/lib/assistant.ts": [
       "16-site-assistant",
@@ -104,8 +103,7 @@
     "src/lib/logo": [
       "15-logo-studio",
       "17-logo-curated-library",
-      "18-curated-library-admin",
-      "23-wizard-ai-logo"
+      "18-curated-library-admin"
     ],
     "src/lib/mailbox.ts": [
       "07-mailbox"
@@ -135,6 +133,7 @@
       "27-nav-stage-gating"
     ],
     "src/components/copilot": [
+      "01-signup-onboarding",
       "29-copilot"
     ],
     "src/lib/copilot": [
@@ -142,6 +141,18 @@
     ],
     "src/app/admin/site-ai": [
       "29-copilot"
+    ],
+    "src/app/setup": [
+      "01-signup-onboarding"
+    ],
+    "src/components/setup-flow": [
+      "01-signup-onboarding"
+    ],
+    "src/lib/setup-flow.ts": [
+      "01-signup-onboarding"
+    ],
+    "src/lib/interview.ts": [
+      "01-signup-onboarding"
     ]
   },
   "frontend-main": [
@@ -149,11 +160,8 @@
     "10-impersonation",
     "11-login-code",
     "18-curated-library-admin",
-    "19-wizard-recovery",
     "22-assistant-takeover",
-    "23-wizard-ai-logo",
-    "24-admin-logs",
-    "27-wizard-domain-purchase"
+    "24-admin-logs"
   ],
   "manual": [
     "90-logo-eval",
