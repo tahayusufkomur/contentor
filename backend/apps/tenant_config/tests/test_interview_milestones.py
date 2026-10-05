@@ -212,3 +212,36 @@ def test_interview_background_ai_runs_behind_the_coach(tenant_ctx, config, owner
     ):
         ms.run_draft(tenant_ctx, "course", "prompt")
     assert create.call_args.kwargs["label"].startswith("contentor:compose")
+
+
+def _sells(tenant_ctx, **answers):
+    from apps.core.models import Tenant
+
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+
+
+def test_brief_price_wins_over_a_free_model_answer(tenant_ctx, config, owner):
+    """Review finding 3: the coach said 49; the model said free."""
+    _sells(tenant_ctx, sells="paid", course_price=49.0)
+    reply = setup_flow.CourseDraft(
+        title="Desk Yoga", description="d", modules=[{"title": "W1", "lessons": ["a"]}], pricing_type="free", price=0
+    )
+    with (
+        mock.patch("apps.tenant_config.setup_flow.is_paid_active", return_value=False),
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch("apps.core.copilot.content._give_cover"),
+        mock.patch("apps.core.ai.structured", return_value=(reply, Decimal("0"), "m")),
+    ):
+        setup_flow.create_draft(tenant_ctx, owner, "course", "Desk yoga")
+    course = Course.objects.get()
+    assert course.pricing_type == "paid" and course.price == Decimal("49.00")
+
+
+def test_delegated_price_for_a_selling_coach_is_not_free(tenant_ctx, config, owner):
+    _sells(tenant_ctx, sells="paid", delegated=["course_price"])
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"sells": "paid", "delegated": ["course_price"]})
+    course = Course.objects.get()
+    assert course.pricing_type == "paid" and course.price > 0

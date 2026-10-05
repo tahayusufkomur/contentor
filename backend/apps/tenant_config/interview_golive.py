@@ -37,7 +37,9 @@ def golive_state(tenant) -> dict:
     paid_content = _has_paid_content(_seeded_by_label())
     wants_live = bool({"live", "onsite"} & set(answers.get("offers") or [])) and not _live_entitled(tenant)
     paid = is_paid_active(tenant)
-    needs_plan = (paid_content or wants_live) and not paid
+    # Selling is known from the brief even before a paid course exists.
+    sells = paid_content or answers.get("sells") == "paid"
+    needs_plan = (sells or wants_live) and not paid
     return {
         "ready": not brief.missing(answers) and not building,
         "building": building,

@@ -133,3 +133,17 @@ def test_blockers_that_go_live_resolves_itself_are_hidden(client, config):
     config.save()
     with mock.patch("apps.tenant_config.interview_golive.fire"):
         assert "first_course" not in client.get(URL).json()["blockers"]
+
+
+def test_selling_coach_on_free_plan_is_offered_the_plan(client, tenant_ctx):
+    """Review finding 3: selling is known from the brief, even before a paid
+    course exists."""
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(
+        wizard_state={"flow": "interview", "answers": {**DONE, "sells": "paid"}}
+    )
+    _course(paid=False)
+    with (
+        mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False),
+        mock.patch("apps.tenant_config.interview_golive.fire"),
+    ):
+        assert client.get(URL).json()["needs_plan"] is True

@@ -401,6 +401,22 @@ PROMPT_MAX_LEN = 2000
 MAX_PRICE = 9999
 
 
+# A coach who sells but left the price to us gets a sensible paid default.
+DEFAULT_COURSE_PRICE = 49.0
+
+
+def _brief_price(tenant) -> float | None:
+    """The course price the brief commits to, or None when the brief says
+    nothing about selling (the model's own draft then stands)."""
+    from .interview_brief import answers_of
+
+    answers = answers_of(tenant)
+    if answers.get("sells") != "paid":
+        return None
+    price = answers.get("course_price")
+    return float(price) if price else DEFAULT_COURSE_PRICE
+
+
 def _may_price(tenant) -> bool:
     """Drafts may carry a price when the plan can sell, or the coach told the
     interview they sell (go-live then asks for the plan before publishing)."""
@@ -444,6 +460,10 @@ def _create(tenant, user, config, kind: str, draft):
     from apps.core.copilot import content
 
     if kind == "course":
+        # What the coach told the interview wins over the model's guess.
+        stated = _brief_price(tenant)
+        if stated:
+            draft = draft.model_copy(update={"pricing_type": "paid", "price": stated})
         paid = _may_price(tenant) and draft.pricing_type == "paid" and draft.price > 0
         params = {
             "title": draft.title[:200],
@@ -542,8 +562,8 @@ def fallback_draft(kind: str, answers: dict):
     teaches = answers.get("teaches") or "my practice"
     offers = answers.get("offers") or []
     if kind == "course":
-        price = answers.get("course_price") or 0
-        paid = answers.get("sells") == "paid" and price > 0
+        paid = answers.get("sells") == "paid"
+        price = (answers.get("course_price") or DEFAULT_COURSE_PRICE) if paid else 0
         return CourseDraft(
             title=str(answers.get("course_topic") or f"Getting started with {teaches}")[:80],
             description=f"A first course for {answers.get('audience') or 'new students'}.",
