@@ -1,31 +1,34 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Monitor, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageState } from "@/components/ui/page-state";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
+import { isUndoableKind, runBundle } from "@/lib/copilot/state";
+import { landedPage, noteEntry, toEntry } from "@/lib/interview";
 import {
   setupFlowApi,
-  type ContentKind,
+  type CopilotPayload,
+  type GuideTurn,
+  type InterviewEntry,
   type SetupFlowApi,
   type SetupFlowState,
-  type SetupStep,
+  type TurnRequest,
 } from "@/lib/setup-flow";
+import { announceSiteUpdated } from "@/lib/site-events";
 import { ApiError } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { BrowserFrame, Composing, type Device } from "./browser-frame";
-import { ChatPanel } from "./chat-panel";
-import { ContentQuestion } from "./content-question";
-import { Celebration, LaunchPanel } from "./launch";
+import { GoLiveCard } from "./go-live-card";
+import { InterviewChat } from "./interview-chat";
+import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
-import { PayoutsCard } from "./payouts-card";
 import { SetupSkeleton } from "./skeleton";
-import { MobileHeader, StepRail, progressOf } from "./step-rail";
-import { Welcome } from "./welcome";
 import { SHELL_CSS, SHELL_TOKENS } from "./tokens";
 
 type Stages = [string, string, string];
@@ -34,53 +37,6 @@ const PAGE_STAGES: Stages = [
   "Writing your copy",
   "Finding your photos",
 ];
-const CONTENT_STAGES: Record<ContentKind, Stages> = {
-  course: [
-    "Shaping the outline",
-    "Writing the lessons and description",
-    "Finding a cover photo",
-  ],
-  event: [
-    "Picking a date and time",
-    "Writing the description",
-    "Finding a cover photo",
-  ],
-  post: ["Outlining the article", "Writing the draft", "Finding a cover photo"],
-};
-
-const CHIPS: Record<string, string[]> = {
-  page: [
-    "Make the headline punchier",
-    "Use a warmer photo for the hero",
-    "Try a bolder style",
-  ],
-  course: [
-    "Make it a 4-week program",
-    "Set the price to 49",
-    "Rewrite the description to sound warmer",
-  ],
-  event: [
-    "Move it to Sunday morning",
-    "Make it free to join",
-    "Shorten the description",
-  ],
-  post: [
-    "Make the intro more personal",
-    "Add a section of practical tips",
-    "Cut it to a 3-minute read",
-  ],
-  payouts: [
-    "How do payouts work?",
-    "What will students see at checkout?",
-    "Can I still offer free courses?",
-  ],
-  launch: [
-    "Is anything missing before I publish?",
-    "Give the home page a final polish",
-    "Make the home headline punchier",
-  ],
-};
-
 function useNarrow(): boolean {
   const [narrow, setNarrow] = useState(false);
   useEffect(() => {
@@ -95,13 +51,11 @@ function useNarrow(): boolean {
 
 export function SetupFlow({
   brandName,
-  logoUrl,
   host,
   mock,
   fontClassName,
 }: {
   brandName: string;
-  logoUrl: string;
   host: string;
   mock: boolean;
   fontClassName: string;
@@ -148,7 +102,6 @@ export function SetupFlow({
             setFlow={setFlow}
             api={api}
             brandName={flow.brand_name || brandName}
-            logoUrl={logoUrl}
             host={host}
           />
         )}
@@ -162,60 +115,30 @@ function Flow({
   setFlow,
   api,
   brandName,
-  logoUrl,
   host,
 }: {
   flow: SetupFlowState;
   setFlow: Dispatch<SetStateAction<SetupFlowState | null>>;
   api: SetupFlowApi;
   brandName: string;
-  logoUrl: string;
   host: string;
 }) {
   const navigate = useNavigate();
   const narrow = useNarrow();
-  const [tab, setTab] = useState<"preview" | "chat">("preview");
+  const iv = flow.interview;
+  const [entries, setEntries] = useState<InterviewEntry[]>(iv.turns);
+  const [guide, setGuide] = useState<GuideTurn>(iv.guide);
+  const [tab, setTab] = useState<"chat" | "preview">("chat");
   const [device, setDevice] = useState<Device>("desktop");
   const [reloadKey, setReloadKey] = useState(0);
-  const [buildFailed, setBuildFailed] = useState<string | null>(null);
-  const [drafting, setDrafting] = useState(false);
-  const [draftPath, setDraftPath] = useState<string | null>(null);
-  const [startOver, setStartOver] = useState(false);
-  const [payoutsReady, setPayoutsReady] = useState(false);
+  const [path, setPath] = useState("/");
   const [celebrate, setCelebrate] = useState(false);
+  const builds = useRef(flow.page_builds);
 
-  const steps = flow.steps;
-  const step: SetupStep | undefined =
-    steps.find((s) => s.id === flow.step) ??
-    steps.find((s) => s.state === "active") ??
-    steps[0];
-  const index = step ? steps.indexOf(step) : 0;
-
-  // First landing (nothing settled yet, not dismissed on this browser): a
-  // welcome panel before the first question. Per-viewer flag; storage may
-  // be unavailable (private mode), in which case the welcome just shows.
-  const welcomeKey = `setup-welcome:${flow.slug}`;
-  const [welcome, setWelcome] = useState(() => {
-    if (progressOf(flow.steps).settled > 0) return false;
-    try {
-      return !window.localStorage.getItem(welcomeKey);
-    } catch {
-      return true;
-    }
-  });
-  const startFlow = () => {
-    try {
-      window.localStorage.setItem(welcomeKey, "1");
-    } catch {
-      // Not remembered — harmless, the welcome shows once more next visit.
-    }
-    setWelcome(false);
-  };
-
-  useEffect(() => {
-    setStartOver(false);
-    setDraftPath(null);
-  }, [step?.id]);
+  const split = iv.phase !== "interview";
+  const working =
+    Object.values(flow.page_builds).some((b) => b.status === "building") ||
+    Object.values(iv.draft_status).some((s) => s === "building");
 
   const refresh = useCallback(async () => {
     try {
@@ -224,273 +147,126 @@ function Flow({
       // A missed poll is harmless; the next one catches up.
     }
   }, [api, setFlow]);
-
-  // ── Page steps: request the build when idle, poll while composing ──────
-  const pageKey = step?.kind === "page" ? (step.page_key ?? null) : null;
-  const buildStatus = pageKey
-    ? (flow.page_builds[pageKey]?.status ?? "idle")
-    : null;
-  const requested = useRef(new Set<string>());
-  const requestBuild = useCallback(
-    async (page: string, force = false) => {
-      setBuildFailed(null);
-      try {
-        await api.buildPage(page, force);
-        await refresh();
-      } catch {
-        setBuildFailed(page);
-      }
-    },
-    [api, refresh],
-  );
   useEffect(() => {
-    if (!pageKey || buildStatus !== "idle") return;
-    if (requested.current.has(pageKey)) return;
-    requested.current.add(pageKey);
-    void requestBuild(pageKey);
-  }, [pageKey, buildStatus, requestBuild]);
-  const pageFailed =
-    pageKey != null && (buildStatus === "failed" || buildFailed === pageKey);
-  const composingPage =
-    pageKey != null &&
-    !pageFailed &&
-    (buildStatus === "building" || buildStatus === "idle");
-  useEffect(() => {
-    if (!composingPage) return;
-    const t = setInterval(() => void refresh(), 2000);
+    if (!working) return;
+    const t = setInterval(() => void refresh(), 3000);
     return () => clearInterval(t);
-  }, [composingPage, refresh]);
+  }, [working, refresh]);
 
-  const { run: retryBuild, loading: retrying } = useAsyncAction(async () => {
-    if (pageKey) await requestBuild(pageKey, true);
-  });
+  // A page that just finished composing: show it.
+  useEffect(() => {
+    const key = landedPage(builds.current, flow.page_builds);
+    builds.current = flow.page_builds;
+    if (!key) return;
+    setPath(flow.steps.find((s) => s.page_key === key)?.preview_path ?? "/");
+    setReloadKey((k) => k + 1);
+  }, [flow.page_builds, flow.steps]);
 
-  // ── Content steps ──────────────────────────────────────────────────────
-  const contentKind =
-    step?.kind === "content" ? (step.id as ContentKind) : null;
-  const hasDraft = contentKind ? flow.content[contentKind] != null : false;
-  const { run: draft } = useAsyncAction(
-    async (prompt: string) => {
-      if (!contentKind) return;
-      setDrafting(true);
-      try {
-        const res = await api.draft(contentKind, prompt);
-        setDraftPath(res.preview_path);
-        setStartOver(false);
-        setReloadKey((k) => k + 1);
-        await refresh();
-      } finally {
-        setDrafting(false);
+  const applyEdit = useCallback(
+    async (edit: CopilotPayload) => {
+      if (edit.kind !== "actions" || !edit.actions?.length) {
+        if (edit.text)
+          setEntries((prev) => [...prev, noteEntry(edit.text as string)]);
+        return;
       }
+      const titles: string[] = [];
+      let auditId: number | undefined;
+      const { failed } = await runBundle(
+        edit.actions.map((card) => async () => {
+          const res = await executeCopilotAction(card.token);
+          titles.push(card.title);
+          if (res.audit_id != null && isUndoableKind(card.kind))
+            auditId = res.audit_id;
+        }),
+      );
+      if (titles.length) {
+        announceSiteUpdated();
+        setReloadKey((k) => k + 1);
+        void refresh();
+      }
+      const text = failed
+        ? `Changed: ${titles.join(", ")}. The rest didn’t go through. Ask again to finish.`
+        : `Done: ${titles.join(", ")}.`;
+      setEntries((prev) => [...prev, noteEntry(text, auditId)]);
     },
-    { errorToast: "Couldn’t draft that. Try again, or say it differently." },
+    [refresh],
   );
 
-  // ── Step moves ─────────────────────────────────────────────────────────
-  const { run: goto, loading: going } = useAsyncAction(
-    async (id: string) => {
-      setFlow(await api.act({ action: "goto", step: id }));
-      setTab("preview");
-    },
-    { errorToast: "Couldn’t open that step. Try again." },
-  );
-  const { run: complete, loading: completing } = useAsyncAction(
-    async () => {
-      if (step) setFlow(await api.act({ action: "complete", step: step.id }));
-    },
-    { errorToast: "Couldn’t save this step. Try again." },
-  );
-  const { run: skip, loading: skipping } = useAsyncAction(
-    async () => {
-      if (step) setFlow(await api.act({ action: "skip", step: step.id }));
-    },
-    { errorToast: "Couldn’t skip this step. Try again." },
-  );
-  const { run: publish, loading: publishing } = useAsyncAction(
-    async () => {
+  const { run: send, loading: sending } = useAsyncAction(
+    async (req: TurnRequest) => {
+      const before = entries;
+      setEntries([...before, { role: "coach", text: req.message }]);
       try {
-        setFlow(await api.act({ action: "finish", publish: true }));
-        setCelebrate(true);
+        const res = await api.turn(req);
+        const coach: InterviewEntry[] = res.coach_text
+          ? [{ role: "coach", text: res.coach_text }]
+          : [];
+        setEntries([...before, ...coach, toEntry(res.guide)]);
+        setGuide(res.guide);
+        setFlow(res.state);
+        if (res.edit) await applyEdit(res.edit);
       } catch (err) {
-        const blockers =
-          err instanceof ApiError ? err.data.blockers : undefined;
-        if (Array.isArray(blockers)) {
-          setFlow((prev) =>
-            prev ? { ...prev, publish_blockers: blockers as string[] } : prev,
-          );
-          toast.error("A few things need finishing before you publish.");
-          return;
-        }
+        setEntries(before);
         throw err;
       }
     },
-    { errorToast: "Couldn’t publish your site. Try again." },
+    { errorToast: "That didn’t go through. Try again." },
   );
-  const { run: later, loading: leaving } = useAsyncAction(
-    async () => {
-      await api.act({ action: "finish", publish: false });
-      navigate("/admin");
+
+  const { run: undo } = useAsyncAction(
+    async (auditId: number) => {
+      await undoCopilotAction(auditId);
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.role === "guide" && e.audit_id === auditId
+            ? { ...e, audit_id: undefined, ack: `${e.ack} (undone)` }
+            : e,
+        ),
+      );
+      announceSiteUpdated();
+      setReloadKey((k) => k + 1);
+      toast.success("Change undone");
     },
-    { errorToast: "Couldn’t finish setup. Try again." },
+    { errorToast: "Couldn’t undo that. Try again." },
   );
 
-  // The welcome's live strip follows the background page builds.
-  useEffect(() => {
-    if (!welcome) return;
-    const t = setInterval(() => void refresh(), 3000);
-    return () => clearInterval(t);
-  }, [welcome, refresh]);
-
-  const onApplied = useCallback(() => {
-    setReloadKey((k) => k + 1);
-    void refresh();
-  }, [refresh]);
-
-  if (!step) return null;
-  const busy = going || completing || skipping;
-  const effectiveDevice: Device = narrow ? "phone" : device;
-  const previewPath = step.preview_path ?? draftPath;
-
-  // ── The stage for this step ───────────────────────────────────────────
-  let stage: ReactNode;
-  let framed = true;
-  let overlay: ReactNode = null;
-  if (step.kind === "content" && contentKind) {
-    if (drafting) {
-      overlay = (
-        <Composing
-          title={step.title}
-          stages={CONTENT_STAGES[contentKind]}
-          note="Usually ready in under a minute."
-        />
-      );
-    } else if (!hasDraft || startOver) {
-      framed = false;
-      stage = (
-        <ContentQuestion
-          key={step.id}
-          kind={contentKind}
-          suggestions={flow.suggestions[contentKind] ?? []}
-          drafting={drafting}
-          onDraft={(prompt) => draft(prompt)}
-          onKeepCurrent={hasDraft ? () => setStartOver(false) : undefined}
-        />
-      );
-    }
-  } else if (step.kind === "page") {
-    if (pageFailed) {
-      overlay = (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#FBFAF8] p-6">
-          <div className="max-w-[380px] text-center">
-            <p className="text-xl font-semibold tracking-[-0.015em]">
-              This page didn’t come together
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--sf-graphite)]">
-              Composing it stopped partway. Try again; it usually works on the
-              second go.
-            </p>
-            <Button
-              onClick={() => retryBuild()}
-              loading={retrying}
-              className="mt-5 rounded-full px-6"
-            >
-              Try again
-            </Button>
-          </div>
-        </div>
-      );
-    } else if (composingPage) {
-      overlay = (
-        <Composing
-          title={step.title}
-          stages={PAGE_STAGES}
-          note="Usually ready in under a minute."
-        />
-      );
-    }
-  } else if (step.kind === "payouts") {
-    framed = false;
-    stage = <PayoutsCard onReady={setPayoutsReady} />;
-  }
-  if (welcome) {
-    framed = false;
-    stage = <Welcome flow={flow} brandName={brandName} onStart={startFlow} />;
-  }
-  if (framed) {
-    stage = (
-      <BrowserFrame
-        host={host}
-        path={step.kind === "launch" ? (previewPath ?? "/") : previewPath}
-        device={effectiveDevice}
-        reloadKey={reloadKey}
-        onReload={overlay ? undefined : () => setReloadKey((k) => k + 1)}
-        overlay={overlay}
-      />
-    );
-  }
-
-  const primaryDisabled =
-    (step.kind === "content" && (!hasDraft || startOver || drafting)) ||
-    (step.kind === "page" && buildStatus !== "ready") ||
-    (step.kind === "payouts" && !payoutsReady);
-
-  const chips =
-    step.kind === "content" && !hasDraft
-      ? []
-      : (CHIPS[contentKind ?? step.kind] ?? []);
-  const context = `[On the "${step.title}" step, previewing ${previewPath ?? "nothing yet"}]`;
+  const currentPage = flow.steps.find((s) => s.preview_path === path)?.page_key;
+  const composing = currentPage
+    ? flow.page_builds[currentPage]?.status !== "ready"
+    : false;
 
   return (
     <div className="flex h-full flex-col lg:flex-row">
-      <StepRail
-        steps={steps}
-        brandName={brandName}
-        logoUrl={logoUrl}
-        onGoto={(id) => goto(id)}
-        busy={busy}
-      />
-      <MobileHeader
-        steps={steps}
-        brandName={brandName}
-        logoUrl={logoUrl}
-        activeTitle={welcome ? "Welcome" : step.title}
-        tab={tab}
-        onTab={setTab}
-      />
+      {split && narrow && (
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[var(--sf-line)] bg-[var(--sf-paper)] px-4">
+          <span className="truncate text-sm font-semibold">{brandName}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTab(tab === "chat" ? "preview" : "chat")}
+            className="rounded-full"
+          >
+            {tab === "chat" ? "See your site" : "Back to the chat"}
+          </Button>
+        </div>
+      )}
 
-      <main
-        className={cn(
-          "relative min-h-0 min-w-0 flex-1 flex-col bg-[var(--sf-wall)]",
-          tab === "chat" ? "hidden lg:flex" : "flex",
-        )}
-        style={{
-          // Lit from above, edges falling off softly: a quiet wall for the
-          // coach's site to hang on.
-          backgroundImage:
-            "radial-gradient(90% 60% at 50% 8%, var(--sf-wall-lit), transparent 72%), radial-gradient(140% 110% at 50% 45%, transparent 55%, rgb(72 52 28 / 0.07))",
-        }}
-      >
-        <div
+      {split && (
+        <main
           className={cn(
-            "hidden h-[60px] shrink-0 items-center justify-between gap-6 px-7",
-            !welcome && "lg:flex",
+            "relative min-h-0 min-w-0 flex-1 flex-col bg-[var(--sf-wall)] motion-safe:animate-fade-in",
+            narrow && tab !== "preview" ? "hidden" : "flex",
           )}
+          style={{
+            backgroundImage:
+              "radial-gradient(90% 60% at 50% 8%, var(--sf-wall-lit), transparent 72%), radial-gradient(140% 110% at 50% 45%, transparent 55%, rgb(72 52 28 / 0.07))",
+          }}
         >
-          <div className="min-w-0">
-            <h1 className="truncate text-[15px] font-semibold tracking-[-0.01em]">
-              {step.title}
-            </h1>
-            {step.subtitle && (
-              <p className="truncate text-[13px] text-[var(--sf-graphite)]">
-                {step.subtitle}
-              </p>
-            )}
-          </div>
-          {framed && (
+          <div className="hidden h-[60px] shrink-0 items-center justify-end px-7 lg:flex">
             <div
               role="radiogroup"
               aria-label="Preview size"
-              className="flex shrink-0 rounded-full bg-[rgb(255_255_255/0.6)] p-0.5 ring-1 ring-[var(--sf-line)]"
+              className="flex rounded-full bg-[rgb(255_255_255/0.6)] p-0.5 ring-1 ring-[var(--sf-line)]"
             >
               {(
                 [
@@ -517,85 +293,60 @@ function Flow({
                 </button>
               ))}
             </div>
-          )}
-        </div>
-
-        <div
-          className={cn(
-            "min-h-0 flex-1",
-            framed && "px-3 py-3 lg:px-7 lg:py-0",
-          )}
-        >
-          {stage}
-        </div>
-
-        {welcome ? null : step.kind === "launch" ? (
-          <LaunchPanel
-            blockers={flow.publish_blockers}
-            stepIds={steps.map((s) => s.id)}
-            onFix={(id) => goto(id)}
-            onPublish={() => publish()}
-            onLater={() => later()}
-            publishing={publishing}
-            leaving={leaving}
-          />
-        ) : (
-          <div className="flex shrink-0 items-center justify-between gap-3 border-t border-[var(--sf-line)] bg-[var(--sf-paper)] px-4 py-3 lg:border-0 lg:bg-transparent lg:px-7 lg:py-4">
-            <span className="hidden text-[13px] tabular-nums text-[var(--sf-graphite)] sm:block">
-              Step {index + 1} of {steps.length}
-            </span>
-            <div className="flex flex-1 items-center justify-end gap-2">
-              {step.kind === "content" && hasDraft && !startOver && (
-                <Button
-                  variant="ghost"
-                  onClick={() => setStartOver(true)}
-                  disabled={drafting || busy}
-                  className="rounded-full"
-                >
-                  Start over
-                </Button>
-              )}
-              {step.optional && (
-                <Button
-                  variant="ghost"
-                  onClick={() => skip()}
-                  loading={skipping}
-                  disabled={completing || going}
-                  className="rounded-full"
-                >
-                  Skip for now
-                </Button>
-              )}
-              <Button
-                size="lg"
-                onClick={() => complete()}
-                loading={completing}
-                disabled={primaryDisabled || skipping || going}
-                className="rounded-full px-6"
-              >
-                {step.kind === "payouts" ? "Continue" : "Looks good — continue"}
-              </Button>
-            </div>
           </div>
-        )}
+          <div className="min-h-0 flex-1 px-3 py-3 lg:px-7 lg:pb-6 lg:pt-0">
+            <BrowserFrame
+              host={host}
+              path={path}
+              device={narrow ? "phone" : device}
+              reloadKey={reloadKey}
+              onReload={
+                composing ? undefined : () => setReloadKey((k) => k + 1)
+              }
+              overlay={
+                composing ? (
+                  <Composing
+                    title="Building your page"
+                    stages={PAGE_STAGES}
+                    note="Usually ready in under a minute."
+                  />
+                ) : null
+              }
+            />
+          </div>
+          {celebrate && (
+            <Celebration
+              brandName={brandName}
+              host={host}
+              onDashboard={() => navigate("/admin")}
+            />
+          )}
+        </main>
+      )}
 
-        {celebrate && (
-          <Celebration
-            brandName={brandName}
-            host={host}
-            onDashboard={() => navigate("/admin")}
-          />
-        )}
-      </main>
-
-      <ChatPanel
-        brandName={brandName}
-        context={context}
-        chips={chips}
-        onApplied={onApplied}
-        className={
-          tab === "preview" ? "hidden lg:flex" : "flex flex-1 lg:flex-none"
+      <InterviewChat
+        entries={entries}
+        guide={guide}
+        sending={sending}
+        remaining={iv.remaining}
+        wide={!split}
+        onSend={(req) => void send(req)}
+        onUndo={(id) => void undo(id)}
+        onMoreLogos={api.logos}
+        footer={
+          iv.phase === "golive" ? (
+            <GoLiveCard api={api} onPublished={() => setCelebrate(true)} />
+          ) : null
         }
+        className={cn(
+          split
+            ? "lg:w-[400px] lg:shrink-0 lg:border-l lg:border-[var(--sf-line)]"
+            : "flex-1",
+          split && narrow && tab !== "chat"
+            ? "hidden"
+            : "flex flex-1 lg:flex-none",
+          !split && "lg:flex-1",
+        )}
       />
     </div>
   );

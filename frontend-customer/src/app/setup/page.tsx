@@ -37,7 +37,6 @@ export default async function SetupPage({
   return (
     <SetupFlow
       brandName={config?.brand_name ?? ""}
-      logoUrl={config?.logo_url ?? ""}
       host={host}
       mock={mock}
       fontClassName={ui.variable}
