@@ -21,3 +21,5 @@
 /.secrets.baseline
 /.ruff_cache/
 /tsconfig.tsbuildinfo
+# Local code-graph index (366M, rewritten live by the GitNexus MCP — races rsync)
+/.gitnexus/
