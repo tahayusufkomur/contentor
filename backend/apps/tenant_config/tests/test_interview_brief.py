@@ -125,3 +125,21 @@ def test_answers_round_trip_and_interview_tenants_skip_migration(tenant_ctx):
     assert state["answers"]["teaches"] == "Yoga"
     assert state["site_plan"] == {"x": 1}  # other keys survive
     assert state["interview_last_at"]
+
+
+@pytest.mark.django_db
+def test_save_merges_only_this_turns_changes(tenant_ctx):
+    """Review finding 4: two tabs must not wipe each other's answers."""
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": {"teaches": "Yoga"}})
+    tenant_ctx.refresh_from_db()
+    base = brief.answers_of(tenant_ctx)
+    mine = dict(base)
+    mine["audience"] = "Desk workers"
+    # Meanwhile another tab picked a style and corrected `teaches`.
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(
+        wizard_state={"flow": "interview", "answers": {"teaches": "Pilates", "site_style": "grid"}}
+    )
+    brief.save_answers(tenant_ctx, mine, base=base)
+    saved = Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["answers"]
+    assert saved == {"teaches": "Pilates", "site_style": "grid", "audience": "Desk workers"}
+    assert tenant_ctx.wizard_state["answers"] == saved

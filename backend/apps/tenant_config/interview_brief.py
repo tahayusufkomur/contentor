@@ -287,13 +287,31 @@ def answers_of(tenant) -> dict:
     return answers if state.get("flow") == "interview" else migrate_legacy(answers)
 
 
-def save_answers(tenant, answers: dict) -> None:
+_GONE = object()
+
+
+def save_answers(tenant, answers: dict, base: dict | None = None) -> None:
     """Locked write of wizard_state["answers"]; the composer writes site_plan
-    into the same JSON from Celery, so other keys are re-read under the lock."""
+    into the same JSON from Celery, so other keys are re-read under the lock.
+
+    With ``base`` (the answers as read before this change), only the keys
+    this caller changed are applied onto the freshly locked answers, so two
+    tabs answering at once never wipe each other's facts."""
     from apps.core.models import Tenant
 
     with transaction.atomic():
         state = dict(Tenant.objects.select_for_update().get(pk=tenant.pk).wizard_state or {})
+        if base is not None:
+            merged = dict(state.get("answers") or {})
+            for key in set(base) | set(answers):
+                value = answers.get(key, _GONE)
+                if value == base.get(key, _GONE):
+                    continue
+                if value is _GONE:
+                    merged.pop(key, None)
+                else:
+                    merged[key] = value
+            answers = merged
         state["answers"] = answers
         state["interview_last_at"] = timezone.now().isoformat()
         Tenant.objects.filter(pk=tenant.pk).update(wizard_state=state)

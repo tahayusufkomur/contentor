@@ -175,6 +175,7 @@ def run_turn(tenant, message: str, *, spoken: bool = False, choice: dict | None 
     flow = TenantConfig.objects.first().setup_flow or {}
     turns = list((flow.get("interview") or {}).get("turns") or [])
     answers = brief.answers_of(tenant)
+    base = dict(answers)
     pending = brief.missing(answers)
     asked = (flow.get("interview") or {}).get("asked") or (pending[0].id if pending else None)
     text = str(message or "").strip()[:MESSAGE_MAX]
@@ -189,7 +190,8 @@ def run_turn(tenant, message: str, *, spoken: bool = False, choice: dict | None 
             brief.apply_fact(answers, fact.field, fact.value)
     elif text and asked and not choice:
         brief.apply_fact(answers, asked, text)  # no AI: the answer is to the question we asked
-    brief.save_answers(tenant, answers)
+    brief.save_answers(tenant, answers, base=base)
+    answers = brief.answers_of(tenant)  # merged with any concurrent tab
 
     nxt = _next_field(brief.missing(answers), turn)
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:

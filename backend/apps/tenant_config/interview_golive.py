@@ -81,12 +81,13 @@ def make_free(tenant) -> None:
     from apps.courses.models import Course
 
     answers = brief.answers_of(tenant)
+    base = dict(answers)
     answers["sells"] = "free"
     answers.pop("course_price", None)
     if not _live_entitled(tenant) and answers.get("offers"):
         brief.apply_fact(
             answers, "offers", ", ".join(o for o in answers["offers"] if o not in ("live", "onsite")) or "course"
         )
-    brief.save_answers(tenant, answers)
+    brief.save_answers(tenant, answers, base=base)
     # During onboarding the only courses are the interview's drafts.
     Course.objects.filter(pricing_type="paid").update(pricing_type="free", price=0)
