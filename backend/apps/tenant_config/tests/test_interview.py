@@ -238,3 +238,18 @@ def test_interview_and_edit_calls_are_capped_under_the_proxy_timeout(client, qui
     ai_cap = quiet.calls[0]["timeout_seconds"]
     edit_cap = run.call_args.kwargs["timeout_seconds"]
     assert ai_cap + edit_cap <= 85
+
+
+def test_interview_throttle_is_per_tenant():
+    """Review finding 5: tenant user ids collide across schemas (owner = pk 1
+    everywhere); the bucket must not be shared between coaches."""
+    from apps.core.throttling import SetupInterviewThrottle
+
+    throttle = SetupInterviewThrottle()
+    user = SimpleNamespace(is_authenticated=True, pk=1)
+    with mock.patch("apps.core.throttling.connection") as conn:
+        conn.schema_name = "yoga_a"
+        key_a = throttle.get_cache_key(SimpleNamespace(user=user), None)
+        conn.schema_name = "chess_b"
+        key_b = throttle.get_cache_key(SimpleNamespace(user=user), None)
+    assert key_a != key_b

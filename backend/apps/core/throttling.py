@@ -2,6 +2,7 @@
 (CF-Connecting-IP aware) rather than REMOTE_ADDR — behind the Cloudflare
 tunnel every anonymous requester otherwise shares one rate bucket."""
 
+from django.db import connection
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from apps.core.net import client_ip
@@ -50,6 +51,12 @@ class BrandNameCheckThrottle(ClientIpAnonThrottle):
 
 
 class SetupInterviewThrottle(UserRateThrottle):
-    """Coach /setup interview turns (one AI call each)."""
+    """Coach /setup interview turns (one AI call each). Keyed per tenant
+    schema too: tenant user ids repeat across schemas (the owner is pk 1
+    almost everywhere), so a user-only key would share one bucket."""
 
     scope = "setup_interview"
+
+    def get_cache_key(self, request, view):
+        key = super().get_cache_key(request, view)
+        return f"{key}:{connection.schema_name}" if key else key
