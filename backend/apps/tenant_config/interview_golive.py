@@ -89,5 +89,6 @@ def make_free(tenant) -> None:
             answers, "offers", ", ".join(o for o in answers["offers"] if o not in ("live", "onsite")) or "course"
         )
     brief.save_answers(tenant, answers, base=base)
-    # During onboarding the only courses are the interview's drafts.
-    Course.objects.filter(pricing_type="paid").update(pricing_type="free", price=0)
+    draft = ((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("course")
+    if draft:
+        Course.objects.filter(pk=draft, pricing_type="paid").update(pricing_type="free", price=0)

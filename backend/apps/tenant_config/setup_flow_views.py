@@ -20,6 +20,16 @@ def _data(request) -> dict:
     return request.data if isinstance(request.data, dict) else {}
 
 
+def _setup_over() -> Response | None:
+    """The interview and go-live act only while guided setup is running."""
+    from .models import TenantConfig
+
+    flow = (TenantConfig.objects.first() or TenantConfig()).setup_flow or {}
+    if flow.get("status") != "active":
+        return Response({"detail": "setup_finished"}, status=409)
+    return None
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsCoachOrOwner])
 def setup_flow_state(request):
@@ -73,6 +83,8 @@ def setup_flow_draft(request):
 @permission_classes([IsCoachOrOwner])
 @throttle_classes([SetupInterviewThrottle])
 def setup_flow_turn(request):
+    if (over := _setup_over()) is not None:
+        return over
     data = _data(request)
     choice = data.get("choice") if isinstance(data.get("choice"), dict) else None
     try:
@@ -103,6 +115,8 @@ def setup_flow_golive(request):
     tenant = connection.tenant
     touch(tenant)
     if request.method == "POST":
+        if (over := _setup_over()) is not None:
+            return over
         action = str(_data(request).get("action") or "")
         try:
             if action == "publish":

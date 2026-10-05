@@ -89,9 +89,11 @@ def test_building_pages_are_not_ready(client, config):
         assert client.get(URL).json()["ready"] is False
 
 
-def test_make_free_clears_plan_and_payouts_needs(client, tenant_ctx):
+def test_make_free_clears_plan_and_payouts_needs(client, tenant_ctx, config):
     """Review focus 5."""
-    _course(paid=True)
+    draft = _course(paid=True)
+    config.setup_flow = {**config.setup_flow, "drafts": {"course": draft.id}}
+    config.save()
     answers = {**DONE, "sells": "paid", "course_price": 49.0, "offers": ["course", "live"]}
     Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
     with (
@@ -147,3 +149,25 @@ def test_selling_coach_on_free_plan_is_offered_the_plan(client, tenant_ctx):
         mock.patch("apps.tenant_config.interview_golive.fire"),
     ):
         assert client.get(URL).json()["needs_plan"] is True
+
+
+def test_make_free_only_touches_the_interviews_draft(client, config):
+    """Review finding 8: other paid courses are not the interview's to change."""
+    draft = _course(paid=True)
+    other = _course(paid=True)
+    config.setup_flow = {**config.setup_flow, "drafts": {"course": draft.id}}
+    config.save()
+    with (
+        mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False),
+        mock.patch("apps.tenant_config.interview_golive.fire"),
+    ):
+        client.post(URL, {"action": "make_free"}, format="json")
+    assert Course.objects.get(pk=draft.pk).pricing_type == "free"
+    assert Course.objects.get(pk=other.pk).pricing_type == "paid"
+
+
+def test_finished_setup_refuses_interview_endpoints(client, config):
+    config.setup_flow = {**config.setup_flow, "status": "done"}
+    config.save()
+    assert client.post(URL, {"action": "make_free"}, format="json").status_code == 409
+    assert client.post("/api/v1/admin/setup-flow/turn/", {"message": "hi"}, format="json").status_code == 409
