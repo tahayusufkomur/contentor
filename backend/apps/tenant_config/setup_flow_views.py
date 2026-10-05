@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.throttling import SetupInterviewThrottle
 
-from . import interview, interview_milestones, setup_flow
+from . import interview, interview_golive, interview_milestones, setup_flow
 
 logger = logging.getLogger(__name__)
 
@@ -93,3 +93,21 @@ def setup_flow_logos(request):
         page = 0
     tenant = connection.tenant
     return Response(interview_milestones.logo_cards(tenant, answers_of(tenant), page))
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def setup_flow_golive(request):
+    tenant = connection.tenant
+    if request.method == "POST":
+        action = str(_data(request).get("action") or "")
+        try:
+            if action == "publish":
+                interview_golive.publish(tenant)
+            elif action == "make_free":
+                interview_golive.make_free(tenant)
+            else:
+                return Response({"detail": "unknown_action"}, status=400)
+        except setup_flow.PublishBlockedError as exc:
+            return Response({"detail": "publish_requirements_unmet", "blockers": exc.blockers}, status=400)
+    return Response(interview_golive.golive_state(tenant))

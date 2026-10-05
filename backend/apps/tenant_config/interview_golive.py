@@ -1,0 +1,80 @@
+"""Go-live for the /setup interview: what still stands between the coach and
+a published site (a paid plan and Stripe only when they sell), publishing,
+and the "make it free and go live now" way out."""
+
+from contextlib import suppress
+
+from apps.core.monetization import can_monetize, is_paid_active
+
+from . import interview_brief as brief
+from .interview_milestones import fire
+from .models import TenantConfig
+from .setup_items import _has_paid_content, _live_entitled, _seeded_by_label, publish_blockers
+
+
+def _starter_plan(tenant) -> dict | None:
+    from apps.billing.views.platform import _build_prices
+    from apps.core.models import PlatformPlan
+
+    plan = PlatformPlan.objects.filter(is_active=True, price_monthly__gt=0).order_by("price_monthly").first()
+    if plan is None:
+        return None
+    currency = (tenant.billing_currency or "USD").upper()
+    entry = _build_prices(plan).get(currency) or {}
+    return {"id": plan.pk, "name": plan.name, "amount_cents": entry.get("amount_cents"), "currency": currency}
+
+
+def golive_state(tenant) -> dict:
+    answers = brief.answers_of(tenant)
+    fire(tenant, answers)  # e.g. a live-class draft unlocked by a plan bought at checkout
+    config = TenantConfig.objects.first()
+    flow = config.setup_flow or {}
+    fired = (flow.get("interview") or {}).get("fired") or []
+    builds = flow.get("page_builds") or {}
+    building = any(
+        (builds.get(k.removeprefix("page:")) or {}).get("status") == "building" for k in fired if k.startswith("page:")
+    ) or any(s == "building" for s in (flow.get("draft_status") or {}).values())
+    paid_content = _has_paid_content(_seeded_by_label())
+    wants_live = bool({"live", "onsite"} & set(answers.get("offers") or [])) and not _live_entitled(tenant)
+    paid = is_paid_active(tenant)
+    needs_plan = (paid_content or wants_live) and not paid
+    return {
+        "ready": not brief.missing(answers) and not building,
+        "building": building,
+        "needs_plan": needs_plan,
+        "needs_payouts": paid_content and paid and not can_monetize(tenant),
+        "plan": _starter_plan(tenant) if needs_plan else None,
+        "blockers": publish_blockers(config, tenant),
+    }
+
+
+def publish(tenant) -> None:
+    """Publish the interview's drafts, then the site. Raises
+    setup_flow.PublishBlockedError when a requirement is still unmet."""
+    from apps.core.copilot import content
+
+    from . import setup_flow
+
+    drafts = (TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}
+    for kind, publisher in (("course", content.publish_course), ("post", content.publish_blog_post)):
+        if drafts.get(kind):
+            with suppress(content.ContentOpError):  # already published, or the draft is gone
+                publisher(drafts[kind])
+    setup_flow.act(tenant, "finish", publish=True)
+
+
+def make_free(tenant) -> None:
+    """The coach declined the plan or Stripe: everything free, live classes
+    (which need a paid plan) dropped from the offer for now."""
+    from apps.courses.models import Course
+
+    answers = brief.answers_of(tenant)
+    answers["sells"] = "free"
+    answers.pop("course_price", None)
+    if not _live_entitled(tenant) and answers.get("offers"):
+        brief.apply_fact(
+            answers, "offers", ", ".join(o for o in answers["offers"] if o not in ("live", "onsite")) or "course"
+        )
+    brief.save_answers(tenant, answers)
+    # During onboarding the only courses are the interview's drafts.
+    Course.objects.filter(pricing_type="paid").update(pricing_type="free", price=0)

@@ -90,6 +90,15 @@ def start_checkout(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    # The guided /setup flow brings the coach back to itself; nothing else may
+    # steer Stripe's redirect (same rule as connect_onboard).
+    return_path = request.data.get("return_path")
+    if return_path is not None and not str(return_path).startswith("/setup"):
+        return Response(
+            {"error": "INVALID_RETURN_PATH", "detail": "return_path must be a relative /setup path."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
         plan = PlatformPlan.objects.get(pk=plan_id)
     except PlatformPlan.DoesNotExist:
@@ -122,8 +131,10 @@ def start_checkout(request):
         )
 
     origin = _tenant_origin(tenant)
-    success_url = f"{origin}/admin/billing?checkout=success"
-    cancel_url = f"{origin}/admin/billing?checkout=cancel"
+    back = f"{origin}{return_path}" if return_path else f"{origin}/admin/billing"
+    sep = "&" if "?" in back else "?"
+    success_url = f"{back}{sep}checkout=success"
+    cancel_url = f"{back}{sep}checkout=cancel"
     locale = _resolve_locale(request.user, tenant)
 
     provider = get_provider()
