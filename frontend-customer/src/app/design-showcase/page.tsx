@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation";
-import { FAMILIES, FAMILY_IDS, SECTION_MANIFEST, type FamilyId } from "@shared/sections/types";
+import {
+  FAMILIES,
+  FAMILY_IDS,
+  SECTION_MANIFEST,
+  type FamilyId,
+} from "@shared/sections/types";
 import { SITE_STYLES, styleFontsHref, styleScope } from "@/lib/site-styles";
 import { STYLE_SECTIONS } from "@/components/sections/registry";
 import { fixtureBlock, fixtureData } from "@/components/sections/fixtures";
@@ -31,7 +36,10 @@ export default async function DesignShowcasePage({
   type Item = { family: FamilyId; variant: string };
   let items: Item[] = [];
   if (sp.page && sp.page in SECTION_MANIFEST.recipes) {
-    const recipe = SECTION_MANIFEST.recipes[sp.page as keyof typeof SECTION_MANIFEST.recipes];
+    const recipe =
+      SECTION_MANIFEST.recipes[
+        sp.page as keyof typeof SECTION_MANIFEST.recipes
+      ];
     items = recipe.map((entry) => {
       const [family, name] = entry.split(":") as [FamilyId, string | undefined];
       return { family, variant: name ?? style.variants[family]?.[0] ?? "" };
@@ -39,7 +47,8 @@ export default async function DesignShowcasePage({
   } else {
     const families = sp.family ? ([sp.family] as FamilyId[]) : FAMILY_IDS;
     for (const family of families) {
-      for (const name of style.variants[family] ?? []) items.push({ family, variant: name });
+      for (const name of style.variants[family] ?? [])
+        items.push({ family, variant: name });
     }
   }
 
@@ -50,19 +59,31 @@ export default async function DesignShowcasePage({
         <nav className="sticky top-0 z-50 flex flex-wrap items-center gap-2 border-b border-black/10 bg-white/90 px-4 py-2 font-mono text-[11px] text-black backdrop-blur">
           <strong className="mr-2">{style.label}</strong>
           {styleIds.map((id) => (
-            <a key={id} href={`?style=${id}&size=${size}`} className={id === style.id ? "underline" : "opacity-60"}>
+            <a
+              key={id}
+              href={`?style=${id}&size=${size}`}
+              className={id === style.id ? "underline" : "opacity-60"}
+            >
               {id}
             </a>
           ))}
           <span className="mx-2 opacity-30">|</span>
           {Object.keys(SECTION_MANIFEST.recipes).map((p) => (
-            <a key={p} href={`?style=${style.id}&page=${p}`} className={sp.page === p ? "underline" : "opacity-60"}>
+            <a
+              key={p}
+              href={`?style=${style.id}&page=${p}`}
+              className={sp.page === p ? "underline" : "opacity-60"}
+            >
               {p}
             </a>
           ))}
           <span className="mx-2 opacity-30">|</span>
-          <a href={`?style=${style.id}&size=long`} className="opacity-60">long</a>
-          <a href={`?style=${style.id}&size=short`} className="opacity-60">short</a>
+          <a href={`?style=${style.id}&size=long`} className="opacity-60">
+            long
+          </a>
+          <a href={`?style=${style.id}&size=short`} className="opacity-60">
+            short
+          </a>
         </nav>
       )}
       {items.map(({ family, variant }, i) => {
@@ -70,7 +91,10 @@ export default async function DesignShowcasePage({
         const key = `${family}-${variant}-${i}`;
         if (!Comp) {
           return (
-            <div key={key} className="border-y border-dashed border-red-400 p-6 font-mono text-xs text-red-600">
+            <div
+              key={key}
+              className="border-y border-dashed border-red-400 p-6 font-mono text-xs text-red-600"
+            >
               missing: {style.id} / {family} / {variant}
             </div>
           );

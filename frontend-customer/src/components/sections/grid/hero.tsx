@@ -106,7 +106,9 @@ export function HeroIntro({ block, editable }: SectionProps) {
           <div
             className={cn(
               "col-span-12 md:col-start-4 md:pt-16",
-              photo ? "md:col-span-5 lg:col-span-6 lg:col-start-4" : "md:col-span-9",
+              photo
+                ? "md:col-span-5 lg:col-span-6 lg:col-start-4"
+                : "md:col-span-9",
             )}
           >
             <Txt
@@ -129,7 +131,11 @@ export function HeroIntro({ block, editable }: SectionProps) {
             )}
             {block.ctaLabel ? (
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-                <Cta block={block} editable={editable} className={btn.primary} />
+                <Cta
+                  block={block}
+                  editable={editable}
+                  className={btn.primary}
+                />
                 <Cta
                   block={block}
                   editable={editable}

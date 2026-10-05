@@ -4,22 +4,42 @@ import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H1, Kicker, PILL, Section, WRAP, str } from "./ui";
 
-const delay = (ms: number) => ({ "--journal-delay": `${ms}ms` }) as CSSProperties;
+const delay = (ms: number) =>
+  ({ "--journal-delay": `${ms}ms` }) as CSSProperties;
 
-function Actions({ block, editable, className }: SectionProps & { className?: string }) {
+function Actions({
+  block,
+  editable,
+  className,
+}: SectionProps & { className?: string }) {
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
   return (
-    <div className={cn("flex flex-wrap items-center gap-x-8 gap-y-5", className)}>
+    <div
+      className={cn("flex flex-wrap items-center gap-x-8 gap-y-5", className)}
+    >
       {primary && (
         <SmartLink href={block.ctaHref} className={PILL}>
-          <Txt block={block} field="ctaLabel" editable={editable} placeholder="Button text" />
+          <Txt
+            block={block}
+            field="ctaLabel"
+            editable={editable}
+            placeholder="Button text"
+          />
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className="journal-link text-[0.95rem] font-medium">
-          <Txt block={block} field="secondaryLabel" editable={editable} placeholder="Second button" />
+        <SmartLink
+          href={block.secondaryHref}
+          className="journal-link text-[0.95rem] font-medium"
+        >
+          <Txt
+            block={block}
+            field="secondaryLabel"
+            editable={editable}
+            placeholder="Second button"
+          />
         </SmartLink>
       )}
     </div>
@@ -33,7 +53,12 @@ export function HeroEditorial({ block, editable }: SectionProps) {
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
     <Section className="pt-10 md:pt-14 lg:pt-16" label={alt}>
-      <div className={cn(WRAP, "grid gap-y-12 md:grid-cols-12 md:gap-x-8 lg:gap-x-10")}>
+      <div
+        className={cn(
+          WRAP,
+          "grid gap-y-12 md:grid-cols-12 md:gap-x-8 lg:gap-x-10",
+        )}
+      >
         <div className="flex flex-col md:col-span-7 md:pb-4 lg:pt-6">
           <div className="journal-rise" style={delay(0)}>
             <Kicker block={block} editable={editable} />
@@ -53,7 +78,10 @@ export function HeroEditorial({ block, editable }: SectionProps) {
               )}
             />
           </div>
-          <div className="journal-rise mt-auto pt-10 md:pt-14 lg:pt-16" style={delay(200)}>
+          <div
+            className="journal-rise mt-auto pt-10 md:pt-14 lg:pt-16"
+            style={delay(200)}
+          >
             <Txt
               block={block}
               field="subhead"
@@ -81,7 +109,11 @@ export function HeroEditorial({ block, editable }: SectionProps) {
                 className="journal-rise absolute -bottom-10 -left-3 w-[38%] max-w-[13rem] border-[6px] border-background sm:-left-6 lg:-left-24 lg:bottom-12"
                 style={delay(700)}
               >
-                <Img value={block.image2} alt={alt} className="aspect-square w-full" />
+                <Img
+                  value={block.image2}
+                  alt={alt}
+                  className="aspect-square w-full"
+                />
               </div>
             )}
           </div>
@@ -92,7 +124,12 @@ export function HeroEditorial({ block, editable }: SectionProps) {
                 showDetail && "pl-[42%] md:pl-[30%] lg:pl-0",
               )}
             >
-              <Txt block={block} field="meta" editable={editable} placeholder="Small line" />
+              <Txt
+                block={block}
+                field="meta"
+                editable={editable}
+                placeholder="Small line"
+              />
             </figcaption>
           )}
         </figure>
@@ -107,8 +144,16 @@ export function HeroIntro({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   return (
-    <Section className="border-b border-border pb-14 pt-14 md:pb-20 md:pt-20 lg:pb-24 lg:pt-24" label={alt}>
-      <div className={cn(WRAP, "grid items-end gap-y-10 lg:grid-cols-12 lg:gap-x-10")}>
+    <Section
+      className="border-b border-border pb-14 pt-14 md:pb-20 md:pt-20 lg:pb-24 lg:pt-24"
+      label={alt}
+    >
+      <div
+        className={cn(
+          WRAP,
+          "grid items-end gap-y-10 lg:grid-cols-12 lg:gap-x-10",
+        )}
+      >
         <div className={showImage ? "lg:col-span-8" : "lg:col-span-10"}>
           <Kicker block={block} editable={editable} />
           <Txt
@@ -139,7 +184,12 @@ export function HeroIntro({ block, editable }: SectionProps) {
             />
             {has(block, "meta", editable) && (
               <figcaption className="mt-3 max-w-[19rem] font-display text-[0.95rem] italic text-muted-foreground lg:ml-auto">
-                <Txt block={block} field="meta" editable={editable} placeholder="Small line" />
+                <Txt
+                  block={block}
+                  field="meta"
+                  editable={editable}
+                  placeholder="Small line"
+                />
               </figcaption>
             )}
           </figure>

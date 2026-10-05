@@ -19,7 +19,8 @@ const SPREAD: [place: string, aspect: string][] = [
 export function MomentsSpread({ block, editable }: SectionProps) {
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
-  const showHead = has(block, "heading", editable) || has(block, "kicker", editable);
+  const showHead =
+    has(block, "heading", editable) || has(block, "kicker", editable);
   const showCaption = has(block, "caption", editable);
 
   return (
@@ -57,13 +58,19 @@ export function MomentsSpread({ block, editable }: SectionProps) {
           {photos.map((p, i) => (
             <li
               key={i}
-              className={cn("w-[74%] shrink-0 snap-start sm:w-[46%] md:w-auto", SPREAD[i % SPREAD.length][0])}
+              className={cn(
+                "w-[74%] shrink-0 snap-start sm:w-[46%] md:w-auto",
+                SPREAD[i % SPREAD.length][0],
+              )}
             >
               <figure>
                 <Img
                   value={p.image}
                   alt={p.caption || alt}
-                  className={cn("aspect-[4/5] w-full", SPREAD[i % SPREAD.length][1])}
+                  className={cn(
+                    "aspect-[4/5] w-full",
+                    SPREAD[i % SPREAD.length][1],
+                  )}
                 />
                 {p.caption && (
                   <figcaption className="mt-3 font-display text-[0.98rem] italic leading-snug text-muted-foreground">

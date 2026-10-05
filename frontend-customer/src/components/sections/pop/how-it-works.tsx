@@ -15,8 +15,17 @@ export function HowItWorksCircles({ block, editable }: SectionProps) {
   return (
     <PopSection bg="var(--background)" className="py-20 md:py-28">
       <div className={WRAP}>
-        <div className={cn("grid items-center gap-x-16 gap-y-12", withImage && "md:grid-cols-12")}>
-          <div className={cn(withImage ? "md:col-span-7 lg:col-span-8" : "max-w-4xl")}>
+        <div
+          className={cn(
+            "grid items-center gap-x-16 gap-y-12",
+            withImage && "md:grid-cols-12",
+          )}
+        >
+          <div
+            className={cn(
+              withImage ? "md:col-span-7 lg:col-span-8" : "max-w-4xl",
+            )}
+          >
             <Kicker block={block} editable={editable} fill="lilac" />
             <Txt
               block={block}
@@ -37,7 +46,11 @@ export function HowItWorksCircles({ block, editable }: SectionProps) {
           {withImage && (
             <div className="relative mx-auto w-full max-w-[17rem] md:col-span-5 md:mr-4 lg:col-span-4">
               <div className="pop-card rotate-3 overflow-hidden">
-                <Img value={block.image} alt={str(block.heading)} className="aspect-[4/5] w-full" />
+                <Img
+                  value={block.image}
+                  alt={str(block.heading)}
+                  className="aspect-[4/5] w-full"
+                />
               </div>
             </div>
           )}
@@ -46,7 +59,9 @@ export function HowItWorksCircles({ block, editable }: SectionProps) {
         <ol
           className={cn(
             "mt-16 grid gap-x-8 gap-y-10 md:mt-20",
-            four ? "sm:grid-cols-2 sm:gap-y-14 lg:grid-cols-4" : "md:grid-cols-3",
+            four
+              ? "sm:grid-cols-2 sm:gap-y-14 lg:grid-cols-4"
+              : "md:grid-cols-3",
           )}
         >
           {steps.map((s, i) => (
@@ -70,8 +85,12 @@ export function HowItWorksCircles({ block, editable }: SectionProps) {
                 {i + 1}
               </span>
               <div className="pt-2 md:mt-7 md:pt-0">
-                <h3 className="pop-h3 text-[1.5rem] md:text-[1.625rem]">{s.title}</h3>
-                <p className="mt-2.5 max-w-[22rem] text-base leading-relaxed text-muted-foreground">{s.text}</p>
+                <h3 className="pop-h3 text-[1.5rem] md:text-[1.625rem]">
+                  {s.title}
+                </h3>
+                <p className="mt-2.5 max-w-[22rem] text-base leading-relaxed text-muted-foreground">
+                  {s.text}
+                </p>
               </div>
             </li>
           ))}

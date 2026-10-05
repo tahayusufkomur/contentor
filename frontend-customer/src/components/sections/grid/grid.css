@@ -5,9 +5,14 @@
   font-family: var(--font-sans);
 }
 @media (min-width: 768px) {
-  .swiss-sec { --swiss-g: 1.5rem; }
+  .swiss-sec {
+    --swiss-g: 1.5rem;
+  }
 }
-.swiss-sec ::selection { background: var(--primary); color: var(--primary-foreground); }
+.swiss-sec ::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
 
 /* ---- type ---------------------------------------------------------- */
 .swiss-mono {
@@ -76,11 +81,18 @@
   letter-spacing: -0.012em;
 }
 /* First line starts on the column-4 axis of an N-col span (default 12). */
-.swiss-indent { text-indent: calc((100% + var(--swiss-g)) * 3 / var(--swiss-cols, 12)); }
+.swiss-indent {
+  text-indent: calc((100% + var(--swiss-g)) * 3 / var(--swiss-cols, 12));
+}
 
 /* Book-set paragraphs: no gap, indented continuation. */
-.swiss-sec .swiss-prose p { margin: 0; }
-.swiss-sec .swiss-prose p + p { margin-top: 0; text-indent: 2em; }
+.swiss-sec .swiss-prose p {
+  margin: 0;
+}
+.swiss-sec .swiss-prose p + p {
+  margin-top: 0;
+  text-indent: 2em;
+}
 
 /* ---- structure ----------------------------------------------------- */
 .swiss-rule {
@@ -102,13 +114,22 @@
 }
 
 /* Photos are monochrome so cobalt stays the only colour on the page. */
-.swiss-photo img { filter: grayscale(1) contrast(1.05); }
-.swiss-duo { background: transparent; }
-.swiss-duo img { filter: grayscale(1) contrast(1.1); mix-blend-mode: luminosity; }
+.swiss-photo img {
+  filter: grayscale(1) contrast(1.05);
+}
+.swiss-duo {
+  background: transparent;
+}
+.swiss-duo img {
+  filter: grayscale(1) contrast(1.1);
+  mix-blend-mode: luminosity;
+}
 
 /* Cards bring their photo back to colour while pointed at. */
 .swiss-card:hover .swiss-photo img,
-.swiss-card:focus-visible .swiss-photo img { filter: none; }
+.swiss-card:focus-visible .swiss-photo img {
+  filter: none;
+}
 
 /* ---- focus --------------------------------------------------------- */
 .swiss-sec a:focus-visible,
@@ -118,7 +139,9 @@
   outline-offset: 3px;
 }
 .swiss-inverse a:focus-visible,
-.swiss-inverse button:focus-visible { outline-color: var(--inverse-foreground); }
+.swiss-inverse button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
 
 /* ---- contact form, restyled to the grid ---------------------------- */
 .swiss-form label {
@@ -151,7 +174,10 @@
   font-size: 0.9375rem;
   box-shadow: none;
 }
-.swiss-form button:hover { background: var(--foreground); color: var(--background); }
+.swiss-form button:hover {
+  background: var(--foreground);
+  color: var(--background);
+}
 
 /* ---- motion -------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -159,9 +185,15 @@
     animation: swiss-rise 1.1s cubic-bezier(0.2, 0.7, 0.1, 1) both;
     animation-delay: calc(var(--i) * 45ms);
   }
-  .swiss-hero .swiss-rule { animation: swiss-draw 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both; }
-  .swiss-plumb { animation: swiss-rise 0.6s 0.7s cubic-bezier(0.5, 0, 0.2, 1) both; }
-  .swiss-card .swiss-photo img { transition: filter 0.45s ease; }
+  .swiss-hero .swiss-rule {
+    animation: swiss-draw 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  }
+  .swiss-plumb {
+    animation: swiss-rise 0.6s 0.7s cubic-bezier(0.5, 0, 0.2, 1) both;
+  }
+  .swiss-card .swiss-photo img {
+    transition: filter 0.45s ease;
+  }
 
   @supports (animation-timeline: view()) {
     .swiss-sec:not(.swiss-hero) .swiss-rule {
@@ -172,10 +204,18 @@
   }
 }
 @keyframes swiss-draw {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 @keyframes swiss-rise {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }

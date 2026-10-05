@@ -30,7 +30,9 @@ export function BenefitsIndex({ block, editable }: SectionProps) {
               <span className="swiss-mono col-span-9 text-muted-foreground md:col-span-1">
                 ({pad(i + 1)})
               </span>
-              <h3 className="swiss-h3 col-span-9 text-balance md:col-span-3">{it.title}</h3>
+              <h3 className="swiss-h3 col-span-9 text-balance md:col-span-3">
+                {it.title}
+              </h3>
               <p className="col-span-9 max-w-[52ch] text-[1.0625rem] leading-[1.5] text-muted-foreground md:col-span-5">
                 {it.text}
               </p>

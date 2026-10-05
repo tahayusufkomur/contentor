@@ -37,7 +37,13 @@ export function PopSection({
   return (
     <section
       className={cn("pop-root", dark && "pop-dark", className)}
-      style={{ "--pop-bg": bg, ...(fg ? { "--pop-fg": fg } : {}), ...style } as CSSProperties}
+      style={
+        {
+          "--pop-bg": bg,
+          ...(fg ? { "--pop-fg": fg } : {}),
+          ...style,
+        } as CSSProperties
+      }
     >
       {children}
     </section>
@@ -87,10 +93,21 @@ export function PopButton({
   className?: string;
 }) {
   if (!has(block, label, editable)) return null;
-  const link = (href && typeof block[href] === "string" && block[href]) || fallbackHref || "";
+  const link =
+    (href && typeof block[href] === "string" && block[href]) ||
+    fallbackHref ||
+    "";
   return (
-    <SmartLink href={link} className={cn("pop-btn", `pop-btn-${tone}`, className)}>
-      <Txt block={block} field={label} editable={editable} placeholder="Button text" />
+    <SmartLink
+      href={link}
+      className={cn("pop-btn", `pop-btn-${tone}`, className)}
+    >
+      <Txt
+        block={block}
+        field={label}
+        editable={editable}
+        placeholder="Button text"
+      />
     </SmartLink>
   );
 }
@@ -115,12 +132,32 @@ export function RingBadge({
   const pathId = `pop-ring-${uid.replace(/[^\w-]/g, "")}`;
   return (
     <div className={cn("pop-wiggle aspect-square rounded-full", className)}>
-      <svg viewBox="0 0 200 200" role="img" aria-label={text} className="pop-spin block h-full w-full">
+      <svg
+        viewBox="0 0 200 200"
+        role="img"
+        aria-label={text}
+        className="pop-spin block h-full w-full"
+      >
         <defs>
-          <path id={pathId} d="M22,100 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+          <path
+            id={pathId}
+            d="M22,100 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"
+          />
         </defs>
-        <circle cx="100" cy="100" r="97" style={{ fill: "var(--accent)", stroke: "var(--foreground)" }} strokeWidth="3" />
-        <circle cx="100" cy="100" r="64" style={{ fill: "none", stroke: "var(--foreground)" }} strokeWidth="2" />
+        <circle
+          cx="100"
+          cy="100"
+          r="97"
+          style={{ fill: "var(--accent)", stroke: "var(--foreground)" }}
+          strokeWidth="3"
+        />
+        <circle
+          cx="100"
+          cy="100"
+          r="64"
+          style={{ fill: "none", stroke: "var(--foreground)" }}
+          strokeWidth="2"
+        />
         <text
           style={{
             fill: "var(--foreground)",

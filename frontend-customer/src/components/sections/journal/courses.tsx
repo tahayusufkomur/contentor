@@ -1,11 +1,22 @@
 import { cn } from "@/lib/utils";
 import type { Course } from "@/types/course";
-import { CoursePrice, EmptyHint, Img, SmartLink, Txt, courseHref, courseImage, has } from "../kit";
+import {
+  CoursePrice,
+  EmptyHint,
+  Img,
+  SmartLink,
+  Txt,
+  courseHref,
+  courseImage,
+  has,
+} from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, H3, Kicker, LABEL, Section, WRAP } from "./ui";
 
 const lessons = (c: Course) =>
-  c.lesson_count ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}` : "";
+  c.lesson_count
+    ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
+    : "";
 
 /** Meta line under a cover: lesson count left, price right, on one hairline. */
 function Meta({ course, className }: { course: Course; className?: string }) {
@@ -67,10 +78,20 @@ function Card({ course, wide }: { course: Course; wide: boolean }) {
       <Img
         value={{ url: courseImage(course) }}
         alt={course.title}
-        className={cn("journal-zoom w-full", wide ? "aspect-[3/2]" : "aspect-[4/5]")}
+        className={cn(
+          "journal-zoom w-full",
+          wide ? "aspect-[3/2]" : "aspect-[4/5]",
+        )}
       />
       <Meta course={course} className="mt-5" />
-      <h3 className={cn(H3, "mt-4 text-[1.45rem] leading-[1.15] md:text-[1.6rem]")}>{course.title}</h3>
+      <h3
+        className={cn(
+          H3,
+          "mt-4 text-[1.45rem] leading-[1.15] md:text-[1.6rem]",
+        )}
+      >
+        {course.title}
+      </h3>
       {course.description && (
         <p className="mt-3 line-clamp-2 max-w-[44ch] text-[0.975rem] leading-[1.6] text-muted-foreground">
           {course.description}
@@ -97,7 +118,9 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
   const n = rest.length;
 
   return (
-    <Section label={typeof block.heading === "string" ? block.heading : "Courses"}>
+    <Section
+      label={typeof block.heading === "string" ? block.heading : "Courses"}
+    >
       <div className={WRAP}>
         <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-10">
           <div className="lg:col-span-7">
@@ -140,7 +163,10 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
               <div className="mt-16 grid gap-x-8 gap-y-14 border-t border-border pt-12 sm:grid-cols-2 md:mt-24 lg:grid-cols-6 lg:gap-x-10">
                 {rest.map((c, i) => (
                   <div key={c.id} className={span(i, n)}>
-                    <Card course={c} wide={n % 3 !== 0 && i < (n % 3 === 2 ? 2 : 4)} />
+                    <Card
+                      course={c}
+                      wide={n % 3 !== 0 && i < (n % 3 === 2 ? 2 : 4)}
+                    />
                   </div>
                 ))}
               </div>
@@ -150,10 +176,18 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
 
         {(has(block, "ctaLabel", editable) || courses.length > 0) && (
           <div className="mt-16 flex md:mt-20">
-            <SmartLink href="/courses" className="group inline-flex items-center gap-3 text-[1rem] font-medium">
+            <SmartLink
+              href="/courses"
+              className="group inline-flex items-center gap-3 text-[1rem] font-medium"
+            >
               <span className="journal-link">
                 {has(block, "ctaLabel", editable) ? (
-                  <Txt block={block} field="ctaLabel" editable={editable} placeholder="Button text" />
+                  <Txt
+                    block={block}
+                    field="ctaLabel"
+                    editable={editable}
+                    placeholder="Button text"
+                  />
                 ) : (
                   "All courses"
                 )}

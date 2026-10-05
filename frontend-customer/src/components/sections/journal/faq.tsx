@@ -21,7 +21,10 @@ export function FaqSticky({ block, editable }: SectionProps) {
               editable={editable}
               as="h2"
               placeholder="Heading"
-              className={cn(H2, "mt-5 block text-[clamp(2.1rem,1.6rem+1.9vw,3.4rem)] leading-[1.06]")}
+              className={cn(
+                H2,
+                "mt-5 block text-[clamp(2.1rem,1.6rem+1.9vw,3.4rem)] leading-[1.06]",
+              )}
             />
             <Txt
               block={block}
@@ -36,12 +39,19 @@ export function FaqSticky({ block, editable }: SectionProps) {
 
         <div className="journal-faq border-b border-border lg:col-span-7 lg:col-start-6">
           {items.map((it, i) => (
-            <details key={i} className="group border-t border-border" open={i === 0}>
+            <details
+              key={i}
+              className="group border-t border-border"
+              open={i === 0}
+            >
               <summary className="flex cursor-pointer items-baseline justify-between gap-8 py-6 md:py-7">
                 <span className="text-balance font-display text-[1.3rem] leading-snug md:text-[1.5rem]">
                   {it.q}
                 </span>
-                <span className="journal-plus translate-y-[-0.2em]" aria-hidden="true" />
+                <span
+                  className="journal-plus translate-y-[-0.2em]"
+                  aria-hidden="true"
+                />
               </summary>
               <p className="max-w-[60ch] pb-8 pr-10 text-pretty text-[1.0625rem] leading-[1.7] text-muted-foreground">
                 {it.a}

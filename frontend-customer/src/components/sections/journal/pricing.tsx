@@ -1,7 +1,13 @@
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
-import { EmptyHint, SmartLink, SubscribeButton, Txt, billingIntervalSuffix } from "../kit";
+import {
+  EmptyHint,
+  SmartLink,
+  SubscribeButton,
+  Txt,
+  billingIntervalSuffix,
+} from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WRAP } from "./ui";
 
@@ -18,7 +24,10 @@ function money(price: string, currency: string) {
     }).formatToParts(value);
     return {
       symbol: parts.find((p) => p.type === "currency")?.value ?? currency,
-      amount: parts.filter((p) => p.type !== "currency" && p.type !== "literal").map((p) => p.value).join(""),
+      amount: parts
+        .filter((p) => p.type !== "currency" && p.type !== "literal")
+        .map((p) => p.value)
+        .join(""),
     };
   } catch {
     return { symbol: currency, amount: price };
@@ -35,9 +44,13 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
       )}
     >
       <div className={cn(solo && "md:col-span-7")}>
-        <h3 className="font-display text-[1.75rem] font-normal italic leading-tight">{plan.name}</h3>
+        <h3 className="font-display text-[1.75rem] font-normal italic leading-tight">
+          {plan.name}
+        </h3>
         <p className="journal-lnum mt-6 flex items-start font-display font-light leading-none tracking-[-0.03em]">
-          <span className="mr-1 mt-[0.35em] text-[1.6rem] text-muted-foreground">{symbol}</span>
+          <span className="mr-1 mt-[0.35em] text-[1.6rem] text-muted-foreground">
+            {symbol}
+          </span>
           <span className="text-[clamp(4rem,2.6rem+4vw,6rem)]">{amount}</span>
           <span className="ml-2 self-end pb-[0.4em] text-[1rem] tracking-normal text-muted-foreground">
             {billingIntervalSuffix(plan.billing_interval_months)}
@@ -45,7 +58,8 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
         </p>
         {!!plan.item_count && (
           <p className={cn(LABEL, "mt-6 text-foreground")}>
-            {plan.item_count} {plan.item_count === 1 ? "item" : "items"} included
+            {plan.item_count} {plan.item_count === 1 ? "item" : "items"}{" "}
+            included
           </p>
         )}
         {plan.description && (
@@ -88,7 +102,9 @@ export function PricingColumns({ block, data, editable }: SectionProps) {
   const solo = plans.length === 1;
 
   return (
-    <Section label={typeof block.heading === "string" ? block.heading : "Pricing"}>
+    <Section
+      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+    >
       <div className={WRAP}>
         <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-10">
           <div className="lg:col-span-7">
@@ -115,7 +131,9 @@ export function PricingColumns({ block, data, editable }: SectionProps) {
         {plans.length ? (
           <ul
             className="mt-14 grid border-y border-foreground md:mt-20 md:grid-cols-[repeat(var(--journal-cols),minmax(0,1fr))]"
-            style={{ "--journal-cols": solo ? 1 : plans.length } as CSSProperties}
+            style={
+              { "--journal-cols": solo ? 1 : plans.length } as CSSProperties
+            }
           >
             {plans.map((p) => (
               <Plan key={p.id} plan={p} solo={solo} />

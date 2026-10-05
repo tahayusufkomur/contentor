@@ -13,7 +13,11 @@ export function MomentsPolaroids({ block, editable }: SectionProps) {
   const photos = itemsOf<Photo>(block, "photos");
   const heading = str(block.heading);
   const size =
-    photos.length <= 3 ? "lg:max-w-[20rem]" : photos.length === 4 ? "lg:max-w-[18rem]" : "lg:max-w-[15.5rem]";
+    photos.length <= 3
+      ? "lg:max-w-[20rem]"
+      : photos.length === 4
+        ? "lg:max-w-[18rem]"
+        : "lg:max-w-[15.5rem]";
   return (
     <PopSection
       bg="var(--primary)"
@@ -23,7 +27,12 @@ export function MomentsPolaroids({ block, editable }: SectionProps) {
     >
       <div className={WRAP}>
         <div className="mx-auto max-w-4xl text-center">
-          <Kicker block={block} editable={editable} fill="sun" className="mx-auto" />
+          <Kicker
+            block={block}
+            editable={editable}
+            fill="sun"
+            className="mx-auto"
+          />
           <Txt
             block={block}
             field="heading"
@@ -53,7 +62,11 @@ export function MomentsPolaroids({ block, editable }: SectionProps) {
               style={{ "--pop-tilt": TILT[i % TILT.length] } as CSSProperties}
             >
               <figure className="border-2 border-[color:var(--pop-ink)] bg-[var(--pop-paper)] p-2.5 pb-3 text-[color:var(--foreground)] shadow-[5px_5px_0_var(--pop-ink)] md:p-3">
-                <Img value={p.image} alt={p.caption || heading} className="aspect-[4/5] w-full" />
+                <Img
+                  value={p.image}
+                  alt={p.caption || heading}
+                  className="aspect-[4/5] w-full"
+                />
                 <figcaption className="pop-h3 flex min-h-[2.75rem] items-center justify-center px-1 pt-2 text-center text-[1.0625rem] md:min-h-[3.25rem]">
                   {p.caption}
                 </figcaption>

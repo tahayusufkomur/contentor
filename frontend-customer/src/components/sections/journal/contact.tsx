@@ -22,7 +22,11 @@ export function ContactColophon({ block, editable }: SectionProps) {
       <div className={cn(WRAP, "grid gap-y-14 lg:grid-cols-12 lg:gap-x-10")}>
         <div className={showForm ? "lg:col-span-5" : "lg:col-span-7"}>
           {showImage && (
-            <Img value={block.image} alt={alt} className="mb-10 aspect-[4/5] w-32 md:w-36" />
+            <Img
+              value={block.image}
+              alt={alt}
+              className="mb-10 aspect-[4/5] w-32 md:w-36"
+            />
           )}
           <Kicker block={block} editable={editable} />
           <Txt
@@ -31,7 +35,10 @@ export function ContactColophon({ block, editable }: SectionProps) {
             editable={editable}
             as="h2"
             placeholder="Heading"
-            className={cn(H2, "mt-5 block max-w-[17ch] text-[clamp(2.1rem,1.5rem+2.1vw,3.6rem)] leading-[1.06]")}
+            className={cn(
+              H2,
+              "mt-5 block max-w-[17ch] text-[clamp(2.1rem,1.5rem+2.1vw,3.6rem)] leading-[1.06]",
+            )}
           />
           <Txt
             block={block}
@@ -49,21 +56,27 @@ export function ContactColophon({ block, editable }: SectionProps) {
                   key={r.field}
                   className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-4 border-t border-border py-4"
                 >
-                  <dt className={cn(LABEL, "text-muted-foreground")}>{r.label}</dt>
+                  <dt className={cn(LABEL, "text-muted-foreground")}>
+                    {r.label}
+                  </dt>
                   <dd className="min-w-0 break-words font-display text-[1.2rem] leading-snug">
                     {r.field === "email" && email && !editable ? (
                       <a href={`mailto:${email}`} className="journal-link">
                         {email}
                       </a>
                     ) : (
-                      <Txt block={block} field={r.field} editable={editable} placeholder={r.label} />
+                      <Txt
+                        block={block}
+                        field={r.field}
+                        editable={editable}
+                        placeholder={r.label}
+                      />
                     )}
                   </dd>
                 </div>
               ))}
             </dl>
           )}
-
         </div>
 
         {showForm && (

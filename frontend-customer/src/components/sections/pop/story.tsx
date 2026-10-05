@@ -10,14 +10,32 @@ export function StorySticker({ block, editable }: SectionProps) {
   const withSetting = Boolean(imageUrl(block.image2));
   return (
     <PopSection bg="var(--card)" className="py-20 md:py-28">
-      <div className={cn(WRAP, "grid items-center gap-x-16 gap-y-16 lg:grid-cols-12")}>
-        <div className={cn("relative mx-auto w-full max-w-[24rem] pt-4 lg:col-span-5 lg:max-w-[30rem]", withSetting && "pb-16")}>
+      <div
+        className={cn(
+          WRAP,
+          "grid items-center gap-x-16 gap-y-16 lg:grid-cols-12",
+        )}
+      >
+        <div
+          className={cn(
+            "relative mx-auto w-full max-w-[24rem] pt-4 lg:col-span-5 lg:max-w-[30rem]",
+            withSetting && "pb-16",
+          )}
+        >
           <div className="pop-card relative -rotate-2 overflow-hidden">
-            <Img value={block.image} alt={alt} className="aspect-[4/5] w-full" />
+            <Img
+              value={block.image}
+              alt={alt}
+              className="aspect-[4/5] w-full"
+            />
           </div>
           {withSetting && (
             <div className="pop-card absolute -right-1 bottom-0 w-[58%] rotate-[4deg] overflow-hidden bg-[var(--pop-paper)] p-2 [--pop-r:1.25rem] sm:-right-6">
-              <Img value={block.image2} alt="" className="aspect-[3/2] w-full rounded-[0.75rem]" />
+              <Img
+                value={block.image2}
+                alt=""
+                className="aspect-[3/2] w-full rounded-[0.75rem]"
+              />
             </div>
           )}
           {has(block, "signature", editable) && (
@@ -42,10 +60,21 @@ export function StorySticker({ block, editable }: SectionProps) {
             className="pop-display pop-h2 mt-6"
             placeholder="Heading"
           />
-          <Rich block={block} field="body" editable={editable} className="mt-8 max-w-[38rem]" />
+          <Rich
+            block={block}
+            field="body"
+            editable={editable}
+            className="mt-8 max-w-[38rem]"
+          />
           {has(block, "ctaLabel", editable) && (
             <div className="mt-9">
-              <PopButton block={block} editable={editable} label="ctaLabel" href="ctaHref" tone="paper" />
+              <PopButton
+                block={block}
+                editable={editable}
+                label="ctaLabel"
+                href="ctaHref"
+                tone="paper"
+              />
             </div>
           )}
         </div>

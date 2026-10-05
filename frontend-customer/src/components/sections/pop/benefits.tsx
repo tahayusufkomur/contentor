@@ -5,7 +5,14 @@ import { FILL, Kicker, PopSection, WRAP, str } from "./ui";
 
 type Item = { title?: string; text?: string };
 
-const TILE: (keyof typeof FILL)[] = ["lime", "pink", "lilac", "sun", "berry", "plum"];
+const TILE: (keyof typeof FILL)[] = [
+  "lime",
+  "pink",
+  "lilac",
+  "sun",
+  "berry",
+  "plum",
+];
 
 /** Each tile's shape takes a swatch that pops against the tile. */
 const SHAPE_FILL: Record<string, string> = {
@@ -20,10 +27,21 @@ const SHAPE_FILL: Record<string, string> = {
 /** Small cut-paper shapes, one per tile (decorative). */
 const SHAPES = [
   <circle key="c" cx="24" cy="24" r="19" />,
-  <path key="f" d="M24 4c4 0 5 7 9 9s11-1 11 5-6 6-6 6 6 1 6 7-7 4-11 6-5 9-9 9-5-7-9-9-11 1-11-5 6-6 6-6-6-1-6-7 7-4 11-6 5-9 9-9z" />,
+  <path
+    key="f"
+    d="M24 4c4 0 5 7 9 9s11-1 11 5-6 6-6 6 6 1 6 7-7 4-11 6-5 9-9 9-5-7-9-9-11 1-11-5 6-6 6-6-6-1-6-7 7-4 11-6 5-9 9-9z"
+  />,
   <path key="h" d="M5 30a19 19 0 0 1 38 0z" />,
   <path key="p" d="M18 5h12v13h13v12H30v13H18V30H5V18h13z" />,
-  <rect key="r" x="9" y="9" width="30" height="30" rx="9" transform="rotate(45 24 24)" />,
+  <rect
+    key="r"
+    x="9"
+    y="9"
+    width="30"
+    height="30"
+    rx="9"
+    transform="rotate(45 24 24)"
+  />,
   <path key="t" d="M24 6l19 34H5z" strokeLinejoin="round" />,
 ];
 
@@ -78,7 +96,11 @@ export function BenefitsBento({ block, editable }: SectionProps) {
           {withImage && (
             <li className="row-span-2 sm:col-span-1 lg:col-span-1">
               <div className="pop-card h-full min-h-[22rem] overflow-hidden">
-                <Img value={block.image} alt={str(block.heading)} className="h-full min-h-[22rem] w-full" />
+                <Img
+                  value={block.image}
+                  alt={str(block.heading)}
+                  className="h-full min-h-[22rem] w-full"
+                />
               </div>
             </li>
           )}
@@ -99,12 +121,23 @@ export function BenefitsBento({ block, editable }: SectionProps) {
                   viewBox="0 0 48 48"
                   aria-hidden="true"
                   className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rotate-12 sm:h-32 sm:w-32 md:h-36 md:w-36"
-                  style={{ fill: SHAPE_FILL[fill], stroke: "var(--foreground)", strokeWidth: 1.2 }}
+                  style={{
+                    fill: SHAPE_FILL[fill],
+                    stroke: "var(--foreground)",
+                    strokeWidth: 1.2,
+                  }}
                 >
                   {SHAPES[i % SHAPES.length]}
                 </svg>
                 <div className="relative">
-                  <h3 className={cn("pop-h3", wide ? "text-[clamp(1.75rem,1.2rem+1.6vw,2.5rem)]" : "text-[1.75rem]")}>
+                  <h3
+                    className={cn(
+                      "pop-h3",
+                      wide
+                        ? "text-[clamp(1.75rem,1.2rem+1.6vw,2.5rem)]"
+                        : "text-[1.75rem]",
+                    )}
+                  >
                     {it.title}
                   </h3>
                   <p

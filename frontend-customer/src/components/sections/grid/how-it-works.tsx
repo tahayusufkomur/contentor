@@ -37,8 +37,12 @@ export function HowItWorksRuled({ block, editable }: SectionProps) {
           {steps.map((s, i) => (
             <li key={i} className="border-t border-foreground pt-3">
               <span className="swiss-mono block">({pad(i + 1)})</span>
-              <h3 className="swiss-step mt-10 text-balance md:mt-16">{s.title}</h3>
-              <p className="mt-4 max-w-[36ch] leading-[1.5] text-muted-foreground">{s.text}</p>
+              <h3 className="swiss-step mt-10 text-balance md:mt-16">
+                {s.title}
+              </h3>
+              <p className="mt-4 max-w-[36ch] leading-[1.5] text-muted-foreground">
+                {s.text}
+              </p>
             </li>
           ))}
         </ol>

@@ -15,7 +15,8 @@ const TONES: Record<Tone, string> = {
   paper: "bg-background text-foreground",
   fog: "bg-muted text-foreground",
   ink: "bg-foreground text-background",
-  cobalt: "swiss-inverse bg-[var(--inverse)] text-[color:var(--inverse-foreground)]",
+  cobalt:
+    "swiss-inverse bg-[var(--inverse)] text-[color:var(--inverse-foreground)]",
 };
 
 /** 12-col grid row with the style's gutters. */
@@ -54,14 +55,20 @@ export function Sheet({
 /** The layout grid made visible: hairline column edges (4 on phones, 12 up). */
 export function Guides() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 px-5 md:px-8">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 px-5 md:px-8"
+    >
       <div className="mx-auto grid h-full max-w-[88rem] grid-cols-4 gap-x-4 md:grid-cols-12 md:gap-x-6">
         {Array.from({ length: 12 }, (_, i) => (
           <span
             key={i}
             style={{ "--i": i } as CSSProperties}
             // Never toggle `display` here: that restarts the draw-in animation.
-            className={cn("swiss-guide", i >= 4 && "max-md:invisible max-md:absolute")}
+            className={cn(
+              "swiss-guide",
+              i >= 4 && "max-md:invisible max-md:absolute",
+            )}
           />
         ))}
       </div>
@@ -111,7 +118,12 @@ export function Head({
   return (
     <div className={cn(row, "gap-y-6 pt-3")}>
       <Label block={block} editable={editable} />
-      <div className={cn("col-span-12 md:col-start-4", aside ? "md:col-span-6" : "md:col-span-9")}>
+      <div
+        className={cn(
+          "col-span-12 md:col-start-4",
+          aside ? "md:col-span-6" : "md:col-span-9",
+        )}
+      >
         <Txt
           block={block}
           field={heading}
@@ -144,8 +156,14 @@ const BTN =
   "swiss-btn inline-flex min-h-12 items-center justify-center px-6 py-3 text-[0.9375rem] font-medium leading-tight";
 
 export const btn = {
-  primary: cn(BTN, "bg-primary text-primary-foreground hover:bg-foreground hover:text-background"),
-  outline: cn(BTN, "border border-current hover:bg-foreground hover:text-background hover:border-foreground"),
+  primary: cn(
+    BTN,
+    "bg-primary text-primary-foreground hover:bg-foreground hover:text-background",
+  ),
+  outline: cn(
+    BTN,
+    "border border-current hover:bg-foreground hover:text-background hover:border-foreground",
+  ),
   /** Bone button on the cobalt band. */
   onCobalt: cn(
     BTN,
@@ -175,10 +193,16 @@ export function Cta({
   className: string;
 }) {
   if (!has(block, label, editable)) return null;
-  const to = (typeof block[href] === "string" && block[href]) || fallbackHref || null;
+  const to =
+    (typeof block[href] === "string" && block[href]) || fallbackHref || null;
   return (
     <SmartLink href={editable ? null : to} className={className}>
-      <Txt block={block} field={label} editable={editable} placeholder="Button text" />
+      <Txt
+        block={block}
+        field={label}
+        editable={editable}
+        placeholder="Button text"
+      />
     </SmartLink>
   );
 }

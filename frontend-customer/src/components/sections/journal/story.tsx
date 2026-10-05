@@ -10,9 +10,18 @@ export function StoryLetter({ block, editable }: SectionProps) {
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
     <Section label={alt}>
-      <div className={cn(WRAP, "grid gap-y-14 md:grid-cols-12 md:gap-x-8 lg:gap-x-10")}>
+      <div
+        className={cn(
+          WRAP,
+          "grid gap-y-14 md:grid-cols-12 md:gap-x-8 lg:gap-x-10",
+        )}
+      >
         <div className="relative md:col-span-5">
-          <Img value={block.image} alt={alt} className="aspect-[4/5] w-full lg:w-[88%]" />
+          <Img
+            value={block.image}
+            alt={alt}
+            className="aspect-[4/5] w-full lg:w-[88%]"
+          />
           {showSetting && (
             <Img
               value={block.image2}
@@ -55,7 +64,12 @@ export function StoryLetter({ block, editable }: SectionProps) {
               className="group mt-10 inline-flex items-center gap-3 text-[0.95rem] font-medium"
             >
               <span className="journal-link">
-                <Txt block={block} field="ctaLabel" editable={editable} placeholder="Link text" />
+                <Txt
+                  block={block}
+                  field="ctaLabel"
+                  editable={editable}
+                  placeholder="Link text"
+                />
               </span>
               <Arrow />
             </SmartLink>

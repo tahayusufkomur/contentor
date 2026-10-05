@@ -1,6 +1,11 @@
 import type { ReactNode } from "react";
 import type { SubscriptionPlan } from "@/types/billing";
-import { EmptyHint, SmartLink, SubscribeButton, billingIntervalSuffix } from "../kit";
+import {
+  EmptyHint,
+  SmartLink,
+  SubscribeButton,
+  billingIntervalSuffix,
+} from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row, textLink } from "./ui";
 
@@ -16,7 +21,8 @@ const billed = (m?: number) => {
   return `Every ${n} months`;
 };
 
-const included = (n?: number) => (n && n > 0 ? `${n} ${n === 1 ? "item" : "items"}` : "—");
+const included = (n?: number) =>
+  n && n > 0 ? `${n} ${n === 1 ? "item" : "items"}` : "—";
 
 function Action({ plan }: { plan: SubscriptionPlan }) {
   return (
@@ -106,11 +112,17 @@ export function PricingTable({ block, data, editable }: SectionProps) {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.label} className="border-t border-border">
-                  <th scope="row" className="swiss-mono py-5 pr-6 align-top font-normal text-muted-foreground">
+                  <th
+                    scope="row"
+                    className="swiss-mono py-5 pr-6 align-top font-normal text-muted-foreground"
+                  >
                     {r.label}
                   </th>
                   {plans.map((p) => (
-                    <td key={p.id} className="py-5 pr-6 align-top leading-[1.5]">
+                    <td
+                      key={p.id}
+                      className="py-5 pr-6 align-top leading-[1.5]"
+                    >
                       {r.cell(p)}
                     </td>
                   ))}
@@ -130,12 +142,21 @@ export function PricingTable({ block, data, editable }: SectionProps) {
           {/* Phones: each plan as its own ruled sheet. */}
           <div className="mt-12 space-y-12 md:hidden">
             {plans.map((p) => (
-              <section key={p.id} aria-label={p.name} className="border-t border-foreground pt-4">
+              <section
+                key={p.id}
+                aria-label={p.name}
+                className="border-t border-foreground pt-4"
+              >
                 <h3 className="swiss-h3">{p.name}</h3>
                 <dl className="mt-6">
                   {rows.map((r) => (
-                    <div key={r.label} className={`${row} border-t border-border py-4`}>
-                      <dt className="swiss-mono col-span-4 text-muted-foreground">{r.label}</dt>
+                    <div
+                      key={r.label}
+                      className={`${row} border-t border-border py-4`}
+                    >
+                      <dt className="swiss-mono col-span-4 text-muted-foreground">
+                        {r.label}
+                      </dt>
                       <dd className="col-span-8 leading-[1.5]">{r.cell(p)}</dd>
                     </div>
                   ))}

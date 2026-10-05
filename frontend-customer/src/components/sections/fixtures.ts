@@ -68,31 +68,63 @@ const LONG: Record<FamilyId, Content> = {
     intro:
       "Every class is built around what changes in your body and your week — not around how many poses we can fit into an hour.",
     items: [
-      { title: "Stronger, safer joints", text: "Progressive strength work protects shoulders, hips and lower back so flexibility comes without strain." },
-      { title: "Calm you can carry", text: "Short breath practices you can use in a meeting, on a train or at 2 a.m. when sleep won't come." },
-      { title: "Classes that meet you", text: "Every pose has an easier and a deeper option, so beginners and seasoned students share the same room." },
-      { title: "Learn at your pace", text: "Recorded courses stay yours; pause, repeat and come back whenever your schedule allows." },
-      { title: "Real feedback", text: "Ask questions under every lesson and get answers from me, not a support bot." },
-      { title: "Small live groups", text: "Live classes are capped at twelve so I can see you, cue you and learn your name." },
+      {
+        title: "Stronger, safer joints",
+        text: "Progressive strength work protects shoulders, hips and lower back so flexibility comes without strain.",
+      },
+      {
+        title: "Calm you can carry",
+        text: "Short breath practices you can use in a meeting, on a train or at 2 a.m. when sleep won't come.",
+      },
+      {
+        title: "Classes that meet you",
+        text: "Every pose has an easier and a deeper option, so beginners and seasoned students share the same room.",
+      },
+      {
+        title: "Learn at your pace",
+        text: "Recorded courses stay yours; pause, repeat and come back whenever your schedule allows.",
+      },
+      {
+        title: "Real feedback",
+        text: "Ask questions under every lesson and get answers from me, not a support bot.",
+      },
+      {
+        title: "Small live groups",
+        text: "Live classes are capped at twelve so I can see you, cue you and learn your name.",
+      },
     ],
     image: P.stretch,
   },
   courseShowcase: {
     kicker: "Courses",
     heading: "Start where you are, go as deep as you like",
-    intro: "Self-paced programs you keep forever. Each one builds a real skill, with short daily sessions you'll actually finish.",
+    intro:
+      "Self-paced programs you keep forever. Each one builds a real skill, with short daily sessions you'll actually finish.",
     ctaLabel: "See all courses",
     limit: "6",
   },
   howItWorks: {
     kicker: "How it works",
     heading: "From first class to a practice of your own",
-    intro: "No pressure, no contracts. Pick the format that suits you and switch whenever your life changes.",
+    intro:
+      "No pressure, no contracts. Pick the format that suits you and switch whenever your life changes.",
     steps: [
-      { title: "Choose your path", text: "Start with a self-paced course or book a live class — both are designed for complete beginners." },
-      { title: "Practise a little, often", text: "Twenty focused minutes, four times a week, beats one exhausting class. Your plan shows you what to do next." },
-      { title: "Ask, adjust, repeat", text: "Leave a question on any lesson and get a personal answer, so you never practise a pose the wrong way." },
-      { title: "Make it yours", text: "After a few weeks you'll build your own short sequences for mornings, travel days and hard nights." },
+      {
+        title: "Choose your path",
+        text: "Start with a self-paced course or book a live class — both are designed for complete beginners.",
+      },
+      {
+        title: "Practise a little, often",
+        text: "Twenty focused minutes, four times a week, beats one exhausting class. Your plan shows you what to do next.",
+      },
+      {
+        title: "Ask, adjust, repeat",
+        text: "Leave a question on any lesson and get a personal answer, so you never practise a pose the wrong way.",
+      },
+      {
+        title: "Make it yours",
+        text: "After a few weeks you'll build your own short sequences for mornings, travel days and hard nights.",
+      },
     ],
     image: P.meditate,
   },
@@ -106,7 +138,8 @@ const LONG: Record<FamilyId, Content> = {
   moments: {
     kicker: "Inside the studio",
     heading: "Moments from class",
-    caption: "Morning flows, Sunday workshops and the quiet minutes after savasana.",
+    caption:
+      "Morning flows, Sunday workshops and the quiet minutes after savasana.",
     photos: [
       { image: P.acro, caption: "Partner flow workshop" },
       { image: P.portrait2, caption: "Balance lab, Thursday" },
@@ -119,26 +152,53 @@ const LONG: Record<FamilyId, Content> = {
   pricing: {
     kicker: "Membership",
     heading: "One membership, every class and course",
-    intro: "Join live classes, follow every course and get new sessions each month. Cancel any time from your account.",
+    intro:
+      "Join live classes, follow every course and get new sessions each month. Cancel any time from your account.",
   },
   faq: {
     kicker: "Questions",
     heading: "Everything you want to know before your first class",
-    intro: "Can't find your answer? Write to me — I reply to every message within a day.",
+    intro:
+      "Can't find your answer? Write to me — I reply to every message within a day.",
     items: [
-      { q: "I've never done yoga. Is this really for me?", a: "Yes. Every course starts with the basics and every pose has a simpler option. Most of my students started exactly where you are." },
-      { q: "What do I need at home?", a: "A mat and a quiet corner. A cushion and a strap help but a folded blanket and a belt work just as well." },
-      { q: "How long are the sessions?", a: "Course lessons run 15–30 minutes. Live classes are 60 minutes including a slow warm-up and a proper rest at the end." },
-      { q: "Can I practise with an injury?", a: "Often, yes — with care. Tell me about it before class and I'll suggest modifications, but always follow your doctor's advice first." },
-      { q: "Do the courses expire?", a: "No. Once you join a course it's yours, including future updates to its lessons." },
-      { q: "Can I switch between live and recorded?", a: "Any time. The membership covers both, so you can mix them week by week." },
-      { q: "How do I cancel?", a: "From your account page in two clicks. You keep access until the end of the period you paid for." },
-      { q: "Do you offer private sessions?", a: "A few each month. Send me a message with what you'd like to work on and I'll share available times." },
+      {
+        q: "I've never done yoga. Is this really for me?",
+        a: "Yes. Every course starts with the basics and every pose has a simpler option. Most of my students started exactly where you are.",
+      },
+      {
+        q: "What do I need at home?",
+        a: "A mat and a quiet corner. A cushion and a strap help but a folded blanket and a belt work just as well.",
+      },
+      {
+        q: "How long are the sessions?",
+        a: "Course lessons run 15–30 minutes. Live classes are 60 minutes including a slow warm-up and a proper rest at the end.",
+      },
+      {
+        q: "Can I practise with an injury?",
+        a: "Often, yes — with care. Tell me about it before class and I'll suggest modifications, but always follow your doctor's advice first.",
+      },
+      {
+        q: "Do the courses expire?",
+        a: "No. Once you join a course it's yours, including future updates to its lessons.",
+      },
+      {
+        q: "Can I switch between live and recorded?",
+        a: "Any time. The membership covers both, so you can mix them week by week.",
+      },
+      {
+        q: "How do I cancel?",
+        a: "From your account page in two clicks. You keep access until the end of the period you paid for.",
+      },
+      {
+        q: "Do you offer private sessions?",
+        a: "A few each month. Send me a message with what you'd like to work on and I'll share available times.",
+      },
     ],
   },
   cta: {
     kicker: "Your first week is on me",
-    heading: "Roll out your mat — your stronger, calmer self is twenty minutes away",
+    heading:
+      "Roll out your mat — your stronger, calmer self is twenty minutes away",
     text: "Start the free 7-day beginner course today. No card, no pressure, just one short session a day.",
     ctaLabel: "Start free today",
     ctaHref: "/courses",
@@ -157,14 +217,24 @@ const LONG: Record<FamilyId, Content> = {
   events: {
     kicker: "Live",
     heading: "Upcoming live classes and workshops",
-    intro: "Small groups, real-time cues and a few minutes for questions at the end. Join from home or the studio.",
+    intro:
+      "Small groups, real-time cues and a few minutes for questions at the end. Join from home or the studio.",
     ctaLabel: "See the full calendar",
   },
 };
 
 const SHORT: Record<FamilyId, Content> = {
-  hero: { headline: "Yoga for real life", image: P.teaching2, ctaLabel: "Start", ctaHref: "/courses" },
-  story: { heading: "Hi, I'm Maya", body: "<p>I teach slow, strong yoga.</p>", image: P.portrait },
+  hero: {
+    headline: "Yoga for real life",
+    image: P.teaching2,
+    ctaLabel: "Start",
+    ctaHref: "/courses",
+  },
+  story: {
+    heading: "Hi, I'm Maya",
+    body: "<p>I teach slow, strong yoga.</p>",
+    image: P.portrait,
+  },
   benefits: {
     heading: "Why join",
     items: [
@@ -183,7 +253,9 @@ const SHORT: Record<FamilyId, Content> = {
     ],
   },
   philosophy: { statement: "Breathe first." },
-  moments: { photos: [{ image: P.acro }, { image: P.detail }, { image: P.stretch }] },
+  moments: {
+    photos: [{ image: P.acro }, { image: P.detail }, { image: P.stretch }],
+  },
   pricing: { heading: "Membership" },
   faq: {
     heading: "FAQ",
@@ -238,18 +310,85 @@ const course = (
 });
 
 export const FIXTURE_COURSES: Course[] = [
-  course(1, "Yoga Foundations: Your First 30 Days", "Build a safe, strong base with four short sessions a week — alignment, breath and the poses everything else is built on.", "49.00", P.teaching2, 24),
-  course(2, "Strong Spine, Calm Mind", "A posture and core program for desk workers: release the neck and lower back, then build the strength that keeps them happy.", "39.00", P.stretch, 18),
-  course(3, "7-Day Beginner Reset", "Seven gentle sessions to start moving again. Free, short and kind.", "0.00", P.meditate, 7, "free"),
-  course(4, "Breathwork for Better Sleep", "Evening breath and restorative practices that switch your nervous system off.", "29.00", P.meditate2, 10),
-  course(5, "Arm Balances Without Fear", "Crow, side crow and beyond — progressive drills that make balancing feel inevitable.", "59.00", P.acro, 21),
-  course(6, "Hips & Hamstrings Lab", "Twelve focused sessions that open tight hips and hamstrings without forcing.", "35.00", P.detail2, 12),
+  course(
+    1,
+    "Yoga Foundations: Your First 30 Days",
+    "Build a safe, strong base with four short sessions a week — alignment, breath and the poses everything else is built on.",
+    "49.00",
+    P.teaching2,
+    24,
+  ),
+  course(
+    2,
+    "Strong Spine, Calm Mind",
+    "A posture and core program for desk workers: release the neck and lower back, then build the strength that keeps them happy.",
+    "39.00",
+    P.stretch,
+    18,
+  ),
+  course(
+    3,
+    "7-Day Beginner Reset",
+    "Seven gentle sessions to start moving again. Free, short and kind.",
+    "0.00",
+    P.meditate,
+    7,
+    "free",
+  ),
+  course(
+    4,
+    "Breathwork for Better Sleep",
+    "Evening breath and restorative practices that switch your nervous system off.",
+    "29.00",
+    P.meditate2,
+    10,
+  ),
+  course(
+    5,
+    "Arm Balances Without Fear",
+    "Crow, side crow and beyond — progressive drills that make balancing feel inevitable.",
+    "59.00",
+    P.acro,
+    21,
+  ),
+  course(
+    6,
+    "Hips & Hamstrings Lab",
+    "Twelve focused sessions that open tight hips and hamstrings without forcing.",
+    "35.00",
+    P.detail2,
+    12,
+  ),
 ];
 
 export const FIXTURE_PLANS: SubscriptionPlan[] = [
-  { id: 1, name: "Monthly", description: "Every live class and every course. Cancel anytime.", price: "29.00", currency: "EUR", billing_interval_months: 1, item_count: 14 },
-  { id: 2, name: "Quarterly", description: "Three months of everything, with a live check-in call.", price: "75.00", currency: "EUR", billing_interval_months: 3, item_count: 14 },
-  { id: 3, name: "Yearly", description: "A full year of practice — two months free.", price: "290.00", currency: "EUR", billing_interval_months: 12, item_count: 14 },
+  {
+    id: 1,
+    name: "Monthly",
+    description: "Every live class and every course. Cancel anytime.",
+    price: "29.00",
+    currency: "EUR",
+    billing_interval_months: 1,
+    item_count: 14,
+  },
+  {
+    id: 2,
+    name: "Quarterly",
+    description: "Three months of everything, with a live check-in call.",
+    price: "75.00",
+    currency: "EUR",
+    billing_interval_months: 3,
+    item_count: 14,
+  },
+  {
+    id: 3,
+    name: "Yearly",
+    description: "A full year of practice — two months free.",
+    price: "290.00",
+    currency: "EUR",
+    billing_interval_months: 12,
+    item_count: 14,
+  },
 ];
 
 const inDays = (d: number, hour: number) => {
@@ -259,7 +398,15 @@ const inDays = (d: number, hour: number) => {
   return t.toISOString();
 };
 
-const event = (id: number, title: string, d: number, h: number, location: string, img: { url: string } | null, price = "0.00"): CalendarEvent =>
+const event = (
+  id: number,
+  title: string,
+  d: number,
+  h: number,
+  location: string,
+  img: { url: string } | null,
+  price = "0.00",
+): CalendarEvent =>
   ({
     id,
     type: "live",
@@ -277,14 +424,25 @@ const event = (id: number, title: string, d: number, h: number, location: string
 
 export const FIXTURE_EVENTS: CalendarEvent[] = [
   event(1, "Slow Flow & Breath", 2, 8, "Online", P.teaching),
-  event(2, "Sunday Restorative Workshop", 5, 10, "Studio, Lisbon", P.meditate2, "25.00"),
+  event(
+    2,
+    "Sunday Restorative Workshop",
+    5,
+    10,
+    "Studio, Lisbon",
+    P.meditate2,
+    "25.00",
+  ),
   event(3, "Arm Balance Lab", 8, 18, "Online", P.acro, "15.00"),
   event(4, "Full Moon Yin", 12, 20, "Studio, Lisbon", P.garden),
 ];
 
 export function fixtureData(family: FamilyId, size: "long" | "short") {
-  if (family === "courseShowcase") return size === "long" ? FIXTURE_COURSES : FIXTURE_COURSES.slice(0, 1);
-  if (family === "pricing") return size === "long" ? FIXTURE_PLANS : FIXTURE_PLANS.slice(0, 1);
-  if (family === "events") return size === "long" ? FIXTURE_EVENTS : FIXTURE_EVENTS.slice(0, 1);
+  if (family === "courseShowcase")
+    return size === "long" ? FIXTURE_COURSES : FIXTURE_COURSES.slice(0, 1);
+  if (family === "pricing")
+    return size === "long" ? FIXTURE_PLANS : FIXTURE_PLANS.slice(0, 1);
+  if (family === "events")
+    return size === "long" ? FIXTURE_EVENTS : FIXTURE_EVENTS.slice(0, 1);
   return undefined;
 }

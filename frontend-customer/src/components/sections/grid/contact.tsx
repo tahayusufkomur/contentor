@@ -25,7 +25,12 @@ export function ContactDefinition({ block, editable }: SectionProps) {
             href={email && !editable ? `mailto:${email}` : null}
             className="swiss-email mt-4 block decoration-2 underline-offset-[0.12em] hover:text-primary hover:underline md:mt-6"
           >
-            <Txt block={block} field="email" editable={editable} placeholder="you@example.com" />
+            <Txt
+              block={block}
+              field="email"
+              editable={editable}
+              placeholder="you@example.com"
+            />
           </SmartLink>
         </div>
       )}
@@ -44,7 +49,12 @@ export function ContactDefinition({ block, editable }: SectionProps) {
               <div key={d.field} className="border-t border-foreground py-4">
                 <dt className="swiss-mono text-muted-foreground">{d.label}</dt>
                 <dd className="mt-2 text-[1.0625rem] leading-[1.45]">
-                  <Txt block={block} field={d.field} editable={editable} placeholder={d.label} />
+                  <Txt
+                    block={block}
+                    field={d.field}
+                    editable={editable}
+                    placeholder={d.label}
+                  />
                 </dd>
               </div>
             ))}
@@ -54,7 +64,9 @@ export function ContactDefinition({ block, editable }: SectionProps) {
           <div
             className={cn(
               "col-span-12 border-t border-foreground pt-4",
-              photo || details.length ? "md:col-span-5 md:col-start-8" : "md:col-span-6 md:col-start-4",
+              photo || details.length
+                ? "md:col-span-5 md:col-start-8"
+                : "md:col-span-6 md:col-start-4",
             )}
           >
             <ContactForm className="swiss-form space-y-7" />

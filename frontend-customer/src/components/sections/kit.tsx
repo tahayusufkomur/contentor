@@ -121,7 +121,10 @@ export function Img({
           alt={label}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
-          className={cn("absolute inset-0 h-full w-full object-cover", imgClassName)}
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover",
+            imgClassName,
+          )}
         />
       ) : (
         <div
@@ -161,14 +164,18 @@ export function SmartLink({
 }
 
 /** Items of a repeater field, always an array. */
-export function itemsOf<T = Record<string, unknown>>(block: Block, field: string): T[] {
+export function itemsOf<T = Record<string, unknown>>(
+  block: Block,
+  field: string,
+): T[] {
   const v = block[field];
   return Array.isArray(v) ? (v as T[]) : [];
 }
 
 export const courseHref = (c: Course) => `/courses/${c.slug}`;
 export const eventHref = (e: CalendarEvent) => `/calendar/${e.type}/${e.id}`;
-export const courseImage = (c: Course) => c.thumbnail_signed_url || c.thumbnail_url || null;
+export const courseImage = (c: Course) =>
+  c.thumbnail_signed_url || c.thumbnail_url || null;
 
 /** Plain-text price in the tenant currency: "€49", "Free", "Included in
  *  membership", or "Owned" for a student who already has it. */
@@ -192,7 +199,8 @@ export function CoursePrice({
   className?: string;
   plain?: boolean;
 }) {
-  if (plain) return <span className={className}>{coursePriceLabel(course)}</span>;
+  if (plain)
+    return <span className={className}>{coursePriceLabel(course)}</span>;
   return (
     <span className={className}>
       <PriceBadge
@@ -233,13 +241,20 @@ export function eventPriceLabel(e: CalendarEvent): string {
 export function formatEventDate(iso: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  return d.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function formatEventTime(iso: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  return d.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export { ContactForm } from "@/components/blocks/contact-form";

@@ -2,8 +2,10 @@ import type { SectionComponent, StyleSections } from "./types";
 import { STYLE_SECTION_MODULES } from "./all-styles";
 
 /** style id → that style's layouts. */
-export const STYLE_SECTIONS: Record<string, Partial<StyleSections>> =
-  STYLE_SECTION_MODULES;
+export const STYLE_SECTIONS: Record<
+  string,
+  Partial<StyleSections>
+> = STYLE_SECTION_MODULES;
 
 /** Layout for `family` given a stored `variant` ("<style>.<name>"). Unknown
  *  name → the style's first layout for that family; unknown style → the first

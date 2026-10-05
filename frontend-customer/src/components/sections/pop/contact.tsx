@@ -44,8 +44,13 @@ export function ContactPostcard({ block, editable }: SectionProps) {
             {details.length > 0 && (
               <dl className="mt-10 divide-y-2 divide-dashed divide-[color:var(--pop-ink)] border-y-2 border-dashed border-[color:var(--pop-ink)]">
                 {details.map((d) => (
-                  <div key={d.field} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:gap-6">
-                    <dt className="pop-mono w-20 shrink-0 text-[0.8125rem] text-muted-foreground">{d.label}</dt>
+                  <div
+                    key={d.field}
+                    className="flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:gap-6"
+                  >
+                    <dt className="pop-mono w-20 shrink-0 text-[0.8125rem] text-muted-foreground">
+                      {d.label}
+                    </dt>
                     <dd className="min-w-0 break-words text-[1.0625rem] font-medium">
                       {d.field === "email" && email && !editable ? (
                         <a
@@ -55,7 +60,12 @@ export function ContactPostcard({ block, editable }: SectionProps) {
                           {email}
                         </a>
                       ) : (
-                        <Txt block={block} field={d.field} editable={editable} placeholder={d.label} />
+                        <Txt
+                          block={block}
+                          field={d.field}
+                          editable={editable}
+                          placeholder={d.label}
+                        />
                       )}
                     </dd>
                   </div>
@@ -70,7 +80,9 @@ export function ContactPostcard({ block, editable }: SectionProps) {
                 <div
                   className={cn(
                     "pop-wiggle [--pop-tilt:5deg]",
-                    showForm ? "absolute -top-6 right-5 w-28 sm:w-36 lg:-top-8 lg:right-10 lg:w-40" : "mx-auto w-full max-w-xs",
+                    showForm
+                      ? "absolute -top-6 right-5 w-28 sm:w-36 lg:-top-8 lg:right-10 lg:w-40"
+                      : "mx-auto w-full max-w-xs",
                   )}
                   style={{ rotate: "var(--pop-tilt)" }}
                 >

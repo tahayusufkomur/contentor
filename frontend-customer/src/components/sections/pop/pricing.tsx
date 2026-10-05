@@ -26,12 +26,21 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
   const plans = Array.isArray(data) ? (data as SubscriptionPlan[]) : [];
   if (!plans.length && !editable) return null;
   const cols =
-    plans.length >= 3 ? "md:grid-cols-2 lg:grid-cols-3" : plans.length === 2 ? "md:grid-cols-2 max-w-4xl" : "max-w-md";
+    plans.length >= 3
+      ? "md:grid-cols-2 lg:grid-cols-3"
+      : plans.length === 2
+        ? "md:grid-cols-2 max-w-4xl"
+        : "max-w-md";
   return (
     <PopSection bg="var(--card)" className="py-20 md:py-28">
       <div className={WRAP}>
         <div className="mx-auto max-w-4xl text-center">
-          <Kicker block={block} editable={editable} fill="paper" className="mx-auto" />
+          <Kicker
+            block={block}
+            editable={editable}
+            fill="paper"
+            className="mx-auto"
+          />
           <Txt
             block={block}
             field="heading"
@@ -51,10 +60,16 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
 
         {plans.length === 0 ? (
           <div className="mt-12">
-            <EmptyHint editable={editable} title="No plans yet" text="Create a membership plan and it shows up here." />
+            <EmptyHint
+              editable={editable}
+              title="No plans yet"
+              text="Create a membership plan and it shows up here."
+            />
           </div>
         ) : (
-          <ul className={cn("mx-auto mt-14 grid gap-8 md:mt-16 lg:gap-10", cols)}>
+          <ul
+            className={cn("mx-auto mt-14 grid gap-8 md:mt-16 lg:gap-10", cols)}
+          >
             {plans.map((p, i) => (
               <li
                 key={p.id}
@@ -64,7 +79,9 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
                   TILT[i % TILT.length],
                 )}
               >
-                <h3 className="pop-kicker bg-[var(--pop-paper)] !text-[0.875rem]">{p.name}</h3>
+                <h3 className="pop-kicker bg-[var(--pop-paper)] !text-[0.875rem]">
+                  {p.name}
+                </h3>
                 <p className="mt-8 flex flex-wrap items-baseline gap-x-2">
                   <span className="pop-display text-[clamp(3.75rem,2.5rem+3vw,5.5rem)] !leading-[0.85]">
                     {money(p.price, p.currency)}
@@ -73,7 +90,11 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
                     {billingIntervalSuffix(p.billing_interval_months)}
                   </span>
                 </p>
-                {p.description && <p className="mt-6 flex-1 text-base leading-relaxed">{p.description}</p>}
+                {p.description && (
+                  <p className="mt-6 flex-1 text-base leading-relaxed">
+                    {p.description}
+                  </p>
+                )}
                 <SubscribeButton
                   planId={p.id}
                   planName={p.name}

@@ -49,7 +49,9 @@ export function HowItWorksColumns({ block, editable }: SectionProps) {
 
         <ol
           className="mt-16 grid border-t border-foreground md:mt-24 md:grid-cols-2 lg:grid-cols-[repeat(var(--journal-cols),minmax(0,1fr))]"
-          style={{ "--journal-cols": Math.max(steps.length, 1) } as CSSProperties}
+          style={
+            { "--journal-cols": Math.max(steps.length, 1) } as CSSProperties
+          }
         >
           {steps.map((s, i) => (
             <li
@@ -62,7 +64,12 @@ export function HowItWorksColumns({ block, editable }: SectionProps) {
               >
                 {i + 1}
               </span>
-              <h3 className={cn(H3, "mt-8 text-[1.5rem] leading-[1.15] md:text-[1.65rem]")}>
+              <h3
+                className={cn(
+                  H3,
+                  "mt-8 text-[1.5rem] leading-[1.15] md:text-[1.65rem]",
+                )}
+              >
                 <span className="sr-only">{`${i + 1}. `}</span>
                 {s.title}
               </h3>

@@ -58,7 +58,8 @@ export function ContactForm({
     return (
       <div
         className={cn(
-          successClassName ?? "rounded-xl border bg-brand-surface p-8 text-center",
+          successClassName ??
+            "rounded-xl border bg-brand-surface p-8 text-center",
           className,
         )}
       >

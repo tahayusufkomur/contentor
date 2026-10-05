@@ -21,10 +21,16 @@ export function MomentsTiles({ block, editable }: SectionProps) {
         {photos.map((p, i) => (
           <li key={i}>
             <figure>
-              <Img value={p.image} alt={p.caption || alt} className="swiss-photo aspect-[4/5] w-full" />
+              <Img
+                value={p.image}
+                alt={p.caption || alt}
+                className="swiss-photo aspect-[4/5] w-full"
+              />
               <figcaption className="swiss-mono mt-3 flex gap-3 border-t border-foreground pt-2">
                 <span>({pad(i + 1)})</span>
-                {p.caption ? <span className="text-muted-foreground">{p.caption}</span> : null}
+                {p.caption ? (
+                  <span className="text-muted-foreground">{p.caption}</span>
+                ) : null}
               </figcaption>
             </figure>
           </li>

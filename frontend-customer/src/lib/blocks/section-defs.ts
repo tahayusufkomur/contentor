@@ -13,7 +13,12 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { FAMILIES, FAMILY_IDS, type FamilyField, type FamilyId } from "@shared/sections/types";
+import {
+  FAMILIES,
+  FAMILY_IDS,
+  type FamilyField,
+  type FamilyId,
+} from "@shared/sections/types";
 import { SITE_STYLES } from "@shared/sections/styles";
 import { SectionBlock } from "@/components/sections/section-block";
 import type { Block } from "@/types/tenant";
@@ -42,8 +47,10 @@ const SOURCE_KEY: Record<string, DynamicDataKey> = {
 };
 
 export const SECTION_PREFIX = "section.";
-export const isSectionType = (type?: string) => Boolean(type?.startsWith(SECTION_PREFIX));
-export const sectionFamily = (type: string) => type.slice(SECTION_PREFIX.length) as FamilyId;
+export const isSectionType = (type?: string) =>
+  Boolean(type?.startsWith(SECTION_PREFIX));
+export const sectionFamily = (type: string) =>
+  type.slice(SECTION_PREFIX.length) as FamilyId;
 
 function humanize(name: string) {
   const spaced = name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[-_]/g, " ");
@@ -74,7 +81,9 @@ function toField(key: string, f: FamilyField): FieldSchema {
         type: "repeater",
         itemLabel: f.itemLabel,
         maxItems: f.max,
-        itemFields: Object.entries(f.fields ?? {}).map(([k, sub]) => toField(k, sub)),
+        itemFields: Object.entries(f.fields ?? {}).map(([k, sub]) =>
+          toField(k, sub),
+        ),
       };
     default:
       return {
@@ -101,23 +110,70 @@ function variantOptions(family: FamilyId) {
 }
 
 const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
-  hero: { headline: "A headline that says what you offer", subhead: "One sentence on who it's for and what changes for them.", ctaLabel: "Explore courses", ctaHref: "/courses" },
-  story: { heading: "Hi, I'm glad you're here", body: "<p>Tell visitors how you started, who you teach and what a session with you feels like.</p>" },
-  benefits: { heading: "What you'll gain", items: [{ title: "First benefit", text: "What changes for your students." }, { title: "Second benefit", text: "What changes for your students." }, { title: "Third benefit", text: "What changes for your students." }] },
-  courseShowcase: { heading: "Courses", ctaLabel: "See all courses", limit: "3" },
-  howItWorks: { heading: "How it works", steps: [{ title: "Choose", text: "Pick the course or class that fits you." }, { title: "Join", text: "Learn at your own pace or live with me." }, { title: "Grow", text: "Practise, ask questions and see progress." }] },
-  philosophy: { statement: "A sentence you believe about your craft, in your own words." },
+  hero: {
+    headline: "A headline that says what you offer",
+    subhead: "One sentence on who it's for and what changes for them.",
+    ctaLabel: "Explore courses",
+    ctaHref: "/courses",
+  },
+  story: {
+    heading: "Hi, I'm glad you're here",
+    body: "<p>Tell visitors how you started, who you teach and what a session with you feels like.</p>",
+  },
+  benefits: {
+    heading: "What you'll gain",
+    items: [
+      { title: "First benefit", text: "What changes for your students." },
+      { title: "Second benefit", text: "What changes for your students." },
+      { title: "Third benefit", text: "What changes for your students." },
+    ],
+  },
+  courseShowcase: {
+    heading: "Courses",
+    ctaLabel: "See all courses",
+    limit: "3",
+  },
+  howItWorks: {
+    heading: "How it works",
+    steps: [
+      { title: "Choose", text: "Pick the course or class that fits you." },
+      { title: "Join", text: "Learn at your own pace or live with me." },
+      { title: "Grow", text: "Practise, ask questions and see progress." },
+    ],
+  },
+  philosophy: {
+    statement: "A sentence you believe about your craft, in your own words.",
+  },
   moments: { heading: "Moments", photos: [{}, {}, {}] },
   pricing: { heading: "Membership" },
-  faq: { heading: "Questions, answered", items: [{ q: "Who is this for?", a: "Describe who you teach." }, { q: "Do I need experience?", a: "Say what a beginner needs." }, { q: "How do I start?", a: "Explain the first step." }] },
-  cta: { heading: "Ready to begin?", ctaLabel: "Get started", ctaHref: "/courses" },
-  contact: { heading: "Get in touch", text: "Questions about a course or a session? Send a message.", showForm: true },
+  faq: {
+    heading: "Questions, answered",
+    items: [
+      { q: "Who is this for?", a: "Describe who you teach." },
+      { q: "Do I need experience?", a: "Say what a beginner needs." },
+      { q: "How do I start?", a: "Explain the first step." },
+    ],
+  },
+  cta: {
+    heading: "Ready to begin?",
+    ctaLabel: "Get started",
+    ctaHref: "/courses",
+  },
+  contact: {
+    heading: "Get in touch",
+    text: "Questions about a course or a session? Send a message.",
+    showForm: true,
+  },
   events: { heading: "Upcoming classes", ctaLabel: "See the calendar" },
 };
 
 /** Fresh content for a new section block in `styleId` (first variant). */
-export function sectionDefaultData(family: FamilyId, styleId?: string): Partial<Block> {
-  const style = (styleId && SITE_STYLES[styleId]) || Object.values(SITE_STYLES)[0];
+export function sectionDefaultData(
+  family: FamilyId,
+  styleId?: string,
+): Partial<Block> {
+  const style =
+    (styleId && SITE_STYLES[styleId]) || Object.values(SITE_STYLES)[0];
   const first = style?.variants[family]?.[0];
   return {
     ...(first ? { variant: `${style!.id}.${first}` } : {}),
@@ -125,32 +181,33 @@ export function sectionDefaultData(family: FamilyId, styleId?: string): Partial<
   };
 }
 
-export const SECTION_BLOCK_DEFS: Record<string, BlockDefinition> = Object.fromEntries(
-  FAMILY_IDS.map((family) => {
-    const fam = FAMILIES[family];
-    const type = `${SECTION_PREFIX}${family}`;
-    const fields: FieldSchema[] = [
-      {
-        key: "variant",
-        label: "Layout",
-        type: "select",
-        dynamicOptions: variantOptions(family),
-      },
-      ...Object.entries(fam.fields).map(([k, f]) => toField(k, f)),
-    ];
-    const def: BlockDefinition = {
-      type,
-      label: fam.label,
-      icon: ICONS[family],
-      group: "section",
-      component: SectionBlock,
-      defaultData: sectionDefaultData(family),
-      fields,
-      ...(fam.source ? { dynamicDataKey: SOURCE_KEY[fam.source] } : {}),
-    };
-    return [type, def];
-  }),
-);
+export const SECTION_BLOCK_DEFS: Record<string, BlockDefinition> =
+  Object.fromEntries(
+    FAMILY_IDS.map((family) => {
+      const fam = FAMILIES[family];
+      const type = `${SECTION_PREFIX}${family}`;
+      const fields: FieldSchema[] = [
+        {
+          key: "variant",
+          label: "Layout",
+          type: "select",
+          dynamicOptions: variantOptions(family),
+        },
+        ...Object.entries(fam.fields).map(([k, f]) => toField(k, f)),
+      ];
+      const def: BlockDefinition = {
+        type,
+        label: fam.label,
+        icon: ICONS[family],
+        group: "section",
+        component: SectionBlock,
+        defaultData: sectionDefaultData(family),
+        fields,
+        ...(fam.source ? { dynamicDataKey: SOURCE_KEY[fam.source] } : {}),
+      };
+      return [type, def];
+    }),
+  );
 
 /** Wrapper class for a rendered page: styled-section pages are designed
  *  full-bleed (globals.css lifts the layout's max-width for .page-fullbleed);

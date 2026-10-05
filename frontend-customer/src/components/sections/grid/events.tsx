@@ -22,7 +22,12 @@ export function EventsTable({ block, data, editable }: SectionProps) {
   const calendar = (
     <SmartLink href={editable ? null : "/calendar"} className={textLink}>
       {block.ctaLabel || editable ? (
-        <Txt block={block} field="ctaLabel" editable={editable} placeholder="See the calendar" />
+        <Txt
+          block={block}
+          field="ctaLabel"
+          editable={editable}
+          placeholder="See the calendar"
+        />
       ) : (
         "Full calendar"
       )}
@@ -31,7 +36,11 @@ export function EventsTable({ block, data, editable }: SectionProps) {
 
   return (
     <Sheet>
-      <Head block={block} editable={editable} aside={events.length ? calendar : undefined} />
+      <Head
+        block={block}
+        editable={editable}
+        aside={events.length ? calendar : undefined}
+      />
       {!events.length ? (
         <div className="mt-14">
           <EmptyHint
@@ -42,7 +51,10 @@ export function EventsTable({ block, data, editable }: SectionProps) {
         </div>
       ) : (
         <div className="mt-14 md:mt-20">
-          <div aria-hidden="true" className={`${row} swiss-mono hidden pb-3 text-muted-foreground md:grid`}>
+          <div
+            aria-hidden="true"
+            className={`${row} swiss-mono hidden pb-3 text-muted-foreground md:grid`}
+          >
             <span className="col-span-3">Date</span>
             <span className="col-span-5">Session</span>
             <span className="col-span-2">Where</span>
@@ -50,21 +62,29 @@ export function EventsTable({ block, data, editable }: SectionProps) {
           </div>
           <ul className="border-b border-foreground">
             {events.map((e) => (
-              <li key={`${e.type}-${e.id}`} className="border-t border-foreground">
+              <li
+                key={`${e.type}-${e.id}`}
+                className="border-t border-foreground"
+              >
                 <SmartLink
                   href={eventHref(e)}
                   className={`${row} swiss-row group items-baseline gap-y-2 py-5 hover:bg-primary hover:text-primary-foreground md:-mx-3 md:px-3 md:py-6`}
                 >
                   <span className="col-span-12 flex items-baseline gap-3 md:col-span-3">
-                    <span className="swiss-step tabular-nums">{dayOf(e.scheduled_at)}</span>
+                    <span className="swiss-step tabular-nums">
+                      {dayOf(e.scheduled_at)}
+                    </span>
                     <span className="swiss-mono text-muted-foreground group-hover:text-primary-foreground">
                       <span className="block text-foreground group-hover:text-primary-foreground">
                         {part(e.scheduled_at, { month: "short" })}
                       </span>
-                      {part(e.scheduled_at, { weekday: "short" })} {formatEventTime(e.scheduled_at)}
+                      {part(e.scheduled_at, { weekday: "short" })}{" "}
+                      {formatEventTime(e.scheduled_at)}
                     </span>
                   </span>
-                  <span className="swiss-h3 col-span-12 text-balance md:col-span-5">{e.title}</span>
+                  <span className="swiss-h3 col-span-12 text-balance md:col-span-5">
+                    {e.title}
+                  </span>
                   <span className="swiss-mono col-span-6 text-muted-foreground group-hover:text-primary-foreground md:col-span-2">
                     {e.location}
                   </span>

@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/types/live";
-import { EmptyHint, SmartLink, Txt, eventHref, formatEventTime, has } from "../kit";
+import {
+  EmptyHint,
+  SmartLink,
+  Txt,
+  eventHref,
+  formatEventTime,
+  has,
+} from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP } from "./ui";
 
@@ -45,7 +52,12 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
           {events.length > 0 && (
             <SmartLink href="/calendar" className="pop-btn pop-btn-paper">
               {has(block, "ctaLabel", editable) ? (
-                <Txt block={block} field="ctaLabel" editable={editable} placeholder="Button text" />
+                <Txt
+                  block={block}
+                  field="ctaLabel"
+                  editable={editable}
+                  placeholder="Button text"
+                />
               ) : (
                 "Full calendar"
               )}
@@ -55,7 +67,11 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
 
         {events.length === 0 ? (
           <div className="mt-12">
-            <EmptyHint editable={editable} title="No upcoming events" text="Scheduled live classes appear here automatically." />
+            <EmptyHint
+              editable={editable}
+              title="No upcoming events"
+              text="Scheduled live classes appear here automatically."
+            />
           </div>
         ) : (
           <ul className="mt-14 grid gap-7 md:mt-16 lg:grid-cols-2">
@@ -76,9 +92,15 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
                     >
                       {d && (
                         <>
-                          <span className="pop-mono text-[0.8125rem]">{d.weekday}</span>
-                          <span className="pop-display mt-1 text-[3.25rem] !leading-none sm:text-[4rem]">{d.day}</span>
-                          <span className="pop-mono mt-1 text-[0.8125rem]">{d.month}</span>
+                          <span className="pop-mono text-[0.8125rem]">
+                            {d.weekday}
+                          </span>
+                          <span className="pop-display mt-1 text-[3.25rem] !leading-none sm:text-[4rem]">
+                            {d.day}
+                          </span>
+                          <span className="pop-mono mt-1 text-[0.8125rem]">
+                            {d.month}
+                          </span>
                         </>
                       )}
                     </div>

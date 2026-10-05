@@ -37,7 +37,12 @@ export function CtaBand({ block, editable }: SectionProps) {
       />
       <div className="mt-10">
         <SmartLink href={block.ctaHref} className={PILL_ON_MOSS}>
-          <Txt block={block} field="ctaLabel" editable={editable} placeholder="Button text" />
+          <Txt
+            block={block}
+            field="ctaLabel"
+            editable={editable}
+            placeholder="Button text"
+          />
         </SmartLink>
       </div>
     </>
@@ -46,7 +51,12 @@ export function CtaBand({ block, editable }: SectionProps) {
   return (
     <Section tone="moss" label={alt}>
       {showImage ? (
-        <div className={cn(WRAP, "grid items-center gap-y-12 lg:grid-cols-12 lg:gap-x-10")}>
+        <div
+          className={cn(
+            WRAP,
+            "grid items-center gap-y-12 lg:grid-cols-12 lg:gap-x-10",
+          )}
+        >
           <Img
             value={block.image}
             alt={alt}

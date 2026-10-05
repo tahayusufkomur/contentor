@@ -190,7 +190,8 @@
   translate: -50% 0;
   rotate: -5deg;
   background: color-mix(in oklch, var(--pop-sun) 82%, transparent);
-  border-inline: 2px dashed color-mix(in oklch, var(--foreground) 25%, transparent);
+  border-inline: 2px dashed
+    color-mix(in oklch, var(--foreground) 25%, transparent);
 }
 
 /* FAQ: open/close plus. */
@@ -228,13 +229,15 @@
   --r: 5px;
   padding: calc(2.4 * var(--r));
   -webkit-mask:
-    radial-gradient(var(--r), #0000 98%, #000) round calc(-1.5 * var(--r)) calc(-1.5 * var(--r)) /
-      calc(3 * var(--r)) calc(3 * var(--r)),
-    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r)) calc(100% - 3 * var(--r));
+    radial-gradient(var(--r), #0000 98%, #000) round calc(-1.5 * var(--r))
+      calc(-1.5 * var(--r)) / calc(3 * var(--r)) calc(3 * var(--r)),
+    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r))
+      calc(100% - 3 * var(--r));
   mask:
-    radial-gradient(var(--r), #0000 98%, #000) round calc(-1.5 * var(--r)) calc(-1.5 * var(--r)) /
-      calc(3 * var(--r)) calc(3 * var(--r)),
-    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r)) calc(100% - 3 * var(--r));
+    radial-gradient(var(--r), #0000 98%, #000) round calc(-1.5 * var(--r))
+      calc(-1.5 * var(--r)) / calc(3 * var(--r)) calc(3 * var(--r)),
+    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r))
+      calc(100% - 3 * var(--r));
 }
 
 /* CTA: ribbon marquee. */
@@ -272,7 +275,8 @@
     }
     .pop-lift:hover {
       transform: translate(-2px, -3px);
-      box-shadow: calc(var(--pop-off) + 3px) calc(var(--pop-off) + 4px) 0 var(--pop-ink);
+      box-shadow: calc(var(--pop-off) + 3px) calc(var(--pop-off) + 4px) 0
+        var(--pop-ink);
     }
     .pop-polaroid:hover {
       z-index: 5;

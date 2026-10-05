@@ -19,7 +19,11 @@ export function BenefitsContents({ block, editable }: SectionProps) {
           key={i}
           className="grid gap-x-10 gap-y-2 border-t border-border py-7 sm:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:py-8"
         >
-          <h3 className={cn(H3, "text-[1.5rem] leading-[1.15] md:text-[1.7rem]")}>{it.title}</h3>
+          <h3
+            className={cn(H3, "text-[1.5rem] leading-[1.15] md:text-[1.7rem]")}
+          >
+            {it.title}
+          </h3>
           <p className="max-w-[48ch] text-pretty text-[1rem] leading-[1.65] text-muted-foreground sm:pt-1.5">
             {it.text}
           </p>

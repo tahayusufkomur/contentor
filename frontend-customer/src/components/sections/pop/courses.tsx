@@ -1,6 +1,15 @@
 import { cn } from "@/lib/utils";
 import type { Course } from "@/types/course";
-import { CoursePrice, EmptyHint, Img, SmartLink, Txt, courseHref, courseImage, has } from "../kit";
+import {
+  CoursePrice,
+  EmptyHint,
+  Img,
+  SmartLink,
+  Txt,
+  courseHref,
+  courseImage,
+  has,
+} from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, PopSection, WRAP } from "./ui";
 
@@ -9,7 +18,10 @@ const BAND = ["bg-[var(--accent)]", "bg-[var(--card)]", "bg-[var(--pop-sun)]"];
 /** Trading cards: a colour frame around the cover, the price as a tilted
  *  sticker, title and description on paper. */
 export function CoursesCards({ block, data, editable }: SectionProps) {
-  const courses = (Array.isArray(data) ? (data as Course[]) : []).slice(0, block.limit === "6" ? 6 : 3);
+  const courses = (Array.isArray(data) ? (data as Course[]) : []).slice(
+    0,
+    block.limit === "6" ? 6 : 3,
+  );
   if (!courses.length && !editable) return null;
   const solo = courses.length === 1;
   return (
@@ -37,7 +49,12 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
           {courses.length > 0 && (
             <SmartLink href="/courses" className="pop-btn pop-btn-paper">
               {has(block, "ctaLabel", editable) ? (
-                <Txt block={block} field="ctaLabel" editable={editable} placeholder="Button text" />
+                <Txt
+                  block={block}
+                  field="ctaLabel"
+                  editable={editable}
+                  placeholder="Button text"
+                />
               ) : (
                 "All courses"
               )}
@@ -47,7 +64,11 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
 
         {courses.length === 0 ? (
           <div className="mt-12">
-            <EmptyHint editable={editable} title="No courses yet" text="Published courses appear here automatically." />
+            <EmptyHint
+              editable={editable}
+              title="No courses yet"
+              text="Published courses appear here automatically."
+            />
           </div>
         ) : (
           <ul
@@ -68,7 +89,8 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
                   <div
                     className={cn(
                       "relative border-b-2 border-[color:var(--pop-ink)] p-3 pb-6",
-                      solo && "md:w-[55%] md:shrink-0 md:border-b-0 md:border-r-2 md:pb-3 md:pr-6",
+                      solo &&
+                        "md:w-[55%] md:shrink-0 md:border-b-0 md:border-r-2 md:pb-3 md:pr-6",
                       BAND[i % BAND.length],
                     )}
                   >
@@ -86,17 +108,32 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
                       )}
                     />
                   </div>
-                  <div className={cn("flex flex-1 flex-col px-6 pb-7 pt-7", solo && "md:justify-center md:px-9")}>
-                    {typeof c.lesson_count === "number" && c.lesson_count > 0 && (
-                      <p className="pop-mono text-[0.8125rem] text-muted-foreground">
-                        {c.lesson_count} {c.lesson_count === 1 ? "lesson" : "lessons"}
-                      </p>
+                  <div
+                    className={cn(
+                      "flex flex-1 flex-col px-6 pb-7 pt-7",
+                      solo && "md:justify-center md:px-9",
                     )}
-                    <h3 className={cn("pop-h3 mt-2 text-[1.75rem]", solo && "md:text-[2.25rem]", "group-hover:underline group-hover:decoration-2 group-hover:underline-offset-4")}>
+                  >
+                    {typeof c.lesson_count === "number" &&
+                      c.lesson_count > 0 && (
+                        <p className="pop-mono text-[0.8125rem] text-muted-foreground">
+                          {c.lesson_count}{" "}
+                          {c.lesson_count === 1 ? "lesson" : "lessons"}
+                        </p>
+                      )}
+                    <h3
+                      className={cn(
+                        "pop-h3 mt-2 text-[1.75rem]",
+                        solo && "md:text-[2.25rem]",
+                        "group-hover:underline group-hover:decoration-2 group-hover:underline-offset-4",
+                      )}
+                    >
                       {c.title}
                     </h3>
                     {c.description && (
-                      <p className="mt-3 line-clamp-3 text-base leading-relaxed text-muted-foreground">{c.description}</p>
+                      <p className="mt-3 line-clamp-3 text-base leading-relaxed text-muted-foreground">
+                        {c.description}
+                      </p>
                     )}
                   </div>
                 </SmartLink>

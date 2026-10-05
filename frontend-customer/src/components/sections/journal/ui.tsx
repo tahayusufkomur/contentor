@@ -50,7 +50,11 @@ export function Section({
   return (
     <section
       aria-label={label || undefined}
-      className={cn("journal relative w-full py-20 md:py-28 lg:py-32", TONES[tone], className)}
+      className={cn(
+        "journal relative w-full py-20 md:py-28 lg:py-32",
+        TONES[tone],
+        className,
+      )}
     >
       {children}
     </section>
