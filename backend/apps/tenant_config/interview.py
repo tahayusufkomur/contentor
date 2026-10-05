@@ -16,6 +16,11 @@ from .models import TenantConfig
 logger = logging.getLogger(__name__)
 
 MESSAGE_MAX = 2000
+# Cloudflare cuts a proxied request at ~100s: the interview call plus an
+# optional copilot edit must both fit under it. A slow hub then falls back to
+# the field's pre-written question instead of a lost request.
+INTERVIEW_TIMEOUT_SECONDS = 45
+EDIT_TIMEOUT_SECONDS = 35
 TRANSCRIPT_KEEP = 80
 # The hub has no sessions: the whole kept transcript rides every turn.
 CONTEXT_TURNS = TRANSCRIPT_KEEP
@@ -138,6 +143,7 @@ def _ask_ai(tenant, answers, turns, message, spoken) -> InterviewTurn | None:
             model=settings.COPILOT_MODEL,
             max_tokens=800,
             label="contentor:interview",
+            timeout_seconds=INTERVIEW_TIMEOUT_SECONDS,
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
@@ -152,7 +158,7 @@ def _run_edit(tenant, request: str) -> dict:
     from apps.core.onboarding import ai_compose
 
     try:
-        payload, cost = engine.run_turn(tenant, [], [], request[:MESSAGE_MAX])
+        payload, cost = engine.run_turn(tenant, [], [], request[:MESSAGE_MAX], timeout_seconds=EDIT_TIMEOUT_SECONDS)
     except Exception:
         logger.exception("interview edit failed schema=%s", tenant.schema_name)
         return {"kind": "answer", "text": "I couldn't make that change just now. Ask again in a moment."}

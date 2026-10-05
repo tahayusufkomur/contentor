@@ -228,3 +228,13 @@ def test_opening_setup_counts_as_activity(client, tenant_ctx):
     with mock.patch("apps.tenant_config.interview_milestones.cards_for", return_value=None):
         client.get("/api/v1/admin/setup-flow/")
     assert Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["interview_last_at"] > "2026-01-01"
+
+
+def test_interview_and_edit_calls_are_capped_under_the_proxy_timeout(client, quiet):
+    """Review finding 2: Cloudflare cuts requests at ~100s."""
+    quiet.reply = interview.InterviewTurn(edit_request="Warmer headline", next_field="audience", question="q")
+    with mock.patch("apps.core.copilot.engine.run_turn", return_value=({"kind": "answer", "text": "ok"}, 0)) as run:
+        client.post(URL, {"message": "Yoga, and make the headline warmer"}, format="json")
+    ai_cap = quiet.calls[0]["timeout_seconds"]
+    edit_cap = run.call_args.kwargs["timeout_seconds"]
+    assert ai_cap + edit_cap <= 85

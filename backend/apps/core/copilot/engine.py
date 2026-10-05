@@ -447,7 +447,7 @@ def _pages_digest(tenant):
                 if b.get(f) not in (None, "")
             )
             if b.get("variant"):
-                vals = f'variant={b["variant"]} {vals}'.strip()
+                vals = f"variant={b['variant']} {vals}".strip()
             for image_field in photos.IMAGE_FIELDS.get(b.get("type"), ()):
                 image_value = b.get(image_field)
                 if isinstance(image_value, dict) and image_value.get("photo_id"):
@@ -1348,7 +1348,7 @@ def _asks_so_far(transcript):
     )
 
 
-def run_turn(tenant, transcript, selections, message, attachments=None):
+def run_turn(tenant, transcript, selections, message, attachments=None, *, timeout_seconds=None):
     # Bound the transcript once, up front, to the same trailing window
     # _user_turn applies — the ask-cap count and the model's actual visible
     # context must agree on the same bounded view, or a stale "ask" outside
@@ -1365,6 +1365,7 @@ def run_turn(tenant, transcript, selections, message, attachments=None):
         output_model=CopilotTurn,
         model=settings.COPILOT_MODEL,
         max_tokens=4000,
+        timeout_seconds=timeout_seconds,
     )
     if parsed.kind == "ask" and capped:
         # Hard cap: the question still reads fine as a statement-of-need,

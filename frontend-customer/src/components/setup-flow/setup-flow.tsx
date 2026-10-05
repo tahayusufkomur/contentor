@@ -192,9 +192,13 @@ function Flow({
     [refresh],
   );
 
+  const [restore, setRestore] = useState<{ text: string; at: number } | null>(
+    null,
+  );
   const { run: send, loading: sending } = useAsyncAction(
     async (req: TurnRequest) => {
       const before = entries;
+      const serverTurns = flow.interview.turns.length;
       setEntries([...before, { role: "coach", text: req.message }]);
       try {
         const res = await api.turn(req);
@@ -206,11 +210,22 @@ function Flow({
         setFlow(res.state);
         if (res.edit) await applyEdit(res.edit);
       } catch (err) {
+        // A slow turn can be cut off by the proxy after the server finished
+        // it: adopt the server's transcript instead of losing the answer.
+        const fresh = await api.get().catch(() => null);
+        if (fresh && fresh.interview.turns.length > serverTurns) {
+          setFlow(fresh);
+          setEntries(fresh.interview.turns);
+          setGuide(fresh.interview.guide);
+          return;
+        }
         setEntries(before);
+        // Typed or dictated text goes back into the box, never lost.
+        if (!req.choice) setRestore({ text: req.message, at: Date.now() });
         throw err;
       }
     },
-    { errorToast: "That didn’t go through. Try again." },
+    { errorToast: "That didn’t go through. Your answer is back in the box." },
   );
 
   const { run: undo } = useAsyncAction(
@@ -333,6 +348,7 @@ function Flow({
         onSend={(req) => void send(req)}
         onUndo={(id) => void undo(id)}
         onMoreLogos={api.logos}
+        restore={restore}
         footer={
           iv.phase === "golive" ? (
             <GoLiveCard api={api} onPublished={() => setCelebrate(true)} />

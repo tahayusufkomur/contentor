@@ -28,6 +28,7 @@ export function InterviewChat({
   onUndo,
   onMoreLogos,
   footer,
+  restore,
   className,
 }: {
   entries: InterviewEntry[];
@@ -40,12 +41,17 @@ export function InterviewChat({
   onUndo: (auditId: number) => void;
   onMoreLogos: (page: number) => Promise<LookCards>;
   footer?: React.ReactNode;
+  /** Text of a send that failed: put back into the box. */
+  restore?: { text: string; at: number } | null;
   className?: string;
 }) {
   const [draft, setDraft] = useState("");
   const [hearing, setHearing] = useState("");
   const spoken = useRef(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (restore) setDraft((d) => d || restore.text);
+  }, [restore]);
   // A turn can wait behind site building on the shared AI hub; say so
   // honestly instead of leaving a bare spinner.
   const [slow, setSlow] = useState(false);

@@ -157,20 +157,23 @@ def _strip_fences(text):
 # ── structured output (blog drafts/topics, brand pack) ──────────────────────
 
 
-def structured(*, system, user, output_model, model, max_tokens, label=None):
+def structured(*, system, user, output_model, model, max_tokens, label=None, timeout_seconds=None):
     """One structured-output call -> (validated ``output_model`` instance,
     cost_usd, effective_model). Raises AiError on provider or schema
     failure. ``label`` tags the run on the agentc hub; other providers
-    ignore it."""
+    ignore it. ``timeout_seconds`` caps an interactive caller's wait (the
+    whole call, retries included) below the provider default."""
     if settings.AI_PROVIDER == "agentc":
-        return _agentc_structured(system, user, output_model, label)
+        return _agentc_structured(system, user, output_model, label, timeout_seconds)
     if settings.AI_PROVIDER == "cli":
         return _cli_structured(system, user, output_model, model)
-    return _anthropic_structured(system, user, output_model, model, max_tokens)
+    return _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds)
 
 
-def _anthropic_structured(system, user, output_model, model, max_tokens):
+def _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds=None):
     client = _anthropic_client()
+    if timeout_seconds is not None:
+        client = client.with_options(timeout=float(timeout_seconds), max_retries=0)
     try:
         response = client.messages.parse(
             model=model,
@@ -261,17 +264,20 @@ def _agentc_url(path):
 _AGENTC_BACKGROUND_LABELS = ("contentor:compose",)
 
 
-def _agentc_run(prompt, label):
+def _agentc_run(prompt, label, deadline=None):
     """Run one prompt on the hub -> its resultText. Raises AiError on any
     failure, including a run whose event log shows a tool call (fail closed:
-    an unreadable event log counts as a failure too)."""
+    an unreadable event log counts as a failure too). ``deadline`` is a
+    time.monotonic() instant; default: AGENTC_TIMEOUT_SECONDS from now."""
     label = label or "contentor"
-    deadline = time.monotonic() + settings.AGENTC_TIMEOUT_SECONDS
+    if deadline is None:
+        deadline = time.monotonic() + settings.AGENTC_TIMEOUT_SECONDS
+    budget = max(int(deadline - time.monotonic()), 0)
     body = {
         "prompt": prompt,
         "cwd": settings.AGENTC_CWD,
         "model": settings.AGENTC_MODEL,
-        "timeoutSec": settings.AGENTC_TIMEOUT_SECONDS,
+        "timeoutSec": budget,
         "worktree": False,
         "requireSyncFresh": False,
         "priority": "background" if label.startswith(_AGENTC_BACKGROUND_LABELS) else "interactive",
@@ -288,7 +294,7 @@ def _agentc_run(prompt, label):
     try:
         while run.get("state") not in _AGENTC_TERMINAL:
             if time.monotonic() >= deadline:
-                raise AiError(f"agentc run {run_id} exceeded {settings.AGENTC_TIMEOUT_SECONDS}s")
+                raise AiError(f"agentc run {run_id} exceeded its {budget}s budget")
             time.sleep(AGENTC_POLL_SECONDS)
             resp = requests.get(_agentc_url(f"/runs/{run_id}"), timeout=_AGENTC_HTTP_TIMEOUT)
             resp.raise_for_status()
@@ -326,17 +332,19 @@ def _agentc_used_tool(run_id):
         raise AiError(f"agentc run {run_id} events unreadable: {exc}") from exc
 
 
-def _agentc_structured(system, user, output_model, label):
+def _agentc_structured(system, user, output_model, label, timeout_seconds=None):
     """One retry (a fresh run) absorbs invalid JSON, like the cli path. A
-    tool-use AiError is not retried."""
+    tool-use AiError is not retried. Both attempts share one deadline."""
     from pydantic import ValidationError
 
     prompt = (
         system + _schema_note(output_model) + _AGENTC_RULES.format(reply="the JSON object") + user + _JSON_USER_NOTE
     )
+    seconds = settings.AGENTC_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
+    deadline = time.monotonic() + seconds
     last_error = None
     for _attempt in range(2):
-        text = _strip_fences(_agentc_run(prompt, label))
+        text = _strip_fences(_agentc_run(prompt, label, deadline))
         try:
             return output_model.model_validate_json(text), Decimal("0"), settings.AGENTC_MODEL
         except (ValueError, ValidationError) as exc:

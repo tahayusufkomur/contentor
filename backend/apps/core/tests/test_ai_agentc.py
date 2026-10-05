@@ -211,3 +211,13 @@ def test_no_vision_on_agentc(settings):
     assert ai.supports_vision() is False
     with pytest.raises(ai.AiError):
         ai.structured_messages(system="s", messages=[], output_model=_Greeting, model="m", max_tokens=1)
+
+
+def test_per_call_timeout_beats_the_global_one(hub, settings):
+    """Interactive callers (the /setup interview) cap their wait well under
+    the proxy's ~100s cut-off, independent of the background default."""
+    settings.AGENTC_TIMEOUT_SECONDS = 600
+    with pytest.raises(ai.AiError, match="exceeded"):
+        _call(timeout_seconds=0)
+    assert hub.created[0]["timeoutSec"] == 0
+    assert hub.cancelled == ["run-1"]
