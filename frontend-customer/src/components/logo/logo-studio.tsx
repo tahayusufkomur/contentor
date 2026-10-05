@@ -142,6 +142,20 @@ export function LogoStudio({
       .finally(() => setLoadingLibrary(false));
   }, [open, config.niche, config.meta_description]);
 
+  // Derived, not applied once in startIdeas: the catalog fetch often lands
+  // AFTER the coach submits the brief (or restores a session), and would
+  // otherwise swap the brief-ranked wall for the config-only rank above.
+  const ideas = useMemo(
+    () =>
+      ideasReady
+        ? rankForBrief(library, {
+            niche: brief.niche,
+            styleChips: brief.styleChips,
+          })
+        : library,
+    [library, ideasReady, brief.niche, brief.styleChips],
+  );
+
   // Load all studio fonts once so previews render true (each family's real
   // shipped weights).
   useEffect(() => {
@@ -256,9 +270,6 @@ export function LogoStudio({
 
   function startIdeas() {
     setIdeasReady(true);
-    setLibrary((prev) =>
-      rankForBrief(prev, { niche: brief.niche, styleChips: brief.styleChips }),
-    );
     chatDispatch({ type: "hydrate", snapshot: null });
     setChatOpen(false);
     setStep("ideas");
@@ -666,7 +677,7 @@ export function LogoStudio({
                   />
                 ) : (
                   <StudioEntrance
-                    logos={library}
+                    logos={ideas}
                     loadingLibrary={loadingLibrary}
                     logoAiStatus={logoAiStatus}
                     brandName={brief.brandName || config.brand_name}
