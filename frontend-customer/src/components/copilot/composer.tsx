@@ -186,13 +186,14 @@ export function CopilotComposer({
             </button>
             <MicButton
               disabled={sending}
-              onText={(text) =>
+              onText={(text, final) => {
+                if (!final || !text) return;
                 editor
                   .chain()
                   .focus("end")
                   .insertContent(editor.isEmpty ? text : ` ${text}`)
-                  .run()
-              }
+                  .run();
+              }}
             />
           </span>
           <Button

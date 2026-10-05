@@ -84,7 +84,8 @@ export function ContentQuestion({
           <MicButton
             disabled={drafting}
             className="absolute bottom-2.5 right-2.5 p-1.5"
-            onText={(spoken) =>
+            onText={(spoken, final) =>
+              final &&
               setText((prev) =>
                 (prev.trim() ? `${prev.trimEnd()} ${spoken}` : spoken).slice(
                   0,

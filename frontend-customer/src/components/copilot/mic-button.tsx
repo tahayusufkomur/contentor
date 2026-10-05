@@ -29,7 +29,8 @@ function recognitionCtor(): (new () => Recognition) | undefined {
 }
 
 /** Dictation via the browser's built-in speech recognition (English).
- * Each finished phrase goes to onText. Renders nothing where the browser
+ * Live (interim) words go to onText(text, false); each finished phrase
+ * to onText(text, true). Renders nothing where the browser
  * has no recognizer (Firefox), so typing stays the fallback.
  * ponytail: browser engine only (Chrome sends audio to Google, Safari to
  * Apple); move to server-side transcription if Firefox or privacy matters. */
@@ -38,7 +39,7 @@ export function MicButton({
   disabled,
   className,
 }: {
-  onText: (text: string) => void;
+  onText: (text: string, final: boolean) => void;
   disabled?: boolean;
   className?: string;
 }) {
@@ -66,12 +67,19 @@ export function MicButton({
     const rec = new Ctor();
     rec.lang = "en-US";
     rec.continuous = true;
-    rec.interimResults = false;
+    rec.interimResults = true;
     rec.onresult = (e) => {
+      let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        const text = e.results[i].isFinal ? e.results[i][0].transcript : "";
-        if (text.trim()) onTextRef.current(text.trim());
+        const text = e.results[i][0].transcript;
+        if (e.results[i].isFinal) {
+          if (text.trim()) onTextRef.current(text.trim(), true);
+        } else {
+          interim += text;
+        }
       }
+      // Words still being recognised: shown live, replaced by the final text.
+      onTextRef.current(interim.trim(), false);
     };
     rec.onerror = (e) => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
