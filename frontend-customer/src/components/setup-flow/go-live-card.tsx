@@ -117,13 +117,16 @@ export function GoLiveCard({
 
   if (state.needs_plan && state.plan) {
     const price = formatPrice(state.plan.amount_cents, state.plan.currency);
+    // Plan names are stored lowercase ("starter"); shown capitalised.
+    const name =
+      state.plan.name.charAt(0).toUpperCase() + state.plan.name.slice(1);
     return shell(
       <>
         <p className="text-[15px] font-semibold">
-          To sell on your site, choose {state.plan.name}
+          To sell on your site, choose {name}
         </p>
         <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
-          Paid courses and live classes need the {state.plan.name} plan
+          Paid courses and live classes need the {name} plan
           {price ? ` (${price} a month)` : ""}. You’ll come straight back here.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -132,7 +135,7 @@ export function GoLiveCard({
             loading={checkingOut}
             className="rounded-full px-6"
           >
-            Choose {state.plan.name}
+            Choose {name}
           </Button>
           {free}
         </div>

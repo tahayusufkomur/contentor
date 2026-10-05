@@ -44,8 +44,18 @@ def golive_state(tenant) -> dict:
         "needs_plan": needs_plan,
         "needs_payouts": paid_content and paid and not can_monetize(tenant),
         "plan": _starter_plan(tenant) if needs_plan else None,
-        "blockers": publish_blockers(config, tenant),
+        "blockers": _open_blockers(config, tenant, flow),
     }
+
+
+# publish() publishes the interview's drafts itself, so these never need
+# the coach's attention once the draft exists.
+_SELF_RESOLVED = {"first_course": "course", "first_blog_post": "post"}
+
+
+def _open_blockers(config, tenant, flow) -> list[str]:
+    drafts = flow.get("drafts") or {}
+    return [b for b in publish_blockers(config, tenant) if not drafts.get(_SELF_RESOLVED.get(b, ""))]
 
 
 def publish(tenant) -> None:

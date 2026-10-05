@@ -125,3 +125,11 @@ def test_publish_blocked_returns_blockers(client):
 
 def test_unknown_action_is_400(client):
     assert client.post(URL, {"action": "nope"}, format="json").status_code == 400
+
+
+def test_blockers_that_go_live_resolves_itself_are_hidden(client, config):
+    course = _course(paid=False)
+    config.setup_flow = {**config.setup_flow, "drafts": {"course": course.id}}
+    config.save()
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        assert "first_course" not in client.get(URL).json()["blockers"]
