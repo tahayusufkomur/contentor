@@ -342,8 +342,6 @@ def onboarding_handoff(request):
     email-ownership proof; the returned URL carries a standard magic-link
     token consumed by the tenant's existing /callback flow.
     """
-    from .wizard import _resolve_tenant_from_wizard_token
-
     payload, tenant, err = _resolve_tenant_from_wizard_token(request)
     if err is not None:
         return err
@@ -382,3 +380,34 @@ def provisioning_status(request):
             "stage": (tenant.wizard_state or {}).get("provisioning_stage"),
         }
     )
+
+
+def _resolve_tenant_from_wizard_token(request):
+    """Resolve the tenant a wizard (7-day) or signup token belongs to.
+
+    Returns (payload, tenant, error_response); exactly one of (tenant, error)
+    is None. Accepts wizard tokens and still-valid signup tokens.
+    """
+    from django.utils.text import slugify
+
+    from apps.accounts.tokens import verify_wizard_token
+    from apps.core.i18n_helpers import msg
+    from apps.core.models import Tenant
+
+    token = request.data.get("token")
+    if not token:
+        return None, None, Response({"detail": msg(request, "token_required")}, status=400)
+    try:
+        payload = verify_wizard_token(token)
+    except Exception:
+        return None, None, Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+
+    region = payload.get("region", "global")
+    slug = slugify(payload["brand_name"])[:63]
+    try:
+        tenant = Tenant.objects.get(slug=slug, region=region)
+    except Tenant.DoesNotExist:
+        return None, None, Response({"detail": msg(request, "tenant_not_found")}, status=404)
+    if tenant.owner_email != payload["email"]:
+        return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
+    return payload, tenant, None

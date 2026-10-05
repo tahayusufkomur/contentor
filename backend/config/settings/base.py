@@ -168,11 +168,7 @@ REST_FRAMEWORK = {
         "brand_name_check": "30/min",
         # Wizard recovery re-send — one outbound email per call.
         "wizard_recover": "5/hour",
-        # Public (wizard-token) logo AI endpoints — mirrors ai_rate.
-        "wizard_logo": "20/min",
-        # Public (wizard-token) describe-followups AI endpoint — one AI call
-        # per describe-step Continue, so tighter than wizard_logo.
-        "wizard_followups": "10/min",
+        # Coach /setup interview turns — one AI call each.
         "setup_interview": "30/min",
     },
 }

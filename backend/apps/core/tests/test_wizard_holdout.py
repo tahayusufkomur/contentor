@@ -132,36 +132,6 @@ def test_report_never_counts_the_public_row_and_survives_an_empty_bucket():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_wizard_state_patch_is_closed_once_provisioning_starts():
-    """Only a 'pending' tenant is mid-wizard; every later state closes it."""
-    from apps.accounts.tokens import create_wizard_token
-
-    api = APIClient()
-    connection.set_schema_to_public()
-    tenant = Tenant.objects.create(
-        schema_name="patch_closed",
-        name="patch-closed",
-        slug="patch-closed",
-        subdomain="patch-closed",
-        owner_email="patch-closed@example.com",
-        region="global",
-    )
-    token = create_wizard_token(tenant.owner_email, tenant.name, tenant.slug, region="global")
-    try:
-        for status in ("provisioning", "provisioned", "ready"):
-            Tenant.objects.filter(pk=tenant.pk).update(provisioning_status=status)
-            resp = api.patch(
-                "/api/v1/onboarding/wizard/state/",
-                {"token": token, "answers": {"niche": "yoga"}, "current_step": "business.describe"},
-                format="json",
-            )
-            assert resp.status_code == 409, f"{status} should close the wizard: {resp.content}"
-    finally:
-        connection.set_schema_to_public()
-        Tenant.objects.filter(pk=tenant.pk).delete()
-
-
-@pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize(("country", "expected"), [("DE", "EUR"), ("US", "USD"), (None, "USD")])
 def test_verify_sets_billing_currency_from_country(client, country, expected):
     from apps.accounts.tokens import create_signup_token

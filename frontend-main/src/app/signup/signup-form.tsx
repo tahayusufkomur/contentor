@@ -15,8 +15,7 @@ import {
   checkBrandName,
   createPlatformAuthenticated,
 } from "@/lib/api/onboarding";
-import { SlideHeader } from "./verify/wizard/steps";
-import { WizardShell } from "./verify/wizard/WizardShell";
+import { SignupShell, SlideHeader } from "./signup-shell";
 import { ApiError } from "@/types/api";
 
 interface SignupFormProps {
@@ -108,9 +107,8 @@ type Step = "brand" | "contact" | "email-sent";
 const DRAFT_KEY = "contentor_signup_draft";
 const RESEND_COOLDOWN_SECONDS = 30; // the endpoint allows 5/min per IP
 
-/** New coach: brand name -> name+email -> verification email sent. Renders
- * inside the wizard's own shell so this feels like the wizard's first step
- * instead of a separate form. */
+/** New coach: brand name -> name+email -> verification email sent. The rest
+ * of onboarding happens in the coach's own /setup after the email link. */
 function AnonymousSignupFlow() {
   const t = useTranslations("auth.signup");
   const [step, setStep] = useState<Step>("brand");
@@ -267,15 +265,12 @@ function AnonymousSignupFlow() {
 
   if (step === "brand") {
     return (
-      <WizardShell
-        chapter="business"
+      <SignupShell
         stepId="brand"
         direction={direction}
         progress={0}
         canBack={false}
         onBack={() => {}}
-        showFinishRest={false}
-        onFinishRest={() => {}}
         error={error}
         footer={
           <>
@@ -327,14 +322,13 @@ function AnonymousSignupFlow() {
             />
           </form>
         </div>
-      </WizardShell>
+      </SignupShell>
     );
   }
 
   // step === "contact"
   return (
-    <WizardShell
-      chapter="business"
+    <SignupShell
       stepId="contact"
       direction={direction}
       progress={8}
@@ -344,8 +338,6 @@ function AnonymousSignupFlow() {
         setDirection(-1);
         setStep("brand");
       }}
-      showFinishRest={false}
-      onFinishRest={() => {}}
       error={error}
       footer={
         <>
@@ -408,6 +400,6 @@ function AnonymousSignupFlow() {
           </div>
         </form>
       </div>
-    </WizardShell>
+    </SignupShell>
   );
 }

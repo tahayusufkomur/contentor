@@ -58,11 +58,6 @@ def test_cf_header_beats_remote_addr(tenant_ctx):
 
 
 WIZARD_AI_URLS = [
-    "/api/v1/onboarding/wizard/logo-status/",
-    "/api/v1/onboarding/wizard/logo-converse/",
-    "/api/v1/onboarding/wizard/logo-converse/finish/",
-    "/api/v1/onboarding/wizard/logo-refine/",
-    "/api/v1/onboarding/wizard/logo-upload/",
     "/api/v1/onboarding/wizard/recover/",
 ]
 
@@ -77,12 +72,3 @@ def test_blocked_ip_gets_403_on_wizard_ai_endpoints(restore_public):
     client = APIClient(HTTP_HOST=HOST, REMOTE_ADDR="6.6.6.8")
     for url in WIZARD_AI_URLS:
         assert client.post(url, {}, format="json").status_code == 403, url
-
-
-def test_wizard_logo_endpoints_throttle_per_ip(restore_public):
-    client = APIClient(HTTP_HOST=HOST, REMOTE_ADDR="8.8.8.1")
-    statuses = [
-        client.post("/api/v1/onboarding/wizard/logo-status/", {}, format="json").status_code
-        for _ in range(21)  # rate is 20/min
-    ]
-    assert 429 in statuses, statuses

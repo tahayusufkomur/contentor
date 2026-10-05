@@ -11,23 +11,6 @@ from .views import (
     seed_from_template,
     skip_template,
 )
-from .wizard import (
-    wizard_catalog_view,
-    wizard_checkout,
-    wizard_checkout_sync,
-    wizard_finalize,
-    wizard_site_edit_apply,
-    wizard_site_edit_preview,
-    wizard_state,
-)
-from .wizard_followups import wizard_describe_followups
-from .wizard_logo import (
-    wizard_logo_converse,
-    wizard_logo_converse_finish,
-    wizard_logo_refine,
-    wizard_logo_status,
-    wizard_logo_upload,
-)
 
 urlpatterns = [
     path("signup/", creator_signup, name="creator-signup"),
@@ -38,18 +21,5 @@ urlpatterns = [
     path("skip-template/", skip_template, name="skip-template"),
     path("handoff/", onboarding_handoff, name="onboarding-handoff"),
     path("status/", provisioning_status, name="provisioning-status"),
-    path("wizard/catalog/", wizard_catalog_view, name="wizard-catalog"),
-    path("wizard/state/", wizard_state, name="wizard-state"),
-    path("wizard/finalize/", wizard_finalize, name="wizard-finalize"),
-    path("wizard/site-edit/preview/", wizard_site_edit_preview, name="wizard-site-edit-preview"),
-    path("wizard/site-edit/apply/", wizard_site_edit_apply, name="wizard-site-edit-apply"),
-    path("wizard/describe-followups/", wizard_describe_followups, name="wizard-describe-followups"),
-    path("wizard/checkout/", wizard_checkout, name="wizard-checkout"),
-    path("wizard/checkout/sync/", wizard_checkout_sync, name="wizard-checkout-sync"),
     path("wizard/recover/", wizard_recover, name="wizard-recover"),
-    path("wizard/logo-status/", wizard_logo_status, name="wizard-logo-status"),
-    path("wizard/logo-converse/", wizard_logo_converse, name="wizard-logo-converse"),
-    path("wizard/logo-converse/finish/", wizard_logo_converse_finish, name="wizard-logo-converse-finish"),
-    path("wizard/logo-refine/", wizard_logo_refine, name="wizard-logo-refine"),
-    path("wizard/logo-upload/", wizard_logo_upload, name="wizard-logo-upload"),
 ]

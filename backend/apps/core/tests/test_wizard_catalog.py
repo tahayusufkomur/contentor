@@ -1,5 +1,4 @@
 import pytest
-from rest_framework.test import APIClient
 
 from apps.core.onboarding import wizard_catalog as wc
 from apps.tenant_config.defaults import KNOWN_BLOCK_TYPES, KNOWN_PAGE_KEYS
@@ -69,17 +68,6 @@ def test_validate_answers_accepts_valid_partial():
 )
 def test_validate_answers_rejects_invalid(partial):
     assert wc.validate_answers(partial) != []
-
-
-def test_catalog_endpoint_serves_payload():
-    resp = APIClient().get("/api/v1/onboarding/wizard/catalog/")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "yoga" in data["niches"]
-    assert data["niches"][-1] == "general"  # catch-all is last, not alphabetical
-    assert len(data["page_layouts"]["home"]) == 3
-    assert data["recommended"]["logo"]["mode"] == "wordmark"
-    assert data["curated_logo_layouts"] == ["horizontal", "stacked"]
 
 
 @pytest.mark.parametrize("layout", ["horizontal", "stacked"])
