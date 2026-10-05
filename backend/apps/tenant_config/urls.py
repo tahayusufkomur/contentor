@@ -15,7 +15,13 @@ from .assistant_views import (
     assistant_transcripts,
 )
 from .demo_content import demo_content, erase_demo_content
-from .setup_flow_views import setup_flow_build_page, setup_flow_draft, setup_flow_state
+from .setup_flow_views import (
+    setup_flow_build_page,
+    setup_flow_draft,
+    setup_flow_logos,
+    setup_flow_state,
+    setup_flow_turn,
+)
 from .views import (
     TenantConfigView,
     admin_stats,
@@ -38,6 +44,8 @@ urlpatterns = [
     path("setup-flow/", setup_flow_state, name="setup-flow"),
     path("setup-flow/build-page/", setup_flow_build_page, name="setup-flow-build-page"),
     path("setup-flow/draft/", setup_flow_draft, name="setup-flow-draft"),
+    path("setup-flow/turn/", setup_flow_turn, name="setup-flow-turn"),
+    path("setup-flow/logos/", setup_flow_logos, name="setup-flow-logos"),
     path("demo-content/", demo_content, name="demo-content"),
     path("demo-content/erase/", erase_demo_content, name="demo-content-erase"),
     path("help-bot/chat/", help_bot_chat, name="help-bot-chat"),

@@ -2,7 +2,7 @@
 (CF-Connecting-IP aware) rather than REMOTE_ADDR — behind the Cloudflare
 tunnel every anonymous requester otherwise shares one rate bucket."""
 
-from rest_framework.throttling import AnonRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from apps.core.net import client_ip
 
@@ -57,3 +57,9 @@ class BrandNameCheckThrottle(ClientIpAnonThrottle):
     """Pre-wizard step 1 availability check — read-only, no email sent."""
 
     scope = "brand_name_check"
+
+
+class SetupInterviewThrottle(UserRateThrottle):
+    """Coach /setup interview turns (one AI call each)."""
+
+    scope = "setup_interview"

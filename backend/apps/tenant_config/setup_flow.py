@@ -206,7 +206,14 @@ def state_body(tenant) -> dict:
         "publish_blockers": publish_blockers(config, tenant),
         "is_published": bool(tenant.is_published),
         "suggestions": {kind: _ideas(plan.get(f"{kind}_ideas")) for kind in CONTENT_KINDS},
+        "interview": _interview_state(tenant, flow),
     }
+
+
+def _interview_state(tenant, flow):
+    from .interview import interview_state
+
+    return interview_state(tenant, flow)
 
 
 # ── writes ───────────────────────────────────────────────────────────────────

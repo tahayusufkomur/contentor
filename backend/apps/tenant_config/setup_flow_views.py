@@ -4,12 +4,13 @@ Coach JWT (DRF default auth) + IsCoachOrOwner, like the copilot."""
 import logging
 
 from django.db import connection
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.throttling import SetupInterviewThrottle
 
-from . import setup_flow
+from . import interview, interview_milestones, setup_flow
 
 logger = logging.getLogger(__name__)
 
@@ -64,3 +65,31 @@ def setup_flow_draft(request):
     except ContentOpError as exc:
         return Response({"detail": str(exc)}, status=400)
     return Response(result, status=201)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@throttle_classes([SetupInterviewThrottle])
+def setup_flow_turn(request):
+    data = _data(request)
+    choice = data.get("choice") if isinstance(data.get("choice"), dict) else None
+    try:
+        body = interview.run_turn(
+            connection.tenant, str(data.get("message") or ""), spoken=bool(data.get("spoken")), choice=choice
+        )
+    except interview_milestones.ChoiceError as exc:
+        return Response({"detail": str(exc)}, status=400)
+    return Response(body)
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def setup_flow_logos(request):
+    from .interview_brief import answers_of
+
+    try:
+        page = max(int(request.query_params.get("page") or 0), 0)
+    except ValueError:
+        page = 0
+    tenant = connection.tenant
+    return Response(interview_milestones.logo_cards(tenant, answers_of(tenant), page))

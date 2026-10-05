@@ -173,6 +173,7 @@ REST_FRAMEWORK = {
         # Public (wizard-token) describe-followups AI endpoint — one AI call
         # per describe-step Continue, so tighter than wizard_logo.
         "wizard_followups": "10/min",
+        "setup_interview": "30/min",
     },
 }
 
@@ -276,7 +277,7 @@ LIVECRAFT_API_KEY = os.environ.get("LIVECRAFT_API_KEY", "")
 # Container hub: Gemini CLI on subscription accounts, AGENTC_* below).
 AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
 AGENTC_HUB = os.environ.get("AGENTC_HUB", "http://host.docker.internal:39300")
-AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "gemini-3.7-flash-high")
+AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "gemini-3.8-flash-high")  # newest in `agy models`
 # Working dir on the HUB host (must already exist there), not in this container.
 AGENTC_CWD = os.environ.get("AGENTC_CWD", "/Users/tahayusufkomur/ws/agent-studio-runs")
 # Per run, queue wait included.
