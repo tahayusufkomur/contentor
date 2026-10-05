@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tenant_config', '0025_tenantconfig_style'),
+        ("tenant_config", "0025_tenantconfig_style"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tenantconfig',
-            name='setup_flow',
+            model_name="tenantconfig",
+            name="setup_flow",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

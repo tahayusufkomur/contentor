@@ -3809,105 +3809,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/onboarding/wizard/compose/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Trigger compose-at-reveal for the content-first flow. Only a provisioned
-     *     tenant composes; the frontend polls onboarding/status until 'ready'.
-     */
-    post: operations["v1_onboarding_wizard_compose_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/content/blog/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description The coach's first post, from fields they provide (default draft; only
-     *     'published' satisfies the publish gate). Mirrors
-     *     BlogPostAdminViewSet.perform_create — server-derived slug, published_at
-     *     stamped on publish — because we bypass the viewset.
-     */
-    post: operations["v1_onboarding_wizard_content_blog_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/content/course/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description The coach's first course. Published on create: the publish gate counts
-     *     only published courses, so a draft here would gate them out of going live.
-     */
-    post: operations["v1_onboarding_wizard_content_course_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/content/course-outlines/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_onboarding_wizard_content_course_outlines_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/content/event/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description The coach's first event: kind='live' -> LiveClass, 'onsite' -> OnsiteEvent.
-     *     Both models carry an instructor FK and both list views save it from the
-     *     request user (apps/live/views.py), so both get the owner here.
-     */
-    post: operations["v1_onboarding_wizard_content_event_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/onboarding/wizard/describe-followups/": {
     parameters: {
       query?: never;
@@ -4086,32 +3987,6 @@ export interface paths {
      *     key per tenant+kind so re-picks overwrite instead of accumulating.
      */
     post: operations["v1_onboarding_wizard_logo_upload_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/provision/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Enqueue early schema provisioning for the token's tenant. Idempotent:
-     *     only 'pending' tenants enqueue; any other state just reports its status.
-     *     The frontend polls this same view every 1.5s until 'provisioned', so the
-     *     'pending' guard must flip synchronously here — the task is the only other
-     *     thing that changes provisioning_status, and it may not start running for
-     *     several polls (worker backlog, slow migration), which used to re-enqueue a
-     *     duplicate on every intervening tick. select_for_update closes the window
-     *     between two near-simultaneous polls too.
-     */
-    post: operations["v1_onboarding_wizard_provision_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -16126,96 +16001,6 @@ export interface operations {
       };
     };
   };
-  v1_onboarding_wizard_compose_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_content_blog_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_content_course_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_content_course_outlines_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_content_event_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   v1_onboarding_wizard_describe_followups_create: {
     parameters: {
       query?: never;
@@ -16379,24 +16164,6 @@ export interface operations {
     };
   };
   v1_onboarding_wizard_logo_upload_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_provision_create: {
     parameters: {
       query?: never;
       header?: never;

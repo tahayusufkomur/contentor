@@ -1121,7 +1121,6 @@ def _call_page_model(tenant, user) -> dict[int, dict]:
     return {s.index: s.model_dump() for s in parsed.sections}
 
 
-
 def _other_headlines(page_key) -> list[str]:
     """Opening headlines already on the tenant's other pages (inside
     tenant_context), so each page leads with its own line."""
@@ -1137,6 +1136,7 @@ def _other_headlines(page_key) -> list[str]:
                 out.append(str(block["headline"])[:120])
                 break
     return out
+
 
 def _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction) -> list[dict]:
     """Field dicts per entry: AI copy that passes the manifest, one repair

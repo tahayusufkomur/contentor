@@ -4,8 +4,7 @@
       "business": "Your business",
       "look": "Your look",
       "logo": "Your logo",
-      "launch": "Launch",
-      "content": "Your content"
+      "launch": "Launch"
     },
     "common": {
       "back": "Back",
@@ -84,22 +83,6 @@
         "write_blog": "Share articles & tips",
         "send_announcements": "Send announcements & updates"
       }
-    },
-    "content": {
-      "provisioning": "Setting up your studio…",
-      "provisioningHint": "This takes a few seconds. Your content will be saved here.",
-      "courseTitle": "Create your first course",
-      "coursePrompt": "Pick a starting point — you can edit everything later.",
-      "courseEmpty": "We couldn't suggest courses right now. You can add one later.",
-      "eventTitle": "Schedule your first event",
-      "eventPrompt": "Give students something to show up for.",
-      "blogTitle": "Publish your first post",
-      "blogPrompt": "A short welcome post helps people find you.",
-      "skip": "I'll do this later",
-      "titleLabel": "Title",
-      "priceLabel": "Price",
-      "dateLabel": "Date and time",
-      "free": "Free"
     },
     "theme": {
       "heading": "Pick your colors",

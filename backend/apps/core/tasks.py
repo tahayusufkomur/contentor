@@ -186,10 +186,7 @@ def _run_ai_step(label, tenant, fn, timeout_seconds):
 
 def _gather_content_items(tenant):
     """Course/download items for the compose brief, read in the caller's
-    tenant_context. Includes PUBLISHED courses — the content-first wizard makes
-    the coach's first course published, and it must feed the composed site.
-    (Classic tenants have only draft demo courses here, so widening the filter
-    is a no-op for them.)"""
+    tenant_context. Includes published and draft courses alike."""
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
 
@@ -315,11 +312,9 @@ def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale):
     """Create the tenant schema, the owner user (public + tenant schema), and a
     default TenantConfig — and stop. Idempotent: every step reuses existing rows.
 
-    Does NOT seed niche content or AI-compose pages: those are deferred so this
-    can run early (when the coach reaches the wizard content step) to give them
-    a real schema to write content into. On success leaves
-    provisioning_status='provisioned'. Callers that want the full site
-    (provision_tenant) continue from there to seed + compose + 'ready'.
+    Does NOT seed niche content or AI-compose pages. On success leaves
+    provisioning_status='provisioned'; provision_tenant continues from there
+    to seed + compose + 'ready'.
     """
     # Create owner in main (public) schema if they don't exist yet.
     # If they do exist (e.g. they already own a tenant in another region),
@@ -437,78 +432,6 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         tenant.provisioning_status = "failed"
         tenant.save(update_fields=["provisioning_status"])
         logger.exception("Tenant provisioning failed for %s", tenant.slug)
-        raise self.retry(exc=exc) from exc
-
-
-@shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def provision_wizard_schema(self, tenant_id, owner_email, owner_name):
-    """Early, content-step provisioning: schema + owner + config only, no seed
-    or compose. Enqueued when the coach reaches the wizard's content step so
-    they have a real schema to write their first course/event/post into."""
-    from apps.core.constants import REGION_DEFAULT_LOCALE
-    from apps.core.models import Tenant
-
-    tenant = Tenant.objects.get(id=tenant_id)
-    # 'provisioning' is the handoff state the endpoint sets synchronously
-    # before enqueueing (closing the double-poll race) — the task must still
-    # run from it, or every call would see its own handoff state and no-op.
-    if tenant.provisioning_status not in ("pending", "provisioning", "failed"):
-        return  # already provisioned/ready — nothing to do
-    try:
-        region = tenant.region or "global"
-        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
-        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
-    except Exception as exc:
-        tenant.provisioning_status = "failed"
-        tenant.save(update_fields=["provisioning_status"])
-        logger.exception("Wizard schema provisioning failed for %s", tenant.slug)
-        raise self.retry(exc=exc) from exc
-
-
-@shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def compose_wizard_site(self, tenant_id):
-    """Compose the site for an already-provisioned content-first tenant from
-    its real content + wizard answers, then mark ready. Fail-soft: an AI
-    failure inside _apply_wizard_answers falls back to deterministic pages and
-    still reaches 'ready'. Only an unexpected error retries."""
-    from apps.core.constants import REGION_DEFAULT_LOCALE
-    from apps.core.models import Tenant
-
-    tenant = Tenant.objects.get(id=tenant_id)
-    if tenant.provisioning_status == "ready":
-        return
-    if tenant.provisioning_status != "provisioned":
-        return  # schema not ready yet; the frontend gates compose on 'provisioned'
-    try:
-        region = tenant.region or "global"
-        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
-        answers = (tenant.wizard_state or {}).get("answers") or {}
-        _apply_wizard_answers(tenant, answers, preferred_locale)
-
-        from apps.core.onboarding.site_composer import site_style_for
-
-        styled = bool(site_style_for(answers))
-        if not styled:  # styled sites get no demo posts/products
-            try:
-                from apps.core.onboarding import ai_curate, seeding_content
-
-                brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
-                with tenant_context(tenant):
-                    seeding_content.seed_starter_posts(tenant, brief)
-                    seeding_content.seed_draft_products(tenant, brief)
-            except Exception:  # noqa: BLE001 — seeding is best-effort, never fails the reveal
-                logger.exception("reveal seeding failed for %s", tenant.slug)
-
-        _set_provisioning_stage(tenant, "finalizing")
-        tenant.provisioning_status = "ready"
-        tenant.save(update_fields=["provisioning_status"])
-        logger.info("Tenant %s composed at reveal", tenant.slug)
-        if styled:
-            _enqueue_compose_site(tenant)
-    except Exception as exc:
-        tenant.provisioning_status = "failed"
-        tenant.save(update_fields=["provisioning_status"])
-        logger.exception("compose_wizard_site failed for %s", tenant.slug)
         raise self.retry(exc=exc) from exc
 
 

@@ -284,12 +284,6 @@ def validate_answers(partial: dict) -> list[str]:
                 errors.append(
                     "custom_domain must be {choice, domain?} with choice one of: " + ", ".join(CUSTOM_DOMAIN_CHOICES)
                 )
-        elif key in ("course_created", "event_created", "blog_created"):
-            # Content-first flow (holdout "treatment"): the coach created that
-            # item during the wizard. Absent = not created; skipping never sets
-            # the flag, so the publish gate still surfaces the gap.
-            if not isinstance(value, bool):
-                errors.append(f"{key} must be a boolean")
         else:
             errors.append(f"unknown answer key '{key}'")
     return errors
