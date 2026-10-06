@@ -1,10 +1,23 @@
 import { SITE_STYLES } from "@shared/sections/styles";
-import type { SiteStyle } from "@shared/sections/types";
+import type { SiteStyle, SiteStylePalette } from "@shared/sections/types";
 
 export { SITE_STYLES };
 
 export function getSiteStyle(id?: string | null): SiteStyle | undefined {
   return id ? SITE_STYLES[id] : undefined;
+}
+
+/** The palette a site wears: the style's own, or one of its alternatives.
+ *  An id the style does not have (e.g. left over from a style switch) means
+ *  the style's own. */
+export function paletteOf(
+  style: SiteStyle,
+  paletteId?: string | null,
+): SiteStylePalette {
+  return (
+    style.palettes?.find((p) => paletteId && p.id === paletteId)?.palette ??
+    style.palette
+  );
 }
 
 const DESTRUCTIVE = "oklch(0.577 0.245 27.33)";
@@ -22,8 +35,11 @@ const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 /** A style's compact palette → the full theme variable set the whole tenant
  *  app reads (shadcn tokens + brand + charts), plus the section-only tokens
  *  (--inverse, --font-display, --radius). Keys are without the leading `--`. */
-export function styleVars(style: SiteStyle): Record<string, string> {
-  const p = style.palette;
+export function styleVars(
+  style: SiteStyle,
+  paletteId?: string | null,
+): Record<string, string> {
+  const p = paletteOf(style, paletteId);
   return {
     background: p.background,
     foreground: p.foreground,
@@ -67,9 +83,13 @@ export function styleVars(style: SiteStyle): Record<string, string> {
 
 /** Inline `style` object scoping a style's tokens to a subtree (showcase,
  *  wizard previews) without touching :root. */
-export function styleScope(style: SiteStyle): Record<string, string> {
+export function styleScope(
+  style: SiteStyle,
+  paletteId?: string | null,
+): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(styleVars(style))) out[`--${k}`] = v;
+  for (const [k, v] of Object.entries(styleVars(style, paletteId)))
+    out[`--${k}`] = v;
   out.backgroundColor = "var(--background)";
   out.color = "var(--foreground)";
   out.fontFamily = "var(--font-sans)";
@@ -78,8 +98,12 @@ export function styleScope(style: SiteStyle): Record<string, string> {
 
 /** :root CSS for a styled tenant. Styles are designed as a single mode, so
  *  .dark/.dim get the same values (the layout also forces light). */
-export function styleRootCss(style: SiteStyle, extraCss = ""): string {
-  const vars = Object.entries(styleVars(style))
+export function styleRootCss(
+  style: SiteStyle,
+  extraCss = "",
+  paletteId?: string | null,
+): string {
+  const vars = Object.entries(styleVars(style, paletteId))
     .map(([k, v]) => `  --${k}: ${v};`)
     .join("\n");
   const safeExtra = (extraCss || "").replace(/[<>]/g, "");

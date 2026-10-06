@@ -10197,6 +10197,7 @@ export interface components {
       logo_recipe?: unknown;
       theme?: components["schemas"]["ThemeEnum"];
       style?: string;
+      palette?: string;
       dark_mode_enabled?: boolean;
       font_family?: string;
       custom_css?: string;
@@ -10535,6 +10536,7 @@ export interface components {
       logo_recipe?: unknown;
       theme?: components["schemas"]["ThemeEnum"];
       style?: string;
+      palette?: string;
       dark_mode_enabled?: boolean;
       font_family?: string;
       custom_css?: string;

@@ -176,6 +176,8 @@ export interface TenantConfig {
   custom_css: string;
   /** Site style id (packages/shared/src/sections/styles); "" = legacy theme. */
   style?: string;
+  /** Alternative colourway of `style` ("" = the style's own palette). */
+  palette?: string;
   enabled_modules: string[];
   social_links: Record<string, string>;
   meta_description: string;

@@ -5,7 +5,7 @@ import type { TenantConfig } from "@/types/tenant";
 export function TenantThemeStyle({ config }: { config: TenantConfig }) {
   const siteStyle = getSiteStyle(config.style);
   const css = siteStyle
-    ? styleRootCss(siteStyle, config.custom_css || "")
+    ? styleRootCss(siteStyle, config.custom_css || "", config.palette)
     : generateThemeCSS(
         config.theme,
         config.font_family,

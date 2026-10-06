@@ -53,7 +53,7 @@ export default async function DesignShowcasePage({
   }
 
   return (
-    <div style={styleScope(style)} className="min-h-screen">
+    <div style={styleScope(style, sp.palette)} className="min-h-screen">
       <link rel="stylesheet" href={styleFontsHref(style)} />
       {!sp.bare && (
         <nav className="sticky top-0 z-50 flex flex-wrap items-center gap-2 border-b border-black/10 bg-white/90 px-4 py-2 font-mono text-[11px] text-black backdrop-blur">
@@ -67,6 +67,20 @@ export default async function DesignShowcasePage({
               {id}
             </a>
           ))}
+          <span className="mx-2 opacity-30">|</span>
+          {[{ id: "", label: style.paletteLabel }, ...style.palettes].map(
+            (p) => (
+              <a
+                key={p.id || "own"}
+                href={`?style=${style.id}&palette=${p.id}${sp.page ? `&page=${sp.page}` : ""}`}
+                className={
+                  (sp.palette ?? "") === p.id ? "underline" : "opacity-60"
+                }
+              >
+                {p.label}
+              </a>
+            ),
+          )}
           <span className="mx-2 opacity-30">|</span>
           {Object.keys(SECTION_MANIFEST.recipes).map((p) => (
             <a

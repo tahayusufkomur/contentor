@@ -159,6 +159,17 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Style must be one of the site style IDs.")
         return value
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        current = self.instance
+        style = attrs.get("style", getattr(current, "style", ""))
+        if "palette" in attrs:
+            if attrs["palette"] and attrs["palette"] not in sections.palettes(style):
+                raise serializers.ValidationError({"palette": "Palette must be one of the style's palettes."})
+        elif "style" in attrs and getattr(current, "palette", "") not in sections.palettes(style):
+            attrs["palette"] = ""  # a style switch drops a colourway the new style does not have
+        return attrs
+
     def validate_custom_css(self, value):
         # Trust boundary: this CSS is injected into a <style> tag on every
         # tenant page. Strip the </style> breakout vector and active-content
@@ -187,6 +198,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "logo_recipe",
             "theme",
             "style",
+            "palette",
             "dark_mode_enabled",
             "font_family",
             "custom_css",

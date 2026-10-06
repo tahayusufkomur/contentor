@@ -244,3 +244,26 @@ def test_parse_look(real_styles):
     assert sections.parse_look("journal:mint") is None
     assert sections.parse_look("nope") is None
     assert sections.parse_look("") is None
+
+
+def test_palette_must_belong_to_the_style(real_styles):
+    from apps.tenant_config.serializers import TenantConfigSerializer
+
+    assert TenantConfigSerializer(data={"style": "journal", "palette": "sage"}, partial=True).is_valid()
+    bad = TenantConfigSerializer(data={"style": "journal", "palette": "mint"}, partial=True)
+    assert not bad.is_valid() and "palette" in bad.errors
+
+
+@pytest.mark.django_db
+def test_patching_style_alone_clears_a_stale_palette(tenant_ctx, real_styles):
+    """Review focus 1: the copilot and the admin page change style without
+    touching palette; a palette from the old style must not block the save."""
+    from apps.tenant_config.models import TenantConfig
+    from apps.tenant_config.serializers import TenantConfigSerializer
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Glow")
+    cfg.style, cfg.palette = "journal", "sage"
+    cfg.save()
+    ser = TenantConfigSerializer(cfg, data={"style": "grid"}, partial=True)
+    assert ser.is_valid(), ser.errors
+    assert ser.validated_data["palette"] == ""

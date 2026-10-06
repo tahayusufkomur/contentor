@@ -30,6 +30,9 @@ class TenantConfig(models.Model):
     # Site style id from the section manifest (apps.tenant_config.sections);
     # "" = legacy theme/font rendering.
     style = models.CharField(max_length=40, blank=True, default="")
+    # Alternative colourway of ``style`` (its "palettes" in the manifest);
+    # "" = the style's own palette. Ignored when it does not belong to ``style``.
+    palette = models.CharField(max_length=40, blank=True, default="")
     custom_css = models.TextField(blank=True, default="")
     enabled_modules = models.JSONField(default=list)
     social_links = models.JSONField(default=dict)
