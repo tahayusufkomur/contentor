@@ -5,7 +5,7 @@ import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { MicButton } from "@/components/copilot/mic-button";
-import { joinSpeech, pastEntries } from "@/lib/interview";
+import { joinSpeech, splitEntries } from "@/lib/interview";
 import {
   DELEGATE,
   type GuideTurn,
@@ -22,6 +22,7 @@ export function InterviewChat({
   entries,
   guide,
   sending,
+  activity,
   remaining,
   wide,
   onSend,
@@ -34,6 +35,8 @@ export function InterviewChat({
   entries: InterviewEntry[];
   guide: GuideTurn;
   sending: boolean;
+  /** What the guide is building right now, shown above the answer box. */
+  activity: string | null;
   remaining: number;
   /** Full-width first phase vs. the side panel once the site is building. */
   wide: boolean;
@@ -73,7 +76,33 @@ export function InterviewChat({
 
   // The latest guide question is drawn live below (with its chips); the
   // transcript holds everything else.
-  const past = pastEntries(entries, sending);
+  const { past, after } = splitEntries(entries, sending);
+  const entry = (e: InterviewEntry, i: number) =>
+    e.role === "coach" ? (
+      <p
+        key={i}
+        className="ml-auto w-fit max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[var(--sf-tint-strong)] px-3.5 py-2.5 text-[15px] leading-relaxed"
+      >
+        {e.text}
+      </p>
+    ) : (
+      <div key={i} className="mr-6 text-[15px] leading-relaxed">
+        {e.ack && <p className="text-[var(--sf-graphite)]">{e.ack}</p>}
+        {e.status && <StatusLine text={e.status} />}
+        {e.question && <p className="mt-1">{e.question}</p>}
+        {e.audit_id != null && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onUndo(e.audit_id as number)}
+            className="-ml-2 mt-1 h-7 rounded-full px-2.5"
+          >
+            <Undo2 aria-hidden />
+            Undo
+          </Button>
+        )}
+      </div>
+    );
 
   const submit = () => {
     const text = joinSpeech(draft, hearing).trim();
@@ -99,32 +128,7 @@ export function InterviewChat({
             wide ? "max-w-[640px]" : "max-w-none",
           )}
         >
-          {past.map((e, i) =>
-            e.role === "coach" ? (
-              <p
-                key={i}
-                className="ml-auto w-fit max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[var(--sf-tint-strong)] px-3.5 py-2.5 text-[15px] leading-relaxed"
-              >
-                {e.text}
-              </p>
-            ) : (
-              <div key={i} className="mr-6 text-[15px] leading-relaxed">
-                {e.ack && <p className="text-[var(--sf-graphite)]">{e.ack}</p>}
-                {e.question && <p className="mt-1">{e.question}</p>}
-                {e.audit_id != null && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onUndo(e.audit_id as number)}
-                    className="-ml-2 mt-1 h-7 rounded-full px-2.5"
-                  >
-                    <Undo2 aria-hidden />
-                    Undo
-                  </Button>
-                )}
-              </div>
-            ),
-          )}
+          {past.map(entry)}
 
           {sending ? (
             <p className="flex items-center gap-2 text-[var(--sf-graphite)]">
@@ -139,6 +143,10 @@ export function InterviewChat({
                 <p className="text-[15px] leading-relaxed text-[var(--sf-graphite)]">
                   {guide.ack}
                 </p>
+              )}
+              {guide.status && <StatusLine text={guide.status} />}
+              {after.length > 0 && (
+                <div className="my-5 space-y-5">{after.map(entry)}</div>
               )}
               <p
                 className={cn(
@@ -252,6 +260,18 @@ export function InterviewChat({
           submit();
         }}
       >
+        {activity && (
+          <p
+            role="status"
+            className={cn(
+              "mx-auto mb-2 flex items-center gap-2 px-1 text-[13px] text-[var(--sf-graphite)]",
+              wide ? "max-w-[640px]" : "max-w-none",
+            )}
+          >
+            <Spinner size="sm" className="text-[var(--sf-brass)]" />
+            <span className="truncate">{activity}</span>
+          </p>
+        )}
         <div
           className={cn(
             "mx-auto rounded-2xl border border-[var(--sf-line-strong)] bg-white",
@@ -309,5 +329,18 @@ export function InterviewChat({
         </div>
       </form>
     </section>
+  );
+}
+
+/** The guide noting work it just started, set apart from its question. */
+function StatusLine({ text }: { text: string }) {
+  return (
+    <p className="mt-1.5 flex gap-2.5 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
+      <span
+        aria-hidden
+        className="mt-[9px] size-1.5 shrink-0 rounded-full bg-[var(--sf-brass)]"
+      />
+      {text}
+    </p>
   );
 }

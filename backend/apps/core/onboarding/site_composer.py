@@ -1312,11 +1312,13 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     coach = _coach_data(tenant, brand)
     ctx = _ctx(coach["niche"], brand, coach["description"])
 
+    _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)
     if not ctx["name_like"]:  # a letter signed "Yoga Studio" reads wrong; we don't know the coach's name
         for f in fields:
             f.pop("signature", None)
     blocks = [_new_block(e, f) for e, f in zip(entries, fields, strict=True)]
+    _set_stage(tenant, page_key, "photos")
     with _IMAGE_LOCK:
         # Sibling pages may have placed photos since this page started.
         plan = {**plan, "used_assets": _fresh_used_assets(tenant) or plan.get("used_assets") or {}}
@@ -1406,6 +1408,21 @@ def set_build_status(tenant, page_key, status) -> None:
 
     def write(config):
         _write_status(config, page_key, status)
+        return ["setup_flow"]
+
+    _update_config(tenant, write)
+
+
+def _set_stage(tenant, page_key, stage) -> None:
+    """Where a running build is ("copy", then "photos"; no stage yet = still
+    planning), so /setup can say what it is doing. Any status write clears it."""
+
+    def write(config):
+        builds = (config.setup_flow or {}).get("page_builds") or {}
+        current = builds.get(page_key) or {}
+        if current.get("status") != "building":
+            return None
+        config.setup_flow = {**config.setup_flow, "page_builds": {**builds, page_key: {**current, "stage": stage}}}
         return ["setup_flow"]
 
     _update_config(tenant, write)

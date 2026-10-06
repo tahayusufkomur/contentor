@@ -181,27 +181,20 @@ function PageSkeleton({ className }: { className?: string }) {
   );
 }
 
-const STAGE_AT = [0, 6, 14]; // seconds each stage starts (presentation only)
-
-/** The page being composed: its name, three stages advancing, a faint
- * page skeleton beneath. Stages are paced client-side — the server only
- * says "building" — and the last one holds until the page is ready. */
+/** The page being composed: its name, three stages advancing as the server
+ * reports them, a faint page skeleton beneath. */
 export function Composing({
   title,
   stages,
+  current,
   note,
 }: {
   title: string;
   stages: [string, string, string];
+  /** Index of the stage running now. */
+  current: number;
   note: string;
 }) {
-  const [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setElapsed((s) => s + 1), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const current = STAGE_AT.filter((at) => elapsed >= at).length - 1;
-
   return (
     <div className="absolute inset-0 bg-[#FBFAF8]">
       <PageSkeleton className="opacity-60" />

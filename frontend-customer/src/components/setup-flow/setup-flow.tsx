@@ -10,7 +10,15 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
 import { isUndoableKind, runBundle } from "@/lib/copilot/state";
-import { landedPage, noteEntry, toEntry } from "@/lib/interview";
+import {
+  activityLine,
+  finishedNotes,
+  landedPage,
+  noteEntry,
+  pageLabel,
+  stageIndex,
+  toEntry,
+} from "@/lib/interview";
 import {
   setupFlowApi,
   type CopilotPayload,
@@ -133,7 +141,7 @@ function Flow({
   const [reloadKey, setReloadKey] = useState(0);
   const [path, setPath] = useState("/");
   const [celebrate, setCelebrate] = useState(false);
-  const builds = useRef(flow.page_builds);
+  const seen = useRef({ builds: flow.page_builds, drafts: iv.draft_status });
 
   const split = iv.phase !== "interview";
   const working =
@@ -153,14 +161,19 @@ function Flow({
     return () => clearInterval(t);
   }, [working, refresh]);
 
-  // A page that just finished composing: show it.
+  // Work that finished since the last poll: the guide says so, and a page
+  // that just finished composing is shown.
   useEffect(() => {
-    const key = landedPage(builds.current, flow.page_builds);
-    builds.current = flow.page_builds;
+    const next = { builds: flow.page_builds, drafts: iv.draft_status };
+    const notes = finishedNotes(seen.current, next);
+    const key = landedPage(seen.current.builds, next.builds);
+    seen.current = next;
+    if (notes.length)
+      setEntries((prev) => [...prev, ...notes.map((n) => noteEntry(n))]);
     if (!key) return;
     setPath(flow.steps.find((s) => s.page_key === key)?.preview_path ?? "/");
     setReloadKey((k) => k + 1);
-  }, [flow.page_builds, flow.steps]);
+  }, [flow.page_builds, iv.draft_status, flow.steps]);
 
   const applyEdit = useCallback(
     async (edit: CopilotPayload) => {
@@ -197,15 +210,22 @@ function Flow({
   );
   const { run: send, loading: sending } = useAsyncAction(
     async (req: TurnRequest) => {
-      const before = entries;
       const serverTurns = flow.interview.turns.length;
-      setEntries([...before, { role: "coach", text: req.message }]);
+      const pending: InterviewEntry = { role: "coach", text: req.message };
+      setEntries((prev) => [...prev, pending]);
       try {
         const res = await api.turn(req);
         const coach: InterviewEntry[] = res.coach_text
           ? [{ role: "coach", text: res.coach_text }]
           : [];
-        setEntries([...before, ...coach, toEntry(res.guide)]);
+        // Notes that arrived while the answer was in flight stay, after it.
+        setEntries((prev) => {
+          const at = prev.indexOf(pending);
+          const reply = [...coach, toEntry(res.guide)];
+          return at === -1
+            ? [...prev, ...reply]
+            : [...prev.slice(0, at), ...reply, ...prev.slice(at + 1)];
+        });
         setGuide(res.guide);
         setFlow(res.state);
         if (res.edit) await applyEdit(res.edit);
@@ -219,7 +239,7 @@ function Flow({
           setGuide(fresh.interview.guide);
           return;
         }
-        setEntries(before);
+        setEntries((prev) => prev.filter((e) => e !== pending));
         // Typed or dictated text goes back into the box, never lost.
         if (!req.choice) setRestore({ text: req.message, at: Date.now() });
         throw err;
@@ -246,9 +266,10 @@ function Flow({
   );
 
   const currentPage = flow.steps.find((s) => s.preview_path === path)?.page_key;
-  const composing = currentPage
-    ? flow.page_builds[currentPage]?.status !== "ready"
-    : false;
+  const build = currentPage ? flow.page_builds[currentPage] : undefined;
+  // A failed build shows its first version instead of composing forever.
+  const composing =
+    !!build && build.status !== "ready" && build.status !== "failed";
 
   return (
     <div className="flex h-full flex-col lg:flex-row">
@@ -319,10 +340,11 @@ function Flow({
                 composing ? undefined : () => setReloadKey((k) => k + 1)
               }
               overlay={
-                composing ? (
+                composing && currentPage ? (
                   <Composing
-                    title="Building your page"
+                    title={`Building your ${pageLabel(currentPage)}`}
                     stages={PAGE_STAGES}
+                    current={stageIndex(build?.stage)}
                     note="Usually ready in under a minute."
                   />
                 ) : null
@@ -343,6 +365,7 @@ function Flow({
         entries={entries}
         guide={guide}
         sending={sending}
+        activity={activityLine(flow.page_builds, iv.draft_status)}
         remaining={iv.remaining}
         wide={!split}
         onSend={(req) => void send(req)}

@@ -70,6 +70,13 @@ function snapshot(): SetupFlowState {
       ? "ready"
       : "building"
     : "idle";
+  const left = s.homeAt - Date.now();
+  const stage =
+    home !== "building" || left > (BUILD_MS * 2) / 3
+      ? undefined
+      : left > BUILD_MS / 3
+        ? ("copy" as const)
+        : ("photos" as const);
   return {
     status: s.published ? "done" : "active",
     step: "course",
@@ -85,7 +92,7 @@ function snapshot(): SetupFlowState {
         preview_path: "/",
       },
     ],
-    page_builds: { home: { status: home } },
+    page_builds: { home: { status: home, ...(stage ? { stage } : {}) } },
     content: {},
     style: "journal",
     brand_name: "Demo Yoga",
@@ -124,15 +131,25 @@ export const mockSetupFlowApi: SetupFlowApi = {
     await wait(900);
     s.turns = [...s.turns, { role: "coach", text: body.message }];
     s.i += 1;
-    if (s.i === 2) s.homeAt = Date.now() + BUILD_MS;
+    const started = s.i === 2;
+    if (started) s.homeAt = Date.now() + BUILD_MS;
     const state = snapshot();
-    const { cards: _cards, ...rest } = state.interview.guide;
+    const guide: GuideTurn = {
+      ...state.interview.guide,
+      ...(started
+        ? {
+            status:
+              "I have enough to start building, so I'm working on your home page now. Bear with me, it takes about a minute. Let's keep going while I build.",
+          }
+        : {}),
+    };
+    const { cards: _cards, ...rest } = guide;
     s.turns = [...s.turns, { role: "guide", ...rest }];
     return {
       coach_text: body.message,
-      guide: state.interview.guide,
+      guide,
       edit: null,
-      fired: [],
+      fired: started ? ["page:home"] : [],
       state: snapshot(),
     };
   },

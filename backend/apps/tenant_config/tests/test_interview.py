@@ -158,6 +158,23 @@ def test_edit_request_reaches_the_copilot(client, quiet):
     assert body["edit"] == payload
 
 
+def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
+    quiet.reply = interview.InterviewTurn(ack="Got it.", next_field="audience", question="Who?")
+    fired = ["style:auto", "page:home", "rank:logos", "draft:course"]
+    with mock.patch("apps.tenant_config.interview_milestones.fire", return_value=fired):
+        body = client.post(URL, {"message": "Yoga"}, format="json").json()
+    status = body["guide"]["status"]
+    assert "your home page and a first draft of your course now" in status and "Bear with me" in status
+    flow = TenantConfig.objects.first().setup_flow
+    assert flow["interview"]["turns"][-1]["status"] == status
+    assert "status" not in interview.interview_state(tenant_ctx, flow)["guide"]  # a reload never re-announces it
+
+    body = client.post(URL, {"message": "Beginners"}, format="json").json()
+    assert "status" not in body["guide"]  # nothing started
+    assert interview.started_note(["page:about"]) == "I'm starting on your About page now."
+    assert interview.started_note(["style:auto", "rank:logos"]) == ""
+
+
 def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):
     answers = {
         "teaches": "Yoga",

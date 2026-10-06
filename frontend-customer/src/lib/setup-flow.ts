@@ -29,7 +29,15 @@ export interface SetupFlowState {
   status: "active" | "done";
   step: string;
   steps: SetupStep[];
-  page_builds: Record<string, { status: BuildStatus; updated_at?: string }>;
+  page_builds: Record<
+    string,
+    {
+      status: BuildStatus;
+      updated_at?: string;
+      /** Where a running build is; absent while it is still planning. */
+      stage?: "copy" | "photos";
+    }
+  >;
   content: Partial<Record<ContentKind, ContentDraft | null>>;
   style: string;
   brand_name: string;
@@ -142,6 +150,8 @@ export interface GuideTurn {
   /** Several options can be ticked, then sent together. */
   multi?: boolean;
   cards?: LookCards | null;
+  /** Work this turn just started ("I'm starting on your About page now."). */
+  status?: string;
 }
 
 export interface CopilotCard {

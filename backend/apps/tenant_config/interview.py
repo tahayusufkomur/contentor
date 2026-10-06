@@ -26,6 +26,17 @@ TRANSCRIPT_KEEP = 80
 CONTEXT_TURNS = TRANSCRIPT_KEEP
 OPENING_ACK = "Hi! I'll ask you a few questions and build your site while we talk. Type, tap an answer, or use the mic."
 READY_QUESTION = "Your site is ready. Take a look around, then go live when you're happy."
+# What the guide says about work a turn just started. Code-owned: instant,
+# and it never announces work that did not start.
+STARTED = {
+    "page:home": "your home page",
+    "page:about": "your About page",
+    "page:contact": "your Contact page",
+    "page:faq": "your FAQ page",
+    "draft:course": "a first draft of your course",
+    "draft:event": "your first class",
+    "draft:post": "your first article",
+}
 
 # Static: byte-identical across tenants. Everything coach-specific rides the
 # user turn as JSON data.
@@ -97,6 +108,19 @@ def guide_for(field: brief.Field | None, ack: str = "", question: str = "", opti
         "can_delegate": True,
         "multi": field.multi,
     }
+
+
+def started_note(fired: list[str]) -> str:
+    things = [STARTED[k] for k in fired if k in STARTED]
+    if not things:
+        return ""
+    what = things[0] if len(things) == 1 else f"{', '.join(things[:-1])} and {things[-1]}"
+    if "page:home" in fired:
+        return (
+            f"I have enough to start building, so I'm working on {what} now. "
+            "Bear with me, it takes about a minute. Let's keep going while I build."
+        )
+    return f"I'm starting on {what} now."
 
 
 def _next_field(missing: list[brief.Field], turn: InterviewTurn | None) -> brief.Field | None:
@@ -211,6 +235,10 @@ def run_turn(tenant, message: str, *, spoken: bool = False, choice: dict | None 
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice else None
     fired = milestones.fire(tenant, answers)
+    # Kept in the transcript; interview_state never re-serves it as the live
+    # guide, so a reload doesn't announce finished work as starting.
+    if note := started_note(fired):
+        guide["status"] = note
 
     def mutate(_config, flow):
         iv = dict(flow.get("interview") or {})

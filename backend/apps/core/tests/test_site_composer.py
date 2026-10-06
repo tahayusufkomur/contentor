@@ -424,6 +424,34 @@ def test_build_status_and_claims(styled, monkeypatch, catalog):
 
 
 @pytest.mark.django_db
+def test_a_running_build_reports_its_stage(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    seen = []
+    fill, attach = sc._fill_page, sc._attach_images
+
+    def stage():
+        return ((_config(styled).setup_flow or {}).get("page_builds") or {}).get("home", {}).get("stage")
+
+    def fill_page(*args, **kwargs):
+        seen.append(stage())
+        return fill(*args, **kwargs)
+
+    def attach_images(*args, **kwargs):
+        seen.append(stage())
+        return attach(*args, **kwargs)
+
+    monkeypatch.setattr(sc, "_fill_page", fill_page)
+    monkeypatch.setattr(sc, "_attach_images", attach_images)
+    assert sc.build_page(styled, "home", skip_if_building=False) is True
+    assert seen == ["copy", "photos"]
+    assert "stage" not in _config(styled).setup_flow["page_builds"]["home"]  # ready clears it
+
+    seen.clear()
+    sc.compose_page(styled, "home")  # not building: nothing to report
+    assert seen == [None, None]
+
+
+@pytest.mark.django_db
 def test_compose_site_builds_pages_in_order_and_pricing_only_with_plans(styled, monkeypatch):
     built = []
     monkeypatch.setattr(sc, "plan_site", lambda tenant, **kw: {})
