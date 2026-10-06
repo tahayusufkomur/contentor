@@ -364,6 +364,8 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
     by_id = {r.pk: r for r in rows}
     ranked = [by_id[i] for i in (tenant.wizard_state or {}).get("curated_logo_rank") or [] if i in by_id]
     ordered = ranked or shortlist(rows, CoachBrief.from_tenant(tenant), limit=24)
+    # Vector marks first: they take the site's colours and crop tight.
+    ordered = sorted(ordered, key=lambda r: not r.mark_paths)
     chunk = ordered[page * LOGO_PAGE : (page + 1) * LOGO_PAGE]
     return {
         "kind": "logo",
