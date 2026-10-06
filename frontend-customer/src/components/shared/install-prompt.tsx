@@ -88,9 +88,10 @@ export function InstallPrompt({ hide = false }: { hide?: boolean }) {
     }
   };
 
-  // Never show inside the coach admin, in standalone, after dismissal, or with
-  // nothing to offer.
-  if (hide || pathname?.startsWith("/admin")) return null;
+  // Never show inside the coach admin or the setup flow, in standalone, after
+  // dismissal, or with nothing to offer.
+  if (hide || pathname?.startsWith("/admin") || pathname?.startsWith("/setup"))
+    return null;
   if (hidden || (!deferred && !showIosHint)) return null;
 
   return (

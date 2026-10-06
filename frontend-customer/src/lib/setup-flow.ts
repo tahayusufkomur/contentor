@@ -139,6 +139,8 @@ export interface GuideTurn {
   options: string[];
   field: string | null;
   can_delegate: boolean;
+  /** Several options can be ticked, then sent together. */
+  multi?: boolean;
   cards?: LookCards | null;
 }
 

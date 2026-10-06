@@ -57,6 +57,7 @@ class Field:
     kind: str = "text"  # text | offers | sells | price | tone | style | logo
     needs: tuple[str, ...] = ()  # required only when one of these offers is chosen
     paid_only: bool = False  # ...and only when the coach sells
+    multi: bool = False  # several options can be ticked at once
 
 
 FIELDS: tuple[Field, ...] = (
@@ -71,14 +72,16 @@ FIELDS: tuple[Field, ...] = (
         "Who they teach",
         "Who are the students you love teaching most?",
         ("Complete beginners", "Busy professionals", "People coming back after an injury"),
+        multi=True,
     ),
     Field("outcome", "What students get", "What changes for a student after working with you?"),
     Field(
         "offers",
         "What they offer",
         "Besides your first course, what else would you like to offer?",
-        ("Just courses for now", "Live online classes", "In-person sessions", "Articles"),
+        ("Courses", "Live online classes", "In-person sessions", "Articles", "Community", "Memberships"),
         kind="offers",
+        multi=True,
     ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
     Field("difference", "What makes their approach theirs", "What do you do differently from other teachers?"),
@@ -135,6 +138,7 @@ FIELDS: tuple[Field, ...] = (
         "How students reach them",
         "How should students get in touch with you?",
         ("Email", "Instagram", "WhatsApp"),
+        multi=True,
     ),
     Field(
         "location", "Where in-person sessions happen", "Where do your in-person sessions take place?", needs=("onsite",)

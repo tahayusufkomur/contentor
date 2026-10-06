@@ -47,6 +47,8 @@ export function InterviewChat({
 }) {
   const [draft, setDraft] = useState("");
   const [hearing, setHearing] = useState("");
+  const [ticked, setTicked] = useState<string[]>([]);
+  useEffect(() => setTicked([]), [guide.question]);
   const spoken = useRef(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -168,12 +170,47 @@ export function InterviewChat({
                     <button
                       key={o}
                       type="button"
-                      onClick={() => pick({ message: o })}
-                      className="rounded-full border border-[var(--sf-line)] bg-white px-3.5 py-1.5 text-left text-[13px] transition-colors hover:border-[var(--sf-line-strong)] hover:bg-[var(--sf-tint)]"
+                      aria-pressed={
+                        guide.multi ? ticked.includes(o) : undefined
+                      }
+                      onClick={() =>
+                        guide.multi
+                          ? setTicked((t) =>
+                              t.includes(o)
+                                ? t.filter((x) => x !== o)
+                                : [...t, o],
+                            )
+                          : pick({ message: o })
+                      }
+                      className={cn(
+                        "rounded-full border px-3.5 py-1.5 text-left text-[13px] transition-colors hover:border-[var(--sf-line-strong)] hover:bg-[var(--sf-tint)]",
+                        guide.multi && ticked.includes(o)
+                          ? "border-[var(--sf-line-strong)] bg-[var(--sf-tint-strong)]"
+                          : "border-[var(--sf-line)] bg-white",
+                      )}
                     >
                       {o}
                     </button>
                   ))}
+                  {guide.multi && guide.options.length > 1 && (
+                    <button
+                      type="button"
+                      aria-pressed={ticked.length === guide.options.length}
+                      onClick={() => setTicked([...guide.options])}
+                      className="rounded-full border border-[var(--sf-line)] bg-white px-3.5 py-1.5 text-[13px] transition-colors hover:border-[var(--sf-line-strong)] hover:bg-[var(--sf-tint)]"
+                    >
+                      All of them
+                    </button>
+                  )}
+                  {guide.multi && ticked.length > 0 && (
+                    <Button
+                      size="sm"
+                      onClick={() => pick({ message: ticked.join(", ") })}
+                      className="rounded-full px-4"
+                    >
+                      Continue
+                    </Button>
+                  )}
                   {guide.can_delegate && guide.field && (
                     <button
                       type="button"

@@ -253,3 +253,13 @@ def test_interview_throttle_is_per_tenant():
         conn.schema_name = "chess_b"
         key_b = throttle.get_cache_key(SimpleNamespace(user=user), None)
     assert key_a != key_b
+
+
+def test_offers_guide_is_multi_with_the_full_offer_list():
+    from apps.tenant_config import interview_brief as brief
+
+    guide = interview.guide_for(brief.FIELD_BY_ID["offers"], options=["AI made-up"])
+    assert guide["multi"] is True
+    assert len(guide["options"]) == 6
+    assert brief.parse_offers(", ".join(guide["options"])) == list(brief.OFFERS)
+    assert interview.guide_for(brief.FIELD_BY_ID["outcome"])["multi"] is False

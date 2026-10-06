@@ -54,8 +54,9 @@ Do these things:
      no exclamation marks.
    - question: ONE question, under 25 words, about next_field only, specific to their niche
      and students. Never ask two things at once.
-   - options: 2 to 4 likely answers they can tap, under 8 words each, specific to them. Empty
-     for personal questions such as their story.
+   - options: 2 to 4 likely answers they can tap, under 8 words each, specific to them. Always
+     give some, even for open questions (their story, their pitch): write them as the coach
+     might say it. Never leave it empty.
 If "spoken" is true the message came from speech recognition and may contain misheard words:
 set heard to what they most likely said (fix niche vocabulary, their brand name, obvious
 mishearings) and extract facts from that. Otherwise heard is null. Write in English."""
@@ -78,14 +79,23 @@ class InterviewTurn(BaseModel):
 
 def guide_for(field: brief.Field | None, ack: str = "", question: str = "", options=None) -> dict:
     if field is None:
-        return {"ack": ack[:300], "question": READY_QUESTION, "options": [], "field": None, "can_delegate": False}
-    chosen = field.options if options is None else options
+        return {
+            "ack": ack[:300],
+            "question": READY_QUESTION,
+            "options": [],
+            "field": None,
+            "can_delegate": False,
+            "multi": False,
+        }
+    # The offers chips are the fixed offer list the answer is parsed against.
+    chosen = field.options if options is None or field.kind == "offers" else options
     return {
         "ack": ack[:300],
         "question": (question or field.question)[:300],
-        "options": [str(o)[:60] for o in chosen][:4],
+        "options": [str(o)[:60] for o in chosen][: 6 if field.multi else 4],
         "field": field.id,
         "can_delegate": True,
+        "multi": field.multi,
     }
 
 
@@ -231,7 +241,7 @@ def interview_state(tenant, flow: dict) -> dict:
     elif last is None:
         guide = guide_for(missing[0], OPENING_ACK)
     else:
-        guide = {k: last.get(k) for k in ("ack", "question", "options", "field", "can_delegate")}
+        guide = {k: last.get(k) for k in ("ack", "question", "options", "field", "can_delegate", "multi")}
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
     fired = list(iv.get("fired") or [])
     return {
