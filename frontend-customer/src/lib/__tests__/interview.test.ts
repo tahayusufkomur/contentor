@@ -66,6 +66,31 @@ describe("questionSteps", () => {
     ...(field ? { field } : {}),
   });
 
+  it("keeps icons and hints on a question", () => {
+    const g: GuideTurn = {
+      ...ask("tone"),
+      icons: { A: "heart" },
+      hints: { A: "Come as you are." },
+    };
+    const steps = questionSteps([{ role: "guide", ...g }], g);
+    expect(steps[0].icons).toEqual({ A: "heart" });
+    expect(steps[0].hints).toEqual({ A: "Come as you are." });
+  });
+
+  it("keeps icons and hints on an answered question too", () => {
+    const g: GuideTurn = {
+      ...ask("tone"),
+      icons: { A: "heart" },
+      hints: { A: "Come as you are." },
+    };
+    const steps = questionSteps(
+      [{ role: "guide", ...g }, said("A")],
+      ask("next"),
+    );
+    expect(steps[0].icons).toEqual({ A: "heart" });
+    expect(steps[0].hints).toEqual({ A: "Come as you are." });
+  });
+
   it("lists answered questions in order, then the live one", () => {
     const entries = [
       guide("teaches"),

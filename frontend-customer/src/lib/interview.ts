@@ -135,7 +135,16 @@ export function questionSteps(
   for (const e of entries) {
     if (e.role === "guide") {
       if (e.field && e.question) {
-        const { ack, question, options, field, can_delegate, multi } = e;
+        const {
+          ack,
+          question,
+          options,
+          field,
+          can_delegate,
+          multi,
+          icons,
+          hints,
+        } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
           ack,
@@ -144,6 +153,8 @@ export function questionSteps(
           field,
           can_delegate,
           multi,
+          icons,
+          hints,
           answer,
         });
         onScreen = e.field;

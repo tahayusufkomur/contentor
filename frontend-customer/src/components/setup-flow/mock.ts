@@ -8,6 +8,7 @@ import type {
   SetupFlowApi,
   SetupFlowState,
 } from "@/lib/setup-flow";
+import { SITE_STYLES } from "@/lib/site-styles";
 
 const SCRIPT: GuideTurn[] = [
   {
@@ -16,6 +17,11 @@ const SCRIPT: GuideTurn[] = [
     options: ["Yoga", "Pilates", "Fitness coaching"],
     field: "teaches",
     can_delegate: true,
+    icons: {
+      Yoga: "flower-2",
+      Pilates: "person-standing",
+      "Fitness coaching": "dumbbell",
+    },
   },
   {
     ack: "Lovely.",
@@ -23,6 +29,10 @@ const SCRIPT: GuideTurn[] = [
     options: ["Complete beginners", "Busy professionals"],
     field: "audience",
     can_delegate: true,
+    icons: {
+      "Complete beginners": "sprout",
+      "Busy professionals": "briefcase",
+    },
   },
   {
     ack: "Got it.",
@@ -32,14 +42,23 @@ const SCRIPT: GuideTurn[] = [
     can_delegate: true,
     cards: {
       kind: "style",
-      options: [
+      options: Object.values(SITE_STYLES).flatMap((s, i) => [
         {
-          value: "journal",
-          label: "Quiet Journal",
-          detail: "Calm and editorial",
+          value: s.id,
+          style: s.id,
+          palette: "",
+          label: `${s.label} · ${s.paletteLabel}`,
+          detail: s.mood,
+          ...(i === 0 ? { recommended: true } : {}),
         },
-        { value: "grid", label: "Swiss Grid", detail: "Crisp and structured" },
-      ],
+        ...s.palettes.map((p) => ({
+          value: `${s.id}:${p.id}`,
+          style: s.id,
+          palette: p.id,
+          label: `${s.label} · ${p.label}`,
+          detail: p.mood,
+        })),
+      ]),
     },
   },
   {

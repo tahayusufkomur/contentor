@@ -134,6 +134,9 @@ export interface LookOption {
   label: string;
   detail?: string;
   image_url?: string;
+  /** Looks: the section style and its colourway ("" = the style's own). */
+  style?: string;
+  palette?: string;
   /** The guide's pick for this coach. */
   recommended?: boolean;
 }
@@ -153,6 +156,10 @@ export interface GuideTurn {
   can_delegate: boolean;
   /** Several options can be ticked, then sent together. */
   multi?: boolean;
+  /** Lucide icon id per option (only options that have one). */
+  icons?: Record<string, string>;
+  /** One short line per option, shown under it (fixed questions only). */
+  hints?: Record<string, string>;
   cards?: LookCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;
