@@ -1,6 +1,7 @@
 // Client for the coach's guided onboarding (/setup). Contract:
 // GET/POST /api/v1/admin/setup-flow/ (+ build-page/, draft/).
 import { clientFetch } from "@/lib/api-client";
+import type { LogoMark } from "@/types/tenant";
 
 export type StepKind = "content" | "page" | "payouts" | "launch";
 export type StepState = "done" | "active" | "todo" | "skipped";
@@ -144,6 +145,8 @@ export interface LookOption {
   palette?: string;
   /** The guide's pick for this coach. */
   recommended?: boolean;
+  /** Logos: the vector mark, previewed in the coach's look. */
+  mark?: LogoMark | null;
 }
 
 export interface LookCards {
@@ -155,6 +158,9 @@ export interface LookCards {
   photos?: string[];
   /** The coach's pitch, the previews' headline. */
   headline?: string;
+  /** Logos: the look the coach picked, to preview marks in its colours. */
+  style?: string;
+  palette?: string;
 }
 
 export type ReviewKind = "course" | "event";

@@ -143,7 +143,8 @@ export type PageKey =
   | "courses"
   | "pricing"
   | "faq"
-  | "contact";
+  | "contact"
+  | "events";
 
 export type PagesConfig = Partial<Record<PageKey, PageConfig>>;
 
@@ -164,6 +165,8 @@ export interface TenantConfig {
   id: number;
   brand_name: string;
   logo_url: string;
+  /** A library logo's vector mark, drawn in the site's colours. */
+  logo_mark?: LogoMark | null;
   logo_id?: string | null;
   /** Square mark exported by the Logo Studio (drives favicon/PWA icons). */
   icon_url?: string;
@@ -200,4 +203,16 @@ export interface TenantConfig {
   has_preview_password?: boolean;
   /** Guided onboarding (/setup) still running — coach routes redirect there. */
   setup_flow_active?: boolean;
+}
+
+/** A curated logo's traced vector mark: paths fill by colour role, never a
+ * hex, so it takes the site's palette; ``box`` is a viewBox hugging it. */
+export interface LogoMark {
+  box: string;
+  paths: {
+    d: string;
+    role: "mark" | "mark2" | "accent";
+    fill_rule?: "nonzero" | "evenodd";
+    opacity?: number;
+  }[];
 }

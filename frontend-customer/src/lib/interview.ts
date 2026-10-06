@@ -28,6 +28,7 @@ const PAGE_LABELS: Record<string, string> = {
   pricing: "Pricing page",
   faq: "FAQ page",
   contact: "Contact page",
+  events: "Events page",
 };
 export const pageLabel = (key: string) => PAGE_LABELS[key] ?? `${key} page`;
 

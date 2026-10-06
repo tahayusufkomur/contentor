@@ -60,8 +60,9 @@ PAGE_PATHS = {
     "pricing": "/plans",
     "faq": "/faq",
     "contact": "/contact",
+    "events": "/events",
 }
-ALLOWED_LINKS = ("/courses", "/about", "/contact", "/calendar", "/plans", "/faq", "/blog")
+ALLOWED_LINKS = ("/courses", "/about", "/contact", "/calendar", "/events", "/plans", "/faq", "/blog")
 CLOSING_FAMILIES = ("cta", "contact")
 MAX_CONSECUTIVE_IMAGE_HEAVY = 2  # the home recipe itself opens hero → story
 MAX_SECTIONS = 9
@@ -254,6 +255,16 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             "ctaLabel": "See all courses",
             "limit": "3",
         }
+    if family == "howItWorks" and page_key == "events":
+        return {
+            "kicker": "How it works",
+            "heading": "Join a class in three steps",
+            "steps": [
+                {"title": "Pick a class", "text": "Find a session above that fits your week, online or in person."},
+                {"title": "Save your spot", "text": "Book in a few clicks; online classes send you the link to join."},
+                {"title": "Show up and train", "text": f"Come as you are. {i.capitalize()} take it from there."},
+            ],
+        }
     if family == "howItWorks":
         return {
             "kicker": "How it works",
@@ -287,6 +298,30 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             "heading": "Plans and pricing",
             "intro": "Each plan lists what it includes. Pick the one that fits your week.",
         }
+    if family == "faq" and page_key == "events":
+        return {
+            "kicker": "Questions",
+            "heading": "Before your first class",
+            "intro": f"Can't find yours? Send {me} a message.",
+            "items": [
+                {
+                    "q": "Do I need experience to join?",
+                    "a": "Each class says who it is for. If you are unsure, send a message and ask.",
+                },
+                {
+                    "q": "How do I join an online class?",
+                    "a": "Book your spot and the link to join arrives by email; it is on the class page too.",
+                },
+                {
+                    "q": "What should I bring?",
+                    "a": "The class page lists anything you need. Comfortable clothes and water are a good start.",
+                },
+                {
+                    "q": "Can I cancel?",
+                    "a": f"Plans change. Send {me} a message as early as you can and {i} will sort it out.",
+                },
+            ],
+        }
     if family == "faq":
         return {
             "kicker": "Questions",
@@ -314,6 +349,13 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             ],
         }
     if family == "cta":
+        if page_key == "events":
+            return {
+                "heading": "See you in class",
+                "text": f"Pick a session above, or ask {me} which one suits you best.",
+                "ctaLabel": "Ask a question",
+                "ctaHref": "/contact",
+            }
         if page_key == "courses":
             return {
                 "heading": "Not sure where to start?",
@@ -369,6 +411,11 @@ def _hero_intro(page_key, c) -> dict:
             "Each plan lists what it includes. Pick the one that fits your week.",
         ),
         "faq": ("FAQ", "Good questions, plain answers", "The things worth knowing before you start."),
+        "events": (
+            "Classes & events",
+            "Train with me live",
+            f"Upcoming classes and sessions, online and in person. Pick one and save your spot with {me}.",
+        ),
         "contact": (
             "Contact",
             "Let's talk",
@@ -506,6 +553,16 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
     for family in required:
         if family not in {e["family"] for e in entries} and usable(family):
             entries.insert(1, _entry(style_id, family, recipe_names.get(family)))
+
+    # A variant the recipe names (courseShowcase:rows on the courses page) is
+    # that page's layout whatever the plan chose, like hero:intro above.
+    pinned = {f: n for f, n in _recipe(page_key) if n and f != "hero"}
+    entries = [
+        {**e, "variant": sections.resolve_variant(style_id, e["family"], pinned[e["family"]])}
+        if e["family"] in pinned
+        else e
+        for e in entries
+    ]
 
     # A closing invitation: the last cta/contact moves to the end, else a cta.
     if entries[-1]["family"] not in CLOSING_FAMILIES:
@@ -1356,10 +1413,12 @@ def compose_site(tenant) -> None:
     """Plan, then build every page in order; pricing only when the coach has
     subscription plans (its skeleton stays otherwise)."""
     from apps.billing.models import SubscriptionPlan
+    from apps.tenant_config.setup_items import EVENT_GOALS, _wizard_goals
 
     with tenant_context(tenant):
         has_plans = SubscriptionPlan.objects.filter(is_active=True).exists()
-    pages = SITE_ORDER + (("pricing",) if has_plans else ())
+    runs_classes = bool(EVENT_GOALS & set(_wizard_goals(tenant)))
+    pages = SITE_ORDER + (("pricing",) if has_plans else ()) + (("events",) if runs_classes else ())
     # Show every page as building from the first second (the plan call alone
     # takes ~a minute) — the /setup welcome strip reads these statuses.
     claimed = [page_key for page_key in pages if _claim_build(tenant, page_key)]

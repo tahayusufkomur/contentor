@@ -220,6 +220,11 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             data["logo_url"] = generate_presigned_download_url(instance.logo.s3_key)
         else:
             data["logo_url"] = sign_if_s3_key(data.get("logo_url"))
+        # A library logo also comes as its vector mark: the header draws it
+        # in the site's colours, tightly cropped (the PNG stays the fallback).
+        from apps.core.copilot.logos import mark_for_key
+
+        data["logo_mark"] = mark_for_key(instance.logo.s3_key) if instance.logo_id and instance.logo else None
         # Prefer icon FK over icon_url string (same contract as logo above).
         if instance.icon_id and instance.icon and instance.icon.s3_key:
             data["icon_url"] = generate_presigned_download_url(instance.icon.s3_key)

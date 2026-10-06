@@ -4,6 +4,10 @@ import Link from "next/link";
 import { serverFetch } from "@/lib/api-server";
 import { getAuthUser } from "@/lib/auth";
 import { EventsList } from "@/components/public/events/events-list";
+import { PageView } from "@/components/blocks/page-view";
+import { fetchDynamicData } from "@/lib/blocks/fetch-dynamic-data";
+import { PAGE_LABELS } from "@/lib/blocks/pages";
+import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import type { CalendarEvent } from "@/types/live";
 
 export const metadata = { title: "Events" };
@@ -11,6 +15,20 @@ export const metadata = { title: "Events" };
 const isoDate = (d: Date) => d.toISOString().split("T")[0];
 
 export default async function EventsPage() {
+  // A composed Events page (built in the site's style during setup) wins;
+  // tenants without one keep the plain list below.
+  const config = await fetchTenantConfig(await getTenantSlug());
+  const blocks = config?.pages?.events?.blocks ?? [];
+  if (blocks.length)
+    return (
+      <PageView
+        pageKey="events"
+        blocks={blocks}
+        dynamicData={await fetchDynamicData(blocks)}
+        pageTitle={PAGE_LABELS.events}
+      />
+    );
+
   const from = new Date();
   const to = new Date();
   to.setDate(to.getDate() + 90);

@@ -45,6 +45,7 @@ STEP_COPY = {
     "page:pricing": ("Pricing page", "Your membership plans, side by side."),
     "page:faq": ("FAQ page", "Answers to what students ask before they join."),
     "page:contact": ("Contact page", "How students reach you."),
+    "page:events": ("Events page", "Your upcoming classes, online and in person."),
     "payouts": ("Get paid", "Connect Stripe so your sales reach your bank account."),
     "launch": ("Go live", "Publish your site — or keep it private a little longer."),
 }
@@ -55,6 +56,7 @@ PAGE_PATHS = {
     "pricing": "/plans",
     "faq": "/faq",
     "contact": "/contact",
+    "events": "/events",
 }
 # Public calendar route segment per event kind (frontend /calendar/<type>/<id>).
 EVENT_CAL_TYPE = {"live": "live_class", "onsite": "onsite_event"}
@@ -93,6 +95,8 @@ def applicable_steps(tenant) -> list[dict]:
         rows.append(("post", "content", True))
     has_plans = SubscriptionPlan.objects.filter(is_active=True).exists()
     rows += [(f"page:{key}", "page", False) for key in CORE_PAGE_KEYS if key != "pricing" or has_plans]
+    if EVENT_GOALS & goals:
+        rows.append(("page:events", "page", False))
     if _has_paid_content(_seeded_by_label()):
         rows.append(("payouts", "payouts", True))
     rows.append(("launch", "launch", False))
@@ -320,7 +324,7 @@ def _queue_page_builds(tenant, steps, step_id: str) -> None:
 
 
 def build_page(tenant, page: str, force: bool = False) -> None:
-    if page not in CORE_PAGE_KEYS:
+    if page not in (*CORE_PAGE_KEYS, "events"):
         raise FlowError("unknown_page")
     builds = (TenantConfig.objects.first().setup_flow or {}).get("page_builds") or {}
     if force or (builds.get(page) or {}).get("status") != "building":

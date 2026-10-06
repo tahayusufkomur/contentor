@@ -330,3 +330,24 @@ def test_a_class_on_a_plan_without_live_classes_waits_for_go_live(tenant_ctx, co
         assert ms.review_card(tenant_ctx, "event")["status"] == "waiting"
     with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=True):
         assert ms.review_card(tenant_ctx, "event")["status"] == "building"
+
+
+def test_classes_turn_on_live_add_events_and_pricing_links(tenant_ctx, config, side_effects):
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [{"label": "Courses", "href": "/courses"}, {"label": "About", "href": "/about"}]}
+    cfg.enabled_modules = ["courses", "pages"]
+    cfg.save()
+    answers = {
+        **HOME,
+        "offers": ["course", "live"],
+        "goals": ["run_live_classes", "sell_courses"],
+        "payments": ["membership"],
+        "live_topic": "Pads",
+        "live_when": "Tuesday",
+    }
+    assert "page:events" in ms.fire(tenant_ctx, answers)
+    cfg = TenantConfig.objects.first()
+    assert [link["href"] for link in cfg.navbar_config["links"]] == ["/courses", "/events", "/plans", "/about"]
+    assert "live" in cfg.enabled_modules and "courses" in cfg.enabled_modules
+    ms.sync_site(tenant_ctx, answers)  # idempotent
+    assert len(TenantConfig.objects.first().navbar_config["links"]) == 4

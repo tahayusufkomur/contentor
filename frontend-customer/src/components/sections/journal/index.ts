@@ -1,4 +1,5 @@
 import type { StyleSections } from "../types";
+import { CoursesRows, EventsRows } from "../rows";
 import "./journal.css";
 import { BenefitsContents } from "./benefits";
 import { ContactColophon } from "./contact";
@@ -18,7 +19,7 @@ export const sections: Partial<StyleSections> = {
   hero: { editorial: HeroEditorial, intro: HeroIntro },
   story: { letter: StoryLetter },
   benefits: { contents: BenefitsContents },
-  courseShowcase: { issue: CoursesIssue },
+  courseShowcase: { issue: CoursesIssue, rows: CoursesRows },
   howItWorks: { columns: HowItWorksColumns },
   philosophy: { pullquote: PhilosophyPullquote },
   moments: { strip: MomentsSpread },
@@ -26,5 +27,5 @@ export const sections: Partial<StyleSections> = {
   faq: { sticky: FaqSticky },
   cta: { band: CtaBand },
   contact: { colophon: ContactColophon },
-  events: { programme: EventsProgramme },
+  events: { programme: EventsProgramme, rows: EventsRows },
 };

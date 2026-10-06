@@ -1,4 +1,5 @@
 import type { StyleSections } from "../types";
+import { CoursesRows, EventsRows } from "../rows";
 import "./kinetic.css";
 import { BenefitsSpec } from "./benefits";
 import { ContactBigmail } from "./contact";
@@ -18,7 +19,7 @@ export const sections: Partial<StyleSections> = {
   hero: { poster: HeroPoster, intro: HeroIntro },
   story: { outline: StoryOutline },
   benefits: { spec: BenefitsSpec },
-  courseShowcase: { posters: CoursesPosters },
+  courseShowcase: { posters: CoursesPosters, rows: CoursesRows },
   howItWorks: { track: HowItWorksTrack },
   philosophy: { statement: PhilosophyStatement },
   moments: { marquee: MomentsMarquee },
@@ -26,5 +27,5 @@ export const sections: Partial<StyleSections> = {
   faq: { numbered: FaqNumbered },
   cta: { band: CtaBand },
   contact: { bigmail: ContactBigmail },
-  events: { timetable: EventsTimetable },
+  events: { timetable: EventsTimetable, rows: EventsRows },
 };

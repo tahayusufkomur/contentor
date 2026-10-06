@@ -554,3 +554,16 @@ def test_subject_is_what_the_coach_teaches_when_the_niche_is_unknown():
     assert interview_brief.subject_of({"niche": "yoga"}) == "yoga"
     assert interview_brief.niche_for("Boxing for beginners") == "fitness"  # its looks and copy
     assert sc._ctx("general", "Iron Fist", "", "boxing")["topic"] == "boxing"
+
+
+def test_courses_and_events_pages_open_in_the_rows_layout():
+    for style_id in ("journal", "kinetic", "grid", "pop"):
+        plan = sc.apply_guardrails(
+            {"pages": {"courses": [{"family": "hero"}, {"family": "courseShowcase", "variant": "x"}]}}, style_id
+        )
+        showcase = next(e for e in plan["pages"]["courses"] if e["family"] == "courseShowcase")
+        assert showcase["variant"] == f"{style_id}.rows"
+        events = next(e for e in plan["pages"]["events"] if e["family"] == "events")
+        assert events["variant"] == f"{style_id}.rows"
+        home = next(e for e in plan["pages"]["home"] if e["family"] == "courseShowcase")
+        assert home["variant"] != f"{style_id}.rows"  # home keeps the style's own showcase

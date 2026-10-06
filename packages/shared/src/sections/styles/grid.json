@@ -78,7 +78,8 @@
       "index"
     ],
     "courseShowcase": [
-      "catalogue"
+      "catalogue",
+      "rows"
     ],
     "howItWorks": [
       "ruled"
@@ -102,7 +103,8 @@
       "definition"
     ],
     "events": [
-      "table"
+      "table",
+      "rows"
     ]
   }
 }

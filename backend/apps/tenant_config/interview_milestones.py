@@ -51,6 +51,10 @@ def _due(tenant, answers) -> list[str]:
         return []
     due = ["style:auto", "page:home", "rank:logos"]
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
+    # A coach who runs classes gets an Events page once the class section
+    # is answered or skipped.
+    if offers & {"live", "onsite"} and brief.settled(answers, ("live_topic", "live_when")):
+        due.append("page:events")
     skipped = set(answers.get("skipped") or [])
     if "membership" in (answers.get("payments") or []) and brief.settled(answers, ("membership_price",)):
         due.append("plan:membership")
@@ -69,6 +73,7 @@ def fire(tenant, answers: dict) -> list[str]:
     racing turns can never fire the same milestone twice."""
     from .setup_flow import _update_flow
 
+    sync_site(tenant, answers)
     due = _due(tenant, answers)
     if not due:
         return []
@@ -111,6 +116,42 @@ def _start(tenant, answers, key) -> None:
     elif action == "draft":
         prompt = draft_prompt(answers, arg)
         transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, arg, prompt))
+
+
+# Header links the interview adds, in the order they sit in the nav.
+NAV = (("/courses", "Courses"), ("/events", "Events"), ("/plans", "Pricing"), ("/about", "About"), ("/faq", "FAQ"))
+
+
+def sync_site(tenant, answers: dict) -> None:
+    """Modules and header links follow what the coach said they offer:
+    classes turn on the live module and add an Events link, a membership
+    a Pricing link. Additive only, and written only when something changes."""
+    from apps.core.onboarding.compose import ALWAYS_MODULES, GOAL_MODULES
+
+    modules = set(ALWAYS_MODULES).union(*(GOAL_MODULES.get(g, ()) for g in answers.get("goals") or []))
+    want = {"/events"} if {"live", "onsite"} & set(answers.get("offers") or []) else set()
+    if "membership" in (answers.get("payments") or []):
+        want.add("/plans")
+    order = [href for href, _ in NAV]
+    with transaction.atomic():
+        cfg = TenantConfig.objects.select_for_update().first()
+        if cfg is None:
+            return
+        nav = dict(cfg.navbar_config or {})
+        links = list(nav.get("links") or [])
+        hrefs = {link.get("href") for link in links}
+        missing = [href for href in order if href in want and href not in hrefs]
+        enabled = sorted(set(cfg.enabled_modules or []) | modules)
+        if not missing and enabled == sorted(cfg.enabled_modules or []):
+            return
+        for href in missing:
+            before = order[: order.index(href)]
+            at = next((i + 1 for i in range(len(links) - 1, -1, -1) if links[i].get("href") in before), 0)
+            links.insert(at, {"label": dict(NAV)[href], "href": href})
+        cfg.navbar_config = {**nav, "links": links}
+        cfg.enabled_modules = enabled
+        cfg.save(update_fields=["navbar_config", "enabled_modules"])
+    _bust(tenant)
 
 
 # ── drafts ───────────────────────────────────────────────────────────────────
@@ -314,7 +355,7 @@ def style_cards(answers: dict, tenant=None) -> dict:
 
 
 def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
-    from apps.core.copilot.logos import preview_url
+    from apps.core.copilot.logos import mark_of, preview_url
     from apps.core.models import CuratedLogo
     from apps.core.onboarding.ai_curate import CoachBrief, shortlist
 
@@ -328,7 +369,12 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
         "kind": "logo",
         "page": page,
         "more": len(ordered) > (page + 1) * LOGO_PAGE,
-        "options": [{"value": str(r.pk), "label": r.title, "image_url": preview_url(r)} for r in chunk],
+        "options": [
+            {"value": str(r.pk), "label": r.title, "image_url": preview_url(r), "mark": mark_of(r)} for r in chunk
+        ],
+        # Marks are previewed in the look the coach picked.
+        "style": answers.get("style") or "",
+        "palette": answers.get("palette") or "",
     }
 
 

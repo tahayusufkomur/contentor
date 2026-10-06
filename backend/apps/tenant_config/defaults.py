@@ -29,8 +29,9 @@ from __future__ import annotations
 from .sections import SECTION_TYPES
 
 # Fixed set of buildable pages. ``pricing`` renders at the /plans route on the
-# frontend; the mismatch is resolved there, not here.
-KNOWN_PAGE_KEYS = ("home", "about", "courses", "pricing", "faq", "contact")
+# frontend; the mismatch is resolved there, not here. ``events`` is built only
+# for coaches who run live or in-person classes.
+KNOWN_PAGE_KEYS = ("home", "about", "courses", "pricing", "faq", "contact", "events")
 
 # Every block type the builder understands. Content blocks render static,
 # coach-authored content; dynamic blocks pull live data (courses, plans, etc.)

@@ -16,6 +16,7 @@ import type {
   TenantConfig,
 } from "@/types/tenant";
 import AnnouncementBell from "@/components/shared/announcement-bell";
+import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import {
   logoSizeClass,
   showBrandName,
@@ -55,7 +56,13 @@ function Brand({ config }: { config: TenantConfig | null }) {
           : "items-center gap-2"
       }`}
     >
-      {config?.logo_url ? (
+      {config?.logo_mark ? (
+        <LogoMarkSvg
+          mark={config.logo_mark}
+          label={config.brand_name}
+          className={`${logoSizeClass(config.navbar_config?.logo_size, layout)} w-auto text-primary`}
+        />
+      ) : config?.logo_url ? (
         <img
           src={config.logo_url}
           alt={config.brand_name}

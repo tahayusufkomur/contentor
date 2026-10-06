@@ -1,5 +1,6 @@
 import "./pop.css";
 import type { StyleSections } from "../types";
+import { CoursesRows, EventsRows } from "../rows";
 import { BenefitsBento } from "./benefits";
 import { ContactPostcard } from "./contact";
 import { CoursesCards } from "./courses";
@@ -18,7 +19,7 @@ export const sections: Partial<StyleSections> = {
   hero: { bigname: HeroBigname, intro: HeroIntro },
   story: { sticker: StorySticker },
   benefits: { bento: BenefitsBento },
-  courseShowcase: { cards: CoursesCards },
+  courseShowcase: { cards: CoursesCards, rows: CoursesRows },
   howItWorks: { circles: HowItWorksCircles },
   philosophy: { highlight: PhilosophyHighlight },
   moments: { polaroids: MomentsPolaroids },
@@ -26,5 +27,5 @@ export const sections: Partial<StyleSections> = {
   faq: { bubbles: FaqBubbles },
   cta: { marquee: CtaMarquee },
   contact: { postcard: ContactPostcard },
-  events: { tickets: EventsTickets },
+  events: { tickets: EventsTickets, rows: EventsRows },
 };

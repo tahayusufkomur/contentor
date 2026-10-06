@@ -524,7 +524,7 @@
     ],
     "courses": [
       "hero:intro",
-      "courseShowcase",
+      "courseShowcase:rows",
       "howItWorks",
       "faq",
       "cta"
@@ -544,6 +544,13 @@
       "hero:intro",
       "contact",
       "faq"
+    ],
+    "events": [
+      "hero:intro",
+      "events:rows",
+      "howItWorks",
+      "faq",
+      "cta"
     ]
   },
   "requiredFamilies": {
@@ -558,6 +565,9 @@
     ],
     "contact": [
       "contact"
+    ],
+    "events": [
+      "events"
     ]
   }
 }

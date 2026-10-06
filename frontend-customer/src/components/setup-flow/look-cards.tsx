@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
 import type { LookCards, LookOption } from "@/lib/setup-flow";
-import { getSiteStyle, styleFontsHref } from "@/lib/site-styles";
+import { getSiteStyle, styleFontsHref, styleVars } from "@/lib/site-styles";
+import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import { cn } from "@/lib/utils";
 import { LookTile } from "./look-tile";
 
@@ -98,6 +99,10 @@ export function LookCardsView({
     );
   }
 
+  // Traced marks are drawn in the primary colour of the look the coach
+  // picked: the logo as it will sit in their header.
+  const look = getSiteStyle(shown.style ?? "");
+  const markColor = look ? styleVars(look, shown.palette).primary : undefined;
   return (
     <div className="mt-8">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
@@ -110,12 +115,25 @@ export function LookCardsView({
             style={enter(i)}
             className="p-3"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={o.image_url}
-              alt={o.label}
-              className="mx-auto aspect-square w-full rounded-lg object-contain"
-            />
+            {o.mark ? (
+              <span
+                className="flex aspect-square w-full items-center justify-center p-[12%]"
+                style={{ color: markColor }}
+              >
+                <LogoMarkSvg
+                  mark={o.mark}
+                  label={o.label}
+                  className="max-h-full w-full"
+                />
+              </span>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={o.image_url}
+                alt={o.label}
+                className="mx-auto aspect-square w-full rounded-lg object-contain"
+              />
+            )}
             <span className="mt-2 block truncate text-center text-[13px]">
               {o.label}
             </span>

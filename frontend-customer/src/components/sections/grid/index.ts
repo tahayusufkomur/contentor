@@ -1,5 +1,6 @@
 import "./grid.css";
 import type { StyleSections } from "../types";
+import { CoursesRows, EventsRows } from "../rows";
 import { HeroIntro, HeroStatement } from "./hero";
 import { StoryColumns } from "./story";
 import { BenefitsIndex } from "./benefits";
@@ -18,7 +19,7 @@ export const sections: Partial<StyleSections> = {
   hero: { statement: HeroStatement, intro: HeroIntro },
   story: { columns: StoryColumns },
   benefits: { index: BenefitsIndex },
-  courseShowcase: { catalogue: CourseCatalogue },
+  courseShowcase: { catalogue: CourseCatalogue, rows: CoursesRows },
   howItWorks: { ruled: HowItWorksRuled },
   philosophy: { paragraph: PhilosophyParagraph },
   moments: { tiles: MomentsTiles },
@@ -26,5 +27,5 @@ export const sections: Partial<StyleSections> = {
   faq: { open: FaqOpen },
   cta: { block: CtaBlock },
   contact: { definition: ContactDefinition },
-  events: { table: EventsTable },
+  events: { table: EventsTable, rows: EventsRows },
 };

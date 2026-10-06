@@ -360,3 +360,22 @@ class TestSeedCommand:
         (catalog_dir / "yoga.png").write_bytes(_white_bg_png())
         call_command("seed_curated_logos", dir=str(catalog_dir))
         assert _corner_alpha(self.stored["platform/curated-logos/yoga.png"]) == 0
+
+
+def test_mark_of_hugs_the_artwork_and_keeps_colour_roles():
+    from types import SimpleNamespace
+
+    from apps.core.copilot.logos import mark_of
+
+    row = SimpleNamespace(
+        mark_paths=[
+            {"d": "M 20 30 C 40 30 60 50 60 70 Z", "fill": "mark"},
+            {"d": "M 30 40 C 35 45 40 45 45 40 Z", "fill": "#ff0000", "fill_rule": "evenodd", "opacity": 0.5},
+            {"nope": True},
+        ]
+    )
+    mark = mark_of(row)
+    assert mark["box"] == "18.5 28.5 43.0 43.0"
+    assert [p["role"] for p in mark["paths"]] == ["mark", "mark"]  # a raw colour never reaches the page
+    assert mark["paths"][1]["fill_rule"] == "evenodd" and mark["paths"][1]["opacity"] == 0.5
+    assert mark_of(SimpleNamespace(mark_paths=None)) is None

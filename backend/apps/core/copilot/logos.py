@@ -2,6 +2,8 @@
 of photos.py: deterministic shortlist, no extra AI call, DB writes in the
 execute view."""
 
+import re
+
 
 class LogoOpError(Exception):
     """User-safe message describing why a logo operation was refused."""
@@ -31,6 +33,61 @@ def pick_logo(description, tenant, *, exclude_s3_key=None):
         raise LogoOpError("no logos are available in the library yet")
     brief = brief_with_turn_style(tenant, description)
     return shortlist(rows, brief, limit=SHORTLIST_LIMIT)[0]
+
+
+MARK_ROLES = ("mark", "mark2", "accent")
+_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def mark_of(row) -> dict | None:
+    """A curated logo's traced vector mark for rendering in the site's own
+    colours: its paths (fill as a colour role, never a hex) and a viewBox
+    hugging the artwork, so the mark fills its height instead of sitting
+    small inside the PNG's margins. None when it was never traced."""
+    paths = [p for p in row.mark_paths or [] if isinstance(p, dict) and isinstance(p.get("d"), str) and p["d"]]
+    xs: list[float] = []
+    ys: list[float] = []
+    for p in paths:
+        nums = [float(n) for n in _NUMBER.findall(p["d"])]  # traces are absolute M/C/Z: x, y pairs
+        xs += nums[0::2]
+        ys += nums[1::2]
+    if not xs or not ys:
+        return None
+    pad = 1.5
+    x, y = min(xs) - pad, min(ys) - pad
+    w, h = max(xs) - min(xs) + 2 * pad, max(ys) - min(ys) + 2 * pad
+    return {
+        "box": f"{x:.1f} {y:.1f} {w:.1f} {h:.1f}",
+        "paths": [
+            {
+                "d": p["d"],
+                "role": p.get("fill") if p.get("fill") in MARK_ROLES else "mark",
+                **({"fill_rule": p["fill_rule"]} if p.get("fill_rule") in ("nonzero", "evenodd") else {}),
+                **({"opacity": p["opacity"]} if isinstance(p.get("opacity"), int | float) else {}),
+            }
+            for p in paths
+        ],
+    }
+
+
+def mark_for_key(s3_key: str) -> dict | None:
+    """The traced mark of the curated logo stored at ``s3_key`` (a tenant's
+    logo picked from the library), cached; None for any other image."""
+    from django.core.cache import cache
+    from django_tenants.utils import schema_context
+
+    from apps.core.models import CuratedLogo
+
+    if not isinstance(s3_key, str) or not s3_key.startswith("platform/curated-logos/"):
+        return None
+    key = f"curated-mark:{s3_key}"
+    cached = cache.get(key)
+    if cached is None:
+        with schema_context("public"):
+            row = CuratedLogo.objects.filter(image_key=s3_key).first()
+        cached = (mark_of(row) if row else None) or {}
+        cache.set(key, cached, 3600)
+    return cached or None
 
 
 def preview_url(row):

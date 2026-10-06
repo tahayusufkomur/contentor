@@ -7,6 +7,7 @@ export const PAGE_KEYS: PageKey[] = [
   "pricing",
   "faq",
   "contact",
+  "events",
 ];
 
 // `pricing` renders at /plans — the one route/key mismatch, resolved here only.
@@ -17,6 +18,7 @@ export const PAGE_ROUTES: Record<PageKey, string> = {
   pricing: "/plans",
   faq: "/faq",
   contact: "/contact",
+  events: "/events",
 };
 
 export const PAGE_LABELS: Record<PageKey, string> = {
@@ -26,6 +28,7 @@ export const PAGE_LABELS: Record<PageKey, string> = {
   pricing: "Pricing",
   faq: "FAQ",
   contact: "Contact",
+  events: "Events",
 };
 
 const ROUTE_TO_PAGE_KEY: Record<string, PageKey> = Object.entries(

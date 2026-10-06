@@ -367,4 +367,5 @@ def apply_wizard_logo(config, answers, tenant) -> None:
 
     layout = logo.get("layout")
     navbar["logo_layout"] = layout if layout in CURATED_LOGO_LAYOUTS else "horizontal"
+    navbar["logo_size"] = "lg"  # a tightly cropped mark reads at the bigger size
     config.navbar_config = navbar
