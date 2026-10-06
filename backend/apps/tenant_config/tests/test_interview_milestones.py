@@ -114,6 +114,14 @@ def test_choose_style_validates_and_applies(tenant_ctx, config):
     cfg = TenantConfig.objects.first()
     assert cfg.style == "grid" and answers["site_style"] == "grid" and answers["style"] == "grid"
     assert cfg.setup_progress["look_edited"] is True
+    ms.choose(tenant_ctx, answers, "site_style", "journal:sage")
+    cfg = TenantConfig.objects.first()
+    assert (cfg.style, cfg.palette) == ("journal", "sage")
+    assert (answers["site_style"], answers["style"], answers["palette"]) == ("journal:sage", "journal", "sage")
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "site_style", "journal:mint")
+    ms.choose(tenant_ctx, answers, "site_style", "grid")
+    assert TenantConfig.objects.first().palette == "" and answers["palette"] == ""
 
 
 def test_choose_wordmark_and_delegate(tenant_ctx, config):
@@ -134,13 +142,13 @@ def test_choose_text_field_goes_through_coercion(tenant_ctx, config):
         ms.choose(tenant_ctx, answers, "course_price", "no idea")
 
 
-def test_style_cards_lead_with_the_niche_pick():
-    from apps.tenant_config import sections
-
+def test_style_cards_offer_every_look_with_the_niche_style_first():
     cards = ms.style_cards({"niche": "fitness"})
-    assert cards["kind"] == "style" and len(cards["options"]) == len(sections.enabled_styles())  # every style
-    assert all({"value", "label", "detail"} <= set(o) for o in cards["options"])
-    assert cards["options"][0].get("recommended") and not any(o.get("recommended") for o in cards["options"][1:])
+    assert cards["kind"] == "style" and len(cards["options"]) == 12
+    assert [o["style"] for o in cards["options"][:3]] == ["kinetic"] * 3
+    assert cards["options"][0]["value"] == "kinetic" and cards["options"][0]["recommended"] is True
+    assert cards["options"][1]["value"] == "kinetic:ocean" and "recommended" not in cards["options"][1]
+    assert all({"value", "style", "palette", "label", "detail"} <= set(o) for o in cards["options"])
 
 
 def test_free_plan_coach_who_sells_gets_a_paid_course_draft(tenant_ctx, config, owner):

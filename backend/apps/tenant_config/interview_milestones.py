@@ -179,24 +179,17 @@ def run_draft(tenant, kind: str, prompt: str) -> None:
 
 
 def style_cards(answers: dict) -> dict:
+    """Every look (style x palette), the niche's style first; its own
+    palette is the guide's pick."""
     from apps.core.onboarding.wizard_catalog import recommended_style
 
     from . import sections
 
-    enabled = sorted(sections.enabled_styles().values(), key=lambda s: s.get("order", 0))
     first = recommended_style(answers.get("niche") or "general")
-    ordered = sorted(enabled, key=lambda s: s["id"] != first)
+    looks = sorted(sections.looks(), key=lambda o: o["style"] != first)
     return {
         "kind": "style",
-        "options": [
-            {
-                "value": s["id"],
-                "label": s.get("label") or s["id"],
-                "detail": s.get("mood", ""),
-                **({"recommended": True} if s["id"] == first else {}),
-            }
-            for s in ordered
-        ],
+        "options": [{**o, **({"recommended": True} if o["value"] == first else {})} for o in looks],
     }
 
 
@@ -231,17 +224,18 @@ def _bust(tenant) -> None:
     cache.delete(f"tenant:{tenant.schema_name}:config")
 
 
-def apply_style(tenant, style_id: str) -> None:
+def apply_style(tenant, style_id: str, palette: str = "") -> None:
     """Same effect as the copilot's edit_style: every block takes the style's
-    layout (no AI), and the `look` publish blocker clears."""
+    layout (no AI), the colourway is set, and the `look` publish blocker clears."""
     from . import sections
 
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
         cfg.style = style_id
+        cfg.palette = palette
         cfg.pages = sections.restyle_pages(cfg.pages or {}, style_id)
         cfg.setup_progress = {**(cfg.setup_progress or {}), "look_edited": True}
-        cfg.save(update_fields=["style", "pages", "setup_progress"])
+        cfg.save(update_fields=["style", "palette", "pages", "setup_progress"])
     _bust(tenant)
 
 
@@ -274,10 +268,14 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             apply_logo(tenant, answers)
         return
     if field_id == "site_style":
-        if value not in sections.enabled_styles():
+        look = sections.parse_look(value)
+        if look is None or look[0] not in sections.enabled_styles():
             raise ChoiceError("unknown_style")
-        answers["site_style"] = answers["style"] = value
-        apply_style(tenant, value)
+        style_id, palette = look
+        answers["site_style"] = str(value)
+        answers["style"] = style_id
+        answers["palette"] = palette
+        apply_style(tenant, style_id, palette)
         return
     if field_id == "site_logo":
         if value == "wordmark":
