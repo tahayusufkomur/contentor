@@ -322,3 +322,32 @@ def test_offers_guide_is_multi_with_the_full_offer_list():
     assert interview.guide_for(brief.FIELD_BY_ID["pitch"])["multi"] is False
     many = interview.guide_for(brief.FIELD_BY_ID["pitch"], options=[str(n) for n in range(20)])["options"]
     assert len(many) == interview.MAX_OPTIONS
+
+
+def test_fixed_options_carry_icons_and_hints(client, tenant_ctx):
+    from apps.tenant_config import interview_brief as brief
+
+    with mock.patch("apps.tenant_config.interview_milestones.cards_for", return_value=None):
+        guide = client.get("/api/v1/admin/setup-flow/").json()["interview"]["guide"]
+    assert guide["icons"]["Yoga"] == "flower-2" and len(guide["icons"]) == len(guide["options"])
+    assert guide["hints"] == {}
+    tone = interview.guide_for(brief.FIELD_BY_ID["tone"])
+    assert tone["icons"]["Warm"] == "heart" and tone["hints"]["Warm"].startswith("Come as you are")
+    offers = interview.guide_for(brief.FIELD_BY_ID["offers"], options=["AI made-up"], icons=["star"])
+    assert offers["icons"]["Courses"] == "book-open"  # the fixed offer list keeps its own icons
+    assert interview.guide_for(None)["icons"] == {} and interview.guide_for(None)["hints"] == {}
+
+
+def test_ai_icons_are_matched_to_options_and_filtered(client, tenant_ctx, quiet):
+    """Review focus 3: fewer or bogus icons never break the guide."""
+    quiet.reply = interview.InterviewTurn(
+        next_field="audience",
+        question="Who?",
+        options=["Parents", "Runners", "Desk workers"],
+        icons=["baby", "not-an-icon"],
+    )
+    guide = client.post(URL, {"message": "Yoga"}, format="json").json()["guide"]
+    assert guide["icons"] == {"Parents": "baby"} and guide["hints"] == {}
+    assert '"icons"' in quiet.calls[0]["user"]  # the allowlist rides every turn
+    flow = TenantConfig.objects.first().setup_flow
+    assert interview.interview_state(tenant_ctx, flow)["guide"]["icons"] == {"Parents": "baby"}  # survives a reload

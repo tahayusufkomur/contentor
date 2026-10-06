@@ -76,6 +76,8 @@ Do these things:
      (their story, their pitch) get 16 too, written as the coach might say it. When the field is
      marked "several", the coach can tick any number of them, so every option is one distinct
      item that combines with the others: never "all of the above", "none" or "something else".
+   - icons: one icon id per option, in the same order, chosen from "icons" in the message: the
+     best visual hint for that answer (repeat an id when nothing fits better).
 If "spoken" is true the message came from speech recognition and may contain misheard words:
 set heard to what they most likely said (fix niche vocabulary, their brand name, obvious
 mishearings) and extract facts from that. Otherwise heard is null. Write in English."""
@@ -94,9 +96,10 @@ class InterviewTurn(BaseModel):
     next_field: str = ""
     question: str = ""
     options: list[str] = []
+    icons: list[str] = []
 
 
-def guide_for(field: brief.Field | None, ack: str = "", question: str = "", options=None) -> dict:
+def guide_for(field: brief.Field | None, ack: str = "", question: str = "", options=None, icons=None) -> dict:
     if field is None:
         return {
             "ack": ack[:300],
@@ -105,16 +108,22 @@ def guide_for(field: brief.Field | None, ack: str = "", question: str = "", opti
             "field": None,
             "can_delegate": False,
             "multi": False,
+            "icons": {},
+            "hints": {},
         }
     # The offers chips are the fixed offer list the answer is parsed against.
-    chosen = field.options if options is None or field.kind == "offers" else options
+    fixed = options is None or field.kind == "offers"
+    chosen = [str(o)[:60] for o in (field.options if fixed else options)][:MAX_OPTIONS]
+    names = field.icons if fixed else [str(i) for i in (icons or [])]
     return {
         "ack": ack[:300],
         "question": (question or field.question)[:300],
-        "options": [str(o)[:60] for o in chosen][:MAX_OPTIONS],
+        "options": chosen,
         "field": field.id,
         "can_delegate": True,
         "multi": field.multi,
+        "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
+        "hints": dict(zip(chosen, field.hints, strict=False)) if fixed else {},
     }
 
 
@@ -165,6 +174,7 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
                 if f.kind not in brief.CARD_KINDS
             ],
             "fields": {f.id: f.label for f in brief.FIELDS if f.kind not in brief.CARD_KINDS},
+            "icons": list(brief.ICONS),
             "recent": recent,
             "message": message,
             "answering": answering,
@@ -248,7 +258,7 @@ def run_turn(
 
     nxt = _next_field(brief.missing(answers), turn)
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:
-        guide = guide_for(nxt, turn.ack, turn.question, turn.options)
+        guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons)
     else:
         guide = guide_for(nxt, turn.ack if turn else "")
     # A tapped chip/card is applied by code; it is never also a site edit.
@@ -290,7 +300,12 @@ def interview_state(tenant, flow: dict) -> dict:
     elif last is None:
         guide = guide_for(missing[0], OPENING_ACK)
     else:
-        guide = {k: last.get(k) for k in ("ack", "question", "options", "field", "can_delegate", "multi")}
+        guide = {
+            k: last.get(k) for k in ("ack", "question", "options", "field", "can_delegate", "multi", "icons", "hints")
+        }
+        # A transcript written before icons existed still renders.
+        guide["icons"] = guide["icons"] or {}
+        guide["hints"] = guide["hints"] or {}
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back

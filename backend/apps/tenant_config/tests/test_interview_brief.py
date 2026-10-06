@@ -144,3 +144,13 @@ def test_save_merges_only_this_turns_changes(tenant_ctx):
     saved = Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["answers"]
     assert saved == {"teaches": "Pilates", "site_style": "grid", "audience": "Desk workers"}
     assert tenant_ctx.wizard_state["answers"] == saved
+
+
+def test_field_icons_and_hints_line_up_with_options():
+    for f in brief.FIELDS:
+        assert len(f.icons) in (0, len(f.options)), f.id
+        assert len(f.hints) in (0, len(f.options)), f.id
+        assert set(f.icons) <= set(brief.ICONS), f.id
+    assert brief.FIELD_BY_ID["teaches"].icons[0] == "flower-2"
+    assert brief.FIELD_BY_ID["tone"].hints[0].startswith("Come as you are")
+    assert len(set(brief.ICONS)) == len(brief.ICONS)  # no duplicates

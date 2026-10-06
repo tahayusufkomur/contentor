@@ -37,6 +37,25 @@ _OFFER_WORDS = (
     ("memberships", r"member|subscription"),
 )
 TONES = ("warm", "energetic", "calm", "expert", "playful")
+# Lucide icon ids a tile may show (frontend: src/lib/option-icons.ts mirrors
+# this list). The model picks one per AI-written option; fixed fields carry
+# their own below. Unknown ids are dropped, never shown.
+# fmt: off
+ICONS = (
+    "activity", "apple", "armchair", "baby", "badge-check", "badge-dollar-sign", "bed-double", "bike",
+    "book-open", "brain", "briefcase", "building-2", "calendar", "calendar-days", "camera", "chef-hat",
+    "circle-help", "clock", "coffee", "coins", "compass", "crown", "dumbbell", "feather",
+    "flame", "flower-2", "footprints", "gem", "gift", "glasses", "globe", "graduation-cap",
+    "guitar", "hand", "hand-heart", "headphones", "heart", "heart-pulse", "home", "hourglass",
+    "infinity", "instagram", "languages", "laptop", "layers", "layout-grid", "leaf", "lightbulb",
+    "list-checks", "lock-open", "mail", "map-pin", "megaphone", "message-circle", "mic", "moon",
+    "mountain", "music", "newspaper", "paintbrush", "palette", "pen-line", "person-standing", "phone",
+    "piggy-bank", "repeat", "rocket", "salad", "school", "scissors", "shield", "shirt",
+    "smile", "sparkles", "sprout", "star", "stethoscope", "store", "sun", "sun-medium",
+    "sunrise", "sunset", "target", "ticket", "timer", "trees", "trophy", "type",
+    "user-round", "users", "users-round", "video", "wallet", "waves", "wind", "zap",
+)
+# fmt: on
 _NICHE_WORDS = (
     ("face_yoga", r"face[- ]?yoga|facial"),
     ("pole_dance", r"\bpole\b"),
@@ -58,6 +77,8 @@ class Field:
     needs: tuple[str, ...] = ()  # required only when one of these offers is chosen
     paid_only: bool = False  # ...and only when the coach sells
     multi: bool = False  # several options can be ticked at once
+    icons: tuple[str, ...] = ()  # one lucide id per option (fixed-option fields)
+    hints: tuple[str, ...] = ()  # one short line per option, shown under it
 
 
 FIELDS: tuple[Field, ...] = (
@@ -84,6 +105,24 @@ FIELDS: tuple[Field, ...] = (
             "Art and painting",
             "Cooking",
         ),
+        icons=(
+            "flower-2",
+            "person-standing",
+            "dumbbell",
+            "brain",
+            "music",
+            "sparkles",
+            "zap",
+            "smile",
+            "paintbrush",
+            "salad",
+            "compass",
+            "briefcase",
+            "languages",
+            "guitar",
+            "palette",
+            "chef-hat",
+        ),
     ),
     Field(
         "audience",
@@ -91,6 +130,7 @@ FIELDS: tuple[Field, ...] = (
         "Who are the students you love teaching most?",
         ("Complete beginners", "Busy professionals", "People coming back after an injury", "Parents", "Older adults"),
         multi=True,
+        icons=("sprout", "briefcase", "heart-pulse", "baby", "glasses"),
     ),
     Field("outcome", "What students get", "What changes for a student after working with you?", multi=True),
     Field(
@@ -100,6 +140,7 @@ FIELDS: tuple[Field, ...] = (
         ("Courses", "Live online classes", "In-person sessions", "Articles", "Community", "Memberships"),
         kind="offers",
         multi=True,
+        icons=("book-open", "video", "map-pin", "newspaper", "users", "badge-check"),
     ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
     Field(
@@ -120,6 +161,14 @@ FIELDS: tuple[Field, ...] = (
         ("Warm", "Energetic", "Calm", "Expert", "Playful"),
         kind="tone",
         multi=True,
+        icons=("heart", "zap", "leaf", "graduation-cap", "smile"),
+        hints=(
+            "Come as you are. We'll take it slow.",
+            "Let's go. Today counts.",
+            "Breathe in. There's no rush here.",
+            "Twelve years of teaching, distilled.",
+            "Yes, you can wear socks.",
+        ),
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo"),
     Field("course_topic", "First course topic", "What's your first course about?"),
@@ -128,12 +177,20 @@ FIELDS: tuple[Field, ...] = (
         "First course format",
         "How is it structured?",
         ("4 weeks, one lesson a week", "A weekend intensive", "Self-paced lessons", "Short daily practices"),
+        icons=("calendar-days", "ticket", "infinity", "sunrise"),
+        hints=(
+            "A weekly rhythm that's easy to keep",
+            "Two days, all in",
+            "Start any time, go at their pace",
+            "Ten minutes a day",
+        ),
     ),
     Field(
         "course_level",
         "First course level",
         "Who is this course for?",
         ("Beginners", "Intermediate", "Advanced", "All levels"),
+        icons=("sprout", "trees", "mountain", "users"),
     ),
     Field(
         "sells",
@@ -141,6 +198,8 @@ FIELDS: tuple[Field, ...] = (
         "Will students pay, or is everything free to start?",
         ("Students pay", "Free to start"),
         kind="sells",
+        icons=("coins", "gift"),
+        hints=("Set a price; students pay by card", "Everything free now, prices later"),
     ),
     Field(
         "course_price",
@@ -158,6 +217,7 @@ FIELDS: tuple[Field, ...] = (
         ("Weekday mornings", "Weekday lunchtimes", "Weekday evenings", "Saturday mornings", "Sunday mornings"),
         needs=("live", "onsite"),
         multi=True,
+        icons=("sunrise", "coffee", "sunset", "calendar", "sun"),
     ),
     Field("article_topic", "First article topic", "What should your first article be about?", needs=("articles",)),
     Field(
@@ -166,6 +226,7 @@ FIELDS: tuple[Field, ...] = (
         "How should students get in touch with you?",
         ("Email", "Instagram", "WhatsApp", "Phone", "Contact form"),
         multi=True,
+        icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
     ),
     Field(
         "location", "Where in-person sessions happen", "Where do your in-person sessions take place?", needs=("onsite",)
