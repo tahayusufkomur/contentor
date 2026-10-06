@@ -8,6 +8,10 @@ from apps.tenant_config.serializers import _NAVBAR_LAYOUTS
 pytestmark = pytest.mark.django_db
 
 
+# The events page is built by the site composer only, never by the classic wizard.
+WIZARD_PAGES = set(KNOWN_PAGE_KEYS) - {"events"}
+
+
 def test_themes_match_tenant_theme_enum():
     assert set(wc.THEMES) == set(TenantTheme.values)
 
@@ -27,7 +31,7 @@ def test_navbar_and_hero_enums_are_valid_subsets():
 
 
 def test_page_layouts_cover_all_pages_with_known_blocks():
-    assert set(wc.PAGE_LAYOUTS) == set(KNOWN_PAGE_KEYS)
+    assert set(wc.PAGE_LAYOUTS) == WIZARD_PAGES
     for options in wc.PAGE_LAYOUTS.values():
         assert len(options) >= 2
         ids = [o["id"] for o in options]
@@ -42,7 +46,7 @@ def test_page_layouts_cover_all_pages_with_known_blocks():
 def test_recommended_answers_complete_and_fallback():
     rec = wc.recommended_answers("yoga")
     assert rec["theme"] == "forest"
-    assert set(rec["page_layouts"]) == set(KNOWN_PAGE_KEYS)
+    assert set(rec["page_layouts"]) == WIZARD_PAGES
     assert rec["logo"] == {"mode": "wordmark", "curated_id": None}
     assert wc.recommended_answers("no-such-niche")["niche"] == "general"
 

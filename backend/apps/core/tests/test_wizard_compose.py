@@ -34,7 +34,7 @@ def test_returns_exactly_the_override_keys():
 
 def test_all_pages_present_with_known_types_and_unique_ids():
     pages = _build()["pages"]
-    assert set(pages) == set(KNOWN_PAGE_KEYS)
+    assert set(pages) == set(KNOWN_PAGE_KEYS) - {"events"}  # events: composer-only
     for page in pages.values():
         types = [b["type"] for b in page["blocks"]]
         ids = [b["id"] for b in page["blocks"]]
