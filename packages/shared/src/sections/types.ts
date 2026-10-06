@@ -54,6 +54,15 @@ export interface SiteStylePalette {
   inverseForeground: string;
 }
 
+/** An alternative colourway a style ships. Fonts, radius, photo words and
+ *  layouts stay the style's; only the palette changes. */
+export interface SitePaletteVariant {
+  id: string;
+  label: string;
+  mood: string;
+  palette: SiteStylePalette;
+}
+
 export interface SiteStyle {
   id: string;
   label: string;
@@ -71,6 +80,10 @@ export interface SiteStyle {
     googleQuery: string;
   };
   palette: SiteStylePalette;
+  /** Name of the style's own `palette` as shown beside the alternatives. */
+  paletteLabel: string;
+  /** Alternative colourways; a look is `<style.id>` or `<style.id>:<palette.id>`. */
+  palettes: SitePaletteVariant[];
   /** Base radius (CSS length) — drives Tailwind rounded-sm/md/lg. */
   radius: string;
   /** Appended to every stock-photo search so a site's photos share one look. */

@@ -38,6 +38,12 @@ def fixture_styles(monkeypatch):
     monkeypatch.setattr(sections, "styles", lambda: STYLES)
 
 
+@pytest.fixture
+def real_styles(monkeypatch):
+    """Undo fixture_styles: read the style JSON the repo actually ships."""
+    monkeypatch.undo()
+
+
 # --- catalog ------------------------------------------------------------------
 
 
@@ -210,3 +216,31 @@ def test_style_round_trips_through_config_api(tenant_ctx):
     public = APIClient(HTTP_HOST="shared-test.localhost").get("/api/v1/admin/config/")
     assert public.status_code == 200
     assert public.json()["style"] == "calm"
+
+
+def test_every_enabled_style_ships_two_full_palettes(real_styles):
+    keys = set(sections.style("journal")["palette"])
+    for sid, s in sections.enabled_styles().items():
+        assert s.get("paletteLabel"), sid
+        assert len(s["palettes"]) == 2, sid
+        for p in s["palettes"]:
+            assert p["id"] and p["label"] and p["mood"], (sid, p)
+            assert set(p["palette"]) == keys, (sid, p["id"])
+
+
+def test_looks_list_every_style_in_every_palette(real_styles):
+    looks = sections.looks()
+    assert len(looks) == 3 * len(sections.enabled_styles())
+    first = looks[0]
+    assert first["value"] == first["style"] and first["palette"] == ""
+    assert looks[1]["value"] == f"{first['style']}:{looks[1]['palette']}"
+    assert all({"value", "style", "palette", "label", "detail"} <= set(o) for o in looks)
+    assert sections.palettes("journal").keys() == {"sage", "dusk"}
+
+
+def test_parse_look(real_styles):
+    assert sections.parse_look("journal") == ("journal", "")
+    assert sections.parse_look("journal:sage") == ("journal", "sage")
+    assert sections.parse_look("journal:mint") is None
+    assert sections.parse_look("nope") is None
+    assert sections.parse_look("") is None

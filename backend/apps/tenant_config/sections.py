@@ -56,6 +56,49 @@ def style(style_id) -> dict | None:
     return styles().get(str(style_id or ""))
 
 
+def palettes(style_id) -> dict:
+    """palette id -> variant for a style. The style's own palette is not
+    listed: it is palette id "" everywhere."""
+    return {p["id"]: p for p in (style(style_id) or {}).get("palettes") or [] if p.get("id")}
+
+
+def looks() -> list[dict]:
+    """Every enabled style in its own palette and in each alternative, in
+    display order: the looks /setup offers. value is the look id the coach
+    picks: "<style>" or "<style>:<palette>"."""
+    out = []
+    for sid, s in enabled_styles().items():
+        label = s.get("label") or sid
+        out.append(
+            {
+                "value": sid,
+                "style": sid,
+                "palette": "",
+                "label": f"{label} · {s.get('paletteLabel') or 'Original'}",
+                "detail": s.get("mood", ""),
+            }
+        )
+        for p in s.get("palettes") or []:
+            out.append(
+                {
+                    "value": f"{sid}:{p['id']}",
+                    "style": sid,
+                    "palette": p["id"],
+                    "label": f"{label} · {p.get('label') or p['id']}",
+                    "detail": p.get("mood") or s.get("mood", ""),
+                }
+            )
+    return out
+
+
+def parse_look(value) -> tuple[str, str] | None:
+    """ "journal" or "journal:sage" -> (style id, palette id) when both exist."""
+    sid, _, pid = str(value or "").partition(":")
+    if style(sid) is None or (pid and pid not in palettes(sid)):
+        return None
+    return sid, pid
+
+
 def variants(style_id, family) -> list[str]:
     """Variant names a style ships for a family; the first is its default."""
     return list(((style(style_id) or {}).get("variants") or {}).get(family) or [])

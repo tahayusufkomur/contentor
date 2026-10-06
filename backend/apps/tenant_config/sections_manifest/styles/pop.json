@@ -28,6 +28,45 @@
     "inverse": "oklch(0.29 0.07 330)",
     "inverseForeground": "oklch(0.95 0.05 100)"
   },
+  "paletteLabel": "Candy",
+  "palettes": [
+    {
+      "id": "sorbet",
+      "label": "Sorbet",
+      "mood": "Tangerine and sky blue — summer stickers.",
+      "palette": {
+        "background": "oklch(0.975 0.02 80)",
+        "surface": "oklch(0.92 0.05 60)",
+        "foreground": "oklch(0.25 0.05 40)",
+        "mutedForeground": "oklch(0.45 0.05 40)",
+        "primary": "oklch(0.6 0.19 40)",
+        "primaryForeground": "oklch(0.99 0.01 80)",
+        "accent": "oklch(0.88 0.1 220)",
+        "accentForeground": "oklch(0.25 0.05 40)",
+        "border": "oklch(0.25 0.05 40)",
+        "inverse": "oklch(0.3 0.08 40)",
+        "inverseForeground": "oklch(0.95 0.04 80)"
+      }
+    },
+    {
+      "id": "mint",
+      "label": "Mint",
+      "mood": "Teal and lemon on mint — fresh and loud.",
+      "palette": {
+        "background": "oklch(0.975 0.02 150)",
+        "surface": "oklch(0.92 0.06 165)",
+        "foreground": "oklch(0.24 0.05 190)",
+        "mutedForeground": "oklch(0.45 0.05 190)",
+        "primary": "oklch(0.5 0.14 190)",
+        "primaryForeground": "oklch(0.99 0.01 150)",
+        "accent": "oklch(0.92 0.17 100)",
+        "accentForeground": "oklch(0.24 0.05 190)",
+        "border": "oklch(0.24 0.05 190)",
+        "inverse": "oklch(0.28 0.07 200)",
+        "inverseForeground": "oklch(0.95 0.04 150)"
+      }
+    }
+  ],
   "radius": "1rem",
   "photoWords": "bright colorful backdrop, playful candid, joyful energy, vivid",
   "variants": {

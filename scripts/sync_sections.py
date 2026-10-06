@@ -51,6 +51,10 @@ def _style_errors(files):
             errors.append(f"{name}: enabled but has no variants for {', '.join(missing)}")
         if "intro" not in (variants.get("hero") or []):
             errors.append(f'{name}: enabled but hero variants lack "intro"')
+        keys = set(style.get("palette") or {})
+        for variant in style.get("palettes") or []:
+            if not variant.get("id") or set(variant.get("palette") or {}) != keys:
+                errors.append(f"{name}: palette {variant.get('id')!r} must define exactly the style's palette keys")
     return errors
 
 

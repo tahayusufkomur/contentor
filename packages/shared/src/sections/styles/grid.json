@@ -25,6 +25,45 @@
     "inverse": "oklch(0.45 0.22 265)",
     "inverseForeground": "oklch(0.98 0.005 95)"
   },
+  "paletteLabel": "Cobalt",
+  "palettes": [
+    {
+      "id": "mono",
+      "label": "Mono",
+      "mood": "Black on white, nothing else — pure typography.",
+      "palette": {
+        "background": "oklch(0.985 0 0)",
+        "surface": "oklch(0.95 0 0)",
+        "foreground": "oklch(0.15 0 0)",
+        "mutedForeground": "oklch(0.45 0 0)",
+        "primary": "oklch(0.2 0 0)",
+        "primaryForeground": "oklch(0.99 0 0)",
+        "accent": "oklch(0.9 0 0)",
+        "accentForeground": "oklch(0.15 0 0)",
+        "border": "oklch(0.82 0 0)",
+        "inverse": "oklch(0.2 0 0)",
+        "inverseForeground": "oklch(0.98 0 0)"
+      }
+    },
+    {
+      "id": "terracotta",
+      "label": "Terracotta",
+      "mood": "Clay red on warm stone — grounded and modern.",
+      "palette": {
+        "background": "oklch(0.975 0.01 70)",
+        "surface": "oklch(0.94 0.015 70)",
+        "foreground": "oklch(0.2 0.01 40)",
+        "mutedForeground": "oklch(0.46 0.01 40)",
+        "primary": "oklch(0.55 0.16 40)",
+        "primaryForeground": "oklch(0.99 0 0)",
+        "accent": "oklch(0.9 0.05 40)",
+        "accentForeground": "oklch(0.2 0.01 40)",
+        "border": "oklch(0.84 0.01 70)",
+        "inverse": "oklch(0.5 0.16 40)",
+        "inverseForeground": "oklch(0.98 0.005 70)"
+      }
+    }
+  ],
   "radius": "0rem",
   "photoWords": "clean natural light, strong graphic composition, neutral background, candid documentary, modern minimal interior",
   "variants": {
