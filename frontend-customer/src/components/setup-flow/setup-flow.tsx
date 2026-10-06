@@ -383,6 +383,7 @@ function Flow({
               cards={
                 live ? step.cards : step.field ? iv.cards?.[step.field] : null
               }
+              brandName={brandName}
               live={live}
               sending={sending}
               draft={drafts[step.field ?? GOLIVE] ?? {}}

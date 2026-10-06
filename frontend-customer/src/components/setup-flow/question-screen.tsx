@@ -29,6 +29,7 @@ export interface StepDraft {
 export function QuestionScreen({
   step,
   cards,
+  brandName,
   live,
   sending,
   draft,
@@ -39,6 +40,7 @@ export function QuestionScreen({
   step: QuestionStep;
   /** Look cards (style, logo) for this question, if it is one. */
   cards?: LookCards | null;
+  brandName: string;
   /** The question being asked now, vs. one the coach went back to. */
   live: boolean;
   sending: boolean;
@@ -114,6 +116,7 @@ export function QuestionScreen({
           {cards && step.field && (
             <LookCardsView
               cards={cards}
+              brandName={brandName}
               selected={live ? undefined : step.answer}
               disabled={sending}
               onMore={onMoreLogos}

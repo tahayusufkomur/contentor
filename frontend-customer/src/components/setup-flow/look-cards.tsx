@@ -4,8 +4,11 @@ import { useState } from "react";
 import { Check, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import type { SiteStyle } from "@shared/sections/types";
 import type { LookCards, LookOption } from "@/lib/setup-flow";
+import { getSiteStyle, styleFontsHref } from "@/lib/site-styles";
 import { cn } from "@/lib/utils";
+import { LookTile } from "./look-tile";
 
 const WORDMARK = "Just my name, as text";
 
@@ -13,12 +16,14 @@ const WORDMARK = "Just my name, as text";
  * picked before (a question they went back to). */
 export function LookCardsView({
   cards,
+  brandName,
   selected,
   disabled,
   onPick,
   onMore,
 }: {
   cards: LookCards;
+  brandName: string;
   selected?: string;
   disabled: boolean;
   onPick: (value: string, label: string) => void;
@@ -33,38 +38,55 @@ export function LookCardsView({
     !!selected && selected.trim().toLowerCase() === label.toLowerCase();
 
   if (shown.kind === "style") {
+    const styles = [...new Set(shown.options.map((o) => o.style ?? o.value))]
+      .map((id) => getSiteStyle(id))
+      .filter((s): s is SiteStyle => !!s);
     return (
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {shown.options.map((o) => (
-          <CardButton
-            key={o.value}
-            picked={isPicked(o.label)}
-            disabled={disabled}
-            onClick={() => onPick(o.value, o.label)}
-            className="min-h-[148px] p-5"
-          >
-            {o.recommended && (
-              <span className="mb-3 inline-block rounded-full bg-[var(--sf-brass-soft)] px-2.5 py-0.5 text-[11.5px] font-semibold text-[var(--sf-brass)]">
-                Recommended for you
-              </span>
-            )}
-            <span className="block text-[18px] font-semibold tracking-[-0.01em]">
-              {o.label}
-            </span>
-            {o.detail && (
-              <span className="mt-1.5 block text-[14px] leading-snug text-[var(--sf-graphite)]">
-                {o.detail}
-              </span>
-            )}
-          </CardButton>
+      <div className="mt-8">
+        {styles.map((s) => (
+          <link key={s.id} rel="stylesheet" href={styleFontsHref(s)} />
         ))}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
+          {shown.options.map((o) => (
+            <CardButton
+              key={o.value}
+              picked={isPicked(o.label)}
+              disabled={disabled}
+              onClick={() => onPick(o.value, o.label)}
+              className="overflow-hidden p-0"
+            >
+              <LookTile
+                styleId={o.style ?? o.value}
+                paletteId={o.palette}
+                brandName={brandName}
+              />
+              <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 py-2.5">
+                <span className="min-w-0">
+                  <span className="block truncate text-[14px] font-semibold">
+                    {o.label}
+                  </span>
+                  {o.detail && (
+                    <span className="block truncate text-[12px] text-[var(--sf-graphite)]">
+                      {o.detail}
+                    </span>
+                  )}
+                </span>
+                {o.recommended && (
+                  <span className="shrink-0 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
+                    Suggested
+                  </span>
+                )}
+              </span>
+            </CardButton>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {shown.options.map((o: LookOption) => (
           <CardButton
             key={o.value}
