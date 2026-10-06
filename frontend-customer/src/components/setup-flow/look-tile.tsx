@@ -29,6 +29,8 @@ export function LookTile({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Truly inert: no focus, no activation of any link inside the picture.
+    el.setAttribute("inert", "");
     const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
     ro.observe(el);
     return () => ro.disconnect();
@@ -54,8 +56,16 @@ export function LookTile({
             const variant = style.variants[family]?.[0];
             const Comp = variant ? layouts[family]?.[variant] : undefined;
             if (!Comp || !variant) return null;
-            const block = fixtureBlock(family, `${styleId}.${variant}`, "short");
-            if (family === "hero" && brandName) block.kicker = brandName;
+            const block = fixtureBlock(
+              family,
+              `${styleId}.${variant}`,
+              "short",
+            );
+            if (family === "hero") {
+              if (brandName) block.kicker = brandName;
+              block.ctaHref = "";
+              block.secondaryHref = "";
+            }
             return (
               <Comp
                 key={family}
