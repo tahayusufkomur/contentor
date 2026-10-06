@@ -149,6 +149,16 @@ function Flow({
   // null = the live question; a number = an earlier one the coach went back to.
   const [at, setAt] = useState<number | null>(null);
   const index = Math.min(at ?? steps.length - 1, steps.length - 1);
+  const [dir, setDir] = useState<"next" | "back">("next");
+  const lastIndex = steps.length - 1;
+  const goBack = useCallback(() => {
+    setDir("back");
+    setAt(index - 1);
+  }, [index]);
+  const goNext = useCallback(() => {
+    setDir("next");
+    setAt(index + 1 >= lastIndex ? null : index + 1);
+  }, [index, lastIndex]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [tab, setTab] = useState<"guide" | "preview">("guide");
   const [device, setDevice] = useState<Device>("desktop");
@@ -267,6 +277,7 @@ function Flow({
         const res = await api.turn(req);
         setGuide(res.guide);
         setFlow(res.state);
+        setDir("next");
         setAt(null);
         dropDraft(key);
         if (res.edit) await applyEdit(res.edit);
@@ -277,6 +288,7 @@ function Flow({
         if (fresh && fresh.interview.turns.length > serverTurns) {
           setFlow(fresh);
           setGuide(fresh.interview.guide);
+          setDir("next");
           setAt(null);
           dropDraft(key);
           return;
@@ -286,6 +298,19 @@ function Flow({
     },
     { errorToast: "That didn’t go through. Your answer is still in the box." },
   );
+
+  // Slides: ← and → move between questions when nothing is being typed.
+  useEffect(() => {
+    if (golive || previewOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (sending || t?.closest("textarea, input, [contenteditable]")) return;
+      if (e.key === "ArrowLeft" && index > 0) goBack();
+      if (e.key === "ArrowRight" && index < lastIndex) goNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [golive, previewOpen, sending, index, lastIndex, goBack, goNext]);
 
   const currentPage = flow.steps.find((s) => s.preview_path === path)?.page_key;
   const build = currentPage ? flow.page_builds[currentPage] : undefined;
@@ -325,7 +350,7 @@ function Flow({
           <NavButton
             label="Previous question"
             disabled={index === 0 || sending}
-            onClick={() => setAt(index - 1)}
+            onClick={goBack}
           >
             <ArrowLeft className="size-4" aria-hidden />
           </NavButton>
@@ -348,9 +373,7 @@ function Flow({
           <NavButton
             label="Next question"
             disabled={live || sending}
-            onClick={() =>
-              setAt(index + 1 >= steps.length - 1 ? null : index + 1)
-            }
+            onClick={goNext}
           >
             <ArrowRight className="size-4" aria-hidden />
           </NavButton>
@@ -390,6 +413,7 @@ function Flow({
               onDraft={editDraft(step.field ?? GOLIVE)}
               onSend={(req) => void send(req)}
               onMoreLogos={api.logos}
+              dir={dir}
             />
           )}
         </section>

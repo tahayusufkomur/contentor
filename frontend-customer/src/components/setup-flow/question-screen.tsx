@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { OPTION_ICONS } from "@/lib/option-icons";
 import { pickedOptions, type QuestionStep } from "@/lib/interview";
 import {
   DELEGATE,
@@ -36,6 +37,7 @@ export function QuestionScreen({
   onDraft,
   onSend,
   onMoreLogos,
+  dir,
 }: {
   step: QuestionStep;
   /** Look cards (style, logo) for this question, if it is one. */
@@ -47,6 +49,8 @@ export function QuestionScreen({
   draft: StepDraft;
   onDraft: (update: (d: StepDraft) => StepDraft) => void;
   onSend: (req: TurnRequest) => void;
+  /** Which way the slide came from: forward, or back to an earlier question. */
+  dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
 }) {
   const multi = !!step.multi && step.options.length > 1;
@@ -81,8 +85,14 @@ export function QuestionScreen({
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="mx-auto flex w-full max-w-[1120px] flex-1 flex-col justify-center px-5 py-8 sm:px-10">
-        <div className="motion-safe:animate-[sf-rise_.45s_ease-out_both]">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col justify-center px-5 py-8 sm:px-10">
+        <div
+          className={
+            dir === "back"
+              ? "motion-safe:animate-[sf-slide-back_.45s_ease-out_both]"
+              : "motion-safe:animate-[sf-slide-next_.45s_ease-out_both]"
+          }
+        >
           {live ? (
             <>
               {step.ack && (
@@ -142,7 +152,7 @@ export function QuestionScreen({
                     onClick={() => (multi ? toggle(o) : send({ message: o }))}
                     style={{ animationDelay: `${Math.min(i, 15) * 22}ms` }}
                     className={cn(
-                      "relative flex min-h-[68px] items-center rounded-2xl border px-4 py-3 text-left text-[15.5px] font-medium leading-snug",
+                      "relative flex min-h-[84px] flex-col justify-center gap-1.5 rounded-2xl border px-4 py-3.5 text-left text-[15.5px] font-medium leading-snug",
                       "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-rise_.4s_ease-out_both] motion-safe:hover:-translate-y-0.5 disabled:pointer-events-none",
                       on
                         ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)] shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)]"
@@ -150,7 +160,37 @@ export function QuestionScreen({
                       sending && !on && "opacity-55",
                     )}
                   >
-                    <span className={cn(multi && "pr-7")}>{o}</span>
+                    {(() => {
+                      const Icon = step.icons?.[o]
+                        ? OPTION_ICONS[step.icons[o]]
+                        : undefined;
+                      return (
+                        Icon && (
+                          <Icon
+                            aria-hidden
+                            className={cn(
+                              "size-5 shrink-0",
+                              on
+                                ? "text-[var(--sf-paper)]"
+                                : "text-[var(--sf-brass)]",
+                            )}
+                          />
+                        )
+                      );
+                    })()}
+                    <span className={cn("leading-snug", multi && "pr-7")}>
+                      {o}
+                    </span>
+                    {step.hints?.[o] && (
+                      <span
+                        className={cn(
+                          "text-[12.5px] font-normal leading-snug",
+                          on ? "opacity-75" : "text-[var(--sf-graphite)]",
+                        )}
+                      >
+                        {step.hints[o]}
+                      </span>
+                    )}
                     {multi && (
                       <span
                         aria-hidden
@@ -228,7 +268,7 @@ export function QuestionScreen({
 
       <div className="sticky bottom-0 border-t border-[var(--sf-line)] bg-[var(--sf-paper)] px-5 py-3 sm:px-10">
         <AnswerBox
-          className="mx-auto max-w-[1120px]"
+          className="mx-auto max-w-[1280px]"
           value={draft.text ?? typed}
           onChange={(update) =>
             onDraft((d) => ({ ...d, text: update(d.text ?? typed) }))

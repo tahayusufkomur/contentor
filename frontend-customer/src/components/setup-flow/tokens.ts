@@ -54,6 +54,8 @@ export const SHELL_CSS = `
 @keyframes sf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes sf-ring { 0% { opacity: .55; transform: scale(.55); } 100% { opacity: 0; transform: scale(2.6); } }
 @keyframes sf-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+@keyframes sf-slide-next { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes sf-slide-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
 .sf-shell [data-slot="button"].bg-primary:disabled { opacity: 1; background: rgb(34 33 31 / 0.09); color: rgb(34 33 31 / 0.38); box-shadow: none; }
 .sf-shell [data-slot="button"].bg-primary[aria-busy="true"] { background: var(--sf-ink); color: var(--sf-paper); }
 `;
