@@ -16,6 +16,10 @@ schema-validated generation), selected by settings.AI_PROVIDER:
   "cli". The hub's agent HAS tools and our prompts carry untrusted coach
   text, so any run whose event log shows a tool call is discarded
   (_agentc_run). No vision, no token streaming.
+- "gemini": the Gemini API directly on settings.GEMINI_API_KEY — no queue,
+  no CLI start-up, schema-constrained JSON. Billed per token, so its cost
+  is real and accrues against the budget kill-switches. No vision, no token
+  streaming.
 
 Prompt-caching contract: the ``system`` argument must be byte-frozen per
 feature (persona / knowledge base / static prompt only). Tenant state
@@ -81,7 +85,10 @@ def estimate_cost(usage, model):
 
 def available():
     """Provider preflight -> (ok, reason).
-    Reasons: ok | no_api_key | cli_no_binary | cli_no_token | agentc_unreachable."""
+    Reasons: ok | no_api_key | cli_no_binary | cli_no_token | agentc_unreachable
+    | no_gemini_key."""
+    if settings.AI_PROVIDER == "gemini":
+        return (True, "ok") if settings.GEMINI_API_KEY else (False, "no_gemini_key")
     if settings.AI_PROVIDER == "agentc":
         try:
             ok = requests.get(_agentc_url("/health"), timeout=2).json().get("ok") is True
@@ -163,6 +170,8 @@ def structured(*, system, user, output_model, model, max_tokens, label=None, tim
     failure. ``label`` tags the run on the agentc hub; other providers
     ignore it. ``timeout_seconds`` caps an interactive caller's wait (the
     whole call, retries included) below the provider default."""
+    if settings.AI_PROVIDER == "gemini":
+        return _gemini_structured(system, user, output_model, timeout_seconds)
     if settings.AI_PROVIDER == "agentc":
         return _agentc_structured(system, user, output_model, label, timeout_seconds)
     if settings.AI_PROVIDER == "cli":
@@ -352,6 +361,91 @@ def _agentc_structured(system, user, output_model, label, timeout_seconds=None):
     raise AiError(f"agentc output did not match schema: {last_error}") from last_error
 
 
+# ── gemini provider (Gemini API on an API key) ──────────────────────────────
+
+_GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+# $ per 1M tokens for gemini-3.8-flash at its 2027 list price (2026's is
+# half): a kill-switch may over-count, never under-count. Thinking tokens
+# bill as output. Re-check https://ai.google.dev/pricing when changing
+# GEMINI_MODEL.
+_GEMINI_PRICES = {"input": 1.50, "output": 7.50, "cache_read": 0.15}
+
+
+def _gemini_cost(usage):
+    usage = usage or {}
+
+    def per_m(tokens, price):
+        return (Decimal(tokens or 0) / Decimal(1_000_000)) * Decimal(str(price))
+
+    cached = usage.get("cachedContentTokenCount") or 0
+    output = (usage.get("candidatesTokenCount") or 0) + (usage.get("thoughtsTokenCount") or 0)
+    return (
+        per_m((usage.get("promptTokenCount") or 0) - cached, _GEMINI_PRICES["input"])
+        + per_m(cached, _GEMINI_PRICES["cache_read"])
+        + per_m(output, _GEMINI_PRICES["output"])
+    )
+
+
+def _gemini_call(system, contents, deadline, schema=None):
+    """One generateContent call -> (text, cost_usd). Raises AiError."""
+    config = {}
+    if settings.GEMINI_THINKING_LEVEL:
+        config["thinkingConfig"] = {"thinkingLevel": settings.GEMINI_THINKING_LEVEL}
+    if schema is not None:
+        config["responseMimeType"] = "application/json"
+        config["responseJsonSchema"] = schema
+    timeout = max(deadline - time.monotonic(), 1)
+    try:
+        resp = requests.post(
+            _GEMINI_URL.format(model=settings.GEMINI_MODEL),
+            headers={"x-goog-api-key": settings.GEMINI_API_KEY},
+            json={"systemInstruction": {"parts": [{"text": system}]}, "contents": contents, "generationConfig": config},
+            timeout=timeout,
+        )
+        if not resp.ok:
+            raise AiError(f"gemini call failed ({resp.status_code}): {resp.text[:500]}")
+        payload = resp.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise AiError(f"gemini call failed: {exc}") from exc
+    cost = _gemini_cost(payload.get("usageMetadata"))
+    candidate = (payload.get("candidates") or [{}])[0]
+    parts = (candidate.get("content") or {}).get("parts") or []
+    text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+    if not text:
+        reason = candidate.get("finishReason") or payload.get("promptFeedback")
+        raise AiError(f"gemini returned no text ({reason})", cost_usd=cost)
+    return text, cost
+
+
+def _gemini_structured(system, user, output_model, timeout_seconds=None):
+    """JSON constrained to the output model's schema, validated with the same
+    pydantic model as the other providers. One retry, sharing the deadline,
+    absorbs an overloaded or rate-limited moment as well as invalid output."""
+    from pydantic import ValidationError
+
+    seconds = settings.GEMINI_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
+    deadline = time.monotonic() + seconds
+    contents = [{"role": "user", "parts": [{"text": user}]}]
+    schema = output_model.model_json_schema()
+    spent = Decimal("0")
+    last_error = None
+    for _attempt in range(2):
+        if time.monotonic() >= deadline:
+            break
+        try:
+            text, cost = _gemini_call(system, contents, deadline, schema)
+        except AiError as exc:
+            spent += exc.cost_usd
+            last_error = exc
+            continue
+        spent += cost
+        try:
+            return output_model.model_validate_json(_strip_fences(text)), spent, settings.GEMINI_MODEL
+        except (ValueError, ValidationError) as exc:
+            last_error = exc
+    raise AiError(f"gemini structured call failed: {last_error}", cost_usd=spent) from last_error
+
+
 # ── streamed structured output (progress UI for the long calls) ─────────────
 # structured() blocks for the whole generation — 45s+ for a blog draft — which
 # reads as a hang. structured_stream() is the same call with the intermediate
@@ -418,9 +512,12 @@ def structured_stream(*, system, user, output_model, model, max_tokens, label=No
     forms, then exactly one ("done", (parsed, cost_usd, effective_model)).
     Raises AiError on provider or schema failure, like structured().
 
-    The cli and agentc providers cannot stream (blocking), so they yield no
-    partials and go straight to ("done", …) — callers degrade to an
+    The cli, agentc and gemini providers do not stream (blocking), so they
+    yield no partials and go straight to ("done", …) — callers degrade to an
     indeterminate wait rather than breaking."""
+    if settings.AI_PROVIDER == "gemini":
+        yield ("done", _gemini_structured(system, user, output_model))
+        return
     if settings.AI_PROVIDER == "agentc":
         yield ("done", _agentc_structured(system, user, output_model, label))
         return
@@ -464,8 +561,9 @@ def _anthropic_structured_stream(system, user, output_model, model, max_tokens):
 
 
 def supports_vision():
-    """Whether the active provider can take image inputs. The cli (claude -p)
-    and agentc providers have no image path — callers skip the critique pass."""
+    """Whether the active provider can take image inputs. The cli (claude -p),
+    agentc and gemini providers have no image path here — callers skip the
+    critique pass."""
     return settings.AI_PROVIDER == "anthropic"
 
 
@@ -496,7 +594,9 @@ def stream_text(*, system, history, model, max_tokens, label=None):
     """Yield ("delta", text) events, then exactly one ("done", info) where
     info = {"cost_usd": Decimal, "provider": str, "model": str}. ``label``
     tags the run on the agentc hub; other providers ignore it."""
-    if settings.AI_PROVIDER == "agentc":
+    if settings.AI_PROVIDER == "gemini":
+        yield from _stream_gemini(system, history)
+    elif settings.AI_PROVIDER == "agentc":
         yield from _stream_agentc(system, history, label)
     elif settings.AI_PROVIDER == "cli":
         yield from _stream_cli(system, history, model)
@@ -509,6 +609,16 @@ def _stream_agentc(system, history, label):
     prompt = system + _AGENTC_RULES.format(reply="your answer text") + _cli_prompt(history)
     yield ("delta", _agentc_run(prompt, label))
     yield ("done", {"cost_usd": Decimal("0"), "provider": "agentc", "model": settings.AGENTC_MODEL})
+
+
+def _stream_gemini(system, history):
+    """Not a real stream: the whole answer arrives as one delta."""
+    contents = [
+        {"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]} for m in history
+    ]
+    text, cost = _gemini_call(system, contents, time.monotonic() + settings.GEMINI_TIMEOUT_SECONDS)
+    yield ("delta", text)
+    yield ("done", {"cost_usd": cost, "provider": "gemini", "model": settings.GEMINI_MODEL})
 
 
 def _stream_anthropic(system, history, model, max_tokens):

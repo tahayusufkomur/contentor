@@ -1,7 +1,7 @@
 """One-command answer to "is my AI provider working?" — prints the active
 provider, runs the core.ai preflight with a fix-it message on failure, then
 fires ONE tiny end-to-end structured call (~10 output tokens). With
-AI_PROVIDER=anthropic that call bills a fraction of a cent and says so."""
+AI_PROVIDER=anthropic or gemini that call bills a fraction of a cent and says so."""
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -24,6 +24,7 @@ _FIXES = {
         "host, paste the token into .env, then restart django + celery-worker."
     ),
     "no_api_key": "ANTHROPIC_API_KEY is empty — set it in the environment.",  # pragma: allowlist secret
+    "no_gemini_key": "GEMINI_API_KEY is empty — set it in the environment.",  # pragma: allowlist secret
 }
 
 
@@ -41,7 +42,11 @@ class Command(BaseCommand):
             self.stderr.write(_FIXES.get(reason, ""))
             raise SystemExit(1)
         self.stdout.write("preflight: ok")
-        if provider == "anthropic":
+        if provider == "gemini":
+            self.stdout.write(
+                f"GEMINI_MODEL={settings.GEMINI_MODEL}  GEMINI_THINKING_LEVEL={settings.GEMINI_THINKING_LEVEL}"
+            )
+        if provider in ("anthropic", "gemini"):
             self.stdout.write("firing one ~10-token call against the BILLED API key...")
         try:
             parsed, cost, model = ai.structured(

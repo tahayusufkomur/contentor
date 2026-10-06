@@ -269,9 +269,16 @@ LIVECRAFT_API_KEY = os.environ.get("LIVECRAFT_API_KEY", "")
 # "anthropic" (prod: API key + prompt caching) or "cli" (local dev: the
 # developer's Claude subscription via the `claude` CLI; needs the binary in
 # the container — dev compose builds with INSTALL_CLAUDE_CLI=1 — and
-# CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`), or "agentc" (the Agent
-# Container hub: Gemini CLI on subscription accounts, AGENTC_* below).
+# CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`), "agentc" (the Agent
+# Container hub: Gemini CLI on subscription accounts, AGENTC_* below), or
+# "gemini" (the Gemini API on GEMINI_API_KEY, billed per token, GEMINI_* below).
 AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+# minimal | low | medium | high; "" leaves the model's default (high on
+# Gemini 3, which costs seconds per call).
+GEMINI_THINKING_LEVEL = os.environ.get("GEMINI_THINKING_LEVEL", "low")
+# Per call, its one retry included.
+GEMINI_TIMEOUT_SECONDS = int(os.environ.get("GEMINI_TIMEOUT_SECONDS", "120"))
 AGENTC_HUB = os.environ.get("AGENTC_HUB", "http://host.docker.internal:39300")
 AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "gemini-3.8-flash-high")  # newest in `agy models`
 # Working dir on the HUB host (must already exist there), not in this container.
@@ -303,7 +310,8 @@ LOGO_AI_MONTHLY_REFINE_LIMIT = int(os.environ.get("LOGO_AI_MONTHLY_REFINE_LIMIT"
 # Unset key = feature entirely off: the icon stage ships Claude-authored
 # paths exactly as before (mirrors the ANTHROPIC_API_KEY-unset pattern, so
 # tests/CI/e2e need no fake service). NOT routed through AI_PROVIDER — image
-# generation is a different modality with its own key and off-switch.
+# generation is a different modality with its own off-switch. The same key
+# also serves AI_PROVIDER=gemini text calls.
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 # Verified live 2026-07-12: ListModels advertises generateContent for
 # "gemini-3.1-flash-image" and a real 1K generation succeeded through the
