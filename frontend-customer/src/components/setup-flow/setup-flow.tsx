@@ -303,8 +303,17 @@ function Flow({
   useEffect(() => {
     if (golive || previewOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (sending || t?.closest("textarea, input, [contenteditable]")) return;
+      if (
+        !(e.target instanceof Element) ||
+        e.altKey ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.repeat
+      )
+        return;
+      if (sending || e.target.closest("textarea, input, [contenteditable]"))
+        return;
       if (e.key === "ArrowLeft" && index > 0) goBack();
       if (e.key === "ArrowRight" && index < lastIndex) goNext();
     };

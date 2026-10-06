@@ -76,6 +76,8 @@ Do these things:
      (their story, their pitch) get 16 too, written as the coach might say it. When the field is
      marked "several", the coach can tick any number of them, so every option is one distinct
      item that combines with the others: never "all of the above", "none" or "something else".
+     When a field in "missing" lists "fixed_options", those are the answers the coach will see;
+     write options anyway but phrase the question to fit them.
    - icons: one icon id per option, in the same order, chosen from "icons" in the message: the
      best visual hint for that answer (repeat an id when nothing fits better).
 If "spoken" is true the message came from speech recognition and may contain misheard words:
@@ -111,8 +113,9 @@ def guide_for(field: brief.Field | None, ack: str = "", question: str = "", opti
             "icons": {},
             "hints": {},
         }
-    # The offers chips are the fixed offer list the answer is parsed against.
-    fixed = options is None or field.kind == "offers"
+    # The offers chips are the fixed offer list the answer is parsed against; hinted fields keep
+    # their pre-written options so each hint matches its tile.
+    fixed = options is None or field.kind == "offers" or bool(field.hints)
     chosen = [str(o)[:60] for o in (field.options if fixed else options)][:MAX_OPTIONS]
     names = field.icons if fixed else [str(i) for i in (icons or [])]
     return {
@@ -169,7 +172,12 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
             },
             "left_to_you": answers.get("delegated") or [],
             "missing": [
-                {"id": f.id, "means": f.label, **({"several": True} if f.multi else {})}
+                {
+                    "id": f.id,
+                    "means": f.label,
+                    **({"several": True} if f.multi else {}),
+                    **({"fixed_options": list(f.options)} if f.hints else {}),
+                }
                 for f in brief.missing(answers)
                 if f.kind not in brief.CARD_KINDS
             ],

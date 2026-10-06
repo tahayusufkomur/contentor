@@ -185,6 +185,7 @@ export function QuestionScreen({
                       <span
                         className={cn(
                           "text-[12.5px] font-normal leading-snug",
+                          multi && "pr-7",
                           on ? "opacity-75" : "text-[var(--sf-graphite)]",
                         )}
                       >

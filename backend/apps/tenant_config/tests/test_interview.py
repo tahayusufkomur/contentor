@@ -338,6 +338,19 @@ def test_fixed_options_carry_icons_and_hints(client, tenant_ctx):
     assert interview.guide_for(None)["icons"] == {} and interview.guide_for(None)["hints"] == {}
 
 
+def test_hinted_fields_keep_their_own_options_and_hints_over_ai_ones(client, tenant_ctx, quiet):
+    from apps.tenant_config import interview_brief as brief
+
+    tone = brief.FIELD_BY_ID["tone"]
+    quiet.reply = interview.InterviewTurn(
+        next_field="tone", question="How should it sound?", options=["Chatty", "Bossy"], icons=["smile", "zap"]
+    )
+    guide = client.post(URL, {"message": "Yoga"}, format="json").json()["guide"]
+    assert guide["options"] == list(tone.options)
+    assert guide["hints"]["Warm"].startswith("Come as you are") and guide["icons"]["Warm"] == "heart"
+    assert '"fixed_options"' in quiet.calls[0]["user"]
+
+
 def test_ai_icons_are_matched_to_options_and_filtered(client, tenant_ctx, quiet):
     """Review focus 3: fewer or bogus icons never break the guide."""
     quiet.reply = interview.InterviewTurn(
