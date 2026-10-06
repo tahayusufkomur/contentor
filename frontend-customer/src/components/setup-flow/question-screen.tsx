@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -9,24 +9,32 @@ import { pickedOptions, type QuestionStep } from "@/lib/interview";
 import {
   DELEGATE,
   DELEGATE_TEXT,
+  SKIP,
+  isReview,
+  type GuideCards,
   type LookCards,
+  type ReviewKind,
   type TurnRequest,
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
+import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 
 /** What the coach has ticked or typed on a question but not sent yet. */
 export interface StepDraft {
   ticked?: string[];
   text?: string;
+  /** A look card picked but not sent yet. */
+  card?: { value: string; label: string };
 }
 
 /** One interview question on the whole screen: big answer tiles (any number
  * of them on a multi question), "You decide", or a typed or dictated answer.
- * A question the coach already answered shows their answer, ready to change.
- * Unsent ticks and text live in ``draft`` so moving between questions keeps
- * them. */
+ * Picking a tile or card only selects it; Continue sends. A question the
+ * coach already answered shows their answer, ready to change (Continue with
+ * it unchanged just moves on). Unsent ticks and text live in ``draft`` so
+ * moving between questions keeps them. */
 export function QuestionScreen({
   step,
   cards,
@@ -37,11 +45,13 @@ export function QuestionScreen({
   onDraft,
   onSend,
   onMoreLogos,
+  onCover,
+  onNext,
   dir,
 }: {
   step: QuestionStep;
-  /** Look cards (style, logo) for this question, if it is one. */
-  cards?: LookCards | null;
+  /** Look cards (style, logo) or the draft to review, if it is one. */
+  cards?: GuideCards | null;
   brandName: string;
   /** The question being asked now, vs. one the coach went back to. */
   live: boolean;
@@ -52,10 +62,24 @@ export function QuestionScreen({
   /** Which way the slide came from: forward, or back to an earlier question. */
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
+  onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
+  /** Move on to the next question without answering this one again. */
+  onNext: () => void;
 }) {
   const multi = !!step.multi && step.options.length > 1;
   const picked = pickedOptions(step);
-  const ticked = draft.ticked ?? (multi ? picked : []);
+  const ticked = draft.ticked ?? picked;
+  const changed = draft.card
+    ? draft.card.label !== step.answer
+    : ticked.join("\n") !== picked.join("\n");
+  const review = isReview(cards) ? cards : null;
+  const looks = cards && !isReview(cards) ? cards : null;
+  const canContinue = review
+    ? review.status === "waiting" ||
+      (review.status === "ready" && !!review.item)
+    : looks
+      ? !!draft.card || (!live && !!step.answer)
+      : ticked.length > 0;
   // A typed answer (not a tile, a card or "you decide") goes back in the box.
   const typed =
     !live &&
@@ -82,6 +106,26 @@ export function QuestionScreen({
     onDraft((d) => ({ ...d, ticked: next(d.ticked ?? ticked) }));
   const toggle = (o: string) =>
     setTicked((t) => (t.includes(o) ? t.filter((x) => x !== o) : [...t, o]));
+  const proceed = () => {
+    if (review && step.field)
+      return live
+        ? send({
+            message: "Looks good",
+            choice: { field: step.field, value: "ok" },
+          })
+        : onNext();
+    if (!live && !changed) return onNext();
+    if (draft.card && step.field)
+      return send({
+        message: draft.card.label,
+        choice: { field: step.field, value: draft.card.value },
+      });
+    send({ message: ticked.join(", ") });
+  };
+  // Slide choreography: the words of the question land one by one, then
+  // the answers spring in.
+  const words = step.question.split(/\s+/).filter(Boolean);
+  const answersAt = 160 + Math.min(words.length, 16) * 42;
 
   return (
     <div className="flex min-h-full flex-col">
@@ -96,12 +140,12 @@ export function QuestionScreen({
           {live ? (
             <>
               {step.ack && (
-                <p className="max-w-[72ch] text-[16px] leading-relaxed text-[var(--sf-graphite)]">
+                <p className="max-w-[72ch] text-[16px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_both]">
                   {step.ack}
                 </p>
               )}
               {step.status && (
-                <p className="mt-2 flex max-w-[72ch] gap-2.5 text-[15px] leading-relaxed text-[var(--sf-graphite)]">
+                <p className="mt-2 flex max-w-[72ch] gap-2.5 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_80ms_both]">
                   <span
                     aria-hidden
                     className="mt-[9px] size-1.5 shrink-0 rounded-full bg-[var(--sf-brass)]"
@@ -120,21 +164,38 @@ export function QuestionScreen({
             )
           )}
           <h1 className="mt-3 max-w-[32ch] text-[30px] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-[42px]">
-            {step.question}
+            {words.map((w, i) => (
+              <Fragment key={i}>
+                <span
+                  className="inline-block motion-safe:animate-[sf-word_.8s_var(--sf-spring)_both]"
+                  style={{ animationDelay: `${120 + Math.min(i, 16) * 42}ms` }}
+                >
+                  {w}
+                </span>{" "}
+              </Fragment>
+            ))}
           </h1>
 
-          {cards && step.field && (
+          {review && (
+            <DraftReview
+              card={review}
+              delay={answersAt}
+              disabled={sending}
+              onCover={onCover}
+            />
+          )}
+
+          {looks && step.field && (
             <LookCardsView
-              cards={cards}
+              cards={looks}
               brandName={brandName}
               selected={live ? undefined : step.answer}
+              chosen={draft.card?.value}
               disabled={sending}
+              delay={answersAt}
               onMore={onMoreLogos}
               onPick={(value, label) =>
-                send({
-                  message: label,
-                  choice: { field: step.field as string, value },
-                })
+                onDraft((d) => ({ ...d, card: { value, label } }))
               }
             />
           )}
@@ -142,18 +203,20 @@ export function QuestionScreen({
           {step.options.length > 0 && (
             <div className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
               {step.options.map((o, i) => {
-                const on = multi ? ticked.includes(o) : picked.includes(o);
+                const on = ticked.includes(o);
                 return (
                   <button
                     key={o}
                     type="button"
                     aria-pressed={multi ? on : undefined}
                     disabled={sending}
-                    onClick={() => (multi ? toggle(o) : send({ message: o }))}
-                    style={{ animationDelay: `${Math.min(i, 15) * 22}ms` }}
+                    onClick={() => (multi ? toggle(o) : setTicked(() => [o]))}
+                    style={{
+                      animationDelay: `${answersAt + Math.min(i, 15) * 32}ms`,
+                    }}
                     className={cn(
                       "relative flex min-h-[84px] flex-col justify-center gap-1.5 rounded-2xl border px-4 py-3.5 text-left text-[15.5px] font-medium leading-snug",
-                      "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-rise_.4s_ease-out_both] motion-safe:hover:-translate-y-0.5 disabled:pointer-events-none",
+                      "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.97] disabled:pointer-events-none",
                       on
                         ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)] shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)]"
                         : "border-[var(--sf-line)] bg-white hover:border-[var(--sf-line-strong)] hover:shadow-[0_10px_24px_-16px_rgb(48_36_20/0.45)]",
@@ -221,16 +284,36 @@ export function QuestionScreen({
               </p>
             ) : (
               <>
-                {multi && (
+                {(cards || step.options.length > 0) && (
                   <Button
                     size="lg"
-                    disabled={!ticked.length}
-                    onClick={() => send({ message: ticked.join(", ") })}
+                    disabled={!canContinue}
+                    onClick={proceed}
                     className="rounded-full px-6"
                   >
-                    {ticked.length
-                      ? `Continue with ${ticked.length}`
-                      : "Pick as many as fit"}
+                    {review
+                      ? review.status === "waiting"
+                        ? "Continue"
+                        : "Looks good, continue"
+                      : !canContinue
+                        ? multi
+                          ? "Pick as many as fit"
+                          : "Pick one to continue"
+                        : multi && ticked.length > 1
+                          ? `Continue with ${ticked.length}`
+                          : "Continue"}
+                  </Button>
+                )}
+                {review?.status === "ready" && (
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    onClick={() =>
+                      send({ message: "Draft a different version, please." })
+                    }
+                    className="rounded-full"
+                  >
+                    Try another version
                   </Button>
                 )}
                 {multi && ticked.length < step.options.length && (
@@ -261,6 +344,21 @@ export function QuestionScreen({
                     You decide
                   </Button>
                 )}
+                {step.skip && step.field && (
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    onClick={() =>
+                      send({
+                        message: step.skip as string,
+                        choice: { field: step.field as string, value: SKIP },
+                      })
+                    }
+                    className="rounded-full text-[var(--sf-graphite)]"
+                  >
+                    {step.skip}
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -276,7 +374,11 @@ export function QuestionScreen({
           }
           sending={sending}
           placeholder={
-            live ? "Or type your own answer…" : "Or type a new answer…"
+            review
+              ? "Or tell me what to change, like “make it six weeks”…"
+              : live
+                ? "Or type your own answer…"
+                : "Or type a new answer…"
           }
           onSubmit={(text, spoken) => send({ message: text, spoken })}
         />

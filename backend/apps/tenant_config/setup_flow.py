@@ -403,18 +403,28 @@ MAX_PRICE = 9999
 
 # A coach who sells but left the price to us gets a sensible paid default.
 DEFAULT_COURSE_PRICE = 49.0
+DEFAULT_EVENT_PRICE = 15.0
 
 
-def _brief_price(tenant) -> float | None:
-    """The course price the brief commits to, or None when the brief says
-    nothing about selling (the model's own draft then stands)."""
+def brief_price(answers: dict, kind: str) -> float | None:
+    """What the brief commits a course or class to cost: a price, 0.0 when
+    it is not sold on its own (free, or covered by the membership), or None
+    when the brief says nothing about selling (the model's draft stands)."""
+    ways = answers.get("payments")
+    if ways is None:  # an interview from before the payments question
+        if kind != "course" or answers.get("sells") != "paid":
+            return None
+        ways = ["course"]
+    if kind not in ways:
+        return 0.0
+    price = answers.get(f"{kind}_price")
+    return float(price) if price else DEFAULT_COURSE_PRICE if kind == "course" else DEFAULT_EVENT_PRICE
+
+
+def _brief_price(tenant, kind: str = "course") -> float | None:
     from .interview_brief import answers_of
 
-    answers = answers_of(tenant)
-    if answers.get("sells") != "paid":
-        return None
-    price = answers.get("course_price")
-    return float(price) if price else DEFAULT_COURSE_PRICE
+    return brief_price(answers_of(tenant), kind)
 
 
 def _may_price(tenant) -> bool:
@@ -462,8 +472,8 @@ def _create(tenant, user, config, kind: str, draft):
     if kind == "course":
         # What the coach told the interview wins over the model's guess.
         stated = _brief_price(tenant)
-        if stated:
-            draft = draft.model_copy(update={"pricing_type": "paid", "price": stated})
+        if stated is not None:
+            draft = draft.model_copy(update={"pricing_type": "paid" if stated else "free", "price": stated})
         paid = _may_price(tenant) and draft.pricing_type == "paid" and draft.price > 0
         params = {
             "title": draft.title[:200],
@@ -477,11 +487,12 @@ def _create(tenant, user, config, kind: str, draft):
         }
         return content.create_course(user, params)["id"]
     if kind == "event":
+        price = (_brief_price(tenant, "event") or 0) if _may_price(tenant) else 0
         params = {
             "title": draft.title[:200],
             "description": draft.description,
-            "price": "0.00",
-            "pricing_type": "free",
+            "price": f"{min(price, MAX_PRICE):.2f}",
+            "pricing_type": "paid" if price > 0 else "free",
             "scheduled_at": _event_time(draft, ZoneInfo(config.timezone or "UTC")).isoformat(),
         }
         if draft.event_kind == "onsite":
@@ -562,8 +573,8 @@ def fallback_draft(kind: str, answers: dict):
     teaches = answers.get("teaches") or "my practice"
     offers = answers.get("offers") or []
     if kind == "course":
-        paid = answers.get("sells") == "paid"
-        price = (answers.get("course_price") or DEFAULT_COURSE_PRICE) if paid else 0
+        price = brief_price(answers, "course") or 0
+        paid = price > 0
         return CourseDraft(
             title=str(answers.get("course_topic") or f"Getting started with {teaches}")[:80],
             description=f"A first course for {answers.get('audience') or 'new students'}.",

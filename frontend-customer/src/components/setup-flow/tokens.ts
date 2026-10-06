@@ -49,13 +49,19 @@ export const SHELL_TOKENS = {
 /** Shell-scoped CSS: keyframes (used only behind `motion-safe:`) and the
  * disabled primary button — a soft ink tint that reads as "not yet", not
  * the shared button's 50%-opacity grey. A loading button stays full ink
- * (its spinner already says busy). */
+ * (its spinner already says busy). `--sf-spring` is a damped spring
+ * (about 9% overshoot) sampled into a linear() easing: the motion-graphics
+ * feel of each slide, with no animation library. */
 export const SHELL_CSS = `
+.sf-shell { --sf-spring: linear(0, 0.07, 0.232, 0.431, 0.627, 0.795, 0.924, 1.014, 1.067, 1.091, 1.094, 1.084, 1.067, 1.048, 1.03, 1.015, 1.004, 0.997, 0.993, 0.991, 0.991, 0.993, 0.996, 0.999, 1); }
 @keyframes sf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes sf-word { from { opacity: 0; transform: translateY(0.45em) scale(0.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes sf-pop { from { opacity: 0; transform: translateY(18px) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes sf-glow { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 @keyframes sf-ring { 0% { opacity: .55; transform: scale(.55); } 100% { opacity: 0; transform: scale(2.6); } }
 @keyframes sf-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
-@keyframes sf-slide-next { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
-@keyframes sf-slide-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes sf-slide-next { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+@keyframes sf-slide-back { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: none; } }
 .sf-shell [data-slot="button"].bg-primary:disabled { opacity: 1; background: rgb(34 33 31 / 0.09); color: rgb(34 33 31 / 0.38); box-shadow: none; }
 .sf-shell [data-slot="button"].bg-primary[aria-busy="true"] { background: var(--sf-ink); color: var(--sf-paper); }
 `;

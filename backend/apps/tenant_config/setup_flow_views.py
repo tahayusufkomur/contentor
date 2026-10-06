@@ -113,6 +113,22 @@ def setup_flow_logos(request):
     return Response(interview_milestones.logo_cards(tenant, answers_of(tenant), page))
 
 
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def setup_flow_cover(request):
+    """Another cover for the interview's first course or class."""
+    if (over := _setup_over()) is not None:
+        return over
+    data = _data(request)
+    try:
+        card = interview_milestones.set_cover(
+            connection.tenant, str(data.get("kind") or ""), str(data.get("asset") or "")
+        )
+    except interview_milestones.ChoiceError as exc:
+        return Response({"detail": str(exc)}, status=400)
+    return Response(card)
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsCoachOrOwner])
 def setup_flow_golive(request):

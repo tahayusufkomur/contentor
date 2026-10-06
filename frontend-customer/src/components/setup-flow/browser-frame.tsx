@@ -21,6 +21,7 @@ export function BrowserFrame({
   device,
   reloadKey,
   onReload,
+  onNavigate,
   overlay,
 }: {
   host: string;
@@ -28,6 +29,8 @@ export function BrowserFrame({
   device: Device;
   reloadKey: number;
   onReload?: () => void;
+  /** A link inside the preview was followed to this site path. */
+  onNavigate?: (path: string) => void;
   /** Rendered instead of the page (composing, retry). */
   overlay?: ReactNode;
 }) {
@@ -104,6 +107,7 @@ export function BrowserFrame({
                 width={virtualW}
                 height={box.h / scale}
                 scale={scale}
+                onNavigate={onNavigate}
               />
             ))}
         </div>
@@ -117,11 +121,13 @@ function LivePage({
   width,
   height,
   scale,
+  onNavigate,
 }: {
   src: string;
   width: number;
   height: number;
   scale: number;
+  onNavigate?: (path: string) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
   return (
@@ -131,15 +137,24 @@ function LivePage({
         src={src}
         title="Site preview"
         onLoad={(e) => {
-          // The preview is a picture of one page: links and forms inside it
-          // stay put (a navigated frame would also lose ?embed=1).
-          const doc = e.currentTarget.contentDocument;
+          // Links to the coach's own pages open in the preview (re-framed
+          // with ?embed=1, which in-frame navigation would drop); in-page
+          // anchors scroll; anything else and forms stay put.
+          const frame = e.currentTarget;
+          const doc = frame.contentDocument;
           doc?.addEventListener(
             "click",
             (ev) => {
-              if ((ev.target as Element | null)?.closest?.("a[href]")) {
-                ev.preventDefault();
+              const a = (ev.target as Element | null)?.closest?.("a[href]");
+              if (!a) return;
+              const here = frame.contentWindow?.location;
+              const to = new URL(a.getAttribute("href") ?? "", here?.href);
+              if (here && to.origin === here.origin) {
+                if (to.pathname === here.pathname && to.hash) return;
+                to.searchParams.delete("embed");
+                onNavigate?.(`${to.pathname}${to.search}`);
               }
+              ev.preventDefault();
             },
             true,
           );

@@ -518,3 +518,39 @@ def test_provisioning_styled_path(restore_public, monkeypatch):
     finally:
         connection.set_schema_to_public()
         Tenant.objects.get(pk=tenant.pk).delete(force_drop=True)
+
+
+def _remote(asset_id, text):
+    return curated_client.RemoteImage(
+        asset_id=asset_id, title=text, description=text, tags=[], width=800, height=600, preview_url="", web_url=""
+    )
+
+
+def test_a_boxing_coach_never_gets_a_pole_dance_photo(monkeypatch):
+    results = [
+        _remote("pole", "woman on a dance pole in a studio"),
+        _remote("gym", "coach holding pads in a gym"),
+        _remote("box", "boxer wrapping hands, boxing gym"),
+    ]
+    monkeypatch.setattr(
+        sc.curated_client, "search", lambda *a, **k: curated_client.SearchPage(results=results, page=1, has_next=False)
+    )
+    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
+    image, _ = sc._find_photo(["boxing coach"], "landscape", set(), ctx)
+    assert image.asset_id == "box"  # names the subject: first
+    image, _ = sc._find_photo(["boxing coach"], "landscape", {"box"}, ctx)
+    assert image.asset_id == "gym"  # neutral is fine; the pole photo never is
+    image, _ = sc._find_photo(["boxing coach"], "landscape", {"box", "gym"}, ctx)
+    assert image.asset_id in {"box", "gym"}
+
+
+def test_subject_is_what_the_coach_teaches_when_the_niche_is_unknown():
+    from apps.tenant_config import interview_brief
+
+    assert interview_brief.subject_of({"niche": "fitness", "teaches": "Boxing for women"}) == "boxing"
+    assert interview_brief.subject_of({"niche": "pole_dance", "teaches": "Pole dance"}) == "pole dance"
+    assert interview_brief.subject_of({"niche": "general", "teaches": "Life coaching"}) == "life coaching"
+    assert interview_brief.subject_of({"niche": "yoga"}) == "yoga"
+    assert interview_brief.niche_for("Boxing for beginners") == "fitness"  # its looks and copy
+    assert sc._ctx("general", "Iron Fist", "", "boxing")["topic"] == "boxing"

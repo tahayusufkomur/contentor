@@ -5,7 +5,8 @@ said into stored values, what is still missing, and each field's pre-written
 fallback question. Values live in ``Tenant.wizard_state["answers"]`` beside
 the legacy keys every brief consumer already reads (niche, description,
 goals, style, logo) — ``apply_fact`` keeps those in sync.
-``answers["delegated"]`` lists fields the coach left to us ("you decide").
+``answers["delegated"]`` lists fields the coach left to us ("you decide");
+``answers["skipped"]`` the sections (course, event, post) they skipped.
 """
 
 from __future__ import annotations
@@ -17,16 +18,18 @@ from django.db import transaction
 from django.utils import timezone
 
 DELEGATE = "__delegate__"
+SKIP = "__skip__"
 TEXT_MAX = 500
-CARD_KINDS = ("style", "logo")
-OFFERS = ("course", "live", "onsite", "articles", "community", "memberships")
+# Answered by tapping a card (applied by code, asked in order): the look,
+# the logo, and the review screens of the first course and class.
+CARD_KINDS = ("style", "logo", "course", "event")
+OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
     "course": "sell_courses",
     "live": "run_live_classes",
     "onsite": "in_person_events",
     "articles": "write_blog",
     "community": "build_community",
-    "memberships": "sell_courses",
 }
 _OFFER_WORDS = (
     ("course", r"course|program"),
@@ -34,8 +37,18 @@ _OFFER_WORDS = (
     ("onsite", r"in[- ]person|studio|on[- ]?site|retreat|workshop"),
     ("articles", r"article|blog|writ"),
     ("community", r"community|group|circle"),
-    ("memberships", r"member|subscription"),
 )
+# How students pay: any number of the paid ways, or free for now.
+PAYMENTS = ("course", "membership", "event", "free")
+PAID_WAYS = ("course", "membership", "event")
+_PAYMENT_WORDS = (
+    ("course", r"course|one[- ]time|once"),
+    ("membership", r"member|subscri|monthly"),
+    ("event", r"\bclass|event|session|ticket|drop[- ]in"),
+    ("free", r"free"),
+)
+# Sections a coach can skip, and what the skip button says.
+SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
 TONES = ("warm", "energetic", "calm", "expert", "playful")
 # Lucide icon ids a tile may show (frontend: src/lib/option-icons.ts mirrors
 # this list). The model picks one per AI-written option; fixed fields carry
@@ -63,7 +76,11 @@ _NICHE_WORDS = (
     ("makeup", r"make[- ]?up"),
     ("pilates", r"pilates"),
     ("yoga", r"yoga"),
-    ("fitness", r"fitness|strength|hiit|workout|gym|personal train|running"),
+    (
+        "fitness",
+        r"fitness|strength|hiit|workout|gym|personal train|running"
+        r"|\bbox|kickbox|martial|\bmma\b|muay|crossfit|bootcamp|calisthenic",
+    ),
 )
 
 
@@ -73,9 +90,10 @@ class Field:
     label: str
     question: str = ""
     options: tuple[str, ...] = ()
-    kind: str = "text"  # text | offers | sells | price | tone | style | logo
+    kind: str = "text"  # text | offers | payments | price | tone | style | logo | course | event
     needs: tuple[str, ...] = ()  # required only when one of these offers is chosen
-    paid_only: bool = False  # ...and only when the coach sells
+    pays: tuple[str, ...] = ()  # ...and only when students pay in one of these ways
+    group: str = ""  # the skippable section it belongs to (course | event | post)
     multi: bool = False  # several options can be ticked at once
     icons: tuple[str, ...] = ()  # one lucide id per option (fixed-option fields)
     hints: tuple[str, ...] = ()  # one short line per option, shown under it
@@ -135,12 +153,12 @@ FIELDS: tuple[Field, ...] = (
     Field("outcome", "What students get", "What changes for a student after working with you?", multi=True),
     Field(
         "offers",
-        "What they offer",
-        "Besides your first course, what else would you like to offer?",
-        ("Courses", "Live online classes", "In-person sessions", "Articles", "Community", "Memberships"),
+        "How they teach",
+        "How will you teach your students?",
+        ("Courses", "Live online classes", "In-person sessions", "Articles", "Community"),
         kind="offers",
         multi=True,
-        icons=("book-open", "video", "map-pin", "newspaper", "users", "badge-check"),
+        icons=("book-open", "video", "map-pin", "newspaper", "users"),
     ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
     Field(
@@ -171,45 +189,47 @@ FIELDS: tuple[Field, ...] = (
         ),
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo"),
-    Field("course_topic", "First course topic", "What's your first course about?"),
     Field(
-        "course_format",
-        "First course format",
-        "How is it structured?",
-        ("4 weeks, one lesson a week", "A weekend intensive", "Self-paced lessons", "Short daily practices"),
-        icons=("calendar-days", "ticket", "infinity", "sunrise"),
+        "payments",
+        "How students pay",
+        "How will students pay you?",
+        ("One-time course purchases", "Monthly membership", "Pay per class or event", "Free for now"),
+        kind="payments",
+        multi=True,
+        icons=("book-open", "repeat", "ticket", "gift"),
         hints=(
-            "A weekly rhythm that's easy to keep",
-            "Two days, all in",
-            "Start any time, go at their pace",
-            "Ten minutes a day",
+            "Students buy each course once",
+            "One monthly price for everything",
+            "Students pay for each live class",
+            "Everything free now, prices later",
         ),
     ),
     Field(
-        "course_level",
-        "First course level",
-        "Who is this course for?",
-        ("Beginners", "Intermediate", "Advanced", "All levels"),
-        icons=("sprout", "trees", "mountain", "users"),
+        "membership_price",
+        "Monthly membership price",
+        "What should the monthly membership cost?",
+        ("9", "15", "19", "29", "39", "49", "79", "99"),
+        kind="price",
+        pays=("membership",),
     ),
-    Field(
-        "sells",
-        "Free or paid",
-        "Will students pay, or is everything free to start?",
-        ("Students pay", "Free to start"),
-        kind="sells",
-        icons=("coins", "gift"),
-        hints=("Set a price; students pay by card", "Everything free now, prices later"),
-    ),
+    Field("course_topic", "First course topic", "What's your first course about?", group="course"),
     Field(
         "course_price",
         "First course price",
         "What should the course cost?",
-        ("19", "29", "49", "99", "149"),
+        ("19", "29", "39", "49", "79", "99", "149", "199"),
         kind="price",
-        paid_only=True,
+        pays=("course",),
+        group="course",
     ),
-    Field("live_topic", "Live class topic", "What will your live class be about?", needs=("live", "onsite")),
+    Field("course_review", "First course", "Here's your first course. Happy with it?", kind="course", group="course"),
+    Field(
+        "live_topic",
+        "Live class topic",
+        "What will your first class be about?",
+        needs=("live", "onsite"),
+        group="event",
+    ),
     Field(
         "live_when",
         "Live class schedule",
@@ -218,8 +238,33 @@ FIELDS: tuple[Field, ...] = (
         needs=("live", "onsite"),
         multi=True,
         icons=("sunrise", "coffee", "sunset", "calendar", "sun"),
+        group="event",
     ),
-    Field("article_topic", "First article topic", "What should your first article be about?", needs=("articles",)),
+    Field(
+        "event_price",
+        "Price per class",
+        "What should one class cost?",
+        ("5", "10", "15", "20", "25", "35", "50", "75"),
+        kind="price",
+        needs=("live", "onsite"),
+        pays=("event",),
+        group="event",
+    ),
+    Field(
+        "event_review",
+        "First class",
+        "Here's your first class. Happy with it?",
+        kind="event",
+        needs=("live", "onsite"),
+        group="event",
+    ),
+    Field(
+        "article_topic",
+        "First article topic",
+        "What should your first article be about?",
+        needs=("articles",),
+        group="post",
+    ),
     Field(
         "contact",
         "How students reach them",
@@ -234,7 +279,7 @@ FIELDS: tuple[Field, ...] = (
 )
 FIELD_BY_ID = {f.id: f for f in FIELDS}
 # Fields that ride in `description`, or are applied as config, not as copy facts.
-_NOT_FACTS = {"teaches", "pitch", "site_style", "site_logo"}
+_NOT_FACTS = {"teaches", "pitch", "site_style", "site_logo", "course_review", "event_review"}
 
 
 def _text(raw) -> str | None:
@@ -248,6 +293,18 @@ def parse_offers(raw) -> list[str]:
     text = str(raw or "").lower()
     found = {offer for offer, pattern in _OFFER_WORDS if re.search(pattern, text)}
     return [o for o in OFFERS if o in found]
+
+
+def parse_payments(raw) -> list[str]:
+    if isinstance(raw, list | tuple):
+        raw = " ".join(map(str, raw))
+    text = str(raw or "").lower()
+    found = {way for way, pattern in _PAYMENT_WORDS if re.search(pattern, text)}
+    if not found and re.search(r"\bpa(y|id)", text):
+        found = {"course"}
+    if found & set(PAID_WAYS):
+        found.discard("free")
+    return [w for w in PAYMENTS if w in found]
 
 
 def parse_price(raw) -> float | None:
@@ -265,17 +322,35 @@ def coerce(field_id: str, raw):
         return None
     if field.kind == "offers":
         return parse_offers(raw) or None
-    if field.kind == "sells":
-        text = str(raw or "").lower().strip()
-        if not text:
-            return None
-        return "free" if "free" in text and "pay" not in text else "paid"
+    if field.kind == "payments":
+        return parse_payments(raw) or None
     if field.kind == "price":
         return parse_price(raw)
     if field.kind == "tone":
         text = str(raw or "").lower()
         return ", ".join(t for t in TONES if t in text) or _text(raw)
     return _text(raw)
+
+
+# Not what is taught: who it is for, and filler.
+_STOP_WORDS = frozenset(
+    "a an and the for with of to in on at my your our i we teach teaching lessons classes class "  # noqa: SIM905
+    "beginners beginner women men kids children adults seniors people everyone busy professionals amateur "
+    "advanced intermediate all levels level online".split()
+)
+
+
+def subject_of(answers: dict) -> str:
+    """What the coach teaches as a short visual subject ("boxing", "pole
+    dance") for photo search and photo matching: their own first words, or
+    the niche's when they name it ("yoga"). A niche alone would search a
+    boxing coach's photos as "fitness", and "general" as "coaching"."""
+    niche = str(answers.get("niche") or "general").replace("_", " ")
+    teaches = str(answers.get("teaches") or "").lower()
+    if niche != "general" and niche in teaches:
+        return niche
+    words = [w for w in re.findall(r"[a-z]+", teaches) if w not in _STOP_WORDS]
+    return " ".join(words[:2]) or ("" if niche == "general" else niche)
 
 
 def niche_for(text) -> str:
@@ -294,6 +369,8 @@ def _sync_legacy(answers: dict, field_id: str) -> None:
         offers = ["course", *[o for o in answers["offers"] if o != "course"]]
         answers["offers"] = [o for o in OFFERS if o in offers]
         answers["goals"] = sorted({OFFER_GOALS[o] for o in answers["offers"]})
+    if field_id == "payments":
+        answers["sells"] = "paid" if set(answers["payments"]) & set(PAID_WAYS) else "free"
 
 
 def apply_fact(answers: dict, field_id: str, raw) -> bool:
@@ -316,10 +393,41 @@ def delegate(answers: dict, field_id: str) -> bool:
     return True
 
 
+def skip(answers: dict, group: str) -> bool:
+    if group not in SKIP_LABELS:
+        return False
+    answers["skipped"] = sorted({*(answers.get("skipped") or []), group})
+    return True
+
+
 def required(answers: dict) -> list[Field]:
     offers = set(answers.get("offers") or [])
-    paid = answers.get("sells") == "paid"
-    return [f for f in FIELDS if (not f.needs or offers.intersection(f.needs)) and (not f.paid_only or paid)]
+    pays = set(answers.get("payments") or [])
+    skipped = set(answers.get("skipped") or [])
+    return [
+        f
+        for f in FIELDS
+        if (not f.needs or offers.intersection(f.needs))
+        and (not f.pays or pays.intersection(f.pays))
+        and f.group not in skipped
+    ]
+
+
+def options_for(field: Field, answers: dict) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    """A fixed field's (options, icons, hints) for this coach: paying per
+    class is only offered to a coach who runs classes."""
+    rows = list(
+        zip(
+            field.options,
+            field.icons or ("",) * len(field.options),
+            field.hints or ("",) * len(field.options),
+            strict=False,
+        )
+    )
+    if field.kind == "payments" and not {"live", "onsite"} & set(answers.get("offers") or []):
+        rows = [r for r in rows if r[0] != "Pay per class or event"]
+    options, icons, hints = (tuple(col) for col in zip(*rows, strict=True)) if rows else ((), (), ())
+    return options, icons if field.icons else (), hints if field.hints else ()
 
 
 def is_settled(answers: dict, field_id: str) -> bool:
@@ -345,7 +453,7 @@ def composer_facts(answers: dict) -> list[dict]:
         value = answers.get(field.id)
         if field.id in _NOT_FACTS or value in (None, "", []):
             continue
-        if field.kind == "offers":
+        if field.kind in ("offers", "payments"):
             value = ", ".join(value)
         elif field.kind == "price":
             value = "free" if value == 0 else f"{value:g}"
@@ -364,7 +472,7 @@ def migrate_legacy(answers: dict) -> dict:
         out["pitch"] = str(out["description"])[:TEXT_MAX]
     goals = set(out.get("goals") or [])
     if "offers" not in out and goals:
-        out["offers"] = [o for o in OFFERS if o == "course" or OFFER_GOALS[o] in goals and o != "memberships"]
+        out["offers"] = [o for o in OFFERS if o == "course" or OFFER_GOALS[o] in goals]
     if "site_style" not in out and out.get("style"):
         out["site_style"] = out["style"]
     logo = out.get("logo") or {}

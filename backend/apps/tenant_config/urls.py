@@ -17,6 +17,7 @@ from .assistant_views import (
 from .demo_content import demo_content, erase_demo_content
 from .setup_flow_views import (
     setup_flow_build_page,
+    setup_flow_cover,
     setup_flow_draft,
     setup_flow_golive,
     setup_flow_logos,
@@ -48,6 +49,7 @@ urlpatterns = [
     path("setup-flow/turn/", setup_flow_turn, name="setup-flow-turn"),
     path("setup-flow/logos/", setup_flow_logos, name="setup-flow-logos"),
     path("setup-flow/golive/", setup_flow_golive, name="setup-flow-golive"),
+    path("setup-flow/cover/", setup_flow_cover, name="setup-flow-cover"),
     path("demo-content/", demo_content, name="demo-content"),
     path("demo-content/erase/", erase_demo_content, name="demo-content-erase"),
     path("help-bot/chat/", help_bot_chat, name="help-bot-chat"),

@@ -42,14 +42,17 @@ def _give_cover(item):
     from django.db import connection
 
     from apps.core.curated_images.cache import auto_cover
-    from apps.core.onboarding.ai_curate import CoachBrief, photo_query
+    from apps.core.onboarding.ai_curate import CoachBrief, allowed_disciplines, off_topic, photo_query
 
     if item.thumbnail_id or item.thumbnail_url:
         return
     # Niche + title, then the niche alone: the catalog matches short visual
-    # queries far better than a bare title.
+    # queries far better than a bare title. Never another discipline's photo.
     brief = CoachBrief.from_tenant(connection.tenant)
-    item.thumbnail = auto_cover(photo_query(brief, item.title), photo_query(brief))
+    allowed = allowed_disciplines(brief.subject, brief.description, item.title)
+    item.thumbnail = auto_cover(
+        photo_query(brief, item.title), photo_query(brief), keep=lambda image: not off_topic(image, allowed)
+    )
     if item.thumbnail is not None:
         item.save(update_fields=["thumbnail"])
 

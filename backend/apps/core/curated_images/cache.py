@@ -128,7 +128,7 @@ def cache_remote_image(image: RemoteImage):
     )
 
 
-def auto_cover(*queries: str):
+def auto_cover(*queries: str, keep=None):
     """A wide catalog photo for something automation just created without one
     (a seeded draft course, a copilot-created course or event), as a tenant
     media.Photo — or None. Fail-soft: content creation must never fail because
@@ -141,6 +141,7 @@ def auto_cover(*queries: str):
 
     Prefers a match this tenant has not used yet, so three seeded courses whose
     titles the catalog has no words for don't all get the same fallback photo.
+    ``keep`` filters results (e.g. no photo of another discipline).
     """
     from apps.media.models import Photo
 
@@ -149,7 +150,7 @@ def auto_cover(*queries: str):
     try:
         results = []
         for query in dict.fromkeys((*queries, "")):  # de-duplicated, in order
-            results = client.search(query, orientation=client.WIDE).results
+            results = [i for i in client.search(query, orientation=client.WIDE).results if keep is None or keep(i)]
             if results:
                 break
         else:

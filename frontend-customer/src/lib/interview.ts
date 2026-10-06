@@ -144,6 +144,7 @@ export function questionSteps(
           multi,
           icons,
           hints,
+          skip,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -155,6 +156,7 @@ export function questionSteps(
           multi,
           icons,
           hints,
+          skip,
           answer,
         });
         onScreen = e.field;

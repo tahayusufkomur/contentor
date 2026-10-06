@@ -50,12 +50,19 @@ test("signup lands in /setup and the interview ends in a published site", async 
 
   const guide = page.getByRole("region", { name: "Your setup guide" });
   const decide = guide.getByRole("button", { name: "You decide", exact: true });
+  // A drafted course or class, or a class waiting for a plan with live classes.
+  const looksGood = guide.getByRole("button", { name: /^(Looks good, continue|Continue)$/ });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
   for (let i = 0; i < 40; i++) {
-    // Wait for the turn in flight to finish: either the next question's
-    // "You decide" or the go-live button shows up.
-    await expect(decide.or(goLive)).toBeVisible({ timeout: 300_000 });
+    // Wait for the turn in flight to finish: the next question's "You
+    // decide", a drafted course or class to approve, or go-live.
+    await expect(decide.or(looksGood).or(goLive)).toBeVisible({ timeout: 300_000 });
     if (await goLive.isVisible()) break;
+    if (await looksGood.isVisible()) {
+      // Enabled once the draft is ready (it drafts in the background).
+      await looksGood.click({ timeout: 300_000 });
+      continue;
+    }
     await decide.click();
   }
   await expect(goLive).toBeVisible({ timeout: 600_000 });

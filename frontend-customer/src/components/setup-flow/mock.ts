@@ -173,6 +173,7 @@ export const mockSetupFlowApi: SetupFlowApi = {
     };
   },
   logos: async (page) => ({ kind: "logo", page, more: false, options: [] }),
+  cover: async (kind) => ({ kind, status: "ready", item: null }),
   golive: async () => golive(),
   goliveAction: async (action) => {
     if (action === "publish") s.published = true;

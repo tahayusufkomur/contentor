@@ -23,6 +23,7 @@ from apps.core import ai as core_ai
 @dataclass(frozen=True)
 class CoachBrief:
     niche: str = "general"
+    subject: str = ""  # what they teach, in a few words ("boxing")
     description: str = ""
     followups: tuple[tuple[str, str], ...] = ()
     goals: tuple[str, ...] = ()
@@ -43,6 +44,7 @@ class CoachBrief:
         ) + tuple((f["q"], f["a"]) for f in interview_brief.composer_facts(answers))
         return cls(
             niche=answers.get("niche") or "general",
+            subject=interview_brief.subject_of(answers),
             description=str(answers.get("description") or ""),
             followups=followups,
             goals=tuple(answers.get("goals") or ()),
@@ -62,6 +64,7 @@ def brief_block(brief: CoachBrief) -> str:
         "<coach_brief>",
         f"Brand: {brief.brand_name or 'a new coaching brand'}",
         f"Niche: {brief.niche}",
+        f"Teaches: {brief.subject or '-'}",
         f"In their own words: {brief.description or '-'}",
     ]
     for q, a in brief.followups:
@@ -80,7 +83,7 @@ def tokens(text: str) -> set[str]:
 
 
 def brief_tokens(brief: CoachBrief) -> set[str]:
-    parts = [brief.niche.replace("_", " "), brief.description]
+    parts = [brief.niche.replace("_", " "), brief.subject, brief.description]
     parts += [f"{q} {a}" for q, a in brief.followups]
     return tokens(" ".join(parts))
 
@@ -118,8 +121,42 @@ def photo_query(brief: CoachBrief, extra: str = "") -> str:
     ("I will teach online - on site pole dance classes") describe a service, not
     a photograph. Niche plus the requested style is the visual signal; the
     caller widens (niche alone, then browse) when it wants more variety."""
-    words = f"{brief.niche.replace('_', ' ')} {extra or ''}".split()
+    words = f"{brief.subject or brief.niche.replace('_', ' ')} {extra or ''}".split()
     return " ".join(words[:PHOTO_QUERY_MAX_WORDS])
+
+
+# Disciplines a stock photo can show. A photo of one the coach does not
+# teach (pole dance on a boxing coach's site) is never used for them.
+DISCIPLINES = frozenset(
+    "yoga pilates pole belly ballet salsa tango bachata zumba boxing kickboxing karate judo taekwondo jiujitsu "  # noqa: SIM905
+    "wrestling fencing swimming surfing climbing cycling tennis golf football soccer basketball volleyball skiing "
+    "snowboarding equestrian horse makeup cooking baking painting pottery guitar piano violin drums singing chess "
+    "knitting crochet sewing skateboarding gymnastics cheerleading barre".split()
+)
+# Close enough that a photo of one suits the other.
+_KIN = {"yoga": {"pilates"}, "pilates": {"yoga", "barre"}, "barre": {"pilates", "ballet"}, "boxing": {"kickboxing"}}
+
+
+def allowed_disciplines(*texts: str) -> set[str]:
+    """The disciplines the coach's own words name, with their close kin."""
+    named = tokens(" ".join(texts)) & DISCIPLINES
+    return named.union(*(_KIN.get(d, set()) for d in named))
+
+
+def off_topic(image, allowed: set[str]) -> bool:
+    """Whether a catalog image shows a discipline outside ``allowed``."""
+    seen = tokens(f"{image.title} {image.description} {' '.join(image.tags or [])}")
+    return bool((seen & DISCIPLINES) - allowed)
+
+
+def on_topic_first(images, subject: str, allowed: set[str]) -> list:
+    """Off-topic images dropped; those naming the subject first."""
+    want = tokens(subject)
+
+    def names_it(image) -> bool:
+        return bool(want & tokens(f"{image.title} {image.description} {' '.join(image.tags or [])}"))
+
+    return sorted((i for i in images if not off_topic(i, allowed)), key=lambda i: not names_it(i))
 
 
 def brief_with_turn_style(tenant, turn_description: str) -> CoachBrief:

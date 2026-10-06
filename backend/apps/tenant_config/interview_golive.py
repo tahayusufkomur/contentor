@@ -78,17 +78,27 @@ def publish(tenant) -> None:
 def make_free(tenant) -> None:
     """The coach declined the plan or Stripe: everything free, live classes
     (which need a paid plan) dropped from the offer for now."""
+    from apps.billing.models import SubscriptionPlan
     from apps.courses.models import Course
+    from apps.live.models import LiveClass, OnsiteEvent
 
     answers = brief.answers_of(tenant)
     base = dict(answers)
     answers["sells"] = "free"
-    answers.pop("course_price", None)
+    answers["payments"] = ["free"]
+    for key in ("course_price", "membership_price", "event_price"):
+        answers.pop(key, None)
     if not _live_entitled(tenant) and answers.get("offers"):
         brief.apply_fact(
             answers, "offers", ", ".join(o for o in answers["offers"] if o not in ("live", "onsite")) or "course"
         )
     brief.save_answers(tenant, answers, base=base)
-    draft = ((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("course")
-    if draft:
-        Course.objects.filter(pk=draft, pricing_type="paid").update(pricing_type="free", price=0)
+    drafts = (TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}
+    if drafts.get("course"):
+        Course.objects.filter(pk=drafts["course"], pricing_type="paid").update(pricing_type="free", price=0)
+    event = drafts.get("event") or {}
+    if event.get("id"):
+        model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass
+        model.objects.filter(pk=event["id"], pricing_type="paid").update(pricing_type="free", price=0)
+    if drafts.get("plan"):
+        SubscriptionPlan.objects.filter(pk=drafts["plan"]).update(is_active=False)

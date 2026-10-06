@@ -11,18 +11,41 @@ import { getSiteStyle, styleScope } from "@/lib/site-styles";
 // preview frame scales the live page.
 const PAGE_W = 1180;
 const FAMILIES: FamilyId[] = ["hero", "benefits", "courseShowcase"];
+const SAMPLE_PHOTO = /^https:\/\/pix4less\.com\/media\/previews\//;
+
+/** ``value`` with every sample photo swapped for the coach's own photos, in
+ * turn — so a boxing coach previews boxing, not the yoga samples. */
+function withPhotos<T>(value: T, photos: string[], next = { i: 0 }): T {
+  if (!photos.length) return value;
+  if (typeof value === "string")
+    return (
+      SAMPLE_PHOTO.test(value) ? photos[next.i++ % photos.length] : value
+    ) as T;
+  if (Array.isArray(value))
+    return value.map((v) => withPhotos(v, photos, next)) as T;
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, withPhotos(v, photos, next)]),
+    ) as T;
+  return value;
+}
 
 /** One look as the top of a real home page in that style and colourway: the
- * style's own section layouts with fixture content and the coach's brand as
- * the kicker, scaled into the tile. A picture, not a page: inert. */
+ * style's own section layouts with sample content, the coach's brand as the
+ * kicker, their pitch as the headline and photos of what they teach, scaled
+ * into the tile. A picture, not a page: inert. */
 export function LookTile({
   styleId,
   paletteId,
   brandName,
+  headline,
+  photos = [],
 }: {
   styleId: string;
   paletteId?: string;
   brandName: string;
+  headline?: string;
+  photos?: string[];
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [w, setW] = useState(0);
@@ -52,17 +75,20 @@ export function LookTile({
     >
       {w > 0 && (
         <div style={page}>
-          {FAMILIES.map((family) => {
+          {FAMILIES.map((family, n) => {
             const variant = style.variants[family]?.[0];
             const Comp = variant ? layouts[family]?.[variant] : undefined;
             if (!Comp || !variant) return null;
-            const block = fixtureBlock(
-              family,
-              `${styleId}.${variant}`,
-              "short",
+            // Each section starts at a different photo, so they don't repeat.
+            const from = { i: n * 2 };
+            const block = withPhotos(
+              fixtureBlock(family, `${styleId}.${variant}`, "short"),
+              photos,
+              from,
             );
             if (family === "hero") {
               if (brandName) block.kicker = brandName;
+              if (headline) block.headline = headline;
               block.ctaHref = "";
               block.secondaryHref = "";
             }
@@ -70,7 +96,7 @@ export function LookTile({
               <Comp
                 key={family}
                 block={block}
-                data={fixtureData(family, "short")}
+                data={withPhotos(fixtureData(family, "short"), photos, from)}
               />
             );
           })}

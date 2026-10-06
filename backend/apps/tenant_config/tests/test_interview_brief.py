@@ -13,9 +13,13 @@ def test_offers_parse_from_words_and_ids():
     assert brief.coerce("offers", "nothing") is None
 
 
-def test_sells_price_and_tone():
-    assert brief.coerce("sells", "Free to start") == "free"
-    assert brief.coerce("sells", "Students pay") == "paid"
+def test_payments_price_and_tone():
+    assert brief.coerce("payments", "One-time course purchases, Monthly membership") == ["course", "membership"]
+    assert brief.coerce("payments", "Pay per class or event") == ["event"]
+    assert brief.coerce("payments", "Free for now") == ["free"]
+    assert brief.coerce("payments", "free trial, then a monthly membership") == ["membership"]
+    assert brief.coerce("payments", "they pay") == ["course"]
+    assert brief.coerce("payments", "no idea") is None
     assert brief.coerce("course_price", "49 dollars") == 49.0
     assert brief.coerce("course_price", "free") == 0.0
     assert brief.coerce("course_price", "no idea") is None
@@ -37,6 +41,37 @@ def test_teaches_syncs_niche_and_description():
     assert answers["description"] == "I help desk workers move without pain"
 
 
+def test_payments_sync_sells():
+    answers = {}
+    brief.apply_fact(answers, "payments", "Monthly membership")
+    assert answers["sells"] == "paid"
+    brief.apply_fact(answers, "payments", "Free for now")
+    assert answers["sells"] == "free"
+
+
+def test_memberships_are_a_payment_not_a_way_to_teach():
+    assert "memberships" not in brief.OFFERS
+    assert "Memberships" not in brief.FIELD_BY_ID["offers"].options
+    assert "Monthly membership" in brief.FIELD_BY_ID["payments"].options
+
+
+def test_paying_per_class_is_offered_only_to_coaches_who_run_classes():
+    field = brief.FIELD_BY_ID["payments"]
+    options, icons, hints = brief.options_for(field, {"offers": ["course"]})
+    assert "Pay per class or event" not in options and len(options) == len(icons) == len(hints) == 3
+    assert "Pay per class or event" in brief.options_for(field, {"offers": ["course", "onsite"]})[0]
+
+
+def test_skipping_a_section_drops_its_questions():
+    answers = {"offers": ["course", "live", "articles"], "payments": ["course", "event"]}
+    ids = lambda: {f.id for f in brief.required(answers)}  # noqa: E731
+    assert {"course_topic", "course_price", "course_review", "live_topic", "event_review", "article_topic"} <= ids()
+    assert brief.skip(answers, "course") and brief.skip(answers, "post")
+    assert not ids() & {"course_topic", "course_price", "course_review", "article_topic"}
+    assert {"live_topic", "event_price", "event_review"} <= ids()
+    assert not brief.skip(answers, "story")
+
+
 def test_offers_sync_goals_and_course_is_always_a_goal():
     answers = {}
     brief.apply_fact(answers, "offers", "live classes and articles")
@@ -56,8 +91,10 @@ def test_required_follows_offers_and_selling():
     base = ids({})
     assert "live_topic" not in base and "article_topic" not in base and "location" not in base
     assert "course_topic" in base  # a first course is always needed to publish
-    assert "course_price" not in base  # only when selling
-    assert "course_price" in ids({"sells": "paid"})
+    assert "course_price" not in base  # only when selling courses one by one
+    assert "course_price" not in ids({"payments": ["membership"]})
+    assert "membership_price" in ids({"payments": ["membership"]})
+    assert "course_price" in ids({"payments": ["course"]})
     assert {"live_topic", "live_when", "location"} <= set(ids({"offers": ["course", "onsite"]}))
 
 
@@ -85,12 +122,13 @@ def test_composer_facts_label_values():
             "teaches": "Yoga",
             "audience": "Desk workers",
             "offers": ["course", "live"],
-            "sells": "paid",
+            "payments": ["course"],
             "course_price": 49.0,
         }
     )
     assert {"q": "Who they teach", "a": "Desk workers"} in facts
-    assert {"q": "What they offer", "a": "course, live"} in facts
+    assert {"q": "How they teach", "a": "course, live"} in facts
+    assert {"q": "How students pay", "a": "course"} in facts
     assert {"q": "First course price", "a": "49"} in facts
     assert not any(f["q"] == "What they teach" for f in facts)  # rides in description
 

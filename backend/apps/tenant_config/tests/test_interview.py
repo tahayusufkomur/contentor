@@ -316,7 +316,7 @@ def test_offers_guide_is_multi_with_the_full_offer_list():
 
     guide = interview.guide_for(brief.FIELD_BY_ID["offers"], options=["AI made-up"])
     assert guide["multi"] is True
-    assert len(guide["options"]) == 6
+    assert len(guide["options"]) == 5
     assert brief.parse_offers(", ".join(guide["options"])) == list(brief.OFFERS)
     assert interview.guide_for(brief.FIELD_BY_ID["outcome"])["multi"] is True  # several outcomes can apply
     assert interview.guide_for(brief.FIELD_BY_ID["pitch"])["multi"] is False
@@ -364,3 +364,56 @@ def test_ai_icons_are_matched_to_options_and_filtered(client, tenant_ctx, quiet)
     assert '"icons"' in quiet.calls[0]["user"]  # the allowlist rides every turn
     flow = TenantConfig.objects.first().setup_flow
     assert interview.interview_state(tenant_ctx, flow)["guide"]["icons"] == {"Parents": "baby"}  # survives a reload
+
+
+BEFORE_COURSE = {
+    "teaches": "Boxing",
+    "audience": "Beginners",
+    "outcome": "Fitter",
+    "offers": ["course"],
+    "pitch": "Boxing for beginners",
+    "difference": "Technique first",
+    "site_style": "journal",
+    "story": "Fought for ten years",
+    "credentials": "Coach level 2",
+    "tone": "energetic",
+    "site_logo": "wordmark",
+    "payments": ["course"],
+}
+
+
+def _set_answers(tenant, answers):
+    Tenant.objects.filter(pk=tenant.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant.refresh_from_db()
+
+
+def test_a_section_is_asked_in_order_whatever_the_ai_prefers(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, dict(BEFORE_COURSE))
+    quiet.reply = interview.InterviewTurn(ack="Ok.", next_field="contact", question="How do they reach you?")
+    guide = client.post(URL, {"message": "fine"}, format="json").json()["guide"]
+    assert guide["field"] == "course_topic"
+    assert guide["skip"] == "No course for now"
+
+
+def test_words_on_a_review_screen_redraft_without_an_ai_turn(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "course_topic": "Footwork", "course_price": 49.0})
+    with mock.patch("apps.tenant_config.interview_milestones.redraft") as redraft:
+        body = client.post(URL, {"message": "Make it six weeks", "field": "course_review"}, format="json").json()
+    assert quiet.calls == []
+    assert redraft.call_args.args[2:] == ("course", "Make it six weeks")
+    assert body["guide"]["field"] == "course_review"
+    assert body["guide"]["ack"] == interview.REDRAFT_ACK
+    assert body["guide"]["can_delegate"] is False
+
+
+def test_a_started_section_finishes_before_other_questions(client, tenant_ctx, quiet):
+    answers = {**BEFORE_COURSE, "payments": ["course", "membership"], "course_topic": "Footwork"}
+    _set_answers(tenant_ctx, answers)
+    quiet.reply = interview.InterviewTurn(
+        facts=[{"field": "course_price", "value": "49"}],
+        ack="Ok.",
+        next_field="membership_price",
+        question="Monthly price?",
+    )
+    guide = client.post(URL, {"message": "49", "field": "course_price"}, format="json").json()["guide"]
+    assert guide["field"] == "course_review"

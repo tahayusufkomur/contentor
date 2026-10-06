@@ -75,6 +75,7 @@ export interface SetupFlowApi {
   draft: (kind: ContentKind, prompt: string) => Promise<DraftResult>;
   turn: (body: TurnRequest) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
+  cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
   goliveAction: (action: "publish" | "make_free") => Promise<GoLiveState>;
 }
@@ -94,6 +95,8 @@ export const setupFlowApi: SetupFlowApi = {
     clientFetch<DraftResult>(`${BASE}/draft/`, post({ kind, prompt })),
   turn: (body) => clientFetch<TurnResponse>(`${BASE}/turn/`, post(body)),
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
+  cover: (kind, asset) =>
+    clientFetch<ReviewCard>(`${BASE}/cover/`, post({ kind, asset })),
   golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
   goliveAction: (action) =>
     clientFetch<GoLiveState>(`${BASE}/golive/`, post({ action })),
@@ -126,6 +129,8 @@ export function embedSrc(path: string): string {
 }
 
 export const DELEGATE = "__delegate__";
+/** Skip a section (the first course, class or article). */
+export const SKIP = "__skip__";
 /** What the coach "says" when they leave a question to the guide. */
 export const DELEGATE_TEXT = "You decide for me.";
 
@@ -146,7 +151,41 @@ export interface LookCards {
   options: LookOption[];
   page?: number;
   more?: boolean;
+  /** Photos of what the coach teaches, shown in the look previews. */
+  photos?: string[];
+  /** The coach's pitch, the previews' headline. */
+  headline?: string;
 }
+
+export type ReviewKind = "course" | "event";
+
+/** The interview's first course or class, as drafted. */
+export interface ReviewItem {
+  title: string;
+  description: string;
+  /** "49.00" when sold on its own, "" when free. */
+  price: string;
+  currency: string;
+  cover_url: string;
+  covers: { value: string; url: string; current: boolean }[];
+  modules?: { title: string; lessons: string[] }[];
+  when?: string;
+  event_kind?: "live" | "onsite";
+  location?: string;
+}
+
+/** The review screen of a draft: still drafting, drafted, or failed. */
+export interface ReviewCard {
+  kind: ReviewKind;
+  /** waiting: a class held until go-live adds live classes to the plan. */
+  status: "building" | "ready" | "failed" | "waiting";
+  item: ReviewItem | null;
+}
+
+export type GuideCards = LookCards | ReviewCard;
+
+export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
+  c?.kind === "course" || c?.kind === "event";
 
 export interface GuideTurn {
   ack: string;
@@ -160,7 +199,9 @@ export interface GuideTurn {
   icons?: Record<string, string>;
   /** One short line per option, shown under it (fixed questions only). */
   hints?: Record<string, string>;
-  cards?: LookCards | null;
+  /** Label of the button that skips this question's section, if it has one. */
+  skip?: string | null;
+  cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;
 }
@@ -193,8 +234,8 @@ export interface InterviewState {
   phase: "interview" | "building" | "golive";
   fired: string[];
   draft_status: Partial<Record<ContentKind, "building" | "ready" | "failed">>;
-  /** Fresh cards for look questions already behind the coach. */
-  cards?: Partial<Record<string, LookCards>>;
+  /** Fresh cards for look and review questions already behind the coach. */
+  cards?: Partial<Record<string, GuideCards>>;
 }
 
 export interface TurnRequest {

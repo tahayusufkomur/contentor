@@ -55,7 +55,9 @@ Do these things:
    other field it clearly also answers, and corrections to earlier answers. Use only field ids
    from "fields". Values
    are short plain text in the coach's own words. Never guess a fact the coach did not state.
-   For "offers" give the matching ids from: course, live, onsite, articles, community, memberships.
+   For "offers" give the matching ids from: course, live, onsite, articles, community.
+   For "payments" give the matching ids from: course (one-time course purchases), membership
+   (a monthly subscription), event (paying per class or event), free.
 2. edit_request: if the message asks you to change or create something on their site (a
    headline, a photo, colours, wording, a page section, a course, an event, a post, the logo,
    the style), restate that request in one clear sentence. Otherwise null. A message that
@@ -68,7 +70,7 @@ Do these things:
    - ack: one short, warm sentence that shows you understood, using their words. No flattery,
      no exclamation marks.
    - question: ONE question, under 25 words, about next_field only, specific to their niche
-     and students. Never ask two things at once.
+     and students. Never ask two things at once, and never list the answers in the question.
    - options: exactly 16 answers they can tap, 1 to 6 words each, specific to them and all
      different. The coach picks from a full screen of tiles, so cover the whole range of what
      someone like them might say, from the most common to the less obvious. Only two
@@ -101,7 +103,14 @@ class InterviewTurn(BaseModel):
     icons: list[str] = []
 
 
-def guide_for(field: brief.Field | None, ack: str = "", question: str = "", options=None, icons=None) -> dict:
+GUIDE_KEYS = ("ack", "question", "options", "field", "can_delegate", "multi", "icons", "hints", "skip")
+REVIEW_KINDS = ("course", "event")
+REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
+
+
+def guide_for(
+    field: brief.Field | None, ack: str = "", question: str = "", options=None, icons=None, answers=None
+) -> dict:
     if field is None:
         return {
             "ack": ack[:300],
@@ -112,21 +121,25 @@ def guide_for(field: brief.Field | None, ack: str = "", question: str = "", opti
             "multi": False,
             "icons": {},
             "hints": {},
+            "skip": None,
         }
-    # The offers chips are the fixed offer list the answer is parsed against; hinted fields keep
-    # their pre-written options so each hint matches its tile.
-    fixed = options is None or field.kind == "offers" or bool(field.hints)
-    chosen = [str(o)[:60] for o in (field.options if fixed else options)][:MAX_OPTIONS]
-    names = field.icons if fixed else [str(i) for i in (icons or [])]
+    # The offers and payments chips are the fixed lists the answer is parsed against; hinted
+    # fields keep their pre-written options so each hint matches its tile.
+    fixed = options is None or field.kind in ("offers", "payments") or bool(field.hints)
+    own, own_icons, own_hints = brief.options_for(field, answers or {})
+    chosen = [str(o)[:60] for o in (own if fixed else options)][:MAX_OPTIONS]
+    names = own_icons if fixed else [str(i) for i in (icons or [])]
     return {
         "ack": ack[:300],
-        "question": (question or field.question)[:300],
+        # A review screen keeps its own words: it shows a draft, not a question.
+        "question": (field.question if field.kind in REVIEW_KINDS else question or field.question)[:300],
         "options": chosen,
         "field": field.id,
-        "can_delegate": True,
+        "can_delegate": field.kind not in REVIEW_KINDS,
         "multi": field.multi,
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
-        "hints": dict(zip(chosen, field.hints, strict=False)) if fixed else {},
+        "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
+        "skip": brief.SKIP_LABELS.get(field.group),
     }
 
 
@@ -143,12 +156,17 @@ def started_note(fired: list[str]) -> str:
     return f"I'm starting on {what} now."
 
 
-def _next_field(missing: list[brief.Field], turn: InterviewTurn | None) -> brief.Field | None:
+def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=None) -> brief.Field | None:
     if not missing:
         return None
     top = missing[0]
-    if top.kind in brief.CARD_KINDS:  # cards are asked by code, in order
+    # Cards are asked by code, in order; so is a section (course, class,
+    # article): once started it runs to its review screen before anything else.
+    if top.kind in brief.CARD_KINDS or top.group:
         return top
+    begun = {f.group for f in brief.FIELDS if f.group and brief.is_settled(answers or {}, f.id)}
+    if section := next((f for f in missing if f.group in begun), None):
+        return section
     if turn:
         chosen = next((f for f in missing if f.id == turn.next_field and f.kind not in brief.CARD_KINDS), None)
         if chosen:
@@ -176,7 +194,7 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
                     "id": f.id,
                     "means": f.label,
                     **({"several": True} if f.multi else {}),
-                    **({"fixed_options": list(f.options)} if f.hints else {}),
+                    **({"fixed_options": list(brief.options_for(f, answers)[0])} if f.hints else {}),
                 }
                 for f in brief.missing(answers)
                 if f.kind not in brief.CARD_KINDS
@@ -248,27 +266,33 @@ def run_turn(
     answering = (choice or {}).get("field") or (field if field in brief.FIELD_BY_ID else asked)
     # interview_state serves the opening question without storing it; keep it
     # in the transcript so the coach can go back to it.
-    opening = guide_for(pending[0], OPENING_ACK) if pending else None
+    opening = guide_for(pending[0], OPENING_ACK, answers=answers) if pending else None
     text = str(message or "").strip()[:MESSAGE_MAX]
 
     if choice:
         milestones.choose(tenant, answers, str(choice.get("field") or ""), choice.get("value"))
-    turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text else None
+    # Words on a review screen are changes to that draft: it is redrafted and
+    # reviewed again (an approved one too, when the coach went back to it).
+    review = milestones.REVIEW_FIELDS.get(answering) if text and not choice else None
+    if review:
+        milestones.redraft(tenant, answers, review, text)
+        answers.pop(answering, None)
+    turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text and not review else None
     if turn:
         if spoken and turn.heard and turn.heard.strip():
             text = turn.heard.strip()[:MESSAGE_MAX]
         for fact in turn.facts:
             brief.apply_fact(answers, fact.field, fact.value)
-    elif text and answering and not choice:
+    elif text and answering and not choice and not review:
         brief.apply_fact(answers, answering, text)  # no AI: the answer is to the question on screen
     brief.save_answers(tenant, answers, base=base)
     answers = brief.answers_of(tenant)  # merged with any concurrent tab
 
-    nxt = _next_field(brief.missing(answers), turn)
+    nxt = _next_field(brief.missing(answers), turn, answers)
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:
-        guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons)
+        guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons, answers)
     else:
-        guide = guide_for(nxt, turn.ack if turn else "")
+        guide = guide_for(nxt, REDRAFT_ACK if review else turn.ack if turn else "", answers=answers)
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice else None
     fired = milestones.fire(tenant, answers)
@@ -306,11 +330,9 @@ def interview_state(tenant, flow: dict) -> dict:
     if not missing:
         guide = guide_for(None, (last or {}).get("ack", ""))
     elif last is None:
-        guide = guide_for(missing[0], OPENING_ACK)
+        guide = guide_for(missing[0], OPENING_ACK, answers=answers)
     else:
-        guide = {
-            k: last.get(k) for k in ("ack", "question", "options", "field", "can_delegate", "multi", "icons", "hints")
-        }
+        guide = {k: last.get(k) for k in GUIDE_KEYS}
         # A transcript written before icons existed still renders.
         guide["icons"] = guide["icons"] or {}
         guide["hints"] = guide["hints"] or {}
@@ -319,7 +341,8 @@ def interview_state(tenant, flow: dict) -> dict:
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
-    cards = {f: milestones.cards_for(tenant, answers, f) for f in ("site_style", "site_logo") if f in asked}
+    looks = ("site_style", "site_logo", *milestones.REVIEW_FIELDS)
+    cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
     return {
         "turns": turns,
         "guide": guide,

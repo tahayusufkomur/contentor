@@ -13,19 +13,25 @@ import { LookTile } from "./look-tile";
 const WORDMARK = "Just my name, as text";
 
 /** Style and logo choices as big cards. ``selected`` is the label the coach
- * picked before (a question they went back to). */
+ * picked before (a question they went back to); ``chosen`` the value picked
+ * on this screen but not sent yet (it wins). ``delay`` (ms) is when the
+ * cards start springing in. */
 export function LookCardsView({
   cards,
   brandName,
   selected,
+  chosen,
   disabled,
+  delay = 0,
   onPick,
   onMore,
 }: {
   cards: LookCards;
   brandName: string;
   selected?: string;
+  chosen?: string;
   disabled: boolean;
+  delay?: number;
   onPick: (value: string, label: string) => void;
   onMore: (page: number) => Promise<LookCards>;
 }) {
@@ -34,8 +40,13 @@ export function LookCardsView({
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
     { errorToast: "Couldn’t load more logos. Try again." },
   );
-  const isPicked = (label: string) =>
-    !!selected && selected.trim().toLowerCase() === label.toLowerCase();
+  const isPicked = (value: string, label: string) =>
+    chosen
+      ? chosen === value
+      : !!selected && selected.trim().toLowerCase() === label.toLowerCase();
+  const enter = (i: number) => ({
+    animationDelay: `${delay + Math.min(i, 15) * 40}ms`,
+  });
 
   if (shown.kind === "style") {
     const styles = [...new Set(shown.options.map((o) => o.style ?? o.value))]
@@ -47,18 +58,21 @@ export function LookCardsView({
           <link key={s.id} rel="stylesheet" href={styleFontsHref(s)} />
         ))}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
-          {shown.options.map((o) => (
+          {shown.options.map((o, i) => (
             <CardButton
               key={o.value}
-              picked={isPicked(o.label)}
+              picked={isPicked(o.value, o.label)}
               disabled={disabled}
               onClick={() => onPick(o.value, o.label)}
+              style={enter(i)}
               className="overflow-hidden p-0"
             >
               <LookTile
                 styleId={o.style ?? o.value}
                 paletteId={o.palette}
                 brandName={brandName}
+                headline={shown.headline}
+                photos={shown.photos}
               />
               <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 py-2.5">
                 <span className="min-w-0">
@@ -87,12 +101,13 @@ export function LookCardsView({
   return (
     <div className="mt-8">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {shown.options.map((o: LookOption) => (
+        {shown.options.map((o: LookOption, i) => (
           <CardButton
             key={o.value}
-            picked={isPicked(o.label)}
+            picked={isPicked(o.value, o.label)}
             disabled={disabled}
             onClick={() => onPick(o.value, o.label)}
+            style={enter(i)}
             className="p-3"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -107,9 +122,10 @@ export function LookCardsView({
           </CardButton>
         ))}
         <CardButton
-          picked={isPicked(WORDMARK)}
+          picked={isPicked("wordmark", WORDMARK)}
           disabled={disabled}
           onClick={() => onPick("wordmark", WORDMARK)}
+          style={enter(shown.options.length)}
           className="p-3"
         >
           <span className="flex aspect-square w-full items-center justify-center rounded-lg bg-[var(--sf-tint)]">
@@ -140,12 +156,14 @@ function CardButton({
   picked,
   disabled,
   onClick,
+  style,
   className,
   children,
 }: {
   picked: boolean;
   disabled: boolean;
   onClick: () => void;
+  style?: React.CSSProperties;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -155,8 +173,9 @@ function CardButton({
       aria-pressed={picked}
       disabled={disabled}
       onClick={onClick}
+      style={style}
       className={cn(
-        "relative rounded-2xl border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 motion-safe:hover:-translate-y-0.5 disabled:opacity-50",
+        "relative rounded-2xl border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.98] disabled:opacity-50",
         picked
           ? "border-[var(--sf-ink)] shadow-[0_0_0_1px_var(--sf-ink)]"
           : "border-[var(--sf-line)] hover:border-[var(--sf-line-strong)] hover:shadow-[0_10px_24px_-16px_rgb(48_36_20/0.45)]",

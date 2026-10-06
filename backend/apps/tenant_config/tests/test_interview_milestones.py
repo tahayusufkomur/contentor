@@ -87,9 +87,7 @@ def test_course_draft_fires_with_its_prompt(tenant_ctx, config, side_effects, dj
     answers = {
         **HOME,
         "course_topic": "Morning mobility",
-        "course_format": "4 weeks",
-        "course_level": "Beginners",
-        "sells": "free",
+        "payments": ["free"],
     }
     with django_capture_on_commit_callbacks(execute=True):
         assert "draft:course" in ms.fire(tenant_ctx, answers)
@@ -99,7 +97,13 @@ def test_course_draft_fires_with_its_prompt(tenant_ctx, config, side_effects, dj
 
 
 def test_event_waits_for_live_entitlement(tenant_ctx, config, side_effects):
-    answers = {**HOME, "offers": ["course", "live"], "live_topic": "Slow flow", "live_when": "Sunday 9am"}
+    answers = {
+        **HOME,
+        "offers": ["course", "live"],
+        "payments": ["free"],
+        "live_topic": "Slow flow",
+        "live_when": "Sunday 9am",
+    }
     with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=False):
         assert "draft:event" not in ms.fire(tenant_ctx, answers)
     with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=True):
@@ -136,16 +140,17 @@ def test_choose_wordmark_and_delegate(tenant_ctx, config):
 
 def test_choose_text_field_goes_through_coercion(tenant_ctx, config):
     answers = {}
-    ms.choose(tenant_ctx, answers, "sells", "Students pay")
-    assert answers["sells"] == "paid"
+    ms.choose(tenant_ctx, answers, "payments", "One-time course purchases")
+    assert answers["payments"] == ["course"] and answers["sells"] == "paid"
     with pytest.raises(ms.ChoiceError):
         ms.choose(tenant_ctx, answers, "course_price", "no idea")
 
 
 def test_style_cards_offer_every_look_with_the_niche_style_first():
     cards = ms.style_cards({"niche": "fitness"})
-    assert cards["kind"] == "style" and len(cards["options"]) == 12
-    assert [o["style"] for o in cards["options"][:3]] == ["kinetic"] * 3
+    assert cards["kind"] == "style" and len(cards["options"]) == 8  # 6-8 looks, not 12
+    assert [o["style"] for o in cards["options"][:2]] == ["kinetic"] * 2
+    assert cards["options"][2]["style"] != "kinetic"
     assert cards["options"][0]["value"] == "kinetic" and cards["options"][0]["recommended"] is True
     assert cards["options"][1]["value"] == "kinetic:ocean" and "recommended" not in cards["options"][1]
     assert all({"value", "style", "palette", "label", "detail"} <= set(o) for o in cards["options"])
@@ -256,3 +261,72 @@ def test_delegated_price_for_a_selling_coach_is_not_free(tenant_ctx, config, own
         setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"sells": "paid", "delegated": ["course_price"]})
     course = Course.objects.get()
     assert course.pricing_type == "paid" and course.price > 0
+
+
+def test_brief_price_follows_how_students_pay():
+    assert setup_flow.brief_price({"payments": ["course"], "course_price": 29.0}, "course") == 29.0
+    assert setup_flow.brief_price({"payments": ["course"]}, "course") == setup_flow.DEFAULT_COURSE_PRICE
+    assert setup_flow.brief_price({"payments": ["membership"]}, "course") == 0.0  # it's in the membership
+    assert setup_flow.brief_price({"payments": ["event"], "event_price": 12.0}, "event") == 12.0
+    assert setup_flow.brief_price({"sells": "paid"}, "course") == setup_flow.DEFAULT_COURSE_PRICE  # before payments
+    assert setup_flow.brief_price({}, "course") is None
+
+
+def test_membership_plan_is_created_once_with_the_course_in_it(tenant_ctx, config, owner, side_effects):
+    from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
+
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"payments": ["membership"]})
+    answers = {**HOME, "payments": ["membership"], "membership_price": 25.0}
+    assert "plan:membership" in ms.fire(tenant_ctx, answers)
+    assert ms.fire(tenant_ctx, answers) == []
+    plan = SubscriptionPlan.objects.get()
+    assert plan.price == Decimal("25.00") and plan.billing_interval_months == 1
+    course = Course.objects.get()
+    assert course.pricing_type == "free"  # members get it; not sold on its own
+    assert SubscriptionPlanAccess.objects.get(plan=plan).object_id == course.pk
+    side_effects["build"].assert_any_call(tenant_ctx, "pricing")
+
+
+def test_skip_drops_the_draft_and_its_publish_blocker(tenant_ctx, config, owner):
+    from apps.tenant_config.setup_items import publish_blockers
+
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {})
+    answers = {**HOME}
+    ms.choose(tenant_ctx, answers, "course_topic", "__skip__")
+    assert answers["skipped"] == ["course"]
+    assert not Course.objects.exists()
+    cfg = TenantConfig.objects.first()
+    assert "course" not in cfg.setup_flow["drafts"] and "course" in cfg.setup_flow["skipped"]
+    assert "first_course" not in publish_blockers(cfg, tenant_ctx)
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "story", "__skip__")
+
+
+def test_review_card_shows_the_real_draft(tenant_ctx, config, owner):
+    assert ms.review_card(tenant_ctx, "course") == {"kind": "course", "status": "building", "item": None}
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"course_topic": "Morning mobility"})
+    ms._set_draft_status(tenant_ctx, "course", "ready")
+    with mock.patch("apps.core.curated_images.client.search") as search:
+        search.return_value.results = []
+        card = ms.review_card(tenant_ctx, "course")
+    assert card["status"] == "ready"
+    assert card["item"]["title"] == "Morning mobility"
+    assert card["item"]["modules"][0]["lessons"] == ["Welcome", "Your first practice"]
+    assert card["item"]["price"] == ""  # free
+    answers = {}
+    ms.choose(tenant_ctx, answers, "course_review", "ok")
+    assert answers["course_review"] == "approved"
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "course_review", "maybe")
+    with pytest.raises(ms.ChoiceError):
+        ms.set_cover(tenant_ctx, "course", "not-offered")
+
+
+def test_a_class_on_a_plan_without_live_classes_waits_for_go_live(tenant_ctx, config):
+    with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=False):
+        assert ms.review_card(tenant_ctx, "event")["status"] == "waiting"
+    with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=True):
+        assert ms.review_card(tenant_ctx, "event")["status"] == "building"

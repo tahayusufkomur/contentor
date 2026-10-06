@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
-import { ArrowLeft, ArrowRight, Eye, Monitor, Smartphone } from "lucide-react";
+import { ArrowLeft, ArrowRight, Monitor, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageState } from "@/components/ui/page-state";
@@ -159,7 +159,6 @@ function Flow({
     setDir("next");
     setAt(index + 1 >= lastIndex ? null : index + 1);
   }, [index, lastIndex]);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [tab, setTab] = useState<"guide" | "preview">("guide");
   const [device, setDevice] = useState<Device>("desktop");
   const [reloadKey, setReloadKey] = useState(0);
@@ -187,34 +186,21 @@ function Flow({
     return () => clearInterval(t);
   }, [working, refresh]);
 
-  // Work that finished since the last poll: the guide says so, and the
-  // preview moves to a page that just finished composing.
+  // Work that finished since the last poll: at go-live the guide says so
+  // and the preview moves to a page that just finished composing. During
+  // the questions the site stays out of sight; the header says what is
+  // being built.
   useEffect(() => {
     const next = { builds: flow.page_builds, drafts: iv.draft_status };
     const notes = finishedNotes(seen.current, next);
     const key = landedPage(seen.current.builds, next.builds);
     seen.current = next;
-    for (const note of notes)
-      toast.success(
-        note,
-        golive
-          ? undefined
-          : {
-              action: { label: "Preview", onClick: () => setPreviewOpen(true) },
-            },
-      );
+    if (!golive) return;
+    for (const note of notes) toast.success(note);
     if (!key) return;
     setPath(flow.steps.find((s) => s.page_key === key)?.preview_path ?? "/");
     setReloadKey((k) => k + 1);
   }, [flow.page_builds, iv.draft_status, flow.steps, golive]);
-
-  useEffect(() => {
-    if (!previewOpen) return;
-    const close = (e: KeyboardEvent) =>
-      e.key === "Escape" && setPreviewOpen(false);
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [previewOpen]);
 
   const { run: undo } = useAsyncAction(
     async (auditId: number) => {
@@ -301,7 +287,7 @@ function Flow({
 
   // Slides: ← and → move between questions when nothing is being typed.
   useEffect(() => {
-    if (golive || previewOpen) return;
+    if (golive) return;
     const onKey = (e: KeyboardEvent) => {
       if (
         !(e.target instanceof Element) ||
@@ -319,7 +305,7 @@ function Flow({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [golive, previewOpen, sending, index, lastIndex, goBack, goNext]);
+  }, [golive, sending, index, lastIndex, goBack, goNext]);
 
   const currentPage = flow.steps.find((s) => s.preview_path === path)?.page_key;
   const build = currentPage ? flow.page_builds[currentPage] : undefined;
@@ -333,6 +319,7 @@ function Flow({
       device={narrow ? "phone" : device}
       reloadKey={reloadKey}
       onReload={composing ? undefined : () => setReloadKey((k) => k + 1)}
+      onNavigate={setPath}
       overlay={
         composing && currentPage ? (
           <Composing
@@ -386,22 +373,14 @@ function Flow({
           >
             <ArrowRight className="size-4" aria-hidden />
           </NavButton>
-          {started && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPreviewOpen(true)}
-              className="ml-1 max-w-[44vw] rounded-full bg-white"
+          {started && activity && (
+            <p
+              role="status"
+              className="ml-1 hidden max-w-[34vw] items-center gap-2 text-[13px] text-[var(--sf-graphite)] md:flex"
             >
-              {activity ? (
-                <Spinner size="sm" className="text-[var(--sf-brass)]" />
-              ) : (
-                <Eye aria-hidden />
-              )}
-              <span className="truncate">
-                {activity ?? "Preview your site"}
-              </span>
-            </Button>
+              <Spinner size="sm" className="text-[var(--sf-brass)]" />
+              <span className="truncate">{activity}</span>
+            </p>
           )}
         </header>
         <section
@@ -413,7 +392,13 @@ function Flow({
               key={`${index}:${step.field}:${iv.turns.length}`}
               step={step}
               cards={
-                live ? step.cards : step.field ? iv.cards?.[step.field] : null
+                live
+                  ? iv.guide.field === step.field
+                    ? iv.guide.cards
+                    : step.cards
+                  : step.field
+                    ? iv.cards?.[step.field]
+                    : null
               }
               brandName={brandName}
               live={live}
@@ -422,47 +407,15 @@ function Flow({
               onDraft={editDraft(step.field ?? GOLIVE)}
               onSend={(req) => void send(req)}
               onMoreLogos={api.logos}
+              onCover={async (kind, asset) => {
+                await api.cover(kind, asset);
+                await refresh();
+              }}
+              onNext={goNext}
               dir={dir}
             />
           )}
         </section>
-        {previewOpen && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Your site so far"
-            className="fixed inset-0 z-40 flex flex-col bg-[var(--sf-wall)] motion-safe:animate-fade-in"
-            style={WALL}
-          >
-            <PreviewPane
-              start={
-                <p className="flex min-w-0 items-center gap-2 text-[14px] text-[var(--sf-graphite)]">
-                  {activity && (
-                    <Spinner size="sm" className="text-[var(--sf-brass)]" />
-                  )}
-                  <span className="truncate">
-                    {activity ?? "Your site so far"}
-                  </span>
-                </p>
-              }
-              end={
-                <>
-                  {toggle}
-                  <Button
-                    autoFocus
-                    size="sm"
-                    onClick={() => setPreviewOpen(false)}
-                    className="rounded-full px-4"
-                  >
-                    Back to the questions
-                  </Button>
-                </>
-              }
-            >
-              {frame}
-            </PreviewPane>
-          </div>
-        )}
       </div>
     );
   }

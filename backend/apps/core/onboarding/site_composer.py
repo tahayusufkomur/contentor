@@ -46,7 +46,7 @@ from pydantic import BaseModel, Field, create_model
 from apps.core import ai as core_ai
 from apps.core.curated_images import cache as curated_cache
 from apps.core.curated_images import client as curated_client
-from apps.core.onboarding import ai_compose
+from apps.core.onboarding import ai_compose, ai_curate
 from apps.tenant_config import sections
 from apps.tenant_config.defaults import KNOWN_PAGE_KEYS
 
@@ -150,11 +150,13 @@ def speaker(brand, description="") -> str:
     return "I" if re.search(r"\b(i|i'm|my|me)\b", text) else "we"
 
 
-def _ctx(niche, brand, description="") -> dict:
-    t = topic(niche)
+def _ctx(niche, brand, description="", subject="") -> dict:
+    t = subject or topic(niche)
     solo = speaker(brand, description) == "I"
     return {
         "niche": str(niche or "general"),
+        # Photo disciplines this coach's words allow (see ai_curate.off_topic).
+        "allowed": ai_curate.allowed_disciplines(t, str(description or "")),
         "brand": brand or "this studio",
         "topic": t,
         "Topic": t[:1].upper() + t[1:],
@@ -701,7 +703,7 @@ def plan_site(tenant, *, force=False) -> dict:
         return _store_plan(tenant, plan)
 
     coach = _coach_data(tenant, brand)
-    ctx = _ctx(coach["niche"], brand, coach["description"])
+    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"])
     raw, source = None, "fallback"
     if ai_compose.compose_available():
         try:
@@ -812,7 +814,7 @@ def _coach_data(tenant, brand) -> dict:
     return {
         "brand": brand,
         "niche": niche,
-        "topic": topic(niche),
+        "topic": interview_brief.subject_of(answers) or topic(niche),
         "description": str(answers.get("description") or "").strip()[:500],
         "followups": followups[:12],
         "goals": [str(g) for g in (answers.get("goals") or []) if isinstance(g, str)][:8],
@@ -1220,9 +1222,11 @@ def _queries(brief, ctx, photo_words) -> list[str]:
     return list(dict.fromkeys(q for q in (f"{words} {photo_words}".strip(), short, ctx["topic"]) if q))
 
 
-def _find_photo(queries, orientation, used):
+def _find_photo(queries, orientation, used, ctx):
     """(RemoteImage, tenant Photo) for the best catalog match not in ``used``;
-    a used one only when nothing else matches; (None, None) on failure."""
+    a used one only when nothing else matches; (None, None) on failure.
+    Never a photo of another discipline; photos naming the coach's subject
+    first."""
     seen_fallback = None
     for query in queries:
         try:
@@ -1230,7 +1234,7 @@ def _find_photo(queries, orientation, used):
         except curated_client.CuratedImageError as exc:
             logger.warning("composer photo search failed (%s): %s", query[:60], exc)
             continue
-        for image in results:
+        for image in ai_curate.on_topic_first(results, ctx["topic"], ctx["allowed"]):
             if image.asset_id in used:
                 seen_fallback = seen_fallback or image
                 continue
@@ -1274,7 +1278,9 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                 continue
             brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx)
             try:
-                image, photo = _find_photo(_queries(brief, ctx, photo_words), _orientation(aspect), used | set(placed))
+                image, photo = _find_photo(
+                    _queries(brief, ctx, photo_words), _orientation(aspect), used | set(placed), ctx
+                )
             except Exception:  # an image must never take the page down
                 logger.exception("composer image failed for %s %s/%s", tenant.schema_name, page_key, slot)
                 image = photo = None
@@ -1310,7 +1316,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     plan = plan_site(tenant)
     entries = plan["pages"].get(page_key) or apply_guardrails({}, style_id)["pages"][page_key]
     coach = _coach_data(tenant, brand)
-    ctx = _ctx(coach["niche"], brand, coach["description"])
+    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"])
 
     _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)

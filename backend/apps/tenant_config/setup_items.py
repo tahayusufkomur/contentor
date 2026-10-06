@@ -112,8 +112,8 @@ def publish_blockers(config, tenant) -> list[str]:
     create (the free plan has ``is_live_enabled`` False), which would leave the
     gate permanently unsatisfiable.
 
-    The guided /setup flow can skip ``event``/``post``: a skipped step drops
-    its blocker (``config.setup_flow["skipped"]``).
+    The guided /setup flow can skip ``course``/``event``/``post``: a skipped
+    step drops its blocker (``config.setup_flow["skipped"]``).
 
     ``demo_cleanup`` is deliberately NOT a blocker (see the AI-seeding plan):
     seeded content is niche-appropriate AI/starter content the coach may
@@ -137,11 +137,11 @@ def publish_blockers(config, tenant) -> list[str]:
     has_own_product = _has_own(
         Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
     ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
-    if not has_own_product:
+    skipped = (config.setup_flow or {}).get("skipped") or []
+    if not has_own_product and "course" not in skipped:
         blockers.append("first_course")
 
     goals = _wizard_goals(tenant)
-    skipped = (config.setup_flow or {}).get("skipped") or []
     if EVENT_GOALS.intersection(goals) and _live_entitled(tenant) and "event" not in skipped:
         from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
