@@ -65,16 +65,16 @@ FIELDS: tuple[Field, ...] = (
         "teaches",
         "What they teach",
         "Let's start with you. What do you teach?",
-        ("Yoga", "Pilates", "Fitness coaching", "Something else"),
+        ("Yoga", "Pilates", "Fitness coaching", "Meditation", "Dance", "Something else"),
     ),
     Field(
         "audience",
         "Who they teach",
         "Who are the students you love teaching most?",
-        ("Complete beginners", "Busy professionals", "People coming back after an injury"),
+        ("Complete beginners", "Busy professionals", "People coming back after an injury", "Parents", "Older adults"),
         multi=True,
     ),
-    Field("outcome", "What students get", "What changes for a student after working with you?"),
+    Field("outcome", "What students get", "What changes for a student after working with you?", multi=True),
     Field(
         "offers",
         "What they offer",
@@ -84,21 +84,24 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
     ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
-    Field("difference", "What makes their approach theirs", "What do you do differently from other teachers?"),
+    Field(
+        "difference", "What makes their approach theirs", "What do you do differently from other teachers?", multi=True
+    ),
     Field("site_style", "Site style", "Which look feels most like you?", kind="style"),
     Field("story", "Their story", "How did you come to teach this?"),
     Field(
         "credentials",
         "Training and experience",
         "Any training, certifications or years of teaching you'd like visitors to know about?",
-        ("I'd rather not mention any",),
+        multi=True,
     ),
     Field(
         "tone",
         "How the site should sound",
         "How should your site sound?",
-        ("Warm", "Energetic", "Calm", "Expert"),
+        ("Warm", "Energetic", "Calm", "Expert", "Playful"),
         kind="tone",
+        multi=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo"),
     Field("course_topic", "First course topic", "What's your first course about?"),
@@ -106,9 +109,14 @@ FIELDS: tuple[Field, ...] = (
         "course_format",
         "First course format",
         "How is it structured?",
-        ("4 weeks, one lesson a week", "A weekend intensive", "Self-paced lessons"),
+        ("4 weeks, one lesson a week", "A weekend intensive", "Self-paced lessons", "Short daily practices"),
     ),
-    Field("course_level", "First course level", "Who is this course for?", ("Beginners", "Intermediate", "All levels")),
+    Field(
+        "course_level",
+        "First course level",
+        "Who is this course for?",
+        ("Beginners", "Intermediate", "Advanced", "All levels"),
+    ),
     Field(
         "sells",
         "Free or paid",
@@ -120,7 +128,7 @@ FIELDS: tuple[Field, ...] = (
         "course_price",
         "First course price",
         "What should the course cost?",
-        ("29", "49", "99"),
+        ("19", "29", "49", "99", "149"),
         kind="price",
         paid_only=True,
     ),
@@ -129,15 +137,16 @@ FIELDS: tuple[Field, ...] = (
         "live_when",
         "Live class schedule",
         "When does it happen?",
-        ("Weekday evenings", "Saturday mornings", "Sunday mornings"),
+        ("Weekday mornings", "Weekday lunchtimes", "Weekday evenings", "Saturday mornings", "Sunday mornings"),
         needs=("live", "onsite"),
+        multi=True,
     ),
     Field("article_topic", "First article topic", "What should your first article be about?", needs=("articles",)),
     Field(
         "contact",
         "How students reach them",
         "How should students get in touch with you?",
-        ("Email", "Instagram", "WhatsApp"),
+        ("Email", "Instagram", "WhatsApp", "Phone", "Contact form"),
         multi=True,
     ),
     Field(
@@ -186,7 +195,7 @@ def coerce(field_id: str, raw):
         return parse_price(raw)
     if field.kind == "tone":
         text = str(raw or "").lower()
-        return next((t for t in TONES if t in text), None) or _text(raw)
+        return ", ".join(t for t in TONES if t in text) or _text(raw)
     return _text(raw)
 
 

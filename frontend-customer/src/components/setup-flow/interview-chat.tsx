@@ -77,6 +77,7 @@ export function InterviewChat({
   // The latest guide question is drawn live below (with its chips); the
   // transcript holds everything else.
   const { past, after } = splitEntries(entries, sending);
+  const multiPick = !!guide.multi && guide.options.length > 1;
   const entry = (e: InterviewEntry, i: number) =>
     e.role === "coach" ? (
       <p
@@ -200,7 +201,7 @@ export function InterviewChat({
                       {o}
                     </button>
                   ))}
-                  {guide.multi && guide.options.length > 1 && (
+                  {multiPick && (
                     <button
                       type="button"
                       aria-pressed={ticked.length === guide.options.length}
@@ -238,10 +239,15 @@ export function InterviewChat({
                   )}
                 </div>
               )}
-              {remaining > 0 && (
+              {(remaining > 0 || multiPick) && (
                 <p className="mt-4 text-[12.5px] text-[var(--sf-faint)]">
-                  About {remaining} {remaining === 1 ? "question" : "questions"}{" "}
-                  left
+                  {[
+                    multiPick && "Pick as many as fit",
+                    remaining > 0 &&
+                      `About ${remaining} ${remaining === 1 ? "question" : "questions"} left`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               )}
             </div>

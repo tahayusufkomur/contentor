@@ -98,8 +98,8 @@ STALE_BUILD_SECONDS = 180
 # can still race for the same photo; use a DB advisory lock if that shows up.
 _IMAGE_LOCK = threading.Lock()
 INSTRUCTION_MAX = 500
-PLAN_MAX_TOKENS = 4000
-PAGE_MAX_TOKENS = 6000
+PLAN_MAX_TOKENS = 8000
+PAGE_MAX_TOKENS = 12000
 SEARCH_PER_PAGE = 12
 BRIEF_FIELD_MAX = 60
 IDEA_MAX = 80

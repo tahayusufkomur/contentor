@@ -523,7 +523,7 @@ def create_draft(tenant, user, kind: str, prompt: str, *, label: str = "contento
             user=_draft_user_turn(tenant, config, prompt[:PROMPT_MAX_LEN]),
             output_model=DRAFT_MODELS[kind],
             model=settings.COPILOT_MODEL,
-            max_tokens=3000,
+            max_tokens=6000,
             label=label,
         )
     except core_ai.AiError as exc:

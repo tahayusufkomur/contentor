@@ -221,6 +221,7 @@ def test_model_may_fill_fields_not_yet_required(client, quiet):
     client.post(URL, {"message": "Yoga, my course is 49"}, format="json")
     sent = quiet.calls[0]["user"]
     assert '"course_price"' in sent and '"live_when"' in sent
+    assert '{"id": "outcome", "means": "What students get", "several": true}' in sent  # multi-pick questions are marked
 
 
 def test_a_tapped_choice_never_becomes_a_site_edit(client, quiet):
@@ -279,4 +280,7 @@ def test_offers_guide_is_multi_with_the_full_offer_list():
     assert guide["multi"] is True
     assert len(guide["options"]) == 6
     assert brief.parse_offers(", ".join(guide["options"])) == list(brief.OFFERS)
-    assert interview.guide_for(brief.FIELD_BY_ID["outcome"])["multi"] is False
+    assert interview.guide_for(brief.FIELD_BY_ID["outcome"])["multi"] is True  # several outcomes can apply
+    assert interview.guide_for(brief.FIELD_BY_ID["pitch"])["multi"] is False
+    many = interview.guide_for(brief.FIELD_BY_ID["pitch"], options=[str(n) for n in range(9)])["options"]
+    assert len(many) == interview.MAX_OPTIONS

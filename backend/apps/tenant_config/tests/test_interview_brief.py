@@ -20,6 +20,7 @@ def test_sells_price_and_tone():
     assert brief.coerce("course_price", "free") == 0.0
     assert brief.coerce("course_price", "no idea") is None
     assert brief.coerce("tone", "Calm, please") == "calm"
+    assert brief.coerce("tone", "Warm, Calm") == "warm, calm"  # several tones can be ticked
 
 
 def test_card_fields_are_never_set_by_text():
