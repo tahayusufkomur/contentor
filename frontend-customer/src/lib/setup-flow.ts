@@ -126,12 +126,16 @@ export function embedSrc(path: string): string {
 }
 
 export const DELEGATE = "__delegate__";
+/** What the coach "says" when they leave a question to the guide. */
+export const DELEGATE_TEXT = "You decide for me.";
 
 export interface LookOption {
   value: string;
   label: string;
   detail?: string;
   image_url?: string;
+  /** The guide's pick for this coach. */
+  recommended?: boolean;
 }
 
 export interface LookCards {
@@ -167,13 +171,13 @@ export interface CopilotPayload {
 }
 
 export type InterviewEntry =
-  | { role: "coach"; text: string }
-  | ({
-      role: "guide";
-      edit?: CopilotPayload;
-      /** Applied copilot change that can still be undone. */
-      audit_id?: number;
-    } & Omit<GuideTurn, "cards">);
+  | {
+      role: "coach";
+      text: string;
+      /** The question this answers (older turns: the one asked before it). */
+      field?: string | null;
+    }
+  | ({ role: "guide"; edit?: CopilotPayload } & Omit<GuideTurn, "cards">);
 
 export interface InterviewState {
   turns: InterviewEntry[];
@@ -182,12 +186,16 @@ export interface InterviewState {
   phase: "interview" | "building" | "golive";
   fired: string[];
   draft_status: Partial<Record<ContentKind, "building" | "ready" | "failed">>;
+  /** Fresh cards for look questions already behind the coach. */
+  cards?: Partial<Record<string, LookCards>>;
 }
 
 export interface TurnRequest {
   message: string;
   spoken?: boolean;
   choice?: { field: string; value: string };
+  /** An earlier question the coach went back to (default: the live one). */
+  field?: string;
 }
 
 export interface TurnResponse {

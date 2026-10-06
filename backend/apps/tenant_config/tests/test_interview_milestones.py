@@ -135,9 +135,12 @@ def test_choose_text_field_goes_through_coercion(tenant_ctx, config):
 
 
 def test_style_cards_lead_with_the_niche_pick():
+    from apps.tenant_config import sections
+
     cards = ms.style_cards({"niche": "fitness"})
-    assert cards["kind"] == "style" and len(cards["options"]) == 2
+    assert cards["kind"] == "style" and len(cards["options"]) == len(sections.enabled_styles())  # every style
     assert all({"value", "label", "detail"} <= set(o) for o in cards["options"])
+    assert cards["options"][0].get("recommended") and not any(o.get("recommended") for o in cards["options"][1:])
 
 
 def test_free_plan_coach_who_sells_gets_a_paid_course_draft(tenant_ctx, config, owner):

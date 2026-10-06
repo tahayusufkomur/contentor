@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { InterviewEntry } from "@/lib/setup-flow";
+import type { GuideTurn, InterviewEntry } from "@/lib/setup-flow";
 import {
   activityLine,
   finishedNotes,
   formatPrice,
   joinSpeech,
   landedPage,
-  noteEntry,
-  splitEntries,
+  pickedOptions,
+  questionSteps,
   stageIndex,
-  toEntry,
 } from "@/lib/interview";
 
 describe("joinSpeech", () => {
@@ -42,35 +41,6 @@ describe("landedPage", () => {
   });
 });
 
-describe("toEntry / noteEntry", () => {
-  it("drops the cards from a stored guide turn", () => {
-    const entry = toEntry({
-      ack: "a",
-      question: "q",
-      options: [],
-      field: "teaches",
-      can_delegate: true,
-      cards: { kind: "style", options: [] },
-    });
-    expect(entry).toEqual({
-      role: "guide",
-      ack: "a",
-      question: "q",
-      options: [],
-      field: "teaches",
-      can_delegate: true,
-    });
-  });
-  it("makes a note with an undo handle", () => {
-    expect(noteEntry("Done", 7)).toMatchObject({
-      role: "guide",
-      ack: "Done",
-      audit_id: 7,
-      field: null,
-    });
-  });
-});
-
 describe("formatPrice", () => {
   it("formats cents in the plan currency", () => {
     expect(formatPrice(1990, "usd")).toBe("$19.90");
@@ -78,33 +48,96 @@ describe("formatPrice", () => {
   });
 });
 
-describe("splitEntries", () => {
-  const q = (question: string) => ({
-    role: "guide" as const,
+describe("questionSteps", () => {
+  const ask = (field: string, question = `${field}?`): GuideTurn => ({
     ack: "",
     question,
-    options: [],
-    field: "x",
+    options: ["A", "B"],
+    field,
     can_delegate: true,
   });
-  const text = (e: InterviewEntry) =>
-    e.role === "guide" ? e.question || e.ack : e.text;
-  it("splits around the live question, keeping notes after it in order", () => {
-    const entries = [
-      q("old"),
-      { role: "coach" as const, text: "a" },
-      q("live"),
-      noteEntry("Done"),
-    ];
-    const { past, after } = splitEntries(entries, false);
-    expect(past.map(text)).toEqual(["old", "a"]);
-    expect(after.map(text)).toEqual(["Done"]);
+  const guide = (field: string, question?: string): InterviewEntry => ({
+    role: "guide",
+    ...ask(field, question),
   });
-  it("keeps everything in the past while a turn is in flight", () => {
-    expect(splitEntries([q("live")], true)).toEqual({
-      past: [q("live")],
-      after: [],
-    });
+  const said = (text: string, field?: string): InterviewEntry => ({
+    role: "coach",
+    text,
+    ...(field ? { field } : {}),
+  });
+
+  it("lists answered questions in order, then the live one", () => {
+    const entries = [
+      guide("teaches"),
+      said("Yoga"),
+      guide("audience"),
+      said("Parents"),
+      guide("outcome"),
+    ];
+    const steps = questionSteps(entries, ask("outcome"));
+    expect(steps.map((s) => [s.field, s.answer])).toEqual([
+      ["teaches", "Yoga"],
+      ["audience", "Parents"],
+      ["outcome", undefined],
+    ]);
+  });
+  it("keeps a revisited question in place with its new answer", () => {
+    const entries = [
+      guide("teaches"),
+      said("Yoga"),
+      guide("audience", "Who?"),
+      said("Parents"),
+      guide("outcome"),
+      said("Pilates", "teaches"),
+      guide("outcome", "What changes?"),
+    ];
+    const steps = questionSteps(entries, ask("outcome", "What changes?"));
+    expect(steps.map((s) => [s.field, s.answer])).toEqual([
+      ["teaches", "Pilates"],
+      ["audience", "Parents"],
+      ["outcome", undefined],
+    ]);
+    expect(steps[2].question).toBe("What changes?");
+  });
+  it("has no live step once nothing is left to ask", () => {
+    const done: GuideTurn = { ...ask("x"), field: null, question: "Ready" };
+    expect(questionSteps([guide("teaches"), said("Yoga")], done)).toHaveLength(
+      1,
+    );
+  });
+});
+
+describe("pickedOptions", () => {
+  const step = {
+    ...{ ack: "", question: "q", field: "f", can_delegate: true },
+  };
+  it("finds every option a multi answer named", () => {
+    expect(
+      pickedOptions({
+        ...step,
+        multi: true,
+        options: ["Parents", "Busy professionals", "Seniors"],
+        answer: "parents, Busy professionals",
+      }),
+    ).toEqual(["Parents", "Busy professionals"]);
+  });
+  it("keeps options that contain commas whole", () => {
+    expect(
+      pickedOptions({
+        ...step,
+        multi: true,
+        options: ["No mirrors, no judgement", "Small classes", "Costumes"],
+        answer: "No mirrors, no judgement, Small classes",
+      }),
+    ).toEqual(["No mirrors, no judgement", "Small classes"]);
+  });
+  it("matches a single answer whole, and typed text not at all", () => {
+    expect(
+      pickedOptions({ ...step, options: ["Yoga"], answer: "Yoga" }),
+    ).toEqual(["Yoga"]);
+    expect(
+      pickedOptions({ ...step, options: ["Yoga"], answer: "Yoga, mostly" }),
+    ).toEqual([]);
   });
 });
 

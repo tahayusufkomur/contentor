@@ -32,7 +32,7 @@ DRAFT_NEEDS = {
     "post": ("article_topic",),
 }
 DRAFT_OFFERS = {"event": ("live", "onsite"), "post": ("articles",)}
-LOGO_PAGE = 3
+LOGO_PAGE = 15  # + "just my name" = a full 4x4 grid
 
 
 class ChoiceError(Exception):
@@ -185,11 +185,17 @@ def style_cards(answers: dict) -> dict:
 
     enabled = sorted(sections.enabled_styles().values(), key=lambda s: s.get("order", 0))
     first = recommended_style(answers.get("niche") or "general")
-    ordered = sorted(enabled, key=lambda s: s["id"] != first)[:2]
+    ordered = sorted(enabled, key=lambda s: s["id"] != first)
     return {
         "kind": "style",
         "options": [
-            {"value": s["id"], "label": s.get("label") or s["id"], "detail": s.get("mood", "")} for s in ordered
+            {
+                "value": s["id"],
+                "label": s.get("label") or s["id"],
+                "detail": s.get("mood", ""),
+                **({"recommended": True} if s["id"] == first else {}),
+            }
+            for s in ordered
         ],
     }
 

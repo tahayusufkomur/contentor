@@ -109,25 +109,6 @@ export function finishedNotes(
   return notes;
 }
 
-/** A guide turn as it is kept in the transcript (cards are re-fetched fresh). */
-export function toEntry(guide: GuideTurn): InterviewEntry {
-  const { cards: _cards, ...rest } = guide;
-  return { role: "guide", ...rest };
-}
-
-/** A short status line from the guide (e.g. an applied change). */
-export function noteEntry(text: string, auditId?: number): InterviewEntry {
-  return {
-    role: "guide",
-    ack: text,
-    question: "",
-    options: [],
-    field: null,
-    can_delegate: false,
-    ...(auditId != null ? { audit_id: auditId } : {}),
-  };
-}
-
 export function formatPrice(cents: number | null, currency: string): string {
   if (cents == null) return "";
   return new Intl.NumberFormat("en-US", {
@@ -136,20 +117,58 @@ export function formatPrice(cents: number | null, currency: string): string {
   }).format(cents / 100);
 }
 
-/** The transcript around the latest guide question, which is drawn live with
- * its chips: what came before it, and the notes that came after it — those
- * go between its ack and its question, so the question always sits last,
- * next to the answer box, and the transcript stays in order. */
-export function splitEntries(
+export interface QuestionStep extends GuideTurn {
+  /** What the coach answered (questions behind them only). */
+  answer?: string;
+}
+
+/** The interview as a list of questions: each field the coach answered,
+ * once, in the order they first answered it, with its latest wording and
+ * answer; then the live question. */
+export function questionSteps(
   entries: InterviewEntry[],
-  sending: boolean,
-): { past: InterviewEntry[]; after: InterviewEntry[] } {
-  let live = -1;
-  if (!sending)
-    entries.forEach((e, i) => {
-      if (e.role === "guide" && e.question) live = i;
-    });
-  return live === -1
-    ? { past: entries, after: [] }
-    : { past: entries.slice(0, live), after: entries.slice(live + 1) };
+  guide: GuideTurn,
+): QuestionStep[] {
+  const asked = new Map<string, QuestionStep>();
+  const order: string[] = [];
+  let onScreen: string | null = null;
+  for (const e of entries) {
+    if (e.role === "guide") {
+      if (e.field && e.question) {
+        const { ack, question, options, field, can_delegate, multi } = e;
+        const answer = asked.get(e.field)?.answer;
+        asked.set(e.field, {
+          ack,
+          question,
+          options,
+          field,
+          can_delegate,
+          multi,
+          answer,
+        });
+        onScreen = e.field;
+      }
+      continue;
+    }
+    const field = e.field ?? onScreen;
+    const step = field ? asked.get(field) : undefined;
+    if (!field || !step) continue;
+    step.answer = e.text;
+    if (!order.includes(field)) order.push(field);
+  }
+  const past = order
+    .filter((f) => f !== guide.field)
+    .map((f) => asked.get(f) as QuestionStep);
+  return guide.field ? [...past, guide] : past;
+}
+
+/** The options a past answer picked (several on a multi question, sent as
+ * the ticked labels joined by ", " — labels may hold commas themselves). */
+export function pickedOptions(step: QuestionStep): string[] {
+  if (!step.answer) return [];
+  const said = step.answer.trim().toLowerCase();
+  return step.options.filter((o) => {
+    const label = o.toLowerCase();
+    return step.multi ? `, ${said}, `.includes(`, ${label}, `) : said === label;
+  });
 }

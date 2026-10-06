@@ -116,6 +116,24 @@ def test_fallback_answer_goes_to_the_asked_field(client, tenant_ctx, quiet, conf
     assert _answers(tenant_ctx)["audience"] == "Busy parents"
 
 
+def test_going_back_answers_the_earlier_question(client, tenant_ctx, quiet):
+    from apps.core import ai as core_ai
+
+    quiet.error = core_ai.AiError("down")
+    client.post(URL, {"message": "Yoga"}, format="json")
+    client.post(URL, {"message": "Busy parents"}, format="json")
+    client.post(URL, {"message": "Pilates", "field": "teaches"}, format="json")  # back to question 1
+    answers = _answers(tenant_ctx)
+    assert answers["teaches"] == "Pilates" and answers["audience"] == "Busy parents"
+    turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
+    assert [t["field"] for t in turns if t["role"] == "coach"] == ["teaches", "audience", "teaches"]
+
+    quiet.error = None
+    quiet.reply = interview.InterviewTurn(next_field="outcome", question="q")
+    client.post(URL, {"message": "Desk workers", "field": "audience"}, format="json")
+    assert '"answering": "audience"' in quiet.calls[-1]["user"]
+
+
 def test_spoken_text_is_corrected_and_stored(client, tenant_ctx, quiet):
     quiet.reply = interview.InterviewTurn(
         heard="I teach vinyasa yoga",
@@ -126,7 +144,8 @@ def test_spoken_text_is_corrected_and_stored(client, tenant_ctx, quiet):
     body = client.post(URL, {"message": "I teach Vince's yoga", "spoken": True}, format="json").json()
     assert body["coach_text"] == "I teach vinyasa yoga"
     turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
-    assert turns[0] == {"role": "coach", "text": "I teach vinyasa yoga"}
+    assert turns[0]["role"] == "guide" and turns[0]["ack"] == interview.OPENING_ACK  # the opening question is kept
+    assert turns[1] == {"role": "coach", "text": "I teach vinyasa yoga", "field": "teaches"}
     assert '"spoken": true' in quiet.calls[0]["user"]
 
 
@@ -196,6 +215,25 @@ def test_state_opening_and_phase(client, tenant_ctx):
     assert state["guide"]["field"] == "teaches"
     assert state["guide"]["ack"] == interview.OPENING_ACK
     assert state["phase"] == "interview" and state["turns"] == []
+
+
+def test_look_questions_behind_the_coach_get_fresh_cards(tenant_ctx, config):
+    config.setup_flow = {
+        **config.setup_flow,
+        "interview": {
+            "turns": [
+                {"role": "guide", "field": "site_style", "question": "Which look?"},
+                {"role": "coach", "text": "Quiet Journal", "field": "site_style"},
+                {"role": "guide", "field": "story", "question": "Your story?"},
+            ],
+            "fired": [],
+        },
+    }
+    config.save()
+    with mock.patch("apps.tenant_config.interview_milestones.cards_for", return_value={"kind": "style"}) as cards_for:
+        state = interview.interview_state(tenant_ctx, config.setup_flow)
+    assert state["cards"] == {"site_style": {"kind": "style"}}
+    assert {c.args[2] for c in cards_for.call_args_list} == {"story", "site_style"}  # live guide + the past look
 
 
 def test_phase_is_golive_when_nothing_is_missing(tenant_ctx, config):
@@ -282,5 +320,5 @@ def test_offers_guide_is_multi_with_the_full_offer_list():
     assert brief.parse_offers(", ".join(guide["options"])) == list(brief.OFFERS)
     assert interview.guide_for(brief.FIELD_BY_ID["outcome"])["multi"] is True  # several outcomes can apply
     assert interview.guide_for(brief.FIELD_BY_ID["pitch"])["multi"] is False
-    many = interview.guide_for(brief.FIELD_BY_ID["pitch"], options=[str(n) for n in range(9)])["options"]
+    many = interview.guide_for(brief.FIELD_BY_ID["pitch"], options=[str(n) for n in range(20)])["options"]
     assert len(many) == interview.MAX_OPTIONS

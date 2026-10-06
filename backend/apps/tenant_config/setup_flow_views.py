@@ -89,7 +89,11 @@ def setup_flow_turn(request):
     choice = data.get("choice") if isinstance(data.get("choice"), dict) else None
     try:
         body = interview.run_turn(
-            connection.tenant, str(data.get("message") or ""), spoken=bool(data.get("spoken")), choice=choice
+            connection.tenant,
+            str(data.get("message") or ""),
+            spoken=bool(data.get("spoken")),
+            choice=choice,
+            field=str(data.get("field") or "") or None,
         )
     except interview_milestones.ChoiceError as exc:
         return Response({"detail": str(exc)}, status=400)
