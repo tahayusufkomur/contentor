@@ -1,182 +1,163 @@
-// Dev-only stand-in for the setup-flow API (`/setup?mock=1`): a scripted
-// interview so the layout and transitions can be checked without the
-// backend. Never reachable in production (the page gates `mock` on NODE_ENV).
-import type {
-  GoLiveState,
-  GuideTurn,
-  InterviewEntry,
-  SetupFlowApi,
-  SetupFlowState,
+// Dev-only replay of this tenant's recorded interview (`/setup?mock=1`):
+// the real setup-flow state is fetched once for the transcript and the
+// look, logo and review cards, then every turn pre-selects what the coach
+// answered last time and serves the next recorded question. No AI call, no
+// site build, so the screens can be iterated on in seconds. `&at=N` opens
+// on the Nth question. Never reachable in production (the page gates `mock`
+// on NODE_ENV).
+import { pickedOptions } from "@/lib/interview";
+import {
+  isReview,
+  setupFlowApi,
+  type GuideTurn,
+  type InterviewEntry,
+  type ReviewCard,
+  type SetupFlowApi,
+  type SetupFlowState,
+  type StepDraft,
 } from "@/lib/setup-flow";
-import { SITE_STYLES } from "@/lib/site-styles";
 
-const SCRIPT: GuideTurn[] = [
-  {
-    ack: "Hi! I'll ask you a few questions and build your site while we talk.",
-    question: "Let's start with you. What do you teach?",
-    options: ["Yoga", "Pilates", "Fitness coaching"],
-    field: "teaches",
-    can_delegate: true,
-    icons: {
-      Yoga: "flower-2",
-      Pilates: "person-standing",
-      "Fitness coaching": "dumbbell",
-    },
-  },
-  {
-    ack: "Lovely.",
-    question: "Who are the students you love teaching most?",
-    options: ["Complete beginners", "Busy professionals"],
-    field: "audience",
-    can_delegate: true,
-    icons: {
-      "Complete beginners": "sprout",
-      "Busy professionals": "briefcase",
-    },
-  },
-  {
-    ack: "Got it.",
-    question: "Which look feels most like you?",
+const TURN_MS = 350;
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+type Guide = Extract<InterviewEntry, { role: "guide" }>;
+
+const s = {
+  real: null as SetupFlowState | null,
+  recorded: [] as InterviewEntry[],
+  /** Where each recorded coach answer sits in the transcript, in order. */
+  answers: [] as number[],
+  /** How many of them have been sent in this replay. */
+  i: 0,
+  /** The replay's transcript: recorded up to the live question, then what
+   * was actually sent this time. */
+  turns: [] as InterviewEntry[],
+  published: false,
+};
+
+async function init() {
+  if (s.real) return;
+  s.real = await setupFlowApi.get();
+  s.recorded = s.real.interview.turns;
+  s.answers = s.recorded.flatMap((t, i) => (t.role === "coach" ? [i] : []));
+  const at = Number(new URLSearchParams(window.location.search).get("at"));
+  s.i = Math.min(Math.max(at || 0, 0), s.answers.length);
+  s.turns = s.recorded.slice(0, cut(s.i));
+}
+
+/** The transcript just before the Nth recorded answer. */
+const cut = (n: number) =>
+  n < s.answers.length ? s.answers[n] : s.recorded.length;
+
+function liveGuide(): GuideTurn {
+  let last: Guide | undefined;
+  for (const t of s.turns) if (t.role === "guide") last = t;
+  const {
+    role: _role,
+    edit: _edit,
+    ...guide
+  } = last ?? {
+    role: "guide" as const,
+    ack: "",
+    question: "",
     options: [],
-    field: "site_style",
-    can_delegate: true,
-    cards: {
-      kind: "style",
-      options: Object.values(SITE_STYLES).flatMap((s, i) => [
-        {
-          value: s.id,
-          style: s.id,
-          palette: "",
-          label: `${s.label} · ${s.paletteLabel}`,
-          detail: s.mood,
-          ...(i === 0 ? { recommended: true } : {}),
-        },
-        ...s.palettes.map((p) => ({
-          value: `${s.id}:${p.id}`,
-          style: s.id,
-          palette: p.id,
-          label: `${s.label} · ${p.label}`,
-          detail: p.mood,
-        })),
-      ]),
-    },
-  },
-  {
-    ack: "Great choice.",
-    question: "What's your first course about?",
-    options: [],
-    field: "course_topic",
-    can_delegate: true,
-  },
-];
-const BUILD_MS = 6000;
-const s = { i: 0, turns: [] as InterviewEntry[], homeAt: 0, published: false };
+    field: null,
+    can_delegate: false,
+  };
+  const cards = guide.field ? s.real?.interview.cards?.[guide.field] : null;
+  return { ...guide, cards: cards ?? null };
+}
 
 function snapshot(): SetupFlowState {
-  const done = s.i >= SCRIPT.length;
-  const guide: GuideTurn = done
-    ? {
-        ack: "",
-        question:
-          "Your site is ready. Take a look around, then go live when you're happy.",
-        options: [],
-        field: null,
-        can_delegate: false,
-      }
-    : SCRIPT[s.i];
-  const home = s.homeAt
-    ? Date.now() >= s.homeAt
-      ? "ready"
-      : "building"
-    : "idle";
-  const left = s.homeAt - Date.now();
-  const stage =
-    home !== "building" || left > (BUILD_MS * 2) / 3
-      ? undefined
-      : left > BUILD_MS / 3
-        ? ("copy" as const)
-        : ("photos" as const);
+  const real = s.real as SetupFlowState;
+  const remaining = s.answers.length - s.i;
+  const building = s.turns.some((t) => t.role === "guide" && !!t.status);
   return {
-    status: s.published ? "done" : "active",
-    step: "course",
-    steps: [
-      {
-        id: "page:home",
-        kind: "page",
-        title: "Home page",
-        subtitle: "",
-        state: "todo",
-        optional: false,
-        page_key: "home",
-        preview_path: "/",
-      },
-    ],
-    page_builds: { home: { status: home, ...(stage ? { stage } : {}) } },
-    content: {},
-    style: "journal",
-    brand_name: "Demo Yoga",
-    slug: "demo-yoga",
-    publish_blockers: [],
+    ...real,
     is_published: s.published,
-    suggestions: {},
     interview: {
+      ...real.interview,
       turns: s.turns,
-      guide,
-      remaining: Math.max(SCRIPT.length - s.i, 0),
-      phase: done ? "golive" : s.i >= 2 ? "building" : "interview",
-      fired: s.homeAt ? ["page:home"] : [],
+      guide: liveGuide(),
+      remaining,
+      phase: !remaining ? "golive" : building ? "building" : "interview",
+      fired: [],
       draft_status: {},
     },
   };
 }
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const golive = (): GoLiveState => ({
-  ready: true,
-  building: false,
-  needs_plan: false,
-  needs_payouts: false,
-  plan: null,
-  blockers: [],
-});
+/** What the coach answered on the live question last time. */
+function recordedAnswer() {
+  const at = s.answers[s.i];
+  const entry = at == null ? undefined : s.recorded[at];
+  return entry?.role === "coach" ? entry : undefined;
+}
 
 export const mockSetupFlowApi: SetupFlowApi = {
-  get: async () => snapshot(),
+  get: async () => {
+    await init();
+    return snapshot();
+  },
   act: async () => snapshot(),
   buildPage: async () => ({}),
   draft: async () => ({ id: 1, title: "Draft", preview_path: "/courses" }),
-  turn: async (body) => {
-    await wait(900);
-    s.turns = [...s.turns, { role: "coach", text: body.message }];
-    s.i += 1;
-    const started = s.i === 2;
-    if (started) s.homeAt = Date.now() + BUILD_MS;
-    const state = snapshot();
-    const guide: GuideTurn = {
-      ...state.interview.guide,
-      ...(started
-        ? {
-            status:
-              "I have enough to start building, so I'm working on your home page now. Bear with me, it takes about a minute. Let's keep going while I build.",
-          }
-        : {}),
-    };
-    const { cards: _cards, ...rest } = guide;
-    s.turns = [...s.turns, { role: "guide", ...rest }];
+  turn: async (req) => {
+    await wait(TURN_MS);
+    const live = liveGuide().field;
+    const field = req.choice?.field ?? req.field ?? live;
+    if (field && field !== live) {
+      // Went back and re-answered: keep the new words, stay on the live question.
+      let i = s.turns.length - 1;
+      while (
+        i >= 0 &&
+        !(s.turns[i].role === "coach" && s.turns[i].field === field)
+      )
+        i--;
+      if (i >= 0)
+        s.turns = s.turns.map((t, j) =>
+          j === i ? { ...t, text: req.message } : t,
+        );
+    } else if (s.i < s.answers.length) {
+      s.turns = [
+        ...s.turns,
+        { role: "coach", text: req.message, field },
+        ...s.recorded.slice(s.answers[s.i] + 1, cut(s.i + 1)),
+      ];
+      s.i += 1;
+    }
     return {
-      coach_text: body.message,
-      guide,
+      coach_text: req.message,
+      guide: liveGuide(),
       edit: null,
-      fired: started ? ["page:home"] : [],
+      fired: [],
       state: snapshot(),
     };
   },
-  logos: async (page) => ({ kind: "logo", page, more: false, options: [] }),
-  cover: async (kind) => ({ kind, status: "ready", item: null }),
-  golive: async () => golive(),
+  preset: (field): StepDraft | undefined => {
+    const said = recordedAnswer();
+    if (!said || said.field !== field) return undefined;
+    const guide = liveGuide();
+    if (isReview(guide.cards)) return undefined;
+    if (guide.cards) {
+      const o = guide.cards.options.find(
+        (o) => o.label.toLowerCase() === said.text.trim().toLowerCase(),
+      );
+      return o ? { card: { value: o.value, label: o.label } } : undefined;
+    }
+    const ticked = pickedOptions({ ...guide, answer: said.text });
+    return ticked.length ? { ticked } : { text: said.text };
+  },
+  logos: (page) => setupFlowApi.logos(page),
+  cover: async (kind) => {
+    const card = s.real?.interview.cards?.[`${kind}_review`];
+    return isReview(card)
+      ? card
+      : ({ kind, status: "ready", item: null } as ReviewCard);
+  },
+  golive: () => setupFlowApi.golive(),
   goliveAction: async (action) => {
     if (action === "publish") s.published = true;
-    return golive();
+    return setupFlowApi.golive();
   },
 };

@@ -250,8 +250,11 @@ function Flow({
   // Unsent ticks and text per question (by field; the go-live box under
   // GOLIVE), kept while the coach moves between questions.
   const [drafts, setDrafts] = useState<Record<string, StepDraft>>({});
+  // The dev mock opens the live question with last time's answer picked.
+  const preset = (key: string): StepDraft =>
+    (key === guide.field ? api.preset?.(key) : undefined) ?? {};
   const editDraft = (key: string) => (update: (d: StepDraft) => StepDraft) =>
-    setDrafts((all) => ({ ...all, [key]: update(all[key] ?? {}) }));
+    setDrafts((all) => ({ ...all, [key]: update(all[key] ?? preset(key)) }));
   const dropDraft = (key: string) =>
     setDrafts(({ [key]: _sent, ...rest }) => rest);
 
@@ -403,7 +406,9 @@ function Flow({
               brandName={brandName}
               live={live}
               sending={sending}
-              draft={drafts[step.field ?? GOLIVE] ?? {}}
+              draft={
+                drafts[step.field ?? GOLIVE] ?? preset(step.field ?? GOLIVE)
+              }
               onDraft={editDraft(step.field ?? GOLIVE)}
               onSend={(req) => void send(req)}
               onMoreLogos={api.logos}

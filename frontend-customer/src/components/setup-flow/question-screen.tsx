@@ -14,6 +14,7 @@ import {
   type GuideCards,
   type LookCards,
   type ReviewKind,
+  type StepDraft,
   type TurnRequest,
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
@@ -21,13 +22,7 @@ import { AnswerBox } from "./answer-box";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 
-/** What the coach has ticked or typed on a question but not sent yet. */
-export interface StepDraft {
-  ticked?: string[];
-  text?: string;
-  /** A look card picked but not sent yet. */
-  card?: { value: string; label: string };
-}
+export type { StepDraft };
 
 /** One interview question on the whole screen: big answer tiles (any number
  * of them on a multi question), "You decide", or a typed or dictated answer.

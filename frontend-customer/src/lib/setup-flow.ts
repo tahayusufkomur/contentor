@@ -68,9 +68,19 @@ export interface ConnectStatus {
   is_paid_active: boolean;
 }
 
+/** What the coach has ticked or typed on a question but not sent yet. */
+export interface StepDraft {
+  ticked?: string[];
+  text?: string;
+  /** A look card picked but not sent yet. */
+  card?: { value: string; label: string };
+}
+
 /** The seam the UI talks to — the real API below, or the dev mock. */
 export interface SetupFlowApi {
   get: () => Promise<SetupFlowState>;
+  /** Dev mock only: what the live question opens pre-filled with. */
+  preset?: (field: string) => StepDraft | undefined;
   act: (body: SetupAction) => Promise<SetupFlowState>;
   buildPage: (page: string, force?: boolean) => Promise<unknown>;
   draft: (kind: ContentKind, prompt: string) => Promise<DraftResult>;

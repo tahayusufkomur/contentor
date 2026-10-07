@@ -28,7 +28,8 @@ export default async function SetupPage({
   await requireRole(user, ["owner", "coach"]);
   const [slug, host] = await Promise.all([getTenantSlug(), getTenantDomain()]);
   const config = await fetchTenantConfig(slug);
-  // Dev-only fixture so the layout can be checked without the backend.
+  // Dev-only replay of this tenant's recorded interview, answers
+  // pre-selected and no AI calls (`&at=N` opens on the Nth question).
   const mock =
     process.env.NODE_ENV !== "production" && searchParams.mock === "1";
   // Finished (or never-guided) tenants have nothing to do here.
