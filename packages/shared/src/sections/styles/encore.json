@@ -1,0 +1,110 @@
+{
+  "id": "encore",
+  "label": "Encore",
+  "mood": "A gig poster and the record it sells — cream stock, black ink, a teal second colour, a tracklist.",
+  "niches": [
+    "music"
+  ],
+  "order": 10,
+  "enabled": true,
+  "fonts": {
+    "display": "Unbounded",
+    "body": "Libre Franklin",
+    "googleQuery": "family=Unbounded:wght@400;700;900&family=Libre+Franklin:wght@400;500;600&family=Space+Mono:wght@400;700"
+  },
+  "palette": {
+    "background": "oklch(0.95 0.02 80)",
+    "surface": "oklch(0.9 0.025 80)",
+    "foreground": "oklch(0.16 0.01 60)",
+    "mutedForeground": "oklch(0.45 0.01 60)",
+    "primary": "oklch(0.16 0.01 60)",
+    "primaryForeground": "oklch(0.95 0.02 80)",
+    "accent": "oklch(0.6 0.13 190)",
+    "accentForeground": "oklch(0.12 0.02 190)",
+    "border": "oklch(0.78 0.02 80)",
+    "inverse": "oklch(0.16 0.01 60)",
+    "inverseForeground": "oklch(0.95 0.02 80)"
+  },
+  "paletteLabel": "Cream stock",
+  "palettes": [
+    {
+      "id": "jazz",
+      "label": "Jazz club",
+      "mood": "Black and brass — late set, low light.",
+      "palette": {
+        "background": "oklch(0.17 0.005 60)",
+        "surface": "oklch(0.22 0.006 60)",
+        "foreground": "oklch(0.93 0.02 80)",
+        "mutedForeground": "oklch(0.7 0.015 80)",
+        "primary": "oklch(0.93 0.02 80)",
+        "primaryForeground": "oklch(0.17 0.005 60)",
+        "accent": "oklch(0.78 0.12 85)",
+        "accentForeground": "oklch(0.17 0.01 85)",
+        "border": "oklch(0.32 0.008 60)",
+        "inverse": "oklch(0.93 0.02 80)",
+        "inverseForeground": "oklch(0.17 0.005 60)"
+      }
+    },
+    {
+      "id": "riot",
+      "label": "Riot",
+      "mood": "Cream and magenta — the all-ages show.",
+      "palette": {
+        "background": "oklch(0.95 0.02 80)",
+        "surface": "oklch(0.9 0.025 80)",
+        "foreground": "oklch(0.16 0.01 60)",
+        "mutedForeground": "oklch(0.45 0.01 60)",
+        "primary": "oklch(0.16 0.01 60)",
+        "primaryForeground": "oklch(0.95 0.02 80)",
+        "accent": "oklch(0.62 0.24 350)",
+        "accentForeground": "oklch(0.99 0 0)",
+        "border": "oklch(0.78 0.02 80)",
+        "inverse": "oklch(0.62 0.24 350)",
+        "inverseForeground": "oklch(0.99 0 0)"
+      }
+    }
+  ],
+  "radius": "0rem",
+  "photoWords": "stage light, instrument close-up, performer mid-song, grain, black and white or high contrast",
+  "variants": {
+    "hero": [
+      "poster",
+      "intro"
+    ],
+    "story": [
+      "linernotes"
+    ],
+    "benefits": [
+      "setlist"
+    ],
+    "courseShowcase": [
+      "tracklist",
+      "rows"
+    ],
+    "howItWorks": [
+      "soundcheck"
+    ],
+    "philosophy": [
+      "manifesto"
+    ],
+    "moments": [
+      "sleeves"
+    ],
+    "pricing": [
+      "passes"
+    ],
+    "faq": [
+      "bsides"
+    ],
+    "cta": [
+      "encore"
+    ],
+    "contact": [
+      "booking"
+    ],
+    "events": [
+      "tourdates",
+      "rows"
+    ]
+  }
+}

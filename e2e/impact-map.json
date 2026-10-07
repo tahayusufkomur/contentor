@@ -153,6 +153,14 @@
     ],
     "src/lib/interview.ts": [
       "01-signup-onboarding"
+    ],
+    "src/components/sections": [
+      "01-signup-onboarding",
+      "09-builder"
+    ],
+    "src/lib/site-styles.ts": [
+      "01-signup-onboarding",
+      "09-builder"
     ]
   },
   "frontend-main": [

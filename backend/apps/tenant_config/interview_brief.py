@@ -76,6 +76,42 @@ _NICHE_WORDS = (
     ("makeup", r"make[- ]?up"),
     ("pilates", r"pilates"),
     ("yoga", r"yoga"),
+    # Styled-site niches (2026-10-07): each maps to a site style. Specific
+    # trades come before "fitness", which otherwise swallows "running".
+    (
+        "outdoors",
+        r"\brun(ning|ner)|hik(e|ing)|\btrail|cycl|climb|surf|\bski|triathl|marathon" r"|open[- ]water|mountain|outdoor",
+    ),
+    (
+        "cooking",
+        r"cook|bak(e|ing|er)|chef|kitchen|pastry|sourdough|recipe|\bwine|barista|cuisine|nutrition|meal",
+    ),
+    (
+        "music",
+        r"music|piano|guitar|\bsing|voice|vocal|drum|\bdj\b|violin|cello|saxo|ukulele|songwrit"
+        r"|produc(er|tion)|theat|acting|\bband\b",
+    ),
+    (
+        "learning",
+        r"language|spanish|english|french|german|italian|portuguese|japanese|mandarin|chinese|arabic"
+        r"|tutor|\bexam|ielts|toefl|\bmath|chess|coding|programming|python|javascript|homework|study"
+        r"|\bsat\b|gcse|a-level|grammar|literacy",
+    ),
+    (
+        "creative",
+        r"photograph|paint|draw|illustrat|sketch|watercolou?r|pottery|ceramic|craft|knit|\bsew|crochet"
+        r"|calligraph|graphic design|\bdesign|\bfilm|video edit|animation|writing|creative|\bart\b|artist",
+    ),
+    (
+        "wellness",
+        r"sleep|stress|mindful|meditat|breathwork|anxiet|therap|mindset|life coach|spiritual|astrolog|tarot"
+        r"|reiki|burnout|habit|confidence|relationship|parent|grief|hypno|wellbeing|well-being|self[- ]care",
+    ),
+    (
+        "business",
+        r"business|consult|executive|leadership|career|financ|money|invest|marketing|\bsales|entrepreneur"
+        r"|startup|founder|productiv|management|negotiat|linkedin|freelanc|agency|real estate|\bceo\b",
+    ),
     (
         "fitness",
         r"fitness|strength|hiit|workout|gym|personal train|running"

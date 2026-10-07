@@ -331,21 +331,25 @@ def _look_photos(tenant, answers: dict) -> list[str]:
 
 
 def style_cards(answers: dict, tenant=None) -> dict:
-    """Eight looks: every style in its own colours and its first
-    alternative, the niche's style first (its own palette is the guide's
+    """Every enabled style as a look: the styles made for the coach's niche
+    in their own colours and their first alternative, the rest in their own
+    colours only; the niche's style first (its own palette is the guide's
     pick); previewed with the coach's own subject and words."""
     from apps.core.onboarding.wizard_catalog import recommended_style
 
     from . import sections
 
-    first = recommended_style(answers.get("niche") or "general")
+    niche = answers.get("niche") or "general"
+    first = recommended_style(niche)
+    fits = {sid for sid, s in sections.enabled_styles().items() if niche in (s.get("niches") or [])}
+    fits.add(first)
     seen: dict[str, int] = {}
     looks = []
     for look in sections.looks():
         seen[look["style"]] = seen.get(look["style"], 0) + 1
-        if seen[look["style"]] <= 2:
+        if seen[look["style"]] <= (2 if look["style"] in fits else 1):
             looks.append(look)
-    looks.sort(key=lambda o: o["style"] != first)
+    looks.sort(key=lambda o: (o["style"] != first, o["style"] not in fits))
     return {
         "kind": "style",
         "options": [{**o, **({"recommended": True} if o["value"] == first else {})} for o in looks],

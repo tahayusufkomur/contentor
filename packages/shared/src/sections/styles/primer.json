@@ -1,0 +1,110 @@
+{
+  "id": "primer",
+  "label": "Primer",
+  "mood": "The exercise book you loved — ruled lines, a red margin, index tabs, outcomes as checkboxes.",
+  "niches": [
+    "learning"
+  ],
+  "order": 8,
+  "enabled": true,
+  "fonts": {
+    "display": "Source Serif 4",
+    "body": "Atkinson Hyperlegible",
+    "googleQuery": "family=Source+Serif+4:opsz,wght@8..60,400..700&family=Atkinson+Hyperlegible:wght@400;700&family=Courier+Prime:wght@400;700"
+  },
+  "palette": {
+    "background": "oklch(0.985 0.005 90)",
+    "surface": "oklch(0.955 0.01 90)",
+    "foreground": "oklch(0.22 0.02 260)",
+    "mutedForeground": "oklch(0.5 0.02 260)",
+    "primary": "oklch(0.45 0.15 255)",
+    "primaryForeground": "oklch(0.985 0.005 90)",
+    "accent": "oklch(0.55 0.18 25)",
+    "accentForeground": "oklch(0.99 0.005 90)",
+    "border": "oklch(0.85 0.03 230)",
+    "inverse": "oklch(0.35 0.12 255)",
+    "inverseForeground": "oklch(0.985 0.005 90)"
+  },
+  "paletteLabel": "Exercise book",
+  "palettes": [
+    {
+      "id": "chalk",
+      "label": "Chalkboard",
+      "mood": "Board green, white chalk and a yellow stick.",
+      "palette": {
+        "background": "oklch(0.3 0.05 160)",
+        "surface": "oklch(0.34 0.05 160)",
+        "foreground": "oklch(0.96 0.01 90)",
+        "mutedForeground": "oklch(0.78 0.02 110)",
+        "primary": "oklch(0.96 0.01 90)",
+        "primaryForeground": "oklch(0.28 0.05 160)",
+        "accent": "oklch(0.8 0.12 85)",
+        "accentForeground": "oklch(0.25 0.04 85)",
+        "border": "oklch(0.42 0.05 160)",
+        "inverse": "oklch(0.96 0.01 90)",
+        "inverseForeground": "oklch(0.3 0.05 160)"
+      }
+    },
+    {
+      "id": "manila",
+      "label": "Manila",
+      "mood": "Folder buff and brown ink — the teacher's own notes.",
+      "palette": {
+        "background": "oklch(0.93 0.04 85)",
+        "surface": "oklch(0.9 0.045 85)",
+        "foreground": "oklch(0.3 0.04 50)",
+        "mutedForeground": "oklch(0.5 0.04 50)",
+        "primary": "oklch(0.4 0.06 50)",
+        "primaryForeground": "oklch(0.96 0.03 85)",
+        "accent": "oklch(0.5 0.15 25)",
+        "accentForeground": "oklch(0.97 0.02 85)",
+        "border": "oklch(0.8 0.05 80)",
+        "inverse": "oklch(0.35 0.05 50)",
+        "inverseForeground": "oklch(0.95 0.03 85)"
+      }
+    }
+  ],
+  "radius": "0.25rem",
+  "photoWords": "bright classroom or desk, books and notebooks, tutor with a student, natural daylight, clean, friendly",
+  "variants": {
+    "hero": [
+      "titlepage",
+      "intro"
+    ],
+    "story": [
+      "foreword"
+    ],
+    "benefits": [
+      "outcomes"
+    ],
+    "courseShowcase": [
+      "syllabus",
+      "rows"
+    ],
+    "howItWorks": [
+      "lessonplan"
+    ],
+    "philosophy": [
+      "marginnote"
+    ],
+    "moments": [
+      "classroom"
+    ],
+    "pricing": [
+      "termfees"
+    ],
+    "faq": [
+      "glossary"
+    ],
+    "cta": [
+      "enrol"
+    ],
+    "contact": [
+      "officehours"
+    ],
+    "events": [
+      "termdates",
+      "rows"
+    ]
+  }
+}

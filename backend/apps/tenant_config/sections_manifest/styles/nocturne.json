@@ -1,0 +1,111 @@
+{
+  "id": "nocturne",
+  "label": "Nocturne",
+  "mood": "Night blue with one warm lamp — a soft dark style, rounded serif, a glow on the one button.",
+  "niches": [
+    "wellness",
+    "yoga"
+  ],
+  "order": 7,
+  "enabled": true,
+  "fonts": {
+    "display": "Fraunces",
+    "body": "Figtree",
+    "googleQuery": "family=Fraunces:opsz,wght,SOFT@9..144,300..700,0..100&family=Figtree:wght@400;500;600"
+  },
+  "palette": {
+    "background": "oklch(0.21 0.035 270)",
+    "surface": "oklch(0.26 0.04 270)",
+    "foreground": "oklch(0.94 0.012 80)",
+    "mutedForeground": "oklch(0.74 0.02 80)",
+    "primary": "oklch(0.82 0.12 80)",
+    "primaryForeground": "oklch(0.2 0.03 270)",
+    "accent": "oklch(0.78 0.09 300)",
+    "accentForeground": "oklch(0.2 0.03 290)",
+    "border": "oklch(0.34 0.04 270)",
+    "inverse": "oklch(0.94 0.012 80)",
+    "inverseForeground": "oklch(0.22 0.035 270)"
+  },
+  "paletteLabel": "Lamp",
+  "palettes": [
+    {
+      "id": "moss",
+      "label": "Moss night",
+      "mood": "Deep green and a sage glow — a forest cabin after dark.",
+      "palette": {
+        "background": "oklch(0.2 0.03 160)",
+        "surface": "oklch(0.25 0.035 160)",
+        "foreground": "oklch(0.94 0.01 110)",
+        "mutedForeground": "oklch(0.73 0.02 120)",
+        "primary": "oklch(0.8 0.1 130)",
+        "primaryForeground": "oklch(0.2 0.03 160)",
+        "accent": "oklch(0.78 0.08 60)",
+        "accentForeground": "oklch(0.2 0.03 60)",
+        "border": "oklch(0.33 0.035 160)",
+        "inverse": "oklch(0.94 0.01 110)",
+        "inverseForeground": "oklch(0.22 0.03 160)"
+      }
+    },
+    {
+      "id": "plum",
+      "label": "Plum",
+      "mood": "Aubergine and rose — candlelight.",
+      "palette": {
+        "background": "oklch(0.22 0.04 330)",
+        "surface": "oklch(0.27 0.045 330)",
+        "foreground": "oklch(0.95 0.01 340)",
+        "mutedForeground": "oklch(0.75 0.025 340)",
+        "primary": "oklch(0.8 0.1 20)",
+        "primaryForeground": "oklch(0.22 0.04 330)",
+        "accent": "oklch(0.78 0.08 300)",
+        "accentForeground": "oklch(0.22 0.04 300)",
+        "border": "oklch(0.35 0.045 330)",
+        "inverse": "oklch(0.95 0.01 340)",
+        "inverseForeground": "oklch(0.24 0.04 330)"
+      }
+    }
+  ],
+  "radius": "1.5rem",
+  "photoWords": "low warm lamp light, dusk, quiet interior, soft focus, a calm person resting or reading, deep blue and amber tones",
+  "variants": {
+    "hero": [
+      "lantern",
+      "intro"
+    ],
+    "story": [
+      "evening"
+    ],
+    "benefits": [
+      "rituals"
+    ],
+    "courseShowcase": [
+      "nights",
+      "rows"
+    ],
+    "howItWorks": [
+      "winddown"
+    ],
+    "philosophy": [
+      "whisper"
+    ],
+    "moments": [
+      "lanterns"
+    ],
+    "pricing": [
+      "stays"
+    ],
+    "faq": [
+      "soft"
+    ],
+    "cta": [
+      "lamp"
+    ],
+    "contact": [
+      "note"
+    ],
+    "events": [
+      "evenings",
+      "rows"
+    ]
+  }
+}

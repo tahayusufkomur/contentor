@@ -147,10 +147,19 @@ def test_choose_text_field_goes_through_coercion(tenant_ctx, config):
 
 
 def test_style_cards_offer_every_look_with_the_niche_style_first():
+    from apps.tenant_config import sections
+
     cards = ms.style_cards({"niche": "fitness"})
-    assert cards["kind"] == "style" and len(cards["options"]) == 8  # 6-8 looks, not 12
+    enabled = sections.enabled_styles()
+    fits = {sid for sid, s in enabled.items() if "fitness" in s["niches"]}
+    # Every style once in its own colours; the styles made for the niche also
+    # in their first alternative — not every colourway of every style.
+    assert cards["kind"] == "style"
+    assert len(cards["options"]) == len(enabled) + len(fits)
+    assert {o["style"] for o in cards["options"]} == set(enabled)
     assert [o["style"] for o in cards["options"][:2]] == ["kinetic"] * 2
     assert cards["options"][2]["style"] != "kinetic"
+    assert all(o["palette"] == "" for o in cards["options"] if o["style"] not in fits)
     assert cards["options"][0]["value"] == "kinetic" and cards["options"][0]["recommended"] is True
     assert cards["options"][1]["value"] == "kinetic:ocean" and "recommended" not in cards["options"][1]
     assert all({"value", "style", "palette", "label", "detail"} <= set(o) for o in cards["options"])

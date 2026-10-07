@@ -1,0 +1,111 @@
+{
+  "id": "maison",
+  "label": "Maison",
+  "mood": "A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, hairline frames and a great deal of air.",
+  "niches": [
+    "business",
+    "general"
+  ],
+  "order": 12,
+  "enabled": true,
+  "fonts": {
+    "display": "Bodoni Moda",
+    "body": "Jost",
+    "googleQuery": "family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300;400;500"
+  },
+  "palette": {
+    "background": "oklch(0.975 0.006 80)",
+    "surface": "oklch(0.94 0.008 80)",
+    "foreground": "oklch(0.15 0 0)",
+    "mutedForeground": "oklch(0.45 0.005 80)",
+    "primary": "oklch(0.15 0 0)",
+    "primaryForeground": "oklch(0.975 0.006 80)",
+    "accent": "oklch(0.78 0.06 80)",
+    "accentForeground": "oklch(0.15 0 0)",
+    "border": "oklch(0.85 0.008 80)",
+    "inverse": "oklch(0.15 0 0)",
+    "inverseForeground": "oklch(0.96 0.006 80)"
+  },
+  "paletteLabel": "Ivory",
+  "palettes": [
+    {
+      "id": "noir",
+      "label": "Noir",
+      "mood": "Black with ivory type — the evening edition.",
+      "palette": {
+        "background": "oklch(0.15 0 0)",
+        "surface": "oklch(0.2 0 0)",
+        "foreground": "oklch(0.96 0.006 80)",
+        "mutedForeground": "oklch(0.7 0.005 80)",
+        "primary": "oklch(0.96 0.006 80)",
+        "primaryForeground": "oklch(0.15 0 0)",
+        "accent": "oklch(0.78 0.06 80)",
+        "accentForeground": "oklch(0.15 0 0)",
+        "border": "oklch(0.3 0 0)",
+        "inverse": "oklch(0.96 0.006 80)",
+        "inverseForeground": "oklch(0.15 0 0)"
+      }
+    },
+    {
+      "id": "bordeaux",
+      "label": "Bordeaux",
+      "mood": "Ivory and deep wine — the private salon.",
+      "palette": {
+        "background": "oklch(0.975 0.006 80)",
+        "surface": "oklch(0.94 0.01 20)",
+        "foreground": "oklch(0.25 0.06 15)",
+        "mutedForeground": "oklch(0.48 0.04 15)",
+        "primary": "oklch(0.3 0.09 15)",
+        "primaryForeground": "oklch(0.975 0.006 80)",
+        "accent": "oklch(0.78 0.06 80)",
+        "accentForeground": "oklch(0.25 0.06 15)",
+        "border": "oklch(0.85 0.015 20)",
+        "inverse": "oklch(0.28 0.08 15)",
+        "inverseForeground": "oklch(0.96 0.006 80)"
+      }
+    }
+  ],
+  "radius": "0rem",
+  "photoWords": "editorial portrait, soft directional studio light, ivory and black, minimal interior, tailored, composed",
+  "variants": {
+    "hero": [
+      "lookbook",
+      "intro"
+    ],
+    "story": [
+      "atelier"
+    ],
+    "benefits": [
+      "edit"
+    ],
+    "courseShowcase": [
+      "collection",
+      "rows"
+    ],
+    "howItWorks": [
+      "fittings"
+    ],
+    "philosophy": [
+      "maxim"
+    ],
+    "moments": [
+      "editorial"
+    ],
+    "pricing": [
+      "appointment"
+    ],
+    "faq": [
+      "notes"
+    ],
+    "cta": [
+      "introduction"
+    ],
+    "contact": [
+      "address"
+    ],
+    "events": [
+      "salons",
+      "rows"
+    ]
+  }
+}

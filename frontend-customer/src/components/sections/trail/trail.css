@@ -1,0 +1,217 @@
+/* Trail — style-scoped CSS. Every class/keyframe is trail-prefixed. */
+
+.trail {
+  font-feature-settings: "kern", "liga";
+}
+
+/* The third face: mono for distances, elevations, waypoints. */
+.trail-mono {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.trail-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Contour lines: faint concentric rings drawn on the stone, top right. */
+.trail-contours {
+  background-image: repeating-radial-gradient(
+    ellipse at 88% 12%,
+    transparent 0 34px,
+    color-mix(in oklch, var(--primary) 9%, transparent) 34px 35px
+  );
+}
+
+/* The pine band: its own dim text and rules; blaze stays blaze. */
+.trail-pine .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 72%, var(--inverse));
+}
+.trail-pine .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 28%, transparent);
+}
+.trail-pine .border-foreground {
+  border-color: var(--inverse-foreground);
+}
+.trail-pine .text-primary {
+  color: var(--inverse-foreground);
+}
+.trail-pine .bg-muted {
+  background-color: color-mix(
+    in oklch,
+    var(--inverse-foreground) 8%,
+    var(--inverse)
+  );
+}
+
+/* Stamps sit tilted, like ink on a passport. */
+.trail-stamp {
+  transform: rotate(-10deg);
+}
+
+/* One focus treatment for every control. */
+.trail a:focus-visible,
+.trail button:focus-visible,
+.trail summary:focus-visible,
+.trail [tabindex]:focus-visible,
+.trail-focus:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.trail-pine a:focus-visible,
+.trail-pine button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Link: a blaze underline. */
+.trail-link {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+}
+.trail-link:hover {
+  color: var(--accent);
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.trail-price.trail-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* Ranger (FAQ): the waypoint turns blaze when open; no marker. */
+.trail-faq summary {
+  list-style: none;
+}
+.trail-faq summary::-webkit-details-marker {
+  display: none;
+}
+.trail-faq details[open] .trail-q {
+  color: var(--primary);
+}
+.trail-faq details[open] .trail-plus::after {
+  transform: rotate(0deg);
+}
+.trail-plus {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+.trail-plus::before,
+.trail-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: currentColor;
+}
+.trail-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: pine-bordered fields on stone, mono labels. */
+.trail-form label {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.trail-form input,
+.trail-form textarea {
+  border: 2px solid var(--foreground);
+  border-radius: var(--radius);
+  background: var(--background);
+  box-shadow: none;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+  font-size: 1.02rem;
+}
+.trail-form input:focus-visible,
+.trail-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 25%, transparent);
+  outline: none;
+}
+
+/* A photograph as a postcard: stone border, soft offset shadow. */
+.trail-postcard {
+  border: 6px solid var(--background);
+  box-shadow: 0 1px 0 1px var(--border);
+}
+
+/* Dotted route line for waypoint lists. */
+.trail-route {
+  border-left: 2px dashed var(--primary);
+}
+
+/* Scroll strip without a visible scrollbar. */
+.trail-strip {
+  scrollbar-width: none;
+}
+.trail-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .trail-link {
+    transition: color 0.2s ease;
+  }
+  .trail-plus::after {
+    transition: transform 0.3s ease;
+  }
+  .trail-arrow {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .trail-arrow {
+    transform: translateX(5px);
+  }
+  .trail-zoom img {
+    transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .trail-zoom img {
+    transform: scale(1.03);
+  }
+
+  /* The one orchestrated moment: the route card is filled in and the stamp
+   * comes down on it. */
+  .trail-rise {
+    animation: trail-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--trail-delay, 0ms);
+  }
+  .trail-stamp {
+    animation: trail-stamp 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+    animation-delay: var(--trail-delay, 0ms);
+  }
+}
+
+@keyframes trail-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes trail-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-10deg) scale(1.5);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-10deg) scale(1);
+  }
+}

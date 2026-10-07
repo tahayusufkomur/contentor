@@ -3,10 +3,20 @@ import journal from "./journal.json";
 import kinetic from "./kinetic.json";
 import grid from "./grid.json";
 import pop from "./pop.json";
+import ledger from "./ledger.json";
+import darkroom from "./darkroom.json";
+import nocturne from "./nocturne.json";
+import primer from "./primer.json";
+import tavola from "./tavola.json";
+import encore from "./encore.json";
+import trail from "./trail.json";
+import maison from "./maison.json";
 
 /** Every site style, by id, in build/display order. */
 export const SITE_STYLES: Record<string, SiteStyle> = Object.fromEntries(
-  ([journal, kinetic, grid, pop] as unknown as SiteStyle[])
+  (
+    [journal, kinetic, grid, pop, ledger, darkroom, nocturne, primer, tavola, encore, trail, maison] as unknown as SiteStyle[]
+  )
     .sort((a, b) => a.order - b.order)
     .map((s) => [s.id, s]),
 );

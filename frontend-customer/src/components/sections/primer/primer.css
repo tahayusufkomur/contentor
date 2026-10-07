@@ -1,0 +1,254 @@
+/* Primer — style-scoped CSS. Every class/keyframe is primer-prefixed. */
+
+.primer {
+  font-feature-settings: "kern", "liga";
+  --primer-rule: var(--border);
+  --primer-margin: var(--accent);
+  --primer-line: 2rem;
+}
+
+/* The third face: Courier for unit labels, margin notes, tabs. */
+.primer-courier {
+  font-family: "Courier Prime", "Courier New", Courier, monospace;
+}
+.primer-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ruled paper: faint lines every 2rem, like an exercise book; the lines
+   fade out towards the foot of the section instead of stopping dead. */
+.primer-ruled {
+  isolation: isolate;
+}
+.primer-ruled::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 calc(var(--primer-line) - 1px),
+    color-mix(in oklch, var(--primer-rule) 70%, transparent)
+      calc(var(--primer-line) - 1px) var(--primer-line)
+  );
+  background-size: 100% var(--primer-line);
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent);
+}
+
+/* A page: the red margin rule down the left edge. */
+.primer-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.9rem;
+  width: 1px;
+  background: var(--primer-margin);
+  opacity: 0.8;
+}
+@media (min-width: 640px) {
+  .primer-page::before {
+    left: 1.5rem;
+  }
+}
+
+/* The ink band: its own dim text, rules and margin. */
+.primer-ink {
+  --primer-rule: color-mix(
+    in oklch,
+    var(--inverse-foreground) 25%,
+    transparent
+  );
+  --primer-margin: var(--inverse-foreground);
+}
+.primer-ink .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 72%, var(--inverse));
+}
+.primer-ink .border-border {
+  border-color: var(--primer-rule);
+}
+.primer-ink .text-accent {
+  color: var(--inverse-foreground);
+}
+.primer-ink .border-primary {
+  border-color: var(--inverse-foreground);
+}
+
+/* Checkbox: ticked = filled ink with a paper inset. */
+.primer-check-done {
+  background: var(--primary);
+  box-shadow: inset 0 0 0 2px var(--background);
+}
+.primer-ink .primer-check-done {
+  background: var(--inverse-foreground);
+  box-shadow: inset 0 0 0 2px var(--inverse);
+}
+
+/* Index tab fill. */
+.primer-tab {
+  background: var(--primary);
+}
+
+/* One focus treatment for every control. */
+.primer a:focus-visible,
+.primer button:focus-visible,
+.primer summary:focus-visible,
+.primer [tabindex]:focus-visible,
+.primer-focus:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.primer-ink a:focus-visible,
+.primer-ink button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Link: a pencil-red underline, like a teacher's mark. */
+.primer-link {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+}
+.primer-link:hover {
+  color: var(--accent);
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.primer-price.primer-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* Glossary (FAQ): the term turns ink blue when open; no marker. */
+.primer-faq summary {
+  list-style: none;
+}
+.primer-faq summary::-webkit-details-marker {
+  display: none;
+}
+.primer-faq details[open] .primer-term {
+  color: var(--primary);
+}
+.primer-faq details[open] .primer-plus::after {
+  transform: rotate(0deg);
+}
+.primer-plus {
+  position: relative;
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+.primer-plus::before,
+.primer-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: currentColor;
+}
+.primer-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: ruled-line fields, Courier labels. */
+.primer-form label {
+  font-family: "Courier Prime", "Courier New", monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.primer-form input,
+.primer-form textarea {
+  border-width: 0 0 1px 0;
+  border-color: var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1.05rem;
+}
+.primer-form input:focus-visible,
+.primer-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: 0 2px 0 0 var(--primary);
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Photo: a paper corner, slightly tilted like a print taped in a notebook. */
+.primer-print {
+  box-shadow:
+    0 0 0 6px var(--background),
+    0 0 0 7px var(--border);
+}
+
+/* Scroll strip without a visible scrollbar. */
+.primer-strip {
+  scrollbar-width: none;
+}
+.primer-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .primer-link {
+    transition: color 0.25s ease;
+  }
+  .primer-plus::after {
+    transition: transform 0.3s ease;
+  }
+  .primer-arrow {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .primer-arrow {
+    transform: translateX(5px);
+  }
+  .primer-zoom img {
+    transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .primer-zoom img {
+    transform: scale(1.03);
+  }
+
+  /* The one orchestrated moment: the opening page is written in — the
+   * title appears line by line and the first boxes get ticked. */
+  .primer-write {
+    animation: primer-write 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--primer-delay, 0ms);
+  }
+  .primer-tick {
+    animation: primer-tick 0.4s ease both;
+    animation-delay: var(--primer-delay, 0ms);
+  }
+}
+
+@keyframes primer-write {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes primer-tick {
+  from {
+    background: transparent;
+    box-shadow: none;
+  }
+}

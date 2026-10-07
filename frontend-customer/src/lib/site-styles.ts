@@ -29,6 +29,14 @@ const SITE_WRAP: Record<string, string> = {
   kinetic: "90rem",
   grid: "88rem",
   pop: "84rem",
+  ledger: "80rem",
+  darkroom: "96rem",
+  nocturne: "76rem",
+  primer: "78rem",
+  tavola: "84rem",
+  encore: "88rem",
+  trail: "86rem",
+  maison: "80rem",
 };
 const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 

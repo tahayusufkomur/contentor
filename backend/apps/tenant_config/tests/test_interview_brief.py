@@ -192,3 +192,25 @@ def test_field_icons_and_hints_line_up_with_options():
     assert brief.FIELD_BY_ID["teaches"].icons[0] == "flower-2"
     assert brief.FIELD_BY_ID["tone"].hints[0].startswith("Come as you are")
     assert len(set(brief.ICONS)) == len(brief.ICONS)  # no duplicates
+
+
+@pytest.mark.parametrize(
+    ("teaches", "niche"),
+    [
+        ("Business coaching for owners of small service firms", "business"),
+        ("Career change coaching for mid-career professionals", "business"),
+        ("Natural-light portrait photography", "creative"),
+        ("Loose watercolour landscapes", "creative"),
+        ("Sleep and stress programmes", "wellness"),
+        ("Conversational Spanish for adults", "learning"),
+        ("Chess for club players", "learning"),
+        ("Weeknight cooking for busy parents", "cooking"),
+        ("Piano for adult beginners", "music"),
+        ("First-marathon running coaching", "outdoors"),
+        ("Strength training for adults over 40", "fitness"),
+        ("Yoga for runners", "yoga"),
+        ("Something else entirely", "general"),
+    ],
+)
+def test_niche_for_maps_the_styled_niches(teaches, niche):
+    assert brief.niche_for(teaches) == niche

@@ -1,0 +1,111 @@
+{
+  "id": "ledger",
+  "label": "Ledger",
+  "mood": "The trusted advisor's annual report — bone paper, navy ink, one oxblood rule, numbered clauses.",
+  "niches": [
+    "business",
+    "general"
+  ],
+  "order": 5,
+  "enabled": true,
+  "fonts": {
+    "display": "Instrument Serif",
+    "body": "IBM Plex Sans",
+    "googleQuery": "family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500"
+  },
+  "palette": {
+    "background": "oklch(0.965 0.007 80)",
+    "surface": "oklch(0.93 0.01 80)",
+    "foreground": "oklch(0.23 0.03 260)",
+    "mutedForeground": "oklch(0.46 0.02 260)",
+    "primary": "oklch(0.23 0.03 260)",
+    "primaryForeground": "oklch(0.97 0.007 80)",
+    "accent": "oklch(0.42 0.14 20)",
+    "accentForeground": "oklch(0.97 0.007 80)",
+    "border": "oklch(0.82 0.012 80)",
+    "inverse": "oklch(0.23 0.03 260)",
+    "inverseForeground": "oklch(0.95 0.008 80)"
+  },
+  "paletteLabel": "Bone",
+  "palettes": [
+    {
+      "id": "slate",
+      "label": "Slate",
+      "mood": "Graphite ink and a verdigris rule — a quieter boardroom.",
+      "palette": {
+        "background": "oklch(0.96 0.004 250)",
+        "surface": "oklch(0.92 0.006 250)",
+        "foreground": "oklch(0.2 0.01 250)",
+        "mutedForeground": "oklch(0.45 0.012 250)",
+        "primary": "oklch(0.3 0.015 250)",
+        "primaryForeground": "oklch(0.97 0.004 250)",
+        "accent": "oklch(0.5 0.1 180)",
+        "accentForeground": "oklch(0.98 0 0)",
+        "border": "oklch(0.82 0.006 250)",
+        "inverse": "oklch(0.2 0.01 250)",
+        "inverseForeground": "oklch(0.95 0.004 250)"
+      }
+    },
+    {
+      "id": "forest",
+      "label": "Forest",
+      "mood": "Deep green ink with a brass rule — an old firm's letterhead.",
+      "palette": {
+        "background": "oklch(0.965 0.01 100)",
+        "surface": "oklch(0.93 0.015 100)",
+        "foreground": "oklch(0.22 0.04 150)",
+        "mutedForeground": "oklch(0.45 0.03 150)",
+        "primary": "oklch(0.3 0.06 150)",
+        "primaryForeground": "oklch(0.97 0.01 100)",
+        "accent": "oklch(0.62 0.11 85)",
+        "accentForeground": "oklch(0.18 0.03 85)",
+        "border": "oklch(0.82 0.015 100)",
+        "inverse": "oklch(0.24 0.05 150)",
+        "inverseForeground": "oklch(0.95 0.01 100)"
+      }
+    }
+  ],
+  "radius": "0rem",
+  "photoWords": "corporate documentary, natural office light, candid professional at work with a client, muted navy and bone tones, medium format look",
+  "variants": {
+    "hero": [
+      "statement",
+      "intro"
+    ],
+    "story": [
+      "memo"
+    ],
+    "benefits": [
+      "clauses"
+    ],
+    "courseShowcase": [
+      "dossier",
+      "rows"
+    ],
+    "howItWorks": [
+      "quarters"
+    ],
+    "philosophy": [
+      "principles"
+    ],
+    "moments": [
+      "figures"
+    ],
+    "pricing": [
+      "table"
+    ],
+    "faq": [
+      "appendix"
+    ],
+    "cta": [
+      "signature"
+    ],
+    "contact": [
+      "letterhead"
+    ],
+    "events": [
+      "agenda",
+      "rows"
+    ]
+  }
+}

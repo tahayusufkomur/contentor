@@ -1,0 +1,200 @@
+/* Darkroom — style-scoped CSS. Every class/keyframe is darkroom-prefixed. */
+
+.darkroom {
+  font-feature-settings: "kern", "liga";
+}
+
+/* The third face: mono for plate numbers, dates, editions. */
+.darkroom-mono {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.darkroom-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The black box band: dim text and hairlines from its own tokens. */
+.darkroom-black {
+  --darkroom-hair: color-mix(
+    in oklch,
+    var(--inverse-foreground) 28%,
+    transparent
+  );
+}
+.darkroom-black .border-foreground,
+.darkroom-black .darkroom-label {
+  border-color: var(--inverse-foreground);
+}
+.darkroom-black .border-border {
+  border-color: var(--darkroom-hair);
+}
+.darkroom-black .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 68%, var(--inverse));
+}
+
+/* One focus treatment for every control. */
+.darkroom a:focus-visible,
+.darkroom button:focus-visible,
+.darkroom summary:focus-visible,
+.darkroom [tabindex]:focus-visible,
+.darkroom-focus:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Mono link: hairline underline that turns red. */
+.darkroom-link {
+  padding-bottom: 3px;
+  border-bottom: 1px solid currentColor;
+}
+.darkroom-link:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.darkroom-price.darkroom-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ disclosure: the plate number turns red when open; no marker. */
+.darkroom-faq summary {
+  list-style: none;
+}
+.darkroom-faq summary::-webkit-details-marker {
+  display: none;
+}
+.darkroom-faq details[open] .darkroom-num {
+  color: var(--accent);
+}
+.darkroom-faq details[open] .darkroom-plus::after {
+  transform: rotate(0deg);
+}
+.darkroom-plus {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+}
+.darkroom-plus::before,
+.darkroom-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+}
+.darkroom-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: hairline-bottom fields, mono caps labels. */
+.darkroom-form label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.darkroom-form input,
+.darkroom-form textarea {
+  border-width: 0 0 1px 0;
+  border-color: var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1rem;
+}
+.darkroom-form input:focus-visible,
+.darkroom-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: 0 1px 0 0 var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Scroll strip without a visible scrollbar (contact sheet on phones). */
+.darkroom-strip {
+  scrollbar-width: none;
+}
+.darkroom-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .darkroom-link {
+    transition:
+      color 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .darkroom-plus::after {
+    transition: transform 0.3s ease;
+  }
+  .darkroom-arrow {
+    transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .darkroom-arrow {
+    transform: translateX(5px);
+  }
+  .darkroom-zoom img {
+    transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .darkroom-zoom img {
+    transform: scale(1.025);
+  }
+
+  /* The one orchestrated moment: the lights come up on the first plate,
+   * then the label is hung beside it. */
+  .darkroom-lights {
+    animation: darkroom-lights 1.8s cubic-bezier(0.65, 0, 0.25, 1) both;
+    animation-delay: var(--darkroom-delay, 0ms);
+  }
+  .darkroom-hang {
+    animation: darkroom-hang 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--darkroom-delay, 0ms);
+  }
+  .darkroom-dot {
+    animation: darkroom-pulse 3s ease-in-out infinite;
+  }
+}
+
+@keyframes darkroom-lights {
+  from {
+    opacity: 0;
+    filter: brightness(1.6) contrast(0.8);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+@keyframes darkroom-hang {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes darkroom-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}

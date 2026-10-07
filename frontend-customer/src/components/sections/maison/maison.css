@@ -1,0 +1,174 @@
+/* Maison — style-scoped CSS. Every class/keyframe is maison-prefixed. */
+
+.maison {
+  font-feature-settings: "kern", "liga";
+  font-weight: 300;
+}
+
+/* Bodoni at its largest optical size: hairline serifs, high contrast. */
+.maison-opsz {
+  font-variation-settings: "opsz" 96;
+}
+.maison-tnum {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* The black band: ivory hairlines and dim text. */
+.maison-black .border-foreground {
+  border-color: var(--inverse-foreground);
+}
+.maison-black .bg-foreground {
+  background-color: var(--inverse-foreground);
+}
+.maison-black .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 68%, var(--inverse));
+}
+.maison-black .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 25%, transparent);
+}
+
+/* One focus treatment for every control. */
+.maison a:focus-visible,
+.maison button:focus-visible,
+.maison summary:focus-visible,
+.maison [tabindex]:focus-visible,
+.maison-focus:focus-visible {
+  outline: 1px solid var(--foreground);
+  outline-offset: 4px;
+}
+.maison-black a:focus-visible,
+.maison-black button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Link: a hairline underline that draws away on hover. */
+.maison-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  padding-bottom: 3px;
+}
+.maison-link:hover {
+  background-position: 100% 100%;
+  background-size: 0 1px;
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.maison-price.maison-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* Notes (FAQ): the numeral goes italic when open; no marker. */
+.maison-faq summary {
+  list-style: none;
+}
+.maison-faq summary::-webkit-details-marker {
+  display: none;
+}
+.maison-faq details[open] .maison-num {
+  font-style: italic;
+}
+.maison-faq details[open] .maison-plus::after {
+  transform: rotate(0deg);
+}
+.maison-plus {
+  position: relative;
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+}
+.maison-plus::before,
+.maison-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+}
+.maison-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: hairline-bottom fields, tracked caps labels. */
+.maison-form label {
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.maison-form input,
+.maison-form textarea {
+  border-width: 0 0 1px 0;
+  border-color: var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1rem;
+  font-weight: 300;
+}
+.maison-form input:focus-visible,
+.maison-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: 0 1px 0 0 var(--foreground);
+  outline: none;
+}
+
+/* Scroll strip without a visible scrollbar. */
+.maison-strip {
+  scrollbar-width: none;
+}
+.maison-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .maison-link {
+    transition: background-size 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .maison-plus::after {
+    transition: transform 0.35s ease;
+  }
+  .maison-arrow {
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .maison-arrow {
+    transform: translateX(8px);
+  }
+  .maison-zoom img {
+    transition: transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .maison-zoom img {
+    transform: scale(1.02);
+  }
+
+  /* The one orchestrated moment: the page turns — the plate fades up
+   * slowly, the type settles after it. */
+  .maison-fade {
+    animation: maison-fade 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--maison-delay, 0ms);
+  }
+}
+
+@keyframes maison-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

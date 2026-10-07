@@ -1,0 +1,110 @@
+{
+  "id": "tavola",
+  "label": "Tavola",
+  "mood": "The trattoria — butter-yellow awning, olive and tomato, a chunky warm serif and a menu card with dotted leaders.",
+  "niches": [
+    "cooking"
+  ],
+  "order": 9,
+  "enabled": true,
+  "fonts": {
+    "display": "Young Serif",
+    "body": "Karla",
+    "googleQuery": "family=Young+Serif&family=Karla:wght@400;500;700"
+  },
+  "palette": {
+    "background": "oklch(0.955 0.045 95)",
+    "surface": "oklch(0.985 0.02 95)",
+    "foreground": "oklch(0.26 0.03 50)",
+    "mutedForeground": "oklch(0.48 0.03 50)",
+    "primary": "oklch(0.44 0.09 130)",
+    "primaryForeground": "oklch(0.98 0.02 95)",
+    "accent": "oklch(0.57 0.19 30)",
+    "accentForeground": "oklch(0.99 0.01 95)",
+    "border": "oklch(0.82 0.05 95)",
+    "inverse": "oklch(0.3 0.05 130)",
+    "inverseForeground": "oklch(0.96 0.03 95)"
+  },
+  "paletteLabel": "Awning",
+  "palettes": [
+    {
+      "id": "harbour",
+      "label": "Harbour",
+      "mood": "Navy and saffron — fish, rice and the sea.",
+      "palette": {
+        "background": "oklch(0.96 0.01 230)",
+        "surface": "oklch(0.985 0.005 230)",
+        "foreground": "oklch(0.22 0.04 250)",
+        "mutedForeground": "oklch(0.46 0.03 250)",
+        "primary": "oklch(0.35 0.08 250)",
+        "primaryForeground": "oklch(0.97 0.01 230)",
+        "accent": "oklch(0.75 0.15 80)",
+        "accentForeground": "oklch(0.22 0.04 80)",
+        "border": "oklch(0.84 0.02 230)",
+        "inverse": "oklch(0.25 0.06 250)",
+        "inverseForeground": "oklch(0.96 0.01 230)"
+      }
+    },
+    {
+      "id": "bakery",
+      "label": "Bakery",
+      "mood": "Flour, charcoal and wheat — the 5 a.m. shift.",
+      "palette": {
+        "background": "oklch(0.94 0.02 80)",
+        "surface": "oklch(0.975 0.012 80)",
+        "foreground": "oklch(0.25 0.01 60)",
+        "mutedForeground": "oklch(0.48 0.012 60)",
+        "primary": "oklch(0.3 0.01 60)",
+        "primaryForeground": "oklch(0.97 0.012 80)",
+        "accent": "oklch(0.72 0.12 75)",
+        "accentForeground": "oklch(0.22 0.02 75)",
+        "border": "oklch(0.82 0.02 80)",
+        "inverse": "oklch(0.25 0.01 60)",
+        "inverseForeground": "oklch(0.95 0.015 80)"
+      }
+    }
+  ],
+  "radius": "0.5rem",
+  "photoWords": "warm kitchen light, hands cooking, fresh ingredients, rustic table, overhead and close, a person cooking",
+  "variants": {
+    "hero": [
+      "menu",
+      "intro"
+    ],
+    "story": [
+      "kitchentable"
+    ],
+    "benefits": [
+      "ingredients"
+    ],
+    "courseShowcase": [
+      "recipecards",
+      "rows"
+    ],
+    "howItWorks": [
+      "method"
+    ],
+    "philosophy": [
+      "houserule"
+    ],
+    "moments": [
+      "market"
+    ],
+    "pricing": [
+      "menu"
+    ],
+    "faq": [
+      "pantry"
+    ],
+    "cta": [
+      "reserve"
+    ],
+    "contact": [
+      "kitchen"
+    ],
+    "events": [
+      "tastings",
+      "rows"
+    ]
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "id": "darkroom",
+  "label": "Darkroom",
+  "mood": "A gallery wall — the work enormous, the words a museum label beside it, one red dot.",
+  "niches": [
+    "creative"
+  ],
+  "order": 6,
+  "enabled": true,
+  "fonts": {
+    "display": "Syne",
+    "body": "Schibsted Grotesk",
+    "googleQuery": "family=Syne:wght@500;700;800&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500"
+  },
+  "palette": {
+    "background": "oklch(0.99 0 0)",
+    "surface": "oklch(0.96 0 0)",
+    "foreground": "oklch(0.14 0 0)",
+    "mutedForeground": "oklch(0.5 0 0)",
+    "primary": "oklch(0.14 0 0)",
+    "primaryForeground": "oklch(0.99 0 0)",
+    "accent": "oklch(0.55 0.21 25)",
+    "accentForeground": "oklch(0.99 0 0)",
+    "border": "oklch(0.88 0 0)",
+    "inverse": "oklch(0.17 0 0)",
+    "inverseForeground": "oklch(0.96 0 0)"
+  },
+  "paletteLabel": "White cube",
+  "palettes": [
+    {
+      "id": "blackbox",
+      "label": "Black box",
+      "mood": "Charcoal walls and a brass dot — the evening opening.",
+      "palette": {
+        "background": "oklch(0.2 0 0)",
+        "surface": "oklch(0.25 0 0)",
+        "foreground": "oklch(0.95 0 0)",
+        "mutedForeground": "oklch(0.68 0 0)",
+        "primary": "oklch(0.95 0 0)",
+        "primaryForeground": "oklch(0.15 0 0)",
+        "accent": "oklch(0.8 0.12 85)",
+        "accentForeground": "oklch(0.15 0 0)",
+        "border": "oklch(0.33 0 0)",
+        "inverse": "oklch(0.96 0 0)",
+        "inverseForeground": "oklch(0.15 0 0)"
+      }
+    },
+    {
+      "id": "linen",
+      "label": "Linen",
+      "mood": "Warm off-white and ochre — a printmaker's studio.",
+      "palette": {
+        "background": "oklch(0.96 0.015 85)",
+        "surface": "oklch(0.925 0.02 85)",
+        "foreground": "oklch(0.2 0.01 60)",
+        "mutedForeground": "oklch(0.48 0.015 60)",
+        "primary": "oklch(0.2 0.01 60)",
+        "primaryForeground": "oklch(0.97 0.012 85)",
+        "accent": "oklch(0.6 0.13 55)",
+        "accentForeground": "oklch(0.98 0.01 85)",
+        "border": "oklch(0.84 0.02 85)",
+        "inverse": "oklch(0.22 0.015 60)",
+        "inverseForeground": "oklch(0.95 0.015 85)"
+      }
+    }
+  ],
+  "radius": "0rem",
+  "photoWords": "gallery light, white wall, artwork in progress, hands making, the artist at work, large format, muted, documentary",
+  "variants": {
+    "hero": [
+      "exhibition",
+      "intro"
+    ],
+    "story": [
+      "statement"
+    ],
+    "benefits": [
+      "catalogue"
+    ],
+    "courseShowcase": [
+      "plates",
+      "rows"
+    ],
+    "howItWorks": [
+      "contactsheet"
+    ],
+    "philosophy": [
+      "walltext"
+    ],
+    "moments": [
+      "grid"
+    ],
+    "pricing": [
+      "editions"
+    ],
+    "faq": [
+      "didactics"
+    ],
+    "cta": [
+      "privateview"
+    ],
+    "contact": [
+      "hours"
+    ],
+    "events": [
+      "openings",
+      "rows"
+    ]
+  }
+}

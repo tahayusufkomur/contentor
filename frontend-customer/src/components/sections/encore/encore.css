@@ -1,0 +1,186 @@
+/* Encore — style-scoped CSS. Every class/keyframe is encore-prefixed. */
+
+.encore {
+  font-feature-settings: "kern", "liga";
+}
+
+/* The third face: Space Mono for track numbers, durations, dates. */
+.encore-mono {
+  font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.encore-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ink band: inverted rules, dim text, teal stays teal. */
+.encore-ink .border-foreground {
+  border-color: var(--inverse-foreground);
+}
+.encore-ink .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 70%, var(--inverse));
+}
+.encore-ink .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 30%, transparent);
+}
+
+/* One focus treatment for every control. */
+.encore a:focus-visible,
+.encore button:focus-visible,
+.encore summary:focus-visible,
+.encore [tabindex]:focus-visible,
+.encore-focus:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Link: a 3px ink underline that turns teal. */
+.encore-link {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: currentColor;
+}
+.encore-link:hover {
+  text-decoration-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Halftone: a dot screen laid over a photo, like a screen print. */
+.encore-halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in oklch, var(--foreground) 22%, transparent) 0.6px,
+    transparent 1.2px
+  );
+  background-size: 4px 4px;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.encore-price.encore-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* B-sides (FAQ): the track number turns teal when open; no marker. */
+.encore-faq summary {
+  list-style: none;
+}
+.encore-faq summary::-webkit-details-marker {
+  display: none;
+}
+.encore-faq details[open] .encore-num {
+  color: var(--accent);
+}
+.encore-faq details[open] .encore-plus::after {
+  transform: rotate(0deg);
+}
+.encore-plus {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+.encore-plus::before,
+.encore-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  background: currentColor;
+}
+.encore-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: 3px bottom rules, mono labels. */
+.encore-form label {
+  font-family: "Space Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.encore-form input,
+.encore-form textarea {
+  border-width: 0 0 3px 0;
+  border-color: var(--foreground);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1.05rem;
+}
+.encore-form input:focus-visible,
+.encore-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--accent);
+  box-shadow: none;
+  outline: none;
+}
+
+/* Scroll strip without a visible scrollbar. */
+.encore-strip {
+  scrollbar-width: none;
+}
+.encore-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .encore-link {
+    transition:
+      color 0.2s ease,
+      text-decoration-color 0.2s ease;
+  }
+  .encore-plus::after {
+    transition: transform 0.25s ease;
+  }
+  .encore-arrow {
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .encore-arrow {
+    transform: translateX(5px);
+  }
+  .encore-zoom img {
+    transition: transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .encore-zoom img {
+    transform: scale(1.03);
+  }
+
+  /* The one orchestrated moment: the poster is pulled off the press — each
+   * line stamps down in turn. */
+  .encore-stamp {
+    animation: encore-stamp 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+    animation-delay: var(--encore-delay, 0ms);
+  }
+}
+
+@keyframes encore-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

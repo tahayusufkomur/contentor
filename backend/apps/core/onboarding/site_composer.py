@@ -108,7 +108,19 @@ IDEA_MAX = 80
 
 # ── niche + voice helpers ────────────────────────────────────────────────────
 
-_TOPICS = {"general": "coaching", "face_yoga": "face yoga", "pole_dance": "pole dance", "belly_dance": "belly dance"}
+_TOPICS = {
+    "general": "coaching",
+    "face_yoga": "face yoga",
+    "pole_dance": "pole dance",
+    "belly_dance": "belly dance",
+    "business": "business coaching",
+    "creative": "creative practice",
+    "wellness": "wellbeing",
+    "learning": "lessons",
+    "cooking": "cooking",
+    "music": "music",
+    "outdoors": "outdoor training",
+}
 _HEADLINES = {
     "yoga": "Steady breath, stronger body, quieter mind",
     "pilates": "Strength that starts from your centre",
@@ -118,6 +130,13 @@ _HEADLINES = {
     "face_yoga": "A few calm minutes for your face",
     "makeup": "Makeup that still looks like you",
     "general": "Clear next steps toward what matters",
+    "business": "Run the business instead of it running you",
+    "creative": "Make the work you keep meaning to make",
+    "wellness": "Calmer days and better nights",
+    "learning": "Learn it properly, at your own pace",
+    "cooking": "Real food, every night of the week",
+    "music": "Play the music you always wanted to",
+    "outdoors": "Go further than you thought you could",
 }
 # Words that mark a brand as a business rather than a person's name.
 _BUSINESS_WORDS = frozenset(

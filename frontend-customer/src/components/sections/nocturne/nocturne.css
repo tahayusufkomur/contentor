@@ -1,0 +1,207 @@
+/* Nocturne — style-scoped CSS. Every class/keyframe is nocturne-prefixed. */
+
+.nocturne {
+  font-feature-settings: "kern", "liga";
+  color-scheme: dark;
+}
+
+/* Fraunces at its softest, widest optical size: the rounded serif. */
+.nocturne-soft {
+  font-variation-settings:
+    "SOFT" 100,
+    "opsz" 144;
+}
+.nocturne-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The cream band (daylight): its own dim text and hairlines. */
+.nocturne-cream {
+  color-scheme: light;
+}
+.nocturne-cream .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 70%, var(--inverse));
+}
+.nocturne-cream .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 22%, transparent);
+}
+.nocturne-cream .text-accent {
+  color: color-mix(in oklch, var(--inverse-foreground) 80%, var(--accent));
+}
+
+/* The glow on the one button. */
+.nocturne-glow {
+  box-shadow:
+    0 0 0 6px color-mix(in oklch, var(--primary) 14%, transparent),
+    0 0 36px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+.nocturne-glow:hover {
+  box-shadow:
+    0 0 0 8px color-mix(in oklch, var(--primary) 18%, transparent),
+    0 0 56px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
+/* A warm radial glow behind the element. */
+.nocturne-halo::before {
+  content: "";
+  position: absolute;
+  inset: -22% -30%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    color-mix(in oklch, var(--primary) 28%, transparent),
+    transparent 62%
+  );
+  opacity: var(--nocturne-halo, 1);
+}
+.nocturne-halo > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Arched top on photographs. */
+.nocturne-arch {
+  border-radius: 999px 999px var(--radius) var(--radius);
+}
+
+/* One focus treatment for every control. */
+.nocturne a:focus-visible,
+.nocturne button:focus-visible,
+.nocturne summary:focus-visible,
+.nocturne [tabindex]:focus-visible,
+.nocturne-focus:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.nocturne-cream a:focus-visible,
+.nocturne-cream button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Lavender link with a soft underline that brightens. */
+.nocturne-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: color-mix(in oklch, var(--accent) 45%, transparent);
+}
+.nocturne-link:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.nocturne-price.nocturne-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ: soft pills that open; the chevron turns. */
+.nocturne-faq summary {
+  list-style: none;
+}
+.nocturne-faq summary::-webkit-details-marker {
+  display: none;
+}
+.nocturne-faq details[open] .nocturne-chev {
+  transform: rotate(180deg);
+}
+.nocturne-faq details[open] > summary {
+  color: var(--primary);
+}
+
+/* Contact form: soft rounded fields on the surface tone. */
+.nocturne-form label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.nocturne-form input,
+.nocturne-form textarea {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--muted);
+  color: var(--foreground);
+  box-shadow: none;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 1rem;
+}
+.nocturne-form input:focus-visible,
+.nocturne-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--primary) 18%, transparent);
+  outline: none;
+}
+
+/* Scroll strip without a visible scrollbar. */
+.nocturne-strip {
+  scrollbar-width: none;
+}
+.nocturne-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nocturne-glow,
+  .nocturne-link {
+    transition:
+      box-shadow 0.4s ease,
+      text-decoration-color 0.3s ease;
+  }
+  .nocturne-chev {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .nocturne-arrow {
+    transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .nocturne-arrow {
+    transform: translateX(5px);
+  }
+  .nocturne-zoom img {
+    transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .nocturne-zoom img {
+    transform: scale(1.03);
+  }
+
+  /* The one orchestrated moment: the lamp is switched on. */
+  .nocturne-dawn::before {
+    animation: nocturne-dawn 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .nocturne-rise {
+    animation: nocturne-rise 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--nocturne-delay, 0ms);
+  }
+}
+
+@keyframes nocturne-dawn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: var(--nocturne-halo, 1);
+    transform: none;
+  }
+}
+@keyframes nocturne-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
