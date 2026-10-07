@@ -18,6 +18,7 @@ import {
   landedPage,
   pageLabel,
   questionSteps,
+  scheduleSummary,
   stageIndex,
 } from "@/lib/interview";
 import {
@@ -387,7 +388,16 @@ function Flow({
       const answers: Record<string, string> = {};
       for (const q of steps)
         if (q.field && q.answer) answers[q.field] = q.answer;
-      const now = draft.ticked?.length ? draft.ticked.join(", ") : draft.text;
+      const now = step.schedule
+        ? draft.ticked?.length && draft.schedule
+          ? scheduleSummary(
+              draft.ticked[0] === "One-time" ? "once" : "recurring",
+              draft.schedule,
+            )
+          : undefined
+        : draft.ticked?.length
+          ? draft.ticked.join(", ")
+          : draft.text;
       if (step.field && now) answers[step.field] = now;
       const reviewField = `${step.builder}_review`;
       const card = iv.cards?.[reviewField];

@@ -11,7 +11,11 @@
 // where the guide can decide, descriptions on the offers tiles, builder
 // previews beside the course, membership and class questions, a working
 // "Try another version", a drafted first class and a multi-pick location.
-import { pickedOptions } from "@/lib/interview";
+import {
+  firstOccurrence,
+  pickedOptions,
+  scheduleSummary,
+} from "@/lib/interview";
 import {
   isReview,
   setupFlowApi,
@@ -22,10 +26,13 @@ import {
   type ReviewCard,
   type ReviewItem,
   type ReviewKind,
+  type Schedule,
+  type ScheduleMode,
   type SetupFlowApi,
   type SetupFlowState,
   type StepDraft,
 } from "@/lib/setup-flow";
+import { tiersFor } from "./memberships";
 
 const TURN_MS = 350;
 const REDRAFT_MS = 2600;
@@ -58,13 +65,33 @@ const BUILDER: Record<string, BuilderKind> = {
 };
 const REWORDED: Record<string, string> = {
   course_topic: "Let's build your first course. What should it teach?",
-  membership_price:
-    "Would you like to create your first membership? Pick what it costs a month.",
   live_topic: "Let's set up your first live class. What should it focus on?",
 };
 const SKIPS: Record<string, string> = {
-  membership_price: "No membership for now",
+  membership_price: "No memberships for now",
 };
+// The memberships question (several tiers, any number of them) and the
+// class schedule (weekly or one-time, then the dates) replace the recorded
+// price and "when" questions.
+const MEMBERSHIPS = "membership_price";
+const SCHEDULE = "live_when";
+const TIER_ICONS: Record<string, string> = {
+  "Digital membership": "laptop",
+  "Online membership": "video",
+  "Studio membership": "building-2",
+  "Community membership": "users",
+  "All-access": "crown",
+};
+const ymd = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+/** From next Monday, eight weeks of Tuesdays and Thursdays at 6:30 PM. */
+function defaultSchedule(): Schedule {
+  const start = new Date();
+  start.setDate(start.getDate() + ((8 - start.getDay()) % 7 || 7));
+  const end = new Date(start);
+  end.setDate(end.getDate() + 7 * 8);
+  return { start: ymd(start), end: ymd(end), days: [2, 4], times: ["18:30"] };
+}
 const MULTI = new Set(["location"]);
 const RENAME: Record<string, string> = { Courses: "Digital Courses" };
 const DETAILS: Record<string, Record<string, string>> = {
@@ -99,6 +126,8 @@ const s = {
   redraftUntil: {} as Partial<Record<ReviewKind, number>>,
   version: {} as Partial<Record<ReviewKind, number>>,
   coverPick: {} as Partial<Record<ReviewKind, string>>,
+  /** The class schedule as picked this replay. */
+  schedule: null as (Schedule & { mode: ScheduleMode }) | null,
 };
 
 const rename = (label: string) => RENAME[label] ?? label;
@@ -115,8 +144,45 @@ function cap(guide: Guide, answer?: string): string[] {
 }
 
 /** The recorded question, shaped for the flow being tried out. */
-function shape(guide: Guide, answer?: string): Guide {
+function shape(
+  guide: Guide,
+  answer: string | undefined,
+  offers: string[],
+): Guide {
   const field = guide.field ?? "";
+  if (field === MEMBERSHIPS) {
+    const tiers = tiersFor(offers);
+    return {
+      ...guide,
+      question: `You can offer more than one membership. Which would ${s.real?.brand_name ?? "you"} have?`,
+      options: tiers.map((t) => t.label),
+      multi: true,
+      can_delegate: true,
+      skip: SKIPS[field],
+      icons: Object.fromEntries(
+        tiers.map((t) => [t.label, TIER_ICONS[t.label] ?? "badge-check"]),
+      ),
+      hints: Object.fromEntries(tiers.map((t) => [t.label, t.price])),
+      details: Object.fromEntries(tiers.map((t) => [t.label, t.blurb])),
+      builder: BUILDER[field],
+    };
+  }
+  if (field === SCHEDULE) {
+    return {
+      ...guide,
+      question: "When does your first live class run?",
+      options: ["Recurring", "One-time"],
+      multi: false,
+      can_delegate: true,
+      schedule: true,
+      icons: { Recurring: "repeat", "One-time": "calendar" },
+      hints: {
+        Recurring: "Set days and times, week after week",
+        "One-time": "A single session on one date",
+      },
+      builder: BUILDER[field],
+    };
+  }
   return {
     ...guide,
     options: cap(guide, answer),
@@ -135,13 +201,31 @@ async function init() {
   if (s.real) return;
   s.real = await setupFlowApi.get();
   const turns = s.real.interview.turns;
+  const offersSaid = turns.find(
+    (t) => t.role === "coach" && t.field === "offers",
+  );
+  const offers =
+    offersSaid?.role === "coach" ? offersSaid.text.split(", ").map(rename) : [];
+  // The recorded answers, as the reshaped questions would have taken them.
+  const coach = (t: InterviewEntry): InterviewEntry => {
+    if (t.role !== "coach") return t;
+    if (t.field === "offers") return { ...t, text: offers.join(", ") };
+    if (t.field === MEMBERSHIPS)
+      return {
+        ...t,
+        text: tiersFor(offers)
+          .slice(0, 2)
+          .map((x) => x.label)
+          .join(", "),
+      };
+    if (t.field === SCHEDULE)
+      return { ...t, text: scheduleSummary("recurring", defaultSchedule()) };
+    return t;
+  };
   s.recorded = turns.map((t, i) => {
-    if (t.role === "coach")
-      return t.field === "offers"
-        ? { ...t, text: t.text.split(", ").map(rename).join(", ") }
-        : t;
+    if (t.role === "coach") return coach(t);
     const next = turns[i + 1];
-    return shape(t, next?.role === "coach" ? next.text : undefined);
+    return shape(t, next?.role === "coach" ? next.text : undefined, offers);
   });
   s.answers = s.recorded.flatMap((t, i) => (t.role === "coach" ? [i] : []));
   const at = Number(new URLSearchParams(window.location.search).get("at"));
@@ -169,9 +253,10 @@ function draftedClass(): ReviewItem {
   const covers = from?.covers ?? [];
   const a = said();
   const who = (a.audience ?? "everyone").split(", ").slice(0, 2).join(" and ");
-  const when = new Date();
-  when.setDate(when.getDate() + ((9 - when.getDay()) % 7 || 7));
-  when.setHours(18, 30, 0, 0);
+  const when =
+    (s.schedule && firstOccurrence(s.schedule.mode, s.schedule)) ??
+    firstOccurrence("recurring", defaultSchedule()) ??
+    new Date().toISOString();
   return {
     title: a.live_topic ?? "Your first live class",
     description: `A live, coach-led session on ${(a.live_topic ?? "the basics").toLowerCase()} for ${who.toLowerCase()}: a proper warm-up, technique, drills and a cool-down, with time for questions.`,
@@ -179,7 +264,7 @@ function draftedClass(): ReviewItem {
     currency: from?.currency ?? "usd",
     cover_url: covers[1]?.url ?? covers[0]?.url ?? "",
     covers: covers.map((c, i) => ({ ...c, current: i === 1 })),
-    when: when.toISOString(),
+    when,
     event_kind: "live",
   };
 }
@@ -308,6 +393,13 @@ export const mockSetupFlowApi: SetupFlowApi = {
   draft: async () => ({ id: 1, title: "Draft", preview_path: "/courses" }),
   turn: async (req) => {
     await wait(TURN_MS);
+    if (req.choice?.field === SCHEDULE) {
+      try {
+        s.schedule = JSON.parse(req.choice.value);
+      } catch {
+        s.schedule = null;
+      }
+    }
     const live = liveGuide().field;
     const field = req.choice?.field ?? req.field ?? live;
     const kind = live ? REVIEW_KIND[live] : undefined;
@@ -349,6 +441,8 @@ export const mockSetupFlowApi: SetupFlowApi = {
     if (!said || said.field !== field) return undefined;
     const guide = liveGuide();
     if (isReview(guide.cards)) return undefined;
+    if (guide.schedule)
+      return { ticked: ["Recurring"], schedule: defaultSchedule() };
     if (guide.cards) {
       const o = guide.cards.options.find(
         (o) => o.label.toLowerCase() === said.text.trim().toLowerCase(),

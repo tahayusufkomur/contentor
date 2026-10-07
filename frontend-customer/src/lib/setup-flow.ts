@@ -74,6 +74,8 @@ export interface StepDraft {
   text?: string;
   /** A look card picked but not sent yet. */
   card?: { value: string; label: string };
+  /** The dates of a schedule question, as picked so far. */
+  schedule?: Schedule;
 }
 
 /** The seam the UI talks to — the real API below, or the dev mock. */
@@ -179,6 +181,18 @@ export interface LookCards {
 export type ReviewKind = "course" | "event";
 export type BuilderKind = ReviewKind | "membership";
 
+/** When a class runs: weekly on set days and times between two dates, or
+ * once, on one date and time (`at`). Dates "YYYY-MM-DD", times "HH:MM",
+ * days as JS weekdays (0 = Sunday). */
+export interface Schedule {
+  start?: string;
+  end?: string;
+  days?: number[];
+  times?: string[];
+  at?: string;
+}
+export type ScheduleMode = "recurring" | "once";
+
 /** The interview's first course or class, as drafted. */
 export interface ReviewItem {
   title: string;
@@ -225,6 +239,8 @@ export interface GuideTurn {
   details?: Record<string, string>;
   /** The question builds something: a live preview of it sits beside the answers. */
   builder?: BuilderKind;
+  /** The answer is a schedule: a tile picks weekly or one-time, then the dates. */
+  schedule?: boolean;
   cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;

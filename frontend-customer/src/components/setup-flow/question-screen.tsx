@@ -5,7 +5,12 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { OPTION_ICONS } from "@/lib/option-icons";
-import { pickedOptions, type QuestionStep } from "@/lib/interview";
+import {
+  pickedOptions,
+  scheduleSummary,
+  scheduleValid,
+  type QuestionStep,
+} from "@/lib/interview";
 import {
   DELEGATE,
   DELEGATE_TEXT,
@@ -14,6 +19,7 @@ import {
   type GuideCards,
   type LookCards,
   type ReviewKind,
+  type ScheduleMode,
   type StepDraft,
   type TurnRequest,
 } from "@/lib/setup-flow";
@@ -22,6 +28,7 @@ import { AnswerBox } from "./answer-box";
 import { BuilderPreview, type BuilderData } from "./builder-preview";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
+import { SchedulePicker } from "./schedule-picker";
 
 export type { StepDraft };
 
@@ -76,12 +83,17 @@ export function QuestionScreen({
     : ticked.join("\n") !== picked.join("\n");
   const review = isReview(cards) ? cards : null;
   const looks = cards && !isReview(cards) ? cards : null;
+  // A schedule question: the tile picks weekly or one-time, the picker the dates.
+  const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
+  const sched = step.schedule ? (draft.schedule ?? {}) : null;
   const canContinue = review
     ? review.status === "waiting" ||
       (review.status === "ready" && !!review.item)
     : looks
       ? !!draft.card || (!live && !!step.answer)
-      : ticked.length > 0;
+      : sched
+        ? ticked.length > 0 && scheduleValid(mode, sched)
+        : ticked.length > 0;
   // A typed answer (not a tile, a card or "you decide") goes back in the box.
   const typed =
     !live &&
@@ -117,6 +129,14 @@ export function QuestionScreen({
           })
         : onNext();
     if (!live && !changed) return onNext();
+    if (sched && step.field)
+      return send({
+        message: scheduleSummary(mode, sched),
+        choice: {
+          field: step.field,
+          value: JSON.stringify({ mode, ...sched }),
+        },
+      });
     if (draft.card && step.field)
       return send({
         message: draft.card.label,
@@ -326,6 +346,17 @@ export function QuestionScreen({
                     );
                   })}
                 </div>
+              )}
+
+              {sched && ticked.length > 0 && (
+                <SchedulePicker
+                  key={mode}
+                  mode={mode}
+                  value={sched}
+                  onChange={(s) => onDraft((d) => ({ ...d, schedule: s }))}
+                  disabled={sending}
+                  className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
+                />
               )}
 
               <div className="mt-6 flex min-h-11 flex-wrap items-center gap-2">

@@ -1,5 +1,10 @@
 // Pure helpers for the /setup interview (no runtime imports: unit-tested in isolation).
-import type { GuideTurn, InterviewEntry } from "@/lib/setup-flow";
+import type {
+  GuideTurn,
+  InterviewEntry,
+  Schedule,
+  ScheduleMode,
+} from "@/lib/setup-flow";
 
 /** Append a dictated phrase to what is already in the box. */
 export function joinSpeech(base: string, phrase: string): string {
@@ -148,6 +153,7 @@ export function questionSteps(
           skip,
           details,
           builder,
+          schedule,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -162,6 +168,7 @@ export function questionSteps(
           skip,
           details,
           builder,
+          schedule,
           answer,
         });
         onScreen = e.field;
@@ -189,4 +196,81 @@ export function pickedOptions(step: QuestionStep): string[] {
     const label = o.toLowerCase();
     return step.multi ? `, ${said}, `.includes(`, ${label}, `) : said === label;
   });
+}
+
+// ---- Class schedules -------------------------------------------------------
+
+const DAY_NAMES = [
+  "Sundays",
+  "Mondays",
+  "Tuesdays",
+  "Wednesdays",
+  "Thursdays",
+  "Fridays",
+  "Saturdays",
+];
+const mondayFirst = (d: number) => (d + 6) % 7;
+const list = (xs: string[]) =>
+  xs.length > 1
+    ? `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`
+    : (xs[0] ?? "");
+/** Local time from "YYYY-MM-DD" (midnight) or "YYYY-MM-DDTHH:MM". */
+const local = (s: string) => new Date(s.length === 10 ? `${s}T00:00` : s);
+const fmtDate = (s: string, year: boolean) =>
+  new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    ...(year ? { year: "numeric" } : {}),
+  }).format(local(s));
+const fmtTime = (t: string) => {
+  const [h, m] = t.split(":").map(Number);
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+};
+
+export function scheduleValid(mode: ScheduleMode, s: Schedule): boolean {
+  return mode === "once"
+    ? !!s.at
+    : !!s.start && !!s.days?.length && !!s.times?.some(Boolean);
+}
+
+/** The schedule as the coach would say it: "Tuesdays and Thursdays at
+ * 6:30 PM, from 12 Oct to 7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM". */
+export function scheduleSummary(mode: ScheduleMode, s: Schedule): string {
+  if (mode === "once") {
+    if (!s.at) return "";
+    const day = new Intl.DateTimeFormat("en-GB", { weekday: "long" }).format(
+      local(s.at),
+    );
+    return `${day} ${fmtDate(s.at, true)} at ${fmtTime(s.at.slice(11, 16))}`;
+  }
+  const days = list(
+    [...(s.days ?? [])]
+      .sort((a, b) => mondayFirst(a) - mondayFirst(b))
+      .map((d) => DAY_NAMES[d]),
+  );
+  const times = list((s.times ?? []).filter(Boolean).sort().map(fmtTime));
+  const span = !s.start
+    ? ""
+    : s.end
+      ? `from ${fmtDate(s.start, false)} to ${fmtDate(s.end, true)}`
+      : `from ${fmtDate(s.start, true)}`;
+  const when = days && times ? `${days} at ${times}` : days || times;
+  return [when, span].filter(Boolean).join(", ");
+}
+
+/** The first class, as an ISO instant: the one date, or the first picked
+ * weekday on or after the start, at the earliest time. */
+export function firstOccurrence(
+  mode: ScheduleMode,
+  s: Schedule,
+): string | null {
+  if (mode === "once") return s.at ? local(s.at).toISOString() : null;
+  const time = (s.times ?? []).filter(Boolean).sort()[0];
+  if (!s.start || !s.days?.length || !time) return null;
+  const d = local(`${s.start}T${time}`);
+  for (let i = 0; i < 7; i++) {
+    if (s.days.includes(d.getDay())) return d.toISOString();
+    d.setDate(d.getDate() + 1);
+  }
+  return null;
 }

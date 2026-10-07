@@ -13,6 +13,7 @@ import type {
   ReviewKind,
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
+import { tierByLabel, type MembershipTier } from "./memberships";
 
 /** What the preview is built from: every answer so far (the live question's
  * unsent pick included), the drafted item once there is one, and a photo of
@@ -24,19 +25,6 @@ export interface BuilderData {
   covers: ReviewItem["covers"];
   photo?: string;
 }
-
-const PERKS: Record<string, string> = {
-  "Digital Courses": "Every digital course, included",
-  "Live online classes": "All live online classes",
-  "In-person sessions": "Member rates on in-person sessions",
-  Articles: "Members-only articles",
-  Community: "The members' community",
-};
-const DEFAULT_PERKS = [
-  "Every digital course, included",
-  "All live online classes",
-  "The members' community",
-];
 
 /** The thing a question is building, drawn live beside it: the first
  * course, the membership or the first class, with each answer landing in
@@ -55,7 +43,7 @@ export function BuilderPreview({
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
 }) {
   if (kind === "membership")
-    return <MembershipCard data={data} brandName={brandName} />;
+    return <MembershipCards data={data} brandName={brandName} />;
   return (
     <ItemCard kind={kind} data={data} disabled={disabled} onCover={onCover} />
   );
@@ -240,52 +228,65 @@ function ItemCard({
   );
 }
 
-function MembershipCard({
+function MembershipCards({
   data,
   brandName,
 }: {
   data: BuilderData;
   brandName: string;
 }) {
-  const a = data.answers;
-  const perks = (a.offers ?? "")
+  const tiers = (data.answers.membership_price ?? "")
     .split(", ")
-    .map((o) => PERKS[o])
-    .filter(Boolean);
-  const price = a.membership_price;
+    .map(tierByLabel)
+    .filter((t): t is MembershipTier => !!t);
   return (
-    <Card kicker="Your membership">
-      <h3 className="mt-3 text-[20px] font-semibold leading-tight tracking-[-0.02em]">
-        {brandName} Membership
-      </h3>
-      {price ? (
-        <p
-          key={price}
-          className="mt-3 text-[30px] font-semibold tracking-[-0.03em] motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
-        >
-          {price}
-        </p>
+    <div className="space-y-3">
+      <p className="px-1 text-[12.5px] leading-snug text-[var(--sf-graphite)]">
+        Students pick the one that fits them. You can add or change memberships
+        any time.
+      </p>
+      {tiers.length ? (
+        tiers.map((t) => (
+          <Card
+            key={t.label}
+            kicker={brandName ? `${brandName} membership` : "Membership"}
+          >
+            <div className="mt-2 flex items-baseline justify-between gap-3">
+              <h3 className="text-[18px] font-semibold leading-tight tracking-[-0.02em]">
+                {t.label}
+              </h3>
+              <p
+                key={t.price}
+                className="shrink-0 text-[18px] font-semibold tracking-[-0.02em] motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
+              >
+                {t.price}
+              </p>
+            </div>
+            <ul className="mt-2.5 space-y-1.5">
+              {t.perks.map((perk) => (
+                <li key={perk} className="flex items-start gap-2 text-[13.5px]">
+                  <Check
+                    className="mt-0.5 size-3.5 shrink-0 text-[var(--sf-brass)]"
+                    strokeWidth={2.5}
+                    aria-hidden
+                  />
+                  {perk}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ))
       ) : (
-        <p className="mt-3 text-[18px] text-[var(--sf-faint)]">
-          Pick a monthly price
-        </p>
+        <Card kicker="Your memberships">
+          <p className="mt-2 text-[14px] text-[var(--sf-faint)]">
+            Pick one or more memberships and they appear here.
+          </p>
+        </Card>
       )}
-      <ul className="mt-4 space-y-2">
-        {(perks.length ? perks : DEFAULT_PERKS).map((p) => (
-          <li key={p} className="flex items-start gap-2 text-[14px]">
-            <Check
-              className="mt-0.5 size-4 shrink-0 text-[var(--sf-brass)]"
-              strokeWidth={2.5}
-              aria-hidden
-            />
-            {p}
-          </li>
-        ))}
-      </ul>
-      <p className="mt-4 text-[12.5px] text-[var(--sf-faint)]">
+      <p className="px-1 text-[12.5px] text-[var(--sf-faint)]">
         Billed monthly · Cancel any time
       </p>
-    </Card>
+    </div>
   );
 }
 
