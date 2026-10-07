@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
+import { flushSync } from "react-dom";
 import { ArrowLeft, ArrowRight, Monitor, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,21 @@ const WALL: CSSProperties = {
 };
 
 const GOLIVE = "__golive";
+
+/** Moves to another question as a slide: the outgoing one leaves in the
+ * travel direction while the new one lands (CSS on the view-transition
+ * pseudo-elements in tokens.ts). Without view transitions, or with reduced
+ * motion, the screen simply switches. */
+function slide(dir: "next" | "back", update: () => void) {
+  if (
+    typeof document === "undefined" ||
+    !("startViewTransition" in document) ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
+    return update();
+  document.documentElement.dataset.sfDir = dir;
+  document.startViewTransition(() => flushSync(update));
+}
 
 function useNarrow(): boolean {
   const [narrow, setNarrow] = useState(false);
@@ -151,14 +167,22 @@ function Flow({
   const index = Math.min(at ?? steps.length - 1, steps.length - 1);
   const [dir, setDir] = useState<"next" | "back">("next");
   const lastIndex = steps.length - 1;
-  const goBack = useCallback(() => {
-    setDir("back");
-    setAt(index - 1);
-  }, [index]);
-  const goNext = useCallback(() => {
-    setDir("next");
-    setAt(index + 1 >= lastIndex ? null : index + 1);
-  }, [index, lastIndex]);
+  const goBack = useCallback(
+    () =>
+      slide("back", () => {
+        setDir("back");
+        setAt(index - 1);
+      }),
+    [index],
+  );
+  const goNext = useCallback(
+    () =>
+      slide("next", () => {
+        setDir("next");
+        setAt(index + 1 >= lastIndex ? null : index + 1);
+      }),
+    [index, lastIndex],
+  );
   const [tab, setTab] = useState<"guide" | "preview">("guide");
   const [device, setDevice] = useState<Device>("desktop");
   const [reloadKey, setReloadKey] = useState(0);
@@ -264,22 +288,26 @@ function Flow({
       const key = req.choice?.field ?? req.field ?? guide.field ?? GOLIVE;
       try {
         const res = await api.turn(req);
-        setGuide(res.guide);
-        setFlow(res.state);
-        setDir("next");
-        setAt(null);
-        dropDraft(key);
+        slide("next", () => {
+          setGuide(res.guide);
+          setFlow(res.state);
+          setDir("next");
+          setAt(null);
+          dropDraft(key);
+        });
         if (res.edit) await applyEdit(res.edit);
       } catch (err) {
         // A slow turn can be cut off by the proxy after the server finished
         // it: adopt the server's transcript instead of losing the answer.
         const fresh = await api.get().catch(() => null);
         if (fresh && fresh.interview.turns.length > serverTurns) {
-          setFlow(fresh);
-          setGuide(fresh.interview.guide);
-          setDir("next");
-          setAt(null);
-          dropDraft(key);
+          slide("next", () => {
+            setFlow(fresh);
+            setGuide(fresh.interview.guide);
+            setDir("next");
+            setAt(null);
+            dropDraft(key);
+          });
           return;
         }
         throw err; // the answer is still in its box
@@ -345,7 +373,10 @@ function Flow({
     const live = index === steps.length - 1;
     return (
       <div className="flex h-full flex-col">
-        <header className="flex h-16 shrink-0 items-center gap-1.5 border-b border-[var(--sf-line)] px-3 sm:gap-3 sm:px-6">
+        <header
+          style={{ viewTransitionName: "sf-header" }}
+          className="flex h-16 shrink-0 items-center gap-1.5 border-b border-[var(--sf-line)] px-3 sm:gap-3 sm:px-6"
+        >
           <NavButton
             label="Previous question"
             disabled={index === 0 || sending}
@@ -388,6 +419,7 @@ function Flow({
         </header>
         <section
           aria-label="Your setup guide"
+          style={{ viewTransitionName: "sf-slide" }}
           className="min-h-0 flex-1 overflow-y-auto"
         >
           {step && (

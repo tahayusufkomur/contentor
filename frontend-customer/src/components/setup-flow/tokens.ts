@@ -51,7 +51,10 @@ export const SHELL_TOKENS = {
  * the shared button's 50%-opacity grey. A loading button stays full ink
  * (its spinner already says busy). `--sf-spring` is a damped spring
  * (about 9% overshoot) sampled into a linear() easing: the motion-graphics
- * feel of each slide, with no animation library. */
+ * feel of each slide, with no animation library. Between questions the
+ * outgoing slide leaves through a view transition (`sf-slide`, direction
+ * on `:root[data-sf-dir]`) while the header and answer box hold still; the
+ * incoming slide's own entrance keyframes then land it. */
 export const SHELL_CSS = `
 .sf-shell { --sf-spring: linear(0, 0.07, 0.232, 0.431, 0.627, 0.795, 0.924, 1.014, 1.067, 1.091, 1.094, 1.084, 1.067, 1.048, 1.03, 1.015, 1.004, 0.997, 0.993, 0.991, 0.991, 0.993, 0.996, 0.999, 1); }
 @keyframes sf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -62,6 +65,13 @@ export const SHELL_CSS = `
 @keyframes sf-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
 @keyframes sf-slide-next { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
 @keyframes sf-slide-back { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: none; } }
+@keyframes sf-leave-next { to { opacity: 0; transform: translateX(-72px) scale(0.985); filter: blur(8px); } }
+@keyframes sf-leave-back { to { opacity: 0; transform: translateX(72px) scale(0.985); filter: blur(8px); } }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(sf-slide), ::view-transition-new(sf-slide) { mix-blend-mode: normal; }
+::view-transition-old(sf-slide) { animation: sf-leave-next .42s cubic-bezier(.5, 0, .75, .3) both; }
+::view-transition-new(sf-slide) { animation: none; }
+:root[data-sf-dir="back"]::view-transition-old(sf-slide) { animation-name: sf-leave-back; }
 .sf-shell [data-slot="button"].bg-primary:disabled { opacity: 1; background: rgb(34 33 31 / 0.09); color: rgb(34 33 31 / 0.38); box-shadow: none; }
 .sf-shell [data-slot="button"].bg-primary[aria-busy="true"] { background: var(--sf-ink); color: var(--sf-paper); }
 `;

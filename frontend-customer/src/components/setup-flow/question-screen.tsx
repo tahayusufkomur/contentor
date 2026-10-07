@@ -128,8 +128,8 @@ export function QuestionScreen({
         <div
           className={
             dir === "back"
-              ? "motion-safe:animate-[sf-slide-back_.45s_ease-out_both]"
-              : "motion-safe:animate-[sf-slide-next_.45s_ease-out_both]"
+              ? "motion-safe:animate-[sf-slide-back_.6s_var(--sf-spring)_.1s_both]"
+              : "motion-safe:animate-[sf-slide-next_.6s_var(--sf-spring)_.1s_both]"
           }
         >
           {live ? (
@@ -360,7 +360,10 @@ export function QuestionScreen({
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-[var(--sf-line)] bg-[var(--sf-paper)] px-5 py-3 sm:px-10">
+      <div
+        style={{ viewTransitionName: "sf-answer" }}
+        className="sticky bottom-0 border-t border-[var(--sf-line)] bg-[var(--sf-paper)] px-5 py-3 sm:px-10"
+      >
         <AnswerBox
           className="mx-auto max-w-[1280px]"
           value={draft.text ?? typed}
