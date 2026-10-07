@@ -2,8 +2,6 @@
 # anchored to the repo root. Caches/.git/node_modules/.next are excluded centrally
 # by deploy.sh BASE_EXCLUDES. NEVER list .env.prod here — it must ship to the box.
 
-# Dev-only proxy (prod uses Caddy on the edge network)
-/traefik/
 # monitoring/ must NOT be excluded: the prod stack's vector service bind-mounts
 # monitoring/vector/vector.yaml. Excluding it meant the file never reached the
 # box, so Docker auto-created a DIRECTORY at that path and vector refused to

@@ -1,9 +1,8 @@
 """Dev-only: print a session JWT for a seeded user.
 
-Used by the screenshot-map crawler (scripts/screenshot-map) to log in as each
-role without an email round-trip. Mints the same session token the magic-link
-verify flow produces, then the crawler injects it as the contentor_access_token
-cookie. Refuses to run outside DEBUG so it can never mint a login in prod.
+Lets a scripted browser log in as a seeded role without an email round-trip.
+Mints the same session token the magic-link verify flow produces; set it as the
+contentor_access_token cookie. Refuses to run outside DEBUG so it can never mint a login in prod.
 """
 
 from django.conf import settings

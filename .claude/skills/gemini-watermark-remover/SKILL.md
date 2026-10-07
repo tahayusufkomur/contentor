@@ -5,7 +5,7 @@ description: Remove the visible Gemini sparkle watermark from local images — n
 
 # Gemini Watermark Remover
 
-Wraps the `gwr` CLI (`@pilio/gemini-watermark-remover`, vendored via `skills-lock.json`). It
+Wraps the `gwr` CLI (`@pilio/gemini-watermark-remover`; adapted from GargantuaX/gemini-watermark-remover). It
 reverses the alpha blend algebraically rather than inpainting, so the underlying pixels are
 recovered exactly instead of smeared.
 

@@ -94,10 +94,6 @@ seed-demo-assets: ## Mirror real demo/* media from the prod bucket into dev MinI
 	@$(PROD_ENV); python3 scripts/mirror_demo_assets.py
 
 
-capture-wizard-mockups: seed-demo-assets ## Capture per-niche wizard screenshots (needs make dev running; ARGS="--niche belly_dance" for one niche)
-	cd tools/wizard-mockups && npm install --silent && npx playwright install chromium && npm run capture -- $(ARGS)
-
-
 # ============================================================================
 # Quality
 # ============================================================================
