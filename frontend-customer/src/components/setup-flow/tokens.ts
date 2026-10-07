@@ -72,6 +72,11 @@ export const SHELL_CSS = `
 ::view-transition-old(sf-slide) { animation: sf-leave-next .42s cubic-bezier(.5, 0, .75, .3) both; }
 ::view-transition-new(sf-slide) { animation: none; }
 :root[data-sf-dir="back"]::view-transition-old(sf-slide) { animation-name: sf-leave-back; }
+.sf-backdrop { position: absolute; inset: -25%; z-index: 0; pointer-events: none; opacity: .9; background: radial-gradient(38% 46% at 18% 28%, rgb(241 232 215 / .95), rgb(241 232 215 / 0) 70%), radial-gradient(34% 40% at 82% 18%, rgb(226 220 236 / .8), rgb(226 220 236 / 0) 70%), radial-gradient(42% 38% at 64% 86%, rgb(214 229 222 / .85), rgb(214 229 222 / 0) 70%), radial-gradient(30% 34% at 28% 88%, rgb(240 222 205 / .7), rgb(240 222 205 / 0) 70%); animation: sf-shader 28s ease-in-out infinite alternate; }
+.sf-backdrop::after { content: ""; position: absolute; inset: 0; background: radial-gradient(50% 60% at 50% 50%, rgb(255 255 255 / .4), transparent 70%); animation: sf-shader-2 19s ease-in-out infinite alternate; }
+@keyframes sf-shader { 0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); } 50% { transform: translate3d(4%, -3%, 0) rotate(3deg) scale(1.08); } 100% { transform: translate3d(-4%, 3%, 0) rotate(-2deg) scale(1.03); } }
+@keyframes sf-shader-2 { from { transform: translate3d(-6%, 4%, 0) scale(1.1); } to { transform: translate3d(6%, -4%, 0) scale(0.95); } }
+@media (prefers-reduced-motion: reduce) { .sf-backdrop, .sf-backdrop::after { animation: none; } }
 .sf-shell [data-slot="button"].bg-primary:disabled { opacity: 1; background: rgb(34 33 31 / 0.09); color: rgb(34 33 31 / 0.38); box-shadow: none; }
 .sf-shell [data-slot="button"].bg-primary[aria-busy="true"] { background: var(--sf-ink); color: var(--sf-paper); }
 `;

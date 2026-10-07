@@ -146,6 +146,8 @@ export function questionSteps(
           icons,
           hints,
           skip,
+          details,
+          builder,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -158,6 +160,8 @@ export function questionSteps(
           icons,
           hints,
           skip,
+          details,
+          builder,
           answer,
         });
         onScreen = e.field;

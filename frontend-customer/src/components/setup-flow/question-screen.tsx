@@ -19,6 +19,7 @@ import {
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
+import { BuilderPreview, type BuilderData } from "./builder-preview";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 
@@ -34,9 +35,11 @@ export function QuestionScreen({
   step,
   cards,
   brandName,
+  host,
   live,
   sending,
   draft,
+  builder,
   onDraft,
   onSend,
   onMoreLogos,
@@ -48,10 +51,14 @@ export function QuestionScreen({
   /** Look cards (style, logo) or the draft to review, if it is one. */
   cards?: GuideCards | null;
   brandName: string;
+  /** The site's host, shown on the look preview's address bar. */
+  host: string;
   /** The question being asked now, vs. one the coach went back to. */
   live: boolean;
   sending: boolean;
   draft: StepDraft;
+  /** What a building question previews beside its answers. */
+  builder?: BuilderData;
   onDraft: (update: (d: StepDraft) => StepDraft) => void;
   onSend: (req: TurnRequest) => void;
   /** Which way the slide came from: forward, or back to an earlier question. */
@@ -132,230 +139,289 @@ export function QuestionScreen({
               : "motion-safe:animate-[sf-slide-next_.6s_var(--sf-spring)_.1s_both]"
           }
         >
-          {live ? (
-            <>
-              {step.ack && (
-                <p className="max-w-[72ch] text-[16px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_both]">
-                  {step.ack}
-                </p>
-              )}
-              {step.status && (
-                <p className="mt-2 flex max-w-[72ch] gap-2.5 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_80ms_both]">
-                  <span
-                    aria-hidden
-                    className="mt-[9px] size-1.5 shrink-0 rounded-full bg-[var(--sf-brass)]"
-                  />
-                  {step.status}
-                </p>
-              )}
-            </>
-          ) : (
-            step.answer &&
-            !typed && (
-              <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
-                You said:{" "}
-                <span className="text-[var(--sf-ink)]">{step.answer}</span>
-              </p>
-            )
-          )}
-          <h1 className="mt-3 max-w-[32ch] text-[30px] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-[42px]">
-            {words.map((w, i) => (
-              <Fragment key={i}>
-                <span
-                  className="inline-block motion-safe:animate-[sf-word_.8s_var(--sf-spring)_both]"
-                  style={{ animationDelay: `${120 + Math.min(i, 16) * 42}ms` }}
-                >
-                  {w}
-                </span>{" "}
-              </Fragment>
-            ))}
-          </h1>
-
-          {review && (
-            <DraftReview
-              card={review}
-              delay={answersAt}
-              disabled={sending}
-              onCover={onCover}
-            />
-          )}
-
-          {looks && step.field && (
-            <LookCardsView
-              cards={looks}
-              brandName={brandName}
-              selected={live ? undefined : step.answer}
-              chosen={draft.card?.value}
-              disabled={sending}
-              delay={answersAt}
-              onMore={onMoreLogos}
-              onPick={(value, label) =>
-                onDraft((d) => ({ ...d, card: { value, label } }))
-              }
-            />
-          )}
-
-          {step.options.length > 0 && (
-            <div className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-              {step.options.map((o, i) => {
-                const on = ticked.includes(o);
-                return (
-                  <button
-                    key={o}
-                    type="button"
-                    aria-pressed={multi ? on : undefined}
-                    disabled={sending}
-                    onClick={() => (multi ? toggle(o) : setTicked(() => [o]))}
-                    style={{
-                      animationDelay: `${answersAt + Math.min(i, 15) * 32}ms`,
-                    }}
-                    className={cn(
-                      "relative flex min-h-[84px] flex-col justify-center gap-1.5 rounded-2xl border px-4 py-3.5 text-left text-[15.5px] font-medium leading-snug",
-                      "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.97] disabled:pointer-events-none",
-                      on
-                        ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)] shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)]"
-                        : "border-[var(--sf-line)] bg-white hover:border-[var(--sf-line-strong)] hover:shadow-[0_10px_24px_-16px_rgb(48_36_20/0.45)]",
-                      sending && !on && "opacity-55",
-                    )}
-                  >
-                    {(() => {
-                      const Icon = step.icons?.[o]
-                        ? OPTION_ICONS[step.icons[o]]
-                        : undefined;
-                      return (
-                        Icon && (
-                          <Icon
-                            aria-hidden
-                            className={cn(
-                              "size-5 shrink-0",
-                              on
-                                ? "text-[var(--sf-paper)]"
-                                : "text-[var(--sf-brass)]",
-                            )}
-                          />
-                        )
-                      );
-                    })()}
-                    <span className={cn("leading-snug", multi && "pr-7")}>
-                      {o}
-                    </span>
-                    {step.hints?.[o] && (
-                      <span
-                        className={cn(
-                          "text-[12.5px] font-normal leading-snug",
-                          multi && "pr-7",
-                          on ? "opacity-75" : "text-[var(--sf-graphite)]",
-                        )}
-                      >
-                        {step.hints[o]}
-                      </span>
-                    )}
-                    {multi && (
+          <div
+            className={cn(
+              builder &&
+                "lg:grid lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start lg:gap-12",
+            )}
+          >
+            {builder && step.builder && (
+              <aside
+                className="mb-8 lg:sticky lg:top-6 lg:mb-0 motion-safe:animate-[sf-rise_.6s_ease-out_both]"
+                style={{ animationDelay: `${answersAt}ms` }}
+              >
+                <BuilderPreview
+                  kind={step.builder}
+                  data={builder}
+                  brandName={brandName}
+                  disabled={sending}
+                  onCover={onCover}
+                />
+              </aside>
+            )}
+            <div className="min-w-0">
+              {live ? (
+                <>
+                  {step.ack && (
+                    <p className="max-w-[72ch] text-[16px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_both]">
+                      {step.ack}
+                    </p>
+                  )}
+                  {step.status && (
+                    <p className="mt-2 flex max-w-[72ch] gap-2.5 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_80ms_both]">
                       <span
                         aria-hidden
+                        className="mt-[9px] size-1.5 shrink-0 rounded-full bg-[var(--sf-brass)]"
+                      />
+                      {step.status}
+                    </p>
+                  )}
+                </>
+              ) : (
+                step.answer &&
+                !typed && (
+                  <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
+                    You said:{" "}
+                    <span className="text-[var(--sf-ink)]">{step.answer}</span>
+                  </p>
+                )
+              )}
+              <h1 className="mt-3 max-w-[32ch] text-[30px] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-[42px]">
+                {words.map((w, i) => (
+                  <Fragment key={i}>
+                    <span
+                      className="inline-block motion-safe:animate-[sf-word_.8s_var(--sf-spring)_both]"
+                      style={{
+                        animationDelay: `${120 + Math.min(i, 16) * 42}ms`,
+                      }}
+                    >
+                      {w}
+                    </span>{" "}
+                  </Fragment>
+                ))}
+              </h1>
+
+              {review && (
+                <DraftReview
+                  card={review}
+                  delay={answersAt}
+                  disabled={sending}
+                  onCover={onCover}
+                />
+              )}
+
+              {looks && step.field && (
+                <LookCardsView
+                  cards={looks}
+                  brandName={brandName}
+                  host={host}
+                  selected={live ? undefined : step.answer}
+                  chosen={draft.card?.value}
+                  disabled={sending}
+                  delay={answersAt}
+                  onMore={onMoreLogos}
+                  onPick={(value, label) =>
+                    onDraft((d) => ({ ...d, card: { value, label } }))
+                  }
+                />
+              )}
+
+              {step.options.length > 0 && (
+                <div
+                  className={cn(
+                    "mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3",
+                    builder
+                      ? "lg:grid-cols-3 xl:grid-cols-4"
+                      : "lg:grid-cols-4",
+                  )}
+                >
+                  {step.options.map((o, i) => {
+                    const on = ticked.includes(o);
+                    return (
+                      <button
+                        key={o}
+                        type="button"
+                        aria-pressed={multi ? on : undefined}
+                        disabled={sending}
+                        onClick={() =>
+                          multi ? toggle(o) : setTicked(() => [o])
+                        }
+                        style={{
+                          animationDelay: `${answersAt + Math.min(i, 15) * 32}ms`,
+                        }}
                         className={cn(
-                          "absolute right-3.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-full border",
+                          "relative flex min-h-[84px] flex-col justify-center gap-1.5 rounded-2xl border px-4 py-3.5 text-left text-[15.5px] font-medium leading-snug",
+                          "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.97] disabled:pointer-events-none",
                           on
-                            ? "border-[var(--sf-paper)] bg-[var(--sf-paper)] text-[var(--sf-ink)]"
-                            : "border-[var(--sf-line-strong)]",
+                            ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)] shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)]"
+                            : "border-[var(--sf-line)] bg-white hover:border-[var(--sf-line-strong)] hover:shadow-[0_10px_24px_-16px_rgb(48_36_20/0.45)]",
+                          sending && !on && "opacity-55",
                         )}
                       >
-                        {on && <Check className="size-3" strokeWidth={3} />}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                        {(() => {
+                          const Icon = step.icons?.[o]
+                            ? OPTION_ICONS[step.icons[o]]
+                            : undefined;
+                          return (
+                            Icon && (
+                              <Icon
+                                aria-hidden
+                                className={cn(
+                                  "size-5 shrink-0",
+                                  on
+                                    ? "text-[var(--sf-paper)]"
+                                    : "text-[var(--sf-brass)]",
+                                )}
+                              />
+                            )
+                          );
+                        })()}
+                        <span className={cn("leading-snug", multi && "pr-7")}>
+                          {o}
+                        </span>
+                        {step.hints?.[o] && (
+                          <span
+                            className={cn(
+                              "text-[12.5px] font-normal leading-snug",
+                              multi && "pr-7",
+                              on ? "opacity-75" : "text-[var(--sf-graphite)]",
+                            )}
+                          >
+                            {step.hints[o]}
+                          </span>
+                        )}
+                        {step.details?.[o] && (
+                          // Unfolds when picked: a grid row growing from 0fr.
+                          <span
+                            className={cn(
+                              "grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300",
+                              multi && "pr-7",
+                            )}
+                            style={{ gridTemplateRows: on ? "1fr" : "0fr" }}
+                          >
+                            <span
+                              className={cn(
+                                "overflow-hidden text-[12.5px] font-normal leading-snug motion-safe:transition-opacity motion-safe:duration-300",
+                                on ? "opacity-80" : "opacity-0",
+                              )}
+                            >
+                              {step.details[o]}
+                            </span>
+                          </span>
+                        )}
+                        {multi && (
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "absolute right-3.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-full border",
+                              on
+                                ? "border-[var(--sf-paper)] bg-[var(--sf-paper)] text-[var(--sf-ink)]"
+                                : "border-[var(--sf-line-strong)]",
+                            )}
+                          >
+                            {on && <Check className="size-3" strokeWidth={3} />}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
-          <div className="mt-6 flex min-h-11 flex-wrap items-center gap-2">
-            {sending ? (
-              <p className="flex items-center gap-2 text-[15px] text-[var(--sf-graphite)]">
-                <Spinner size="sm" className="text-[var(--sf-brass)]" />
-                {slow
-                  ? "Still thinking. Your site is being built at the same time, so this can take a little longer."
-                  : "Thinking…"}
-              </p>
-            ) : (
-              <>
-                {(cards || step.options.length > 0) && (
-                  <Button
-                    size="lg"
-                    disabled={!canContinue}
-                    onClick={proceed}
-                    className="rounded-full px-6"
-                  >
-                    {review
-                      ? review.status === "waiting"
-                        ? "Continue"
-                        : "Looks good, continue"
-                      : !canContinue
-                        ? multi
-                          ? "Pick as many as fit"
-                          : "Pick one to continue"
-                        : multi && ticked.length > 1
-                          ? `Continue with ${ticked.length}`
-                          : "Continue"}
-                  </Button>
+              <div className="mt-6 flex min-h-11 flex-wrap items-center gap-2">
+                {sending ? (
+                  <p className="flex items-center gap-2 text-[15px] text-[var(--sf-graphite)]">
+                    <Spinner size="sm" className="text-[var(--sf-brass)]" />
+                    {slow
+                      ? "Still thinking. Your site is being built at the same time, so this can take a little longer."
+                      : "Thinking…"}
+                  </p>
+                ) : (
+                  <>
+                    {(cards || step.options.length > 0) && (
+                      <Button
+                        size="lg"
+                        disabled={!canContinue}
+                        onClick={proceed}
+                        className="rounded-full px-6"
+                      >
+                        {review
+                          ? review.status === "waiting"
+                            ? "Continue"
+                            : "Looks good, continue"
+                          : !canContinue
+                            ? multi
+                              ? "Pick as many as fit"
+                              : "Pick one to continue"
+                            : multi && ticked.length > 1
+                              ? `Continue with ${ticked.length}`
+                              : "Continue"}
+                      </Button>
+                    )}
+                    {review?.status === "ready" && (
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() =>
+                          send({
+                            message: "Draft a different version, please.",
+                          })
+                        }
+                        className="rounded-full"
+                      >
+                        Try another version
+                      </Button>
+                    )}
+                    {multi && ticked.length < step.options.length && (
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() => setTicked(() => [...step.options])}
+                        className="rounded-full"
+                      >
+                        All of them
+                      </Button>
+                    )}
+                    {step.can_delegate && step.field && (
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() =>
+                          send({
+                            message: DELEGATE_TEXT,
+                            choice: {
+                              field: step.field as string,
+                              value: DELEGATE,
+                            },
+                          })
+                        }
+                        className="rounded-full text-[var(--sf-graphite)]"
+                      >
+                        You decide
+                      </Button>
+                    )}
+                    {step.skip && step.field && (
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() =>
+                          send({
+                            message: step.skip as string,
+                            choice: {
+                              field: step.field as string,
+                              value: SKIP,
+                            },
+                          })
+                        }
+                        className="rounded-full text-[var(--sf-graphite)]"
+                      >
+                        {step.skip}
+                      </Button>
+                    )}
+                  </>
                 )}
-                {review?.status === "ready" && (
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={() =>
-                      send({ message: "Draft a different version, please." })
-                    }
-                    className="rounded-full"
-                  >
-                    Try another version
-                  </Button>
-                )}
-                {multi && ticked.length < step.options.length && (
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={() => setTicked(() => [...step.options])}
-                    className="rounded-full"
-                  >
-                    All of them
-                  </Button>
-                )}
-                {step.can_delegate && step.field && (
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={() =>
-                      send({
-                        message: DELEGATE_TEXT,
-                        choice: {
-                          field: step.field as string,
-                          value: DELEGATE,
-                        },
-                      })
-                    }
-                    className="rounded-full text-[var(--sf-graphite)]"
-                  >
-                    You decide
-                  </Button>
-                )}
-                {step.skip && step.field && (
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={() =>
-                      send({
-                        message: step.skip as string,
-                        choice: { field: step.field as string, value: SKIP },
-                      })
-                    }
-                    className="rounded-full text-[var(--sf-graphite)]"
-                  >
-                    {step.skip}
-                  </Button>
-                )}
-              </>
-            )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

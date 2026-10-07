@@ -21,6 +21,7 @@ import {
   stageIndex,
 } from "@/lib/interview";
 import {
+  isReview,
   setupFlowApi,
   type CopilotPayload,
   type GuideTurn,
@@ -35,6 +36,7 @@ import { BrowserFrame, Composing, type Device } from "./browser-frame";
 import { GoLivePanel } from "./golive-panel";
 import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
+import type { BuilderData } from "./builder-preview";
 import { QuestionScreen, type StepDraft } from "./question-screen";
 import { SetupSkeleton } from "./skeleton";
 import { SHELL_CSS, SHELL_TOKENS } from "./tokens";
@@ -115,27 +117,32 @@ export function SetupFlow({
       style={SHELL_TOKENS}
       className={cn(
         fontClassName,
-        "sf-shell h-dvh overflow-hidden antialiased",
+        "sf-shell relative isolate h-dvh overflow-hidden antialiased",
       )}
     >
       <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
-      <PageState
-        loading={!flow && !loadError}
-        error={loadError}
-        onRetry={load}
-        skeleton={<SetupSkeleton />}
-        className="h-full"
-      >
-        {flow && (
-          <Flow
-            flow={flow}
-            setFlow={setFlow}
-            api={api}
-            brandName={flow.brand_name || brandName}
-            host={host}
-          />
-        )}
-      </PageState>
+      {/* Prototype (mock only until it's decided): a slow drift of warm
+          light behind the questions. */}
+      {mock && <div aria-hidden className="sf-backdrop" />}
+      <div className="relative z-10 h-full">
+        <PageState
+          loading={!flow && !loadError}
+          error={loadError}
+          onRetry={load}
+          skeleton={<SetupSkeleton />}
+          className="h-full"
+        >
+          {flow && (
+            <Flow
+              flow={flow}
+              setFlow={setFlow}
+              api={api}
+              brandName={flow.brand_name || brandName}
+              host={host}
+            />
+          )}
+        </PageState>
+      </div>
     </div>
   );
 }
@@ -371,6 +378,30 @@ function Flow({
     const step = steps[index];
     const total = Math.max(steps.length - 1 + iv.remaining, index + 1);
     const live = index === steps.length - 1;
+    const draft =
+      drafts[step?.field ?? GOLIVE] ?? preset(step?.field ?? GOLIVE);
+    // A building question previews what it builds from every answer so
+    // far, the pick on screen included.
+    let builder: BuilderData | undefined;
+    if (step?.builder) {
+      const answers: Record<string, string> = {};
+      for (const q of steps)
+        if (q.field && q.answer) answers[q.field] = q.answer;
+      const now = draft.ticked?.length ? draft.ticked.join(", ") : draft.text;
+      if (step.field && now) answers[step.field] = now;
+      const reviewField = `${step.builder}_review`;
+      const card = iv.cards?.[reviewField];
+      const review = isReview(card) ? card : null;
+      const looks = iv.cards?.site_style;
+      builder = {
+        answers,
+        // The draft itself only once its review has been reached; until
+        // then the preview is built from the answers (covers offered early).
+        review: steps.some((q) => q.field === reviewField) ? review : null,
+        covers: review?.item?.covers ?? [],
+        photo: looks && !isReview(looks) ? looks.photos?.[0] : undefined,
+      };
+    }
     return (
       <div className="flex h-full flex-col">
         <header
@@ -436,11 +467,11 @@ function Flow({
                     : null
               }
               brandName={brandName}
+              host={host}
               live={live}
               sending={sending}
-              draft={
-                drafts[step.field ?? GOLIVE] ?? preset(step.field ?? GOLIVE)
-              }
+              draft={draft}
+              builder={builder}
               onDraft={editDraft(step.field ?? GOLIVE)}
               onSend={(req) => void send(req)}
               onMoreLogos={api.logos}

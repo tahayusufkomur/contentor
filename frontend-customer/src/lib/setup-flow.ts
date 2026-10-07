@@ -157,6 +157,8 @@ export interface LookOption {
   recommended?: boolean;
   /** Logos: the vector mark, previewed in the coach's look. */
   mark?: LogoMark | null;
+  /** Looks: a whole page in this look, opened as a preview on pick. */
+  preview_url?: string;
 }
 
 export interface LookCards {
@@ -174,6 +176,7 @@ export interface LookCards {
 }
 
 export type ReviewKind = "course" | "event";
+export type BuilderKind = ReviewKind | "membership";
 
 /** The interview's first course or class, as drafted. */
 export interface ReviewItem {
@@ -217,6 +220,10 @@ export interface GuideTurn {
   hints?: Record<string, string>;
   /** Label of the button that skips this question's section, if it has one. */
   skip?: string | null;
+  /** One short description per option, shown once it is picked. */
+  details?: Record<string, string>;
+  /** The question builds something: a live preview of it sits beside the answers. */
+  builder?: BuilderKind;
   cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;

@@ -5,21 +5,83 @@
 // site build, so the screens can be iterated on in seconds. `&at=N` opens
 // on the Nth question. Never reachable in production (the page gates `mock`
 // on NODE_ENV).
+//
+// The replay also shapes the recorded questions into the flow being tried
+// out before the backend learns it: at most 8 answers, "You decide" only
+// where the guide can decide, descriptions on the offers tiles, builder
+// previews beside the course, membership and class questions, a working
+// "Try another version", a drafted first class and a multi-pick location.
 import { pickedOptions } from "@/lib/interview";
 import {
   isReview,
   setupFlowApi,
+  type BuilderKind,
+  type GuideCards,
   type GuideTurn,
   type InterviewEntry,
   type ReviewCard,
+  type ReviewItem,
+  type ReviewKind,
   type SetupFlowApi,
   type SetupFlowState,
   type StepDraft,
 } from "@/lib/setup-flow";
 
 const TURN_MS = 350;
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const REDRAFT_MS = 2600;
+const MAX_OPTIONS = 8;
+const REDRAFT = "Draft a different version, please.";
+const REVIEW_KIND: Record<string, ReviewKind> = {
+  course_review: "course",
+  event_review: "event",
+};
+/** Questions the guide may answer for the coach; the rest only they know. */
+const DELEGABLE = new Set([
+  "site_style",
+  "site_logo",
+  "tone",
+  "course_topic",
+  "course_price",
+  "membership_price",
+  "live_topic",
+  "live_when",
+  "event_price",
+  "article_topic",
+]);
+const BUILDER: Record<string, BuilderKind> = {
+  course_topic: "course",
+  course_price: "course",
+  membership_price: "membership",
+  live_topic: "event",
+  live_when: "event",
+  event_price: "event",
+};
+const REWORDED: Record<string, string> = {
+  course_topic: "Let's build your first course. What should it teach?",
+  membership_price:
+    "Would you like to create your first membership? Pick what it costs a month.",
+  live_topic: "Let's set up your first live class. What should it focus on?",
+};
+const SKIPS: Record<string, string> = {
+  membership_price: "No membership for now",
+};
+const MULTI = new Set(["location"]);
+const RENAME: Record<string, string> = { Courses: "Digital Courses" };
+const DETAILS: Record<string, Record<string, string>> = {
+  offers: {
+    "Digital Courses":
+      "Pre-recorded lessons students buy once and follow at their own pace.",
+    "Live online classes":
+      "Scheduled video sessions students join from home, with you live.",
+    "In-person sessions": "Classes, workshops or retreats at your own place.",
+    Articles:
+      "A blog that brings new students in from search and keeps them reading.",
+    Community:
+      "A members' space where your students talk, share and stay motivated.",
+  },
+};
 
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 type Guide = Extract<InterviewEntry, { role: "guide" }>;
 
 const s = {
@@ -33,12 +95,54 @@ const s = {
    * was actually sent this time. */
   turns: [] as InterviewEntry[],
   published: false,
+  /** "Try another version": the draft is "building" until this time. */
+  redraftUntil: {} as Partial<Record<ReviewKind, number>>,
+  version: {} as Partial<Record<ReviewKind, number>>,
+  coverPick: {} as Partial<Record<ReviewKind, string>>,
 };
+
+const rename = (label: string) => RENAME[label] ?? label;
+const rekey = (m?: Record<string, string>) =>
+  m && Object.fromEntries(Object.entries(m).map(([k, v]) => [rename(k), v]));
+
+/** At most MAX_OPTIONS answers, always including the recorded picks. */
+function cap(guide: Guide, answer?: string): string[] {
+  const options = guide.options.map(rename);
+  if (options.length <= MAX_OPTIONS) return options;
+  const picked = new Set(pickedOptions({ ...guide, options, answer }));
+  let room = MAX_OPTIONS - picked.size;
+  return options.filter((o) => picked.has(o) || room-- > 0);
+}
+
+/** The recorded question, shaped for the flow being tried out. */
+function shape(guide: Guide, answer?: string): Guide {
+  const field = guide.field ?? "";
+  return {
+    ...guide,
+    options: cap(guide, answer),
+    icons: rekey(guide.icons),
+    hints: rekey(guide.hints),
+    can_delegate: guide.can_delegate && DELEGABLE.has(field),
+    multi: guide.multi || MULTI.has(field),
+    question: REWORDED[field] ?? guide.question,
+    skip: SKIPS[field] ?? guide.skip,
+    ...(DETAILS[field] ? { details: DETAILS[field] } : {}),
+    ...(BUILDER[field] ? { builder: BUILDER[field] } : {}),
+  };
+}
 
 async function init() {
   if (s.real) return;
   s.real = await setupFlowApi.get();
-  s.recorded = s.real.interview.turns;
+  const turns = s.real.interview.turns;
+  s.recorded = turns.map((t, i) => {
+    if (t.role === "coach")
+      return t.field === "offers"
+        ? { ...t, text: t.text.split(", ").map(rename).join(", ") }
+        : t;
+    const next = turns[i + 1];
+    return shape(t, next?.role === "coach" ? next.text : undefined);
+  });
   s.answers = s.recorded.flatMap((t, i) => (t.role === "coach" ? [i] : []));
   const at = Number(new URLSearchParams(window.location.search).get("at"));
   s.i = Math.min(Math.max(at || 0, 0), s.answers.length);
@@ -48,6 +152,79 @@ async function init() {
 /** The transcript just before the Nth recorded answer. */
 const cut = (n: number) =>
   n < s.answers.length ? s.answers[n] : s.recorded.length;
+
+/** What the coach has said so far in this replay, by question. */
+function said(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const t of s.turns)
+    if (t.role === "coach" && t.field) out[t.field] = t.text;
+  return out;
+}
+
+/** The first class as the backend would draft it (the recording ran on the
+ * free plan, where the class waits for go-live). */
+function draftedClass(): ReviewItem {
+  const course = s.real?.interview.cards?.course_review;
+  const from = isReview(course) ? course.item : null;
+  const covers = from?.covers ?? [];
+  const a = said();
+  const who = (a.audience ?? "everyone").split(", ").slice(0, 2).join(" and ");
+  const when = new Date();
+  when.setDate(when.getDate() + ((9 - when.getDay()) % 7 || 7));
+  when.setHours(18, 30, 0, 0);
+  return {
+    title: a.live_topic ?? "Your first live class",
+    description: `A live, coach-led session on ${(a.live_topic ?? "the basics").toLowerCase()} for ${who.toLowerCase()}: a proper warm-up, technique, drills and a cool-down, with time for questions.`,
+    price: (a.event_price ?? "").replace(/[^\d.]/g, ""),
+    currency: from?.currency ?? "usd",
+    cover_url: covers[1]?.url ?? covers[0]?.url ?? "",
+    covers: covers.map((c, i) => ({ ...c, current: i === 1 })),
+    when: when.toISOString(),
+    event_kind: "live",
+  };
+}
+
+/** The real cards for a question, with the prototype's additions: a page to
+ * preview each look in, redrafts and cover picks on the reviews, a drafted
+ * first class. */
+function cardsFor(field: string | null): GuideCards | null {
+  const cards = field ? s.real?.interview.cards?.[field] : undefined;
+  if (!cards) return null;
+  if (!isReview(cards)) {
+    if (cards.kind !== "style") return cards;
+    return {
+      ...cards,
+      options: cards.options.map((o) => ({
+        ...o,
+        preview_url: `/design-showcase?style=${o.style ?? o.value}&palette=${o.palette ?? ""}&page=home&bare=1`,
+      })),
+    };
+  }
+  const kind = cards.kind;
+  if ((s.redraftUntil[kind] ?? 0) > Date.now())
+    return { kind, status: "building", item: null };
+  const item = cards.item ?? (kind === "event" ? draftedClass() : null);
+  if (!item) return cards;
+  const covers = item.covers;
+  const pick =
+    s.coverPick[kind] ??
+    covers[(s.version[kind] ?? 0) % Math.max(covers.length, 1)]?.value;
+  const cover = covers.find((c) => c.value === pick);
+  return {
+    kind,
+    status: "ready",
+    item: cover
+      ? {
+          ...item,
+          cover_url: cover.url,
+          covers: covers.map((c) => ({
+            ...c,
+            current: c.value === cover.value,
+          })),
+        }
+      : item,
+  };
+}
 
 function liveGuide(): GuideTurn {
   let last: Guide | undefined;
@@ -64,14 +241,14 @@ function liveGuide(): GuideTurn {
     field: null,
     can_delegate: false,
   };
-  const cards = guide.field ? s.real?.interview.cards?.[guide.field] : null;
-  return { ...guide, cards: cards ?? null };
+  return { ...guide, cards: cardsFor(guide.field) };
 }
 
 function snapshot(): SetupFlowState {
   const real = s.real as SetupFlowState;
   const remaining = s.answers.length - s.i;
   const building = s.turns.some((t) => t.role === "guide" && !!t.status);
+  const now = Date.now();
   return {
     ...real,
     is_published: s.published,
@@ -79,10 +256,17 @@ function snapshot(): SetupFlowState {
       ...real.interview,
       turns: s.turns,
       guide: liveGuide(),
+      cards: Object.fromEntries(
+        Object.keys(real.interview.cards ?? {}).map((k) => [k, cardsFor(k)]),
+      ) as Record<string, GuideCards>,
       remaining,
       phase: !remaining ? "golive" : building ? "building" : "interview",
       fired: [],
-      draft_status: {},
+      draft_status: Object.fromEntries(
+        Object.entries(s.redraftUntil)
+          .filter(([, t]) => (t ?? 0) > now)
+          .map(([k]) => [k, "building" as const]),
+      ),
     },
   };
 }
@@ -106,7 +290,13 @@ export const mockSetupFlowApi: SetupFlowApi = {
     await wait(TURN_MS);
     const live = liveGuide().field;
     const field = req.choice?.field ?? req.field ?? live;
-    if (field && field !== live) {
+    const kind = live ? REVIEW_KIND[live] : undefined;
+    if (kind && field === live && req.message === REDRAFT) {
+      // Another version: the review drafts again, then shows a new cover.
+      s.redraftUntil[kind] = Date.now() + REDRAFT_MS;
+      s.version[kind] = (s.version[kind] ?? 0) + 1;
+      delete s.coverPick[kind];
+    } else if (field && field !== live) {
       // Went back and re-answered: keep the new words, stay on the live question.
       let i = s.turns.length - 1;
       while (
@@ -149,8 +339,9 @@ export const mockSetupFlowApi: SetupFlowApi = {
     return ticked.length ? { ticked } : { text: said.text };
   },
   logos: (page) => setupFlowApi.logos(page),
-  cover: async (kind) => {
-    const card = s.real?.interview.cards?.[`${kind}_review`];
+  cover: async (kind, asset) => {
+    s.coverPick[kind] = asset;
+    const card = cardsFor(`${kind}_review`);
     return isReview(card)
       ? card
       : ({ kind, status: "ready", item: null } as ReviewCard);

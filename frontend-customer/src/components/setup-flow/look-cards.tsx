@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
 import type { LookCards, LookOption } from "@/lib/setup-flow";
 import { getSiteStyle, styleFontsHref, styleVars } from "@/lib/site-styles";
 import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import { cn } from "@/lib/utils";
+import { BrowserFrame } from "./browser-frame";
 import { LookTile } from "./look-tile";
+import { SHELL_TOKENS } from "./tokens";
 
 const WORDMARK = "Just my name, as text";
 
@@ -20,6 +23,7 @@ const WORDMARK = "Just my name, as text";
 export function LookCardsView({
   cards,
   brandName,
+  host,
   selected,
   chosen,
   disabled,
@@ -29,6 +33,7 @@ export function LookCardsView({
 }: {
   cards: LookCards;
   brandName: string;
+  host?: string;
   selected?: string;
   chosen?: string;
   disabled: boolean;
@@ -37,6 +42,8 @@ export function LookCardsView({
   onMore: (page: number) => Promise<LookCards>;
 }) {
   const [shown, setShown] = useState<LookCards>(cards);
+  // A look with a page behind it opens as that page on pick.
+  const [preview, setPreview] = useState<LookOption | null>(null);
   const { run: more, loading } = useAsyncAction(
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
     { errorToast: "Couldn’t load more logos. Try again." },
@@ -64,7 +71,10 @@ export function LookCardsView({
               key={o.value}
               picked={isPicked(o.value, o.label)}
               disabled={disabled}
-              onClick={() => onPick(o.value, o.label)}
+              onClick={() => {
+                onPick(o.value, o.label);
+                if (o.preview_url) setPreview(o);
+              }}
               style={enter(i)}
               className="overflow-hidden p-0"
             >
@@ -95,6 +105,13 @@ export function LookCardsView({
             </CardButton>
           ))}
         </div>
+        {preview?.preview_url && (
+          <LookPreview
+            look={preview}
+            host={host ?? ""}
+            onClose={() => setPreview(null)}
+          />
+        )}
       </div>
     );
   }
@@ -167,6 +184,76 @@ export function LookCardsView({
         </Button>
       )}
     </div>
+  );
+}
+
+/** A look as a whole page, in a browser frame over the questions: scroll
+ * it, then keep it or close. Escape closes too. */
+function LookPreview({
+  look,
+  host,
+  onClose,
+}: {
+  look: LookOption;
+  host: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <ModalPortal>
+      <div
+        role="dialog"
+        aria-modal
+        aria-label={`${look.label}, as a page`}
+        style={{ ...SHELL_TOKENS, backgroundColor: "rgb(34 33 31 / 0.6)" }}
+        className="sf-shell fixed inset-0 z-50 flex flex-col p-3 backdrop-blur-sm motion-safe:animate-fade-in sm:p-6"
+        onClick={onClose}
+      >
+        <div
+          className="mx-auto flex w-full max-w-[1400px] shrink-0 items-center justify-between gap-3 pb-3 text-white"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-semibold">{look.label}</p>
+            {look.detail && (
+              <p className="truncate text-[13px] text-white/70">
+                {look.detail}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="rounded-full text-white hover:bg-white/10 hover:text-white"
+            >
+              Close
+            </Button>
+            <Button
+              onClick={onClose}
+              className="rounded-full bg-white text-[var(--sf-ink)] hover:bg-white/90"
+            >
+              Keep this look
+            </Button>
+          </div>
+        </div>
+        <div
+          className="min-h-0 flex-1 motion-safe:animate-[sf-rise_.5s_ease-out_both]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <BrowserFrame
+            host={host}
+            path={look.preview_url ?? null}
+            device="desktop"
+            reloadKey={0}
+          />
+        </div>
+      </div>
+    </ModalPortal>
   );
 }
 
