@@ -15,8 +15,8 @@ from django.db import transaction
 from django_tenants.utils import schema_context
 
 from . import interview_brief as brief
+from . import interview_schedule as schedule
 from .models import TenantConfig
-from .setup_items import _live_entitled
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ PAGE_NEEDS = {
     "home": ("teaches", "audience", "outcome", "offers", "pitch"),
     "about": ("teaches", "story", "credentials", "tone"),
     "contact": ("contact", "location"),
-    "faq": ("offers", "payments", "course_price", "membership_price", "live_when", "event_price"),
+    "faq": ("offers", "payments", "course_price", "memberships", "live_when", "event_price"),
 }
 DRAFT_NEEDS = {
     "course": ("course_topic", "payments", "course_price"),
@@ -35,7 +35,7 @@ DRAFT_OFFERS = {"event": ("live", "onsite"), "post": ("articles",)}
 # The review screen that shows each draft.
 REVIEW_FIELDS = {"course_review": "course", "event_review": "event"}
 LOGO_PAGE = 15  # + "just my name" = a full 4x4 grid
-DEFAULT_MEMBERSHIP_PRICE = 19
+DEFAULT_TIER = "digital"
 
 
 class ChoiceError(Exception):
@@ -56,12 +56,11 @@ def _due(tenant, answers) -> list[str]:
     if offers & {"live", "onsite"} and brief.settled(answers, ("live_topic", "live_when")):
         due.append("page:events")
     skipped = set(answers.get("skipped") or [])
-    if "membership" in (answers.get("payments") or []) and brief.settled(answers, ("membership_price",)):
+    if "membership" in (answers.get("payments") or []) and brief.settled(answers, ("memberships",)):
         due.append("plan:membership")
     for kind, needs in DRAFT_NEEDS.items():
+        # A class is drafted on any plan; go-live offers the plan that runs it.
         wanted = kind not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
-        if kind == "event" and wanted and not _live_entitled(tenant):
-            wanted = False  # free plan: go-live offers the plan, then this fires
         if wanted and brief.settled(answers, needs):
             due.append(f"draft:{kind}")
     return due
@@ -112,7 +111,7 @@ def _start(tenant, answers, key) -> None:
     elif action == "rank":
         transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
     elif action == "plan":
-        create_membership(tenant, answers)
+        create_memberships(tenant, answers)
     elif action == "draft":
         prompt = draft_prompt(answers, arg)
         transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, arg, prompt))
@@ -183,10 +182,11 @@ def draft_prompt(answers: dict, kind: str) -> str:
         offers = answers.get("offers") or []
         where = "in person" if "onsite" in offers and "live" not in offers else "online"
         place = f" Where: {answers['location']}." if where == "in person" and answers.get("location") else ""
-        return (
-            f"My first {where} class. Topic: {_val(answers, 'live_topic', 'you choose')}. "
-            f"When: {_val(answers, 'live_when', 'an evening that suits my students')}.{place}"
+        first = first_class_at(answers)
+        when = f"{_val(answers, 'live_when', 'an evening that suits my students')}" + (
+            f" (the first one on {first.strftime('%Y-%m-%dT%H:%M')})" if first else ""
         )
+        return f"My first {where} class. Topic: {_val(answers, 'live_topic', 'you choose')}. When: {when}.{place}"
     return f"My first article. Topic: {_val(answers, 'article_topic', 'you choose something useful for my students')}."
 
 
@@ -220,10 +220,65 @@ def run_draft(tenant, kind: str, prompt: str) -> None:
         except ContentOpError:
             logger.exception("interview fallback draft failed schema=%s kind=%s", tenant.schema_name, kind)
             status = "failed"
+    if kind == "event" and status == "ready":
+        apply_schedule(tenant)
     _set_draft_status(tenant, kind, status)
     if kind == "course" and status == "ready":
         grant_membership(tenant)
         setup_flow.start_page_build(tenant, "courses")
+
+
+# ── class schedule ───────────────────────────────────────────────────────────
+
+
+def first_class_at(answers: dict):
+    """When the coach's schedule puts the first class, or None without one."""
+    picked = answers.get("live_schedule")
+    if not picked:
+        return None
+    tz = (TenantConfig.objects.first() or TenantConfig()).timezone
+    dates = schedule.occurrences(picked, tz)
+    return dates[0] if dates else None
+
+
+def apply_schedule(tenant) -> None:
+    """The drafted class takes the schedule's first date (the model's own
+    guess stands when the coach typed a time instead of picking one)."""
+    first = first_class_at(brief.answers_of(tenant))
+    item = _draft_row(TenantConfig.objects.first().setup_flow or {}, "event") if first else None
+    if item is not None and item.scheduled_at != first:
+        item.scheduled_at = first
+        item.save(update_fields=["scheduled_at"])
+
+
+def expand_class_series(tenant) -> int:
+    """At go-live, a weekly schedule becomes the classes it means: the
+    approved first class, copied to every later date (capped by
+    interview_schedule.MAX_CLASSES). Returns how many were added."""
+    answers = brief.answers_of(tenant)
+    picked = answers.get("live_schedule")
+    if not picked or picked.get("mode") != "recurring":
+        return 0
+    flow = TenantConfig.objects.first().setup_flow or {}
+    first = _draft_row(flow, "event")
+    if first is None or (flow.get("interview") or {}).get("series_expanded"):
+        return 0
+    tz = TenantConfig.objects.first().timezone
+    later = [d for d in schedule.occurrences(picked, tz) if d > first.scheduled_at]
+    copy_fields = ("title", "description", "instructor", "status", "pricing_type", "price", "duration_minutes")
+    copy_fields += ("thumbnail", "thumbnail_url") + (("location", "address") if hasattr(first, "address") else ())
+    model = type(first)
+    for when in later:
+        row = model(**{f: getattr(first, f) for f in copy_fields}, scheduled_at=when)
+        row.save()
+
+    def mutate(_config, flow):
+        flow["interview"] = {**(flow.get("interview") or {}), "series_expanded": True}
+
+    from .setup_flow import _update_flow
+
+    _update_flow(tenant, mutate)
+    return len(later)
 
 
 def redraft(tenant, answers: dict, kind: str, request: str) -> None:
@@ -257,49 +312,62 @@ def drop_draft(tenant, kind: str) -> None:
 # ── membership ───────────────────────────────────────────────────────────────
 
 
-def create_membership(tenant, answers: dict) -> None:
-    """The monthly membership a coach asked for: one plan, the first course
-    in it. Created once (its id is kept in setup_flow["drafts"]["plan"])."""
+def create_memberships(tenant, answers: dict) -> None:
+    """The memberships a coach asked for: one plan per picked tier (a
+    delegated pick gets the digital one), the first course in every tier
+    that includes courses. Created once; the plan ids are kept in
+    setup_flow["drafts"]["plans"] by tier."""
     from decimal import Decimal
 
     from apps.billing.models import SubscriptionPlan
 
     from .setup_flow import _update_flow, start_page_build
 
-    price = answers.get("membership_price") or DEFAULT_MEMBERSHIP_PRICE
-    teaches = str(answers.get("teaches") or "everything I teach")
-    plan = SubscriptionPlan.objects.create(
-        name="Membership",
-        description=f"Every course and class in {teaches.lower()}, one monthly price. Cancel any time.",
-        price=Decimal(f"{min(float(price), 9999):.2f}"),
-        billing_interval_months=1,
-    )
+    picked = [i for i in (answers.get("memberships") or []) if i in brief.TIER_BY_ID] or [DEFAULT_TIER]
+    teaches = str(answers.get("teaches") or "everything I teach").lower()
+    plans = {}
+    for tier_id in picked:
+        tier = brief.TIER_BY_ID[tier_id]
+        perks = ", ".join(p.lower() for p in tier["perks"])
+        plans[tier_id] = SubscriptionPlan.objects.create(
+            name=tier["label"],
+            description=f"{tier['blurb']} {perks[:1].upper()}{perks[1:]}, for {teaches}. Cancel any time.",
+            price=Decimal(f"{tier['price']:.2f}"),
+            billing_interval_months=1,
+        ).pk
 
     def mutate(_config, flow):
-        flow["drafts"] = {**(flow.get("drafts") or {}), "plan": plan.pk}
+        flow["drafts"] = {**(flow.get("drafts") or {}), "plans": plans, "plan": next(iter(plans.values()))}
 
     _update_flow(tenant, mutate)
     grant_membership(tenant)
     start_page_build(tenant, "pricing")
 
 
+def membership_plan_ids(flow: dict) -> list[int]:
+    drafts = flow.get("drafts") or {}
+    return list((drafts.get("plans") or {}).values()) or ([drafts["plan"]] if drafts.get("plan") else [])
+
+
 def grant_membership(tenant) -> None:
-    """Members get the interview's course: the membership's course access
-    points at the current course draft."""
+    """Members get the interview's course: every tier that includes courses
+    points its course access at the current course draft."""
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import SubscriptionPlanAccess
     from apps.courses.models import Course
 
     drafts = (TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}
-    if not drafts.get("plan"):
+    plans = drafts.get("plans") or ({DEFAULT_TIER: drafts["plan"]} if drafts.get("plan") else {})
+    if not plans:
         return
     course_ct = ContentType.objects.get_for_model(Course)
-    SubscriptionPlanAccess.objects.filter(plan_id=drafts["plan"], content_type=course_ct).delete()
-    if drafts.get("course") and Course.objects.filter(pk=drafts["course"]).exists():
-        SubscriptionPlanAccess.objects.create(
-            plan_id=drafts["plan"], content_type=course_ct, object_id=drafts["course"]
-        )
+    SubscriptionPlanAccess.objects.filter(plan_id__in=plans.values(), content_type=course_ct).delete()
+    if not (drafts.get("course") and Course.objects.filter(pk=drafts["course"]).exists()):
+        return
+    for tier_id, plan_id in plans.items():
+        if brief.TIER_BY_ID.get(tier_id, brief.TIER_BY_ID[DEFAULT_TIER])["courses"]:
+            SubscriptionPlanAccess.objects.create(plan_id=plan_id, content_type=course_ct, object_id=drafts["course"])
 
 
 # ── look: cards and picks ────────────────────────────────────────────────────
@@ -355,7 +423,22 @@ def style_cards(answers: dict, tenant=None) -> dict:
         "options": [{**o, **({"recommended": True} if o["value"] == first else {})} for o in looks],
         "photos": _look_photos(tenant, answers),
         "headline": str(answers.get("pitch") or "")[:120],
+        # A picked look opens as a whole page: sample copy about their subject,
+        # the hero's line in their words.
+        "preview": {"subject": brief.subject_of(answers), "body": hero_line(answers)},
     }
+
+
+def hero_line(answers: dict) -> str:
+    """What makes them different, then what students get (the first four)."""
+    gets = [g.strip() for g in str(answers.get("outcome") or "").split(",") if g.strip()][:4]
+    gets = [g if i == 0 else g[:1].lower() + g[1:] for i, g in enumerate(gets)]
+    parts = []
+    if answers.get("difference"):
+        parts.append(f"{str(answers['difference']).rstrip('.')}.")
+    if gets:
+        parts.append(f"{', '.join(gets[:-1]) + ' and ' + gets[-1] if len(gets) > 1 else gets[0]}.")
+    return " ".join(parts)[:300]
 
 
 def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
@@ -427,18 +510,13 @@ def _cover_images(tenant, kind: str, item) -> list:
 def review_card(tenant, kind: str) -> dict:
     """The review screen of the interview's first course or class: the real
     draft (title, description, curriculum or date, price, cover) and a few
-    covers to choose from. ``status`` is building | ready | failed, or
-    waiting: a class on a plan without live classes is drafted once go-live
-    adds them."""
+    covers to choose from. ``status`` is building | ready | failed."""
     from apps.core.curated_images.cache import asset_id_from_key
     from apps.core.currency import tenant_charge_currency
     from apps.core.storage import generate_presigned_download_url
 
     flow = TenantConfig.objects.first().setup_flow or {}
-    status = (flow.get("draft_status") or {}).get(kind)
-    if status is None and kind == "event" and not _live_entitled(tenant):
-        return {"kind": kind, "status": "waiting", "item": None}
-    status = status or "building"
+    status = (flow.get("draft_status") or {}).get(kind) or "building"
     item = None if status == "building" else _draft_row(flow, kind)
     card = {"kind": kind, "status": "failed" if status == "ready" and item is None else status, "item": None}
     if item is None:
@@ -552,6 +630,13 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         elif field_id == "site_logo":
             answers["logo"] = {"mode": "wordmark", "curated_id": None}
             apply_logo(tenant, answers)
+        return
+    if field is not None and field.kind == "schedule":
+        picked = schedule.parse(value)
+        if picked is None:
+            raise ChoiceError("invalid_schedule")
+        brief.apply_fact(answers, field_id, schedule.summary(picked))
+        answers["live_schedule"] = picked
         return
     if field_id == "site_style":
         look = sections.parse_look(value)

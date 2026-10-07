@@ -22,7 +22,7 @@ MESSAGE_MAX = 2000
 INTERVIEW_TIMEOUT_SECONDS = 45
 EDIT_TIMEOUT_SECONDS = 35
 TRANSCRIPT_KEEP = 80
-MAX_OPTIONS = 16
+MAX_OPTIONS = 8
 # The hub has no sessions: the whole kept transcript rides every turn.
 CONTEXT_TURNS = TRANSCRIPT_KEEP
 OPENING_ACK = "Hi! I'll ask you a few questions and build your site while we talk. Type, tap an answer, or use the mic."
@@ -71,11 +71,10 @@ Do these things:
      no exclamation marks.
    - question: ONE question, under 25 words, about next_field only, specific to their niche
      and students. Never ask two things at once, and never list the answers in the question.
-   - options: exactly 16 answers they can tap, 1 to 6 words each, specific to them and all
-     different. The coach picks from a full screen of tiles, so cover the whole range of what
-     someone like them might say, from the most common to the less obvious. Only two
-     questions get fewer: free or paid (2 options) and a price (8 options). Open questions
-     (their story, their pitch) get 16 too, written as the coach might say it. When the field is
+   - options: exactly 8 answers they can tap, 1 to 6 words each, specific to them and all
+     different. The coach picks from a screen of tiles, so cover the range of what someone
+     like them might say, from the most common to the less obvious. Open questions
+     (their story, their pitch) get 8 too, written as the coach might say it. When the field is
      marked "several", the coach can tick any number of them, so every option is one distinct
      item that combines with the others: never "all of the above", "none" or "something else".
      When a field in "missing" lists "fixed_options", those are the answers the coach will see;
@@ -103,7 +102,20 @@ class InterviewTurn(BaseModel):
     icons: list[str] = []
 
 
-GUIDE_KEYS = ("ack", "question", "options", "field", "can_delegate", "multi", "icons", "hints", "skip")
+GUIDE_KEYS = (
+    "ack",
+    "question",
+    "options",
+    "field",
+    "can_delegate",
+    "multi",
+    "icons",
+    "hints",
+    "skip",
+    "details",
+    "builder",
+    "schedule",
+)
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
 
@@ -122,10 +134,13 @@ def guide_for(
             "icons": {},
             "hints": {},
             "skip": None,
+            "details": {},
+            "builder": None,
+            "schedule": False,
         }
-    # The offers and payments chips are the fixed lists the answer is parsed against; hinted
-    # fields keep their pre-written options so each hint matches its tile.
-    fixed = options is None or field.kind in ("offers", "payments") or bool(field.hints)
+    # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
+    # against; hinted fields keep their pre-written options so each hint matches its tile.
+    fixed = options is None or field.kind in brief.FIXED_KINDS or bool(field.hints)
     own, own_icons, own_hints = brief.options_for(field, answers or {})
     chosen = [str(o)[:60] for o in (own if fixed else options)][:MAX_OPTIONS]
     names = own_icons if fixed else [str(i) for i in (icons or [])]
@@ -135,12 +150,24 @@ def guide_for(
         "question": (field.question if field.kind in REVIEW_KINDS else question or field.question)[:300],
         "options": chosen,
         "field": field.id,
-        "can_delegate": field.kind not in REVIEW_KINDS,
+        "can_delegate": field.delegable and field.kind not in REVIEW_KINDS,
         "multi": field.multi,
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
         "skip": brief.SKIP_LABELS.get(field.group),
+        "details": brief.details_for(field, answers or {}) if fixed else {},
+        # What the question builds, previewed beside its answers.
+        "builder": builder_of(field),
+        "schedule": field.kind == "schedule",
     }
+
+
+def builder_of(field: brief.Field) -> str | None:
+    if field.kind == "memberships":
+        return "membership"
+    if field.group in ("course", "event") and field.kind not in REVIEW_KINDS:
+        return field.group
+    return None
 
 
 def started_note(fired: list[str]) -> str:
@@ -168,7 +195,12 @@ def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=
     if section := next((f for f in missing if f.group in begun), None):
         return section
     if turn:
-        chosen = next((f for f in missing if f.id == turn.next_field and f.kind not in brief.CARD_KINDS), None)
+        # The model reorders the open questions only: a section starts when
+        # everything before it is settled, or its draft could never fire and
+        # its review screen would wait forever.
+        chosen = next(
+            (f for f in missing if f.id == turn.next_field and f.kind not in brief.CARD_KINDS and not f.group), None
+        )
         if chosen:
             return chosen
     return top
@@ -194,7 +226,11 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
                     "id": f.id,
                     "means": f.label,
                     **({"several": True} if f.multi else {}),
-                    **({"fixed_options": list(brief.options_for(f, answers)[0])} if f.hints else {}),
+                    **(
+                        {"fixed_options": list(brief.options_for(f, answers)[0])}
+                        if f.hints or f.kind in brief.FIXED_KINDS
+                        else {}
+                    ),
                 }
                 for f in brief.missing(answers)
                 if f.kind not in brief.CARD_KINDS
@@ -282,6 +318,8 @@ def run_turn(
         if spoken and turn.heard and turn.heard.strip():
             text = turn.heard.strip()[:MESSAGE_MAX]
         for fact in turn.facts:
+            if choice and fact.field == choice.get("field"):
+                continue  # the pick is applied by code; the model's reading of it never overrides it
             brief.apply_fact(answers, fact.field, fact.value)
     elif text and answering and not choice and not review:
         brief.apply_fact(answers, answering, text)  # no AI: the answer is to the question on screen

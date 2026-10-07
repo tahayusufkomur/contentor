@@ -7,7 +7,7 @@ from contextlib import suppress
 from apps.core.monetization import can_monetize, is_paid_active
 
 from . import interview_brief as brief
-from .interview_milestones import fire
+from .interview_milestones import drop_draft, expand_class_series, fire, membership_plan_ids
 from .models import TenantConfig
 from .setup_items import _has_paid_content, _live_entitled, _seeded_by_label, publish_blockers
 
@@ -72,6 +72,8 @@ def publish(tenant) -> None:
         if drafts.get(kind):
             with suppress(content.ContentOpError):  # already published, or the draft is gone
                 publisher(drafts[kind])
+    if _live_entitled(tenant):
+        expand_class_series(tenant)  # a weekly schedule becomes its classes
     setup_flow.act(tenant, "finish", publish=True)
 
 
@@ -86,19 +88,23 @@ def make_free(tenant) -> None:
     base = dict(answers)
     answers["sells"] = "free"
     answers["payments"] = ["free"]
-    for key in ("course_price", "membership_price", "event_price"):
+    for key in ("course_price", "memberships", "event_price"):
         answers.pop(key, None)
-    if not _live_entitled(tenant) and answers.get("offers"):
+    live_dropped = not _live_entitled(tenant) and bool({"live", "onsite"} & set(answers.get("offers") or []))
+    if live_dropped:
         brief.apply_fact(
             answers, "offers", ", ".join(o for o in answers["offers"] if o not in ("live", "onsite")) or "course"
         )
     brief.save_answers(tenant, answers, base=base)
-    drafts = (TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}
+    flow = TenantConfig.objects.first().setup_flow or {}
+    drafts = flow.get("drafts") or {}
     if drafts.get("course"):
         Course.objects.filter(pk=drafts["course"], pricing_type="paid").update(pricing_type="free", price=0)
     event = drafts.get("event") or {}
-    if event.get("id"):
+    if live_dropped and event:
+        drop_draft(tenant, "event")  # the drafted class goes with the live offer
+    elif event.get("id"):
         model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass
         model.objects.filter(pk=event["id"], pricing_type="paid").update(pricing_type="free", price=0)
-    if drafts.get("plan"):
-        SubscriptionPlan.objects.filter(pk=drafts["plan"]).update(is_active=False)
+    if plan_ids := membership_plan_ids(flow):
+        SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)

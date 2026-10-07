@@ -82,7 +82,7 @@ def test_extracts_several_facts_and_follows_the_ai_question(client, tenant_ctx, 
     assert "made_up" not in _answers(tenant_ctx)
     assert body["guide"]["field"] == "outcome"
     assert body["guide"]["question"] == "What changes for them after a month with you?"
-    assert body["guide"]["can_delegate"] is True
+    assert body["guide"]["can_delegate"] is False  # only the coach knows what students get
     assert body["state"]["interview"]["remaining"] > 0
 
 
@@ -334,7 +334,7 @@ def test_fixed_options_carry_icons_and_hints(client, tenant_ctx):
     tone = interview.guide_for(brief.FIELD_BY_ID["tone"])
     assert tone["icons"]["Warm"] == "heart" and tone["hints"]["Warm"].startswith("Come as you are")
     offers = interview.guide_for(brief.FIELD_BY_ID["offers"], options=["AI made-up"], icons=["star"])
-    assert offers["icons"]["Courses"] == "book-open"  # the fixed offer list keeps its own icons
+    assert offers["icons"]["Digital Courses"] == "book-open"  # the fixed offer list keeps its own icons
     assert interview.guide_for(None)["icons"] == {} and interview.guide_for(None)["hints"] == {}
 
 
@@ -412,8 +412,71 @@ def test_a_started_section_finishes_before_other_questions(client, tenant_ctx, q
     quiet.reply = interview.InterviewTurn(
         facts=[{"field": "course_price", "value": "49"}],
         ack="Ok.",
-        next_field="membership_price",
-        question="Monthly price?",
+        next_field="memberships",
+        question="Which memberships?",
     )
     guide = client.post(URL, {"message": "49", "field": "course_price"}, format="json").json()["guide"]
     assert guide["field"] == "course_review"
+
+
+def test_guide_carries_details_builder_and_schedule():
+    from apps.tenant_config import interview_brief as brief
+
+    offers = interview.guide_for(brief.FIELD_BY_ID["offers"])
+    assert offers["details"]["Digital Courses"].startswith("Pre-recorded")
+    assert offers["can_delegate"] is False and offers["builder"] is None and offers["schedule"] is False
+    when = interview.guide_for(brief.FIELD_BY_ID["live_when"])
+    assert when["schedule"] is True and when["options"] == ["Recurring", "One-time"] and when["builder"] == "event"
+    assert when["hints"]["Recurring"].startswith("Set days") and when["can_delegate"] is True
+    tiers = interview.guide_for(
+        brief.FIELD_BY_ID["memberships"], options=["AI made-up"], answers={"offers": ["course", "onsite"]}
+    )
+    assert tiers["options"] == ["Digital membership", "Studio membership", "All-access"]
+    assert tiers["hints"]["Digital membership"] == "$9 a month" and tiers["builder"] == "membership"
+    assert tiers["multi"] is True and tiers["details"]["All-access"] == "One membership for all of it."
+    assert interview.guide_for(brief.FIELD_BY_ID["course_topic"])["builder"] == "course"
+    assert interview.guide_for(brief.FIELD_BY_ID["course_review"])["builder"] is None
+    assert interview.guide_for(None)["details"] == {} and interview.guide_for(None)["builder"] is None
+
+
+def test_a_schedule_pick_is_applied_by_code_and_the_model_never_overrides_it(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "offers": ["course", "live"], "live_topic": "Pads"})
+    quiet.reply = interview.InterviewTurn(
+        facts=[{"field": "live_when", "value": "whenever suits"}],
+        ack="Ok.",
+        next_field="event_price",
+        question="Price?",
+        options=["10"],
+    )
+    body = client.post(
+        URL,
+        {
+            "message": "Tuesday 8 Jan 2030 at 6:30 PM",
+            "choice": {"field": "live_when", "value": '{"mode": "once", "at": "2030-01-08T18:30"}'},
+        },
+        format="json",
+    ).json()
+    answers = _answers(tenant_ctx)
+    assert answers["live_when"] == "Tuesday 8 Jan 2030 at 6:30 PM"
+    assert answers["live_schedule"] == {"mode": "once", "at": "2030-01-08T18:30"}
+    assert body["guide"]["field"]  # the interview went on (the course section comes first)
+    bad = client.post(
+        URL, {"message": "x", "choice": {"field": "live_when", "value": '{"mode": "once"}'}}, format="json"
+    )
+    assert bad.status_code == 400
+
+
+def test_the_model_cannot_start_a_section_before_its_turn(client, tenant_ctx, quiet):
+    """The course draft needs the home facts and the payments answer; a
+    review screen reached before them would wait for a draft that never
+    fires (seen in e2e: teaches → outcome → offers → course_topic)."""
+    _set_answers(tenant_ctx, {"teaches": "Yoga", "outcome": "Less back pain"})
+    quiet.reply = interview.InterviewTurn(
+        facts=[{"field": "offers", "value": "Digital Courses"}],
+        ack="Ok.",
+        next_field="course_topic",
+        question="What should your first course teach?",
+        options=["Neck release"],
+    )
+    guide = client.post(URL, {"message": "Digital Courses", "field": "offers"}, format="json").json()["guide"]
+    assert guide["field"] == "audience"  # the next open question in order, not the course section

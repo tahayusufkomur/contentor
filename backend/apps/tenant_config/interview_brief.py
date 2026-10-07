@@ -23,6 +23,9 @@ TEXT_MAX = 500
 # Answered by tapping a card (applied by code, asked in order): the look,
 # the logo, and the review screens of the first course and class.
 CARD_KINDS = ("style", "logo", "course", "event")
+# Fixed answer lists the coach's words are parsed against; the model phrases
+# the question to fit them and never rewrites them.
+FIXED_KINDS = ("offers", "payments", "memberships", "schedule")
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
     "course": "sell_courses",
@@ -50,6 +53,71 @@ _PAYMENT_WORDS = (
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
 TONES = ("warm", "energetic", "calm", "expert", "playful")
+# The memberships a coach can offer, any number of them, each built on what
+# they teach with: id, label, monthly price, the offers it needs, whether the
+# first course is in it, its perks and a line about it.
+MEMBERSHIP_TIERS = (
+    {
+        "id": "digital",
+        "label": "Digital membership",
+        "price": 9,
+        "needs": ("course",),
+        "courses": True,
+        "icon": "laptop",
+        "perks": ("Every digital course", "New courses as they land"),
+        "blurb": "All the pre-recorded content, watched any time.",
+    },
+    {
+        "id": "online",
+        "label": "Online membership",
+        "price": 19,
+        "needs": ("live",),
+        "courses": True,
+        "icon": "video",
+        "perks": ("All live online classes", "Class replays", "Every digital course"),
+        "blurb": "Every live class from home, plus the courses.",
+    },
+    {
+        "id": "studio",
+        "label": "Studio membership",
+        "price": 49,
+        "needs": ("onsite",),
+        "courses": True,
+        "icon": "building-2",
+        "perks": ("Unlimited in-person sessions", "Every digital course"),
+        "blurb": "Train at your place as often as they like.",
+    },
+    {
+        "id": "community",
+        "label": "Community membership",
+        "price": 5,
+        "needs": ("community",),
+        "courses": False,
+        "icon": "users",
+        "perks": ("The members' community", "Members-only articles"),
+        "blurb": "A place to talk, share and stay motivated.",
+    },
+    {
+        "id": "all",
+        "label": "All-access",
+        "price": 69,
+        "needs": (),
+        "courses": True,
+        "icon": "crown",
+        "perks": ("Everything, online and in person",),
+        "blurb": "One membership for all of it.",
+    },
+)
+TIER_BY_ID = {t["id"]: t for t in MEMBERSHIP_TIERS}
+
+
+def tiers_for(answers: dict) -> list[dict]:
+    """The tiers this coach's offers allow; all-access only when there is
+    more than one thing to bundle."""
+    have = set(answers.get("offers") or ["course"])
+    return [t for t in MEMBERSHIP_TIERS if set(t["needs"]) <= have and (t["needs"] or len(have) > 1)]
+
+
 # Lucide icon ids a tile may show (frontend: src/lib/option-icons.ts mirrors
 # this list). The model picks one per AI-written option; fixed fields carry
 # their own below. Unknown ids are dropped, never shown.
@@ -133,6 +201,8 @@ class Field:
     multi: bool = False  # several options can be ticked at once
     icons: tuple[str, ...] = ()  # one lucide id per option (fixed-option fields)
     hints: tuple[str, ...] = ()  # one short line per option, shown under it
+    details: tuple[str, ...] = ()  # one description per option, shown once it is picked
+    delegable: bool = False  # the guide may decide it for the coach ("You decide")
 
 
 FIELDS: tuple[Field, ...] = (
@@ -140,43 +210,18 @@ FIELDS: tuple[Field, ...] = (
         "teaches",
         "What they teach",
         "Let's start with you. What do you teach?",
-        # The first screen, before any AI turn: 16 tiles, typing covers the rest.
+        # The first screen, before any AI turn: eight tiles, typing covers the rest.
         (
             "Yoga",
             "Pilates",
             "Fitness coaching",
-            "Meditation",
             "Dance",
-            "Belly dance",
-            "Pole dance",
-            "Face yoga",
-            "Makeup",
+            "Meditation",
             "Nutrition",
             "Life coaching",
             "Business coaching",
-            "Language lessons",
-            "Music lessons",
-            "Art and painting",
-            "Cooking",
         ),
-        icons=(
-            "flower-2",
-            "person-standing",
-            "dumbbell",
-            "brain",
-            "music",
-            "sparkles",
-            "zap",
-            "smile",
-            "paintbrush",
-            "salad",
-            "compass",
-            "briefcase",
-            "languages",
-            "guitar",
-            "palette",
-            "chef-hat",
-        ),
+        icons=("flower-2", "person-standing", "dumbbell", "music", "brain", "salad", "compass", "briefcase"),
     ),
     Field(
         "audience",
@@ -191,16 +236,23 @@ FIELDS: tuple[Field, ...] = (
         "offers",
         "How they teach",
         "How will you teach your students?",
-        ("Courses", "Live online classes", "In-person sessions", "Articles", "Community"),
+        ("Digital Courses", "Live online classes", "In-person sessions", "Articles", "Community"),
         kind="offers",
         multi=True,
         icons=("book-open", "video", "map-pin", "newspaper", "users"),
+        details=(
+            "Pre-recorded lessons students buy once and follow at their own pace.",
+            "Scheduled video sessions students join from home, with you live.",
+            "Classes, workshops or retreats at your own place.",
+            "A blog that brings new students in from search and keeps them reading.",
+            "A members' space where your students talk, share and stay motivated.",
+        ),
     ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
     Field(
         "difference", "What makes their approach theirs", "What do you do differently from other teachers?", multi=True
     ),
-    Field("site_style", "Site style", "Which look feels most like you?", kind="style"),
+    Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
     Field("story", "Their story", "How did you come to teach this?"),
     Field(
         "credentials",
@@ -215,6 +267,7 @@ FIELDS: tuple[Field, ...] = (
         ("Warm", "Energetic", "Calm", "Expert", "Playful"),
         kind="tone",
         multi=True,
+        delegable=True,
         icons=("heart", "zap", "leaf", "graduation-cap", "smile"),
         hints=(
             "Come as you are. We'll take it slow.",
@@ -224,7 +277,7 @@ FIELDS: tuple[Field, ...] = (
             "Yes, you can wear socks.",
         ),
     ),
-    Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo"),
+    Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
     Field(
         "payments",
         "How students pay",
@@ -241,14 +294,21 @@ FIELDS: tuple[Field, ...] = (
         ),
     ),
     Field(
-        "membership_price",
-        "Monthly membership price",
-        "What should the monthly membership cost?",
-        ("9", "15", "19", "29", "39", "49", "79", "99"),
-        kind="price",
+        "memberships",
+        "Memberships offered",
+        "You can offer more than one membership. Which ones fit your students?",
+        kind="memberships",  # options come from tiers_for()
+        multi=True,
         pays=("membership",),
+        delegable=True,
     ),
-    Field("course_topic", "First course topic", "What's your first course about?", group="course"),
+    Field(
+        "course_topic",
+        "First course topic",
+        "Let's build your first course. What should it teach?",
+        group="course",
+        delegable=True,
+    ),
     Field(
         "course_price",
         "First course price",
@@ -257,24 +317,28 @@ FIELDS: tuple[Field, ...] = (
         kind="price",
         pays=("course",),
         group="course",
+        delegable=True,
     ),
     Field("course_review", "First course", "Here's your first course. Happy with it?", kind="course", group="course"),
     Field(
         "live_topic",
         "Live class topic",
-        "What will your first class be about?",
+        "Let's set up your first live class. What should it focus on?",
         needs=("live", "onsite"),
         group="event",
+        delegable=True,
     ),
     Field(
         "live_when",
         "Live class schedule",
-        "When does it happen?",
-        ("Weekday mornings", "Weekday lunchtimes", "Weekday evenings", "Saturday mornings", "Sunday mornings"),
+        "When does your first live class run?",
+        ("Recurring", "One-time"),
+        kind="schedule",  # the tile picks weekly or one-time; the picker sends the dates
         needs=("live", "onsite"),
-        multi=True,
-        icons=("sunrise", "coffee", "sunset", "calendar", "sun"),
+        icons=("repeat", "calendar"),
+        hints=("Set days and times, week after week", "A single session on one date"),
         group="event",
+        delegable=True,
     ),
     Field(
         "event_price",
@@ -285,6 +349,7 @@ FIELDS: tuple[Field, ...] = (
         needs=("live", "onsite"),
         pays=("event",),
         group="event",
+        delegable=True,
     ),
     Field(
         "event_review",
@@ -300,6 +365,7 @@ FIELDS: tuple[Field, ...] = (
         "What should your first article be about?",
         needs=("articles",),
         group="post",
+        delegable=True,
     ),
     Field(
         "contact",
@@ -310,7 +376,11 @@ FIELDS: tuple[Field, ...] = (
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
     ),
     Field(
-        "location", "Where in-person sessions happen", "Where do your in-person sessions take place?", needs=("onsite",)
+        "location",
+        "Where in-person sessions happen",
+        "Where do your in-person sessions take place?",
+        needs=("onsite",),
+        multi=True,
     ),
 )
 FIELD_BY_ID = {f.id: f for f in FIELDS}
@@ -351,6 +421,14 @@ def parse_price(raw) -> float | None:
     return min(float(match.group().replace(",", ".")), 9999.0) if match else None
 
 
+def parse_memberships(raw) -> list[str]:
+    """Tier ids named in the coach's words (labels or ids), in catalogue order."""
+    if isinstance(raw, list | tuple):
+        raw = " ".join(map(str, raw))
+    text = str(raw or "").lower()
+    return [t["id"] for t in MEMBERSHIP_TIERS if t["label"].lower() in text or re.search(rf"\b{t['id']}\b", text)]
+
+
 def coerce(field_id: str, raw):
     """What the coach said → the stored value, or None when it doesn't fit."""
     field = FIELD_BY_ID.get(field_id)
@@ -360,6 +438,8 @@ def coerce(field_id: str, raw):
         return parse_offers(raw) or None
     if field.kind == "payments":
         return parse_payments(raw) or None
+    if field.kind == "memberships":
+        return parse_memberships(raw) or None
     if field.kind == "price":
         return parse_price(raw)
     if field.kind == "tone":
@@ -450,8 +530,16 @@ def required(answers: dict) -> list[Field]:
 
 
 def options_for(field: Field, answers: dict) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
-    """A fixed field's (options, icons, hints) for this coach: paying per
-    class is only offered to a coach who runs classes."""
+    """A fixed field's answers, icons and hints as this coach should see them:
+    paying per class only for coaches who run classes, the memberships their
+    offers allow."""
+    if field.kind == "memberships":
+        tiers = tiers_for(answers)
+        return (
+            tuple(t["label"] for t in tiers),
+            tuple(t["icon"] for t in tiers),
+            tuple(f"${t['price']} a month" for t in tiers),
+        )
     rows = list(
         zip(
             field.options,
@@ -464,6 +552,13 @@ def options_for(field: Field, answers: dict) -> tuple[tuple[str, ...], tuple[str
         rows = [r for r in rows if r[0] != "Pay per class or event"]
     options, icons, hints = (tuple(col) for col in zip(*rows, strict=True)) if rows else ((), (), ())
     return options, icons if field.icons else (), hints if field.hints else ()
+
+
+def details_for(field: Field, answers: dict) -> dict[str, str]:
+    """One description per option, shown once it is picked."""
+    if field.kind == "memberships":
+        return {t["label"]: t["blurb"] for t in tiers_for(answers)}
+    return dict(zip(field.options, field.details, strict=False)) if field.details else {}
 
 
 def is_settled(answers: dict, field_id: str) -> bool:
@@ -491,6 +586,10 @@ def composer_facts(answers: dict) -> list[dict]:
             continue
         if field.kind in ("offers", "payments"):
             value = ", ".join(value)
+        elif field.kind == "memberships":
+            value = ", ".join(
+                f"{TIER_BY_ID[i]['label']} (${TIER_BY_ID[i]['price']} a month)" for i in value if i in TIER_BY_ID
+            )
         elif field.kind == "price":
             value = "free" if value == 0 else f"{value:g}"
         out.append({"q": field.label, "a": str(value)[:TEXT_MAX]})

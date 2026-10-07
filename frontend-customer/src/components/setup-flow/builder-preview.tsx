@@ -13,7 +13,6 @@ import type {
   ReviewKind,
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
-import { tierByLabel, type MembershipTier } from "./memberships";
 
 /** What the preview is built from: every answer so far (the live question's
  * unsent pick included), the drafted item once there is one, and a photo of
@@ -24,6 +23,8 @@ export interface BuilderData {
   /** Covers to choose from, offered before the draft is reviewed. */
   covers: ReviewItem["covers"];
   photo?: string;
+  /** Memberships picked so far: label, monthly price and a line about each. */
+  tiers?: { label: string; price: string; blurb: string }[];
 }
 
 /** The thing a question is building, drawn live beside it: the first
@@ -235,10 +236,7 @@ function MembershipCards({
   data: BuilderData;
   brandName: string;
 }) {
-  const tiers = (data.answers.membership_price ?? "")
-    .split(", ")
-    .map(tierByLabel)
-    .filter((t): t is MembershipTier => !!t);
+  const tiers = data.tiers ?? [];
   return (
     <div className="space-y-3">
       <p className="px-1 text-[12.5px] leading-snug text-[var(--sf-graphite)]">
@@ -262,18 +260,11 @@ function MembershipCards({
                 {t.price}
               </p>
             </div>
-            <ul className="mt-2.5 space-y-1.5">
-              {t.perks.map((perk) => (
-                <li key={perk} className="flex items-start gap-2 text-[13.5px]">
-                  <Check
-                    className="mt-0.5 size-3.5 shrink-0 text-[var(--sf-brass)]"
-                    strokeWidth={2.5}
-                    aria-hidden
-                  />
-                  {perk}
-                </li>
-              ))}
-            </ul>
+            {t.blurb && (
+              <p className="mt-2 text-[13.5px] leading-relaxed text-[var(--sf-graphite)]">
+                {t.blurb}
+              </p>
+            )}
           </Card>
         ))
       ) : (

@@ -96,7 +96,7 @@ def test_course_draft_fires_with_its_prompt(tenant_ctx, config, side_effects, dj
     assert TenantConfig.objects.first().setup_flow["draft_status"]["course"] == "building"
 
 
-def test_event_waits_for_live_entitlement(tenant_ctx, config, side_effects):
+def test_a_class_is_drafted_on_any_plan(tenant_ctx, config, side_effects, django_capture_on_commit_callbacks):
     answers = {
         **HOME,
         "offers": ["course", "live"],
@@ -104,10 +104,9 @@ def test_event_waits_for_live_entitlement(tenant_ctx, config, side_effects):
         "live_topic": "Slow flow",
         "live_when": "Sunday 9am",
     }
-    with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=False):
-        assert "draft:event" not in ms.fire(tenant_ctx, answers)
-    with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=True):
-        assert "draft:event" in ms.fire(tenant_ctx, answers)
+    with django_capture_on_commit_callbacks(execute=True):
+        assert "draft:event" in ms.fire(tenant_ctx, answers)  # go-live offers the plan that runs it
+    assert ms.review_card(tenant_ctx, "event")["status"] == "building"
 
 
 def test_choose_style_validates_and_applies(tenant_ctx, config):
@@ -281,20 +280,37 @@ def test_brief_price_follows_how_students_pay():
     assert setup_flow.brief_price({}, "course") is None
 
 
-def test_membership_plan_is_created_once_with_the_course_in_it(tenant_ctx, config, owner, side_effects):
+def test_membership_plans_are_created_once_per_tier_with_the_course_in_them(tenant_ctx, config, owner, side_effects):
     from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 
     with mock.patch("apps.core.copilot.content._give_cover"):
         setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"payments": ["membership"]})
-    answers = {**HOME, "payments": ["membership"], "membership_price": 25.0}
+    answers = {
+        **HOME,
+        "offers": ["course", "community"],
+        "payments": ["membership"],
+        "memberships": ["digital", "community"],
+    }
     assert "plan:membership" in ms.fire(tenant_ctx, answers)
     assert ms.fire(tenant_ctx, answers) == []
-    plan = SubscriptionPlan.objects.get()
-    assert plan.price == Decimal("25.00") and plan.billing_interval_months == 1
+    plans = {p.name: p for p in SubscriptionPlan.objects.all()}
+    assert set(plans) == {"Digital membership", "Community membership"}
+    digital = plans["Digital membership"]
+    assert digital.price == Decimal("9.00") and digital.billing_interval_months == 1
+    assert plans["Community membership"].price == Decimal("5.00")
     course = Course.objects.get()
     assert course.pricing_type == "free"  # members get it; not sold on its own
-    assert SubscriptionPlanAccess.objects.get(plan=plan).object_id == course.pk
+    # Only the tiers that include courses point at it.
+    assert [(a.plan_id, a.object_id) for a in SubscriptionPlanAccess.objects.all()] == [(digital.pk, course.pk)]
     side_effects["build"].assert_any_call(tenant_ctx, "pricing")
+
+
+def test_a_delegated_membership_pick_gets_the_digital_tier(tenant_ctx, config, side_effects):
+    from apps.billing.models import SubscriptionPlan
+
+    answers = {**HOME, "payments": ["membership"], "delegated": ["memberships"]}
+    assert "plan:membership" in ms.fire(tenant_ctx, answers)
+    assert SubscriptionPlan.objects.get().name == "Digital membership"
 
 
 def test_skip_drops_the_draft_and_its_publish_blocker(tenant_ctx, config, owner):
@@ -334,11 +350,78 @@ def test_review_card_shows_the_real_draft(tenant_ctx, config, owner):
         ms.set_cover(tenant_ctx, "course", "not-offered")
 
 
-def test_a_class_on_a_plan_without_live_classes_waits_for_go_live(tenant_ctx, config):
-    with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=False):
-        assert ms.review_card(tenant_ctx, "event")["status"] == "waiting"
-    with mock.patch("apps.tenant_config.interview_milestones._live_entitled", return_value=True):
-        assert ms.review_card(tenant_ctx, "event")["status"] == "building"
+def test_review_card_is_building_until_the_draft_lands(tenant_ctx, config):
+    assert ms.review_card(tenant_ctx, "event")["status"] == "building"
+
+
+def test_choose_schedule_validates_and_sets_the_summary(tenant_ctx, config):
+    answers = {"delegated": ["live_when"]}
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "live_when", '{"mode": "recurring", "start": "2026-10-12", "days": [9]}')
+    ms.choose(
+        tenant_ctx,
+        answers,
+        "live_when",
+        '{"mode": "recurring", "start": "2026-10-12", "end": "2026-12-07", "days": [4, 2], "times": ["18:30"]}',
+    )
+    assert answers["live_when"] == "Tuesdays and Thursdays at 6:30 PM, from 12 Oct to 7 Dec 2026"
+    assert answers["live_schedule"]["days"] == [2, 4] and answers["delegated"] == []
+    prompt = ms.draft_prompt({**answers, "offers": ["course", "live"], "live_topic": "Pads"}, "event")
+    assert "the first one on 2026-10-13T18:30" in prompt
+
+
+def test_a_weekly_schedule_dates_the_draft_and_expands_at_go_live(tenant_ctx, config, owner):
+    from apps.core.models import Tenant
+    from apps.live.models import LiveClass
+
+    answers = {
+        **HOME,
+        "offers": ["course", "live"],
+        "live_topic": "Pads",
+        "live_when": "Tuesdays and Thursdays at 6:30 PM",
+        # 7 Jan 2030 is a Monday: Tue 8, Thu 10, Tue 15, Thu 17 (the 21st ends it).
+        "live_schedule": {
+            "mode": "recurring",
+            "start": "2030-01-07",
+            "end": "2030-01-21",
+            "days": [2, 4],
+            "times": ["18:30"],
+        },
+    }
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", answers)
+    ms.apply_schedule(tenant_ctx)
+    first = LiveClass.objects.get()
+    assert first.scheduled_at.isoformat() == "2030-01-08T18:30:00+00:00"
+    assert ms.expand_class_series(tenant_ctx) == 3
+    assert ms.expand_class_series(tenant_ctx) == 0  # once
+    rows = list(LiveClass.objects.order_by("scheduled_at"))
+    assert [r.scheduled_at.isoformat()[:16] for r in rows] == [
+        "2030-01-08T18:30",
+        "2030-01-10T18:30",
+        "2030-01-15T18:30",
+        "2030-01-17T18:30",
+    ]
+    assert {r.title for r in rows} == {first.title} and len({r.room_name for r in rows}) == 4
+
+
+def test_style_cards_carry_a_preview_of_the_coach_in_the_look(tenant_ctx, config):
+    answers = {
+        **HOME,
+        "difference": "No ego, beginner-friendly gym",
+        "outcome": "Real fitness and stamina, Weight loss that lasts, Confidence, Fundamentals, Extra",
+    }
+    with mock.patch("apps.tenant_config.interview_milestones._look_photos", return_value=[]):
+        cards = ms.style_cards(answers, tenant_ctx)
+    assert cards["preview"] == {
+        "subject": "yoga",
+        "body": (
+            "No ego, beginner-friendly gym. "
+            "Real fitness and stamina, weight loss that lasts, confidence and fundamentals."
+        ),
+    }
 
 
 def test_classes_turn_on_live_add_events_and_pricing_links(tenant_ctx, config, side_effects):

@@ -58,16 +58,22 @@ const GOLIVE = "__golive";
 /** Moves to another question as a slide: the outgoing one leaves in the
  * travel direction while the new one lands (CSS on the view-transition
  * pseudo-elements in tokens.ts). Without view transitions, or with reduced
- * motion, the screen simply switches. */
-function slide(dir: "next" | "back", update: () => void) {
+ * motion, the screen simply switches. Resolves once the new question is in
+ * the DOM: the transition applies the update a frame later, and until then
+ * the old question must not come back to life. */
+function slide(dir: "next" | "back", update: () => void): Promise<void> {
   if (
     typeof document === "undefined" ||
     !("startViewTransition" in document) ||
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  )
-    return update();
+  ) {
+    update();
+    return Promise.resolve();
+  }
   document.documentElement.dataset.sfDir = dir;
-  document.startViewTransition(() => flushSync(update));
+  return document
+    .startViewTransition(() => flushSync(update))
+    .updateCallbackDone.catch(() => undefined);
 }
 
 function useNarrow(): boolean {
@@ -122,9 +128,8 @@ export function SetupFlow({
       )}
     >
       <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
-      {/* Prototype (mock only until it's decided): a slow drift of warm
-          light behind the questions. */}
-      {mock && <div aria-hidden className="sf-backdrop" />}
+      {/* A slow drift of warm light behind the questions. */}
+      <div aria-hidden className="sf-backdrop" />
       <div className="relative z-10 h-full">
         <PageState
           loading={!flow && !loadError}
@@ -296,7 +301,7 @@ function Flow({
       const key = req.choice?.field ?? req.field ?? guide.field ?? GOLIVE;
       try {
         const res = await api.turn(req);
-        slide("next", () => {
+        await slide("next", () => {
           setGuide(res.guide);
           setFlow(res.state);
           setDir("next");
@@ -309,7 +314,7 @@ function Flow({
         // it: adopt the server's transcript instead of losing the answer.
         const fresh = await api.get().catch(() => null);
         if (fresh && fresh.interview.turns.length > serverTurns) {
-          slide("next", () => {
+          await slide("next", () => {
             setFlow(fresh);
             setGuide(fresh.interview.guide);
             setDir("next");
@@ -403,6 +408,9 @@ function Flow({
       const card = iv.cards?.[reviewField];
       const review = isReview(card) ? card : null;
       const looks = iv.cards?.site_style;
+      // The memberships picked so far, with the price and line the guide gave each.
+      const picked =
+        step.builder === "membership" ? (now ?? "").split(", ") : [];
       builder = {
         answers,
         // The draft itself only once its review has been reached; until
@@ -410,6 +418,13 @@ function Flow({
         review: steps.some((q) => q.field === reviewField) ? review : null,
         covers: review?.item?.covers ?? [],
         photo: looks && !isReview(looks) ? looks.photos?.[0] : undefined,
+        tiers: picked
+          .filter((l) => step.options.includes(l))
+          .map((label) => ({
+            label,
+            price: step.hints?.[label] ?? "",
+            blurb: step.details?.[label] ?? "",
+          })),
       };
     }
     return (

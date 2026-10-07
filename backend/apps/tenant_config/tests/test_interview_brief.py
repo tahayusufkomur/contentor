@@ -93,7 +93,7 @@ def test_required_follows_offers_and_selling():
     assert "course_topic" in base  # a first course is always needed to publish
     assert "course_price" not in base  # only when selling courses one by one
     assert "course_price" not in ids({"payments": ["membership"]})
-    assert "membership_price" in ids({"payments": ["membership"]})
+    assert "memberships" in ids({"payments": ["membership"]})
     assert "course_price" in ids({"payments": ["course"]})
     assert {"live_topic", "live_when", "location"} <= set(ids({"offers": ["course", "onsite"]}))
 
@@ -214,3 +214,41 @@ def test_field_icons_and_hints_line_up_with_options():
 )
 def test_niche_for_maps_the_styled_niches(teaches, niche):
     assert brief.niche_for(teaches) == niche
+
+
+def test_memberships_follow_the_offers_and_parse_from_labels():
+    assert [t["id"] for t in brief.tiers_for({"offers": ["course"]})] == ["digital"]
+    assert [t["id"] for t in brief.tiers_for({"offers": ["course", "live", "community"]})] == [
+        "digital",
+        "online",
+        "community",
+        "all",
+    ]
+    assert brief.coerce("memberships", "Studio membership, Digital membership") == ["digital", "studio"]
+    assert brief.coerce("memberships", "none of those") is None
+    assert brief.details_for(brief.FIELD_BY_ID["memberships"], {"offers": ["course"]}) == {
+        "Digital membership": "All the pre-recorded content, watched any time."
+    }
+    assert brief.composer_facts({"memberships": ["digital"]}) == [
+        {"q": "Memberships offered", "a": "Digital membership ($9 a month)"}
+    ]
+
+
+def test_only_the_guides_own_calls_can_be_left_to_it():
+    delegable = {f.id for f in brief.FIELDS if f.delegable}
+    assert delegable == {
+        "site_style",
+        "site_logo",
+        "tone",
+        "memberships",
+        "course_topic",
+        "course_price",
+        "live_topic",
+        "live_when",
+        "event_price",
+        "article_topic",
+    }
+    assert len(brief.FIELD_BY_ID["teaches"].options) == 8
+    assert brief.FIELD_BY_ID["location"].multi and brief.FIELD_BY_ID["live_when"].kind == "schedule"
+    assert brief.details_for(brief.FIELD_BY_ID["offers"], {})["Articles"].startswith("A blog")
+    assert brief.parse_offers("Digital Courses, Community") == ["course", "community"]
