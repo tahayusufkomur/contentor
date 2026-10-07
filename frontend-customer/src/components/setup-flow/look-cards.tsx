@@ -73,7 +73,7 @@ export function LookCardsView({
               disabled={disabled}
               onClick={() => {
                 onPick(o.value, o.label);
-                if (o.preview_url) setPreview(o);
+                if (shown.preview) setPreview(o);
               }}
               style={enter(i)}
               className="overflow-hidden p-0"
@@ -105,9 +105,11 @@ export function LookCardsView({
             </CardButton>
           ))}
         </div>
-        {preview?.preview_url && (
+        {preview && shown.preview && (
           <LookPreview
             look={preview}
+            cards={shown}
+            brandName={brandName}
             host={host ?? ""}
             onClose={() => setPreview(null)}
           />
@@ -187,14 +189,20 @@ export function LookCardsView({
   );
 }
 
-/** A look as a whole page, in a browser frame over the questions: scroll
- * it, then keep it or close. Escape closes too. */
+/** A look as a whole home page, in a browser frame over the questions:
+ * the coach's brand, pitch and photos in the style's own layouts, sample
+ * copy turned to their subject. Scroll it, then keep it or close. Escape
+ * closes too. */
 function LookPreview({
   look,
+  cards,
+  brandName,
   host,
   onClose,
 }: {
   look: LookOption;
+  cards: LookCards;
+  brandName: string;
   host: string;
   onClose: () => void;
 }) {
@@ -203,6 +211,12 @@ function LookPreview({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+  const subject = cards.preview?.subject;
+  const words = {
+    ...(brandName ? { "Maya Laurent": brandName } : {}),
+    Maya: "the coach",
+    ...(subject ? { yoga: subject } : {}),
+  };
   return (
     <ModalPortal>
       <div
@@ -247,9 +261,23 @@ function LookPreview({
         >
           <BrowserFrame
             host={host}
-            path={look.preview_url ?? null}
+            path={null}
             device="desktop"
             reloadKey={0}
+            overlay={
+              <div className="absolute inset-0 overflow-y-auto overscroll-contain bg-white">
+                <LookTile
+                  page
+                  styleId={look.style ?? look.value}
+                  paletteId={look.palette}
+                  brandName={brandName}
+                  headline={cards.headline}
+                  photos={cards.photos}
+                  words={words}
+                  body={cards.preview?.body}
+                />
+              </div>
+            }
           />
         </div>
       </div>

@@ -192,13 +192,33 @@ function cardsFor(field: string | null): GuideCards | null {
   if (!cards) return null;
   if (!isReview(cards)) {
     if (cards.kind !== "style") return cards;
-    return {
-      ...cards,
-      options: cards.options.map((o) => ({
-        ...o,
-        preview_url: `/design-showcase?style=${o.style ?? o.value}&palette=${o.palette ?? ""}&page=home&bare=1`,
-      })),
-    };
+    // "Boxing Club" → the sample copy talks about boxing.
+    const teaches = s.recorded.find(
+      (t) => t.role === "coach" && t.field === "teaches",
+    );
+    const subject =
+      (teaches?.role === "coach" ? teaches.text : "")
+        .toLowerCase()
+        .replace(
+          /\b(club|studio|gym|school|academy|coaching|lessons|classes)\b/g,
+          "",
+        )
+        .trim() || "training";
+    // The hero's line: what makes them different, then what students get.
+    const a = said();
+    const gets = (a.outcome ?? "")
+      .split(", ")
+      .filter(Boolean)
+      .slice(0, 4)
+      .map((o, i) => (i ? o.charAt(0).toLowerCase() + o.slice(1) : o));
+    const body = [
+      a.difference && `${a.difference.replace(/\.$/, "")}.`,
+      gets.length &&
+        `${gets.length > 1 ? `${gets.slice(0, -1).join(", ")} and ${gets.at(-1)}` : gets[0]}.`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { ...cards, preview: { subject, ...(body ? { body } : {}) } };
   }
   const kind = cards.kind;
   if ((s.redraftUntil[kind] ?? 0) > Date.now())

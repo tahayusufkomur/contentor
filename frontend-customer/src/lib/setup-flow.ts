@@ -157,8 +157,6 @@ export interface LookOption {
   recommended?: boolean;
   /** Logos: the vector mark, previewed in the coach's look. */
   mark?: LogoMark | null;
-  /** Looks: a whole page in this look, opened as a preview on pick. */
-  preview_url?: string;
 }
 
 export interface LookCards {
@@ -173,6 +171,9 @@ export interface LookCards {
   /** Logos: the look the coach picked, to preview marks in its colours. */
   style?: string;
   palette?: string;
+  /** Looks: picking one opens it as a whole page, its sample copy about
+   * ``subject`` ("boxing") and the hero's line in the coach's words. */
+  preview?: { subject?: string; body?: string };
 }
 
 export type ReviewKind = "course" | "event";
