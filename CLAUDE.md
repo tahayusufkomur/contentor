@@ -70,7 +70,7 @@ Sibling project [mailCraft/](../mailCraft/) — standalone email-builder SaaS (`
 - **`docs/wiki/`** — generated per-area architecture wiki (GitNexus, mirrored from `.gitnexus/wiki/` — never edit by hand). **Read the area's page(s) before working in it** — named `<area>[-<location>].md`, e.g. `billing-payments-backend-apps.md`. A git post-commit/post-merge hook auto-refreshes it in the background (debounced to one run per 6h; log `.gitnexus/wiki-refresh.log`; shims reinstall via `scripts/install-git-hooks.sh`) — commit the resulting `docs/wiki/` diff with your next commit. `make wiki` forces a refresh; `make wiki-sync` re-mirrors only. Pages describe design intent; for exact current callers/impact trust the GitNexus MCP tools.
 - **`docs/PRODUCT.md`** — living product plan (north star, backlog); maintained via `/po`. Consult for any "what's next / what is left" question.
 - **`docs/REFERENCE.md`** — cross-cutting reference (domain model, auth/tenancy flows, billing, integrations, deploy). **`docs/GLOSSARY.md`** — canonical terminology.
-- `docs/superpowers/plans|specs/` — in-progress feature specs/plans; `specs/archive/` = shipped, historical only. (`../docs/plans|specs/` at platform level = historical, ignore.)
+- `docs/superpowers/plans|specs/` — in-progress feature specs/plans only. Shipped ones are deleted, not archived (2026-10-07); a `docs/superpowers/specs/<date>-<name>.md` path cited in a code comment lives in git history (`git log --all -- <path>`). (`../docs/plans|specs/` at platform level = historical, ignore.)
 
 ## Rules
 
