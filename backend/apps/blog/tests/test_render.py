@@ -32,3 +32,14 @@ def test_render_is_deterministic():
     sections = [_Section(heading="A", body_markdown="**b** and [l](https://x.com)")]
     assert render_body(sections) == render_body(sections)
     assert '<a href="https://x.com"' in render_body(sections)
+
+
+def test_render_appends_the_faq_as_h3_questions():
+    from apps.blog.ai import _Faq
+
+    html = render_body(
+        [_Section(heading="", body_markdown="Intro.")],
+        [_Faq(question="How long?", answer="Five minutes."), _Faq(question=" ", answer="dropped")],
+    )
+    assert html.endswith("<h2>FAQ</h2>\n<h3>How long?</h3>\n<p>Five minutes.</p>")
+    assert "dropped" not in html

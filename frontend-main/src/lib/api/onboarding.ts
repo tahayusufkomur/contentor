@@ -42,16 +42,23 @@ export async function createPlatformAuthenticated(
 
 /**
  * Pre-wizard step 1: is this brand name available? Read-only — no token
- * minted, no email sent.
+ * minted, no email sent. With ``review``, an available name also comes back
+ * with an AI typo fix and alternatives (only names still free to take).
  */
 export async function checkBrandName(
   brandName: string,
-): Promise<{ available: boolean; detail?: string }> {
+  review = false,
+): Promise<{
+  available: boolean;
+  detail?: string;
+  typo_fix?: string;
+  suggestions?: string[];
+}> {
   const res = await fetch("/api/v1/onboarding/check-brand-name/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ brand_name: brandName }),
+    body: JSON.stringify({ brand_name: brandName, review }),
   });
   if (!res.ok) {
     let body: unknown = { detail: "Request failed" };

@@ -349,7 +349,7 @@ def test_hinted_fields_keep_their_own_options_and_hints_over_ai_ones(client, ten
     quiet.reply = interview.InterviewTurn(
         next_field="tone", question="How should it sound?", options=["Chatty", "Bossy"], icons=["smile", "zap"]
     )
-    guide = client.post(URL, {"message": "Yoga"}, format="json").json()["guide"]
+    guide = client.post(URL, {"message": "Pottery"}, format="json").json()["guide"]
     assert guide["options"] == list(tone.options)
     assert guide["hints"]["Warm"].startswith("Come as you are") and guide["icons"]["Warm"] == "heart"
     assert '"fixed_options"' in quiet.calls[0]["user"]
@@ -363,7 +363,7 @@ def test_ai_icons_are_matched_to_options_and_filtered(client, tenant_ctx, quiet)
         options=["Parents", "Runners", "Desk workers"],
         icons=["baby", "not-an-icon"],
     )
-    guide = client.post(URL, {"message": "Yoga"}, format="json").json()["guide"]
+    guide = client.post(URL, {"message": "Pottery"}, format="json").json()["guide"]
     assert guide["icons"] == {"Parents": "baby"} and guide["hints"] == {}
     assert "Icon ids: activity," in quiet.calls[0]["system"]  # the allowlist is in the cached system prompt
     flow = TenantConfig.objects.first().setup_flow
@@ -484,3 +484,16 @@ def test_the_model_cannot_start_a_section_before_its_turn(client, tenant_ctx, qu
     )
     guide = client.post(URL, {"message": "Digital Courses", "field": "offers"}, format="json").json()["guide"]
     assert guide["field"] == "audience"  # the next open question in order, not the course section
+
+
+def test_a_tapped_niche_tile_is_applied_by_code(client, tenant_ctx, config, quiet):
+    config.brand_name = "Görkem's Face Yoga Studio"
+    config.save()
+    # The model paraphrases the tile; code's reading of it wins.
+    quiet.reply = interview.InterviewTurn(
+        facts=[{"field": "teaches", "value": "face yoga"}], ack="Got it.", next_field="specialty", question="More?"
+    )
+    body = client.post(URL, {"message": "Face yoga and more"}, format="json").json()
+    answers = _answers(tenant_ctx)
+    assert answers["teaches"] == "Yoga" and answers["specialty_base"] == "Face yoga" and "specialty" not in answers
+    assert body["guide"]["field"] == "specialty" and "Face yoga" not in body["guide"]["options"]

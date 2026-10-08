@@ -9,7 +9,12 @@ async function signupThroughVerify(page: Page, brand: string, email: string) {
   await page.goto("http://localhost/signup");
   await page.getByPlaceholder(en.signup.brandNamePlaceholder).fill(brand);
   await page.getByRole("button", { name: en.signup.submit }).click();
-  await page.getByPlaceholder(en.signup.namePlaceholder).fill("E2E Coach");
+  // The AI may offer a typo fix or alternatives first; Continue keeps the name.
+  const nameField = page.getByPlaceholder(en.signup.namePlaceholder);
+  const keep = page.getByText(en.signup.nameKeep);
+  await expect(nameField.or(keep)).toBeVisible({ timeout: 20_000 });
+  if (await keep.isVisible()) await page.getByRole("button", { name: en.signup.submit }).click();
+  await nameField.fill("E2E Coach");
   await page.getByPlaceholder(en.signup.emailPlaceholder).fill(email);
   await page.getByRole("button", { name: en.signup.submit }).click();
   await expect(page.getByRole("heading", { name: en.signup.verifyTitle })).toBeVisible({ timeout: 10_000 });

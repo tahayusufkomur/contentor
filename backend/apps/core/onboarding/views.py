@@ -99,7 +99,20 @@ def check_brand_name(request):
     region = getattr(request, "region", "global")
     if Tenant.objects.filter(slug=slug, region=region).exists():
         return Response({"available": False, "detail": msg(request, "brand_taken")})
-    return Response({"available": True})
+    if not request.data.get("review"):
+        return Response({"available": True})
+    # A typo fix and a few alternatives, only the ones still free to take.
+    from .name_check import review
+
+    found = review(brand_name)
+    taken = set(
+        Tenant.objects.filter(
+            slug__in=[slugify(n)[:63] for n in (found["typo_fix"], *found["suggestions"]) if n], region=region
+        ).values_list("slug", flat=True)
+    )
+    free = [n for n in found["suggestions"] if slugify(n)[:63] and slugify(n)[:63] not in taken]
+    typo = found["typo_fix"] if found["typo_fix"] and slugify(found["typo_fix"])[:63] not in taken else ""
+    return Response({"available": True, "typo_fix": typo, "suggestions": free})
 
 
 @api_view(["POST"])

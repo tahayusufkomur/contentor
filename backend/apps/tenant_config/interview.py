@@ -166,7 +166,8 @@ def guide_for(
         "field": field.id,
         "can_delegate": field.delegable and field.kind not in REVIEW_KINDS,
         # A studio name that gives the niche away opens on its kinds: pick several.
-        "multi": field.multi or (field.id == "teaches" and fixed and bool(brief.tile_of_brand(brand))),
+        "multi": field.multi
+        or (field.id == "teaches" and fixed and not brief.kind_of_brand(brand) and bool(brief.tile_of_brand(brand))),
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
         "skip": brief.SKIP_LABELS.get(field.group),
@@ -180,7 +181,11 @@ def guide_for(
 def default_question(field: brief.Field, answers, brand="") -> str:
     """The pre-written question, naming the niche where the screen shows its kinds."""
     if field.kind == "specialty":
+        if base := (answers or {}).get("specialty_base"):
+            return f"What else do you teach besides {base.lower()}?"
         return f"Which kinds of {str((answers or {}).get('teaches') or '').strip().lower()} do you teach?"
+    if field.id == "teaches" and (named := brief.kind_of_brand(brand)):
+        return f"Let's start with you. Are you only teaching {named[1].lower()}?"
     if field.id == "teaches" and (tile := brief.tile_of_brand(brand)):
         return f"Let's start with you. Which kinds of {tile.lower()} do you teach?"
     return field.question
@@ -273,6 +278,15 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
     )
 
 
+def _is_tapped(text: str, answering, answers, brand) -> bool:
+    """The message is exactly niche tiles this coach was shown."""
+    if answering not in ("teaches", "specialty"):
+        return False
+    shown = {o.lower() for o in brief.options_for(brief.FIELD_BY_ID[answering], answers, brand)[0]}
+    parts = [p.strip().lower() for p in text.split(",") if p.strip()]
+    return bool(parts) and all(p in shown for p in parts)
+
+
 def _ask_ai(tenant, answers, turns, message, spoken, answering=None) -> InterviewTurn | None:
     from apps.core import ai as core_ai
     from apps.core.onboarding import ai_compose
@@ -343,15 +357,20 @@ def run_turn(
     if review:
         milestones.redraft(tenant, answers, review, text)
         answers.pop(answering, None)
+    # A tapped niche tile ("Face yoga and more", "Belly dance, Hip hop") is
+    # applied by code, like a card: the model would paraphrase it.
+    tapped = bool(text and not choice and not review and _is_tapped(text, answering, answers, brand))
+    if tapped:
+        brief.apply_fact(answers, answering, text)
     turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text and not review else None
     if turn:
         if spoken and turn.heard and turn.heard.strip():
             text = turn.heard.strip()[:MESSAGE_MAX]
         for fact in turn.facts:
-            if choice and fact.field == choice.get("field"):
+            if (choice and fact.field == choice.get("field")) or (tapped and fact.field in ("teaches", "specialty")):
                 continue  # the pick is applied by code; the model's reading of it never overrides it
             brief.apply_fact(answers, fact.field, fact.value)
-    elif text and answering and not choice and not review:
+    elif text and answering and not choice and not review and not tapped:
         brief.apply_fact(answers, answering, text)  # no AI: the answer is to the question on screen
     brief.save_answers(tenant, answers, base=base)
     answers = brief.answers_of(tenant)  # merged with any concurrent tab

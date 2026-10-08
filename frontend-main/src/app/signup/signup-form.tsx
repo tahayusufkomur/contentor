@@ -119,6 +119,12 @@ function AnonymousSignupFlow() {
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [restored, setRestored] = useState(false);
+  // The AI's look at the name: shown once per name; Continue again keeps it.
+  const [reviewed, setReviewed] = useState<string[]>([]);
+  const [ideas, setIdeas] = useState<{
+    typo: string;
+    suggestions: string[];
+  } | null>(null);
 
   // A reload (or a password manager's autofill hiccup) must not wipe the form:
   // keep {brand, name, email, step} for this tab only.
@@ -155,16 +161,31 @@ function AnonymousSignupFlow() {
     return () => clearTimeout(id);
   }, [cooldown]);
 
+  // A picked name is already checked (free to take): fill it in, no second review.
+  const pick = (next: string) => {
+    setBrandName(next);
+    setReviewed((r) => [...r, next]);
+    setIdeas(null);
+  };
+
   const { run: handleBrandContinue, loading: brandLoading } = useAsyncAction(
     async () => {
       const trimmed = brandName.trim();
       if (!trimmed) return;
       setError(null);
-      const result = await checkBrandName(trimmed);
+      const fresh = !reviewed.includes(trimmed);
+      const result = await checkBrandName(trimmed, fresh);
       if (!result.available) {
         setError(result.detail ?? t("errors.generic"));
         return;
       }
+      const suggestions = result.suggestions ?? [];
+      if (fresh && (result.typo_fix || suggestions.length)) {
+        setReviewed((r) => [...r, trimmed]);
+        setIdeas({ typo: result.typo_fix ?? "", suggestions });
+        return;
+      }
+      setIdeas(null);
       setDirection(1);
       setStep("contact");
     },
@@ -314,12 +335,54 @@ function AnonymousSignupFlow() {
               id="brandName"
               placeholder={t("brandNamePlaceholder")}
               value={brandName}
-              onChange={(e) => setBrandName(e.target.value)}
+              onChange={(e) => {
+                setBrandName(e.target.value);
+                setIdeas(null);
+              }}
               autoFocus
               autoComplete="off"
               data-1p-ignore
               data-lpignore="true"
             />
+            {ideas && (
+              <div className="space-y-3 pt-2 text-sm motion-safe:animate-fade-in">
+                {ideas.typo && (
+                  <p className="text-foreground/80">
+                    {t("nameTypo")}{" "}
+                    <button
+                      type="button"
+                      className="font-semibold text-foreground underline underline-offset-2"
+                      onClick={() => pick(ideas.typo)}
+                    >
+                      {ideas.typo}
+                    </button>
+                    ?
+                  </p>
+                )}
+                {ideas.suggestions.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[13px] text-foreground/60">
+                      {t("nameIdeas")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {ideas.suggestions.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => pick(s)}
+                          className="rounded-full border px-3 py-1.5 text-[13px] transition-colors hover:bg-muted"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[13px] text-foreground/60">
+                  {t("nameKeep")}
+                </p>
+              </div>
+            )}
           </form>
         </div>
       </SignupShell>

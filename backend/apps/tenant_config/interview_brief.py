@@ -279,12 +279,31 @@ def tile_of_brand(brand) -> str | None:
     return next((tile for tile, (pattern, _) in SPECIALTIES.items() if re.search(pattern, lowered)), None)
 
 
-def _tile_of_kinds(raw) -> str | None:
-    """The broad tile when every comma-separated part of ``raw`` is one of its kinds."""
-    parts = {p.strip().lower() for p in str(raw or "").split(",") if p.strip()}
-    if not parts:
-        return None
-    return next((tile for tile, (_, kinds) in SPECIALTIES.items() if parts <= {k.lower() for k in kinds}), None)
+def kind_of_brand(brand) -> tuple[str, str] | None:
+    """(tile, kind) when a studio name names one kind outright ("Görkem's Face
+    Yoga Studio" → ("Yoga", "Face yoga")): the first question then only asks
+    whether that is all they teach."""
+    lowered = str(brand or "").lower()
+    for tile, (_, kinds) in SPECIALTIES.items():
+        for kind in kinds:
+            if re.search(rf"\b{re.escape(kind.lower())}\b", lowered):
+                return tile, kind
+    return None
+
+
+def brand_kind_options(kind: str) -> tuple[str, str]:
+    return f"Only {kind.lower()}", f"{kind} and more"
+
+
+def _tile_of_kinds(raw) -> tuple[str, str] | None:
+    """(tile, the kinds as its own labels) when every comma-separated part of
+    ``raw`` is one of that tile's kinds."""
+    parts = [p.strip().lower() for p in str(raw or "").split(",") if p.strip()]
+    for tile, (_, kinds) in SPECIALTIES.items():
+        labels = {k.lower(): k for k in kinds}
+        if parts and all(p in labels for p in parts):
+            return tile, ", ".join(labels[p] for p in parts)
+    return None
 
 
 @dataclass(frozen=True)
@@ -600,12 +619,20 @@ def apply_fact(answers: dict, field_id: str, raw) -> bool:
     if value is None:
         return False
     if field_id == "teaches":
-        # Kinds picked on the first screen ("Belly dance, Hip hop") are the
-        # specialty of their tile; any other answer drops a stale specialty.
-        tile = _tile_of_kinds(value)
+        # Kinds picked on the first screen ("Belly dance, Hip hop", "Only face
+        # yoga") are the specialty of their tile; "Face yoga and more" keeps the
+        # kind and asks what else. Any other answer drops a stale specialty.
         answers.pop("specialty", None)
-        if tile:
-            answers["specialty"], value = value, tile
+        answers.pop("specialty_base", None)
+        value = re.sub(r"^only\s+", "", value, flags=re.I)
+        more = re.fullmatch(r"(.+?)\s+and more", value, flags=re.I)
+        if more and (found := _tile_of_kinds(more[1])):
+            value, answers["specialty_base"] = found
+        elif found := _tile_of_kinds(value):
+            value, answers["specialty"] = found
+    base = answers.get("specialty_base") if field_id == "specialty" else None
+    if base and base.lower() not in value.lower():
+        value = f"{base}, {value}"
     answers[field_id] = value
     answers["delegated"] = [d for d in answers.get("delegated") or [] if d != field_id]
     _sync_legacy(answers, field_id)
@@ -657,10 +684,15 @@ def options_for(
         if field.id == "teaches"
         else None
     )
+    first = FIELD_BY_ID["teaches"]
+    if field.id == "teaches" and (named := kind_of_brand(brand)):
+        icon = dict(zip(first.options, first.icons, strict=True)).get(named[0], "sparkles")
+        return brand_kind_options(named[1]), (icon, "layers"), ()
     if tile:
-        first = FIELD_BY_ID["teaches"]
         icon = dict(zip(first.options, first.icons, strict=True)).get(tile, "sparkles")
-        return SPECIALTIES[tile][1], (icon,) * len(SPECIALTIES[tile][1]), ()
+        base = str(answers.get("specialty_base") or "").lower() if field.kind == "specialty" else ""
+        kinds = tuple(k for k in SPECIALTIES[tile][1] if k.lower() != base)
+        return kinds, (icon,) * len(kinds), ()
     if field.kind == "memberships":
         tiers = tiers_for(answers)
         return (

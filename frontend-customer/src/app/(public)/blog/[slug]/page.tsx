@@ -81,6 +81,33 @@ export async function generateMetadata({
   };
 }
 
+/** No cover photo: the title set on a tinted card with a few drawn shapes. */
+function TitleCard({ title }: { title: string }) {
+  return (
+    <div
+      aria-hidden
+      className="relative mt-6 flex aspect-[1200/627] w-full items-center justify-center overflow-hidden rounded-xl border bg-[color-mix(in_oklch,var(--primary)_12%,transparent)] px-[8%] shadow-sm"
+    >
+      <div className="absolute -left-4 -top-4 grid grid-cols-3 gap-2 opacity-60">
+        {Array.from({ length: 9 }, (_, i) => (
+          <span
+            key={i}
+            className="size-8 rounded-md border-2 border-[color-mix(in_oklch,var(--primary)_50%,transparent)] sm:size-12"
+          />
+        ))}
+      </div>
+      <span className="absolute -bottom-10 left-[6%] size-24 rounded-full border-[10px] border-[color-mix(in_oklch,var(--primary)_30%,transparent)] sm:size-32" />
+      <span className="absolute -right-6 bottom-[12%] h-16 w-28 rotate-[-12deg] rounded-xl bg-[color-mix(in_oklch,var(--primary)_25%,transparent)] sm:h-24 sm:w-40" />
+      <span className="absolute right-[5%] top-[8%] text-3xl font-bold tracking-[-0.2em] text-[color-mix(in_oklch,var(--primary)_45%,transparent)] sm:text-5xl">
+        ⌃⌃⌃
+      </span>
+      <p className="relative text-balance text-center font-serif text-2xl font-bold leading-[1.1] text-foreground sm:text-5xl">
+        {title}
+      </p>
+    </div>
+  );
+}
+
 function Contents({ headings }: { headings: Heading[] }) {
   const links = (
     <ul className="flex flex-col gap-0.5 text-sm">
@@ -194,13 +221,15 @@ export default async function BlogPostPage({
         >
           ← {brand}
         </NavLink>
-        {post.cover_photo_url && (
+        {post.cover_photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={post.cover_photo_url}
             alt=""
             className="mt-6 aspect-[1200/627] w-full rounded-xl border object-cover shadow-sm"
           />
+        ) : (
+          <TitleCard title={post.title} />
         )}
         <header className="mb-10 mt-8 border-b pb-10">
           {tag && (
@@ -250,7 +279,7 @@ export default async function BlogPostPage({
 
           <div className="mt-16 rounded-xl border bg-gradient-to-br from-muted/40 to-muted/10 p-6">
             <div className="flex items-start gap-4">
-              <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold text-muted-foreground ring-2 ring-primary/20">
+              <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold text-muted-foreground ring-2 ring-[color-mix(in_oklch,var(--primary)_20%,transparent)]">
                 {config?.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

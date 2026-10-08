@@ -273,7 +273,7 @@ def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
 
     # "Bella Belly Dance" opens on the kinds of dance, several at once;
     # picking them fills the broad answer and the specialty together.
-    opening = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Bella Belly Dance")
+    opening = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Bella Dance Academy")
     assert opening["multi"] and "Salsa & bachata" in opening["options"]
     assert opening["question"].endswith("Which kinds of dance do you teach?")
     picked = {}
@@ -283,3 +283,26 @@ def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
     # A name with no niche in it keeps the broad tiles.
     plain = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Studio Nova")
     assert not plain["multi"] and "Dance" in plain["options"]
+
+
+def test_a_studio_named_after_one_kind_asks_only_whether_there_is_more():
+    from apps.tenant_config.interview import guide_for
+
+    brand = "Görkem's Face Yoga Studio"
+    opening = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand=brand)
+    assert opening["question"].endswith("Are you only teaching face yoga?")
+    assert opening["options"] == ["Only face yoga", "Face yoga and more"] and not opening["multi"]
+
+    only = {}
+    brief.apply_fact(only, "teaches", "Only face yoga")
+    assert (only["teaches"], only["specialty"], only["niche"]) == ("Yoga", "Face yoga", "face_yoga")
+    assert brief.missing(only)[0].id != "specialty"
+
+    more = {}
+    brief.apply_fact(more, "teaches", "Face yoga and more")
+    assert more["teaches"] == "Yoga" and brief.missing(more)[0].id == "specialty"
+    step = guide_for(brief.FIELD_BY_ID["specialty"], answers=more)
+    assert step["question"] == "What else do you teach besides face yoga?"
+    assert "Face yoga" not in step["options"] and "Yin yoga" in step["options"]
+    brief.apply_fact(more, "specialty", "Yin yoga, Hatha yoga")
+    assert more["specialty"] == "Face yoga, Yin yoga, Hatha yoga" and more["niche"] == "face_yoga"

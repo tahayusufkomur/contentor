@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from apps.core import ai as core_ai
 from apps.core.models import BlogAiUsage
 
-PROMPT_VERSION = 2
+PROMPT_VERSION = 3
 MAX_OUTPUT_TOKENS = 3000
 TOPIC_MAX_OUTPUT_TOKENS = 1200
 MAX_AVAILABLE_PHOTOS = 30
@@ -38,6 +38,11 @@ class _Section(BaseModel):
     photo_id: str = ""  # id of an <available_photos> entry, or "" for none
 
 
+class _Faq(BaseModel):
+    question: str
+    answer: str
+
+
 class _BlogDraft(BaseModel):
     title: str
     slug: str
@@ -46,6 +51,7 @@ class _BlogDraft(BaseModel):
     tags: list[str] = Field(default_factory=list)
     cover_photo_id: str = ""  # id of an <available_photos> entry, or "" for none
     sections: list[_Section]
+    faq: list[_Faq] = Field(default_factory=list)  # rendered after the sections as "FAQ"
 
 
 class _TopicIdea(BaseModel):
@@ -84,7 +90,13 @@ do today. Never invent statistics, studies, client stories or testimonials.
 Structure rules:
 - 800-1200 words total, split into 4-7 sections.
 - Each section: a short heading (empty string for the intro section) and \
-1-3 paragraphs of markdown.
+1-3 paragraphs of markdown. Headings after the intro are questions or \
+claims a reader would scan for; they become the post's table of contents.
+- faq: 3-5 questions a reader would actually search, each answered in 1-3 \
+plain sentences. They are shown under an "FAQ" heading after the sections, \
+so never write an FAQ section yourself.
+- Where a caveat or common mistake matters, give it its own paragraph \
+starting with "⚠️ ". At most two per post.
 - Markdown subset ONLY: paragraphs separated by blank lines, **bold**, \
 *italic*, "- " bullet lists, and [text](https://...) links sparingly. \
 No headings inside body_markdown, no images, no HTML, no code blocks.
@@ -157,7 +169,7 @@ _BLOG_TAGS = {"p", "br", "strong", "em", "b", "i", "ul", "ol", "li", "h2", "h3",
 _BLOG_ATTRS = {"a": {"href"}}
 
 
-def render_body(sections):
+def render_body(sections, faq=()):
     """Deterministic markdown->HTML for the restricted subset the prompt
     allows, then nh3-sanitized. This is the trust boundary: nothing
     model-generated reaches body_html except through here."""
@@ -172,8 +184,13 @@ def render_body(sections):
         body = (s.body_markdown or "").strip()
         if body:
             parts.append(body)
+    faq = [f for f in faq if (f.question or "").strip() and (f.answer or "").strip()]
+    if faq:
+        parts.append("## FAQ")
+        for f in faq:
+            parts += [f"### {f.question.strip()}", f.answer.strip()]
     raw = md.markdown("\n\n".join(parts), extensions=[])  # core syntax only
-    # The "## " headings arrive as h2 from markdown; clamp everything else.
+    # "## " / "### " headings arrive as h2/h3 from markdown; clamp everything else.
     return nh3.clean(raw, tags=_BLOG_TAGS, attributes=_BLOG_ATTRS)
 
 
@@ -213,7 +230,7 @@ def _draft_prompt(brief, topic, instructions, photo_list):
 def _draft_fields(parsed, valid_ids, effective_model, cost):
     """Validated _BlogDraft -> BlogPost-ready field dict. Shared by the
     blocking and streaming paths so the two cannot drift."""
-    body_html = render_body(parsed.sections)
+    body_html = render_body(parsed.sections, parsed.faq)
     if not body_html.strip():
         raise BlogAiError("model returned an empty post", cost_usd=cost)
     cover_photo_id = parsed.cover_photo_id if parsed.cover_photo_id in valid_ids else ""
