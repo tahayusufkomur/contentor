@@ -99,7 +99,7 @@ def test_required_follows_offers_and_selling():
 
 
 def test_missing_skips_answered_and_delegated_in_priority_order():
-    answers = {"teaches": "Yoga", "delegated": ["audience"]}
+    answers = {"teaches": "Pottery", "delegated": ["audience"]}
     assert [f.id for f in brief.missing(answers)][:2] == ["outcome", "offers"]
 
 
@@ -252,3 +252,34 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
     assert brief.FIELD_BY_ID["location"].multi and brief.FIELD_BY_ID["live_when"].kind == "schedule"
     assert brief.details_for(brief.FIELD_BY_ID["offers"], {})["Articles"].startswith("A blog")
     assert brief.parse_offers("Digital Courses, Community") == ["course", "community"]
+
+
+def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
+    from apps.tenant_config.interview import default_question, guide_for
+
+    answers = {}
+    brief.apply_fact(answers, "teaches", "Dance")
+    assert brief.missing(answers)[0].id == "specialty"
+    kinds = brief.options_for(brief.FIELD_BY_ID["specialty"], answers)[0]
+    assert "Belly dance" in kinds and "Hip hop" in kinds
+    assert default_question(brief.FIELD_BY_ID["specialty"], answers) == "Which kinds of dance do you teach?"
+    brief.apply_fact(answers, "specialty", "Belly dance, Hip hop")
+    assert answers["niche"] == "belly_dance" and brief.subject_of(answers) == "belly dance"
+    assert "specialty" not in [f.id for f in brief.missing(answers)]
+
+    # A specific answer needs no follow-up, and drops a stale specialty.
+    brief.apply_fact(answers, "teaches", "Sourdough baking")
+    assert "specialty" not in answers and "specialty" not in [f.id for f in brief.required(answers)]
+
+    # "Bella Belly Dance" opens on the kinds of dance, several at once;
+    # picking them fills the broad answer and the specialty together.
+    opening = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Bella Belly Dance")
+    assert opening["multi"] and "Salsa & bachata" in opening["options"]
+    assert opening["question"].endswith("Which kinds of dance do you teach?")
+    picked = {}
+    brief.apply_fact(picked, "teaches", "Belly dance, Ballet")
+    assert picked["teaches"] == "Dance" and picked["specialty"] == "Belly dance, Ballet"
+    assert brief.missing(picked)[0].id != "specialty"
+    # A name with no niche in it keeps the broad tiles.
+    plain = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Studio Nova")
+    assert not plain["multi"] and "Dance" in plain["options"]

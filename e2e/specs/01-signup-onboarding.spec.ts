@@ -96,5 +96,5 @@ test("signup lands in /setup and the interview ends in a published site", async 
   }
   await expect(goLive).toBeVisible({ timeout: 600_000 });
   await goLive.click();
-  await expect(page.getByRole("button", { name: "Go to dashboard" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("button", { name: "Go to your admin panel" })).toBeVisible({ timeout: 60_000 });
 });

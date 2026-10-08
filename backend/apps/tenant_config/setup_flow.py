@@ -366,9 +366,11 @@ DRAFT_SYSTEM = {
     ),
     "post": _DRAFT_RULES
     + (
-        "Draft ONE short blog post: a specific title (max 90 chars); a one-sentence excerpt "
-        "(max 250 chars); body_html of 4-6 short paragraphs using only <p>, <strong>, <em>, <ul>, "
-        "<li>. Honest and practical — something a reader can use today."
+        "Draft ONE blog post: a specific title (max 90 chars); a one-sentence excerpt "
+        "(max 250 chars); body_html: a short intro of 1-2 <p>, then 3-5 sections, each an <h2> "
+        "question or claim followed by 1-3 short <p> (a <ul> of <li> where a list reads better), "
+        "then <h2>FAQ</h2> with 2-3 <h3> reader questions each answered in one <p>. Use only <h2>, "
+        "<h3>, <p>, <strong>, <em>, <ul>, <li>. Honest and practical — something a reader can use today."
     ),
 }
 

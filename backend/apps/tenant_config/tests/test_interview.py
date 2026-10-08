@@ -68,7 +68,7 @@ def _answers(tenant):
 def test_extracts_several_facts_and_follows_the_ai_question(client, tenant_ctx, quiet):
     quiet.reply = interview.InterviewTurn(
         facts=[
-            {"field": "teaches", "value": "Yoga"},
+            {"field": "teaches", "value": "Pottery"},
             {"field": "audience", "value": "Desk workers"},
             {"field": "made_up", "value": "x"},
         ],
@@ -78,7 +78,7 @@ def test_extracts_several_facts_and_follows_the_ai_question(client, tenant_ctx, 
         options=["Less back pain", "Better sleep"],
     )
     body = client.post(URL, {"message": "I teach yoga to desk workers"}, format="json").json()
-    assert _answers(tenant_ctx)["teaches"] == "Yoga" and _answers(tenant_ctx)["audience"] == "Desk workers"
+    assert _answers(tenant_ctx)["teaches"] == "Pottery" and _answers(tenant_ctx)["audience"] == "Desk workers"
     assert "made_up" not in _answers(tenant_ctx)
     assert body["guide"]["field"] == "outcome"
     assert body["guide"]["question"] == "What changes for them after a month with you?"
@@ -88,9 +88,12 @@ def test_extracts_several_facts_and_follows_the_ai_question(client, tenant_ctx, 
 
 def test_ai_asking_a_known_field_falls_back_to_priority(client, quiet):
     quiet.reply = interview.InterviewTurn(
-        facts=[{"field": "teaches", "value": "Yoga"}], ack="Nice.", next_field="teaches", question="What do you teach?"
+        facts=[{"field": "teaches", "value": "Pottery"}],
+        ack="Nice.",
+        next_field="teaches",
+        question="What do you teach?",
     )
-    body = client.post(URL, {"message": "Yoga"}, format="json").json()
+    body = client.post(URL, {"message": "Pottery"}, format="json").json()
     assert body["guide"]["field"] == "audience"
     assert body["guide"]["question"] == "Who are the students you love teaching most?"
     assert body["guide"]["ack"] == "Nice."
@@ -111,7 +114,7 @@ def test_fallback_answer_goes_to_the_asked_field(client, tenant_ctx, quiet, conf
     from apps.core import ai as core_ai
 
     quiet.error = core_ai.AiError("down")
-    client.post(URL, {"message": "Yoga"}, format="json")
+    client.post(URL, {"message": "Pottery"}, format="json")
     client.post(URL, {"message": "Busy parents"}, format="json")
     assert _answers(tenant_ctx)["audience"] == "Busy parents"
 
@@ -120,7 +123,7 @@ def test_going_back_answers_the_earlier_question(client, tenant_ctx, quiet):
     from apps.core import ai as core_ai
 
     quiet.error = core_ai.AiError("down")
-    client.post(URL, {"message": "Yoga"}, format="json")
+    client.post(URL, {"message": "Pottery"}, format="json")
     client.post(URL, {"message": "Busy parents"}, format="json")
     client.post(URL, {"message": "Pilates", "field": "teaches"}, format="json")  # back to question 1
     answers = _answers(tenant_ctx)
@@ -196,7 +199,7 @@ def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
 
 def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):
     answers = {
-        "teaches": "Yoga",
+        "teaches": "Pottery",
         "audience": "a",
         "outcome": "o",
         "offers": ["course"],
@@ -471,7 +474,7 @@ def test_the_model_cannot_start_a_section_before_its_turn(client, tenant_ctx, qu
     """The course draft needs the home facts and the payments answer; a
     review screen reached before them would wait for a draft that never
     fires (seen in e2e: teaches → outcome → offers → course_topic)."""
-    _set_answers(tenant_ctx, {"teaches": "Yoga", "outcome": "Less back pain"})
+    _set_answers(tenant_ctx, {"teaches": "Pottery", "outcome": "Less back pain"})
     quiet.reply = interview.InterviewTurn(
         facts=[{"field": "offers", "value": "Digital Courses"}],
         ack="Ok.",

@@ -133,7 +133,7 @@ REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minu
 
 
 def guide_for(
-    field: brief.Field | None, ack: str = "", question: str = "", options=None, icons=None, answers=None
+    field: brief.Field | None, ack: str = "", question: str = "", options=None, icons=None, answers=None, brand=""
 ) -> dict:
     if field is None:
         return {
@@ -153,17 +153,20 @@ def guide_for(
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
     fixed = options is None or field.kind in brief.FIXED_KINDS or bool(field.hints)
-    own, own_icons, own_hints = brief.options_for(field, answers or {})
+    own, own_icons, own_hints = brief.options_for(field, answers or {}, brand)
     chosen = [str(o)[:60] for o in (own if fixed else options)][:MAX_OPTIONS]
     names = own_icons if fixed else [str(i) for i in (icons or [])]
     return {
         "ack": ack[:300],
         # A review screen keeps its own words: it shows a draft, not a question.
-        "question": (field.question if field.kind in REVIEW_KINDS else question or field.question)[:300],
+        "question": (
+            field.question if field.kind in REVIEW_KINDS else question or default_question(field, answers, brand)
+        )[:300],
         "options": chosen,
         "field": field.id,
         "can_delegate": field.delegable and field.kind not in REVIEW_KINDS,
-        "multi": field.multi,
+        # A studio name that gives the niche away opens on its kinds: pick several.
+        "multi": field.multi or (field.id == "teaches" and fixed and bool(brief.tile_of_brand(brand))),
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
         "skip": brief.SKIP_LABELS.get(field.group),
@@ -172,6 +175,20 @@ def guide_for(
         "builder": builder_of(field),
         "schedule": field.kind == "schedule",
     }
+
+
+def default_question(field: brief.Field, answers, brand="") -> str:
+    """The pre-written question, naming the niche where the screen shows its kinds."""
+    if field.kind == "specialty":
+        return f"Which kinds of {str((answers or {}).get('teaches') or '').strip().lower()} do you teach?"
+    if field.id == "teaches" and (tile := brief.tile_of_brand(brand)):
+        return f"Let's start with you. Which kinds of {tile.lower()} do you teach?"
+    return field.question
+
+
+def brand_of(tenant) -> str:
+    config = TenantConfig.objects.first()
+    return (config.brand_name if config else "") or tenant.name
 
 
 def builder_of(field: brief.Field) -> str | None:
@@ -201,7 +218,8 @@ def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=
     top = missing[0]
     # Cards are asked by code, in order; so is a section (course, class,
     # article): once started it runs to its review screen before anything else.
-    if top.kind in brief.CARD_KINDS or top.group:
+    # The specialty follows its broad answer straight away.
+    if top.kind in brief.CARD_KINDS or top.group or top.kind == "specialty":
         return top
     begun = {f.group for f in brief.FIELDS if f.group and brief.is_settled(answers or {}, f.id)}
     if section := next((f for f in missing if f.group in begun), None):
@@ -219,7 +237,6 @@ def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=
 
 
 def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
-    config = TenantConfig.objects.first()
     recent = []
     for t in turns[-CONTEXT_TURNS:]:
         if t.get("role") == "coach":
@@ -228,7 +245,7 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
             recent.append({"who": "guide", "text": " ".join(x for x in (t.get("ack"), t.get("question")) if x)})
     return json.dumps(
         {
-            "brand": (config.brand_name if config else "") or tenant.name,
+            "brand": brand_of(tenant),
             "answered": {
                 f.id: answers[f.id] for f in brief.FIELDS if f.kind not in brief.CARD_KINDS and f.id in answers
             },
@@ -314,7 +331,8 @@ def run_turn(
     answering = (choice or {}).get("field") or (field if field in brief.FIELD_BY_ID else asked)
     # interview_state serves the opening question without storing it; keep it
     # in the transcript so the coach can go back to it.
-    opening = guide_for(pending[0], OPENING_ACK, answers=answers) if pending else None
+    brand = brand_of(tenant)
+    opening = guide_for(pending[0], OPENING_ACK, answers=answers, brand=brand) if pending else None
     text = str(message or "").strip()[:MESSAGE_MAX]
 
     if choice:
@@ -340,9 +358,9 @@ def run_turn(
 
     nxt = _next_field(brief.missing(answers), turn, answers)
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:
-        guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons, answers)
+        guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons, answers, brand)
     else:
-        guide = guide_for(nxt, REDRAFT_ACK if review else turn.ack if turn else "", answers=answers)
+        guide = guide_for(nxt, REDRAFT_ACK if review else turn.ack if turn else "", answers=answers, brand=brand)
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice else None
     fired = milestones.fire(tenant, answers)
@@ -380,7 +398,7 @@ def interview_state(tenant, flow: dict) -> dict:
     if not missing:
         guide = guide_for(None, (last or {}).get("ack", ""))
     elif last is None:
-        guide = guide_for(missing[0], OPENING_ACK, answers=answers)
+        guide = guide_for(missing[0], OPENING_ACK, answers=answers, brand=brand_of(tenant))
     else:
         guide = {k: last.get(k) for k in GUIDE_KEYS}
         # A transcript written before icons existed still renders.

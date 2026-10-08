@@ -45,8 +45,9 @@ export default async function PublicLayout({
   const posts = await fetchPublishedPosts();
   const blogEnabled = posts.length > 0;
 
+  // A flex column at least a screen tall: a short page keeps its footer at the bottom.
   const content = (
-    <>
+    <div className="flex min-h-screen flex-col">
       <PublicHeader
         // The /setup preview shows the site as a visitor sees it.
         user={embed ? null : user}
@@ -54,11 +55,13 @@ export default async function PublicLayout({
         plansEnabled={plansEnabled}
         blogEnabled={blogEnabled}
       />
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:px-6">
+        {children}
+      </main>
       <PublicFooter />
       {!isAdmin && !embed && <SiteAssistantBubble />}
       {isAdmin && !embed && <CopilotBubble />}
-    </>
+    </div>
   );
 
   if (isAdmin && config) {

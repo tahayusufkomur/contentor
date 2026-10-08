@@ -25,7 +25,7 @@ TEXT_MAX = 500
 CARD_KINDS = ("style", "logo", "course", "event")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
-FIXED_KINDS = ("offers", "payments", "memberships", "schedule")
+FIXED_KINDS = ("offers", "payments", "memberships", "schedule", "specialty")
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
     "course": "sell_courses",
@@ -188,6 +188,105 @@ _NICHE_WORDS = (
 )
 
 
+# Each broad first-screen tile → the kinds of it a coach can pick next
+# ("Dance" → belly dance, hip hop…), and the words in a studio name that give
+# the tile away ("Bella Belly Dance" opens on the kinds of dance). Labels are
+# unique across tiles: a pick of them alone tells which tile it belongs to.
+SPECIALTIES = {
+    "Yoga": (
+        r"yoga",
+        (
+            "Vinyasa yoga",
+            "Hatha yoga",
+            "Yin yoga",
+            "Ashtanga yoga",
+            "Kundalini yoga",
+            "Prenatal yoga",
+            "Face yoga",
+            "Power yoga",
+        ),
+    ),
+    "Pilates": (
+        r"pilates|reformer|barre",
+        ("Mat pilates", "Reformer pilates", "Clinical pilates", "Prenatal pilates", "Wall pilates", "Barre"),
+    ),
+    "Fitness coaching": (
+        r"fitness|\bfit\b|\bgym|strength|\bbox|crossfit|\bhiit|bootcamp|personal train",
+        (
+            "Strength training",
+            "HIIT",
+            "Running",
+            "Boxing",
+            "Weight loss training",
+            "Calisthenics",
+            "Mobility",
+            "Pre & postnatal fitness",
+        ),
+    ),
+    "Dance": (
+        r"danc|ballet|salsa|bachata|tango|belly|hip[- ]?hop|zumba|\bpole\b",
+        (
+            "Belly dance",
+            "Hip hop",
+            "Salsa & bachata",
+            "Ballet",
+            "Contemporary",
+            "Pole dance",
+            "Latin & ballroom",
+            "Zumba",
+        ),
+    ),
+    "Meditation": (
+        r"meditat|mindful|breath",
+        ("Mindfulness", "Breathwork", "Guided meditation", "Sound healing", "Yoga nidra", "Sleep & relaxation"),
+    ),
+    "Nutrition": (
+        r"nutri|diet|\bmeal|\bfood",
+        (
+            "Healthy weight loss",
+            "Sports nutrition",
+            "Plant-based eating",
+            "Gut health",
+            "Meal planning",
+            "Hormone health",
+        ),
+    ),
+    "Life coaching": (
+        r"life coach|mindset|confiden",
+        ("Confidence", "Career change", "Relationships", "Mindset", "Stress & burnout", "Purpose & direction"),
+    ),
+    "Business coaching": (
+        r"business|consult|leadership|\bgrowth",
+        ("Starting a business", "Marketing", "Sales", "Leadership", "Productivity", "Personal branding"),
+    ),
+}
+
+
+def _tile_named(text) -> str | None:
+    lowered = str(text or "").strip().lower()
+    return next((tile for tile in SPECIALTIES if tile.lower() == lowered), None)
+
+
+def specialties_for(answers: dict) -> tuple[str, ...]:
+    """The kinds to ask about when the coach picked a broad tile ("Dance"), else ()."""
+    tile = _tile_named(answers.get("teaches"))
+    return SPECIALTIES[tile][1] if tile else ()
+
+
+def tile_of_brand(brand) -> str | None:
+    """The broad tile a studio name gives away ("Zen Yoga Studio" → "Yoga"), or None."""
+    lowered = str(brand or "").lower()
+    return next((tile for tile, (pattern, _) in SPECIALTIES.items() if re.search(pattern, lowered)), None)
+
+
+def _tile_of_kinds(raw) -> str | None:
+    """The broad tile when every comma-separated part of ``raw`` is one of its kinds."""
+    parts = {p.strip().lower() for p in str(raw or "").split(",") if p.strip()}
+    if not parts:
+        return None
+    return next((tile for tile, (_, kinds) in SPECIALTIES.items() if parts <= {k.lower() for k in kinds}), None)
+
+
 @dataclass(frozen=True)
 class Field:
     id: str
@@ -222,6 +321,13 @@ FIELDS: tuple[Field, ...] = (
             "Business coaching",
         ),
         icons=("flower-2", "person-standing", "dumbbell", "music", "brain", "salad", "compass", "briefcase"),
+    ),
+    Field(
+        "specialty",
+        "Their specialty",
+        "Which kinds do you teach?",  # asked only after a broad tile; options from specialties_for()
+        kind="specialty",
+        multi=True,
     ),
     Field(
         "audience",
@@ -462,7 +568,7 @@ def subject_of(answers: dict) -> str:
     the niche's when they name it ("yoga"). A niche alone would search a
     boxing coach's photos as "fitness", and "general" as "coaching"."""
     niche = str(answers.get("niche") or "general").replace("_", " ")
-    teaches = str(answers.get("teaches") or "").lower()
+    teaches = f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}".lower()
     if niche != "general" and niche in teaches:
         return niche
     words = [w for w in re.findall(r"[a-z]+", teaches) if w not in _STOP_WORDS]
@@ -477,8 +583,8 @@ def niche_for(text) -> str:
 def _sync_legacy(answers: dict, field_id: str) -> None:
     """Keep the keys existing consumers read (CoachBrief, the composer,
     setup_items goals) in step with the brief."""
-    if field_id == "teaches":
-        answers["niche"] = niche_for(answers["teaches"])
+    if field_id in ("teaches", "specialty"):
+        answers["niche"] = niche_for(f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}")
     if field_id in ("teaches", "pitch"):
         answers["description"] = str(answers.get("pitch") or answers.get("teaches") or "")[:TEXT_MAX]
     if field_id == "offers":
@@ -493,6 +599,13 @@ def apply_fact(answers: dict, field_id: str, raw) -> bool:
     value = coerce(field_id, raw)
     if value is None:
         return False
+    if field_id == "teaches":
+        # Kinds picked on the first screen ("Belly dance, Hip hop") are the
+        # specialty of their tile; any other answer drops a stale specialty.
+        tile = _tile_of_kinds(value)
+        answers.pop("specialty", None)
+        if tile:
+            answers["specialty"], value = value, tile
     answers[field_id] = value
     answers["delegated"] = [d for d in answers.get("delegated") or [] if d != field_id]
     _sync_legacy(answers, field_id)
@@ -526,13 +639,28 @@ def required(answers: dict) -> list[Field]:
         if (not f.needs or offers.intersection(f.needs))
         and (not f.pays or pays.intersection(f.pays))
         and f.group not in skipped
+        and (f.kind != "specialty" or specialties_for(answers))
     ]
 
 
-def options_for(field: Field, answers: dict) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+def options_for(
+    field: Field, answers: dict, brand: str = ""
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     """A fixed field's answers, icons and hints as this coach should see them:
     paying per class only for coaches who run classes, the memberships their
-    offers allow."""
+    offers allow; the kinds of a broad tile, opened straight away when the
+    studio name gives the tile away."""
+    tile = (
+        _tile_named(answers.get("teaches"))
+        if field.kind == "specialty"
+        else tile_of_brand(brand)
+        if field.id == "teaches"
+        else None
+    )
+    if tile:
+        first = FIELD_BY_ID["teaches"]
+        icon = dict(zip(first.options, first.icons, strict=True)).get(tile, "sparkles")
+        return SPECIALTIES[tile][1], (icon,) * len(SPECIALTIES[tile][1]), ()
     if field.kind == "memberships":
         tiers = tiers_for(answers)
         return (

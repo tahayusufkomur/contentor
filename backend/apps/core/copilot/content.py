@@ -36,25 +36,27 @@ def _fail(errors):
     raise ContentOpError(f"{'.'.join(path)}: {current}" if path else current)
 
 
-def _give_cover(item):
-    """A course or event the copilot creates arrives with a fitting stock photo
-    instead of an empty thumbnail; the coach can swap it like any other cover."""
+def _give_cover(item, field="thumbnail"):
+    """A course, event or blog post the copilot creates arrives with a fitting
+    stock photo (Pix4Less) instead of an empty cover; the coach can swap it
+    like any other cover."""
     from django.db import connection
 
     from apps.core.curated_images.cache import auto_cover
     from apps.core.onboarding.ai_curate import CoachBrief, allowed_disciplines, off_topic, photo_query
 
-    if item.thumbnail_id or item.thumbnail_url:
+    if getattr(item, f"{field}_id") or getattr(item, f"{field}_url", ""):
         return
     # Niche + title, then the niche alone: the catalog matches short visual
     # queries far better than a bare title. Never another discipline's photo.
     brief = CoachBrief.from_tenant(connection.tenant)
     allowed = allowed_disciplines(brief.subject, brief.description, item.title)
-    item.thumbnail = auto_cover(
+    photo = auto_cover(
         photo_query(brief, item.title), photo_query(brief), keep=lambda image: not off_topic(image, allowed)
     )
-    if item.thumbnail is not None:
-        item.save(update_fields=["thumbnail"])
+    if photo is not None:
+        setattr(item, field, photo)
+        item.save(update_fields=[field])
 
 
 def create_course(user, params):
@@ -293,4 +295,5 @@ def create_blog_post(user, params):
         status="draft",
         noindex=False,
     )
+    _give_cover(post, "cover_photo")
     return {"kind": "create_blog_post", "id": post.id, "title": post.title, "url": f"/admin/blog/{post.id}"}

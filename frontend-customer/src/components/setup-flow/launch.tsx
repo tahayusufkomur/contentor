@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 
 /** After publishing: one orchestrated moment — rings, the live address,
- * the way to the dashboard. CSS-only and motion-safe. */
+ * the way to the site and to the admin panel. CSS-only and motion-safe. */
 export function Celebration({
   brandName,
   host,
-  onDashboard,
+  onGo,
 }: {
   brandName: string;
   host: string;
-  onDashboard: () => void;
+  onGo: (href: "/" | "/admin") => void;
 }) {
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center overflow-hidden bg-[rgb(228_229_232/0.9)] px-6 backdrop-blur-md motion-safe:animate-fade-in">
@@ -50,9 +50,21 @@ export function Celebration({
         >
           <span className="truncate">{host}</span>
         </NavLink>
-        <div className="mt-8">
-          <Button size="lg" onClick={onDashboard} className="rounded-full px-8">
-            Go to dashboard
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Button
+            size="lg"
+            onClick={() => onGo("/")}
+            className="rounded-full px-8"
+          >
+            Go to your website
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => onGo("/admin")}
+            className="rounded-full bg-white px-8"
+          >
+            Go to your admin panel
           </Button>
         </div>
       </div>

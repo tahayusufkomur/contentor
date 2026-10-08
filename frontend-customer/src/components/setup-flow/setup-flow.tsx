@@ -537,11 +537,7 @@ function Flow({
       >
         <PreviewPane end={toggle}>{frame}</PreviewPane>
         {celebrate && (
-          <Celebration
-            brandName={brandName}
-            host={host}
-            onDashboard={() => navigate("/admin")}
-          />
+          <Celebration brandName={brandName} host={host} onGo={navigate} />
         )}
       </main>
       <GoLivePanel
