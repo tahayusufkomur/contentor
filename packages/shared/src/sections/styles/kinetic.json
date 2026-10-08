@@ -1,12 +1,9 @@
 {
   "id": "kinetic",
   "label": "Kinetic Club",
-  "mood": "Loud, fast and bold \u2014 condensed caps, signal red and volt, a premium boutique gym.",
-  "niches": [
-    "fitness",
-    "pole_dance",
-    "pilates"
-  ],
+  "mood": "Loud, fast and bold — condensed caps, signal red and volt, a premium boutique gym.",
+  "niches": ["fitness", "martial_arts", "pole_dance", "pilates"],
+  "tones": ["energetic"],
   "order": 2,
   "enabled": true,
   "fonts": {
@@ -69,44 +66,17 @@
   "radius": "0rem",
   "photoWords": "high contrast dramatic studio lighting, dark background, motion, athletic, low angle",
   "variants": {
-    "hero": [
-      "poster",
-      "intro"
-    ],
-    "story": [
-      "outline"
-    ],
-    "benefits": [
-      "spec"
-    ],
-    "courseShowcase": [
-      "posters",
-      "rows"
-    ],
-    "howItWorks": [
-      "track"
-    ],
-    "philosophy": [
-      "statement"
-    ],
-    "moments": [
-      "marquee"
-    ],
-    "pricing": [
-      "tickets"
-    ],
-    "faq": [
-      "numbered"
-    ],
-    "cta": [
-      "band"
-    ],
-    "contact": [
-      "bigmail"
-    ],
-    "events": [
-      "timetable",
-      "rows"
-    ]
+    "hero": ["poster", "intro"],
+    "story": ["outline"],
+    "benefits": ["spec"],
+    "courseShowcase": ["posters", "rows"],
+    "howItWorks": ["track"],
+    "philosophy": ["statement"],
+    "moments": ["marquee"],
+    "pricing": ["tickets"],
+    "faq": ["numbered"],
+    "cta": ["band"],
+    "contact": ["bigmail"],
+    "events": ["timetable", "rows"]
   }
 }

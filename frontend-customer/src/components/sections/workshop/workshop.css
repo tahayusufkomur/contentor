@@ -1,0 +1,274 @@
+/* Workshop — style-scoped CSS. Every class/keyframe is workshop-prefixed. */
+
+.workshop {
+  font-feature-settings: "kern", "liga";
+  --workshop-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* Third face: Caveat for handwritten notes, kickers, annotations, maker signatures. */
+.workshop-hand {
+  font-family: "Caveat", cursive, sans-serif;
+}
+
+.workshop-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle kraft paper grain background */
+.workshop-kraft {
+  position: relative;
+  isolation: isolate;
+}
+.workshop-kraft::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--workshop-grain);
+  background-repeat: repeat;
+}
+
+/* Lined craft paper background for notes and index cards */
+.workshop-lined {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 calc(2rem - 1px),
+    color-mix(in oklch, var(--border) 65%, transparent) calc(2rem - 1px) 2rem
+  );
+  background-size: 100% 2rem;
+}
+
+/* Stitched seam (like sewing machine thread) */
+.workshop-stitched {
+  border: 2px dashed var(--primary);
+}
+
+.workshop-seam {
+  position: relative;
+}
+.workshop-seam::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 2px dashed color-mix(in oklch, var(--primary) 55%, transparent);
+  border-radius: calc(var(--radius) - 4px);
+  pointer-events: none;
+}
+
+/* Washi tape pieces */
+.workshop-tape {
+  background: color-mix(in oklch, var(--accent) 38%, transparent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(1px);
+}
+.workshop-tape-primary {
+  background: color-mix(in oklch, var(--primary) 32%, transparent);
+}
+.workshop-tape-muted {
+  background: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+
+/* Polaroid photo card */
+.workshop-polaroid {
+  background: color-mix(in oklch, var(--background) 30%, white);
+  box-shadow:
+    0 4px 10px -2px rgba(0, 0, 0, 0.07),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px color-mix(in oklch, var(--border) 50%, transparent);
+}
+
+/* Craft tag with punched hole circle */
+.workshop-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.workshop-tag-hole {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+
+/* Visible focus rings on every interactive control */
+.workshop a:focus-visible,
+.workshop button:focus-visible,
+.workshop summary:focus-visible,
+.workshop [tabindex]:focus-visible,
+.workshop-focus:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.workshop-inverse a:focus-visible,
+.workshop-inverse button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Links: warm dashed underline with smooth hover */
+.workshop-link {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+.workshop-link:hover {
+  text-decoration-style: solid;
+  color: var(--accent);
+}
+
+/* Plain price display resets for badge inside text */
+.workshop-price.workshop-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ Tips: sticky note accordions */
+.workshop-faq summary {
+  list-style: none;
+}
+.workshop-faq summary::-webkit-details-marker {
+  display: none;
+}
+.workshop-faq details[open] .workshop-faq-q {
+  color: var(--primary);
+}
+.workshop-faq details[open] .workshop-plus::after {
+  transform: rotate(0deg);
+}
+.workshop-plus {
+  position: relative;
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+.workshop-plus::before,
+.workshop-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: currentColor;
+}
+.workshop-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: stitched dashed fields */
+.workshop-form label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.workshop-form input,
+.workshop-form textarea {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--background) 50%, white);
+  box-shadow: none;
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+  font-size: 1.02rem;
+}
+.workshop-form input:focus-visible,
+.workshop-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--primary);
+  border-style: solid;
+  outline: none;
+}
+
+/* Inverse styling for CTA pickup band */
+.workshop-inverse {
+  background-color: var(--inverse);
+  color: var(--inverse-foreground);
+}
+.workshop-inverse .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 75%, var(--inverse));
+}
+.workshop-inverse .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 30%, transparent);
+}
+.workshop-inverse .text-accent {
+  color: color-mix(in oklch, var(--inverse-foreground) 85%, var(--accent));
+}
+
+/* Scroll strip without visible bar */
+.workshop-strip {
+  scrollbar-width: none;
+}
+.workshop-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .workshop-link {
+    transition: color 0.25s ease;
+  }
+  .workshop-plus::after {
+    transition: transform 0.3s ease;
+  }
+  .workshop-arrow {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .workshop-arrow {
+    transform: translateX(5px);
+  }
+  .workshop-card-hover {
+    transition:
+      transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .workshop-card-hover {
+    transform: translateY(-3px) rotate(-0.5deg);
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+  }
+  .workshop-rise {
+    animation: workshop-rise 0.85s cubic-bezier(0.2, 0.75, 0.15, 1) both;
+    animation-delay: var(--workshop-delay, 0ms);
+  }
+  .workshop-pin {
+    animation: workshop-pin 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--workshop-delay, 0ms);
+  }
+}
+
+@keyframes workshop-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes workshop-pin {
+  from {
+    opacity: 0;
+    transform: scale(0.96) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

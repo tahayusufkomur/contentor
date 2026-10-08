@@ -2,9 +2,8 @@
   "id": "darkroom",
   "label": "Darkroom",
   "mood": "A gallery wall — the work enormous, the words a museum label beside it, one red dot.",
-  "niches": [
-    "creative"
-  ],
+  "niches": ["creative", "crafts", "writing"],
+  "tones": ["expert", "calm"],
   "order": 6,
   "enabled": true,
   "fonts": {
@@ -67,44 +66,17 @@
   "radius": "0rem",
   "photoWords": "gallery light, white wall, artwork in progress, hands making, the artist at work, large format, muted, documentary",
   "variants": {
-    "hero": [
-      "exhibition",
-      "intro"
-    ],
-    "story": [
-      "statement"
-    ],
-    "benefits": [
-      "catalogue"
-    ],
-    "courseShowcase": [
-      "plates",
-      "rows"
-    ],
-    "howItWorks": [
-      "contactsheet"
-    ],
-    "philosophy": [
-      "walltext"
-    ],
-    "moments": [
-      "grid"
-    ],
-    "pricing": [
-      "editions"
-    ],
-    "faq": [
-      "didactics"
-    ],
-    "cta": [
-      "privateview"
-    ],
-    "contact": [
-      "hours"
-    ],
-    "events": [
-      "openings",
-      "rows"
-    ]
+    "hero": ["exhibition", "intro"],
+    "story": ["statement"],
+    "benefits": ["catalogue"],
+    "courseShowcase": ["plates", "rows"],
+    "howItWorks": ["contactsheet"],
+    "philosophy": ["walltext"],
+    "moments": ["grid"],
+    "pricing": ["editions"],
+    "faq": ["didactics"],
+    "cta": ["privateview"],
+    "contact": ["hours"],
+    "events": ["openings", "rows"]
   }
 }

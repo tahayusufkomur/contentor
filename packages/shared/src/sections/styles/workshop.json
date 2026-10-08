@@ -1,0 +1,82 @@
+{
+  "id": "workshop",
+  "label": "Workshop",
+  "mood": "The maker's bench — kraft paper, indigo thread, a handwritten margin note and projects shown as materials lists.",
+  "niches": ["crafts"],
+  "tones": ["warm", "playful"],
+  "order": 16,
+  "enabled": true,
+  "fonts": {
+    "display": "Alegreya",
+    "body": "Alegreya Sans",
+    "googleQuery": "family=Alegreya:ital,wght@0,400..800;1,400..700&family=Alegreya+Sans:wght@400;500;700&family=Caveat:wght@500;700"
+  },
+  "palette": {
+    "background": "oklch(0.93 0.035 75)",
+    "surface": "oklch(0.895 0.045 70)",
+    "foreground": "oklch(0.27 0.04 45)",
+    "mutedForeground": "oklch(0.47 0.045 50)",
+    "primary": "oklch(0.38 0.1 262)",
+    "primaryForeground": "oklch(0.96 0.02 80)",
+    "accent": "oklch(0.55 0.15 40)",
+    "accentForeground": "oklch(0.97 0.02 80)",
+    "border": "oklch(0.82 0.045 70)",
+    "inverse": "oklch(0.34 0.09 262)",
+    "inverseForeground": "oklch(0.95 0.025 80)"
+  },
+  "paletteLabel": "Kraft",
+  "palettes": [
+    {
+      "id": "linen",
+      "label": "Linen & thread",
+      "mood": "Off-white linen with madder-red thread and navy ink.",
+      "palette": {
+        "background": "oklch(0.972 0.008 95)",
+        "surface": "oklch(0.945 0.012 95)",
+        "foreground": "oklch(0.25 0.02 250)",
+        "mutedForeground": "oklch(0.5 0.02 250)",
+        "primary": "oklch(0.5 0.15 25)",
+        "primaryForeground": "oklch(0.98 0.008 95)",
+        "accent": "oklch(0.45 0.09 240)",
+        "accentForeground": "oklch(0.98 0.008 95)",
+        "border": "oklch(0.87 0.015 95)",
+        "inverse": "oklch(0.3 0.04 250)",
+        "inverseForeground": "oklch(0.96 0.01 95)"
+      }
+    },
+    {
+      "id": "clay",
+      "label": "Clay",
+      "mood": "Terracotta tints, deep umber ink and a moss accent — the pottery shelf.",
+      "palette": {
+        "background": "oklch(0.9 0.05 50)",
+        "surface": "oklch(0.86 0.06 48)",
+        "foreground": "oklch(0.26 0.05 35)",
+        "mutedForeground": "oklch(0.46 0.06 40)",
+        "primary": "oklch(0.42 0.1 35)",
+        "primaryForeground": "oklch(0.95 0.03 60)",
+        "accent": "oklch(0.5 0.1 150)",
+        "accentForeground": "oklch(0.97 0.01 90)",
+        "border": "oklch(0.78 0.06 48)",
+        "inverse": "oklch(0.32 0.07 35)",
+        "inverseForeground": "oklch(0.93 0.04 60)"
+      }
+    }
+  ],
+  "radius": "0.5rem",
+  "photoWords": "hands making something, pottery or knitting or sewing, craft table, natural materials, warm daylight, close-up texture",
+  "variants": {
+    "hero": ["bench", "intro"],
+    "story": ["maker"],
+    "benefits": ["skills"],
+    "courseShowcase": ["projects", "rows"],
+    "howItWorks": ["steps"],
+    "philosophy": ["note"],
+    "moments": ["gallery"],
+    "pricing": ["kits"],
+    "faq": ["tips"],
+    "cta": ["pickup"],
+    "contact": ["visit"],
+    "events": ["sessions", "rows"]
+  }
+}

@@ -11,6 +11,14 @@ import { sections as tavola } from "./tavola";
 import { sections as encore } from "./encore";
 import { sections as trail } from "./trail";
 import { sections as maison } from "./maison";
+import { sections as studiofloor } from "./studiofloor";
+import { sections as atelier } from "./atelier";
+import { sections as dojo } from "./dojo";
+import { sections as workshop } from "./workshop";
+import { sections as terminal } from "./terminal";
+import { sections as sprout } from "./sprout";
+import { sections as manuscript } from "./manuscript";
+import { sections as sanctum } from "./sanctum";
 
 export const STYLE_SECTION_MODULES: Record<string, Partial<StyleSections>> = {
   journal,
@@ -25,4 +33,12 @@ export const STYLE_SECTION_MODULES: Record<string, Partial<StyleSections>> = {
   encore,
   trail,
   maison,
+  studiofloor,
+  atelier,
+  dojo,
+  workshop,
+  terminal,
+  sprout,
+  manuscript,
+  sanctum,
 };

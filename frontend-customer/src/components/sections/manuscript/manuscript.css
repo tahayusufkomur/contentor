@@ -1,0 +1,178 @@
+/* Manuscript — style-scoped CSS. Every class/keyframe/custom property is manuscript-prefixed. */
+
+.manuscript {
+  font-feature-settings: "kern", "liga", "onum";
+  --manuscript-rule: var(--border);
+  --manuscript-measure: 42rem;
+}
+
+/* Small caps for running heads, labels, roman numerals */
+.manuscript-small-caps {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.1em;
+}
+
+/* Tabular numbers for dates, prices, and page numbers */
+.manuscript-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Double hairline rule (border-top 3px double) */
+.manuscript-double-rule {
+  border-top: 3px double var(--border);
+  height: 0;
+  width: 100%;
+}
+
+/* Dotted leader between title and page/price */
+.manuscript-dots {
+  border-bottom: 1px dotted
+    color-mix(in oklch, var(--foreground) 30%, transparent);
+}
+.manuscript-inverse .manuscript-dots {
+  border-bottom-color: color-mix(
+    in oklch,
+    var(--inverse-foreground) 40%,
+    transparent
+  );
+}
+
+/* Double hairline frame / book border */
+.manuscript-frame {
+  border: 1px solid var(--border);
+  position: relative;
+}
+.manuscript-frame::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid color-mix(in oklch, var(--border) 75%, transparent);
+  pointer-events: none;
+}
+
+/* Framed plate (illustration or figure in a book) */
+.manuscript-plate {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+
+/* Drop cap on the first paragraph of the story */
+.manuscript-dropcap > p:first-of-type::first-letter,
+.manuscript-dropcap p:first-child::first-letter {
+  float: left;
+  font-family: var(--font-display, "Spectral", serif);
+  font-size: 3.8em;
+  line-height: 0.82;
+  padding-top: 0.08em;
+  padding-right: 0.12em;
+  padding-bottom: 0.02em;
+  color: var(--accent);
+  font-weight: 400;
+}
+
+/* The inverse band / lamplight or colophon */
+.manuscript-inverse {
+  --manuscript-rule: color-mix(
+    in oklch,
+    var(--inverse-foreground) 25%,
+    transparent
+  );
+}
+.manuscript-inverse .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 72%, var(--inverse));
+}
+.manuscript-inverse .border-border {
+  border-color: var(--manuscript-rule);
+}
+.manuscript-inverse .manuscript-double-rule {
+  border-top-color: var(--manuscript-rule);
+}
+.manuscript-inverse .manuscript-frame::before {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 20%, transparent);
+}
+
+/* Visible focus outline for all interactive elements (3px) */
+.manuscript a:focus-visible,
+.manuscript button:focus-visible,
+.manuscript summary:focus-visible,
+.manuscript [tabindex]:focus-visible,
+.manuscript-focus:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.manuscript-inverse a:focus-visible,
+.manuscript-inverse button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Literary link underline */
+.manuscript-link {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+.manuscript-link:hover {
+  color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+/* Course prices rendered as clean literary type */
+.manuscript-price.manuscript-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ / footnotes details marker styling */
+.manuscript-faq summary {
+  list-style: none;
+}
+.manuscript-faq summary::-webkit-details-marker {
+  display: none;
+}
+.manuscript-faq details[open] .manuscript-term {
+  color: var(--accent);
+}
+
+/* Refined literary form inputs */
+.manuscript-form input,
+.manuscript-form textarea,
+.manuscript-form select {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  transition: border-color 0.2s ease;
+}
+.manuscript-form input:focus,
+.manuscript-form textarea:focus,
+.manuscript-form select:focus {
+  border-color: var(--accent);
+}
+
+/* Subtle fade in motion */
+@media (prefers-reduced-motion: no-preference) {
+  .manuscript-fade {
+    animation: manuscript-fade-in 0.6s ease-out both;
+  }
+}
+
+@keyframes manuscript-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -70,12 +70,16 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // The first payments tile is a paid one, so go-live offers the plan; the
   // spec takes the free way out instead of Stripe.
   const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
+  // The guide's pick opens as a page by itself on the look question.
+  const keepLook = page.getByRole("button", { name: "Keep this look" });
   const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile);
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
     await expect(busy).toBeHidden({ timeout: 300_000 });
     await action.first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
+    await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
+    if (await keepLook.isVisible()) await keepLook.click();
     if (await goLive.isVisible()) break;
     if (await makeFree.isVisible()) {
       await makeFree.click();

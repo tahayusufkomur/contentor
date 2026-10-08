@@ -205,11 +205,27 @@ def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):
         "offers": ["course"],
         "pitch": "p",
         "difference": "d",
+        "tone": "warm",
     }
     Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
     quiet.reply = interview.InterviewTurn(next_field="story", question="Tell me your story?")
     body = client.post(URL, {"message": "ok"}, format="json").json()
     assert body["guide"]["field"] == "site_style"
+
+
+def test_the_tone_is_asked_before_the_look_so_it_can_rank_the_looks(client, tenant_ctx, quiet):
+    answers = {
+        "teaches": "Pottery",
+        "audience": "a",
+        "outcome": "o",
+        "offers": ["course"],
+        "pitch": "p",
+        "difference": "d",
+    }
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    quiet.reply = interview.InterviewTurn(next_field="story", question="Tell me your story?")
+    body = client.post(URL, {"message": "ok"}, format="json").json()
+    assert body["guide"]["field"] == "tone"
 
 
 def test_state_opening_and_phase(client, tenant_ctx):

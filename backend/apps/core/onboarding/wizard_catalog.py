@@ -145,15 +145,13 @@ def _layout_ids(page: str) -> set[str]:
     return {option["id"] for option in PAGE_LAYOUTS[page]}
 
 
-def recommended_style(niche: str) -> str:
-    """Best enabled site style for a niche ("" when none is enabled): styles
-    listing the niche first, in manifest order — mirrors the wizard's
-    rankStylesForNiche in packages/shared/src/sections/styles/index.ts."""
+def recommended_style(niche: str, tone: str = "") -> str:
+    """Best enabled site style for a niche and the tone asked for ("" when
+    none is enabled) — mirrors rankStylesForNiche in
+    packages/shared/src/sections/styles/index.ts."""
     from apps.tenant_config import sections
 
-    enabled = sorted(sections.enabled_styles().values(), key=lambda s: s.get("order", 0))
-    fits = [s for s in enabled if niche in s.get("niches", [])]
-    ranked = fits + [s for s in enabled if s not in fits]
+    ranked = sections.rank_styles(niche, sections.tones_of(tone))
     return ranked[0]["id"] if ranked else ""
 
 

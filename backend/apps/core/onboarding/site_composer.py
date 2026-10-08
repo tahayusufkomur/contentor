@@ -121,6 +121,14 @@ _TOPICS = {
     "cooking": "cooking",
     "music": "music",
     "outdoors": "outdoor training",
+    "martial_arts": "martial arts",
+    "dance": "dance",
+    "tech": "tech skills",
+    "family": "family life",
+    "spiritual": "spiritual practice",
+    "beauty": "beauty",
+    "crafts": "making",
+    "writing": "writing",
 }
 _HEADLINES = {
     "yoga": "Steady breath, stronger body, quieter mind",
@@ -138,6 +146,14 @@ _HEADLINES = {
     "cooking": "Real food, every night of the week",
     "music": "Play the music you always wanted to",
     "outdoors": "Go further than you thought you could",
+    "martial_arts": "Train with focus, build quiet confidence",
+    "dance": "Move like nobody is watching",
+    "tech": "Build real skills, one project at a time",
+    "family": "Calmer days with the little ones",
+    "spiritual": "Find your own rhythm with the sky",
+    "beauty": "Care that still looks like you",
+    "crafts": "Make something with your own hands",
+    "writing": "Write the pages you keep putting off",
 }
 # Words that mark a brand as a business rather than a person's name.
 _BUSINESS_WORDS = frozenset(
@@ -873,7 +889,9 @@ def _style_and_brand(tenant) -> tuple[str, str]:
     style_id = config.style if config and sections.style(config.style) else ""
     if not style_id:
         answers = (tenant.wizard_state or {}).get("answers") or {}
-        style_id = recommended_style(answers.get("niche") or tenant.template_niche or "general")
+        style_id = recommended_style(
+            answers.get("niche") or tenant.template_niche or "general", answers.get("tone") or ""
+        )
     if not style_id:
         raise ValueError(f"tenant {tenant.schema_name} has no site style")
     return style_id, (config.brand_name if config else "") or tenant.name or ""
@@ -1542,7 +1560,7 @@ def site_style_for(answers) -> str:
         return ""
     if answers.get("style") in sections.enabled_styles():
         return answers["style"]
-    return recommended_style(answers.get("niche") or "general")
+    return recommended_style(answers.get("niche") or "general", answers.get("tone") or "")
 
 
 # ── config writes ────────────────────────────────────────────────────────────

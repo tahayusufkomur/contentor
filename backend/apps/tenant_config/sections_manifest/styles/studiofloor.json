@@ -1,0 +1,82 @@
+{
+  "id": "studiofloor",
+  "label": "Studio Floor",
+  "mood": "The dance studio after dark — stage black, neon edges, stretched italic type and a mirror wall of photos.",
+  "niches": ["dance", "belly_dance", "pole_dance"],
+  "tones": ["energetic", "playful"],
+  "order": 13,
+  "enabled": true,
+  "fonts": {
+    "display": "Anybody",
+    "body": "Manrope",
+    "googleQuery": "family=Anybody:wdth,wght@50..150,100..900&family=Manrope:wght@400;500;600;700"
+  },
+  "palette": {
+    "background": "oklch(0.17 0.03 300)",
+    "surface": "oklch(0.22 0.04 300)",
+    "foreground": "oklch(0.97 0.01 300)",
+    "mutedForeground": "oklch(0.74 0.03 300)",
+    "primary": "oklch(0.7 0.26 350)",
+    "primaryForeground": "oklch(0.16 0.03 300)",
+    "accent": "oklch(0.86 0.17 195)",
+    "accentForeground": "oklch(0.16 0.03 300)",
+    "border": "oklch(0.32 0.05 300)",
+    "inverse": "oklch(0.95 0.03 320)",
+    "inverseForeground": "oklch(0.17 0.03 300)"
+  },
+  "paletteLabel": "Neon night",
+  "palettes": [
+    {
+      "id": "ember",
+      "label": "Ember floor",
+      "mood": "Warm black with orange and a flash of yellow — a late rehearsal.",
+      "palette": {
+        "background": "oklch(0.17 0.025 40)",
+        "surface": "oklch(0.22 0.035 40)",
+        "foreground": "oklch(0.97 0.01 70)",
+        "mutedForeground": "oklch(0.75 0.03 60)",
+        "primary": "oklch(0.72 0.2 50)",
+        "primaryForeground": "oklch(0.16 0.02 40)",
+        "accent": "oklch(0.88 0.16 95)",
+        "accentForeground": "oklch(0.16 0.02 40)",
+        "border": "oklch(0.32 0.04 40)",
+        "inverse": "oklch(0.94 0.03 80)",
+        "inverseForeground": "oklch(0.17 0.025 40)"
+      }
+    },
+    {
+      "id": "ice",
+      "label": "Ice rink",
+      "mood": "Blue-black with ice blue and lime — cold, bright and fast.",
+      "palette": {
+        "background": "oklch(0.18 0.03 250)",
+        "surface": "oklch(0.23 0.04 250)",
+        "foreground": "oklch(0.97 0.01 240)",
+        "mutedForeground": "oklch(0.76 0.03 245)",
+        "primary": "oklch(0.78 0.14 225)",
+        "primaryForeground": "oklch(0.16 0.03 250)",
+        "accent": "oklch(0.9 0.2 125)",
+        "accentForeground": "oklch(0.16 0.03 250)",
+        "border": "oklch(0.33 0.05 250)",
+        "inverse": "oklch(0.96 0.02 240)",
+        "inverseForeground": "oklch(0.18 0.03 250)"
+      }
+    }
+  ],
+  "radius": "0.5rem",
+  "photoWords": "dance studio, dancer in motion, mirror wall, stage lighting, saturated colour, energy, movement blur",
+  "variants": {
+    "hero": ["stage", "intro"],
+    "story": ["backstage"],
+    "benefits": ["moves"],
+    "courseShowcase": ["setlist", "rows"],
+    "howItWorks": ["rehearsal"],
+    "philosophy": ["mirror"],
+    "moments": ["reel"],
+    "pricing": ["passes"],
+    "faq": ["warmup"],
+    "cta": ["spotlight"],
+    "contact": ["booking"],
+    "events": ["schedule", "rows"]
+  }
+}

@@ -2,10 +2,8 @@
   "id": "maison",
   "label": "Maison",
   "mood": "A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, hairline frames and a great deal of air.",
-  "niches": [
-    "business",
-    "general"
-  ],
+  "niches": ["business", "general"],
+  "tones": ["expert", "calm"],
   "order": 12,
   "enabled": true,
   "fonts": {
@@ -68,44 +66,17 @@
   "radius": "0rem",
   "photoWords": "editorial portrait, soft directional studio light, ivory and black, minimal interior, tailored, composed",
   "variants": {
-    "hero": [
-      "lookbook",
-      "intro"
-    ],
-    "story": [
-      "atelier"
-    ],
-    "benefits": [
-      "edit"
-    ],
-    "courseShowcase": [
-      "collection",
-      "rows"
-    ],
-    "howItWorks": [
-      "fittings"
-    ],
-    "philosophy": [
-      "maxim"
-    ],
-    "moments": [
-      "editorial"
-    ],
-    "pricing": [
-      "appointment"
-    ],
-    "faq": [
-      "notes"
-    ],
-    "cta": [
-      "introduction"
-    ],
-    "contact": [
-      "address"
-    ],
-    "events": [
-      "salons",
-      "rows"
-    ]
+    "hero": ["lookbook", "intro"],
+    "story": ["atelier"],
+    "benefits": ["edit"],
+    "courseShowcase": ["collection", "rows"],
+    "howItWorks": ["fittings"],
+    "philosophy": ["maxim"],
+    "moments": ["editorial"],
+    "pricing": ["appointment"],
+    "faq": ["notes"],
+    "cta": ["introduction"],
+    "contact": ["address"],
+    "events": ["salons", "rows"]
   }
 }

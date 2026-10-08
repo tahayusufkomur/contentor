@@ -164,6 +164,20 @@ def test_style_cards_offer_every_look_with_the_niche_style_first():
     assert all({"value", "style", "palette", "label", "detail"} <= set(o) for o in cards["options"])
 
 
+def test_style_cards_rank_by_niche_then_tone_and_say_why():
+    from apps.tenant_config import sections
+
+    # Same niche, different tone: the tone asked for breaks the tie.
+    assert sections.rank_styles("fitness", ["energetic"])[0]["id"] == "kinetic"
+    ranked = [s["id"] for s in sections.rank_styles("general", ["expert"])]
+    assert ranked.index("ledger") < ranked.index("journal")  # both list general; ledger sounds expert
+    cards = ms.style_cards({"niche": "fitness", "teaches": "boxing", "tone": "Energetic, Warm"})
+    first = cards["options"][0]
+    assert first["recommended"] and first["style"] == "kinetic"
+    assert first["reason"] == "Made for boxing coaches, and it sounds energetic."
+    assert sections.tones_of("Warm, Calm") == ["warm", "calm"]
+
+
 def test_free_plan_coach_who_sells_gets_a_paid_course_draft(tenant_ctx, config, owner):
     """Review focus 2: never silently turn a priced course free."""
     from apps.core.models import Tenant

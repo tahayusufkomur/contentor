@@ -1,13 +1,9 @@
 {
   "id": "journal",
   "label": "Quiet Journal",
-  "mood": "A calm editorial magazine \u2014 light serif headlines, paper tones, quiet confidence.",
-  "niches": [
-    "yoga",
-    "pilates",
-    "face_yoga",
-    "general"
-  ],
+  "mood": "A calm editorial magazine — light serif headlines, paper tones, quiet confidence.",
+  "niches": ["yoga", "pilates", "face_yoga", "general"],
+  "tones": ["calm", "warm"],
   "order": 1,
   "enabled": true,
   "fonts": {
@@ -70,44 +66,17 @@
   "radius": "0.25rem",
   "photoWords": "soft natural window light, muted neutral tones, calm editorial, negative space",
   "variants": {
-    "hero": [
-      "editorial",
-      "intro"
-    ],
-    "story": [
-      "letter"
-    ],
-    "benefits": [
-      "contents"
-    ],
-    "courseShowcase": [
-      "issue",
-      "rows"
-    ],
-    "howItWorks": [
-      "columns"
-    ],
-    "philosophy": [
-      "pullquote"
-    ],
-    "moments": [
-      "strip"
-    ],
-    "pricing": [
-      "columns"
-    ],
-    "faq": [
-      "sticky"
-    ],
-    "cta": [
-      "band"
-    ],
-    "contact": [
-      "colophon"
-    ],
-    "events": [
-      "programme",
-      "rows"
-    ]
+    "hero": ["editorial", "intro"],
+    "story": ["letter"],
+    "benefits": ["contents"],
+    "courseShowcase": ["issue", "rows"],
+    "howItWorks": ["columns"],
+    "philosophy": ["pullquote"],
+    "moments": ["strip"],
+    "pricing": ["columns"],
+    "faq": ["sticky"],
+    "cta": ["band"],
+    "contact": ["colophon"],
+    "events": ["programme", "rows"]
   }
 }

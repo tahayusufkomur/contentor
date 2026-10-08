@@ -2,10 +2,8 @@
   "id": "trail",
   "label": "Trail",
   "mood": "A national park field guide — stone paper with contour lines, pine and blaze orange, a route card and stamps.",
-  "niches": [
-    "outdoors",
-    "fitness"
-  ],
+  "niches": ["outdoors", "fitness"],
+  "tones": ["energetic", "warm"],
   "order": 11,
   "enabled": true,
   "fonts": {
@@ -68,44 +66,17 @@
   "radius": "0.375rem",
   "photoWords": "outdoor golden hour, a person running or hiking, wide landscape, trail, earthy tones, natural",
   "variants": {
-    "hero": [
-      "trailhead",
-      "intro"
-    ],
-    "story": [
-      "fieldnotes"
-    ],
-    "benefits": [
-      "gearlist"
-    ],
-    "courseShowcase": [
-      "routes",
-      "rows"
-    ],
-    "howItWorks": [
-      "waypoints"
-    ],
-    "philosophy": [
-      "trailrule"
-    ],
-    "moments": [
-      "postcards"
-    ],
-    "pricing": [
-      "permits"
-    ],
-    "faq": [
-      "ranger"
-    ],
-    "cta": [
-      "laceup"
-    ],
-    "contact": [
-      "basecamp"
-    ],
-    "events": [
-      "meetups",
-      "rows"
-    ]
+    "hero": ["trailhead", "intro"],
+    "story": ["fieldnotes"],
+    "benefits": ["gearlist"],
+    "courseShowcase": ["routes", "rows"],
+    "howItWorks": ["waypoints"],
+    "philosophy": ["trailrule"],
+    "moments": ["postcards"],
+    "pricing": ["permits"],
+    "faq": ["ranger"],
+    "cta": ["laceup"],
+    "contact": ["basecamp"],
+    "events": ["meetups", "rows"]
   }
 }

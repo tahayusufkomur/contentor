@@ -2,9 +2,8 @@
   "id": "primer",
   "label": "Primer",
   "mood": "The exercise book you loved — ruled lines, a red margin, index tabs, outcomes as checkboxes.",
-  "niches": [
-    "learning"
-  ],
+  "niches": ["learning", "tech"],
+  "tones": ["warm", "expert"],
   "order": 8,
   "enabled": true,
   "fonts": {
@@ -67,44 +66,17 @@
   "radius": "0.25rem",
   "photoWords": "bright classroom or desk, books and notebooks, tutor with a student, natural daylight, clean, friendly",
   "variants": {
-    "hero": [
-      "titlepage",
-      "intro"
-    ],
-    "story": [
-      "foreword"
-    ],
-    "benefits": [
-      "outcomes"
-    ],
-    "courseShowcase": [
-      "syllabus",
-      "rows"
-    ],
-    "howItWorks": [
-      "lessonplan"
-    ],
-    "philosophy": [
-      "marginnote"
-    ],
-    "moments": [
-      "classroom"
-    ],
-    "pricing": [
-      "termfees"
-    ],
-    "faq": [
-      "glossary"
-    ],
-    "cta": [
-      "enrol"
-    ],
-    "contact": [
-      "officehours"
-    ],
-    "events": [
-      "termdates",
-      "rows"
-    ]
+    "hero": ["titlepage", "intro"],
+    "story": ["foreword"],
+    "benefits": ["outcomes"],
+    "courseShowcase": ["syllabus", "rows"],
+    "howItWorks": ["lessonplan"],
+    "philosophy": ["marginnote"],
+    "moments": ["classroom"],
+    "pricing": ["termfees"],
+    "faq": ["glossary"],
+    "cta": ["enrol"],
+    "contact": ["officehours"],
+    "events": ["termdates", "rows"]
   }
 }

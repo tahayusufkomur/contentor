@@ -1,0 +1,233 @@
+/* Sanctum — style-scoped CSS. Every class/keyframe is sanctum-prefixed. */
+
+.sanctum {
+  font-feature-settings: "kern", "liga";
+  --sanctum-gold: var(--primary);
+  --sanctum-glow-color: color-mix(in oklch, var(--primary) 25%, transparent);
+}
+
+/* Star-field background: static subtle cosmic dust / stars */
+.sanctum-starfield {
+  background-image:
+    radial-gradient(
+      1px 1px at 20px 30px,
+      color-mix(in oklch, var(--primary) 65%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      1.5px 1.5px at 100px 150px,
+      color-mix(in oklch, var(--foreground) 70%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      1px 1px at 240px 80px,
+      color-mix(in oklch, var(--accent) 55%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      1.5px 1.5px at 320px 280px,
+      color-mix(in oklch, var(--primary) 60%, transparent),
+      rgba(0, 0, 0, 0)
+    ),
+    radial-gradient(
+      1px 1px at 450px 190px,
+      color-mix(in oklch, var(--foreground) 50%, transparent),
+      rgba(0, 0, 0, 0)
+    );
+  background-repeat: repeat;
+  background-size: 500px 400px;
+}
+
+/* Tabular figures for prices, dates and numbers */
+.sanctum-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Luminous band (inverse tone): white pearl on dark themes, dark indigo on light */
+.sanctum-luminous {
+  --sanctum-gold: var(--inverse-foreground);
+  color-scheme: light;
+}
+.sanctum-luminous .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 72%, var(--inverse));
+}
+.sanctum-luminous .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 24%, transparent);
+}
+.sanctum-luminous .text-primary {
+  color: var(--inverse-foreground);
+}
+
+/* Gold glow effect for celestial highlights */
+.sanctum-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent),
+    0 0 28px color-mix(in oklch, var(--primary) 22%, transparent);
+}
+.sanctum-glow:hover {
+  box-shadow:
+    0 0 0 1px var(--primary),
+    0 0 40px color-mix(in oklch, var(--primary) 35%, transparent);
+}
+
+/* Notched corner frame with celestial cuts */
+.sanctum-notched {
+  clip-path: polygon(
+    0 12px,
+    12px 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+}
+
+/* Arched top window for mystical photography */
+.sanctum-arch {
+  border-radius: 9999px 9999px var(--radius) var(--radius);
+}
+
+/* Oval window for sacred portraits */
+.sanctum-oval {
+  border-radius: 9999px;
+}
+
+/* Focus outline for all interactive elements (3px visible ring) */
+.sanctum a:focus-visible,
+.sanctum button:focus-visible,
+.sanctum summary:focus-visible,
+.sanctum [tabindex]:focus-visible,
+.sanctum-focus:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+.sanctum-luminous a:focus-visible,
+.sanctum-luminous button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Celestial link with fine gold underline */
+.sanctum-link {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--primary) 50%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.35em;
+  transition:
+    text-decoration-color 0.3s ease,
+    color 0.3s ease;
+}
+.sanctum-link:hover {
+  color: var(--primary);
+  text-decoration-color: var(--primary);
+}
+
+/* Course prices: render plain unboxed */
+.sanctum-price.sanctum-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ: Celestial accordion toggle */
+.sanctum-faq summary {
+  list-style: none;
+}
+.sanctum-faq summary::-webkit-details-marker {
+  display: none;
+}
+.sanctum-faq details[open] > summary {
+  color: var(--primary);
+}
+.sanctum-faq details[open] .sanctum-star-toggle {
+  transform: rotate(45deg);
+  color: var(--primary);
+}
+
+/* Contact form: celestial dark inputs with hairline gold borders */
+.sanctum-form label {
+  font-family: var(--font-display, "Cinzel", serif);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.sanctum-form input,
+.sanctum-form textarea {
+  border: 1px solid color-mix(in oklch, var(--primary) 28%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--surface) 60%, transparent);
+  color: var(--foreground);
+  box-shadow: none;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 1rem;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.sanctum-form input:focus-visible,
+.sanctum-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 24%, transparent);
+  outline: none;
+}
+
+/* Tarot card hover glow */
+.sanctum-tarot-card {
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.4s ease;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sanctum-tarot-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 12px 36px -8px color-mix(in oklch, var(--primary) 20%, transparent),
+      0 0 0 1px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+}
+
+/* Motion-safe celestial keyframe animations */
+@media (prefers-reduced-motion: no-preference) {
+  .sanctum-spin-slow {
+    animation: sanctum-spin 120s linear infinite;
+  }
+  .sanctum-pulse-glow {
+    animation: sanctum-pulse 6s ease-in-out infinite;
+  }
+  .sanctum-star-toggle {
+    transition:
+      transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+      color 0.25s ease;
+  }
+}
+
+@keyframes sanctum-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sanctum-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}

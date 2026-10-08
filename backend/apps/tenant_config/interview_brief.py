@@ -144,11 +144,23 @@ _NICHE_WORDS = (
     ("makeup", r"make[- ]?up"),
     ("pilates", r"pilates"),
     ("yoga", r"yoga"),
-    # Styled-site niches (2026-10-07): each maps to a site style. Specific
-    # trades come before "fitness", which otherwise swallows "running".
+    # Styled-site niches (2026-10-07, 2026-10-08): each maps to a site style.
+    # Specific trades come before "fitness", which otherwise swallows
+    # "running" and "boxing"; the narrow ones (tech, crafts, writing…) come
+    # before the broad "learning"/"creative"/"wellness".
     (
         "outdoors",
-        r"\brun(ning|ner)|hik(e|ing)|\btrail|cycl|climb|surf|\bski|triathl|marathon" r"|open[- ]water|mountain|outdoor",
+        r"\brun(ning|ner)|hik(e|ing)|\btrail|cycl|climb|surf|\bski(ing|er|s)?\b|triathl|marathon"
+        r"|open[- ]water|mountain|outdoor",
+    ),
+    (
+        "martial_arts",
+        r"martial|karate|judo|taekwondo|jiu[- ]?jitsu|\bbjj\b|aikido|kung[- ]?fu|krav|self[- ]defen[cs]e|fencing"
+        r"|kendo",
+    ),
+    (
+        "dance",
+        r"danc|ballet|hip[- ]?hop|zumba|salsa|bachata|tango|choreo|ballroom|flamenco|breakdanc|\bk-?pop",
     ),
     (
         "cooking",
@@ -160,20 +172,50 @@ _NICHE_WORDS = (
         r"|produc(er|tion)|theat|acting|\bband\b",
     ),
     (
+        "tech",
+        r"coding|programming|python|javascript|software|developer|web dev|data (science|analy)|machine learning"
+        r"|\bai\b|cyber|no[- ]?code|\bexcel\b|\bsql\b|\bux\b|devops|\bcloud\b",
+    ),
+    (
+        "family",
+        r"parent|\bmum|\bmom|baby|babies|toddler|child(ren|care)|pregnan|postnatal|doula|montessori"
+        r"|newborn|breastfe|early years",
+    ),
+    (
+        "spiritual",
+        r"spiritual|astrolog|tarot|reiki|psychic|numerolog|crystal|manifest|oracle|human design|shaman|chakra"
+        r"|energy heal|\bwitch",
+    ),
+    (
+        "beauty",
+        r"skin[- ]?care|\bskin\b|\bhair|\bnail|beauty|cosmetic|\blash|\bbrow|esthetic|aesthetic|gua sha"
+        r"|fashion|styling|wardrobe|barber|colou?r analysis",
+    ),
+    (
+        "crafts",
+        r"pottery|ceramic|craft|knit|\bsew|crochet|embroider|weav|woodwork|carpentry|macram|candle|soap"
+        r"|\bdiy\b|upholster|jewel|leather|origami",
+    ),
+    (
+        "writing",
+        r"writing|writer|author|novel|poetry|\bpoem|storytell|copywrit|journalis|memoir|screenwrit|publishing"
+        r"|blogging|creative writing|literature|\bessay",
+    ),
+    (
         "learning",
         r"language|spanish|english|french|german|italian|portuguese|japanese|mandarin|chinese|arabic"
-        r"|tutor|\bexam|ielts|toefl|\bmath|chess|coding|programming|python|javascript|homework|study"
+        r"|tutor|\bexam|ielts|toefl|\bmath|chess|homework|study"
         r"|\bsat\b|gcse|a-level|grammar|literacy",
     ),
     (
         "creative",
-        r"photograph|paint|draw|illustrat|sketch|watercolou?r|pottery|ceramic|craft|knit|\bsew|crochet"
-        r"|calligraph|graphic design|\bdesign|\bfilm|video edit|animation|writing|creative|\bart\b|artist",
+        r"photograph|paint|draw|illustrat|sketch|watercolou?r|calligraph|graphic design|\bdesign|\bfilm"
+        r"|video edit|animation|creative|\bart\b|artist",
     ),
     (
         "wellness",
-        r"sleep|stress|mindful|meditat|breathwork|anxiet|therap|mindset|life coach|spiritual|astrolog|tarot"
-        r"|reiki|burnout|habit|confidence|relationship|parent|grief|hypno|wellbeing|well-being|self[- ]care",
+        r"sleep|stress|mindful|meditat|breathwork|anxiet|therap|mindset|life coach|burnout|habit|confidence"
+        r"|relationship|grief|hypno|wellbeing|well-being|self[- ]care",
     ),
     (
         "business",
@@ -182,8 +224,8 @@ _NICHE_WORDS = (
     ),
     (
         "fitness",
-        r"fitness|strength|hiit|workout|gym|personal train|running"
-        r"|\bbox|kickbox|martial|\bmma\b|muay|crossfit|bootcamp|calisthenic",
+        r"fitness|strength|hiit|workout|gym|personal train|running|crossfit|bootcamp|calisthenic"
+        r"|\bbox|kickbox|\bmma\b|muay|wrestl",
     ),
 )
 
@@ -377,14 +419,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "difference", "What makes their approach theirs", "What do you do differently from other teachers?", multi=True
     ),
-    Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
-    Field("story", "Their story", "How did you come to teach this?"),
-    Field(
-        "credentials",
-        "Training and experience",
-        "Any training, certifications or years of teaching you'd like visitors to know about?",
-        multi=True,
-    ),
+    # Before the look: the tone asked for helps rank the looks.
     Field(
         "tone",
         "How the site should sound",
@@ -401,6 +436,14 @@ FIELDS: tuple[Field, ...] = (
             "Twelve years of teaching, distilled.",
             "Yes, you can wear socks.",
         ),
+    ),
+    Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
+    Field("story", "Their story", "How did you come to teach this?"),
+    Field(
+        "credentials",
+        "Training and experience",
+        "Any training, certifications or years of teaching you'd like visitors to know about?",
+        multi=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
     Field(

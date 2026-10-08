@@ -69,6 +69,9 @@ export interface SiteStyle {
   mood: string;
   /** Niche ids this style suits best — ranks the wizard Style step. */
   niches: string[];
+  /** Tones of voice (warm, energetic, calm, expert, playful) the style
+   *  carries — a tone the coach asked for lifts it in the ranking. */
+  tones?: string[];
   /** Build/display order. */
   order: number;
   /** Only enabled styles are offered to coaches. */

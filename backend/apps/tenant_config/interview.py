@@ -223,8 +223,9 @@ def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=
     top = missing[0]
     # Cards are asked by code, in order; so is a section (course, class,
     # article): once started it runs to its review screen before anything else.
-    # The specialty follows its broad answer straight away.
-    if top.kind in brief.CARD_KINDS or top.group or top.kind == "specialty":
+    # The specialty follows its broad answer straight away; so does the tone,
+    # which ranks the looks right after it.
+    if top.kind in brief.CARD_KINDS or top.group or top.kind in ("specialty", "tone"):
         return top
     begun = {f.group for f in brief.FIELDS if f.group and brief.is_settled(answers or {}, f.id)}
     if section := next((f for f in missing if f.group in begun), None):

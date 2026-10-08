@@ -91,6 +91,33 @@ def looks() -> list[dict]:
     return out
 
 
+# Ranking weights, mirrored by rankStylesForNiche in packages/shared: the
+# niche's position in a style's `niches` list (its first entry is the niche it
+# is made for), plus a little for each tone the coach asked the site to have.
+NICHE_WEIGHTS = (12, 8, 5, 3)
+TONE_WEIGHT = 3
+
+
+def tones_of(text) -> list[str]:
+    """ "Warm, Calm" (the tone answer) -> ["warm", "calm"]."""
+    return [t.strip().lower() for t in str(text or "").split(",") if t.strip()]
+
+
+def rank_styles(niche, tones=()) -> list[dict]:
+    """Enabled styles best first: niche fit, then tone match; ties keep the
+    manifest order. A style with neither still ranks (the coach sees all)."""
+    tones = {t.lower() for t in tones}
+
+    def score(s):
+        listed = s.get("niches") or []
+        at = listed.index(niche) if niche in listed else None
+        return (NICHE_WEIGHTS[min(at, len(NICHE_WEIGHTS) - 1)] if at is not None else 0) + TONE_WEIGHT * len(
+            tones & set(s.get("tones") or [])
+        )
+
+    return sorted(enabled_styles().values(), key=lambda s: -score(s))  # sorted() is stable
+
+
 def parse_look(value) -> tuple[str, str] | None:
     """ "journal" or "journal:sage" -> (style id, palette id) when both exist."""
     sid, _, pid = str(value or "").partition(":")

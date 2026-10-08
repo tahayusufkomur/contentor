@@ -157,6 +157,8 @@ export interface LookOption {
   palette?: string;
   /** The guide's pick for this coach. */
   recommended?: boolean;
+  /** Why it is the pick ("Made for dance coaches, and it sounds playful."). */
+  reason?: string;
   /** Logos: the vector mark, previewed in the coach's look. */
   mark?: LogoMark | null;
 }

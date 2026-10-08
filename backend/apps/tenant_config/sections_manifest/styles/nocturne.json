@@ -2,10 +2,8 @@
   "id": "nocturne",
   "label": "Nocturne",
   "mood": "Night blue with one warm lamp — a soft dark style, rounded serif, a glow on the one button.",
-  "niches": [
-    "wellness",
-    "yoga"
-  ],
+  "niches": ["wellness", "yoga", "spiritual"],
+  "tones": ["calm", "warm"],
   "order": 7,
   "enabled": true,
   "fonts": {
@@ -68,44 +66,17 @@
   "radius": "1.5rem",
   "photoWords": "low warm lamp light, dusk, quiet interior, soft focus, a calm person resting or reading, deep blue and amber tones",
   "variants": {
-    "hero": [
-      "lantern",
-      "intro"
-    ],
-    "story": [
-      "evening"
-    ],
-    "benefits": [
-      "rituals"
-    ],
-    "courseShowcase": [
-      "nights",
-      "rows"
-    ],
-    "howItWorks": [
-      "winddown"
-    ],
-    "philosophy": [
-      "whisper"
-    ],
-    "moments": [
-      "lanterns"
-    ],
-    "pricing": [
-      "stays"
-    ],
-    "faq": [
-      "soft"
-    ],
-    "cta": [
-      "lamp"
-    ],
-    "contact": [
-      "note"
-    ],
-    "events": [
-      "evenings",
-      "rows"
-    ]
+    "hero": ["lantern", "intro"],
+    "story": ["evening"],
+    "benefits": ["rituals"],
+    "courseShowcase": ["nights", "rows"],
+    "howItWorks": ["winddown"],
+    "philosophy": ["whisper"],
+    "moments": ["lanterns"],
+    "pricing": ["stays"],
+    "faq": ["soft"],
+    "cta": ["lamp"],
+    "contact": ["note"],
+    "events": ["evenings", "rows"]
   }
 }

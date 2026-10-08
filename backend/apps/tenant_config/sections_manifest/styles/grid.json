@@ -2,9 +2,8 @@
   "id": "grid",
   "label": "Swiss Grid",
   "mood": "Clear, intelligent, modern — a text-led grid with cobalt accents and mono labels.",
-  "niches": [
-    "general"
-  ],
+  "niches": ["general"],
+  "tones": ["expert"],
   "order": 3,
   "enabled": true,
   "fonts": {
@@ -67,44 +66,17 @@
   "radius": "0rem",
   "photoWords": "clean natural light, strong graphic composition, neutral background, candid documentary, modern minimal interior",
   "variants": {
-    "hero": [
-      "statement",
-      "intro"
-    ],
-    "story": [
-      "columns"
-    ],
-    "benefits": [
-      "index"
-    ],
-    "courseShowcase": [
-      "catalogue",
-      "rows"
-    ],
-    "howItWorks": [
-      "ruled"
-    ],
-    "philosophy": [
-      "paragraph"
-    ],
-    "moments": [
-      "tiles"
-    ],
-    "pricing": [
-      "table"
-    ],
-    "faq": [
-      "open"
-    ],
-    "cta": [
-      "block"
-    ],
-    "contact": [
-      "definition"
-    ],
-    "events": [
-      "table",
-      "rows"
-    ]
+    "hero": ["statement", "intro"],
+    "story": ["columns"],
+    "benefits": ["index"],
+    "courseShowcase": ["catalogue", "rows"],
+    "howItWorks": ["ruled"],
+    "philosophy": ["paragraph"],
+    "moments": ["tiles"],
+    "pricing": ["table"],
+    "faq": ["open"],
+    "cta": ["block"],
+    "contact": ["definition"],
+    "events": ["table", "rows"]
   }
 }

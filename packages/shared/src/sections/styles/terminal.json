@@ -1,0 +1,82 @@
+{
+  "id": "terminal",
+  "label": "Terminal",
+  "mood": "The command line — phosphor on near-black, a monospace headline, prompts, code blocks and a blinking cursor.",
+  "niches": ["tech"],
+  "tones": ["expert", "playful"],
+  "order": 17,
+  "enabled": true,
+  "fonts": {
+    "display": "JetBrains Mono",
+    "body": "DM Sans",
+    "googleQuery": "family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600"
+  },
+  "palette": {
+    "background": "oklch(0.17 0.014 160)",
+    "surface": "oklch(0.21 0.02 160)",
+    "foreground": "oklch(0.92 0.04 150)",
+    "mutedForeground": "oklch(0.7 0.04 155)",
+    "primary": "oklch(0.83 0.22 148)",
+    "primaryForeground": "oklch(0.15 0.02 160)",
+    "accent": "oklch(0.82 0.15 85)",
+    "accentForeground": "oklch(0.15 0.02 160)",
+    "border": "oklch(0.3 0.03 160)",
+    "inverse": "oklch(0.94 0.02 150)",
+    "inverseForeground": "oklch(0.17 0.014 160)"
+  },
+  "paletteLabel": "Phosphor",
+  "palettes": [
+    {
+      "id": "paper",
+      "label": "IDE light",
+      "mood": "White editor, blue keywords and an orange cursor.",
+      "palette": {
+        "background": "oklch(0.985 0.003 250)",
+        "surface": "oklch(0.96 0.006 250)",
+        "foreground": "oklch(0.22 0.02 260)",
+        "mutedForeground": "oklch(0.5 0.02 260)",
+        "primary": "oklch(0.52 0.2 262)",
+        "primaryForeground": "oklch(0.99 0.003 250)",
+        "accent": "oklch(0.64 0.19 45)",
+        "accentForeground": "oklch(0.15 0.02 45)",
+        "border": "oklch(0.9 0.008 250)",
+        "inverse": "oklch(0.2 0.03 260)",
+        "inverseForeground": "oklch(0.96 0.005 250)"
+      }
+    },
+    {
+      "id": "violet",
+      "label": "Night owl",
+      "mood": "Deep violet editor with lilac keywords and cyan strings.",
+      "palette": {
+        "background": "oklch(0.2 0.04 285)",
+        "surface": "oklch(0.25 0.05 285)",
+        "foreground": "oklch(0.94 0.015 285)",
+        "mutedForeground": "oklch(0.74 0.04 285)",
+        "primary": "oklch(0.74 0.17 300)",
+        "primaryForeground": "oklch(0.16 0.04 285)",
+        "accent": "oklch(0.8 0.15 190)",
+        "accentForeground": "oklch(0.16 0.04 285)",
+        "border": "oklch(0.34 0.06 285)",
+        "inverse": "oklch(0.94 0.02 285)",
+        "inverseForeground": "oklch(0.2 0.04 285)"
+      }
+    }
+  ],
+  "radius": "0.25rem",
+  "photoWords": "developer at a laptop, code on a screen, desk setup, cool monitor glow, modern workspace, focused",
+  "variants": {
+    "hero": ["prompt", "intro"],
+    "story": ["readme"],
+    "benefits": ["features"],
+    "courseShowcase": ["modules", "rows"],
+    "howItWorks": ["pipeline"],
+    "philosophy": ["principles"],
+    "moments": ["screens"],
+    "pricing": ["plans"],
+    "faq": ["man"],
+    "cta": ["install"],
+    "contact": ["issue"],
+    "events": ["cron", "rows"]
+  }
+}

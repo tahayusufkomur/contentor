@@ -2,10 +2,8 @@
   "id": "ledger",
   "label": "Ledger",
   "mood": "The trusted advisor's annual report — bone paper, navy ink, one oxblood rule, numbered clauses.",
-  "niches": [
-    "business",
-    "general"
-  ],
+  "niches": ["business", "general"],
+  "tones": ["expert"],
   "order": 5,
   "enabled": true,
   "fonts": {
@@ -68,44 +66,17 @@
   "radius": "0rem",
   "photoWords": "corporate documentary, natural office light, candid professional at work with a client, muted navy and bone tones, medium format look",
   "variants": {
-    "hero": [
-      "statement",
-      "intro"
-    ],
-    "story": [
-      "memo"
-    ],
-    "benefits": [
-      "clauses"
-    ],
-    "courseShowcase": [
-      "dossier",
-      "rows"
-    ],
-    "howItWorks": [
-      "quarters"
-    ],
-    "philosophy": [
-      "principles"
-    ],
-    "moments": [
-      "figures"
-    ],
-    "pricing": [
-      "table"
-    ],
-    "faq": [
-      "appendix"
-    ],
-    "cta": [
-      "signature"
-    ],
-    "contact": [
-      "letterhead"
-    ],
-    "events": [
-      "agenda",
-      "rows"
-    ]
+    "hero": ["statement", "intro"],
+    "story": ["memo"],
+    "benefits": ["clauses"],
+    "courseShowcase": ["dossier", "rows"],
+    "howItWorks": ["quarters"],
+    "philosophy": ["principles"],
+    "moments": ["figures"],
+    "pricing": ["table"],
+    "faq": ["appendix"],
+    "cta": ["signature"],
+    "contact": ["letterhead"],
+    "events": ["agenda", "rows"]
   }
 }

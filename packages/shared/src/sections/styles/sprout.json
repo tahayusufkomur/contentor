@@ -1,0 +1,82 @@
+{
+  "id": "sprout",
+  "label": "Sprout",
+  "mood": "The family room — cream paper, a round friendly face, chunky colour shapes and hand-drawn sprouts.",
+  "niches": ["family"],
+  "tones": ["playful", "warm"],
+  "order": 18,
+  "enabled": true,
+  "fonts": {
+    "display": "Fredoka",
+    "body": "Nunito",
+    "googleQuery": "family=Fredoka:wght@400..700&family=Nunito:wght@400;600;700"
+  },
+  "palette": {
+    "background": "oklch(0.985 0.02 100)",
+    "surface": "oklch(0.955 0.04 100)",
+    "foreground": "oklch(0.27 0.05 255)",
+    "mutedForeground": "oklch(0.5 0.05 255)",
+    "primary": "oklch(0.52 0.15 150)",
+    "primaryForeground": "oklch(0.99 0.01 100)",
+    "accent": "oklch(0.85 0.16 90)",
+    "accentForeground": "oklch(0.27 0.05 255)",
+    "border": "oklch(0.9 0.04 100)",
+    "inverse": "oklch(0.33 0.07 255)",
+    "inverseForeground": "oklch(0.97 0.02 100)"
+  },
+  "paletteLabel": "Meadow",
+  "palettes": [
+    {
+      "id": "berry",
+      "label": "Berry",
+      "mood": "Raspberry pink, plum ink and sunshine yellow.",
+      "palette": {
+        "background": "oklch(0.985 0.014 350)",
+        "surface": "oklch(0.955 0.03 350)",
+        "foreground": "oklch(0.28 0.06 320)",
+        "mutedForeground": "oklch(0.5 0.06 320)",
+        "primary": "oklch(0.55 0.2 350)",
+        "primaryForeground": "oklch(0.99 0.01 350)",
+        "accent": "oklch(0.84 0.14 85)",
+        "accentForeground": "oklch(0.28 0.06 320)",
+        "border": "oklch(0.9 0.035 350)",
+        "inverse": "oklch(0.34 0.12 320)",
+        "inverseForeground": "oklch(0.97 0.02 350)"
+      }
+    },
+    {
+      "id": "sky",
+      "label": "Sky",
+      "mood": "Cloud blue, navy ink and a tangerine accent.",
+      "palette": {
+        "background": "oklch(0.985 0.014 230)",
+        "surface": "oklch(0.955 0.03 230)",
+        "foreground": "oklch(0.26 0.06 260)",
+        "mutedForeground": "oklch(0.5 0.06 255)",
+        "primary": "oklch(0.55 0.16 245)",
+        "primaryForeground": "oklch(0.99 0.01 230)",
+        "accent": "oklch(0.78 0.16 55)",
+        "accentForeground": "oklch(0.26 0.06 260)",
+        "border": "oklch(0.9 0.035 230)",
+        "inverse": "oklch(0.32 0.09 255)",
+        "inverseForeground": "oklch(0.97 0.015 230)"
+      }
+    }
+  ],
+  "radius": "1.5rem",
+  "photoWords": "parent and child together, family at home, toddlers playing, warm natural light, candid joyful moments, bright",
+  "variants": {
+    "hero": ["playground", "intro"],
+    "story": ["hello"],
+    "benefits": ["growth"],
+    "courseShowcase": ["activities", "rows"],
+    "howItWorks": ["steps"],
+    "philosophy": ["promise"],
+    "moments": ["snapshots"],
+    "pricing": ["tickets"],
+    "faq": ["askaway"],
+    "cta": ["join"],
+    "contact": ["hello"],
+    "events": ["playdates", "rows"]
+  }
+}

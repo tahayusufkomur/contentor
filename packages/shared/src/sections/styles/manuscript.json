@@ -1,0 +1,82 @@
+{
+  "id": "manuscript",
+  "label": "Manuscript",
+  "mood": "The book — cream pages, a light literary serif, drop caps, chapter numbers and long-form reading rhythm.",
+  "niches": ["writing"],
+  "tones": ["expert", "calm"],
+  "order": 19,
+  "enabled": true,
+  "fonts": {
+    "display": "Spectral",
+    "body": "Literata",
+    "googleQuery": "family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Literata:wght@400;500;600"
+  },
+  "palette": {
+    "background": "oklch(0.97 0.014 88)",
+    "surface": "oklch(0.94 0.02 85)",
+    "foreground": "oklch(0.2 0.02 60)",
+    "mutedForeground": "oklch(0.46 0.025 65)",
+    "primary": "oklch(0.32 0.06 225)",
+    "primaryForeground": "oklch(0.97 0.014 88)",
+    "accent": "oklch(0.52 0.15 40)",
+    "accentForeground": "oklch(0.98 0.01 88)",
+    "border": "oklch(0.86 0.02 85)",
+    "inverse": "oklch(0.26 0.05 225)",
+    "inverseForeground": "oklch(0.95 0.015 88)"
+  },
+  "paletteLabel": "Cream",
+  "palettes": [
+    {
+      "id": "lamp",
+      "label": "Lamplight",
+      "mood": "A dark study: warm ivory type, brass and rust.",
+      "palette": {
+        "background": "oklch(0.2 0.03 60)",
+        "surface": "oklch(0.24 0.035 60)",
+        "foreground": "oklch(0.92 0.03 85)",
+        "mutedForeground": "oklch(0.72 0.035 80)",
+        "primary": "oklch(0.82 0.12 80)",
+        "primaryForeground": "oklch(0.2 0.03 60)",
+        "accent": "oklch(0.7 0.14 40)",
+        "accentForeground": "oklch(0.15 0.02 60)",
+        "border": "oklch(0.33 0.035 60)",
+        "inverse": "oklch(0.93 0.03 85)",
+        "inverseForeground": "oklch(0.2 0.03 60)"
+      }
+    },
+    {
+      "id": "newsprint",
+      "label": "Newsprint",
+      "mood": "Grey newsprint, pure black ink and one red.",
+      "palette": {
+        "background": "oklch(0.96 0.003 100)",
+        "surface": "oklch(0.92 0.004 100)",
+        "foreground": "oklch(0.15 0 0)",
+        "mutedForeground": "oklch(0.45 0.005 100)",
+        "primary": "oklch(0.15 0 0)",
+        "primaryForeground": "oklch(0.96 0.003 100)",
+        "accent": "oklch(0.55 0.22 28)",
+        "accentForeground": "oklch(0.98 0.005 90)",
+        "border": "oklch(0.84 0.005 100)",
+        "inverse": "oklch(0.15 0 0)",
+        "inverseForeground": "oklch(0.96 0.003 100)"
+      }
+    }
+  ],
+  "radius": "0.125rem",
+  "photoWords": "writer at a desk, notebook and pen, bookshelves, reading nook, warm lamp light, quiet, literary",
+  "variants": {
+    "hero": ["titlepage", "intro"],
+    "story": ["preface"],
+    "benefits": ["chapters"],
+    "courseShowcase": ["contents", "rows"],
+    "howItWorks": ["process"],
+    "philosophy": ["epigraph"],
+    "moments": ["plates"],
+    "pricing": ["subscriptions"],
+    "faq": ["notes"],
+    "cta": ["subscribe"],
+    "contact": ["letter"],
+    "events": ["readings", "rows"]
+  }
+}

@@ -1,0 +1,206 @@
+/* Dojo — style-scoped CSS. Every class/keyframe is dojo-prefixed. */
+
+.dojo {
+  font-feature-settings: "palt", "kern", "liga";
+  --dojo-rule: var(--border);
+  --dojo-belt-0: #f0ede6; /* 6th Kyu: White */
+  --dojo-belt-1: #eab308; /* 5th Kyu: Yellow */
+  --dojo-belt-2: #f97316; /* 4th Kyu: Orange */
+  --dojo-belt-3: #16a34a; /* 3rd Kyu: Green */
+  --dojo-belt-4: #2563eb; /* 2nd Kyu: Blue */
+  --dojo-belt-5: #78350f; /* 1st Kyu: Brown */
+  --dojo-belt-6: #18181b; /* 1st Dan: Black */
+}
+
+/* Tabular figures for ranking, time and price */
+.dojo-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vertical text rail down the side on desktop */
+@media (min-width: 1024px) {
+  .dojo-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+}
+
+/* Red Seal (Hanko): solid accent square with rounded 2px corners, rotated -4deg */
+.dojo-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  border-radius: 2px;
+  transform: rotate(-4deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Big ENSO-like accent circle: thick border ring with partial conic mask */
+.dojo-enso {
+  position: absolute;
+  border-radius: 9999px;
+  border: 10px solid var(--accent);
+  mask-image: conic-gradient(
+    from 35deg,
+    black 0%,
+    black 72%,
+    transparent 94%,
+    transparent 100%
+  );
+  -webkit-mask-image: conic-gradient(
+    from 35deg,
+    black 0%,
+    black 72%,
+    transparent 94%,
+    transparent 100%
+  );
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+/* Ink band (sumi / night training): inverted tones with custom hairlines */
+.dojo-ink {
+  --dojo-rule: color-mix(in oklch, var(--inverse-foreground) 22%, transparent);
+}
+.dojo-ink .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 70%, var(--inverse));
+}
+.dojo-ink .border-border {
+  border-color: var(--dojo-rule);
+}
+.dojo-ink .border-primary {
+  border-color: var(--inverse-foreground);
+}
+
+/* Photographs: sharp rectangular frame with grayscale hover transition */
+.dojo-photo img {
+  filter: grayscale(0.85) contrast(1.05);
+  transition:
+    filter 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@media (hover: hover) {
+  .group:hover .dojo-photo img,
+  .dojo-photo:hover img {
+    filter: grayscale(0) contrast(1);
+  }
+}
+
+/* One crisp 3px focus treatment for every control */
+.dojo a:focus-visible,
+.dojo button:focus-visible,
+.dojo summary:focus-visible,
+.dojo [tabindex]:focus-visible,
+.dojo-focus:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.dojo-ink a:focus-visible,
+.dojo-ink button:focus-visible {
+  outline-color: var(--accent);
+}
+
+/* Link with crisp red underline */
+.dojo-link {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.28em;
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+.dojo-link:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+/* Course prices: plain type within dojo */
+.dojo-price.dojo-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ etiquette details / accordion */
+.dojo-faq summary {
+  list-style: none;
+}
+.dojo-faq summary::-webkit-details-marker {
+  display: none;
+}
+.dojo-faq details[open] summary .dojo-faq-num {
+  color: var(--accent);
+}
+.dojo-faq details[open] summary {
+  color: var(--primary);
+}
+
+/* Contact form: ruled sumi line fields */
+.dojo-form label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+.dojo-form input,
+.dojo-form textarea {
+  border-width: 0 0 1px 0;
+  border-color: var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1rem;
+  color: var(--foreground);
+}
+.dojo-form input:focus-visible,
+.dojo-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: 0 2px 0 0 var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Scroll strip without visible scrollbar */
+.dojo-strip {
+  scrollbar-width: none;
+}
+.dojo-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dojo-arrow {
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .dojo-arrow {
+    transform: translateX(4px);
+  }
+  .dojo-rise {
+    animation: dojo-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--dojo-delay, 0ms);
+  }
+}
+
+@keyframes dojo-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

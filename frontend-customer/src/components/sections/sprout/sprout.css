@@ -1,0 +1,204 @@
+/* Sprout — style-scoped CSS. Every class/keyframe/custom property is sprout-prefixed. */
+
+.sprout {
+  font-feature-settings: "kern", "liga";
+  --sprout-radius-blob-1: 58% 42% 55% 45% / 48% 55% 45% 52%;
+  --sprout-radius-blob-2: 45% 55% 42% 58% / 55% 48% 52% 45%;
+  --sprout-radius-blob-3: 52% 48% 60% 40% / 40% 55% 45% 60%;
+  --sprout-radius-card: 2rem;
+  --sprout-pill-radius: 9999px;
+}
+
+/* Organic blob masks for images */
+.sprout-blob-1 {
+  border-radius: var(--sprout-radius-blob-1);
+}
+
+.sprout-blob-2 {
+  border-radius: var(--sprout-radius-blob-2);
+}
+
+.sprout-blob-3 {
+  border-radius: var(--sprout-radius-blob-3);
+}
+
+/* Speech bubble for philosophy promise */
+.sprout-speech-bubble {
+  border-radius: 2.5rem 2.5rem 2.5rem 0.75rem;
+}
+
+/* Ticket stub card styling for pricing */
+.sprout-ticket-notch-left,
+.sprout-ticket-notch-right {
+  position: absolute;
+  top: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--background);
+  border-radius: 9999px;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.sprout-ticket-notch-left {
+  left: -0.75rem;
+}
+
+.sprout-ticket-notch-right {
+  right: -0.75rem;
+}
+
+/* Ticket dashed separator */
+.sprout-ticket-dash {
+  border-top: 2px dashed color-mix(in oklch, var(--border) 90%, transparent);
+}
+
+/* Accessible 3px focus rings on every interactable control */
+.sprout a:focus-visible,
+.sprout button:focus-visible,
+.sprout summary:focus-visible,
+.sprout input:focus-visible,
+.sprout textarea:focus-visible,
+.sprout [tabindex]:focus-visible,
+.sprout-focus:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.sprout-inverse a:focus-visible,
+.sprout-inverse button:focus-visible,
+.sprout-inverse summary:focus-visible,
+.sprout-inverse [tabindex]:focus-visible {
+  outline-color: var(--accent);
+}
+
+/* Inverse tone overrides */
+.sprout-inverse {
+  --sprout-rule: color-mix(
+    in oklch,
+    var(--inverse-foreground) 20%,
+    transparent
+  );
+}
+
+.sprout-inverse .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 75%, var(--inverse));
+}
+
+.sprout-inverse .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 20%, transparent);
+}
+
+/* Form styling: soft, friendly, pill-like rounded fields */
+.sprout-form label {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.sprout-form input,
+.sprout-form textarea {
+  border-radius: 1.25rem;
+  border: 2px solid color-mix(in oklch, var(--border) 80%, transparent);
+  background: var(--background);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.sprout-form input:focus-visible,
+.sprout-form textarea:focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 20%, transparent);
+  outline: none;
+}
+
+/* FAQ accordion animation & summary reset */
+.sprout-faq summary {
+  list-style: none;
+}
+
+.sprout-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.sprout-faq details[open] .sprout-faq-icon {
+  transform: rotate(45deg);
+}
+
+.sprout-faq details[open] .sprout-faq-question {
+  color: var(--primary);
+}
+
+/* Price badge styling */
+.sprout-price-chip > * {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-weight: 700;
+}
+
+/* Scroll strip with invisible scrollbar */
+.sprout-strip {
+  scrollbar-width: none;
+}
+
+.sprout-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* CSS-only animations inside media query */
+@media (prefers-reduced-motion: no-preference) {
+  .sprout-float {
+    animation: sprout-float 4.5s ease-in-out infinite alternate;
+  }
+
+  .sprout-float-delayed {
+    animation: sprout-float 5s ease-in-out infinite alternate;
+    animation-delay: 1.5s;
+  }
+
+  .sprout-wiggle {
+    animation: sprout-wiggle 5s ease-in-out infinite;
+  }
+
+  .sprout-pulse-subtle {
+    animation: sprout-pulse-subtle 3s ease-in-out infinite alternate;
+  }
+
+  .sprout-faq-icon {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+@keyframes sprout-float {
+  from {
+    transform: translateY(0px) rotate(0deg);
+  }
+  to {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes sprout-wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes sprout-pulse-subtle {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}

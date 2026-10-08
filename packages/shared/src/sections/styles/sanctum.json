@@ -1,0 +1,82 @@
+{
+  "id": "sanctum",
+  "label": "Sanctum",
+  "mood": "The temple of the stars — midnight indigo, thin gold line-art, zodiac rings and moon phases.",
+  "niches": ["spiritual"],
+  "tones": ["calm", "warm"],
+  "order": 20,
+  "enabled": true,
+  "fonts": {
+    "display": "Cinzel",
+    "body": "Mulish",
+    "googleQuery": "family=Cinzel:wght@400..700&family=Mulish:wght@400;500;600;700"
+  },
+  "palette": {
+    "background": "oklch(0.19 0.06 285)",
+    "surface": "oklch(0.24 0.07 285)",
+    "foreground": "oklch(0.93 0.02 85)",
+    "mutedForeground": "oklch(0.74 0.04 280)",
+    "primary": "oklch(0.8 0.12 85)",
+    "primaryForeground": "oklch(0.19 0.06 285)",
+    "accent": "oklch(0.72 0.14 330)",
+    "accentForeground": "oklch(0.15 0.05 285)",
+    "border": "oklch(0.35 0.08 285)",
+    "inverse": "oklch(0.93 0.02 85)",
+    "inverseForeground": "oklch(0.19 0.06 285)"
+  },
+  "paletteLabel": "Midnight gold",
+  "palettes": [
+    {
+      "id": "rose",
+      "label": "Rose gold",
+      "mood": "Plum night with rose-gold line-art and champagne.",
+      "palette": {
+        "background": "oklch(0.22 0.05 340)",
+        "surface": "oklch(0.27 0.06 340)",
+        "foreground": "oklch(0.94 0.02 30)",
+        "mutedForeground": "oklch(0.76 0.04 20)",
+        "primary": "oklch(0.78 0.1 40)",
+        "primaryForeground": "oklch(0.2 0.05 340)",
+        "accent": "oklch(0.78 0.13 80)",
+        "accentForeground": "oklch(0.2 0.05 340)",
+        "border": "oklch(0.38 0.07 340)",
+        "inverse": "oklch(0.94 0.025 30)",
+        "inverseForeground": "oklch(0.22 0.05 340)"
+      }
+    },
+    {
+      "id": "moonstone",
+      "label": "Moonstone",
+      "mood": "Pearl-lavender daylight with deep indigo ink and gold.",
+      "palette": {
+        "background": "oklch(0.965 0.014 290)",
+        "surface": "oklch(0.935 0.025 290)",
+        "foreground": "oklch(0.24 0.07 285)",
+        "mutedForeground": "oklch(0.5 0.05 285)",
+        "primary": "oklch(0.3 0.1 285)",
+        "primaryForeground": "oklch(0.97 0.014 290)",
+        "accent": "oklch(0.54 0.13 80)",
+        "accentForeground": "oklch(0.98 0.01 290)",
+        "border": "oklch(0.86 0.03 290)",
+        "inverse": "oklch(0.27 0.08 285)",
+        "inverseForeground": "oklch(0.96 0.015 290)"
+      }
+    }
+  ],
+  "radius": "0.5rem",
+  "photoWords": "candles and crystals, moonlit night sky, tarot cards, soft mystical light, deep indigo and gold, calm woman in meditation",
+  "variants": {
+    "hero": ["oracle", "intro"],
+    "story": ["origin"],
+    "benefits": ["gifts"],
+    "courseShowcase": ["paths", "rows"],
+    "howItWorks": ["ritual"],
+    "philosophy": ["invocation"],
+    "moments": ["visions"],
+    "pricing": ["offerings"],
+    "faq": ["questions"],
+    "cta": ["begin"],
+    "contact": ["message"],
+    "events": ["gatherings", "rows"]
+  }
+}

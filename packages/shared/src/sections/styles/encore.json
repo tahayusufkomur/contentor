@@ -2,9 +2,8 @@
   "id": "encore",
   "label": "Encore",
   "mood": "A gig poster and the record it sells — cream stock, black ink, a teal second colour, a tracklist.",
-  "niches": [
-    "music"
-  ],
+  "niches": ["music", "dance"],
+  "tones": ["energetic", "playful"],
   "order": 10,
   "enabled": true,
   "fonts": {
@@ -67,44 +66,17 @@
   "radius": "0rem",
   "photoWords": "stage light, instrument close-up, performer mid-song, grain, black and white or high contrast",
   "variants": {
-    "hero": [
-      "poster",
-      "intro"
-    ],
-    "story": [
-      "linernotes"
-    ],
-    "benefits": [
-      "setlist"
-    ],
-    "courseShowcase": [
-      "tracklist",
-      "rows"
-    ],
-    "howItWorks": [
-      "soundcheck"
-    ],
-    "philosophy": [
-      "manifesto"
-    ],
-    "moments": [
-      "sleeves"
-    ],
-    "pricing": [
-      "passes"
-    ],
-    "faq": [
-      "bsides"
-    ],
-    "cta": [
-      "encore"
-    ],
-    "contact": [
-      "booking"
-    ],
-    "events": [
-      "tourdates",
-      "rows"
-    ]
+    "hero": ["poster", "intro"],
+    "story": ["linernotes"],
+    "benefits": ["setlist"],
+    "courseShowcase": ["tracklist", "rows"],
+    "howItWorks": ["soundcheck"],
+    "philosophy": ["manifesto"],
+    "moments": ["sleeves"],
+    "pricing": ["passes"],
+    "faq": ["bsides"],
+    "cta": ["encore"],
+    "contact": ["booking"],
+    "events": ["tourdates", "rows"]
   }
 }

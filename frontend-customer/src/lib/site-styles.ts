@@ -37,6 +37,14 @@ const SITE_WRAP: Record<string, string> = {
   encore: "88rem",
   trail: "86rem",
   maison: "80rem",
+  studiofloor: "90rem",
+  atelier: "80rem",
+  dojo: "84rem",
+  workshop: "82rem",
+  terminal: "80rem",
+  sprout: "80rem",
+  manuscript: "72rem",
+  sanctum: "80rem",
 };
 const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 

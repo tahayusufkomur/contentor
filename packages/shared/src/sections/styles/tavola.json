@@ -2,9 +2,8 @@
   "id": "tavola",
   "label": "Tavola",
   "mood": "The trattoria — butter-yellow awning, olive and tomato, a chunky warm serif and a menu card with dotted leaders.",
-  "niches": [
-    "cooking"
-  ],
+  "niches": ["cooking"],
+  "tones": ["warm", "playful"],
   "order": 9,
   "enabled": true,
   "fonts": {
@@ -67,44 +66,17 @@
   "radius": "0.5rem",
   "photoWords": "warm kitchen light, hands cooking, fresh ingredients, rustic table, overhead and close, a person cooking",
   "variants": {
-    "hero": [
-      "menu",
-      "intro"
-    ],
-    "story": [
-      "kitchentable"
-    ],
-    "benefits": [
-      "ingredients"
-    ],
-    "courseShowcase": [
-      "recipecards",
-      "rows"
-    ],
-    "howItWorks": [
-      "method"
-    ],
-    "philosophy": [
-      "houserule"
-    ],
-    "moments": [
-      "market"
-    ],
-    "pricing": [
-      "menu"
-    ],
-    "faq": [
-      "pantry"
-    ],
-    "cta": [
-      "reserve"
-    ],
-    "contact": [
-      "kitchen"
-    ],
-    "events": [
-      "tastings",
-      "rows"
-    ]
+    "hero": ["menu", "intro"],
+    "story": ["kitchentable"],
+    "benefits": ["ingredients"],
+    "courseShowcase": ["recipecards", "rows"],
+    "howItWorks": ["method"],
+    "philosophy": ["houserule"],
+    "moments": ["market"],
+    "pricing": ["menu"],
+    "faq": ["pantry"],
+    "cta": ["reserve"],
+    "contact": ["kitchen"],
+    "events": ["tastings", "rows"]
   }
 }

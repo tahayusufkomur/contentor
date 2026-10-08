@@ -1,0 +1,203 @@
+/* Atelier — style-scoped CSS. Every class/keyframe is atelier-prefixed. */
+
+.atelier {
+  font-feature-settings: "kern", "liga";
+  --atelier-hairline: color-mix(in oklch, var(--border) 85%, transparent);
+  --atelier-accent-hairline: color-mix(
+    in oklch,
+    var(--accent) 45%,
+    transparent
+  );
+}
+
+/* Tabular figures for prices, durations, dates */
+.atelier-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Arch curves */
+.atelier-arch {
+  border-top-left-radius: 999px;
+  border-top-right-radius: 999px;
+}
+
+/* Menu dotted leader lines */
+.atelier-dots {
+  background-image: radial-gradient(
+    circle,
+    currentColor 0.75px,
+    transparent 0.75px
+  );
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  background-position: bottom;
+  height: 1px;
+  opacity: 0.35;
+}
+
+/* Inverse band styling */
+.atelier-inverse {
+  --atelier-hairline: color-mix(
+    in oklch,
+    var(--inverse-foreground) 20%,
+    transparent
+  );
+  --atelier-accent-hairline: color-mix(
+    in oklch,
+    var(--inverse-foreground) 40%,
+    transparent
+  );
+}
+.atelier-inverse .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 75%, var(--inverse));
+}
+.atelier-inverse .border-border {
+  border-color: var(--atelier-hairline);
+}
+.atelier-inverse .atelier-divider-diamond {
+  background: var(--inverse);
+  border-color: var(--inverse-foreground);
+}
+
+/* Focus indicators (3px visible) */
+.atelier a:focus-visible,
+.atelier button:focus-visible,
+.atelier summary:focus-visible,
+.atelier [tabindex]:focus-visible,
+.atelier-focus:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.atelier-inverse a:focus-visible,
+.atelier-inverse button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Link underline effect */
+.atelier-link {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition:
+    color 0.25s ease,
+    text-decoration-color 0.25s ease;
+}
+.atelier-link:hover {
+  color: var(--primary);
+  text-decoration-color: var(--primary);
+}
+
+/* Course price plain badge flattening */
+.atelier-price.atelier-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ Consultation accordion */
+.atelier-faq summary {
+  list-style: none;
+}
+.atelier-faq summary::-webkit-details-marker {
+  display: none;
+}
+.atelier-faq details[open] .atelier-q {
+  color: var(--primary);
+}
+.atelier-faq details[open] .atelier-plus::after {
+  transform: rotate(0deg);
+}
+.atelier-plus {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+}
+.atelier-plus::before,
+.atelier-plus::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1.5px;
+  background: currentColor;
+}
+.atelier-plus::after {
+  transform: rotate(90deg);
+}
+
+/* Contact form: elegant underline fields with tracked labels */
+.atelier-form label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.atelier-form input,
+.atelier-form textarea {
+  border-width: 0 0 1px 0;
+  border-color: var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1.05rem;
+}
+.atelier-form input:focus-visible,
+.atelier-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: 0 1.5px 0 0 var(--primary);
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Double hairline frame for CTA appointment */
+.atelier-frame-double {
+  border: 1px solid var(--border);
+  box-shadow:
+    0 0 0 4px var(--background),
+    0 0 0 5px var(--border);
+}
+
+/* Subtle motion transitions */
+@media (prefers-reduced-motion: no-preference) {
+  .atelier-plus::after {
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .atelier-arrow {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .atelier-arrow {
+    transform: translateX(4px);
+  }
+  .atelier-zoom img {
+    transition: transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .atelier-zoom img {
+    transform: scale(1.03);
+  }
+  .atelier-fade-up {
+    animation: atelier-fade-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--atelier-delay, 0ms);
+  }
+}
+
+@keyframes atelier-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

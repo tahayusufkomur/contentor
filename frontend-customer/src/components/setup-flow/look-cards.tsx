@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -44,6 +44,24 @@ export function LookCardsView({
   const [shown, setShown] = useState<LookCards>(cards);
   // A look with a page behind it opens as that page on pick.
   const [preview, setPreview] = useState<LookOption | null>(null);
+  // The guide's pick is selected and opened as a page the first time the
+  // coach lands on the question; "See other looks" returns to the grid.
+  const picked = useRef(false);
+  const [auto, setAuto] = useState<LookOption | null>(null);
+  useEffect(() => {
+    const pick = shown.options.find((o) => o.recommended);
+    if (picked.current || shown.kind !== "style" || !pick) return;
+    if (selected || chosen) return;
+    picked.current = true;
+    onPick(pick.value, pick.label);
+    setAuto(pick);
+  }, [shown, selected, chosen, onPick]);
+  const hasPreview = !!shown.preview;
+  useEffect(() => {
+    if (!auto || !hasPreview) return;
+    const t = setTimeout(() => setPreview(auto), delay + 500);
+    return () => clearTimeout(t);
+  }, [auto, hasPreview, delay]);
   const { run: more, loading } = useAsyncAction(
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
     { errorToast: "Couldn’t load more logos. Try again." },
@@ -60,8 +78,17 @@ export function LookCardsView({
     const styles = [...new Set(shown.options.map((o) => o.style ?? o.value))]
       .map((id) => getSiteStyle(id))
       .filter((s): s is SiteStyle => !!s);
+    const suggested = shown.options.find((o) => o.recommended);
     return (
       <div className="mt-8">
+        {suggested?.reason && (
+          <p className="mb-4 text-[14px] text-[var(--sf-graphite)]">
+            <span className="font-semibold text-[var(--sf-ink)]">
+              {suggested.label}
+            </span>{" "}
+            is our pick. {suggested.reason}
+          </p>
+        )}
         {styles.map((s) => (
           <link key={s.id} rel="stylesheet" href={styleFontsHref(s)} />
         ))}
@@ -233,11 +260,11 @@ function LookPreview({
         >
           <div className="min-w-0">
             <p className="truncate text-[15px] font-semibold">{look.label}</p>
-            {look.detail && (
+            {(look.recommended && look.reason) || look.detail ? (
               <p className="truncate text-[13px] text-white/70">
-                {look.detail}
+                {look.recommended && look.reason ? look.reason : look.detail}
               </p>
-            )}
+            ) : null}
           </div>
           <div className="flex shrink-0 gap-2">
             <Button
@@ -245,7 +272,7 @@ function LookPreview({
               onClick={onClose}
               className="rounded-full text-white hover:bg-white/10 hover:text-white"
             >
-              Close
+              {look.recommended ? "See other looks" : "Close"}
             </Button>
             <Button
               onClick={onClose}

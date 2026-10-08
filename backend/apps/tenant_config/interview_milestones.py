@@ -105,7 +105,7 @@ def _start(tenant, answers, key) -> None:
     action, _, arg = key.partition(":")
     tenant_id = tenant.id
     if action == "style" and not brief.is_settled(answers, "site_style"):
-        apply_style(tenant, recommended_style(answers.get("niche") or "general"))
+        apply_style(tenant, recommended_style(answers.get("niche") or "general", answers.get("tone") or ""))
     elif action == "page":
         start_page_build(tenant, arg)
     elif action == "rank":
@@ -401,34 +401,52 @@ def _look_photos(tenant, answers: dict) -> list[str]:
 
 
 def style_cards(answers: dict, tenant=None) -> dict:
-    """Every enabled style as a look: the styles made for the coach's niche
-    in their own colours and their first alternative, the rest in their own
-    colours only; the niche's style first (its own palette is the guide's
-    pick); previewed with the coach's own subject and words."""
-    from apps.core.onboarding.wizard_catalog import recommended_style
-
+    """Every enabled style as a look, best match first (niche, then the tone
+    asked for): the styles made for the coach's niche in their own colours and
+    their first alternative, the rest in their own colours only. The first
+    look is the guide's pick (its own palette) and carries the reason; the
+    preview shows the coach's own subject and words."""
     from . import sections
 
     niche = answers.get("niche") or "general"
-    first = recommended_style(niche)
-    fits = {sid for sid, s in sections.enabled_styles().items() if niche in (s.get("niches") or [])}
-    fits.add(first)
+    tones = sections.tones_of(answers.get("tone"))
+    ranked = sections.rank_styles(niche, tones)
+    rank = {s["id"]: i for i, s in enumerate(ranked)}
+    first = ranked[0]["id"] if ranked else ""
+    fits = {s["id"] for s in ranked if niche in (s.get("niches") or [])} | {first}
     seen: dict[str, int] = {}
     looks = []
     for look in sections.looks():
         seen[look["style"]] = seen.get(look["style"], 0) + 1
         if seen[look["style"]] <= (2 if look["style"] in fits else 1):
             looks.append(look)
-    looks.sort(key=lambda o: (o["style"] != first, o["style"] not in fits))
+    looks.sort(key=lambda o: rank[o["style"]])  # stable: own colours before alternatives
+    reason = style_reason(sections.style(first), niche, tones, answers)
     return {
         "kind": "style",
-        "options": [{**o, **({"recommended": True} if o["value"] == first else {})} for o in looks],
+        "options": [{**o, **({"recommended": True, "reason": reason} if o["value"] == first else {})} for o in looks],
         "photos": _look_photos(tenant, answers),
         "headline": str(answers.get("pitch") or "")[:120],
         # A picked look opens as a whole page: sample copy about their subject,
         # the hero's line in their words.
         "preview": {"subject": brief.subject_of(answers), "body": hero_line(answers)},
     }
+
+
+def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict) -> str:
+    """Why this look is the pick, in the coach's own words ("Made for dance
+    coaches, and it sounds playful")."""
+    if not style:
+        return ""
+    matched = [t for t in tones if t in (style.get("tones") or [])]
+    subject = brief.subject_of(answers)
+    parts = []
+    if niche in (style.get("niches") or []) and subject:
+        parts.append(f"made for {subject} coaches")
+    if matched:
+        parts.append(f"it sounds {' and '.join(matched)}")
+    text = ", and ".join(parts)
+    return f"{text[:1].upper()}{text[1:]}." if text else ""
 
 
 def hero_line(answers: dict) -> str:
@@ -628,7 +646,7 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if not brief.delegate(answers, field_id):
             raise ChoiceError("unknown_field")
         if field_id == "site_style":
-            apply_style(tenant, recommended_style(answers.get("niche") or "general"))
+            apply_style(tenant, recommended_style(answers.get("niche") or "general", answers.get("tone") or ""))
         elif field_id == "site_logo":
             answers["logo"] = {"mode": "wordmark", "curated_id": None}
             apply_logo(tenant, answers)

@@ -1,0 +1,82 @@
+{
+  "id": "dojo",
+  "label": "Dojo",
+  "mood": "The dojo — rice paper, black sumi ink, one red seal, vertical rules and belts as progress.",
+  "niches": ["martial_arts", "fitness"],
+  "tones": ["calm", "expert"],
+  "order": 15,
+  "enabled": true,
+  "fonts": {
+    "display": "Shippori Mincho",
+    "body": "Zen Kaku Gothic New",
+    "googleQuery": "family=Shippori+Mincho:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700"
+  },
+  "palette": {
+    "background": "oklch(0.965 0.012 90)",
+    "surface": "oklch(0.935 0.016 88)",
+    "foreground": "oklch(0.2 0.008 60)",
+    "mutedForeground": "oklch(0.48 0.01 70)",
+    "primary": "oklch(0.2 0.008 60)",
+    "primaryForeground": "oklch(0.965 0.012 90)",
+    "accent": "oklch(0.52 0.2 28)",
+    "accentForeground": "oklch(0.97 0.01 90)",
+    "border": "oklch(0.85 0.015 85)",
+    "inverse": "oklch(0.19 0.008 60)",
+    "inverseForeground": "oklch(0.95 0.012 90)"
+  },
+  "paletteLabel": "Ink on rice",
+  "palettes": [
+    {
+      "id": "sumi",
+      "label": "Sumi",
+      "mood": "Charcoal, paper-white type and the same red seal — training at night.",
+      "palette": {
+        "background": "oklch(0.19 0.008 60)",
+        "surface": "oklch(0.23 0.01 60)",
+        "foreground": "oklch(0.94 0.012 90)",
+        "mutedForeground": "oklch(0.72 0.015 85)",
+        "primary": "oklch(0.94 0.012 90)",
+        "primaryForeground": "oklch(0.19 0.008 60)",
+        "accent": "oklch(0.55 0.21 28)",
+        "accentForeground": "oklch(0.97 0.01 90)",
+        "border": "oklch(0.32 0.012 60)",
+        "inverse": "oklch(0.94 0.012 90)",
+        "inverseForeground": "oklch(0.19 0.008 60)"
+      }
+    },
+    {
+      "id": "indigo",
+      "label": "Aizome",
+      "mood": "Indigo-dyed cloth, white type and a gold belt stripe.",
+      "palette": {
+        "background": "oklch(0.28 0.07 260)",
+        "surface": "oklch(0.32 0.075 260)",
+        "foreground": "oklch(0.96 0.01 250)",
+        "mutedForeground": "oklch(0.78 0.03 255)",
+        "primary": "oklch(0.96 0.01 250)",
+        "primaryForeground": "oklch(0.28 0.07 260)",
+        "accent": "oklch(0.75 0.15 70)",
+        "accentForeground": "oklch(0.2 0.05 260)",
+        "border": "oklch(0.4 0.07 260)",
+        "inverse": "oklch(0.96 0.01 250)",
+        "inverseForeground": "oklch(0.28 0.07 260)"
+      }
+    }
+  ],
+  "radius": "0rem",
+  "photoWords": "martial arts training, dojo or gym mat, gi or boxing gloves, disciplined focused athlete, black white and red, dramatic side light",
+  "variants": {
+    "hero": ["banner", "intro"],
+    "story": ["lineage"],
+    "benefits": ["disciplines"],
+    "courseShowcase": ["belts", "rows"],
+    "howItWorks": ["path"],
+    "philosophy": ["creed"],
+    "moments": ["training"],
+    "pricing": ["dues"],
+    "faq": ["etiquette"],
+    "cta": ["join"],
+    "contact": ["dojoinfo"],
+    "events": ["timetable", "rows"]
+  }
+}
