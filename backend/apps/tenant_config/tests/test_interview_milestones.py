@@ -407,6 +407,25 @@ def test_a_weekly_schedule_dates_the_draft_and_expands_at_go_live(tenant_ctx, co
     assert {r.title for r in rows} == {first.title} and len({r.room_name for r in rows}) == 4
 
 
+def test_look_photos_are_the_web_rendition_not_the_thumbnail(tenant_ctx):
+    from apps.core.curated_images.client import RemoteImage, SearchPage
+
+    image = RemoteImage(
+        asset_id="a1",
+        title="Yoga class",
+        description="",
+        tags=["yoga"],
+        width=2560,
+        height=1429,
+        preview_url="https://img.test/a1/thumbnail.webp",
+        web_url="https://img.test/a1/web.webp",
+    )
+    with mock.patch("apps.core.curated_images.client.search", return_value=SearchPage([image], 1, False)):
+        photos = ms._look_photos(tenant_ctx, {"niche": "yoga", "teaches": "Yoga"})
+    # The previews show a full-width hero: the 640 px thumbnail looked soft there.
+    assert photos == ["https://img.test/a1/web.webp"]
+
+
 def test_style_cards_carry_a_preview_of_the_coach_in_the_look(tenant_ctx, config):
     answers = {
         **HOME,

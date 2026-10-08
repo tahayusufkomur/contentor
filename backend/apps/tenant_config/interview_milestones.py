@@ -378,14 +378,16 @@ LOOK_PHOTOS = 6
 
 def _look_photos(tenant, answers: dict) -> list[str]:
     """Photos of what the coach teaches for the look previews (a boxing
-    coach sees boxing, not the yoga sample photos). Cached for an hour."""
+    coach sees boxing, not the yoga sample photos). The web rendition, the
+    one the real site renders: the previews show a full-width hero, where the
+    640 px thumbnail looked soft. Cached for an hour."""
     from apps.core.curated_images import client as curated_client
     from apps.core.onboarding.ai_curate import allowed_disciplines, on_topic_first
 
     subject = brief.subject_of(answers)
     if tenant is None or not subject:
         return []
-    key = f"setup:look-photos:{tenant.schema_name}:{subject}"
+    key = f"setup:look-photos:v2:{tenant.schema_name}:{subject}"
     photos = cache.get(key)
     if photos is None:
         try:
@@ -393,7 +395,7 @@ def _look_photos(tenant, answers: dict) -> list[str]:
         except curated_client.CuratedImageError:
             found = []
         allowed = allowed_disciplines(subject, str(answers.get("description") or ""))
-        photos = [i.preview_url for i in on_topic_first(found, subject, allowed) if i.preview_url][:LOOK_PHOTOS]
+        photos = [i.web_url for i in on_topic_first(found, subject, allowed) if i.web_url][:LOOK_PHOTOS]
         cache.set(key, photos, 3600 if photos else 300)
     return photos
 
