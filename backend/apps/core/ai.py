@@ -14,8 +14,9 @@ schema-validated generation), selected by settings.AI_PROVIDER:
 - "agentc": the Agent Container hub (settings.AGENTC_HUB), which runs the
   Gemini CLI headless on subscription accounts. Cost is Decimal("0") like
   "cli". The hub's agent HAS tools and our prompts carry untrusted coach
-  text, so any run whose event log shows a tool call is discarded
-  (_agentc_run). No vision, no token streaming.
+  text, so runs go only to the studio accounts (settings.AGENTC_ACCOUNTS,
+  which mount agent-studio-runs alone) and any run whose event log shows a
+  tool call is discarded (_agentc_run). No vision, no token streaming.
 - "gemini": the Gemini API directly on settings.GEMINI_API_KEY — no queue,
   no CLI start-up, schema-constrained JSON. Billed per token, so its cost
   is real and accrues against the budget kill-switches. No vision, no token
@@ -27,6 +28,7 @@ travels in the user turn — never interpolate it into ``system`` (it would
 fragment the Anthropic cache per tenant).
 """
 
+import itertools
 import json
 import logging
 import os
@@ -35,6 +37,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+from collections import Counter
 from decimal import Decimal
 
 import requests
@@ -173,12 +176,13 @@ def structured(*, system, user, output_model, model, max_tokens, label=None, tim
     whole call, retries included) below the provider default. ``effort``
     (low | medium | high | xhigh | max) sets how much the model thinks on
     the anthropic and cli providers; None keeps the model default (high on
-    Sonnet 5.5). Thinking counts toward ``max_tokens``, so size it for both.
-    Haiku 4.5 rejects effort: pass None for haiku models."""
+    Sonnet 5.5). On agentc, "low" picks the -low variant of AGENTC_MODEL.
+    Thinking counts toward ``max_tokens``, so size it for both. Haiku 4.5
+    rejects effort: pass None for haiku models."""
     if settings.AI_PROVIDER == "gemini":
         return _gemini_structured(system, user, output_model, timeout_seconds)
     if settings.AI_PROVIDER == "agentc":
-        return _agentc_structured(system, user, output_model, label, timeout_seconds)
+        return _agentc_structured(system, user, output_model, label, timeout_seconds, effort)
     if settings.AI_PROVIDER == "cli":
         return _cli_structured(system, user, output_model, model, effort)
     return _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds, effort)
@@ -266,7 +270,8 @@ def _cli_structured(system, user, output_model, model, effort=None):
 # file and shell tools and there is no flag to take them away. The prompt
 # forbids tools; the event-log check in _agentc_run enforces it.
 
-AGENTC_POLL_SECONDS = 1.5
+# Completion is noticed one poll late on average half of this.
+AGENTC_POLL_SECONDS = 0.5
 # Per HTTP call; the run as a whole is bounded by AGENTC_TIMEOUT_SECONDS.
 _AGENTC_HTTP_TIMEOUT = 10
 _AGENTC_TERMINAL = frozenset({"succeeded", "failed", "timed_out", "cancelled", "rejected"})
@@ -285,7 +290,61 @@ def _agentc_url(path):
 _AGENTC_BACKGROUND_LABELS = ("contentor:compose",)
 
 
-def _agentc_run(prompt, label, deadline=None):
+def _agentc_model(effort):
+    """AGENTC_MODEL, or its -low variant for effort="low" calls (interview
+    turns, edits, picks): an interview turn took ~5 s on -low vs ~15 s on
+    -high with the same output checks passing (2026-10-08)."""
+    if effort == "low":
+        return re.sub(r"-(medium|high)$", "-low", settings.AGENTC_MODEL)
+    return settings.AGENTC_MODEL
+
+
+# Rotating tie-break between equally busy AGENTC_ACCOUNTS.
+_AGENTC_NEXT = itertools.count()
+
+
+def _agentc_order(accounts):
+    """``accounts``, least busy first (queued + running runs on the hub, any
+    client's). A run sharing an account with a page build took 32 s against
+    ~5 s on the idle one (2026-10-08). Ties keep a rotating order; an
+    unreadable run list keeps just the rotation."""
+    start = next(_AGENTC_NEXT) % len(accounts)
+    rotated = accounts[start:] + accounts[:start]
+    try:
+        resp = requests.get(_agentc_url("/runs"), params={"limit": 50}, timeout=_AGENTC_HTTP_TIMEOUT)
+        resp.raise_for_status()
+        busy = Counter(r.get("account") for r in resp.json() if r.get("state") in ("queued", "running"))
+    except (requests.RequestException, ValueError, TypeError, AttributeError):
+        return rotated
+    return sorted(rotated, key=lambda name: busy[name])  # stable: ties keep the rotation
+
+
+def _agentc_create(body):
+    """Create the run on one of AGENTC_ACCOUNTS -> the run. Never the hub's
+    pool: the pool agents mount all of ~/ws (synced to the Mac), the studio
+    accounts only agent-studio-runs. An account that refuses the run
+    (disabled, logged out, rate-limited) hands it to the next one."""
+    accounts = list(settings.AGENTC_ACCOUNTS)
+    if not accounts:
+        raise AiError("agentc run create failed: AGENTC_ACCOUNTS is empty")
+    problems = []
+    for name in _agentc_order(accounts):
+        try:
+            resp = requests.post(_agentc_url(f"/accounts/{name}/runs"), json=body, timeout=_AGENTC_HTTP_TIMEOUT)
+            if not resp.ok:
+                problems.append(f"{name} ({resp.status_code}): {resp.text[:200]}")
+                continue
+            run = resp.json()
+        except (requests.RequestException, ValueError) as exc:
+            problems.append(f"{name}: {exc}")
+            continue
+        if run.get("state") != "rejected":
+            return run
+        problems.append(f"{name} rejected: {str(run.get('error') or '')[:200]}")
+    raise AiError("agentc run create failed: " + "; ".join(problems))
+
+
+def _agentc_run(prompt, label, deadline=None, model=None):
     """Run one prompt on the hub -> its resultText. Raises AiError on any
     failure, including a run whose event log shows a tool call (fail closed:
     an unreadable event log counts as a failure too). ``deadline`` is a
@@ -297,20 +356,14 @@ def _agentc_run(prompt, label, deadline=None):
     body = {
         "prompt": prompt,
         "cwd": settings.AGENTC_CWD,
-        "model": settings.AGENTC_MODEL,
+        "model": model or settings.AGENTC_MODEL,
         "timeoutSec": budget,
         "worktree": False,
         "requireSyncFresh": False,
         "priority": "background" if label.startswith(_AGENTC_BACKGROUND_LABELS) else "interactive",
         "label": label,
     }
-    try:
-        resp = requests.post(_agentc_url("/vendors/gemini/runs"), json=body, timeout=_AGENTC_HTTP_TIMEOUT)
-        if not resp.ok:
-            raise AiError(f"agentc run create failed ({resp.status_code}): {resp.text[:500]}")
-        run = resp.json()
-    except (requests.RequestException, ValueError) as exc:
-        raise AiError(f"agentc run create failed: {exc}") from exc
+    run = _agentc_create(body)
     run_id = run.get("id")
     try:
         while run.get("state") not in _AGENTC_TERMINAL:
@@ -353,7 +406,7 @@ def _agentc_used_tool(run_id):
         raise AiError(f"agentc run {run_id} events unreadable: {exc}") from exc
 
 
-def _agentc_structured(system, user, output_model, label, timeout_seconds=None):
+def _agentc_structured(system, user, output_model, label, timeout_seconds=None, effort=None):
     """One retry (a fresh run) absorbs invalid JSON, like the cli path. A
     tool-use AiError is not retried. Both attempts share one deadline."""
     from pydantic import ValidationError
@@ -363,11 +416,12 @@ def _agentc_structured(system, user, output_model, label, timeout_seconds=None):
     )
     seconds = settings.AGENTC_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
     deadline = time.monotonic() + seconds
+    model = _agentc_model(effort)
     last_error = None
     for _attempt in range(2):
-        text = _strip_fences(_agentc_run(prompt, label, deadline))
+        text = _strip_fences(_agentc_run(prompt, label, deadline, model))
         try:
-            return output_model.model_validate_json(text), Decimal("0"), settings.AGENTC_MODEL
+            return output_model.model_validate_json(text), Decimal("0"), model
         except (ValueError, ValidationError) as exc:
             last_error = exc
     raise AiError(f"agentc output did not match schema: {last_error}") from last_error

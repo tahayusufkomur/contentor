@@ -53,8 +53,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
   await send.click();
 
   const guide = page.getByRole("region", { name: "Your setup guide" });
-  // What the guide shows while a turn, an edit or a page build is in flight.
-  const busy = guide.getByText(/Thinking|Making that change|Finishing your pages|Confirming your plan/);
+  // What the guide shows while a turn, an edit or a page build is in flight
+  // (a turn past 12 s reads "Still thinking…").
+  const busy = guide.getByText(/Thinking…|Still thinking|Making that change|Finishing your pages|Confirming your plan/);
   const decide = guide.getByRole("button", { name: "You decide", exact: true });
   const tile = guide.locator("h1 ~ div.grid > button").first();
   const cont = guide.getByRole("button", { name: /^Continue/ });

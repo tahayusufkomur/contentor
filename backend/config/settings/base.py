@@ -283,6 +283,12 @@ AGENTC_HUB = os.environ.get("AGENTC_HUB", "http://host.docker.internal:39300")
 AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "gemini-3.8-flash-high")  # newest in `agy models`
 # Working dir on the HUB host (must already exist there), not in this container.
 AGENTC_CWD = os.environ.get("AGENTC_CWD", "/Users/tahayusufkomur/ws/agent-studio-runs")
+# Hub accounts that take our runs, tried in turn. Studio accounts only: they
+# mount agent-studio-runs alone, while the hub's pool agents mount all of ~/ws
+# and our prompts carry coach text. Shared with Pix4Less's studio lane.
+AGENTC_ACCOUNTS = [
+    a.strip() for a in os.environ.get("AGENTC_ACCOUNTS", "studio-gemini-1,studio-gemini-2").split(",") if a.strip()
+]
 # Per run, queue wait included.
 AGENTC_TIMEOUT_SECONDS = int(os.environ.get("AGENTC_TIMEOUT_SECONDS", "180"))
 # Pages the site composer builds at once (apps.core.onboarding.site_composer).
