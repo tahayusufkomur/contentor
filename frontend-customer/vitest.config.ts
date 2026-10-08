@@ -1,4 +1,5 @@
-import { defineConfig, transformWithOxc } from "vite";
+import { transformWithOxc } from "vite";
+import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 // Mostly pure-logic tests. Component tests (sections kit contract, cx renderer)
