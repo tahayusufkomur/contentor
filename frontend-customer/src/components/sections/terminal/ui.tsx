@@ -205,7 +205,7 @@ export function Opener({
             className="font-mono text-xs text-muted-foreground select-none"
             aria-hidden="true"
           >
-            // overview
+            {"// overview"}
           </p>
           <Txt
             block={block}

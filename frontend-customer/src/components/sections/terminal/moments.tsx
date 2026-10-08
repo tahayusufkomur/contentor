@@ -51,7 +51,7 @@ export function MomentsScreens({ block, editable }: SectionProps) {
                       className="text-accent font-bold mr-1.5 select-none"
                       aria-hidden="true"
                     >
-                      //
+                      {"//"}
                     </span>
                     {p.caption}
                   </div>

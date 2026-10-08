@@ -105,7 +105,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
                   className="text-primary font-bold mr-1.5"
                   aria-hidden="true"
                 >
-                  //
+                  {"//"}
                 </span>
                 <Txt
                   block={block}
@@ -172,7 +172,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
                     <span className="text-primary">&quot;mentorship&quot;</span>
                     {"\n"}
                     <span className="text-muted-foreground">
-                      // system ready: start your journey below
+                      {"// system ready: start your journey below"}
                     </span>
                   </code>
                 </pre>
@@ -225,7 +225,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                   className="text-primary font-bold mr-1.5"
                   aria-hidden="true"
                 >
-                  //
+                  {"//"}
                 </span>
                 <Txt
                   block={block}

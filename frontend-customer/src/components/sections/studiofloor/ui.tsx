@@ -95,7 +95,7 @@ export function Kicker({
     <div className={cn("flex items-center gap-2", className)}>
       {cue && (
         <span aria-hidden="true" className={LABEL_ACCENT}>
-          {cue} //
+          {cue} {"//"}
         </span>
       )}
       <Txt

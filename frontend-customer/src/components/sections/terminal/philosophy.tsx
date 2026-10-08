@@ -24,7 +24,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
           tag="DOCS"
           bodyClassName="p-6 sm:p-10 md:p-12 font-mono"
         >
-          <div className="text-primary opacity-70 select-none text-lg">/**</div>
+          <div className="text-primary opacity-70 select-none text-lg">{"/**"}</div>
 
           <div className="my-4 pl-4 sm:pl-6 border-l-2 border-primary/30">
             <Kicker block={block} editable={editable} className="mb-4" />
@@ -60,7 +60,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
                 className="text-muted-foreground select-none"
                 aria-hidden="true"
               >
-                // @author
+                {"// @author"}
               </span>
               <Txt
                 block={block}

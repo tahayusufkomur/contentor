@@ -35,7 +35,7 @@ export function FaqMan({ block, editable }: SectionProps) {
                 className="font-mono text-xs text-muted-foreground select-none"
                 aria-hidden="true"
               >
-                // SYNOPSIS
+                {"// SYNOPSIS"}
               </p>
               <Txt
                 block={block}

@@ -92,7 +92,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
                   className="mb-4 font-mono text-xs text-muted-foreground select-none"
                   aria-hidden="true"
                 >
-                  // ## Background & Philosophy
+                  {"// ## Background & Philosophy"}
                 </p>
                 <Rich
                   block={block}
@@ -108,7 +108,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
                     className="text-muted-foreground select-none"
                     aria-hidden="true"
                   >
-                    // Signed-off-by:
+                    {"// Signed-off-by:"}
                   </span>
                   <Txt
                     block={block}

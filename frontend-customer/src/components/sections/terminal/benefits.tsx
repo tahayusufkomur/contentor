@@ -44,7 +44,7 @@ export function BenefitsFeatures({ block, editable }: SectionProps) {
 
           <div className="mt-4 pt-3 border-t border-border/40 font-mono text-[0.75rem] text-muted-foreground">
             <span className="text-accent" aria-hidden="true">
-              //
+              {"//"}
             </span>{" "}
             verified module
           </div>
