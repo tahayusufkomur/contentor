@@ -188,7 +188,7 @@ def shortlist(rows, brief: CoachBrief, *, limit: int = 40) -> list:
 
 LOGO_RANK_TOP = 24
 LOGO_RANK_POOL = 60
-LOGO_RANK_MAX_TOKENS = 600
+LOGO_RANK_MAX_TOKENS = 1500
 
 
 class _LogoRank(BaseModel):
@@ -228,6 +228,7 @@ def rank_logos(brief: CoachBrief, *, tenant_schema: str) -> list[int]:
             model=settings.ONBOARDING_AI_MODEL,
             max_tokens=LOGO_RANK_MAX_TOKENS,
             label="contentor:compose-logo-rank",  # background: nobody waits on it
+            effort="low",
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))

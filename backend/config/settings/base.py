@@ -345,13 +345,17 @@ BLOG_AI_TOPIC_MODEL = os.environ.get("BLOG_AI_TOPIC_MODEL", "claude-haiku-4-5")
 BLOG_AI_MONTHLY_BUDGET_USD = float(os.environ.get("BLOG_AI_MONTHLY_BUDGET_USD", "30"))
 
 # --- Coach copilot conversation engine (apps.core.copilot.engine; provider from AI_PROVIDER) ---
-COPILOT_MODEL = os.environ.get("COPILOT_MODEL", "claude-sonnet-5")
+# Also runs the /setup interview turns and drafts (apps.tenant_config).
+COPILOT_MODEL = os.environ.get("COPILOT_MODEL", "claude-sonnet-5-5")
 
 # --- Onboarding wizard page compose (apps.core.onboarding.ai_compose;
 # provider from AI_PROVIDER). Free for all signups -> its own off-switch so
 # dev/e2e stacks (AI_PROVIDER=cli) can provision deterministically.
 ONBOARDING_AI_ENABLED = os.environ.get("ONBOARDING_AI_ENABLED", "true").lower() == "true"
-ONBOARDING_AI_MODEL = os.environ.get("ONBOARDING_AI_MODEL", "claude-sonnet-5")
+# Onboarding calls pass output_config.effort per call (low for interactive
+# and ranking turns, medium for copy), which Haiku 4.5 rejects: keep this and
+# COPILOT_MODEL on a model that takes effort.
+ONBOARDING_AI_MODEL = os.environ.get("ONBOARDING_AI_MODEL", "claude-sonnet-5-5")
 # Global monthly USD kill-switch across ALL onboarding composes (attempts included).
 ONBOARDING_AI_MONTHLY_BUDGET_USD = float(os.environ.get("ONBOARDING_AI_MONTHLY_BUDGET_USD", "20"))
 

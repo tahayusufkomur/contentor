@@ -132,6 +132,20 @@ def test_structured_cli_maps_the_requested_model_to_its_cli_alias(settings, monk
     )
     assert captured["cmd"][captured["cmd"].index("--model") + 1] == "opus"
     assert model == "claude-opus-4-8"  # returned model is the request, not the CLI alias
+    assert "--effort" not in captured["cmd"]  # no effort asked -> the CLI default
+
+
+def test_structured_cli_passes_effort(settings, monkeypatch):
+    _cli_settings(settings)
+    captured = {}
+
+    def fake_run(cmd, **kw):
+        captured["cmd"] = cmd
+        return _completed(stdout=_json.dumps({"result": '{"title": "hi"}'}))
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+    ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100, effort="low")
+    assert captured["cmd"][captured["cmd"].index("--effort") + 1] == "low"
 
 
 def test_structured_cli_falls_back_to_ai_cli_model_for_unmapped_family(settings, monkeypatch):
@@ -244,6 +258,34 @@ def test_structured_anthropic_parses_and_costs(settings, monkeypatch):
     assert model == "claude-sonnet-5"
     assert _Resp.kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
     assert _Resp.kwargs["output_format"] is _Out
+    assert "output_config" not in _Resp.kwargs  # no effort asked -> the model default
+
+
+def _parse_client(resp):
+    class _Messages:
+        def parse(self, **kwargs):
+            resp.kwargs = kwargs
+            return resp
+
+    return SimpleNamespace(messages=_Messages())
+
+
+def test_structured_anthropic_passes_effort(settings, monkeypatch):
+    settings.AI_PROVIDER = "anthropic"
+    resp = SimpleNamespace(parsed_output=_Out(title="hi"), usage=_Usage(), stop_reason="end_turn")
+    monkeypatch.setattr(ai, "_anthropic_client", lambda: _parse_client(resp))
+    ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100, effort="medium")
+    assert resp.kwargs["output_config"] == {"effort": "medium"}
+    assert resp.kwargs["output_format"] is _Out  # the SDK merges it into output_config.format
+
+
+def test_structured_anthropic_refusal_raises_with_cost(settings, monkeypatch):
+    settings.AI_PROVIDER = "anthropic"
+    resp = SimpleNamespace(parsed_output=None, usage=_Usage(out=1_000_000), stop_reason="refusal")
+    monkeypatch.setattr(ai, "_anthropic_client", lambda: _parse_client(resp))
+    with pytest.raises(ai.AiError, match="refusal") as excinfo:
+        ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100)
+    assert excinfo.value.cost_usd == Decimal("10")  # billed, so it still accrues against the caps
 
 
 def test_structured_anthropic_wraps_sdk_errors(settings, monkeypatch):

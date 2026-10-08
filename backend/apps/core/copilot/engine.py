@@ -1364,8 +1364,10 @@ def run_turn(tenant, transcript, selections, message, attachments=None, *, timeo
         user=user,
         output_model=CopilotTurn,
         model=settings.COPILOT_MODEL,
-        max_tokens=4000,
+        max_tokens=6000,
         timeout_seconds=timeout_seconds,
+        # Interactive, under a 35 s wizard timeout.
+        effort="low",
     )
     if parsed.kind == "ask" and capped:
         # Hard cap: the question still reads fine as a statement-of-need,

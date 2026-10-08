@@ -258,7 +258,8 @@ def test_model_may_fill_fields_not_yet_required(client, quiet):
     quiet.reply = interview.InterviewTurn(next_field="audience", question="q")
     client.post(URL, {"message": "Yoga, my course is 49"}, format="json")
     sent = quiet.calls[0]["user"]
-    assert '"course_price"' in sent and '"live_when"' in sent
+    # Every field id is offered, not just the missing ones: in the cached system prompt.
+    assert '"course_price"' in quiet.calls[0]["system"] and '"live_when"' in quiet.calls[0]["system"]
     assert '{"id": "outcome", "means": "What students get", "several": true}' in sent  # multi-pick questions are marked
 
 
@@ -361,7 +362,7 @@ def test_ai_icons_are_matched_to_options_and_filtered(client, tenant_ctx, quiet)
     )
     guide = client.post(URL, {"message": "Yoga"}, format="json").json()["guide"]
     assert guide["icons"] == {"Parents": "baby"} and guide["hints"] == {}
-    assert '"icons"' in quiet.calls[0]["user"]  # the allowlist rides every turn
+    assert "Icon ids: activity," in quiet.calls[0]["system"]  # the allowlist is in the cached system prompt
     flow = TenantConfig.objects.first().setup_flow
     assert interview.interview_state(tenant_ctx, flow)["guide"]["icons"] == {"Parents": "baby"}  # survives a reload
 

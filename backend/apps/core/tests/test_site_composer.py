@@ -170,7 +170,7 @@ class FakeAI:
         self.page_overrides = list(page_overrides)  # callables(sections) -> sections, one per page call
         self.calls = []
 
-    def __call__(self, *, system, user, output_model, model, max_tokens, label=None):
+    def __call__(self, *, system, user, output_model, model, max_tokens, label=None, effort=None):
         self.calls.append((label, user))
         if output_model is sc._SitePlan:
             if isinstance(self.plan, Exception):

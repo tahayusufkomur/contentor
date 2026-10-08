@@ -99,8 +99,9 @@ STALE_BUILD_SECONDS = 180
 # can still race for the same photo; use a DB advisory lock if that shows up.
 _IMAGE_LOCK = threading.Lock()
 INSTRUCTION_MAX = 500
-PLAN_MAX_TOKENS = 8000
-PAGE_MAX_TOKENS = 12000
+# Thinking counts toward these (effort "medium" on both calls).
+PLAN_MAX_TOKENS = 12000
+PAGE_MAX_TOKENS = 16000
 SEARCH_PER_PAGE = 12
 BRIEF_FIELD_MAX = 60
 IDEA_MAX = 80
@@ -790,6 +791,7 @@ def plan_site(tenant, *, force=False) -> dict:
                 model=settings.ONBOARDING_AI_MODEL,
                 max_tokens=PLAN_MAX_TOKENS,
                 label="contentor:compose-plan",
+                effort="medium",
             )
             ai_compose.record_spend(tenant.schema_name, float(cost or 0))
             raw, source = parsed, "ai"
@@ -1196,6 +1198,7 @@ def _call_page_model(tenant, user) -> dict[int, dict]:
         model=settings.ONBOARDING_AI_MODEL,
         max_tokens=PAGE_MAX_TOKENS,
         label="contentor:compose-page",
+        effort="medium",
     )
     ai_compose.record_spend(tenant.schema_name, float(cost or 0))
     return {s.index: s.model_dump() for s in parsed.sections}

@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 CANDIDATES_PER_GROUP = 12  # one catalog page
 MAX_SLOTS = 16
-MAX_OUTPUT_TOKENS = 1000
+MAX_OUTPUT_TOKENS = 2000
 
 
 class CurateError(Exception):
@@ -145,6 +145,7 @@ def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> 
             output_model=_Picks,
             model=settings.ONBOARDING_AI_MODEL,
             max_tokens=MAX_OUTPUT_TOKENS,
+            effort="low",
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))

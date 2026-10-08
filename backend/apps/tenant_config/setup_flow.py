@@ -538,8 +538,9 @@ def create_draft(tenant, user, kind: str, prompt: str, *, label: str = "contento
             user=_draft_user_turn(tenant, config, prompt[:PROMPT_MAX_LEN]),
             output_model=DRAFT_MODELS[kind],
             model=settings.COPILOT_MODEL,
-            max_tokens=6000,
+            max_tokens=12000,
             label=label,
+            effort="medium",
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

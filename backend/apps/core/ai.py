@@ -51,10 +51,11 @@ CLI_TIMEOUT_SECONDS = 240
 # $ per 1M tokens: (input, output, cache_read, cache_write). Cache-write here
 # assumes the 5-minute TTL (1.25x input), not the 1-hour tier.
 _MODEL_PRICES = {
+    "claude-sonnet-5-5": {"input": 2.00, "output": 10.00, "cache_read": 0.20, "cache_write": 2.50},
     "claude-sonnet-5": {"input": 2.00, "output": 10.00, "cache_read": 0.20, "cache_write": 2.50},
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00, "cache_read": 0.10, "cache_write": 1.25},
 }
-_DEFAULT_PRICES = _MODEL_PRICES["claude-sonnet-5"]
+_DEFAULT_PRICES = _MODEL_PRICES["claude-sonnet-5-5"]
 
 
 class AiError(Exception):
@@ -164,22 +165,26 @@ def _strip_fences(text):
 # ── structured output (blog drafts/topics, brand pack) ──────────────────────
 
 
-def structured(*, system, user, output_model, model, max_tokens, label=None, timeout_seconds=None):
+def structured(*, system, user, output_model, model, max_tokens, label=None, timeout_seconds=None, effort=None):
     """One structured-output call -> (validated ``output_model`` instance,
     cost_usd, effective_model). Raises AiError on provider or schema
     failure. ``label`` tags the run on the agentc hub; other providers
     ignore it. ``timeout_seconds`` caps an interactive caller's wait (the
-    whole call, retries included) below the provider default."""
+    whole call, retries included) below the provider default. ``effort``
+    (low | medium | high | xhigh | max) sets how much the model thinks on
+    the anthropic and cli providers; None keeps the model default (high on
+    Sonnet 5.5). Thinking counts toward ``max_tokens``, so size it for both.
+    Haiku 4.5 rejects effort: pass None for haiku models."""
     if settings.AI_PROVIDER == "gemini":
         return _gemini_structured(system, user, output_model, timeout_seconds)
     if settings.AI_PROVIDER == "agentc":
         return _agentc_structured(system, user, output_model, label, timeout_seconds)
     if settings.AI_PROVIDER == "cli":
-        return _cli_structured(system, user, output_model, model)
-    return _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds)
+        return _cli_structured(system, user, output_model, model, effort)
+    return _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds, effort)
 
 
-def _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds=None):
+def _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds=None, effort=None):
     client = _anthropic_client()
     if timeout_seconds is not None:
         client = client.with_options(timeout=float(timeout_seconds), max_retries=0)
@@ -190,14 +195,20 @@ def _anthropic_structured(system, user, output_model, model, max_tokens, timeout
             system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
             messages=[{"role": "user", "content": user}],
             output_format=output_model,
+            **({"output_config": {"effort": effort}} if effort else {}),
         )
     except Exception as exc:
         # No usage data on a failed call — nothing billable to estimate.
         raise AiError(f"anthropic call failed: {exc}") from exc
-    return response.parsed_output, estimate_cost(response.usage, model), model
+    cost = estimate_cost(response.usage, model)
+    if response.parsed_output is None:
+        # A refusal (or a reply cut off at max_tokens) is billed but carries
+        # no object; callers fall back exactly as on a failed call.
+        raise AiError(f"anthropic returned no parsed output (stop_reason={response.stop_reason})", cost_usd=cost)
+    return response.parsed_output, cost, model
 
 
-def _cli_structured(system, user, output_model, model):
+def _cli_structured(system, user, output_model, model, effort=None):
     """Local-dev provider: blocking `claude -p` on the developer's
     subscription. The CLI has no parse-forced structured output, so the
     schema contract is appended to the system prompt and the result is
@@ -220,6 +231,7 @@ def _cli_structured(system, user, output_model, model):
         "1",
         "--output-format",
         "json",
+        *(["--effort", effort] if effort else []),
     ]
     last_error = None
     for _attempt in range(2):
