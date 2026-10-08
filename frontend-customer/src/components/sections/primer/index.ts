@@ -13,6 +13,21 @@ import { MomentsClassroom } from "./moments";
 import { PhilosophyMarginNote } from "./philosophy";
 import { PricingTermFees } from "./pricing";
 import { StoryForeword } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  BTN,
+  BTN_GHOST,
+  BTN_ON_INK,
+  H1,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "primer" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +44,19 @@ export const sections: Partial<StyleSections> = {
   contact: { officehours: ContactOfficeHours },
   events: { termdates: EventsTermDates, rows: EventsRows },
 };
+
+/** Primer's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "primer",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, ghost: BTN_GHOST, onInverse: BTN_ON_INK },
+  tones: { base: "paper", surface: "ruled", inverse: "ink" },
+  Section,
+  Kicker,
+  Opener,
+});

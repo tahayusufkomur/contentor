@@ -13,6 +13,8 @@ import { MomentsPolaroids } from "./moments";
 import { PhilosophyHighlight } from "./philosophy";
 import { PricingColorcards } from "./pricing";
 import { StorySticker } from "./story";
+import { defineKit } from "../kit-contract";
+import { Kicker, Section, WRAP } from "./ui";
 
 /** "pop" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +31,22 @@ export const sections: Partial<StyleSections> = {
   contact: { postcard: ContactPostcard },
   events: { tickets: EventsTickets, rows: EventsRows },
 };
+
+/** Pop's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "pop",
+  wrap: WRAP,
+  display: "pop-display pop-h1",
+  h2: "pop-display pop-h2",
+  h3: "pop-h3",
+  label: "pop-mono",
+  button: {
+    primary: "pop-btn pop-btn-primary",
+    ghost: "pop-btn pop-btn-paper",
+    onInverse: "pop-btn pop-btn-paper",
+  },
+  card: "pop-card p-6 md:p-8",
+  tones: { base: "paper", surface: "lilac", inverse: "plum" },
+  Section,
+  Kicker,
+});

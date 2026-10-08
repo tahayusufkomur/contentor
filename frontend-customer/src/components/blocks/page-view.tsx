@@ -1,4 +1,5 @@
 import { getAuthUser } from "@/lib/auth";
+import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { PageRenderer } from "./page-renderer";
 import { EditModeCanvas } from "@/components/owner/canvas/edit-mode-canvas";
 import type { Block, PageKey } from "@/types/tenant";
@@ -21,7 +22,12 @@ export async function PageView({
   dynamicData,
   pageTitle,
 }: PageViewProps) {
-  const user = await getAuthUser();
+  const [user, config] = await Promise.all([
+    getAuthUser(),
+    getTenantSlug().then(fetchTenantConfig),
+  ]);
+  // AI-built sections (cx) render with the site style's kit.
+  const styleId = config?.style ?? "";
   const isAdmin = user?.role === "owner" || user?.role === "coach";
 
   if (isAdmin) {
@@ -30,6 +36,7 @@ export async function PageView({
         pageKey={pageKey}
         blocks={blocks}
         dynamicData={dynamicData}
+        styleId={styleId}
       />
     );
   }
@@ -38,6 +45,7 @@ export async function PageView({
       blocks={blocks}
       dynamicData={dynamicData}
       pageTitle={pageTitle}
+      styleId={styleId}
     />
   );
 }

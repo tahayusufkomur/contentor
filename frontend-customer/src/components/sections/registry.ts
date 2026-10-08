@@ -19,7 +19,13 @@ export function resolveSection(
   const byFamily = (s?: Partial<StyleSections>) =>
     s?.[family as keyof StyleSections];
   const fam = byFamily(map[styleId]);
-  if (fam) return fam[name ?? ""] ?? Object.values(fam)[0] ?? null;
+  // `name` comes from stored data (a cx Layout carries free text): own keys only.
+  if (fam) {
+    const own = Object.prototype.hasOwnProperty.call(fam, name ?? "")
+      ? fam[name ?? ""]
+      : undefined;
+    return own ?? Object.values(fam)[0] ?? null;
+  }
   for (const s of Object.values(map)) {
     const f = byFamily(s);
     if (f) return Object.values(f)[0] ?? null;

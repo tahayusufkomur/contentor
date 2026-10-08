@@ -8,12 +8,15 @@ interface PageRendererProps {
   dynamicData?: DynamicData;
   /** Accessible page title — rendered as a visually-hidden h1 when no hero. */
   pageTitle?: string;
+  /** Site style id, for AI-built sections. */
+  styleId?: string;
 }
 
 export function PageRenderer({
   blocks,
   dynamicData,
   pageTitle,
+  styleId,
 }: PageRendererProps) {
   const visible = blocks.filter((b) => b.enabled !== false);
   const firstIsHero =
@@ -33,6 +36,7 @@ export function PageRenderer({
             key={block.id}
             block={block}
             dynamicData={dynamicData}
+            styleId={styleId}
           />
         ))
       )}

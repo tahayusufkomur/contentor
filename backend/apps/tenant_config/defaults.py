@@ -57,8 +57,10 @@ DYNAMIC_BLOCK_TYPES = (
     "storeProducts",
 )
 # Styled sections (``section.<family>``) come from the synced manifest; see
-# apps.tenant_config.sections for their schemas and cleaner.
-KNOWN_BLOCK_TYPES = frozenset(CONTENT_BLOCK_TYPES + DYNAMIC_BLOCK_TYPES) | SECTION_TYPES
+# apps.tenant_config.sections for their schemas and cleaner. AI-built custom
+# sections (``cx``) carry a validated spec snapshot; see apps.tenant_config.cx.
+CX_BLOCK_TYPE = "cx"
+KNOWN_BLOCK_TYPES = frozenset(CONTENT_BLOCK_TYPES + DYNAMIC_BLOCK_TYPES) | SECTION_TYPES | {CX_BLOCK_TYPE}
 
 # --- Optional per-block style overrides (hybrid theme-lock) ------------------
 # Theme-token-first overrides a coach may set on a block. Theme-lock stays the

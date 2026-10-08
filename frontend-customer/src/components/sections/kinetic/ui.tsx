@@ -23,6 +23,37 @@ export const H2 = "text-[clamp(2.75rem,1rem+5vw,6.25rem)]";
 export const BTN =
   "kinetic-notch kinetic-focus inline-flex h-14 items-stretch bg-primary text-primary-foreground transition-colors hover:bg-foreground hover:text-background";
 
+type Tone = "paper" | "iron" | "ink";
+
+const TONES: Record<Tone, string> = {
+  paper: "kinetic-paper",
+  iron: "kinetic-iron",
+  ink: "kinetic-ink",
+};
+
+/** A plain band on one of the style's three grounds (kinetic.css). Used by
+ *  AI-built sections; the hand-built layouts set their own grounds. */
+export function Section({
+  tone = "paper",
+  className,
+  children,
+  label,
+}: {
+  tone?: Tone;
+  className?: string;
+  children: ReactNode;
+  label?: string;
+}) {
+  return (
+    <section
+      aria-label={label || undefined}
+      className={cn(TONES[tone], "relative py-20 md:py-32", className)}
+    >
+      {children}
+    </section>
+  );
+}
+
 /** The kicker as a volt tag. */
 export function Kicker({
   block,

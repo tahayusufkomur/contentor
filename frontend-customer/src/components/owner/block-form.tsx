@@ -1,7 +1,10 @@
 "use client";
 
 import { FieldRenderer } from "./field-renderer";
+import { CxRefine } from "./cx-refine";
 import { StyleControls } from "./style-controls";
+import { CX_BLOCK_TYPE } from "@shared/cx/types";
+import { cxFields } from "@/lib/blocks/cx-defs";
 import { getBlockDef } from "@/lib/blocks/registry";
 import type { Block } from "@/types/tenant";
 
@@ -19,9 +22,13 @@ export function BlockForm({ block, onChange }: BlockFormProps) {
       </p>
     );
   }
+  const fields = block.type === CX_BLOCK_TYPE ? cxFields(block) : def.fields;
   return (
     <div className="space-y-3">
-      {def.fields.map((field) => {
+      {block.type === CX_BLOCK_TYPE && (
+        <CxRefine block={block} onChange={onChange} />
+      )}
+      {fields.map((field) => {
         if (field.showWhen && !field.showWhen(block)) return null;
         const resolved = field.dynamicOptions
           ? { ...field, options: field.dynamicOptions(block) }

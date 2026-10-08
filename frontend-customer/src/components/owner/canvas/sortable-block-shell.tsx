@@ -135,6 +135,7 @@ export function SortableBlockShell({
           block={{ ...block, enabled: true }}
           dynamicData={dynamicData}
           editable={editable}
+          styleId={store.siteStyle}
         />
       </div>
     </div>

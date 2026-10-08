@@ -13,6 +13,20 @@ import { MomentsFigures } from "./moments";
 import { PhilosophyPrinciples } from "./philosophy";
 import { PricingTable } from "./pricing";
 import { StoryMemo } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  BTN,
+  BTN_GHOST,
+  BTN_ON_NAVY,
+  H1,
+  H2,
+  H3,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "ledger" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +43,18 @@ export const sections: Partial<StyleSections> = {
   contact: { letterhead: ContactLetterhead },
   events: { agenda: EventsAgenda, rows: EventsRows },
 };
+
+/** Ledger's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "ledger",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, ghost: BTN_GHOST, onInverse: BTN_ON_NAVY },
+  tones: { base: "bone", surface: "surface", inverse: "navy" },
+  Section,
+  Opener,
+});

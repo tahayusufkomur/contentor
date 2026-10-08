@@ -13,6 +13,24 @@ import { MomentsLookbook } from "./moments";
 import { PhilosophyPullquote } from "./philosophy";
 import { PricingMenu } from "./pricing";
 import { StorySalon } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  ARCH,
+  BTN,
+  BTN_GHOST,
+  BTN_ON_INVERSE,
+  Diamond,
+  Divider,
+  H1,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "atelier" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +47,21 @@ export const sections: Partial<StyleSections> = {
   contact: { studio: ContactStudio },
   events: { masterclasses: EventsMasterclasses, rows: EventsRows },
 };
+
+/** Atelier's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "atelier",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, ghost: BTN_GHOST, onInverse: BTN_ON_INVERSE },
+  media: { arch: ARCH },
+  tones: { base: "blush", surface: "surface", inverse: "inverse" },
+  Section,
+  Kicker,
+  Opener,
+  ornaments: { divider: Divider, glyph: Diamond },
+});

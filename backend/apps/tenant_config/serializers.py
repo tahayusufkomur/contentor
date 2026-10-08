@@ -9,7 +9,9 @@ from apps.media.models import Photo
 
 from . import logo_recipe as logo_recipe_lib
 from . import sections
+from .cx.blocks import clean_cx_block
 from .defaults import (
+    CX_BLOCK_TYPE,
     KNOWN_BLOCK_TYPES,
     KNOWN_PAGE_KEYS,
     RICH_TEXT_FIELDS,
@@ -374,6 +376,8 @@ def _clean_block(raw):
         if isinstance(block.get(field), str):
             block[field] = sanitize_rich_text(block[field])
     _scrub_unsafe_urls(block)
+    if block["type"] == CX_BLOCK_TYPE:
+        return clean_cx_block(block)
     if block["type"] in sections.SECTION_TYPES:
         return sections.clean_section_block(block)
     return block
@@ -381,7 +385,8 @@ def _clean_block(raw):
 
 def _collect_asset_ids(node, photo_ids, video_ids):
     if isinstance(node, dict):
-        if node.get("photo_id"):
+        # Photo.pk is a UUID: a malformed id must not reach the query.
+        if node.get("photo_id") and _clean_photo_id(node["photo_id"]):
             photo_ids.add(str(node["photo_id"]))
         if node.get("video_id"):
             video_ids.add(str(node["video_id"]))

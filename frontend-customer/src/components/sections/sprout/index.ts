@@ -13,6 +13,22 @@ import { MomentsSnapshots } from "./moments";
 import { PhilosophyPromise } from "./philosophy";
 import { PricingTickets } from "./pricing";
 import { StoryHello } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  BTN,
+  BTN_GHOST,
+  BTN_ON_INVERSE,
+  CARD,
+  H1,
+  H2,
+  H3,
+  Kicker,
+  NUM,
+  Opener,
+  Section,
+  SunDoodle,
+  WRAP,
+} from "./ui";
 
 /** "sprout" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +45,20 @@ export const sections: Partial<StyleSections> = {
   contact: { hello: ContactHello },
   events: { playdates: EventsPlaydates, rows: EventsRows },
 };
+
+/** Sprout's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "sprout",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  num: NUM,
+  button: { primary: BTN, ghost: BTN_GHOST, onInverse: BTN_ON_INVERSE },
+  card: CARD,
+  tones: { base: "paper", surface: "surface", inverse: "inverse" },
+  Section,
+  Kicker,
+  Opener,
+  ornaments: { glyph: SunDoodle },
+});

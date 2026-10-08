@@ -813,3 +813,53 @@ class AiIpBlock(models.Model):
 
     def __str__(self):
         return self.ip
+
+
+class CxComponent(models.Model):
+    """An AI-built custom section ("cx", apps.tenant_config.cx). Public schema
+    so a later phase can share proven components across tenants; for now every
+    row is private to its author tenant. Tenant sites never read this table to
+    render — their blocks carry a snapshot of the spec."""
+
+    VISIBILITY_CHOICES = [
+        ("private", "Private"),
+        ("shared", "Shared"),
+        ("featured", "Featured"),
+        ("hidden", "Hidden"),
+    ]
+
+    id = models.CharField(primary_key=True, max_length=12)  # "cx_" + 8 hex
+    name = models.CharField(max_length=60)
+    summary = models.CharField(max_length=200, blank=True, default="")
+    author_tenant_schema = models.CharField(max_length=63, db_index=True)
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default="private")
+    latest_version = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "core"
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"{self.pk} {self.name}"
+
+
+class CxVersion(models.Model):
+    """One immutable revision of a CxComponent: the validated spec and the
+    content it was made with (the author's own words and photo ids)."""
+
+    component = models.ForeignKey(CxComponent, on_delete=models.CASCADE, related_name="versions")
+    n = models.PositiveIntegerField()
+    spec = models.JSONField()
+    content = models.JSONField(default=dict, blank=True)
+    prompt = models.TextField(blank=True, default="")
+    missing_capabilities = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "core"
+        constraints = [models.UniqueConstraint(fields=["component", "n"], name="uniq_cx_version_n")]
+
+    def __str__(self):
+        return f"{self.component_id}@{self.n}"

@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { Block } from "@/types/tenant";
 import type { FieldSchema } from "./field-schema";
 
-export type BlockGroup = "content" | "dynamic" | "section";
+export type BlockGroup = "content" | "dynamic" | "section" | "custom";
 
 /** Datasets dynamic blocks pull at render time. */
 export type DynamicDataKey = "courses" | "plans" | "events" | "storeProducts";
@@ -24,6 +24,9 @@ export interface BlockComponentProps {
   dynamicData?: any;
   /** Present only in edit mode; enables inline text editing. */
   editable?: EditableContext;
+  /** The site style id (TenantConfig.style). AI-built sections (cx) render
+   *  with that style's kit; other blocks ignore it. */
+  styleId?: string;
 }
 
 export interface BlockDefinition {

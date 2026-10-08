@@ -14,6 +14,7 @@ from .assistant_views import (
     assistant_preview_chat,
     assistant_transcripts,
 )
+from .cx import views as cx_views
 from .demo_content import demo_content, erase_demo_content
 from .setup_flow_views import (
     setup_flow_build_page,
@@ -61,6 +62,9 @@ urlpatterns = [
     path("config/logo-converse/", logo_converse, name="logo-converse"),
     path("config/logo-converse/finish/", logo_converse_finish, name="logo-converse-finish"),
     path("config/logo-refine/", logo_refine, name="logo-refine"),
+    path("cx/compose/", cx_views.cx_compose, name="cx-compose"),
+    path("cx/refine/", cx_views.cx_refine, name="cx-refine"),
+    path("cx/components/", cx_views.cx_components, name="cx-components"),
     path("assistant/config/", assistant_config, name="assistant-config"),
     path("assistant/knowledge/", assistant_knowledge, name="assistant-knowledge"),
     path("assistant/knowledge/<int:pk>/", assistant_knowledge_detail, name="assistant-knowledge-detail"),

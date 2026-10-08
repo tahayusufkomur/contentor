@@ -19,6 +19,8 @@ interface EditModeCanvasProps {
   /** SSR/fallback blocks. Used only if the editor store isn't mounted. */
   blocks: Block[];
   dynamicData?: DynamicData;
+  /** Site style id, for AI-built sections. */
+  styleId?: string;
 }
 
 /** The coach's live, editable view of a page. Renders the page's blocks from
@@ -32,6 +34,7 @@ export function EditModeCanvas({
   pageKey,
   blocks,
   dynamicData,
+  styleId,
 }: EditModeCanvasProps) {
   const store = useOptionalEditorStore();
   const editMode = useEditMode();
@@ -50,6 +53,7 @@ export function EditModeCanvas({
             key={block.id}
             block={block}
             dynamicData={dynamicData}
+            styleId={styleId}
           />
         ))}
       </div>

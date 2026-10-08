@@ -13,6 +13,22 @@ import { MomentsLanterns } from "./moments";
 import { PhilosophyWhisper } from "./philosophy";
 import { PricingStays } from "./pricing";
 import { StoryEvening } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  ARCH,
+  BTN,
+  BTN_GHOST,
+  BTN_ON_CREAM,
+  H1,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "nocturne" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +45,20 @@ export const sections: Partial<StyleSections> = {
   contact: { note: ContactNote },
   events: { evenings: EventsEvenings, rows: EventsRows },
 };
+
+/** Nocturne's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "nocturne",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, ghost: BTN_GHOST, onInverse: BTN_ON_CREAM },
+  media: { arch: ARCH },
+  tones: { base: "night", surface: "surface", inverse: "cream" },
+  Section,
+  Kicker,
+  Opener,
+});

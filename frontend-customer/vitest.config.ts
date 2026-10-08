@@ -1,9 +1,23 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, transformWithOxc } from "vite";
 import path from "node:path";
 
-// Pure-logic tests only (src/lib/logo). React components are covered by
-// `npm run build` + the Playwright e2e suite, per repo convention.
+// Mostly pure-logic tests. Component tests (sections kit contract, cx renderer)
+// render to static markup. tsconfig keeps jsx: "preserve" for Next, which makes
+// Vite leave JSX untouched, so compile .tsx with the automatic runtime first.
+const tsxAutomatic = {
+  name: "tsx-automatic-jsx",
+  enforce: "pre" as const,
+  transform(code: string, id: string) {
+    if (!id.endsWith(".tsx")) return null;
+    return transformWithOxc(code, id, {
+      lang: "tsx",
+      jsx: { runtime: "automatic" },
+    });
+  },
+};
+
 export default defineConfig({
+  plugins: [tsxAutomatic],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

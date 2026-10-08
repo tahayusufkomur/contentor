@@ -13,6 +13,21 @@ import { MomentsEditorial } from "./moments";
 import { PhilosophyMaxim } from "./philosophy";
 import { PricingAppointment } from "./pricing";
 import { StoryAtelier } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  BTN,
+  BTN_ON_BLACK,
+  FRAME,
+  H1,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "maison" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +44,20 @@ export const sections: Partial<StyleSections> = {
   contact: { address: ContactAddress },
   events: { salons: EventsSalons, rows: EventsRows },
 };
+
+/** Maison's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "maison",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, onInverse: BTN_ON_BLACK },
+  media: { frame: FRAME },
+  tones: { base: "ivory", surface: "surface", inverse: "black" },
+  Section,
+  Kicker,
+  Opener,
+});

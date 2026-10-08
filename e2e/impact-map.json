@@ -50,7 +50,8 @@
       "16-site-assistant",
       "17-logo-curated-library",
       "18-curated-library-admin",
-      "22-assistant-takeover"
+      "22-assistant-takeover",
+      "30-custom-components"
     ],
     "usage": "none"
   },
@@ -76,7 +77,11 @@
     ],
     "src/components/blocks": [
       "09-builder",
-      "14-navbar-layouts"
+      "14-navbar-layouts",
+      "30-custom-components"
+    ],
+    "src/components/cx": [
+      "30-custom-components"
     ],
     "src/components/community": [
       "15-community"
@@ -95,7 +100,11 @@
     ],
     "src/lib/blocks": [
       "09-builder",
-      "14-navbar-layouts"
+      "14-navbar-layouts",
+      "30-custom-components"
+    ],
+    "src/lib/cx": [
+      "30-custom-components"
     ],
     "src/lib/community": [
       "15-community"
@@ -156,7 +165,14 @@
     ],
     "src/components/sections": [
       "01-signup-onboarding",
-      "09-builder"
+      "09-builder",
+      "30-custom-components"
+    ],
+    "src/components/owner/cx-composer.tsx": [
+      "30-custom-components"
+    ],
+    "src/components/owner/cx-refine.tsx": [
+      "30-custom-components"
     ],
     "src/lib/site-styles.ts": [
       "01-signup-onboarding",

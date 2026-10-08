@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "limits": { "nodes": 150, "depth": 8, "bytes": 16384, "fields": 24 },
+  "icons": [
+    "sparkles", "heart", "star", "sun", "moon", "leaf", "flower", "mountain", "waves", "flame", "music",
+    "palette", "camera", "book", "graduation", "dumbbell", "footprints", "clock", "calendar", "pin", "users",
+    "chat", "mail", "check", "gift", "coffee", "globe", "award", "target", "smile", "compass", "feather"
+  ],
+  "primitives": {
+    "Sequence": {
+      "role": "root", "children": "bands",
+      "doc": "Full-width bands (Section or Layout) one after another. Only as the root, when one band is not enough."
+    },
+    "Section": {
+      "role": "band", "children": "blocks",
+      "props": {
+        "tone": { "enum": ["base", "surface", "inverse"], "default": "base" },
+        "width": { "enum": ["wrap", "narrow", "full"], "default": "wrap" }
+      },
+      "doc": "A full-width band drawn by the site style. tone: base is the page colour, surface is tinted, inverse is dark or colour-blocked. Children stack with generous spacing."
+    },
+    "Layout": {
+      "role": "band", "children": "none",
+      "props": {
+        "family": { "family": true, "required": true },
+        "variant": { "text": 40, "default": "auto" },
+        "map": { "map": true }
+      },
+      "doc": "One of the style's hand-built layouts for an existing family, filled from this section's fields. map: familyField=yourField pairs. A dynamic family needs dynamic set to its source."
+    },
+    "Opener": {
+      "role": "block", "children": "none",
+      "doc": "The style's own section opener: kicker, heading and intro from your fields named kicker, heading (required, text) and intro."
+    },
+    "Heading": {
+      "role": "block", "children": "none",
+      "props": {
+        "bind": { "bind": ["text"], "required": true },
+        "level": { "int": [2, 4], "default": 3 },
+        "size": { "enum": ["sm", "md", "lg"], "default": "md" }
+      },
+      "doc": "A heading. Level 2 only for a band's main heading when there is no Opener; 3 for item titles."
+    },
+    "Text": {
+      "role": "block", "children": "none",
+      "props": {
+        "bind": { "bind": ["text"], "required": true },
+        "size": { "enum": ["sm", "md", "lg"], "default": "md" },
+        "muted": { "bool": true, "default": false },
+        "measure": { "enum": ["narrow", "normal", "wide"], "default": "normal" }
+      },
+      "doc": "A paragraph of plain text."
+    },
+    "Rich": {
+      "role": "block", "children": "none",
+      "props": { "bind": { "bind": ["richtext"], "required": true, "top": true } },
+      "doc": "Formatted text (paragraphs, lists) from a richtext field. Not inside item templates."
+    },
+    "Label": {
+      "role": "block", "children": "none",
+      "props": { "bind": { "bind": ["text"], "required": true } },
+      "doc": "A small label in the style's caption voice (dates, durations, categories)."
+    },
+    "Num": {
+      "role": "block", "children": "none",
+      "props": {
+        "bind": { "bind": ["text"] },
+        "format": { "enum": ["plain", "pad2", "roman"], "default": "pad2" }
+      },
+      "doc": "A large ordinal. Without bind it shows the item's position (inside an item template only)."
+    },
+    "Img": {
+      "role": "block", "children": "none",
+      "props": {
+        "bind": { "bind": ["image"], "required": true },
+        "treatment": { "enum": ["plain", "frame", "arch", "circle", "polaroid"], "default": "plain" },
+        "aspect": { "num": [0.5, 2.5], "default": 1.333 }
+      },
+      "doc": "A photo. aspect is width divided by height (1.5 landscape, 0.8 portrait)."
+    },
+    "Button": {
+      "role": "block", "children": "none",
+      "props": {
+        "label": { "bind": ["text"], "required": true },
+        "href": { "bind": ["link"] },
+        "variant": { "enum": ["primary", "ghost", "onInverse"], "default": "primary" }
+      },
+      "doc": "A call-to-action button. Use onInverse inside an inverse Section or Band."
+    },
+    "Link": {
+      "role": "block", "children": "none",
+      "props": {
+        "label": { "bind": ["text"], "required": true },
+        "href": { "bind": ["link"] }
+      },
+      "doc": "An underlined text link."
+    },
+    "Badge": {
+      "role": "block", "children": "none",
+      "props": { "bind": { "bind": ["text"], "required": true } },
+      "doc": "A small pill (level, format, 'New')."
+    },
+    "Icon": {
+      "role": "block", "children": "none",
+      "props": {
+        "name": { "icon": true, "required": true },
+        "size": { "enum": ["sm", "md", "lg"], "default": "md" }
+      },
+      "doc": "A line icon from the icon list."
+    },
+    "Card": {
+      "role": "block", "children": "blocks",
+      "props": { "emphasis": { "enum": ["soft", "strong"], "default": "soft" } },
+      "doc": "A panel in the style's card look holding other blocks."
+    },
+    "Stack": {
+      "role": "block", "children": "blocks",
+      "props": {
+        "gap": { "enum": ["sm", "md", "lg"], "default": "md" },
+        "align": { "enum": ["start", "center"], "default": "start" }
+      },
+      "doc": "Blocks one under another."
+    },
+    "Ornament": {
+      "role": "block", "children": "none",
+      "props": { "slot": { "enum": ["divider", "glyph"], "default": "divider" } },
+      "doc": "The style's own decoration: a divider line or a small glyph."
+    },
+    "Split": {
+      "role": "block", "children": "two",
+      "props": {
+        "ratio": { "enum": ["1/2", "5/7", "4/8", "7/5", "8/4"], "default": "1/2" },
+        "reverse": { "bool": true, "default": false },
+        "sticky": { "bool": true, "default": false },
+        "valign": { "enum": ["start", "center"], "default": "start" }
+      },
+      "doc": "Two columns on wide screens, stacked on phones. Exactly two children (wrap several blocks in a Stack). sticky keeps the first column in view while the second scrolls."
+    },
+    "Grid": {
+      "role": "block", "children": "item",
+      "props": {
+        "each": { "each": true, "required": true },
+        "cols": { "int": [1, 6], "default": 3 },
+        "gap": { "enum": ["sm", "md", "lg"], "default": "md" },
+        "card": { "enum": ["none", "soft", "strong"], "default": "none" },
+        "numbering": { "enum": ["none", "plain", "pad2", "roman"], "default": "none" }
+      },
+      "doc": "One cell per item of an items field; the item template renders in each cell."
+    },
+    "Rows": {
+      "role": "block", "children": "item",
+      "props": {
+        "each": { "each": true, "required": true },
+        "divider": { "enum": ["none", "hairline", "leader"], "default": "hairline" },
+        "numbering": { "enum": ["none", "plain", "pad2", "roman"], "default": "none" }
+      },
+      "doc": "One row per item. The template's first block sits left, the rest right; leader draws dots between them (menus, prices, timetables)."
+    },
+    "Timeline": {
+      "role": "block", "children": "item",
+      "props": {
+        "each": { "each": true, "required": true },
+        "orient": { "enum": ["vertical", "horizontal"], "default": "vertical" },
+        "marker": { "enum": ["num", "dot", "glyph"], "default": "num" }
+      },
+      "doc": "Items along a line with a marker each (itineraries, journeys, histories)."
+    },
+    "Steps": {
+      "role": "block", "children": "item",
+      "props": {
+        "each": { "each": true, "required": true },
+        "cols": { "int": [2, 5], "default": 3 },
+        "connector": { "enum": ["line", "none"], "default": "line" },
+        "numbering": { "enum": ["plain", "pad2", "roman"], "default": "pad2" }
+      },
+      "doc": "Numbered steps side by side, joined by a line."
+    },
+    "Band": {
+      "role": "block", "children": "blocks",
+      "props": { "tone": { "enum": ["surface", "inverse"], "default": "inverse" } },
+      "doc": "A coloured panel inside a Section that makes one part stand out."
+    }
+  }
+}

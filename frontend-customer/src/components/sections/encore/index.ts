@@ -13,6 +13,21 @@ import { MomentsSleeves } from "./moments";
 import { PhilosophyManifesto } from "./philosophy";
 import { PricingPasses } from "./pricing";
 import { StoryLinerNotes } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  BTN,
+  BTN_ON_INK,
+  DISPLAY,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  Stars,
+  WRAP,
+} from "./ui";
 
 /** "encore" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +44,20 @@ export const sections: Partial<StyleSections> = {
   contact: { booking: ContactBooking },
   events: { tourdates: EventsTourDates, rows: EventsRows },
 };
+
+/** Encore's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "encore",
+  wrap: WRAP,
+  display: DISPLAY,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, onInverse: BTN_ON_INK },
+  tones: { base: "stock", surface: "surface", inverse: "ink" },
+  Section,
+  Kicker,
+  Opener,
+  ornaments: { glyph: Stars },
+});

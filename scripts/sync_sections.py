@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy the section manifest (packages/shared/src/sections) into the backend.
+"""Copy the section manifest (packages/shared/src/sections) and the AI component catalog (packages/shared/src/cx) into the backend.
 
 The Django build context is ./backend only, so the backend keeps a synced copy
 of families.json + styles/<id>.json under apps/tenant_config/sections_manifest/.
@@ -15,11 +15,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "packages/shared/src/sections"
 DST = ROOT / "backend/apps/tenant_config/sections_manifest"
+CX_SRC = ROOT / "packages/shared/src/cx/primitives.json"
+CX_NAME = "cx/primitives.json"
 
 
 def _expected():
     """{relative path: bytes} the backend copy must hold."""
     files = {"families.json": (SRC / "families.json").read_bytes()}
+    files[CX_NAME] = CX_SRC.read_bytes()
     for path in sorted((SRC / "styles").glob("*.json")):
         files[f"styles/{path.name}"] = path.read_bytes()
     return files
@@ -29,6 +32,8 @@ def _actual():
     files = {}
     if (DST / "families.json").exists():
         files["families.json"] = (DST / "families.json").read_bytes()
+    if (DST / CX_NAME).exists():
+        files[CX_NAME] = (DST / CX_NAME).read_bytes()
     for path in sorted((DST / "styles").glob("*.json")):
         files[f"styles/{path.name}"] = path.read_bytes()
     return files
@@ -68,6 +73,7 @@ def main():
             print(f"sections: {error}", file=sys.stderr)
         return 1 if errors else 0
     (DST / "styles").mkdir(parents=True, exist_ok=True)
+    (DST / "cx").mkdir(parents=True, exist_ok=True)
     for stale in set(_actual()) - set(expected):
         (DST / stale).unlink()
     for name, data in expected.items():

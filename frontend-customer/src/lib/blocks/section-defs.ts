@@ -20,6 +20,7 @@ import {
   type FamilyId,
 } from "@shared/sections/types";
 import { SITE_STYLES } from "@shared/sections/styles";
+import { CX_BLOCK_TYPE } from "@shared/cx/types";
 import { SectionBlock } from "@/components/sections/section-block";
 import type { Block } from "@/types/tenant";
 import type { BlockDefinition, DynamicDataKey } from "./types";
@@ -57,7 +58,7 @@ function humanize(name: string) {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
-function toField(key: string, f: FamilyField): FieldSchema {
+export function toField(key: string, f: FamilyField): FieldSchema {
   switch (f.type) {
     case "richtext":
       return { key, label: f.label, type: "richtext", required: f.required };
@@ -209,11 +210,11 @@ export const SECTION_BLOCK_DEFS: Record<string, BlockDefinition> =
     }),
   );
 
-/** Wrapper class for a rendered page: styled-section pages are designed
+/** Wrapper class for a rendered page: styled-section and AI-section pages are designed
  *  full-bleed (globals.css lifts the layout's max-width for .page-fullbleed);
  *  legacy block pages keep breaking out of the layout's padding only. */
 export function pageWrapperClass(blocks: { type?: string }[]): string {
-  return blocks.some((b) => isSectionType(b.type))
+  return blocks.some((b) => isSectionType(b.type) || b.type === CX_BLOCK_TYPE)
     ? "page-fullbleed"
     : "-mx-4 -mt-8 md:-mx-6";
 }

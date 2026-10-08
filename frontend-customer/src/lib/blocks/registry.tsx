@@ -16,10 +16,12 @@ import {
   CalendarDays,
   ShoppingBag,
 } from "lucide-react";
+import { CX_BLOCK_TYPE } from "@shared/cx/types";
 import type { Block } from "@/types/tenant";
 import type { BlockDefinition, BlockGroup, DynamicDataKey } from "./types";
 import type { FieldSchema } from "./field-schema";
 import { exampleFor } from "./examples";
+import { CX_BLOCK_DEF, cxDynamicKey } from "./cx-defs";
 import {
   SECTION_BLOCK_DEFS,
   isSectionType,
@@ -594,25 +596,35 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
   },
   // --- Styled sections (one def per family; the variant picks the layout) ---
   ...SECTION_BLOCK_DEFS,
+  [CX_BLOCK_TYPE]: CX_BLOCK_DEF,
 };
 
 export function getBlockDef(type: string): BlockDefinition | undefined {
-  return BLOCK_REGISTRY[type];
+  return Object.prototype.hasOwnProperty.call(BLOCK_REGISTRY, type)
+    ? BLOCK_REGISTRY[type]
+    : undefined;
 }
 
 export const BLOCKS_BY_GROUP: Record<BlockGroup, BlockDefinition[]> = {
   content: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "content"),
   dynamic: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "dynamic"),
   section: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "section"),
+  custom: Object.values(BLOCK_REGISTRY).filter((b) => b.group === "custom"),
 };
+
+/** The dataset a block renders: its type's, or for an AI-built section the
+ *  one its spec names. */
+export function dynamicKeyOf(block: Block): DynamicDataKey | undefined {
+  return getBlockDef(block.type)?.dynamicDataKey ?? cxDynamicKey(block);
+}
 
 /** Dynamic datasets referenced by the enabled blocks on a page. */
 export function dynamicKeysForBlocks(blocks: Block[]): Set<DynamicDataKey> {
   const keys = new Set<DynamicDataKey>();
   for (const block of blocks) {
     if (block.enabled === false) continue;
-    const def = BLOCK_REGISTRY[block.type];
-    if (def?.dynamicDataKey) keys.add(def.dynamicDataKey);
+    const key = dynamicKeyOf(block);
+    if (key) keys.add(key);
   }
   return keys;
 }

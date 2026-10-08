@@ -50,6 +50,38 @@ export function PopSection({
   );
 }
 
+type Tone = "paper" | "lilac" | "plum";
+
+const TONES: Record<Tone, { bg: string; fg?: string; dark?: boolean }> = {
+  paper: { bg: "var(--background)" },
+  lilac: { bg: "var(--card)" },
+  plum: { bg: "var(--inverse)", fg: "var(--inverse-foreground)", dark: true },
+};
+
+/** A PopSection on one of three grounds. Used by AI-built sections. */
+export function Section({
+  tone = "paper",
+  className,
+  children,
+}: {
+  tone?: Tone;
+  className?: string;
+  children: ReactNode;
+  label?: string;
+}) {
+  const t = TONES[tone];
+  return (
+    <PopSection
+      bg={t.bg}
+      fg={t.fg}
+      dark={t.dark}
+      className={cn("py-20 md:py-28", className)}
+    >
+      {children}
+    </PopSection>
+  );
+}
+
 export function Kicker({
   block,
   editable,

@@ -13,6 +13,21 @@ import { MomentsReel } from "./moments";
 import { PhilosophyMirror } from "./philosophy";
 import { PricingPasses } from "./pricing";
 import { StoryBackstage } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  BTN,
+  BTN_GHOST,
+  BTN_ON_INVERSE,
+  H1,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  NUM,
+  Opener,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "studiofloor" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +44,19 @@ export const sections: Partial<StyleSections> = {
   contact: { booking: ContactBooking },
   events: { schedule: EventsSchedule, rows: EventsRows },
 };
+
+/** Studio Floor's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "studiofloor",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  num: NUM,
+  button: { primary: BTN, ghost: BTN_GHOST, onInverse: BTN_ON_INVERSE },
+  tones: { base: "stage", surface: "surface", inverse: "spotlight" },
+  Section,
+  Kicker,
+  Opener,
+});

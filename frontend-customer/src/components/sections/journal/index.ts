@@ -13,6 +13,18 @@ import { MomentsSpread } from "./moments";
 import { PhilosophyPullquote } from "./philosophy";
 import { PricingColumns } from "./pricing";
 import { StoryLetter } from "./story";
+import { defineKit } from "../kit-contract";
+import {
+  H1,
+  H2,
+  H3,
+  Kicker,
+  LABEL,
+  PILL,
+  PILL_ON_MOSS,
+  Section,
+  WRAP,
+} from "./ui";
 
 /** "journal" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
@@ -29,3 +41,17 @@ export const sections: Partial<StyleSections> = {
   contact: { colophon: ContactColophon },
   events: { programme: EventsProgramme, rows: EventsRows },
 };
+
+/** Journal's StyleKit: what AI-built sections (components/cx) render with. */
+export const kit = defineKit({
+  id: "journal",
+  wrap: WRAP,
+  display: H1,
+  h2: H2,
+  h3: H3,
+  label: LABEL,
+  button: { primary: PILL, onInverse: PILL_ON_MOSS },
+  tones: { base: "paper", surface: "surface", inverse: "moss" },
+  Section,
+  Kicker,
+});

@@ -11,11 +11,14 @@ import {
   ArrowDown,
   LayoutTemplate,
 } from "lucide-react";
+import { CX_BLOCK_TYPE } from "@shared/cx/types";
+import { cxSpecOf } from "@/lib/blocks/cx-defs";
 import { BLOCKS_BY_GROUP, getBlockDef, newBlock } from "@/lib/blocks/registry";
 import { useEditorStore } from "./canvas/editor-store";
 import { PaletteDragSource } from "./canvas/palette-drag-source";
 import { TemplateGallery } from "./template-gallery";
 import { BlockForm } from "./block-form";
+import { CxComposer } from "./cx-composer";
 import type { Block, PageKey, PageTemplate } from "@/types/tenant";
 
 interface BlocksTabProps {
@@ -136,7 +139,9 @@ export function BlocksTab({
               >
                 {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
                 <span className="text-sm font-medium">
-                  {def?.label ?? block.type}
+                  {(block.type === CX_BLOCK_TYPE && cxSpecOf(block)?.name) ||
+                    def?.label ||
+                    block.type}
                 </span>
                 {!enabled && (
                   <span className="text-xs text-muted-foreground">
@@ -229,6 +234,9 @@ export function BlocksTab({
               Cancel
             </button>
           </div>
+          {store.siteStyle && (
+            <CxComposer pageKey={pageKey} onInserted={() => setAdding(false)} />
+          )}
           {(store.siteStyle
             ? (["section"] as const)
             : (["content", "dynamic"] as const)
