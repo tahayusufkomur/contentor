@@ -87,7 +87,7 @@ def empty_slots(blocks) -> list[str]:
         family = sections.family_of(block.get("type"))
         if not family:
             continue
-        skip = sc._UNSHOWN_SLOTS.get((family, sc._variant_name(block.get("variant"))), ())
+        skip = sections.unshown_slots(family, block.get("variant"))
         for name, spec in sections.families()[family]["fields"].items():
             slots = []
             if spec["type"] == "image":

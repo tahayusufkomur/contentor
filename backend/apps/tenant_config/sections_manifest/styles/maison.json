@@ -6,6 +6,24 @@
   "tones": ["expert", "calm"],
   "order": 12,
   "enabled": true,
+  "heroLayout": "cover",
+  "recipes": {
+    "home": [
+      "hero",
+      "story",
+      "benefits",
+      "moments",
+      "philosophy",
+      "courseShowcase",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "columns",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Bodoni Moda",
     "body": "Jost",
@@ -66,7 +84,7 @@
   "radius": "0rem",
   "photoWords": "editorial portrait, soft directional studio light, ivory and black, minimal interior, tailored, composed",
   "variants": {
-    "hero": ["lookbook", "intro"],
+    "hero": ["cover", "lookbook", "intro"],
     "story": ["atelier"],
     "benefits": ["edit"],
     "courseShowcase": ["collection", "rows"],

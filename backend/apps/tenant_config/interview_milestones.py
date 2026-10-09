@@ -401,11 +401,10 @@ def _look_photos(tenant, answers: dict) -> list[str]:
 
 
 def style_cards(answers: dict, tenant=None) -> dict:
-    """Every enabled style as a look, best match first (niche, then the tone
-    asked for): the styles made for the coach's niche in their own colours and
-    their first alternative, the rest in their own colours only. The first
-    look is the guide's pick (its own palette) and carries the reason; the
-    preview shows the coach's own subject and words."""
+    """Every enabled style as one look card, best match first (niche, then the
+    tone asked for), each with the colourways it comes in. The first look is
+    the guide's pick and carries the reason; the preview shows the coach's own
+    subject and words."""
     from . import sections
 
     niche = answers.get("niche") or "general"
@@ -413,14 +412,7 @@ def style_cards(answers: dict, tenant=None) -> dict:
     ranked = sections.rank_styles(niche, tones)
     rank = {s["id"]: i for i, s in enumerate(ranked)}
     first = ranked[0]["id"] if ranked else ""
-    fits = {s["id"] for s in ranked if niche in (s.get("niches") or [])} | {first}
-    seen: dict[str, int] = {}
-    looks = []
-    for look in sections.looks():
-        seen[look["style"]] = seen.get(look["style"], 0) + 1
-        if seen[look["style"]] <= (2 if look["style"] in fits else 1):
-            looks.append(look)
-    looks.sort(key=lambda o: rank[o["style"]])  # stable: own colours before alternatives
+    looks = sorted(sections.looks(), key=lambda o: rank[o["style"]])
     reason = style_reason(sections.style(first), niche, tones, answers)
     return {
         "kind": "style",

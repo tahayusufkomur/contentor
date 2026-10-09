@@ -51,6 +51,8 @@ const LONG: Record<FamilyId, Content> = {
     meta: "Online & in-studio · All levels welcome",
     image: P.teaching,
     image2: P.detail,
+    image3: P.portrait2,
+    image4: P.garden,
   },
   story: {
     kicker: "Hello, I'm Maya",
@@ -227,6 +229,9 @@ const SHORT: Record<FamilyId, Content> = {
   hero: {
     headline: "Yoga for real life",
     image: P.teaching2,
+    image2: P.detail,
+    image3: P.portrait2,
+    image4: P.garden,
     ctaLabel: "Start",
     ctaHref: "/courses",
   },

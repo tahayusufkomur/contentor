@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
+import { makeHowRow } from "../how-layouts";
 import { ARCH, ArchFrame, H3, Opener, Section, WRAP, pad2, str } from "./ui";
 
 type Step = { title?: string; text?: string };
@@ -66,3 +67,15 @@ export function HowItWorksRoutine({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** The routine as three columns: a large italic numeral over each step, a hairline above. */
+export const HowItWorksRoutineRow = makeHowRow({
+  Section,
+  wrap: WRAP,
+  Opener,
+  h3: H3,
+  text: "text-[0.98rem] leading-[1.7] text-muted-foreground",
+  num: "font-display text-[2.6rem] italic leading-none text-accent",
+  rule: "border-border",
+  photo: ARCH,
+});

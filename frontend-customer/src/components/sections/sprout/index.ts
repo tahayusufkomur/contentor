@@ -7,12 +7,12 @@ import { CourseShowcaseActivities } from "./courses";
 import { CtaJoin } from "./cta";
 import { EventsPlaydates } from "./events";
 import { FaqAskaway } from "./faq";
-import { HeroIntro, HeroPlayground } from "./hero";
-import { HowItWorksSteps } from "./how-it-works";
+import { HeroIntro, HeroMosaic, HeroPlayground } from "./hero";
+import { HowItWorksSteps, HowItWorksTrail } from "./how-it-works";
 import { MomentsSnapshots } from "./moments";
 import { PhilosophyPromise } from "./philosophy";
 import { PricingTickets } from "./pricing";
-import { StoryHello } from "./story";
+import { StoryBubble, StoryHello } from "./story";
 import { defineKit } from "../kit-contract";
 import {
   BTN,
@@ -32,11 +32,11 @@ import {
 
 /** "sprout" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { playground: HeroPlayground, intro: HeroIntro },
-  story: { hello: StoryHello },
+  hero: { mosaic: HeroMosaic, playground: HeroPlayground, intro: HeroIntro },
+  story: { bubble: StoryBubble, hello: StoryHello },
   benefits: { growth: BenefitsGrowth },
   courseShowcase: { activities: CourseShowcaseActivities, rows: CoursesRows },
-  howItWorks: { steps: HowItWorksSteps },
+  howItWorks: { trail: HowItWorksTrail, steps: HowItWorksSteps },
   philosophy: { promise: PhilosophyPromise },
   moments: { snapshots: MomentsSnapshots },
   pricing: { tickets: PricingTickets },

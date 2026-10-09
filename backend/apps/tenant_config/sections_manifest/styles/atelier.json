@@ -6,6 +6,24 @@
   "tones": ["warm", "calm"],
   "order": 14,
   "enabled": true,
+  "heroLayout": "split",
+  "recipes": {
+    "home": [
+      "hero",
+      "philosophy",
+      "moments",
+      "story",
+      "benefits",
+      "courseShowcase",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "pull",
+    "benefits": "cards",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Cormorant",
     "body": "Albert Sans",
@@ -67,10 +85,10 @@
   "photoWords": "beauty portrait, soft window light, skin close-up, makeup brushes, blush and cream tones, clean elegant, editorial",
   "variants": {
     "hero": ["portrait", "intro"],
-    "story": ["salon"],
+    "story": ["manifesto", "salon"],
     "benefits": ["rituals"],
     "courseShowcase": ["treatments", "rows"],
-    "howItWorks": ["routine"],
+    "howItWorks": ["shortlist", "routine"],
     "philosophy": ["pullquote"],
     "moments": ["lookbook"],
     "pricing": ["menu"],

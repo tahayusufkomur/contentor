@@ -6,6 +6,24 @@
   "tones": ["warm", "playful"],
   "order": 9,
   "enabled": true,
+  "heroLayout": "split",
+  "recipes": {
+    "home": [
+      "hero",
+      "courseShowcase",
+      "philosophy",
+      "story",
+      "benefits",
+      "moments",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "pull",
+    "benefits": "list",
+    "howItWorks": "grid"
+  },
   "fonts": {
     "display": "Young Serif",
     "body": "Karla",
@@ -67,7 +85,7 @@
   "photoWords": "warm kitchen light, hands cooking, fresh ingredients, rustic table, overhead and close, a person cooking",
   "variants": {
     "hero": ["menu", "intro"],
-    "story": ["kitchentable"],
+    "story": ["chalkboard", "kitchentable"],
     "benefits": ["ingredients"],
     "courseShowcase": ["recipecards", "rows"],
     "howItWorks": ["method"],

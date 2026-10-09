@@ -7,7 +7,7 @@ import { CoursesIssue } from "./courses";
 import { CtaBand } from "./cta";
 import { EventsProgramme } from "./events";
 import { FaqSticky } from "./faq";
-import { HeroEditorial, HeroIntro } from "./hero";
+import { HeroCover, HeroEditorial, HeroIntro } from "./hero";
 import { HowItWorksColumns } from "./how-it-works";
 import { MomentsSpread } from "./moments";
 import { PhilosophyPullquote } from "./philosophy";
@@ -28,7 +28,7 @@ import {
 
 /** "journal" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { editorial: HeroEditorial, intro: HeroIntro },
+  hero: { cover: HeroCover, editorial: HeroEditorial, intro: HeroIntro },
   story: { letter: StoryLetter },
   benefits: { contents: BenefitsContents },
   courseShowcase: { issue: CoursesIssue, rows: CoursesRows },

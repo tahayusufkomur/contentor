@@ -488,9 +488,9 @@ def _new_block(entry, fields) -> dict:
     return sections.clean_section_block(block)
 
 
-def _recipe(page_key) -> list[tuple[str, str | None]]:
+def _recipe(style_id, page_key) -> list[tuple[str, str | None]]:
     out = []
-    for entry in sections.manifest().get("recipes", {}).get(page_key) or ["hero:intro", "cta"]:
+    for entry in sections.recipes(style_id).get(page_key) or ["hero:intro", "cta"]:
         family, _, name = entry.partition(":")
         out.append((family, name or None))
     return out
@@ -547,7 +547,7 @@ def _entry(style_id, family, name, briefs=None) -> dict:
 
 
 def _guard_page(page_key, raw, style_id) -> list[dict]:
-    recipe = [_entry(style_id, f, n) for f, n in _recipe(page_key) if sections.variants(style_id, f)]
+    recipe = [_entry(style_id, f, n) for f, n in _recipe(style_id, page_key) if sections.variants(style_id, f)]
     recipe_names = {e["family"]: _variant_name(e["variant"]) for e in recipe}
     required = list(sections.manifest().get("requiredFamilies", {}).get(page_key) or [])
 
@@ -592,7 +592,7 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
 
     # A variant the recipe names (courseShowcase:rows on the courses page) is
     # that page's layout whatever the plan chose, like hero:intro above.
-    pinned = {f: n for f, n in _recipe(page_key) if n and f != "hero"}
+    pinned = {f: n for f, n in _recipe(style_id, page_key) if n and f != "hero"}
     entries = [
         {**e, "variant": sections.resolve_variant(style_id, e["family"], pinned[e["family"]])}
         if e["family"] in pinned
@@ -694,7 +694,8 @@ Families
 - events: the coach's upcoming live sessions, rendered from their calendar.
 
 Page rules
-- Every page starts with hero. Pages other than home use the hero variant "intro".
+- Every page starts with hero. Pages other than home use the hero variant "intro", which shows one photo: \
+brief only its slot "image".
 - Every page ends with cta or contact.
 - Never more than two photo-led sections (hero, story, courseShowcase, moments) in a row.
 - The courses page includes courseShowcase, pricing includes pricing, faq includes faq, contact includes contact.
@@ -725,17 +726,22 @@ first, grounded in what they teach. No prices, dates, credentials or claims.
 
 def _plan_user_turn(coach, style_id) -> str:
     style = sections.style(style_id) or {}
-    families = {
-        family: {
-            "variants": sections.variants(style_id, family),
+    families = {}
+    for family in sections.families():
+        names = sections.variants(style_id, family)
+        if not names:
+            continue
+        # Only what the style's default layout shows: every brief is output the planner must fit in its budget.
+        unshown = sections.unshown_slots(family, f"{style_id}.{names[0]}")
+        families[family] = {
+            "variants": names,
             "photoSlots": {
-                slot: f"{aspect}, {role}" for slot, (aspect, role) in _slot_specs(family).items() if "." not in slot
+                slot: f"{aspect}, {role}"
+                for slot, (aspect, role) in _slot_specs(family).items()
+                if "." not in slot and slot not in unshown
             }
             | ({"photos.0-3": "4:5, a candid moment from a class or session"} if family == "moments" else {}),
         }
-        for family in sections.families()
-        if sections.variants(style_id, family)
-    }
     nonce = secrets.token_hex(8)
     return "\n".join(
         [
@@ -746,7 +752,7 @@ def _plan_user_turn(coach, style_id) -> str:
             "Style: "
             + json.dumps({"id": style_id, "mood": style.get("mood", ""), "photoWords": style.get("photoWords", "")}),
             "Families in this style (variants, photo slots): " + json.dumps(families),
-            "Recipe (the default plan): " + json.dumps(sections.manifest().get("recipes", {})),
+            "Recipe (the default plan): " + json.dumps(sections.recipes(style_id)),
             "Plan these pages: " + ", ".join(KNOWN_PAGE_KEYS),
         ]
     )
@@ -1347,10 +1353,6 @@ def _find_photo(queries, orientation, used, ctx):
     return None, None
 
 
-# Slots a layout never renders: no search, no download.
-_UNSHOWN_SLOTS = {("hero", "intro"): ("image2",)}
-
-
 def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> list[str]:
     """Fill every photo slot in place; returns the asset ids placed. Must run
     inside tenant_context (creates media.Photo rows). Never raises."""
@@ -1369,7 +1371,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                     if sub_spec["type"] == "image":
                         for n, item in enumerate(block.get(name) or []):
                             slots.append((f"{name}.{n}", sub_spec.get("aspect", "1:1"), item, sub))
-        skip = _UNSHOWN_SLOTS.get((family, _variant_name(entry["variant"])), ())
+        skip = sections.unshown_slots(family, entry["variant"])
         for slot, aspect, target, field in slots:
             if slot in skip:
                 continue

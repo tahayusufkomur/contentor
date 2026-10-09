@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { makeStoryPull } from "../story-layouts";
 import { ARCH, ArchFrame, Arrow, H2, Kicker, Section, WRAP, str } from "./ui";
 
 /** Coach story in the atelier salon: reflective text with signature on the left,
@@ -92,3 +93,18 @@ export function StorySalon({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** The manifesto: the heading set as one large italic line, the story in two
+ *  columns beside a small arch-cropped portrait. */
+export const StoryManifesto = makeStoryPull({
+  Section,
+  wrap: WRAP,
+  h2: H2,
+  Kicker,
+  body: "text-[1.0625rem] leading-[1.85] text-muted-foreground [&_p+p]:mt-5",
+  signature: "font-display text-[1.35rem] italic tracking-tight text-primary",
+  signatureMark: <span aria-hidden="true">&mdash;</span>,
+  link: "atelier-link font-medium text-foreground",
+  LinkIcon: Arrow,
+  photo: ARCH,
+});

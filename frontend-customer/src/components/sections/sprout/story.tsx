@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { makeStoryPull } from "../story-layouts";
 import {
   Arrow,
   BlobImage,
@@ -113,3 +114,19 @@ export function StoryHello({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** A shout-out: the heading as one big friendly line, the story in two
+ *  columns beside a small blob-cropped portrait. */
+export const StoryBubble = makeStoryPull({
+  Section: (p) => <Section tone="surface" {...p} />,
+  wrap: WRAP,
+  h2: H2,
+  Kicker,
+  body: "text-[1.0625rem] leading-[1.8] text-muted-foreground",
+  signature:
+    "font-display text-[1.4rem] font-semibold tracking-[-0.01em] text-foreground",
+  signatureMark: <HeartDoodle className="size-5 text-primary opacity-80" />,
+  link: "min-h-11 font-display text-[1.05rem] font-bold text-primary transition-colors hover:text-accent-foreground",
+  LinkIcon: Arrow,
+  photo: "sprout-blob-2 overflow-hidden shadow-lg",
+});

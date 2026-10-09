@@ -6,6 +6,24 @@
   "tones": ["expert"],
   "order": 5,
   "enabled": true,
+  "heroLayout": "split",
+  "recipes": {
+    "home": [
+      "hero",
+      "benefits",
+      "story",
+      "philosophy",
+      "courseShowcase",
+      "howItWorks",
+      "moments",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "list",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Instrument Serif",
     "body": "IBM Plex Sans",

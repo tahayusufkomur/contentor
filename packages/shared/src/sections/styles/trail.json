@@ -6,6 +6,24 @@
   "tones": ["energetic", "warm"],
   "order": 11,
   "enabled": true,
+  "heroLayout": "fullbleed",
+  "recipes": {
+    "home": [
+      "hero",
+      "story",
+      "howItWorks",
+      "courseShowcase",
+      "benefits",
+      "moments",
+      "philosophy",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "list",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Zilla Slab",
     "body": "Source Sans 3",
@@ -66,7 +84,7 @@
   "radius": "0.375rem",
   "photoWords": "outdoor golden hour, a person running or hiking, wide landscape, trail, earthy tones, natural",
   "variants": {
-    "hero": ["trailhead", "intro"],
+    "hero": ["overlook", "trailhead", "intro"],
     "story": ["fieldnotes"],
     "benefits": ["gearlist"],
     "courseShowcase": ["routes", "rows"],

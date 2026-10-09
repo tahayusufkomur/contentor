@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { makeStoryLetter } from "../story-layouts";
 import {
+  CARD,
   H2,
   HandArrow,
   Kicker,
@@ -108,3 +110,29 @@ export function StoryMaker({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** A note card on the bench: no photo, one lined card of the maker's own
+ *  words taped down, signed in Caveat. */
+export const StoryNotecard = makeStoryLetter({
+  Section: (p) => <Section tone="kraft" {...p} />,
+  Frame: ({ className, children }) => (
+    <div
+      className={cn(
+        CARD,
+        "workshop-lined relative rotate-[-0.6deg] px-6 py-10 shadow-[0_10px_24px_-8px_rgba(0,0,0,0.2)] md:px-14",
+        className,
+      )}
+    >
+      <WashiTape tone="primary" className="-top-3 left-1/2 -translate-x-1/2" />
+      {children}
+    </div>
+  ),
+  wrap: WRAP,
+  h2: H2,
+  Kicker,
+  body: "text-[1.0625rem] leading-[1.8] text-muted-foreground [&_p]:mb-4",
+  signature: "workshop-hand text-[1.5rem] font-bold leading-none text-accent",
+  signatureMark: <span aria-hidden="true" className="h-px w-8 bg-border" />,
+  link: "workshop-link text-[1.05rem] font-bold text-foreground",
+  LinkIcon: HandArrow,
+});

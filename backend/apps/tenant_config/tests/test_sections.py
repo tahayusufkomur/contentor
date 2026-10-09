@@ -59,7 +59,7 @@ def test_style_lookups():
     assert sections.style("nope") is None and sections.style("") is None
     assert sections.variants("calm", "hero") == ["split", "fullBleed", "intro"]
     assert sections.variants("nope", "hero") == []
-    assert sections.image_fields("hero") == ("image", "image2")
+    assert sections.image_fields("hero") == ("image", "image2", "image3", "image4")
     assert sections.image_fields("moments") == ()
 
 
@@ -73,10 +73,61 @@ def test_resolve_variant():
 def test_restyle_variant_prefers_name_then_index_then_first():
     assert sections.restyle_variant("calm.intro", "bold", "hero") == "bold.intro"  # same name
     assert sections.restyle_variant("calm.split", "bold", "hero") == "bold.poster"  # same index (0)
-    assert sections.restyle_variant("calm.fullBleed", "bold", "hero") == "bold.intro"  # index 1
+    # a hero that is not the intro never lands on the target's intro, whatever its index
+    assert sections.restyle_variant("calm.fullBleed", "bold", "hero") == "bold.poster"
     assert sections.restyle_variant("calm.wide", "bold", "story") == "bold.stacked"  # index 1 missing → first
     assert sections.restyle_variant("ghost.x", "bold", "hero") == "bold.poster"  # unknown source → first
     assert sections.restyle_variant("calm.split", "nope", "hero") == "calm.split"  # unmappable → unchanged
+
+
+def test_hero_photos_by_layout(monkeypatch):
+    styles = {
+        "wide": {**_style("wide", hero=["cluster", "split", "intro"]), "heroLayout": "collage"},
+        "plain": {**_style("plain", hero=["split", "intro"]), "heroLayout": "split"},
+    }
+    monkeypatch.setattr(sections, "styles", lambda: styles)
+    assert sections.hero_photos("wide.cluster") == 4  # the layout's own count
+    assert sections.hero_photos("wide.split") == 2  # the old variant keeps two
+    assert sections.hero_photos("wide.intro") == 1
+    assert sections.hero_photos("plain.split") == 2
+    assert sections.hero_photos("nope.x") == 2
+
+
+def test_unshown_slots_follow_the_layout(monkeypatch):
+    styles = {
+        "wide": {
+            **_style("wide", hero=["cluster", "split", "intro"], story=["note", "old"]),
+            "heroLayout": "collage",
+            "bodyLayouts": {"story": "letter"},
+        },
+        "quote": {**_style("quote", story=["pull", "old"]), "bodyLayouts": {"story": "pull"}},
+        "plain": {**_style("plain", story=["old"]), "bodyLayouts": {"story": "split"}},
+    }
+    monkeypatch.setattr(sections, "styles", lambda: styles)
+    assert sections.unshown_slots("hero", "wide.intro") == ("image2", "image3", "image4")
+    assert sections.unshown_slots("hero", "wide.cluster") == ()  # the collage shows all four
+    assert sections.unshown_slots("story", "wide.note") == ("image", "image2")  # a letter has no photo
+    assert sections.unshown_slots("story", "wide.old") == ()  # the older variant keeps its photos
+    assert sections.unshown_slots("story", "quote.pull") == ("image2",)
+    assert sections.unshown_slots("story", "plain.old") == ()
+    assert sections.unshown_slots("benefits", "plain.only") == ()
+
+
+def test_restyle_keeps_the_coachs_story_photo_visible(monkeypatch):
+    styles = {
+        **STYLES,
+        "letters": {
+            **_style("letters", story=["note", "old"]),
+            "bodyLayouts": {"story": "letter"},
+        },
+    }
+    monkeypatch.setattr(sections, "styles", lambda: styles)
+    story = lambda image: {"type": "section.story", "variant": "calm.portrait", "image": image}  # noqa: E731
+    pages = lambda block: {"home": {"blocks": [block]}}  # noqa: E731
+    with_photo = sections.restyle_pages(pages(story({"photo_id": "p1", "url": None})), "letters")
+    assert with_photo["home"]["blocks"][0]["variant"] == "letters.old"  # a letter would hide the photo
+    without = sections.restyle_pages(pages(story({"photo_id": None, "url": None})), "letters")
+    assert without["home"]["blocks"][0]["variant"] == "letters.note"  # nothing to hide: the style's default
 
 
 def test_restyle_pages_only_touches_section_blocks():
@@ -228,14 +279,54 @@ def test_every_enabled_style_ships_two_full_palettes(real_styles):
             assert set(p["palette"]) == keys, (sid, p["id"])
 
 
-def test_looks_list_every_style_in_every_palette(real_styles):
+def test_looks_list_every_style_once_with_its_palettes(real_styles):
     looks = sections.looks()
-    assert len(looks) == 3 * len(sections.enabled_styles())
+    assert len(looks) == len(sections.enabled_styles())
     first = looks[0]
     assert first["value"] == first["style"] and first["palette"] == ""
-    assert looks[1]["value"] == f"{first['style']}:{looks[1]['palette']}"
-    assert all({"value", "style", "palette", "label", "detail"} <= set(o) for o in looks)
+    assert [p["id"] for p in first["palettes"]][0] == ""
+    assert len(first["palettes"]) == 3
+    assert all({"value", "style", "palette", "label", "detail", "palettes"} <= set(o) for o in looks)
     assert sections.palettes("journal").keys() == {"sage", "dusk"}
+    # Every look names its hero layout, so /setup can group the near-twins.
+    assert all(o["group"] for o in looks), [o["value"] for o in looks if not o["group"]]
+    assert len({o["group"] for o in looks}) >= 10
+    # Every hero layout a style uses has a label, and each label is its own group.
+    assert {s.get("heroLayout") for s in sections.enabled_styles().values()} <= set(sections.HERO_LAYOUTS)
+    assert len(set(sections.HERO_LAYOUTS.values())) == len(sections.HERO_LAYOUTS)
+
+
+def test_styles_sharing_a_hero_layout_differ_in_two_body_sections(real_styles):
+    """Same hero layout, same body would be the same page: story / benefits /
+    howItWorks must differ in at least two of the three."""
+    styles = sections.enabled_styles()
+    assert all(set(s["bodyLayouts"]) == {"story", "benefits", "howItWorks"} for s in styles.values())
+    clashes = []
+    ids = list(styles)
+    for i, a in enumerate(ids):
+        for b in ids[i + 1 :]:
+            if styles[a]["heroLayout"] != styles[b]["heroLayout"]:
+                continue
+            same = [f for f in styles[a]["bodyLayouts"] if styles[a]["bodyLayouts"][f] == styles[b]["bodyLayouts"][f]]
+            if len(same) > 1:
+                clashes.append(f"{a}/{b} ({styles[a]['heroLayout']}) share {same}")
+    assert not clashes, clashes
+
+
+def test_every_niche_gets_varied_hero_layouts_among_its_first_six(real_styles):
+    """/setup leads with the best six looks for a niche: they must not all be the same page."""
+    niches = {n for s in sections.enabled_styles().values() for n in s.get("niches", [])}
+    for niche in sorted(niches):
+        layouts = {s["heroLayout"] for s in sections.rank_styles(niche)[:6]}
+        assert len(layouts) >= 5, (niche, layouts)
+
+
+def test_a_style_can_order_its_own_home_page(real_styles, monkeypatch):
+    base = sections.manifest()["recipes"]
+    assert sections.recipes("nope") == base  # unknown style: the manifest's
+    own = ["hero", "courseShowcase", "cta"]
+    monkeypatch.setattr(sections, "style", lambda sid: {"recipes": {"home": own}})
+    assert sections.recipes("any") == {**base, "home": own}  # other pages keep the manifest's order
 
 
 def test_parse_look(real_styles):

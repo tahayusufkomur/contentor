@@ -7,7 +7,7 @@ import { CoursesBelts } from "./courses";
 import { CtaJoin } from "./cta";
 import { EventsTimetable } from "./events";
 import { FaqEtiquette } from "./faq";
-import { HeroBanner, HeroIntro } from "./hero";
+import { HeroBanner, HeroHall, HeroIntro } from "./hero";
 import { HowItWorksPath } from "./how-it-works";
 import { MomentsTraining } from "./moments";
 import { PhilosophyCreed } from "./philosophy";
@@ -32,7 +32,7 @@ import {
 
 /** "dojo" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { banner: HeroBanner, intro: HeroIntro },
+  hero: { hall: HeroHall, banner: HeroBanner, intro: HeroIntro },
   story: { lineage: StoryLineage },
   benefits: { disciplines: BenefitsDisciplines },
   courseShowcase: { belts: CoursesBelts, rows: CoursesRows },

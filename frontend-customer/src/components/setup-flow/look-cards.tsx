@@ -7,7 +7,12 @@ import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
 import type { LookCards, LookOption } from "@/lib/setup-flow";
-import { getSiteStyle, styleFontsHref, styleVars } from "@/lib/site-styles";
+import {
+  getSiteStyle,
+  paletteOf,
+  styleFontsHref,
+  styleVars,
+} from "@/lib/site-styles";
 import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import { cn } from "@/lib/utils";
 import { BrowserFrame } from "./browser-frame";
@@ -15,6 +20,79 @@ import { LookTile } from "./look-tile";
 import { SHELL_TOKENS } from "./tokens";
 
 const WORDMARK = "Just my name, as text";
+const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4";
+
+/** The look a style card stands for in a colourway: "journal:sage". */
+const lookValue = (o: LookOption, palette: string) =>
+  palette ? `${o.value}:${palette}` : o.value;
+/** ...and its name, "Quiet Journal · Sage". */
+const lookLabel = (o: LookOption, palette: string) =>
+  `${o.label} · ${o.palettes?.find((p) => p.id === palette)?.label ?? "Original"}`;
+
+/** The colourway of a style card the coach already picked, from the value
+ * picked on this screen or the label of the answer they gave before. */
+function pickedPalette(
+  o: LookOption,
+  chosen?: string,
+  selected?: string,
+): string | undefined {
+  const hit = o.palettes?.find((p) =>
+    chosen
+      ? chosen === lookValue(o, p.id)
+      : !!selected &&
+        selected.trim().toLowerCase() === lookLabel(o, p.id).toLowerCase(),
+  );
+  return hit?.id;
+}
+
+/** A style's colourways as dots: the ground with the brand colour on it. */
+function Swatches({
+  option,
+  value,
+  disabled,
+  onPick,
+  className,
+}: {
+  option: LookOption;
+  value: string;
+  disabled?: boolean;
+  onPick: (palette: string) => void;
+  className?: string;
+}) {
+  const style = getSiteStyle(option.style ?? option.value);
+  if (!style || (option.palettes?.length ?? 0) < 2) return null;
+  return (
+    <span
+      role="radiogroup"
+      aria-label={`${option.label} colours`}
+      className={cn("flex items-center gap-1.5", className)}
+    >
+      {option.palettes?.map((p) => {
+        const pal = paletteOf(style, p.id);
+        return (
+          <button
+            key={p.id || "own"}
+            type="button"
+            role="radio"
+            aria-checked={value === p.id}
+            aria-label={p.label}
+            title={p.label}
+            disabled={disabled}
+            onClick={() => onPick(p.id)}
+            style={{
+              background: `linear-gradient(135deg, ${pal.background} 50%, ${pal.primary} 50%)`,
+            }}
+            className={cn(
+              "size-5 rounded-full border border-[var(--sf-line-strong)] transition-transform motion-safe:hover:scale-110",
+              value === p.id &&
+                "ring-2 ring-[var(--sf-ink)] ring-offset-2 ring-offset-white",
+            )}
+          />
+        );
+      })}
+    </span>
+  );
+}
 
 /** Style and logo choices as big cards. ``selected`` is the label the coach
  * picked before (a question they went back to); ``chosen`` the value picked
@@ -44,6 +122,12 @@ export function LookCardsView({
   const [shown, setShown] = useState<LookCards>(cards);
   // A look with a page behind it opens as that page on pick.
   const [preview, setPreview] = useState<LookOption | null>(null);
+  // The colourway each style card is showing, by style id ("" = its own).
+  const [palettes, setPalettes] = useState<Record<string, string>>({});
+  // The looks grouped behind "More looks", once the coach asks for them.
+  const [others, setOthers] = useState(false);
+  const paletteFor = (o: LookOption) =>
+    palettes[o.value] ?? pickedPalette(o, chosen, selected) ?? "";
   // The guide's pick is selected and opened as a page the first time the
   // coach lands on the question; "See other looks" returns to the grid.
   const picked = useRef(false);
@@ -53,7 +137,7 @@ export function LookCardsView({
     if (picked.current || shown.kind !== "style" || !pick) return;
     if (selected || chosen) return;
     picked.current = true;
-    onPick(pick.value, pick.label);
+    onPick(pick.value, lookLabel(pick, ""));
     setAuto(pick);
   }, [shown, selected, chosen, onPick]);
   const hasPreview = !!shown.preview;
@@ -70,6 +154,16 @@ export function LookCardsView({
     chosen
       ? chosen === value
       : !!selected && selected.trim().toLowerCase() === label.toLowerCase();
+  const isLookPicked = (o: LookOption) =>
+    chosen
+      ? chosen === o.value || chosen.startsWith(`${o.value}:`)
+      : !!selected &&
+        selected.trim().toLowerCase().startsWith(o.label.toLowerCase());
+  const pickLook = (o: LookOption, palette: string) => {
+    setPalettes((m) => ({ ...m, [o.value]: palette }));
+    onPick(lookValue(o, palette), lookLabel(o, palette));
+    if (preview?.value === o.value) setPreview({ ...o, palette });
+  };
   const enter = (i: number) => ({
     animationDelay: `${delay + Math.min(i, 15) * 40}ms`,
   });
@@ -79,6 +173,78 @@ export function LookCardsView({
       .map((id) => getSiteStyle(id))
       .filter((s): s is SiteStyle => !!s);
     const suggested = shown.options.find((o) => o.recommended);
+    // One look per hero layout first (the best ranked of each; the guide's
+    // pick ranks first), the near-twins grouped under "More looks".
+    const seen = new Set<string>();
+    const leads: LookOption[] = [];
+    const rest = new Map<string, LookOption[]>();
+    for (const o of shown.options) {
+      const g = o.group || o.value;
+      if (!seen.has(g)) {
+        seen.add(g);
+        leads.push(o);
+      } else rest.set(g, [...(rest.get(g) ?? []), o]);
+    }
+    const groups = [...rest];
+    // A look picked before that is one of the grouped ones keeps them open.
+    const open = others || groups.some(([, l]) => l.some(isLookPicked));
+    const card = (o: LookOption, i: number) => {
+      const palette = paletteFor(o);
+      return (
+        <div key={o.value} className="relative">
+          <CardButton
+            picked={isLookPicked(o)}
+            disabled={disabled}
+            onClick={() => {
+              pickLook(o, palette);
+              if (shown.preview) setPreview({ ...o, palette });
+            }}
+            style={enter(i)}
+            className="w-full overflow-hidden p-0"
+          >
+            <LookTile
+              styleId={o.style ?? o.value}
+              paletteId={palette}
+              brandName={brandName}
+              headline={shown.headline}
+              photos={shown.photos}
+            />
+            <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 py-2.5">
+              <span className="min-w-0">
+                <span className="block truncate text-[14px] font-semibold">
+                  {o.label}
+                </span>
+                {o.detail && (
+                  <span className="block truncate text-[12px] text-[var(--sf-graphite)]">
+                    {o.detail}
+                  </span>
+                )}
+              </span>
+              {/* Room for the colour dots laid over the card's corner. */}
+              <span
+                aria-hidden
+                style={{
+                  width: `${(o.palettes?.length ?? 0) * 26}px`,
+                }}
+                className="shrink-0"
+              />
+            </span>
+          </CardButton>
+          {o.recommended && (
+            <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
+              Suggested
+            </span>
+          )}
+          <Swatches
+            option={o}
+            value={palette}
+            disabled={disabled}
+            onPick={(p) => pickLook(o, p)}
+            className="absolute bottom-3.5 right-3.5"
+          />
+        </div>
+      );
+    };
     return (
       <div className="mt-8">
         {suggested?.reason && (
@@ -92,52 +258,37 @@ export function LookCardsView({
         {styles.map((s) => (
           <link key={s.id} rel="stylesheet" href={styleFontsHref(s)} />
         ))}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
-          {shown.options.map((o, i) => (
-            <CardButton
-              key={o.value}
-              picked={isPicked(o.value, o.label)}
+        <div className={GRID}>{leads.map(card)}</div>
+        {groups.length > 0 &&
+          (open ? (
+            groups.map(([group, list]) => (
+              <section key={group} className="mt-8">
+                <h3 className="mb-3 text-[14px] font-semibold">
+                  More looks: {group.toLowerCase()}
+                </h3>
+                <div className={GRID}>
+                  {list.map((o, i) => card(o, leads.length + i))}
+                </div>
+              </section>
+            ))
+          ) : (
+            <Button
+              variant="ghost"
+              size="lg"
               disabled={disabled}
-              onClick={() => {
-                onPick(o.value, o.label);
-                if (shown.preview) setPreview(o);
-              }}
-              style={enter(i)}
-              className="overflow-hidden p-0"
+              onClick={() => setOthers(true)}
+              className="mt-3 rounded-full"
             >
-              <LookTile
-                styleId={o.style ?? o.value}
-                paletteId={o.palette}
-                brandName={brandName}
-                headline={shown.headline}
-                photos={shown.photos}
-              />
-              <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 py-2.5">
-                <span className="min-w-0">
-                  <span className="block truncate text-[14px] font-semibold">
-                    {o.label}
-                  </span>
-                  {o.detail && (
-                    <span className="block truncate text-[12px] text-[var(--sf-graphite)]">
-                      {o.detail}
-                    </span>
-                  )}
-                </span>
-                {o.recommended && (
-                  <span className="shrink-0 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
-                    Suggested
-                  </span>
-                )}
-              </span>
-            </CardButton>
+              More looks ({groups.reduce((n, [, l]) => n + l.length, 0)})
+            </Button>
           ))}
-        </div>
         {preview && shown.preview && (
           <LookPreview
             look={preview}
             cards={shown}
             brandName={brandName}
             host={host ?? ""}
+            onPalette={(p) => pickLook(preview, p)}
             onClose={() => setPreview(null)}
           />
         )}
@@ -225,12 +376,14 @@ function LookPreview({
   cards,
   brandName,
   host,
+  onPalette,
   onClose,
 }: {
   look: LookOption;
   cards: LookCards;
   brandName: string;
   host: string;
+  onPalette: (palette: string) => void;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -266,7 +419,13 @@ function LookPreview({
               </p>
             ) : null}
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 items-center gap-2">
+            <Swatches
+              option={look}
+              value={look.palette ?? ""}
+              onPick={onPalette}
+              className="mr-2 rounded-full bg-white/90 px-2.5 py-1.5"
+            />
             <Button
               variant="ghost"
               onClick={onClose}

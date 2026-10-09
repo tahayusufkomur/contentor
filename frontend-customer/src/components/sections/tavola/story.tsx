@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { makeStoryPull } from "../story-layouts";
 import { Arrow, H2, Kicker, Section, WRAP, str } from "./ui";
 
 /** The trattoria kitchen table: portrait and detail print on the left, a warm
@@ -77,3 +78,17 @@ export function StoryKitchenTable({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** The chalkboard special: the heading chalked up as one big line, the story
+ *  in two columns beside a small portrait. */
+export const StoryChalkboard = makeStoryPull({
+  Section,
+  wrap: WRAP,
+  h2: H2,
+  Kicker,
+  body: "text-[1.0625rem] leading-[1.75] [&_p]:mb-5",
+  signature: "font-display text-[1.6rem] leading-none text-primary",
+  link: "tavola-link font-bold",
+  LinkIcon: Arrow,
+  photo: "tavola-photo rounded-[var(--radius)]",
+});

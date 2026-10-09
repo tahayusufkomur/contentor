@@ -7,12 +7,12 @@ import { CourseShowcaseProjects } from "./courses";
 import { CtaPickup } from "./cta";
 import { EventsSessions } from "./events";
 import { FaqTips } from "./faq";
-import { HeroBench, HeroIntro } from "./hero";
+import { HeroBench, HeroIntro, HeroPinboard } from "./hero";
 import { HowItWorksSteps } from "./how-it-works";
 import { MomentsGallery } from "./moments";
 import { PhilosophyNote } from "./philosophy";
 import { PricingKits } from "./pricing";
-import { StoryMaker } from "./story";
+import { StoryNotecard, StoryMaker } from "./story";
 import { defineKit } from "../kit-contract";
 import {
   BTN,
@@ -33,8 +33,8 @@ import {
 
 /** "workshop" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { bench: HeroBench, intro: HeroIntro },
-  story: { maker: StoryMaker },
+  hero: { pinboard: HeroPinboard, bench: HeroBench, intro: HeroIntro },
+  story: { notecard: StoryNotecard, maker: StoryMaker },
   benefits: { skills: BenefitsSkills },
   courseShowcase: { projects: CourseShowcaseProjects, rows: CoursesRows },
   howItWorks: { steps: HowItWorksSteps },

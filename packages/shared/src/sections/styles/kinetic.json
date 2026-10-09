@@ -6,6 +6,24 @@
   "tones": ["energetic"],
   "order": 2,
   "enabled": true,
+  "heroLayout": "poster",
+  "recipes": {
+    "home": [
+      "hero",
+      "courseShowcase",
+      "benefits",
+      "story",
+      "moments",
+      "howItWorks",
+      "philosophy",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "cards",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Archivo",
     "body": "Archivo",

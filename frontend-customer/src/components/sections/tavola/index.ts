@@ -12,7 +12,7 @@ import { HowItWorksMethod } from "./how-it-works";
 import { MomentsMarket } from "./moments";
 import { PhilosophyHouseRule } from "./philosophy";
 import { PricingMenu } from "./pricing";
-import { StoryKitchenTable } from "./story";
+import { StoryChalkboard, StoryKitchenTable } from "./story";
 import { defineKit } from "../kit-contract";
 import {
   BTN,
@@ -33,7 +33,7 @@ import {
 /** "tavola" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
   hero: { menu: HeroMenu, intro: HeroIntro },
-  story: { kitchentable: StoryKitchenTable },
+  story: { chalkboard: StoryChalkboard, kitchentable: StoryKitchenTable },
   benefits: { ingredients: BenefitsIngredients },
   courseShowcase: { recipecards: CoursesRecipeCards, rows: CoursesRows },
   howItWorks: { method: HowItWorksMethod },

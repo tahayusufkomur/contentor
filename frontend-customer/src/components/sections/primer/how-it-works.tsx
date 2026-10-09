@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
+import { makeHowTimeline } from "../how-layouts";
 import {
   Check,
   H2,
@@ -91,3 +92,17 @@ export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** The lesson as a timeline down the exercise-book page: a Courier-numbered
+ *  margin dot per step on a red rail. */
+export const HowItWorksSyllabus = makeHowTimeline({
+  Section: (p) => <Section tone="ruled" {...p} />,
+  Frame: ({ children }) => <Page>{children}</Page>,
+  wrap: WRAP,
+  Opener,
+  h3: H3,
+  text: "text-[0.98rem] leading-[1.7] text-muted-foreground",
+  dot: "primer-courier border-2 border-accent bg-background text-accent",
+  rail: "before:bg-accent/40",
+  photo: "primer-print rotate-[1.5deg]",
+});

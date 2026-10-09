@@ -2,16 +2,19 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { heroPhotos } from "../collage";
 import {
   Arrow,
   BOX,
   BTN,
   BTN_ACCENT,
   H1,
+  DISPLAY,
   LABEL,
   Section,
   Stars,
   WRAP,
+  pad2,
   str,
 } from "./ui";
 
@@ -50,6 +53,124 @@ function Actions({
         </SmartLink>
       )}
     </div>
+  );
+}
+
+/** The lineup: the billing line between two heavy rules, the headline at
+ *  the width of the page in wide black caps, then up to three tracks as
+ *  ruled boxes across the foot, the dek and the actions between. */
+export function HeroLineup({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const photos = heroPhotos(block, editable).slice(0, 3);
+  const showKicker = has(block, "kicker", editable);
+  const showMeta = has(block, "meta", editable);
+  return (
+    <Section className="pt-8 md:pt-10 lg:pt-12" label={alt}>
+      <div className={WRAP}>
+        {(showKicker || showMeta) && (
+          <div
+            className={cn(
+              LABEL,
+              "encore-stamp flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y-[3px] border-foreground py-3",
+            )}
+            style={delay(0)}
+          >
+            <Txt
+              block={block}
+              field="kicker"
+              editable={editable}
+              as="span"
+              placeholder="Kicker"
+            />
+            <span aria-hidden="true" className="hidden sm:inline">
+              &#9733;
+            </span>
+            <Txt
+              block={block}
+              field="meta"
+              editable={editable}
+              as="span"
+              placeholder="Small line"
+              className="text-muted-foreground"
+            />
+          </div>
+        )}
+        <div className="encore-stamp mt-6 md:mt-8" style={delay(150)}>
+          <Txt
+            block={block}
+            field="headline"
+            editable={editable}
+            as="h1"
+            placeholder="Headline"
+            className={cn(
+              DISPLAY,
+              "block",
+              alt.length <= 26
+                ? "text-[clamp(2.8rem,0.4rem+11.6vw,13rem)] leading-[0.86]"
+                : "text-[clamp(2.2rem,0.6rem+6.4vw,7.4rem)] leading-[0.92]",
+            )}
+          />
+        </div>
+        <div
+          className="encore-stamp mt-7 grid items-end gap-x-10 gap-y-6 md:grid-cols-12"
+          style={delay(320)}
+        >
+          <Txt
+            block={block}
+            field="subhead"
+            editable={editable}
+            as="p"
+            placeholder="Subheadline"
+            className="block max-w-[46ch] text-pretty text-[1rem] font-medium uppercase leading-[1.55] tracking-[0.04em] md:col-span-7 md:text-[1.05rem]"
+          />
+          <Actions
+            block={block}
+            editable={editable}
+            className="md:col-span-5 md:col-start-8 md:justify-end"
+          />
+        </div>
+        {photos.length > 0 && (
+          <ul
+            className={cn(
+              "encore-stamp mt-9 grid gap-3 sm:gap-5",
+              photos.length === 1
+                ? "grid-cols-1"
+                : photos.length === 2
+                  ? "grid-cols-2"
+                  : "grid-cols-2 md:grid-cols-3",
+            )}
+            style={delay(450)}
+          >
+            {photos.map((value, n) => (
+              <li
+                key={n}
+                className={cn(
+                  photos.length === 3 && n === 2 && "col-span-2 md:col-span-1",
+                )}
+              >
+                <div
+                  className={cn(BOX, "encore-halftone relative p-1.5 sm:p-2")}
+                >
+                  <Img
+                    value={value}
+                    alt={alt}
+                    priority={n === 0}
+                    className={
+                      photos.length === 1
+                        ? "aspect-[16/7] w-full"
+                        : "aspect-[4/3] w-full"
+                    }
+                  />
+                </div>
+                <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
+                  Track {pad2(n)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Section>
   );
 }
 

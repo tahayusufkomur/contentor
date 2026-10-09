@@ -92,8 +92,8 @@ def _families(entries):
 @pytest.mark.parametrize(
     ("page", "raw", "expected"),
     [
-        # hero moved first; unknown family replaced by the recipe's entry at that position
-        ("home", ["story", "hero", "nonsense", "cta"], ["hero", "story", "benefits", "cta"]),
+        # hero moved first; unknown family replaced by the style's own recipe entry at that position
+        ("home", ["story", "hero", "nonsense", "cta"], ["hero", "story", "philosophy", "cta"]),
         # missing closing section -> a cta is appended
         ("about", ["hero", "story", "philosophy"], ["hero", "story", "philosophy", "cta"]),
         # contact page: the contact section moves to the end
@@ -121,14 +121,32 @@ def test_guardrails_variants():
         }
     }
     out = sc.apply_guardrails(plan, "journal")
-    assert out["pages"]["home"][0]["variant"] == "journal.editorial"  # home never opens with the intro
+    assert out["pages"]["home"][0]["variant"] == "journal.cover"  # home never opens with the intro: the default hero
     assert out["pages"]["home"][1]["variant"] == "journal.letter"
     assert out["pages"]["about"][0]["variant"] == "journal.intro"
     assert out["pages"]["about"][-1]["variant"] == "journal.band"
     # Pure: the input is untouched; an empty plan is the recipe
     assert plan["pages"]["home"][0]["variant"] == "journal.intro"
     recipe = sc.apply_guardrails({}, "journal")["pages"]["home"]
-    assert _families(recipe) == [f.partition(":")[0] for f in sections.manifest()["recipes"]["home"]]
+    assert _families(recipe) == [f.partition(":")[0] for f in sections.recipes("journal")["home"]]
+
+
+@pytest.mark.parametrize("style_id", ENABLED)
+def test_every_styles_home_order_survives_the_guardrails(style_id):
+    """A style's own home order is the page a coach gets: the guardrails
+    (hero first, cta last, no run of three photo-led sections) must not reshuffle it."""
+    home = sc.apply_guardrails({}, style_id)["pages"]["home"]
+    assert _families(home) == [f.partition(":")[0] for f in sections.recipes(style_id)["home"]]
+    skeleton = sc.skeleton_pages(style_id, niche="yoga", brand_name="Flow Studio")
+    assert [sections.family_of(b["type"]) for b in skeleton["home"]["blocks"]] == _families(home)
+
+
+def test_no_two_styles_share_a_hero_layout_and_a_home_order():
+    seen = {}
+    for sid, s in sections.enabled_styles().items():
+        key = (s["heroLayout"], tuple(f.partition(":")[0] for f in sections.recipes(sid)["home"]))
+        assert key not in seen, f"{sid} and {seen[key]} share hero layout {key[0]} and home order"
+        seen[key] = sid
 
 
 def test_guardrails_keep_valid_briefs_only():
@@ -268,6 +286,23 @@ def test_plan_falls_back_on_ai_error(styled, monkeypatch):
     assert styled.wizard_state["keep"] == "me"  # other wizard_state keys survive
 
 
+def _plan_slots(style_id):
+    """family -> the photo slots the planner is asked to brief for this style."""
+    user = sc._plan_user_turn({"niche": "yoga"}, style_id)
+    line = next(line for line in user.splitlines() if line.startswith("Families in this style"))
+    return {family: list(spec["photoSlots"]) for family, spec in json.loads(line.partition(": ")[2]).items()}
+
+
+def test_plan_asks_only_for_photos_the_default_layouts_show():
+    """Every brief is output the planner must fit in its token budget: no slot a layout never renders."""
+    assert _plan_slots("workshop")["hero"] == ["image", "image2", "image3", "image4"]  # the collage shows four
+    assert _plan_slots("workshop")["story"] == []  # a letter has no photo
+    assert _plan_slots("trail")["hero"] == ["image"]  # fullbleed shows one
+    assert _plan_slots("sanctum")["story"] == ["image"]  # a pull-quote keeps the portrait only
+    assert _plan_slots("journal")["hero"] == ["image", "image2"]
+    assert _plan_slots("ledger")["story"] == ["image", "image2"]  # the split story shows both
+
+
 @pytest.mark.django_db
 def test_plan_uses_ai_then_caches(styled, monkeypatch):
     brief = {"slot": "image", "subject": "woman in a low lunge", "action": "", "setting": "", "person": "woman, 40s"}
@@ -296,7 +331,7 @@ def test_plan_uses_ai_then_caches(styled, monkeypatch):
         TenantConfig.objects.update(style="pop")
     switched = sc.plan_site(styled)
     assert len(fake.calls) == 1 and switched["style"] == "pop"
-    assert switched["pages"]["home"][0]["variant"] == "pop.bigname"
+    assert switched["pages"]["home"][0]["variant"] == "pop.cluster"  # the style's default hero
 
 
 @pytest.mark.django_db

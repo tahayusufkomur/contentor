@@ -6,6 +6,24 @@
   "tones": ["expert", "playful"],
   "order": 17,
   "enabled": true,
+  "heroLayout": "split",
+  "recipes": {
+    "home": [
+      "hero",
+      "howItWorks",
+      "courseShowcase",
+      "benefits",
+      "story",
+      "philosophy",
+      "moments",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "cards",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "JetBrains Mono",
     "body": "DM Sans",

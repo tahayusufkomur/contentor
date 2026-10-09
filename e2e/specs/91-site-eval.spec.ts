@@ -118,7 +118,11 @@ async function capture(
     });
     await page
       .waitForFunction(
-        () => Array.from(document.images).every((i) => i.complete),
+        // An image the page does not render (display:none on a phone) is never fetched: not broken.
+        () =>
+          Array.from(document.images).every(
+            (i) => i.getClientRects().length === 0 || i.complete,
+          ),
         null,
         {
           timeout: 20_000,
@@ -130,6 +134,7 @@ async function capture(
         document.documentElement.scrollWidth -
         document.documentElement.clientWidth,
       broken: Array.from(document.images)
+        .filter((i) => i.getClientRects().length > 0)
         .filter((i) => !i.complete || i.naturalWidth === 0)
         .map((i) => i.currentSrc || i.src),
       empty: document.querySelectorAll("[data-empty-image]").length,

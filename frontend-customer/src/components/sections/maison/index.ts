@@ -7,7 +7,7 @@ import { CoursesCollection } from "./courses";
 import { CtaIntroduction } from "./cta";
 import { EventsSalons } from "./events";
 import { FaqNotes } from "./faq";
-import { HeroIntro, HeroLookbook } from "./hero";
+import { HeroCover, HeroIntro, HeroLookbook } from "./hero";
 import { HowItWorksFittings } from "./how-it-works";
 import { MomentsEditorial } from "./moments";
 import { PhilosophyMaxim } from "./philosophy";
@@ -31,7 +31,7 @@ import {
 
 /** "maison" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { lookbook: HeroLookbook, intro: HeroIntro },
+  hero: { cover: HeroCover, lookbook: HeroLookbook, intro: HeroIntro },
   story: { atelier: StoryAtelier },
   benefits: { edit: BenefitsEdit },
   courseShowcase: { collection: CoursesCollection, rows: CoursesRows },

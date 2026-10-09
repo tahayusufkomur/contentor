@@ -6,6 +6,24 @@
   "tones": ["calm", "warm"],
   "order": 20,
   "enabled": true,
+  "heroLayout": "centered",
+  "recipes": {
+    "home": [
+      "hero",
+      "philosophy",
+      "benefits",
+      "story",
+      "howItWorks",
+      "moments",
+      "courseShowcase",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "pull",
+    "benefits": "cards",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Cinzel",
     "body": "Mulish",
@@ -66,8 +84,8 @@
   "radius": "0.5rem",
   "photoWords": "candles and crystals, moonlit night sky, tarot cards, soft mystical light, deep indigo and gold, calm woman in meditation",
   "variants": {
-    "hero": ["oracle", "intro"],
-    "story": ["origin"],
+    "hero": ["observatory", "oracle", "intro"],
+    "story": ["invocation", "origin"],
     "benefits": ["gifts"],
     "courseShowcase": ["paths", "rows"],
     "howItWorks": ["ritual"],

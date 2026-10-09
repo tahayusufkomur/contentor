@@ -7,7 +7,7 @@ import { CoursesRoutes } from "./courses";
 import { CtaLaceUp } from "./cta";
 import { EventsMeetups } from "./events";
 import { FaqRanger } from "./faq";
-import { HeroIntro, HeroTrailhead } from "./hero";
+import { HeroIntro, HeroOverlook, HeroTrailhead } from "./hero";
 import { HowItWorksWaypoints } from "./how-it-works";
 import { MomentsPostcards } from "./moments";
 import { PhilosophyTrailRule } from "./philosophy";
@@ -32,7 +32,7 @@ import {
 
 /** "trail" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { trailhead: HeroTrailhead, intro: HeroIntro },
+  hero: { overlook: HeroOverlook, trailhead: HeroTrailhead, intro: HeroIntro },
   story: { fieldnotes: StoryFieldNotes },
   benefits: { gearlist: BenefitsGearList },
   courseShowcase: { routes: CoursesRoutes, rows: CoursesRows },

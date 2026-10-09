@@ -57,6 +57,18 @@
           "aspect": "1:1",
           "role": "a close detail of the practice (hands, tools, texture) with a person",
           "label": "Detail photo"
+        },
+        "image3": {
+          "type": "image",
+          "aspect": "4:5",
+          "role": "a student mid-practice, a different moment and setting from the main photo",
+          "label": "Third photo (some layouts)"
+        },
+        "image4": {
+          "type": "image",
+          "aspect": "1:1",
+          "role": "a small group or the room itself, wide and welcoming",
+          "label": "Fourth photo (some layouts)"
         }
       }
     },

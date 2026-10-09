@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { makeStoryPull } from "../story-layouts";
 import { H2, Kicker, MoonPhases, Section, StarGlyph, WRAP, str } from "./ui";
 
 /** Story "origin": coach lineage and story with oval gold portrait frame. */
@@ -108,3 +109,27 @@ export function StoryOrigin({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** An invocation: the heading as one large line of light, the story in two
+ *  columns beside a small oval portrait. */
+export const StoryInvocation = makeStoryPull({
+  Section: (p) => <Section tone="surface" {...p} />,
+  wrap: WRAP,
+  h2: H2,
+  Kicker,
+  Ornament: MoonPhases,
+  body: "text-[1.0625rem] leading-[1.8] text-muted-foreground [&_p]:mb-4",
+  signature:
+    "font-display text-[1rem] uppercase tracking-[0.14em] text-primary",
+  signatureMark: <StarGlyph className="size-3" />,
+  link: "sanctum-link font-display text-[0.85rem] font-medium uppercase tracking-[0.12em]",
+  LinkIcon: ({ className }) => (
+    <StarGlyph
+      className={cn(
+        "size-3 text-primary transition-transform duration-300 motion-safe:group-hover:rotate-45",
+        className,
+      )}
+    />
+  ),
+  photo: "sanctum-oval rounded-full border border-primary/60",
+});

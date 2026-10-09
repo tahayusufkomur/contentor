@@ -6,6 +6,24 @@
   "tones": ["calm", "warm"],
   "order": 7,
   "enabled": true,
+  "heroLayout": "arch",
+  "recipes": {
+    "home": [
+      "hero",
+      "philosophy",
+      "story",
+      "benefits",
+      "moments",
+      "courseShowcase",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "cards",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Fraunces",
     "body": "Figtree",

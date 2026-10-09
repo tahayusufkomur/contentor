@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { SECTION_MANIFEST, type FamilyId } from "@shared/sections/types";
+import { styleRecipe, type FamilyId } from "@shared/sections/types";
 import { fixtureBlock, fixtureData } from "@/components/sections/fixtures";
 import { STYLE_SECTIONS } from "@/components/sections/registry";
 import { getSiteStyle, styleScope } from "@/lib/site-styles";
@@ -92,7 +92,7 @@ export function LookTile({
   if (!style) return null;
   const layouts = STYLE_SECTIONS[styleId] ?? {};
   const items = page
-    ? SECTION_MANIFEST.recipes.home.map((entry) => {
+    ? styleRecipe(style, "home").map((entry) => {
         const [family, name] = entry.split(":") as [FamilyId, string?];
         return { family, variant: name ?? style.variants[family]?.[0] };
       })

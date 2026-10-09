@@ -8,11 +8,11 @@ import { CtaEnrol } from "./cta";
 import { EventsTermDates } from "./events";
 import { FaqGlossary } from "./faq";
 import { HeroIntro, HeroTitlePage } from "./hero";
-import { HowItWorksLessonPlan } from "./how-it-works";
+import { HowItWorksLessonPlan, HowItWorksSyllabus } from "./how-it-works";
 import { MomentsClassroom } from "./moments";
 import { PhilosophyMarginNote } from "./philosophy";
 import { PricingTermFees } from "./pricing";
-import { StoryForeword } from "./story";
+import { StoryNote, StoryForeword } from "./story";
 import { defineKit } from "../kit-contract";
 import {
   BTN,
@@ -32,10 +32,13 @@ import {
 /** "primer" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
   hero: { titlepage: HeroTitlePage, intro: HeroIntro },
-  story: { foreword: StoryForeword },
+  story: { note: StoryNote, foreword: StoryForeword },
   benefits: { outcomes: BenefitsOutcomes },
   courseShowcase: { syllabus: CoursesSyllabus, rows: CoursesRows },
-  howItWorks: { lessonplan: HowItWorksLessonPlan },
+  howItWorks: {
+    syllabus: HowItWorksSyllabus,
+    lessonplan: HowItWorksLessonPlan,
+  },
   philosophy: { marginnote: PhilosophyMarginNote },
   moments: { classroom: MomentsClassroom },
   pricing: { termfees: PricingTermFees },

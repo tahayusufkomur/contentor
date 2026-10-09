@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { H1, Kicker, PILL, Section, WRAP, str } from "./ui";
+import { H1, Kicker, LABEL, PILL, Section, WRAP, str } from "./ui";
 
 const delay = (ms: number) =>
   ({ "--journal-delay": `${ms}ms` }) as CSSProperties;
@@ -43,6 +43,111 @@ function Actions({
         </SmartLink>
       )}
     </div>
+  );
+}
+
+/** The cover: the kicker as an italic masthead on the left over a heavy
+ *  rule with the small line flush right, one large photo (the detail print
+ *  as a small round inset), and a ruled column of numbered coverlines: the
+ *  claim, the dek, the way in. */
+export function HeroCover({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const masthead = str(block.kicker);
+  const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
+  return (
+    <Section className="pt-10 md:pt-14 lg:pt-16" label={alt}>
+      <div className={WRAP}>
+        {(has(block, "kicker", editable) || has(block, "meta", editable)) && (
+          <div
+            className="journal-rise flex items-end justify-between gap-x-8 gap-y-3 border-b-2 border-foreground pb-3"
+            style={delay(0)}
+          >
+            <Txt
+              block={block}
+              field="kicker"
+              editable={editable}
+              as="p"
+              placeholder="Masthead"
+              className={cn(
+                "block font-display font-light italic",
+                masthead.length <= 22
+                  ? "text-[clamp(2.4rem,0.8rem+6.4vw,6.8rem)] leading-[0.9] tracking-[-0.02em]"
+                  : "text-[clamp(1.5rem,0.9rem+2vw,2.6rem)] leading-[1.05]",
+              )}
+            />
+            {has(block, "meta", editable) && (
+              <p className="hidden text-right font-display text-[0.98rem] italic leading-snug text-muted-foreground sm:block">
+                <Txt
+                  block={block}
+                  field="meta"
+                  editable={editable}
+                  placeholder="Small line"
+                />
+              </p>
+            )}
+          </div>
+        )}
+        <div className="mt-8 grid gap-x-10 gap-y-10 md:grid-cols-12">
+          <figure className="relative md:col-span-8">
+            <div className="journal-unveil" style={delay(120)}>
+              <Img
+                value={block.image}
+                alt={alt}
+                priority
+                className="aspect-[4/5] w-full md:aspect-[1/1]"
+              />
+            </div>
+            {showDetail && (
+              <div className="journal-rise absolute -bottom-6 right-4 w-[26%] max-w-[11rem] overflow-hidden rounded-full border-[6px] border-background md:-right-8">
+                <Img
+                  value={block.image2}
+                  alt={alt}
+                  className="aspect-square w-full"
+                />
+              </div>
+            )}
+          </figure>
+          <div
+            className="journal-rise flex flex-col md:col-span-4 md:border-l md:border-border md:pl-8"
+            style={delay(260)}
+          >
+            <p className={cn(LABEL, "text-muted-foreground")}>No. 1</p>
+            <Txt
+              block={block}
+              field="headline"
+              editable={editable}
+              as="h1"
+              placeholder="Headline"
+              className={cn(
+                H1,
+                "mt-4 block",
+                alt.length <= 28
+                  ? "text-[clamp(2.2rem,1rem+3.6vw,4.4rem)] leading-[1]"
+                  : "text-[clamp(1.8rem,1rem+2.4vw,3rem)] leading-[1.04]",
+              )}
+            />
+            {has(block, "subhead", editable) && (
+              <div className="mt-8 border-t border-border pt-6">
+                <p className={cn(LABEL, "text-muted-foreground")}>No. 2</p>
+                <Txt
+                  block={block}
+                  field="subhead"
+                  editable={editable}
+                  as="p"
+                  placeholder="Subheadline"
+                  className="mt-3 block text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground md:text-[1.12rem]"
+                />
+              </div>
+            )}
+            <Actions
+              block={block}
+              editable={editable}
+              className="mt-auto pt-10"
+            />
+          </div>
+        </div>
+      </div>
+    </Section>
   );
 }
 

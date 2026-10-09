@@ -49,6 +49,74 @@ function Actions({
   );
 }
 
+/** The mirror wall: the whole studio fills the hero, dimmed to stage black,
+ *  and the claim hangs on a frosted glass panel with a neon edge on the
+ *  right, like a cue card in the mirror. One photo; without one the stage
+ *  lights carry it. */
+export function HeroMirror({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  return (
+    <Section
+      tone="stage"
+      className="flex min-h-[min(46rem,92svh)] items-center py-0 md:py-0 lg:py-0"
+      label={alt}
+    >
+      <Img
+        value={block.image}
+        alt={alt}
+        priority
+        className="absolute inset-0 size-full"
+      />
+      <div
+        aria-hidden="true"
+        className="studiofloor-mirror-wash absolute inset-0"
+      />
+      <div aria-hidden="true" className="studiofloor-stage-beam" />
+      <div className={cn(WRAP, "relative z-10 py-20 md:py-24")}>
+        <div className="ml-auto max-w-[34rem] rounded-[var(--radius)] border border-primary/50 bg-background/80 p-7 shadow-[0_0_48px_color-mix(in_oklch,var(--primary)_28%,transparent)] backdrop-blur-md md:p-10">
+          <Kicker block={block} editable={editable} cue="ACT 01" />
+          <Txt
+            block={block}
+            field="headline"
+            editable={editable}
+            as="h1"
+            placeholder="Headline"
+            className={cn(
+              H1,
+              "mt-4 block",
+              alt.length <= 32
+                ? "text-[clamp(2.3rem,1.2rem+3.8vw,4.4rem)] leading-[0.92]"
+                : "text-[clamp(2rem,1.2rem+2.8vw,3.4rem)] leading-[0.96]",
+            )}
+          />
+          <Txt
+            block={block}
+            field="subhead"
+            editable={editable}
+            as="p"
+            placeholder="Subheadline"
+            className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
+          />
+          {has(block, "meta", editable) && (
+            <div className="mt-5">
+              <span className={CHIP}>
+                <span className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+                <Txt
+                  block={block}
+                  field="meta"
+                  editable={editable}
+                  placeholder="Small line (location / level)"
+                />
+              </span>
+            </div>
+          )}
+          <Actions block={block} editable={editable} className="mt-8" />
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 /** The signature stage entrance: stage lights overhead, stretched italic
  *  Anybody headline, and a mirror wall of photos separated by glowing neon
  *  light bars. */

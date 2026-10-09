@@ -6,6 +6,24 @@
   "tones": ["playful", "warm"],
   "order": 18,
   "enabled": true,
+  "heroLayout": "collage",
+  "recipes": {
+    "home": [
+      "hero",
+      "benefits",
+      "story",
+      "howItWorks",
+      "moments",
+      "courseShowcase",
+      "philosophy",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "pull",
+    "benefits": "cards",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Fredoka",
     "body": "Nunito",
@@ -66,11 +84,11 @@
   "radius": "1.5rem",
   "photoWords": "parent and child together, family at home, toddlers playing, warm natural light, candid joyful moments, bright",
   "variants": {
-    "hero": ["playground", "intro"],
-    "story": ["hello"],
+    "hero": ["mosaic", "playground", "intro"],
+    "story": ["bubble", "hello"],
     "benefits": ["growth"],
     "courseShowcase": ["activities", "rows"],
-    "howItWorks": ["steps"],
+    "howItWorks": ["trail", "steps"],
     "philosophy": ["promise"],
     "moments": ["snapshots"],
     "pricing": ["tickets"],

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
+import { makeHowTimeline } from "../how-layouts";
 import { BlobImage, H3, Opener, Section, WRAP, getSproutTint, str } from "./ui";
 
 type Step = { title?: string; text?: string };
@@ -92,3 +93,15 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** A friendly trail: round yellow numbered bubbles down a dashed path. */
+export const HowItWorksTrail = makeHowTimeline({
+  Section,
+  wrap: WRAP,
+  Opener,
+  h3: H3,
+  text: "text-[1rem] leading-[1.7] text-muted-foreground",
+  dot: "bg-accent font-display font-bold text-accent-foreground shadow-md",
+  rail: "before:w-0 before:border-l-[3px] before:border-dashed before:border-primary/40",
+  photo: "sprout-blob-1 overflow-hidden shadow-lg",
+});

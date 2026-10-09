@@ -42,6 +42,15 @@
   );
 }
 
+/* The overlook's scrim: a little pine at the foot so the card sits in shadow. */
+.trail-scrim {
+  background: linear-gradient(
+    to top,
+    color-mix(in oklch, var(--inverse) 55%, transparent) 0%,
+    transparent 55%
+  );
+}
+
 /* Stamps sit tilted, like ink on a passport. */
 .trail-stamp {
   transform: rotate(-10deg);

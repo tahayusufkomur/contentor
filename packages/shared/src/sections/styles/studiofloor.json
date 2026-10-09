@@ -6,6 +6,24 @@
   "tones": ["energetic", "playful"],
   "order": 13,
   "enabled": true,
+  "heroLayout": "fullbleed",
+  "recipes": {
+    "home": [
+      "hero",
+      "courseShowcase",
+      "howItWorks",
+      "moments",
+      "story",
+      "benefits",
+      "philosophy",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "cards",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Anybody",
     "body": "Manrope",
@@ -66,7 +84,7 @@
   "radius": "0.5rem",
   "photoWords": "dance studio, dancer in motion, mirror wall, stage lighting, saturated colour, energy, movement blur",
   "variants": {
-    "hero": ["stage", "intro"],
+    "hero": ["mirror", "stage", "intro"],
     "story": ["backstage"],
     "benefits": ["moves"],
     "courseShowcase": ["setlist", "rows"],

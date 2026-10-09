@@ -2,9 +2,11 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { STAGE, heroPhotos, tileStyle, TILE_W } from "../collage";
 import {
   BTN,
   BTN_GHOST,
+  CARD,
   H1,
   HandArrow,
   Kicker,
@@ -50,6 +52,95 @@ function Actions({
         </SmartLink>
       )}
     </div>
+  );
+}
+
+/** The pinboard: up to four taped polaroids pinned over each other on the
+ *  kraft bench, the headline written on a lined note card stuck across their
+ *  feet. */
+export function HeroPinboard({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const photos = heroPhotos(block, editable);
+  const tapes = ["top-left", "top-center", "top-right", "top-center"] as const;
+  return (
+    <Section tone="kraft" className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+      <div className={WRAP}>
+        <div
+          className={cn(
+            "workshop-pin relative mx-auto grid w-full max-w-[70rem]",
+            photos.length > 0 && STAGE,
+          )}
+        >
+          {photos.map((value, n) => (
+            <div
+              key={n}
+              className={cn("absolute", TILE_W, n > 0 && "max-sm:hidden")}
+              style={{ ...tileStyle(photos.length, n), zIndex: 1 + (n % 2) }}
+            >
+              <Polaroid
+                image={value}
+                alt={alt}
+                priority={n === 0}
+                imgClassName={n % 2 ? "aspect-square" : "aspect-[4/5]"}
+                tapePosition={tapes[n]}
+              />
+            </div>
+          ))}
+          <div
+            className={cn(
+              CARD,
+              "workshop-lined relative z-10 max-w-[92%] rotate-[-1deg] justify-self-center px-6 py-5 text-center shadow-[0_10px_24px_-8px_rgba(0,0,0,0.25)] md:px-12 md:py-7",
+              photos.length > 0 ? "self-end" : "self-center",
+            )}
+          >
+            <WashiTape
+              tone="primary"
+              className="-top-3 left-1/2 -translate-x-1/2"
+            />
+            <Kicker block={block} editable={editable} />
+            <Txt
+              block={block}
+              field="headline"
+              editable={editable}
+              as="h1"
+              placeholder="Headline"
+              className={cn(
+                H1,
+                "mt-2 block",
+                alt.length > 28
+                  ? "text-[clamp(1.9rem,1rem+3.2vw,3.8rem)]"
+                  : "text-[clamp(2.4rem,1rem+5vw,6rem)] leading-[0.98]",
+              )}
+            />
+          </div>
+        </div>
+        <div className="mx-auto mt-14 max-w-[46rem] text-center">
+          <Txt
+            block={block}
+            field="subhead"
+            editable={editable}
+            as="p"
+            placeholder="Subheadline"
+            className="block text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]"
+          />
+          {has(block, "meta", editable) && (
+            <p className="workshop-hand mt-5 text-[1.15rem] font-bold text-accent">
+              <Txt
+                block={block}
+                field="meta"
+                editable={editable}
+                placeholder="Small line (e.g. location or format)"
+              />
+            </p>
+          )}
+          <Actions
+            block={block}
+            editable={editable}
+            className="mt-8 justify-center"
+          />
+        </div>
+      </div>
+    </Section>
   );
 }
 

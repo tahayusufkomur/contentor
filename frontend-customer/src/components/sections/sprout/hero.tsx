@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { heroPhotos, tileStyle, TILE_W } from "../collage";
 import {
   Arrow,
   BTN,
@@ -49,6 +50,100 @@ function Actions({
         </SmartLink>
       )}
     </div>
+  );
+}
+
+/** The mosaic: a friendly centred welcome over a cluster of up to four
+ *  photos cut as blobs, a circle and a soft square, on a pale yellow cloud. */
+export function HeroMosaic({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const photos = heroPhotos(block, editable);
+  const shapes = [
+    "sprout-blob-1 aspect-[4/5]",
+    "rounded-full aspect-square",
+    "sprout-blob-2 aspect-[4/5]",
+    "rounded-[2.5rem] aspect-square",
+  ];
+  return (
+    <Section tone="paper" className="pt-10 md:pt-16 lg:pt-20" label={alt}>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute max-sm:hidden left-6 top-8 text-accent opacity-70 sprout-wiggle"
+      >
+        <SunDoodle className="size-12 md:size-16" />
+      </div>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute max-sm:hidden right-8 top-12 text-primary opacity-40 sprout-float"
+      >
+        <SquiggleDoodle className="w-20 md:w-28" />
+      </div>
+      <div className={cn(WRAP, "text-center")}>
+        <Kicker block={block} editable={editable} className="justify-center" />
+        <Txt
+          block={block}
+          field="headline"
+          editable={editable}
+          as="h1"
+          placeholder="Headline"
+          className={cn(H1, "mx-auto mt-4 block max-w-[18ch] text-foreground")}
+        />
+        <Txt
+          block={block}
+          field="subhead"
+          editable={editable}
+          as="p"
+          placeholder="Subheadline"
+          className="mx-auto mt-6 block max-w-[50ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]"
+        />
+        {has(block, "meta", editable) && (
+          <div className="mt-6 flex items-center justify-center gap-2 text-[0.92rem] font-semibold text-primary">
+            <SproutDoodle className="size-4" />
+            <Txt
+              block={block}
+              field="meta"
+              editable={editable}
+              placeholder="Small line (e.g. format or ages)"
+            />
+          </div>
+        )}
+        <Actions
+          block={block}
+          editable={editable}
+          className="mt-8 justify-center"
+        />
+        <div
+          className={cn(
+            "relative mx-auto mt-14 w-full max-w-[64rem]",
+            photos.length > 0 && "aspect-[4/5] sm:aspect-[4/3] md:aspect-[5/2]",
+          )}
+        >
+          {photos.length > 0 && (
+            <div
+              aria-hidden="true"
+              className="sprout-blob-3 absolute inset-x-[8%] inset-y-[6%] bg-[color-mix(in_oklch,var(--accent)_30%,transparent)]"
+            />
+          )}
+          {photos.map((value, n) => (
+            <div
+              key={n}
+              className={cn("absolute", TILE_W, n > 1 && "max-sm:hidden")}
+              style={{ ...tileStyle(photos.length, n), zIndex: 1 + (n % 2) }}
+            >
+              <Img
+                value={value}
+                alt={alt}
+                priority={n === 0}
+                className={cn(
+                  shapes[n % 4],
+                  "w-full border-[6px] border-background shadow-lg",
+                )}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
   );
 }
 

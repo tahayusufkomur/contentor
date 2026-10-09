@@ -8,11 +8,11 @@ import { CtaAppointment } from "./cta";
 import { EventsMasterclasses } from "./events";
 import { FaqConsult } from "./faq";
 import { HeroIntro, HeroPortrait } from "./hero";
-import { HowItWorksRoutine } from "./how-it-works";
+import { HowItWorksRoutine, HowItWorksRoutineRow } from "./how-it-works";
 import { MomentsLookbook } from "./moments";
 import { PhilosophyPullquote } from "./philosophy";
 import { PricingMenu } from "./pricing";
-import { StorySalon } from "./story";
+import { StoryManifesto, StorySalon } from "./story";
 import { defineKit } from "../kit-contract";
 import {
   ARCH,
@@ -35,10 +35,10 @@ import {
 /** "atelier" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
   hero: { portrait: HeroPortrait, intro: HeroIntro },
-  story: { salon: StorySalon },
+  story: { manifesto: StoryManifesto, salon: StorySalon },
   benefits: { rituals: BenefitsRituals },
   courseShowcase: { treatments: CoursesTreatments, rows: CoursesRows },
-  howItWorks: { routine: HowItWorksRoutine },
+  howItWorks: { shortlist: HowItWorksRoutineRow, routine: HowItWorksRoutine },
   philosophy: { pullquote: PhilosophyPullquote },
   moments: { lookbook: MomentsLookbook },
   pricing: { menu: PricingMenu },

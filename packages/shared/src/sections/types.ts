@@ -9,6 +9,17 @@ export type FamilyId = keyof typeof familiesJson.families;
 
 export const FAMILY_IDS = Object.keys(familiesJson.families) as FamilyId[];
 
+export type RecipePage = keyof typeof familiesJson.recipes;
+
+/** A page's section order: the style's own (`style.recipes`) when it has one,
+ *  else the manifest's. Entries are `family` or `family:variant`. */
+export function styleRecipe(
+  style: Pick<SiteStyle, "recipes"> | undefined,
+  page: RecipePage,
+): readonly string[] {
+  return style?.recipes?.[page] ?? familiesJson.recipes[page];
+}
+
 export interface FamilyField {
   type: "text" | "richtext" | "link" | "image" | "items" | "select" | "bool";
   label: string;
@@ -76,6 +87,18 @@ export interface SiteStyle {
   order: number;
   /** Only enabled styles are offered to coaches. */
   enabled: boolean;
+  /** The home hero's composition (split, poster, photo, arch, titlepage,
+   *  fullbleed, collage, giant, cover, centered): /setup shows one look per
+   *  layout first, the rest grouped under it. Labels live in the backend's
+   *  HERO_LAYOUTS (apps/tenant_config/sections.py). */
+  heroLayout?: string;
+  /** Pages this style orders itself (home today); the rest follow the
+   *  manifest's recipes. Entries are `family` or `family:variant`. */
+  recipes?: Partial<Record<RecipePage, string[]>>;
+  /** How the style builds the body sections that vary most (story, benefits,
+   *  howItWorks): two styles sharing a hero layout must differ in at least
+   *  two of them. Vocabulary is checked by scripts/sync_sections.py. */
+  bodyLayouts?: Partial<Record<"story" | "benefits" | "howItWorks", string>>;
   fonts: {
     display: string;
     body: string;

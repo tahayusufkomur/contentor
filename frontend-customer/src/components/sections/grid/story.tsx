@@ -62,3 +62,48 @@ export function StoryColumns({ block, editable }: SectionProps) {
     </Sheet>
   );
 }
+
+/** Story as an essay: no photo; the label and the heading on the axis, one
+ *  book-set column of the coach's words under them, signed under a rule. */
+export function StoryEssay({ block, editable }: SectionProps) {
+  return (
+    <Sheet>
+      <div className={cn(row, "gap-y-6 pt-3")}>
+        <Label block={block} editable={editable} />
+        <Txt
+          block={block}
+          field="heading"
+          editable={editable}
+          as="h2"
+          placeholder="Heading"
+          className="swiss-h2 col-span-12 block md:col-span-9 md:col-start-4"
+        />
+      </div>
+      <div className={cn(row, "mt-12 md:mt-20")}>
+        <div className="col-span-12 md:col-span-6 md:col-start-4 lg:col-span-5 lg:col-start-4">
+          <Rich
+            block={block}
+            field="body"
+            editable={editable}
+            className="swiss-prose text-[1.0625rem] leading-[1.6]"
+          />
+          {has(block, "signature", editable) && (
+            <div className="mt-10 border-t border-foreground pt-3">
+              <Txt
+                block={block}
+                field="signature"
+                editable={editable}
+                as="p"
+                placeholder="Your name"
+                className="swiss-h3 block"
+              />
+            </div>
+          )}
+          <div className="mt-8">
+            <Cta block={block} editable={editable} className={textLink} />
+          </div>
+        </div>
+      </div>
+    </Sheet>
+  );
+}

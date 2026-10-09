@@ -1,7 +1,111 @@
 import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { STAGE, TILE_ASPECT, heroPhotos, tileStyle, TILE_W } from "../collage";
 import { Kicker, PopButton, PopSection, RingBadge, WRAP, str } from "./ui";
+
+/** Cluster hero: up to four photos pasted over each other like stickers on a
+ *  notebook, the headline slapped across them on a lime strip, the `meta`
+ *  line on the spinning badge. */
+export function HeroCluster({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const meta = str(block.meta);
+  const photos = heroPhotos(block, editable);
+  return (
+    <PopSection
+      bg="var(--background)"
+      className="pop-top pb-20 pt-10 md:pb-28 md:pt-14"
+    >
+      <div className={cn(WRAP, "text-center")}>
+        <div className="flex justify-center">
+          <Kicker block={block} editable={editable} />
+        </div>
+        <div
+          className={cn(
+            "relative mx-auto mt-8 grid w-full max-w-[72rem]",
+            photos.length > 0 && STAGE,
+          )}
+        >
+          {photos.length > 0 && (
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-[6%] inset-y-[12%] -rotate-1 rounded-[3rem] border-2 border-[color:var(--pop-ink)] bg-[var(--primary)]"
+            />
+          )}
+          {photos.map((value, n) => (
+            <div
+              key={n}
+              className={cn("absolute", TILE_W, n > 1 && "max-sm:hidden")}
+              style={{ ...tileStyle(photos.length, n), zIndex: 1 + (n % 2) }}
+            >
+              <Img
+                value={value}
+                alt={alt}
+                priority={n === 0}
+                className={cn(
+                  TILE_ASPECT[n % 2],
+                  "w-full rounded-[var(--pop-r)] border-2 border-[color:var(--pop-ink)] shadow-[6px_6px_0_var(--pop-ink)]",
+                )}
+              />
+            </div>
+          ))}
+          <Txt
+            block={block}
+            field="headline"
+            editable={editable}
+            as="h1"
+            placeholder="Headline"
+            className={cn(
+              "pop-display relative z-10 inline-block max-w-[88%] -rotate-2 place-self-center border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-5 py-2 shadow-[8px_8px_0_var(--pop-ink)] md:px-8 md:py-4",
+              alt.length > 28
+                ? "text-[clamp(1.9rem,0.8rem+3.6vw,4.4rem)]"
+                : "text-[clamp(2.4rem,0.8rem+5.6vw,6.8rem)]",
+            )}
+          />
+          {meta && (
+            <RingBadge
+              text={meta}
+              uid={String(block.id ?? "hero")}
+              className="absolute -bottom-8 right-0 z-20 w-28 sm:w-36 lg:-right-4 lg:w-40"
+            />
+          )}
+        </div>
+        <Txt
+          block={block}
+          field="subhead"
+          editable={editable}
+          as="p"
+          className="pop-lede mx-auto mt-12 max-w-[36rem] text-muted-foreground"
+        />
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <PopButton
+            block={block}
+            editable={editable}
+            label="ctaLabel"
+            href="ctaHref"
+          />
+          <PopButton
+            block={block}
+            editable={editable}
+            label="secondaryLabel"
+            href="secondaryHref"
+            tone="paper"
+          />
+        </div>
+        {editable && (
+          <Txt
+            block={block}
+            field="meta"
+            editable={editable}
+            as="p"
+            className="pop-mono mt-6 text-sm text-muted-foreground"
+            placeholder="Small line (shown on the badge)"
+          />
+        )}
+      </div>
+    </PopSection>
+  );
+}
 
 /** Poster hero: a giant headline that ends in an inline photo, a tilted
  *  portrait on a berry colour block, and the `meta` line on a spinning badge. */

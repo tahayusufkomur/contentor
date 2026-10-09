@@ -6,6 +6,24 @@
   "tones": ["energetic", "playful"],
   "order": 10,
   "enabled": true,
+  "heroLayout": "giant",
+  "recipes": {
+    "home": [
+      "hero",
+      "moments",
+      "benefits",
+      "courseShowcase",
+      "story",
+      "howItWorks",
+      "philosophy",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "list",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Unbounded",
     "body": "Libre Franklin",
@@ -66,7 +84,7 @@
   "radius": "0rem",
   "photoWords": "stage light, instrument close-up, performer mid-song, grain, black and white or high contrast",
   "variants": {
-    "hero": ["poster", "intro"],
+    "hero": ["lineup", "poster", "intro"],
     "story": ["linernotes"],
     "benefits": ["setlist"],
     "courseShowcase": ["tracklist", "rows"],

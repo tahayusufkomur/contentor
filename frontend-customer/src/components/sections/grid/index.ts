@@ -1,11 +1,11 @@
 import "./grid.css";
 import type { StyleSections } from "../types";
 import { CoursesRows, EventsRows } from "../rows";
-import { HeroIntro, HeroStatement } from "./hero";
-import { StoryColumns } from "./story";
+import { HeroIntro, HeroPlates, HeroStatement } from "./hero";
+import { StoryColumns, StoryEssay } from "./story";
 import { BenefitsIndex } from "./benefits";
 import { CourseCatalogue } from "./course-showcase";
-import { HowItWorksRuled } from "./how-it-works";
+import { HowItWorksRuled, HowItWorksSequence } from "./how-it-works";
 import { PhilosophyParagraph } from "./philosophy";
 import { MomentsTiles } from "./moments";
 import { PricingTable } from "./pricing";
@@ -18,11 +18,11 @@ import { Head, Sheet, btn } from "./ui";
 
 /** "grid" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { statement: HeroStatement, intro: HeroIntro },
-  story: { columns: StoryColumns },
+  hero: { plates: HeroPlates, statement: HeroStatement, intro: HeroIntro },
+  story: { essay: StoryEssay, columns: StoryColumns },
   benefits: { index: BenefitsIndex },
   courseShowcase: { catalogue: CourseCatalogue, rows: CoursesRows },
-  howItWorks: { ruled: HowItWorksRuled },
+  howItWorks: { sequence: HowItWorksSequence, ruled: HowItWorksRuled },
   philosophy: { paragraph: PhilosophyParagraph },
   moments: { tiles: MomentsTiles },
   pricing: { table: PricingTable },

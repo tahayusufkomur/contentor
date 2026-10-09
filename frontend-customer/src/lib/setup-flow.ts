@@ -155,6 +155,11 @@ export interface LookOption {
   /** Looks: the section style and its colourway ("" = the style's own). */
   style?: string;
   palette?: string;
+  /** Looks: the colourways the style comes in, its own first (id ""). */
+  palettes?: { id: string; label: string }[];
+  /** Looks: the hero layout it shares with others ("Headline beside a
+   * photo"); the grid shows the best of each first. */
+  group?: string;
   /** The guide's pick for this coach. */
   recommended?: boolean;
   /** Why it is the pick ("Made for dance coaches, and it sounds playful."). */

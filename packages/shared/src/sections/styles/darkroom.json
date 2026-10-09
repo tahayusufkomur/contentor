@@ -6,6 +6,23 @@
   "tones": ["expert", "calm"],
   "order": 6,
   "enabled": true,
+  "heroLayout": "photo",
+  "recipes": {
+    "home": [
+      "hero",
+      "moments",
+      "philosophy",
+      "story",
+      "courseShowcase",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "list",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Syne",
     "body": "Schibsted Grotesk",

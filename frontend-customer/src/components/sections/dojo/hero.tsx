@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { heroPhotos } from "../collage";
 import {
   Arrow,
   BTN,
@@ -49,6 +50,114 @@ function Actions({
         </SmartLink>
       )}
     </div>
+  );
+}
+
+/** The hall: everything on the centre line, the seal and kicker, the claim in
+ *  black Mincho over a large ensō, the dek and the actions; then up to three
+ *  training photos side by side as one horizontal band of thin-framed panels. */
+export function HeroHall({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const photos = heroPhotos(block, editable).slice(0, 3);
+  const showMeta = has(block, "meta", editable);
+  return (
+    <Section className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+      <div className={cn(WRAP, "relative text-center")}>
+        <div className="relative mx-auto max-w-[56rem]">
+          <Enso className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+          <div className="relative z-10">
+            <div className="dojo-rise" style={delay(0)}>
+              <Kicker
+                block={block}
+                editable={editable}
+                className="justify-center"
+              />
+            </div>
+            <div className="dojo-rise mt-5" style={delay(100)}>
+              <Txt
+                block={block}
+                field="headline"
+                editable={editable}
+                as="h1"
+                placeholder="Headline"
+                className={cn(
+                  H1,
+                  "mx-auto block",
+                  alt.length <= 26
+                    ? "max-w-[14ch] text-[clamp(3rem,1.4rem+6.4vw,7.4rem)] leading-[0.98]"
+                    : "max-w-[18ch] text-[clamp(2.4rem,1.2rem+3.8vw,5rem)] leading-[1.02]",
+                )}
+              />
+            </div>
+            <div className="dojo-rise mt-7" style={delay(220)}>
+              <Txt
+                block={block}
+                field="subhead"
+                editable={editable}
+                as="p"
+                placeholder="Subheadline"
+                className="mx-auto block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.68] text-muted-foreground md:text-[1.2rem]"
+              />
+            </div>
+            {showMeta && (
+              <p
+                className={cn(
+                  LABEL,
+                  "dojo-rise mt-6 text-[0.78rem] tracking-[0.12em] text-foreground",
+                )}
+                style={delay(320)}
+              >
+                <Txt
+                  block={block}
+                  field="meta"
+                  editable={editable}
+                  placeholder="Small line"
+                />
+              </p>
+            )}
+            <Actions
+              block={block}
+              editable={editable}
+              className="dojo-rise mt-10 justify-center"
+            />
+          </div>
+        </div>
+        {photos.length > 0 && (
+          <ul
+            className={cn(
+              "dojo-rise mt-14 grid gap-3 text-left sm:gap-4 md:mt-20",
+              photos.length === 1
+                ? "grid-cols-1"
+                : photos.length === 2
+                  ? "grid-cols-2"
+                  : "grid-cols-2 md:grid-cols-3",
+            )}
+            style={delay(450)}
+          >
+            {photos.map((value, n) => (
+              <li
+                key={n}
+                className={cn(
+                  "dojo-photo border border-border bg-background p-2 shadow-sm",
+                  photos.length === 3 && n === 2 && "col-span-2 md:col-span-1",
+                )}
+              >
+                <Img
+                  value={value}
+                  alt={alt}
+                  priority={n === 0}
+                  className={
+                    photos.length === 1
+                      ? "aspect-[21/9] w-full"
+                      : "aspect-[4/3] w-full"
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Section>
   );
 }
 

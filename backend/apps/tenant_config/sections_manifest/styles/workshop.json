@@ -6,6 +6,24 @@
   "tones": ["warm", "playful"],
   "order": 16,
   "enabled": true,
+  "heroLayout": "collage",
+  "recipes": {
+    "home": [
+      "hero",
+      "story",
+      "howItWorks",
+      "benefits",
+      "courseShowcase",
+      "moments",
+      "philosophy",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "letter",
+    "benefits": "cards",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Alegreya",
     "body": "Alegreya Sans",
@@ -66,8 +84,8 @@
   "radius": "0.5rem",
   "photoWords": "hands making something, pottery or knitting or sewing, craft table, natural materials, warm daylight, close-up texture",
   "variants": {
-    "hero": ["bench", "intro"],
-    "story": ["maker"],
+    "hero": ["pinboard", "bench", "intro"],
+    "story": ["notecard", "maker"],
     "benefits": ["skills"],
     "courseShowcase": ["projects", "rows"],
     "howItWorks": ["steps"],

@@ -6,6 +6,24 @@
   "tones": ["calm", "expert"],
   "order": 15,
   "enabled": true,
+  "heroLayout": "centered",
+  "recipes": {
+    "home": [
+      "hero",
+      "philosophy",
+      "story",
+      "howItWorks",
+      "courseShowcase",
+      "benefits",
+      "moments",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "cards",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Shippori Mincho",
     "body": "Zen Kaku Gothic New",
@@ -66,7 +84,7 @@
   "radius": "0rem",
   "photoWords": "martial arts training, dojo or gym mat, gi or boxing gloves, disciplined focused athlete, black white and red, dramatic side light",
   "variants": {
-    "hero": ["banner", "intro"],
+    "hero": ["hall", "banner", "intro"],
     "story": ["lineage"],
     "benefits": ["disciplines"],
     "courseShowcase": ["belts", "rows"],

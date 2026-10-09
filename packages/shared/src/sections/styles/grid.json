@@ -6,6 +6,24 @@
   "tones": ["expert"],
   "order": 3,
   "enabled": true,
+  "heroLayout": "giant",
+  "recipes": {
+    "home": [
+      "hero",
+      "benefits",
+      "courseShowcase",
+      "howItWorks",
+      "story",
+      "philosophy",
+      "moments",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "letter",
+    "benefits": "list",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Host Grotesk",
     "body": "Host Grotesk",
@@ -66,11 +84,11 @@
   "radius": "0rem",
   "photoWords": "clean natural light, strong graphic composition, neutral background, candid documentary, modern minimal interior",
   "variants": {
-    "hero": ["statement", "intro"],
-    "story": ["columns"],
+    "hero": ["plates", "statement", "intro"],
+    "story": ["essay", "columns"],
     "benefits": ["index"],
     "courseShowcase": ["catalogue", "rows"],
-    "howItWorks": ["ruled"],
+    "howItWorks": ["sequence", "ruled"],
     "philosophy": ["paragraph"],
     "moments": ["tiles"],
     "pricing": ["table"],

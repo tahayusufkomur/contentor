@@ -3,7 +3,9 @@ import {
   FAMILIES,
   FAMILY_IDS,
   SECTION_MANIFEST,
+  styleRecipe,
   type FamilyId,
+  type RecipePage,
 } from "@shared/sections/types";
 import { SITE_STYLES, styleFontsHref, styleScope } from "@/lib/site-styles";
 import { STYLE_SECTIONS } from "@/components/sections/registry";
@@ -36,11 +38,7 @@ export default async function DesignShowcasePage({
   type Item = { family: FamilyId; variant: string };
   let items: Item[] = [];
   if (sp.page && sp.page in SECTION_MANIFEST.recipes) {
-    const recipe =
-      SECTION_MANIFEST.recipes[
-        sp.page as keyof typeof SECTION_MANIFEST.recipes
-      ];
-    items = recipe.map((entry) => {
+    items = styleRecipe(style, sp.page as RecipePage).map((entry) => {
       const [family, name] = entry.split(":") as [FamilyId, string | undefined];
       return { family, variant: name ?? style.variants[family]?.[0] ?? "" };
     });

@@ -7,12 +7,12 @@ import { CoursesPaths } from "./courses";
 import { CtaBegin } from "./cta";
 import { EventsGatherings } from "./events";
 import { FaqQuestions } from "./faq";
-import { HeroIntro, HeroOracle } from "./hero";
+import { HeroIntro, HeroObservatory, HeroOracle } from "./hero";
 import { HowItWorksRitual } from "./how-it-works";
 import { MomentsVisions } from "./moments";
 import { PhilosophyInvocation } from "./philosophy";
 import { PricingOfferings } from "./pricing";
-import { StoryOrigin } from "./story";
+import { StoryInvocation, StoryOrigin } from "./story";
 import { defineKit } from "../kit-contract";
 import {
   BTN,
@@ -33,8 +33,8 @@ import {
 
 /** "sanctum" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { oracle: HeroOracle, intro: HeroIntro },
-  story: { origin: StoryOrigin },
+  hero: { observatory: HeroObservatory, oracle: HeroOracle, intro: HeroIntro },
+  story: { invocation: StoryInvocation, origin: StoryOrigin },
   benefits: { gifts: BenefitsGifts },
   courseShowcase: { paths: CoursesPaths, rows: CoursesRows },
   howItWorks: { ritual: HowItWorksRitual },

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { heroPhotos } from "../collage";
 import {
   BTN,
   BTN_GHOST,
@@ -51,6 +52,91 @@ function Actions({
         </SmartLink>
       )}
     </div>
+  );
+}
+
+/** The observatory: the same ceremonial centre line under a larger zodiac
+ *  ring, but no arch: the photographs are three moons in a row on the
+ *  horizon, the first one full and in the middle, the others waxing either
+ *  side. One photo is one full moon; two are a pair. */
+export function HeroObservatory({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const all = heroPhotos(block, editable).slice(0, 3);
+  // The first photo is the full moon in the middle, the rest flank it.
+  const moons =
+    all.length === 3 ? [all[1], all[0], all[2]] : all.length === 2 ? all : all;
+  const sizes =
+    all.length === 3
+      ? ["size-24 md:size-44", "size-40 md:size-72", "size-24 md:size-44"]
+      : all.length === 2
+        ? ["size-36 md:size-60", "size-36 md:size-60"]
+        : ["size-52 md:size-80"];
+  return (
+    <Section
+      tone="temple"
+      className="relative pt-16 md:pt-24 lg:pt-28"
+      label={alt}
+    >
+      <ZodiacRing
+        size={860}
+        className="left-1/2 top-4 -translate-x-1/2 opacity-30"
+      />
+      <div className={cn(WRAP, "relative z-10")}>
+        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+          <Kicker block={block} editable={editable} />
+          <MoonPhases className="mt-4" />
+          <Txt
+            block={block}
+            field="headline"
+            editable={editable}
+            as="h1"
+            placeholder="Headline"
+            className={cn(H1, "mt-6 max-w-[18ch]")}
+          />
+          <Txt
+            block={block}
+            field="subhead"
+            editable={editable}
+            as="p"
+            placeholder="Subheadline"
+            className="mt-6 max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.75] text-muted-foreground md:text-[1.15rem]"
+          />
+          {has(block, "meta", editable) && (
+            <div className="mt-6 inline-flex items-center gap-2 text-[0.85rem] uppercase tracking-[0.14em] text-primary">
+              <StarGlyph className="size-3 text-primary" />
+              <Txt
+                block={block}
+                field="meta"
+                editable={editable}
+                placeholder="Small line"
+              />
+              <StarGlyph className="size-3 text-primary" />
+            </div>
+          )}
+          <Actions block={block} editable={editable} className="mt-10" />
+        </div>
+        {moons.length > 0 && (
+          <ul className="mt-16 flex items-end justify-center gap-4 md:mt-20 md:gap-10">
+            {moons.map((value, n) => (
+              <li
+                key={n}
+                className={cn(
+                  "rounded-full border border-[color-mix(in_oklch,var(--primary)_50%,transparent)] p-1 shadow-2xl",
+                  sizes[n],
+                )}
+              >
+                <Img
+                  value={value}
+                  alt={alt}
+                  priority={n === (all.length === 3 ? 1 : 0)}
+                  className="sanctum-oval size-full rounded-full"
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </Section>
   );
 }
 

@@ -53,6 +53,86 @@ function Actions({
   );
 }
 
+/** The overlook: the view from the trail fills the hero and the claim sits
+ *  on a route card pinned low and left, stamp on its corner, so the photo
+ *  stays the view. One photo; without one the pine shows through. */
+export function HeroOverlook({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const showMeta = has(block, "meta", editable);
+  return (
+    <Section
+      tone="pine"
+      className="relative flex min-h-[min(46rem,92svh)] items-end py-0 md:py-0 lg:py-0"
+      label={alt}
+    >
+      <Img
+        value={block.image}
+        alt={alt}
+        priority
+        className="absolute inset-0 size-full"
+      />
+      <div aria-hidden="true" className="trail-scrim absolute inset-0" />
+      <div className={cn(WRAP, "relative pb-10 pt-40 md:pb-14")}>
+        <div
+          className={cn(
+            "trail-rise trail-contours relative max-w-[38rem] rounded-[var(--radius)] border-2 border-foreground bg-background p-7 text-foreground shadow-[8px_8px_0_0_var(--accent)] md:p-10",
+          )}
+          style={delay(0)}
+        >
+          <Stamp className="absolute -right-5 -top-9 bg-background sm:-right-9">
+            Trail
+            <br />
+            head
+          </Stamp>
+          <Kicker block={block} editable={editable} className="!text-primary" />
+          <Txt
+            block={block}
+            field="headline"
+            editable={editable}
+            as="h1"
+            placeholder="Headline"
+            className={cn(
+              H1,
+              "mt-4 block",
+              alt.length <= 28
+                ? "max-w-[10ch] text-[clamp(2.8rem,1.4rem+4.6vw,5.6rem)] leading-[0.98]"
+                : "max-w-[16ch] text-[clamp(2.2rem,1.3rem+3.2vw,4rem)]",
+            )}
+          />
+          <Txt
+            block={block}
+            field="subhead"
+            editable={editable}
+            as="p"
+            placeholder="Subheadline"
+            className="mt-5 block max-w-[42ch] text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground"
+          />
+          {showMeta && (
+            <p
+              className={cn(
+                LABEL,
+                "mt-6 flex items-center gap-3 border-t-2 border-dashed border-foreground/40 pt-5 text-foreground",
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className="size-3 shrink-0 rounded-full bg-accent"
+              />
+              <Txt
+                block={block}
+                field="meta"
+                editable={editable}
+                placeholder="Small line"
+              />
+            </p>
+          )}
+          <Actions block={block} editable={editable} className="mt-8" />
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 /** The trailhead: contour lines on stone, the pine kicker, the claim in the
  *  slab serif, the dek, and the small line as a route card with a stamp on
  *  it; the wide photograph across the right as the view from the start. */

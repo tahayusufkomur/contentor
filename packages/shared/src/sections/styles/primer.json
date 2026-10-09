@@ -6,6 +6,24 @@
   "tones": ["warm", "expert"],
   "order": 8,
   "enabled": true,
+  "heroLayout": "split",
+  "recipes": {
+    "home": [
+      "hero",
+      "benefits",
+      "howItWorks",
+      "courseShowcase",
+      "story",
+      "philosophy",
+      "moments",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "letter",
+    "benefits": "list",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Source Serif 4",
     "body": "Atkinson Hyperlegible",
@@ -67,10 +85,10 @@
   "photoWords": "bright classroom or desk, books and notebooks, tutor with a student, natural daylight, clean, friendly",
   "variants": {
     "hero": ["titlepage", "intro"],
-    "story": ["foreword"],
+    "story": ["note", "foreword"],
     "benefits": ["outcomes"],
     "courseShowcase": ["syllabus", "rows"],
-    "howItWorks": ["lessonplan"],
+    "howItWorks": ["syllabus", "lessonplan"],
     "philosophy": ["marginnote"],
     "moments": ["classroom"],
     "pricing": ["termfees"],

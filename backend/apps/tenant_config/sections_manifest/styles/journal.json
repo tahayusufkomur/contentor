@@ -6,6 +6,24 @@
   "tones": ["calm", "warm"],
   "order": 1,
   "enabled": true,
+  "heroLayout": "cover",
+  "recipes": {
+    "home": [
+      "hero",
+      "story",
+      "philosophy",
+      "benefits",
+      "courseShowcase",
+      "moments",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "list",
+    "howItWorks": "row"
+  },
   "fonts": {
     "display": "Newsreader",
     "body": "Hanken Grotesk",
@@ -66,7 +84,7 @@
   "radius": "0.25rem",
   "photoWords": "soft natural window light, muted neutral tones, calm editorial, negative space",
   "variants": {
-    "hero": ["editorial", "intro"],
+    "hero": ["cover", "editorial", "intro"],
     "story": ["letter"],
     "benefits": ["contents"],
     "courseShowcase": ["issue", "rows"],

@@ -7,7 +7,7 @@ import { CourseShowcaseSetlist } from "./courses";
 import { CtaSpotlight } from "./cta";
 import { EventsSchedule } from "./events";
 import { FaqWarmup } from "./faq";
-import { HeroIntro, HeroStage } from "./hero";
+import { HeroIntro, HeroMirror, HeroStage } from "./hero";
 import { HowItWorksRehearsal } from "./how-it-works";
 import { MomentsReel } from "./moments";
 import { PhilosophyMirror } from "./philosophy";
@@ -31,7 +31,7 @@ import {
 
 /** "studiofloor" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { stage: HeroStage, intro: HeroIntro },
+  hero: { mirror: HeroMirror, stage: HeroStage, intro: HeroIntro },
   story: { backstage: StoryBackstage },
   benefits: { moves: BenefitsMoves },
   courseShowcase: { setlist: CourseShowcaseSetlist, rows: CoursesRows },

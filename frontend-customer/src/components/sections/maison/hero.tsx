@@ -61,6 +61,117 @@ function Actions({
   );
 }
 
+/** The cover: the kicker as the masthead across the top between two hairlines,
+ *  the portrait in its frame at the centre with the claim set low across it,
+ *  the dek and the actions as the left coverlines, the detail print and the
+ *  small line as the right ones. */
+export function HeroCover({ block, editable }: SectionProps) {
+  const alt = str(block.headline);
+  const masthead = str(block.kicker);
+  const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
+  const showSide = showDetail || has(block, "meta", editable);
+  return (
+    <Section className="pt-8 md:pt-10 lg:pt-12" label={alt}>
+      <div className={WRAP}>
+        {has(block, "kicker", editable) && (
+          <div
+            className="maison-fade border-y border-foreground py-4 md:py-6"
+            style={delay(0)}
+          >
+            <Txt
+              block={block}
+              field="kicker"
+              editable={editable}
+              as="p"
+              placeholder="Masthead"
+              className={cn(
+                "maison-opsz block text-center font-display font-normal uppercase tracking-[0.04em]",
+                masthead.length <= 18
+                  ? "text-[clamp(2.6rem,0.6rem+10.4vw,10rem)] leading-[0.9]"
+                  : "text-[clamp(1.4rem,0.8rem+2.4vw,3rem)] leading-[1.1]",
+              )}
+            />
+          </div>
+        )}
+        <div className="mt-8 grid gap-x-10 gap-y-10 md:grid-cols-12 md:items-end">
+          <div
+            className="maison-fade order-2 md:order-1 md:col-span-3"
+            style={delay(300)}
+          >
+            <Txt
+              block={block}
+              field="subhead"
+              editable={editable}
+              as="p"
+              placeholder="Subheadline"
+              className="block text-pretty text-[1.05rem] font-light italic leading-[1.7] md:text-[1.1rem]"
+            />
+            <Actions block={block} editable={editable} className="mt-8" />
+          </div>
+          <figure
+            className="maison-fade order-1 mx-auto w-full max-w-[26rem] md:order-2 md:col-span-6 md:max-w-none"
+            style={delay(150)}
+          >
+            <div className={FRAME}>
+              <div className="relative">
+                <Img
+                  value={block.image}
+                  alt={alt}
+                  priority
+                  className="aspect-[4/5] w-full md:aspect-[5/6]"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/75 to-transparent"
+                />
+                <Txt
+                  block={block}
+                  field="headline"
+                  editable={editable}
+                  as="h1"
+                  placeholder="Headline"
+                  className={cn(
+                    "maison-opsz absolute inset-x-0 bottom-0 block p-5 text-center font-display font-normal tracking-[-0.01em] text-white md:p-8",
+                    alt.length <= 26
+                      ? "text-[clamp(2.4rem,1rem+4.8vw,5.6rem)] leading-[0.96]"
+                      : "text-[clamp(1.9rem,1rem+2.8vw,3.6rem)] leading-[1]",
+                  )}
+                />
+              </div>
+            </div>
+          </figure>
+          {showSide && (
+            <div
+              className="maison-fade order-3 mx-auto w-[60%] max-w-[12rem] md:col-span-3 md:mx-0 md:w-full md:max-w-none"
+              style={delay(450)}
+            >
+              {showDetail && (
+                <div className={cn(FRAME, "p-1.5")}>
+                  <Img
+                    value={block.image2}
+                    alt={alt}
+                    className="aspect-square w-full"
+                  />
+                </div>
+              )}
+              {has(block, "meta", editable) && (
+                <Caption>
+                  <Txt
+                    block={block}
+                    field="meta"
+                    editable={editable}
+                    placeholder="Small line"
+                  />
+                </Caption>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 /** The lookbook opening: the tracked kicker, the claim in enormous Bodoni,
  *  the dek in light Jost and a hairline-outlined action on the left; on
  *  the right the portrait in a hairline frame with its caption, the detail

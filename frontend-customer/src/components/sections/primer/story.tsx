@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
+import { makeStoryLetter } from "../story-layouts";
 import { Arrow, H2, Kicker, Page, Section, WRAP, str } from "./ui";
 
 /** Coach foreword on ruled exercise-book paper with tilted prints and signature. */
@@ -74,3 +75,20 @@ export function StoryForeword({ block, editable }: SectionProps) {
     </Section>
   );
 }
+
+/** A note home on the exercise-book page: no photo, one ruled column of the
+ *  coach's own words, signed in Courier. */
+export const StoryNote = makeStoryLetter({
+  Section: (p) => <Section tone="ruled" {...p} />,
+  Frame: ({ className, children }) => (
+    <Page className={className}>{children}</Page>
+  ),
+  wrap: WRAP,
+  h2: H2,
+  Kicker,
+  body: "text-[1.0625rem] leading-[2rem] [&_p]:mb-0",
+  signature: "primer-courier text-[1.05rem] text-accent",
+  signatureMark: <span aria-hidden="true">&mdash;</span>,
+  link: "primer-link font-bold",
+  LinkIcon: Arrow,
+});

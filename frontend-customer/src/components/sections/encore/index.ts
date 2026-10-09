@@ -7,7 +7,7 @@ import { CoursesTracklist } from "./courses";
 import { CtaEncore } from "./cta";
 import { EventsTourDates } from "./events";
 import { FaqBSides } from "./faq";
-import { HeroIntro, HeroPoster } from "./hero";
+import { HeroIntro, HeroLineup, HeroPoster } from "./hero";
 import { HowItWorksSoundcheck } from "./how-it-works";
 import { MomentsSleeves } from "./moments";
 import { PhilosophyManifesto } from "./philosophy";
@@ -31,7 +31,7 @@ import {
 
 /** "encore" style layouts: family → variant → component. */
 export const sections: Partial<StyleSections> = {
-  hero: { poster: HeroPoster, intro: HeroIntro },
+  hero: { lineup: HeroLineup, poster: HeroPoster, intro: HeroIntro },
   story: { linernotes: StoryLinerNotes },
   benefits: { setlist: BenefitsSetlist },
   courseShowcase: { tracklist: CoursesTracklist, rows: CoursesRows },

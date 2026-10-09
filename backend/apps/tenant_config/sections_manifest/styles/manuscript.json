@@ -6,6 +6,24 @@
   "tones": ["expert", "calm"],
   "order": 19,
   "enabled": true,
+  "heroLayout": "titlepage",
+  "recipes": {
+    "home": [
+      "hero",
+      "story",
+      "philosophy",
+      "howItWorks",
+      "benefits",
+      "courseShowcase",
+      "moments",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "split",
+    "benefits": "columns",
+    "howItWorks": "timeline"
+  },
   "fonts": {
     "display": "Spectral",
     "body": "Literata",

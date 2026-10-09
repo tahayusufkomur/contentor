@@ -19,6 +19,14 @@ CX_SRC = ROOT / "packages/shared/src/cx/primitives.json"
 CX_NAME = "cx/primitives.json"
 
 
+# The structures a style can build its story / benefits / howItWorks with (style.bodyLayouts).
+BODY_LAYOUTS = {
+    "story": {"split", "letter", "pull"},
+    "benefits": {"cards", "columns", "list", "bento"},
+    "howItWorks": {"row", "timeline", "grid"},
+}
+
+
 def _expected():
     """{relative path: bytes} the backend copy must hold."""
     files = {"families.json": (SRC / "families.json").read_bytes()}
@@ -42,7 +50,8 @@ def _actual():
 def _style_errors(files):
     """Every enabled style must cover every family (so any page can be
     restyled without losing a section) and offer hero "intro"."""
-    families = json.loads(files["families.json"])["families"]
+    manifest = json.loads(files["families.json"])
+    families = manifest["families"]
     errors = []
     for name, raw in files.items():
         if not name.startswith("styles/"):
@@ -56,6 +65,18 @@ def _style_errors(files):
             errors.append(f"{name}: enabled but has no variants for {', '.join(missing)}")
         if "intro" not in (variants.get("hero") or []):
             errors.append(f'{name}: enabled but hero variants lack "intro"')
+        for page, entries in (style.get("recipes") or {}).items():
+            if page not in manifest["recipes"]:
+                errors.append(f"{name}: recipe for unknown page {page!r}")
+            for entry in entries:
+                family, _, variant = entry.partition(":")
+                if family not in families:
+                    errors.append(f"{name}: recipe {page!r} names unknown family {family!r}")
+                elif variant and variant not in variants.get(family, []):
+                    errors.append(f"{name}: recipe {page!r} names {family}:{variant}, which the style does not ship")
+        for family, layout in (style.get("bodyLayouts") or {}).items():
+            if layout not in BODY_LAYOUTS.get(family, ()):
+                errors.append(f"{name}: bodyLayouts.{family} {layout!r} is not one of {sorted(BODY_LAYOUTS.get(family, ()))}")
         keys = set(style.get("palette") or {})
         for variant in style.get("palettes") or []:
             if not variant.get("id") or set(variant.get("palette") or {}) != keys:

@@ -62,33 +62,45 @@ def palettes(style_id) -> dict:
     return {p["id"]: p for p in (style(style_id) or {}).get("palettes") or [] if p.get("id")}
 
 
+# A style's heroLayout as the coach reads it: looks sharing one are grouped.
+HERO_LAYOUTS = {
+    "split": "Headline beside a photo",
+    "poster": "Giant type over a photo",
+    "photo": "Photo first, words second",
+    "arch": "Centred, with an arched photo",
+    "titlepage": "A framed title page",
+    "fullbleed": "Photo fills the page, words on a card",
+    "collage": "A cluster of photos",
+    "giant": "Giant headline, photos beneath",
+    "cover": "A magazine cover",
+    "centered": "Centred words, a band of photos",
+}
+
+# Photo slots (image, image2, image3, image4) a layout's first hero variant
+# shows when it is not the usual two; the composer fetches no more than these.
+HERO_PHOTOS = {"fullbleed": 1, "collage": 4, "giant": 3, "centered": 3}
+
+
 def looks() -> list[dict]:
-    """Every enabled style in its own palette and in each alternative, in
-    display order: the looks /setup offers. value is the look id the coach
-    picks: "<style>" or "<style>:<palette>"."""
-    out = []
-    for sid, s in enabled_styles().items():
-        label = s.get("label") or sid
-        out.append(
-            {
-                "value": sid,
-                "style": sid,
-                "palette": "",
-                "label": f"{label} · {s.get('paletteLabel') or 'Original'}",
-                "detail": s.get("mood", ""),
-            }
-        )
-        for p in s.get("palettes") or []:
-            out.append(
-                {
-                    "value": f"{sid}:{p['id']}",
-                    "style": sid,
-                    "palette": p["id"],
-                    "label": f"{label} · {p.get('label') or p['id']}",
-                    "detail": p.get("mood") or s.get("mood", ""),
-                }
-            )
-    return out
+    """Every enabled style, in display order, with the colourways it offers:
+    the looks /setup offers. "palettes" lists the style's own colours (id "")
+    then its alternatives; the look the coach picks is "<style>" or
+    "<style>:<palette>". "group" names the hero layout it shares with others."""
+    return [
+        {
+            "value": sid,
+            "style": sid,
+            "palette": "",
+            "label": s.get("label") or sid,
+            "detail": s.get("mood", ""),
+            "group": HERO_LAYOUTS.get(s.get("heroLayout") or "", ""),
+            "palettes": [
+                {"id": "", "label": s.get("paletteLabel") or "Original"},
+                *[{"id": p["id"], "label": p.get("label") or p["id"]} for p in s.get("palettes") or []],
+            ],
+        }
+        for sid, s in enabled_styles().items()
+    ]
 
 
 # Ranking weights, mirrored by rankStylesForNiche in packages/shared: the
@@ -124,6 +136,43 @@ def parse_look(value) -> tuple[str, str] | None:
     if style(sid) is None or (pid and pid not in palettes(sid)):
         return None
     return sid, pid
+
+
+def recipes(style_id) -> dict:
+    """page key -> ordered ``family[:variant]`` entries: the manifest's recipes
+    with any page the style orders itself (``style.recipes``) swapped in."""
+    return {**manifest().get("recipes", {}), **((style(style_id) or {}).get("recipes") or {})}
+
+
+# Photo slots a body layout never shows (by the style's bodyLayouts tag): no
+# search, no download. A letter has no photo; a pull-quote keeps the portrait.
+_BODY_UNSHOWN = {("story", "letter"): ("image", "image2"), ("story", "pull"): ("image2",)}
+HERO_SLOTS = ("image", "image2", "image3", "image4")
+
+
+def unshown_slots(family, variant) -> tuple[str, ...]:
+    """Photo slots a layout ("<style>.<name>") never renders: the composer
+    fetches none for them. Only a style's own first variant carries the
+    layout it is tagged with; its older variants show what they always did."""
+    style_id, _, name = str(variant or "").partition(".")
+    if family == "hero":
+        return HERO_SLOTS[hero_photos(variant) :]
+    names = variants(style_id, family)
+    layout = ((style(style_id) or {}).get("bodyLayouts") or {}).get(family)
+    return _BODY_UNSHOWN.get((family, layout), ()) if names and name == names[0] else ()
+
+
+def hero_photos(variant) -> int:
+    """How many of the hero's photo slots a hero variant ("<style>.<name>")
+    shows: one on the compact intro, the layout's count on the style's own
+    first hero, two on any other."""
+    style_id, _, name = str(variant or "").partition(".")
+    names = variants(style_id, "hero")
+    if name == "intro":
+        return 1
+    if names and name == names[0]:
+        return HERO_PHOTOS.get((style(style_id) or {}).get("heroLayout"), 2)
+    return 2
 
 
 def variants(style_id, family) -> list[str]:
@@ -166,7 +215,14 @@ def restyle_variant(variant, target_style_id, family) -> str:
         return f"{target_style_id}.{name}"
     source = variants(source_style, family)
     index = source.index(name) if name in source else 0
-    return f"{target_style_id}.{target[index] if index < len(target) else target[0]}"
+    # A hero that is not the compact intro never lands on the target's intro.
+    pool = [n for n in target if n != "intro"] if family == "hero" and name != "intro" else target
+    pool = pool or target
+    return f"{target_style_id}.{pool[index] if index < len(pool) else pool[0]}"
+
+
+def _has_photo(value) -> bool:
+    return isinstance(value, dict) and bool(value.get("photo_id") or value.get("url"))
 
 
 def restyle_pages(pages, target_style_id) -> dict:
@@ -181,7 +237,18 @@ def restyle_pages(pages, target_style_id) -> dict:
         for block in page["blocks"]:
             family = family_of(block.get("type")) if isinstance(block, dict) else None
             if family:
-                block = {**block, "variant": restyle_variant(block.get("variant"), target_style_id, family)}
+                variant = restyle_variant(block.get("variant"), target_style_id, family)
+                if _has_photo(block.get("image")) and "image" in unshown_slots(family, variant):
+                    # A layout without a photo would hide the coach's own: take the target's next layout that shows it.
+                    variant = next(
+                        (
+                            v
+                            for n in variants(target_style_id, family)
+                            if "image" not in unshown_slots(family, v := f"{target_style_id}.{n}")
+                        ),
+                        variant,
+                    )
+                block = {**block, "variant": variant}
             blocks.append(block)
         out[key] = {**page, "blocks": blocks}
     return out
