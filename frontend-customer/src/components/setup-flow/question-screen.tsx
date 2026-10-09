@@ -452,31 +452,27 @@ export function QuestionScreen({
                   </>
                 )}
               </div>
+              <div style={{ viewTransitionName: "sf-answer" }} className="mt-6">
+                <AnswerBox
+                  className="max-w-[720px]"
+                  value={draft.text ?? typed}
+                  onChange={(update) =>
+                    onDraft((d) => ({ ...d, text: update(d.text ?? typed) }))
+                  }
+                  sending={sending}
+                  placeholder={
+                    review
+                      ? "Or tell me what to change, like “make it six weeks”…"
+                      : live
+                        ? "Or type your own answer…"
+                        : "Or type a new answer…"
+                  }
+                  onSubmit={(text, spoken) => send({ message: text, spoken })}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div
-        style={{ viewTransitionName: "sf-answer" }}
-        className="sticky bottom-0 border-t border-[var(--sf-line)] bg-[var(--sf-paper)] px-5 py-3 sm:px-10"
-      >
-        <AnswerBox
-          className="mx-auto max-w-[1280px]"
-          value={draft.text ?? typed}
-          onChange={(update) =>
-            onDraft((d) => ({ ...d, text: update(d.text ?? typed) }))
-          }
-          sending={sending}
-          placeholder={
-            review
-              ? "Or tell me what to change, like “make it six weeks”…"
-              : live
-                ? "Or type your own answer…"
-                : "Or type a new answer…"
-          }
-          onSubmit={(text, spoken) => send({ message: text, spoken })}
-        />
       </div>
     </div>
   );
