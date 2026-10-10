@@ -813,8 +813,8 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if not isinstance(picked, dict):
             raise ChoiceError("invalid_value")
         links = {n: u for k, v in picked.items() if (n := str(k).lower()) and (u := brief.social_url(n, v))}
-        if picked and not links:
-            raise ChoiceError("invalid_value")
+        if len(links) < len(picked):  # a handle that doesn't parse is named, never dropped
+            raise ChoiceError("invalid_handle")
         answers["socials"] = brief.socials_summary(links)
         return
     if field_id == "calendar_view":

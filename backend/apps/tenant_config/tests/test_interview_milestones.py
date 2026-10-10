@@ -533,8 +533,12 @@ def test_calendar_and_social_choices_are_validated(tenant_ctx, config):
         ms.choose(tenant_ctx, answers, "calendar_view", "year")
     ms.choose(tenant_ctx, answers, "socials", "{}")
     assert answers["socials"] == brief.NO_SOCIALS
-    with pytest.raises(ms.ChoiceError):
+    with pytest.raises(ms.ChoiceError, match="invalid_handle"):
         ms.choose(tenant_ctx, answers, "socials", '{"Instagram": "not a handle!!"}')
+    with pytest.raises(ms.ChoiceError, match="invalid_handle"):
+        ms.choose(tenant_ctx, answers, "socials", '{"Instagram": "mira yoga house"}')  # audit R2
+    with pytest.raises(ms.ChoiceError, match="invalid_handle"):  # one bad handle is never dropped silently
+        ms.choose(tenant_ctx, answers, "socials", '{"Instagram": "mira yoga house", "YouTube": "@mira"}')
     assert ms.calendar_cards()["options"][0]["value"] == "month"
 
 

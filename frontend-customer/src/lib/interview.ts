@@ -116,6 +116,30 @@ export function finishedNotes(
   return notes;
 }
 
+// Mirrors interview_brief.SOCIALS / social_url (pinned by the same table in
+// test_interview_brief.py): a handle, or a link on that network.
+const SOCIAL_HOSTS: Record<string, string> = {
+  instagram: "instagram\\.com",
+  youtube: "youtube\\.com|youtu\\.be",
+  tiktok: "tiktok\\.com",
+  facebook: "facebook\\.com|fb\\.com",
+  x: "x\\.com|twitter\\.com",
+  linkedin: "linkedin\\.com",
+};
+
+/** Whether the server will take this handle or link for a network ("Instagram"). */
+export function socialOk(network: string, raw: string): boolean {
+  const host = SOCIAL_HOSTS[network.toLowerCase()];
+  const text = raw.trim().replace(/[.,;]+$/, "");
+  if (!host || !text) return false;
+  return (
+    new RegExp(
+      `^(?:https?://)?(?:[\\w-]+\\.)?(?:${host})/\\S{1,200}$`,
+      "i",
+    ).test(text) || /^@?[\p{L}\p{N}_.-]{1,60}$/u.test(text)
+  );
+}
+
 export function formatPrice(cents: number | null, currency: string): string {
   if (cents == null) return "";
   return new Intl.NumberFormat("en-US", {

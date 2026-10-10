@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { GuideTurn, InterviewEntry } from "@/lib/setup-flow";
+import {
+  turnErrorText,
+  type GuideTurn,
+  type InterviewEntry,
+} from "@/lib/setup-flow";
+import { ApiError } from "@/types/api";
 import {
   activityLine,
   addStarter,
@@ -11,6 +16,7 @@ import {
   pickedOptions,
   planLabel,
   questionSteps,
+  socialOk,
   stageIndex,
   withNote,
 } from "@/lib/interview";
@@ -268,5 +274,28 @@ describe("planLabel", () => {
     expect(
       planLabel({ name: "pro", amount_cents: null, currency: "EUR" }),
     ).toBe("Pro plan");
+  });
+});
+
+describe("socialOk mirrors the server", () => {
+  it.each([
+    ["Instagram", "@mira.yoga", true],
+    ["Instagram", "mira yoga house", false],
+    ["Instagram", "https://www.instagram.com/mira.yoga/?hl=en", true],
+    ["YouTube", "youtu.be/abc", true],
+    ["X", "twitter.com/mira", true],
+    ["TikTok", "", false],
+    ["Instagram", "mira.yoga.", true],
+  ] as const)("%s %s", (network, raw, ok) => {
+    expect(socialOk(network, raw)).toBe(ok);
+  });
+});
+
+describe("turnErrorText", () => {
+  it("names a refused handle and falls back for anything else", () => {
+    expect(
+      turnErrorText(new ApiError(400, { detail: "invalid_handle" })),
+    ).toMatch(/handle/);
+    expect(turnErrorText(new Error("offline"))).toMatch(/didn’t go through/);
   });
 });

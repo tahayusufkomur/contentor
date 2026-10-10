@@ -2,6 +2,7 @@
 // GET/POST /api/v1/admin/setup-flow/ (+ build-page/, draft/).
 import type { FamilyId } from "@shared/sections/types";
 import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
 import type { LogoMark } from "@/types/tenant";
 
 export type StepKind = "content" | "page" | "payouts" | "launch";
@@ -146,6 +147,26 @@ export const BLOCKERS: Record<string, { label: string; step: string }> = {
  * owner chrome and without the /setup redirect. */
 export function embedSrc(path: string): string {
   return `${path}${path.includes("?") ? "&" : "?"}embed=1`;
+}
+
+/** A refused answer (the server's 400 detail code), in the coach's words. */
+const CHOICE_ERRORS: Record<string, string> = {
+  invalid_handle:
+    "That handle doesn’t look right. Use your handle, like @mira.yoga, or paste the link to your profile.",
+  invalid_schedule: "Pick at least one day and a time for the class.",
+  unknown_logo: "That logo isn’t available any more. Pick another one.",
+  unknown_style: "That look isn’t available any more. Pick another one.",
+};
+
+export function turnErrorText(err: unknown): string {
+  const code =
+    err instanceof ApiError && err.status === 400
+      ? String(err.data.detail ?? "")
+      : "";
+  return (
+    CHOICE_ERRORS[code] ??
+    "That didn’t go through. Your answer is still here, so try again in a moment."
+  );
 }
 
 export const DELEGATE = "__delegate__";

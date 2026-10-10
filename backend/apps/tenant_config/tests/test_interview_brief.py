@@ -361,3 +361,20 @@ def test_tone_hints_follow_the_niche_and_the_model_when_it_wrote_them():
 )
 def test_parse_price_takes_the_number_over_free(raw, price):
     assert brief.parse_price(raw) == price
+
+
+@pytest.mark.parametrize(
+    ("network", "raw", "ok"),
+    [
+        ("instagram", "@mira.yoga", True),
+        ("instagram", "mira yoga house", False),
+        ("instagram", "https://www.instagram.com/mira.yoga/?hl=en", True),
+        ("youtube", "youtu.be/abc", True),
+        ("x", "twitter.com/mira", True),
+        ("tiktok", "", False),
+        ("instagram", "mira.yoga.", True),
+    ],
+)
+def test_social_url_table_the_browser_mirrors(network, raw, ok):
+    """Review focus 5: lib/interview.ts socialOk runs the same table."""
+    assert (brief.social_url(network, raw) is not None) is ok

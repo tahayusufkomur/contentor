@@ -13,6 +13,7 @@ import {
   planLabel,
   scheduleSummary,
   scheduleValid,
+  socialOk,
   withNote,
   type QuestionStep,
 } from "@/lib/interview";
@@ -118,7 +119,8 @@ export function QuestionScreen({
       : sched
         ? ticked.length > 0 && scheduleValid(mode, sched)
         : socials
-          ? ticked.length > 0 && networks.every((n) => !!socials[n]?.trim())
+          ? ticked.length > 0 &&
+            networks.every((n) => socialOk(n, socials[n] ?? ""))
           : ticked.length > 0 || !!note;
   // A turn can take a while when the model is busy; say so honestly.
   const [slow, setSlow] = useState(false);

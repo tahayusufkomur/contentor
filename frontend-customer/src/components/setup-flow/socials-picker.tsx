@@ -1,5 +1,6 @@
 "use client";
 
+import { socialOk } from "@/lib/interview";
 import { cn } from "@/lib/utils";
 
 const INPUT =
@@ -27,22 +28,36 @@ export function SocialsPicker({
         className,
       )}
     >
-      {networks.map((n) => (
-        <label key={n} className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-medium text-[var(--sf-graphite)]">
-            {n}
-          </span>
-          <input
-            type="text"
-            value={value[n] ?? ""}
-            disabled={disabled}
-            placeholder="@yourname or a link"
-            autoComplete="off"
-            onChange={(e) => onChange({ ...value, [n]: e.target.value })}
-            className={INPUT}
-          />
-        </label>
-      ))}
+      {networks.map((n) => {
+        // Checked as typed, the way the server will read it.
+        const bad = !!value[n]?.trim() && !socialOk(n, value[n]);
+        return (
+          <label key={n} className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium text-[var(--sf-graphite)]">
+              {n}
+            </span>
+            <input
+              type="text"
+              value={value[n] ?? ""}
+              disabled={disabled}
+              placeholder="@yourname or a link"
+              autoComplete="off"
+              aria-invalid={bad || undefined}
+              aria-describedby={bad ? `social-${n}-error` : undefined}
+              onChange={(e) => onChange({ ...value, [n]: e.target.value })}
+              className={INPUT}
+            />
+            {bad && (
+              <span
+                id={`social-${n}-error`}
+                className="text-[12.5px] text-destructive"
+              >
+                No spaces: use your handle, like @mira.yoga, or paste the link.
+              </span>
+            )}
+          </label>
+        );
+      })}
     </div>
   );
 }

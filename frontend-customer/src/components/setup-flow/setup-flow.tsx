@@ -24,6 +24,7 @@ import {
 import {
   isReview,
   setupFlowApi,
+  turnErrorText,
   type CopilotPayload,
   type GuideTurn,
   type SetupFlowApi,
@@ -327,7 +328,7 @@ function Flow({
         throw err; // the answer is still in its box
       }
     },
-    { errorToast: "That didn’t go through. Your answer is still in the box." },
+    { onError: (err) => toast.error(turnErrorText(err)) },
   );
 
   // Slides: ← and → move between questions when nothing is being typed.
