@@ -25,7 +25,10 @@ TRANSCRIPT_KEEP = 80
 MAX_OPTIONS = 8
 # The hub has no sessions: the whole kept transcript rides every turn.
 CONTEXT_TURNS = TRANSCRIPT_KEEP
-OPENING_ACK = "Hi! I'll ask you a few questions and build your site while we talk. Type, tap an answer, or use the mic."
+OPENING_ACK = (
+    "Hi. This takes about 15 minutes, and your site builds while we talk. Tap an answer, type, or use the mic."
+    " Tell me a lot at once and I'll skip what you've covered."
+)
 READY_QUESTION = "Your site is ready. Take a look around, then go live when you're happy."
 # What the guide says about work a turn just started. Code-owned: instant,
 # and it never announces work that did not start.
