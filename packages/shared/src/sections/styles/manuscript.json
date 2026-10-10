@@ -4,6 +4,7 @@
   "mood": "The book — cream pages, a light literary serif, drop caps, chapter numbers and long-form reading rhythm.",
   "niches": ["writing"],
   "tones": ["expert", "calm"],
+  "tags": ["expertise", "long"],
   "order": 19,
   "enabled": true,
   "heroLayout": "titlepage",

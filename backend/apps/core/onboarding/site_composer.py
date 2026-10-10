@@ -1309,14 +1309,6 @@ def _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction) -> list
 # ── images ───────────────────────────────────────────────────────────────────
 
 
-def _orientation(aspect) -> str:
-    try:
-        w, h = (float(x) for x in str(aspect).split(":"))
-    except ValueError:
-        return "square"
-    return "portrait" if w < h else "landscape" if w > h else "square"
-
-
 def _queries(brief, ctx, photo_words) -> list[str]:
     words = " ".join(brief.get(k, "") for k in ("person", "subject", "action", "setting")).strip()
     if ctx["topic"].lower() not in words.lower():
@@ -1325,31 +1317,77 @@ def _queries(brief, ctx, photo_words) -> list[str]:
     return list(dict.fromkeys(q for q in (f"{words} {photo_words}".strip(), short, ctx["topic"]) if q))
 
 
-def _find_photo(queries, orientation, used, ctx):
-    """(RemoteImage, tenant Photo) for the best catalog match not in ``used``;
-    a used one only when nothing else matches; (None, None) on failure.
-    Never a photo of another discipline; photos naming the coach's subject
-    first."""
-    seen_fallback = None
-    for query in queries:
+POOL_PAGES = 3  # catalog pages per orientation per page build: up to 36 candidates for ~13 slots
+
+
+def _pool_candidates(pools: dict, topic: str, orientation: str, used: set) -> list:
+    """Unused candidates of ``orientation`` from the site's shared topic search,
+    one catalog page at a time, the next fetched only once every loaded image is
+    taken. Sibling pages building in parallel run the identical query, so the
+    client's Redis cache serves it to them: a whole site costs a handful of
+    searches instead of several per slot."""
+    state = pools.setdefault(orientation, {"images": [], "page": 0, "more": True})
+    while True:
+        fresh = [i for i in state["images"] if i.asset_id not in used]
+        if fresh or not state["more"] or state["page"] >= POOL_PAGES:
+            return fresh
+        state["page"] += 1
         try:
-            results = curated_client.search(query, orientation=orientation, per_page=SEARCH_PER_PAGE).results
+            page = curated_client.search(topic, orientation=orientation, page=state["page"], per_page=SEARCH_PER_PAGE)
         except curated_client.CuratedImageError as exc:
-            logger.warning("composer photo search failed (%s): %s", query[:60], exc)
+            logger.warning("composer photo pool failed (%s): %s", topic[:60], exc)
+            state["more"] = False
             continue
-        for image in ai_curate.on_topic_first(results, ctx["topic"], ctx["allowed"]):
-            if image.asset_id in used:
-                seen_fallback = seen_fallback or image
-                continue
+        known = {i.asset_id for i in state["images"]}
+        state["images"] += [i for i in page.results if i.asset_id not in known]
+        state["more"] = page.has_next
+
+
+def _ranked(images, query: str, ctx) -> list:
+    """On-topic images, those sharing the most words with the slot's brief first
+    (local ranking: the catalog already filtered on the topic)."""
+    want = ai_curate.tokens(query)
+
+    def overlap(image) -> int:
+        return len(want & ai_curate.tokens(f"{image.title} {image.description} {' '.join(image.tags or [])}"))
+
+    return sorted(ai_curate.on_topic_first(images, ctx["topic"], ctx["allowed"]), key=lambda i: -overlap(i))
+
+
+def _find_photo(queries, aspect, used, ctx, pools=None):
+    """(RemoteImage, tenant Photo) for a slot: the best unused image of the
+    slot's orientation from the site's shared pool; the slot's own brief queries
+    only when the pool has nothing left; a used image only when nothing else
+    matches; (None, None) on failure. Never a photo of another discipline.
+    Orientation, not exact aspect: the renderer cover-crops, and the exact-shape
+    page came back short so often that every query cost two searches."""
+    pools = {} if pools is None else pools
+    orientation = curated_client.orientation_of(aspect)
+    taken = set(used)
+    candidates = _ranked(_pool_candidates(pools, ctx["topic"], orientation, taken), queries[0], ctx)
+    if not candidates:
+        for query in queries:
+            if query == ctx["topic"]:
+                continue  # that is the pool, already exhausted
             try:
-                return image, curated_cache.cache_remote_image(image)
-            except curated_client.CuratedImageError:
+                found = curated_client.search(query, orientation=orientation, per_page=SEARCH_PER_PAGE).results
+            except curated_client.CuratedImageError as exc:
+                logger.warning("composer photo search failed (%s): %s", query[:60], exc)
                 continue
-    if seen_fallback is not None:
+            candidates = [i for i in _ranked(found, query, ctx) if i.asset_id not in taken]
+            if candidates:
+                break
+    for image in candidates:
         try:
-            return seen_fallback, curated_cache.cache_remote_image(seen_fallback)
+            return image, curated_cache.cache_remote_image(image)
         except curated_client.CuratedImageError:
-            pass
+            continue
+    # Everything on topic is already placed: repeat a pool photo rather than leave the slot empty.
+    for image in _ranked(pools.get(orientation, {}).get("images", []), queries[0], ctx):
+        try:
+            return image, curated_cache.cache_remote_image(image)
+        except curated_client.CuratedImageError:
+            continue
     return None, None
 
 
@@ -1359,6 +1397,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
     photo_words = (sections.style(style_id) or {}).get("photoWords", "")
     used = {a for key, ids in (plan.get("used_assets") or {}).items() if key != page_key for a in ids}
     placed = []
+    pools = {}  # orientation -> shared candidate pages for this page build
     for block, entry in zip(blocks, entries, strict=True):
         family = entry["family"]
         specs = sections.families()[family]["fields"]
@@ -1377,9 +1416,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                 continue
             brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx)
             try:
-                image, photo = _find_photo(
-                    _queries(brief, ctx, photo_words), _orientation(aspect), used | set(placed), ctx
-                )
+                image, photo = _find_photo(_queries(brief, ctx, photo_words), aspect, used | set(placed), ctx, pools)
             except Exception:  # an image must never take the page down
                 logger.exception("composer image failed for %s %s/%s", tenant.schema_name, page_key, slot)
                 image = photo = None

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { CalendarDays, Check, ImageOff, MapPin, Video } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,8 @@ const DRAFTING: Record<ReviewKind, string[]> = {
 /** The interview's first course or class, shown as it was drafted: cover
  * (with a few others to choose from), title, description, price, and the
  * curriculum or the date. While it drafts, a page-shaped skeleton and the
- * steps it is going through. ``delay`` (ms) is when it springs in. */
+ * steps it is going through; while it is redrafted, the draft it replaces.
+ * ``delay`` (ms) is when it springs in. */
 export function DraftReview({
   card,
   delay,
@@ -31,8 +32,15 @@ export function DraftReview({
   disabled: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
 }) {
+  // The parts spring in one by one the first time a draft shows. After that
+  // a change only replays on the parts it touched (each is keyed by its
+  // value), so they arrive at once.
+  const shown = useRef(false);
+  useEffect(() => {
+    if (card.item) shown.current = true;
+  });
   const enter = (i: number): CSSProperties => ({
-    animationDelay: `${delay + i * 90}ms`,
+    animationDelay: `${shown.current ? 0 : delay + i * 90}ms`,
   });
   if (card.status === "waiting")
     return (
@@ -44,7 +52,7 @@ export function DraftReview({
         and your first class will be drafted the moment it’s active.
       </p>
     );
-  if (card.status === "building" || !card.item) {
+  if (!card.item) {
     return card.status === "failed" ? (
       <p
         style={enter(0)}
@@ -63,6 +71,7 @@ export function DraftReview({
       item={card.item}
       enter={enter}
       disabled={disabled}
+      redrafting={card.status === "building"}
       onCover={onCover}
     />
   );
@@ -109,12 +118,14 @@ function Drafted({
   item,
   enter,
   disabled,
+  redrafting,
   onCover,
 }: {
   kind: ReviewKind;
   item: ReviewItem;
   enter: (i: number) => CSSProperties;
   disabled: boolean;
+  redrafting: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
 }) {
   const [picking, setPicking] = useState<string | null>(null);
@@ -136,8 +147,15 @@ function Drafted({
       ).replace(/[.,]00$/, "")
     : "Free";
   return (
-    <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
+    <div
+      aria-busy={redrafting}
+      className={cn(
+        "mt-8 grid gap-6 transition-opacity duration-300 lg:grid-cols-[1.1fr_1fr] lg:gap-10",
+        redrafting && "opacity-60",
+      )}
+    >
       <div
+        key={item.cover_url}
         style={enter(0)}
         className="motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
       >
@@ -171,7 +189,9 @@ function Drafted({
                   type="button"
                   aria-pressed={c.current}
                   aria-label={c.current ? "Current cover" : "Use this cover"}
-                  disabled={disabled || c.current || picking !== null}
+                  disabled={
+                    disabled || redrafting || c.current || picking !== null
+                  }
                   onClick={() => pick(c.value)}
                   className={cn(
                     "relative aspect-video overflow-hidden rounded-lg ring-offset-2 ring-offset-[var(--sf-paper)] transition-[box-shadow,transform] motion-safe:hover:-translate-y-0.5",
@@ -199,6 +219,15 @@ function Drafted({
       </div>
 
       <div className="min-w-0">
+        {redrafting && (
+          <p
+            role="status"
+            className="mb-3 flex items-center gap-2 text-[14px] text-[var(--sf-graphite)]"
+          >
+            <Spinner size="sm" className="text-[var(--sf-brass)]" />
+            Redrafting…
+          </p>
+        )}
         <p
           style={enter(1)}
           className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--sf-brass)] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
@@ -206,6 +235,7 @@ function Drafted({
           Your first {NOUN[kind]}
         </p>
         <h2
+          key={item.title}
           style={enter(2)}
           className="mt-2 text-[26px] font-semibold leading-tight tracking-[-0.02em] motion-safe:animate-[sf-word_.8s_var(--sf-spring)_both] sm:text-[30px]"
         >
@@ -213,6 +243,7 @@ function Drafted({
         </h2>
         {kind === "event" && item.when && (
           <div
+            key={`${item.when}|${item.location}|${item.event_kind}`}
             style={enter(3)}
             className="mt-3 flex flex-wrap gap-2 text-[13.5px] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
           >
@@ -239,6 +270,7 @@ function Drafted({
           </div>
         )}
         <p
+          key={item.description}
           style={enter(3)}
           className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
         >
@@ -248,7 +280,7 @@ function Drafted({
           <ol className="mt-5 space-y-2">
             {item.modules.map((m, i) => (
               <li
-                key={`${i}:${m.title}`}
+                key={`${i}:${m.title}:${m.lessons.join("|")}`}
                 style={enter(4 + i)}
                 className="rounded-xl border border-[var(--sf-line)] bg-white px-4 py-3 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
               >

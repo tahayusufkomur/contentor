@@ -4,6 +4,7 @@
   "mood": "The trusted advisor's annual report — bone paper, navy ink, one oxblood rule, numbered clauses.",
   "niches": ["business", "general"],
   "tones": ["expert"],
+  "tags": ["expertise", "long"],
   "order": 5,
   "enabled": true,
   "heroLayout": "split",

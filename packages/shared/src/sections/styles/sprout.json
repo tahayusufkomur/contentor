@@ -4,6 +4,7 @@
   "mood": "The family room — cream paper, a round friendly face, chunky colour shapes and hand-drawn sprouts.",
   "niches": ["family"],
   "tones": ["playful", "warm"],
+  "tags": ["playful", "short"],
   "order": 18,
   "enabled": true,
   "heroLayout": "collage",

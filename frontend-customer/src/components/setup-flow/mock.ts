@@ -3,7 +3,7 @@
 // look, logo and review cards, then every turn pre-selects what the coach
 // answered last time and serves the next recorded question. No AI call, no
 // site build, so the screens can be iterated on in seconds. `&at=N` opens
-// on the Nth question; "Try another version" and cover picks are simulated.
+// on the Nth question; cover picks and a typed "different version" are simulated.
 // Never reachable in production (the page gates `mock` on NODE_ENV).
 import { pickedOptions } from "@/lib/interview";
 import {
@@ -42,7 +42,7 @@ const s = {
    * was actually sent this time. */
   turns: [] as InterviewEntry[],
   published: false,
-  /** "Try another version": the draft is "building" until this time. */
+  /** A typed "different version": the draft is "building" until this time. */
   redraftUntil: {} as Partial<Record<ReviewKind, number>>,
   version: {} as Partial<Record<ReviewKind, number>>,
   coverPick: {} as Partial<Record<ReviewKind, string>>,
@@ -56,7 +56,11 @@ function defaultSchedule(): Schedule {
   start.setDate(start.getDate() + ((8 - start.getDay()) % 7 || 7));
   const end = new Date(start);
   end.setDate(end.getDate() + 7 * 8);
-  return { start: ymd(start), end: ymd(end), days: [2, 4], times: ["18:30"] };
+  return {
+    start: ymd(start),
+    end: ymd(end),
+    slots: [{ days: [2, 4], times: ["18:30"] }],
+  };
 }
 
 async function init() {
@@ -219,11 +223,11 @@ export const mockSetupFlowApi: SetupFlowApi = {
     return ticked.length ? { ticked } : { text: said.text };
   },
   logos: (page) => setupFlowApi.logos(page),
+  logoMore: () => setupFlowApi.logoMore(),
   cover: async (kind, asset) => {
     s.coverPick[kind] = asset;
     const card = cardsFor(`${kind}_review`);
     return isReview(card)
-  logoMore: () => setupFlowApi.logoMore(),
       ? card
       : ({ kind, status: "ready", item: null } as ReviewCard);
   },

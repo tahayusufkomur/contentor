@@ -4,6 +4,7 @@
   "mood": "Clear, intelligent, modern — a text-led grid with cobalt accents and mono labels.",
   "niches": ["general"],
   "tones": ["expert"],
+  "tags": ["expertise", "short"],
   "order": 3,
   "enabled": true,
   "heroLayout": "giant",

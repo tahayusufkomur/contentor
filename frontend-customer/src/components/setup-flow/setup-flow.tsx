@@ -124,7 +124,7 @@ export function SetupFlow({
       style={SHELL_TOKENS}
       className={cn(
         fontClassName,
-        "sf-shell relative isolate h-dvh overflow-hidden antialiased",
+        "sf-shell relative isolate h-dvh overflow-clip antialiased",
       )}
     >
       <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />

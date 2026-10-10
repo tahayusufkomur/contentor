@@ -478,7 +478,7 @@ def compose_page_task(tenant_id, page_key, instruction=None):
 
 
 @shared_task
-def interview_draft_task(tenant_id, kind, prompt):
+def interview_draft_task(tenant_id, kind, prompt, keep_cover=False):
     """First-content draft for the /setup interview, with a deterministic
     fallback (interview_milestones.run_draft). Status lands in
     TenantConfig.setup_flow["draft_status"][kind]."""
@@ -489,7 +489,7 @@ def interview_draft_task(tenant_id, kind, prompt):
     if tenant is None:
         return
     with tenant_context(tenant):
-        interview_milestones.run_draft(tenant, kind, prompt)
+        interview_milestones.run_draft(tenant, kind, prompt, keep_cover=keep_cover)
 
 
 AI_STARTER_POST_TIMEOUT_SECONDS = 90

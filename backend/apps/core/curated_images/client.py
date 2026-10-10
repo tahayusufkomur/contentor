@@ -12,7 +12,7 @@ Spec: docs/superpowers/specs/2026-08-09-curated-images-offload-design.md
 import hashlib
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from urllib.parse import urljoin
 
 import requests
@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 # but a wide shot is what those slots need.
 WIDE = "landscape"
 ORIENTATIONS = frozenset({"landscape", "portrait", "square"})
+# The exact shapes the search can filter to (POST /v1/images/search filters.aspect_ratio).
+SEARCH_ASPECT_RATIOS = frozenset({"16:9", "1:1", "4:3", "3:2", "9:16", "4:5"})
 
 MAX_PER_PAGE = 12  # the service's hard page size
 UNAVAILABLE = "the photo library is unavailable right now"
@@ -186,10 +188,17 @@ def _image_from_payload(payload: dict) -> RemoteImage:
     )
 
 
-def _cache_key(query: str, orientation: str | None, page: int, per_page: int) -> str:
-    digest = hashlib.sha256(
-        json.dumps([query, orientation or "", page, per_page], sort_keys=True).encode()
-    ).hexdigest()[:32]
+def orientation_of(aspect) -> str:
+    """An aspect like 4:5 → portrait, 16:9 → landscape, 1:1 (or nonsense) → square."""
+    try:
+        w, h = (float(x) for x in str(aspect).split(":"))
+    except ValueError:
+        return "square"
+    return "portrait" if w < h else "landscape" if w > h else "square"
+
+
+def _cache_key(query: str, shape: str | None, page: int, per_page: int) -> str:
+    digest = hashlib.sha256(json.dumps([query, shape or "", page, per_page], sort_keys=True).encode()).hexdigest()[:32]
     return f"curated-images:v2:search:{digest}"
 
 
@@ -197,6 +206,7 @@ def search(
     query: str = "",
     *,
     orientation: str | None = None,
+    aspect_ratio: str | None = None,
     page: int = 1,
     per_page: int = MAX_PER_PAGE,
     session_id: str = "",
@@ -204,7 +214,8 @@ def search(
 ) -> SearchPage:
     """Ranked catalog page for a plain-language query, over the whole library.
     An empty query browses newest-first, which is what a picker opening for the
-    first time wants. `orientation` narrows to landscape/portrait/square.
+    first time wants. `orientation` narrows to landscape/portrait/square;
+    `aspect_ratio` (one of SEARCH_ASPECT_RATIOS) to that exact shape instead.
 
     Cached in Redis so a coach typing does not fan out one upstream request per
     keystroke. The TTL must stay below the service's signed-URL lifetime (15
@@ -219,15 +230,22 @@ def search(
     query = " ".join((query or "").split())[:2000]
     per_page = max(1, min(per_page, MAX_PER_PAGE))
     page = max(1, page)
+    if aspect_ratio not in SEARCH_ASPECT_RATIOS:
+        aspect_ratio = None
     if is_fake():
         from . import fake
 
         return fake.search(
-            query, orientation=orientation, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle
+            query,
+            orientation=orientation_of(aspect_ratio) if aspect_ratio else orientation,
+            page=page,
+            per_page=per_page,
+            session_id=session_id,
+            shuffle=shuffle,
         )
 
     sessioned = bool(session_id or shuffle)
-    key = _cache_key(query, orientation, page, per_page)
+    key = _cache_key(query, aspect_ratio or orientation, page, per_page)
     cached = None if sessioned else cache.get(key)
     if cached is None:
         body = _request(
@@ -235,7 +253,13 @@ def search(
             "/v1/images/search",
             json_body={
                 **({"query": query} if query else {}),
-                **({"filters": {"orientation": orientation}} if orientation else {}),
+                **(
+                    {"filters": {"aspect_ratio": aspect_ratio}}
+                    if aspect_ratio
+                    else {"filters": {"orientation": orientation}}
+                    if orientation
+                    else {}
+                ),
                 **({"session_id": session_id} if session_id else {}),
                 **({"shuffle": True} if shuffle else {}),
                 "page": page,
@@ -291,6 +315,21 @@ def search_or_browse(
     return search(
         orientation=orientation, page=1, per_page=per_page, session_id=session_id or first.session_id, shuffle=shuffle
     )
+
+
+def search_shaped(query: str, aspect: str, *, per_page: int = MAX_PER_PAGE) -> SearchPage:
+    """Matches for a slot that renders at `aspect` ("4:5", "16:9"): photos of
+    that exact shape first, so the crop keeps the subject; topped up with the
+    same orientation when the catalog has no such shape or too few of it."""
+    exact = search(query, aspect_ratio=aspect, per_page=per_page) if aspect in SEARCH_ASPECT_RATIOS else None
+    if exact and len(exact.results) >= per_page:
+        return exact
+    near = search(query, orientation=orientation_of(aspect), per_page=per_page)
+    if not exact:
+        return near
+    ids = {i.asset_id for i in exact.results}
+    extra = [i for i in near.results if i.asset_id not in ids][: per_page - len(exact.results)]
+    return replace(exact, results=[*exact.results, *extra])
 
 
 def get(asset_id: str) -> RemoteImage | None:

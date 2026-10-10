@@ -4,6 +4,7 @@
   "mood": "A beauty atelier — blush paper, a light italic serif, arched photo crops and a champagne hairline.",
   "niches": ["beauty", "makeup", "face_yoga"],
   "tones": ["warm", "calm"],
+  "tags": ["selling", "sensual"],
   "order": 14,
   "enabled": true,
   "heroLayout": "split",

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/hooks/use-tenant";
+import { themeModes } from "@/lib/site-styles";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -289,7 +290,10 @@ export function AppSidebar({
       <div className="border-t p-2 space-y-2">
         <Separator className="mb-2" />
         {allowDarkMode && (
-          <ThemeToggle collapsed={collapsed} modes={["light", "dim", "dark"]} />
+          <ThemeToggle
+            collapsed={collapsed}
+            modes={themeModes(Boolean(config?.style))}
+          />
         )}
         {React.Children.map(children, (child) =>
           React.isValidElement(child)

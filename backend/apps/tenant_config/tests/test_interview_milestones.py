@@ -8,6 +8,7 @@ import pytest
 
 from apps.accounts.models import User
 from apps.courses.models import Course
+from apps.tenant_config import interview_brief as brief
 from apps.tenant_config import interview_milestones as ms
 from apps.tenant_config import setup_flow
 from apps.tenant_config.models import TenantConfig
@@ -344,8 +345,9 @@ def test_review_card_shows_the_real_draft(tenant_ctx, config, owner):
     with mock.patch("apps.core.copilot.content._give_cover"):
         setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"course_topic": "Morning mobility"})
     ms._set_draft_status(tenant_ctx, "course", "ready")
-    with mock.patch("apps.core.curated_images.client.search") as search:
-        search.return_value.results = []
+    from apps.core.curated_images import client as curated_client
+
+    with mock.patch("apps.core.curated_images.client.search", return_value=curated_client.SearchPage([], 1, False)):
         card = ms.review_card(tenant_ctx, "course")
     assert card["status"] == "ready"
     assert card["item"]["title"] == "Morning mobility"
@@ -375,9 +377,21 @@ def test_choose_schedule_validates_and_sets_the_summary(tenant_ctx, config):
         '{"mode": "recurring", "start": "2026-10-12", "end": "2026-12-07", "days": [4, 2], "times": ["18:30"]}',
     )
     assert answers["live_when"] == "Tuesdays and Thursdays at 6:30 PM, from 12 Oct to 7 Dec 2026"
-    assert answers["live_schedule"]["days"] == [2, 4] and answers["delegated"] == []
+    assert answers["live_schedule"]["slots"] == [{"days": [2, 4], "times": ["18:30"]}]
+    assert answers["delegated"] == []
     prompt = ms.draft_prompt({**answers, "offers": ["course", "live"], "live_topic": "Pads"}, "event")
     assert "the first one on 2026-10-13T18:30" in prompt
+
+
+def test_a_schedule_timezone_becomes_the_site_timezone(tenant_ctx, config):
+    answers = {"delegated": ["live_when"]}
+    ms.choose(
+        tenant_ctx,
+        answers,
+        "live_when",
+        '{"mode": "recurring", "start": "2026-10-12", "days": [2], "times": ["18:30"], "tz": "Europe/Istanbul"}',
+    )
+    assert TenantConfig.objects.first().timezone == "Europe/Istanbul"
 
 
 def test_a_weekly_schedule_dates_the_draft_and_expands_at_go_live(tenant_ctx, config, owner):
@@ -450,7 +464,28 @@ def test_style_cards_carry_a_preview_of_the_coach_in_the_look(tenant_ctx, config
             "No ego, beginner-friendly gym. "
             "Real fitness and stamina, weight loss that lasts, confidence and fundamentals."
         ),
+        "copy": None,  # no model here: the looks keep their own sample words
     }
+    with (
+        mock.patch("apps.tenant_config.interview_milestones._look_photos", return_value=[]),
+        mock.patch("apps.tenant_config.look_copy.for_tenant", return_value={"hero": {"headline": "Box"}}),
+    ):
+        assert ms.style_cards(answers, tenant_ctx)["preview"]["copy"] == {"hero": {"headline": "Box"}}
+
+
+@pytest.mark.parametrize(
+    "request_text, scope",
+    [
+        ("Change the photo", "photo"),
+        ("Use another picture, please", "photo"),
+        ("Make it six weeks", "words"),
+        ("Rewrite the description", "words"),
+        ("Change the photo and the title", "all"),
+        ("Start over, change everything", "all"),
+    ],
+)
+def test_a_review_change_is_scoped_to_what_it_names(request_text, scope):
+    assert ms.redraft_scope(request_text) == scope
 
 
 def test_classes_turn_on_live_add_events_and_pricing_links(tenant_ctx, config, side_effects):
@@ -472,3 +507,32 @@ def test_classes_turn_on_live_add_events_and_pricing_links(tenant_ctx, config, s
     assert "live" in cfg.enabled_modules and "courses" in cfg.enabled_modules
     ms.sync_site(tenant_ctx, answers)  # idempotent
     assert len(TenantConfig.objects.first().navbar_config["links"]) == 4
+
+
+def test_calendar_and_social_answers_reach_the_navbar(tenant_ctx, config):
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [{"label": "Courses", "href": "/courses"}]}
+    cfg.save()
+    answers = {"offers": ["course", "live"], "calendar_nav": "yes", "calendar_view": "agenda"}
+    ms.choose(tenant_ctx, answers, "socials", '{"Instagram": "@maya", "YouTube": "https://youtube.com/@mayaflow"}')
+    assert answers["socials"] == "Instagram: https://instagram.com/maya; YouTube: https://youtube.com/@mayaflow"
+    ms.sync_site(tenant_ctx, answers)
+    cfg = TenantConfig.objects.first()
+    assert [link["href"] for link in cfg.navbar_config["links"]] == ["/courses", "/events", "/calendar"]
+    assert cfg.navbar_config["calendar_view"] == "agenda" and cfg.navbar_config["show_social"] is True
+    assert cfg.social_links == {"instagram": "https://instagram.com/maya", "youtube": "https://youtube.com/@mayaflow"}
+    ms.sync_site(tenant_ctx, answers)  # idempotent
+    assert len(TenantConfig.objects.first().navbar_config["links"]) == 3
+
+
+def test_calendar_and_social_choices_are_validated(tenant_ctx, config):
+    answers = {}
+    ms.choose(tenant_ctx, answers, "calendar_view", "month")
+    assert answers["calendar_view"] == "month"
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "calendar_view", "year")
+    ms.choose(tenant_ctx, answers, "socials", "{}")
+    assert answers["socials"] == brief.NO_SOCIALS
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "socials", '{"Instagram": "not a handle!!"}')
+    assert ms.calendar_cards()["options"][0]["value"] == "month"

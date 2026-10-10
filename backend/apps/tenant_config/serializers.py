@@ -111,6 +111,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         if logo_layout not in _LOGO_LAYOUTS:
             raise serializers.ValidationError("logo_layout must be one of: " + ", ".join(sorted(_LOGO_LAYOUTS)) + ".")
         cleaned["logo_layout"] = logo_layout
+        cleaned["show_social"] = bool(cleaned.get("show_social", False))
+        if cleaned.get("calendar_view") not in {"month", "agenda"}:
+            cleaned.pop("calendar_view", None)
         return cleaned
 
     def validate_pages(self, value):

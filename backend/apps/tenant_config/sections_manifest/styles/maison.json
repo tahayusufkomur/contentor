@@ -4,6 +4,7 @@
   "mood": "A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, hairline frames and a great deal of air.",
   "niches": ["business", "general"],
   "tones": ["expert", "calm"],
+  "tags": ["sexy", "selling"],
   "order": 12,
   "enabled": true,
   "heroLayout": "cover",

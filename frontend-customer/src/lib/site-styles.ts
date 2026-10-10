@@ -7,6 +7,19 @@ export function getSiteStyle(id?: string | null): SiteStyle | undefined {
   return id ? SITE_STYLES[id] : undefined;
 }
 
+/** The looks a coach can filter by, in the order the chips show them. The
+ *  tags themselves live in each style's manifest (`tags`). */
+export const STYLE_TAGS: [tag: string, label: string][] = [
+  ["selling", "Selling"],
+  ["expertise", "Expertise"],
+  ["short", "Short"],
+  ["long", "Long"],
+  ["sensual", "Sensual"],
+  ["confident", "Confident"],
+  ["sexy", "Sexy"],
+  ["playful", "Playful"],
+];
+
 /** The palette a site wears: the style's own, or one of its alternatives.
  *  An id the style does not have (e.g. left over from a style switch) means
  *  the style's own. */
@@ -21,6 +34,62 @@ export function paletteOf(
 }
 
 const DESTRUCTIVE = "oklch(0.577 0.245 27.33)";
+
+const parseOklch = (c: string) => {
+  const m = /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/.exec(c);
+  return m ? { l: +m[1], c: +m[2], h: +m[3] } : null;
+};
+
+/** A palette is dark when its ground is. */
+export const isDarkPalette = (p: SiteStylePalette) =>
+  (parseOklch(p.background)?.l ?? 1) < 0.5;
+
+/** The palette in the requested scheme. Its own scheme is returned as is; the
+ *  other is derived — ground and ink swapped for tints of the palette's own
+ *  hue, brand colours lifted or deepened to stay readable on them — so any
+ *  style can honour the light/dark toggle. */
+export function modePalette(
+  p: SiteStylePalette,
+  mode: "light" | "dark",
+): SiteStylePalette {
+  if (isDarkPalette(p) === (mode === "dark")) return p;
+  const dark = mode === "dark";
+  // Dark ink carries the brand hue on a light palette; on a dark one the ground does.
+  const tint = parseOklch(dark ? p.foreground : p.background);
+  const h = tint?.h ?? 0;
+  const c = Math.min(tint?.c ?? 0, dark ? 0.04 : 0.02);
+  const ground = dark ? `oklch(0.18 ${c} ${h})` : `oklch(0.975 ${c} ${h})`;
+  const ink = dark ? `oklch(0.95 0.01 ${h})` : `oklch(0.22 0.02 ${h})`;
+  const mix = (a: string, pct: number, b: string, space = "oklab") =>
+    `color-mix(in ${space}, ${a} ${pct}%, ${b})`;
+  const brand = (color: string) =>
+    dark ? mix(color, 55, "white", "oklch") : mix(color, 70, "black", "oklch");
+  return {
+    background: ground,
+    foreground: ink,
+    surface: mix(ground, 91, ink),
+    mutedForeground: mix(ink, 62, ground),
+    primary: brand(p.primary),
+    primaryForeground: ground,
+    accent: brand(p.accent),
+    accentForeground: ground,
+    border: mix(ground, 80, ink),
+    inverse: dark ? `oklch(0.25 ${c} ${h})` : `oklch(0.93 ${c} ${h})`,
+    inverseForeground: ink,
+  };
+}
+
+/** The theme a visitor starts in: a style made dark wears its own look. */
+export function styleDefaultTheme(
+  style: SiteStyle,
+  paletteId?: string | null,
+): "light" | "dark" {
+  return isDarkPalette(paletteOf(style, paletteId)) ? "dark" : "light";
+}
+
+/** The modes the toggle steps through: styles are light or dark, no dim. */
+export const themeModes = (styled: boolean) =>
+  styled ? ["light", "dark"] : ["light", "dim", "dark"];
 
 /** Each style's content width (its sections' WRAP) — the site header and
  *  footer align to it via --site-wrap / --site-gutter(-md). */
@@ -54,8 +123,10 @@ const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 export function styleVars(
   style: SiteStyle,
   paletteId?: string | null,
+  mode?: "light" | "dark",
 ): Record<string, string> {
-  const p = paletteOf(style, paletteId);
+  const own = paletteOf(style, paletteId);
+  const p = mode ? modePalette(own, mode) : own;
   return {
     background: p.background,
     foreground: p.foreground,
@@ -112,18 +183,19 @@ export function styleScope(
   return out;
 }
 
-/** :root CSS for a styled tenant. Styles are designed as a single mode, so
- *  .dark/.dim get the same values (the layout also forces light). */
+/** :root CSS for a styled tenant: the light scheme on :root, the dark one
+ *  (.dark, and .dim for visitors who stored it before) beside it. */
 export function styleRootCss(
   style: SiteStyle,
   extraCss = "",
   paletteId?: string | null,
 ): string {
-  const vars = Object.entries(styleVars(style, paletteId))
-    .map(([k, v]) => `  --${k}: ${v};`)
-    .join("\n");
+  const block = (mode: "light" | "dark") =>
+    Object.entries(styleVars(style, paletteId, mode))
+      .map(([k, v]) => `  --${k}: ${v};`)
+      .join("\n");
   const safeExtra = (extraCss || "").replace(/[<>]/g, "");
-  return `:root, .dark, .dim {\n${vars}\n}\n${safeExtra}`;
+  return `:root {\n${block("light")}\n}\n.dark, .dim {\n${block("dark")}\n}\n${safeExtra}`;
 }
 
 export function styleFontsHref(style: SiteStyle): string {

@@ -30,6 +30,10 @@ export interface NavbarConfig {
   /** Mark-and-name arrangement when both render: "horizontal" (name beside the
    * mark) or "stacked" (name under it). Missing renders as "horizontal". */
   logo_layout?: "horizontal" | "stacked";
+  /** Show the coach's social accounts as icons in the navbar (default false). */
+  show_social?: boolean;
+  /** How /calendar opens: the month grid or the agenda list (default month). */
+  calendar_view?: "month" | "agenda";
 }
 
 export interface LandingHero {

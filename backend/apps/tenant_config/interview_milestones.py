@@ -8,15 +8,18 @@ ponytail: a page fired while Home's plan call is still running plans again
 (one extra AI call); serialize builds if that cost shows up.
 """
 
+import json
 import logging
+import re
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
-from django.conf import settings
 from django_tenants.utils import schema_context
 
 from . import interview_brief as brief
 from . import interview_schedule as schedule
+from . import look_copy
 from .models import TenantConfig
 
 logger = logging.getLogger(__name__)
@@ -51,11 +54,11 @@ def _due(tenant, answers) -> list[str]:
     if not brief.settled(answers, PAGE_NEEDS["home"]):
         return []
     due = ["style:auto", "page:home", "rank:logos"]
+    if settings.LOGO_GEN_ENABLED:
+        due.append("logo:generate")
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
     # A coach who runs classes gets an Events page once the class section
     # is answered or skipped.
-    if settings.LOGO_GEN_ENABLED:
-        due.append("logo:generate")
     if offers & {"live", "onsite"} and brief.settled(answers, ("live_topic", "live_when")):
         due.append("page:events")
     skipped = set(answers.get("skipped") or [])
@@ -113,32 +116,46 @@ def _start(tenant, answers, key) -> None:
         start_page_build(tenant, arg)
     elif action == "rank":
         transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
-    elif action == "plan":
-        create_memberships(tenant, answers)
-    elif action == "draft":
     elif action == "logo":
         from .logo_gen import pipeline
 
         pipeline.start_batch(tenant)
+    elif action == "plan":
+        create_memberships(tenant, answers)
+    elif action == "draft":
         prompt = draft_prompt(answers, arg)
         transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, arg, prompt))
 
 
 # Header links the interview adds, in the order they sit in the nav.
-NAV = (("/courses", "Courses"), ("/events", "Events"), ("/plans", "Pricing"), ("/about", "About"), ("/faq", "FAQ"))
+NAV = (
+    ("/courses", "Courses"),
+    ("/events", "Events"),
+    ("/calendar", "Calendar"),
+    ("/plans", "Pricing"),
+    ("/about", "About"),
+    ("/faq", "FAQ"),
+)
 
 
 def sync_site(tenant, answers: dict) -> None:
-    """Modules and header links follow what the coach said they offer:
-    classes turn on the live module and add an Events link, a membership
-    a Pricing link. Additive only, and written only when something changes."""
+    """Modules, header links and social accounts follow what the coach said:
+    classes turn on the live module and add an Events link (and a Calendar
+    link when they want it in the navbar, laid out the way they picked), a
+    membership a Pricing link, social accounts header icons. Additive only
+    for links, and written only when something changes."""
     from apps.core.onboarding.compose import ALWAYS_MODULES, GOAL_MODULES
 
     modules = set(ALWAYS_MODULES).union(*(GOAL_MODULES.get(g, ()) for g in answers.get("goals") or []))
-    want = {"/events"} if {"live", "onsite"} & set(answers.get("offers") or []) else set()
+    runs_classes = bool({"live", "onsite"} & set(answers.get("offers") or []))
+    want = {"/events"} if runs_classes else set()
+    if runs_classes and answers.get("calendar_nav") == "yes":
+        want.add("/calendar")
     if "membership" in (answers.get("payments") or []):
         want.add("/plans")
     order = [href for href, _ in NAV]
+    socials = brief.parse_socials(answers.get("socials"))
+    view = answers.get("calendar_view") if answers.get("calendar_view") in CALENDAR_IDS else None
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
         if cfg is None:
@@ -148,15 +165,26 @@ def sync_site(tenant, answers: dict) -> None:
         hrefs = {link.get("href") for link in links}
         missing = [href for href in order if href in want and href not in hrefs]
         enabled = sorted(set(cfg.enabled_modules or []) | modules)
-        if not missing and enabled == sorted(cfg.enabled_modules or []):
+        social = {**(cfg.social_links or {}), **socials}
+        extra = {
+            **({"calendar_view": view} if view else {}),
+            **({"show_social": True} if socials else {}),
+        }
+        if (
+            not missing
+            and enabled == sorted(cfg.enabled_modules or [])
+            and social == (cfg.social_links or {})
+            and all(nav.get(k) == v for k, v in extra.items())
+        ):
             return
         for href in missing:
             before = order[: order.index(href)]
             at = next((i + 1 for i in range(len(links) - 1, -1, -1) if links[i].get("href") in before), 0)
             links.insert(at, {"label": dict(NAV)[href], "href": href})
-        cfg.navbar_config = {**nav, "links": links}
+        cfg.navbar_config = {**nav, "links": links, **extra}
         cfg.enabled_modules = enabled
-        cfg.save(update_fields=["navbar_config", "enabled_modules"])
+        cfg.social_links = social
+        cfg.save(update_fields=["navbar_config", "enabled_modules", "social_links"])
     _bust(tenant)
 
 
@@ -206,14 +234,17 @@ def _set_draft_status(tenant, kind, status) -> None:
     _update_flow(tenant, mutate)
 
 
-def run_draft(tenant, kind: str, prompt: str) -> None:
-    """AI draft, else the deterministic fallback. Inside tenant_context."""
+def run_draft(tenant, kind: str, prompt: str, keep_cover: bool = False) -> None:
+    """AI draft, else the deterministic fallback. Inside tenant_context. With
+    ``keep_cover`` the new draft takes the cover the old one had."""
     from apps.accounts.models import User
     from apps.core import ai as core_ai
     from apps.core.copilot.content import ContentOpError
 
     from . import setup_flow
 
+    old = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind) if keep_cover else None
+    cover = (old.thumbnail, old.thumbnail_url) if old is not None and (old.thumbnail_id or old.thumbnail_url) else None
     owner = User.objects.filter(role="owner").order_by("id").first()
     status = "ready"
     try:
@@ -227,6 +258,11 @@ def run_draft(tenant, kind: str, prompt: str) -> None:
         except ContentOpError:
             logger.exception("interview fallback draft failed schema=%s kind=%s", tenant.schema_name, kind)
             status = "failed"
+    if cover is not None and status == "ready":
+        item = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind)
+        if item is not None:
+            item.thumbnail, item.thumbnail_url = cover
+            item.save(update_fields=["thumbnail", "thumbnail_url"])
     if kind == "event" and status == "ready":
         apply_schedule(tenant)
     _set_draft_status(tenant, kind, status)
@@ -288,15 +324,53 @@ def expand_class_series(tenant) -> int:
     return len(later)
 
 
+_PHOTO_WORDS = re.compile(r"\b(photos?|pictures?|pics?|images?|covers?|thumbnails?)\b", re.IGNORECASE)
+_TEXT_WORDS = re.compile(
+    r"\b(text|title|description|wording|words?|copy|names?|lessons?|modules?|curriculum|outline|price|weeks?"
+    r"|minutes?|hours?|topic|sentences?|paragraphs?|write|written|intro|tone|length)\b",
+    re.IGNORECASE,
+)
+_WHOLE_WORDS = re.compile(
+    r"\b(everything|all of it|start over|from scratch|another version|different version|redo)\b", re.IGNORECASE
+)
+
+
+def redraft_scope(request: str) -> str:
+    """What a coach's words on a review screen are about: "photo" (only the
+    cover), "words" (the text; the cover stays) or "all" (draft it again)."""
+    if _WHOLE_WORDS.search(request) or (_PHOTO_WORDS.search(request) and _TEXT_WORDS.search(request)):
+        return "all"
+    return "photo" if _PHOTO_WORDS.search(request) else "words"
+
+
 def redraft(tenant, answers: dict, kind: str, request: str) -> None:
-    """The coach asked for changes on a review screen: draft it again with
-    their words (the new draft replaces the old one)."""
+    """The coach asked for changes on a review screen. A photo change swaps the
+    cover at once; a words change drafts the words again and keeps the cover;
+    anything else drafts it again. The new draft replaces the old one."""
+    scope = redraft_scope(request)
+    if scope == "photo":
+        _next_cover(tenant, kind)
+        return
     _set_draft_status(tenant, kind, "building")
     prompt = f"{draft_prompt(answers, kind)} Changes the coach asked for: {request[:500]}"
     tenant_id = tenant.id
     from apps.core import tasks
 
-    transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, kind, prompt))
+    keep_cover = scope == "words"
+    transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, kind, prompt, keep_cover))
+
+
+def _next_cover(tenant, kind: str) -> None:
+    """The next catalog photo that fits the draft takes its cover; the words stay."""
+    from apps.core.curated_images.cache import asset_id_from_key
+
+    item = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind)
+    if item is None:
+        return
+    current = asset_id_from_key(item.thumbnail.s3_key) if item.thumbnail else ""
+    following = next((i for i in _cover_images(tenant, kind, item) if i.asset_id != current), None)
+    if following is not None:
+        set_cover(tenant, kind, following.asset_id)
 
 
 def drop_draft(tenant, kind: str) -> None:
@@ -398,7 +472,7 @@ def _look_photos(tenant, answers: dict) -> list[str]:
     photos = cache.get(key)
     if photos is None:
         try:
-            found = curated_client.search(subject, orientation="landscape", per_page=LOOK_PHOTOS * 2).results
+            found = curated_client.search_shaped(subject, "16:9", per_page=LOOK_PHOTOS * 2).results
         except curated_client.CuratedImageError:
             found = []
         allowed = allowed_disciplines(subject, str(answers.get("description") or ""))
@@ -428,7 +502,12 @@ def style_cards(answers: dict, tenant=None) -> dict:
         "headline": str(answers.get("pitch") or "")[:120],
         # A picked look opens as a whole page: sample copy about their subject,
         # the hero's line in their words.
-        "preview": {"subject": brief.subject_of(answers), "body": hero_line(answers)},
+        "preview": {
+            "subject": brief.subject_of(answers),
+            "body": hero_line(answers),
+            # The sample words written for this coach: every look shows the same set.
+            "copy": look_copy.for_tenant(tenant, answers) if tenant is not None else None,
+        },
     }
 
 
@@ -460,6 +539,37 @@ def hero_line(answers: dict) -> str:
     return " ".join(parts)[:300]
 
 
+def generated_logos(tenant) -> dict:
+    """The current generated batch for the logo card: ready candidates in
+    rank order, a building marker, or nothing."""
+    from apps.core.storage import generate_presigned_download_url
+
+    from .logo_gen import pipeline
+    from .models import LogoCandidate
+
+    batch = pipeline.batch_state(tenant)
+    state = batch.get("state")
+    if state == "building":
+        return {"state": "building", "options": []}
+    if state != "ready":
+        return {"state": "none", "options": []}
+    rows = (
+        LogoCandidate.objects.filter(batch=batch.get("id"), state="ready", png__isnull=False)
+        .select_related("png")
+        .order_by("rank", "position")
+    )
+    options = [
+        {
+            "value": f"gen:{r.pk}",
+            "label": r.concept[:60],
+            "image_url": generate_presigned_download_url(r.png.s3_key),
+            "rank": r.rank,
+        }
+        for r in rows
+    ]
+    return {"state": "ready" if options else "none", "options": options}
+
+
 def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
     from apps.core.copilot.logos import mark_of, preview_url
     from apps.core.models import CuratedLogo
@@ -483,6 +593,7 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
         # Marks are previewed in the look the coach picked.
         "style": answers.get("style") or "",
         "palette": answers.get("palette") or "",
+        "generated": generated_logos(tenant),
     }
 
 
@@ -516,7 +627,7 @@ def _cover_images(tenant, kind: str, item) -> list:
         images = []
         for query in dict.fromkeys((photo_query(brief, item.title), photo_query(brief))):
             try:
-                found = curated_client.search(query, orientation="landscape", per_page=COVERS * 3).results
+                found = curated_client.search_shaped(query, "16:9", per_page=COVERS * 3).results
             except curated_client.CuratedImageError:
                 found = []
             images = on_topic_first(found, brief.subject, allowed)
@@ -536,40 +647,10 @@ def review_card(tenant, kind: str) -> dict:
 
     flow = TenantConfig.objects.first().setup_flow or {}
     status = (flow.get("draft_status") or {}).get(kind) or "building"
-    item = None if status == "building" else _draft_row(flow, kind)
+    # While a redraft runs the draft it replaces stays on the screen, so only what changes moves.
+    item = None if status == "failed" else _draft_row(flow, kind)
     card = {"kind": kind, "status": "failed" if status == "ready" and item is None else status, "item": None}
     if item is None:
-def generated_logos(tenant) -> dict:
-    """The current generated batch for the logo card: ready candidates in
-    rank order, a building marker, or nothing."""
-    from apps.core.storage import generate_presigned_download_url
-
-    from .logo_gen import pipeline
-    from .models import LogoCandidate
-
-    batch = pipeline.batch_state(tenant)
-    state = batch.get("state")
-    if state == "building":
-        return {"state": "building", "options": []}
-    if state != "ready":
-        return {"state": "none", "options": []}
-    rows = (
-        LogoCandidate.objects.filter(batch=batch.get("id"), state="ready", png__isnull=False)
-        .select_related("png")
-        .order_by("rank", "position")
-    )
-    options = [
-        {
-            "value": f"gen:{r.pk}",
-            "label": r.concept[:60],
-            "image_url": generate_presigned_download_url(r.png.s3_key),
-            "rank": r.rank,
-        }
-        for r in rows
-    ]
-    return {"state": "ready" if options else "none", "options": options}
-
-
         return card
     photo = item.thumbnail
     current = asset_id_from_key(photo.s3_key) if photo else ""
@@ -593,7 +674,6 @@ def generated_logos(tenant) -> dict:
     covers += [{"value": i.asset_id, "url": i.preview_url, "current": False} for i in others]
     return {**card, "item": {**detail, "covers": covers}}
 
-        "generated": generated_logos(tenant),
 
 def set_cover(tenant, kind: str, asset_id: str) -> dict:
     """The coach picked another cover on a review screen."""
@@ -614,9 +694,27 @@ def set_cover(tenant, kind: str, asset_id: str) -> dict:
     return review_card(tenant, kind)
 
 
+CALENDAR_VIEWS = (
+    ("month", "Month grid", "The whole month at a glance, with a day panel."),
+    ("agenda", "Agenda list", "Upcoming classes in a simple list, day by day."),
+)
+
+
+CALENDAR_IDS = {v for v, _, _ in CALENDAR_VIEWS}
+
+
+def calendar_cards() -> dict:
+    return {
+        "kind": "calendar",
+        "options": [{"value": v, "label": label, "detail": detail} for v, label, detail in CALENDAR_VIEWS],
+    }
+
+
 def cards_for(tenant, answers: dict, field_id: str | None) -> dict | None:
     if field_id == "site_style":
         return style_cards(answers, tenant)
+    if field_id == "calendar_view":
+        return calendar_cards()
     if field_id == "site_logo":
         return logo_cards(tenant, answers)
     if field_id in REVIEW_FIELDS:
@@ -632,15 +730,20 @@ def apply_style(tenant, style_id: str, palette: str = "") -> None:
     """Same effect as the copilot's edit_style: every block takes the style's
     layout (no AI), the colourway is set, and the `look` publish blocker clears."""
     from . import sections
+    from .logo_gen import pipeline
 
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
+        changed = (cfg.style, cfg.palette) != (style_id, palette)
         cfg.style = style_id
         cfg.palette = palette
         cfg.pages = sections.restyle_pages(cfg.pages or {}, style_id)
         cfg.setup_progress = {**(cfg.setup_progress or {}), "look_edited": True}
         cfg.save(update_fields=["style", "palette", "pages", "setup_progress"])
     _bust(tenant)
+    # The palette is inside a generated logo: a new look needs a new batch.
+    if changed and (tenant.wizard_state or {}).get("logo_batch"):
+        pipeline.start_batch(tenant)
 
 
 def apply_logo(tenant, answers: dict) -> None:
@@ -688,6 +791,29 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             raise ChoiceError("invalid_schedule")
         brief.apply_fact(answers, field_id, schedule.summary(picked))
         answers["live_schedule"] = picked
+        # The timezone the coach picked is the site's: class times and the calendar use it.
+        config = TenantConfig.objects.first()
+        if picked.get("tz") and config and config.timezone != picked["tz"]:
+            config.timezone = picked["tz"]
+            config.save(update_fields=["timezone"])
+            _bust(tenant)
+        return
+    if field is not None and field.kind == "socials":
+        try:
+            picked = json.loads(value) if isinstance(value, str) else value
+        except ValueError:
+            picked = None
+        if not isinstance(picked, dict):
+            raise ChoiceError("invalid_value")
+        links = {n: u for k, v in picked.items() if (n := str(k).lower()) and (u := brief.social_url(n, v))}
+        if picked and not links:
+            raise ChoiceError("invalid_value")
+        answers["socials"] = brief.socials_summary(links)
+        return
+    if field_id == "calendar_view":
+        if value not in CALENDAR_IDS:
+            raise ChoiceError("invalid_value")
+        answers["calendar_view"] = value
         return
     if field_id == "site_style":
         look = sections.parse_look(value)
@@ -702,6 +828,16 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
     if field_id == "site_logo":
         if value == "wordmark":
             logo = {"mode": "wordmark", "curated_id": None}
+        elif str(value).startswith("gen:"):
+            from .models import LogoCandidate
+
+            try:
+                candidate_id = int(str(value)[4:])
+            except ValueError:
+                raise ChoiceError("unknown_logo") from None
+            if not LogoCandidate.objects.filter(pk=candidate_id, state="ready", png__isnull=False).exists():
+                raise ChoiceError("unknown_logo")
+            logo = {"mode": "generated", "candidate_id": candidate_id}
         else:
             try:
                 logo_id = int(value)
@@ -717,18 +853,3 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         return
     if not brief.apply_fact(answers, field_id, value):
         raise ChoiceError("invalid_value")
-    from .logo_gen import pipeline
-        changed = (cfg.style, cfg.palette) != (style_id, palette)
-    # The palette is inside a generated logo: a new look needs a new batch.
-    if changed and (tenant.wizard_state or {}).get("logo_batch"):
-        pipeline.start_batch(tenant)
-        elif str(value).startswith("gen:"):
-            from .models import LogoCandidate
-
-            try:
-                candidate_id = int(str(value)[4:])
-            except ValueError:
-                raise ChoiceError("unknown_logo") from None
-            if not LogoCandidate.objects.filter(pk=candidate_id, state="ready", png__isnull=False).exists():
-                raise ChoiceError("unknown_logo")
-            logo = {"mode": "generated", "candidate_id": candidate_id}

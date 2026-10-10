@@ -83,6 +83,10 @@ export interface SiteStyle {
   /** Tones of voice (warm, energetic, calm, expert, playful) the style
    *  carries — a tone the coach asked for lifts it in the ranking. */
   tones?: string[];
+  /** What the look is for, filterable on /setup (see STYLE_TAGS in
+   *  frontend-customer/src/lib/site-styles.ts): selling, expertise, short,
+   *  long, sensual, confident, sexy, playful. */
+  tags?: string[];
   /** Build/display order. */
   order: number;
   /** Only enabled styles are offered to coaches. */

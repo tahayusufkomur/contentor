@@ -95,6 +95,24 @@ def test_search_normalizes_payload_and_prefers_the_thumbnail_for_previews(live_c
     assert headers["X-API-Key"] == "test-key"
 
 
+def test_search_shaped_asks_for_the_exact_ratio_then_the_orientation(live_client, monkeypatch):
+    filters = []
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        filters.append(json.get("filters"))
+        exact = json["filters"] == {"aspect_ratio": "4:5"}
+        data = [_image_payload("a")] if exact else [_image_payload("a"), _image_payload("b")]
+        return _Response(payload={"data": data, "pagination": {}})
+
+    monkeypatch.setattr(requests, "request", _request)
+    # One 4:5 match, then other portraits after it (no repeats).
+    assert [i.asset_id for i in client.search_shaped("yoga pose", "4:5").results] == ["a", "b"]
+    assert filters == [{"aspect_ratio": "4:5"}, {"orientation": "portrait"}]
+    filters.clear()
+    client.search_shaped("pilates reformer", "3:4")  # a shape the catalog has no filter for
+    assert filters == [{"orientation": "portrait"}]
+
+
 def test_search_omits_an_empty_query_so_the_catalog_browses(live_client, monkeypatch):
     bodies = []
 

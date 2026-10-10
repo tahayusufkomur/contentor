@@ -4,6 +4,7 @@
   "mood": "The maker's bench — kraft paper, indigo thread, a handwritten margin note and projects shown as materials lists.",
   "niches": ["crafts"],
   "tones": ["warm", "playful"],
+  "tags": ["playful", "expertise"],
   "order": 16,
   "enabled": true,
   "heroLayout": "collage",

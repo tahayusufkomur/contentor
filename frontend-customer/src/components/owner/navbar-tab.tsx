@@ -119,6 +119,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
   const showLogin = navbar.show_login !== false;
   const showInstall = navbar.show_install !== false;
   const transparent = navbar.transparent_over_hero === true;
+  const showSocial = navbar.show_social === true;
 
   const [picker, setPicker] = useState<PickerTarget>(null);
   // Which capability suggestions apply (fetched once): hrefs the tenant has
@@ -440,6 +441,19 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
         <Switch
           checked={showInstall}
           onCheckedChange={(v) => emit({ show_install: v })}
+        />
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div>
+          <Label>Show social icons</Label>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Your social accounts as icons in the navbar
+          </p>
+        </div>
+        <Switch
+          checked={showSocial}
+          onCheckedChange={(v) => emit({ show_social: v })}
         />
       </div>
 

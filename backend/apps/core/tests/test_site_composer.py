@@ -224,8 +224,8 @@ def catalog(monkeypatch):
     """40 distinct catalog images per search; copy-on-use -> fake Photo."""
     queries = []
 
-    def search(query, *, orientation=None, per_page=12, **_kw):
-        queries.append((query, orientation))
+    def search(query, *, orientation=None, aspect_ratio=None, per_page=12, **_kw):
+        queries.append((query, aspect_ratio or orientation))
         results = [
             curated_client.RemoteImage(
                 asset_id=f"asset-{n}",
@@ -352,9 +352,10 @@ def test_compose_page_happy_path(styled, monkeypatch, catalog):
     assert all(p["image"]["photo_id"] for p in moments["photos"])
     ids = _photo_ids(blocks)
     assert len(ids) == len(set(ids))  # no photo twice on the page
-    # Queries carry the niche, the brief and the style's photo words; orientation from the aspect
-    assert any("yoga" in q and "soft natural window light" in q for q, _ in catalog)
-    assert {o for _, o in catalog} >= {"portrait", "square", "landscape"}
+    # One shared topic pool per orientation, not a search per slot: ~11 slots, at most a few searches
+    assert all(q == "yoga" for q, _ in catalog)
+    assert {o for _, o in catalog} <= {"landscape", "portrait", "square"}
+    assert len(catalog) <= 3
 
     page_call = next(user for label, user in fake.calls if label == "contentor:compose-page")
     assert "mention mornings" in page_call and "<<COACH_DATA" in page_call
@@ -572,11 +573,11 @@ def test_a_boxing_coach_never_gets_a_pole_dance_photo(monkeypatch):
     )
     monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
-    image, _ = sc._find_photo(["boxing coach"], "landscape", set(), ctx)
+    image, _ = sc._find_photo(["boxing coach"], "16:9", set(), ctx)
     assert image.asset_id == "box"  # names the subject: first
-    image, _ = sc._find_photo(["boxing coach"], "landscape", {"box"}, ctx)
+    image, _ = sc._find_photo(["boxing coach"], "16:9", {"box"}, ctx)
     assert image.asset_id == "gym"  # neutral is fine; the pole photo never is
-    image, _ = sc._find_photo(["boxing coach"], "landscape", {"box", "gym"}, ctx)
+    image, _ = sc._find_photo(["boxing coach"], "16:9", {"box", "gym"}, ctx)
     assert image.asset_id in {"box", "gym"}
 
 

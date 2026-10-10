@@ -9,12 +9,14 @@ export function TenantThemeEnforcer() {
   const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
-    // Styled sites are designed as one mode, like a dark-mode-off theme.
-    const singleMode =
-      config?.dark_mode_enabled === false || Boolean(config?.style);
-    if (singleMode && (resolvedTheme === "dark" || resolvedTheme === "dim")) {
+    if (
+      config?.dark_mode_enabled === false &&
+      (resolvedTheme === "dark" || resolvedTheme === "dim")
+    ) {
       setTheme("light");
     }
+    // Styles are light or dark: a stored "dim" is the dark scheme.
+    if (config?.style && resolvedTheme === "dim") setTheme("dark");
   }, [config?.dark_mode_enabled, config?.style, resolvedTheme, setTheme]);
 
   return null;

@@ -87,6 +87,10 @@ Do these things:
      write options anyway but phrase the question to fit them.
    - icons: one icon id per option, in the same order, chosen from "Icon ids" below: the
      best visual hint for that answer (repeat an id when nothing fits better).
+4. tone_hints: exactly 5 lines, one for each tone answer in this order: Warm, Energetic, Calm,
+   Expert, Playful. Each is under 10 words and says what that tone feels like on this coach's
+   site, in the words of their niche and students (a face-yoga coach's Playful is never a sock
+   joke). Write them once you know what they teach; until then, an empty list.
 If "spoken" is true the message came from speech recognition and may contain misheard words:
 set heard to what they most likely said (fix niche vocabulary, their brand name, obvious
 mishearings) and extract facts from that. Otherwise heard is null. Write in English.
@@ -112,6 +116,7 @@ class InterviewTurn(BaseModel):
     question: str = ""
     options: list[str] = []
     icons: list[str] = []
+    tone_hints: list[str] = []
 
 
 GUIDE_KEYS = (
@@ -121,15 +126,18 @@ GUIDE_KEYS = (
     "field",
     "can_delegate",
     "multi",
+    "alone",
     "icons",
     "hints",
     "skip",
     "details",
     "builder",
     "schedule",
+    "socials",
 )
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
+COVER_ACK = "Here's another cover. Happy with it?"
 
 
 def guide_for(
@@ -143,12 +151,14 @@ def guide_for(
             "field": None,
             "can_delegate": False,
             "multi": False,
+            "alone": None,
             "icons": {},
             "hints": {},
             "skip": None,
             "details": {},
             "builder": None,
             "schedule": False,
+            "socials": False,
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
@@ -168,6 +178,7 @@ def guide_for(
         # A studio name that gives the niche away opens on its kinds: pick several.
         "multi": field.multi
         or (field.id == "teaches" and fixed and not brief.kind_of_brand(brand) and bool(brief.tile_of_brand(brand))),
+        "alone": field.alone if field.alone in chosen else None,
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
         "skip": brief.SKIP_LABELS.get(field.group),
@@ -175,6 +186,8 @@ def guide_for(
         # What the question builds, previewed beside its answers.
         "builder": builder_of(field),
         "schedule": field.kind == "schedule",
+        # The answer is a handle or link for each network ticked.
+        "socials": field.kind == "socials",
     }
 
 
@@ -215,6 +228,13 @@ def started_note(fired: list[str]) -> str:
             "Bear with me, it takes about a minute. Let's keep going while I build."
         )
     return f"I'm starting on {what} now."
+
+
+def redraft_ack(request: str) -> str:
+    """What the guide says about a change asked for on a review screen."""
+    from . import interview_milestones as milestones
+
+    return COVER_ACK if milestones.redraft_scope(request) == "photo" else REDRAFT_ACK
 
 
 def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=None) -> brief.Field | None:
@@ -373,6 +393,8 @@ def run_turn(
             brief.apply_fact(answers, fact.field, fact.value)
     elif text and answering and not choice and not review and not tapped:
         brief.apply_fact(answers, answering, text)  # no AI: the answer is to the question on screen
+    if turn and len(turn.tone_hints) == len(brief.FIELD_BY_ID["tone"].options):
+        answers["tone_hints"] = [h.strip()[:80] for h in turn.tone_hints]
     brief.save_answers(tenant, answers, base=base)
     answers = brief.answers_of(tenant)  # merged with any concurrent tab
 
@@ -380,7 +402,7 @@ def run_turn(
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:
         guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons, answers, brand)
     else:
-        guide = guide_for(nxt, REDRAFT_ACK if review else turn.ack if turn else "", answers=answers, brand=brand)
+        guide = guide_for(nxt, redraft_ack(text) if review else turn.ack if turn else "", answers=answers, brand=brand)
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice else None
     fired = milestones.fire(tenant, answers)
@@ -409,6 +431,7 @@ def run_turn(
 
 def interview_state(tenant, flow: dict) -> dict:
     from . import interview_milestones as milestones
+    from .logo_gen import pipeline
 
     answers = brief.answers_of(tenant)
     iv = flow.get("interview") or {}
@@ -429,16 +452,15 @@ def interview_state(tenant, flow: dict) -> dict:
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
-    looks = ("site_style", "site_logo", *milestones.REVIEW_FIELDS)
+    looks = ("site_style", "site_logo", "calendar_view", *milestones.REVIEW_FIELDS)
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
-    from .logo_gen import pipeline
     return {
         "turns": turns,
         "guide": guide,
         "cards": cards,
         "remaining": len(missing),
+        "logo_batch": {"state": pipeline.batch_state(tenant).get("state") or "none"},
         "phase": "golive" if not missing else "building" if "page:home" in fired else "interview",
         "fired": fired,
         "draft_status": flow.get("draft_status") or {},
     }
-        "logo_batch": {"state": pipeline.batch_state(tenant).get("state") or "none"},

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { OPTION_ICONS } from "@/lib/option-icons";
 import {
+  browserTimeZone,
   pickedOptions,
   scheduleSummary,
   scheduleValid,
@@ -29,6 +30,7 @@ import { BuilderPreview, type BuilderData } from "./builder-preview";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 import { SchedulePicker } from "./schedule-picker";
+import { SocialsPicker } from "./socials-picker";
 
 export type { StepDraft };
 
@@ -50,9 +52,9 @@ export function QuestionScreen({
   onDraft,
   onSend,
   onMoreLogos,
+  onLogoMore,
   onCover,
   onNext,
-  onLogoMore,
   dir,
 }: {
   step: QuestionStep;
@@ -72,9 +74,9 @@ export function QuestionScreen({
   /** Which way the slide came from: forward, or back to an earlier question. */
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
+  onLogoMore: () => Promise<LookCards>;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
   /** Move on to the next question without answering this one again. */
-  onLogoMore: () => Promise<LookCards>;
   onNext: () => void;
 }) {
   const multi = !!step.multi && step.options.length > 1;
@@ -88,6 +90,10 @@ export function QuestionScreen({
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
   const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
   const sched = step.schedule ? (draft.schedule ?? {}) : null;
+  // A social-accounts question: a handle or link for each network ticked.
+  const none = !!step.alone && ticked.includes(step.alone);
+  const networks = step.socials && !none ? ticked : [];
+  const socials = step.socials ? (draft.socials ?? {}) : null;
   const canContinue = review
     ? review.status === "waiting" ||
       (review.status === "ready" && !!review.item)
@@ -95,7 +101,9 @@ export function QuestionScreen({
       ? !!draft.card || (!live && !!step.answer)
       : sched
         ? ticked.length > 0 && scheduleValid(mode, sched)
-        : ticked.length > 0;
+        : socials
+          ? ticked.length > 0 && networks.every((n) => !!socials[n]?.trim())
+          : ticked.length > 0;
   // A typed answer (not a tile, a card or "you decide") goes back in the box.
   const typed =
     !live &&
@@ -120,8 +128,17 @@ export function QuestionScreen({
   };
   const setTicked = (next: (t: string[]) => string[]) =>
     onDraft((d) => ({ ...d, ticked: next(d.ticked ?? ticked) }));
+  // Ticking the "alone" option ("Free for now") clears the rest, and the
+  // other way round.
   const toggle = (o: string) =>
-    setTicked((t) => (t.includes(o) ? t.filter((x) => x !== o) : [...t, o]));
+    setTicked((t) =>
+      t.includes(o)
+        ? t.filter((x) => x !== o)
+        : o === step.alone
+          ? [o]
+          : [...t.filter((x) => x !== step.alone), o],
+    );
+  const every = step.options.filter((o) => o !== step.alone);
   const proceed = () => {
     if (review && step.field)
       return live
@@ -136,7 +153,21 @@ export function QuestionScreen({
         message: scheduleSummary(mode, sched),
         choice: {
           field: step.field,
-          value: JSON.stringify({ mode, ...sched }),
+          value: JSON.stringify({
+            mode,
+            ...sched,
+            tz: sched.tz || browserTimeZone(),
+          }),
+        },
+      });
+    if (socials && step.field)
+      return send({
+        message: ticked.join(", "),
+        choice: {
+          field: step.field,
+          value: JSON.stringify(
+            Object.fromEntries(networks.map((n) => [n, socials[n].trim()])),
+          ),
         },
       });
     if (draft.card && step.field)
@@ -242,6 +273,7 @@ export function QuestionScreen({
                   disabled={sending}
                   delay={answersAt}
                   onMore={onMoreLogos}
+                  onLogoMore={onLogoMore}
                   onPick={(value, label) =>
                     onDraft((d) => ({ ...d, card: { value, label } }))
                   }
@@ -273,7 +305,6 @@ export function QuestionScreen({
                         }}
                         className={cn(
                           "relative flex min-h-[84px] flex-col justify-center gap-1.5 rounded-2xl border px-4 py-3.5 text-left text-[15.5px] font-medium leading-snug",
-                  onLogoMore={onLogoMore}
                           "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.97] disabled:pointer-events-none",
                           on
                             ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)] shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)]"
@@ -362,6 +393,16 @@ export function QuestionScreen({
                 />
               )}
 
+              {socials && networks.length > 0 && (
+                <SocialsPicker
+                  networks={networks}
+                  value={socials}
+                  onChange={(s) => onDraft((d) => ({ ...d, socials: s }))}
+                  disabled={sending}
+                  className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
+                />
+              )}
+
               <div className="mt-6 flex min-h-11 flex-wrap items-center gap-2">
                 {sending ? (
                   <p className="flex items-center gap-2 text-[15px] text-[var(--sf-graphite)]">
@@ -374,6 +415,7 @@ export function QuestionScreen({
                   <>
                     {(cards || step.options.length > 0) && (
                       <Button
+                        id="setup-continue"
                         size="lg"
                         disabled={!canContinue}
                         onClick={proceed}
@@ -392,25 +434,11 @@ export function QuestionScreen({
                               : "Continue"}
                       </Button>
                     )}
-                    {review?.status === "ready" && (
+                    {multi && every.some((o) => !ticked.includes(o)) && (
                       <Button
                         variant="ghost"
                         size="lg"
-                        onClick={() =>
-                          send({
-                            message: "Draft a different version, please.",
-                          })
-                        }
-                        className="rounded-full"
-                      >
-                        Try another version
-                      </Button>
-                    )}
-                    {multi && ticked.length < step.options.length && (
-                      <Button
-                        variant="ghost"
-                        size="lg"
-                        onClick={() => setTicked(() => [...step.options])}
+                        onClick={() => setTicked(() => every)}
                         className="rounded-full"
                       >
                         All of them
@@ -465,7 +493,7 @@ export function QuestionScreen({
                   sending={sending}
                   placeholder={
                     review
-                      ? "Or tell me what to change, like “make it six weeks”…"
+                      ? "Or tell me what to change, like “make it six weeks” or “another photo”…"
                       : live
                         ? "Or type your own answer…"
                         : "Or type a new answer…"

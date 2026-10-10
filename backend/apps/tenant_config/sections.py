@@ -94,6 +94,7 @@ def looks() -> list[dict]:
             "label": s.get("label") or sid,
             "detail": s.get("mood", ""),
             "group": HERO_LAYOUTS.get(s.get("heroLayout") or "", ""),
+            "tags": list(s.get("tags") or []),
             "palettes": [
                 {"id": "", "label": s.get("paletteLabel") or "Original"},
                 *[{"id": p["id"], "label": p.get("label") or p["id"]} for p in s.get("palettes") or []],

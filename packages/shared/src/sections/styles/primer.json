@@ -4,6 +4,7 @@
   "mood": "The exercise book you loved — ruled lines, a red margin, index tabs, outcomes as checkboxes.",
   "niches": ["learning", "tech"],
   "tones": ["warm", "expert"],
+  "tags": ["expertise", "long"],
   "order": 8,
   "enabled": true,
   "heroLayout": "split",

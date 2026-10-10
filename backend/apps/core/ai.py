@@ -37,6 +37,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 from collections import Counter
 from decimal import Decimal
@@ -276,7 +277,8 @@ def _cli_structured(system, user, output_model, model, effort=None):
 AGENTC_POLL_SECONDS = 0.5
 # Dev mount only (AGENTC_RUNS_DIR): how often to look for the synced file.
 AGENTC_FILE_POLL_SECONDS = 2
-_AGENTC_FILE_WAIT_SECONDS = 120
+# Measured 2026-10-10: the sync lags the run by 30 s to over 2 min.
+_AGENTC_FILE_WAIT_SECONDS = 420
 # Per HTTP call; the run as a whole is bounded by AGENTC_TIMEOUT_SECONDS.
 _AGENTC_HTTP_TIMEOUT = 10
 _AGENTC_FILE_TIMEOUT = 60  # a logo PNG over the hub's file route
@@ -308,6 +310,7 @@ def _agentc_model(effort):
     return settings.AGENTC_MODEL
 
 
+_AGENTC_CREATE_LOCK = threading.Lock()
 # Rotating tie-break between equally busy AGENTC_ACCOUNTS.
 _AGENTC_NEXT = itertools.count()
 
@@ -336,6 +339,14 @@ def _agentc_create(body):
     accounts = list(settings.AGENTC_ACCOUNTS)
     if not accounts:
         raise AiError("agentc run create failed: AGENTC_ACCOUNTS is empty")
+    # One create at a time: a batch of parallel runs (generated logos) must each
+    # see the previous one queued, or all pick the same idle account and run
+    # one after another (a hub account runs one run at a time).
+    with _AGENTC_CREATE_LOCK:
+        return _agentc_create_locked(body, accounts)
+
+
+def _agentc_create_locked(body, accounts):
     problems = []
     for name in _agentc_order(accounts):
         try:

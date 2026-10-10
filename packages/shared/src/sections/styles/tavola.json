@@ -4,6 +4,7 @@
   "mood": "The trattoria — butter-yellow awning, olive and tomato, a chunky warm serif and a menu card with dotted leaders.",
   "niches": ["cooking"],
   "tones": ["warm", "playful"],
+  "tags": ["selling", "playful"],
   "order": 9,
   "enabled": true,
   "heroLayout": "split",

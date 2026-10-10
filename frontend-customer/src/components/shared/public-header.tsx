@@ -8,6 +8,8 @@ import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
+import { themeModes } from "@/lib/site-styles";
+import { SocialLinks } from "@/components/shared/social-links";
 import { BookOpen, LogOut, Menu, User as UserIcon, X, Zap } from "lucide-react";
 import type { User } from "@/types/auth";
 import type {
@@ -138,14 +140,12 @@ function AuthCluster({
   onSignOut: () => void;
   dashboardHref: string;
 }) {
+  const styled = Boolean(useTenant()?.style);
   return (
     <div className="flex items-center gap-3">
+      <SocialLinks />
       {allowDarkMode && (
-        <ThemeToggle
-          compact
-          className="shrink-0"
-          modes={["light", "dim", "dark"]}
-        />
+        <ThemeToggle compact className="shrink-0" modes={themeModes(styled)} />
       )}
       {user ? (
         <>
@@ -403,10 +403,11 @@ export function PublicHeader({
             )}
           </div>
         )}
+        <SocialLinks className="px-1" />
         {allowDarkMode && (
           <ThemeToggle
             className="justify-start"
-            modes={["light", "dim", "dark"]}
+            modes={themeModes(Boolean(config?.style))}
           />
         )}
       </nav>

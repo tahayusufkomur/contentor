@@ -4,6 +4,7 @@ import type {
   InterviewEntry,
   Schedule,
   ScheduleMode,
+  ScheduleSlot,
 } from "@/lib/setup-flow";
 
 /** Append a dictated phrase to what is already in the box. */
@@ -148,12 +149,14 @@ export function questionSteps(
           field,
           can_delegate,
           multi,
+          alone,
           icons,
           hints,
           skip,
           details,
           builder,
           schedule,
+          socials,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -163,12 +166,14 @@ export function questionSteps(
           field,
           can_delegate,
           multi,
+          alone,
           icons,
           hints,
           skip,
           details,
           builder,
           schedule,
+          socials,
           answer,
         });
         onScreen = e.field;
@@ -227,14 +232,23 @@ const fmtTime = (t: string) => {
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 };
 
+/** A slot is ready once it has a weekday and a time. */
+const slotReady = (sl: ScheduleSlot) =>
+  sl.days.length > 0 && sl.times.some(Boolean);
+
 export function scheduleValid(mode: ScheduleMode, s: Schedule): boolean {
   return mode === "once"
     ? !!s.at
-    : !!s.start && !!s.days?.length && !!s.times?.some(Boolean);
+    : !!s.start && !!s.slots?.length && s.slots.every(slotReady);
 }
 
+/** The timezone the browser is in: the default for a class schedule. */
+export const browserTimeZone = () =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 /** The schedule as the coach would say it: "Tuesdays and Thursdays at
- * 6:30 PM, from 12 Oct to 7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM". */
+ * 6:30 PM, from 12 Oct to 7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM".
+ * Each slot reads as its own clause: "Mondays at 9:00 AM; Fridays at 6:00 PM". */
 export function scheduleSummary(mode: ScheduleMode, s: Schedule): string {
   if (mode === "once") {
     if (!s.at) return "";
@@ -243,34 +257,40 @@ export function scheduleSummary(mode: ScheduleMode, s: Schedule): string {
     );
     return `${day} ${fmtDate(s.at, true)} at ${fmtTime(s.at.slice(11, 16))}`;
   }
-  const days = list(
-    [...(s.days ?? [])]
-      .sort((a, b) => mondayFirst(a) - mondayFirst(b))
-      .map((d) => DAY_NAMES[d]),
-  );
-  const times = list((s.times ?? []).filter(Boolean).sort().map(fmtTime));
+  const when = (s.slots ?? [])
+    .filter(slotReady)
+    .map((sl) => {
+      const days = list(
+        [...sl.days]
+          .sort((a, b) => mondayFirst(a) - mondayFirst(b))
+          .map((d) => DAY_NAMES[d]),
+      );
+      const times = list(sl.times.filter(Boolean).sort().map(fmtTime));
+      return `${days} at ${times}`;
+    })
+    .join("; ");
   const span = !s.start
     ? ""
     : s.end
       ? `from ${fmtDate(s.start, false)} to ${fmtDate(s.end, true)}`
       : `from ${fmtDate(s.start, true)}`;
-  const when = days && times ? `${days} at ${times}` : days || times;
   return [when, span].filter(Boolean).join(", ");
 }
 
-/** The first class, as an ISO instant: the one date, or the first picked
- * weekday on or after the start, at the earliest time. */
+/** The first class, as an ISO instant: the one date, or the earliest slot's
+ * first weekday on or after the start, at its earliest time. */
 export function firstOccurrence(
   mode: ScheduleMode,
   s: Schedule,
 ): string | null {
   if (mode === "once") return s.at ? local(s.at).toISOString() : null;
-  const time = (s.times ?? []).filter(Boolean).sort()[0];
-  if (!s.start || !s.days?.length || !time) return null;
-  const d = local(`${s.start}T${time}`);
-  for (let i = 0; i < 7; i++) {
-    if (s.days.includes(d.getDay())) return d.toISOString();
-    d.setDate(d.getDate() + 1);
+  if (!s.start) return null;
+  let first: Date | null = null;
+  for (const sl of (s.slots ?? []).filter(slotReady)) {
+    const d = local(`${s.start}T${sl.times.filter(Boolean).sort()[0]}`);
+    for (let i = 0; i < 7 && !sl.days.includes(d.getDay()); i++)
+      d.setDate(d.getDate() + 1);
+    if (sl.days.includes(d.getDay()) && (!first || d < first)) first = d;
   }
-  return null;
+  return first?.toISOString() ?? null;
 }

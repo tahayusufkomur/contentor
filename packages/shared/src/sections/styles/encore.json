@@ -4,6 +4,7 @@
   "mood": "A gig poster and the record it sells — cream stock, black ink, a teal second colour, a tracklist.",
   "niches": ["music", "dance"],
   "tones": ["energetic", "playful"],
+  "tags": ["selling", "confident", "short"],
   "order": 10,
   "enabled": true,
   "heroLayout": "giant",

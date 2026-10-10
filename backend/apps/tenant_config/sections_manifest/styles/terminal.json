@@ -4,6 +4,7 @@
   "mood": "The command line — phosphor on near-black, a monospace headline, prompts, code blocks and a blinking cursor.",
   "niches": ["tech"],
   "tones": ["expert", "playful"],
+  "tags": ["expertise", "short"],
   "order": 17,
   "enabled": true,
   "heroLayout": "split",

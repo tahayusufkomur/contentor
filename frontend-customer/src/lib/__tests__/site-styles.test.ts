@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { SITE_STYLES, paletteOf, styleVars } from "@/lib/site-styles";
+import {
+  SITE_STYLES,
+  isDarkPalette,
+  modePalette,
+  paletteOf,
+  styleDefaultTheme,
+  styleRootCss,
+  styleVars,
+  themeModes,
+} from "@/lib/site-styles";
 
 describe("paletteOf", () => {
   const journal = SITE_STYLES.journal;
@@ -15,5 +24,29 @@ describe("paletteOf", () => {
     expect(vars.primary).toBe(sage.palette.primary);
     expect(vars.inverse).toBe(sage.palette.inverse);
     expect(vars["font-display"]).toBe(styleVars(journal)["font-display"]);
+  });
+});
+
+describe("modePalette", () => {
+  it("keeps a palette's own scheme and derives the other", () => {
+    const journal = SITE_STYLES.journal.palette;
+    expect(isDarkPalette(journal)).toBe(false);
+    expect(modePalette(journal, "light")).toBe(journal);
+    const dark = modePalette(journal, "dark");
+    expect(isDarkPalette(dark)).toBe(true);
+    expect(dark.foreground).not.toBe(journal.foreground);
+    const nocturne = SITE_STYLES.nocturne.palette;
+    expect(isDarkPalette(nocturne)).toBe(true);
+    expect(isDarkPalette(modePalette(nocturne, "light"))).toBe(false);
+  });
+  it("starts a dark style dark, and emits both schemes", () => {
+    expect(styleDefaultTheme(SITE_STYLES.nocturne)).toBe("dark");
+    expect(styleDefaultTheme(SITE_STYLES.journal)).toBe("light");
+    const css = styleRootCss(SITE_STYLES.journal);
+    expect(css).toMatch(/:root \{[\s\S]*\.dark, \.dim \{/);
+  });
+  it("styled sites toggle light and dark only", () => {
+    expect(themeModes(true)).toEqual(["light", "dark"]);
+    expect(themeModes(false)).toContain("dim");
   });
 });

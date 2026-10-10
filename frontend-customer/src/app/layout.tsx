@@ -13,7 +13,11 @@ import { PushOptIn } from "@/components/shared/push-optin";
 import { SwUpdateToast } from "@/components/shared/sw-update-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
-import { getSiteStyle, styleFontsHref } from "@/lib/site-styles";
+import {
+  getSiteStyle,
+  styleDefaultTheme,
+  styleFontsHref,
+} from "@/lib/site-styles";
 import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { UsageReporter } from "@/components/shared/usage-reporter";
@@ -181,12 +185,18 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
+            defaultTheme={
+              siteStyle
+                ? styleDefaultTheme(siteStyle, config?.palette)
+                : "light"
+            }
             themes={["light", "dim", "dark"]}
             enableSystem={false}
             forcedTheme={
-              config?.dark_mode_enabled === false || siteStyle
-                ? "light"
+              config?.dark_mode_enabled === false
+                ? siteStyle
+                  ? styleDefaultTheme(siteStyle, config?.palette)
+                  : "light"
                 : undefined
             }
             disableTransitionOnChange

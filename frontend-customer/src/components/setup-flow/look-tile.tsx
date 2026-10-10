@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { styleRecipe, type FamilyId } from "@shared/sections/types";
 import { fixtureBlock, fixtureData } from "@/components/sections/fixtures";
 import { STYLE_SECTIONS } from "@/components/sections/registry";
+import type { LookCopy } from "@/lib/setup-flow";
 import { getSiteStyle, styleScope } from "@/lib/site-styles";
 
 // The site's desktop layout width; the tile scales it down, the same way the
@@ -51,6 +52,42 @@ function fill<T>(
   return value;
 }
 
+const nonEmpty = (o: Record<string, unknown>) =>
+  Object.fromEntries(Object.entries(o).filter(([, v]) => v !== ""));
+
+/** A section's sample block with the coach's words in place of the sample's:
+ * each text field the copy has, and each list item's title and text by
+ * position (the item keeps its photo). Empty copy leaves the sample alone. */
+function withCopy<T extends object>(
+  block: T,
+  copy?: Record<string, unknown>,
+): T {
+  if (!copy) return block;
+  const out: Record<string, unknown> = {
+    ...(block as Record<string, unknown>),
+  };
+  for (const [key, value] of Object.entries(copy)) {
+    if (typeof value === "string" && value) out[key] = value;
+    else if (Array.isArray(value) && Array.isArray(out[key]))
+      out[key] = (out[key] as Record<string, unknown>[])
+        .slice(0, value.length)
+        .map((item, i) => ({
+          ...item,
+          ...nonEmpty(value[i] as Record<string, unknown>),
+        }));
+  }
+  return out as T;
+}
+
+/** The sample courses, retitled in the coach's words by position. */
+function withCourses<T>(data: T, courses?: LookCopy["courses"]): T {
+  if (!Array.isArray(data) || !courses?.length) return data;
+  return data.slice(0, courses.length).map((course, i) => ({
+    ...course,
+    ...nonEmpty(courses[i] ?? {}),
+  })) as T;
+}
+
 /** One look as the top of a real home page in that style and colourway: the
  * style's own section layouts with sample content, the coach's brand as the
  * kicker, their pitch as the headline and photos of what they teach, scaled
@@ -64,6 +101,7 @@ export function LookTile({
   photos = [],
   words = {},
   body,
+  copy,
   page = false,
 }: {
   styleId: string;
@@ -73,6 +111,8 @@ export function LookTile({
   photos?: string[];
   /** The hero's line under the headline, in the coach's words. */
   body?: string;
+  /** The sample words written for this coach, in place of the sample copy. */
+  copy?: LookCopy | null;
   /** Sample words to swap in the copy ({ yoga: "boxing" }). */
   words?: Record<string, string>;
   page?: boolean;
@@ -130,7 +170,10 @@ export function LookTile({
             // Each section starts at a different photo, so they don't repeat.
             const from = { i: n * 2 };
             const block = fill(
-              fixtureBlock(family, `${styleId}.${variant}`, size),
+              withCopy(
+                fixtureBlock(family, `${styleId}.${variant}`, size),
+                copy?.[family],
+              ),
               photos,
               words,
               from,
@@ -146,7 +189,12 @@ export function LookTile({
               <Comp
                 key={`${family}-${variant}-${n}`}
                 block={block}
-                data={fill(fixtureData(family, size), photos, words, from)}
+                data={fill(
+                  withCourses(fixtureData(family, size), copy?.courses),
+                  photos,
+                  words,
+                  from,
+                )}
               />
             );
           })}

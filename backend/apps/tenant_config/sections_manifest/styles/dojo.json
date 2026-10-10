@@ -4,6 +4,7 @@
   "mood": "The dojo — rice paper, black sumi ink, one red seal, vertical rules and belts as progress.",
   "niches": ["martial_arts", "fitness"],
   "tones": ["calm", "expert"],
+  "tags": ["expertise", "confident"],
   "order": 15,
   "enabled": true,
   "heroLayout": "centered",

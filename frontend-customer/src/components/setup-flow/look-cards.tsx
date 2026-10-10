@@ -9,6 +9,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
 import type { LookCards, LookOption } from "@/lib/setup-flow";
 import {
+  STYLE_TAGS,
   getSiteStyle,
   paletteOf,
   styleFontsHref,
@@ -109,8 +110,8 @@ export function LookCardsView({
   delay = 0,
   onPick,
   onMore,
-}: {
   onLogoMore,
+}: {
   cards: LookCards;
   brandName: string;
   host?: string;
@@ -120,9 +121,9 @@ export function LookCardsView({
   delay?: number;
   onPick: (value: string, label: string) => void;
   onMore: (page: number) => Promise<LookCards>;
-}) {
   /** Starts three more generated logos (the parent refreshes the card). */
   onLogoMore?: () => Promise<LookCards>;
+}) {
   const [shown, setShown] = useState<LookCards>(cards);
   // A look with a page behind it opens as that page on pick.
   const [preview, setPreview] = useState<LookOption | null>(null);
@@ -130,6 +131,8 @@ export function LookCardsView({
   const [palettes, setPalettes] = useState<Record<string, string>>({});
   // The looks grouped behind "More looks", once the coach asks for them.
   const [others, setOthers] = useState(false);
+  // The looks a tag filters to ("" = all).
+  const [tag, setTag] = useState("");
   const paletteFor = (o: LookOption) =>
     palettes[o.value] ?? pickedPalette(o, chosen, selected) ?? "";
   // The guide's pick is selected and opened as a page the first time the
@@ -154,15 +157,15 @@ export function LookCardsView({
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
     { errorToast: "Couldn’t load more logos. Try again." },
   );
-  const isPicked = (value: string, label: string) =>
-    chosen
-      ? chosen === value
   const { run: logoMore, loading: moreLoading } = useAsyncAction(
     async () => {
       await onLogoMore?.();
     },
     { errorToast: "Couldn’t start more logos. Try again." },
   );
+  const isPicked = (value: string, label: string) =>
+    chosen
+      ? chosen === value
       : !!selected && selected.trim().toLowerCase() === label.toLowerCase();
   const isLookPicked = (o: LookOption) =>
     chosen
@@ -183,12 +186,21 @@ export function LookCardsView({
       .map((id) => getSiteStyle(id))
       .filter((s): s is SiteStyle => !!s);
     const suggested = shown.options.find((o) => o.recommended);
+    const chips: [string, string][] = [
+      ["", "All"],
+      ...STYLE_TAGS.filter(([t]) =>
+        shown.options.some((o) => o.tags?.includes(t)),
+      ),
+    ];
+    const options = tag
+      ? shown.options.filter((o) => o.tags?.includes(tag))
+      : shown.options;
     // One look per hero layout first (the best ranked of each; the guide's
     // pick ranks first), the near-twins grouped under "More looks".
     const seen = new Set<string>();
     const leads: LookOption[] = [];
     const rest = new Map<string, LookOption[]>();
-    for (const o of shown.options) {
+    for (const o of options) {
       const g = o.group || o.value;
       if (!seen.has(g)) {
         seen.add(g);
@@ -218,6 +230,7 @@ export function LookCardsView({
               brandName={brandName}
               headline={shown.headline}
               photos={shown.photos}
+              copy={shown.preview?.copy}
             />
             <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 py-2.5">
               <span className="min-w-0">
@@ -265,6 +278,30 @@ export function LookCardsView({
             is our pick. {suggested.reason}
           </p>
         )}
+        {chips.length > 1 && (
+          <div
+            role="group"
+            aria-label="Filter looks"
+            className="mb-5 flex flex-wrap gap-1.5"
+          >
+            {chips.map(([id, label]) => (
+              <button
+                key={id || "all"}
+                type="button"
+                aria-pressed={tag === id}
+                onClick={() => setTag(id)}
+                className={cn(
+                  "h-9 rounded-full border px-3.5 text-[13.5px] font-medium transition-colors",
+                  tag === id
+                    ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+                    : "border-[var(--sf-line-strong)] bg-white hover:border-[var(--sf-ink)]",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         {styles.map((s) => (
           <link key={s.id} rel="stylesheet" href={styleFontsHref(s)} />
         ))}
@@ -306,12 +343,101 @@ export function LookCardsView({
     );
   }
 
+  if (shown.kind === "calendar") {
+    return (
+      <div className="mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        {shown.options.map((o, i) => (
+          <CardButton
+            key={o.value}
+            picked={isPicked(o.value, o.label)}
+            disabled={disabled}
+            onClick={() => onPick(o.value, o.label)}
+            style={enter(i)}
+            className="overflow-hidden p-0"
+          >
+            <CalendarSketch kind={o.value} />
+            <span className="block border-t border-[var(--sf-line)] px-3.5 py-2.5">
+              <span className="block text-[14px] font-semibold">{o.label}</span>
+              {o.detail && (
+                <span className="block text-[12px] text-[var(--sf-graphite)]">
+                  {o.detail}
+                </span>
+              )}
+            </span>
+          </CardButton>
+        ))}
+      </div>
+    );
+  }
+
   // Traced marks are drawn in the primary colour of the look the coach
   // picked: the logo as it will sit in their header.
   const look = getSiteStyle(shown.style ?? "");
   const markColor = look ? styleVars(look, shown.palette).primary : undefined;
+  // Read from ``cards``, not ``shown``: the batch lands while the card is open.
+  const generated = cards.generated;
   return (
     <div className="mt-8">
+      {generated && generated.state !== "none" && (
+        <section className="mb-8" aria-label="Designed for you">
+          <p className="mb-3 text-[13px] font-medium text-[var(--sf-graphite)]">
+            {generated.state === "ready"
+              ? "Designed for you"
+              : "Designing your logo"}
+          </p>
+          {generated.state === "building" ? (
+            <>
+              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                {[0, 1, 2].map((i) => (
+                  <Skeleton key={i} className="aspect-[4/3] rounded-lg" />
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-[var(--sf-graphite)]">
+                Designing your logo, about two minutes. Pick a ready-made mark
+                below meanwhile, or wait.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                {generated.options.map((o, i) => (
+                  <CardButton
+                    key={o.value}
+                    picked={isPicked(o.value, o.label)}
+                    disabled={disabled}
+                    onClick={() => onPick(o.value, o.label)}
+                    style={enter(i)}
+                    className="p-2"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={o.image_url}
+                      alt={o.label}
+                      className="aspect-[4/3] w-full rounded-lg object-contain"
+                    />
+                    <span className="mt-2 block truncate text-center text-[13px]">
+                      {o.label}
+                    </span>
+                  </CardButton>
+                ))}
+              </div>
+              {onLogoMore && (
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  loading={moreLoading}
+                  loadingText="Starting…"
+                  disabled={disabled}
+                  onClick={() => logoMore()}
+                  className="mt-3 rounded-full"
+                >
+                  Three more
+                </Button>
+              )}
+            </>
+          )}
+        </section>
+      )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {shown.options.map((o: LookOption, i) => (
           <CardButton
@@ -374,70 +500,8 @@ export function LookCardsView({
         </Button>
       )}
     </div>
-  // Read from ``cards``, not ``shown``: the batch lands while the card is open.
-  const generated = cards.generated;
   );
 }
-      {generated && generated.state !== "none" && (
-        <section className="mb-8" aria-label="Designed for you">
-          <p className="mb-3 text-[13px] font-medium text-[var(--sf-graphite)]">
-            {generated.state === "ready"
-              ? "Designed for you"
-              : "Designing your logo"}
-          </p>
-          {generated.state === "building" ? (
-            <>
-              <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="aspect-[4/3] rounded-lg" />
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-[var(--sf-graphite)]">
-                Designing your logo, about two minutes. Pick a ready-made mark
-                below meanwhile, or wait.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-                {generated.options.map((o, i) => (
-                  <CardButton
-                    key={o.value}
-                    picked={isPicked(o.value, o.label)}
-                    disabled={disabled}
-                    onClick={() => onPick(o.value, o.label)}
-                    style={enter(i)}
-                    className="p-2"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={o.image_url}
-                      alt={o.label}
-                      className="aspect-[4/3] w-full rounded-lg object-contain"
-                    />
-                    <span className="mt-2 block truncate text-center text-[13px]">
-                      {o.label}
-                    </span>
-                  </CardButton>
-                ))}
-              </div>
-              {onLogoMore && (
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  loading={moreLoading}
-                  loadingText="Starting…"
-                  disabled={disabled}
-                  onClick={() => logoMore()}
-                  className="mt-3 rounded-full"
-                >
-                  Three more
-                </Button>
-              )}
-            </>
-          )}
-        </section>
-      )}
 
 /** A look as a whole home page, in a browser frame over the questions:
  * the coach's brand, pitch and photos in the style's own layouts, sample
@@ -463,6 +527,25 @@ function LookPreview({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+  // The answers sit above Continue: once the page is back, bring it into view.
+  const keep = () => {
+    onClose();
+    // Scroll the guide's own panel only: scrollIntoView would also move the
+    // overflow-hidden shell above it, hiding the header with no way back.
+    requestAnimationFrame(() => {
+      const target = document.getElementById("setup-continue");
+      const box = target?.closest<HTMLElement>(
+        '[aria-label="Your setup guide"]',
+      );
+      if (!target || !box) return;
+      const t = target.getBoundingClientRect();
+      const b = box.getBoundingClientRect();
+      box.scrollTo({
+        top: box.scrollTop + t.top - b.top - (b.height - t.height) / 2,
+        behavior: "smooth",
+      });
+    });
+  };
   const subject = cards.preview?.subject;
   const words = {
     ...(brandName ? { "Maya Laurent": brandName } : {}),
@@ -506,7 +589,7 @@ function LookPreview({
               {look.recommended ? "See other looks" : "Close"}
             </Button>
             <Button
-              onClick={onClose}
+              onClick={keep}
               className="rounded-full bg-white text-[var(--sf-ink)] hover:bg-white/90"
             >
               Keep this look
@@ -533,6 +616,7 @@ function LookPreview({
                   photos={cards.photos}
                   words={words}
                   body={cards.preview?.body}
+                  copy={cards.preview?.copy}
                 />
               </div>
             }
@@ -540,6 +624,48 @@ function LookPreview({
         </div>
       </div>
     </ModalPortal>
+  );
+}
+
+/** A calendar layout as a small picture: the month grid with a day picked, or
+ * the agenda as dated rows. */
+function CalendarSketch({ kind }: { kind: string }) {
+  const bar = "rounded-full bg-[var(--sf-line-strong)]";
+  return (
+    <span
+      aria-hidden
+      className="block aspect-[16/9] w-full bg-[var(--sf-tint)] p-4"
+    >
+      {kind === "agenda" ? (
+        <span className="flex h-full flex-col justify-center gap-2.5">
+          {[0, 1, 2].map((r) => (
+            <span key={r} className="flex items-center gap-3">
+              <span className="flex size-8 shrink-0 flex-col items-center justify-center rounded-lg bg-white text-[10px] font-semibold shadow-sm">
+                {10 + r * 3}
+              </span>
+              <span className="flex-1 rounded-lg bg-white px-3 py-2 shadow-sm">
+                <span className={cn("block h-1.5 w-2/3", bar)} />
+                <span className={cn("mt-1.5 block h-1.5 w-1/3", bar)} />
+              </span>
+            </span>
+          ))}
+        </span>
+      ) : (
+        <span className="grid h-full grid-cols-7 grid-rows-5 gap-1">
+          {Array.from({ length: 35 }, (_, n) => (
+            <span
+              key={n}
+              className={cn(
+                "rounded-[5px] bg-white shadow-sm",
+                n === 16 && "bg-[var(--sf-ink)]",
+                [4, 11, 18, 25, 22].includes(n) &&
+                  "ring-2 ring-inset ring-[var(--sf-brass)]",
+              )}
+            />
+          ))}
+        </span>
+      )}
+    </span>
   );
 }
 

@@ -21,11 +21,11 @@ DELEGATE = "__delegate__"
 SKIP = "__skip__"
 TEXT_MAX = 500
 # Answered by tapping a card (applied by code, asked in order): the look,
-# the logo, and the review screens of the first course and class.
-CARD_KINDS = ("style", "logo", "course", "event")
+# the logo, the calendar layout, and the review screens of the first course and class.
+CARD_KINDS = ("style", "logo", "calendar", "course", "event")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
-FIXED_KINDS = ("offers", "payments", "memberships", "schedule", "specialty")
+FIXED_KINDS = ("offers", "payments", "memberships", "schedule", "specialty", "calendar_nav", "socials")
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
     "course": "sell_courses",
@@ -53,6 +53,74 @@ _PAYMENT_WORDS = (
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
 TONES = ("warm", "energetic", "calm", "expert", "playful")
+# One line under each tone answer (Warm, Energetic, Calm, Expert, Playful). The
+# model writes the coach's own (answers["tone_hints"]); these are the fallback,
+# per broad tile ("" = any other), so no niche gets another niche's words.
+TONE_HINTS = {
+    "": (
+        "Come as you are. We'll take it slow.",
+        "Let's go. Today counts.",
+        "Breathe in. There's no rush here.",
+        "Years of experience, shared plainly.",
+        "Let's have some fun with this.",
+    ),
+    "Yoga": (
+        "Come as you are. Your mat is a safe place.",
+        "Move, breathe and feel the heat rise.",
+        "Slow breath, steady body, quiet mind.",
+        "Years of practice, taught with clear cues.",
+        "Let's find your flow, one silly pose at a time.",
+    ),
+    "Pilates": (
+        "Strong core, kind pace, every body welcome.",
+        "Sculpt, lengthen and feel the burn.",
+        "Controlled movement, long lines, calm breath.",
+        "Precise form, taught the way it's built.",
+        "Tiny moves, big results. Let's have fun with it.",
+    ),
+    "Fitness coaching": (
+        "Strength for real life, at your own pace.",
+        "Let's go. Today's session counts.",
+        "Steady progress, no crash, no burnout.",
+        "Programmes built on what actually works.",
+        "Sweat, laugh, repeat. Your new favourite hour.",
+    ),
+    "Dance": (
+        "Dance like nobody's judging. Nobody is.",
+        "Turn up the music and move.",
+        "Gentle rhythm, easy steps, no pressure.",
+        "Years on the floor, taught step by step.",
+        "Shake it out. Spins and smiles welcome.",
+    ),
+    "Meditation": (
+        "Rest here. There's nothing to fix.",
+        "Reset your mind in ten minutes flat.",
+        "Breathe in. The room goes quiet.",
+        "Practices rooted in years of teaching.",
+        "Your brain needs a nap. Let's give it one.",
+    ),
+    "Nutrition": (
+        "Good food, no guilt, no strict rules.",
+        "Fuel up with simple, delicious meals.",
+        "Eat well, sleep well, feel steady.",
+        "Evidence-based plans, explained plainly.",
+        "Real food that tastes like a treat.",
+    ),
+    "Life coaching": (
+        "You've got this. Let's find the next step.",
+        "Stop waiting. Start the change today.",
+        "Clear thinking, one honest question at a time.",
+        "Proven tools for the big decisions.",
+        "Dream big, then let's make it happen.",
+    ),
+    "Business coaching": (
+        "Your business, built with people you trust.",
+        "Grow faster and stop the guesswork.",
+        "Clear plans, steady decisions, no panic.",
+        "Strategy from years in the trenches.",
+        "Serious results, and a bit of fun along the way.",
+    ),
+}
 # The memberships a coach can offer, any number of them, each built on what
 # they teach with: id, label, monthly price, the offers it needs, whether the
 # first course is in it, its perks and a line about it.
@@ -318,7 +386,19 @@ def specialties_for(answers: dict) -> tuple[str, ...]:
 def tile_of_brand(brand) -> str | None:
     """The broad tile a studio name gives away ("Zen Yoga Studio" → "Yoga"), or None."""
     lowered = str(brand or "").lower()
-    return next((tile for tile, (pattern, _) in SPECIALTIES.items() if re.search(pattern, lowered)), None)
+    found = next((tile for tile, (pattern, _) in SPECIALTIES.items() if re.search(pattern, lowered)), None)
+    if found or not lowered.strip():
+        return found
+    from apps.core import jev
+
+    # High bar: a wrong guess opens the first screen on the wrong kinds.
+    return jev.choose(
+        brand,
+        "This is the name of a coach's teaching business. Does the name itself clearly say which of these they"
+        " teach? Pick none when the name does not say (a person's name, an abstract brand word).",
+        {tile: ", ".join(kinds) for tile, (_, kinds) in SPECIALTIES.items()},
+        min_confidence=0.8,
+    )
 
 
 def kind_of_brand(brand) -> tuple[str, str] | None:
@@ -359,6 +439,7 @@ class Field:
     pays: tuple[str, ...] = ()  # ...and only when students pay in one of these ways
     group: str = ""  # the skippable section it belongs to (course | event | post)
     multi: bool = False  # several options can be ticked at once
+    alone: str = ""  # the option that can't be ticked with any other ("Free for now")
     icons: tuple[str, ...] = ()  # one lucide id per option (fixed-option fields)
     hints: tuple[str, ...] = ()  # one short line per option, shown under it
     details: tuple[str, ...] = ()  # one description per option, shown once it is picked
@@ -429,13 +510,7 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
         delegable=True,
         icons=("heart", "zap", "leaf", "graduation-cap", "smile"),
-        hints=(
-            "Come as you are. We'll take it slow.",
-            "Let's go. Today counts.",
-            "Breathe in. There's no rush here.",
-            "Twelve years of teaching, distilled.",
-            "Yes, you can wear socks.",
-        ),
+        hints=TONE_HINTS[""],
     ),
     Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
     Field("story", "Their story", "How did you come to teach this?"),
@@ -446,6 +521,25 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
+    # Coaches who run classes: how the public calendar looks, and whether it is in the navbar.
+    Field(
+        "calendar_view",
+        "Calendar layout",
+        "How should your class calendar look?",
+        kind="calendar",
+        needs=("live", "onsite"),
+        delegable=True,
+    ),
+    Field(
+        "calendar_nav",
+        "Calendar in the navbar",
+        "Want your calendar in the navbar?",
+        ("Yes, add it", "No, keep it off"),
+        kind="calendar_nav",
+        needs=("live", "onsite"),
+        icons=("calendar-days", "lock-open"),
+        hints=("One click from every page", "Students find it from your classes"),
+    ),
     Field(
         "payments",
         "How students pay",
@@ -453,6 +547,7 @@ FIELDS: tuple[Field, ...] = (
         ("One-time course purchases", "Monthly membership", "Pay per class or event", "Free for now"),
         kind="payments",
         multi=True,
+        alone="Free for now",
         icons=("book-open", "repeat", "ticket", "gift"),
         hints=(
             "Students buy each course once",
@@ -536,6 +631,16 @@ FIELDS: tuple[Field, ...] = (
         delegable=True,
     ),
     Field(
+        "socials",
+        "Social accounts",
+        "Which social accounts should students find you on?",
+        ("Instagram", "YouTube", "TikTok", "Facebook", "X", "LinkedIn", "No social accounts yet"),
+        kind="socials",  # tiles pick the networks; the picker takes each handle or link
+        multi=True,
+        alone="No social accounts yet",
+        icons=("instagram", "video", "music", "users", "message-circle", "briefcase", "clock"),
+    ),
+    Field(
         "contact",
         "How students reach them",
         "How should students get in touch with you?",
@@ -597,6 +702,51 @@ def parse_memberships(raw) -> list[str]:
     return [t["id"] for t in MEMBERSHIP_TIERS if t["label"].lower() in text or re.search(rf"\b{t['id']}\b", text)]
 
 
+NO_SOCIALS = "No social accounts yet"
+# id: (name, profile URL for a bare handle, host pattern). The first match wins.
+SOCIALS = {
+    "instagram": ("Instagram", "https://instagram.com/{}", r"instagram\.com"),
+    "youtube": ("YouTube", "https://youtube.com/@{}", r"youtube\.com|youtu\.be"),
+    "tiktok": ("TikTok", "https://tiktok.com/@{}", r"tiktok\.com"),
+    "facebook": ("Facebook", "https://facebook.com/{}", r"facebook\.com|fb\.com"),
+    "x": ("X", "https://x.com/{}", r"x\.com|twitter\.com"),
+    "linkedin": ("LinkedIn", "https://linkedin.com/in/{}", r"linkedin\.com"),
+}
+_HANDLE = re.compile(r"@?([\w.\-]{1,60})")
+
+
+def social_url(network: str, raw) -> str | None:
+    """A handle ("@maya") or a link as the profile URL on ``network``, or None."""
+    if network not in SOCIALS:
+        return None
+    text = str(raw or "").strip().rstrip(".,;")
+    if not text:
+        return None
+    _, template, host = SOCIALS[network]
+    link = re.fullmatch(rf"(?:https?://)?(?:[\w-]+\.)?(?:{host})/\S{{1,200}}", text, re.I)
+    if link:
+        return "https://" + re.sub(r"^https?://", "", text, flags=re.I)
+    handle = _HANDLE.fullmatch(text)
+    return template.format(handle[1]) if handle else None
+
+
+def parse_socials(raw) -> dict[str, str]:
+    """Profile links named in the coach's words: links, or "Instagram: @maya"."""
+    text = str(raw or "")
+    found = {}
+    for network, (name, _, host) in SOCIALS.items():
+        hit = re.search(rf"(?:https?://)?(?:[\w-]+\.)?(?:{host})/[^\s,;]+", text, re.I) or re.search(
+            rf"\b{name}\b\W{{1,3}}(@?[\w.\-]+)", text, re.I
+        )
+        if hit and (url := social_url(network, hit[1] if hit.re.groups else hit[0])):
+            found[network] = url
+    return found
+
+
+def socials_summary(links: dict[str, str]) -> str:
+    return "; ".join(f"{SOCIALS[n][0]}: {u}" for n, u in links.items()) or NO_SOCIALS
+
+
 def coerce(field_id: str, raw):
     """What the coach said → the stored value, or None when it doesn't fit."""
     field = FIELD_BY_ID.get(field_id)
@@ -610,6 +760,20 @@ def coerce(field_id: str, raw):
         return parse_memberships(raw) or None
     if field.kind == "price":
         return parse_price(raw)
+    if field.kind == "calendar_nav":
+        text = str(raw or "").lower()
+        return (
+            "yes"
+            if re.search(r"\b(yes|add|show|sure|yeah|please)\b", text)
+            else "no"
+            if re.search(r"\b(no|off|don.?t)\b", text)
+            else None
+        )
+    if field.kind == "socials":
+        links = parse_socials(raw)
+        if links:
+            return socials_summary(links)
+        return NO_SOCIALS if re.search(r"\bno\b|none|later|don.?t|nothing", str(raw or ""), re.I) else None
     if field.kind == "tone":
         text = str(raw or "").lower()
         return ", ".join(t for t in TONES if t in text) or _text(raw)
@@ -637,9 +801,41 @@ def subject_of(answers: dict) -> str:
     return " ".join(words[:2]) or ("" if niche == "general" else niche)
 
 
+# What each niche means, for Jev when the keyword table finds nothing.
+_NICHE_MEANS = {
+    "face_yoga": "Face yoga, facial exercises",
+    "pole_dance": "Pole dance, pole fitness",
+    "belly_dance": "Belly dance",
+    "makeup": "Make-up artistry",
+    "pilates": "Pilates, barre",
+    "yoga": "Yoga of any kind",
+    "outdoors": "Running, hiking, cycling, climbing, surfing, skiing and other outdoor sport",
+    "martial_arts": "Martial arts and self-defence",
+    "dance": "Dance of any other kind",
+    "cooking": "Cooking, baking, drinks, nutrition and food",
+    "music": "Music, singing, instruments, acting and performance",
+    "tech": "Coding, software, data, AI and digital tools",
+    "family": "Parenting, pregnancy, babies and children",
+    "spiritual": "Astrology, tarot, energy healing and other spiritual practice",
+    "beauty": "Skin, hair, nails, beauty, fashion and personal style",
+    "crafts": "Pottery, knitting, sewing, woodwork and other handicrafts",
+    "writing": "Writing, storytelling and publishing",
+    "learning": "Languages, school subjects, exams, tutoring and chess",
+    "creative": "Photography, painting, drawing, design, film and visual art",
+    "wellness": "Mental wellbeing, mindfulness, meditation, therapy and life coaching",
+    "business": "Business, career, money, marketing and leadership",
+    "fitness": "Fitness, strength, gym, boxing and personal training",
+}
+
+
 def niche_for(text) -> str:
     lowered = str(text or "").lower()
-    return next((niche for niche, pattern in _NICHE_WORDS if re.search(pattern, lowered)), "general")
+    found = next((niche for niche, pattern in _NICHE_WORDS if re.search(pattern, lowered)), None)
+    if found or not lowered.strip():
+        return found or "general"
+    from apps.core import jev
+
+    return jev.choose(text, "Which field does this coach teach?", _NICHE_MEANS) or "general"
 
 
 def _sync_legacy(answers: dict, field_id: str) -> None:
@@ -713,6 +909,18 @@ def required(answers: dict) -> list[Field]:
     ]
 
 
+def tone_hints_for(answers: dict) -> tuple[str, ...]:
+    """One line per tone: the model's, written for this coach's niche, else the
+    fallback of the broad tile they teach (see TONE_HINTS)."""
+    if len(written := answers.get("tone_hints") or ()) == len(FIELD_BY_ID["tone"].options):
+        return tuple(written)
+    teaches = str(answers.get("teaches") or "")
+    tile = _tile_named(teaches) or next(
+        (t for t, (pattern, _) in SPECIALTIES.items() if re.search(pattern, teaches.lower())), ""
+    )
+    return TONE_HINTS.get(tile, TONE_HINTS[""])
+
+
 def options_for(
     field: Field, answers: dict, brand: str = ""
 ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
@@ -747,7 +955,7 @@ def options_for(
         zip(
             field.options,
             field.icons or ("",) * len(field.options),
-            field.hints or ("",) * len(field.options),
+            (tone_hints_for(answers) if field.id == "tone" else field.hints) or ("",) * len(field.options),
             strict=False,
         )
     )

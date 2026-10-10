@@ -4,6 +4,7 @@
   "mood": "A calm editorial magazine — light serif headlines, paper tones, quiet confidence.",
   "niches": ["yoga", "pilates", "face_yoga", "general"],
   "tones": ["calm", "warm"],
+  "tags": ["expertise", "long"],
   "order": 1,
   "enabled": true,
   "heroLayout": "cover",

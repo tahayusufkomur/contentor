@@ -4,6 +4,7 @@
   "mood": "A gallery wall — the work enormous, the words a museum label beside it, one red dot.",
   "niches": ["creative", "crafts", "writing"],
   "tones": ["expert", "calm"],
+  "tags": ["expertise", "long"],
   "order": 6,
   "enabled": true,
   "heroLayout": "photo",

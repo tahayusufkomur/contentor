@@ -5,6 +5,7 @@ import Link from "next/link";
 import { serverFetch } from "@/lib/api-server";
 import { getDateRangeParams } from "@/lib/calendar-utils";
 import { CalendarClient } from "@/components/public/calendar/calendar-client";
+import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import type { CalendarEvent } from "@/types/live";
 
 interface Props {
@@ -13,7 +14,11 @@ interface Props {
 
 export default async function CalendarPage({ searchParams }: Props) {
   const params = await searchParams;
-  const view = params.view || "month";
+  // Open the way the coach laid the calendar out, unless a view was asked for.
+  const config = params.view
+    ? null
+    : await fetchTenantConfig(await getTenantSlug());
+  const view = params.view || config?.navbar_config?.calendar_view || "month";
   const dateStr = params.date || new Date().toISOString().split("T")[0];
   const date = new Date(dateStr);
   const { from, to } = getDateRangeParams(view, date);

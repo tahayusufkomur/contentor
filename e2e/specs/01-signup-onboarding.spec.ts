@@ -64,6 +64,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const decide = guide.getByRole("button", { name: "You decide", exact: true });
   const tile = guide.locator("h1 ~ div.grid > button").first();
   const cont = guide.getByRole("button", { name: /^Continue/ });
+  // The social-accounts question wants a handle for each network ticked.
+  const handles = guide.getByPlaceholder("@yourname or a link");
   // A drafted course or class to approve.
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
@@ -97,6 +99,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
     }
     if (await tile.isVisible()) {
       await tile.click();
+      for (const handle of await handles.all()) await handle.fill("e2estudio");
       await cont.click();
       continue;
     }
