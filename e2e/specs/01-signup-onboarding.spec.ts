@@ -49,7 +49,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
   await page.waitForURL(/e2e-studio-[\w-]+\.localhost\/setup/, { timeout: 120_000 });
   await expect(page.getByText("What do you teach?")).toBeVisible({ timeout: 30_000 });
 
-  // First answer typed; then "You decide" where the guide may decide, the
+  // First answer typed; then "Pick for me" where the guide may decide, the
   // first tile (and Continue) where only the coach knows, a typed answer
   // when a fallback question has neither, until go-live.
   const answer = page.getByLabel("Your answer");
@@ -61,7 +61,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // What the guide shows while a turn, an edit or a page build is in flight
   // (a turn past 12 s reads "Still thinking…").
   const busy = guide.getByText(/Thinking…|Still thinking|Making that change|Finishing your pages|Confirming your plan/);
-  const decide = guide.getByRole("button", { name: "You decide", exact: true });
+  const decide = guide.getByRole("button", { name: "Pick for me", exact: true });
   const tile = guide.locator("h1 ~ div.grid > button").first();
   const cont = guide.getByRole("button", { name: /^Continue/ });
   // The social-accounts question wants a handle for each network ticked.

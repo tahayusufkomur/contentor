@@ -322,6 +322,34 @@ def _code_owned(field: brief.Field | None) -> bool:
     return field is None or field.kind in brief.CARD_KINDS or field.kind in brief.FIXED_KINDS or bool(field.hints)
 
 
+def picked_note(tenant, field_id) -> str:
+    """What code chose when the coach left a question to the guide ("Pick for
+    me"): the reply says it, so nothing is decided out of sight."""
+    from apps.core.currency import tenant_charge_currency
+
+    from . import sections
+    from . import setup_flow as flow
+
+    if field_id == "site_style":
+        cfg = TenantConfig.objects.first()
+        look = sections.style(cfg.style) if cfg else None
+        return (
+            f"I picked the {look.get('label') or cfg.style} look for you. You can change it any time." if look else ""
+        )
+    if field_id == "site_logo":
+        return "I put your name in as the logo for now. You can pick a mark any time."
+    if field_id == "memberships":
+        from .interview_milestones import DEFAULT_TIER
+
+        return f"I set up the {brief.TIER_BY_ID[DEFAULT_TIER]['label']} for you. You can change it any time."
+    if field_id == "tone":
+        return "I'll match the tone to what you've told me. You can change it any time."
+    if field_id in ("course_price", "event_price"):
+        price = flow.DEFAULT_COURSE_PRICE if field_id == "course_price" else flow.DEFAULT_EVENT_PRICE
+        return f"I'll start it at {price:g} {tenant_charge_currency(tenant).upper()}. You can change it any time."
+    return ""
+
+
 def _is_tapped(text: str, answering, answers, brand) -> bool:
     """The message is exactly tiles of code's own this coach was shown (the
     niche tiles, or a fixed list's)."""
@@ -397,6 +425,8 @@ def run_turn(
 
     if choice:
         milestones.choose(tenant, answers, str(choice.get("field") or ""), choice.get("value"))
+    # "Pick for me" where code decides: the reply says what it picked.
+    picked = picked_note(tenant, answering) if (choice or {}).get("value") == brief.DELEGATE else ""
     # Words on a review screen are changes to that draft: it is redrafted and
     # reviewed again (an approved one too, when the coach went back to it).
     review = milestones.REVIEW_FIELDS.get(answering) if text and not choice else None
@@ -420,12 +450,12 @@ def run_turn(
     )
     instant = bool(pure and _code_owned(_next_field(brief.missing(answers), None, answers)))
     turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text and not review and not instant else None
-    picked = {answering} | ({"teaches", "specialty"} if answering in ("teaches", "specialty") else set())
+    own = {answering} | ({"teaches", "specialty"} if answering in ("teaches", "specialty") else set())
     if turn:
         if spoken and turn.heard and turn.heard.strip():
             text = turn.heard.strip()[:MESSAGE_MAX]
         for fact in turn.facts:
-            if (choice and fact.field == choice.get("field")) or (tapped and fact.field in picked):
+            if (choice and fact.field == choice.get("field")) or (tapped and fact.field in own):
                 continue  # the pick is applied by code; the model's reading of it never overrides it
             brief.apply_fact(answers, fact.field, fact.value)
     elif text and answering and not choice and not review and not tapped and not instant:
@@ -439,10 +469,11 @@ def run_turn(
     answers = brief.answers_of(tenant)  # merged with any concurrent tab
 
     nxt = _next_field(brief.missing(answers), turn, answers)
+    ack = " ".join(x for x in (picked, turn.ack if turn else "") if x)
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:
-        guide = guide_for(nxt, turn.ack, turn.question, turn.options, turn.icons, answers, brand)
+        guide = guide_for(nxt, ack, turn.question, turn.options, turn.icons, answers, brand)
     else:
-        guide = guide_for(nxt, redraft_ack(text) if review else turn.ack if turn else "", answers=answers, brand=brand)
+        guide = guide_for(nxt, redraft_ack(text) if review else ack, answers=answers, brand=brand)
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice else None
     fired = milestones.fire(tenant, answers)

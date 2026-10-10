@@ -634,3 +634,27 @@ def test_leaving_a_wording_question_to_the_guide_still_asks_the_model(client, te
         URL, {"message": "You decide for me.", "choice": {"field": "pitch", "value": "__delegate__"}}, format="json"
     )
     assert len(quiet.calls) == 1
+
+
+def test_leaving_the_look_to_the_guide_says_which_look_it_picked(client, tenant_ctx, quiet):
+    """Audit E2: the next reply says what was picked."""
+    from apps.tenant_config import sections
+
+    _only_missing(tenant_ctx, ("site_style", "credentials"), niche="yoga")
+    body = client.post(
+        URL,
+        {"message": "You decide for me.", "choice": {"field": "site_style", "value": "__delegate__"}},
+        format="json",
+    ).json()
+    label = sections.style(TenantConfig.objects.first().style)["label"]
+    assert label in body["guide"]["ack"] and "change it any time" in body["guide"]["ack"]
+
+
+def test_leaving_memberships_to_the_guide_names_the_one_it_set_up(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ("memberships", "socials"), payments=["membership"])
+    body = client.post(
+        URL,
+        {"message": "You decide for me.", "choice": {"field": "memberships", "value": "__delegate__"}},
+        format="json",
+    ).json()
+    assert "Digital membership" in body["guide"]["ack"]

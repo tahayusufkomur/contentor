@@ -39,8 +39,11 @@ import { SocialsPicker } from "./socials-picker";
 
 export type { StepDraft };
 
+/** The questions where "All of them" makes sense. */
+const ALL_OK = ["offers", "payments"];
+
 /** One interview question on the whole screen: big answer tiles (any number
- * of them on a multi question), "You decide", or a typed or dictated answer.
+ * of them on a multi question), "Pick for me", or a typed or dictated answer.
  * Picking a tile or card only selects it; Continue sends. A question the
  * coach already answered shows their answer, ready to change (Continue with
  * it unchanged just moves on). Unsent ticks and text live in ``draft`` so
@@ -496,8 +499,10 @@ export function QuestionScreen({
                                   : "Continue"}
                       </Button>
                     )}
+                    {/* Only where every answer combines sensibly: a yoga
+                        coach's every style, or every tone at once, never does. */}
                     {multi &&
-                      !step.starter &&
+                      ALL_OK.includes(step.field ?? "") &&
                       every.some((o) => !ticked.includes(o)) && (
                         <Button
                           variant="ghost"
@@ -521,9 +526,10 @@ export function QuestionScreen({
                             },
                           })
                         }
+                        aria-describedby="setup-pick-for-me"
                         className="rounded-full text-[var(--sf-graphite)]"
                       >
-                        You decide
+                        Pick for me
                       </Button>
                     )}
                     {step.skip && step.field && (
@@ -547,6 +553,15 @@ export function QuestionScreen({
                   </>
                 )}
               </div>
+              {step.can_delegate && step.field && !sending && (
+                <p
+                  id="setup-pick-for-me"
+                  className="mt-2 text-[13px] text-[var(--sf-faint)]"
+                >
+                  Not sure? I&rsquo;ll choose from your answers, and you can
+                  change it any time.
+                </p>
+              )}
               <div style={{ viewTransitionName: "sf-answer" }} className="mt-6">
                 <AnswerBox
                   className="max-w-[720px]"
