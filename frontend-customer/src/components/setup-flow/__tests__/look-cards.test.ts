@@ -123,14 +123,15 @@ describe("LookCardsView tag chips", () => {
       ...look(`s${i}`, `g${i}`, i === 0),
       tags: i === 0 ? ["selling"] : i === 9 ? ["sexy"] : [],
     }));
+    const cards: LookCards = { kind: "style", options };
     const html = renderToStaticMarkup(
       createElement(LookCardsView, {
-        cards: { kind: "style", options },
+        cards,
         brandName: "",
         disabled: false,
         onPick: () => {},
         onKeep: () => {},
-        onMore: async () => ({ kind: "style", options }),
+        onMore: async () => cards,
       }),
     );
     expect(html).toContain("Made to sell");
@@ -138,14 +139,15 @@ describe("LookCardsView tag chips", () => {
   });
   it("names a moody look in plain words", () => {
     const options = [{ ...look("nocturne", "g0", true), tags: ["sensual"] }];
+    const cards: LookCards = { kind: "style", options };
     const html = renderToStaticMarkup(
       createElement(LookCardsView, {
-        cards: { kind: "style", options },
+        cards,
         brandName: "",
         disabled: false,
         onPick: () => {},
         onKeep: () => {},
-        onMore: async () => ({ kind: "style", options }),
+        onMore: async () => cards,
       }),
     );
     expect(html).toContain("Soft and moody");
