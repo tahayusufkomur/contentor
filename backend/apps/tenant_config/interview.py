@@ -371,9 +371,8 @@ def run_turn(
     reply. ``field`` names the question the message answers when the coach
     went back to an earlier one (default: the question being asked). Raises
     interview_milestones.ChoiceError for an invalid pick."""
-    from . import interview_golive
+    from . import interview_golive, setup_flow
     from . import interview_milestones as milestones
-    from . import setup_flow
 
     flow = TenantConfig.objects.first().setup_flow or {}
     turns = list((flow.get("interview") or {}).get("turns") or [])

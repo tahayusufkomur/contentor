@@ -4,6 +4,10 @@ their answers, in the fields the section families edit (so a boxing coach
 never sees a yoga sample). Without the model the previews keep their own
 sample words, as before."""
 
+# The field names are the section families' own keys (ctaLabel, howItWorks…),
+# which the frontend reads as they are.
+# ruff: noqa: N815
+
 from __future__ import annotations
 
 import hashlib
