@@ -316,11 +316,19 @@ def _user_turn(tenant, answers, turns, message, spoken, answering=None) -> str:
     )
 
 
+def _code_owned(field: brief.Field | None) -> bool:
+    """Code owns the answers on screen (cards, fixed lists, hinted tiles), or
+    there is no question left: the model would only phrase it."""
+    return field is None or field.kind in brief.CARD_KINDS or field.kind in brief.FIXED_KINDS or bool(field.hints)
+
+
 def _is_tapped(text: str, answering, answers, brand) -> bool:
-    """The message is exactly niche tiles this coach was shown."""
-    if answering not in ("teaches", "specialty"):
+    """The message is exactly tiles of code's own this coach was shown (the
+    niche tiles, or a fixed list's)."""
+    field = brief.FIELD_BY_ID.get(answering or "")
+    if field is None or (answering not in ("teaches", "specialty") and not _code_owned(field)):
         return False
-    shown = {o.lower() for o in brief.options_for(brief.FIELD_BY_ID[answering], answers, brand)[0]}
+    shown = {o.lower() for o in brief.options_for(field, answers, brand)[0]}
     parts = [p.strip().lower() for p in text.split(",") if p.strip()]
     return bool(parts) and all(p in shown for p in parts)
 
@@ -398,20 +406,29 @@ def run_turn(
     # Picked tiles come first; a note the coach typed with them sits on the
     # lines after (the frontend's withNote).
     picks = text.partition("\n")[0]
-    # A tapped niche tile ("Face yoga and more", "Belly dance, Hip hop") is
-    # applied by code, like a card: the model would paraphrase it.
+    # A tapped tile of code's own ("Face yoga and more", "Monthly membership")
+    # is applied by code, like a card: the model would paraphrase it.
     tapped = bool(text and not choice and not review and _is_tapped(picks, answering, answers, brand))
     if tapped:
         brief.apply_fact(answers, answering, picks)
-    turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text and not review else None
+    # A pure pick (a card, an approval, a skip, tiles with no note; "you decide"
+    # only where code decides) that leads to a code-owned question needs no
+    # model: it would only phrase what code already knows. The coach moves on
+    # at once instead of waiting on an AI turn.
+    pure = (choice and (choice.get("value") != brief.DELEGATE or _code_owned(brief.FIELD_BY_ID.get(answering)))) or (
+        tapped and picks == text
+    )
+    instant = bool(pure and _code_owned(_next_field(brief.missing(answers), None, answers)))
+    turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text and not review and not instant else None
+    picked = {answering} | ({"teaches", "specialty"} if answering in ("teaches", "specialty") else set())
     if turn:
         if spoken and turn.heard and turn.heard.strip():
             text = turn.heard.strip()[:MESSAGE_MAX]
         for fact in turn.facts:
-            if (choice and fact.field == choice.get("field")) or (tapped and fact.field in ("teaches", "specialty")):
+            if (choice and fact.field == choice.get("field")) or (tapped and fact.field in picked):
                 continue  # the pick is applied by code; the model's reading of it never overrides it
             brief.apply_fact(answers, fact.field, fact.value)
-    elif text and answering and not choice and not review and not tapped:
+    elif text and answering and not choice and not review and not tapped and not instant:
         # No AI: the answer is to the question on screen. A fixed list reads
         # only the tiles, never the note ("maybe a membership later").
         fixed = getattr(brief.FIELD_BY_ID.get(answering), "kind", "") in brief.FIXED_KINDS

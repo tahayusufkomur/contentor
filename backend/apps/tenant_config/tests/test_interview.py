@@ -579,3 +579,58 @@ def test_without_ai_a_fixed_answer_reads_its_tiles_not_the_note(client, tenant_c
     quiet.error = core_ai.AiError("down")
     client.post(URL, {"message": "Free for now\nmaybe a membership later", "field": "payments"}, format="json")
     assert _answers(tenant_ctx)["payments"] == ["free"]
+
+
+def _only_missing(tenant_ctx, keep, **answers):
+    """Every field settled (left to the guide) except ``keep``."""
+    from apps.tenant_config import interview_brief as brief
+
+    answers["delegated"] = [f.id for f in brief.FIELDS if f.id not in keep]
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+
+
+def test_a_tap_whose_next_question_is_code_owned_skips_the_model(client, tenant_ctx, quiet):
+    """Phase 2A: a tapped fixed tile leading to a code-owned question needs no AI turn."""
+    _only_missing(tenant_ctx, ("payments", "memberships"), offers=["live"])
+    body = client.post(URL, {"message": "Monthly membership", "field": "payments"}, format="json").json()
+    assert quiet.calls == []
+    assert _answers(tenant_ctx)["payments"] == ["membership"]
+    assert body["guide"]["field"] == "memberships" and body["guide"]["options"]
+
+
+def test_a_card_pick_whose_next_question_is_code_owned_skips_the_model(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ("calendar_view", "calendar_nav"), offers=["live"])
+    body = client.post(
+        URL, {"message": "Month grid", "choice": {"field": "calendar_view", "value": "month"}}, format="json"
+    ).json()
+    assert quiet.calls == []
+    assert body["guide"]["field"] == "calendar_nav"
+
+
+def test_a_tap_whose_next_question_needs_the_model_still_asks_it(client, tenant_ctx, quiet):
+    """The next question's tiles are written for this coach, so the model runs; its
+    reading of the tapped tiles never overrides code's."""
+    _only_missing(tenant_ctx, ("offers", "pitch"))
+    quiet.reply = interview.InterviewTurn(
+        facts=[{"field": "offers", "value": "course"}], next_field="pitch", question="Your promise?", options=["A"]
+    )
+    body = client.post(URL, {"message": "Community", "field": "offers"}, format="json").json()
+    assert len(quiet.calls) == 1
+    assert "community" in _answers(tenant_ctx)["offers"]
+    assert body["guide"]["field"] == "pitch" and body["guide"]["question"] == "Your promise?"
+
+
+def test_a_tap_with_a_note_still_asks_the_model(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ("payments", "memberships"), offers=["live"])
+    client.post(URL, {"message": "Monthly membership\nmostly for regulars", "field": "payments"}, format="json")
+    assert len(quiet.calls) == 1
+
+
+def test_leaving_a_wording_question_to_the_guide_still_asks_the_model(client, tenant_ctx, quiet):
+    """The guide writes the pitch itself, so "You decide" there needs the model."""
+    _only_missing(tenant_ctx, ("pitch", "tone"))
+    client.post(
+        URL, {"message": "You decide for me.", "choice": {"field": "pitch", "value": "__delegate__"}}, format="json"
+    )
+    assert len(quiet.calls) == 1
