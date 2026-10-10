@@ -17,6 +17,7 @@ export function GoLivePanel({
   onText,
   onSend,
   onPublished,
+  menu,
   className,
 }: {
   guide: GuideTurn;
@@ -28,6 +29,8 @@ export function GoLivePanel({
   onText: (update: (prev: string) => string) => void;
   onSend: (req: TurnRequest) => void;
   onPublished: () => void;
+  /** The setup menu (finish later, help, sign out), top right. */
+  menu?: React.ReactNode;
   className?: string;
 }) {
   // While pages still build the site is not ready yet: say what is left
@@ -36,8 +39,12 @@ export function GoLivePanel({
   return (
     <section
       aria-label="Your setup guide"
-      className={cn("min-h-0 flex-col bg-[var(--sf-paper)]", className)}
+      className={cn(
+        "relative min-h-0 flex-col bg-[var(--sf-paper)]",
+        className,
+      )}
     >
+      {menu && <div className="absolute right-3 top-3 z-10">{menu}</div>}
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
         {guide.ack && (
           <p className="text-[15px] leading-relaxed text-[var(--sf-graphite)]">

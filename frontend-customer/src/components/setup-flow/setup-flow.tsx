@@ -43,6 +43,7 @@ import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
 import type { BuilderData } from "./builder-preview";
 import { QuestionScreen, type StepDraft } from "./question-screen";
+import { SetupMenu } from "./setup-menu";
 import { SetupSkeleton } from "./skeleton";
 import { SHELL_CSS, SHELL_TOKENS } from "./tokens";
 
@@ -94,11 +95,14 @@ function useNarrow(): boolean {
 
 export function SetupFlow({
   brandName,
+  email = "",
   host,
   mock,
   fontClassName,
 }: {
   brandName: string;
+  /** The coach's own email: "Finish later" sends a sign-in link to it. */
+  email?: string;
   host: string;
   mock: boolean;
   fontClassName: string;
@@ -148,6 +152,7 @@ export function SetupFlow({
               setFlow={setFlow}
               api={api}
               brandName={flow.brand_name || brandName}
+              email={email}
               host={host}
             />
           )}
@@ -162,12 +167,14 @@ function Flow({
   setFlow,
   api,
   brandName,
+  email,
   host,
 }: {
   flow: SetupFlowState;
   setFlow: Dispatch<SetStateAction<SetupFlowState | null>>;
   api: SetupFlowApi;
   brandName: string;
+  email: string;
   host: string;
 }) {
   const navigate = useNavigate();
@@ -520,6 +527,7 @@ function Flow({
               <span className="sr-only md:hidden">{activity}</span>
             </p>
           )}
+          <SetupMenu email={email} />
         </header>
         {peek && (
           <ModalPortal>
@@ -640,6 +648,7 @@ function Flow({
         )}
       </main>
       <GoLivePanel
+        menu={<SetupMenu email={email} />}
         guide={guide}
         api={api}
         sending={sending}
