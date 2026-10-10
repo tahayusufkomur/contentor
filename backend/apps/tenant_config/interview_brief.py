@@ -25,7 +25,17 @@ TEXT_MAX = 500
 CARD_KINDS = ("style", "logo", "calendar", "course", "event")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
-FIXED_KINDS = ("offers", "payments", "memberships", "schedule", "specialty", "calendar_nav", "socials")
+FIXED_KINDS = (
+    "offers",
+    "payments",
+    "memberships",
+    "schedule",
+    "specialty",
+    "calendar_nav",
+    "socials",
+    "price",
+    "contact",
+)
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
     "course": "sell_courses",
@@ -444,6 +454,7 @@ class Field:
     hints: tuple[str, ...] = ()  # one short line per option, shown under it
     details: tuple[str, ...] = ()  # one description per option, shown once it is picked
     delegable: bool = False  # the guide may decide it for the coach ("You decide")
+    starter: bool = False  # options are sentence starters the coach finishes in the box, never answers
 
 
 FIELDS: tuple[Field, ...] = (
@@ -513,12 +524,13 @@ FIELDS: tuple[Field, ...] = (
         hints=TONE_HINTS[""],
     ),
     Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
-    Field("story", "Their story", "How did you come to teach this?"),
+    Field("story", "Their story", "How did you come to teach this?", starter=True),
     Field(
         "credentials",
         "Training and experience",
         "Any training, certifications or years of teaching you'd like visitors to know about?",
         multi=True,
+        starter=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
     # Coaches who run classes: how the public calendar looks, and whether it is in the navbar.
@@ -645,6 +657,7 @@ FIELDS: tuple[Field, ...] = (
         "How students reach them",
         "How should students get in touch with you?",
         ("Email", "Instagram", "WhatsApp", "Phone", "Contact form"),
+        kind="contact",
         multi=True,
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
     ),
@@ -687,11 +700,14 @@ def parse_payments(raw) -> list[str]:
 
 
 def parse_price(raw) -> float | None:
+    """A number wins over "free" ("Free first class, then $15" is 15); "free"
+    alone is 0. ponytail: the first number wins ("2 free classes then 20" is
+    2); fixed price tiles make that rare."""
     text = str(raw or "").lower()
-    if "free" in text:
-        return 0.0
     match = re.search(r"\d+(?:[.,]\d{1,2})?", text)
-    return min(float(match.group().replace(",", ".")), 9999.0) if match else None
+    if match:
+        return min(float(match.group().replace(",", ".")), 9999.0)
+    return 0.0 if "free" in text else None
 
 
 def parse_memberships(raw) -> list[str]:

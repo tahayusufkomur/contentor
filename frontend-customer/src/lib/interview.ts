@@ -157,6 +157,7 @@ export function questionSteps(
           builder,
           schedule,
           socials,
+          starter,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -174,6 +175,7 @@ export function questionSteps(
           builder,
           schedule,
           socials,
+          starter,
           answer,
         });
         onScreen = e.field;
@@ -191,6 +193,11 @@ export function questionSteps(
     .map((f) => asked.get(f) as QuestionStep);
   return guide.field ? [...past, guide] : past;
 }
+
+/** A starter tile put in the answer box: appended without its trailing
+ * "…", with a space to keep typing after. */
+export const addStarter = (text: string, starter: string): string =>
+  `${[text.trimEnd(), starter.replace(/\s*(…|\.\.\.)$/, "")].filter(Boolean).join(" ")} `;
 
 /** A picked answer sent with the coach's own words: the picks, then the
  * note on the next line. The server reads both; going back splits them. */

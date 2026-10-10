@@ -345,3 +345,19 @@ def test_tone_hints_follow_the_niche_and_the_model_when_it_wrote_them():
     assert brief.tone_hints_for({"teaches": "Dance", "tone_hints": ["only", "two"]}) == brief.tone_hints_for(
         {"teaches": "Dance"}
     )
+
+
+@pytest.mark.parametrize(
+    ("raw", "price"),
+    [
+        ("29", 29.0),
+        ("$15", 15.0),
+        ("Free first class, then $15", 15.0),  # audit G1: was saved as free
+        ("free", 0.0),
+        ("Free for now", 0.0),
+        ("Pay what you can", None),
+        ("12,50", 12.5),
+    ],
+)
+def test_parse_price_takes_the_number_over_free(raw, price):
+    assert brief.parse_price(raw) == price

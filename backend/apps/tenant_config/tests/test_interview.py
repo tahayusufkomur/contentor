@@ -513,3 +513,28 @@ def test_a_tapped_niche_tile_is_applied_by_code(client, tenant_ctx, config, quie
     answers = _answers(tenant_ctx)
     assert answers["teaches"] == "Yoga" and answers["specialty_base"] == "Face yoga" and "specialty" not in answers
     assert body["guide"]["field"] == "specialty" and "Face yoga" not in body["guide"]["options"]
+
+
+def test_prices_and_contact_keep_their_own_options_over_ai_ones():
+    """Audit G1: the model offered "Free first class, then $15" and "Website live chat"."""
+    from apps.tenant_config import interview_brief as brief
+
+    answers = {"offers": ["course", "live"], "payments": ["course", "event"]}
+    for field_id, junk in (
+        ("contact", ["Website live chat", "Book a short video call"]),
+        ("course_price", ["Free first class, then $15", "Pay what you can"]),
+        ("event_price", ["Free first class, then $15", "Pay what you can"]),
+    ):
+        guide = interview.guide_for(brief.FIELD_BY_ID[field_id], "", "Q?", junk, ["mail", "coins"], answers)
+        assert guide["options"] == list(brief.FIELD_BY_ID[field_id].options)
+
+
+def test_story_and_credentials_offer_starters_not_claims():
+    """Audit G1: one tap put an invented backstory on the About page."""
+    from apps.tenant_config import interview_brief as brief
+
+    assert interview.guide_for(brief.FIELD_BY_ID["story"], options=["I found yoga when…"], icons=[])["starter"]
+    assert interview.guide_for(brief.FIELD_BY_ID["credentials"], options=["I trained in…"], icons=[])["starter"]
+    assert interview.guide_for(brief.FIELD_BY_ID["pitch"], options=["Yoga for desks"], icons=[])["starter"] is False
+    assert "starter" in interview.GUIDE_KEYS
+    assert "sentence starters" in interview.SYSTEM

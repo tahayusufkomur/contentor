@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { OPTION_ICONS } from "@/lib/option-icons";
 import {
+  addStarter,
   browserTimeZone,
   noteOf,
   pickedOptions,
@@ -324,11 +325,19 @@ export function QuestionScreen({
                       <button
                         key={o}
                         type="button"
-                        aria-pressed={multi ? on : undefined}
+                        aria-pressed={multi && !step.starter ? on : undefined}
                         disabled={sending}
-                        onClick={() =>
-                          multi ? toggle(o) : setTicked(() => [o])
-                        }
+                        onClick={() => {
+                          if (!step.starter)
+                            return multi ? toggle(o) : setTicked(() => [o]);
+                          onDraft((d) => ({
+                            ...d,
+                            text: addStarter(d.text ?? typed, o),
+                          }));
+                          requestAnimationFrame(() =>
+                            document.getElementById("setup-answer")?.focus(),
+                          );
+                        }}
                         style={{
                           animationDelay: `${answersAt + Math.min(i, 15) * 32}ms`,
                         }}
@@ -392,7 +401,7 @@ export function QuestionScreen({
                             </span>
                           </span>
                         )}
-                        {multi && (
+                        {multi && !step.starter && (
                           <span
                             aria-hidden
                             className={cn(
@@ -472,16 +481,18 @@ export function QuestionScreen({
                                   : "Continue"}
                       </Button>
                     )}
-                    {multi && every.some((o) => !ticked.includes(o)) && (
-                      <Button
-                        variant="ghost"
-                        size="lg"
-                        onClick={() => setTicked(() => every)}
-                        className="rounded-full"
-                      >
-                        All of them
-                      </Button>
-                    )}
+                    {multi &&
+                      !step.starter &&
+                      every.some((o) => !ticked.includes(o)) && (
+                        <Button
+                          variant="ghost"
+                          size="lg"
+                          onClick={() => setTicked(() => every)}
+                          className="rounded-full"
+                        >
+                          All of them
+                        </Button>
+                      )}
                     {step.can_delegate && step.field && (
                       <Button
                         variant="ghost"

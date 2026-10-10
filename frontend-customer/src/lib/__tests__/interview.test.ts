@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GuideTurn, InterviewEntry } from "@/lib/setup-flow";
 import {
   activityLine,
+  addStarter,
   finishedNotes,
   formatPrice,
   joinSpeech,
@@ -246,5 +247,14 @@ describe("answers sent with a note", () => {
     ]);
     expect(noteOf(answer)).toBe("mostly women over 40");
     expect(noteOf("Runners")).toBe("");
+  });
+});
+
+describe("addStarter", () => {
+  it("puts a starter in the box to finish, without its ellipsis", () => {
+    expect(addStarter("", "I found yoga when…")).toBe("I found yoga when ");
+    expect(addStarter("I trained in Bali. ", "200-hour training...")).toBe(
+      "I trained in Bali. 200-hour training ",
+    );
   });
 });

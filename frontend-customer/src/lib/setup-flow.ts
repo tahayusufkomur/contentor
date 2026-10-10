@@ -286,6 +286,9 @@ export interface GuideTurn {
   schedule?: boolean;
   /** The answer is a handle or link for each network ticked. */
   socials?: boolean;
+  /** The options are sentence starters: a tap puts one in the box to
+   * finish, and it is never sent as-is. */
+  starter?: boolean;
   cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;

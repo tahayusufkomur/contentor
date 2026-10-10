@@ -80,7 +80,9 @@ Do these things:
    - options: exactly 8 answers they can tap, 1 to 6 words each, specific to them and all
      different. The coach picks from a screen of tiles, so cover the range of what someone
      like them might say, from the most common to the less obvious. Open questions
-     (their story, their pitch) get 8 too, written as the coach might say it. When the field is
+     (their pitch) get 8 too, written as the coach might say it. For "story" and "credentials"
+     write sentence starters the coach finishes in their own words ("I found yoga when…", "I
+     trained in…"), never a finished claim: you do not know their story. When the field is
      marked "several", the coach can tick any number of them, so every option is one distinct
      item that combines with the others: never "all of the above", "none" or "something else".
      When a field in "missing" lists "fixed_options", those are the answers the coach will see;
@@ -134,6 +136,7 @@ GUIDE_KEYS = (
     "builder",
     "schedule",
     "socials",
+    "starter",
 )
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
@@ -159,6 +162,7 @@ def guide_for(
             "builder": None,
             "schedule": False,
             "socials": False,
+            "starter": False,
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
@@ -188,6 +192,8 @@ def guide_for(
         "schedule": field.kind == "schedule",
         # The answer is a handle or link for each network ticked.
         "socials": field.kind == "socials",
+        # Tiles are sentence starters: a tap fills the box, never sends.
+        "starter": field.starter,
     }
 
 
