@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { CalendarDays, Check, ImageOff, MapPin, Video } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -26,11 +27,14 @@ export function DraftReview({
   delay,
   disabled,
   onCover,
+  onRetry,
 }: {
   card: ReviewCard;
   delay: number;
   disabled: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
+  /** Start a draft over that has been building for far too long. */
+  onRetry: () => void;
 }) {
   // The parts spring in one by one the first time a draft shows. After that
   // a change only replays on the parts it touched (each is keyed by its
@@ -42,6 +46,36 @@ export function DraftReview({
   const enter = (i: number): CSSProperties => ({
     animationDelay: `${shown.current ? 0 : delay + i * 90}ms`,
   });
+  // A draft still building after two minutes is stuck (a worker restart can
+  // strand it): offer to start it again instead of spinning forever.
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    setStuck(false);
+    if (card.status !== "building") return;
+    const t = setTimeout(() => setStuck(true), 120_000);
+    return () => clearTimeout(t);
+  }, [card.status]);
+  if (stuck)
+    return (
+      <div
+        role="status"
+        className="mt-8 max-w-[60ch] rounded-2xl border border-[var(--sf-line)] bg-white px-5 py-4 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
+      >
+        <p>
+          Your {NOUN[card.kind]} is taking much longer than it should. Try
+          again, or skip it for now and add it later.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={disabled}
+          onClick={onRetry}
+          className="mt-3 rounded-full"
+        >
+          Try again
+        </Button>
+      </div>
+    );
   if (card.status === "waiting")
     return (
       <p

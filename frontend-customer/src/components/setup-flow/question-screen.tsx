@@ -295,6 +295,9 @@ export function QuestionScreen({
                   delay={answersAt}
                   disabled={sending}
                   onCover={onCover}
+                  onRetry={() =>
+                    send({ message: "Draft it again from scratch" })
+                  }
                 />
               )}
 
@@ -552,7 +555,11 @@ export function QuestionScreen({
                   sending={sending}
                   placeholder={
                     review
-                      ? "Or tell me what to change, like “make it six weeks” or “another photo”…"
+                      ? `Or tell me what to change, like ${
+                          review.kind === "course"
+                            ? "“make it six weeks”"
+                            : "“make it an hour long”"
+                        } or “another photo”…`
                       : live
                         ? "Or type your own answer…"
                         : "Or type a new answer…"

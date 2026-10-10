@@ -536,3 +536,25 @@ def test_calendar_and_social_choices_are_validated(tenant_ctx, config):
     with pytest.raises(ms.ChoiceError):
         ms.choose(tenant_ctx, answers, "socials", '{"Instagram": "not a handle!!"}')
     assert ms.calendar_cards()["options"][0]["value"] == "month"
+
+
+def test_a_crash_while_drafting_marks_the_draft_failed(tenant_ctx, config, owner):
+    """Audit R1: any error, not only AI and content ones, ends the spinner."""
+    with (
+        mock.patch("apps.tenant_config.setup_flow.create_draft", side_effect=KeyError("days")),
+        pytest.raises(KeyError),
+    ):
+        ms.run_draft(tenant_ctx, "event", "prompt")
+    assert TenantConfig.objects.first().setup_flow["draft_status"]["event"] == "failed"
+
+
+def test_a_crash_after_the_draft_exists_keeps_it_ready(tenant_ctx, config, owner):
+    """Review focus 3: the draft is there (the stale-worker KeyError hit in
+    apply_schedule), so the coach reviews it instead of a failure."""
+    with (
+        mock.patch("apps.tenant_config.setup_flow.create_draft"),
+        mock.patch.object(ms, "apply_schedule", side_effect=KeyError("days")),
+        pytest.raises(KeyError),
+    ):
+        ms.run_draft(tenant_ctx, "event", "prompt")
+    assert TenantConfig.objects.first().setup_flow["draft_status"]["event"] == "ready"

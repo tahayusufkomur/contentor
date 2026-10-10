@@ -236,37 +236,44 @@ def _set_draft_status(tenant, kind, status) -> None:
 
 def run_draft(tenant, kind: str, prompt: str, keep_cover: bool = False) -> None:
     """AI draft, else the deterministic fallback. Inside tenant_context. With
-    ``keep_cover`` the new draft takes the cover the old one had."""
+    ``keep_cover`` the new draft takes the cover the old one had. Whatever
+    happens, the status ends ready (the draft exists) or failed: a review
+    screen never waits on a draft that will not come."""
     from apps.accounts.models import User
     from apps.core import ai as core_ai
     from apps.core.copilot.content import ContentOpError
 
     from . import setup_flow
 
-    old = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind) if keep_cover else None
-    cover = (old.thumbnail, old.thumbnail_url) if old is not None and (old.thumbnail_id or old.thumbnail_url) else None
-    owner = User.objects.filter(role="owner").order_by("id").first()
-    status = "ready"
+    status = "failed"
     try:
-        # Background priority: the coach's next interview question must not
-        # queue behind a draft on the shared hub.
-        setup_flow.create_draft(tenant, owner, kind, prompt, label="contentor:compose-draft")
-    except (core_ai.AiError, ContentOpError):
-        logger.warning("interview draft fell back schema=%s kind=%s", tenant.schema_name, kind, exc_info=True)
+        old = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind) if keep_cover else None
+        cover = (
+            (old.thumbnail, old.thumbnail_url) if old is not None and (old.thumbnail_id or old.thumbnail_url) else None
+        )
+        owner = User.objects.filter(role="owner").order_by("id").first()
         try:
-            setup_flow.create_fallback_draft(tenant, owner, kind, brief.answers_of(tenant))
-        except ContentOpError:
-            logger.exception("interview fallback draft failed schema=%s kind=%s", tenant.schema_name, kind)
-            status = "failed"
-    if cover is not None and status == "ready":
-        item = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind)
-        if item is not None:
-            item.thumbnail, item.thumbnail_url = cover
-            item.save(update_fields=["thumbnail", "thumbnail_url"])
-    if kind == "event" and status == "ready":
-        apply_schedule(tenant)
-    _set_draft_status(tenant, kind, status)
-    if kind == "course" and status == "ready":
+            # Background priority: the coach's next interview question must not
+            # queue behind a draft on the shared hub.
+            setup_flow.create_draft(tenant, owner, kind, prompt, label="contentor:compose-draft")
+        except (core_ai.AiError, ContentOpError):
+            logger.warning("interview draft fell back schema=%s kind=%s", tenant.schema_name, kind, exc_info=True)
+            try:
+                setup_flow.create_fallback_draft(tenant, owner, kind, brief.answers_of(tenant))
+            except ContentOpError:
+                logger.exception("interview fallback draft failed schema=%s kind=%s", tenant.schema_name, kind)
+                return
+        status = "ready"
+        if cover is not None:
+            item = _draft_row(TenantConfig.objects.first().setup_flow or {}, kind)
+            if item is not None:
+                item.thumbnail, item.thumbnail_url = cover
+                item.save(update_fields=["thumbnail", "thumbnail_url"])
+        if kind == "event":
+            apply_schedule(tenant)
+    finally:
+        _set_draft_status(tenant, kind, status)
+    if kind == "course":
         grant_membership(tenant)
         setup_flow.start_page_build(tenant, "courses")
 
