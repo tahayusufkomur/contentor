@@ -170,7 +170,13 @@ def test_a_hub_hold_fails_fast_and_cancels(hub, monkeypatch):
 
     def get(url, params=None, timeout=None, stream=False):
         if "/runs/run-" in url and not url.endswith("/events"):
-            return _Resp({"id": "run-1", "state": "queued", "waitReason": 'quota floor 10% for "contentor": no gemini studio account above it'})
+            return _Resp(
+                {
+                    "id": "run-1",
+                    "state": "queued",
+                    "waitReason": 'quota floor 10% for "contentor": no gemini studio account above it',
+                }
+            )
         return real_get(url, params=params, timeout=timeout, stream=stream)
 
     monkeypatch.setattr(ai.requests, "get", get)
@@ -279,7 +285,9 @@ def test_image_run_allows_tools_and_returns_the_run_id(hub, settings):
     run_id = ai.agentc_image_run("Design a logo.", "logo-candidates/t/b/cand_1.png", label="contentor:logo-gen")
     assert run_id == "run-1"
     body = hub.created[0]
-    assert body["timeoutSec"] in (419, 420) and body["priority"] == "interactive"
+    # Logo renders yield to the coach's interview turns on the shared hub: a
+    # batch of them made her next question time out (2026-10-10 walk).
+    assert body["timeoutSec"] in (419, 420) and body["priority"] == "background"
     assert "Save the generated image as logo-candidates/t/b/cand_1.png" in body["prompt"]
     assert body["prompt"].startswith("Use your image generation tool")
 

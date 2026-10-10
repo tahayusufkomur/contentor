@@ -292,7 +292,10 @@ def _agentc_url(path):
 
 # Runs nobody is waiting on (whole-site composition) queue behind a coach's
 # interactive requests on the shared hub.
-_AGENTC_BACKGROUND_LABELS = ("contentor:compose",)
+# Page builds, drafts and logo renders yield to interactive runs (the coach's
+# interview turns): a batch of logo renders on the shared hub made her next
+# question wait out its whole budget (2026-10-10).
+_AGENTC_BACKGROUND_LABELS = ("contentor:compose", "contentor:logo")
 
 
 def _agentc_model(effort):
