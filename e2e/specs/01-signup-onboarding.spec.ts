@@ -72,8 +72,19 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // The first payments tile is a paid one, so go-live offers the plan; the
   // spec takes the free way out instead of Stripe.
   const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
-  // The guide's pick opens as a page by itself on the look question.
+  // A look tapped opens as a page; "Keep this look" answers the question.
   const keepLook = page.getByRole("button", { name: "Keep this look" });
+  // Story and training tiles are sentence starters: a tap fills the box and
+  // the coach finishes it. The guide never writes a coach's story for them,
+  // so those questions take a real answer, not "you decide" words.
+  const ownWords = async () => {
+    const q = await guide.getByRole("heading", { level: 1 }).innerText();
+    if (/teach this|story|inspired|come to/i.test(q))
+      return "I started teaching after yoga eased my own back pain from years at a desk.";
+    if (/training|certif|background|experience|qualif/i.test(q))
+      return "I completed a 200-hour yoga teacher training in 2019.";
+    return "Whatever you think fits best";
+  };
   const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile);
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
@@ -100,10 +111,12 @@ test("signup lands in /setup and the interview ends in a published site", async 
     if (await tile.isVisible()) {
       await tile.click();
       for (const handle of await handles.all()) await handle.fill("e2estudio");
+      // A starter tile filled the box: finish it in the coach's words.
+      if (await answer.inputValue()) await answer.fill(await ownWords());
       await cont.click();
       continue;
     }
-    await answer.fill("Whatever you think fits best");
+    await answer.fill(await ownWords());
     await send.click();
   }
   await expect(goLive).toBeVisible({ timeout: 600_000 });
