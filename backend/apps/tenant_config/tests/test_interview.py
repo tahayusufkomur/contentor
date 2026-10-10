@@ -266,6 +266,21 @@ def test_phase_is_golive_when_nothing_is_missing(tenant_ctx, config):
     assert state["phase"] == "golive" and state["guide"]["field"] is None
 
 
+def test_a_question_added_after_go_live_was_reached_is_asked(tenant_ctx, config):
+    from apps.tenant_config import interview_brief as brief
+
+    answers = {"delegated": [f.id for f in brief.FIELDS if f.id != "timezone"]}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+    config.setup_flow = {
+        **config.setup_flow,
+        "interview": {"turns": [{"role": "guide", **interview.guide_for(None)}], "fired": []},
+    }
+    config.save()
+    guide = interview.interview_state(tenant_ctx, config.setup_flow)["guide"]
+    assert (guide["field"], guide["timezone"]) == ("timezone", True)
+
+
 def test_turn_is_coach_only(tenant_ctx, config):
     student = User.objects.create_user(email="s@iv.test", name="S", password="x", role="student")  # noqa: S106
     c = APIClient(HTTP_HOST="shared-test.localhost")

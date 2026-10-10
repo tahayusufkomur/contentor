@@ -577,8 +577,10 @@ def interview_state(tenant, flow: dict) -> dict:
     last = next((t for t in reversed(turns) if t.get("role") == "guide"), None)
     if not missing:
         guide = guide_for(None, (last or {}).get("ack", ""))
-    elif last is None:
-        guide = guide_for(missing[0], OPENING_ACK, answers=answers, brand=brand_of(tenant))
+    elif last is None or not last.get("field"):
+        # Nothing asked yet; or the interview had reached go-live and a
+        # question added since is still open: it is asked now.
+        guide = guide_for(missing[0], "" if last else OPENING_ACK, answers=answers, brand=brand_of(tenant))
     else:
         guide = {k: last.get(k) for k in GUIDE_KEYS}
         # A transcript written before icons existed still renders.
