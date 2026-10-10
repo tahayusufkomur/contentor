@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MicButton } from "@/components/copilot/mic-button";
 import { joinSpeech } from "@/lib/interview";
@@ -89,13 +90,14 @@ export function AnswerBox({
       />
       <Button
         type="submit"
-        size="sm"
+        size="icon"
+        aria-label="Send"
+        title="Send"
         loading={sending}
-        loadingText="Sending…"
         disabled={!text}
-        className="rounded-full px-4"
+        className="size-9 shrink-0 rounded-full"
       >
-        Send
+        <ArrowUp className="size-4" aria-hidden />
       </Button>
     </form>
   );

@@ -7,9 +7,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { OPTION_ICONS } from "@/lib/option-icons";
 import {
   browserTimeZone,
+  noteOf,
   pickedOptions,
   scheduleSummary,
   scheduleValid,
+  withNote,
   type QuestionStep,
 } from "@/lib/interview";
 import {
@@ -82,11 +84,22 @@ export function QuestionScreen({
   const multi = !!step.multi && step.options.length > 1;
   const picked = pickedOptions(step);
   const ticked = draft.ticked ?? picked;
-  const changed = draft.card
-    ? draft.card.label !== step.answer
-    : ticked.join("\n") !== picked.join("\n");
   const review = isReview(cards) ? cards : null;
   const looks = cards && !isReview(cards) ? cards : null;
+  // A typed answer (not a tile, a card or "you decide") goes back in the
+  // box, and so does the note sent with picked tiles.
+  const typed =
+    live || cards || !step.answer || step.answer === DELEGATE_TEXT
+      ? ""
+      : picked.length
+        ? noteOf(step.answer)
+        : step.answer;
+  // What is in the box now: Continue sends it with the picks.
+  const note = (draft.text ?? typed).trim();
+  const changed =
+    (draft.card
+      ? draft.card.label !== step.answer
+      : ticked.join("\n") !== picked.join("\n")) || note !== typed.trim();
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
   const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
   const sched = step.schedule ? (draft.schedule ?? {}) : null;
@@ -95,7 +108,8 @@ export function QuestionScreen({
   const networks = step.socials && !none ? ticked : [];
   const socials = step.socials ? (draft.socials ?? {}) : null;
   const canContinue = review
-    ? review.status === "waiting" ||
+    ? !!note ||
+      review.status === "waiting" ||
       (review.status === "ready" && !!review.item)
     : looks
       ? !!draft.card || (!live && !!step.answer)
@@ -103,16 +117,7 @@ export function QuestionScreen({
         ? ticked.length > 0 && scheduleValid(mode, sched)
         : socials
           ? ticked.length > 0 && networks.every((n) => !!socials[n]?.trim())
-          : ticked.length > 0;
-  // A typed answer (not a tile, a card or "you decide") goes back in the box.
-  const typed =
-    !live &&
-    !cards &&
-    !picked.length &&
-    step.answer &&
-    step.answer !== DELEGATE_TEXT
-      ? step.answer
-      : "";
+          : ticked.length > 0 || !!note;
   // A turn can take a while when the model is busy; say so honestly.
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -139,43 +144,49 @@ export function QuestionScreen({
           : [...t.filter((x) => x !== step.alone), o],
     );
   const every = step.options.filter((o) => o !== step.alone);
-  const proceed = () => {
-    if (review && step.field)
+  // Continue (and Enter in the box) sends the picks together with the
+  // coach's note. On a review screen the note is a change to the draft.
+  const proceed = (spoken = false, words = note) => {
+    const field = step.field;
+    if (review && field) {
+      if (words) return send({ message: words, spoken });
       return live
-        ? send({
-            message: "Looks good",
-            choice: { field: step.field, value: "ok" },
-          })
+        ? send({ message: "Looks good", choice: { field, value: "ok" } })
         : onNext();
+    }
     if (!live && !changed) return onNext();
-    if (sched && step.field)
-      return send({
-        message: scheduleSummary(mode, sched),
-        choice: {
-          field: step.field,
-          value: JSON.stringify({
-            mode,
-            ...sched,
-            tz: sched.tz || browserTimeZone(),
-          }),
-        },
-      });
-    if (socials && step.field)
-      return send({
-        message: ticked.join(", "),
-        choice: {
-          field: step.field,
-          value: JSON.stringify(
-            Object.fromEntries(networks.map((n) => [n, socials[n].trim()])),
-          ),
-        },
-      });
-    if (draft.card && step.field)
-      return send({
-        message: draft.card.label,
-        choice: { field: step.field, value: draft.card.value },
-      });
-    send({ message: ticked.join(", ") });
+    const pick: TurnRequest =
+      sched && field
+        ? {
+            message: scheduleSummary(mode, sched),
+            choice: {
+              field,
+              value: JSON.stringify({
+                mode,
+                ...sched,
+                tz: sched.tz || browserTimeZone(),
+              }),
+            },
+          }
+        : socials && field
+          ? {
+              message: ticked.join(", "),
+              choice: {
+                field,
+                value: JSON.stringify(
+                  Object.fromEntries(
+                    networks.map((n) => [n, socials[n].trim()]),
+                  ),
+                ),
+              },
+            }
+          : draft.card && field
+            ? {
+                message: draft.card.label,
+                choice: { field, value: draft.card.value },
+              }
+            : { message: ticked.join(", ") };
+    send({ ...pick, message: withNote(pick.message, words), spoken });
   };
   // Slide choreography: the words of the question land one by one, then
   // the answers spring in.
@@ -232,7 +243,7 @@ export function QuestionScreen({
                 </>
               ) : (
                 step.answer &&
-                !typed && (
+                step.answer !== typed && (
                   <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
                     You said:{" "}
                     <span className="text-[var(--sf-ink)]">{step.answer}</span>
@@ -268,7 +279,7 @@ export function QuestionScreen({
                   cards={looks}
                   brandName={brandName}
                   host={host}
-                  selected={live ? undefined : step.answer}
+                  selected={live ? undefined : step.answer?.split("\n")[0]}
                   chosen={draft.card?.value}
                   disabled={sending}
                   delay={answersAt}
@@ -418,20 +429,26 @@ export function QuestionScreen({
                         id="setup-continue"
                         size="lg"
                         disabled={!canContinue}
-                        onClick={proceed}
+                        onClick={() => proceed()}
                         className="rounded-full px-6"
                       >
                         {review
-                          ? review.status === "waiting"
-                            ? "Continue"
-                            : "Looks good, continue"
+                          ? note
+                            ? "Send changes"
+                            : review.status === "waiting"
+                              ? "Continue"
+                              : "Looks good, continue"
                           : !canContinue
                             ? multi
                               ? "Pick as many as fit"
                               : "Pick one to continue"
-                            : multi && ticked.length > 1
-                              ? `Continue with ${ticked.length}`
-                              : "Continue"}
+                            : !live && !changed
+                              ? "Keep this answer"
+                              : note && (ticked.length > 0 || draft.card)
+                                ? "Continue with your note"
+                                : multi && ticked.length > 1
+                                  ? `Continue with ${ticked.length}`
+                                  : "Continue"}
                       </Button>
                     )}
                     {multi && every.some((o) => !ticked.includes(o)) && (
@@ -498,7 +515,11 @@ export function QuestionScreen({
                         ? "Or type your own answer…"
                         : "Or type a new answer…"
                   }
-                  onSubmit={(text, spoken) => send({ message: text, spoken })}
+                  onSubmit={(text, spoken) =>
+                    canContinue
+                      ? proceed(spoken, text)
+                      : send({ message: text, spoken })
+                  }
                 />
               </div>
             </div>

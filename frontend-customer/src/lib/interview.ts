@@ -192,11 +192,21 @@ export function questionSteps(
   return guide.field ? [...past, guide] : past;
 }
 
+/** A picked answer sent with the coach's own words: the picks, then the
+ * note on the next line. The server reads both; going back splits them. */
+export const withNote = (message: string, note: string): string =>
+  [message, note.trim()].filter(Boolean).join("\n");
+
+/** The note an answer was sent with (see withNote), or "". */
+export const noteOf = (answer: string): string =>
+  answer.split("\n").slice(1).join("\n").trim();
+
 /** The options a past answer picked (several on a multi question, sent as
- * the ticked labels joined by ", " — labels may hold commas themselves). */
+ * the ticked labels joined by ", " — labels may hold commas themselves). A
+ * note sent with them sits on the lines after. */
 export function pickedOptions(step: QuestionStep): string[] {
   if (!step.answer) return [];
-  const said = step.answer.trim().toLowerCase();
+  const said = step.answer.split("\n")[0].trim().toLowerCase();
   return step.options.filter((o) => {
     const label = o.toLowerCase();
     return step.multi ? `, ${said}, `.includes(`, ${label}, `) : said === label;

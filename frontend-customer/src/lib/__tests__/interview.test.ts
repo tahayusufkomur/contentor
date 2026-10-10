@@ -6,9 +6,11 @@ import {
   formatPrice,
   joinSpeech,
   landedPage,
+  noteOf,
   pickedOptions,
   questionSteps,
   stageIndex,
+  withNote,
 } from "@/lib/interview";
 
 describe("joinSpeech", () => {
@@ -215,5 +217,34 @@ describe("finishedNotes", () => {
   it("says nothing when nothing changed", () => {
     const same = { builds: builds("ready"), drafts: { course: "ready" } };
     expect(finishedNotes(same, same)).toEqual([]);
+  });
+});
+
+describe("answers sent with a note", () => {
+  const step: GuideTurn = {
+    ack: "",
+    question: "Who do you teach?",
+    field: "audience",
+    can_delegate: false,
+    multi: true,
+    options: ["Desk workers needing relief", "Runners"],
+  };
+  it("puts the note on its own line after the picks", () => {
+    expect(
+      withNote("Desk workers needing relief", "  mostly women over 40 "),
+    ).toBe("Desk workers needing relief\nmostly women over 40");
+    expect(withNote("", "just a note")).toBe("just a note");
+    expect(withNote("Runners", "")).toBe("Runners");
+  });
+  it("going back ticks the tiles and puts the note back in the box", () => {
+    const answer = withNote(
+      "Desk workers needing relief",
+      "mostly women over 40",
+    );
+    expect(pickedOptions({ ...step, answer })).toEqual([
+      "Desk workers needing relief",
+    ]);
+    expect(noteOf(answer)).toBe("mostly women over 40");
+    expect(noteOf("Runners")).toBe("");
   });
 });
