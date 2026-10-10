@@ -17,6 +17,8 @@ import {
 } from "@/lib/api/onboarding";
 import { SignupShell, SlideHeader } from "./signup-shell";
 import { ApiError } from "@/types/api";
+import { BASE_DOMAIN } from "@/lib/constants";
+import { siteSlug } from "@/lib/slug";
 
 interface SignupFormProps {
   /** Set when an already-logged-in coach is creating an additional platform. */
@@ -344,6 +346,14 @@ function AnonymousSignupFlow() {
               data-1p-ignore
               data-lpignore="true"
             />
+            {/* The address is made from the name once and never changes. */}
+            {siteSlug(brandName) && (
+              <p className="text-[12.5px] leading-snug text-muted-foreground">
+                {t("addressPreview", {
+                  address: `${siteSlug(brandName)}.${BASE_DOMAIN}`,
+                })}
+              </p>
+            )}
             {ideas && (
               <div className="space-y-3 pt-2 text-sm motion-safe:animate-fade-in">
                 {ideas.typo && (
