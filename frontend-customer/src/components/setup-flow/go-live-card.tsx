@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,8 +11,10 @@ import { formatPrice } from "@/lib/interview";
 import {
   BLOCKERS,
   type GoLiveState,
+  type GoLiveStep,
   type SetupFlowApi,
 } from "@/lib/setup-flow";
+import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
 import { PayoutsCard } from "./payouts-card";
 
@@ -26,6 +29,8 @@ export function GoLiveCard({
 }) {
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
+  // "Make it free" first says what it will change, then asks.
+  const [confirmFree, setConfirmFree] = useState(false);
   const [returning, setReturning] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -108,7 +113,23 @@ export function GoLiveCard({
 
   const shell = (children: React.ReactNode) => (
     <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4 motion-safe:animate-fade-in-up">
+      {state && state.steps?.length > 1 && <Steps steps={state.steps} />}
       {children}
+      {state && state.summary?.length > 0 && (
+        <dl className="mt-5 space-y-1.5 border-t border-[var(--sf-line)] pt-4 text-[13.5px] leading-snug">
+          <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-[var(--sf-faint)]">
+            What I built
+          </p>
+          {state.summary.map((line) => (
+            <div key={line.label} className="flex gap-3">
+              <dt className="w-28 shrink-0 text-[var(--sf-graphite)]">
+                {line.label}
+              </dt>
+              <dd className="min-w-0">{line.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </div>
   );
 
@@ -123,16 +144,52 @@ export function GoLiveCard({
     );
   }
 
-  const free = (
-    <Button
-      variant="ghost"
-      onClick={() => makeFree()}
-      loading={freeing}
-      className="rounded-full"
-    >
-      Make it free and go live now
-    </Button>
-  );
+  const free =
+    confirmFree && state.free_effects.length > 0 ? (
+      <div
+        role="group"
+        aria-label="Make it free"
+        className="mt-1 w-full rounded-xl border border-[var(--sf-line)] bg-[var(--sf-tint)] p-3 text-[13.5px] leading-relaxed"
+      >
+        <p className="font-medium">Going free changes this:</p>
+        <ul className="mt-1.5 list-disc space-y-1 pl-5 text-[var(--sf-graphite)]">
+          {state.free_effects.map((effect) => (
+            <li key={effect}>{effect}</li>
+          ))}
+        </ul>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => makeFree()}
+            loading={freeing}
+            loadingText="Making it free…"
+            className="rounded-full px-4"
+          >
+            Yes, make it free
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setConfirmFree(false)}
+            className="rounded-full"
+          >
+            Keep my prices
+          </Button>
+        </div>
+      </div>
+    ) : (
+      <Button
+        variant="ghost"
+        onClick={() =>
+          state.free_effects.length ? setConfirmFree(true) : makeFree()
+        }
+        loading={freeing}
+        className="rounded-full"
+      >
+        Make it free and go live now
+      </Button>
+    );
 
   if (state.needs_plan && state.plan) {
     const price = formatPrice(state.plan.amount_cents, state.plan.currency);
@@ -193,5 +250,45 @@ export function GoLiveCard({
         Go live
       </Button>
     </>,
+  );
+}
+
+/** Every step left before going live, the current one first in weight. */
+function Steps({ steps }: { steps: GoLiveStep[] }) {
+  const current = steps.find((s) => !s.done)?.id;
+  return (
+    <ol className="mb-4 space-y-2 border-b border-[var(--sf-line)] pb-4">
+      {steps.map((s, i) => (
+        <li key={s.id} className="flex items-center gap-2.5 text-[14px]">
+          <span
+            aria-hidden
+            className={cn(
+              "flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+              s.done
+                ? "bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+                : s.id === current
+                  ? "border border-[var(--sf-ink)]"
+                  : "border border-[var(--sf-line-strong)] text-[var(--sf-faint)]",
+            )}
+          >
+            {s.done ? <Check className="size-3" strokeWidth={3} /> : i + 1}
+          </span>
+          <span
+            className={cn(
+              s.done && "text-[var(--sf-faint)]",
+              s.id === current && "font-semibold",
+            )}
+          >
+            {s.label}
+            {s.done && <span className="sr-only"> (done)</span>}
+          </span>
+          {!s.done && (
+            <span className="ml-auto shrink-0 text-[12.5px] text-[var(--sf-faint)]">
+              about {s.minutes} min
+            </span>
+          )}
+        </li>
+      ))}
+    </ol>
   );
 }

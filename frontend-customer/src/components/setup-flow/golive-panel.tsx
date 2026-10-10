@@ -30,7 +30,9 @@ export function GoLivePanel({
   onPublished: () => void;
   className?: string;
 }) {
-  const busy = sending ? "Making that change…" : activity;
+  // While pages still build the site is not ready yet: say what is left
+  // (it used to say "Your site is ready" above a skeleton).
+  const busy = sending ? "Making that change…" : null;
   return (
     <section
       aria-label="Your setup guide"
@@ -43,8 +45,17 @@ export function GoLivePanel({
           </p>
         )}
         <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-[-0.02em]">
-          {guide.question}
+          {activity ? "Almost ready" : guide.question}
         </h1>
+        {activity && (
+          <p
+            role="status"
+            className="mt-2 flex items-center gap-2 text-[14.5px] text-[var(--sf-graphite)]"
+          >
+            <Spinner size="sm" className="text-[var(--sf-brass)]" />
+            {activity}
+          </p>
+        )}
         <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
           Want something changed first? Tell me below, like “make the headline
           warmer” or “use a calmer photo”.

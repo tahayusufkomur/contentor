@@ -226,7 +226,8 @@ function Flow({
   }, [working, refresh]);
 
   // Work that finished since the last poll: at go-live the guide says so
-  // and the preview moves to a page that just finished composing. During
+  // and the preview reloads; it stays on the page the coach is looking at
+  // (Home first), never jumping to whichever page finished last. During
   // the questions the site stays out of sight; the header says what is
   // being built.
   useEffect(() => {
@@ -237,9 +238,8 @@ function Flow({
     if (!golive) return;
     for (const note of notes) toast.success(note);
     if (!key) return;
-    setPath(flow.steps.find((s) => s.page_key === key)?.preview_path ?? "/");
     setReloadKey((k) => k + 1);
-  }, [flow.page_builds, iv.draft_status, flow.steps, golive]);
+  }, [flow.page_builds, iv.draft_status, golive]);
 
   const { run: undo } = useAsyncAction(
     async (auditId: number) => {

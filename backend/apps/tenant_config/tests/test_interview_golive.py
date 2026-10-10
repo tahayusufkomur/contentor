@@ -104,7 +104,69 @@ def test_make_free_clears_plan_and_payouts_needs(client, tenant_ctx, config):
     assert body["needs_plan"] is False and body["needs_payouts"] is False
     assert Course.objects.get().pricing_type == "free"
     saved = Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["answers"]
-    assert saved["sells"] == "free" and saved["offers"] == ["course"]
+    assert saved["sells"] == "free" and saved["offers"] == ["course"]  # live dropped, the course stays
+
+
+def _make_free(client, tenant_ctx, **answers):
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(
+        wizard_state={"flow": "interview", "answers": {**DONE, "sells": "paid", **answers}}
+    )
+    with (
+        mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False),
+        mock.patch("apps.tenant_config.interview_golive.fire"),
+    ):
+        client.post(URL, {"action": "make_free"}, format="json")
+    return Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["answers"]
+
+
+def test_making_it_free_never_invents_an_offer(client, tenant_ctx, config):
+    """A live-only coach who declines the plan was given courses she never offered."""
+    assert _make_free(client, tenant_ctx, offers=["live", "community"])["offers"] == ["community"]
+    # Nothing left to offer: the site goes live with its pages.
+    saved = _make_free(client, tenant_ctx, offers=["live"])
+    assert saved["offers"] == [] and not brief.missing(saved)
+
+
+def test_go_live_says_what_making_it_free_will_change(client, tenant_ctx, config):
+    """Audit R6: it switched off memberships and dropped live classes without a word."""
+    from apps.billing.models import SubscriptionPlan
+
+    draft = _course(paid=True)
+    plan = SubscriptionPlan.objects.create(name="Online membership", price=Decimal("19"), billing_interval_months=1)
+    config.setup_flow = {**config.setup_flow, "drafts": {"course": draft.id, "plans": {"online": plan.pk}}}
+    config.save()
+    answers = {**DONE, "sells": "paid", "offers": ["course", "live"]}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    with (
+        mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False),
+        mock.patch("apps.tenant_config.interview_golive.fire"),
+    ):
+        effects = " ".join(client.get(URL).json()["free_effects"])
+    assert "Desk Yoga" in effects and "free" in effects
+    assert "Online membership" in effects and "switched off" in effects
+    assert "Live classes" in effects
+    assert SubscriptionPlan.objects.get().is_active  # reading it changes nothing
+
+
+def test_go_live_lists_the_steps_left_and_what_was_built(client, tenant_ctx, config):
+    """Audit P2: plan, payouts and publish appeared one card at a time, with no summary."""
+    from apps.billing.models import SubscriptionPlan
+
+    plan = SubscriptionPlan.objects.create(name="Online membership", price=Decimal("19"), billing_interval_months=1)
+    config.setup_flow = {**config.setup_flow, "drafts": {"plans": {"online": plan.pk}}}
+    config.save()
+    answers = {**DONE, "sells": "paid", "offers": ["live"], "live_when": "Tuesdays at 7:00 PM"}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    with (
+        mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False),
+        mock.patch("apps.tenant_config.interview_golive.fire"),
+    ):
+        body = client.get(URL).json()
+    assert [s["id"] for s in body["steps"]] == ["plan", "payouts", "publish"]
+    assert all(s["minutes"] for s in body["steps"])
+    summary = {line["label"]: line["value"] for line in body["summary"]}
+    assert "Online membership" in summary["Memberships"] and "Tuesdays at 7:00 PM" in summary["Classes"]
+    assert summary["Pages"].startswith("Home")
 
 
 def test_publish_publishes_the_draft_and_the_site(client, tenant_ctx, config):

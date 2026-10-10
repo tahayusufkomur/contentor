@@ -89,7 +89,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
-    await expect(busy).toBeHidden({ timeout: 300_000 });
+    // Every busy line gone (a change and a page build can show at once).
+    await expect(busy).toHaveCount(0, { timeout: 300_000 });
     await action.first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
     await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
     if (await keepLook.isVisible()) await keepLook.click();

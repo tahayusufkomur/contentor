@@ -389,4 +389,17 @@ export interface GoLiveState {
     currency: string;
   } | null;
   blockers: string[];
+  /** Every step left before going live, with its time. */
+  steps: GoLiveStep[];
+  /** What the interview built ("Memberships": "Online membership (19 USD a month)"). */
+  summary: { label: string; value: string }[];
+  /** What "make it free" would change, said before the coach agrees. */
+  free_effects: string[];
+}
+
+export interface GoLiveStep {
+  id: "plan" | "payouts" | "publish";
+  label: string;
+  minutes: number;
+  done: boolean;
 }
