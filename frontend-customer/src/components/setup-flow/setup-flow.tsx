@@ -649,6 +649,8 @@ function Flow({
       </main>
       <GoLivePanel
         menu={<SetupMenu email={email} />}
+        onSeeSite={narrow ? () => setTab("preview") : undefined}
+        host={host}
         guide={guide}
         api={api}
         sending={sending}

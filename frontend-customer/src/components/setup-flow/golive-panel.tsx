@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, Eye } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import type { GuideTurn, SetupFlowApi, TurnRequest } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,8 @@ export function GoLivePanel({
   onSend,
   onPublished,
   menu,
+  onSeeSite,
+  host,
   className,
 }: {
   guide: GuideTurn;
@@ -31,6 +34,9 @@ export function GoLivePanel({
   onPublished: () => void;
   /** The setup menu (finish later, help, sign out), top right. */
   menu?: React.ReactNode;
+  /** On a phone the site is a tab away: a card opens it. */
+  onSeeSite?: () => void;
+  host?: string;
   className?: string;
 }) {
   // While pages still build the site is not ready yet: say what is left
@@ -62,6 +68,28 @@ export function GoLivePanel({
             <Spinner size="sm" className="text-[var(--sf-brass)]" />
             {activity}
           </p>
+        )}
+        {onSeeSite && (
+          <button
+            type="button"
+            onClick={onSeeSite}
+            className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-[var(--sf-line)] bg-white p-3 text-left transition-colors hover:border-[var(--sf-line-strong)]"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--sf-tint-strong)]">
+              <Eye className="size-5" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14.5px] font-semibold">
+                See your site
+              </span>
+              {host && (
+                <span className="block truncate text-[12.5px] text-[var(--sf-graphite)]">
+                  {host}
+                </span>
+              )}
+            </span>
+            <ArrowRight className="size-4 shrink-0" aria-hidden />
+          </button>
         )}
         <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
           Want something changed first? Tell me below, like “make the headline
