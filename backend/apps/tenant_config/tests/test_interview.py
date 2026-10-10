@@ -557,3 +557,25 @@ def test_only_the_last_turns_ride_along(tenant_ctx, config):
     recent = json.loads(interview._user_turn(tenant_ctx, {}, turns, "hi", False))["recent"]
     assert len(recent) == interview.CONTEXT_TURNS < 40
     assert recent[-1]["text"] == "m39"
+
+
+def test_a_tapped_niche_tile_with_a_note_is_still_applied_by_code(client, tenant_ctx, config, quiet):
+    """Review: Continue sends the tiles, then the note on the next line; the
+    tiles are still read by code, not by the model's paraphrase."""
+    config.brand_name = "Görkem's Face Yoga Studio"
+    config.save()
+    quiet.reply = interview.InterviewTurn(
+        facts=[{"field": "teaches", "value": "face yoga for desk workers"}], ack="Got it.", next_field="specialty"
+    )
+    client.post(URL, {"message": "Face yoga and more\nmostly for desk workers"}, format="json")
+    answers = _answers(tenant_ctx)
+    assert answers["teaches"] == "Yoga" and answers["specialty_base"] == "Face yoga"
+
+
+def test_without_ai_a_fixed_answer_reads_its_tiles_not_the_note(client, tenant_ctx, quiet):
+    """Review: "Free for now" with a note about a membership later stays free."""
+    from apps.core import ai as core_ai
+
+    quiet.error = core_ai.AiError("down")
+    client.post(URL, {"message": "Free for now\nmaybe a membership later", "field": "payments"}, format="json")
+    assert _answers(tenant_ctx)["payments"] == ["free"]

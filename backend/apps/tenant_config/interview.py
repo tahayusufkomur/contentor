@@ -395,11 +395,14 @@ def run_turn(
     if review:
         milestones.redraft(tenant, answers, review, text)
         answers.pop(answering, None)
+    # Picked tiles come first; a note the coach typed with them sits on the
+    # lines after (the frontend's withNote).
+    picks = text.partition("\n")[0]
     # A tapped niche tile ("Face yoga and more", "Belly dance, Hip hop") is
     # applied by code, like a card: the model would paraphrase it.
-    tapped = bool(text and not choice and not review and _is_tapped(text, answering, answers, brand))
+    tapped = bool(text and not choice and not review and _is_tapped(picks, answering, answers, brand))
     if tapped:
-        brief.apply_fact(answers, answering, text)
+        brief.apply_fact(answers, answering, picks)
     turn = _ask_ai(tenant, answers, turns, text, spoken, answering) if text and not review else None
     if turn:
         if spoken and turn.heard and turn.heard.strip():
@@ -409,7 +412,10 @@ def run_turn(
                 continue  # the pick is applied by code; the model's reading of it never overrides it
             brief.apply_fact(answers, fact.field, fact.value)
     elif text and answering and not choice and not review and not tapped:
-        brief.apply_fact(answers, answering, text)  # no AI: the answer is to the question on screen
+        # No AI: the answer is to the question on screen. A fixed list reads
+        # only the tiles, never the note ("maybe a membership later").
+        fixed = getattr(brief.FIELD_BY_ID.get(answering), "kind", "") in brief.FIXED_KINDS
+        brief.apply_fact(answers, answering, picks if fixed else text)
     if turn and len(turn.tone_hints) == len(brief.FIELD_BY_ID["tone"].options):
         answers["tone_hints"] = [h.strip()[:80] for h in turn.tone_hints]
     brief.save_answers(tenant, answers, base=base)
