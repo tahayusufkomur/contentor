@@ -181,11 +181,12 @@ export function LookCardsView({
       .map((id) => getSiteStyle(id))
       .filter((s): s is SiteStyle => !!s);
     const suggested = shown.options.find((o) => o.recommended);
+    // Only tags the best-ranked looks carry (ranked by niche and tone), so a
+    // desk-yoga coach is never offered "Sexy".
+    const fits = shown.options.slice(0, 8);
     const chips: [string, string][] = [
       ["", "All"],
-      ...STYLE_TAGS.filter(([t]) =>
-        shown.options.some((o) => o.tags?.includes(t)),
-      ),
+      ...STYLE_TAGS.filter(([t]) => fits.some((o) => o.tags?.includes(t))),
     ];
     const options = tag
       ? shown.options.filter((o) => o.tags?.includes(tag))

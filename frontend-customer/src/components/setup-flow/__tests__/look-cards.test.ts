@@ -116,3 +116,24 @@ describe("LookCardsView generated logos", () => {
     expect(html).not.toContain("Designing your logo");
   });
 });
+
+describe("LookCardsView tag chips", () => {
+  it("offers only tags the best-ranked looks carry", () => {
+    const options = Array.from({ length: 10 }, (_, i) => ({
+      ...look(`s${i}`, `g${i}`, i === 0),
+      tags: i === 0 ? ["selling"] : i === 9 ? ["sexy"] : [],
+    }));
+    const html = renderToStaticMarkup(
+      createElement(LookCardsView, {
+        cards: { kind: "style", options },
+        brandName: "",
+        disabled: false,
+        onPick: () => {},
+        onKeep: () => {},
+        onMore: async () => ({ kind: "style", options }),
+      }),
+    );
+    expect(html).toContain("Made to sell");
+    expect(html).not.toContain("Sexy");
+  });
+});

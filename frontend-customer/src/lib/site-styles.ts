@@ -10,10 +10,10 @@ export function getSiteStyle(id?: string | null): SiteStyle | undefined {
 /** The looks a coach can filter by, in the order the chips show them. The
  *  tags themselves live in each style's manifest (`tags`). */
 export const STYLE_TAGS: [tag: string, label: string][] = [
-  ["selling", "Selling"],
-  ["expertise", "Expertise"],
-  ["short", "Short"],
-  ["long", "Long"],
+  ["selling", "Made to sell"],
+  ["expertise", "Shows expertise"],
+  ["short", "Short page"],
+  ["long", "Long page"],
   ["sensual", "Sensual"],
   ["confident", "Confident"],
   ["sexy", "Sexy"],
