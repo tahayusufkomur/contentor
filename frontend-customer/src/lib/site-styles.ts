@@ -14,7 +14,7 @@ export const STYLE_TAGS: [tag: string, label: string][] = [
   ["expertise", "Shows expertise"],
   ["short", "Short page"],
   ["long", "Long page"],
-  ["sensual", "Sensual"],
+  ["sensual", "Soft and moody"],
   ["confident", "Confident"],
   ["sexy", "Sexy"],
   ["playful", "Playful"],

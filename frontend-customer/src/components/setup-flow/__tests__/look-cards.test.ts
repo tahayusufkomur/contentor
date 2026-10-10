@@ -136,4 +136,19 @@ describe("LookCardsView tag chips", () => {
     expect(html).toContain("Made to sell");
     expect(html).not.toContain("Sexy");
   });
+  it("names a moody look in plain words", () => {
+    const options = [{ ...look("nocturne", "g0", true), tags: ["sensual"] }];
+    const html = renderToStaticMarkup(
+      createElement(LookCardsView, {
+        cards: { kind: "style", options },
+        brandName: "",
+        disabled: false,
+        onPick: () => {},
+        onKeep: () => {},
+        onMore: async () => ({ kind: "style", options }),
+      }),
+    );
+    expect(html).toContain("Soft and moody");
+    expect(html).not.toContain("Sensual");
+  });
 });
