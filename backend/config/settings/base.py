@@ -280,20 +280,22 @@ GEMINI_THINKING_LEVEL = os.environ.get("GEMINI_THINKING_LEVEL", "low")
 # Per call, its one retry included.
 GEMINI_TIMEOUT_SECONDS = int(os.environ.get("GEMINI_TIMEOUT_SECONDS", "120"))
 AGENTC_HUB = os.environ.get("AGENTC_HUB", "http://host.docker.internal:39300")
-AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "gemini-3.8-flash-high")  # newest in `agy models`
+# Model names are the hub's aliases (agent-container server/accounts.json
+# "models": text, text-low, pro); a concrete `agy models` id works too.
+AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "text")
+# effort="low" (interview turns, edits, picks): ~5 s against ~15 s on text (2026-10-08).
+AGENTC_MODEL_LOW = os.environ.get("AGENTC_MODEL_LOW", "text-low")
 # Working dir on the HUB host (must already exist there), not in this container.
 AGENTC_CWD = os.environ.get("AGENTC_CWD", "/Users/tahayusufkomur/ws/agent-studio-runs")
-# Hub accounts that take our runs, tried in turn. Studio accounts only: they
-# mount agent-studio-runs alone, while the hub's pool agents mount all of ~/ws
-# and our prompts carry coach text. Shared with Pix4Less's studio lane.
-AGENTC_ACCOUNTS = [
-    a.strip() for a in os.environ.get("AGENTC_ACCOUNTS", "studio-gemini-1,studio-gemini-2").split(",") if a.strip()
-]
+# Hub lane that takes our runs; the hub picks an idle account in it. Studio
+# accounts only: they mount agent-studio-runs alone, while the hub's ws lane
+# mounts all of ~/ws and our prompts carry coach text. Shared with Pix4Less.
+AGENTC_LANE = os.environ.get("AGENTC_LANE", "studio")
 # Per run, queue wait included.
 AGENTC_TIMEOUT_SECONDS = int(os.environ.get("AGENTC_TIMEOUT_SECONDS", "180"))
 # Gemini 3.1 Pro on the hub: concepts, image read-back and the logo judge
 # (core_ai.structured(effort="max") selects it on agentc).
-AGENTC_PRO_MODEL = os.environ.get("AGENTC_PRO_MODEL", "gemini-3.1-pro-high")
+AGENTC_PRO_MODEL = os.environ.get("AGENTC_PRO_MODEL", "pro")
 # A hub image run waits on the agent's image subagent: 86-258 s measured
 # 2026-10-09, so the budget is well above the text-run default.
 AGENTC_IMAGE_TIMEOUT_SECONDS = int(os.environ.get("AGENTC_IMAGE_TIMEOUT_SECONDS", "420"))

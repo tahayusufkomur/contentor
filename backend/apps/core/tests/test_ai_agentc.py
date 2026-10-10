@@ -90,8 +90,9 @@ def hub(settings, monkeypatch):
     settings.AI_PROVIDER = "agentc"
     settings.AGENTC_HUB = "http://hub:39300/"
     settings.AGENTC_TIMEOUT_SECONDS = 60
-    settings.AGENTC_ACCOUNTS = ["studio-a", "studio-b"]
+    settings.AGENTC_LANE = "studio"
     settings.AGENTC_MODEL = "gemini-3.8-flash-high"
+    settings.AGENTC_MODEL_LOW = "gemini-3.8-flash-low"
     monkeypatch.setattr(ai, "AGENTC_POLL_SECONDS", 0)
     fake = _Hub(results=['```json\n{"greeting": "hi"}\n```'])
     monkeypatch.setattr(ai.requests, "post", lambda *a, **k: fake.post(*a, **k))
@@ -128,70 +129,28 @@ def test_rejected_on_create(hub):
     hub.create_state = "rejected"
     with pytest.raises(ai.AiError, match="rejected"):
         _call()
-    assert len(hub.created) == 2  # each studio account was offered the run once
+    assert len(hub.created) == 1  # the hub already tried every account in the lane
 
 
-def test_runs_go_to_studio_accounts_never_the_pool(hub):
+def test_runs_go_to_the_studio_lane_never_an_account_or_the_ws_pool(hub):
     hub.results = ['{"greeting": "hi"}'] * 2
     _call()
     _call()
-    # Round robin: consecutive runs start on different accounts.
-    assert {u.split("/accounts/")[1] for u in hub.create_urls} == {"studio-a/runs", "studio-b/runs"}
-    assert not any("/vendors/" in u for u in hub.create_urls)
+    assert hub.create_urls == ["http://hub:39300/lanes/studio/runs"] * 2
 
 
-def test_a_refusing_account_hands_the_run_to_the_next(hub, monkeypatch):
-    real_post = hub.post
-
-    def post(url, json=None, timeout=None):
-        if url.endswith("/runs") and not hub.create_urls:
-            hub.create_urls.append(url)
-            return _Resp({"id": "x", "state": "rejected", "error": "rate limited"})
-        return real_post(url, json=json, timeout=timeout)
-
-    monkeypatch.setattr(ai.requests, "post", post)
-    parsed, _, _ = _call()
-    assert parsed.greeting == "hi"
-    assert hub.create_urls[0] != hub.create_urls[1]
-
-
-def test_the_least_busy_account_takes_the_run(hub):
-    hub.results = ['{"greeting": "hi"}'] * 2
-    hub.active = [
-        {"account": "studio-a", "state": "running"},
-        {"account": "studio-b", "state": "succeeded"},
-        {"account": "other", "state": "running"},
-    ]
-    _call()
-    _call()  # the rotation would start on the other account; load wins
-    assert [u.split("/accounts/")[1] for u in hub.create_urls] == ["studio-b/runs", "studio-b/runs"]
-
-
-def test_unreadable_run_list_keeps_the_rotation(hub, monkeypatch):
-    real_get = hub.get
-
-    def get(url, params=None, timeout=None, stream=False):
-        if url.endswith("/runs"):
-            raise requests.ConnectionError("down")
-        return real_get(url, params=params, timeout=timeout, stream=stream)
-
-    monkeypatch.setattr(ai.requests, "get", get)
-    parsed, _, _ = _call()
-    assert parsed.greeting == "hi"
-
-
-def test_no_accounts_configured_fails(hub, settings):
-    settings.AGENTC_ACCOUNTS = []
-    with pytest.raises(ai.AiError, match="AGENTC_ACCOUNTS is empty"):
+def test_no_lane_configured_fails(hub, settings):
+    settings.AGENTC_LANE = ""
+    with pytest.raises(ai.AiError, match="AGENTC_LANE is empty"):
         _call()
 
 
-def test_low_effort_runs_the_low_variant(hub):
+def test_low_effort_runs_the_low_variant(hub, settings):
     hub.results = ['{"greeting": "hi"}'] * 2
     _parsed, _cost, model = _call(effort="low")
-    assert hub.created[0]["model"] == model == "gemini-3.8-flash-low"
+    assert hub.created[0]["model"] == model == settings.AGENTC_MODEL_LOW
     _call(effort="medium")
-    assert hub.created[1]["model"] == "gemini-3.8-flash-high"
+    assert hub.created[1]["model"] == settings.AGENTC_MODEL
 
 
 def test_create_http_error(hub, monkeypatch):

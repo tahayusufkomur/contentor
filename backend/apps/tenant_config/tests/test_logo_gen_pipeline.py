@@ -5,6 +5,7 @@ import io
 import json
 
 import pytest
+from django.conf import settings
 from django_tenants.utils import tenant_context
 from PIL import Image
 
@@ -63,7 +64,7 @@ def logo_hub(settings, monkeypatch):
     settings.LOGO_GEN_ENABLED = True
     settings.LOGO_GEN_CANDIDATES = 3
     settings.AGENTC_HUB = "http://hub:39300/"
-    settings.AGENTC_ACCOUNTS = ["studio-a", "studio-b", "studio-c"]
+    settings.AGENTC_LANE = "studio"
     settings.AGENTC_RUNS_DIR = ""
     monkeypatch.setattr(ai, "AGENTC_POLL_SECONDS", 0)
     monkeypatch.setattr(
@@ -142,7 +143,7 @@ def test_run_batch_happy_path(tenant_with_interview, logo_hub):
         "defects": ["generic"],
     }
     image_bodies = [c for c in hub.created if "Save the generated image as" in c["prompt"]]
-    assert len(image_bodies) == 3 and {c["model"] for c in image_bodies} == {"gemini-3.8-flash-high"}
+    assert len(image_bodies) == 3 and {c["model"] for c in image_bodies} == {settings.AGENTC_MODEL}
     assert all(419 <= c["timeoutSec"] <= 420 for c in image_bodies)
 
 

@@ -14,8 +14,8 @@ schema-validated generation), selected by settings.AI_PROVIDER:
 - "agentc": the Agent Container hub (settings.AGENTC_HUB), which runs the
   Gemini CLI headless on subscription accounts. Cost is Decimal("0") like
   "cli". The hub's agent HAS tools and our prompts carry untrusted coach
-  text, so runs go only to the studio accounts (settings.AGENTC_ACCOUNTS,
-  which mount agent-studio-runs alone) and any run whose event log shows a
+  text, so runs go only to the studio lane (settings.AGENTC_LANE, whose
+  accounts mount agent-studio-runs alone) and any run whose event log shows a
   tool call is discarded (_agentc_run). Vision only through agentc_vision_run
   (file viewer); images only through agentc_image_run. No token streaming.
 - "gemini": the Gemini API directly on settings.GEMINI_API_KEY — no queue,
@@ -29,7 +29,6 @@ travels in the user turn — never interpolate it into ``system`` (it would
 fragment the Anthropic cache per tenant).
 """
 
-import itertools
 import json
 import logging
 import os
@@ -37,9 +36,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-import threading
 import time
-from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 
@@ -294,74 +291,38 @@ def _agentc_url(path):
 
 
 # Runs nobody is waiting on (whole-site composition) queue behind a coach's
-# interactive requests on the shared 3-slot hub.
+# interactive requests on the shared hub.
 _AGENTC_BACKGROUND_LABELS = ("contentor:compose",)
 
 
 def _agentc_model(effort):
-    """AGENTC_MODEL, its -low variant for effort="low" (interview turns, edits,
-    picks), or AGENTC_PRO_MODEL for effort="max" (logo concepts, judge): an
-    interview turn took ~5 s on -low vs ~15 s on -high with the same output
-    checks passing (2026-10-08)."""
+    """AGENTC_MODEL, AGENTC_MODEL_LOW for effort="low" (interview turns, edits,
+    picks), or AGENTC_PRO_MODEL for effort="max" (logo concepts, judge)."""
     if effort == "max":
         return settings.AGENTC_PRO_MODEL
     if effort == "low":
-        return re.sub(r"-(medium|high)$", "-low", settings.AGENTC_MODEL)
+        return settings.AGENTC_MODEL_LOW
     return settings.AGENTC_MODEL
 
 
-_AGENTC_CREATE_LOCK = threading.Lock()
-# Rotating tie-break between equally busy AGENTC_ACCOUNTS.
-_AGENTC_NEXT = itertools.count()
-
-
-def _agentc_order(accounts):
-    """``accounts``, least busy first (queued + running runs on the hub, any
-    client's). A run sharing an account with a page build took 32 s against
-    ~5 s on the idle one (2026-10-08). Ties keep a rotating order; an
-    unreadable run list keeps just the rotation."""
-    start = next(_AGENTC_NEXT) % len(accounts)
-    rotated = accounts[start:] + accounts[:start]
-    try:
-        resp = requests.get(_agentc_url("/runs"), params={"limit": 50}, timeout=_AGENTC_HTTP_TIMEOUT)
-        resp.raise_for_status()
-        busy = Counter(r.get("account") for r in resp.json() if r.get("state") in ("queued", "running"))
-    except (requests.RequestException, ValueError, TypeError, AttributeError):
-        return rotated
-    return sorted(rotated, key=lambda name: busy[name])  # stable: ties keep the rotation
-
-
 def _agentc_create(body):
-    """Create the run on one of AGENTC_ACCOUNTS -> the run. Never the hub's
-    pool: the pool agents mount all of ~/ws (synced to the Mac), the studio
-    accounts only agent-studio-runs. An account that refuses the run
-    (disabled, logged out, rate-limited) hands it to the next one."""
-    accounts = list(settings.AGENTC_ACCOUNTS)
-    if not accounts:
-        raise AiError("agentc run create failed: AGENTC_ACCOUNTS is empty")
-    # One create at a time: a batch of parallel runs (generated logos) must each
-    # see the previous one queued, or all pick the same idle account and run
-    # one after another (a hub account runs one run at a time).
-    with _AGENTC_CREATE_LOCK:
-        return _agentc_create_locked(body, accounts)
-
-
-def _agentc_create_locked(body, accounts):
-    problems = []
-    for name in _agentc_order(accounts):
-        try:
-            resp = requests.post(_agentc_url(f"/accounts/{name}/runs"), json=body, timeout=_AGENTC_HTTP_TIMEOUT)
-            if not resp.ok:
-                problems.append(f"{name} ({resp.status_code}): {resp.text[:200]}")
-                continue
-            run = resp.json()
-        except (requests.RequestException, ValueError) as exc:
-            problems.append(f"{name}: {exc}")
-            continue
-        if run.get("state") != "rejected":
-            return run
-        problems.append(f"{name} rejected: {str(run.get('error') or '')[:200]}")
-    raise AiError("agentc run create failed: " + "; ".join(problems))
+    """Create the run on the hub's AGENTC_LANE -> the run. The hub picks an
+    idle account in the lane and queues otherwise; it never uses the ws lane
+    (whose agents mount all of ~/ws, synced to the Mac). A lane with no usable
+    account comes back as a rejected run."""
+    lane = settings.AGENTC_LANE
+    if not lane:
+        raise AiError("agentc run create failed: AGENTC_LANE is empty")
+    try:
+        resp = requests.post(_agentc_url(f"/lanes/{lane}/runs"), json=body, timeout=_AGENTC_HTTP_TIMEOUT)
+        if not resp.ok:
+            raise AiError(f"agentc run create failed ({resp.status_code}): {resp.text[:200]}")
+        run = resp.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise AiError(f"agentc run create failed: {exc}") from exc
+    if run.get("state") == "rejected":
+        raise AiError(f"agentc run rejected: {str(run.get('error') or '')[:200]}")
+    return run
 
 
 def _agentc_execute(prompt, label, deadline, model):
