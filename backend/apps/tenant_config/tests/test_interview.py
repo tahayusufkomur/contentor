@@ -538,3 +538,13 @@ def test_story_and_credentials_offer_starters_not_claims():
     assert interview.guide_for(brief.FIELD_BY_ID["pitch"], options=["Yoga for desks"], icons=[])["starter"] is False
     assert "starter" in interview.GUIDE_KEYS
     assert "sentence starters" in interview.SYSTEM
+
+
+def test_offers_and_payments_say_why_they_matter():
+    """Audit E1: the offers question decides about 10 later questions and nothing said so."""
+    from apps.tenant_config import interview_brief as brief
+
+    assert "pages" in interview.guide_for(brief.FIELD_BY_ID["offers"])["why"]
+    assert interview.guide_for(brief.FIELD_BY_ID["payments"])["why"]
+    assert interview.guide_for(brief.FIELD_BY_ID["pitch"], options=["x"], icons=[])["why"] == ""
+    assert {"why", "plan"} <= set(interview.GUIDE_KEYS)

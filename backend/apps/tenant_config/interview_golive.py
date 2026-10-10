@@ -24,6 +24,26 @@ def _starter_plan(tenant) -> dict | None:
     return {"id": plan.pk, "name": plan.name, "amount_cents": entry.get("amount_cents"), "currency": currency}
 
 
+# The choices that need a paid plan, by question: classes need it to run,
+# and selling needs it at all.
+PLAN_CHOICES = {
+    "offers": ("Live online classes", "In-person sessions"),
+    "payments": ("One-time course purchases", "Monthly membership", "Pay per class or event"),
+}
+
+
+def plan_badge(tenant, field_id) -> dict | None:
+    """The plan a question's paid choices need, shown on those tiles before
+    the coach picks (it used to appear first at go-live). None once they
+    have it."""
+    labels = PLAN_CHOICES.get(field_id or "")
+    if not labels:
+        return None
+    covered = _live_entitled(tenant) if field_id == "offers" else is_paid_active(tenant)
+    plan = None if covered else _starter_plan(tenant)
+    return {**plan, "options": list(labels)} if plan else None
+
+
 def golive_state(tenant) -> dict:
     answers = brief.answers_of(tenant)
     fire(tenant, answers)  # e.g. a live-class draft unlocked by a plan bought at checkout

@@ -262,6 +262,14 @@ export type GuideCards = LookCards | ReviewCard;
 export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
   c?.kind === "course" || c?.kind === "event";
 
+/** The paid plan some of a question's options need (backend interview_golive.plan_badge). */
+export interface PlanBadge {
+  name: string;
+  amount_cents: number | null;
+  currency: string;
+  options: string[];
+}
+
 export interface GuideTurn {
   ack: string;
   question: string;
@@ -278,7 +286,7 @@ export interface GuideTurn {
   hints?: Record<string, string>;
   /** Label of the button that skips this question's section, if it has one. */
   skip?: string | null;
-  /** One short description per option, shown once it is picked. */
+  /** One short description per option, shown under it. */
   details?: Record<string, string>;
   /** The question builds something: a live preview of it sits beside the answers. */
   builder?: BuilderKind;
@@ -289,6 +297,10 @@ export interface GuideTurn {
   /** The options are sentence starters: a tap puts one in the box to
    * finish, and it is never sent as-is. */
   starter?: boolean;
+  /** One line under the question: why it matters. */
+  why?: string;
+  /** The plan the listed paid options need, shown on their tiles. */
+  plan?: PlanBadge | null;
   cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;

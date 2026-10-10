@@ -137,6 +137,8 @@ GUIDE_KEYS = (
     "schedule",
     "socials",
     "starter",
+    "why",
+    "plan",
 )
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
@@ -163,6 +165,8 @@ def guide_for(
             "schedule": False,
             "socials": False,
             "starter": False,
+            "why": "",
+            "plan": None,
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
@@ -194,6 +198,8 @@ def guide_for(
         "socials": field.kind == "socials",
         # Tiles are sentence starters: a tap fills the box, never sends.
         "starter": field.starter,
+        # One line under the question: why it matters.
+        "why": field.why,
     }
 
 
@@ -360,6 +366,7 @@ def run_turn(
     reply. ``field`` names the question the message answers when the coach
     went back to an earlier one (default: the question being asked). Raises
     interview_milestones.ChoiceError for an invalid pick."""
+    from . import interview_golive
     from . import interview_milestones as milestones
     from . import setup_flow
 
@@ -416,6 +423,8 @@ def run_turn(
     # guide, so a reload doesn't announce finished work as starting.
     if note := started_note(fired):
         guide["status"] = note
+    # The plan the paid tiles need, stored with the question for going back.
+    guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])
 
     def mutate(_config, flow):
         iv = dict(flow.get("interview") or {})
@@ -436,6 +445,7 @@ def run_turn(
 
 
 def interview_state(tenant, flow: dict) -> dict:
+    from . import interview_golive
     from . import interview_milestones as milestones
     from .logo_gen import pipeline
 
@@ -453,6 +463,7 @@ def interview_state(tenant, flow: dict) -> dict:
         # A transcript written before icons existed still renders.
         guide["icons"] = guide["icons"] or {}
         guide["hints"] = guide["hints"] or {}
+    guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])  # live: a plan bought since hides it
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back

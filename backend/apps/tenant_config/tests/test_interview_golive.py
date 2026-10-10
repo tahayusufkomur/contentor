@@ -171,3 +171,25 @@ def test_finished_setup_refuses_interview_endpoints(client, config):
     config.save()
     assert client.post(URL, {"action": "make_free"}, format="json").status_code == 409
     assert client.post("/api/v1/admin/setup-flow/turn/", {"message": "hi"}, format="json").status_code == 409
+
+
+def test_paid_choices_show_the_plan_before_go_live(tenant_ctx, config):
+    """Audit Top 3: the $19.90 plan first appeared at go-live."""
+    from apps.core.models import PlatformPlan
+    from apps.tenant_config import interview_golive
+
+    PlatformPlan.objects.update(is_active=False)
+    PlatformPlan.objects.create(
+        name="audit-starter", price_monthly="19.90", transaction_fee_pct="0", prices={"USD": {"amount_cents": 1990}}
+    )
+    with mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False):
+        badge = interview_golive.plan_badge(tenant_ctx, "payments")
+    assert badge["name"] == "audit-starter" and badge["amount_cents"] == 1990 and badge["currency"] == "USD"
+    assert "Monthly membership" in badge["options"] and "Free for now" not in badge["options"]
+    # Review focus 4: a coach on a paid plan sees no badge.
+    with mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=True):
+        assert interview_golive.plan_badge(tenant_ctx, "payments") is None
+    assert interview_golive.plan_badge(tenant_ctx, "audience") is None
+    # The badge labels are the tiles' own labels.
+    for field_id, labels in interview_golive.PLAN_CHOICES.items():
+        assert set(labels) <= set(brief.FIELD_BY_ID[field_id].options)

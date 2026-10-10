@@ -9,6 +9,7 @@ import {
   landedPage,
   noteOf,
   pickedOptions,
+  planLabel,
   questionSteps,
   stageIndex,
   withNote,
@@ -256,5 +257,16 @@ describe("addStarter", () => {
     expect(addStarter("I trained in Bali. ", "200-hour training...")).toBe(
       "I trained in Bali. 200-hour training ",
     );
+  });
+});
+
+describe("planLabel", () => {
+  it("names the plan and its monthly price", () => {
+    expect(
+      planLabel({ name: "starter", amount_cents: 1990, currency: "usd" }),
+    ).toBe("Starter plan · $19.90/mo");
+    expect(
+      planLabel({ name: "pro", amount_cents: null, currency: "EUR" }),
+    ).toBe("Pro plan");
   });
 });

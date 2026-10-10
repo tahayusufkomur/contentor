@@ -10,6 +10,7 @@ import {
   browserTimeZone,
   noteOf,
   pickedOptions,
+  planLabel,
   scheduleSummary,
   scheduleValid,
   withNote,
@@ -282,6 +283,11 @@ export function QuestionScreen({
                   </Fragment>
                 ))}
               </h1>
+              {step.why && (
+                <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-[var(--sf-graphite)]">
+                  {step.why}
+                </p>
+              )}
 
               {review && (
                 <DraftReview
@@ -383,22 +389,26 @@ export function QuestionScreen({
                           </span>
                         )}
                         {step.details?.[o] && (
-                          // Unfolds when picked: a grid row growing from 0fr.
                           <span
                             className={cn(
-                              "grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300",
+                              "text-[12.5px] font-normal leading-snug",
                               multi && "pr-7",
+                              on ? "opacity-80" : "text-[var(--sf-graphite)]",
                             )}
-                            style={{ gridTemplateRows: on ? "1fr" : "0fr" }}
                           >
-                            <span
-                              className={cn(
-                                "overflow-hidden text-[12.5px] font-normal leading-snug motion-safe:transition-opacity motion-safe:duration-300",
-                                on ? "opacity-80" : "opacity-0",
-                              )}
-                            >
-                              {step.details[o]}
-                            </span>
+                            {step.details[o]}
+                          </span>
+                        )}
+                        {step.plan?.options.includes(o) && (
+                          <span
+                            className={cn(
+                              "mt-0.5 w-fit rounded-full px-2 py-0.5 text-[11.5px] font-medium",
+                              on
+                                ? "bg-[rgb(255_255_255/0.15)]"
+                                : "bg-[var(--sf-tint-strong)] text-[var(--sf-graphite)]",
+                            )}
+                          >
+                            {planLabel(step.plan)}
                           </span>
                         )}
                         {multi && !step.starter && (

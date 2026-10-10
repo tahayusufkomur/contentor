@@ -452,9 +452,10 @@ class Field:
     alone: str = ""  # the option that can't be ticked with any other ("Free for now")
     icons: tuple[str, ...] = ()  # one lucide id per option (fixed-option fields)
     hints: tuple[str, ...] = ()  # one short line per option, shown under it
-    details: tuple[str, ...] = ()  # one description per option, shown once it is picked
+    details: tuple[str, ...] = ()  # one description per option, shown under it
     delegable: bool = False  # the guide may decide it for the coach ("You decide")
     starter: bool = False  # options are sentence starters the coach finishes in the box, never answers
+    why: str = ""  # one line under the question: why it matters
 
 
 FIELDS: tuple[Field, ...] = (
@@ -497,6 +498,7 @@ FIELDS: tuple[Field, ...] = (
         "How will you teach your students?",
         ("Digital Courses", "Live online classes", "In-person sessions", "Articles", "Community"),
         kind="offers",
+        why="This decides which pages I build and what I ask you next.",
         multi=True,
         icons=("book-open", "video", "map-pin", "newspaper", "users"),
         details=(
@@ -558,6 +560,7 @@ FIELDS: tuple[Field, ...] = (
         "How will students pay you?",
         ("One-time course purchases", "Monthly membership", "Pay per class or event", "Free for now"),
         kind="payments",
+        why="Free stays free. You can change prices any time.",
         multi=True,
         alone="Free for now",
         icons=("book-open", "repeat", "ticket", "gift"),
