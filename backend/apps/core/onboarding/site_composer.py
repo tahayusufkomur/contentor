@@ -63,6 +63,24 @@ PAGE_PATHS = {
     "events": "/events",
 }
 ALLOWED_LINKS = ("/courses", "/about", "/contact", "/calendar", "/events", "/plans", "/faq", "/blog")
+
+
+def coach_links(answers: dict) -> tuple[str, ...]:
+    """The pages this coach's site may link to: the courses only when she
+    offers them, the class pages only when she runs classes (audit
+    2026-10-09: a live-only coach's hero said "Explore our courses"). A
+    brief without offers (older signups) keeps every link."""
+    offers = set(answers.get("offers") or [])
+    if not offers:
+        return ALLOWED_LINKS
+    return tuple(
+        h
+        for h in ALLOWED_LINKS
+        if (h != "/courses" or "course" in offers)
+        and (h not in ("/events", "/calendar") or offers & {"live", "onsite"})
+    )
+
+
 CLOSING_FAMILIES = ("cta", "contact")
 MAX_CONSECUTIVE_IMAGE_HEAVY = 2  # the home recipe itself opens hero → story
 MAX_SECTIONS = 9
@@ -187,10 +205,17 @@ def speaker(brand, description="") -> str:
     return "I" if re.search(r"\b(i|i'm|my|me)\b", text) else "we"
 
 
-def _ctx(niche, brand, description="", subject="") -> dict:
+def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS) -> dict:
     t = subject or topic(niche)
     solo = speaker(brand, description) == "I"
+    # Buttons lead to her main offer: the courses, else the classes, else her story.
+    primary = next(h for h in ("/courses", "/events", "/about") if h in links)
+    me = "me" if solo else "us"
     return {
+        "links": links,
+        "primary": primary,
+        "primaryLabel": {"/courses": "Browse the courses", "/events": "See the classes"}.get(primary, f"About {me}"),
+        "offering": {"/courses": "courses", "/events": "classes"}.get(primary, "work"),
         "niche": str(niche or "general"),
         # Photo disciplines this coach's words allow (see ai_curate.off_topic).
         "allowed": ai_curate.allowed_disciplines(t, str(description or "")),
@@ -233,10 +258,10 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             "kicker": _fit(f"{c['Topic']} with {brand}", 40, c["Topic"]),
             "headline": _HEADLINES.get(c["niche"], f"{c['Topic']} that fits your real life"),
             "subhead": f"I {verb}{tail}" if c["solo"] else _fit(f"At {brand} we {verb}{tail}", 180, f"We {verb}{tail}"),
-            "ctaLabel": "Browse the courses",
-            "ctaHref": "/courses",
-            "secondaryLabel": f"About {me}",
-            "secondaryHref": "/about",
+            "ctaLabel": c["primaryLabel"],
+            "ctaHref": c["primary"],
+            "secondaryLabel": f"About {me}" if c["primary"] != "/about" else "Get in touch",
+            "secondaryHref": "/about" if c["primary"] != "/about" else "/contact",
         }
     if family == "story":
         share = "my coaching" if t == "coaching" and c["solo"] else ("our coaching" if t == "coaching" else t)
@@ -257,10 +282,12 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             if c["name_like"]
             else ("Hello" if c["solo"] else "Who we are"),
             "heading": c["why"],
-            "body": first + f"<p>Here you'll find {my} courses and a simple way to reach {me} whenever a question "
-            "comes up.</p>",
-            "ctaLabel": "See the courses" if page_key == "about" else f"More about {me}",
-            "ctaHref": "/courses" if page_key == "about" else "/about",
+            "body": first + f"<p>Here you'll find {my} {c['offering']} and a simple way to reach {me} whenever a "
+            "question comes up.</p>",
+            "ctaLabel": (c["primaryLabel"] if c["primary"] != "/about" else "Get in touch")
+            if page_key == "about"
+            else f"More about {me}",
+            "ctaHref": (c["primary"] if c["primary"] != "/about" else "/contact") if page_key == "about" else "/about",
         }
         if c["name_like"]:
             out["signature"] = _fit(brand, 40)
@@ -401,9 +428,11 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             }
         return {
             "heading": "Ready when you are",
-            "text": "Take a look at the courses and start with the one that fits you today.",
-            "ctaLabel": "Browse the courses",
-            "ctaHref": "/courses",
+            "text": f"Take a look at the {c['offering']} and start with what fits you today."
+            if c["primary"] != "/about"
+            else f"Tell {me} where you are and {i} will help you take the first step.",
+            "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else "Get in touch",
+            "ctaHref": c["primary"] if c["primary"] != "/about" else "/contact",
         }
     if family == "contact":
         return {
@@ -802,7 +831,7 @@ def plan_site(tenant, *, force=False) -> dict:
         return _store_plan(tenant, plan)
 
     coach = _coach_data(tenant, brand)
-    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"])
+    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]))
     raw, source = None, "fallback"
     if ai_compose.compose_available():
         try:
@@ -920,6 +949,8 @@ def _coach_data(tenant, brand) -> dict:
         "description": str(answers.get("description") or "").strip()[:500],
         "followups": followups[:12],
         "goals": [str(g) for g in (answers.get("goals") or []) if isinstance(g, str)][:8],
+        # The pages her site may link to (every Href field is one of them).
+        "links": list(coach_links(answers)),
     }
 
 
@@ -1049,8 +1080,8 @@ gives the visitor, in a line no other page uses:
 frame the offers (what someone gets by starting) and never repeat an offer's title.
 
 Links
-- Every field ending in "Href" is one of: /courses, /about, /contact, /calendar, /plans, /faq, /blog. Never link a \
-button to the page it is on.
+- Every field ending in "Href" is one of the coach's "links" (in the coach data): only pages she has. Never link \
+a button to the page it is on, and never name an offer she does not make ("our courses" for a coach with no courses).
 
 Fields
 - Fill every field in the page spec within its max characters (count carefully; shorter is better). Required fields \
@@ -1141,15 +1172,17 @@ def _banned(text) -> str | None:
     return "whether you're ... or ..." if _WHETHER_OR.search(low) else None
 
 
-def _safe_href(value, page_key, default) -> str:
+def _safe_href(value, page_key, default, links=ALLOWED_LINKS, primary="/courses") -> str:
+    """A link the coach has a page for, never the page itself: the model's,
+    else the fallback's, else her main offer, else Contact."""
     here = PAGE_PATHS.get(page_key)
-    for href in (str(value or "").strip(), default, "/courses", "/contact"):
-        if href in ALLOWED_LINKS and href != here:
+    for href in (str(value or "").strip(), default, primary, "/contact"):
+        if href in links and href != here:
             return href
-    return "/courses"
+    return "/about"
 
 
-def _normalize(family, raw, fallback, page_key) -> dict:
+def _normalize(family, raw, fallback, page_key, ctx=None) -> dict:
     """Model output for one section -> field dict: text tidied, html paragraphs,
     links pinned to the allowlist. A field the model omitted (None) takes the
     fallback value when optional; required ones stay "" for validation."""
@@ -1168,7 +1201,8 @@ def _normalize(family, raw, fallback, page_key) -> dict:
                 items.append({})
             out[name] = items
         elif spec["type"] == "link":
-            out[name] = _safe_href(value, page_key, fallback.get(name))
+            links, primary = (ctx["links"], ctx["primary"]) if ctx else (ALLOWED_LINKS, "/courses")
+            out[name] = _safe_href(value, page_key, fallback.get(name), links, primary)
         elif value is None:
             if not spec.get("required") and name in fallback:
                 out[name] = fallback[name]
@@ -1271,7 +1305,11 @@ def _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction) -> list
 
     filled = [
         _normalize(
-            e["family"], raw.get(n) if (raw.get(n) or {}).get("family") == e["family"] else {}, fallbacks[n], page_key
+            e["family"],
+            raw.get(n) if (raw.get(n) or {}).get("family") == e["family"] else {},
+            fallbacks[n],
+            page_key,
+            ctx,
         )
         for n, e in enumerate(entries)
     ]
@@ -1292,7 +1330,7 @@ def _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction) -> list
             failing = {p["field"].split("[")[0] for p in problems if p["index"] == n}
             if (fixed.get(n) or {}).get("family") != family:
                 fixed.pop(n, None)
-            repaired = _normalize(family, fixed.get(n) or {}, fallbacks[n], page_key)
+            repaired = _normalize(family, fixed.get(n) or {}, fallbacks[n], page_key, ctx)
             returned = fixed.get(n) or {}
             filled[n].update({k: v for k, v in repaired.items() if k in failing and returned.get(k) is not None})
     out = []
@@ -1452,7 +1490,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     plan = plan_site(tenant)
     entries = plan["pages"].get(page_key) or apply_guardrails({}, style_id)["pages"][page_key]
     coach = _coach_data(tenant, brand)
-    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"])
+    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]))
 
     _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)

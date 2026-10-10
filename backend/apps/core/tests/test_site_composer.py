@@ -603,3 +603,24 @@ def test_courses_and_events_pages_open_in_the_rows_layout():
         assert events["variant"] == f"{style_id}.rows"
         home = next(e for e in plan["pages"]["home"] if e["family"] == "courseShowcase")
         assert home["variant"] != f"{style_id}.rows"  # home keeps the style's own showcase
+
+
+def test_links_follow_what_the_coach_offers():
+    """Audit R5: a live-only coach's site had "Explore our courses" leading nowhere."""
+    live = sc.coach_links({"offers": ["live", "community"]})
+    assert "/courses" not in live and {"/events", "/calendar", "/about"} <= set(live)
+    assert not {"/courses", "/events", "/calendar"} & set(sc.coach_links({"offers": ["articles"]}))
+    assert sc.coach_links({}) == sc.ALLOWED_LINKS  # an older brief keeps every link
+    # A link the coach has no page for falls to her main offer.
+    assert sc._safe_href("/courses", "home", "/courses", links=live, primary="/events") == "/events"
+    assert sc._safe_href("/about", "home", "/courses", links=live, primary="/events") == "/about"
+
+
+def test_fallback_buttons_lead_to_the_coachs_main_offer():
+    live = sc._ctx("yoga", "Maya Laurent", "Slow vinyasa.", links=sc.coach_links({"offers": ["live"]}))
+    hero = sc.fallback_fields("hero", "home", "journal.editorial", live)
+    assert hero["ctaHref"] == "/events" and "course" not in hero["ctaLabel"].lower()
+    cta = sc.fallback_fields("cta", "home", "journal.band", live)
+    assert cta["ctaHref"] == "/events" and "course" not in (cta["text"] + cta["ctaLabel"]).lower()
+    courses = sc._ctx("yoga", "Maya Laurent", "Slow vinyasa.")
+    assert sc.fallback_fields("hero", "home", "journal.editorial", courses)["ctaHref"] == "/courses"
