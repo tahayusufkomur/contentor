@@ -431,6 +431,7 @@ def interview_state(tenant, flow: dict) -> dict:
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
     looks = ("site_style", "site_logo", *milestones.REVIEW_FIELDS)
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
+    from .logo_gen import pipeline
     return {
         "turns": turns,
         "guide": guide,
@@ -440,3 +441,4 @@ def interview_state(tenant, flow: dict) -> dict:
         "fired": fired,
         "draft_status": flow.get("draft_status") or {},
     }
+        "logo_batch": {"state": pipeline.batch_state(tenant).get("state") or "none"},

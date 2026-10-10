@@ -91,6 +91,8 @@ export interface SetupFlowApi {
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
   goliveAction: (action: "publish" | "make_free") => Promise<GoLiveState>;
+  /** Start three more generated logos; the answer is the logo card. */
+  logoMore: () => Promise<LookCards>;
 }
 
 const BASE = "/api/v1/admin/setup-flow";
@@ -111,6 +113,8 @@ export const setupFlowApi: SetupFlowApi = {
   cover: (kind, asset) =>
     clientFetch<ReviewCard>(`${BASE}/cover/`, post({ kind, asset })),
   golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
+  logoMore: () =>
+    clientFetch<LookCards>(`${BASE}/logo-more/`, { method: "POST" }),
   goliveAction: (action) =>
     clientFetch<GoLiveState>(`${BASE}/golive/`, post({ action })),
 };
@@ -178,6 +182,15 @@ export interface LookCards {
   /** The coach's pitch, the previews' headline. */
   headline?: string;
   /** Logos: the look the coach picked, to preview marks in its colours. */
+  /** Generated logos: 1 = the one we would pick. */
+  rank?: number;
+}
+
+/** The logos designed for this coach while they answered. */
+export interface GeneratedLogos {
+  /** building = a batch is running; ready = options are ranked best first. */
+  state: "building" | "ready" | "none";
+  options: LookOption[];
   style?: string;
   palette?: string;
   /** Looks: picking one opens it as a whole page, its sample copy about
@@ -192,6 +205,8 @@ export type BuilderKind = ReviewKind | "membership";
  * once, on one date and time (`at`). Dates "YYYY-MM-DD", times "HH:MM",
  * days as JS weekdays (0 = Sunday). */
 export interface Schedule {
+  /** Logos: the ones designed for this coach, above the curated grid. */
+  generated?: GeneratedLogos;
   start?: string;
   end?: string;
   days?: number[];
@@ -304,6 +319,8 @@ export interface TurnResponse {
 export interface GoLiveState {
   ready: boolean;
   building: boolean;
+  /** The generated-logo batch: polled while it is building. */
+  logo_batch?: { state: "building" | "ready" | "failed" | "none" };
   needs_plan: boolean;
   needs_payouts: boolean;
   plan: {

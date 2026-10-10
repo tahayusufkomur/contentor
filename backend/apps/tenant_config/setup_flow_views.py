@@ -115,6 +115,20 @@ def setup_flow_logos(request):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
+def setup_flow_logo_more(request):
+    """Three more generated logos for the interview's logo card."""
+    from .interview_brief import answers_of
+    from .logo_gen import pipeline
+
+    if (over := _setup_over()) is not None:
+        return over
+    tenant = connection.tenant
+    pipeline.start_batch(tenant, more=True)
+    return Response(interview_milestones.logo_cards(tenant, answers_of(tenant)))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
 def setup_flow_cover(request):
     """Another cover for the interview's first course or class."""
     if (over := _setup_over()) is not None:

@@ -76,6 +76,37 @@ class TenantConfig(models.Model):
         return self.brand_name
 
 
+class LogoCandidate(models.Model):
+    """One generated logo in a setup batch (apps.tenant_config.logo_gen).
+    Tenant schema. The current batch id lives in Tenant.wizard_state
+    ["logo_batch"]; older batches stay until the tenant is erased."""
+
+    STATES = (("ready", "ready"), ("rejected", "rejected"))
+    SOURCES = (("hub", "hub"), ("api", "api"))
+
+    batch = models.CharField(max_length=16, db_index=True)
+    position = models.PositiveSmallIntegerField()
+    state = models.CharField(max_length=10, choices=STATES, default="ready")
+    reject_reason = models.CharField(max_length=40, blank=True, default="")
+    source = models.CharField(max_length=8, choices=SOURCES, default="hub")
+    concept = models.TextField()
+    archetype = models.CharField(max_length=16)
+    prompt = models.TextField()
+    png = models.ForeignKey("media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    icon = models.ForeignKey("media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    vector = models.JSONField(null=True, blank=True)  # logo_vector.vectorize() output
+    rank = models.PositiveSmallIntegerField(null=True, blank=True)  # 1 = best
+    judge_reason = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["batch", "rank", "position"]
+
+    def __str__(self):
+        return f"{self.batch}/{self.position} {self.state}"
+
+
 class SeededObject(models.Model):
     """Registry of objects created by the template seeder for this tenant.
 

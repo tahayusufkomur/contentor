@@ -64,6 +64,22 @@ export interface CustomMarkPath {
   opacity?: number;
 }
 
+export type GeneratedRole =
+  | "background"
+  | "surface"
+  | "primary"
+  | "accent"
+  | "ink"
+  | "muted";
+
+/** One filled path of a generated (whole-logo) mark, in a 100-wide box of
+ * height view_box[1]; `role` resolves against LogoRecipe.colors.roles. */
+export interface GeneratedPath {
+  d: string;
+  role: GeneratedRole;
+  fill_rule?: "nonzero" | "evenodd";
+}
+
 export type LogoMark =
   | { type: "icon"; icon: string; style: "outline" | "solid" }
   | { type: "initials"; style: "plain" | "monogram" | "split" | "overlap" }
@@ -71,7 +87,16 @@ export type LogoMark =
   | { type: "image"; photo_id: string; url: string }
   // AI Brand Pack: bespoke vector mark drawn for this brand. `rationale` is
   // the one-sentence "why it works" caption shown on AI wall tiles.
-  | { type: "custom"; rationale: string; paths: CustomMarkPath[] };
+  | { type: "custom"; rationale: string; paths: CustomMarkPath[] }
+  // Generated logo (setup): the whole lockup traced from an image-model
+  // render. name_in_mark means the brand name is inside the paths, so the
+  // renderer draws no name/tagline text.
+  | {
+      type: "generated";
+      view_box: [number, number];
+      paths: GeneratedPath[];
+      name_in_mark: boolean;
+    };
 
 export interface TextStyle {
   font: string;
@@ -103,6 +128,8 @@ export interface LogoRecipeV2 {
     // omitted entirely on recipes with no custom mark.
     mark2?: string;
     mark_accent?: string;
+    // Palette roles a "generated" mark's paths resolve against.
+    roles?: Partial<Record<GeneratedRole, string>>;
   };
   elements: {
     mark: ElementPlacement;

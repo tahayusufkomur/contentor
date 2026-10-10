@@ -557,6 +557,21 @@ def rank_curated_logos(tenant_id):
     tenant.save(update_fields=["wizard_state"])
 
 
+@shared_task(soft_time_limit=900, time_limit=960)
+def generate_logo_candidates(tenant_id, batch_id):
+    """Generated logo candidates for the /setup interview's logo card
+    (apps.tenant_config.logo_gen.pipeline). Fail-silent: the batch state
+    in wizard_state is the only outcome."""
+    from apps.core.models import Tenant
+    from apps.tenant_config.logo_gen import pipeline
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        pipeline.run_batch(tenant, batch_id)
+
+
 @shared_task
 def purge_ai_transcripts():
     """Retention: drop assistant transcripts older than

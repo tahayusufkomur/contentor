@@ -223,6 +223,7 @@ export const mockSetupFlowApi: SetupFlowApi = {
     s.coverPick[kind] = asset;
     const card = cardsFor(`${kind}_review`);
     return isReview(card)
+  logoMore: () => setupFlowApi.logoMore(),
       ? card
       : ({ kind, status: "ready", item: null } as ReviewCard);
   },

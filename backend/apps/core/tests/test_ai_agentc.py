@@ -291,3 +291,59 @@ def test_per_call_timeout_beats_the_global_one(hub, settings):
         _call(timeout_seconds=0)
     assert hub.created[0]["timeoutSec"] == 0
     assert hub.cancelled == ["run-1"]
+
+
+def test_max_effort_runs_the_pro_model(hub, settings):
+    settings.AGENTC_PRO_MODEL = "gemini-3.1-pro-high"
+    _call(effort="max")
+    assert hub.created[0]["model"] == "gemini-3.1-pro-high"
+
+
+def test_image_run_allows_tools_and_returns_the_run_id(hub, settings):
+    settings.AGENTC_IMAGE_TIMEOUT_SECONDS = 420
+    hub.results = ['{"file": "logo-candidates/t/b/cand_1.png", "image_model": "imagen-3"}']
+    hub.events = ("tool", "text")  # the image subagent is a tool call
+    run_id = ai.agentc_image_run("Design a logo.", "logo-candidates/t/b/cand_1.png", label="contentor:logo-gen")
+    assert run_id == "run-1"
+    body = hub.created[0]
+    assert body["timeoutSec"] in (419, 420) and body["priority"] == "interactive"
+    assert "Save the generated image as logo-candidates/t/b/cand_1.png" in body["prompt"]
+    assert body["prompt"].startswith("Use your image generation tool")
+
+
+def test_vision_run_uses_the_pro_model_and_tolerates_tools(hub, settings):
+    settings.AGENTC_PRO_MODEL = "gemini-3.1-pro-high"
+    hub.results = ['{"ranking": [1]}']
+    hub.events = ("tool", "text")
+    assert ai.agentc_vision_run("Open a.png and rank.", label="contentor:logo-judge") == '{"ranking": [1]}'
+    assert hub.created[0]["model"] == "gemini-3.1-pro-high"
+
+
+def test_run_file_fetches_through_the_hub(hub, monkeypatch, settings):
+    settings.AGENTC_RUNS_DIR = ""
+    seen = {}
+
+    def get(url, params=None, timeout=None, stream=False):
+        seen["url"], seen["params"] = url, params
+        resp = _Resp({}, status=200)
+        resp.content = b"\x89PNG"
+        return resp
+
+    monkeypatch.setattr(ai.requests, "get", get)
+    assert ai.agentc_run_file("run-1", "logo-candidates/t/b/cand_1.png") == b"\x89PNG"
+    assert seen["url"].endswith("/runs/run-1/file") and seen["params"] == {"path": "logo-candidates/t/b/cand_1.png"}
+
+
+def test_run_file_missing_raises(hub, monkeypatch, settings):
+    settings.AGENTC_RUNS_DIR = ""
+    monkeypatch.setattr(ai.requests, "get", lambda *a, **k: _Resp({"error": "no such file"}, status=404))
+    with pytest.raises(ai.AiError):
+        ai.agentc_run_file("run-1", "nope.png")
+
+
+def test_run_file_reads_the_local_mount_when_configured(hub, settings, tmp_path, monkeypatch):
+    settings.AGENTC_RUNS_DIR = str(tmp_path)
+    monkeypatch.setattr(ai, "AGENTC_FILE_POLL_SECONDS", 0)
+    (tmp_path / "x").mkdir()
+    (tmp_path / "x" / "cand_1.png").write_bytes(b"\x89PNGlocal")
+    assert ai.agentc_run_file("run-1", "x/cand_1.png") == b"\x89PNGlocal"

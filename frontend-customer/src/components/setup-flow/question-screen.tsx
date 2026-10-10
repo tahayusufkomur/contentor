@@ -52,6 +52,7 @@ export function QuestionScreen({
   onMoreLogos,
   onCover,
   onNext,
+  onLogoMore,
   dir,
 }: {
   step: QuestionStep;
@@ -73,6 +74,7 @@ export function QuestionScreen({
   onMoreLogos: (page: number) => Promise<LookCards>;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
   /** Move on to the next question without answering this one again. */
+  onLogoMore: () => Promise<LookCards>;
   onNext: () => void;
 }) {
   const multi = !!step.multi && step.options.length > 1;
@@ -271,6 +273,7 @@ export function QuestionScreen({
                         }}
                         className={cn(
                           "relative flex min-h-[84px] flex-col justify-center gap-1.5 rounded-2xl border px-4 py-3.5 text-left text-[15.5px] font-medium leading-snug",
+                  onLogoMore={onLogoMore}
                           "transition-[background-color,border-color,box-shadow,transform] duration-200 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both] motion-safe:hover:-translate-y-0.5 motion-safe:active:scale-[0.97] disabled:pointer-events-none",
                           on
                             ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)] shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)]"

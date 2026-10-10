@@ -338,6 +338,47 @@ def apply_wizard_logo(config, answers, tenant) -> None:
         config.navbar_config = navbar
         return
 
+    if mode == "generated" and logo.get("candidate_id"):
+        from apps.tenant_config import logo_recipe as logo_recipe_lib
+        from apps.tenant_config.logo_gen.brief import ROLES, logo_brief
+        from apps.tenant_config.models import LogoCandidate
+
+        row = LogoCandidate.objects.filter(pk=logo["candidate_id"], state="ready", png__isnull=False).first()
+        if row is None:
+            return
+        config.logo = row.png
+        config.icon = row.icon  # None for a wordmark: the favicon falls back to initials
+        config.logo_url = config.icon_url = ""
+        palette = logo_brief(tenant, answers).palette
+        config.logo_recipe = logo_recipe_lib.validate_recipe(
+            {
+                "version": 3,
+                "layout": "horizontal",
+                "name": tenant.name or "",
+                "tagline": "",
+                "mark": {"type": "generated", **(row.vector or {}), "name_in_mark": True},
+                "badge": {"shape": "none", "outline": False},
+                "typography": {
+                    "name": {"font": "Inter", "weight": 700, "tracking": 0, "case": "none"},
+                    "tagline": {"font": "Inter", "weight": 500, "tracking": 0.08, "case": "upper"},
+                },
+                "colors": {
+                    "palette_id": None,
+                    "badge": {"type": "solid", "color": palette["background"]},
+                    "mark": palette["primary"],
+                    "text": palette["ink"],
+                    "tagline": palette["muted"],
+                    "roles": {r: palette[r] for r in ROLES},
+                },
+                "elements": {k: {"offset": [0, 0], "scale": 1} for k in ("mark", "name", "tagline")},
+            }
+        )
+        navbar = dict(config.navbar_config or {})
+        navbar["show_brand_name"] = False  # the name is inside the mark
+        navbar["logo_size"] = "lg"
+        config.navbar_config = navbar
+        return
+
     if mode != "curated" or not logo.get("curated_id"):
         return
 

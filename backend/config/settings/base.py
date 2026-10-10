@@ -291,6 +291,19 @@ AGENTC_ACCOUNTS = [
 ]
 # Per run, queue wait included.
 AGENTC_TIMEOUT_SECONDS = int(os.environ.get("AGENTC_TIMEOUT_SECONDS", "180"))
+# Gemini 3.1 Pro on the hub: concepts, image read-back and the logo judge
+# (core_ai.structured(effort="max") selects it on agentc).
+AGENTC_PRO_MODEL = os.environ.get("AGENTC_PRO_MODEL", "gemini-3.1-pro-high")
+# A hub image run waits on the agent's image subagent: 86-258 s measured
+# 2026-10-09, so the budget is well above the text-run default.
+AGENTC_IMAGE_TIMEOUT_SECONDS = int(os.environ.get("AGENTC_IMAGE_TIMEOUT_SECONDS", "420"))
+# Dev only: a read-only mount of the synced studio directory, used instead of
+# the hub's file route when set (empty in prod).
+AGENTC_RUNS_DIR = os.environ.get("AGENTC_RUNS_DIR", "")
+
+# --- Generated logo candidates (apps.tenant_config.logo_gen) ---
+LOGO_GEN_ENABLED = os.environ.get("LOGO_GEN_ENABLED", "true" if AI_PROVIDER == "agentc" else "false").lower() == "true"
+LOGO_GEN_CANDIDATES = int(os.environ.get("LOGO_GEN_CANDIDATES", "3"))
 # Pages the site composer builds at once (apps.core.onboarding.site_composer).
 # 2 of the hub's 3 slots, so a coach's draft/chat request never waits behind it.
 SITE_COMPOSE_CONCURRENCY = int(os.environ.get("SITE_COMPOSE_CONCURRENCY", "2"))

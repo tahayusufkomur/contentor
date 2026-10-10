@@ -186,6 +186,7 @@ services:
     command: celery -A config.celery worker -l info --concurrency=2
     volumes:
       - ./backend:/app/backend
+      - ${HOME}/ws/agent-studio-runs:/agent-studio-runs:ro
     env_file: .env
     depends_on:
       django:

@@ -50,3 +50,67 @@ describe("LookCardsView style grouping", () => {
     expect(html).toContain("More looks: headline beside a photo");
   });
 });
+
+const LOGOS: LookCards = {
+  kind: "logo",
+  options: [{ value: "12", label: "Lotus", image_url: "http://x/12.png" }],
+  style: "atelier",
+  palette: "",
+};
+const renderLogos = (
+  generated: LookCards["generated"],
+  onLogoMore = async () => LOGOS,
+) =>
+  renderToStaticMarkup(
+    createElement(LookCardsView, {
+      cards: { ...LOGOS, generated },
+      brandName: "Elara",
+      disabled: false,
+      onPick: () => {},
+      onMore: async () => LOGOS,
+      onLogoMore,
+    }),
+  );
+
+describe("LookCardsView generated logos", () => {
+  it("shows ranked candidates above the curated grid when ready", () => {
+    const html = renderLogos({
+      state: "ready",
+      options: [
+        {
+          value: "gen:2",
+          label: "the name alone",
+          image_url: "http://x/2.png",
+          rank: 1,
+        },
+        {
+          value: "gen:1",
+          label: "a lotus face",
+          image_url: "http://x/1.png",
+          rank: 2,
+        },
+      ],
+    });
+    expect(html).toContain("Designed for you");
+    expect(html.indexOf("http://x/2.png")).toBeLessThan(
+      html.indexOf("http://x/1.png"),
+    );
+    expect(html.indexOf("http://x/2.png")).toBeLessThan(
+      html.indexOf("http://x/12.png"),
+    );
+    expect(html).toContain("Three more");
+  });
+
+  it("shows the waiting state with the curated grid still available", () => {
+    const html = renderLogos({ state: "building", options: [] });
+    expect(html).toContain("Designing your logo");
+    expect(html).toContain("http://x/12.png");
+    expect(html).not.toContain("Three more");
+  });
+
+  it("renders nothing extra when there is no batch", () => {
+    const html = renderLogos({ state: "none", options: [] });
+    expect(html).not.toContain("Designed for you");
+    expect(html).not.toContain("Designing your logo");
+  });
+});

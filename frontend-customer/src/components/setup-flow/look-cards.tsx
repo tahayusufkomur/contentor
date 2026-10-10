@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
@@ -109,6 +110,7 @@ export function LookCardsView({
   onPick,
   onMore,
 }: {
+  onLogoMore,
   cards: LookCards;
   brandName: string;
   host?: string;
@@ -119,6 +121,8 @@ export function LookCardsView({
   onPick: (value: string, label: string) => void;
   onMore: (page: number) => Promise<LookCards>;
 }) {
+  /** Starts three more generated logos (the parent refreshes the card). */
+  onLogoMore?: () => Promise<LookCards>;
   const [shown, setShown] = useState<LookCards>(cards);
   // A look with a page behind it opens as that page on pick.
   const [preview, setPreview] = useState<LookOption | null>(null);
@@ -153,6 +157,12 @@ export function LookCardsView({
   const isPicked = (value: string, label: string) =>
     chosen
       ? chosen === value
+  const { run: logoMore, loading: moreLoading } = useAsyncAction(
+    async () => {
+      await onLogoMore?.();
+    },
+    { errorToast: "Couldn’t start more logos. Try again." },
+  );
       : !!selected && selected.trim().toLowerCase() === label.toLowerCase();
   const isLookPicked = (o: LookOption) =>
     chosen
@@ -364,8 +374,70 @@ export function LookCardsView({
         </Button>
       )}
     </div>
+  // Read from ``cards``, not ``shown``: the batch lands while the card is open.
+  const generated = cards.generated;
   );
 }
+      {generated && generated.state !== "none" && (
+        <section className="mb-8" aria-label="Designed for you">
+          <p className="mb-3 text-[13px] font-medium text-[var(--sf-graphite)]">
+            {generated.state === "ready"
+              ? "Designed for you"
+              : "Designing your logo"}
+          </p>
+          {generated.state === "building" ? (
+            <>
+              <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                {[0, 1, 2].map((i) => (
+                  <Skeleton key={i} className="aspect-[4/3] rounded-lg" />
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-[var(--sf-graphite)]">
+                Designing your logo, about two minutes. Pick a ready-made mark
+                below meanwhile, or wait.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                {generated.options.map((o, i) => (
+                  <CardButton
+                    key={o.value}
+                    picked={isPicked(o.value, o.label)}
+                    disabled={disabled}
+                    onClick={() => onPick(o.value, o.label)}
+                    style={enter(i)}
+                    className="p-2"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={o.image_url}
+                      alt={o.label}
+                      className="aspect-[4/3] w-full rounded-lg object-contain"
+                    />
+                    <span className="mt-2 block truncate text-center text-[13px]">
+                      {o.label}
+                    </span>
+                  </CardButton>
+                ))}
+              </div>
+              {onLogoMore && (
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  loading={moreLoading}
+                  loadingText="Starting…"
+                  disabled={disabled}
+                  onClick={() => logoMore()}
+                  className="mt-3 rounded-full"
+                >
+                  Three more
+                </Button>
+              )}
+            </>
+          )}
+        </section>
+      )}
 
 /** A look as a whole home page, in a browser frame over the questions:
  * the coach's brand, pitch and photos in the style's own layouts, sample

@@ -94,3 +94,37 @@ def generate_mark_images(prompts):
     with ThreadPoolExecutor(max_workers=min(_MAX_PARALLEL, len(prompts))) as pool:
         results = list(pool.map(_generate_one, prompts))
     return [image for image, _ in results], sum((cost for _, cost in results), Decimal("0"))
+
+
+_READ_TEXT_PROMPT = (
+    "This is a logo. Transcribe EVERY word, letter or character visible, verbatim, and say whether any glyphs"
+    ' beyond the brand name are present. Reply with ONLY: {"text_seen": "<verbatim>", "extra_glyphs": true|false}'
+)
+
+
+def read_text(png_bytes):
+    """Vision read-back through the API (used only when the hub is unavailable) -> dict | None."""
+    import json
+
+    try:
+        response = requests.post(
+            _ENDPOINT.format(model=settings.GEMINI_MODEL),
+            headers={"x-goog-api-key": settings.GEMINI_API_KEY},
+            json={
+                "contents": [
+                    {
+                        "parts": [
+                            {"inlineData": {"mimeType": "image/png", "data": base64.b64encode(png_bytes).decode()}},
+                            {"text": _READ_TEXT_PROMPT},
+                        ]
+                    }
+                ],
+                "generationConfig": {"responseMimeType": "application/json", "temperature": 0},
+            },
+            timeout=_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        return json.loads(response.json()["candidates"][0]["content"]["parts"][0]["text"])
+    except Exception:
+        logger.exception("logo image: read-back call failed")
+        return None

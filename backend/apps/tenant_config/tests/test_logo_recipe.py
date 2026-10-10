@@ -288,3 +288,81 @@ class TestMarkFillV3:
         angle = shaped["colors"]["mark"]["angle"]
         assert isinstance(angle, int | float)
         assert 0 <= angle <= 360
+
+
+def _generated(paths=None, roles=None):
+    return {
+        "version": 3,
+        "layout": "horizontal",
+        "name": "Elara",
+        "tagline": "",
+        "mark": {
+            "type": "generated",
+            "view_box": [100, 42.5],
+            "name_in_mark": True,
+            "paths": paths
+            if paths is not None
+            else [
+                {"d": "M2 2L98 2L98 40.5Z", "role": "primary"},
+                {"d": "M10 10L20 10L20 20Z", "role": "ink", "fill_rule": "evenodd"},
+            ],
+        },
+        "badge": {"shape": "none", "outline": False},
+        "typography": {
+            "name": {"font": "Inter", "weight": 700, "tracking": 0, "case": "none"},
+            "tagline": {"font": "Inter", "weight": 500, "tracking": 0.08, "case": "upper"},
+        },
+        "colors": {
+            "palette_id": None,
+            "badge": {"type": "solid", "color": "#ffffff"},
+            "mark": "#8c4451",
+            "text": "#3f2a2b",
+            "tagline": "#7a5f60",
+            "roles": roles
+            if roles is not None
+            else {
+                "background": "#f8eeea",
+                "surface": "#f2e2dd",
+                "primary": "#8c4451",
+                "accent": "#a6713a",
+                "ink": "#3f2a2b",
+                "muted": "#7a5f60",
+            },
+        },
+        "elements": {
+            "mark": {"offset": [0, 0], "scale": 1},
+            "name": {"offset": [0, 0], "scale": 1},
+            "tagline": {"offset": [0, 0], "scale": 1},
+        },
+    }
+
+
+def test_validate_recipe_generated_mark_roundtrips():
+    out = validate_recipe(_generated())
+    assert out["mark"]["type"] == "generated" and out["mark"]["name_in_mark"] is True
+    assert out["mark"]["view_box"] == [100.0, 42.5] and len(out["mark"]["paths"]) == 2
+    assert out["mark"]["paths"][1] == {"d": "M10 10L20 10L20 20Z", "role": "ink", "fill_rule": "evenodd"}
+    assert out["colors"]["roles"]["primary"] == "#8c4451"
+
+
+def test_validate_recipe_generated_mark_drops_bad_paths_and_falls_back():
+    bad = _generated(paths=[{"d": "M0 0 url(#x)", "role": "primary"}, {"d": "M1 1L2 2Z", "role": "nope"}])
+    out = validate_recipe(bad)
+    assert out["mark"]["type"] == "generated" and out["mark"]["paths"] == [{"d": "M1 1L2 2Z", "role": "primary"}]
+    assert validate_recipe(_generated(paths=[]))["mark"] == {"type": "initials", "style": "plain"}
+
+
+def test_validate_recipe_generated_mark_caps():
+    too_many = _generated(paths=[{"d": "M1 1L2 2Z", "role": "ink"}] * 401)
+    assert validate_recipe(too_many)["mark"]["type"] == "initials"
+
+
+def test_validate_recipe_roles_only_known_hex():
+    out = validate_recipe(_generated(roles={"primary": "#123456", "weird": "#000000", "ink": "red"}))
+    assert out["colors"]["roles"] == {"primary": "#123456"}
+
+
+def test_validate_recipe_without_roles_has_no_roles_key():
+    plain = _generated()
+    del plain["colors"]["roles"]
+    assert "roles" not in validate_recipe(plain)["colors"]

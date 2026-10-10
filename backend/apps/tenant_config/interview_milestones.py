@@ -12,6 +12,7 @@ import logging
 
 from django.core.cache import cache
 from django.db import transaction
+from django.conf import settings
 from django_tenants.utils import schema_context
 
 from . import interview_brief as brief
@@ -53,6 +54,8 @@ def _due(tenant, answers) -> list[str]:
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
     # A coach who runs classes gets an Events page once the class section
     # is answered or skipped.
+    if settings.LOGO_GEN_ENABLED:
+        due.append("logo:generate")
     if offers & {"live", "onsite"} and brief.settled(answers, ("live_topic", "live_when")):
         due.append("page:events")
     skipped = set(answers.get("skipped") or [])
@@ -113,6 +116,10 @@ def _start(tenant, answers, key) -> None:
     elif action == "plan":
         create_memberships(tenant, answers)
     elif action == "draft":
+    elif action == "logo":
+        from .logo_gen import pipeline
+
+        pipeline.start_batch(tenant)
         prompt = draft_prompt(answers, arg)
         transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, arg, prompt))
 
@@ -532,6 +539,37 @@ def review_card(tenant, kind: str) -> dict:
     item = None if status == "building" else _draft_row(flow, kind)
     card = {"kind": kind, "status": "failed" if status == "ready" and item is None else status, "item": None}
     if item is None:
+def generated_logos(tenant) -> dict:
+    """The current generated batch for the logo card: ready candidates in
+    rank order, a building marker, or nothing."""
+    from apps.core.storage import generate_presigned_download_url
+
+    from .logo_gen import pipeline
+    from .models import LogoCandidate
+
+    batch = pipeline.batch_state(tenant)
+    state = batch.get("state")
+    if state == "building":
+        return {"state": "building", "options": []}
+    if state != "ready":
+        return {"state": "none", "options": []}
+    rows = (
+        LogoCandidate.objects.filter(batch=batch.get("id"), state="ready", png__isnull=False)
+        .select_related("png")
+        .order_by("rank", "position")
+    )
+    options = [
+        {
+            "value": f"gen:{r.pk}",
+            "label": r.concept[:60],
+            "image_url": generate_presigned_download_url(r.png.s3_key),
+            "rank": r.rank,
+        }
+        for r in rows
+    ]
+    return {"state": "ready" if options else "none", "options": options}
+
+
         return card
     photo = item.thumbnail
     current = asset_id_from_key(photo.s3_key) if photo else ""
@@ -555,6 +593,7 @@ def review_card(tenant, kind: str) -> dict:
     covers += [{"value": i.asset_id, "url": i.preview_url, "current": False} for i in others]
     return {**card, "item": {**detail, "covers": covers}}
 
+        "generated": generated_logos(tenant),
 
 def set_cover(tenant, kind: str, asset_id: str) -> dict:
     """The coach picked another cover on a review screen."""
@@ -678,3 +717,18 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         return
     if not brief.apply_fact(answers, field_id, value):
         raise ChoiceError("invalid_value")
+    from .logo_gen import pipeline
+        changed = (cfg.style, cfg.palette) != (style_id, palette)
+    # The palette is inside a generated logo: a new look needs a new batch.
+    if changed and (tenant.wizard_state or {}).get("logo_batch"):
+        pipeline.start_batch(tenant)
+        elif str(value).startswith("gen:"):
+            from .models import LogoCandidate
+
+            try:
+                candidate_id = int(str(value)[4:])
+            except ValueError:
+                raise ChoiceError("unknown_logo") from None
+            if not LogoCandidate.objects.filter(pk=candidate_id, state="ready", png__isnull=False).exists():
+                raise ChoiceError("unknown_logo")
+            logo = {"mode": "generated", "candidate_id": candidate_id}

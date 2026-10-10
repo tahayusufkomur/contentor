@@ -2,7 +2,8 @@
 
 KEEP IN SYNC: frontend-customer/src/lib/logo/migrate.ts implements the
 identical v1->v2 upgrade in TypeScript — change both together (parity
-fixture: tests/test_logo_recipe.py / __tests__/migrate.test.ts).
+fixture: tests/test_logo_recipe.py / __tests__/migrate.test.ts). The same
+holds for the "generated" mark kind and colors.roles (packages/shared/src/logo/types.ts).
 
 Philosophy matches v1 validation (serializers.validate_logo_recipe):
 unknown enum values are a hard 400 (the studio/composer never produces
@@ -15,7 +16,7 @@ from rest_framework import serializers
 
 LAYOUTS = {"horizontal", "horizontal_reversed", "stacked", "name_only", "emblem"}
 BADGE_SHAPES = {"none", "circle", "rounded", "squircle", "hexagon", "shield", "diamond"}
-MARK_TYPES = {"icon", "initials", "abstract", "image", "custom"}
+MARK_TYPES = {"icon", "initials", "abstract", "image", "custom", "generated"}
 ICON_STYLES = {"outline", "solid"}
 INITIALS_STYLES = {"plain", "monogram", "split", "overlap"}
 ABSTRACT_FAMILIES = {"orbits", "bloom", "waves", "prism", "knot", "grid"}
@@ -32,6 +33,11 @@ MARK_FILL_ROLES = {"mark", "mark2", "accent"}
 # at. Authored (element-compiled) marks stay within logo_geometry._MAX_D.
 MARK_CUSTOM_MAX_PATHS = 12
 MARK_CUSTOM_MAX_D_LEN = 12000
+# Generated (whole-logo) marks: a colour trace of an image-model logo, fills
+# as palette roles (apps.tenant_config.logo_vector). Sized for 30-170 paths.
+GENERATED_ROLES = {"background", "surface", "primary", "accent", "ink", "muted"}
+MARK_GENERATED_MAX_PATHS = 400
+MARK_GENERATED_MAX_TOTAL = 300_000
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 # Whitelist for custom-mark path `d` strings: SVG path-data commands, digits,
@@ -210,6 +216,40 @@ def _custom_mark(raw_mark):
     }
 
 
+def _generated_mark(raw_mark):
+    """Generated logo mark: role-coloured paths in a 100-wide box. Same
+    whitelist as custom marks; invalid paths are dropped, nothing left =
+    plain initials."""
+    raw_paths = raw_mark.get("paths") if isinstance(raw_mark.get("paths"), list) else []
+    paths, total = [], 0
+    for raw_path in raw_paths:
+        if len(paths) >= MARK_GENERATED_MAX_PATHS:
+            return {"type": "initials", "style": "plain"}
+        if not isinstance(raw_path, dict):
+            continue
+        d = str(raw_path.get("d") or "")
+        if not d or not _PATH_D_RE.match(d):
+            continue
+        total += len(d)
+        if total > MARK_GENERATED_MAX_TOTAL:
+            return {"type": "initials", "style": "plain"}
+        role = raw_path.get("role")
+        entry = {"d": d, "role": role if role in GENERATED_ROLES else "primary"}
+        if raw_path.get("fill_rule") in ("nonzero", "evenodd"):
+            entry["fill_rule"] = raw_path["fill_rule"]
+        paths.append(entry)
+    if not paths:
+        return {"type": "initials", "style": "plain"}
+    raw_box = raw_mark.get("view_box") if isinstance(raw_mark.get("view_box"), list) else []
+    height = _num(raw_box[1] if len(raw_box) > 1 else None, 1, 1000, 100.0)
+    return {
+        "type": "generated",
+        "view_box": [100.0, float(height)],
+        "paths": paths,
+        "name_in_mark": bool(raw_mark.get("name_in_mark", True)),
+    }
+
+
 def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
     """Defensively shape a v2 recipe dict. Raises ValidationError on bad
     enums; clamps free text/numbers. ``clean_photo_id`` is injected by the
@@ -232,6 +272,8 @@ def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
         }
     elif mark_type == "custom":
         mark = _custom_mark(raw_mark)
+    elif mark_type == "generated":
+        mark = _generated_mark(raw_mark)
     else:  # image — never persist urls; re-derived on read from photo_id.
         mark = {"type": "image", "photo_id": clean_photo_id(raw_mark.get("photo_id")), "url": ""}
 
@@ -257,6 +299,14 @@ def validate_recipe(value, clean_photo_id=lambda v: str(v or "")):
         colors["mark2"] = _fill_or_hex(raw_colors.get("mark2"), "#ffffff")
     if raw_colors.get("mark_accent") is not None:
         colors["mark_accent"] = _fill_or_hex(raw_colors.get("mark_accent"), "#ffffff")
+    if isinstance(raw_colors.get("roles"), dict):
+        roles = {
+            k: v
+            for k, v in raw_colors["roles"].items()
+            if k in GENERATED_ROLES and isinstance(v, str) and _HEX_RE.match(v)
+        }
+        if roles:
+            colors["roles"] = roles
 
     return {
         "version": 3,

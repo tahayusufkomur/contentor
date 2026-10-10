@@ -16,7 +16,8 @@ schema-validated generation), selected by settings.AI_PROVIDER:
   "cli". The hub's agent HAS tools and our prompts carry untrusted coach
   text, so runs go only to the studio accounts (settings.AGENTC_ACCOUNTS,
   which mount agent-studio-runs alone) and any run whose event log shows a
-  tool call is discarded (_agentc_run). No vision, no token streaming.
+  tool call is discarded (_agentc_run). Vision only through agentc_vision_run
+  (file viewer); images only through agentc_image_run. No token streaming.
 - "gemini": the Gemini API directly on settings.GEMINI_API_KEY — no queue,
   no CLI start-up, schema-constrained JSON. Billed per token, so its cost
   is real and accrues against the budget kill-switches. No vision, no token
@@ -39,6 +40,7 @@ import tempfile
 import time
 from collections import Counter
 from decimal import Decimal
+from pathlib import Path
 
 import requests
 from django.conf import settings
@@ -272,8 +274,12 @@ def _cli_structured(system, user, output_model, model, effort=None):
 
 # Completion is noticed one poll late on average half of this.
 AGENTC_POLL_SECONDS = 0.5
+# Dev mount only (AGENTC_RUNS_DIR): how often to look for the synced file.
+AGENTC_FILE_POLL_SECONDS = 2
+_AGENTC_FILE_WAIT_SECONDS = 120
 # Per HTTP call; the run as a whole is bounded by AGENTC_TIMEOUT_SECONDS.
 _AGENTC_HTTP_TIMEOUT = 10
+_AGENTC_FILE_TIMEOUT = 60  # a logo PNG over the hub's file route
 _AGENTC_TERMINAL = frozenset({"succeeded", "failed", "timed_out", "cancelled", "rejected"})
 _AGENTC_RULES = (
     "\n\nHard rules: Do not use any tools. Do not read, write or list files. Do not run commands. "
@@ -291,9 +297,12 @@ _AGENTC_BACKGROUND_LABELS = ("contentor:compose",)
 
 
 def _agentc_model(effort):
-    """AGENTC_MODEL, or its -low variant for effort="low" calls (interview
-    turns, edits, picks): an interview turn took ~5 s on -low vs ~15 s on
-    -high with the same output checks passing (2026-10-08)."""
+    """AGENTC_MODEL, its -low variant for effort="low" (interview turns, edits,
+    picks), or AGENTC_PRO_MODEL for effort="max" (logo concepts, judge): an
+    interview turn took ~5 s on -low vs ~15 s on -high with the same output
+    checks passing (2026-10-08)."""
+    if effort == "max":
+        return settings.AGENTC_PRO_MODEL
     if effort == "low":
         return re.sub(r"-(medium|high)$", "-low", settings.AGENTC_MODEL)
     return settings.AGENTC_MODEL
@@ -344,14 +353,10 @@ def _agentc_create(body):
     raise AiError("agentc run create failed: " + "; ".join(problems))
 
 
-def _agentc_run(prompt, label, deadline=None, model=None):
-    """Run one prompt on the hub -> its resultText. Raises AiError on any
-    failure, including a run whose event log shows a tool call (fail closed:
-    an unreadable event log counts as a failure too). ``deadline`` is a
-    time.monotonic() instant; default: AGENTC_TIMEOUT_SECONDS from now."""
-    label = label or "contentor"
-    if deadline is None:
-        deadline = time.monotonic() + settings.AGENTC_TIMEOUT_SECONDS
+def _agentc_execute(prompt, label, deadline, model):
+    """Create one run and poll it to a terminal state -> the run dict of a
+    succeeded run. Raises AiError on create/poll failure, deadline, or a
+    non-succeeded state. Tool use is NOT checked here."""
     budget = max(int(deadline - time.monotonic()), 0)
     body = {
         "prompt": prompt,
@@ -380,10 +385,70 @@ def _agentc_run(prompt, label, deadline=None, model=None):
         raise AiError(f"agentc run {run_id} poll failed: {exc}") from exc
     if run["state"] != "succeeded":
         raise AiError(f"agentc run {run_id} {run['state']}: {str(run.get('error') or '')[:500]}")
-    if _agentc_used_tool(run_id):
-        logger.warning("agentc run %s (label=%s) used a tool; output discarded", run_id, label)
+    return run
+
+
+def _agentc_run(prompt, label, deadline=None, model=None):
+    """Run one prompt on the hub -> its resultText. Raises AiError on any
+    failure, including a run whose event log shows a tool call (fail closed:
+    an unreadable event log counts as a failure too). ``deadline`` is a
+    time.monotonic() instant; default: AGENTC_TIMEOUT_SECONDS from now."""
+    label = label or "contentor"
+    if deadline is None:
+        deadline = time.monotonic() + settings.AGENTC_TIMEOUT_SECONDS
+    run = _agentc_execute(prompt, label, deadline, model)
+    if _agentc_used_tool(run.get("id")):
+        logger.warning("agentc run %s (label=%s) used a tool; output discarded", run.get("id"), label)
         raise AiError("agent used a tool")
     return run.get("resultText") or ""
+
+
+_AGENTC_IMAGE_PROMPT = (
+    "Use your image generation tool with the highest-quality image model available to you. {brief}\n\n"
+    "Save the generated image as {out_path} relative to the current working directory. "
+    'Then reply with ONLY a JSON object: {{"file": "{out_path}", "image_model": "<the model your tool used>"}}'
+)
+
+
+def agentc_image_run(brief, out_path, *, label, timeout_seconds=None):
+    """One hub image run (the agent's image subagent draws and saves the
+    file) -> the run id. Tools are the point here, so the tool check is
+    skipped. The plain prompt shape is the one that succeeded 5/5 in the
+    2026-10-09 spike; wrapping the brief or forcing the subagent model hung."""
+    seconds = settings.AGENTC_IMAGE_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
+    prompt = _AGENTC_IMAGE_PROMPT.format(brief=brief, out_path=out_path)
+    run = _agentc_execute(prompt, label, time.monotonic() + seconds, None)
+    return str(run.get("id"))
+
+
+def agentc_vision_run(prompt, *, label, timeout_seconds=None):
+    """One hub text run on the Pro model that may open files with its viewer
+    (image read-back, the logo judge) -> resultText. Tools allowed."""
+    seconds = settings.AGENTC_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
+    run = _agentc_execute(prompt, label, time.monotonic() + seconds, settings.AGENTC_PRO_MODEL)
+    return run.get("resultText") or ""
+
+
+def agentc_run_file(run_id, path):
+    """Bytes of ``path`` (relative to the run cwd) through the hub's file
+    route; with AGENTC_RUNS_DIR set (dev), from the local mount instead,
+    waiting for the directory sync. Raises AiError when missing."""
+    if settings.AGENTC_RUNS_DIR:
+        target = Path(settings.AGENTC_RUNS_DIR) / path
+        waited = 0
+        while waited <= _AGENTC_FILE_WAIT_SECONDS:
+            if target.is_file() and target.stat().st_size > 0:
+                return target.read_bytes()
+            time.sleep(AGENTC_FILE_POLL_SECONDS)
+            waited += AGENTC_FILE_POLL_SECONDS or 1
+        raise AiError(f"agentc file {path} did not arrive in {settings.AGENTC_RUNS_DIR}")
+    try:
+        resp = requests.get(_agentc_url(f"/runs/{run_id}/file"), params={"path": path}, timeout=_AGENTC_FILE_TIMEOUT)
+    except requests.RequestException as exc:
+        raise AiError(f"agentc file fetch failed: {exc}") from exc
+    if resp.status_code != 200:
+        raise AiError(f"agentc file {path} for run {run_id}: {resp.status_code}")
+    return resp.content
 
 
 def _agentc_cancel(run_id):

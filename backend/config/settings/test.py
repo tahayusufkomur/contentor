@@ -29,6 +29,9 @@ DEBUG = False
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 AI_PROVIDER = "anthropic"
+# Generated logo batches fire only when a test turns this on (base.py derives it
+# from the developer's .env AI_PROVIDER, which is agentc).
+LOGO_GEN_ENABLED = False
 
 # Same reasoning: a dev .env pointing at a running LiveCraft must not make
 # tests create real rooms. Tests of the HTTP client turn the fake off themselves.

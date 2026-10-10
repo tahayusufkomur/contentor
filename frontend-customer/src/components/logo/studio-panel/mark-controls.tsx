@@ -22,8 +22,18 @@ export function MarkControls({
     <>
       <section className="space-y-1.5">
         <p className="text-sm font-medium">
-          {recipe.mark.type === "custom" ? "AI-drawn mark" : "Mark"}
+          {recipe.mark.type === "custom"
+            ? "AI-drawn mark"
+            : recipe.mark.type === "generated"
+              ? "Designed in setup"
+              : "Mark"}
         </p>
+        {recipe.mark.type === "generated" && (
+          <p className="text-xs text-muted-foreground">
+            This logo was designed for you during setup. Pick another in Setup →
+            Logo, or choose a mark below to start over.
+          </p>
+        )}
         {recipe.mark.type === "custom" && (
           <p className="text-xs text-muted-foreground">
             Pick a different mark below to swap it out, or use the color

@@ -198,6 +198,24 @@ export function MarkContent({
       />
     );
   }
+  if (mark.type === "generated" && mark.paths.length) {
+    const [vw, vh] = mark.view_box;
+    const s = size / Math.max(vw, vh);
+    return (
+      <g
+        transform={`translate(${(size - vw * s) / 2}, ${(size - vh * s) / 2}) scale(${s})`}
+      >
+        {mark.paths.map((p, i) => (
+          <path
+            key={i}
+            d={p.d}
+            fill={recipe.colors.roles?.[p.role] ?? color}
+            fillRule={p.fill_rule ?? "nonzero"}
+          />
+        ))}
+      </g>
+    );
+  }
   if (mark.type === "custom" && mark.paths.length) {
     // AI Brand Pack mark: paths are in a 0..100 unit viewBox; role tokens
     // resolve against the recipe's own color fields ("mark" = the already
@@ -581,6 +599,38 @@ export function LogoRenderer({
   onPointerUp,
 }: LogoRendererProps) {
   const vb = logoViewBox(recipe.layout);
+  if (recipe.mark.type === "generated" && recipe.mark.name_in_mark) {
+    // The brand name is inside the traced paths: draw them alone, filling the canvas.
+    const [vw, vh] = recipe.mark.view_box;
+    const s = Math.min(vb.w / vw, vb.h / vh);
+    return (
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${vb.w} ${vb.h}`}
+        width={width}
+        height={(width * vb.h) / vb.w}
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+      >
+        <g
+          data-part="mark"
+          transform={`translate(${(vb.w - vw * s) / 2}, ${(vb.h - vh * s) / 2}) scale(${s})`}
+        >
+          {recipe.mark.paths.map((p, i) => (
+            <path
+              key={i}
+              d={p.d}
+              fill={recipe.colors.roles?.[p.role] ?? solidOf(recipe.colors.mark)}
+              fillRule={p.fill_rule ?? "nonzero"}
+            />
+          ))}
+        </g>
+      </svg>
+    );
+  }
   const slots = computeSlots(recipe);
   const { elements, colors, typography } = recipe;
   const name = applyCase(recipe.name, typography.name);
@@ -680,10 +730,11 @@ export function MarkRenderer({
   // Square export/preview: badge fills the box; never renders name or
   // tagline (spec: "Square mark" rule). Only name_only needs the initials
   // fallback — every other layout (emblem included) carries a real mark.
-  // image and non-empty custom marks already carry a real drawable mark.
+  // image and non-empty custom/generated marks already carry a real drawable mark.
   const hasRealMark =
     recipe.mark.type === "image" ||
-    (recipe.mark.type === "custom" && recipe.mark.paths.length > 0);
+    ((recipe.mark.type === "custom" || recipe.mark.type === "generated") &&
+      recipe.mark.paths.length > 0);
   const needsFallback = recipe.layout === "name_only" && !hasRealMark;
   const markRecipe: LogoRecipe = needsFallback
     ? {
