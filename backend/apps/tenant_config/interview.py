@@ -322,6 +322,43 @@ def _code_owned(field: brief.Field | None) -> bool:
     return field is None or field.kind in brief.CARD_KINDS or field.kind in brief.FIXED_KINDS or bool(field.hints)
 
 
+# What the guide calls each question when it says it noted an answer.
+NOTED_NAMES = {
+    "teaches": "what you teach",
+    "specialty": "your specialty",
+    "audience": "who you teach",
+    "outcome": "what students get",
+    "offers": "how you teach",
+    "pitch": "your one-liner",
+    "difference": "what sets you apart",
+    "tone": "your tone",
+    "story": "your story",
+    "credentials": "your training",
+    "payments": "how students pay",
+    "course_topic": "your course topic",
+    "course_price": "your course price",
+    "live_topic": "your class topic",
+    "event_price": "your class price",
+    "article_topic": "your article topic",
+    "socials": "your social accounts",
+    "contact": "how students reach you",
+    "location": "where you teach",
+}
+
+
+def noted(before: dict, after: dict, answering) -> list[str]:
+    """The other questions a typed answer settled or changed, named so the
+    coach sees them (a story that also filled the training used to go by
+    unmentioned)."""
+    return [
+        name
+        for field_id, name in NOTED_NAMES.items()
+        if field_id != answering
+        and after.get(field_id) not in (None, "", [])
+        and after.get(field_id) != before.get(field_id)
+    ]
+
+
 def picked_note(tenant, field_id) -> str:
     """What code chose when the coach left a question to the guide ("Pick for
     me"): the reply says it, so nothing is decided out of sight."""
@@ -469,6 +506,7 @@ def run_turn(
 
     nxt = _next_field(brief.missing(answers), turn, answers)
     ack = " ".join(x for x in (picked, turn.ack if turn else "") if x)
+    also = noted(base, answers, answering) if turn else []
     if turn and nxt is not None and turn.next_field == nxt.id and turn.question:
         guide = guide_for(nxt, ack, turn.question, turn.options, turn.icons, answers, brand)
     else:
@@ -482,6 +520,8 @@ def run_turn(
         guide["status"] = note
     # The plan the paid tiles need, stored with the question for going back.
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])
+    if also:
+        guide["noted"] = also
 
     def mutate(_config, flow):
         iv = dict(flow.get("interview") or {})

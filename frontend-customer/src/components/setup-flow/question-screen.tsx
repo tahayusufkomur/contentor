@@ -266,6 +266,15 @@ export function QuestionScreen({
                       {step.status}
                     </p>
                   )}
+                  {step.noted && step.noted.length > 0 && (
+                    <p className="mt-2 flex max-w-[72ch] flex-wrap items-center gap-1.5 text-[13.5px] text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_120ms_both]">
+                      <Check
+                        aria-hidden
+                        className="size-3.5 text-[var(--sf-brass)]"
+                      />
+                      Noted: {step.noted.join(" · ")}
+                    </p>
+                  )}
                 </>
               ) : (
                 step.answer &&

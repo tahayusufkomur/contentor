@@ -325,6 +325,8 @@ export interface GuideTurn {
   cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;
+  /** Other questions this answer also filled ("your training"). */
+  noted?: string[];
 }
 
 export interface CopilotCard {

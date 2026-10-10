@@ -658,3 +658,20 @@ def test_leaving_memberships_to_the_guide_names_the_one_it_set_up(client, tenant
         format="json",
     ).json()
     assert "Digital membership" in body["guide"]["ack"]
+
+
+def test_a_typed_answer_that_fills_other_questions_says_so(client, tenant_ctx, quiet):
+    """Audit E3: the story also filled the credentials, and the reply only mentioned the story."""
+    _only_missing(tenant_ctx, ("story", "credentials", "contact"))
+    quiet.reply = interview.InterviewTurn(
+        facts=[
+            {"field": "story", "value": "Back pain at my desk job led me to yoga."},
+            {"field": "credentials", "value": "200-hour training, about 20 years of practice"},
+        ],
+        next_field="contact",
+        question="How should students reach you?",
+    )
+    guide = client.post(
+        URL, {"message": "Back pain at my desk job led me to yoga, 200-hour training", "field": "story"}, format="json"
+    ).json()["guide"]
+    assert guide["noted"] == ["your training"]  # the question on screen is not repeated back
