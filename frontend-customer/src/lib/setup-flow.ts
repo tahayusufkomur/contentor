@@ -80,6 +80,8 @@ export interface StepDraft {
   schedule?: Schedule;
   /** A social-accounts question: the handle or link typed per network ticked. */
   socials?: Record<string, string>;
+  /** A contact question: the email address or number per way ticked. */
+  details?: Record<string, string>;
 }
 
 /** The seam the UI talks to — the real API below, or the dev mock. */
@@ -266,6 +268,8 @@ export interface ReviewItem {
   covers: { value: string; url: string; current: boolean }[];
   modules?: { title: string; lessons: string[] }[];
   when?: string;
+  /** A weekly class: its whole timetable ("Tuesdays and Thursdays at 7:00 PM, …"). */
+  repeats?: string;
   event_kind?: "live" | "onsite";
   location?: string;
 }
@@ -327,6 +331,10 @@ export interface GuideTurn {
   status?: string;
   /** Other questions this answer also filled ("your training"). */
   noted?: string[];
+  /** The ways ticked take their details (an email address, a number). */
+  contact?: boolean;
+  /** Details the question starts with (the coach's signup email). */
+  prefill?: Record<string, string>;
 }
 
 export interface CopilotCard {

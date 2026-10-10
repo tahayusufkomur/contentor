@@ -591,3 +591,36 @@ def test_a_delegated_membership_pick_follows_the_offers(tenant_ctx, config, side
     assert "plan:membership" in ms.fire(tenant_ctx, answers)
     plan = SubscriptionPlan.objects.get()
     assert plan.name == "Online membership" and "course" not in plan.description.lower()
+
+
+def test_a_weekly_class_review_says_it_repeats(tenant_ctx, config, owner):
+    """Audit G6: the review showed only the first date of a Tue/Thu weekly series."""
+    from apps.core.curated_images import client as curated_client
+    from apps.core.models import Tenant
+
+    weekly = {"mode": "recurring", "start": "2026-10-13", "slots": [{"days": [2, 4], "times": ["19:00"]}]}
+    answers = {"offers": ["live"], "live_topic": "Desk reset", "live_schedule": weekly}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", answers)
+    ms._set_draft_status(tenant_ctx, "event", "ready")
+    with mock.patch("apps.core.curated_images.client.search", return_value=curated_client.SearchPage([], 1, False)):
+        item = ms.review_card(tenant_ctx, "event")["item"]
+    assert "Tuesdays and Thursdays" in item["repeats"]
+
+
+def test_contact_picks_carry_their_details(tenant_ctx, config):
+    """Audit G2: picking WhatsApp never asked for the number."""
+    answers = {}
+    ms.choose(
+        tenant_ctx,
+        answers,
+        "contact",
+        '{"Email": "mira@example.com", "WhatsApp": "+49 170 1234567", "Contact form": ""}',
+    )
+    assert answers["contact"] == "Email: mira@example.com; WhatsApp: +49 170 1234567; Contact form"
+    with pytest.raises(ms.ChoiceError, match="invalid_phone"):
+        ms.choose(tenant_ctx, answers, "contact", '{"WhatsApp": "call me"}')
+    with pytest.raises(ms.ChoiceError, match="invalid_email"):
+        ms.choose(tenant_ctx, answers, "contact", '{"Email": "mira at example"}')

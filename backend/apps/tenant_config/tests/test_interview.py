@@ -675,3 +675,12 @@ def test_a_typed_answer_that_fills_other_questions_says_so(client, tenant_ctx, q
         URL, {"message": "Back pain at my desk job led me to yoga, 200-hour training", "field": "story"}, format="json"
     ).json()["guide"]
     assert guide["noted"] == ["your training"]  # the question on screen is not repeated back
+
+
+def test_the_contact_question_prefills_the_signup_email(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ("socials", "contact"))
+    guide = client.post(
+        URL, {"message": "No social accounts yet", "choice": {"field": "socials", "value": "{}"}}, format="json"
+    ).json()["guide"]
+    assert guide["field"] == "contact" and guide["contact"] is True
+    assert guide["prefill"] == {"Email": "c@iv.test"}  # the coach's own signup email

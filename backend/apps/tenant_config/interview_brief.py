@@ -772,6 +772,21 @@ def parse_socials(raw) -> dict[str, str]:
     return found
 
 
+# Contact ways that need a detail to be any use, and how each is checked.
+_EMAIL = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+CONTACT_DETAILS = {"Email": "email", "WhatsApp": "phone", "Phone": "phone"}
+
+
+def contact_detail_ok(kind: str, raw) -> bool:
+    """An email address, or a phone number of 6 to 15 digits (spaces, dashes,
+    dots, brackets and a leading + allowed)."""
+    text = str(raw or "").strip()
+    if kind == "email":
+        return bool(_EMAIL.fullmatch(text))
+    digits = re.sub(r"[\s().-]", "", text).removeprefix("+")
+    return digits.isdigit() and 6 <= len(digits) <= 15
+
+
 def socials_summary(links: dict[str, str]) -> str:
     return "; ".join(f"{SOCIALS[n][0]}: {u}" for n, u in links.items()) or NO_SOCIALS
 

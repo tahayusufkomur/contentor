@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
 import { flushSync } from "react-dom";
-import { ArrowLeft, ArrowRight, Monitor, Smartphone } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, Monitor, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import { PageState } from "@/components/ui/page-state";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -19,6 +20,8 @@ import {
   pageLabel,
   questionSteps,
   scheduleSummary,
+  SECTIONS,
+  sectionOf,
   stageIndex,
 } from "@/lib/interview";
 import {
@@ -202,6 +205,15 @@ function Flow({
   const [reloadKey, setReloadKey] = useState(0);
   const [path, setPath] = useState("/");
   const [celebrate, setCelebrate] = useState(false);
+  // The home page, peeked at mid-setup.
+  const [peek, setPeek] = useState(false);
+  const homeReady = flow.page_builds.home?.status === "ready";
+  useEffect(() => {
+    if (!peek) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPeek(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [peek]);
   const seen = useRef({ builds: flow.page_builds, drafts: iv.draft_status });
 
   const golive = iv.phase === "golive";
@@ -384,7 +396,7 @@ function Flow({
 
   if (!golive) {
     const step = steps[index];
-    const total = Math.max(steps.length - 1 + iv.remaining, index + 1);
+    const section = Math.min(sectionOf(step?.field), SECTIONS.length - 1);
     const live = index === steps.length - 1;
     const draft =
       drafts[step?.field ?? GOLIVE] ?? preset(step?.field ?? GOLIVE);
@@ -448,14 +460,32 @@ function Flow({
                 {brandName}
               </span>
               <span className="shrink-0">
-                Question {index + 1} of about {total}
+                {SECTIONS[section]?.label} · part {section + 1} of{" "}
+                {SECTIONS.length}
               </span>
             </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--sf-line)]">
-              <div
-                className="h-full rounded-full bg-[var(--sf-ink)] transition-[width] duration-500 motion-reduce:transition-none"
-                style={{ width: `${Math.round((index / total) * 100)}%` }}
-              />
+            {/* One segment per section: done, current, still to come. */}
+            <div
+              role="progressbar"
+              aria-label="Setup progress"
+              aria-valuemin={0}
+              aria-valuemax={SECTIONS.length}
+              aria-valuenow={section}
+              className="mt-1.5 flex h-1.5 gap-1"
+            >
+              {SECTIONS.map((s, i) => (
+                <span
+                  key={s.label}
+                  className={cn(
+                    "h-full flex-1 rounded-full transition-colors duration-500",
+                    i < section
+                      ? "bg-[var(--sf-ink)]"
+                      : i === section
+                        ? "bg-[var(--sf-brass)]"
+                        : "bg-[var(--sf-line)]",
+                  )}
+                />
+              ))}
             </div>
           </div>
           <NavButton
@@ -465,16 +495,78 @@ function Flow({
           >
             <ArrowRight className="size-4" aria-hidden />
           </NavButton>
+          {/* The home page is built while the questions go on: let the coach
+              see her own words in a design before the end. */}
+          {homeReady && (
+            <button
+              type="button"
+              onClick={() => setPeek(true)}
+              className="ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--sf-line)] bg-white px-3 py-1.5 text-[12.5px] font-medium text-[var(--sf-ink)] transition-colors hover:border-[var(--sf-line-strong)]"
+            >
+              <Eye className="size-3.5" aria-hidden />
+              <span className="hidden sm:inline">Peek at your home page</span>
+              <span className="sm:hidden">Peek</span>
+            </button>
+          )}
           {started && activity && (
             <p
               role="status"
-              className="ml-1 hidden max-w-[34vw] items-center gap-2 text-[13px] text-[var(--sf-graphite)] md:flex"
+              title={activity}
+              className="ml-1 flex max-w-[34vw] items-center gap-2 text-[13px] text-[var(--sf-graphite)]"
             >
               <Spinner size="sm" className="text-[var(--sf-brass)]" />
-              <span className="truncate">{activity}</span>
+              {/* On a phone the spinner alone says something is building. */}
+              <span className="hidden truncate md:inline">{activity}</span>
+              <span className="sr-only md:hidden">{activity}</span>
             </p>
           )}
         </header>
+        {peek && (
+          <ModalPortal>
+            <div
+              role="dialog"
+              aria-modal
+              aria-label="Your home page so far"
+              style={{
+                ...SHELL_TOKENS,
+                backgroundColor: "rgb(34 33 31 / 0.6)",
+              }}
+              className="sf-shell fixed inset-0 z-50 flex flex-col p-3 backdrop-blur-sm motion-safe:animate-fade-in sm:p-6"
+              onClick={() => setPeek(false)}
+            >
+              <div
+                className="mx-auto flex w-full max-w-[1400px] shrink-0 items-center justify-between gap-3 pb-3 text-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold">
+                    Your home page so far
+                  </p>
+                  <p className="text-[13px] text-white/70">
+                    It keeps getting better as you answer.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setPeek(false)}
+                  className="shrink-0 rounded-full bg-white text-[var(--sf-ink)] hover:bg-white/90"
+                >
+                  Back to the questions
+                </Button>
+              </div>
+              <div
+                className="min-h-0 flex-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <BrowserFrame
+                  host={host}
+                  path="/"
+                  device={narrow ? "phone" : "desktop"}
+                  reloadKey={0}
+                />
+              </div>
+            </div>
+          </ModalPortal>
+        )}
         <section
           aria-label="Your setup guide"
           style={{ viewTransitionName: "sf-slide" }}

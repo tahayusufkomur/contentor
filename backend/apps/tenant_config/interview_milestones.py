@@ -678,6 +678,10 @@ def review_card(tenant, kind: str) -> dict:
         ref = (flow.get("drafts") or {}).get("event") or {}
         detail.update(when=item.scheduled_at.isoformat(), event_kind=ref.get("kind", "live"))
         detail["location"] = getattr(item, "location", "") or ""
+        # A weekly class says so, not only its first date (audit G6).
+        picked = brief.answers_of(tenant).get("live_schedule")
+        if isinstance(picked, dict) and picked.get("mode") == "recurring":
+            detail["repeats"] = schedule.summary(picked)
     others = [i for i in _cover_images(tenant, kind, item) if i.asset_id != current][: COVERS - 1]
     covers = [{"value": current, "url": detail["cover_url"], "current": True}] if detail["cover_url"] else []
     covers += [{"value": i.asset_id, "url": i.preview_url, "current": False} for i in others]
@@ -806,6 +810,28 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             config.timezone = picked["tz"]
             config.save(update_fields=["timezone"])
             _bust(tenant)
+        return
+    if field is not None and field.kind == "contact" and isinstance(value, str) and value.lstrip().startswith("{"):
+        # Picked ways with their details: {"Email": "...", "WhatsApp": "...", "Contact form": ""}.
+        try:
+            picked = json.loads(value)
+        except ValueError:
+            raise ChoiceError("invalid_value") from None
+        if not isinstance(picked, dict) or not picked:
+            raise ChoiceError("invalid_value")
+        parts = []
+        for way in field.options:
+            if way not in picked:
+                continue
+            detail = str(picked[way] or "").strip()
+            kind = brief.CONTACT_DETAILS.get(way)
+            if kind and not brief.contact_detail_ok(kind, detail):
+                raise ChoiceError(f"invalid_{kind}")
+            parts.append(f"{way}: {detail}" if kind else way)
+        if not parts:
+            raise ChoiceError("invalid_value")
+        answers["contact"] = "; ".join(parts)
+        answers["delegated"] = [d for d in answers.get("delegated") or [] if d != "contact"]
         return
     if field is not None and field.kind == "socials":
         try:

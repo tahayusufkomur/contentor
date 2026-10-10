@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { CalendarDays, Check, ImageOff, MapPin, Video } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  ImageOff,
+  MapPin,
+  Repeat,
+  Video,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -291,6 +298,12 @@ function Drafted({
                 minute: "2-digit",
               }).format(new Date(item.when))}
             </Chip>
+            {item.repeats && (
+              <Chip>
+                <Repeat className="size-4" aria-hidden />
+                Repeats: {item.repeats}
+              </Chip>
+            )}
             <Chip>
               {item.event_kind === "onsite" ? (
                 <MapPin className="size-4" aria-hidden />

@@ -140,6 +140,25 @@ export function socialOk(network: string, raw: string): boolean {
   );
 }
 
+/** Contact ways that need a detail, as interview_brief.CONTACT_DETAILS. */
+export const CONTACT_DETAILS: Record<string, "email" | "phone"> = {
+  Email: "email",
+  WhatsApp: "phone",
+  Phone: "phone",
+};
+
+/** Whether the server will take this detail for a contact way: an email
+ * address, or a phone number of 6 to 15 digits (contact_detail_ok). Ways
+ * without a detail always pass. */
+export function contactOk(way: string, raw: string): boolean {
+  const kind = CONTACT_DETAILS[way];
+  const text = raw.trim();
+  if (!kind) return true;
+  if (kind === "email") return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(text);
+  const digits = text.replace(/[\s().-]/g, "").replace(/^\+/, "");
+  return /^\d{6,15}$/.test(digits);
+}
+
 export function formatPrice(cents: number | null, currency: string): string {
   if (cents == null) return "";
   return new Intl.NumberFormat("en-US", {
@@ -195,6 +214,8 @@ export function questionSteps(
           starter,
           why,
           plan,
+          contact,
+          prefill,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -215,6 +236,8 @@ export function questionSteps(
           starter,
           why,
           plan,
+          contact,
+          prefill,
           answer,
         });
         onScreen = e.field;
@@ -231,6 +254,41 @@ export function questionSteps(
     .filter((f) => f !== guide.field)
     .map((f) => asked.get(f) as QuestionStep);
   return guide.field ? [...past, guide] : past;
+}
+
+/** The interview in sections, in the order it asks them: progress reads by
+ * section, so it never jumps the way a question count did. */
+export const SECTIONS: { label: string; fields: string[] }[] = [
+  { label: "You", fields: ["teaches", "specialty"] },
+  { label: "Students", fields: ["audience", "outcome"] },
+  { label: "Offer", fields: ["offers", "pitch", "difference"] },
+  {
+    label: "Look & story",
+    fields: ["tone", "site_style", "story", "credentials", "site_logo"],
+  },
+  {
+    label: "Pricing & content",
+    fields: [
+      "payments",
+      "memberships",
+      "course_topic",
+      "course_price",
+      "course_review",
+      "live_topic",
+      "live_when",
+      "event_price",
+      "event_review",
+      "article_topic",
+    ],
+  },
+  { label: "Contact", fields: ["socials", "contact", "location"] },
+];
+
+/** A question's section (SECTIONS.length once nothing is left to ask). */
+export function sectionOf(field: string | null | undefined): number {
+  if (!field) return SECTIONS.length;
+  const i = SECTIONS.findIndex((s) => s.fields.includes(field));
+  return i < 0 ? 0 : i;
 }
 
 /** Whether a question's tiles show icons: only when every tile has one and
@@ -299,6 +357,25 @@ const fmtTime = (t: string) => {
 /** A slot is ready once it has a weekday and a time. */
 const slotReady = (sl: ScheduleSlot) =>
   sl.days.length > 0 && sl.times.some(Boolean);
+
+const ymd = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Where the schedule picker starts (it used to start empty): a weekly class
+ * the Monday after today, a single one a week out, both in the evening. The
+ * days stay the coach's to pick. ponytail: one evening for every niche. */
+export function defaultSchedule(
+  mode: ScheduleMode,
+  today: Date = new Date(),
+): Schedule {
+  const day = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (mode === "once") {
+    day.setDate(day.getDate() + 7);
+    return { at: `${ymd(day)}T18:00` };
+  }
+  day.setDate(day.getDate() + ((8 - day.getDay()) % 7 || 7));
+  return { start: ymd(day), slots: [{ days: [], times: ["18:00"] }] };
+}
 
 export function scheduleValid(mode: ScheduleMode, s: Schedule): boolean {
   return mode === "once"

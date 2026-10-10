@@ -8,6 +8,8 @@ import { ApiError } from "@/types/api";
 import {
   activityLine,
   addStarter,
+  contactOk,
+  defaultSchedule,
   finishedNotes,
   formatPrice,
   joinSpeech,
@@ -16,6 +18,8 @@ import {
   pickedOptions,
   planLabel,
   questionSteps,
+  SECTIONS,
+  sectionOf,
   socialOk,
   stageIndex,
   tileIcons,
@@ -320,5 +324,78 @@ describe("tileIcons", () => {
       false,
     );
     expect(tileIcons(base)).toBe(false);
+  });
+});
+
+describe("defaultSchedule", () => {
+  // Audit G6: the picker started empty, with no date or time.
+  const saturday = new Date(2026, 9, 10, 12, 0); // Sat 10 Oct 2026, local
+  it("starts a weekly class the Monday after today, in the evening", () => {
+    expect(defaultSchedule("recurring", saturday)).toEqual({
+      start: "2026-10-12",
+      slots: [{ days: [], times: ["18:00"] }],
+    });
+    const monday = new Date(2026, 9, 12, 9, 0);
+    expect(defaultSchedule("recurring", monday).start).toBe("2026-10-19");
+  });
+  it("puts a one-time class a week out, in the evening", () => {
+    expect(defaultSchedule("once", saturday)).toEqual({
+      at: "2026-10-17T18:00",
+    });
+  });
+});
+
+describe("sectionOf", () => {
+  // Audit P1: "Question N of about T" went 16 → 21 → 20 → 22 → 21.
+  it("follows the asking order and never steps back", () => {
+    const asked = [
+      "teaches",
+      "specialty",
+      "audience",
+      "outcome",
+      "offers",
+      "pitch",
+      "difference",
+      "tone",
+      "site_style",
+      "story",
+      "credentials",
+      "site_logo",
+      "payments",
+      "memberships",
+      "course_topic",
+      "course_price",
+      "course_review",
+      "live_topic",
+      "live_when",
+      "event_price",
+      "event_review",
+      "article_topic",
+      "socials",
+      "contact",
+      "location",
+    ];
+    const order = asked.map(sectionOf);
+    expect(order.every((s, i) => i === 0 || s >= order[i - 1])).toBe(true);
+    expect(order[0]).toBe(0);
+    expect(sectionOf("contact")).toBe(SECTIONS.length - 1);
+  });
+  it("puts go-live after every section", () => {
+    expect(sectionOf(null)).toBe(SECTIONS.length);
+  });
+});
+
+describe("contactOk mirrors the server", () => {
+  // interview_brief.contact_detail_ok: an email, or 6 to 15 digits.
+  it.each([
+    ["Email", "mira@example.com", true],
+    ["Email", "mira at example", false],
+    ["WhatsApp", "+49 170 1234567", true],
+    ["Phone", "(030) 123-4567", true],
+    ["WhatsApp", "call me", false],
+    ["Phone", "12345", false],
+    ["Contact form", "", true],
+  ] as const)("%s %s", (way, raw, ok) => {
+    expect(contactOk(way, raw)).toBe(ok);
   });
 });

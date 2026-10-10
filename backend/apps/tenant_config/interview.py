@@ -144,6 +144,8 @@ GUIDE_KEYS = (
     "starter",
     "why",
     "plan",
+    "contact",
+    "prefill",
 )
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
@@ -172,6 +174,8 @@ def guide_for(
             "starter": False,
             "why": "",
             "plan": None,
+            "contact": False,
+            "prefill": {},
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
@@ -205,6 +209,9 @@ def guide_for(
         "starter": field.starter,
         # One line under the question: why it matters.
         "why": field.why,
+        # The ways ticked take their details (an email address, a number).
+        "contact": field.kind == "contact",
+        "prefill": {},
     }
 
 
@@ -357,6 +364,16 @@ def noted(before: dict, after: dict, answering) -> list[str]:
         and after.get(field_id) not in (None, "", [])
         and after.get(field_id) != before.get(field_id)
     ]
+
+
+def contact_prefill(field_id) -> dict:
+    """The contact question starts with the coach's signup email filled in."""
+    from apps.accounts.models import User
+
+    if field_id != "contact":
+        return {}
+    owner = User.objects.filter(role="owner").order_by("id").first()
+    return {"Email": owner.email} if owner and owner.email else {}
 
 
 def picked_note(tenant, field_id) -> str:
@@ -520,6 +537,7 @@ def run_turn(
         guide["status"] = note
     # The plan the paid tiles need, stored with the question for going back.
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])
+    guide["prefill"] = contact_prefill(guide["field"])
     if also:
         guide["noted"] = also
 
@@ -561,6 +579,7 @@ def interview_state(tenant, flow: dict) -> dict:
         guide["icons"] = guide["icons"] or {}
         guide["hints"] = guide["hints"] or {}
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])  # live: a plan bought since hides it
+    guide["prefill"] = contact_prefill(guide["field"])
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back
