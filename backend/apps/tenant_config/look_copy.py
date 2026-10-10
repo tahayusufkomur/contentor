@@ -22,6 +22,10 @@ from . import interview_brief as brief
 
 logger = logging.getLogger(__name__)
 TIMEOUT_SECONDS = 30
+# The answers asked before the look question, in asking order.
+_BEFORE_THE_LOOK = frozenset(
+    f.id for f in brief.FIELDS[: next(i for i, f in enumerate(brief.FIELDS) if f.id == "site_style")]
+)
 CACHE_SECONDS = 24 * 3600
 FAILED_SECONDS = 300  # a failed call is not retried on every page load
 
@@ -128,10 +132,14 @@ def for_tenant(tenant, answers: dict) -> dict | None:
 
     from .interview import brand_of
 
+    # Written from what the coach said before the look question only: the
+    # card is re-served on every later turn (going back), and keying the copy
+    # on every answer cost a fresh AI call each time (6-10 s a turn).
+    early = {k: v for k, v in answers.items() if k in _BEFORE_THE_LOOK}
     facts = {
         "brand": brand_of(tenant),
         "subject": brief.subject_of(answers),
-        "facts": brief.composer_facts(answers),
+        "facts": brief.composer_facts(early),
     }
     digest = hashlib.sha256(json.dumps(facts, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
     key = f"setup:look-copy:v1:{tenant.schema_name}:{digest}"

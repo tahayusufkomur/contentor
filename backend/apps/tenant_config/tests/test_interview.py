@@ -684,3 +684,19 @@ def test_the_contact_question_prefills_the_signup_email(client, tenant_ctx, quie
     ).json()["guide"]
     assert guide["field"] == "contact" and guide["contact"] is True
     assert guide["prefill"] == {"Email": "c@iv.test"}  # the coach's own signup email
+
+
+def test_socials_and_contact_picks_skip_the_model(client, tenant_ctx, quiet):
+    """Phase 2A walk: these taps lead to code-owned questions (contact, go-live)."""
+    _only_missing(tenant_ctx, ("socials", "contact"))
+    body = client.post(
+        URL, {"message": "No social accounts yet", "choice": {"field": "socials", "value": "{}"}}, format="json"
+    ).json()
+    assert body["guide"]["field"] == "contact"
+    body = client.post(
+        URL,
+        {"message": "Email", "choice": {"field": "contact", "value": '{"Email": "c@iv.test"}'}},
+        format="json",
+    ).json()
+    assert body["guide"]["field"] is None
+    assert quiet.calls == []

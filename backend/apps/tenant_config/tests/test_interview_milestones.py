@@ -636,3 +636,30 @@ def test_the_look_preview_line_reads_as_a_sentence():
     )
     assert line == "Stretches during lunch breaks, anatomy-focused alignment cueing. Less back pain and better posture."
     assert ms.hero_line({"difference": "Desk yoga, AI-free and simple"}) == "Desk yoga, AI-free and simple."
+
+
+def test_the_look_copy_is_written_once_not_on_every_later_answer(tenant_ctx, config):
+    """Phase 2A walk: every turn after the look re-served its card, and the copy
+    was cached per ALL answers, so each new answer cost a fresh AI call (6-10 s)."""
+    from django.core.cache import cache
+
+    from apps.tenant_config import look_copy
+
+    cache.clear()
+    calls = []
+
+    def fake(**kwargs):
+        calls.append(kwargs)
+        return look_copy.LookCopy(), Decimal("0"), "m"
+
+    early = {"teaches": "Yoga", "audience": "Desk workers", "pitch": "Yoga for desks", "offers": ["live"]}
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch("apps.core.ai.structured", side_effect=fake),
+    ):
+        look_copy.for_tenant(tenant_ctx, early)
+        look_copy.for_tenant(tenant_ctx, {**early, "story": "Back pain", "payments": ["membership"]})
+        assert len(calls) == 1  # later answers don't touch the sample copy
+        look_copy.for_tenant(tenant_ctx, {**early, "audience": "Remote workers"})
+        assert len(calls) == 2  # an answer the copy is written from does
