@@ -233,6 +233,14 @@ export function questionSteps(
   return guide.field ? [...past, guide] : past;
 }
 
+/** Whether a question's tiles show icons: only when every tile has one and
+ * they differ. One icon repeated on every tile says nothing, and a few
+ * missing ones make the grid look uneven. */
+export function tileIcons(step: GuideTurn): boolean {
+  const icons = step.options.map((o) => step.icons?.[o]);
+  return icons.length > 1 && icons.every(Boolean) && new Set(icons).size > 1;
+}
+
 /** A starter tile put in the answer box: appended without its trailing
  * "…", with a space to keep typing after. */
 export const addStarter = (text: string, starter: string): string =>

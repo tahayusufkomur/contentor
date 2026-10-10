@@ -85,7 +85,7 @@ function Swatches({
               background: `linear-gradient(135deg, ${pal.background} 50%, ${pal.primary} 50%)`,
             }}
             className={cn(
-              "size-5 rounded-full border border-[var(--sf-line-strong)] transition-transform motion-safe:hover:scale-110",
+              "size-6 rounded-full border border-[var(--sf-line-strong)] transition-transform motion-safe:hover:scale-110",
               value === p.id &&
                 "ring-2 ring-[var(--sf-ink)] ring-offset-2 ring-offset-white",
             )}
@@ -548,18 +548,20 @@ function LookPreview({
         onClick={onClose}
       >
         <div
-          className="mx-auto flex w-full max-w-[1400px] shrink-0 items-center justify-between gap-3 pb-3 text-white"
+          className="mx-auto flex w-full max-w-[1400px] shrink-0 flex-col items-start gap-3 pb-3 text-white sm:flex-row sm:items-center sm:justify-between"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-semibold">{look.label}</p>
+            <p className="text-[15px] font-semibold sm:truncate">
+              {look.label}
+            </p>
             {(look.recommended && look.reason) || look.detail ? (
-              <p className="truncate text-[13px] text-white/70">
+              <p className="text-[13px] text-white/70 sm:truncate">
                 {look.recommended && look.reason ? look.reason : look.detail}
               </p>
             ) : null}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Swatches
               option={look}
               value={look.palette ?? ""}

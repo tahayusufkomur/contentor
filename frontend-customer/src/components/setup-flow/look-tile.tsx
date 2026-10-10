@@ -11,6 +11,9 @@ import { getSiteStyle, styleScope } from "@/lib/site-styles";
 // The site's desktop layout width; the tile scales it down, the same way the
 // preview frame scales the live page.
 const PAGE_W = 1180;
+// Below this width (a phone) the whole-page preview renders at its own width,
+// in the site's phone layout, instead of the desktop one zoomed to unreadable.
+const PHONE_MAX = 640;
 const FAMILIES: FamilyId[] = ["hero", "benefits", "courseShowcase"];
 const SAMPLE_PHOTO = /^https:\/\/pix4less\.com\/media\/previews\//;
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -144,8 +147,9 @@ export function LookTile({
   const scope = styleScope(style, paletteId) as CSSProperties;
   // The page keeps its layout box (zoom), so the parent can scroll it; the
   // tile is a fixed picture (transform) inside its frame.
+  const pageW = w < PHONE_MAX ? w : PAGE_W;
   const pageStyle: CSSProperties = page
-    ? { ...scope, width: PAGE_W, zoom: w / PAGE_W }
+    ? { ...scope, width: pageW, zoom: w / pageW }
     : {
         ...scope,
         width: PAGE_W,

@@ -14,6 +14,7 @@ import {
   scheduleSummary,
   scheduleValid,
   socialOk,
+  tileIcons,
   withNote,
   type QuestionStep,
 } from "@/lib/interview";
@@ -168,6 +169,7 @@ export function QuestionScreen({
           : [...t.filter((x) => x !== step.alone), o],
     );
   const every = step.options.filter((o) => o !== step.alone);
+  const showIcons = tileIcons(step);
   // Continue (and Enter in the box) sends the picks together with the
   // coach's note. On a review screen the note is a change to the draft.
   const proceed = (spoken = false, words = note) => {
@@ -365,9 +367,10 @@ export function QuestionScreen({
                         )}
                       >
                         {(() => {
-                          const Icon = step.icons?.[o]
-                            ? OPTION_ICONS[step.icons[o]]
-                            : undefined;
+                          const Icon =
+                            showIcons && step.icons?.[o]
+                              ? OPTION_ICONS[step.icons[o]]
+                              : undefined;
                           return (
                             Icon && (
                               <Icon

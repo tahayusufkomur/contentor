@@ -18,6 +18,7 @@ import {
   questionSteps,
   socialOk,
   stageIndex,
+  tileIcons,
   withNote,
 } from "@/lib/interview";
 
@@ -297,5 +298,27 @@ describe("turnErrorText", () => {
       turnErrorText(new ApiError(400, { detail: "invalid_handle" })),
     ).toMatch(/handle/);
     expect(turnErrorText(new Error("offline"))).toMatch(/didn’t go through/);
+  });
+});
+
+describe("tileIcons", () => {
+  const base: GuideTurn = {
+    ack: "",
+    question: "Which kinds?",
+    field: "specialty",
+    can_delegate: false,
+    options: ["Hatha", "Yin", "Power"],
+  };
+  it("shows icons only when every tile has its own", () => {
+    const own = { Hatha: "sun", Yin: "moon", Power: "zap" };
+    expect(tileIcons({ ...base, icons: own })).toBe(true);
+    // Audit V2: eight yoga tiles shared one icon, which said nothing.
+    const same = { Hatha: "flower-2", Yin: "flower-2", Power: "flower-2" };
+    expect(tileIcons({ ...base, icons: same })).toBe(false);
+    // Some AI tiles lost theirs and the grid looked uneven.
+    expect(tileIcons({ ...base, icons: { Hatha: "sun", Yin: "moon" } })).toBe(
+      false,
+    );
+    expect(tileIcons(base)).toBe(false);
   });
 });
