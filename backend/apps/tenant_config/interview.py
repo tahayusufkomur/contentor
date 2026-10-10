@@ -23,8 +23,10 @@ INTERVIEW_TIMEOUT_SECONDS = 45
 EDIT_TIMEOUT_SECONDS = 35
 TRANSCRIPT_KEEP = 80
 MAX_OPTIONS = 8
-# The hub has no sessions: the whole kept transcript rides every turn.
-CONTEXT_TURNS = TRANSCRIPT_KEEP
+# The hub has no sessions, so the context rides every turn. The facts ride in
+# "answered"; the last few turns are enough for the flow of the talk. All 80
+# made late turns about twice as slow (audit 2026-10-09: ~7 s to ~15 s).
+CONTEXT_TURNS = 8
 OPENING_ACK = (
     "Hi. This takes about 15 minutes, and your site builds while we talk. Tap an answer, type, or use the mic."
     " Tell me a lot at once and I'll skip what you've covered."

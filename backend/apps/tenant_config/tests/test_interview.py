@@ -1,6 +1,7 @@
 """The /setup interview turn: extraction, the code safety net, fallback,
 spoken-text correction, edit requests, and the read model."""
 
+import json
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest import mock
@@ -548,3 +549,11 @@ def test_offers_and_payments_say_why_they_matter():
     assert interview.guide_for(brief.FIELD_BY_ID["payments"])["why"]
     assert interview.guide_for(brief.FIELD_BY_ID["pitch"], options=["x"], icons=[])["why"] == ""
     assert {"why", "plan"} <= set(interview.GUIDE_KEYS)
+
+
+def test_only_the_last_turns_ride_along(tenant_ctx, config):
+    """Audit F1: turns slowed from ~7 s to ~15 s as all 80 turns rode every call."""
+    turns = [{"role": "coach", "text": f"m{i}"} for i in range(40)]
+    recent = json.loads(interview._user_turn(tenant_ctx, {}, turns, "hi", False))["recent"]
+    assert len(recent) == interview.CONTEXT_TURNS < 40
+    assert recent[-1]["text"] == "m39"
