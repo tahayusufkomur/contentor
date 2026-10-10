@@ -23,6 +23,7 @@ ALL_ITEM_KEYS = frozenset(
         "first_event",
         "demo_cleanup",
         "payouts",
+        "start_selling",
         "publish",
         "first_download",
         "first_live",
@@ -78,14 +79,15 @@ def _has_own(model, rows, *, queryset=None) -> bool:
     return False
 
 
-def _has_paid_content(seeded) -> bool:
+def _has_paid_content(seeded, held=None) -> bool:
     """The coach sells at least one paid (price > 0) course or download of
     their own. Demo-seeded rows are excluded so an unremoved demo (which may
-    contain paid items) never spuriously demands payout onboarding."""
+    contain paid items) never spuriously demands payout onboarding, and so is
+    a course held back by "go live now, sell later" (``setup_flow["held"]``)."""
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
 
-    course_demo = [row.object_id for row in seeded.get("courses.course", [])]
+    course_demo = [row.object_id for row in seeded.get("courses.course", [])] + [(held or {}).get("course")]
     dl_demo = [row.object_id for row in seeded.get("downloads.downloadfile", [])]
     return (
         Course.objects.filter(pricing_type="paid", price__gt=0).exclude(pk__in=course_demo).exists()
@@ -137,7 +139,9 @@ def publish_blockers(config, tenant) -> list[str]:
     has_own_product = _has_own(
         Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
     ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
-    skipped = (config.setup_flow or {}).get("skipped") or []
+    held = (config.setup_flow or {}).get("held") or {}
+    # A course held by "sell later" waits for payouts like a skipped one.
+    skipped = [*((config.setup_flow or {}).get("skipped") or []), *(["course"] if held.get("course") else [])]
     # A coach whose brief offers no courses is never asked for one (audit
     # 2026-10-09); a brief without offers (older signups) still is.
     offers = ((getattr(tenant, "wizard_state", None) or {}).get("answers") or {}).get("offers")
@@ -165,7 +169,7 @@ def publish_blockers(config, tenant) -> list[str]:
         ):
             blockers.append("first_blog_post")
 
-    if _has_paid_content(seeded) and not can_monetize(tenant):
+    if _has_paid_content(seeded, held=held) and not can_monetize(tenant):
         blockers.append("payouts")
     return blockers
 
@@ -222,6 +226,8 @@ def compute_setup_state(config, tenant) -> dict:
     if was_seeded:
         add("demo_cleanup", "content", not seeded_rows_exist)
     add("payouts", "business", can_monetize(tenant))
+    if (config.setup_flow or {}).get("held"):
+        add("start_selling", "business", False)  # until release_held() puts them on sale
     add("publish", "live", published)
 
     if "downloads" in modules:

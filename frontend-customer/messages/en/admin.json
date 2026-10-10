@@ -297,6 +297,10 @@
         "title": "Set up how you get paid",
         "description": "Connect payouts so students can buy from you."
       },
+      "start_selling": {
+        "title": "Start selling",
+        "description": "Your prices are saved. Choose a plan and set up payouts, and what you held back goes on sale on its own."
+      },
       "publish": {
         "title": "Publish your site",
         "description": "Flip the switch when you are ready for the world."

@@ -100,7 +100,9 @@ export interface SetupFlowApi {
   logoMore: () => Promise<LookCards>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
-  goliveAction: (action: "publish" | "make_free") => Promise<GoLiveState>;
+  goliveAction: (
+    action: "publish" | "make_free" | "sell_later",
+  ) => Promise<GoLiveState>;
 }
 
 const BASE = "/api/v1/admin/setup-flow";
@@ -409,6 +411,8 @@ export interface GoLiveState {
   summary: { label: string; value: string }[];
   /** What "make it free" would change, said before the coach agrees. */
   free_effects: string[];
+  /** What "go live now, sell later" holds back, with its prices, until she can take payments. */
+  held: string[];
 }
 
 export interface GoLiveStep {

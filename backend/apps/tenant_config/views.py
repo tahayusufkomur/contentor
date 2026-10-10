@@ -167,12 +167,18 @@ def admin_stats(_request):
 @api_view(["GET", "PATCH"])
 @permission_classes([IsCoachOrOwner])
 def setup_status(request):
-    """Setup Assistant state: per-item checklist + dismiss + manual overrides."""
+    """Setup Assistant state: per-item checklist + dismiss + manual overrides.
+    Every admin page reads it, so it is also where items held by "go live now,
+    sell later" go on sale once the coach can take payments."""
+    from .interview_golive import release_held
     from .setup_items import ALL_ITEM_KEYS, compute_setup_state
 
     config = TenantConfig.objects.first()
     if config is None:
         return Response(status=404)
+    if (config.setup_flow or {}).get("held"):
+        release_held(connection.tenant)
+        config.refresh_from_db()
     if request.method == "PATCH":
         if "dismissed" in request.data:
             config.setup_guide_dismissed = bool(request.data["dismissed"])

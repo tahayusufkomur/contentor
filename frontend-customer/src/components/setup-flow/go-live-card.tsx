@@ -18,8 +18,9 @@ import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
 import { PayoutsCard } from "./payouts-card";
 
-/** The last stretch: a paid plan and Stripe only when the coach sells, a
- * "make it free" way out of both, then publish. */
+/** The last stretch: a paid plan and Stripe only when the coach sells, two
+ * ways out of both ("go live now, sell later" keeps her prices, "make it
+ * free" drops them), then publish. */
 export function GoLiveCard({
   api,
   onPublished,
@@ -89,6 +90,10 @@ export function GoLiveCard({
   const { run: makeFree, loading: freeing } = useAsyncAction(
     async () => setState(await api.goliveAction("make_free")),
     { errorToast: "Couldn’t switch to free. Try again." },
+  );
+  const { run: sellLater, loading: holding } = useAsyncAction(
+    async () => setState(await api.goliveAction("sell_later")),
+    { errorToast: "Couldn’t hold your paid items back. Try again." },
   );
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
@@ -191,6 +196,24 @@ export function GoLiveCard({
       </Button>
     );
 
+  const later = (
+    <Button
+      variant="outline"
+      onClick={() => sellLater()}
+      loading={holding}
+      loadingText="Holding them back…"
+      className="rounded-full"
+    >
+      Go live now, sell later
+    </Button>
+  );
+  const laterHint = (
+    <p className="mt-3 text-[13px] leading-relaxed text-[var(--sf-faint)]">
+      Going live now keeps your prices: paid items wait as drafts and go on sale
+      on their own once you can take payments.
+    </p>
+  );
+
   if (state.needs_plan && state.plan) {
     const price = formatPrice(state.plan.amount_cents, state.plan.currency);
     // Plan names are stored lowercase ("starter"); shown capitalised.
@@ -213,8 +236,10 @@ export function GoLiveCard({
           >
             Choose {name}
           </Button>
+          {later}
           {free}
         </div>
+        {!confirmFree && laterHint}
       </>,
     );
   }
@@ -225,7 +250,11 @@ export function GoLiveCard({
         <div className="h-[340px]">
           <PayoutsCard onReady={setPayoutsReady} />
         </div>
-        <div className="mt-2">{free}</div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {later}
+          {free}
+        </div>
+        {!confirmFree && laterHint}
       </>,
     );
   }
@@ -233,6 +262,22 @@ export function GoLiveCard({
   return shell(
     <>
       <p className="text-[15px] font-semibold">Ready when you are</p>
+      {state.held?.length > 0 && (
+        <div className="mt-2 rounded-xl bg-[var(--sf-tint)] p-3 text-[13.5px] leading-relaxed">
+          <p className="font-medium">
+            Waiting, with your prices, until you sell:
+          </p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[var(--sf-graphite)]">
+            {state.held.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          <p className="mt-1.5 text-[var(--sf-graphite)]">
+            Choose a plan and set up payouts from your dashboard any time; they
+            go on sale on their own.
+          </p>
+        </div>
+      )}
       {state.blockers.length > 0 && (
         <ul className="mt-2 list-disc space-y-1 pl-5 text-[14px] text-[var(--sf-graphite)]">
           {state.blockers.map((b) => (

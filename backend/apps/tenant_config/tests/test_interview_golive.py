@@ -265,3 +265,68 @@ def test_a_coach_who_offers_no_course_is_not_blocked_by_a_first_course(client, t
     )
     with mock.patch("apps.tenant_config.interview_golive.fire"):
         assert "first_course" not in client.get(URL).json()["blockers"]
+
+
+def _sell_later(client, tenant_ctx, config, *, paid=False, monetize=False):
+    """A selling coach with a paid course, a membership and a drafted class takes "go live now, sell later"."""
+    from apps.billing.models import SubscriptionPlan
+    from apps.live.models import LiveClass
+
+    course = _course(paid=True)
+    plan = SubscriptionPlan.objects.create(name="Online membership", price=Decimal("19"), billing_interval_months=1)
+    owner = User.objects.filter(role="owner").first()
+    live = LiveClass.objects.create(title="Desk Flow", instructor=owner, status="scheduled")
+    config.setup_flow = {
+        **config.setup_flow,
+        "drafts": {"course": course.id, "plans": {"online": plan.pk}, "event": {"id": live.id, "kind": "live"}},
+    }
+    config.save()
+    answers = {**DONE, "sells": "paid", "course_price": 49.0, "offers": ["course", "live"]}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    with (
+        mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=paid),
+        mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=monetize),
+        mock.patch("apps.tenant_config.interview_golive.fire"),
+    ):
+        body = client.post(URL, {"action": "sell_later"}, format="json").json()
+    return body, course, plan, live
+
+
+def test_sell_later_goes_live_with_paid_items_held_and_prices_kept(client, tenant_ctx, config):
+    """Publish now, sell later: making it free threw her prices away."""
+    body, course, plan, live = _sell_later(client, tenant_ctx, config)
+    assert body["needs_plan"] is False and body["needs_payouts"] is False
+    assert [s["id"] for s in body["steps"]] == ["publish"]
+    held = " ".join(body["held"])
+    assert "Desk Yoga" in held and "Online membership" in held and "classes" in held
+    course.refresh_from_db(), plan.refresh_from_db(), live.refresh_from_db()
+    assert (course.pricing_type, course.is_published) == ("paid", False)
+    assert plan.is_active is False and live.status == "draft"
+    assert Tenant.objects.get(pk=tenant_ctx.pk).wizard_state["answers"]["course_price"] == 49.0
+
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        resp = client.post(URL, {"action": "publish"}, format="json")
+    assert resp.status_code == 200, resp.json()  # a held paid course blocks neither first_course nor payouts
+    assert Tenant.objects.get(pk=tenant_ctx.pk).is_published is True
+    course.refresh_from_db()
+    assert course.is_published is False
+
+
+def test_held_items_go_on_sale_once_she_can_take_payments(client, tenant_ctx, config):
+    _, course, plan, live = _sell_later(client, tenant_ctx, config)
+    status_url = "/api/v1/admin/setup-status/"
+    with mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=False):
+        keys = [i["key"] for i in client.get(status_url).json()["items"]]
+    assert "start_selling" in keys
+    course.refresh_from_db()
+    assert course.is_published is False  # not yet: no payouts
+
+    with (
+        mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=True),
+        mock.patch("apps.tenant_config.interview_golive._live_entitled", return_value=True),
+    ):
+        keys = [i["key"] for i in client.get(status_url).json()["items"]]
+    assert "start_selling" not in keys
+    course.refresh_from_db(), plan.refresh_from_db(), live.refresh_from_db()
+    assert course.is_published is True and plan.is_active is True and live.status == "scheduled"
+    assert "held" not in TenantConfig.objects.first().setup_flow
