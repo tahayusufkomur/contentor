@@ -15,7 +15,7 @@ import {
   checkBrandName,
   createPlatformAuthenticated,
 } from "@/lib/api/onboarding";
-import { SignupShell, SlideHeader } from "./signup-shell";
+import { SignupFrame, SignupShell, SlideHeader } from "./signup-shell";
 import { ApiError } from "@/types/api";
 import { BASE_DOMAIN } from "@/lib/constants";
 import { siteSlug } from "@/lib/slug";
@@ -232,9 +232,14 @@ function AnonymousSignupFlow() {
 
   if (step === "email-sent") {
     return (
-      <AuthShell
+      <SignupFrame
         title={t("verifyTitle")}
         subtitle={t("verifyDescription", { email })}
+        progress={85}
+        onBack={() => {
+          setDirection(-1);
+          setStep("contact");
+        }}
       >
         <div className="text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong">
@@ -270,7 +275,7 @@ function AnonymousSignupFlow() {
             </button>
           </div>
         </div>
-      </AuthShell>
+      </SignupFrame>
     );
   }
 
@@ -291,7 +296,7 @@ function AnonymousSignupFlow() {
       <SignupShell
         stepId="brand"
         direction={direction}
-        progress={0}
+        progress={30}
         canBack={false}
         onBack={() => {}}
         error={error}
@@ -404,7 +409,7 @@ function AnonymousSignupFlow() {
     <SignupShell
       stepId="contact"
       direction={direction}
-      progress={8}
+      progress={60}
       canBack
       onBack={() => {
         setError(null);

@@ -7,7 +7,7 @@ import { AlertCircle, CheckCircle2, MailPlus, Rocket } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { AuthShell } from "@/components/auth/auth-shell";
+import { SignupFrame } from "../signup-shell";
 import { recoverSignup, requestHandoff } from "@/lib/api/onboarding";
 import { ApiError } from "@/types/api";
 
@@ -159,7 +159,7 @@ export default function SignupVerifyPage() {
 
   if (state === "verifying" || state === "preparing") {
     return (
-      <AuthShell
+      <SignupFrame
         eyebrow={t(
           state === "verifying"
             ? "verify.verifyingEyebrow"
@@ -186,7 +186,7 @@ export default function SignupVerifyPage() {
             <strong className="text-foreground">{domain}</strong>
           </span>
         </div>
-      </AuthShell>
+      </SignupFrame>
     );
   }
 
@@ -194,7 +194,7 @@ export default function SignupVerifyPage() {
     const r = (key: string) => t(`verify.resume.${key}`);
     if (resumeState === "sent" || resumeState === "closed") {
       return (
-        <AuthShell
+        <SignupFrame
           eyebrow={r("eyebrow")}
           title={r(resumeState === "sent" ? "sentTitle" : "closedTitle")}
           subtitle={r(
@@ -209,11 +209,11 @@ export default function SignupVerifyPage() {
               <a href="/login">{r("closedCta")}</a>
             </Button>
           )}
-        </AuthShell>
+        </SignupFrame>
       );
     }
     return (
-      <AuthShell
+      <SignupFrame
         eyebrow={r("eyebrow")}
         title={r("title")}
         subtitle={resumeState === "failed" ? r("failed") : r("subtitle")}
@@ -244,12 +244,12 @@ export default function SignupVerifyPage() {
             {r("resend")}
           </Button>
         )}
-      </AuthShell>
+      </SignupFrame>
     );
   }
 
   return (
-    <AuthShell
+    <SignupFrame
       eyebrow={t("verify.errorEyebrow")}
       title={t("verify.errorTitle")}
       subtitle={error}
@@ -260,6 +260,6 @@ export default function SignupVerifyPage() {
       <Button asChild variant="outline" size="lg" className="mt-7 w-full">
         <a href="/signup">{t("verify.tryAgain")}</a>
       </Button>
-    </AuthShell>
+    </SignupFrame>
   );
 }

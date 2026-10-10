@@ -4,8 +4,13 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-/** Full-screen frame for the two signup steps (brand, then name + email).
- * Everything after the email link happens in the coach's own /setup. */
+// One sequence from signup to a live site (audit P4): signup is the first
+// stage, /setup the second, its go-live card the third.
+const STAGES = ["account", "site", "live"] as const;
+
+/** Full-screen frame for every signup screen: the two steps (brand, then
+ * name + email), "check your email" and the verify states. Everything after
+ * the email link happens in the coach's own /setup. */
 export function SignupShell({
   stepId,
   direction,
@@ -18,7 +23,7 @@ export function SignupShell({
 }: {
   stepId: string;
   direction: number; // 1 = forward, -1 = back; drives the slide direction
-  progress: number; // 0-100
+  progress: number; // 0-100, of the Account stage
   canBack: boolean;
   onBack: () => void;
   error: string | null;
@@ -51,13 +56,41 @@ export function SignupShell({
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
             </button>
-            <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-foreground/[0.08]">
-              <motion.div
-                className="h-full rounded-full bg-foreground"
-                initial={false}
-                animate={{ width: `${progress}%` }}
-                transition={{ type: "spring", stiffness: 150, damping: 24 }}
-              />
+            <div
+              role="progressbar"
+              aria-label={t("stages.label")}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progress / STAGES.length)}
+              className="grid min-w-0 flex-1 grid-cols-3 gap-1.5"
+            >
+              {STAGES.map((s, i) => (
+                <div key={s} className="min-w-0">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-foreground/[0.08]">
+                    {i === 0 && (
+                      <motion.div
+                        className="h-full rounded-full bg-foreground"
+                        initial={false}
+                        animate={{ width: `${progress}%` }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 150,
+                          damping: 24,
+                        }}
+                      />
+                    )}
+                  </div>
+                  <p
+                    className={`mt-1.5 truncate text-[11.5px] ${
+                      i === 0
+                        ? "font-medium text-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {t(`stages.${s}`)}
+                  </p>
+                </div>
+              ))}
             </div>
           </header>
 
@@ -90,6 +123,47 @@ export function SignupShell({
         </div>
       </div>
     </MotionConfig>
+  );
+}
+
+/** A signup screen that is not a form step ("check your email", verifying,
+ * an expired link): AuthShell's props, in the slides' frame, so signup does
+ * not switch looks halfway (audit V1). */
+export function SignupFrame({
+  eyebrow,
+  title,
+  subtitle,
+  progress = 100,
+  onBack,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  progress?: number;
+  onBack?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <SignupShell
+      stepId={title}
+      direction={1}
+      progress={progress}
+      canBack={!!onBack}
+      onBack={onBack ?? (() => {})}
+      error={null}
+      footer={null}
+    >
+      <div className="mx-auto w-full max-w-[420px] text-center">
+        {eyebrow && (
+          <p className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {eyebrow}
+          </p>
+        )}
+        <SlideHeader heading={title} subhead={subtitle ?? ""} />
+        <div className="mt-7">{children}</div>
+      </div>
+    </SignupShell>
   );
 }
 

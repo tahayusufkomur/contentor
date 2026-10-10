@@ -21,6 +21,7 @@ import {
   scheduleSummary,
   SECTIONS,
   sectionOf,
+  priceOk,
   stageIndex,
 } from "@/lib/interview";
 import {
@@ -441,7 +442,10 @@ function Flow({
           .filter((l) => step.options.includes(l))
           .map((label) => ({
             label,
-            price: step.hints?.[label] ?? "",
+            // The price she is typing, once it reads as one.
+            price: priceOk(draft.prices?.[label] ?? "")
+              ? `${step.sign ?? ""}${draft.prices?.[label]?.trim()} a month`
+              : (step.hints?.[label] ?? ""),
             blurb: step.details?.[label] ?? "",
           })),
       };
@@ -461,8 +465,9 @@ function Flow({
           </NavButton>
           <div className="min-w-0 flex-1 px-1">
             <div className="flex items-baseline justify-between gap-3 text-[12px] text-[var(--sf-faint)]">
+              {/* The second of signup's three stages (Account, Your site, Go live). */}
               <span className="hidden truncate font-medium text-[var(--sf-graphite)] sm:inline">
-                {brandName}
+                Your site, step 2 of 3
               </span>
               <span className="shrink-0">
                 {SECTIONS[section]?.label} · part {section + 1} of{" "}
